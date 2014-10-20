@@ -43,13 +43,11 @@
 #ifndef __embObjMotionControlh__
 #define __embObjMotionControlh__
 
-//#undef __cplucplus
 
 using namespace std;
 
-#define EMBMC_SIZE_INFO     128
 
-/////  Yarp stuff
+//  Yarp stuff
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
 #include <yarp/dev/DeviceDriver.h>
@@ -60,7 +58,7 @@ using namespace std;
 #include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #include <yarp/dev/IVirtualAnalogSensor.h>
-///////////////////
+
 
 #include <iCub/FactoryInterface.h>
 
@@ -74,18 +72,32 @@ using namespace std;
 
 #include "FeatureInterface.h"
 
+
 #include "EoMotionControl.h"
-// #include <ethManager.h>
+#include <ethManager.h>
 #include <ethResource.h>
 #include "../embObjLib/hostTransceiver.hpp"
 // #include "IRobotInterface.h"
-
+#include "FeatureInterface_hid.h"   // marco.accame: actually it contains definition of class IiCubFeature, thus IiCubFeature.h would be better
 #include "eoRequestsQueue.hpp"
 #include "EoMotionControl.h"
+
+
+// - public #define  --------------------------------------------------------------------------------------------------
+
+#define IMPLEMENT_DEBUG_INTERFACE
+
+#undef  VERIFY_ROP_SETIMPEDANCE     // this macro let you send setimpedence rop with signature.
+                                    // if you want use this feature, you should compiled ems firmware with same macro.
+#undef  VERIFY_ROP_SETPOSITIONRAW   // this macro let you send setposition rop with signature.
+                                    // if you want use this feature, yuo should compiled ems firmware with same macro.
+
+
 //
 //   Help structure
 //
 using namespace yarp::os;
+using namespace yarp::dev;
 
 struct ImpedanceLimits
 {
@@ -157,20 +169,7 @@ struct SpeedEstimationParameters
     }
 };
 
-#define IMPLEMENT_DEBUG_INTERFACE
 
-#ifdef _SETPOINT_TEST_
-typedef struct
-{
-    yarp::os::Semaphore     mutex;
-    uint64_t                send_time;
-    eOmeas_position_t       last_pos;
-    eOmeas_position_t       pos;
-    bool                    gotIt;
-    int                     count_old;
-    bool                    wtf;
-} debug_data_of_joint_t;
-#endif
 
 namespace yarp {
     namespace dev  {
@@ -212,13 +211,20 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IOpenLoopControlRaw,
     public ImplementOpenLoopControl,
     public IDebugInterfaceRaw,
-    public ImplementDebugInterface
+    public ImplementDebugInterface,
+    public IiCubFeature
 {
+
+public:
+
+    enum { EMBMC_SIZE_INFO = 128 };
+
 private:
+
     int           tot_packet_recv, errors;
 
-    bool initted;
-    // embObj stuff
+    bool opened;
+
     yarp::os::Semaphore     _mutex;
     FEAT_ID                 _fId;
 
@@ -233,7 +239,6 @@ private:
     Pid *_tpids;                                /** initial torque gains */
     bool _tpidsEnabled;                         /** abilitation for torque gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
-    //  DebugParameters *_debug_params;             /** debug parameters */
 
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_limitsMin;                         /** joint limits, max*/
@@ -253,13 +258,10 @@ private:
 
     bool         useRawEncoderData;
     bool        _pwmIsLimited;                         /** set to true if pwm is limited */
+    int         numberofmaisboards;
 
-    //debug purpose
-    
-#undef  VERIFY_ROP_SETIMPEDANCE   //this macro let you send setimpedence rop with signature.								  //if you want use this feature, you should compiled ems firmware with same macro.
-#undef VERIFY_ROP_SETPOSITIONRAW  //this macro let you send setposition rop with signature.
-								  //if you want use this feature, yuo should compiled ems firmware with same macro.
-    
+    // debug purpose
+      
 #ifdef VERIFY_ROP_SETIMPEDANCE 
     uint32_t *impedanceSignature;
 #endif
@@ -269,7 +271,7 @@ private:
     bool        *sendingDirects;
 #endif
     
-    
+
     // basic knowledge of my joints
     int   _njoints;                             // Number of joints handled by this EMS; this values will be extracted by the config file
 
@@ -289,7 +291,9 @@ private:
     double  *_ref_torques;      // for torque control.
 
     uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
+
 private:
+
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
     bool configure_mais(yarp::os::Searchable &config);
     bool dealloc();
@@ -368,21 +372,25 @@ private:
 
 
 public:
+
     embObjMotionControl();
     ~embObjMotionControl();
 
     char                info[EMBMC_SIZE_INFO];
     Semaphore           semaphore;
-    eoRequestsQueue     *requestQueue;  // tabella che contiene la lista delle attese
+    eoRequestsQueue     *requestQueue;      // it contains the list of requests done to the remote board
 
-    // embObj stuff -- this is better if private... do a get method!!
+    // embObjLib stuff
     ethResources                *res;
     yarp::dev::TheEthManager    *ethManager;
 
-    /*Device Driver*/
+    // Device Driver
     virtual bool open(yarp::os::Searchable &par);
     virtual bool close();
     bool fromConfig(yarp::os::Searchable &config);
+
+    virtual bool isOpened();
+    virtual bool fillData(eOnvID32_t id32, double timestamp, void *rxdata);
 
     eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
     void refreshEncoderTimeStamp(int joint);

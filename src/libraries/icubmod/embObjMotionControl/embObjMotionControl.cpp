@@ -17,13 +17,10 @@
 #include <ethManager.h>
 #include <FeatureInterface.h>
 
-#ifdef _SETPOINT_TEST_
-#include "EOYtheSystem.h"
-#endif
+
 #include "Debug.h"
 
 #include "EoCommon.h"
-//#include "EOnv.h"
 #include "EOarray.h"
 #include "EoProtocol.h"
 #include "EoProtocolMN.h"
@@ -34,15 +31,12 @@ using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
-//#warning "Macro EMS_capacityofropframeregulars defined by hand!! Find a way to have this number synchronized with EMS!!"
-#define EMS_capacityofropframeregulars 1204
-
-#define MAXNUMOFJOINTS 16
 
 // Utilities
 
 void embObjMotionControl::copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
 {
+    memset(out, 0, sizeof(eOmc_PID_t));     // marco.accame: it is good thing to clear the out struct before copying. this prevent future members of struct not yet managed to be dirty.
     out->kp = (int16_t) S_16(in->kp);
     out->ki = (int16_t) S_16(in->ki);
     out->kd = (int16_t) S_16(in->kd);
@@ -54,6 +48,7 @@ void embObjMotionControl::copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
 
 void embObjMotionControl::copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
 {
+    // marco.accame: in here i dont clear the out class because there is not a clear() method
     out->kp = (double) in->kp;
     out->ki = (double) in->ki;
     out->kd = (double) in->kd;
@@ -61,6 +56,9 @@ void embObjMotionControl::copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
     out->max_output = (double) in->limitonoutput;
     out->offset = (double) in->offset;
     out->scale = (double) in->scale;
+    #warning --> marco.accame: inside embObjMotionControl::copyPid_eo2iCub() when protocol version of mc gets 1.1 and has stiction value .... change code in here
+    out->setStictionValues(0, 0);
+    out->setKff(0);
 }
 
 // This will be moved in the ImplXXXInterface
@@ -339,9 +337,6 @@ bool embObjMotionControl::alloc(int nj)
     sendingDirects = allocAndCheck<bool>(nj);
 #endif
 
-#ifdef _SETPOINT_TEST_
-    j_debug_data = allocAndCheck<debug_data_of_joint_t>(nj);
-#endif
     //	_debug_params=allocAndCheck<DebugParameters>(nj);
 
 
@@ -381,10 +376,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_enabledPid);
     checkAndDestroy(_calibrated);
 
-#ifdef _SETPOINT_TEST_
-    delete j_debug_data;
-#endif
-
+    delete requestQueue;
 
     return true;
 }
@@ -410,7 +402,7 @@ embObjMotionControl::embObjMotionControl() :
     _mutex(1),
     SAFETY_THRESHOLD(2.0)
 {
-    initted       = 0;
+    opened        = 0;
     _pids         = NULL;
     _tpids        = NULL;
     res           = NULL;
@@ -461,6 +453,7 @@ embObjMotionControl::embObjMotionControl() :
 
     useRawEncoderData = false;
     _pwmIsLimited     = false;
+    numberofmaisboards = 0;
 
 }
 
@@ -469,12 +462,17 @@ embObjMotionControl::~embObjMotionControl()
     dealloc();
 }
 
+bool embObjMotionControl::isOpened()
+{
+    return opened;
+}
+
 bool embObjMotionControl::open(yarp::os::Searchable &config)
 {
     std::string str;
     if(!config.findGroup("GENERAL").find("verbose").isBool())
     {
-        yError() << " general->verbose bool param is different from accepted values (true / false). Assuming false";
+        yError() << "embObjMotionControl::open() detects that general->verbose bool param is different from accepted values (true / false). Assuming false";
         str=" ";
     }
     else
@@ -484,24 +482,31 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         else
             str=" ";
     }
-    yTrace() <<str;
+    yTrace() << str;
 
-    // Tmp variables
+
     Bottle          groupEth;
     ACE_UINT16      port;
+
+    Bottle groupTransceiver = Bottle(config.findGroup("TRANSCEIVER"));
+    if(groupTransceiver.isNull())
+    {
+        yError() << "embObjMotionControl::open() cannot find TRANSCEIVER group in xml config files";
+        return false;
+    }
 
     Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
     if(groupProtocol.isNull())
     {
-        yWarning() << "embObjMotionControl: Can't find PROTOCOL group in config files ... using max capabilities";
-        //return false;
+        yError() << "embObjMotionControl::open() cannot find PROTOCOL group in xml config files";
+        return false;
     }
 
     // Get both PC104 and EMS ip addresses and port from config file
     groupEth  = Bottle(config.findGroup("ETH"));
     if(groupEth.isNull())
     {
-        yError() << "Can't find ETH group in config files";
+        yError() << "embObjMotionControl::open() cannot find ETH group in config files";
         return false;
     }
     Value *PC104IpAddress_p;
@@ -522,11 +527,11 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     sscanf(_fId.EMSipAddr.string,"\"%d.%d.%d.%d", &_fId.EMSipAddr.ip1, &_fId.EMSipAddr.ip2, &_fId.EMSipAddr.ip3, &_fId.EMSipAddr.ip4);
     sscanf(_fId.PC104ipAddr.string,"\"%d.%d.%d.%d", &_fId.PC104ipAddr.ip1, &_fId.PC104ipAddr.ip2, &_fId.PC104ipAddr.ip3, &_fId.PC104ipAddr.ip4);
 
-    sprintf(_fId.EMSipAddr.string,"%u.%u.%u.%u:%u", _fId.EMSipAddr.ip1, _fId.EMSipAddr.ip2, _fId.EMSipAddr.ip3, _fId.EMSipAddr.ip4, _fId.EMSipAddr.port);
-    sprintf(_fId.PC104ipAddr.string,"%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
+    snprintf(_fId.EMSipAddr.string,sizeof(_fId.EMSipAddr.string), "%u.%u.%u.%u:%u", _fId.EMSipAddr.ip1, _fId.EMSipAddr.ip2, _fId.EMSipAddr.ip3, _fId.EMSipAddr.ip4, _fId.EMSipAddr.port);
+    snprintf(_fId.PC104ipAddr.string, sizeof(_fId.PC104ipAddr.string), "%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
 
     // Check input parameters
-    sprintf(info, "embObjMotionControl - referred to EMS: %s", _fId.EMSipAddr.string);
+    snprintf(info, sizeof(info), "embObjMotionControl - referred to EMS: %s", _fId.EMSipAddr.string);
 
     // Check useRawEncoderData = do not use calibration data!
     Value use_raw = config.findGroup("GENERAL").find("useRawEncoderData");
@@ -539,7 +544,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     {
         if(!use_raw.isBool())
         {
-            yWarning() << " useRawEncoderData bool param is different from accepted values (true / false). Assuming false";
+            yWarning() << "(OK)-> embObjMotionControl::open() detected that useRawEncoderData bool param is different from accepted values (true / false). Assuming false";
             useRawEncoderData = false;
         }
         else
@@ -547,9 +552,9 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
             useRawEncoderData = use_raw.asBool();
             if(useRawEncoderData)
             {
-                yWarning() << "embObjBusMotionControl using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file";
-                yWarning() << "DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION!";
-                yWarning() << "CHECK IF THE FAULT BUTTON IS PRESSED and press ENTER to continue";
+                yWarning() << "(!!)-> embObjMotionControl::open() detected that it is using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file";
+                yWarning() << "(!!)-> DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION!";
+                yWarning() << "(!!)-> CHECK IF THE FAULT BUTTON IS PRESSED and press ENTER to continue";
                 getchar();
             }
         }
@@ -579,9 +584,11 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     snprintf(_fId.name, sizeof(_fId.name), "%s", info);
 
     _fId.boardNum  = 255;
-    Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
+    Value val = config.findGroup("ETH").check("Ems",Value(1), "Board number");
     if(val.isInt())
-        _fId.boardNum =val.asInt();
+    {
+        _fId.boardNum = val.asInt();
+    }
     else
     {
         yError () << "embObjMotionControl: EMS Board number identifier not found";
@@ -632,63 +639,145 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ethManager = TheEthManager::instance();
     if(NULL == ethManager)
     {
-        yFatal() << "Unable to instantiate ethManager";
+        yFatal() << "embObjMotionControl::open() fails to instantiate ethManager";
         return false;
     }
 
     _fId.handle  = (this);
-    res = ethManager->requestResource(config, &_fId);
+    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, &_fId);
     if(NULL == res)
     {
-        yError() << "EMS device not instantiated... unable to continue";
+        yError() << "embObjMotionControl::open() fails because could not instantiate the ethResource for board" << _fId.boardNum << " ... unable to continue";
         return false;
     }
 
-    if(!isEpManagedByBoard())
+    if(false == res->isEPmanaged(eoprot_endpoint_motioncontrol))
     {
-        yError() << "EMS "<< _fId.boardNum << "is not connected to joints";
+        yError() << "embObjMotionControl::open() detected that EMS "<< _fId.boardNum << " does not support motion control";
         return false;
     }
+
+
+    if(false == res->verifyBoard(groupProtocol))
+    {
+        yError() << "embObjMotionControl::open() fails in function verifyBoard() for board " << _fId.boardNum << ": CANNOT PROCEED ANY FURTHER";
+        return false;
+    }
+    else
+    {
+        yWarning() << "(OK)-> embObjMotionControl::open() has verified that BOARD "<< _fId.boardNum << " is communicating correctly";
+    }
+
+    if(false == res->verifyEPprotocol(groupProtocol, eoprot_endpoint_motioncontrol))
+    {
+        yError() << "embObjMotionControl::open() fails in function verifyProtocol() for BOARD "<< _fId.boardNum << ": probably it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_motioncontrol protocol version: DO A FW UPGRADE";
+        return false;
+    }
+    else
+    {
+        yWarning() << "(OK)-> embObjMotionControl::open() has succesfully verified that BOARD "<< _fId.boardNum << " has same protocol version for motioncontrol as robotInterface";
+    }
+
+    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, _njoints))
+    {
+        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for BOARD "<< _fId.boardNum << " and entity eoprot_entity_mc_joint: VERIFY their number in board, and in XML files";
+        return false;
+    }
+//    else
+//    {
+//        yWarning() << "(OK)-> embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNum << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_joint";
+//    }
+
+
+    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, _njoints))
+    {
+        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for board "<< _fId.boardNum << " and entity eoprot_entity_mc_motor: VERIFY their number in board, and in XML files";
+        return false;
+    }
+//    else
+//    {
+//        yWarning() << "(OK)-> embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNum << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_motor";
+//    }
+
+
+
 
     NVnumber = res->getNVnumber(_fId.ep);
     requestQueue = new eoRequestsQueue(NVnumber);
 
     if(!init() )
     {
-        yError() << "while initing board " << _fId.boardNum;
+        yError() << "embObjMotionControl::open() has an error in call of embObjMotionControl::init() for board" << _fId.boardNum;
         return false;
     }
-
-    if(!configure_mais(groupProtocol))
+    else
     {
-        yError() << "while configuring mais for board " << _fId.boardNum;
-        return false;
+        yWarning() << "(OK)-> embObjMotionControl::init() has succesfully initted board "<< _fId.boardNum;
     }
 
-    initted = true;
-    //Time::delay(2);
-    res->goToRun();
+    // now if this device has a mais ... we configure it
+
+    numberofmaisboards = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNum), eoprot_endpoint_analogsensors, eoprot_entity_as_mais);
+
+    if(0 != numberofmaisboards)
+    {
+        // must verify protocol and then the entity number
+
+        if(false == res->verifyEPprotocol(groupProtocol, eoprot_endpoint_analogsensors))
+        {
+            yError() << "embObjMotionControl::open() fails in function verifyProtocol() of eoprot_endpoint_analogsensors for BOARD "<< _fId.boardNum << ": probably it does not have the same eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
+            return false;
+        }
+        else
+        {
+            yWarning() << "(!!)-> embObjMotionControl::open() detected that there is a mais, thus called verifyProtocol() of eoprot_endpoint_analogsensors for board "<< _fId.boardNum;
+        }
+
+
+
+        if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_analogsensors, eoprot_entity_as_mais))
+        {
+            yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for board "<< _fId.boardNum << " and entity eoprot_entity_as_mais: VERIFY their number in board, and in XML files";
+            return false;
+        }
+
+
+        if(false == configure_mais(groupProtocol))
+        {
+            yError() << "embObjMotionControl::open() had an error while configuring mais for board " << _fId.boardNum;
+            return false;
+        }
+        else
+        {
+            yWarning() << "(OK)-> embObjMotionControl::open() succesfully configured the MAIS attached to board" << _fId.boardNum;
+        }
+    }
+
+
+    if(false == res->goToRun())
+    {
+        yError() << "embObjMotionControl::open() fails to start control loop of board" << _fId.boardNum << ": cannot continue";
+        return false;
+    }
+    else
+    {
+        yWarning() << "(OK)-> embObjMotionControl::open() correctly activated control loop of BOARD" << _fId.boardNum;
+    }
+
+
+    opened = true;
+
     return true;
 }
 
 bool embObjMotionControl::isEpManagedByBoard()
 {
-    // marco.accame on 10 apr 2014: there is a better method. use eObool_t eoprot_endpoint_configured_is(eOprotBRD_t brd, eOprotEndpoint_t ep)
-    // boardnumber = res->get_protBRDnumber();
     if(eobool_true == eoprot_endpoint_configured_is(res->get_protBRDnumber(), eoprot_endpoint_motioncontrol))
     {
         return true;
     }
     
     return false;
-
-//    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, 0, eoprot_tag_mc_joint_config);
-//    EOnv nv;
-//    if(NULL == res->getNVhandler(protoid, &nv))
-//    {
-//        return false;
-//    }
-//    return true;
 }
 
 
@@ -913,15 +1002,15 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         posPidsGroup=config.findGroup("POS_PIDS", "Position Pid parameters new format");
         if (posPidsGroup.isNull()==false)
         {
-           yDebug()<< "Position Pids section found, new format";
+           yDebug()<< "  (!!)-> embObjMotionControl::fromConfig() did not find Position Pids new format";
            if (!parsePidsGroup_NewFormat (posPidsGroup, _pids))
            {
-               yError() << "Position Pids section: error detected in parameters syntax";
+               yError() << "embObjMotionControl::fromConfig(): Position Pids section: error detected in parameters syntax";
                return false;
            }
            else
            {
-               yDebug() << "Position Pids successfully loaded";
+               yDebug() << "  (OK)-> embObjMotionControl::fromConfig(): Position Pids successfully loaded";
            }
         }
         else
@@ -929,12 +1018,12 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             Bottle posPidsGroup2=config.findGroup("PIDS", "Position Pid parameters old format");
             if (posPidsGroup2.isNull()==false)
             {
-                yDebug() << "Position Pids section found, old format";
+                yDebug() << "  (!!)-> embObjMotionControl::fromConfig(): Position Pids section found, old format";
                 parsePosPidsGroup_OldFormat (posPidsGroup2, _pids);
             }
             else
             {
-                yError() <<"Error: no PIDS group found in config file, returning";
+                yError() <<"embObjMotionControl::fromConfig(): Error: no PIDS group found in config file, returning";
                 return false;
             }
         }
@@ -947,15 +1036,15 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         trqPidsGroup=config.findGroup("TRQ_PIDS", "Torque Pid parameters new format");
         if (trqPidsGroup.isNull()==false)
         {
-           yDebug()<<"Torque Pids section found, new format";
+           yDebug() << "  (!!)-> embObjMotionControl::fromConfig(): Torque Pids section found, new format";
            if (!parsePidsGroup_NewFormat (trqPidsGroup, _tpids))
            {
-               yError() << "Torque Pids section: error detected in parameters syntax";
+               yError() << "embObjMotionControl::fromConfig(): Torque Pids section: error detected in parameters syntax";
                return false;
            }
            else
            {
-                yDebug() << "Torque Pids new format successfully loaded";
+                yDebug() << "  (OK)-> embObjMotionControl::fromConfig(): Torque Pids new format successfully loaded";
                _tpidsEnabled = true;
            }
         }
@@ -964,21 +1053,21 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             Bottle trqPidsGroup2=config.findGroup("TORQUE_PIDS", "Torque Pid parameters old format");
             if (trqPidsGroup2.isNull()==false)
             {
-                yDebug() << "Torque Pids section found, old format";
+                yDebug() << "  (!!)-> embObjMotionControl::fromConfig(): Torque Pids section found, old format";
                 if(!parseTrqPidsGroup_OldFormat (trqPidsGroup2, _tpids))
                 {
-                     yError() << "Torque Pids section: error detected in parameters syntax";
+                     yError() << "embObjMotionControl::fromConfig(): Torque Pids section: error detected in parameters syntax";
                      return false;
                 }
                 else
                {
-                    yDebug() << "Torque Pids new format successfully loaded";
+                    yDebug() << "  (OK)-> embObjMotionControl::fromConfig(): Torque Pids new format successfully loaded";
                    _tpidsEnabled = true;
                }
             }
             else
             {
-                yWarning() << "Torque Pids section NOT enabled, skipping...";
+                yWarning() << "(!!)-> embObjMotionControl::fromConfig() detected that TORQUE_PIDS section is NOT enabled, skipping...";
             }
         }
     }
@@ -986,7 +1075,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (!extractGroup(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", _njoints))
     {
-        yWarning() <<  "Using default value = 0 (disabled)";
+        yWarning() <<  "(!!)-> embObjMotionControl::fromConfig() detected that TorqueChan is not present: sing default value = 0 (disabled)";
         for(i=1; i<_njoints+1; i++)
             _torqueSensorChan[i-1] = 0;
     }
@@ -997,7 +1086,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (general.check("IMPEDANCE","DEFAULT IMPEDANCE parameters")==true)
     {
-        yWarning() << "IMPEDANCE parameters section found";
+        yWarning() << "(OK)-> embObjMotionControl::fromConfig() detected that IMPEDANCE parameters section is found";
         for(j=0; j<_njoints; j++)
         {
             char str2[80];
@@ -1013,7 +1102,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
     else
     {
-        yWarning() << "Impedance section NOT enabled, skipping.";
+        yWarning() << "(!!)-> embObjMotionControl::fromConfig() detected that IMPEDANCE section is NOT enabled: skipping.";
     }
 
     ////// IMPEDANCE LIMITS DEFAULT VALUES (UNDER TESTING)
@@ -1033,7 +1122,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     Bottle &limits=config.findGroup("LIMITS");
     if (limits.isNull())
     {
-        yWarning() << "Group LIMITS not found in configuration file";
+        yWarning() << "(!!)-> embObjMotionControl::fromConfig() detected that Group LIMITS is not found in configuration file";
         return false;
     }
     // current limit
@@ -1164,289 +1253,141 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     return true;
 }
 
+
 bool embObjMotionControl::init()
 {
-
-    int                         old = 0;
-    eOprotID32_t                protid;
-
-
-
+    eOprotID32_t protid = 0;
+    bool result = true;
 
     /////////////////////////////////////////////////
     //SEND DISABLE TO ALL JOINTS
-    ////////////////////////////////////////////////
-    int totConfigSize   = 0;
+    /////////////////////////////////////////////////
+
     for(int logico=0; logico< _njoints; logico++)
     {
         int fisico = _axisMap[logico];
-        if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += sizeof(eOmc_controlmode_command_t))) )
-        {
-            // yDebug() << "Too many stuff to be sent at once... splitting in more messages";
-            Time::delay(0.01);
-            totConfigSize = 0;
-        }
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, fisico, eoprot_tag_mc_joint_cmmnds_controlmode);
-
         eOmc_controlmode_command_t controlMode = eomc_controlmode_cmd_switch_everything_off;
 
-        //yDebug() << "add set control mode j fisico " << fisico;
         if(!res->addSetMessage(protid, (uint8_t *) &controlMode))
         {
-            yError() << "while setting eomc_controlmode_cmd_switch_everything_off in init";
+            yError() << "embObjMotionControl::init() had an error while setting eomc_controlmode_cmd_switch_everything_off in BOARD" << res->get_protBRDnumber()+1;
+            // return(false); i dont return false. because even if a failure, that is not a severe error.
+            // MOREOVER: to verify we must read the status of the joint and NOT the command ... THINK OF IT
         }
+        //Time::delay(0.001);
     }
-    Time::delay(0.01);
+
+    Time::delay(0.010);  // 10 ms (m.a.a-delay: before it was 0.01)
+
+
 
     ////////////////////////////////////////////////
-    // set ropsig
-    ///////////////////////////////////////////////
-    
-    // marco.accame on 10 apr 2014: 
-    // the method used so far is not correct. nevertheless it works. but for a number of reasons:
-    // 1. the initial value of the ram of the EOnv is zero. only for this reason the eo_array_Reset() of ->array before setting the capacity and itemsize does not write out of memory
-    // 2. the fields of eOmn_ropsigcfg_command_t other than array and cmmnd are left initialised (plustime, plussign, signature) but fortunately are zero.
-    // 3. the send of the rop is: addSetMessage(protid_ropsigcfgassign, (uint8_t *) array) but should be addSetMessage(protid_ropsigcfgassign, (uint8_t *) ropsigcfgassign).
-    //    fortunately the struct eOmn_ropsigcfg_command_t has field array as its first. thus the two pointers are the same.
-    // the correct method is to build a struct eOmn_ropsigcfg_command_t, initialise it properly and then pass it to the function.    
+    // configure the regular rops
+    ////////////////////////////////////////////////
 
-#define NEWMODE
-
-
-
-#if     defined(EOPROT_USE_MN_VERSION_1_0)
-
-    eOmn_ropsigcfg_command_t cmdconfig  = {0};  
-    eOropSIGcfg_t sigcfg                = {0};  
-    eOprotID32_t IDcmdconfig            = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
-    EOarray *array                      = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &cmdconfig.array); 
-
-    cmdconfig.cmmnd                 = ropsigcfg_cmd_append;
-    cmdconfig.plustime              = 0;
-    cmdconfig.plussign              = 0;
-    cmdconfig.filler01              = 0;
-    cmdconfig.signature             = eo_rop_SIGNATUREdummy;  
-
-#else
-
-    eOmn_cmd_config_t cmdconfig     = {0};
-    eOropSIGcfg_t sigcfg            = {0};
-    eOprotID32_t IDcmdconfig        = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
-    uint16_t targetcapacity         = (sizeof(cmdconfig.array)-sizeof(eOarray_head_t)) / sizeof(eOropSIGcfg_t);
-    EOarray *array                  = eo_array_New((uint8_t)targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array); // reduction to uint8_t is ok
-
-    cmdconfig.opcpar.opc            = eomn_opc_config_REGROPs_append;
-    cmdconfig.opcpar.plustime       = 0;
-    cmdconfig.opcpar.plussign       = 0;
-    cmdconfig.opcpar.dummy01        = 0;
-    cmdconfig.opcpar.signature      = eo_rop_SIGNATUREdummy;       
-
-#endif    
-
-
-
-
-
-    ///////////////////////////////////////////////////
-    // Configura le variabili da segnalare ogni ms   //
-    ///////////////////////////////////////////////////
-
-    int jStatusSize = sizeof(eOmc_joint_status_t);
-    int mStatusSize = sizeof(eOmc_motor_status_basic_t);
-    int totSigSize	= 0;
-
-    for(int j=0; j< _njoints; j++)
+    vector<eOprotID32_t> id32v(0);
+    for(int n=0; n<_njoints; n++)
     {
-        //  yDebug() << "configuring ropSig for joint " << j;
-        int sigcfgperiteration = 0; // with this variable we count the number of sigcfg put inside the array at each iteration. we assume that is always the same number.
-        sigcfgperiteration = 0;
-
-        // Verify that the EMS is able to handle all those data. The macro EOK_HOSTTRANSCEIVER_capacityofropframeregulars has to be the one used by the firmware!!!!
-        if( ! (EMS_capacityofropframeregulars >= (totSigSize += jStatusSize)) )
-        {
-            yError () << "No space left on EMS device for setting new regular messages!! Skipping remaining" << _fId.name;
-            break;
-        }
-
-        // basterebbero jstatus__basic e jstatus__ofpid, ma la differenza tra questi due e il jstatus completo sono 4 byte, per ora non utilizzati.
-        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status);
-        //    printf("\njointNVindex_jstatus nvid = %d (0x%04X)", nvid, nvid);
-
-        if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
-        {
-            yError () << " NVID jointNVindex_jstatus not found for board " << _fId.boardNum  << " joint " << j;
-        }
-        else
-        {
-            sigcfg.id32 = protid;
-            if(eores_OK != eo_array_PushBack(array, &sigcfg))
-                yError () << " while loading ropSig Array for joint " << j << " at line " << __LINE__;
-            
-            sigcfgperiteration++;
-        }
-
-        // Verify that the EMS is able to handle all those data. The macro EOK_HOSTTRANSCEIVER_capacityofropframeregulars has to be the one used by the firmware!!!!
-        if( ! (EMS_capacityofropframeregulars >= (totSigSize += mStatusSize)) )
-        {
-            yError () << "No space left on EMS device for setting new regular messages!! Skipping remaining on board" << _fId.name;
-            break;
-        }
-
-        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
-        //    printf("\nmotorNVindex_jstatus nvid = %d (0x%04X)", nvid, nvid);
-
-        if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
-        {
-            yError () << " NVID eoprot_tag_mc_motor_status not found for board " << _fId.boardNum << " joint " << j;
-        }
-        else
-        {
-            sigcfg.id32 = protid;
-            if(eores_OK != eo_array_PushBack(array, &sigcfg))
-                yError () << " while loading ropSig Array for joint " << j << " at line " << __LINE__;
-                
-            sigcfgperiteration ++;
-        }
-
-
-    #if     defined(NEWMODE)        
-        // we put sigcfgperiteration items at each iterations. we transmit if there is not space left for further sigcfgperiteration calls of eo_array_PushBack(array, &sigcfg)
-        if((eo_array_Capacity(array) - eo_array_Size(array)) < sigcfgperiteration)
-    #else    
-        if( (NUMOFROPSIGCFG - 1) <= ((j - old +1)*2))	// a ropSigCfg can store only NUMOFROPSIGCFG variables at time. Send 2 messages if more are needed.
-    #endif    
-        {
-            // A ropsigcfg vector can hold at max NUMOFROPSIGCFG (21) value. If more are needed, send another package,
-            // so wait some time to let ethManager send this package and then start again.
-            // yDebug() << "Maximun number of variables reached in the ropSigCfg array, splitting it in two pieces";
-            if(!res->addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig)) // marco.accame: instead of ropsigcfgassign there was array
-            {
-                yError() << "while setting rop sig cfg";
-            }
-
-            Time::delay(0.01);          // Wait here, the ethManager thread will take care of sending the loaded message
-            eo_array_Reset(array);      // reset so that the array is able to contain new items at the following round
-            old = j;
-        }
- 
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, n, eoprot_tag_mc_joint_status);
+        id32v.push_back(protid);
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, n, eoprot_tag_mc_motor_status_basic);
+        id32v.push_back(protid);
     }
 
-#if     defined(NEWMODE)   
-    if(0 != eo_array_Size(array))
-    {   // there are still ropsigcfg to send
-        if( !res->addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig) )
-        {
-            yError() << "while setting rop sig cfg";
-        }    
-    }
-#else  
-    // Send remaining stuff
-    if( !res->addSetMessage(protid_ropsigcfgassign, (uint8_t *) ropsigcfgassign) ) // marco.accame: instead of ropsigcfgassign there was array
+    if(false == res->addRegulars(id32v, true))
     {
-        yError() << "while setting rop sig cfg";
+        yError() << "embObjMotionControl::init() fails to add its variables to regulars in BOARD" << res->get_protBRDnumber()+1 << ": cannot proceed any further";
+        return false;
     }
-#endif
+    else
+    {
+        yWarning() << "(OK)-> embObjMotionControl::init() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
+        char nvinfo[128];
+        for(int r=0; r<id32v.size(); r++)
+        {
+            uint32_t id32 = id32v.at(r);
+            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+            yWarning() << "(OK)->\t it added regular rop for" << nvinfo;
+        }
+    }   
+
+    Time::delay(0.005);  // 5 ms
+
 
     //////////////////////////////////////////
     // invia la configurazione dei GIUNTI   //
     //////////////////////////////////////////
 
-    int jConfigSize 	= sizeof(eOmc_joint_config_t);
-    int mConfigSize 	= sizeof(eOmc_motor_config_t);
-    totConfigSize	= 0;
-    int index 				= 0;
+
+    for(int logico=0; logico< _njoints; logico++)
+    {
+        int fisico = _axisMap[logico];
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, fisico, eoprot_tag_mc_joint_config);
+
+        eOmc_joint_config_t     jconfig;
+        memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
+        copyPid_iCub2eo(&_pids[logico],  &jconfig.pidposition);
+        copyPid_iCub2eo(&_pids[logico],  &jconfig.pidvelocity);
+        copyPid_iCub2eo(&_tpids[logico], &jconfig.pidtorque);
+
+        jconfig.impedance.damping   = (eOmeas_damping_t)   U_32(_impedance_params[logico].damping * 1000);
+        jconfig.impedance.stiffness = (eOmeas_stiffness_t) U_32(_impedance_params[logico].stiffness * 1000);
+        jconfig.impedance.offset    = 0; //impedance_params[j];
+
+        _cacheImpedance[logico].stiffness = jconfig.impedance.stiffness;
+        _cacheImpedance[logico].damping   = jconfig.impedance.damping;
+        _cacheImpedance[logico].offset    = 0;
+
+        jconfig.limitsofjoint.max = (eOmeas_position_t) S_32(convertA2I(_limitsMax[logico], _zeros[logico], _angleToEncoder[logico]));
+        jconfig.limitsofjoint.min = (eOmeas_position_t) S_32(convertA2I(_limitsMin[logico], _zeros[logico], _angleToEncoder[logico]));
+        jconfig.velocitysetpointtimeout = (eOmeas_time_t) U_16(_velocityTimeout[logico]);
+        jconfig.motionmonitormode = eomc_motionmonitormode_dontmonitor;
+
+        jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[logico]);
+        jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[logico]);
 
 
-    // 	 yDebug() << "Sending joint configuration";
-    if( EOK_HOSTTRANSCEIVER_capacityofrop < jConfigSize )
-    {
-        yError () << "Size of Joint Config is bigger than single ROP... cannot send it at all!! Fix it!!";
-    }
-    else
-    {
-        for(int logico=0; logico< _njoints; logico++)
+        if(false == res->setRemoteValueUntilVerified(protid, &jconfig, sizeof(jconfig), 10, 0.010, 0.050, 2))
         {
-        	int fisico = _axisMap[logico];
-            if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += jConfigSize)) )
-            {
-                // yDebug() << "Too many stuff to be sent at once... splitting in more messages";
-                Time::delay(0.01);
-                totConfigSize = 0;
-            }
-            protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, fisico, eoprot_tag_mc_joint_config);
-
-
-            eOmc_joint_config_t     jconfig;
-            memset(&jconfig, 0x00, sizeof(eOmc_joint_config_t));
-            copyPid_iCub2eo(&_pids[logico],  &jconfig.pidposition);
-            copyPid_iCub2eo(&_pids[logico],  &jconfig.pidvelocity);
-            copyPid_iCub2eo(&_tpids[logico], &jconfig.pidtorque);
-
-            jconfig.impedance.damping   = (eOmeas_damping_t)   U_32(_impedance_params[logico].damping * 1000);
-            jconfig.impedance.stiffness = (eOmeas_stiffness_t) U_32(_impedance_params[logico].stiffness * 1000);
-            jconfig.impedance.offset    = 0; //impedance_params[j];
-
-            _cacheImpedance[logico].stiffness = jconfig.impedance.stiffness;
-            _cacheImpedance[logico].damping   = jconfig.impedance.damping;
-            _cacheImpedance[logico].offset    = 0;
-
-            jconfig.limitsofjoint.max = (eOmeas_position_t) S_32(convertA2I(_limitsMax[logico], _zeros[logico], _angleToEncoder[logico]));
-            jconfig.limitsofjoint.min = (eOmeas_position_t) S_32(convertA2I(_limitsMin[logico], _zeros[logico], _angleToEncoder[logico]));
-            jconfig.velocitysetpointtimeout = (eOmeas_time_t) U_16(_velocityTimeout[logico]);
-            jconfig.motionmonitormode = eomc_motionmonitormode_dontmonitor;
-
-            jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[logico]);
-            jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[logico]);
-
-            if(!res->addSetMessage(protid, (uint8_t *) &jconfig))
-            {
-                yError() << "while setting joint config";
-            }
-
-            // Debugging... to much information can overload can queue on EMS
-            Time::delay(0.01);
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for joint config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+            return false;
         }
+        else
+        {
+            yWarning() << "(OK)-> embObjMotionControl::init() correctly configured joint config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+        }
+
+
     }
+
+
 
     //////////////////////////////////////////
     // invia la configurazione dei MOTORI   //
     //////////////////////////////////////////
 
 //    yDebug() << "Sending motor MAX CURRENT ONLY";
-    totConfigSize = 0;
-    if( EOK_HOSTTRANSCEIVER_capacityofrop < mConfigSize )
+
+    for(int logico=0; logico<_njoints; logico++)
     {
-        yError () << "Size of Motor Config is bigger than single ROP... cannot send it at all!! Fix it";
-    }
-    else
-    {
-        for(int logico=0; logico< _njoints; logico++)
+        int fisico = _axisMap[logico];
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_maxcurrentofmotor);
+
+        eOmeas_current_t	current = (eOmeas_current_t) S_16(_currentLimits[logico]);
+
+        if(false == res->setRemoteValueUntilVerified(protid, &current, sizeof(current), 10, 0.010, 0.050, 2))
         {
-        	int fisico = _axisMap[logico];
-            if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += mConfigSize)) )
-            {
-                // 		yDebug() << "Too many stuff to be sent at once... splitting in more messages";
-                Time::delay(0.01);
-                totConfigSize = 0;
-            }
-            protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_maxcurrentofmotor);
-
-            if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
-            {
-                yError () << " NVID not found\n";
-                continue;
-            }
-
-            eOmeas_current_t	current = (eOmeas_current_t) S_16(_currentLimits[logico]);
-
-            if(!res->addSetMessage(protid, (uint8_t *) &current))
-            {
-                yError() << "while setting motor config";
-            }
-            // Debugging... to much information can overload can queue on EMS
-            Time::delay(0.01);
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+            return false;
         }
+        else
+        {
+            yWarning() << "(OK)-> embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+        }
+
     }
+
     yTrace() << "EmbObj Motion Control for board " << _fId.boardNum << " istantiated correctly\n";
     return true;
 }
@@ -1456,83 +1397,104 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
 {
     // Mais per lettura posizioni dita, c'e' solo sulle mani per ora
 
-    uint8_t               datarate  = 10;    // 10 milli (like in icub_right_arm_safe.ini)  // type ok
-    
-    //#warning --> marcoaccame on 08may14: the control about mais being only in boards 2 and 4 is ... to be avoided. much better using the PROTOCOL section and see if mais is present.
-
 #if 1
-    if((_fId.boardNum != 2) && (_fId.boardNum != 4))
-    {
-        return true; // only board 2 and 4 have mais connected
-    }
-#else
+    // version with read-back
 
-    bool thereisamais = false;
+    uint8_t datarate = 10;    // 10 milli (like in icub_right_arm_safe.ini)  // type ok
+    eOenum08_t maismode  = eoas_maismode_txdatacontinuously; // use eOas_maismode_t for value BUT USE   for type (their sizes can be different !!)
 
-    if(config.isNull())
+    eOprotID32_t id32 = eo_prot_ID32dummy;
+
+
+    if(0 == eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNum), eoprot_endpoint_analogsensors, eoprot_entity_as_mais))
     {
-        yWarning() << "embObjMotionControl-> board " << _fId.boardNum << " cannot find group PROTOCOL, thus the mais shall not be initialised. Possible misbehaviours";
+        return false;
     }
-    else if(false == config.check("endpointAnalogSensorsIsSupported"))
+
+    // ok, we have a mais
+
+
+    // -- mais datarate
+
+    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
+
+    if(false == res->setRemoteValueUntilVerified(id32, &datarate, sizeof(datarate), 10, 0.010, 0.050, 2))
     {
-        yWarning() << "embObjMotionControl-> board " << _fId.boardNum << " cannot find param PROTOCOL.endpointAnalogSensorsIsSupported, thus the mais shall not be initialised. Possible misbehaviours";
-    }
-    else if(false == config.check("entityASmaisNumberOf"))
-    {
-        yWarning() << "embObjMotionControl-> board " << _fId.boardNum << " cannot find param PROTOCOL.entityASmaisNumberOf, thus the mais shall not be initialised. Possible misbehaviours";
+        yError() << "FATAL: embObjMotionControl::configure_mais() had an error while calling setRemoteValueUntilVerified() for mais datarate in BOARD" << res->get_protBRDnumber()+1;
+        return false;
     }
     else
     {
-        int number  = config.find("endpointAnalogSensorsIsSupported").asInt();
-        if(0 != number)
-        {
-            int nmais = config.find("entityASmaisNumberOf").asInt();
-            thereisamais = (0 == nmais) ? (false) : true;
-        }
+        yWarning() << "(OK)-> embObjMotionControl::configure_mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->get_protBRDnumber()+1;
     }
 
-    // ok, if there is not any mais i return
-    if(false == thereisamais)
+    // -- mais tx mode
+
+
+    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
+
+    if(false == res->setRemoteValueUntilVerified(id32, &maismode, sizeof(maismode), 10, 0.010, 0.050, 2))
     {
-        return true;
-    }
-
-#endif
-
-
-    //set mais datarate = 1millisec
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
-
-    // marcoaccame on 08may14: eoprot_ID_get() does not verify if id is valid. use eoprot_id_isvalid() instead.
-
-
-    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
-    {
-        yError () << "[eomc] NVID not found( maisNVindex_mconfig__datarate, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
+        yError() << "FATAL: embObjMotionControl::configure_mais() had an error while calling setRemoteValueUntilVerified() for mais mode in BOARD" << res->get_protBRDnumber()+1;
         return false;
     }
-
-    if(!res->addSetMessage(protid, &datarate))
+    else
     {
-        yError() << "while setting mais datarate";
-    }
-
-    //set tx mode continuosly
-    eOas_maismode_t     maismode  = eoas_maismode_txdatacontinuously;
-    protid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
-
-    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protid))
-    {
-        yError () << "[eomc] NVID not found( maisNVindex_mconfig__mode, " << _fId.name << "board number " << _fId.boardNum << "at line" << __LINE__ << ")";
-        return false;
-    }
-
-    if(!res->addSetMessage(protid, (uint8_t *) &maismode))
-    {
-        yError() << "while setting mais maismode";
+        yWarning() << "(OK)-> embObjMotionControl::configure_mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->get_protBRDnumber()+1;
     }
 
     return true;
+
+#else
+
+    uint8_t datarate = 10;    // 10 milli (like in icub_right_arm_safe.ini)  // type ok
+    eOenum08_t maismode  = eoas_maismode_txdatacontinuously;
+    
+    if(0 == eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNum), eoprot_endpoint_analogsensors, eoprot_entity_as_mais))
+    {
+        return false;
+    }
+
+    // ok, we have a mais
+
+
+    // set mais datarate = 1millisec
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
+
+    if(!res->addSetMessage(protid, &datarate))
+    {
+        yError() << "embObjMotionControl::configure_mais() had send error while setting mais datarate";
+        return false;
+    }
+
+    Time::delay(0.010);
+
+    if(false == res->verifyRemoteValue(protid, (uint8_t *) &datarate, sizeof(datarate)))
+    {
+        yError() << "embObjMotionControl::configure_mais() had an error while verifying datarate =" << datarate << "in BOARD" << res->get_protBRDnumber()+1;
+    }
+
+    // set tx mode continuosly
+    protid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
+
+    if(!res->addSetMessage(protid, (uint8_t *) &maismode))
+    {
+        yError() << "embObjMotionControl::configure_mais() had send error while setting mais maismode";
+        return false;
+    }
+
+    Time::delay(0.010);  // (m.a.a-delay: before it was 0.01)
+
+    if(false == res->verifyRemoteValue(protid, (uint8_t *) &maismode, sizeof(maismode)))
+    {
+        yError() << "embObjMotionControl::configure_mais() had an error while verifying maismode =" << maismode << "in BOARD" << res->get_protBRDnumber()+1;
+        return false;
+    }
+
+
+    return true;
+
+#endif
 }
 
 bool embObjMotionControl::close()
@@ -1574,14 +1536,36 @@ eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint32_t protoid)
     return requestQueue->threadPool->getThreadTable(req.threadId);
 }
 
+
+bool embObjMotionControl::fillData(eOnvID32_t id32, double timestamp, void *rxdata)
+{
+    // use this function to update the values cached in the class using data received by the remote boards via the network callbacks
+    // in embObjMotionControl it is updated only the timestamp of the encoders, thuus i dont used rxdata
+    int joint = eoprot_ID2index(id32);
+
+    rxdata = rxdata;
+
+
+    // for the case of id32 which contains an encoder value .... we refresh the timestamp of that encoder
+
+    if(true == isOpened())
+    {   // do it only if we already have opened the device
+        _mutex.wait();
+        _encodersStamp[joint] = timestamp;
+        _mutex.post();
+    }
+
+    return true;
+}
+
+
 void embObjMotionControl::refreshEncoderTimeStamp(int joint)
 {
     static long int count = 0;
     count++;
 
-    // for this initted flag only one 
-    if(initted)
-    {
+    if(true == isOpened())
+    {   // do it only if we already have opened the device
         _mutex.wait();
         _encodersStamp[joint] = Time::now();
         _mutex.post();
@@ -2014,7 +1998,9 @@ bool embObjMotionControl::doneRaw(int axis)
     // thus: al least for the first call after a calibration command on that joint we should keep the delay. Moreover: a delay of 1 sec is 
     // in parametricCalibrator::checkCalibrateJointEnded() just before calling doneRaw().
 
-    Time::delay(0.1);   // EO_WARNING()
+    Time::delay(0.1);
+
+    #warning --> marco.accame: embObjMotionControl::doneRaw() uses delay of 100ms to wait for something ... review this thing.
 
     res->readBufferedValue(protid, (uint8_t*) &status, &size);
     type = (eOmc_controlmode_t) status.controlmodestatus;
@@ -2062,32 +2048,6 @@ bool embObjMotionControl::setPositionModeRaw()
 
 bool embObjMotionControl::positionMoveRaw(int j, double ref)
 {
-#ifdef _SETPOINT_TEST_
-    /*
-    static eOnvID_t nvid_aux_6 = 0, nvid_aux_8=0;
-
-    if((nvid_aux_6 == 0) && (_fId.ep == 22))
-    {
-        int j, i;
-        for(j=0, i =0; j<  _njoints; j++, i++)
-    	{
-        	eOnvID_t nvid_aux_6 = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) i, jointNVindex_jcmmnds__setpoint );
-        	yError() << "++++++++++++++++++++++++ board num 6"<<  "joint" << i << "ep = " << _fId.ep << "nvid = " << nvid_aux_6;
-    	}
-
-    }
-
-    if((nvid_aux_8 == 0) && (_fId.ep == 24))
-    {
-        int j, i;
-        for(j=0, i =0; j<  _njoints; j++, i++)
-    	{
-			eOnvID_t nvid_aux_8 = eo_cfg_nvsEP_mc_joint_NVID_Get((eOcfg_nvsEP_mc_endpoint_t)_fId.ep, (eOcfg_nvsEP_mc_jointNumber_t) i, jointNVindex_jcmmnds__setpoint );
-			yError() << "++++++++++++++++++++++++ board num 8"<<  "joint" << i << "ep = " << _fId.ep << "nvid = " << nvid_aux_8;
-    	}
-    }
-    */
-#endif
 
     #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
     // fix to emulate behaviour pre-controlMode2
@@ -2108,26 +2068,6 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     setpoint.type = (eOenum08_t) eomc_setpoint_position;
     setpoint.to.position.value =  (eOmeas_position_t) S_32(_ref_positions[j]);
     setpoint.to.position.withvelocity = (eOmeas_velocity_t) S_32(_ref_speeds[j]);
-#ifdef _SETPOINT_TEST_
-    if( (_fId.boardNum == 6) || (_fId.boardNum==8 ) )
-    {
-    	j_debug_data[j].mutex.wait();
-    	if(!j_debug_data[j].gotIt)
-    	{
-    		struct  timeval 	err_time;
-		    gettimeofday(&err_time, NULL);
-    		yError() << "[" << err_time.tv_sec <<"." <<err_time.tv_usec << "] for EMS" << _fId.boardNum << "joint " << j << "Trying to send a new setpoint wihout ACK!!!!!!";
-    	}
-
-    	j_debug_data[j].gotIt = false;
-    	j_debug_data[j].last_pos = j_debug_data[j].pos;
-    	j_debug_data[j].pos = setpoint.to.position.value;
-    	j_debug_data[j].wtf = false;
-	    j_debug_data[j].count_old = 0;
-
-    	j_debug_data[j].mutex.post();
-    }
-#endif
 
 #ifdef VERIFY_ROP_SETPOSITIONRAW
     switch(_fId.boardNum)
@@ -2635,6 +2575,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         if(!controlModeCommandConvert_yarp2embObj(modes[idx], valSet[idx]) )
         {
             yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNum << " joint " << joints[idx] << " mode " << Vocab::decode(modes[idx]);
+            delete valSet; delete valGot;
             return false;
         }
 
@@ -2642,6 +2583,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         if(! res->addSetMessage(protid, (uint8_t*) &valSet[idx]) )
         {
             yError() << "setControlModeRaw failed for board " << _fId.boardNum << " joint " << joints[idx] << " mode " << Vocab::decode(modes[idx]);
+            delete valSet; delete valGot;
             return false;
         }
     }
@@ -2663,6 +2605,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
 //    }
 
     yarp::os::Time::delay(0.010);
+    delete valSet; delete valGot;
     return true;
 }
 
@@ -2679,6 +2622,7 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
         if(!controlModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
         {
             yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            delete jointVector; delete valSet; delete valGot;
             return false;
         }
 
@@ -2686,6 +2630,7 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
         if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
         {
             yError() << "setControlModesRaw failed for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            delete jointVector; delete valSet; delete valGot;
             return false;
         }
     }
@@ -2707,6 +2652,8 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
 //    }
 
     yarp::os::Time::delay(0.010);
+
+    delete jointVector; delete valSet; delete valGot;
     return true;
 }
 
@@ -2815,8 +2762,6 @@ bool embObjMotionControl::getEncodersTimedRaw(double *encs, double *stamps)
     _mutex.wait();
     for(int i=0; i<_njoints; i++)
         stamps[i] = _encodersStamp[i];
-
-    double tmp =  _encodersStamp[0];
     _mutex.post();
 
     return ret;
@@ -2960,12 +2905,13 @@ bool embObjMotionControl::setLimitsRaw(int j, double min, double max)
 {
     bool ret = true;
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_limitsofjoint);
-    eOmeas_position_limits_t    limits;
 
+    eOmeas_position_limits_t    limits;
     limits.max = (eOmeas_position_t) S_32(max);
     limits.min = (eOmeas_position_t) S_32(min);
 
     ret = res->addSetMessage(protid, (uint8_t *) &limits);
+
 
     if(!ret)
     {
@@ -3562,6 +3508,7 @@ bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const i
         if(!res->addGetMessage(protid[idx]) )
         {
             yError() << "Can't send getInteractionMode_withWait request for board " << _fId.boardNum << "joint " << joints[idx];
+            delete protid;
             return false;
         }
     }
@@ -3577,6 +3524,8 @@ bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const i
 
             if(requestQueue->threadPool->getId(&threadId))
                 requestQueue->cleanTimeouts(threadId);
+
+            delete protid;
             return false;
         }
         else
@@ -3588,6 +3537,8 @@ bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const i
             res->readBufferedValue(protid[idx], (uint8_t*)&_modes[idx], &size);
         }
     }
+
+    delete protid;
     return true;
 }
 
@@ -3676,6 +3627,7 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
         if(!interactionModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
         {
             yError() << "setInteractionModeRaw: received unknown interactionMode for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]) << " " << modes[j];
+            delete jointVector; delete valSet; delete valGot;
             return false;
         }
 
@@ -3683,6 +3635,7 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
         if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
         {
             yError() << "setInteractionModeRaw failed for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            delete jointVector; delete valSet; delete valGot;
             return false;
         }
     }
@@ -3709,7 +3662,7 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
 //        }
 //    }
 
-
+    delete jointVector; delete valSet; delete valGot;
     return true;
 }
 
@@ -3726,6 +3679,7 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
         if(!interactionModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
         {
             yError() << "setInteractionModeRaw: received unknown interactionMode for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            delete jointVector; delete valSet; delete valGot;
             return false;
         }
 
@@ -3733,6 +3687,7 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
         if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
         {
             yError() << "setInteractionModeRaw failed for board " << _fId.boardNum << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            delete jointVector; delete valSet; delete valGot;
             return false;
         }
     }
@@ -3758,6 +3713,7 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 //        }
 //    }
 
+    delete jointVector; delete valSet; delete valGot;
     return true;
 }
 

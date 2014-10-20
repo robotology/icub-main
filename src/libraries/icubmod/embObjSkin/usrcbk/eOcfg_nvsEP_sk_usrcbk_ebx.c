@@ -23,6 +23,66 @@
  **/
 
 
+
+// --------------------------------------------------------------------------------------------------------------------
+// - external dependencies
+// --------------------------------------------------------------------------------------------------------------------
+
+#include "stdlib.h"
+#include "string.h"
+#include "stdio.h"
+
+#include "EoProtocolSK.h"
+
+//#include "EoCommon.h"
+//#include "EOarray.h"
+//#include "EOnv.h"
+//#include "EoSkin.h"
+
+#include "FeatureInterface.h"
+
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - #define with internal scope
+// --------------------------------------------------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition (and initialisation) of static variables
+// --------------------------------------------------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - declaration of static functions
+// --------------------------------------------------------------------------------------------------------------------
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - declaration of extern functions
+// --------------------------------------------------------------------------------------------------------------------
+
+extern void eoprot_fun_UPDT_sk_skin_status_arrayof10canframes(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    //EOarray_of_10canframes *arrayofcanframes = (EOarray_of_10canframes *)rd->data;
+    EOarray* arrayof = (EOarray*)rd->data;
+    uint8_t sizeofarray = eo_array_Size(arrayof);
+    if(0 != sizeofarray)
+    {
+        feat_manage_skin_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)arrayof);
+    }
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// - end-of-file (leave a blank line after)
+// --------------------------------------------------------------------------------------------------------------------
+
+
+
+// - old stuff
+
+#if 0
+    // marco.accame on 16 oct 2014: all the rest is not used.
 // --------------------------------------------------------------------------------------------------------------------
 // - external dependencies
 // --------------------------------------------------------------------------------------------------------------------
@@ -114,7 +174,7 @@ FILE *outFile1, *outFile2;
 
 extern void eoprot_fun_UPDT_sk_skin_status_arrayof10canframes(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    EOarray_of_10canframes *sk_array = (EOarray_of_10canframes *)rd->data;
+    EOarray_of_10canframes *arrayofcanframes = (EOarray_of_10canframes *)rd->data;
 
 #if	defined(SK_USRCBK_USE_DEBUG)
 
@@ -161,12 +221,12 @@ extern void eoprot_fun_UPDT_sk_skin_status_arrayof10canframes(const EOnv* nv, co
 #ifdef _ICUB_CALLBACK_
     {  
   
-    FEAT_ID id = {0};
+    FEAT_ID id  = {0};
     id.type 	= Skin;
-    id.ep 	= eo_nv_GetEP8(nv);
+    id.ep       = eo_nv_GetEP8(nv);
     id.boardNum = nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv));
 
-    findAndFill(&id, (char *)sk_array, rd->id32);
+    feat_manage_skin_data(&id, (void *)arrayofcanframes, rd->id32);
 
     }
 #endif
@@ -491,6 +551,8 @@ void s_eo_cfg__nvsEP_sk_hid_Histogram_TV_Print(void)
 #endif//defined(SK_USRCBK_USE_DEBUG)
 
 // eof
+#endif
+
 
 
 

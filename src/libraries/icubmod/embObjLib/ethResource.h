@@ -45,11 +45,14 @@
 #include <yarp/os/Time.h>
 #include "statExt.h"
 
-// embObj includes
+// embobjlib includes
 
 #include "hostTransceiver.hpp"
-#include "debugFunctions.h"
+//#include "debugFunctions.h"
 #include "FeatureInterface.h"
+
+// embobj includes
+#include "EoProtocol.h"
 
 
 // ACE stuff
@@ -58,10 +61,6 @@
 #include <ace/SOCK_Dgram_Bcast.h>
 
 
-// we see EOK_HOSTTRANSCEIVER_capacityofrxpacket by including FeatureInterface.hpp which includes EOhostTransceiver.h
-#define	RECV_BUFFER_SIZE        EOK_HOSTTRANSCEIVER_capacityofrxpacket
-#define	ETHRES_SIZE_INFO        128
-#define MAX_ICUB_EP             32
 
 namespace yarp{
     namespace dev{
@@ -86,31 +85,45 @@ using namespace std;
       //   if there are more then timeout sec it mean that board did not transmit for this period.
 class infoOfRecvPkts
 {
+
 private:
-    int board; //num of ems board
+    enum { DEFAULT_MAX_COUNT_STAT = 60000 }; // 1 minute expressed in ms
+    static const double DEFAULT_TIMEOUT_STAT  = 0.010; // 100 ms expessed in sec
+
+private:
+    int             board;              // the number of ems board with range [1, TheEthManager::maxBoards]
 public:
-    bool          initted;          //if true is pc104 has already received a pkt from the ems when it is in running mode
-    bool          isInError;        //is true if an error occur. it is used to avoid to print error every cicle
-    int           count;
-    int           max_count;        //every max_count received pkts statistics are printed. this number can be modified by environment variable ETHREC_STATISTICS_COUNT_RECPKT_MAX
-    double        timeout;          //is expressed in sec. its default val is 0.01 sec, but is it can modified by environment var ETHREC_STATISTICS_TIMEOUT_MSEC
+    bool            initted;          //if true is pc104 has already received a pkt from the ems when it is in running mode
+    bool            isInError;        //is true if an error occur. it is used to avoid to print error every cicle
+    int             count;
+    int             max_count;        //every max_count received pkts statistics are printed. this number can be modified by environment variable ETHREC_STATISTICS_COUNT_RECPKT_MAX
+    double          timeout;          //is expressed in sec. its default val is 0.01 sec, but is it can modified by environment var ETHREC_STATISTICS_TIMEOUT_MSEC
 
-    uint64_t      last_seqNum;      //last seqNum rec
-    uint64_t      last_ageOfFrame;  //value of ageOfFrame filed of last rec pkt
-    double        last_recvPktTime; //time of last recv pkt
+    double          reportperiod;
+    double          timeoflastreport;
 
-    int           totPktLost;       //total pkt lost from start up
-    int           currPeriodPktLost; // total pkt lost during thsi period
-    StatExt       *stat_ageOfFrame; //period between two packets calculating using ageOfFrame filed of ropframe. values are stored in millisec
-    StatExt       *stat_periodPkt;  //delta time between two consegutivs pkt; time is calculating using pc104 systime. Values are stored in sec
-    StatExt       *stat_precessPktTime; //values are stored in sec
-    bool          _verbose;
+    long            receivedPackets;
+    uint64_t        last_seqNum;      //last seqNum rec
+    uint64_t        last_ageOfFrame;  //value of ageOfFrame filed of last rec pkt
+    double          last_recvPktTime; //time of last recv pkt
+
+    int             totPktLost;       //total pkt lost from start up
+    int             currPeriodPktLost; // total pkt lost during thsi period
+    StatExt         *stat_ageOfFrame; //period between two packets calculating using ageOfFrame filed of ropframe. values are stored in millisec
+    StatExt         *stat_periodPkt;  //delta time between two consegutivs pkt; time is calculating using pc104 systime. Values are stored in sec
+    StatExt         *stat_printstatPktgap;
+    StatExt         *stat_lostPktgap;
+    StatExt         *stat_precessPktTime; //values are stored in sec
+    StatExt         *stat_pktSize; // rx pkt size
+    bool            _verbose;
+    bool            justprinted;
 
     infoOfRecvPkts();
+    ~infoOfRecvPkts();
     void printStatistics(void);
     void clearStatistics(void);
-    uint64_t getSeqNum(uint8_t *packet);
-    uint64_t getAgeOfFrame(uint8_t *packet);
+    uint64_t getSeqNum(uint64_t *packet, uint16_t size);
+    uint64_t getAgeOfFrame(uint64_t *packet, uint16_t size);
 
     /*!   @fn       void updateAndCheck(uint8_t *packet, double reckPktTime, double processPktTime);
      *    @brief    updates communication info statistics and checks if there is a transmission error with this ems board.In case of error print it.
@@ -118,7 +131,11 @@ public:
      *    @param    reckPktTime      sys time on rec pkt (expressed in seconds)
      *    @param    processPktTime   time needed to process this packet (expressed in seconds)
      */
-    void updateAndCheck(uint8_t *packet, double reckPktTime, double processPktTime);
+    void updateAndCheck(uint64_t *packet, uint16_t size, double reckPktTime, double processPktTime, bool evalreport = false);
+
+    void evalReport(void);
+
+    void forceReport(void);
 
     void setBoardNum(int board);
 };
@@ -127,8 +144,14 @@ public:
 class yarp::dev::ethResources:  public DeviceDriver,
                                 public hostTransceiver
 {
+public:
+
+    // this is the maximum size of rx and tx packets managed by the ethresource.
+    enum { maxRXpacketsize = 1496, maxTXpacketsize = 1496 };
+
 private:
-//     static yarp::os::Semaphore  ethResMutex;
+
+    enum { ETHRES_SIZE_INFO = 128 };
 
     char              info[ETHRES_SIZE_INFO];
     int               how_many_features;      //!< Keep track of how many high level class registered. onto this EMS
@@ -136,22 +159,38 @@ private:
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
     bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
     infoOfRecvPkts    *infoPkts;
+// acemor-03oct
+#if defined(WIP_UNIFIED_STATS)
+    infoOfRecvPkts    *inforx;
+#endif
 
+    yarp::os::Semaphore*  objLock;
 
+    yarp::os::Semaphore*  networkQuerySem;      // the semaphore used by the class to wait for a reply from network. it must have exclusive access
+    yarp::os::Semaphore*  isbusyNQsem;          // the semaphore used to guarantee exclusive access of networkQuerySem to calling threads
+    yarp::os::Semaphore*  iswaitingNQsem;       // the semaphore used to guarantee that the wait of the class is unblocked only once and when it is required
+
+    bool lock();
+    bool unlock();
+
+    bool                verifiedEPprotocol[eoprot_endpoints_numberof];
+    bool                verifiedBoardPresence;
+    bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
+    bool                cleanedBoardBehaviour;    // the board is in config mode and does not have any regulars
+    uint8_t             boardEPsNumber;
+    eOmn_comm_status_t  boardCommStatus;
+    uint16_t            usedNumberOfRegularROPs;
+    uint16_t            usedSizeOfRegularROPframe;
 
 public:
-//     hostTransceiver   *transceiver;         //!< Pointer to the protocol handler   non più usato. ora c'è derivazione diretta.
-    yarp::dev::TheEthManager     *ethManager;          //!< Pointer to the Singleton handling the UDP socket
-    int               boardNum;
+    TheEthManager     *ethManager;          //!< Pointer to the Singleton handling the UDP socket
+    int               boardNum;             // the number of ems board with range [1, TheEthManager::maxBoards]
 
     ethResources();
     ~ethResources();
 
-    uint8_t         recv_msg[RECV_BUFFER_SIZE];   // buffer for the reveived messages
-    ACE_UINT16      recv_size;                    // size of the incoming message
 
-    ethResources *  already_exists(yarp::os::Searchable &config);
-    bool            open(yarp::os::Searchable &config, FEAT_ID request);
+    bool            open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID request);
     bool            close();
 
     /*!   @fn       registerFeature(void);
@@ -167,36 +206,28 @@ public:
 
     ACE_INET_Addr   getRemoteAddress(void);
 
-    /*!   @fn       void getPointer2txPack(uint8_t **pack, uint16_t *size);
-     *    @brief    Create the new packet to be sent with all requests collected so far, and return the pointer to
-     *              this fresh new packet.
-     *    @param    pack  this pointer will be modified to make it point to the new packet. No memory needs to be associated
-     *                    with it, just a pointer.
-     *    @param    size  retutn the dimension of the packet.
-     */
-    void            getPointer2TxPack(uint8_t **pack, uint16_t *size);
+    // the function returns true if the packet can be transmitted. 
+    // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
+    bool            getPointer2TxPack(uint8_t **pack, uint16_t *size, uint16_t *numofrops);
 
-    /*!   @fn       void getPack(uint8_t *pack, uint16_t *size);
-     *    @brief    Create the new packet to be sent with all requests collected so far, and copy it in data. External memory
-     *              needs to be provided.
-     *    @param    size  retutn the dimension of the packet.
-     */
-    void            getTxPack(uint8_t *pack, uint16_t *size);
 
-    //! Return the dimension of the receiving buffer.
-    int             getBufferSize();
+    // returns the capacity of the receiving buffer.
+    int             getRXpacketCapacity();
 
-    void            onMsgReception(uint8_t *data, uint16_t size);
+
+    bool            canProcessRXpacket(uint64_t *data, uint16_t size);
+
+    void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true);
 
 
     /*!   @fn       goToRun(void);
-     *    @brief    Tells the EMS to start the 1ms loop.
+     *    @brief    Tells the EMS to start the control loop.
      */
     bool            goToRun(void);
 
 
     /*!   @fn       goToConfig(void);
-     *    @brief    Tells the EMS to stop the 1ms loop and go into configuration mode.
+     *    @brief    Tells the EMS to stop the control loop and go into configuration mode.
      */
     bool            goToConfig(void);
 
@@ -206,11 +237,20 @@ public:
      */
     double          getLastRecvMsgTimestamp(void);
 
-    /*!   @fn       clearPerSigMsg(void);
+    /*!   @fn       clearRegulars(void);
      *    @brief    clears periodic signal message of EMS
      *    @return   true on success else false
      */
-    bool            clearPerSigMsg(void);
+    bool            clearRegulars(bool verify = false);
+
+    bool addRegulars(vector<eOprotID32_t> &id32vector, bool verify = false);
+
+    bool numberofRegulars(uint16_t &numberofregulars);
+
+    bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout = 0.100, int retries = 10);
+
+    // very important note: it works only if there is an handler for the id32 and it manages the unlock of the mutex
+    bool setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries = 10, double waitbeforeverification = 0.001, double verificationtimeout = 0.050, int verificationretries = 2);
 
 
     /*!   @fn       isRunning(void);
@@ -225,12 +265,29 @@ public:
      */
     void checkIsAlive(double curr_time);
 
+    bool isEPmanaged(eOprot_endpoint_t ep);
+
+    bool verifyBoard(yarp::os::Searchable &protconfig);
+    bool verifyBoardPresence(yarp::os::Searchable &protconfig);
+    bool verifyBoardTransceiver(yarp::os::Searchable &protconfig);   
+    bool cleanBoardBehaviour(void);
+
+    bool verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);
+    bool verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber = -1);
 
 
+    Semaphore* startNetworkQuerySession(eOprotID32_t id32, uint32_t signature); // to the associated board
+    bool waitForNetworkQueryReply(Semaphore* sem, double timeout);
+    bool aNetworkQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
+    bool stopNetworkQuerySession(Semaphore* sem);
+
+    bool printRXstatistics(void);
 
 
-//     //! Send a sporadic message. Do not use now.
-//     int             send(void *data, size_t len);
+private:
+    uint64_t        RXpacket[maxRXpacketsize/8];    // buffer holding the received messages after EthReceiver::run() has read it from socket
+    uint16_t        RXpacketSize;
+    //    ACE_UINT16      recv_size;                      // size of the received message
 };
 
 
