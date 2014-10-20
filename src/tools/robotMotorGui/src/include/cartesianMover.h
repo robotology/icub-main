@@ -63,7 +63,7 @@ class cartesianMover{
 
   GtkWidget **frame_slider1;
   GtkWidget **currPosArray;
-  GtkWidget **sliderArray;
+  GtkWidget **slider1;
   GtkWidget *sliderVelocity;
   GtkWidget** po;
   guint *entry_id;

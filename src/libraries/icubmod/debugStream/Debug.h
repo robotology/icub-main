@@ -6,25 +6,42 @@
  */
 
 
-#ifndef DebugStream_DEBUG_H
-#define DebugStream_DEBUG_H
+#ifndef LogStream_DEBUG_H
+#define LogStream_DEBUG_H
 
 #include <iosfwd>
 #include <sstream>
 #include <vector>
-
 #include <yarp/os/ConstString.h>
 
 template <typename T>
 std::ostringstream& operator<<(std::ostringstream &oss, const std::vector<T> &t);
 
 
-namespace DebugStream
+namespace LogStream
 {
+enum MsgType { TraceType, DebugType, WarningType, ErrorType, FatalType, InfoType };
 
-enum MsgType { TraceType, DebugType, WarningType, ErrorType, FatalType };
-
-
+class NetworkForwarder;
+/*
+class NetworkForwarder
+{
+   public:
+      void start();
+      void stop();
+      static NetworkForwarder* getInstance();
+      void forward_output (MsgType t, const std::ostringstream &s, const char *file, unsigned int line, const char *func);
+   protected:
+      NetworkForwarder();
+      ~NetworkForwarder();
+   private:
+      yarp::os::BufferedPort<yarp::os::Bottle>* outputPort;
+      private:
+      NetworkForwarder(NetworkForwarder const&){};
+      NetworkForwarder& operator=(NetworkForwarder const&){};
+      static NetworkForwarder* instance;
+};
+*/
 class Debug {
     struct Stream {
         Stream(MsgType t, const char *fn, unsigned int l, const char *f) : type(t), file(fn), line(l), func(f), ref(1) {}
@@ -49,10 +66,12 @@ public:
         ++stream->ref;
     }
 
-    inline ~Debug() {
-        if (!--stream->ref) {
+    inline ~Debug()
+    {
+        if (!--stream->ref)
+        {
             print_output(stream->type, stream->oss, stream->file, stream->line, stream->func);
-            delete stream;
+            forward_output(stream->type, stream->oss, stream->file, stream->line, stream->func);
         }
     }
 
@@ -149,34 +168,18 @@ public:
         return *this;
     }
 
-    /*!
-     * \brief Set the output file used by yTrace()
-     */
-    static void setTraceFile(const std::string &filename);
-
-    /*!
-     * \brief Set the output file used by yDebug()
-     */
-    static void setOutputFile(const std::string &filename);
-
-    /*!
-     * \brief Set the output file used by yWarning(), yError() and yyyTrace()
-     */
-    static void setErrorFile(const std::string &filename);
-
 private:
     void print_output(MsgType t,
                       const std::ostringstream &s,
                       const char *file,
                       unsigned int line,
                       const char *func);
-
-    static std::ofstream ftrc; /// Used by yTrace()
-    static std::ofstream fout; /// Used by yDebug()
-    static std::ofstream ferr; /// Used by yWarning(), yError() and yyyTrace()
-
+    void forward_output(MsgType t,
+                      const std::ostringstream &s,
+                      const char *file,
+                      unsigned int line,
+                      const char *func);
     static bool colored_output;
-    static bool verbose_output;
     static bool trace_output;
 };
 
@@ -190,11 +193,13 @@ private:
 #pragma message("WARNING-> acemor redefined __YFUNCTION__ because compilation fails on visual studio 2012")
 #endif // __GNUC__
 
-#define yTrace()   DebugStream::Debug(DebugStream::TraceType, __FILE__, __LINE__, __YFUNCTION__)
-#define yDebug()   DebugStream::Debug(DebugStream::DebugType, __FILE__, __LINE__, __YFUNCTION__)
-#define yWarning() DebugStream::Debug(DebugStream::WarningType, __FILE__, __LINE__, __YFUNCTION__)
-#define yError()   DebugStream::Debug(DebugStream::ErrorType, __FILE__, __LINE__, __YFUNCTION__)
-#define yFatal()   DebugStream::Debug(DebugStream::FatalType, __FILE__, __LINE__, __YFUNCTION__)
+#define yTrace()   LogStream::Debug(LogStream::TraceType,   __FILE__, __LINE__, __YFUNCTION__)
+#define yDebug()   LogStream::Debug(LogStream::DebugType,   __FILE__, __LINE__, __YFUNCTION__)
+#define yWarning() LogStream::Debug(LogStream::WarningType, __FILE__, __LINE__, __YFUNCTION__)
+#define yError()   LogStream::Debug(LogStream::ErrorType,   __FILE__, __LINE__, __YFUNCTION__)
+#define yFatal()   LogStream::Debug(LogStream::FatalType,   __FILE__, __LINE__, __YFUNCTION__)
+#define yInfo()    LogStream::Debug(LogStream::InfoType,    __FILE__, __LINE__, __YFUNCTION__)
+#define YFIXME_NOTIMPLEMENTED(what) yWarning() << "FIXME:" << what << "not yet implemented()";
 
 template <typename T>
 inline std::ostringstream& operator<<(std::ostringstream &oss, const std::vector<T> &t)
@@ -206,11 +211,7 @@ inline std::ostringstream& operator<<(std::ostringstream &oss, const std::vector
     return oss;
 }
 
-
-#define YFIXME_NOTIMPLEMENTED(what) yWarning() << "FIXME:" << what << "not yet implemented()";
-
-
-#endif // DebugStream_DEBUG_H
+#endif // LogStream_DEBUG_H
 
 // eof
 

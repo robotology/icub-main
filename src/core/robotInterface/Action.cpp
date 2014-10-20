@@ -37,15 +37,15 @@ std::ostringstream& operator<<(std::ostringstream &oss, const RobotInterface::Ac
     return oss;
 }
 
-
-DebugStream::Debug operator<<(DebugStream::Debug dbg, const RobotInterface::Action &t)
+/*
+LogStream::Debug operator<<(LogStream::Debug dbg, const RobotInterface::Action &t)
 {
     std::ostringstream oss;
     oss << t;
     dbg << oss.str();
     return dbg;
 }
-
+*/
 RobotInterface::Action::Action() :
     mPriv(new Private(this))
 {

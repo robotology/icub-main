@@ -352,7 +352,7 @@ void cartesianMover::sequence_cycle_time(GtkButton *button,cartesianMover* cm)
       for (k =0; k < NUMBER_OF_CARTESIAN_COORDINATES; k++)
 	{
 	  gtk_widget_set_sensitive(cm->sliderVelocity, false);
-	  gtk_widget_set_sensitive(cm->sliderArray[k], false);
+	  gtk_widget_set_sensitive(cm->slider1[k], false);
 	}
 
       if (cm->buttonGo != NULL)
@@ -466,7 +466,7 @@ void cartesianMover::sequence_stop(GtkButton *button,cartesianMover* cm)
   for (k =0; k < NUMBER_OF_CARTESIAN_COORDINATES; k++)
     {
       gtk_widget_set_sensitive(cm->sliderVelocity, true);
-      gtk_widget_set_sensitive(cm->sliderArray[k], true);
+      gtk_widget_set_sensitive(cm->slider1[k], true);
     }
 
   //fprintf(stderr, "Enabling buttons...");

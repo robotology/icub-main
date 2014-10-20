@@ -60,7 +60,7 @@ gboolean partMover::line_click(GtkTreeView *tree_view, GtkTreePath *path, GtkTre
 
   partMover *currentPart = currentClassData->partPointer;
   int * joint = currentClassData->indexPointer;
-  GtkWidget **sliderVelAry = currentPart->sliderVelArray;
+  GtkWidget **sliderVelAry = currentPart->slider2;
   IPositionControl *ipos = currentPart->pos;
   IEncoders *iiencs = currentPart->iencs;
   IAmplifierControl *iamp = currentPart->amp;
@@ -98,7 +98,7 @@ gboolean partMover::line_click(GtkTreeView *tree_view, GtkTreePath *path, GtkTre
  */
 GtkTreeModel * partMover::refresh_position_list_model(partMover* currentPart)
 {
-  GtkWidget **sliderVelAry = currentPart->sliderVelArray;
+  GtkWidget **sliderVelAry = currentPart->slider2;
   IPositionControl *ipos = currentPart->pos;
   IEncoders *iiencs = currentPart->iencs;
   IAmplifierControl *iamp = currentPart->amp;
@@ -178,8 +178,8 @@ gboolean partMover::edited_sequence (GtkCellRendererText *cell, GtkTreePath *pat
   double *TIMING_TMP = currentPart->TIMING;
   double **STORED_POS_TMP = currentPart->STORED_POS;
   double **STORED_VEL_TMP = currentPart->STORED_VEL;
-  GtkWidget **sliderAry = currentPart->sliderArray;
-  GtkWidget **sliderVelAry = currentPart->sliderVelArray;
+  GtkWidget **sliderAry = currentPart->slider1;
+  GtkWidget **sliderVelAry = currentPart->slider2;
   GtkWidget *tree_view = currentPart->treeview;
 
   gint  new_val = atoi (new_text);
@@ -219,8 +219,8 @@ gboolean partMover::edited_timing (GtkCellRendererText *cell, GtkTreePath *path_
   double *TIMING_TMP = currentPart->TIMING;
   double **STORED_POS_TMP = currentPart->STORED_POS;
   double **STORED_VEL_TMP = currentPart->STORED_VEL;
-  GtkWidget **sliderAry = currentPart->sliderArray;
-  GtkWidget **sliderVelAry = currentPart->sliderVelArray;
+  GtkWidget **sliderAry = currentPart->slider1;
+  GtkWidget **sliderVelAry = currentPart->slider2;
   GtkWidget *tree_view = currentPart->treeview;
 
 

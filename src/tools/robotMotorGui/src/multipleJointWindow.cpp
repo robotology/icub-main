@@ -42,8 +42,8 @@ void partMover::fixed_time_move(const double *cmdPositions, double cmdTime, part
   double *TIMING_TMP = currentPart->TIMING;
   double **STORED_POS_TMP = currentPart->STORED_POS;
   double **STORED_VEL_TMP = currentPart->STORED_VEL;
-  GtkWidget **sliderAry = currentPart->sliderArray;
-  GtkWidget **sliderVelAry = currentPart->sliderVelArray;
+  GtkWidget **slider1 = currentPart->slider1;
+  GtkWidget **slider2 = currentPart->slider2;
   int NUM_JOINTS;
   ipos->getAxes(&NUM_JOINTS);
   double *cmdVelocities = new double[NUM_JOINTS];
@@ -184,8 +184,8 @@ void partMover::load_from_file(char* filenameIn, partMover* currentPart)
   double *TIMING_TMP = currentPart->TIMING;
   double **STORED_POS_TMP = currentPart->STORED_POS;
   double **STORED_VEL_TMP = currentPart->STORED_VEL;
-  GtkWidget **sliderAry = currentPart->sliderArray;
-  GtkWidget **sliderVelAry = currentPart->sliderVelArray;
+  GtkWidget **slider1 = currentPart->slider1;
+  GtkWidget **slider2 = currentPart->slider2;
   GtkWidget *tree_view = currentPart->treeview;
 
   int j, k, extensionLength, filenameLength;
@@ -274,7 +274,7 @@ void partMover::run_all(GtkButton *button, partMover* currentPart)
   IAmplifierControl *iamp = currentPart->amp;
   IPidControl *ipid = currentPart->pid;
   IControlMode2 *ictrl = currentPart->ctrlmode2;
-  GtkWidget **sliderAry = currentPart->sliderArray;
+  GtkWidget **slider1 = currentPart->slider1;
 	 
   double posJoint;
   int joint;
@@ -285,7 +285,7 @@ void partMover::run_all(GtkButton *button, partMover* currentPart)
   {
     iiencs->getEncoder(joint, &posJoint);
     ictrl->setControlMode(joint,VOCAB_CM_POSITION);
-    gtk_range_set_value ((GtkRange *) (sliderAry[joint]), posJoint);
+    gtk_range_set_value ((GtkRange *) (slider1[joint]), posJoint);
   }
   return;
 }
@@ -297,7 +297,7 @@ void partMover::idle_all(GtkButton *button, partMover* currentPart)
   IControlMode2 *ictrl = currentPart->ctrlmode2;
   IAmplifierControl *iamp = currentPart->amp;
   IPidControl *ipid = currentPart->pid;
-  GtkWidget **sliderAry = currentPart->sliderArray;
+  GtkWidget **slider1 = currentPart->slider1;
 	 
   double posJoint;
   int joint;
@@ -308,7 +308,7 @@ void partMover::idle_all(GtkButton *button, partMover* currentPart)
   {
     iiencs->getEncoder(joint, &posJoint);
     ictrl->setControlMode(joint,VOCAB_CM_IDLE);
-    gtk_range_set_value ((GtkRange *) (sliderAry[joint]), posJoint);
+    gtk_range_set_value ((GtkRange *) (slider1[joint]), posJoint);
   }
   return;
 }
@@ -454,8 +454,8 @@ void partMover::sequence_click(GtkButton *button, partMover* currentPart)
   double *TIMING_TMP = currentPart->TIMING;
   double **STORED_POS_TMP = currentPart->STORED_POS;
   double **STORED_VEL_TMP = currentPart->STORED_VEL;
-  GtkWidget **sliderAry = currentPart->sliderArray;
-  GtkWidget **sliderVelAry = currentPart->sliderVelArray;
+  GtkWidget **slider1 = currentPart->slider1;
+  GtkWidget **slider2 = currentPart->slider2;
 
   int j;
 	
@@ -481,8 +481,8 @@ void partMover::sequence_click(GtkButton *button, partMover* currentPart)
 	    ipos->positionMove(STORED_POS_TMP[invSequence[j]]);
 	    for (int k =0; k < NUMBER_OF_JOINTS; k++)
 	      {
-		gtk_range_set_value ((GtkRange *) (sliderAry[k]),    STORED_POS_TMP[invSequence[j]][k]);
-		gtk_range_set_value ((GtkRange *) (sliderVelAry[k]), STORED_VEL_TMP[invSequence[j]][k]);
+		gtk_range_set_value ((GtkRange *) (slider1[k]),    STORED_POS_TMP[invSequence[j]][k]);
+		gtk_range_set_value ((GtkRange *) (slider2[k]), STORED_VEL_TMP[invSequence[j]][k]);
 	      }
 	    Time::delay(TIMING_TMP[invSequence[j]]);
 	  }
@@ -509,8 +509,8 @@ void partMover::go_click(GtkButton *button, partMover *currentPart)
   double *TIMING_TMP = currentPart->TIMING;
   double **STORED_POS_TMP = currentPart->STORED_POS;
   double **STORED_VEL_TMP = currentPart->STORED_VEL;
-  GtkWidget **sliderAry = currentPart->sliderArray;
-  GtkWidget **sliderVelAry = currentPart->sliderVelArray;
+  GtkWidget **slider1 = currentPart->slider1;
+  GtkWidget **slider2 = currentPart->slider2;
 
   int NUMBER_OF_JOINTS;
   ipos->getAxes(&NUMBER_OF_JOINTS);
@@ -525,8 +525,8 @@ void partMover::go_click(GtkButton *button, partMover *currentPart)
 	  ipos->positionMove(STORED_POS_TMP[i]);
 	  for (int k =0; k < NUMBER_OF_JOINTS; k++)
 	    {
-	      gtk_range_set_value ((GtkRange *) (sliderAry[k]),  STORED_POS_TMP[i][k]);
-	      gtk_range_set_value ((GtkRange *) (sliderVelAry[k]), STORED_VEL_TMP[i][k]);
+	      gtk_range_set_value ((GtkRange *) (slider1[k]),  STORED_POS_TMP[i][k]);
+	      gtk_range_set_value ((GtkRange *) (slider2[k]), STORED_VEL_TMP[i][k]);
 	    }
 	}
     }
@@ -645,8 +645,8 @@ void partMover::sequence_cycle(GtkButton *button,partMover* currentPart)
   double **STORED_POS_TMP = currentPart->STORED_POS;
   double **STORED_VEL_TMP = currentPart->STORED_VEL;
   int *INV_SEQUENCE_TMP = currentPart->INV_SEQUENCE;
-  GtkWidget **sliderAry = currentPart->sliderArray;
-  GtkWidget **sliderVelAry = currentPart->sliderVelArray;
+  GtkWidget **slider1 = currentPart->slider1;
+  GtkWidget **slider2 = currentPart->slider2;
   GtkWidget *tree_view = currentPart->treeview;
   guint32* timeout_seqeunce_rate_tmp = currentPart->timeout_seqeunce_rate;
   guint* timeout_seqeunce_id_tmp = currentPart->timeout_seqeunce_id;
@@ -678,8 +678,8 @@ void partMover::sequence_cycle(GtkButton *button,partMover* currentPart)
       ipos->positionMove(STORED_POS_TMP[INV_SEQUENCE_TMP[0]]);
       for (k =0; k < NUMBER_OF_JOINTS; k++)
 	{
-	  gtk_range_set_value ((GtkRange *) (sliderAry[k]),    STORED_POS_TMP[INV_SEQUENCE_TMP[0]][k]);
-	  gtk_range_set_value ((GtkRange *) (sliderVelAry[k]), STORED_VEL_TMP[INV_SEQUENCE_TMP[0]][k]);
+	  gtk_range_set_value ((GtkRange *) (slider1[k]),    STORED_POS_TMP[INV_SEQUENCE_TMP[0]][k]);
+	  gtk_range_set_value ((GtkRange *) (slider2[k]), STORED_VEL_TMP[INV_SEQUENCE_TMP[0]][k]);
 	}
       //point the SEQUENCE ITERATOR to the next movement
       *SEQUENCE_ITERATOR_TMP = 1;
@@ -687,8 +687,8 @@ void partMover::sequence_cycle(GtkButton *button,partMover* currentPart)
       //deactivate all buttons
       for (k =0; k < NUMBER_OF_JOINTS; k++)
 	{
-	  gtk_widget_set_sensitive(sliderVelAry[k], false);
-	  gtk_widget_set_sensitive(sliderAry[k], false);
+	  gtk_widget_set_sensitive(slider2[k], false);
+	  gtk_widget_set_sensitive(slider1[k], false);
 	}
 
       //fprintf(stderr, "Disabling bottons\n");
@@ -733,8 +733,8 @@ void partMover::sequence_cycle_time(GtkButton *button,partMover* currentPart)
   double **STORED_POS_TMP = currentPart->STORED_POS;
   double **STORED_VEL_TMP = currentPart->STORED_VEL;
   int *INV_SEQUENCE_TMP = currentPart->INV_SEQUENCE;
-  GtkWidget **sliderAry = currentPart->sliderArray;
-  GtkWidget **sliderVelAry = currentPart->sliderVelArray;
+  GtkWidget **slider1 = currentPart->slider1;
+  GtkWidget **slider2 = currentPart->slider2;
   GtkWidget *tree_view = currentPart->treeview;
   guint32* timeout_seqeunce_rate_tmp = currentPart->timeout_seqeunce_rate;
   guint* timeout_seqeunce_id_tmp = currentPart->timeout_seqeunce_id;
@@ -774,8 +774,8 @@ void partMover::sequence_cycle_time(GtkButton *button,partMover* currentPart)
       //deactivate all buttons
       for (k =0; k < NUMBER_OF_JOINTS; k++)
 	{
-	  gtk_widget_set_sensitive(sliderVelAry[k], false);
-	  gtk_widget_set_sensitive(sliderAry[k], false);
+	  gtk_widget_set_sensitive(slider2[k], false);
+	  gtk_widget_set_sensitive(slider1[k], false);
 	}
 
       //fprintf(stderr, "Disabling bottons\n");
@@ -818,8 +818,8 @@ bool partMover::sequence_iterator(partMover* currP)
   double **STORED_POS_TMP = currP->STORED_POS;
   double **STORED_VEL_TMP = currP->STORED_VEL;
   int *INV_SEQUENCE_TMP = currP->INV_SEQUENCE;
-  GtkWidget **sliderAry = currP->sliderArray;
-  GtkWidget **sliderVelAry = currP->sliderVelArray;
+  GtkWidget **slider1 = currP->slider1;
+  GtkWidget **slider2 = currP->slider2;
   GtkWidget *tree_view = currP->treeview;
   guint32* timeout_seqeunce_rate_tmp = currP->timeout_seqeunce_rate;
   guint* timeout_seqeunce_id_tmp = currP->timeout_seqeunce_id;
@@ -835,8 +835,8 @@ bool partMover::sequence_iterator(partMover* currP)
       ipos->positionMove(STORED_POS_TMP[INV_SEQUENCE_TMP[j]]);
       for (int k =0; k < NUMBER_OF_JOINTS; k++)
 	{
-	  gtk_range_set_value ((GtkRange *) (sliderAry[k]),    STORED_POS_TMP[INV_SEQUENCE_TMP[j]][k]);
-	  gtk_range_set_value ((GtkRange *) (sliderVelAry[k]), STORED_VEL_TMP[INV_SEQUENCE_TMP[j]][k]);
+	  gtk_range_set_value ((GtkRange *) (slider1[k]),    STORED_POS_TMP[INV_SEQUENCE_TMP[j]][k]);
+	  gtk_range_set_value ((GtkRange *) (slider2[k]), STORED_VEL_TMP[INV_SEQUENCE_TMP[j]][k]);
 	}
       (*SEQUENCE_ITERATOR_TMP)++;
       *timeout_seqeunce_rate_tmp = (unsigned int) (TIMING_TMP[j]*1000);
@@ -852,8 +852,8 @@ bool partMover::sequence_iterator(partMover* currP)
       ipos->positionMove(STORED_POS_TMP[INV_SEQUENCE_TMP[j]]);
       for (int k =0; k < NUMBER_OF_JOINTS; k++)
 	{
-	  gtk_range_set_value ((GtkRange *) (sliderAry[k]),    STORED_POS_TMP[INV_SEQUENCE_TMP[j]][k]);
-	  gtk_range_set_value ((GtkRange *) (sliderVelAry[k]), STORED_VEL_TMP[INV_SEQUENCE_TMP[j]][k]);
+	  gtk_range_set_value ((GtkRange *) (slider1[k]),    STORED_POS_TMP[INV_SEQUENCE_TMP[j]][k]);
+	  gtk_range_set_value ((GtkRange *) (slider2[k]), STORED_VEL_TMP[INV_SEQUENCE_TMP[j]][k]);
 	}
       (*SEQUENCE_ITERATOR_TMP)++;
       *timeout_seqeunce_rate_tmp = (unsigned int) (TIMING_TMP[j]*1000);
@@ -883,8 +883,8 @@ bool partMover::sequence_iterator_time(partMover* currP)
   double **STORED_POS_TMP = currP->STORED_POS;
   double **STORED_VEL_TMP = currP->STORED_VEL;
   int *INV_SEQUENCE_TMP = currP->INV_SEQUENCE;
-  GtkWidget **sliderAry = currP->sliderArray;
-  GtkWidget **sliderVelAry = currP->sliderVelArray;
+  GtkWidget **slider1 = currP->slider1;
+  GtkWidget **slider2 = currP->slider2;
   GtkWidget *tree_view = currP->treeview;
   guint32* timeout_seqeunce_rate_tmp = currP->timeout_seqeunce_rate;
   guint* timeout_seqeunce_id_tmp = currP->timeout_seqeunce_id;
@@ -934,8 +934,8 @@ void partMover::sequence_stop(GtkButton *button,partMover* currP)
 {
   //fprintf(stderr, "calling sequence time stop\n");
   guint* timeout_seqeunce_id_tmp = currP->timeout_seqeunce_id;
-  GtkWidget **sliderAry = currP->sliderArray;
-  GtkWidget **sliderVelAry = currP->sliderVelArray;
+  GtkWidget **slider1 = currP->slider1;
+  GtkWidget **slider2 = currP->slider2;
   IPositionControl *ipos = currP->pos;
 
   int NUMBER_OF_JOINTS;
@@ -945,8 +945,8 @@ void partMover::sequence_stop(GtkButton *button,partMover* currP)
   int k;
   for (k =0; k < NUMBER_OF_JOINTS; k++)
     {
-      gtk_widget_set_sensitive(sliderVelAry[k], true);
-      gtk_widget_set_sensitive(sliderAry[k], true);
+      gtk_widget_set_sensitive(slider2[k], true);
+      gtk_widget_set_sensitive(slider1[k], true);
     }
 
   //fprintf(stderr, "Enabling bottons...");
@@ -983,8 +983,8 @@ void partMover::sequence_stop(GtkButton *button,partMover* currP)
 //{
 //  //fprintf(stderr, "calling sequence stop time\n");
 //  guint* timeout_seqeunce_id_tmp = currP->timeout_seqeunce_id;
-//  GtkWidget **sliderAry = currP->sliderArray;
-//  GtkWidget **sliderVelAry = currP->sliderVelArray;
+//  GtkWidget **slider1 = currP->slider1;
+//  GtkWidget **slider2 = currP->slider2;
 //  IPositionControl *ipos = currP->pos;
 
 //  int NUMBER_OF_JOINTS;
@@ -994,8 +994,8 @@ void partMover::sequence_stop(GtkButton *button,partMover* currP)
 //  int k;
 //  for (k =0; k < NUMBER_OF_JOINTS; k++)
 //    {
-//      gtk_widget_set_sensitive(sliderVelAry[k], true);
-//      gtk_widget_set_sensitive(sliderAry[k], true);
+//      gtk_widget_set_sensitive(slider2[k], true);
+//      gtk_widget_set_sensitive(slider1[k], true);
 //    }
 //  gtk_widget_set_sensitive(currP->button0, true);
 //  gtk_widget_set_sensitive(currP->button1, true);

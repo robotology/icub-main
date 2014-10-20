@@ -30,15 +30,15 @@ public:
     std::string value;
     bool isGroup;
 };
-
-DebugStream::Debug operator<<(DebugStream::Debug dbg, const RobotInterface::Param &t)
+/*
+LogStream::Debug operator<<(LogStream::Debug dbg, const RobotInterface::Param &t)
 {
     std::ostringstream oss;
     oss << t;
     dbg << oss.str();
     return dbg;
 }
-
+*/
 RobotInterface::Param::Param(bool isGroup) :
     mPriv(new Private(this))
 {

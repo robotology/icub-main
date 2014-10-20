@@ -16,11 +16,10 @@
 #include <string.h>
 
 #include <yarp/os/Os.h>
-
-
-std::ofstream DebugStream::Debug::ftrc;
-std::ofstream DebugStream::Debug::fout;
-std::ofstream DebugStream::Debug::ferr;
+#include <yarp/os/Bottle.h>
+#include <yarp/os/BufferedPort.h>
+#include <yarp/os/Network.h>
+#include <yarp/os/Semaphore.h>
 
 #ifndef WIN32
 
@@ -30,9 +29,9 @@ std::ofstream DebugStream::Debug::ferr;
  #define BLUE   (colored_output ? "\033[01;34m" : "")
  #define CLEAR  (colored_output ? "\033[00m" : "")
 
- bool DebugStream::Debug::colored_output(getenv("ICUB_COLORED_OUTPUT") && (strcmp(getenv("ICUB_COLORED_OUTPUT"), "1") == 0));
- bool DebugStream::Debug::verbose_output(getenv("ICUB_VERBOSE_OUTPUT") && (strcmp(getenv("ICUB_VERBOSE_OUTPUT"), "1") == 0));
- bool DebugStream::Debug::trace_output(getenv("ICUB_TRACE_ENABLE") && (strcmp(getenv("ICUB_TRACE_ENABLE"), "1") == 0));
+ bool LogStream::Debug::colored_output(getenv("ICUB_COLORED_OUTPUT") && (strcmp(getenv("ICUB_COLORED_OUTPUT"), "1") == 0));
+ //bool LogStream::Debug::verbose_output(getenv("ICUB_VERBOSE_OUTPUT") && (strcmp(getenv("ICUB_VERBOSE_OUTPUT"), "1") == 0));
+ bool LogStream::Debug::trace_output(getenv("ICUB_TRACE_ENABLE") && (strcmp(getenv("ICUB_TRACE_ENABLE"), "1") == 0));
 
 #else // WIN32
 
@@ -43,120 +42,222 @@ std::ofstream DebugStream::Debug::ferr;
  #define BLUE   ""
  #define CLEAR  ""
 
- bool DebugStream::Debug::colored_output(false);
- bool DebugStream::Debug::verbose_output(false);
- bool DebugStream::Debug::trace_output(false);
+ bool LogStream::Debug::colored_output(false);
+ bool LogStream::Debug::trace_output(false);
 #endif // WIN32
 
+class LogStream::NetworkForwarder
+{
+   public:
+      void start();
+      void stop();
+      static NetworkForwarder* getInstance();
+      void forward_output (MsgType t, const std::ostringstream &s, const char *file, unsigned int line, const char *func);
+   protected:
+      NetworkForwarder();
+      ~NetworkForwarder();
+      friend class NetworkForwarderDestroyer; 
+   private:
+      yarp::os::BufferedPort<yarp::os::Bottle>* outputPort;
+      yarp::os::Semaphore mutex;
+      private:
+      NetworkForwarder(NetworkForwarder const&){};
+      NetworkForwarder& operator=(NetworkForwarder const&){};
+      static NetworkForwarder* instance;
+      static NetworkForwarderDestroyer destroyer;
+};
 
-void DebugStream::Debug::print_output(MsgType t,
+class LogStream::NetworkForwarderDestroyer
+{
+    public:
+        NetworkForwarderDestroyer(NetworkForwarder * = 0);
+        ~NetworkForwarderDestroyer();
+        void SetSingleton(NetworkForwarder *s);
+    private:
+        NetworkForwarder* singleton;
+};
+
+LogStream::NetworkForwarder*         LogStream::NetworkForwarder::instance = NULL; 
+LogStream::NetworkForwarderDestroyer LogStream::NetworkForwarder::destroyer;
+
+LogStream::NetworkForwarderDestroyer::NetworkForwarderDestroyer(NetworkForwarder *s)
+{
+    singleton = s;
+}
+
+LogStream::NetworkForwarderDestroyer::~NetworkForwarderDestroyer()
+{
+    if (singleton)
+    {
+        delete singleton;
+    }
+}
+
+void LogStream::NetworkForwarderDestroyer::SetSingleton(NetworkForwarder *s)
+{
+    singleton = s;
+}
+
+LogStream::NetworkForwarder* LogStream::NetworkForwarder::getInstance()
+{ 
+    /*
+    //automatic instance
+    if (instance == 0)
+    {
+        instance = new LogStream::NetworkForwarder();
+    }*/
+    return instance;
+};
+
+void LogStream::NetworkForwarder::start()
+{
+    if (instance == 0)
+    {
+        instance = new LogStream::NetworkForwarder();
+    }
+}
+
+void LogStream::NetworkForwarder::stop()
+{
+    if (instance == 0)
+    {
+        delete instance;
+        instance = 0;
+    }
+}
+
+LogStream::NetworkForwarder::NetworkForwarder()
+{
+    yarp::os::Network::init();
+    //yarpInstance = new yarp::os::Network;
+    
+    outputPort = new yarp::os::BufferedPort<yarp::os::Bottle>;
+    outputPort->open("/log/test_machine/test_proc/test_pid");
+    //yarp::os:Network::connect("/log/test_machine/test_proc/test_pid","logger");
+};
+
+LogStream::NetworkForwarder::~NetworkForwarder()
+{
+    if (outputPort)
+    {
+        outputPort->interrupt();
+        outputPort->close();
+        delete outputPort;
+        outputPort=0;
+        //delete yarpInstance;
+        //yarpInstance =0 ;
+                yarp::os::Network::fini();
+    }
+
+};
+
+void LogStream::Debug::forward_output(MsgType t,
                                          const std::ostringstream &s,
                                          const char *file,
                                          unsigned int line,
                                          const char *func)
 {
-    switch (t) {
-    case TraceType:
-        if(trace_output)
-        if (ftrc.is_open()) {
-            if (verbose_output) {
-                ftrc << "T: " << file << ":" << line << " " << func << ":" << s.str() << std::endl;
-            } else {
-                ftrc << "TRACE: " << func << s.str() << std::endl;
-            }
-        } else {
-            if (verbose_output) {
-                std::cout << GREEN << "T" << CLEAR << ": " << file << ":" << line << " " << GREEN << func << CLEAR << ": " << s.str() << std::endl;
-            } else {
-                std::cout << GREEN << "TRACE" << CLEAR << ": " << func << s.str() << std::endl;
-            }
-        }
-        break;
-    case DebugType:
-        if (fout.is_open()) {
-            if (verbose_output) {
-            	fout << "D: " << file << ":" << line << " " << func << ":" << s.str() << std::endl;
-            } else {
-                fout << "DEBUG: " << s.str() << std::endl;
-            }
-        } else {
-            if (verbose_output) {
-                std::cout << BLUE << "D" << CLEAR << ": " << file << ":" << line << " " << BLUE << func << CLEAR << ": " << s.str() << std::endl;
-            } else {
-                std::cout << "[" << BLUE << "DEBUG" << CLEAR << "]" << s.str() << std::endl;
-            }
-        }
-        break;
+    NetworkForwarder* n = NetworkForwarder::getInstance();
+    if (n)
+    {
+        n->forward_output(stream->type, stream->oss, stream->file, stream->line, stream->func);
+    }
+    delete stream;
+}
 
-    case WarningType:
-        if (ferr.is_open()) {
-            if (verbose_output) {
-                ferr << "W: " << file << ":" << line << " " << func << ":" << s.str() << std::endl;
-            } else {
-                ferr << "WARNING: " << s.str() << std::endl;
+void LogStream::Debug::print_output(MsgType t,
+                                         const std::ostringstream &s,
+                                         const char *file,
+                                         unsigned int line,
+                                         const char *func)
+{
+    switch (t)
+    {
+        case TraceType:
+            if(trace_output)
+            {
+                std::cout << "[" << GREEN  << "TRACE"   << CLEAR << "]" << func << s.str() << std::endl;
             }
-        }
-        if (verbose_output) {
-            std::cerr << YELLOW << "W" << CLEAR << ": " << file << ":" << line << " " << YELLOW << func << CLEAR << ": " << s.str() << std::endl;
-        } else {
-            std::cerr << "[" << YELLOW << "WARNING" << CLEAR << "]" << s.str() << std::endl;
-        }
-        break;
-    case ErrorType:
-        if (ferr.is_open()) {
-            if (verbose_output) {
-                ferr << "E: " << file << ":" << line << " " << func << ":" << s.str() << std::endl;
-            } else {
-                ferr << "ERROR: " << s.str() << std::endl;
+            break;
+        case InfoType:
+            {
+                std::cerr << "[" << GREEN  << "INFO"    << CLEAR << "]" << s.str() << std::endl;
             }
-        }
-        if (verbose_output) {
-            std::cerr << RED << "E" << CLEAR << ": " << file << ":" << line << " " << RED << func << CLEAR << ": " << s.str() << std::endl;
-        } else {
-            std::cerr << "[" << RED << "ERROR" << CLEAR << "]" << s.str() << std::endl;
-        }
-        break;
-    case FatalType:
-        if (ferr.is_open()) {
-            if (verbose_output) {
-                ferr << "F: " << file << ":" << line << " " << func << ":" << s.str() << std::endl;
-            } else {
-                ferr << "FATAL: " << s.str() << std::endl;
+            break;
+        case DebugType:
+            {
+                std::cout << "[" << BLUE   << "DEBUG"   << CLEAR << "]" << s.str() << std::endl;
             }
-        }
-        if (verbose_output) {
-            std::cerr << RED << "F" << CLEAR << ": " << file << ":" << line << " " << RED << func << CLEAR << ": " << s.str() << std::endl;
-        } else {
-            std::cerr << RED << "FATAL" << CLEAR << ": " << s.str() << std::endl;
-        }
-        yarp::os::exit(-1);
-        break;
-    default:
-        break;
+            break;
+        case WarningType:
+            {
+                std::cerr << "[" << YELLOW << "WARNING" << CLEAR << "]" << s.str() << std::endl;
+            }
+            break;
+        case ErrorType:
+            {
+                std::cerr << "[" << RED    << "ERROR"   << CLEAR << "]" << s.str() << std::endl;
+            }
+            break;
+        case FatalType:
+            {
+                std::cerr << "[" << RED    << "FATAL"   << CLEAR << "]" << s.str() << std::endl;
+            }
+            yarp::os::exit(-1);
+            break;
+        default:
+            break;
     }
 }
 
-void DebugStream::Debug::setTraceFile(const std::string& filename)
+void LogStream::NetworkForwarder::forward_output(MsgType t,
+                                         const std::ostringstream &s,
+                                         const char *file,
+                                         unsigned int line,
+                                         const char *func)
 {
-    if(ftrc.is_open()) {
-        ftrc.close();
+    mutex.wait();
+    switch (t)
+    {
+        case DebugType:
+            {
+                std::cout << "[DEBUG]" << s.str() << std::endl;
+            }
+            break;
+        case InfoType:
+            {
+                std::cerr << "[INFO]" << s.str() << std::endl;
+            }
+            break;
+        case WarningType:
+            {
+                std::cerr << "[WARNING]" << s.str() << std::endl;
+            }
+            break;
+        case ErrorType:
+            {
+                std::cerr << "[ERROR]" << s.str() << std::endl;
+            }
+            break;
+        case FatalType:
+            {
+                std::cerr << "[FATAL]" << s.str() << std::endl;
+            }
+            //yarp::os::exit(-1);
+            break;
+        default:
+            break;
     }
-    ftrc.open(filename.c_str());
-}
-
-
-void DebugStream::Debug::setOutputFile(const std::string& filename)
-{
-    if(fout.is_open()) {
-        fout.close();
-    }
-    fout.open(filename.c_str());
-}
-
-void DebugStream::Debug::setErrorFile(const std::string& filename)
-{
-    if(ferr.is_open()) {
-        ferr.close();
-    }
-    ferr.open(filename.c_str());
+    /*
+    yarp::os::Bottle& b = outputPort->prepare();
+    b.clear();
+    b.addString("[/log/test_machine/test_proc/test_pid]");
+    b.addString("ciao");
+    outputPort->write();
+    */
+    //yarp::os::Bottle b;
+    //b.addString("[/log/test_machine/test_proc/test_pid]");
+    //b.addString("ciao");
+    //this->outputPort->write(b);
+    mutex.post();
 }
