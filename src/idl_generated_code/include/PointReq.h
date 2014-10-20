@@ -113,6 +113,7 @@ public:
       this->obj = &obj;
       obj_owned = false;
       dirty_flags(dirty);
+      return true;
     }
     
     virtual ~Editor() {
@@ -193,52 +194,52 @@ public:
     
     void communicate() {
       if (yarp().canWrite()) {
-      yarp().write(*this);
-      clean();
+        yarp().write(*this);
+        clean();
+      }
     }
-  }
-  void mark_dirty() {
-    is_dirty = true;
-  }
-  void mark_dirty_result() {
-    if (is_dirty_result) return;
-    dirty_count++;
-    is_dirty_result = true;
-    mark_dirty();
-  }
-  void mark_dirty_x() {
-    if (is_dirty_x) return;
-    dirty_count++;
-    is_dirty_x = true;
-    mark_dirty();
-  }
-  void mark_dirty_y() {
-    if (is_dirty_y) return;
-    dirty_count++;
-    is_dirty_y = true;
-    mark_dirty();
-  }
-  void mark_dirty_z() {
-    if (is_dirty_z) return;
-    dirty_count++;
-    is_dirty_z = true;
-    mark_dirty();
-  }
-  void dirty_flags(bool flag) {
-    is_dirty = flag;
-    is_dirty_result = flag;
-    is_dirty_x = flag;
-    is_dirty_y = flag;
-    is_dirty_z = flag;
-    dirty_count = flag ? 4 : 0;
-  }
-  bool is_dirty;
-  int dirty_count;
-  bool is_dirty_result;
-  bool is_dirty_x;
-  bool is_dirty_y;
-  bool is_dirty_z;
-};
+    void mark_dirty() {
+      is_dirty = true;
+    }
+    void mark_dirty_result() {
+      if (is_dirty_result) return;
+      dirty_count++;
+      is_dirty_result = true;
+      mark_dirty();
+    }
+    void mark_dirty_x() {
+      if (is_dirty_x) return;
+      dirty_count++;
+      is_dirty_x = true;
+      mark_dirty();
+    }
+    void mark_dirty_y() {
+      if (is_dirty_y) return;
+      dirty_count++;
+      is_dirty_y = true;
+      mark_dirty();
+    }
+    void mark_dirty_z() {
+      if (is_dirty_z) return;
+      dirty_count++;
+      is_dirty_z = true;
+      mark_dirty();
+    }
+    void dirty_flags(bool flag) {
+      is_dirty = flag;
+      is_dirty_result = flag;
+      is_dirty_x = flag;
+      is_dirty_y = flag;
+      is_dirty_z = flag;
+      dirty_count = flag ? 4 : 0;
+    }
+    bool is_dirty;
+    int dirty_count;
+    bool is_dirty_result;
+    bool is_dirty_x;
+    bool is_dirty_y;
+    bool is_dirty_z;
+  };
 };
 
 #endif
