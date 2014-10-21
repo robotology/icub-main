@@ -1054,10 +1054,10 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
         }
     }
     else{ // actSkinEmul == "on"
-        if(robot_streamer->shouldSendTouchLeftHand() || robot_streamer->shouldSendTouchRightHand() ||
+        if( (odeinit._iCub->actCoversCol == "on") && (robot_streamer->shouldSendTouchLeftHand() || robot_streamer->shouldSendTouchRightHand() ||
             robot_streamer->shouldSendTouchLeftArm() || robot_streamer->shouldSendTouchLeftForearm() || 
             robot_streamer->shouldSendTouchRightArm() || robot_streamer->shouldSendTouchRightForearm() || 
-            robot_streamer->shouldSendTouchTorso()){
+            robot_streamer->shouldSendTouchTorso())){
             //these are emulating the skin in the covers on the iCub body. For the moment, whole skin part will be activated if it was touched 
             inspectWholeBodyContactsAndSendTouch(); 
         }
