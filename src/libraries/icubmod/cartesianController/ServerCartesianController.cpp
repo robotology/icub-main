@@ -1627,19 +1627,26 @@ void ServerCartesianController::run()
             bool isInTarget=ctrl->isInTarget();
             if (isInTarget && posDirectEnabled)
             {
-                Matrix Des=chainPlan->getH();
                 Matrix H=chainState->getH();
-                Vector ax=dcm2axis(Des*SE3inv(H));
+                Vector e(6,0.0);
 
-                Vector e(6);
-                e[0]=Des(0,3)-H(0,3);
-                e[1]=Des(1,3)-H(1,3);
-                e[2]=Des(2,3)-H(2,3);
-                e[3]=ax[3]*ax[0];
-                e[4]=ax[3]*ax[1];
-                e[5]=ax[3]*ax[2];
+                if (ctrlPose!=IKINCTRL_POSE_XYZ)
+                {
+                    e[0]=xdes[0]-H(0,3);
+                    e[1]=xdes[1]-H(1,3);
+                    e[2]=xdes[2]-H(2,3);
+                }
 
-                isInTarget=(norm(e)<1e-2);
+                if (ctrlPose!=IKINCTRL_POSE_ANG)
+                {
+                    Matrix Des=axis2dcm(xdes.subVector(3,6));
+                    Vector ax=dcm2axis(Des*SE3inv(H));
+                    e[3]=ax[3]*ax[0];
+                    e[4]=ax[3]*ax[1];
+                    e[5]=ax[3]*ax[2];
+                }
+
+                isInTarget=(norm(e)<targetTol);
             }
             
             if (isInTarget && !taskVelModeOn)
