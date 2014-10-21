@@ -1862,6 +1862,26 @@ bool ActionPrimitives::stopControl()
 
 
 /************************************************************************/
+bool ActionPrimitives::setDefaultExecTime(const double execTime)
+{
+    if (configured && (execTime>0.0))
+    {
+        default_exec_time=execTime; 
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+double ActionPrimitives::getDefaultExecTime() const
+{
+    return default_exec_time;
+}
+
+
+/************************************************************************/
 bool ActionPrimitives::setTrackingMode(const bool f)
 {
     if (configured)
@@ -1876,6 +1896,13 @@ bool ActionPrimitives::setTrackingMode(const bool f)
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool ActionPrimitives::getTrackingMode() const
+{
+    return tracking_mode;
 }
 
 
@@ -1938,13 +1965,6 @@ bool ActionPrimitives::disableReachingTimeout()
     }
     else
         return false;
-}
-
-
-/************************************************************************/
-bool ActionPrimitives::getTrackingMode() const
-{
-    return tracking_mode;
 }
 
 

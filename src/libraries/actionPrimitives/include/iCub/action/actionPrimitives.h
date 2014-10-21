@@ -783,6 +783,19 @@ public:
     virtual bool stopControl();
 
     /**
+    * Set the default arm movement execution time.
+    * @param execTime execution time given in seconds. 
+    * @return true/false on success/failure.
+    */
+    virtual bool setDefaultExecTime(const double execTime);
+
+    /**
+    * Get the current default arm movement execution time.
+    * @return current execution time given in seconds. 
+    */
+    virtual double getDefaultExecTime() const;
+
+    /**
     * Set the task space controller in tracking or non-tracking 
     * mode. 
     * @param f true for tracking mode, false otherwise. 

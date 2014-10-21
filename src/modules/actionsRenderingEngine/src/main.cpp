@@ -306,6 +306,8 @@ library, we also have:
     -[reinstate]: if the module was interrupted reinstate it.\n
     -[elbow] "left"|"right"|"both" <height> <weight>: to change
      elbow parameters.
+    -[time] <time>: to change default arm movement execution
+     time (in seconds).
 
 \section parameters_sec Parameters 
 The following are the options that are not usually contained 
@@ -370,6 +372,7 @@ Windows, Linux
 #define RPC_REINSTATE               VOCAB4('r','e','i','n')
 #define RPC_WAVEING                 VOCAB4('w','a','v','e')
 #define RPC_ELBOW                   VOCAB4('e','l','b','o')
+#define RPC_EXECTIME                VOCAB4('t','i','m','e')
 
 #define CMD_IDLE                    VOCAB4('i','d','l','e')
 #define CMD_HOME                    VOCAB4('h','o','m','e')
@@ -663,6 +666,20 @@ public:
                 }
                 else
                     reply.addString("missing elbow parameters");
+
+                break;
+            }
+
+            case RPC_EXECTIME:
+            {
+                if (command.size()>1)
+                {
+                    double execTime=command.get(1).asDouble();
+                    motorThr->changeExecTime(execTime);
+                    reply.addString("execution time updated");
+                }
+                else
+                    reply.addString("missing execution time");
 
                 break;
             }
