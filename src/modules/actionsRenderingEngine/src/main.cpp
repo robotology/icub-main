@@ -1309,6 +1309,7 @@ public:
                         if(!check(command,"still"))
                         {
                             Time::delay(2.0);
+                            motorThr->goUp(command,0.1);
                             motorThr->goHome(command);
                         }
 
