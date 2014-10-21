@@ -242,11 +242,12 @@ protected:
 
     friend class CartesianCtrlRpcProcessor;
     friend class CartesianCtrlCommandPort;
-
+    
     bool stopControlHelper();
     bool setTrackingModeHelper(const bool f);
     bool setTrajTimeHelper(const double t);
     bool setInTargetTolHelper(const double tol);
+    bool isInTargetHelper();
 
     bool getTask2ndOptions(yarp::os::Value &v);
     bool setTask2ndOptions(const yarp::os::Value &v);
