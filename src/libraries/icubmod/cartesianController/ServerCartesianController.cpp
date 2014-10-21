@@ -39,7 +39,6 @@
 #define CARTCTRL_DEFAULT_POSCTRL            "on"
 #define CARTCTRL_DEFAULT_MULJNTCTRL         "on"
 #define CARTCTRL_MAX_ACCEL                  1e9     // [deg/s^2]
-#define CARTCTRL_POSCTRL_MOTIONDONE_TOL     1.0     // [deg]
 #define CARTCTRL_CONNECT_TMO                5e3     // [ms]
 
 using namespace std;
@@ -1627,7 +1626,21 @@ void ServerCartesianController::run()
             // handle the end-trajectory event
             bool isInTarget=ctrl->isInTarget();
             if (isInTarget && posDirectEnabled)
-                isInTarget=(norm(chainPlan->getAng()-chainState->getAng())<CTRL_DEG2RAD*CARTCTRL_POSCTRL_MOTIONDONE_TOL);
+            {
+                Matrix Des=chainPlan->getH();
+                Matrix H=chainState->getH();
+                Vector ax=dcm2axis(Des*SE3inv(H));
+
+                Vector e(6);
+                e[0]=Des(0,3)-H(0,3);
+                e[1]=Des(1,3)-H(1,3);
+                e[2]=Des(2,3)-H(2,3);
+                e[3]=ax[3]*ax[0];
+                e[4]=ax[3]*ax[1];
+                e[5]=ax[3]*ax[2];
+
+                isInTarget=(norm(e)<1e-2);
+            }
             
             if (isInTarget && !taskVelModeOn)
             {
