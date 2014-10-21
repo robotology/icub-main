@@ -49,7 +49,7 @@
 
 // defines for balancing the arm when in home position
 #define ACTIONPRIM_BALANCEARM_PERIOD                2.0     // [s]
-#define ACTIONPRIM_BALANCEARM_LENGTH                0.04    // [m]
+#define ACTIONPRIM_BALANCEARM_LENGTH                0.03    // [m]
 
 using namespace std;
 using namespace yarp::os;
@@ -200,9 +200,8 @@ public:
 class ArmWavingMonitor : public RateThread
 {
     ICartesianControl *cartCtrl;
-    Vector restPos;
-    Vector q0,w0;
-    double L;
+    Vector restPos, restOrien;
+    int ctxt;
 
 public:
     /************************************************************************/
@@ -210,10 +209,6 @@ public:
                      RateThread((int)(1000.0*ACTIONPRIM_BALANCEARM_PERIOD))
     {
         cartCtrl=_cartCtrl;
-        L=ACTIONPRIM_BALANCEARM_LENGTH;
-
-        restPos.resize(1,0.0);
-
         Rand::init();
     }
 
@@ -226,9 +221,6 @@ public:
     /************************************************************************/
     void afterStart(bool success)
     {
-        cartCtrl->getRestPos(q0);
-        cartCtrl->getRestWeights(w0);
-
         // start in suspended mode
         disable();
     }
@@ -238,22 +230,15 @@ public:
     {
         if (isSuspended())
         {
-            cartCtrl->getRestPos(q0);
-            cartCtrl->getRestWeights(w0);
+            // try to keep the original orientation
+            Vector xdhat,qdhat;
+            cartCtrl->getPose(xdhat,restOrien);
+            cartCtrl->askForPose(restPos,restOrien,xdhat,restOrien,qdhat);
 
-            // impose further constraints as third task
-            // since we reach only in position and not in orientation:
-            // keep the wrist aligned with the forearm
-            Vector q=q0;
-            Vector w=w0;
-            q[3+5]=0.0;
-            w[3+5]=1.0;
-
-            cartCtrl->setRestPos(q,q);
-            cartCtrl->setRestWeights(w,w);
+            cartCtrl->storeContext(&ctxt);
+            cartCtrl->setTrajTime(ACTIONPRIM_BALANCEARM_PERIOD);
 
             resume();
-
             return true;
         }
         else
@@ -264,11 +249,10 @@ public:
     bool disable()
     {
         if (!isSuspended())
-        {
-            cartCtrl->setRestPos(q0,q0);
-            cartCtrl->setRestWeights(w0,w0);
-
+        {            
             suspend();
+            cartCtrl->restoreContext(ctxt);
+            cartCtrl->deleteContext(ctxt);
 
             return true;
         }
@@ -283,9 +267,9 @@ public:
         if ((cartCtrl!=NULL) && (len>=3))
         {
             Vector halves(len,0.5);
-            Vector randOffs=L*(Rand::vector(len)-halves);
-    
-            cartCtrl->goToPosition(restPos+randOffs);
+            Vector randOffs=ACTIONPRIM_BALANCEARM_LENGTH*(Rand::vector(len)-halves);
+
+            cartCtrl->goToPose(restPos+randOffs,restOrien);
         }
     }
 

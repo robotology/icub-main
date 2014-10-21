@@ -32,7 +32,6 @@
 
 using namespace std;
 
-#define SPECIAL_TRIANGLE_CFG_MAX_NUM    20
 
 bool SkinPatchInfo::checkCardAddrIsInList(int cardAddr)
 {
@@ -48,17 +47,23 @@ EmbObjSkin::EmbObjSkin() :  mutex(1)
 {
     res         = NULL;
     ethManager  = NULL;
-    initted     = false;
+    opened     = false;
     sensorsNum  = 0;
     _skCfg.numOfPatches = 0;
     _skCfg.totalCardsNum = 0;
     memset(info, 0x00, sizeof(info));
     _cfgReader = new SkinConfigReader();
-};
+}
+
+
+EmbObjSkin::~EmbObjSkin()
+{
+    delete _cfgReader;
+}
+
+
 bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 {
-    int             totConfigSize = 0;
-    int             configSize;
     Bottle          bNumOfset;
     int             numOfSets;
     eOprotID32_t    protoid;
@@ -81,7 +86,6 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
     if(!ret)
         return false;
 
-    configSize = sizeof(eOsk_cmd_boardsCfg_t);
 
     for(j=0; j<numofcfg; j++) //for each special board config
     {
@@ -121,12 +125,6 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
         protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmd_boardscfg);
 
-        if( !(EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += configSize)) )
-        {
-            yDebug() << "skin board "<< _fId.boardNum<< " too many stuff to be sent at once... splitting in more messages BOARD";
-            Time::delay(0.01);
-            totConfigSize = 0;
-        }
 
         if(! res->addSetMessage(protoid, (uint8_t*)&bcfg))
         {
@@ -134,10 +132,9 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             return false;
         }
 
-            totConfigSize += configSize;
     } //end for for each special board cfg
 
-    Time::delay(0.01);
+    Time::delay(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
 
     //-----------------------------------------------------------------------------------------------------
     //------------ read special cfg triangle --------------------------------------------------------------
@@ -148,8 +145,6 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
     if(!ret)
         return false;
 
-    totConfigSize = 0;
-    configSize = sizeof(eOsk_cmd_trianglesCfg_t);
 
     for(j=0; j<numofcfg; j++)
     {
@@ -175,12 +170,6 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         //prepare data to send to ems
         protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmd_trianglescfg);
 
-        if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += configSize)) )
-        {
-            yDebug() << "skin board "<< _fId.boardNum<< " too many stuff to be sent at once... splitting in more messages TRIANGLE";
-            Time::delay(0.01);
-            totConfigSize = 0;
-        }
 
         eOsk_cmd_trianglesCfg_t tcfg;
         tcfg.boardaddr = triangleCfg[j].boardAddr;
@@ -200,13 +189,13 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             yError() << "skin board "<< _fId.boardNum << " Error in send default triangle config for mtb "<<  tcfg.boardaddr;
             return false;
         }
-        totConfigSize += configSize;
     }
 
-    Time::delay(0.01);
+    Time::delay(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
 
     return true;
 }
+
 
 bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 {
@@ -312,6 +301,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     return true;
 }
 
+
 bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
     std::string str;
@@ -326,11 +316,18 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     int      port;
 
+    Bottle groupTransceiver = Bottle(config.findGroup("TRANSCEIVER"));
+    if(groupTransceiver.isNull())
+    {
+        yError() << "EmbObjSkin::open() can't find TRANSCEIVER group in xml config files";
+        return false;
+    }
+
     Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
     if(groupProtocol.isNull())
     {
-        yWarning() << "embObjSkin: Can't find PROTOCOL group in config files ... using max capabilities";
-        //return false;
+        yError() << "EmbObjSkin::open() can't find PROTOCOL group in config files";
+        return false;
     }
 
     // Get both PC104 and EMS ip addresses and port from config file
@@ -364,7 +361,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     ethManager = TheEthManager::instance();
     if(NULL == ethManager)
     {
-        yFatal() << "Unable to instantiate ethManager";
+        yFatal() << "embObjskin::open() cannot instantiate ethManager";
         return false;
     }
 
@@ -372,7 +369,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     _fId.type = Skin;
 
     _fId.boardNum  = 255;
-    Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
+    Value val = config.findGroup("ETH").check("Ems",Value(1), "Board number");
     if(val.isInt())
     {
         _fId.boardNum = val.asInt();
@@ -391,74 +388,99 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     *  and boradNum to the ethManagerin order to create the ethResource requested.
     * I'll Get back the very same sturct filled with other data useful for future handling
     * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(config, &_fId);
+    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, &_fId);
     if(NULL == res)
     {
-        yError() << "EMS device not instantiated... unable to continue";
+        yError() << "embObjSkin::open() fails because could not instantiate the ethResource board" << _fId.boardNum << " ... unable to continue";
         return false;
     }
 
-    if(!isEpManagedByBoard())
+    if(false == res->isEPmanaged(eoprot_endpoint_skin))
     {
-        yError() << "EMS "<< _fId.boardNum << "is not connected to skin";
+        yError() << "embObjSkin::open() detected that EMS "<< _fId.boardNum << " does not support skin";
         return false;
     }
+
+
+    if(false == res->verifyBoard(groupProtocol))
+    {
+        yError() << "embObjSkin::init() fails in function verifyBoard() for board " << _fId.boardNum << ": CANNOT PROCEED ANY FURTHER";
+        return false;
+    }
+
+    if(!res->verifyEPprotocol(groupProtocol, eoprot_endpoint_skin))
+    {
+        yError() << "embObjSkin::init() fails in function verifyEPprotocol() for board "<< _fId.boardNum << ": the board does not have the same eoprot_endpoint_management and/or eoprot_endpoint_skin protocol version: DO A FW UPGRADE";
+        return false;
+    }
+
+    //    // marco.accame on 04 sept 2014: we could add a verification about the entities of skin ... MAYBE in the future
+    //
+    //    uint8_t numberofskins = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNum), eoprot_endpoint_skin, eoprot_entity_sk_skin);
+    //    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_skin, eoprot_entity_sk_skin, numberofskins))
+    //    {   // JUST AN EXAMPLE OF HOW TO DO IT FOR THE SKIN.
+    //        yError() << "embObjSkin::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNum << " and entity eoprot_entity_sk_skin: VERIFY their number in board, and in XML files";
+    //        return false;
+    //    }
+
 
     if(!this->fromConfig(config))
     {
+        yError() << "embObjSkin::init() fails in function fromConfig() for board " << _fId.boardNum << ": CANNOT PROCEED ANY FURTHER";
         return false;
     }
-    //resize data vector with number of triangle found in config file
-    sensorsNum=16*12*_skCfg.totalCardsNum;     // max num of card
-   data.resize(sensorsNum);
-   int ttt = data.size();
-   for (int i=0; i < ttt; i++)
-       data[i]=(double)255;
 
+    // resize data vector with number of triangles found in config file
+    sensorsNum = 16*12*_skCfg.totalCardsNum;     // max num of card
+
+    mutex.wait();
+
+    this->data.resize(sensorsNum);
+    int ttt = this->data.size();
+    for (int i=0; i < ttt; i++)
+    {
+        this->data[i]=(double)255;
+    }
+
+    mutex.post();
 
     if(!init())
         return false;
-    /*Following delay is necessary in order to give enough time to skin boards to configure all its triangles*/
+
+    /* Following delay is necessary in order to give enough time to skin boards to configure all its triangles */
     Time::delay(0.5);
 
     if(!initWithSpecialConfig(config))
         return false;
 
-    //resize data vector with number of triangle found in config file
     if(!configPeriodicMessage())
         return false;
 
     if(!start())
         return false;
 
-    res->goToRun();
-    yTrace() << "EmbObj Skin for board " << _fId.boardNum << " correctly instatiated\n";
+    if(false == res->goToRun())
+    {
+        yError() << "embObjSkin::open() fails to start control loop of board" << _fId.boardNum << ": cannot continue";
+        return false;
+    }
+    else
+    {
+        yWarning() << "(OK)-> embObjSkin::open() correctly activated control loop of BOARD" << _fId.boardNum;
+    }
+
     return true;
 }
 
 
 bool EmbObjSkin::isEpManagedByBoard()
 {
-    // marco.accame on 23 apr 2014: there is a better method. use eObool_t eoprot_endpoint_configured_is(eOprotBRD_t brd, eOprotEndpoint_t ep)
-    // boardnumber = res->get_protBRDnumber();
     if(eobool_true == eoprot_endpoint_configured_is(res->get_protBRDnumber(), eoprot_endpoint_skin))
     {
         return true;
     }
-    
+
     return false;
- 
- #if 0
-    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, 0, eoprot_tag_sk_skin_config_sigmode);
-
-    EOnv nv;
-    if(NULL == res->getNVhandler(protoid, &nv))
-    {
-        return false;
-    }
-    return true;
-
-#endif
 }
 
 
@@ -479,7 +501,7 @@ void EmbObjSkin::setId(FEAT_ID &id)
 int EmbObjSkin::read(yarp::sig::Vector &out)
 {
     mutex.wait();
-    out=data;  //old - this needs the running thread
+    out = this->data;  //old - this needs the running thread
     mutex.post();
 
     return yarp::dev::IAnalogSensor::AS_OK;
@@ -497,15 +519,6 @@ int EmbObjSkin::getChannels()
 
 int EmbObjSkin::calibrateSensor()
 {
-//#warning "create a ROP to start/initialize the MTB, if needed"
-
-//	int 							j=0;
-//	eOmc_joint_config_t				a;
-//	uint16_t						sizze;
-//
-//	eOnvID_t nvid = eo_cfg_nvsEP_sk_NVID_Get(endpoint_sk_emsboard_leftlowerarm, 0x00, skinNVindex_sconfig__sigmode);
-//	res->load_occasional_rop(eo_ropcode_set, endpoint_sk_emsboard_leftlowerarm, nvid);
-
     return true;
 }
 
@@ -517,7 +530,9 @@ int EmbObjSkin::calibrateChannel(int ch, double v)
 
 int EmbObjSkin::calibrateSensor(const yarp::sig::Vector& v)
 {
-    //data=v;
+    //mutex.wait();
+    //this->data=v;
+    //mutex.post;
     return 0;
 }
 
@@ -536,12 +551,12 @@ bool EmbObjSkin::start()
     if(_newCfg)
     {
         dat = eosk_sigmode_signal;
-        yDebug()<< "skin for board " << _fId.boardNum << "used new signal mode";
+        yDebug()<< "  (!!)-> EmbObjSkin::start() detected that skin for board " << _fId.boardNum << "uses new signal mode";
     }
     else
     {
         dat = eosk_sigmode_signal_oldway;
-        yDebug()<< "skin for board " << _fId.boardNum << "used old signal mode";
+        yDebug()<< "  (!!)-> EmbObjSkin::start() detected  that skin for board " << _fId.boardNum << "used old signal mode";
     }
 
     for(i=0; i<_skCfg.numOfPatches;i++)
@@ -559,72 +574,57 @@ bool EmbObjSkin::start()
 
 bool EmbObjSkin::configPeriodicMessage(void)
 {
-    EOnv                        *cnv;
-    
+    // - configure regular rops
 
-    eOprotID32_t                protoid;
+    vector<eOprotID32_t> id32v(0);
+    eOprotID32_t protoid = eo_prot_ID32dummy;
 
-    //
-    //  config regulars
-    //
+    // choose the variables and put them inside vector
 
-#define NEWMODE
-#if     defined(EOPROT_USE_MN_VERSION_1_0)
-
-    eOmn_ropsigcfg_command_t cmdconfig  = {0};  
-    eOropSIGcfg_t sigcfg                = {0};  
-    eOprotID32_t IDcmdconfig            = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_ropsigcfg);
-    EOarray *array                      = eo_array_New(NUMOFROPSIGCFG, sizeof(eOropSIGcfg_t), &cmdconfig.array); 
-
-    cmdconfig.cmmnd                 = ropsigcfg_cmd_append;
-    cmdconfig.plustime              = 0;
-    cmdconfig.plussign              = 0;
-    cmdconfig.filler01              = 0;
-    cmdconfig.signature             = eo_rop_SIGNATUREdummy;         
-
-#else
-    eOmn_cmd_config_t cmdconfig     = {0};
-    eOropSIGcfg_t sigcfg            = {0};
-    eOprotID32_t IDcmdconfig        = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
-    uint16_t targetcapacity         = (sizeof(cmdconfig.array)-sizeof(eOarray_head_t)) / sizeof(eOropSIGcfg_t);
-    EOarray *array                  = eo_array_New(targetcapacity, sizeof(eOropSIGcfg_t), cmdconfig.array);
-    cmdconfig.opcpar.opc            = eomn_opc_config_REGROPs_append;
-    cmdconfig.opcpar.plustime       = 0;
-    cmdconfig.opcpar.plussign       = 0;
-    cmdconfig.opcpar.dummy01        = 0;
-    cmdconfig.opcpar.signature      = eo_rop_SIGNATUREdummy;
-#endif    
-
-    // ok, now we can fill array
 
     for(int i=0; i<_skCfg.numOfPatches; i++)
     {
         protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[i].indexNv, eoprot_tag_sk_skin_status_arrayof10canframes);
-        sigcfg.id32 = protoid;
-        eo_array_PushBack(array, &sigcfg);
+        id32v.push_back(protoid);
     }
 
-    // Send message
-    if( !res->addSetMessage(IDcmdconfig, (uint8_t *) &cmdconfig) )
+
+    // configure the regulars
+    if(false == res->addRegulars(id32v, true))
     {
-        yError() <<"skin board "<< _fId.boardNum << "while setting rop sig cfg";
+        yError() << "EmbObjSkin::configPeriodicMessage() fails to add its variables to regulars: cannot proceed any further";
+        return false;
     }
+    else
+    {
+        yWarning() << "(OK)-> embObjSkin::configPeriodicMessage() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
+        char nvinfo[128];
+        for(int r=0; r<id32v.size(); r++)
+        {
+            uint32_t id32 = id32v.at(r);
+            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+            yWarning() << "(OK)->\t it added regular rop for" << nvinfo;
+        }
+    }
+    Time::delay(0.005);  // 5 ms (m.a.a-delay: before it was 0)
+
     return true;
 }
+
 bool EmbObjSkin::init()
 {
     int j = 0;
     eOprotID32_t                protoid;
 
-   //if old configuration style returns
+    // if old configuration style returns
     if(!_newCfg)
     {
         return true;
     }
 
-    //send default board and triangle configuration (new configuration style)
-    eOsk_cmd_boardsCfg_t  defBoardCfg;
-    eOsk_cmd_trianglesCfg_t defTriangleCfg;
+    // send default board and triangle configuration (new configuration style)
+    eOsk_cmd_boardsCfg_t  defBoardCfg = {0};
+    eOsk_cmd_trianglesCfg_t defTriangleCfg = {0};
     int                     i,k;
 
     defBoardCfg.cfg.skintype    = _brdCfg.skinType;
@@ -641,7 +641,7 @@ bool EmbObjSkin::init()
     {
         protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[i].indexNv, eoprot_tag_sk_skin_cmd_boardscfg);
 
-        //get min and max address
+        // get min and max address
         uint8_t minAddr = 16;
         uint8_t maxAddr = 0;
 
@@ -665,8 +665,6 @@ bool EmbObjSkin::init()
 
     }
     Time::delay(0.01);
-    int totConfigSize = 0;
-    int configSize = sizeof(eOsk_cmd_trianglesCfg_t);
 
     for(i=0; i<_skCfg.numOfPatches;i++)
     {
@@ -674,32 +672,34 @@ bool EmbObjSkin::init()
 
         for(k=0; k<_skCfg.patchInfoList[i].cardAddrList.size(); k++)
         {
-            if( ! (EOK_HOSTTRANSCEIVER_capacityofropframeoccasionals >= (totConfigSize += configSize)) )
-            {
-                 yDebug() << "skin board " << _fId.boardNum << " too many stuff to be sent at once... splitting in more messages";
-                Time::delay(0.01);
-                totConfigSize = 0;
-            }
             defTriangleCfg.boardaddr = _skCfg.patchInfoList[i].cardAddrList[k];
             if(! res->addSetMessage(protoid, (uint8_t*)&defTriangleCfg))
             {
                 yError() << "skin board "<< _fId.boardNum<< " Error in send default triangle config for mtb "<<  defTriangleCfg.boardaddr;
                 return false;
             }
-            totConfigSize += configSize;
         }
     }
+
+    opened = true;
 
     return true;
 }
 
-bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
+bool EmbObjSkin::isOpened()
+{
+    return opened;
+}
+
+bool EmbObjSkin::fillData(eOnvID32_t id32, double timestamp, void *rxdata)
 {
     uint8_t           msgtype = 0;
     uint8_t           i, triangle = 0;
-    EOarray_of_10canframes 	*sk_array = (EOarray_of_10canframes*) raw_skin_data;
+    //EOarray_of_10canframes 	*arrayofcanframes = (EOarray_of_10canframes*) rxdata;
     static int error = 0;
     int p;
+    EOarray* arrayof = (EOarray*)rxdata;
+    uint8_t sizeofarray = eo_array_Size(arrayof);
 
     eOprotIndex_t indexpatch = eoprot_ID2index(id32);
 
@@ -716,9 +716,11 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
 
    // yError() << "received data from " << patchInfoList[p].idPatch << "port";
 
-    for(i=0; i<sk_array->head.size; i++)
+    //for(i=0; i<arrayofcanframes->head.size; i++)
+    for(i=0; i<sizeofarray; i++)
     {
-        eOutil_canframe_t *canframe;
+        eOutil_canframe_t *canframe = (eOutil_canframe_t*) eo_array_At(arrayof, i);
+
         //uint8_t  j; 
         uint8_t mtbId =255; //unknown mtb card addr
         uint8_t  cardAddr, valid = 0;
@@ -730,7 +732,8 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
             skinClass = ICUBCANPROTO_CLASS_PERIODIC_ANALOGSENSOR;
 
 
-        canframe = (eOutil_canframe_t*) &sk_array->data[i*sizeof(eOutil_canframe_t)];
+        //canframe = (eOutil_canframe_t*) &arrayofcanframes->data[i*sizeof(eOutil_canframe_t)];
+        //canframe = (eOutil_canframe_t*) eo_array_At(arrayof, i);
 
         valid = (((canframe->id & 0x0F00) >> 8) == skinClass) ? 1 : 0;
 
@@ -761,12 +764,14 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
 
             int index=16*12*mtbId + triangle*12;
 
-            //yError() << "skin fill data: mtbid" << mtbId<< " triangle " << triangle << "  msgtype" << msgtype;
+            // marco.accame: added lock to avoid cincurrent access to this->data. i lock at triangle resolution ...
+            mutex.wait();
+
             if (msgtype)
             {
                 for(int k=0; k<5; k++)
                 {
-                    data[index+k+7]=canframe->data[k+1];
+                    this->data[index+k+7]=canframe->data[k+1];
                     // yError() << "fill data " << data[index+k+7];
                 }
             }
@@ -778,6 +783,9 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
                     // yError() << "fill data " << data[index+k];
                 }
             }
+
+            mutex.post();
+
         }
         else if(canframe->id == 0x100)
         {
@@ -787,7 +795,7 @@ bool EmbObjSkin::fillData(void *raw_skin_data, eOprotID32_t id32)
         else
         {
             if(error == 0)
-                yError() << "EMS: " << res->boardNum << " Unknown Message received from skin (" << i<<"/"<< sk_array->head.size<<"): frameID=" << canframe->id << " len="<<canframe->size << "data="<<canframe->data[0] << " " <<canframe->data[1] << " " <<canframe->data[2] << " " <<canframe->data[3] <<"\n" ;
+                yError() << "EMS: " << res->boardNum << " Unknown Message received from skin (" << i<<"/"<< sizeofarray <<"): frameID=" << canframe->id << " len="<<canframe->size << "canframe.data="<<canframe->data[0] << " " <<canframe->data[1] << " " <<canframe->data[2] << " " <<canframe->data[3] <<"\n" ;
             error++;
             if (error == 10000)
                 error = 0;

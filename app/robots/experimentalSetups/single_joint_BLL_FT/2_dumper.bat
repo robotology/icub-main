@@ -1,0 +1,1 @@
+controlBoardDumper --robot icub --part left_leg --rate 5 --dataToDumpAll

@@ -21,7 +21,7 @@
 #ifndef __SKIN_MESH_THREAD_H__
 #define __SKIN_MESH_THREAD_H__
 
-//#include <stdio.h>
+
 #include <string>
 
 #include <yarp/os/RateThread.h>
@@ -33,13 +33,12 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 
-#define EMBSK_SIZE_INFO     128
-// embObj includes
+// embObjLib includes
 #include <ethManager.h>
 #include <ethResource.h>
 #include "EoUtilities.h"
-#include "FeatureInterface_hid.h"       // Interface with embObj world (callback)
-//#include "skinParams.h"
+#include "FeatureInterface.h"
+#include "FeatureInterface_hid.h"   // marco.accame: actually it contains definition of class IiCubFeature, thus IiCubFeature.h would be better
 #include "SkinConfigReader.h"
 
 using namespace yarp::os;
@@ -70,12 +69,20 @@ class EmbObjSkin :  public yarp::dev::IAnalogSensor,
                     public DeviceDriver,
                     public IiCubFeature
 {
+
+public:
+
+    enum { EMBSK_SIZE_INFO = 128 };
+    enum { SPECIAL_TRIANGLE_CFG_MAX_NUM = 20 };
+
+    bool            opened;
+
 protected:
+
     TheEthManager   *ethManager;
     PolyDriver      resource;
     ethResources    *res;
     FEAT_ID         _fId;
-    bool            initted;
     Semaphore       mutex;
     //int             totalCardsNum;
     //std::vector<SkinPatchInfo> patchInfoList;
@@ -106,8 +113,9 @@ protected:
 
 
 public:
+
     EmbObjSkin();
-    ~EmbObjSkin()   { }
+    ~EmbObjSkin();
 
     char            info[EMBSK_SIZE_INFO];
 
@@ -124,9 +132,12 @@ public:
     virtual int     calibrateSensor(const yarp::sig::Vector& v);
     virtual int     calibrateChannel(int ch);
 
-    virtual bool    fillData(void *data, eOprotID32_t id32);
+
     virtual void    setId(FEAT_ID &id);
-    bool            isInitted(void);
+
+    virtual bool    isOpened();
+    virtual bool    fillData(eOnvID32_t id32, double timestamp, void *rxdata);
+
 };
 
 #endif

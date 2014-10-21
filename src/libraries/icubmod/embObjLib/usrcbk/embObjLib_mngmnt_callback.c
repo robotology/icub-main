@@ -32,6 +32,8 @@
 #include "string.h"
 #include "stdint.h"
 #include "stdlib.h"
+#include <math.h>
+#include "FeatureInterface.h"
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -101,6 +103,16 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 
     printf("%s\n", str);
     fflush(stdout);
+
+    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
+    {
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        {
+            printf("ERROR: eoprot_fun_UPDT_mn_appl_status() has received an unexpected message\n");
+            return;
+        }
+    }
+
 }
 
 
@@ -124,10 +136,41 @@ extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor
         sec =  msec = usec = 0;
     }
 
-    snprintf(str, sizeof(str), "MANAGEMENT-info: sign = 0x%x, time = %0.4ds+%0.3dms+%0.3dus, board EB%d: -> info.status.type = %d, info.status.string = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
+    //snprintf(str, sizeof(str), "[INFO]-> mn-info: sign = 0x%x, time = %04ds+%03dms+%03dus, board EB%d: -> info.status.type = %d, info.status.string = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
+    snprintf(str, sizeof(str), "[INFO]-> mn-info: ropsign = 0x%x, roptime = %04ds+%03dms+%03dus, BOARD = %d: -> info.status.type = %d, info.status.string = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
 
     printf("%s\n", str);
     fflush(stdout);
+}
+
+
+
+extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+
+    if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+    {
+        printf("ERROR: eoprot_fun_UPDT_mn_comm_status() has received an unexpected message\n");
+        return;
+    }
+}
+
+extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+    {
+        printf("ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() has received an unexpected message\n");
+        return;
+    }
+}
+
+extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+    {
+        printf("ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() has received an unexpected message\n");
+        return;
+    }
 }
 
 // --------------------------------------------------------------------------------------------------------------------
