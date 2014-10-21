@@ -2193,8 +2193,7 @@ bool MotorThread::goHome(Bottle &options)
                 action[LEFT]->enableArmWaving(homePos[LEFT]);
         }
     }
-
-    if(hand_home)
+    else if(hand_home)
     {
         if(left_arm)
             action[LEFT]->pushAction("open_hand");
