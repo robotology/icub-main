@@ -48,7 +48,7 @@
 #define ACTIONPRIM_DEFAULT_WBDYN_PORTNAME           "cartesianEndEffectorWrench:o"
 
 // defines for balancing the arm when in home position
-#define ACTIONPRIM_BALANCEARM_PERIOD                1.5     // [s]
+#define ACTIONPRIM_BALANCEARM_PERIOD                2.0     // [s]
 #define ACTIONPRIM_BALANCEARM_LENGTH                0.03    // [m]
 
 using namespace std;
@@ -201,6 +201,7 @@ class ArmWavingMonitor : public RateThread
 {
     ICartesianControl *cartCtrl;
     Vector restPos, restOrien;
+    int ctxt;
 
 public:
     /************************************************************************/
@@ -234,6 +235,9 @@ public:
             cartCtrl->getPose(xdhat,restOrien);
             cartCtrl->askForPose(restPos,restOrien,xdhat,restOrien,qdhat);
 
+            cartCtrl->storeContext(&ctxt);
+            cartCtrl->setTrajTime(ACTIONPRIM_BALANCEARM_PERIOD);
+
             resume();
             return true;
         }
@@ -245,8 +249,11 @@ public:
     bool disable()
     {
         if (!isSuspended())
-        {
+        {            
             suspend();
+            cartCtrl->restoreContext(ctxt);
+            cartCtrl->deleteContext(ctxt);
+
             return true;
         }
         else
