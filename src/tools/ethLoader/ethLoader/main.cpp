@@ -491,6 +491,8 @@ static void upload_cbk(GtkButton *button,gpointer user_data)
         return;
     }
 
+	printf("Programming: %s\n",filename);
+
     FILE *programFile=fopen(filename,"r");
     g_free(filename);
 
@@ -556,12 +558,12 @@ static void procs_cbk(GtkButton *button,gpointer user_data)
        
 static void blink_cbk(GtkButton *button,gpointer user_data)
 {
-    gUpdater.cmdEraseEprom();
+	gUpdater.cmdBlink();
 }
 
 static void eraseeprom_cbk(GtkButton *button,gpointer user_data)
 {
-    gUpdater.cmdBlink();
+    gUpdater.cmdEraseEprom();
 }
 
 static void info_cls_cbk(GtkButton *button,gpointer user_data)
