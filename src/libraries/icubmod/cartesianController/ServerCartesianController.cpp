@@ -1624,7 +1624,11 @@ void ServerCartesianController::run()
                 ctrl->iterate(xdes,qdes);
 
             // handle the end-trajectory event
-            if (ctrl->isInTarget() && !taskVelModeOn)
+            bool inTarget=ctrl->isInTarget();
+            if (inTarget && posDirectEnabled)
+                inTarget=isInTargetHelper();
+            
+            if (inTarget && !taskVelModeOn)
             {
                 executingTraj=false;
                 motionDone   =true;
@@ -3026,6 +3030,32 @@ bool ServerCartesianController::setInTargetTolHelper(const double tol)
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::isInTargetHelper()
+{
+    Matrix H=chainState->getH();
+    Vector e(6,0.0);
+
+    if (ctrlPose!=IKINCTRL_POSE_ANG)
+    {
+        e[0]=xdes[0]-H(0,3);
+        e[1]=xdes[1]-H(1,3);
+        e[2]=xdes[2]-H(2,3);
+    }
+
+    if (ctrlPose!=IKINCTRL_POSE_XYZ)
+    {
+        Matrix Des=axis2dcm(xdes.subVector(3,6));
+        Vector ax=dcm2axis(Des*SE3inv(H));
+        e[3]=ax[3]*ax[0];
+        e[4]=ax[3]*ax[1];
+        e[5]=ax[3]*ax[2];
+    }
+
+    return (norm(e)<targetTol);
 }
 
 

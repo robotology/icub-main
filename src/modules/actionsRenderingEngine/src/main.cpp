@@ -220,10 +220,13 @@ accordingly to avoid calibrating always at start-up.
 --[fingers] the robot will calibrate the fingers in order to detect
 whether correct grasp has been achieved.
 
---[kinematics] these option requires a parameter [start/stop]. when started, the system is set to cartesian
-torque control and the robot arm can be moved around by the human user. When the [calib] [kinematics] [stop]
-command is received, the system is set to velocity mode and the offset between the initial and the current
-position is stored. It is also possible to associate a specific kinematic offset to a single object. To do 
+--[kinematics] this option requires a parameter [start/stop]. 
+when started, the system is set to cartesian torque control and 
+the robot arm can be moved around by the human user. When the 
+[calib] [kinematics] [stop] command is received, the system is 
+set to stiff mode and the offset between the initial and the 
+current position is stored. It is also possible to associate a 
+specific kinematic offset to a single object. To do 
 so, it is required to issue the command [calib] [kinematics] [stop] <object_name>. Then, whenever the system
 will be asked to preform an action over such object, the system will use the learnt offset.
  
@@ -295,13 +298,16 @@ library, we also have:
     -[status]: returns the bottle (gaze <status>)
      (left_arm <status>) (right_arm <status>) where 
      <status> can be equal to "idle", "busy" or "unavailable".\n
-    -[impedance] [on]/[off]: enable/disable (if available) impedance velocity control.\n
+    -[impedance] [on]/[off]: enable/disable (if available)
+     impedance control.\n
     -[waveing] [on]/[off]: enable/disable the iCub arm(s) waving.\n
     -[mode] [homography]/[disparity]/[network]: sets the desired stereo to cartesian mode.\n
     -[interrupt]: interrupts any action deleting also the action queue for both arms.\n
     -[reinstate]: if the module was interrupted reinstate it.\n
     -[elbow] "left"|"right"|"both" <height> <weight>: to change
      elbow parameters.
+    -[time] <time>: to change default arm movement execution
+     time (in seconds).
 
 \section parameters_sec Parameters 
 The following are the options that are not usually contained 
@@ -366,6 +372,7 @@ Windows, Linux
 #define RPC_REINSTATE               VOCAB4('r','e','i','n')
 #define RPC_WAVEING                 VOCAB4('w','a','v','e')
 #define RPC_ELBOW                   VOCAB4('e','l','b','o')
+#define RPC_EXECTIME                VOCAB4('t','i','m','e')
 
 #define CMD_IDLE                    VOCAB4('i','d','l','e')
 #define CMD_HOME                    VOCAB4('h','o','m','e')
@@ -659,6 +666,20 @@ public:
                 }
                 else
                     reply.addString("missing elbow parameters");
+
+                break;
+            }
+
+            case RPC_EXECTIME:
+            {
+                if (command.size()>1)
+                {
+                    double execTime=command.get(1).asDouble();
+                    motorThr->changeExecTime(execTime);
+                    reply.addString("execution time updated");
+                }
+                else
+                    reply.addString("missing execution time");
 
                 break;
             }
@@ -1288,6 +1309,7 @@ public:
                         if(!check(command,"still"))
                         {
                             Time::delay(2.0);
+                            motorThr->goUp(command,0.1);
                             motorThr->goHome(command);
                         }
 
@@ -1314,6 +1336,7 @@ public:
                         if (!check(command,"still"))
                         {
                             motorThr->setGazeIdle();
+                            motorThr->goUp(command,0.1);
                             motorThr->goHome(command);
                         }
 

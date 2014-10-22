@@ -404,6 +404,7 @@ public:
     bool suspendLearningModeKinOffset(Bottle &options);
 
     bool changeElbowHeight(const int arm, const double height, const double weight);
+    bool changeExecTime(const double execTime);
 
     bool setImpedance(bool turn_on);
     bool setTorque(bool turn_on, int arm=ARM_IN_USE);

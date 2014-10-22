@@ -44,6 +44,9 @@ void embObjMotionControl::copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
     out->limitonoutput = (int16_t) S_16(in->max_output);
     out->offset = (int16_t) S_16(in->offset);
     out->scale = (int8_t) (in->scale);
+    out->kff = (int16_t)in->kff;
+    out->stiction_down_val = (int16_t)in->stiction_down_val;
+    out->stiction_up_val = (int16_t)in->stiction_up_val;
 }
 
 void embObjMotionControl::copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
@@ -56,9 +59,8 @@ void embObjMotionControl::copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
     out->max_output = (double) in->limitonoutput;
     out->offset = (double) in->offset;
     out->scale = (double) in->scale;
-    #warning --> marco.accame: inside embObjMotionControl::copyPid_eo2iCub() when protocol version of mc gets 1.1 and has stiction value .... change code in here
-    out->setStictionValues(0, 0);
-    out->setKff(0);
+    out->setStictionValues(in->stiction_up_val, in->stiction_down_val);
+    out->setKff(in->kff);
 }
 
 // This will be moved in the ImplXXXInterface
@@ -841,6 +843,7 @@ bool embObjMotionControl::parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[
     if (!extractGroup(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
     if (!extractGroup(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
     if (!extractGroup(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "kff", "Pid kff parameter", _njoints))         return false; for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
 
     //optional PWM limit
     if(_pwmIsLimited)
@@ -1338,6 +1341,11 @@ bool embObjMotionControl::init()
 
         jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[logico]);
         jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[logico]);
+
+        #warning --> marco.accame: so far jconfig.bemf at startup is still configured zero. we must take its value from xml
+        jconfig.bemf.value = 0;
+        jconfig.bemf.offset = 0;
+        jconfig.bemf.dummy = 0;
 
 
         if(false == res->setRemoteValueUntilVerified(protid, &jconfig, sizeof(jconfig), 10, 0.010, 0.050, 2))
@@ -3285,12 +3293,14 @@ bool embObjMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, 
 
 bool embObjMotionControl::getBemfParamRaw(int j, double *bemf)
 {
-    return NOT_YET_IMPLEMENTED("getBemfParam");
+    #warning -> marco.accame: add code to get value of variable eoprot_tag_mc_joint_config_bemf
+    return NOT_YET_IMPLEMENTED("getBemfParamRaw");
 }
 
 bool embObjMotionControl::setBemfParamRaw(int j, double bemf)
 {
-    return NOT_YET_IMPLEMENTED("getBemfParam");
+    #warning -> marco.accame: add code to set value of variable eoprot_tag_mc_joint_config_bemf
+    return NOT_YET_IMPLEMENTED("setBemfParamRaw");
 }
 
 bool embObjMotionControl::setTorqueErrorLimitRaw(int j, double limit)

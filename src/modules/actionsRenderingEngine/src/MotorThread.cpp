@@ -1160,7 +1160,7 @@ bool MotorThread::threadInit()
     option.put("local",name.c_str());
 
     default_exec_time=option.check("default_exec_time",Value("3.0")).asDouble();
-    reachingTimeout=2.0*default_exec_time;
+    reachingTimeout=std::max(2.0*default_exec_time,4.0);
 
     string arm_name[]={"left_arm","right_arm"};
     for (int arm=0; arm<2; arm++)
@@ -2108,6 +2108,27 @@ bool MotorThread::changeElbowHeight(const int arm, const double height, const do
 }
 
 
+bool MotorThread::changeExecTime(const double execTime)
+{
+    if (execTime>0.0)
+    {
+        default_exec_time=execTime; 
+        reachingTimeout=std::max(2.0*default_exec_time,4.0);
+
+        bool ret=true;
+        if (action[LEFT]!=NULL)
+            ret&=action[LEFT]->setDefaultExecTime(execTime);
+
+        if (action[RIGHT]!=NULL)
+            ret&=action[RIGHT]->setDefaultExecTime(execTime);
+
+        return ret;
+    }
+    else
+        return false;
+}
+
+
 void MotorThread::goHomeHelper(ActionPrimitives *action, const Vector &xin, const Vector &oin)
 {
     ICartesianControl *ctrl;
@@ -2193,8 +2214,7 @@ bool MotorThread::goHome(Bottle &options)
                 action[LEFT]->enableArmWaving(homePos[LEFT]);
         }
     }
-
-    if(hand_home)
+    else if(hand_home)
     {
         if(left_arm)
             action[LEFT]->pushAction("open_hand");
