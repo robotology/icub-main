@@ -51,30 +51,30 @@ bool TheEthManager::unlock()
     return true;
 }
 
-ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID *request)
+ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request)
 {
-    yTrace() << request->boardNum;
+    yTrace() << request.boardNumber;
     // Check if local socket is initted, if not do it.
     ACE_TCHAR       address[64];
-    snprintf(address, sizeof(address), "%s:%d", request->PC104ipAddr.string, request->PC104ipAddr.port);
+    snprintf(address, sizeof(address), "%s:%d", request.pc104IPaddr.string, request.pc104IPaddr.port);
 
-    if(request->boardNum > TheEthManager::maxBoards)
+    if(request.boardNumber > TheEthManager::maxBoards)
     {
-        yError() << "FATAL ERROR: TheEthManager::requestResource() detected a board number beyond the maximum allowed (max, rqst) =" << maxBoards << request->boardNum << ")";
+        yError() << "FATAL ERROR: TheEthManager::requestResource() detected a board number beyond the maximum allowed (max, rqst) =" << maxBoards << request.boardNumber << ")";
         yError() << "entering forever loop";
         for(;;);
     }
 
-    if(request->EMSipAddr.ip4 != request->boardNum)
+    if(request.boardIPaddr.ip4 != request.boardNumber)
     {
-        yError() << "FATAL ERROR: TheEthManager::requestResource() detected a board number different from its ip4 address (boardnum, ip4) =" << request->boardNum << request->EMSipAddr.ip4 << ")";
+        yError() << "FATAL ERROR: TheEthManager::requestResource() detected a board number different from its ip4 address (boardNumber, ip4) =" << request.boardNumber << request.boardIPaddr.ip4 << ")";
         yError() << "entering forever loop";
         for(;;);
     }
 
 
-    ACE_UINT32 hostip = (request->PC104ipAddr.ip1 << 24) | (request->PC104ipAddr.ip2 << 16) | (request->PC104ipAddr.ip3 << 8) | (request->PC104ipAddr.ip4);
-    ACE_INET_Addr myIP((u_short)request->PC104ipAddr.port, hostip);
+    ACE_UINT32 hostip = (request.pc104IPaddr.ip1 << 24) | (request.pc104IPaddr.ip2 << 16) | (request.pc104IPaddr.ip3 << 8) | (request.pc104IPaddr.ip4);
+    ACE_INET_Addr myIP((u_short)request.pc104IPaddr.port, hostip);
     myIP.dump();
     char tmp_addr[64];
 
@@ -91,7 +91,7 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
     while(iterator != EMS_list.end())
     {
         (*iterator)->getRemoteAddress().addr_to_string(tmp_addr, 64);
-        if( strcmp(tmp_addr, request->EMSipAddr.string) == 0 )
+        if( strcmp(tmp_addr, request.boardIPaddr.string) == 0 )
         {
             // device already exists, return the pointer.
             newRes = (*iterator);
@@ -105,9 +105,9 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
     if(NULL == newRes)
     {
         // device doesn't exist yet: create it
-        yTrace() << "Creating EMS device with IP " << request->EMSipAddr.string;
+        yTrace() << "Creating EMS device with IP " << request.boardIPaddr.string;
         newRes = new ethResources;
-        if(!newRes->open(cfgtotal, cfgtransceiver, cfgprotocol, *request))
+        if(!newRes->open(cfgtotal, cfgtransceiver, cfgprotocol, request))
         {
             yError() << "Error creating new EMS!!";
             if(NULL != newRes)
@@ -137,9 +137,9 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
 
 
 
-int TheEthManager::releaseResource(FEAT_ID resource)
+int TheEthManager::releaseResource(ethFeature_t &resource)
 {
-    yTrace() << resource.boardNum;
+    yTrace() << resource.boardNumber;
     int           ret           = 0;
     int           stillUsed     = 0;
     ethResources  *res2release  = NULL;
@@ -180,7 +180,7 @@ int TheEthManager::releaseResource(FEAT_ID resource)
         tmpEthRes = (*iterator);
         tmp_ace_addr = tmpEthRes->getRemoteAddress();
         tmp_ace_addr.addr_to_string(tmp_addr, 64);
-        if( strcmp(tmp_addr, resource.EMSipAddr.string) == 0)
+        if( strcmp(tmp_addr, resource.boardIPaddr.string) == 0)
         {
             // device exists
             res2release = (*iterator);
@@ -209,7 +209,8 @@ int TheEthManager::releaseResource(FEAT_ID resource)
     }
 
     if(!ret)
-        yError() << "EthManager: Trying to release a non existing resource" << resource.name << " for boardId " << resource.boardNum << "maybe already deleted?";
+        //yError() << "EthManager: Trying to release a non existing resource" << resource.name << " for boardId " << resource.boardNumber << "maybe already deleted?";
+        yError() << "EthManager: Trying to release a non existing resource for boardId " << resource.boardNumber << "maybe already deleted?";
 
     // ret = -1 means that the singleton is not needed anymore
     if( (EMS_list.size() == 0 ) || (boards_map.size() == 0 ) )
@@ -221,25 +222,25 @@ int TheEthManager::releaseResource(FEAT_ID resource)
 }
 
 
-void TheEthManager::addLUTelement(FEAT_ID *id)
+void TheEthManager::addLUTelement(ethFeature_t &id)
 {
-    yTrace() << id->boardNum;
+    yTrace() << id.boardNumber;
     //in maps use board num starts from 0 so
-    FEAT_boardnumber_t brdnum = id->boardNum;
+    FEAT_boardnumber_t brdnum = id.boardNumber;
     /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
     /* Defined the var addLUT_result to have the true/false result of the insert operation...It helped catching a bug.
      * It fails if the element is already present. This can happen if someone tries to read an element with
      * the '[]' operator before the insert, because the std::map will create it automatically (hopefully initted
      * with zeros.
      */
-     bool addLUT_result =  boards_map.insert(std::pair< std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, FEAT_ID>(std::make_pair<FEAT_boardnumber_t, eOprotEndpoint_t>(brdnum, id->ep), *id)).second;
+     bool addLUT_result =  boards_map.insert(std::pair< std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, ethFeature_t>(std::make_pair<FEAT_boardnumber_t, eOprotEndpoint_t>(brdnum, id.endpoint), id)).second;
 
     // Check result of insertion
-    addLUT_result ? yTrace() << "ok add lut element for board " << id->boardNum << " and ep " << id->ep :
-                    yError() << "NON ok add lut element for board " << id->boardNum << " and ep " << id->ep;
+    addLUT_result ? yTrace() << "ok add lut element for board " << id.boardNumber << " and ep " << id.endpoint :
+                    yError() << "NON ok add lut element for board " << id.boardNumber << " and ep " << id.endpoint;
 
 
-    std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (brdnum, id->ep);
+    std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (brdnum, id.endpoint);
     try
         {
             // USE .at AND NOT the '[ ]' alternative!!! It will create a bug!!!
@@ -248,7 +249,7 @@ void TheEthManager::addLUTelement(FEAT_ID *id)
              * Furthermore the insert method used to correctly initialze the element will fail because a (wrong)
              * element is already present preventing the map to be corrected.
              */
-            void * ret = boards_map.at(key).handle;
+            IethResource * ret = boards_map.at(key).interface;
         }
         catch (const std::out_of_range& errMsg)
         {
@@ -256,12 +257,12 @@ void TheEthManager::addLUTelement(FEAT_ID *id)
         }
 }
 
-bool TheEthManager::removeLUTelement(FEAT_ID element)
+bool TheEthManager::removeLUTelement(ethFeature_t &element)
 {
-    yTrace() << element.boardNum;
+    yTrace() << element.boardNumber;
     /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
     bool ret = false;
-    int n = (int) boards_map.erase(std::make_pair<FEAT_boardnumber_t, eOprotEndpoint_t>(element.boardNum, element.ep));
+    int n = (int) boards_map.erase(std::make_pair<FEAT_boardnumber_t, eOprotEndpoint_t>(element.boardNumber, element.endpoint));
 
     switch(n)
     {
@@ -274,13 +275,13 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
 
         case 1:
         {
-            yTrace() << "FEAT_ID element removed succesfully from the map" << element.name;
+            yTrace() << "ethFeature_t element removed succesfully from the map" << element.name;
             ret = true;
             break;
         }
         default:
         {
-            yError() << "More than one element were removed with key board num " << element.boardNum << "ep " << element.ep;
+            yError() << "More than one element were removed with key board num " << element.boardNumber << "ep " << element.endpoint;
             ret = true;
             break;
         }
@@ -289,10 +290,10 @@ bool TheEthManager::removeLUTelement(FEAT_ID element)
     return ret;
 }
 
-void * TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep)
+IethResource * TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep)
 {
 //     lock(); // marco.accame: found already commented. see why
-    void * ret = NULL;
+    IethResource * ret = NULL;
     static int _error = 0;
     std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (boardnum, ep);
 
@@ -304,7 +305,7 @@ void * TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep
          * Furthermore the insert method used to correctly initialze the element will fail because a (wrong)
          * element is already present preventing the map to be corrected.
          */
-        ret = boards_map.at(key).handle;
+        ret = boards_map.at(key).interface;
     }
     catch (const std::out_of_range& errMsg)
     {
@@ -317,10 +318,12 @@ void * TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep
     return ret;
 }
 
-FEAT_ID TheEthManager::getFeatInfo(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep)
+#if 0
+#warning -> marco.accame change getFeatInfo() so that it returns an handler an not the whole strcut
+ethFeature_t TheEthManager::getFeatInfo(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep)
 {
 //    yTrace();
-    FEAT_ID ret_val;
+    ethFeature_t ret_val;
     std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (boardnum, ep);
 
 //     lock();      // marco.accame: found already commented. see why
@@ -328,6 +331,7 @@ FEAT_ID TheEthManager::getFeatInfo(FEAT_boardnumber_t boardnum, eOprotEndpoint_t
 //     unlock();    // marco.accame: found already commented. see why
     return ret_val;
 }
+#endif
 
 // this function is called by the embobj error manager
 void embOBJerror(eOerrmanErrorType_t errtype, eOid08_t taskid, const char *eobjstr, const char *info)
@@ -547,7 +551,7 @@ TheEthManager::~TheEthManager()
 
     if(boards_map.size() != 0)
     {
-        std::map<std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, FEAT_ID>::iterator mIt;
+        std::map<std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, ethFeature_t>::iterator mIt;
         for(mIt = boards_map.begin(); mIt!=boards_map.end(); mIt++)
         {
             yError() << "Feature " << mIt->second.name << "was not correctly removed from map.., removing it now in the EthManager destructor.";

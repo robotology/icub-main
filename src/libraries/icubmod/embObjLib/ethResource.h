@@ -62,6 +62,60 @@
 
 
 
+// marco.accame on 20 oct 2014.
+// the objects which use ethResource to communicate with the ethernet boards inside the robot
+// must be derived from this class IethResource.
+// these objects are: embObjMotionControl, embObjSkin, embObjAnalogSensor, embObjVirtualAnalogSensor, and future ones.
+// these object must implement the virtual functions initialised() and update() so that:
+// - initialised() must return true only if the object is opened (its method open() has returned).
+// - update() takes care of filling private data structures with bytes contained in the relevant ROPs coming from remote boards.
+// the name of the class is IethResource because this class acts as an interface from ethResource which is the one which
+// manages decoding of received UDP packets and calls the callbacks of the EOnv which in turn call IethResource::update().
+
+class IethResource
+{
+    public:
+        virtual ~IethResource() {};
+
+        virtual bool initialised() = 0;
+        virtual bool update(eOnvID32_t id32, double timestamp, void *rxdata) = 0;
+};
+
+
+typedef struct
+{
+    uint16_t    port;
+    int         ip1;
+    int         ip2;
+    int         ip3;
+    int         ip4;
+    char        string[64];
+} ethFeatIPaddress_t;
+
+typedef enum
+{
+    ethFeatType_Management      = 0x00,
+    ethFeatType_AnalogMais      = 0x01,
+    ethFeatType_AnalogStrain    = 0x02,
+    ethFeatType_MotionControl   = 0x03,
+    ethFeatType_Skin            = 0x04,
+    ethFeatType_AnalogVirtual   = 0x05
+} ethFeatType_t;
+
+
+typedef struct
+{
+    ethFeatIPaddress_t  pc104IPaddr;
+    ethFeatIPaddress_t  boardIPaddr;
+    FEAT_boardnumber_t  boardNumber;
+    eOprotEndpoint_t    endpoint;
+    ethFeatType_t       type;
+    IethResource*       interface;
+    char                name[16];
+} ethFeature_t;
+
+
+
 namespace yarp{
     namespace dev{
         class ethResources;
@@ -190,19 +244,19 @@ public:
     ~ethResources();
 
 
-    bool            open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID request);
+    bool            open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
     bool            close();
 
     /*!   @fn       registerFeature(void);
      *    @grief    tells the EMS a new device requests its services.
      *    @return   true.
      */
-    bool            registerFeature(FEAT_ID *request);
+    bool            registerFeature(ethFeature_t &request);
 
     /*!   @fn       unregisterFeature();
      *    @brief    tell the EMS a user has been closed. If was the last one, close the EMS
      */
-    int             deregisterFeature(FEAT_ID request);
+    int             deregisterFeature(ethFeature_t &request);
 
     ACE_INET_Addr   getRemoteAddress(void);
 

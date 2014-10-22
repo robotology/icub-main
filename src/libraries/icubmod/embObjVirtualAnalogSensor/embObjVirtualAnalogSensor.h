@@ -36,14 +36,14 @@ class ethResources;
  */
 class yarp::dev::embObjVirtualAnalogSensor:     public yarp::dev::IVirtualAnalogSensor,
                                                 public yarp::dev::DeviceDriver,
-                                                public IiCubFeature
+                                                public IethResource
 {
 private:
 
     //! embObj stuff
     TheEthManager       *ethManager;
     ethResources        *res;
-    FEAT_ID             _fId;
+    ethFeature_t        _fId;
 
     ////////////////////
     // parameters
@@ -70,8 +70,8 @@ public:
     bool open(yarp::os::Searchable &config);
     bool close();
 
-    virtual bool isOpened();
-    virtual bool fillData(eOnvID32_t id32, double timestamp, void *rxdata);
+    virtual bool initialised();
+    virtual bool update(eOnvID32_t id32, double timestamp, void *rxdata);
 
     // IvirtualAnalogSensor interface
     virtual int getState(int ch);

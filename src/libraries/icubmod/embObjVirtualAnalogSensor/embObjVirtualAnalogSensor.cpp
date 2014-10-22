@@ -75,7 +75,7 @@ bool embObjVirtualAnalogSensor::fromConfig(yarp::os::Searchable &_config)
     Value val =_config.findGroup("ETH").check("Ems",Value(1), "Board number");
     if(val.isInt())
     {
-        _fId.boardNum =val.asInt();
+        _fId.boardNumber =val.asInt();
     }
     else
     {
@@ -168,12 +168,12 @@ embObjVirtualAnalogSensor::~embObjVirtualAnalogSensor()
 
 }
 
-bool embObjVirtualAnalogSensor::isOpened()
+bool embObjVirtualAnalogSensor::initialised()
 {
     return opened;
 }
 
-bool embObjVirtualAnalogSensor::fillData(eOnvID32_t id32, double timestamp, void *rxdata)
+bool embObjVirtualAnalogSensor::update(eOnvID32_t id32, double timestamp, void *rxdata)
 {
     return true;
 }
@@ -222,32 +222,29 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     groupEth  = Bottle(config.findGroup("ETH"));
     Bottle parameter1( groupEth.find("PC104IpAddress").asString() );    // .findGroup("IpAddress");
     port      = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
-    snprintf(_fId.PC104ipAddr.string, sizeof(_fId.PC104ipAddr.string), "%s", parameter1.toString().c_str());
-    _fId.PC104ipAddr.port = port;
+    snprintf(_fId.pc104IPaddr.string, sizeof(_fId.pc104IPaddr.string), "%s", parameter1.toString().c_str());
+    _fId.pc104IPaddr.port = port;
 
     Bottle parameter2( groupEth.find("IpAddress").asString() );    // .findGroup("IpAddress");
-    snprintf(_fId.EMSipAddr.string, sizeof(_fId.EMSipAddr.string), "%s", parameter2.toString().c_str());
-    _fId.EMSipAddr.port = port;
+    snprintf(_fId.boardIPaddr.string, sizeof(_fId.boardIPaddr.string), "%s", parameter2.toString().c_str());
+    _fId.boardIPaddr.port = port;
 
-    sscanf(_fId.EMSipAddr.string,"\"%d.%d.%d.%d", &_fId.EMSipAddr.ip1, &_fId.EMSipAddr.ip2, &_fId.EMSipAddr.ip3, &_fId.EMSipAddr.ip4);
-    sscanf(_fId.PC104ipAddr.string,"\"%d.%d.%d.%d", &_fId.PC104ipAddr.ip1, &_fId.PC104ipAddr.ip2, &_fId.PC104ipAddr.ip3, &_fId.PC104ipAddr.ip4);
+    sscanf(_fId.boardIPaddr.string,"\"%d.%d.%d.%d", &_fId.boardIPaddr.ip1, &_fId.boardIPaddr.ip2, &_fId.boardIPaddr.ip3, &_fId.boardIPaddr.ip4);
+    sscanf(_fId.pc104IPaddr.string,"\"%d.%d.%d.%d", &_fId.pc104IPaddr.ip1, &_fId.pc104IPaddr.ip2, &_fId.pc104IPaddr.ip3, &_fId.pc104IPaddr.ip4);
 
-    snprintf(_fId.EMSipAddr.string, sizeof(_fId.EMSipAddr.string), "%u.%u.%u.%u:%u", _fId.EMSipAddr.ip1, _fId.EMSipAddr.ip2, _fId.EMSipAddr.ip3, _fId.EMSipAddr.ip4, _fId.EMSipAddr.port);
-    snprintf(_fId.PC104ipAddr.string, sizeof(_fId.PC104ipAddr.string), "%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
+    snprintf(_fId.boardIPaddr.string, sizeof(_fId.boardIPaddr.string), "%u.%u.%u.%u:%u", _fId.boardIPaddr.ip1, _fId.boardIPaddr.ip2, _fId.boardIPaddr.ip3, _fId.boardIPaddr.ip4, _fId.boardIPaddr.port);
+    snprintf(_fId.pc104IPaddr.string, sizeof(_fId.pc104IPaddr.string), "%u.%u.%u.%u:%u", _fId.pc104IPaddr.ip1, _fId.pc104IPaddr.ip2, _fId.pc104IPaddr.ip3, _fId.pc104IPaddr.ip4, _fId.pc104IPaddr.port);
 
     //   Debug info
-    snprintf(_fId.name, sizeof(_fId.name), "embObjAnalogSensor: referred to EMS: %d at address %s\n", _fId.boardNum, address);       // Saving User Friendly Id
+    snprintf(_fId.name, sizeof(_fId.name), "embObjAnalogSensor: referred to EMS: %d at address %s\n", _fId.boardNumber, address);       // Saving User Friendly Id
 
-    // Set dummy values
-    _fId.boardNum   = FEAT_boardnumber_dummy;
-    _fId.ep         = eoprot_endpoint_none;
 
     Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
     if(val.isInt())
-        _fId.boardNum =val.asInt();
+        _fId.boardNumber =val.asInt();
     else
     {
-        yError () << "embObjAnalogSensor: EMS Board number identifier not found for IP" << _fId.PC104ipAddr.string;
+        yError () << "embObjAnalogSensor: EMS Board number identifier not found for IP" << _fId.pc104IPaddr.string;
         return false;
     }
 
@@ -259,14 +256,15 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-    //N.B.: use a dynamic_cast to extract correct interface when using this pointer
-    _fId.handle = (this);
+    // N.B.: use a dynamic_cast to extract correct interface when using this pointer
+    _fId.interface = this;
+    _fId.type = ethFeatType_AnalogVirtual;
 
     /* Once I'm ok, ask for resources, through the _fId struct I'll give the ip addr, port and
     *  and boradNum to the ethManagerin order to create the ethResource requested.
     * I'll Get back the very same sturct filled with other data useful for future handling
     * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, &_fId);
+    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, _fId);
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";
@@ -276,16 +274,16 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     /*IMPORTANT: implement isEpManagedByBoard like every embObj obj when virtaulAnalogSensor will be exist in eo proto!!!!*/
 //    if(!isEpManagedByBoard())
 //    {
-//        yError() << "EMS "<< _fId.boardNum << "is not connected to virtual analog sensor";
+//        yError() << "EMS "<< _fId.boardNumber << "is not connected to virtual analog sensor";
 //        return false;
 //    }
 //    if(!res->verifyProtocol(groupProtocol, eoprot_endpoint_???))
 //    {
-//        yError() << "embObjVirtualAnalogSensor and board "<< _fId.boardNum << "dont not have the same eoprot_endpoint_??? protocol version: DO A FW UPGRADE";
+//        yError() << "embObjVirtualAnalogSensor and board "<< _fId.boardNumber << "dont not have the same eoprot_endpoint_??? protocol version: DO A FW UPGRADE";
 //        return false;
 //    }
 
-    yTrace() << "EmbObj Virtual Analog Sensor for board "<< _fId.boardNum << "instantiated correctly";
+    yTrace() << "EmbObj Virtual Analog Sensor for board "<< _fId.boardNumber << "instantiated correctly";
 
     opened = true;
 

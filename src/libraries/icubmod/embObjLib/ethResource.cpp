@@ -86,7 +86,7 @@ bool ethResources::unlock()
     return true;
 }
 
-bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID request)
+bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request)
 {
     // Get the pointer to the actual Singleton ethManager
     ethManager = TheEthManager::instance();
@@ -94,7 +94,7 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
     lock();
 
     // Fill 'info' field with human friendly string
-    snprintf(info, sizeof(info), "ethResources - referred to EMS: %s:%d", request.EMSipAddr.string, request.EMSipAddr.port);
+    snprintf(info, sizeof(info), "ethResources - referred to EMS: %s:%d", request.boardIPaddr.string, request.boardIPaddr.port);
     yTrace() << "EMS IP address " << info;
     if(cfgtotal.findGroup("GENERAL").find("verbose").asBool())
     {
@@ -115,10 +115,10 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
 
 
     bool ret;
-    eOipv4addr_t eo_locIp = eo_common_ipv4addr(request.PC104ipAddr.ip1, request.PC104ipAddr.ip2, request.PC104ipAddr.ip3, request.PC104ipAddr.ip4);
-    eOipv4addr_t eo_remIp = eo_common_ipv4addr(request.EMSipAddr.ip1, request.EMSipAddr.ip2, request.EMSipAddr.ip3, request.EMSipAddr.ip4);
+    eOipv4addr_t eo_locIp = eo_common_ipv4addr(request.pc104IPaddr.ip1, request.pc104IPaddr.ip2, request.pc104IPaddr.ip3, request.pc104IPaddr.ip4);
+    eOipv4addr_t eo_remIp = eo_common_ipv4addr(request.boardIPaddr.ip1, request.boardIPaddr.ip2, request.boardIPaddr.ip3, request.boardIPaddr.ip4);
     const uint16_t packetRXcapacity = ethResources::maxRXpacketsize; // for safety i use the maximum size ... however, i could read the xml file and set this number equal to max tx size of teh ems ...
-    if(!hostTransceiver::init(cfgtransceiver, cfgprotocol, eo_locIp, eo_remIp, request.EMSipAddr.port, packetRXcapacity, request.boardNum))
+    if(!hostTransceiver::init(cfgtransceiver, cfgprotocol, eo_locIp, eo_remIp, request.boardIPaddr.port, packetRXcapacity, request.boardNumber))
     {
         ret = false;
         yError() << "cannot init transceiver... maybe wrong board number... check log and config file.";
@@ -128,9 +128,9 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
         ret = true;
     }
 
-    boardNum = request.boardNum;
-    ACE_UINT32 hostip = (request.EMSipAddr.ip1 << 24) | (request.EMSipAddr.ip2 << 16) | (request.EMSipAddr.ip3 << 8) | (request.EMSipAddr.ip4);
-    ACE_INET_Addr myIP((u_short)request.EMSipAddr.port, hostip);
+    boardNum = request.boardNumber;
+    ACE_UINT32 hostip = (request.boardIPaddr.ip1 << 24) | (request.boardIPaddr.ip2 << 16) | (request.boardIPaddr.ip3 << 8) | (request.boardIPaddr.ip4);
+    ACE_INET_Addr myIP((u_short)request.boardIPaddr.port, hostip);
     remote_dev = myIP;
 
 
@@ -152,18 +152,18 @@ bool ethResources::close()
     return false;
 }
 
-bool ethResources::registerFeature(FEAT_ID *request)
+bool ethResources::registerFeature(ethFeature_t &request)
 {
-    yTrace() << request->boardNum;
+    yTrace() << request.boardNumber;
     lock();
     how_many_features++;
     unlock();
     return true;
 }
 
-int ethResources::deregisterFeature(FEAT_ID request)
+int ethResources::deregisterFeature(ethFeature_t &request)
 {
-    yTrace() << request.boardNum;
+    yTrace() << request.boardNumber;
     lock();
     how_many_features--;
     int ret = how_many_features;

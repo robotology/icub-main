@@ -212,7 +212,7 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementOpenLoopControl,
     public IDebugInterfaceRaw,
     public ImplementDebugInterface,
-    public IiCubFeature
+    public IethResource
 {
 
 public:
@@ -226,7 +226,7 @@ private:
     bool opened;
 
     yarp::os::Semaphore     _mutex;
-    FEAT_ID                 _fId;
+    ethFeature_t            _fId;
 
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
@@ -389,8 +389,8 @@ public:
     virtual bool close();
     bool fromConfig(yarp::os::Searchable &config);
 
-    virtual bool isOpened();
-    virtual bool fillData(eOnvID32_t id32, double timestamp, void *rxdata);
+    virtual bool initialised();
+    virtual bool update(eOnvID32_t id32, double timestamp, void *rxdata);
 
     eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
     void refreshEncoderTimeStamp(int joint);
@@ -504,7 +504,7 @@ public:
     virtual bool getAmpStatusRaw(int *st);
     virtual bool getAmpStatusRaw(int j, int *st);
     /////////////// END AMPLIFIER INTERFACE
-    FEAT_ID getFeat_id();
+    //ethFeature_t getFeat_id();
 
     // virtual analog sensor
     virtual int getState(int ch);

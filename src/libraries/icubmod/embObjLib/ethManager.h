@@ -142,7 +142,7 @@ private:
 
     // Data for EMS handling
 public:
-    map<std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, FEAT_ID>  boards_map;         //!< Map of high level classes (referred to as Feature) using EMS, es eoMotionControl, eoSkin, eoAnalogSensor etc... Can be more the one for each EMS
+    map<std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, ethFeature_t>  boards_map;         //!< Map of high level classes (referred to as Feature) using EMS, es eoMotionControl, eoSkin, eoAnalogSensor etc... Can be more the one for each EMS
     std::list<ethResources *>     EMS_list;           //!< List of pointer to classes that represent EMS boards
     ACE_INET_Addr                 local_addr;         
 
@@ -198,34 +198,34 @@ public:
     bool close(void);
 
 
-    /*! @fn     ethResources* requestResource(FEAT_ID request);
+    /*! @fn     ethResources* requestResource(ethFeature_t request);
      *  @brief  Get the pointer to a specific EMS board. If it doesn't exists yet it'll be created.
      *  @param  config  Description and parameter for the identifying the requested class
      *  @return Pointer to the requested EMS, NULL if errors arise in the creation.
      */
-    ethResources* requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID *request);
+    ethResources* requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
 
-    /*! @fn     bool releaseResource(FEAT_ID resouce);
+    /*! @fn     bool releaseResource(ethFeature_t resouce);
      *  @brief  Tells the manager the specified resource is not used anymore by the caller,
      *          therefore the manager could decide to delete it if no used by any other one.
      *  @param  config  Description and parameter identifying the releasing class
      *  @return True if ok, false in case of errors.
      */
-    int releaseResource(FEAT_ID resource);
+    int releaseResource(ethFeature_t &resource);
 
 private:
-    /*! @fn     void addLUTelement(FEAT_ID id);
-     *  @brief  Insert a ethResource class descriptor of FEAT_ID type in a map to easy the access from the embObj callbacks
-     *  @param  id  A struct of FEAT_ID type with useful information about the class requesting an ethResource, they can be eoMotionControl, eoSkin, eoAnalogSensor...
+    /*! @fn     void addLUTelement(ethFeature_t id);
+     *  @brief  Insert a ethResource class descriptor of ethFeature_t type in a map to easy the access from the embObj callbacks
+     *  @param  id  A struct of ethFeature_t type with useful information about the class requesting an ethResource, they can be eoMotionControl, eoSkin, eoAnalogSensor...
      */
-    void addLUTelement(FEAT_ID *id);
+    void addLUTelement(ethFeature_t &id);
 
-    /*! @fn     bool removeLUTelement(FEAT_ID element);
-     *  @brief  Remove a ethResource class descriptor of FEAT_ID type from the map used by the callbacks.
-     *  @param  id  A struct of FEAT_ID type with information about the class to be removed.
+    /*! @fn     bool removeLUTelement(ethFeature_t element);
+     *  @brief  Remove a ethResource class descriptor of ethFeature_t type from the map used by the callbacks.
+     *  @param  id  A struct of ethFeature_t type with information about the class to be removed.
      *  @return True if everything went as expected, false if class not found or more than one were removed.
      */
-    bool removeLUTelement(FEAT_ID element);
+    bool removeLUTelement(ethFeature_t &element);
 
 public:
     /*! @fn     void *getHandleFromEP(eOnvEP_t ep);
@@ -234,15 +234,18 @@ public:
      *  @param  ep  The desired EndPoint
      *  @return Pointer to the class, casted to a portable void type. The user must cast it to the correct, expected type like eoMotionControl ecc..
      */
-    void * getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
+    IethResource * getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
 
-    /*! @fn     FEAT_ID getFeatInfoFromEP(eOnvEP_t ep);
-     *  @brief  Get the struct of FEAT_ID type with useful information about the class handling the desired EndPoint.
+#if 0
+    /*! @fn     ethFeature_t getFeatInfoFromEP(eOnvEP_t ep);
+     *  @brief  Get the struct of ethFeature_t type with useful information about the class handling the desired EndPoint.
      *  @param  boardnum the board number in range [1, max]
      *  @param  ep  The desired EndPoint
      *  @return std::list<ethResources *>Struct with info
      */
-    FEAT_ID getFeatInfo(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
+    ethFeature_t getFeatInfo(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
+#endif
+
 
     // Methods for UDP socket handling
 private:
