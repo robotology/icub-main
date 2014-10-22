@@ -99,9 +99,25 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 
     const char* state = (appstatus->currstate > 2) ? (states[3]) : (states[appstatus->currstate]);
 
-    snprintf(str, sizeof(str), "MANAGEMENT-appl-status: sign = 0x%x, board EB%d -> state = %s, msg = %s ", rd->signature, eo_nv_GetBRD(nv)+1, state, appstatus->filler06);
+    snprintf(str, sizeof(str), "MANAGEMENT-appl-status: sign = 0x%x, board EB%d -> name = %s", rd->signature, eo_nv_GetBRD(nv)+1, appstatus->name);
+    printf("%s\n", str);
+
+    snprintf(str, sizeof(str), "                        version = %d.%d, built on date %d %d %d, at hour %d:%d",
+                                                        appstatus->version.major,
+                                                        appstatus->version.minor,
+                                                        appstatus->buildate.day,
+                                                        appstatus->buildate.month,
+                                                        appstatus->buildate.year,
+                                                        appstatus->buildate.hour,
+                                                        appstatus->buildate.min);
 
     printf("%s\n", str);
+
+    snprintf(str, sizeof(str), "                        state = %s", state);
+
+    printf("%s\n", str);
+
+
     fflush(stdout);
 
     if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
@@ -136,7 +152,6 @@ extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor
         sec =  msec = usec = 0;
     }
 
-    //snprintf(str, sizeof(str), "[INFO]-> mn-info: sign = 0x%x, time = %04ds+%03dms+%03dus, board EB%d: -> info.status.type = %d, info.status.string = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
     snprintf(str, sizeof(str), "[INFO]-> mn-info: ropsign = 0x%x, roptime = %04ds+%03dms+%03dus, BOARD = %d: -> info.status.type = %d, info.status.string = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
 
     printf("%s\n", str);
