@@ -31,11 +31,12 @@
         <param name="shift">            8            8         </param>       
         <param name="ko">               0            0         </param>       
         <param name="stictionUp">       0            0         </param>       
-        <param name="stictionDwn">      0            0         </param>       
+        <param name="stictionDwn">      0            0         </param>      
+        <param name="kff">              0            0         </param>              
     </group>
 
 	<group name="TRQ_PIDS">
-        <param name="kp">           50          50       </param>       
+        <param name="kp">           50          50         </param>       
         <param name="kd">            0           0         </param>       
         <param name="ki">         1000        1000         </param>       
         <param name="maxPwm">     8000           0         </param>       
@@ -44,6 +45,7 @@
         <param name="ko">            0           0         </param>       
         <param name="stictionUp">    0           0         </param>       
         <param name="stictionDwn">   0           0         </param>       
+        <param name="kff">           0           0         </param>      
     </group>
 	
   </device>
