@@ -311,8 +311,12 @@ IethResource * TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotID32_
     }
     catch (const std::out_of_range& errMsg)
     {
-        if(0 == (_error%1000) )
-            yError() << "Got a message from boardNum "<< boardnum << " and EP " << ep << "but boards_map does not contains any related class pointer yet";
+        if(0 == (_error%1000))
+        {
+            char nvinfo[128];
+            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+            yError() << "TheEthManager::getHandle() cannot find a handle for boardNum "<< boardnum << " and nv" << nvinfo << " ... maybe the board was in running mode before robotInterface was started";
+        }
 
         _error++;
     }
