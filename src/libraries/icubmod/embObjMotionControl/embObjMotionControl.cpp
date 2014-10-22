@@ -18,7 +18,7 @@
 #include <FeatureInterface.h>
 
 
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 
 #include "EoCommon.h"
 #include "EOarray.h"

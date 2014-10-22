@@ -9,7 +9,7 @@
 
 
 #include "eoRequestsQueue.hpp"
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 
 /////////////////////  eoThreadList  ///////////////////
 eoThreadArray::eoThreadArray()

@@ -47,7 +47,7 @@ using namespace std;
 #include "EoProtocolSK.h"
 
 
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 
 #include <yarp/os/Time.h>
 

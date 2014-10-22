@@ -18,7 +18,8 @@
 #include <ethManager.h>
 #include "FeatureInterface.h"
 #include "IethResource.h"
-#include "Debug.h"
+
+#include <yarp/os/LogStream.h>
 
 
 namespace yarp{

@@ -29,7 +29,7 @@
 #include <robolli/Boards_iface.h>
 
 #include <comanDevicesHandler.hpp>
-#include <Debug.h>
+#include <yarp/os/LogStream.h>
 
 namespace yarp{
     namespace dev{

@@ -9,7 +9,7 @@
 #include <canProtocolLib/iCubCanProtocol.h>
 #include <yarp/os/Time.h>
 #include <iostream>
-#include <Debug.h>
+#include <yarp/os/LogStream.h>
 
 const int CAN_DRIVER_BUFFER_SIZE = 2047;
 

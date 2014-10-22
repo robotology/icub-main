@@ -46,7 +46,7 @@ using namespace std;
 
 
 
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 
 #include <yarp/os/Time.h>
 #include <yarp/os/Bottle.h>

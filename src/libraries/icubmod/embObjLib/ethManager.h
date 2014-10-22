@@ -67,7 +67,7 @@
 #include "EoProtocol.h"
 
 // others
-#include "Debug.h"              // iCub debug class include
+#include <yarp/os/LogStream.h>              // iCub debug class include
 
 
 

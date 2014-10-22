@@ -14,7 +14,7 @@
 #include <boost/circular_buffer.hpp>
 
 
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 #include <string.h>
 
 #warning "_AC_: This file contains a description of how the coman robot is built... \

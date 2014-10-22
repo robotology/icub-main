@@ -38,7 +38,7 @@
 #include "can_string_generic.h"
 /// get the message types from the DSP code.
 #include "messages.h"
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #include "canControlConstants.h"

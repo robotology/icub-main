@@ -13,7 +13,7 @@
 #include "parametricCalibratorEth.h"
 #include <math.h>
 
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 
 using namespace yarp::os;
 using namespace yarp::dev;

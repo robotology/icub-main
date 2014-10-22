@@ -25,7 +25,7 @@
 // specific to this device driver.
 #include <embObjVirtualAnalogSensor.h>
 #include <ethManager.h>
-#include <Debug.h>
+#include <yarp/os/LogStream.h>
 
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.inl>

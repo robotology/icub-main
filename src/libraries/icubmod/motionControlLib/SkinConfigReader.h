@@ -24,7 +24,7 @@
 
 
 //#include <ace/ACE.h>
-#include <Debug.h>
+#include <yarp/os/LogStream.h>
 #include <stdint.h>
 
 

@@ -29,7 +29,7 @@
 
 #include <iCub/FactoryInterface.h>
 
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 
 namespace yarp{
     namespace dev{

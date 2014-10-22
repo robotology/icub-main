@@ -18,7 +18,7 @@
 
 #include "comanDevicesHandler.hpp"
 #include "comanJointTorqueSensor.h"
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 
 using namespace yarp::dev;
 using namespace yarp::os;
