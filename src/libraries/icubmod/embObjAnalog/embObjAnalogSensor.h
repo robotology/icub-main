@@ -28,7 +28,7 @@
 
 #include "FeatureInterface.h"  
 
-#include "FeatureInterface_hid.h"   // marco.accame: actually it contains definition of class IiCubFeature, thus IiCubFeature.h would be better
+#include "IethResource.h"
 
 #include "Debug.h"
 
@@ -215,7 +215,7 @@ public:
     bool init();
 
     virtual bool initialised();
-    virtual bool update(eOnvID32_t id32, double timestamp, void* rxdata);
+    virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
 };
 
 

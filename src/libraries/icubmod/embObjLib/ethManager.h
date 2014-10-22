@@ -60,6 +60,7 @@
 // embobjlib includes
 #include "hostTransceiver.hpp"
 #include "FeatureInterface.h"
+#include "IethResource.h"
 #include "ethResource.h"
 
 // embobj includes
@@ -98,7 +99,7 @@ using namespace std;
 
 class EthSender;
 class EthReceiver;
-class ethResource;
+//class ethResource;
 // acemor-03oct
 #if defined(WIP_UNIFIED_STATS)
 class ethStatistics;
@@ -234,7 +235,7 @@ public:
      *  @param  ep  The desired EndPoint
      *  @return Pointer to the class, casted to a portable void type. The user must cast it to the correct, expected type like eoMotionControl ecc..
      */
-    IethResource * getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
+    IethResource * getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32);
 
 #if 0
     /*! @fn     ethFeature_t getFeatInfoFromEP(eOnvEP_t ep);

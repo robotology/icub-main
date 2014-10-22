@@ -173,7 +173,7 @@ bool embObjVirtualAnalogSensor::initialised()
     return opened;
 }
 
-bool embObjVirtualAnalogSensor::update(eOnvID32_t id32, double timestamp, void *rxdata)
+bool embObjVirtualAnalogSensor::update(eOprotID32_t id32, double timestamp, void *rxdata)
 {
     return true;
 }

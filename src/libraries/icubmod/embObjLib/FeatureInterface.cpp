@@ -25,18 +25,18 @@
 
 static TheEthManager *_interface2ethManager = NULL;
 
-void initCallback(void *p)
+void feat_Initialise(void *ethman)
 {
     if(_interface2ethManager == NULL )
     {
-        _interface2ethManager = (TheEthManager*) p;
+        _interface2ethManager = (TheEthManager*) ethman;
     }
 }
 
-fakestdbool_t addEncoderTimeStamp(FEAT_boardnumber_t boardnum, eOprotID32_t id32)
+fakestdbool_t feat_addEncoderTimeStamp(FEAT_boardnumber_t boardnum, eOprotID32_t id32)
 {
-    //void *p = _interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32));
-    IethResource* ier = _interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32));
+    //void *p = _interface2ethManager->getHandle(boardnum, id32);
+    IethResource* ier = _interface2ethManager->getHandle(boardnum, id32);
     //embObjMotionControl *mc = dynamic_cast<embObjMotionControl *>(p);
     //embObjMotionControl *mc = static_cast<embObjMotionControl *>(p);
     embObjMotionControl *mc = dynamic_cast<embObjMotionControl *>(ier);
@@ -61,8 +61,8 @@ fakestdbool_t addEncoderTimeStamp(FEAT_boardnumber_t boardnum, eOprotID32_t id32
 
 fakestdbool_t feat_manage_motioncontrol_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void* rxdata)
 {
-    //void *p = _interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32));
-    IethResource* ier = _interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32));
+    //void *p = _interface2ethManager->getHandle(boardnum, id32);
+    IethResource* ier = _interface2ethManager->getHandle(boardnum, id32);
     //IiCubFeature * icubfeatureI = static_cast<IiCubFeature *>(p);
     // marco.accame: does not work if we start from a void* ... getHandle() should return a IiCubFeature*
     // embObjMotionControl *mc = dynamic_cast<embObjMotionControl *>(icubfeatureI);
@@ -88,8 +88,8 @@ fakestdbool_t feat_manage_motioncontrol_data(FEAT_boardnumber_t boardnum, eOprot
 fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *arrayofcanframes)
 {   
     static int error = 0;
-    //void *p = _interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32));
-    IethResource *ier = _interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32));
+    //void *p = _interface2ethManager->getHandle(boardnum, id32);
+    IethResource *ier = _interface2ethManager->getHandle(boardnum, id32);
     //IiCubFeature * icubfeatureI = static_cast<IiCubFeature *>(p);
     // marco.accame: does not work if we start from a void* ... getHandle() should return a IiCubFeature*
     //EmbObjSkin *skin = static_cast<EmbObjSkin *>(p);
@@ -117,17 +117,11 @@ fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id
     return fakestdbool_true;
 }
 
-void* get_MChandler_fromEP(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep)
-{
-    void* h = NULL;
-    h = _interface2ethManager->getHandle(boardnum, ep);
-    return h;
-}
 
 fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *as_array)
 {
-    //void *p = _interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32));
-    IethResource *ier = _interface2ethManager->getHandle(boardnum, eoprot_ID2endpoint(id32));
+    //void *p = _interface2ethManager->getHandle(boardnum, id32);
+    IethResource *ier = _interface2ethManager->getHandle(boardnum, id32);
     //IiCubFeature *icubfeatureI = static_cast<IiCubFeature *>(p);
     //embObjAnalogSensor *sensor = dynamic_cast<embObjAnalogSensor *>(icubfeatureI);
     //embObjAnalogSensor *sensor = static_cast<embObjAnalogSensor *>(p);
@@ -150,10 +144,18 @@ fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprot
     return fakestdbool_true;
 }
 
-fakestdbool_t MCmutex_post(void *p, uint32_t prognum)
+
+void* feat_MC_handler_get(FEAT_boardnumber_t boardnum, eOprotID32_t id32)
+{
+    void* h = NULL;
+    h = _interface2ethManager->getHandle(boardnum, id32);
+    return h;
+}
+
+fakestdbool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
 {
     eoThreadEntry *th = NULL;
-    IethResource *ier = static_cast<IethResource*>(p);
+    IethResource *ier = static_cast<IethResource*>(mchandler);
     embObjMotionControl *mc = dynamic_cast<embObjMotionControl *>(ier);
 
     if(NULL == mc)

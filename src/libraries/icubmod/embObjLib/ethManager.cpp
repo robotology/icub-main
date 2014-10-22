@@ -290,8 +290,10 @@ bool TheEthManager::removeLUTelement(ethFeature_t &element)
     return ret;
 }
 
-IethResource * TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep)
+IethResource * TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32)
 {
+    eOprotEndpoint_t ep = eoprot_ID2endpoint(id32);
+
 //     lock(); // marco.accame: found already commented. see why
     IethResource * ret = NULL;
     static int _error = 0;
@@ -490,7 +492,7 @@ TheEthManager *TheEthManager::instance()
         if (NULL == handle)
             yError() << "While calling EthManager constructor";
         else
-            initCallback((void*)handle);
+            feat_Initialise(static_cast<void*>(handle));
     }
     managerMutex.post();
 

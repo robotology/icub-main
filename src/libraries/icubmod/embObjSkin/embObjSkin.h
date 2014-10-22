@@ -38,7 +38,7 @@
 #include <ethResource.h>
 #include "EoUtilities.h"
 #include "FeatureInterface.h"
-#include "FeatureInterface_hid.h"   // marco.accame: actually it contains definition of class IiCubFeature, thus IiCubFeature.h would be better
+#include "IethResource.h"
 #include "SkinConfigReader.h"
 
 using namespace yarp::os;
@@ -137,7 +137,7 @@ public:
 #endif
 
     virtual bool    initialised();
-    virtual bool    update(eOnvID32_t id32, double timestamp, void *rxdata);
+    virtual bool    update(eOprotID32_t id32, double timestamp, void *rxdata);
 
 };
 

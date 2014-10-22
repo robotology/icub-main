@@ -694,7 +694,7 @@ bool EmbObjSkin::initialised()
     return opened;
 }
 
-bool EmbObjSkin::update(eOnvID32_t id32, double timestamp, void *rxdata)
+bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
 {
     uint8_t           msgtype = 0;
     uint8_t           i, triangle = 0;

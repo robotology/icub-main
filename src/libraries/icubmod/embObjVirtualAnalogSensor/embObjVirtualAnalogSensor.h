@@ -16,9 +16,8 @@
 #include <hostTransceiver.hpp>
 #include <yarp/dev/IVirtualAnalogSensor.h>
 #include <ethManager.h>
-#include "FeatureInterface.h"       // Interface with embObj world (callback)
-#include "FeatureInterface_hid.h"   // marco.accame: actually it contains definition of class IiCubFeature, thus IiCubFeature.h would be better
-
+#include "FeatureInterface.h"
+#include "IethResource.h"
 #include "Debug.h"
 
 
@@ -71,7 +70,7 @@ public:
     bool close();
 
     virtual bool initialised();
-    virtual bool update(eOnvID32_t id32, double timestamp, void *rxdata);
+    virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
 
     // IvirtualAnalogSensor interface
     virtual int getState(int ch);

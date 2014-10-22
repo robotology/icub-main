@@ -832,7 +832,7 @@ int embObjAnalogSensor::calibrateChannel(int ch, double v)
     return AS_OK;
 }
 
-bool embObjAnalogSensor::update(eOnvID32_t id32, double timestamp, void* rxdata)
+bool embObjAnalogSensor::update(eOprotID32_t id32, double timestamp, void* rxdata)
 {
     bool ret;
 

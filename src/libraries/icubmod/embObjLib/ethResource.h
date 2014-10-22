@@ -48,8 +48,8 @@
 // embobjlib includes
 
 #include "hostTransceiver.hpp"
-//#include "debugFunctions.h"
 #include "FeatureInterface.h"
+#include "IethResource.h"
 
 // embobj includes
 #include "EoProtocol.h"
@@ -59,27 +59,6 @@
 #include <ace/ACE.h>
 #include <ace/config.h>
 #include <ace/SOCK_Dgram_Bcast.h>
-
-
-
-// marco.accame on 20 oct 2014.
-// the objects which use ethResource to communicate with the ethernet boards inside the robot
-// must be derived from this class IethResource.
-// these objects are: embObjMotionControl, embObjSkin, embObjAnalogSensor, embObjVirtualAnalogSensor, and future ones.
-// these object must implement the virtual functions initialised() and update() so that:
-// - initialised() must return true only if the object is opened (its method open() has returned).
-// - update() takes care of filling private data structures with bytes contained in the relevant ROPs coming from remote boards.
-// the name of the class is IethResource because this class acts as an interface from ethResource which is the one which
-// manages decoding of received UDP packets and calls the callbacks of the EOnv which in turn call IethResource::update().
-
-class IethResource
-{
-    public:
-        virtual ~IethResource() {};
-
-        virtual bool initialised() = 0;
-        virtual bool update(eOnvID32_t id32, double timestamp, void *rxdata) = 0;
-};
 
 
 typedef struct

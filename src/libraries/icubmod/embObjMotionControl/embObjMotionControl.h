@@ -78,7 +78,7 @@ using namespace std;
 #include <ethResource.h>
 #include "../embObjLib/hostTransceiver.hpp"
 // #include "IRobotInterface.h"
-#include "FeatureInterface_hid.h"   // marco.accame: actually it contains definition of class IiCubFeature, thus IiCubFeature.h would be better
+#include "IethResource.h"
 #include "eoRequestsQueue.hpp"
 #include "EoMotionControl.h"
 
@@ -390,7 +390,7 @@ public:
     bool fromConfig(yarp::os::Searchable &config);
 
     virtual bool initialised();
-    virtual bool update(eOnvID32_t id32, double timestamp, void *rxdata);
+    virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
 
     eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
     void refreshEncoderTimeStamp(int joint);

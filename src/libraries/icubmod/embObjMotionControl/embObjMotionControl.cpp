@@ -1539,7 +1539,7 @@ eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint32_t protoid)
 }
 
 
-bool embObjMotionControl::update(eOnvID32_t id32, double timestamp, void *rxdata)
+bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxdata)
 {
     // use this function to update the values cached in the class using data received by the remote boards via the network callbacks
     // in embObjMotionControl it is updated only the timestamp of the encoders, thuus i dont used rxdata

@@ -37,9 +37,9 @@ typedef uint8_t FEAT_boardnumber_t;     // boards are numbered in range [1, maxn
 enum { FEAT_boardnumber_dummy = 0xff};
 
 
-void initCallback(void *p);
+void feat_Initialise(void *ethman);
 
-fakestdbool_t addEncoderTimeStamp(FEAT_boardnumber_t boardnum, eOprotID32_t id32);
+fakestdbool_t feat_addEncoderTimeStamp(FEAT_boardnumber_t boardnum, eOprotID32_t id32);
 
 fakestdbool_t feat_manage_motioncontrol_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void* rxdata);
 
@@ -48,9 +48,9 @@ fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id
 fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *as_array);
 
 // requires boardnum in range [1, max] as used by cpp objects
-void * get_MChandler_fromEP(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
+void * feat_MC_handler_get(FEAT_boardnumber_t boardnum, eOprotID32_t id32);
 
-fakestdbool_t MCmutex_post(void * p, uint32_t prognum);
+fakestdbool_t feat_MC_mutex_post(void * mchandler, uint32_t prognum);
 
 // it converts the protocol board number with range [0, max-1] into the range used by cpp object [1, max]
 FEAT_boardnumber_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum);
