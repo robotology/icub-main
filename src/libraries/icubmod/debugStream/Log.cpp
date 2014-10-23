@@ -165,7 +165,7 @@ void yarp::os::Log::print_output(LogType t,
         if (verbose_output) {
             std::cerr << WHITE << RED_BG << "F" << CLEAR << ": " << file << ":" << line << " " << WHITE << RED_BG << func << CLEAR << ": " << msg << std::endl;
         } else {
-            std::cerr << WHITE << RED_BG << "FATAL" << CLEAR << ": " << msg << std::endl;
+            std::cerr << "["<< WHITE << RED_BG << "FATAL" << CLEAR << "]" << msg << std::endl;
         }
         yarp::os::exit(-1);
         break;
