@@ -18,13 +18,7 @@
 #include <yarp/os/Os.h>
 #include <yarp/os/LogStream.h>
 
-
 #define YARP_MAX_LOG_MSG_SIZE 512
-
-
-std::ofstream yarp::os::Log::ftrc;
-std::ofstream yarp::os::Log::fout;
-std::ofstream yarp::os::Log::ferr;
 
 #ifndef WIN32
 
@@ -53,6 +47,10 @@ std::ofstream yarp::os::Log::ferr;
 
 #endif // WIN32
 
+std::ofstream yarp::os::Log::ftrc;
+std::ofstream yarp::os::Log::fout;
+std::ofstream yarp::os::Log::ferr;
+
 bool yarp::os::Log::colored_output(getenv("ICUB_COLORED_OUTPUT") && (strcmp(yarp::os::getenv("ICUB_COLORED_OUTPUT"), "1") == 0));
 bool yarp::os::Log::verbose_output(getenv("ICUB_VERBOSE_OUTPUT") && (strcmp(yarp::os::getenv("ICUB_VERBOSE_OUTPUT"), "1") == 0));
 bool yarp::os::Log::trace_output(getenv("ICUB_TRACE_ENABLE") && (strcmp(yarp::os::getenv("ICUB_TRACE_ENABLE"), "1") == 0));
@@ -66,6 +64,7 @@ yarp::os::Log::Log(const char *file,
         func(func)
 {
 }
+
 yarp::os::Log::Log() :
         file(NULL),
         line(0),

@@ -28,6 +28,7 @@
 # define __YFUNCTION__ "(unknown function)"
 #endif // __GNUC__
 
+
 namespace yarp {
 namespace os {
 
@@ -38,14 +39,6 @@ class YARP_OS_API Log
 {
 public:
 
-    enum LogType {
-        TraceType,
-        DebugType,
-        InfoType,
-        WarningType,
-        ErrorType,
-        FatalType
-    };
 
     Log(const char *file,
                   const unsigned int line,
@@ -82,10 +75,19 @@ public:
     static void setErrorFile(const std::string &filename);
 
 private:
+
+    enum LogType {
+        TraceType,
+        DebugType,
+        InfoType,
+        WarningType,
+        ErrorType,
+        FatalType
+    };
+
     const char *file;
     const unsigned int line;
     const char *func;
-
 
     static void print_output(LogType t,
                              const char *msg,
@@ -117,11 +119,12 @@ private:
     friend class LogStream;
 
 #ifndef YARP_NO_DEPRECATED
-    YARP_DEPRECATED virtual void debug(const ConstString& txt) const {}; ///< \deprecated since YARP 2.3.64
-    YARP_DEPRECATED virtual void info(const ConstString& txt) const {}; ///< \deprecated since YARP 2.3.64
-    YARP_DEPRECATED virtual void warning(const ConstString& txt) const {}; ///< \deprecated since YARP 2.3.64
-    YARP_DEPRECATED virtual void error(const ConstString& txt) const {}; ///< \deprecated since YARP 2.3.64
-    YARP_DEPRECATED virtual void fail(const ConstString& txt) const {}; ///< \deprecated since YARP 2.3.64
+public:
+    YARP_DEPRECATED virtual void debug(const ConstString& txt) const; ///< \deprecated since YARP 2.3.64
+    YARP_DEPRECATED virtual void info(const ConstString& txt) const; ///< \deprecated since YARP 2.3.64
+    YARP_DEPRECATED virtual void warning(const ConstString& txt) const; ///< \deprecated since YARP 2.3.64
+    YARP_DEPRECATED virtual void error(const ConstString& txt) const; ///< \deprecated since YARP 2.3.64
+    YARP_DEPRECATED virtual void fail(const ConstString& txt) const; ///< \deprecated since YARP 2.3.64
 #endif // YARP_NO_DEPRECATED
 
 }; // class Log
