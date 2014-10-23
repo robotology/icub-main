@@ -5,12 +5,22 @@
 SET(PROJECTNAME debugStream)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS})
-add_library(${PROJECTNAME} yarp/os/Log.h
+
+if(YARP_IS_SHARED_LIBRARY)
+    set(_type SHARED)
+else()
+    set(_type STATIC)
+endif()
+
+add_library(${PROJECTNAME} ${_type}
+                           yarp/os/Log.h
                            yarp/os/LogStream.h
                            Log.cpp)
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES})
-icub_export_library(${PROJECTNAME})
+# Temporary hack in order to enable dllexport on WIN32 using YARP_OS_API
+set_target_properties(${PROJECTNAME} PROPERTIES COMPILE_DEFINITIONS YARP_OS_EXPORTS)
 
+icub_export_library(${PROJECTNAME})
 
 add_executable(${PROJECTNAME}_test test.cpp)
 target_link_libraries(${PROJECTNAME}_test ${PROJECTNAME})
