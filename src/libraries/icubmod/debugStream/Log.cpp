@@ -181,7 +181,7 @@ void yarp::os::Log::trace(const char *msg, ...) const
     va_start(args, msg);
     if (msg) {
         char buf[YARP_MAX_LOG_MSG_SIZE];
-        vsprintf(buf, msg, args); //@@@ this should be preplaced with snprintf when available
+        vsprintf(buf, msg, args); // FIXME this should be preplaced with vsnprintf when available
         print_output(yarp::os::Log::TraceType, buf, file, line, func);
     }
     va_end(args);
@@ -199,7 +199,7 @@ void yarp::os::Log::debug(const char *msg, ...) const
     va_start(args, msg);
     if (msg) {
         char buf[YARP_MAX_LOG_MSG_SIZE];
-        vsprintf(buf, msg, args); //@@@ this should be preplaced with snprintf when available
+        vsprintf(buf, msg, args); // FIXME this should be preplaced with vsnprintf when available
         print_output(yarp::os::Log::DebugType, buf, file, line, func);
     }
     va_end(args);
@@ -217,7 +217,7 @@ void yarp::os::Log::info(const char *msg, ...) const
     va_start(args, msg);
     if (msg) {
         char buf[YARP_MAX_LOG_MSG_SIZE];
-        vsprintf(buf, msg, args); //@@@ this should be preplaced with snprintf when available
+        vsprintf(buf, msg, args); // FIXME this should be preplaced with vsnprintf when available
         print_output(yarp::os::Log::InfoType, buf, file, line, func);
     }
     va_end(args);
@@ -235,7 +235,7 @@ void yarp::os::Log::warning(const char *msg, ...) const
     va_start(args, msg);
     if (msg) {
         char buf[YARP_MAX_LOG_MSG_SIZE];
-        vsprintf(buf, msg, args); //@@@ this should be preplaced with snprintf when available
+        vsprintf(buf, msg, args); // FIXME this should be preplaced with vsnprintf when available
         print_output(yarp::os::Log::WarningType, buf, file, line, func);
     }
     va_end(args);
@@ -253,7 +253,7 @@ void yarp::os::Log::error(const char *msg, ...) const
     va_start(args, msg);
     if (msg) {
         char buf[YARP_MAX_LOG_MSG_SIZE];
-        vsprintf(buf, msg, args); //@@@ this should be preplaced with snprintf when available
+        vsprintf(buf, msg, args); // FIXME this should be preplaced with vsnprintf when available
         print_output(yarp::os::Log::ErrorType, buf, file, line, func);
     }
     va_end(args);
@@ -272,7 +272,7 @@ void yarp::os::Log::fatal(const char *msg, ...) const
     va_start(args, msg);
     if (msg) {
         char buf[YARP_MAX_LOG_MSG_SIZE];
-        vsprintf(buf, msg, args); //@@@ this should be preplaced with snprintf when available
+        vsprintf(buf, msg, args); // FIXME this should be preplaced with vsnprintf when available
         print_output(yarp::os::Log::FatalType, buf, file, line, func);
     }
     va_end(args);
