@@ -228,6 +228,10 @@ bool hostTransceiver::nvSetData(const EOnv *nv, const void *dat, eObool_t forces
 bool hostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32_t signature, bool writelocalrxcache)
 {
     eOresult_t eores = eores_NOK_generic;
+    int32_t err = -1;
+    int32_t info0 = -1;
+    int32_t info1 = -1;
+    int32_t info2 = -1;
 
     if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
     {
@@ -299,6 +303,10 @@ bool hostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32
             eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
             yWarning() << "(!!)-> hostTransceiver::addSetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD" << protboardnumber+1 << "unsuccessful at attempt num " << i+1 <<
                           "with id: " << nvinfo;
+
+            eo_transceiver_lasterror_tx_Get(pc104txrx, &err, &info0, &info1, &info2);
+            yWarning() << "(!!)-> hostTransceiver::addSetMessage__(): eo_transceiver_lasterror_tx_Get() detected: err=" << err << "infos = " << info0 << info1 << info2;
+
             yarp::os::Time::delay(delayAfterROPloadingFailure);
         }
         else
@@ -343,6 +351,10 @@ bool hostTransceiver::addSetMessageWithSignature(eOprotID32_t protid, uint8_t* d
 bool hostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
 {
     eOresult_t eores = eores_NOK_generic;
+    int32_t err = -1;
+    int32_t info0 = -1;
+    int32_t info1 = -1;
+    int32_t info2 = -1;
 
     if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
     {
@@ -379,6 +391,10 @@ bool hostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
             eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
             yWarning() << "(!!)-> hostTransceiver::addGetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD" << protboardnumber+1 << "unsuccessfull at attempt num " << i+1 <<
                           "with id: " << nvinfo;
+
+            eo_transceiver_lasterror_tx_Get(pc104txrx, &err, &info0, &info1, &info2);
+            yWarning() << "(!!)-> hostTransceiver::addGetMessage__(): eo_transceiver_lasterror_tx_Get() detected: err=" << err << "infos = " << info0 << info1 << info2;
+
             yarp::os::Time::delay(delayAfterROPloadingFailure);
         }
         else
