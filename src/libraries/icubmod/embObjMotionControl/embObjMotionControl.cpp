@@ -1703,7 +1703,7 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
     if(-1 == tt->synch() )
     {
         int threadId;
-        yError () << "getPid timed out for board"<< _fId.boardNumber << " joint " << j;
+        yError () << "embObjMotionControl::getPidRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
 
         if(requestQueue->threadPool->getId(&threadId))
             requestQueue->cleanTimeouts(threadId);
@@ -2465,7 +2465,7 @@ bool embObjMotionControl::getStatusBasic_withWait(const int n_joint, const int *
         if(-1 == tt[idx]->synch() )
         {
             int threadId;
-            yError () << "getStatusBasic_withWait timed out for board "<< _fId.boardNumber << " joint " << joints[idx];
+            yError () << "embObjMotionControl::getStatusBasic_withWait() timed out the wait of reply from BOARD" <<  _fId.boardNumber << " joint " << joints[idx];
 
             if(requestQueue->threadPool->getId(&threadId))
                 requestQueue->cleanTimeouts(threadId);
@@ -2896,7 +2896,7 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     if(-1 == tt->synch() )
     {
         int threadId;
-        printf("\n\n-----------------------\nTIMEOUT for joint %d\n-----------------------\n", j); //yError () << "ask request timed out, joint " << j;
+        yError () << "embObjMotionControl::getLimitsRaw() timed out the wait of reply from BOARD" <<  _fId.boardNumber << " joint " << j;
 
         if(requestQueue->threadPool->getId(&threadId))
             requestQueue->cleanTimeouts(threadId);
@@ -3066,7 +3066,7 @@ bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
     if(-1 == tt->synch() )
     {
         int threadId;
-        yError () << "getRefTorque timed out, joint " << j;
+        yError () << "embObjMotionControl::getRefTorqueRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint" << j;
 
         if(requestQueue->threadPool->getId(&threadId))
             requestQueue->cleanTimeouts(threadId);
@@ -3147,7 +3147,8 @@ bool embObjMotionControl::getTorquePidRaw(int j, Pid *pid)
     if(-1 == tt->synch() )
     {
         int threadId;
-        yError () << "get Torque Pid timed out, joint " << j;
+        yError () << "embObjMotionControl::getTorquePidRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
 
         if(requestQueue->threadPool->getId(&threadId))
             requestQueue->cleanTimeouts(threadId);
@@ -3205,7 +3206,7 @@ bool embObjMotionControl::getWholeImpedanceRaw(int j, eOmc_impedance_t &imped)
     if(-1 == tt->synch() )
     {
         int threadId;
-        yError () << "getImpedance timed out, joint " << j << "for board " << _fId.boardNumber;
+        yError () << "embObjMotionControl::getWholeImpedanceRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
 
         if(requestQueue->threadPool->getId(&threadId))
             requestQueue->cleanTimeouts(threadId);
@@ -3293,14 +3294,75 @@ bool embObjMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, 
 
 bool embObjMotionControl::getBemfParamRaw(int j, double *bemf)
 {
-    #warning -> marco.accame: add code to get value of variable eoprot_tag_mc_joint_config_bemf
+#if 0
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_bemf);
+
+    // Sign up for waiting the reply
+
+    eoThreadEntry *tt = appendWaitRequest(j, id32);
+    tt->setPending(1);
+
+    if(!res->addGetMessage(id32) )
+    {
+        yError() << "embObjMotionControl::getBemfParamRaw() could not send get message for BOARD" << _fId.boardNumber << "joint " << j;
+        return false;
+    }
+
+    // wait here
+    if(-1 == tt->synch() )
+    {
+        int threadId;
+        yError () << "embObjMotionControl::getBemfParamRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if(requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_bemf_t eobemf = {0};
+    res->readBufferedValue(id32, (uint8_t *)&eobemf, &size);
+
+    yWarning() << "embObjMotionControl::getBemfParamRaw() is temporarily obtaining bemf converting from int16_t to double: TODO: find out correct conversion.";
+
+    #warning -> marco.accame: the double bemf is now just casted from int16_t. TODO: find out correct conversion.
+
+    *bemf = (double)eobemf.value;
+
+    return true;
+
+#else
+    #warning -> marco.accame: in embObjMotionControl::getBemfParamRaw() uncomment code to get value of variable eoprot_tag_mc_joint_config_bemf
     return NOT_YET_IMPLEMENTED("getBemfParamRaw");
+#endif
 }
 
 bool embObjMotionControl::setBemfParamRaw(int j, double bemf)
 {
-    #warning -> marco.accame: add code to set value of variable eoprot_tag_mc_joint_config_bemf
+#if 0
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_bemf);
+    eOmc_bemf_t eobemf = {0};
+
+    #warning -> marco.accame: the bemf is now just casted as an int16_t. TODO: find out correct conversion.
+    eobemf.value    = (int16_t)bemf;
+    eobemf.offset   = 0;
+    eobemf.dummy    = 0;
+
+    yWarning() << "embObjMotionControl::setBemfParamRaw() is temporarily converting bemf from double to int16_t: TODO: find out correct conversion.";
+
+    if(!res->addSetMessage(id32, (uint8_t *) &eobemf))
+    {
+        yError() << "embObjMotionControl::setBemfParamRaw() could not send set message for BOARD" << _fId.boardNumber << "joint " << j;
+        return false;
+    }
+
+    return true;
+
+#else
+    #warning -> marco.accame: in embObjMotionControl::setBemfParamRaw() uncomment code to set value of variable eoprot_tag_mc_joint_config_bemf
     return NOT_YET_IMPLEMENTED("setBemfParamRaw");
+#endif
 }
 
 bool embObjMotionControl::setTorqueErrorLimitRaw(int j, double limit)
@@ -3469,7 +3531,7 @@ bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const i
         if(-1 == tt[idx]->synch() )
         {
             int threadId;
-            yError () << "getInteractionMode_withWait timed out for board "<< _fId.boardNumber << " joint " << joints[idx];
+            yError () << "embObjMotionControl::getInteractionMode_withWait() timed out the reply from BOARD "<< _fId.boardNumber << " joint " << joints[idx];
 
             if(requestQueue->threadPool->getId(&threadId))
                 requestQueue->cleanTimeouts(threadId);
