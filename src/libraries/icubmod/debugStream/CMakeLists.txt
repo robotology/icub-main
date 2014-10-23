@@ -18,7 +18,10 @@ add_library(${PROJECTNAME} ${_type}
                            Log.cpp)
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES})
 # Temporary hack in order to enable dllexport on WIN32 using YARP_OS_API
-set_target_properties(${PROJECTNAME} PROPERTIES COMPILE_DEFINITIONS YARP_OS_EXPORTS)
+set_target_properties(${PROJECTNAME} PROPERTIES COMPILE_DEFINITIONS YARP_OS_EXPORTS
+                                                RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+                                                LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
+                                                ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
 icub_export_library(${PROJECTNAME})
 
