@@ -2148,7 +2148,7 @@ void MotorThread::goHomeHelper(ActionPrimitives *action, const Vector &xin, cons
     ctrl->setTrajTime(default_exec_time);
 
     ctrl->goToPoseSync(xin,oin);
-    ctrl->waitMotionDone();
+    ctrl->waitMotionDone(0.1,reachingTimeout);
 
     ctrl->restoreContext(context);
     ctrl->deleteContext(context);
