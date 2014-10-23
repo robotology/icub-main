@@ -153,7 +153,7 @@ public:
 /**
  * Low level function for printing a stack trace, if implemented (gcc/Linux).
  *
- * \deprecated
+ * \deprecated since YARP 2.3.64
  */
 YARP_OS_API YARP_DEPRECATED void yarp_print_trace(FILE *out, const char *file, int line);
 
@@ -186,7 +186,7 @@ YARP_OS_API YARP_DEPRECATED bool yarp_show_debug(); ///< \deprecated since YARP 
 /**
  * \deprecated since YARP 2.3.64
  */
-#define YARP_LOG_DEBUG(x) __yarp_debug(x) ///< \deprecated
+#define YARP_LOG_DEBUG(x) __yarp_debug(x)
 
 #endif // YARP_NO_DEPRECATED
 
