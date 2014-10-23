@@ -92,7 +92,7 @@ void yarp::os::Log::print_output(LogType t,
             if (verbose_output) {
                 std::cout << WHITE << "T" << CLEAR << ": " << file << ":" << line << " " << WHITE << func << CLEAR << ": " << msg << std::endl;
             } else {
-                std::cout << WHITE << "TRACE" << CLEAR << ": " << func << msg << std::endl;
+                std::cout << "[" << WHITE << "TRACE" << CLEAR << "]" << func << msg << std::endl;
             }
         }
         break;
