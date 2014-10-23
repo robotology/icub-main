@@ -14,6 +14,10 @@ set(ICUB_COMPILE_EMBOBJ_LIBRARY OFF CACHE INTERNAL "use the embObjLib lib" FORCE
 project(icubmod)
 
 add_subdirectory(debugStream)
+# debugStream must be before YARP to use the "new" yarp/os/Log.h until
+# it is moved to YARP, therefore it is included here for all the icubmod
+# modules
+include_directories(${CMAKE_SOURCE_DIR}/src/libraries/icubmod/debugStream)
 
 option (ICUB_EOPROT_MN_VERSION_1_0 "use OFF unless you want test old mode" OFF)
 mark_as_advanced (ICUB_EOPROT_MN_VERSION_1_0)

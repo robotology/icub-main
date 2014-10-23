@@ -77,7 +77,6 @@ include_directories(
                             ${iCubDev_INCLUDE_DIRS}
                             ${YARP_INCLUDE_DIRS}
                             ${icub_firmware_shared_embobj_INCLUDE_DIR}
-                            ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/debugStream/
                             )
   
 add_executable(${PROJECTNAME}       ${DEMO_BOARD_SOURCE}
