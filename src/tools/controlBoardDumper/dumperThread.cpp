@@ -126,6 +126,8 @@ boardDumperThread::boardDumperThread():RateThread(500)
     amp      = 0;
     lim      = 0;
     trq      = 0;
+    cmod     = 0;
+    imod     = 0;
     idbg     = 0;
     logFile  = 0;
     logToFile = false;
