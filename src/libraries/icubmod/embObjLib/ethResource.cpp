@@ -35,10 +35,6 @@ ethResources::ethResources()
     lastRecvMsgTimestamp        = -1.0;
     isInRunningMode             = false;
     infoPkts                    = new infoOfRecvPkts();
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-    inforx                      = new infoOfRecvPkts();
-#endif
     objLock                     = new Semaphore(1);
     networkQuerySem             = new Semaphore(0);
     isbusyNQsem                 = new Semaphore(1);
@@ -64,10 +60,6 @@ ethResources::~ethResources()
     // marco.accame on 11sept14: in here we must surely deinit/delete what we have created/initted in teh constructor and in open() or init()
 
     delete infoPkts;
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-    delete inforx;
-#endif
     delete objLock;
     delete networkQuerySem;
     delete isbusyNQsem;
@@ -99,18 +91,10 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
     if(cfgtotal.findGroup("GENERAL").find("verbose").asBool())
     {
         infoPkts->_verbose = true;
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-        inforx->_verbose = true;
-#endif
     }
     else
     {
         infoPkts->_verbose = false;
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-        inforx->_verbose = false;
-#endif
     }
 
 
@@ -135,11 +119,6 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
 
 
     infoPkts->setBoardNum(boardNum);
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-    inforx->setBoardNum(boardNum);
-#endif
-
 
     unlock();
 

@@ -370,13 +370,6 @@ TheEthManager::TheEthManager()
     starttime = yarp::os::Time::now();
 }
 
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-ethStatistics* TheEthManager::getEthStatistics(void)
-{
-    return ethStats;
-}
-#endif
 
 EthSender* TheEthManager::getEthSender(void)
 {
@@ -704,11 +697,6 @@ void EthSender::run()
     uint16_t      numofrops = 0;
     ethResRIt     riterator, _rBegin, _rEnd;
 
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-ethStatistics* ethstats = ethManager->getEthStatistics();
-#endif
-
 
     /*
         Usare un reverse iterator per scorrere la lista dalla fine verso l'inizio. Questo aiuta a poter scorrere
@@ -741,22 +729,10 @@ ethStatistics* ethstats = ethManager->getEthStatistics();
         {
             ACE_INET_Addr addr = ethRes->getRemoteAddress();
             int ret = ethManager->send(p_sendData, (size_t)bytes_to_send, addr);
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-            ethstats->tickTX(ethRes, bytes_to_send, numofrops);
-#endif
         }
 
     }
 
-
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-    if(true == ethstats->isReportTime())
-    {
-        ethstats->report(this, ethManager->getEthReceiver());
-    }
-#endif
 }
 
 
@@ -1360,94 +1336,6 @@ void EthReceiver::run()
     return;
 }
 
-#endif
-
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-
-
-
-// -------------------------------------------------------------------\\
-//            ethStatistics
-// -------------------------------------------------------------------\\
-
-// marco.accame on 03 oct 2014:
-// this class is just a coordinator of functionalities offered by other objects.
-// its aim is to coordinate the gathering of statistics of tx and rx.
-
-ethStatistics::ethStatistics(double period)
-{
-    reportPeriod        = period;
-    timeofLastReport    = yarp::os::Time::now();
-    lock                = new Semaphore(1);
-}
-
-
-ethStatistics::~ethStatistics()
-{
-    delete lock;
-}
-
-
-bool ethStatistics::tickTX(ethResources* res, int pktsize, int numofrops)
-{
-
-
-    return true;
-}
-
-bool ethStatistics::tickRX(ethResources* res, int pktsize, int numofrops)
-{
-
-
-    return true;
-}
-
-
-bool ethStatistics::isReportTime(void)
-{
-    double timenow = yarp::os::Time::now();
-
-    if((timenow - timeofLastReport) > reportPeriod)
-    {
-        return true;
-    }
-}
-
-
-bool ethStatistics::report(EthSender* sender, EthReceiver* receiver)
-{
-    double timenow = yarp::os::Time::now();
-
-    timeofLastReport = timenow;
-
-
-
-    // compute stats of all ethresources and print and reset.
-
-    // 1. sender ...
-    double avPeriod, stdPeriod;
-    double avThTime, stdTime;
-
-    sender->getEstUsed(avThTime, stdTime);
-    sender->getEstPeriod(avPeriod, stdPeriod);
-
-    unsigned int it = sender->getIterations();
-
-    char string[128] = {0};
-    snprintf(string, sizeof(string), "  (STATS-TX)-> EthSender::run() thread run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n",
-                            it,
-                            avPeriod, stdPeriod,
-                            avThTime, stdTime);
-    yDebug() << string;
-
-    sender->resetStat();
-
-    // 2. receiver: one each all the ethresources.
-
-
-    return true;
-}
 #endif
 
 
