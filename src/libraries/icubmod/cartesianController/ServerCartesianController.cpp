@@ -1261,7 +1261,7 @@ bool ServerCartesianController::areJointsHealthyAndSet(VectorOf<int> &jointsToSe
     int chainCnt=0;
 
     jointsToSet.clear();
-    for (int i=0; i<numDrv; i++)
+    for (int i=0; (i<numDrv) && ctrlModeAvailable; i++)
     {
         lMod[i]->getControlModes(modes.getFirst());
         for (int j=0; j<lJnt[i]; j++)
@@ -1410,7 +1410,7 @@ Bottle ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
         if (++k>=lJnt[j])
         {
             if (joints.size()>0)
-                lVel[j]->velocityMove(joints.size(),joints.getFirst(),vels.data());
+                static_cast<IVelocityControl2*>(lVel[j])->velocityMove(joints.size(),joints.getFirst(),vels.data());
 
             joints.clear();
             vels.clear();
@@ -1561,7 +1561,7 @@ void ServerCartesianController::run()
         VectorOf<int> jointsToSet;
         jointsHealthy=areJointsHealthyAndSet(jointsToSet);
         if (!jointsHealthy)
-            stopControlHelper();        
+            stopControlHelper();
 
         string event="none";
 
@@ -2017,6 +2017,12 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
     int remainingJoints=chainState->getN();
 
+    ctrlModeAvailable=true;
+    encTimedEnabled=true;
+    pidAvailable=true;
+    posDirectAvailable=true;
+    multipleJointsVelAvailable=true;
+
     for (int i=0; i<numDrv; i++)
     {
         printf("Acquiring info on driver %s... ",lDsc[i].key.c_str());
@@ -2034,7 +2040,6 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         }
 
         // acquire interfaces and driver's info
-        encTimedEnabled=pidAvailable=posDirectAvailable=true;
         if (drivers[j]->poly->isValid())
         {
             printf("ok\n");
@@ -2044,19 +2049,24 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             IEncodersTimed    *ent;
             IPidControl       *pid;
             IControlLimits    *lim;
-            IVelocityControl2 *vel;
+            IVelocityControl  *vel;
+            IVelocityControl2 *vel2;
             IPositionDirect   *pos;
             IPositionControl  *stp;
             int                joints;
-
-            drivers[j]->poly->view(mod);
+            
             drivers[j]->poly->view(enc);
             drivers[j]->poly->view(lim);
+
+            ctrlModeAvailable&=drivers[j]->poly->view(mod);
+            
             drivers[j]->poly->view(vel);
-            drivers[j]->poly->view(stp);
+            multipleJointsVelAvailable&=drivers[j]->poly->view(vel2);
+
             encTimedEnabled&=drivers[j]->poly->view(ent);
             pidAvailable&=drivers[j]->poly->view(pid);
             posDirectAvailable&=drivers[j]->poly->view(pos);
+            posDirectAvailable&=drivers[j]->poly->view(stp);
 
             enc->getAxes(&joints);
 
@@ -2091,12 +2101,13 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             lEnc.push_back(enc);
             lEnt.push_back(ent);
             lPid.push_back(pid);
-            lLim.push_back(lim);
-            lVel.push_back(vel);
+            lLim.push_back(lim);            
             lPos.push_back(pos);
             lStp.push_back(stp);
             lJnt.push_back(joints);
             lRmp.push_back(rmpTmp);
+            lVel.push_back(multipleJointsVelAvailable?
+                           static_cast<IVelocityControl*>(vel2):vel);
         }
         else
         {
@@ -2104,6 +2115,9 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             return false;
         }
     }
+
+    printf("%s: IControlMode2 %s\n",ctrlName.c_str(),
+           ctrlModeAvailable?"available":"not available");
 
     printf("%s: %s interface will be used\n",ctrlName.c_str(),
            encTimedEnabled?"IEncodersTimed":"IEncoders");
@@ -2114,10 +2128,16 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     printf("%s: IPositionDirect %s\n",ctrlName.c_str(),
            posDirectAvailable?"available":"not available");
 
+    printf("%s: IVelocityControl2 %s\n",ctrlName.c_str(),
+           multipleJointsVelAvailable?"available":"not available");
+
     posDirectEnabled&=posDirectAvailable;
     printf("%s: %s interface will be used\n",ctrlName.c_str(),
-           posDirectEnabled?"IPositionDirect":"IVelocityControl");
+           posDirectEnabled?"IPositionDirect":
+           (multipleJointsVelAvailable?"IVelocityControl2":"IVelocityControl"));
 
+    if (!posDirectEnabled)
+        multipleJointsControlEnabled&=multipleJointsVelAvailable; 
     printf("%s: %s control will be used\n",ctrlName.c_str(),
            multipleJointsControlEnabled?"multiple joints":"single joint");
 
