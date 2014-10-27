@@ -119,6 +119,15 @@ public:
   ITorqueControl *itrq;
 };
 
+class GetTrqRefs : public GetData
+{
+public:
+  void setInterface (ITorqueControl *);
+  virtual bool getData(double *);
+
+  ITorqueControl *itrq;
+};
+
 class GetRotorPosition : public GetData
 {
 public:

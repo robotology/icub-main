@@ -200,6 +200,23 @@ bool GetTrqErrs::getData(double *e)
     return 0;
 }
 
+void GetTrqRefs::setInterface(ITorqueControl *i)
+{
+    itrq = i;
+}
+
+bool GetTrqRefs::getData(double *e)
+{
+  //fprintf(stderr, "Entering getTrqRefs\n");
+  if (itrq)
+    {
+        itrq->getRefTorques(e);
+      return 1;
+    }
+  else
+    return 0;
+}
+
 void GetRotorPosition::setInterface(IDebugInterface *i)
 {
     idbg = i;
