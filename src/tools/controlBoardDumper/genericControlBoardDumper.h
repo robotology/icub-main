@@ -110,6 +110,26 @@ public:
   ITorqueControl *itrq;
 };
 
+class GetControlModes : public GetData
+{
+public:
+  void setInterface (IControlMode2 *, int joints);
+  virtual bool getData(double *);
+
+  IControlMode2 *icmd;
+  int nj;
+};
+
+class GetInteractionModes : public GetData
+{
+public:
+  void setInterface (IInteractionMode *, int joints);
+  virtual bool getData(double *);
+
+  IInteractionMode *iint;
+  int nj;
+};
+
 class GetTrqErrs : public GetData
 {
 public:

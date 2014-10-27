@@ -34,14 +34,16 @@ void boardDumperThread::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int 
 
     //getter = NULL;
 
-    bool ok;
-    ok  = board_d->view(pos);
+    bool ok=true;
+    ok &= board_d->view(pos);
     ok &= board_d->view(vel);
     ok &= board_d->view(enc);
     ok &= board_d->view(pid);
     ok &= board_d->view(amp);
     ok &= board_d->view(lim);
     ok &= board_d->view(trq);
+    ok &= board_d->view(cmod);
+    ok &= board_d->view(imod);
     if(debug_d->isValid())
         ok &= debug_d->view(idbg);
 
