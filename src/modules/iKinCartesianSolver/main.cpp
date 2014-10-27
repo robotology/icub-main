@@ -283,9 +283,8 @@ public:
             ResourceFinder rf_kin;
             rf_kin.setVerbose(true);
             rf_kin.setDefaultContext(rf.getContext().c_str());
-            rf_kin.setDefault("customKinFile",group.find("customKinFile").asString().c_str());
             rf_kin.configure(0,NULL);
-            pathToCustomKinFile=rf_kin.findFile("customKinFile").c_str();
+            pathToCustomKinFile=rf_kin.findFileByName(group.find("customKinFile").asString()).c_str();
 
             slv=new CustomCartesianSolver(slvName);
         }

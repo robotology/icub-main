@@ -1920,8 +1920,15 @@ bool ServerCartesianController::open(Searchable &config)
         limbState=new iCubLeg(kinType.c_str());
     else if (optGeneral.check("customKinFile"))     // custom kinematics case
     {
+        ResourceFinder rf_kin;
+        rf_kin.setVerbose(true);
+        if (optGeneral.check("customKinContext"))
+            rf_kin.setDefaultContext(optGeneral.find("customKinContext").asString().c_str()); 
+        rf_kin.configure(0,NULL);
+        string pathToCustomKinFile=rf_kin.findFileByName(optGeneral.find("customKinFile").asString()).c_str();
+
         Property linksOptions;
-        linksOptions.fromConfigFile(optGeneral.find("customKinFile").asString().c_str());
+        linksOptions.fromConfigFile(pathToCustomKinFile.c_str());
 
         limbState=new iKinLimb(linksOptions);
         if (!limbState->isValid())
