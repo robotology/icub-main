@@ -188,7 +188,7 @@ public:
         RateThread::suspend();
 
         mutex.lock();
-        state="hap";
+        state="neu";
         send();
         mutex.unlock();
     }
