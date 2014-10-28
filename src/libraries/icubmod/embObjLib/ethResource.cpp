@@ -24,6 +24,8 @@ using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
+// marco.accame: define it only for debugging robotInterface w/out boards
+// #define ETHRES_DEBUG_DONTREADBACK
 
 // - class ethResources
 
@@ -242,7 +244,7 @@ bool ethResources::goToConfig(void)
     }
 
 
-    // marco.accame: thi code is correct and verifies that the board goes to config. however, it requires FW version >= 1.45, thus so far i keep it commented out 
+    // marco.accame: thi code is correct and verifies that the board goes to config. however, it requires FW version >= 1.45, thus so far i keep it commented out
     // todo: change the eOmn_appl_status_t so that it has a FW version of the application, a build date, and a string name (the same info whcoih gives ethLoader)
  #if 0
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
@@ -280,7 +282,7 @@ bool ethResources::goToRun(void)
 
     // marco.accame: the code is correct and verifies that the board goes to run. however, it requires FW version >= 1.45, thus so far i keep it commented out
     // todo: change the eOmn_appl_status_t so that it has a FW version of the application, a build date, and a string name (the same info whcoih gives ethLoader)
-#if 0 
+#if 0
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
     eOmn_appl_status_t status = {0};
     status.currstate = applstate_running;
@@ -310,7 +312,11 @@ double  ethResources::getLastRecvMsgTimestamp(void)
 
 bool ethResources::clearRegulars(bool verify)
 {
-    yTrace() << info;
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+    yWarning() << "(!!)-> ethResources::clearRegulars() is in ETHRES_DEBUG_DONTREADBACK mode";
+    // execute but force verify to false
+    verify = false;
+#endif
 
     uint16_t numberofregulars = 0;
     if(true == verify)
@@ -336,14 +342,14 @@ bool ethResources::clearRegulars(bool verify)
     cmdconfig.opcpar.plustime       = 0;
     cmdconfig.opcpar.plussign       = 0;
     cmdconfig.opcpar.dummy01        = 0;
-    cmdconfig.opcpar.signature      = eo_rop_SIGNATUREdummy;       
+    cmdconfig.opcpar.signature      = eo_rop_SIGNATUREdummy;
 
- 
+
     // send set command
 
     if(!addSetMessage(IDcmdconfig, (uint8_t*) &cmdconfig))
     {
-        yError() << "in clearing periodic signal msg";
+        yError() << "ethResources::clearRegulars(): call of addSetMessage() has failed";
         return false;
     }
 
@@ -381,7 +387,7 @@ bool ethResources::clearRegulars(bool verify)
 
 bool ethResources::isRunning(void)
 {
-	return(isInRunningMode);
+    return(isInRunningMode);
 }
 
 Semaphore* ethResources::startNetworkQuerySession(eOprotID32_t id32, uint32_t signature)
@@ -445,6 +451,13 @@ bool ethResources::stopNetworkQuerySession(Semaphore* sem)
 
 bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 {
+
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+    yWarning() << "(!!)-> ethResources::verifyBoardTransceiver() is in ETHRES_DEBUG_DONTREADBACK mode";
+    verifiedBoardTransceiver = true;
+    return true;
+#endif
+
     if(verifiedBoardTransceiver)
     {
         return(true);
@@ -685,6 +698,13 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
         return(false);
     }
 
+
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+    verifiedEPprotocol[ep] =  true;
+    yWarning() << "(!!)-> ethResources::verifyEPprotocol() is in ETHRES_DEBUG_DONTREADBACK mode";
+    return true;
+#endif
+
     // 1. send a set<eoprot_tag_mn_comm_cmmnds_command_queryarray> and wait for the arrival of a sig<eoprot_tag_mn_comm_cmmnds_command_replyarray>
     //    the opc to send is eomn_opc_query_array_EPdes which will trigger a opc in reception eomn_opc_reply_array_EPdes
     // 2. the resulting array will contains a eoprot_endpoint_descriptor_t item for the specifeid ep with the protocol version of the ems.
@@ -840,6 +860,13 @@ bool ethResources::verifyBoard(yarp::os::Searchable &protconfig)
 
 bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 {
+
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+    yWarning() << "(!!)-> ethResources::verifyBoardPresence() is in ETHRES_DEBUG_DONTREADBACK mode";
+    verifiedBoardPresence =  true;
+    return true;
+#endif
+
     if(verifiedBoardPresence)
     {
         return(true);
@@ -926,6 +953,12 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 
 bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber)
 {
+
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+    yWarning() << "(!!)-> ethResources::verifyENTITYnumber() is in ETHRES_DEBUG_DONTREADBACK mode";
+    return true;
+#endif
+
     if(false == verifyEPprotocol(protconfig, ep))
     {
         yError() << "ethResources::verifyENTITYnumber() cannot even verify protocol in BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
@@ -1070,6 +1103,13 @@ bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_e
 
 bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
 {
+
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+    yWarning() << "(!!)-> ethResources::addRegulars() is in ETHRES_DEBUG_DONTREADBACK mode";
+    verify = false;
+    // return true; // uncomment to avoid sending command
+#endif
+
     const double delaybetweentransmissions = 0.010; // 10 ms
 
     eOmn_cmd_config_t cmdconfig     = {0};
@@ -1198,6 +1238,12 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
 
 bool ethResources::numberofRegulars(uint16_t &numberofregulars)
 {
+
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+    yWarning() << "(!!)-> ethResources::numberofRegulars() is in ETHRES_DEBUG_DONTREADBACK mode and always gives back 0";
+    return true;
+#endif
+
     const double timeout = 0.100; // 100 ms
 
     uint16_t size = 0;
@@ -1251,7 +1297,7 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
     const int retries = 10;
     bool replied = false;
     bool numberisreceived = false;
-    int i = 0; // must be in here because it count the number of attempts
+    int i = 0; // must be in here because it counts the number of attempts
     // the semaphore used for waiting for replies from the board
     eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replynumof);
     yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, 0);
@@ -1355,6 +1401,11 @@ bool ethResources::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, u
             continue;
         }
 
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+        yWarning() << "(!!)-> ethResources::setRemoteValueUntilVerified() is in ETHRES_DEBUG_DONTREADBACK";
+        return true;
+#endif
+
         // ok, now i wait some time before asking the value back for verification
         Time::delay(waitbeforeverification);
 
@@ -1398,6 +1449,12 @@ bool ethResources::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, u
 // must: 1. be sure we have the callback written and configured, 2. that the callback releases the sem (maybe if a suitable signature is found).
 bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout, int retries)
 {
+
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+        yWarning() << "(!!)-> ethResources::verifyRemoteValue() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not verify";
+        return true;
+#endif
+
     eOprotBRD_t brd = get_protBRDnumber();
     char nvinfo[128];
     eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
@@ -1672,7 +1729,7 @@ void infoOfRecvPkts::setBoardNum(int boardnum)
 }
 
 void infoOfRecvPkts::printStatistics(void)
-{   
+{
     yDebug() << "  (STATS-RX)-> BOARD " << board << ":" << receivedPackets << "ropframes have been received by EthReceiver() in this period";
 
     if(0 == receivedPackets)
@@ -1870,6 +1927,9 @@ void infoOfRecvPkts::forceReport(void)
 
 
 // eof
+
+
+
 
 
 
