@@ -12,11 +12,7 @@
     <devices file="hardware/motorControl/head-cfw2_can0-mc.xml" />
     <devices file="wrappers/motorControl/head-mc_wrapper.xml" />
 
-    <!-- TORSO -->
-    <devices file="hardware/motorControl/torso-ems5-mc.xml" />
-    <devices file="wrappers/motorControl/torso-mc_wrapper.xml" />
-
-    <!-- LEFT ARM -->
+      <!-- LEFT ARM -->
     <devices file="hardware/motorControl/left_upper_arm-ems1-mc.xml" />
     <devices file="hardware/motorControl/left_lower_arm-ems2-mc.xml" />
     <devices file="wrappers/motorControl/left_arm-mc_wrapper.xml" /> 
@@ -35,7 +31,6 @@
     <!-- VIRTUAL ANALOG SENSORS (WRAPPER ONLY-->
     <devices file="wrappers/VFT/left_arm-VFT_wrapper.xml" /> 
     <devices file="wrappers/VFT/right_arm-VFT_wrapper.xml" /> 
-    <devices file="wrappers/VFT/torso-VFT_wrapper.xml" /> 
 
     <!-- ANALOG SENSOR MAIS -->
     <devices file="wrappers/MAIS/left_hand-mais_wrapper.xml" /> 
