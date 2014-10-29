@@ -21,12 +21,13 @@
 <param name="calibrationType">                    3          3       3       3          0         0            </param>
 <param name="calibration1">                       2047.5     2047.5  2047.5  2047.5     900.0     900.0        </param>
 <param name="calibration2">                       10.0       10.0    10.0    10.0       20.0      20.0         </param>
-<param name="calibration3">                       3642.5     3213.5  3789.5  3763.5     0.0       0.0          </param>
+<param name="calibration3">                       1719.5     81.5    323.5   1814.5     0.0       0.0          </param>
 <param name="positionZero">                       0.0        0.0     0.0     0.0        0.0       0.0          </param>
 <param name="velocityZero">                       10.0       10.0    10.0    10.0       10.0      10.0         </param>
 <param name="maxPwm">                             130        130     0       0          0         0            </param>
 <param name="posZeroThreshold">                   2          2       2       2          2         2            </param>
 </group>
+
 
  <!-- check old calibrator for the correct sequence, then ask to Randazz -->
         <param name="CALIB_ORDER"> (0 1 2) (3) (4) (5) </param>
