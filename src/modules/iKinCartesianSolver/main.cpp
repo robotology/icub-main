@@ -96,7 +96,6 @@ robot part:
 [left_arm]
 robot           my-robot
 name            cartesianSolver/left_arm 
-customKinFile   cartesian/kinematics.ini 
 period          20
 dof             (0 0 0 1 1 1 1)
 rest_pos        (0.0 0.0 0.0 0.0 0.0 0.0 0.0)
@@ -110,6 +109,7 @@ xyzTol          0.000001
 interPoints     off 
 ping_robot_tmo  20.0 
  
+CustomKinFile   cartesian/kinematics.ini 
 NumberOfDrivers 2 
 driver_0        (Key torso)    (JointsOrder reversed) 
 driver_1        (Key left_arm) (JointsOrder direct) 
@@ -276,7 +276,7 @@ public:
             return false;
         }
 
-        if (group.check("customKinFile"))
+        if (group.check("CustomKinFile"))
         {
             cout<<"Custom Cartesian Solver detected!"<<endl;
 
@@ -284,7 +284,7 @@ public:
             rf_kin.setVerbose(true);
             rf_kin.setDefaultContext(rf.getContext().c_str());
             rf_kin.configure(0,NULL);
-            pathToCustomKinFile=rf_kin.findFileByName(group.find("customKinFile").asString()).c_str();
+            pathToCustomKinFile=rf_kin.findFileByName(group.find("CustomKinFile").asString()).c_str();
 
             slv=new CustomCartesianSolver(slvName);
         }
