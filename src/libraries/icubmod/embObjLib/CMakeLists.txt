@@ -254,7 +254,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
 
 #add_dependencies(${PROJECTNAME} eBcode-download)
-TARGET_LINK_LIBRARIES(${PROJECTNAME} debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES} )  
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
 
 icub_export_library(${PROJECTNAME})
 
