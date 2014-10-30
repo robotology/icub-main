@@ -195,7 +195,7 @@ public:
     * @note The input bottle should look like this: 
     * ((key1 (value11 value12 ...) (key2 (value21 value22 ...) (key3 (value31 value32 ...))
     */
-    static bool getVectorFromOption(yarp::os::Bottle &options, const char *key, yarp::sig::Vector &val, int &size);
+    static bool getVectorFromOption(const yarp::os::Bottle &options, const char *key, yarp::sig::Vector &val, int &size);
 };
 
 

@@ -1541,15 +1541,13 @@ bool ActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &poss
 /************************************************************************/
 bool ActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &sequence)
 {
-    Bottle &bSeq=const_cast<Bottle&>(sequence);
-
-    if (!bSeq.check("numWayPoints"))
+    if (!sequence.check("numWayPoints"))
     {
         printMessage("WARNING: \"numWayPoints\" option is missing\n");
         return false;
     }
 
-    int numWayPoints=bSeq.find("numWayPoints").asInt();
+    int numWayPoints=sequence.find("numWayPoints").asInt();
     bool ret=false;
 
     for (int j=0; j<numWayPoints; j++)
@@ -1557,7 +1555,7 @@ bool ActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &s
         ostringstream wp;
         wp<<"wp_"<<j;
 
-        Bottle &bWP=bSeq.findGroup(wp.str().c_str());
+        Bottle &bWP=sequence.findGroup(wp.str().c_str());
         if (bWP.isNull())
         {
             printMessage("WARNING: \"%s\" entry is missing\n",wp.str().c_str());

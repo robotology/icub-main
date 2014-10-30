@@ -3796,21 +3796,19 @@ bool ServerCartesianController::setSolverConvergenceOptions(const Bottle &option
 /************************************************************************/
 bool ServerCartesianController::tweakSet(const Bottle &options)
 {
-    Bottle &opt=const_cast<Bottle&>(options);
     mutex.lock();
-
     bool ret=true;
 
     // straightness
-    if (opt.check("straightness"))
-        ctrl->set_gamma(opt.find("straightness").asDouble());
+    if (options.check("straightness"))
+        ctrl->set_gamma(options.find("straightness").asDouble());
 
     // secondary task
-    if (opt.check("task_2"))
-        ret&=setTask2ndOptions(opt.find("task_2"));
+    if (options.check("task_2"))
+        ret&=setTask2ndOptions(options.find("task_2"));
 
     // solver convergence options
-    if (opt.check("max_iter") || opt.check("tol") || opt.check("translationalTol"))
+    if (options.check("max_iter") || options.check("tol") || options.check("translationalTol"))
         ret&=setSolverConvergenceOptions(options);
 
     mutex.unlock();

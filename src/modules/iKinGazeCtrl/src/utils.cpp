@@ -408,7 +408,7 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
 
     if (!_rf.isConfigured())
         return false;
-    
+
     string message=_rf.findFile("from").c_str();
     if (!message.empty())
     {

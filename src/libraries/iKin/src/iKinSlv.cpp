@@ -315,8 +315,7 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
 /************************************************************************/
 PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
 {    
-    Property &options=const_cast<Property&>(partOpt);
-    string partName=options.find("part").asString().c_str();
+    string partName=partOpt.find("part").asString().c_str();
     PolyDriver *pDrv=NULL;
 
     double t0=Time::now();
@@ -324,7 +323,7 @@ PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
     {
         delete pDrv;
 
-        pDrv=new PolyDriver(options);
+        pDrv=new PolyDriver(const_cast<Property&>(partOpt));
         bool ok=pDrv->isValid();
 
         printf("%s: Checking if %s part is active ... ",
@@ -972,10 +971,8 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
             //-----------------
             case IKINSLV_VOCAB_CMD_ASK:
             {
-                Bottle &options=const_cast<Bottle&>(command);
-            
-                Bottle *b_xd=getTargetOption(options);
-                Bottle *b_q=getJointsOption(options);
+                Bottle *b_xd=getTargetOption(command);
+                Bottle *b_q=getJointsOption(command);
             
                 // some integrity checks
                 if (b_xd==NULL)
@@ -1008,9 +1005,9 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                     getFeedback();  // otherwise get the current configuration
             
                 // account for the pose 
-                if (options.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
+                if (command.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
                 {
-                    int pose=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab();
+                    int pose=command.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab();
             
                     if (pose==IKINSLV_VOCAB_VAL_POSE_FULL)
                         slv->set_ctrlPose(IKINCTRL_POSE_FULL);
@@ -1189,9 +1186,9 @@ void CartesianSolver::printInfo(const string &typ, const Vector &xd,
 
     printf("\n");
     printf("   Request type       = %s\n",typ.c_str());
-    printf("  Target rxPose   [m] = %s\n",const_cast<Vector&>(xd).toString().c_str());
-    printf("  Target txPose   [m] = %s\n",const_cast<Vector&>(_x).toString().c_str());
-    printf("Target txJoints [deg] = %s\n",const_cast<Vector&>(q).toString().c_str());
+    printf("  Target rxPose   [m] = %s\n",xd.toString().c_str());
+    printf("  Target txPose   [m] = %s\n",_x.toString().c_str());
+    printf("Target txJoints [deg] = %s\n",q.toString().c_str());
     printf("  norm(rxPose-txPose) = pos [m]: %g\n",getNorm(e,"pos"));
     if (ctrlPose==IKINCTRL_POSE_FULL)
     printf("                        ang [*]: %g\n",getNorm(e,"ang"));

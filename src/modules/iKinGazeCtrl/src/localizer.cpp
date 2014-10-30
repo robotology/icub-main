@@ -166,10 +166,9 @@ void Localizer::setPidOptions(const Bottle &options)
     mutex.lock();
 
     pid->setOptions(options);
-    Bottle &opt=const_cast<Bottle&>(options);
-    if (opt.check("dominantEye"))
+    if (options.check("dominantEye"))
     {
-        string domEye=opt.find("dominantEye").asString().c_str();
+        string domEye=options.find("dominantEye").asString().c_str();
         if ((domEye=="left") || (domEye=="right"))
             dominantEye=domEye;
     }

@@ -42,8 +42,7 @@ using namespace iCub::perception;
 /************************************************************************/
 bool SpringyFinger::fromProperty(const Property &options)
 {
-    Property &opt=const_cast<Property&>(options);
-    if (!opt.check("name"))
+    if (!options.check("name"))
         return false;
 
     sensors.clear();
@@ -51,7 +50,7 @@ bool SpringyFinger::fromProperty(const Property &options)
     neighbors.clear();
     lssvm.reset();
 
-    name=opt.find("name").asString().c_str();
+    name=options.find("name").asString().c_str();
 
     scaler.setLowerBoundIn(0.0);
     scaler.setUpperBoundIn(255.0);
@@ -76,19 +75,19 @@ bool SpringyFinger::fromProperty(const Property &options)
     else
         return false;    
 
-    calibratingVelocity=opt.check("calib_vel",Value(defaultCalibVel)).asDouble();
-    outputGain=opt.check("output_gain",Value(1.0)).asDouble();
-    calibrated=(opt.check("calibrated",Value("false")).asString()=="true");
+    calibratingVelocity=options.check("calib_vel",Value(defaultCalibVel)).asDouble();
+    outputGain=options.check("output_gain",Value(1.0)).asDouble();
+    calibrated=(options.check("calibrated",Value("false")).asString()=="true");
 
-    if (opt.check("scaler"))
+    if (options.check("scaler"))
     {
-        Bottle *pB=opt.find("scaler").asList();
+        Bottle *pB=options.find("scaler").asList();
         scaler.fromString(pB->toString().c_str());
     }
 
-    if (opt.check("lssvm"))
+    if (options.check("lssvm"))
     {
-        Bottle *pB=opt.find("lssvm").asList();
+        Bottle *pB=options.find("lssvm").asList();
         lssvm.fromString(pB->toString().c_str());
     }
 
@@ -230,12 +229,10 @@ bool SpringyFinger::getOutput(Value &out) const
 /************************************************************************/
 bool SpringyFinger::calibrate(const Property &options)
 {
-    Property &opt=const_cast<Property&>(options);
-
-    if (opt.check("reset"))
+    if (options.check("reset"))
         lssvm.reset();
 
-    if (opt.check("feed"))
+    if (options.check("feed"))
     {
         Vector in,out;
         if (extractSensorsData(in,out))
@@ -250,7 +247,7 @@ bool SpringyFinger::calibrate(const Property &options)
             return false;
     }
 
-    if (opt.check("train"))
+    if (options.check("train"))
     {
         lssvm.train();
         calibrated=true;
@@ -290,8 +287,7 @@ int SpringyFingersModel::printMessage(const int level, const char *format, ...) 
 /************************************************************************/
 bool SpringyFingersModel::fromProperty(const Property &options)
 {
-    Property &opt=const_cast<Property&>(options);
-    if (!opt.check("name") || !opt.check("type"))
+    if (!options.check("name") || !options.check("type"))
     {
         printMessage(1,"missing mandatory options \"name\" and/or \"type\"\n");
         return false;
@@ -300,11 +296,11 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     if (configured)
         close();
 
-    name=opt.find("name").asString().c_str();
-    type=opt.find("type").asString().c_str();
-    robot=opt.check("robot",Value("icub")).asString().c_str();
-    carrier=opt.check("carrier",Value("udp")).asString().c_str();
-    verbosity=opt.check("verbosity",Value(0)).asInt();
+    name=options.find("name").asString().c_str();
+    type=options.find("type").asString().c_str();
+    robot=options.check("robot",Value("icub")).asString().c_str();
+    carrier=options.check("carrier",Value("udp")).asString().c_str();
+    verbosity=options.check("verbosity",Value(0)).asInt();
 
     string part_motor=string(type+"_arm");
     string part_analog=string(type+"_hand");
@@ -383,11 +379,11 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     }
 
     printMessage(1,"configuring fingers ...\n");
-    Property thumb(opt.findGroup("thumb").toString().c_str());
-    Property index(opt.findGroup("index").toString().c_str());
-    Property middle(opt.findGroup("middle").toString().c_str());
-    Property ring(opt.findGroup("ring").toString().c_str());
-    Property little(opt.findGroup("little").toString().c_str());
+    Property thumb(options.findGroup("thumb").toString().c_str());
+    Property index(options.findGroup("index").toString().c_str());
+    Property middle(options.findGroup("middle").toString().c_str());
+    Property ring(options.findGroup("ring").toString().c_str());
+    Property little(options.findGroup("little").toString().c_str());
 
     bool fingers_ok=true;
     fingers_ok&=fingers[0].fromProperty(thumb);
@@ -545,8 +541,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
         }
 
         printMessage(1,"proceeding with the calibration\n");
-        Property &opt=const_cast<Property&>(options);
-        string tag=opt.check("finger",Value("all")).asString().c_str();
+        string tag=options.check("finger",Value("all")).asString().c_str();
         if (tag=="thumb")
         {
             calibrateFinger(fingers[0],10,qmin[10],qmax[10]);
