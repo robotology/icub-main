@@ -155,15 +155,9 @@ yarp connect /icub/right_arm/state:o /jointVel/pos:i
 \author Ugo Pattacini
 */ 
 
-#include <iostream>
-#include <iomanip>
 #include <string>
 
-#include <yarp/os/Network.h>
-#include <yarp/os/RFModule.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/Stamp.h>
-#include <yarp/os/Time.h>
+#include <yarp/os/all.h>
 #include <yarp/sig/Vector.h>
 
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
@@ -266,25 +260,25 @@ public:
 
         if (NVel<2)
         {
-            cout<<"Warning: lenVel cannot be lower than 2 => N=2 is assumed"<<endl;
+            yWarning()<<"lenVel cannot be lower than 2 => N=2 is assumed";
             NVel=2;
         }
 
         if (NAcc<3)
         {
-            cout<<"Warning: lenAcc cannot be lower than 3 => N=3 is assumed"<<endl;
+            yWarning()<<"lenAcc cannot be lower than 3 => N=3 is assumed";
             NAcc=3;
         }
 
         if (DVel<0.0)
         {
-            cout<<"Warning: thrVel cannot be lower than 0.0 => D=0.0 is assumed"<<endl;
+            yWarning()<<"thrVel cannot be lower than 0.0 => D=0.0 is assumed";
             DVel=0.0;
         }
 
         if (DAcc<0.0)
         {
-            cout<<"Warning: thrAcc cannot be lower than 0.0 => D=0.0 is assumed"<<endl;
+            yWarning()<<"thrAcc cannot be lower than 0.0 => D=0.0 is assumed";
             DAcc=0.0;
         }
 
@@ -332,12 +326,12 @@ int main(int argc, char *argv[])
 
     if (rf.check("help"))
     {
-        cout<<"Options:"<<endl<<endl;
-        cout<<"\t--name   name: observer port name (default /velObs)"               <<endl;
-        cout<<"\t--lenVel    N: velocity window's max length (default: 16)"         <<endl;
-        cout<<"\t--thrVel    D: velocity max deviation threshold (default: 1.0)"    <<endl;
-        cout<<"\t--lenAcc    N: acceleration window's max length (default: 25)"     <<endl;
-        cout<<"\t--thrAcc    D: acceleration max deviation threshold (default: 1.0)"<<endl;
+        yInfo()<<"Options:";
+        yInfo()<<"\t--name   name: observer port name (default /velObs)";
+        yInfo()<<"\t--lenVel    N: velocity window's max length (default: 16)";
+        yInfo()<<"\t--thrVel    D: velocity max deviation threshold (default: 1.0)";
+        yInfo()<<"\t--lenAcc    N: acceleration window's max length (default: 25)";
+        yInfo()<<"\t--thrAcc    D: acceleration max deviation threshold (default: 1.0)";
 
         return 0;
     }
@@ -345,7 +339,7 @@ int main(int argc, char *argv[])
     Network yarp;
     if (!yarp.checkNetwork())
     {
-        cout<<"YARP server not available!"<<endl;
+        yError()<<"YARP server not available!";
         return -1;
     }
 
