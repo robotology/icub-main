@@ -335,8 +335,8 @@ public:
 
         mouth.configure(rf);
 
-        printf("iSpeak wraps around \"%s\" speech synthesizer\n",package.c_str());
-        printf("starting command-line options: \"%s\"\n",package_options.c_str());
+        yInfo("iSpeak wraps around \"%s\" speech synthesizer",package.c_str());
+        yInfo("starting command-line options: \"%s\"",package_options.c_str());
     }
     
     /************************************************************************/
@@ -449,7 +449,7 @@ int main(int argc, char *argv[])
     Network yarp;
     if (!yarp.checkNetwork())
     {
-        printf("YARP server not available!\n");
+        yError("YARP server not available!");
         return -1;
     }
 
