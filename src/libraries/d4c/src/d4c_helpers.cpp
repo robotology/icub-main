@@ -25,7 +25,7 @@ using namespace yarp::sig;
 
 
 /************************************************************************/
-bool extractVector(Property &prop, const string &option, Vector &res)
+bool extractVector(const Property &prop, const string &option, Vector &res)
 {
     if (prop.check(option.c_str()))
     {

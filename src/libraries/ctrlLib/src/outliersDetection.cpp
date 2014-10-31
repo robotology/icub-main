@@ -152,11 +152,10 @@ set<size_t> ModifiedThompsonTau::detect(const Vector &data, const Property &opti
     double stdev=0.0;
     size_t N=data.length()-recurIdx.size();
 
-    Property &opt=const_cast<Property&>(options);
-    if (opt.check("mean") && opt.check("std"))
+    if (options.check("mean") && options.check("std"))
     {
-        mean=opt.find("mean").asDouble();
-        stdev=opt.find("std").asDouble();
+        mean=options.find("mean").asDouble();
+        stdev=options.find("std").asDouble();
     }
     else
     {
@@ -177,7 +176,7 @@ set<size_t> ModifiedThompsonTau::detect(const Vector &data, const Property &opti
 
     size_t i_check;
     double delta_check=0.0;
-    if (opt.check("sorted"))
+    if (options.check("sorted"))
     {
         // don't account for recursive outliers
         size_t i_1,i_n;
@@ -236,7 +235,7 @@ set<size_t> ModifiedThompsonTau::detect(const Vector &data, const Property &opti
         res.insert(i_check);
 
         // recursive computation
-        if (opt.check("recursive"))
+        if (options.check("recursive"))
         {
             // extend the set of current outliers
             recurIdx.insert(i_check);

@@ -18,7 +18,7 @@ PREPARE_DEVICE(embObjMotionControl TYPE embObjMotionControl
 
 #    yarp_add_plugin(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h usrcbk/eOcfg_nvsEP_mc_usrcbk_pippo.c )
     yarp_add_plugin(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h)
-    TARGET_LINK_LIBRARIES(embObjMotionControl debugStream ethResources iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES})
+    TARGET_LINK_LIBRARIES(embObjMotionControl ethResources iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES})
     icub_export_library(embObjMotionControl)
 ENDIF (NOT SKIP_embObjMotionControl)
 

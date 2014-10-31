@@ -52,18 +52,16 @@ Item::Item()
 /************************************************************************/
 bool Item::fromProperty(const Property &options)
 {
-    Property &opt=const_cast<Property&>(options);
+    if (options.check("name"))
+        name=options.find("name").asString().c_str();    
 
-    if (opt.check("name"))
-        name=opt.find("name").asString().c_str();    
+    if (options.check("active"))
+        active=options.find("active").asString()=="on";    
 
-    if (opt.check("active"))
-        active=opt.find("active").asString()=="on";    
-
-    extractVector(opt,"center",center);
-    extractVector(opt,"orientation",orientation);
-    extractVector(opt,"radius",radius);
-    extractVector(opt,"color",color);
+    extractVector(options,"center",center);
+    extractVector(options,"orientation",orientation);
+    extractVector(options,"radius",radius);
+    extractVector(options,"color",color);
 
     return true;
 }
@@ -72,15 +70,10 @@ bool Item::fromProperty(const Property &options)
 /************************************************************************/
 Property Item::toProperty() const
 {
-    Vector &_center=const_cast<Vector&>(center);
-    Vector &_orientation=const_cast<Vector&>(orientation);
-    Vector &_radius=const_cast<Vector&>(radius);
-    Vector &_color=const_cast<Vector&>(color);
-
-    Value vcenter;      vcenter.fromString(("("+string(_center.toString().c_str())+")").c_str());
-    Value vorientation; vorientation.fromString(("("+string(_orientation.toString().c_str())+")").c_str());
-    Value vradius;      vradius.fromString(("("+string(_radius.toString().c_str())+")").c_str());
-    Value vcolor;       vcolor.fromString(("("+string(_color.toString().c_str())+")").c_str());
+    Value vcenter;      vcenter.fromString(("("+string(center.toString().c_str())+")").c_str());
+    Value vorientation; vorientation.fromString(("("+string(orientation.toString().c_str())+")").c_str());
+    Value vradius;      vradius.fromString(("("+string(radius.toString().c_str())+")").c_str());
+    Value vcolor;       vcolor.fromString(("("+string(color.toString().c_str())+")").c_str());
 
     Property prop;
     prop.put("name",name.c_str());
@@ -111,13 +104,11 @@ bool Target_MSD::fromProperty(const Property &options)
     // call the father's method
     Item::fromProperty(options);
 
-    Property &opt=const_cast<Property&>(options);
+    if (options.check("K"))
+        K=options.find("K").asDouble();
 
-    if (opt.check("K"))
-        K=opt.find("K").asDouble();
-
-    if (opt.check("D"))
-        D=opt.find("D").asDouble();
+    if (options.check("D"))
+        D=options.find("D").asDouble();
 
     return true;
 }
@@ -172,13 +163,11 @@ bool Obstacle_Gaussian::fromProperty(const Property &options)
     // call the father's method
     Item::fromProperty(options);
 
-    Property &opt=const_cast<Property&>(options);
+    if (options.check("G"))
+        G=options.find("G").asDouble();
 
-    if (opt.check("G"))
-        G=opt.find("G").asDouble();
-
-    if (opt.check("cut_tails"))
-        cut_tails=opt.find("cut_tails").asString()=="on";
+    if (options.check("cut_tails"))
+        cut_tails=options.find("cut_tails").asString()=="on";
 
     return true;
 }
@@ -312,14 +301,12 @@ int D4CServer::printMessage(const int level, const char *format, ...) const
 /************************************************************************/
 bool D4CServer::open(const Property &options)
 {
-    Property &opt=const_cast<Property&>(options);
-
-    verbosity=opt.check("verbosity",Value(0)).asInt();
-    device=opt.check("device",Value("cartesiancontrollerclient")).asString().c_str();
-    name=opt.check("name",Value("d4c_server")).asString().c_str();
-    robot=opt.check("robot",Value("icub")).asString().c_str();
-    part=opt.check("part",Value("both_arms")).asString().c_str();
-    offlineMode=opt.check("offline");
+    verbosity=options.check("verbosity",Value(0)).asInt();
+    device=options.check("device",Value("cartesiancontrollerclient")).asString().c_str();
+    name=options.check("name",Value("d4c_server")).asString().c_str();
+    robot=options.check("robot",Value("icub")).asString().c_str();
+    part=options.check("part",Value("both_arms")).asString().c_str();
+    offlineMode=options.check("offline");
 
     if ((part!="right_arm") && (part!="left_arm") && (part!="both_arms"))
     {
@@ -327,7 +314,7 @@ bool D4CServer::open(const Property &options)
         return false;
     }
 
-    period=opt.check("period",Value(20)).asInt();
+    period=options.check("period",Value(20)).asInt();
 
     double Ts=(double)period/1000.0;
 
@@ -463,13 +450,12 @@ void D4CServer::close()
 /************************************************************************/
 Item* D4CServer::itemFactory(const Property &options)
 {
-    Property &opt=const_cast<Property&>(options);
     Item *item=NULL;    
 
-    if (opt.check("type"))
+    if (options.check("type"))
     {
-        string name=opt.check("name",Value("")).asString().c_str();
-        string type=opt.find("type").asString().c_str();
+        string name=options.check("name",Value("")).asString().c_str();
+        string type=options.find("type").asString().c_str();
 
         printMessage(2,"creating \"%s\" of type %s ...\n",name.c_str(),type.c_str());
 
@@ -1217,11 +1203,8 @@ bool D4CServer::getPointState(Vector &x, Vector &o, Vector &xdot, Vector &odot)
         xdot=getVectorPos(this->xdot);
         odot=getVectorOrien(this->xdot);
 
-        Vector &_x=const_cast<Vector&>(this->x);
-        Vector &_xdot=const_cast<Vector&>(this->xdot);
-
         printMessage(1,"point state is x = %s; xdot = %s\n",
-                     _x.toString().c_str(),_xdot.toString().c_str());
+                     x.toString().c_str(),xdot.toString().c_str());
         return true;
     }
     else
@@ -1263,10 +1246,8 @@ bool D4CServer::getSimulation(Vector &xhat, Vector &ohat, Vector &qhat)
             ohat=getVectorOrien(this->xhat);
             qhat=this->qhat;
 
-            Vector &_xhat=const_cast<Vector&>(this->xhat);
-
             printMessage(1,"simulated end-effector pose is xhat = %s; part configuration is qhat = %s\n",
-                         _xhat.toString().c_str(),qhat.toString().c_str());
+                         xhat.toString().c_str(),qhat.toString().c_str());
             return true;
         }
         else

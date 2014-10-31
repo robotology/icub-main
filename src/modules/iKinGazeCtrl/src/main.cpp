@@ -575,8 +575,7 @@ protected:
     /************************************************************************/
     PolyDriver *waitPart(const Property &partOpt, const double ping_robot_tmo)
     {    
-        Property &options=const_cast<Property&>(partOpt);
-        string partName=options.find("part").asString().c_str();
+        string partName=partOpt.find("part").asString().c_str();
         PolyDriver *pDrv=NULL;
 
         double t0=Time::now();
@@ -585,7 +584,7 @@ protected:
             if (pDrv!=NULL)
                 delete pDrv;
 
-            pDrv=new PolyDriver(options);
+            pDrv=new PolyDriver(const_cast<Property&>(partOpt));
             bool ok=pDrv->isValid();
 
             printf("Checking if %s part is active ... ",partName.c_str());
@@ -764,10 +763,9 @@ protected:
     /************************************************************************/
     bool tweakSet(const Bottle &options)
     {
-        Bottle &opt=const_cast<Bottle&>(options);
         savingTweakFile.lock();
 
-        if (Bottle *pB=opt.find("camera_intrinsics_left").asList())
+        if (Bottle *pB=options.find("camera_intrinsics_left").asList())
         {
             Matrix Prj(3,4); Prj=0.0;
             loc->getIntrinsicsMatrix("left",Prj);
@@ -788,7 +786,7 @@ protected:
             doSaveTweakFile=commData.tweakOverwrite;
         }
 
-        if (Bottle *pB=opt.find("camera_intrinsics_right").asList())
+        if (Bottle *pB=options.find("camera_intrinsics_right").asList())
         {
             Matrix Prj(3,4); Prj=0.0;
             loc->getIntrinsicsMatrix("right",Prj);
@@ -810,7 +808,7 @@ protected:
         }
 
         bool doMinAllowedVer=false;
-        if (Bottle *pB=opt.find("camera_extrinsics_left").asList())
+        if (Bottle *pB=options.find("camera_extrinsics_left").asList())
         {
             Matrix HN=eye(4,4);
             loc->getExtrinsicsMatrix("left",HN);
@@ -839,7 +837,7 @@ protected:
             doMinAllowedVer=true;
         }
 
-        if (Bottle *pB=opt.find("camera_extrinsics_right").asList())
+        if (Bottle *pB=options.find("camera_extrinsics_right").asList())
         {
             Matrix HN=eye(4,4);
             loc->getExtrinsicsMatrix("right",HN);

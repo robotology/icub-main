@@ -132,6 +132,7 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 }
 
 
+
 extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     char str[256] = {0};
@@ -152,8 +153,25 @@ extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor
         sec =  msec = usec = 0;
     }
 
-    snprintf(str, sizeof(str), "[INFO]-> mn-info: ropsign = 0x%x, roptime = %04ds+%03dms+%03dus, BOARD = %d: -> info.status.type = %d, info.status.string = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
 
+#if defined(USE_MNINFO_LARGE_STATUS)
+
+    const char * infotype[] =
+    {
+        "eomn_info_type_info",
+        "eomn_info_type_debug",
+        "eomn_info_type_warning",
+        "eomn_info_type_error",
+        "unknown"
+    };
+
+    const char * sss = (infostatus->properties.type > 3) ? (infotype[4]) : (infotype[infostatus->properties.type]);
+
+    snprintf(str, sizeof(str), "[INFO]-> mn-info: ropsign = 0x%x, roptime = %04ds+%03dms+%03dus, BOARD = %d: -> info.status.properties.type = %s, info.status.data = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, sss, infostatus->data);
+
+#else
+    snprintf(str, sizeof(str), "[INFO]-> mn-info: ropsign = 0x%x, roptime = %04ds+%03dms+%03dus, BOARD = %d: -> info.status.type = %d, info.status.string = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
+#endif
     printf("%s\n", str);
     fflush(stdout);
 }

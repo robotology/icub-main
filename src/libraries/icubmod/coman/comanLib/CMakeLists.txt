@@ -19,14 +19,13 @@ if(ICUB_COMPILE_COMAN_LIBRARY )
 	set(handler_SOURCES     comanDevicesHandler.cpp)
 	set(handler_HEADERS     comanDevicesHandler.hpp)
 	
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../../debugStream)
 	include_directories( ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}../ ${robolli_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS}  ${iCubDev_INCLUDE_DIRS})
 
 	set(handler_SOURCES     comanDevicesHandler.cpp)
 	set(handler_HEADERS     comanDevicesHandler.hpp)
 	add_library(${PROJECTNAME} ${handler_SOURCES} ${handler_HEADERS})
         set_target_properties(${PROJECTNAME} PROPERTIES COMPILE_FLAGS "-std=c++0x")
-        target_link_libraries(${PROJECTNAME} ${robolli_LIB} rt debugStream yaml-cpp pthread)
+        target_link_libraries(${PROJECTNAME} ${robolli_LIB} rt yaml-cpp pthread)
 	icub_export_library(${PROJECTNAME} )
 
 #else()

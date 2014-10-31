@@ -305,7 +305,7 @@ library, we also have:
     -[interrupt]: interrupts any action deleting also the action queue for both arms.\n
     -[reinstate]: if the module was interrupted reinstate it.\n
     -[elbow] "left"|"right"|"both" <height> <weight>: to change
-     elbow parameters.
+     elbow parameters. \n
     -[time] <time>: to change default arm movement execution
      time (in seconds).
 

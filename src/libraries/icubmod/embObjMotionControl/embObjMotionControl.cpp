@@ -1739,7 +1739,7 @@ bool embObjMotionControl::getReferenceRaw(int j, double *ref)
     uint16_t size;
     eOmc_joint_status_ofpid_t  tmpJointStatus;
     res->readBufferedValue(protoId, (uint8_t *)&tmpJointStatus, &size);
-    *ref = tmpJointStatus.reference;
+    *ref = tmpJointStatus.positionreference;
     return true;
 }
 
@@ -3040,8 +3040,6 @@ bool embObjMotionControl::setRefTorqueRaw(int j, double t)
     return res->addSetMessage(protid, (uint8_t*) &setpoint);
 }
 
-
-
 bool embObjMotionControl::getRefTorquesRaw(double *t)
 {
     bool ret = true;
@@ -3051,35 +3049,15 @@ bool embObjMotionControl::getRefTorquesRaw(double *t)
 }
 
 bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
-{
-    bool ret;
+{   
 
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    res->addGetMessage(protid);
-
-    // wait here
-    if(-1 == tt->synch() )
-    {
-        int threadId;
-        yError () << "embObjMotionControl::getRefTorqueRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint" << j;
-
-        if(requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
     uint16_t size;
-    eOmc_setpoint_t mysetpoint;
+    eOmc_joint_status_ofpid_t  jstatuspid;
+    res->readBufferedValue(id32, (uint8_t *)&jstatuspid, &size);
+    *t = (double) jstatuspid.torquereference;
+    return true;
 
-    ret = res->readBufferedValue(protid, (uint8_t *)&mysetpoint, &size);
-    *t = (double) mysetpoint.to.torque.value;
-    return ret;
 }
 
 bool embObjMotionControl::setTorquePidRaw(int j, const Pid &pid)
@@ -3771,7 +3749,7 @@ bool embObjMotionControl::getRefOutputRaw(int j, double *out)
     eOmc_joint_status_ofpid_t  tmpJointStatus;
     if(res->readBufferedValue(protoId, (uint8_t *)&tmpJointStatus, &size) )
     {
-        *out = (double) tmpJointStatus.reference;
+        *out = (double) tmpJointStatus.positionreference;
     }
     else
     {

@@ -100,10 +100,7 @@ using namespace std;
 class EthSender;
 class EthReceiver;
 //class ethResource;
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-class ethStatistics;
-#endif
+
 
 typedef std::list<ethResources *>::iterator ethResIt;
 typedef std::list<ethResources *>::reverse_iterator ethResRIt;
@@ -136,10 +133,6 @@ private:
     bool                          emsAlreadyClosed;
     double                        starttime;
 
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-    ethStatistics*                  ethStats;
-#endif
 
     // Data for EMS handling
 public:
@@ -272,10 +265,6 @@ public:
 
     ethResources* GetEthResource(FEAT_boardnumber_t boardnum);
 
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-    ethStatistics* getEthStatistics(void);
-#endif
 
     EthSender* getEthSender(void);
     EthReceiver* getEthReceiver(void);
@@ -359,33 +348,6 @@ public:
 };
 
 
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-
-// -------------------------------------------------------------------\\
-//            ethStatistics
-// -------------------------------------------------------------------\\
-
-class ethStatistics
-{
-
-public:
-
-    ethStatistics(double period);
-    ~ethStatistics();
-    bool tickTX(ethResources* res, int pktsize, int numofrops);
-    bool tickRX(ethResources* res, int pktsize, int numofrops);
-    bool isReportTime(void);
-    bool report(EthSender* sender, EthReceiver* receiver);
-
-private:
-
-    double reportPeriod;
-    double timeofLastReport;
-    yarp::os::Semaphore* lock;
-
-};
-#endif
 
 #endif
 

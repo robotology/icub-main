@@ -70,26 +70,24 @@ int D4CClient::printMessage(const int level, const char *format, ...) const
 /************************************************************************/
 bool D4CClient::open(const Property &options)
 {
-    Property &opt=const_cast<Property&>(options);
-
-    if (opt.check("remote"))
-        remote=opt.find("remote").asString().c_str();
+    if (options.check("remote"))
+        remote=options.find("remote").asString().c_str();
     else
     {
         printMessage(1,"\"remote\" option is mandatory to open the client!\n");
         return false;
     }
 
-    if (opt.check("local"))
-        local=opt.find("local").asString().c_str();
+    if (options.check("local"))
+        local=options.find("local").asString().c_str();
     else
     {
         printMessage(1,"\"local\" option is mandatory to open the client!\n");
         return false;
     }
 
-    carrier=opt.check("carrier",Value("udp")).asString().c_str();
-    verbosity=opt.check("verbosity",Value(0)).asInt();
+    carrier=options.check("carrier",Value("udp")).asString().c_str();
+    verbosity=options.check("verbosity",Value(0)).asInt();
 
     data.open((local+"/data:i").c_str());
     rpc.open((local+"/rpc").c_str());
@@ -856,11 +854,8 @@ bool D4CClient::attachToolFrame(const yarp::sig::Vector &x, const yarp::sig::Vec
             return false;
         }
 
-        Vector &_x=const_cast<Vector&>(x);
-        Vector &_o=const_cast<Vector&>(o);
-
-        Value val_x; val_x.fromString(("("+string(_x.toString().c_str())+")").c_str());
-        Value val_o; val_o.fromString(("("+string(_o.toString().c_str())+")").c_str());
+        Value val_x; val_x.fromString(("("+string(x.toString().c_str())+")").c_str());
+        Value val_o; val_o.fromString(("("+string(o.toString().c_str())+")").c_str());
 
         Property options;
         options.put("x",val_x);

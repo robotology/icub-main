@@ -36,17 +36,16 @@ using namespace iCub::perception;
 /************************************************************************/
 bool TactileFinger::fromProperty(const Property &options)
 {
-    Property &opt=const_cast<Property&>(options);
-    if (!opt.check("name"))
+    if (!options.check("name"))
         return false;
 
     sensors.clear();
     callbacks.clear();
     neighbors.clear();
 
-    name=opt.find("name").asString().c_str();
-    directLogic=(opt.check("logic",Value("direct")).asString()=="direct");
-    outputGain=opt.check("output_gain",Value(1.0)).asDouble();
+    name=options.find("name").asString().c_str();
+    directLogic=(options.check("logic",Value("direct")).asString()=="direct");
+    outputGain=options.check("output_gain",Value(1.0)).asDouble();
 
     if ((name=="thumb") || (name=="index") || (name=="middle") ||
         (name=="ring")  || (name=="little"))
@@ -198,8 +197,7 @@ int TactileFingersModel::printMessage(const int level, const char *format, ...) 
 /************************************************************************/
 bool TactileFingersModel::fromProperty(const Property &options)
 {
-    Property &opt=const_cast<Property&>(options);
-    if (!opt.check("name") || !opt.check("type"))
+    if (!options.check("name") || !options.check("type"))
     {
         printMessage(1,"missing mandatory options \"name\" and/or \"type\"\n");
         return false;
@@ -208,12 +206,12 @@ bool TactileFingersModel::fromProperty(const Property &options)
     if (configured)
         close();
 
-    name=opt.find("name").asString().c_str();
-    type=opt.find("type").asString().c_str();
-    robot=opt.check("robot",Value("icub")).asString().c_str();
-    carrier=opt.check("carrier",Value("udp")).asString().c_str();
-    compensation=(opt.check("compensation",Value("false")).asString()=="true");
-    verbosity=opt.check("verbosity",Value(0)).asInt();
+    name=options.find("name").asString().c_str();
+    type=options.find("type").asString().c_str();
+    robot=options.check("robot",Value("icub")).asString().c_str();
+    carrier=options.check("carrier",Value("udp")).asString().c_str();
+    compensation=(options.check("compensation",Value("false")).asString()=="true");
+    verbosity=options.check("verbosity",Value(0)).asInt();
 
     port->open(("/"+name+"/"+type+"_hand:i").c_str());
     string skinPortName(("/"+robot+"/skin/"+type+"_hand").c_str());
@@ -247,11 +245,11 @@ bool TactileFingersModel::fromProperty(const Property &options)
     }
 
     printMessage(1,"configuring fingers ...\n");
-    Property thumb(opt.findGroup("thumb").toString().c_str());
-    Property index(opt.findGroup("index").toString().c_str());
-    Property middle(opt.findGroup("middle").toString().c_str());
-    Property ring(opt.findGroup("ring").toString().c_str());
-    Property little(opt.findGroup("little").toString().c_str());
+    Property thumb(options.findGroup("thumb").toString().c_str());
+    Property index(options.findGroup("index").toString().c_str());
+    Property middle(options.findGroup("middle").toString().c_str());
+    Property ring(options.findGroup("ring").toString().c_str());
+    Property little(options.findGroup("little").toString().c_str());
 
     bool fingers_ok=true;
     fingers_ok&=fingers[0].fromProperty(thumb);

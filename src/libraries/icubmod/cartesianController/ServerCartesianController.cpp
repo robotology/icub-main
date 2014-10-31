@@ -1261,7 +1261,7 @@ bool ServerCartesianController::areJointsHealthyAndSet(VectorOf<int> &jointsToSe
     int chainCnt=0;
 
     jointsToSet.clear();
-    for (int i=0; i<numDrv; i++)
+    for (int i=0; (i<numDrv) && ctrlModeAvailable; i++)
     {
         lMod[i]->getControlModes(modes.getFirst());
         for (int j=0; j<lJnt[i]; j++)
@@ -1410,7 +1410,7 @@ Bottle ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
         if (++k>=lJnt[j])
         {
             if (joints.size()>0)
-                lVel[j]->velocityMove(joints.size(),joints.getFirst(),vels.data());
+                static_cast<IVelocityControl2*>(lVel[j])->velocityMove(joints.size(),joints.getFirst(),vels.data());
 
             joints.clear();
             vels.clear();
@@ -1561,7 +1561,7 @@ void ServerCartesianController::run()
         VectorOf<int> jointsToSet;
         jointsHealthy=areJointsHealthyAndSet(jointsToSet);
         if (!jointsHealthy)
-            stopControlHelper();        
+            stopControlHelper();
 
         string event="none";
 
@@ -1918,10 +1918,17 @@ bool ServerCartesianController::open(Searchable &config)
         limbState=new iCubArm(kinType.c_str());
     else if (kinPart=="leg")
         limbState=new iCubLeg(kinType.c_str());
-    else if (optGeneral.check("customKinFile"))     // custom kinematics case
+    else if (optGeneral.check("CustomKinFile"))     // custom kinematics case
     {
+        ResourceFinder rf_kin;
+        rf_kin.setVerbose(true);
+        if (optGeneral.check("CustomKinContext"))
+            rf_kin.setDefaultContext(optGeneral.find("CustomKinContext").asString().c_str()); 
+        rf_kin.configure(0,NULL);
+        string pathToCustomKinFile=rf_kin.findFileByName(optGeneral.find("CustomKinFile").asString()).c_str();
+
         Property linksOptions;
-        linksOptions.fromConfigFile(optGeneral.find("customKinFile").asString().c_str());
+        linksOptions.fromConfigFile(pathToCustomKinFile.c_str());
 
         limbState=new iKinLimb(linksOptions);
         if (!limbState->isValid())
@@ -1934,7 +1941,7 @@ bool ServerCartesianController::open(Searchable &config)
     }
     else
     {
-        printf("customKinFile option is missing\n");
+        printf("CustomKinFile option is missing\n");
         close();
 
         return false;
@@ -2010,6 +2017,12 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
     int remainingJoints=chainState->getN();
 
+    ctrlModeAvailable=true;
+    encTimedEnabled=true;
+    pidAvailable=true;
+    posDirectAvailable=true;
+    multipleJointsVelAvailable=true;
+
     for (int i=0; i<numDrv; i++)
     {
         printf("Acquiring info on driver %s... ",lDsc[i].key.c_str());
@@ -2027,7 +2040,6 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
         }
 
         // acquire interfaces and driver's info
-        encTimedEnabled=pidAvailable=posDirectAvailable=true;
         if (drivers[j]->poly->isValid())
         {
             printf("ok\n");
@@ -2037,19 +2049,24 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             IEncodersTimed    *ent;
             IPidControl       *pid;
             IControlLimits    *lim;
-            IVelocityControl2 *vel;
+            IVelocityControl  *vel;
+            IVelocityControl2 *vel2;
             IPositionDirect   *pos;
             IPositionControl  *stp;
             int                joints;
-
-            drivers[j]->poly->view(mod);
+            
             drivers[j]->poly->view(enc);
             drivers[j]->poly->view(lim);
+
+            ctrlModeAvailable&=drivers[j]->poly->view(mod);
+            
             drivers[j]->poly->view(vel);
-            drivers[j]->poly->view(stp);
+            multipleJointsVelAvailable&=drivers[j]->poly->view(vel2);
+
             encTimedEnabled&=drivers[j]->poly->view(ent);
             pidAvailable&=drivers[j]->poly->view(pid);
             posDirectAvailable&=drivers[j]->poly->view(pos);
+            posDirectAvailable&=drivers[j]->poly->view(stp);
 
             enc->getAxes(&joints);
 
@@ -2084,12 +2101,13 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             lEnc.push_back(enc);
             lEnt.push_back(ent);
             lPid.push_back(pid);
-            lLim.push_back(lim);
-            lVel.push_back(vel);
+            lLim.push_back(lim);            
             lPos.push_back(pos);
             lStp.push_back(stp);
             lJnt.push_back(joints);
             lRmp.push_back(rmpTmp);
+            lVel.push_back(multipleJointsVelAvailable?
+                           static_cast<IVelocityControl*>(vel2):vel);
         }
         else
         {
@@ -2097,6 +2115,9 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             return false;
         }
     }
+
+    printf("%s: IControlMode2 %s\n",ctrlName.c_str(),
+           ctrlModeAvailable?"available":"not available");
 
     printf("%s: %s interface will be used\n",ctrlName.c_str(),
            encTimedEnabled?"IEncodersTimed":"IEncoders");
@@ -2107,10 +2128,16 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     printf("%s: IPositionDirect %s\n",ctrlName.c_str(),
            posDirectAvailable?"available":"not available");
 
+    printf("%s: IVelocityControl2 %s\n",ctrlName.c_str(),
+           multipleJointsVelAvailable?"available":"not available");
+
     posDirectEnabled&=posDirectAvailable;
     printf("%s: %s interface will be used\n",ctrlName.c_str(),
-           posDirectEnabled?"IPositionDirect":"IVelocityControl");
+           posDirectEnabled?"IPositionDirect":
+           (multipleJointsVelAvailable?"IVelocityControl2":"IVelocityControl"));
 
+    if (!posDirectEnabled)
+        multipleJointsControlEnabled&=multipleJointsVelAvailable; 
     printf("%s: %s control will be used\n",ctrlName.c_str(),
            multipleJointsControlEnabled?"multiple joints":"single joint");
 
@@ -3769,21 +3796,19 @@ bool ServerCartesianController::setSolverConvergenceOptions(const Bottle &option
 /************************************************************************/
 bool ServerCartesianController::tweakSet(const Bottle &options)
 {
-    Bottle &opt=const_cast<Bottle&>(options);
     mutex.lock();
-
     bool ret=true;
 
     // straightness
-    if (opt.check("straightness"))
-        ctrl->set_gamma(opt.find("straightness").asDouble());
+    if (options.check("straightness"))
+        ctrl->set_gamma(options.find("straightness").asDouble());
 
     // secondary task
-    if (opt.check("task_2"))
-        ret&=setTask2ndOptions(opt.find("task_2"));
+    if (options.check("task_2"))
+        ret&=setTask2ndOptions(options.find("task_2"));
 
     // solver convergence options
-    if (opt.check("max_iter") || opt.check("tol") || opt.check("translationalTol"))
+    if (options.check("max_iter") || options.check("tol") || options.check("translationalTol"))
         ret&=setSolverConvergenceOptions(options);
 
     mutex.unlock();

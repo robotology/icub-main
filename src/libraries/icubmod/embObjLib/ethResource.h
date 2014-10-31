@@ -192,10 +192,6 @@ private:
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
     bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
     infoOfRecvPkts    *infoPkts;
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-    infoOfRecvPkts    *inforx;
-#endif
 
     yarp::os::Semaphore*  objLock;
 

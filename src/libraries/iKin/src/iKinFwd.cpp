@@ -1448,7 +1448,8 @@ void iKinLimb::pushLink(iKinLink *pl)
 
 
 /************************************************************************/
-void iKinLimb::getMatrixFromProperties(Property &options, const string &tag, Matrix &H)
+void iKinLimb::getMatrixFromProperties(const Property &options, const string &tag,
+                                       Matrix &H)
 {
     if (Bottle *bH=options.find(tag.c_str()).asList())
     {
@@ -1484,16 +1485,14 @@ void iKinLimb::setMatrixToProperties(Property &options, const string &tag, Matri
 /************************************************************************/
 bool iKinLimb::fromLinksProperties(const Property &options)
 {
-    Property &opt=const_cast<Property&>(options);
-
     dispose();    
 
-    type=opt.check("type",Value("right")).asString().c_str();
+    type=options.check("type",Value("right")).asString().c_str();
 
-    getMatrixFromProperties(opt,"H0",H0);
-    getMatrixFromProperties(opt,"HN",HN);
+    getMatrixFromProperties(options,"H0",H0);
+    getMatrixFromProperties(options,"HN",HN);
 
-    int numLinks=opt.check("numLinks",Value(0)).asInt();
+    int numLinks=options.check("numLinks",Value(0)).asInt();
     if (numLinks==0)
     {
         fprintf(stderr,"Error: invalid number of links specified!\n");
@@ -1510,7 +1509,7 @@ bool iKinLimb::fromLinksProperties(const Property &options)
         ostringstream link;
         link<<"link_"<<i;
 
-        Bottle &bLink=opt.findGroup(link.str().c_str());
+        Bottle &bLink=options.findGroup(link.str().c_str());
         if (bLink.isNull())
         {
             fprintf(stderr,"Error: %s is missing!\n",link.str().c_str());

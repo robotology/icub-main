@@ -151,7 +151,6 @@ protected:
     /************************************************************************/
     PolyDriver *waitPart(const Property &partOpt, const double ping_robot_tmo)
     {
-        Property &options=const_cast<Property&>(partOpt);
         PolyDriver *pDrv=NULL;
 
         double t0=Time::now();
@@ -160,7 +159,7 @@ protected:
             if (pDrv!=NULL)
                 delete pDrv;
 
-            pDrv=new PolyDriver(options);
+            pDrv=new PolyDriver(const_cast<Property&>(partOpt));
             bool ok=pDrv->isValid();
 
             printf("Checking if %s is active ... ",device.c_str());
