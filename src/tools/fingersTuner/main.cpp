@@ -86,7 +86,6 @@ Windows, Linux
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <iomanip>
 #include <map>
 
 #include <yarp/os/all.h>
@@ -161,17 +160,17 @@ protected:
 
             pDrv=new PolyDriver(const_cast<Property&>(partOpt));
             bool ok=pDrv->isValid();
-
-            printf("Checking if %s is active ... ",device.c_str());
+            
+            yInfo("Checking if %s is active ... ",device.c_str());
             if (ok)
             {
-                printf("yes\n");
+                yInfo("yes");
                 return pDrv;
             }
             else
             {
                 double dt=ping_robot_tmo-(Time::now()-t0);
-                printf("not yet: still %.1f [s] to timeout expiry\n",dt>0.0?dt:0.0);
+                yInfo("not yet: still %.1f [s] to timeout expiry",dt>0.0?dt:0.0);
 
                 double t1=Time::now();
                 while (Time::now()-t1<1.0)
@@ -232,7 +231,7 @@ protected:
         OnlineCompensatorDesign designer;
         if (!designer.configure(*driver,pOptions))
         {
-            printf("Error: designer configuration failed!\n");
+            yError("designer configuration failed!");
             return false;
         }
 
@@ -241,13 +240,13 @@ protected:
         pPlantEstimation.put("switch_timeout",2.0);
         designer.startPlantEstimation(pPlantEstimation);
 
-        printf("Estimating plant for joint %d: max duration = %g seconds\n",
-               i,pPlantEstimation.find("max_time").asDouble());
+        yInfo("Estimating plant for joint %d: max duration = %g seconds",
+              i,pPlantEstimation.find("max_time").asDouble());
 
         double t0=Time::now();
         while (!designer.isDone())
         {
-            printf("elapsed %d [s]\n",(int)(Time::now()-t0));
+            yInfo("elapsed %d [s]",(int)(Time::now()-t0));
             Time::delay(1.0);
             if (interrupting)
                 return false;
@@ -257,7 +256,7 @@ protected:
         designer.getResults(pResults);
         double tau=pResults.find("tau_mean").asDouble();
         double K=pResults.find("K_mean").asDouble();
-        printf("plant = %g/s * 1/(1+s*%g)\n",K,tau);
+        yInfo("plant = %g/s * 1/(1+s*%g)",K,tau);
 
         Property pControllerRequirements,pController;
         pControllerRequirements.put("tau",tau);
@@ -273,7 +272,7 @@ protected:
             pControllerRequirements.put("type","P");
 
         designer.tuneController(pControllerRequirements,pController);
-        printf("tuning results: %s\n",pController.toString().c_str());
+        yInfo("tuning results: %s",pController.toString().c_str());
         double Kp=pController.find("Kp").asDouble();
         double Ki=pController.find("Ki").asDouble();
         pid.scale=4.0;
@@ -283,7 +282,7 @@ protected:
         pid.Kp=iCub::ctrl::sign(pid.Kp*fwKp)>0.0?fwKp:-fwKp;
         pid.Ki=iCub::ctrl::sign(pid.Ki*fwKi)>0.0?fwKi:-fwKi;
         pid.Kd=0.0;
-        printf("Kp (FW) = %g; Ki (FW) = %g; Kd (FW) = %g; shift factor = %d\n",pid.Kp,pid.Ki,pid.Kd,scale);
+        yInfo("Kp (FW) = %g; Ki (FW) = %g; Kd (FW) = %g; shift factor = %d",pid.Kp,pid.Ki,pid.Kd,scale);
 
         Property pStictionEstimation;
         pStictionEstimation.put("max_time",60.0);
@@ -292,13 +291,13 @@ protected:
         pStictionEstimation.put("Kd",0.0);
         designer.startStictionEstimation(pStictionEstimation);
 
-        printf("Estimating stiction for joint %d: max duration = %g seconds\n",
-               i,pStictionEstimation.find("max_time").asDouble());
+        yInfo("Estimating stiction for joint %d: max duration = %g seconds",
+              i,pStictionEstimation.find("max_time").asDouble());
 
         t0=Time::now();
         while (!designer.isDone())
         {
-            printf("elapsed %d [s]\n",(int)(Time::now()-t0));
+            yInfo("elapsed %d [s]",(int)(Time::now()-t0));
             Time::delay(1.0);
             if (interrupting)
                 return false;
@@ -307,7 +306,7 @@ protected:
         designer.getResults(pResults);
         pid.st_up=floor(pResults.find("stiction").asList()->get(0).asDouble());
         pid.st_down=floor(pResults.find("stiction").asList()->get(1).asDouble());
-        printf("Stiction values: up = %g; down = %g\n",pid.st_up,pid.st_down);
+        yInfo("Stiction values: up = %g; down = %g",pid.st_up,pid.st_down);
 
         IPositionControl *ipos;
         IEncoders *ienc;
@@ -315,7 +314,7 @@ protected:
         driver->view(ienc);
         ipos->setRefSpeed(i,50.0);
         ipos->positionMove(i,0.0);
-        printf("Driving the joint back to rest... ");
+        yInfo("Driving the joint back to rest... ");
         t0=Time::now();
         while (Time::now()-t0<5.0)
         {
@@ -329,7 +328,7 @@ protected:
 
             Time::delay(0.2);
         }
-        printf("done!\n");
+        yInfo("done!");
 
         return true;
     }
@@ -348,20 +347,20 @@ public:
         Bottle &bGeneral=rf.findGroup("general");
         if (bGeneral.isNull())
         {
-            printf("Error: group [general] is missing!\n");
+            yError("group [general] is missing!");
             return false;
         }
 
         Bottle &bPart=rf.findGroup(part.c_str());
         if (bPart.isNull())
         {
-            printf("Error: group [%s] is missing!\n",part.c_str());
+            yError("group [%s] is missing!",part.c_str());
             return false;
         }
 
         if (!bPart.check("device"))
         {
-            printf("Error: \"device\" option is missing!\n");
+            yError("\"device\" option is missing!");
             return false;
         }
 
@@ -374,7 +373,7 @@ public:
             rJoints=*rj;
         else
         {
-            printf("Error: \"relevantJoints\" option is missing!\n");
+            yError("\"relevantJoints\" option is missing!");
             return false;
         }
 
@@ -412,7 +411,7 @@ public:
 
         if (!driver->isValid())
         {
-            printf("%s device driver not available!\n",device.c_str());
+            yError("%s device driver not available!",device.c_str());
             return false;
         }
 
@@ -572,7 +571,7 @@ public:
         Bottle &bGeneral=rf.findGroup("general");
         if (bGeneral.isNull())
         {
-            printf("Error: group [general] is missing!\n");
+            yError("group [general] is missing!");
             return false;
         }
 
@@ -598,7 +597,7 @@ public:
         }
         else
         {
-            printf("Error: \"relevantParts\" option is missing!\n");
+            yError("\"relevantParts\" option is missing!");
             return false;
         }
 
@@ -714,7 +713,7 @@ int main(int argc, char *argv[])
     Network yarp;
     if (!yarp.checkNetwork())
     {
-        printf("YARP server not available!\n");
+        yError("YARP server not available!");
         return -1;
     }
 
