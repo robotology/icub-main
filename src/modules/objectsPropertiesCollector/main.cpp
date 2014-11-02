@@ -193,9 +193,6 @@ to (cond1)&&(cond2) || (cond1)&&(cond3).
 - If this option is given then the content of database is not 
   saved at shutdown.
  
---verbose 
-- Enable some verbosity. 
- 
 --sync_bc <T> 
 - Broadcast the database content each \e T seconds. If not 
   specified, a period of 1.0 second is assumed.
@@ -258,7 +255,6 @@ reply: [ack] (id (1))
 \author Ugo Pattacini
 */ 
 
-#include <stdio.h>
 #include <stdarg.h>
 #include <sstream>
 #include <string>
@@ -428,27 +424,10 @@ protected:
     int  idCnt;
     bool initialized;
     bool nosave;
-    bool verbose;
     bool quitting;
 
     BufferedPort<Bottle> *pBroadcastPort;
     bool asyncBroadcast;
-
-    /************************************************************************/
-    int printMessage(const char *format, ...)
-    {
-        if (verbose)
-        {
-            va_list ap;
-            va_start(ap,format);
-            int ret=vfprintf(stdout,format,ap);
-            va_end(ap);
-
-            return ret;
-        }
-        else
-            return -1;
-    }
 
     /************************************************************************/
     void clear()
@@ -537,7 +516,6 @@ public:
         asyncBroadcast=false;
         initialized=false;
         nosave=false;
-        verbose=false;
         quitting=false;
         idCnt=0;
     }
@@ -556,10 +534,9 @@ public:
     void configure(ResourceFinder &rf)
     {
         this->rf=&rf;
-        verbose=rf.check("verbose");
         if (initialized)
         {
-            printMessage("database already initialized ...\n");
+            yWarning("database already initialized ...");
             return;
         }
 
@@ -569,7 +546,7 @@ public:
 
         dump();
         initialized=true;
-        printMessage("database ready ...\n");
+        yInfo("database ready ...");
 
         if (rf.check("sync_bc"))
         {
@@ -592,11 +569,11 @@ public:
         string dbFileName=rf->findFile("db").c_str();
         if (dbFileName.empty())
         {
-            printMessage("requested database to be loaded not found!\n");
+            yWarning("requested database to be loaded not found!");
             return;
         }
 
-        printMessage("loading database from %s ...\n",dbFileName.c_str());
+        yInfo("loading database from %s ...",dbFileName.c_str());
 
         LockGuard lg(mutex);
         clear();
@@ -617,7 +594,7 @@ public:
 
             if (b1.size()<3)
             {
-                printMessage("error while loading %s!\n",tag.str().c_str());
+                yWarning("error while loading %s!",tag.str().c_str());
                 continue;
             }
 
@@ -625,13 +602,13 @@ public:
             Bottle *b3=b1.get(2).asList();
             if ((b2==NULL) || (b3==NULL))
             {
-                printMessage("error while loading %s!\n",tag.str().c_str());
+                yWarning("error while loading %s!",tag.str().c_str());
                 continue;
             }
 
             if (b2->size()<2)
             {
-                printMessage("error while loading %s!\n",tag.str().c_str());
+                yWarning("error while loading %s!",tag.str().c_str());
                 continue;
             }
 
@@ -642,7 +619,7 @@ public:
                 idCnt=id+1;
         }
 
-        printMessage("database loaded\n");
+        yInfo("database loaded");
     }
 
     /************************************************************************/
@@ -655,23 +632,23 @@ public:
         string dbFileName=rf->getHomeContextPath().c_str();
         dbFileName+="/";
         dbFileName+=rf->find("db").asString().c_str();
-        printMessage("saving database in %s ...\n",dbFileName.c_str());
+        yInfo("saving database in %s ...",dbFileName.c_str());
 
         FILE *fout=fopen(dbFileName.c_str(),"w");
         write(fout);
         fclose(fout);
 
-        printMessage("database stored\n");
+        yInfo("database stored");
     }
 
     /************************************************************************/
     void dump()
     {
         LockGuard lg(mutex);
-        printMessage("dumping database content ... \n");
+        yInfo("dumping database content ...");
 
         if (itemsMap.size()==0)
-            printMessage("empty\n");
+            yInfo("empty");
         else
             write(stdout);
     }
@@ -712,7 +689,7 @@ public:
 
         if (content->check(PROP_ID))
         {
-            printMessage("%s field cannot be specified as a property!\n",PROP_ID);
+            yWarning("%s field cannot be specified as a property!",PROP_ID);
             return false;
         }
 
@@ -721,7 +698,6 @@ public:
         itemsMap[idCnt].prop=item;
         itemsMap[idCnt].lastUpdate=Time::now();
 
-        printMessage("added item %s\n",item->toString().c_str());
         return true;
     }
 
@@ -739,7 +715,7 @@ public:
                 {
                     LockGuard lg(mutex);
                     clear();
-                    printMessage("database cleared\n");
+                    yInfo("database cleared");
                     return true;
                 }
             }
@@ -747,12 +723,11 @@ public:
 
         if (!content->check(PROP_ID))
         {
-            printMessage("%s field not present within the request!\n",PROP_ID);
+            yWarning("%s field not present within the request!",PROP_ID);
             return false;
         }
 
         int id=content->find(PROP_ID).asInt();
-        printMessage("removing item %d ... ",id);
 
         LockGuard lg(mutex);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -769,11 +744,9 @@ public:
             else
                 eraseItem(it);
 
-            printMessage("successfully\n");
             return true;
         }
 
-        printMessage("not present!\n");
         return false;
     }
 
@@ -785,12 +758,11 @@ public:
 
         if (!content->check(PROP_ID))
         {
-            printMessage("%s field not present within the request!\n",PROP_ID);
+            yWarning("%s field not present within the request!",PROP_ID);
             return false;
         }
 
         int id=content->find(PROP_ID).asInt();
-        printMessage("getting item %d ... ",id);
 
         LockGuard lg(mutex);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -815,11 +787,9 @@ public:
             else
                 response.read(*pProp);
 
-            printMessage("%s\n",response.toString().c_str());
             return true;
         }
 
-        printMessage("not present!\n");
         return false;
     }
 
@@ -831,12 +801,11 @@ public:
 
         if (!content->check(PROP_ID))
         {
-            printMessage("%s field not present within the request!\n",PROP_ID);
+            yWarning("%s field not present within the request!",PROP_ID);
             return false;
         }
 
         int id=content->find(PROP_ID).asInt();
-        printMessage("setting item %d ... ",id);
 
         LockGuard lg(mutex);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -846,17 +815,12 @@ public:
             if ((owner==OPT_OWNERSHIP_ALL) || (owner==agent))
             {
                 Property *pProp=it->second.prop;
-                printMessage("%s\n",content->toString().c_str());
-
                 for (int i=0; i<content->size(); i++)
                 {
                     if (Bottle *option=content->get(i).asList())
                     {
                         if (option->size()<2)
-                        {
-                            printMessage("invalid property!\n");
                             continue;
-                        }
 
                         string prop=option->get(0).asString().c_str();
                         Value  val=option->get(1);
@@ -868,23 +832,14 @@ public:
                         pProp->put(prop.c_str(),val);
                     }
                     else
-                    {
-                        printMessage("invalid property!\n");
                         continue;
-                    }
                 }
 
                 it->second.lastUpdate=Time::now();
                 return true;
             }
-            else
-            {
-                printMessage("locked by [%s]!\n",owner.c_str());
-                return false;
-            }
         }
 
-        printMessage("not present!\n");
         return false;
     }
 
@@ -896,12 +851,11 @@ public:
 
         if (!content->check(PROP_ID))
         {
-            printMessage("%s field not present within the request!\n",PROP_ID);
+            yWarning("%s field not present within the request!",PROP_ID);
             return false;
         }
 
         int id=content->find(PROP_ID).asInt();
-        printMessage("locking item %d ... ",id);
 
         LockGuard lg(mutex);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -910,18 +864,11 @@ public:
             string owner=it->second.owner;
             if ((owner==OPT_OWNERSHIP_ALL) || (owner==agent))
             {
-                printMessage("successfully locked by [%s]!\n",agent.c_str());
                 it->second.owner=agent;
                 return true;
             }
-            else
-            {
-                printMessage("already locked by [%s]!\n",owner.c_str());
-                return false;
-            }
         }
 
-        printMessage("not present!\n");
         return false;
     }
 
@@ -933,12 +880,11 @@ public:
 
         if (!content->check(PROP_ID))
         {
-            printMessage("%s field not present within the request!\n",PROP_ID);
+            yWarning("%s field not present within the request!",PROP_ID);
             return false;
         }
 
         int id=content->find(PROP_ID).asInt();
-        printMessage("unlocking item %d ... ",id);
 
         LockGuard lg(mutex);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -947,18 +893,11 @@ public:
             string owner=it->second.owner;
             if ((owner==OPT_OWNERSHIP_ALL) || (owner==agent))
             {
-                printMessage("successfully unlocked!\n");
                 it->second.owner=OPT_OWNERSHIP_ALL;
                 return true;
             }
-            else
-            {
-                printMessage("already locked by [%s]!\n",owner.c_str());
-                return false;
-            }
         }
 
-        printMessage("not present!\n");
         return false;
     }
 
@@ -970,12 +909,11 @@ public:
         
         if (!content->check(PROP_ID))
         {
-            printMessage("%s field not present within the request!\n",PROP_ID);
+            yWarning("%s field not present within the request!",PROP_ID);
             return false;
         }
 
         int id=content->find(PROP_ID).asInt();
-        printMessage("getting owner of the item %d ... ",id);
 
         LockGuard lg(mutex);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -984,11 +922,9 @@ public:
             response.clear();
             string &owner=it->second.owner;
             response.addString(owner.c_str());
-            printMessage("[%s]\n",owner.c_str());
             return true;
         }
 
-        printMessage("item not present!\n");
         return false;
     }
 
@@ -1000,12 +936,11 @@ public:
         
         if (!content->check(PROP_ID))
         {
-            printMessage("%s field not present within the request!\n",PROP_ID);
+            yWarning("%s field not present within the request!",PROP_ID);
             return false;
         }
 
         int id=content->find(PROP_ID).asInt();
-        printMessage("getting time elapsed from last update for item %d ... ",id);
 
         LockGuard lg(mutex);
         map<int,Item>::iterator it=itemsMap.find(id);
@@ -1013,20 +948,15 @@ public:
         {
             response.clear();
             if (it->second.lastUpdate<0.0)
-            {
                 response.addDouble(it->second.lastUpdate);
-                printMessage("just loaded\n");
-            }
             else
             {
                 double dt=Time::now()-it->second.lastUpdate;
                 response.addDouble(dt);
-                printMessage("%g [s]\n",dt);
             }
             return true;
         }
 
-        printMessage("item not present!\n");
         return false;
     }
 
@@ -1060,7 +990,7 @@ public:
         // a boolean operator
         if (!(content->size()&0x01))
         {
-            printMessage("uncorrect conditions received!\n");
+            yWarning("uncorrect conditions received!");
             return false;
         }
 
@@ -1097,13 +1027,13 @@ public:
                         condition.compare=&relationalOperators::notEqual;
                     else
                     {
-                        printMessage("unknown relational operator '%s'!\n",operation.c_str());
+                        yWarning("unknown relational operator '%s'!",operation.c_str());
                         return false;
                     }
                 }
                 else
                 {
-                    printMessage("wrong condition given!\n");
+                    yWarning("wrong condition given!");
                     return false;
                 }
 
@@ -1114,7 +1044,7 @@ public:
                     operation=content->get(i+1).asString().c_str();
                     if ((operation!="||") && (operation!="&&"))
                     {
-                        printMessage("unknown boolean operator '%s'!\n",operation.c_str());
+                        yWarning("unknown boolean operator '%s'!",operation.c_str());
                         return false;
                     }
                     else
@@ -1123,7 +1053,7 @@ public:
             }
             else
             {
-                printMessage("wrong condition given!\n");
+                yWarning("wrong condition given!");
                 return false;
             }
         }
@@ -1139,7 +1069,6 @@ public:
                 response.addInt(it->first);
         }
 
-        printMessage("found items matching received conditions: (%s)\n",response.toString().c_str());
         return true;
     }
 
@@ -1156,7 +1085,6 @@ public:
                 double lifeTimer=pProp->find(PROP_LIFETIMER).asDouble()-dt;
                 if (lifeTimer<0.0)
                 {
-                    printMessage("item with id==%d expired\n",it->first);
                     eraseItem(it);
                     erased=true;
 
@@ -1185,8 +1113,6 @@ public:
     void respond(ConnectionReader &connection, const Bottle &command, Bottle &reply)
     {
         string agent=connection.getRemoteContact().getName().c_str();
-        printMessage("[%s]: %s\n",agent.c_str(),command.toString().c_str());
-
         if (command.size()<1)
         {
             reply.addVocab(REP_NACK);
@@ -1477,7 +1403,7 @@ public:
             //-----------------
             default:
             {
-                printMessage("received unknown command!\n");
+                yWarning("received unknown command!");
                 reply.addVocab(REP_UNKNOWN);
             }
         }
@@ -1684,8 +1610,8 @@ public:
 
             unsigned int calls=nCalls-nCallsOld;
             double timeSpent=cumTime-cumTimeOld;
-            fprintf(stdout,"*** Statistics: received %d/%g [requests/s]; %g [ms/request] spent on average\n",
-                    calls,getPeriod(),timeSpent==0.0?0.0:(1e3*timeSpent)/(double)calls);
+            yInfo("*** Statistics: received %d/%g [requests/s]; %g [ms/request] spent on average",
+                  calls,getPeriod(),timeSpent==0.0?0.0:(1e3*timeSpent)/(double)calls);
 
             nCallsOld=nCalls;
             cumTimeOld=cumTime;
@@ -1713,31 +1639,27 @@ int main(int argc, char *argv[])
 
     if (rf.check("help"))
     {
-        fprintf(stdout,"Options\n\n");
-        fprintf(stdout,"\t--name        <name>: collector name (default: objectsPropertiesCollector)\n");
-        fprintf(stdout,"\t--db      <fileName>: database file name to load at startup/save at shutdown (default: dataBase.ini)\n");
-        fprintf(stdout,"\t--context  <context>: context to search for database file (default: objectsPropertiesCollector)\n");
-        fprintf(stdout,"\t--empty             : start an empty database\n");
-        fprintf(stdout,"\t--nosave            : prevent from saving the content of database at shutdown\n");
-        fprintf(stdout,"\t--verbose           : enable some verbosity\n");
-        fprintf(stdout,"\t--sync_bc        <T>: broadcast the database content each T seconds\n");
-        fprintf(stdout,"\t--async_bc          : broadcast the database content whenever a change occurs\n");
-        fprintf(stdout,"\t--stats             : enable statistics printouts\n");
-        fprintf(stdout,"\n");
-
+        yInfo("Options");
+        yInfo("\t--name        <name>: collector name (default: objectsPropertiesCollector)");
+        yInfo("\t--db      <fileName>: database file name to load at startup/save at shutdown (default: dataBase.ini)");
+        yInfo("\t--context  <context>: context to search for database file (default: objectsPropertiesCollector)");
+        yInfo("\t--empty             : start an empty database");
+        yInfo("\t--nosave            : prevent from saving the content of database at shutdown");
+        yInfo("\t--sync_bc        <T>: broadcast the database content each T seconds");
+        yInfo("\t--async_bc          : broadcast the database content whenever a change occurs");
+        yInfo("\t--stats             : enable statistics printouts");
         return 0;
     }
 
     Network yarp;
     if (!yarp.checkNetwork())
     {
-        fprintf(stdout,"YARP server not available!\n");
+        yError("YARP server not available!");
         return -1;
     }
 
     objectsPropertiesCollectorModule collector;
     return collector.runModule(rf);
 }
-
 
 
