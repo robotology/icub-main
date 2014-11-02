@@ -190,7 +190,6 @@ Linux and Windows.
 \author Carlo Ciliberto and Ugo Pattacini
 */ 
 
-#include <stdio.h>
 #include <string>
 #include <set>
 #include <vector>

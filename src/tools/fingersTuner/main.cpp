@@ -81,7 +81,6 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
-#include <stdio.h>
 #include <math.h>
 #include <string>
 #include <sstream>
