@@ -24,6 +24,7 @@
 
 #include <iCub/ctrl/math.h>
 #include <iCub/perception/private/ports.h>
+#include <iCub/perception/private/models.h>
 #include <iCub/perception/springyFingers.h>
 
 using namespace std;

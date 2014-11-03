@@ -20,6 +20,7 @@
 
 #include <yarp/os/Log.h>
 
+#include <iCub/perception/private/models.h>
 #include <iCub/perception/models.h>
 
 using namespace std;

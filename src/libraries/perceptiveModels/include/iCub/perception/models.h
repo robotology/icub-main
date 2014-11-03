@@ -52,11 +52,6 @@ namespace iCub
 namespace perception
 {
 
-namespace log
-{
-    enum { no_info, info, warning, error };
-}
-
 /**
 * @ingroup percmod_Models
 *  
