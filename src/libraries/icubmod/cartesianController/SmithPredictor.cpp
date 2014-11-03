@@ -65,7 +65,7 @@ void SmithPredictor::dealloc()
 
 
 /************************************************************************/
-void SmithPredictor::configure(Property &options, iKinChain &chain)
+void SmithPredictor::configure(const Property &options, iKinChain &chain)
 {
     enabled=options.check("smith_predictor",Value("off")).asString()=="on";
     if (!enabled)
@@ -99,7 +99,7 @@ void SmithPredictor::configure(Property &options, iKinChain &chain)
 
             ostringstream entry;
             entry<<"joint_"<<j;
-            const char *entry_str=entry.str().c_str();
+            ConstString entry_str(entry.str().c_str());
             if (options.check(entry_str))
             {
                 if (Bottle *params=options.find(entry_str).asList())

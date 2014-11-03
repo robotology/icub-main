@@ -1827,18 +1827,18 @@ bool ServerCartesianController::open(Searchable &config)
     {
         ostringstream entry;
         entry<<"DRIVER_"<<i;
-        const char *entry_str=entry.str().c_str();
+        ConstString entry_str(entry.str().c_str());
 
         Bottle &optDrv=config.findGroup(entry_str);
         if (optDrv.isNull())
         {
-            yError("%s group is missing",entry_str);
+            yError("%s group is missing",entry_str.c_str());
             close();
 
             return false;
         }
 
-        yInfo("Acquiring options for group %s...",entry_str);
+        yInfo("Acquiring options for group %s...",entry_str.c_str());
 
         DriverDescriptor desc;
 
