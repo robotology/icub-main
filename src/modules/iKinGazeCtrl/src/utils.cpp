@@ -426,11 +426,11 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
 
                 if (verbose)
                 {
-                    printf("%s found:\n",message.c_str());
-                    printf("fx = %g\n",fx);
-                    printf("fy = %g\n",fy);
-                    printf("cx = %g\n",cx);
-                    printf("cy = %g\n",cy);
+                    yInfo("%s found:",message.c_str());
+                    yInfo("fx = %g",fx);
+                    yInfo("fy = %g",fy);
+                    yInfo("cx = %g",cx);
+                    yInfo("cy = %g",cy);
                 }
 
                 *Prj=new Matrix(eye(3,4));
@@ -450,7 +450,7 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
     }
 
     if (verbose)
-        printf("%s not found!\n",message.c_str());
+        yWarning("%s not found!",message.c_str());
 
     return false;
 }
@@ -494,8 +494,8 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
 
                     if (verbose)
                     {
-                        printf("%s found:\n",message.c_str());
-                        printf("%s\n",HN.toString(3,3).c_str());
+                        yInfo("%s found:",message.c_str());
+                        yInfo("%s",HN.toString(3,3).c_str());
                     }
 
                     return true;
@@ -509,7 +509,7 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
         }
 
         if (verbose)
-            printf("%s not found!\n",message.c_str());
+            yWarning("%s not found!",message.c_str());
     }
 
     return false;

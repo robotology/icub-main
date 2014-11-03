@@ -281,11 +281,11 @@ bool EyePinvRefGen::threadInit()
     if (!Network::connect(robotPortInertial.c_str(),port_inertial.getName().c_str()))
     {
         counterRotGain[0]=0.0; counterRotGain[1]=1.0;
-        printf("Unable to connect to %s => (vor,ocr) gains = (%s)\n",
-               robotPortInertial.c_str(),counterRotGain.toString(3,3).c_str());
+        yWarning("Unable to connect to %s => (vor,ocr) gains = (%s)",
+                 robotPortInertial.c_str(),counterRotGain.toString(3,3).c_str());
     }
 
-    printf("Starting Pseudoinverse Reference Generator at %d ms\n",period);
+    yInfo("Starting Pseudoinverse Reference Generator at %d ms",period);
 
     saccadesRxTargets=0;
     saccadesClock=Time::now();
@@ -297,8 +297,10 @@ bool EyePinvRefGen::threadInit()
 /************************************************************************/
 void EyePinvRefGen::afterStart(bool s)
 {
-    s?printf("Pseudoinverse Reference Generator started successfully\n"):
-      printf("Pseudoinverse Reference Generator did not start\n");
+    if (s)
+        yInfo("Pseudoinverse Reference Generator started successfully");
+    else
+        yWarning("Pseudoinverse Reference Generator did not start!");
 }
 
 
@@ -470,7 +472,7 @@ void EyePinvRefGen::threadRelease()
 void EyePinvRefGen::suspend()
 {    
     RateThread::suspend();
-    printf("Pseudoinverse Reference Generator has been suspended!\n");
+    yInfo("Pseudoinverse Reference Generator has been suspended!");
 }
 
 
@@ -478,7 +480,7 @@ void EyePinvRefGen::suspend()
 void EyePinvRefGen::resume()
 {    
     RateThread::resume();
-    printf("Pseudoinverse Reference Generator has been resumed!\n");
+    yInfo("Pseudoinverse Reference Generator has been resumed!");
 }
 
 
@@ -597,7 +599,7 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
     (*chainNeck)(0).setMax(max_rad);    
     mutex.unlock();
 
-    printf("\nneck pitch constrained in [%g,%g] deg\n\n",min_deg,max_deg);
+    yInfo("neck pitch constrained in [%g,%g] deg",min_deg,max_deg);
 }
 
 
@@ -615,7 +617,7 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
     (*chainNeck)(1).setMax(max_rad);
     mutex.unlock();
 
-    printf("\nneck roll constrained in [%g,%g] deg\n\n",min_deg,max_deg);
+    yInfo("neck roll constrained in [%g,%g] deg",min_deg,max_deg);
 }
 
 
@@ -633,7 +635,7 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
     (*chainNeck)(2).setMax(max_rad);
     mutex.unlock();
 
-    printf("\nneck yaw constrained in [%g,%g] deg\n\n",min_deg,max_deg);
+    yInfo("neck yaw constrained in [%g,%g] deg",min_deg,max_deg);
 }
 
 
@@ -675,7 +677,7 @@ void Solver::clearNeckPitch()
     (*chainNeck)(0).setMax(neckPitchMax);
     mutex.unlock();
 
-    printf("\nneck pitch cleared\n\n");
+    yInfo("neck pitch cleared");
 }
 
 
@@ -687,7 +689,7 @@ void Solver::clearNeckRoll()
     (*chainNeck)(1).setMax(neckRollMax);
     mutex.unlock();
 
-    printf("\nneck roll cleared\n\n");
+    yInfo("neck roll cleared");
 }
 
 
@@ -699,7 +701,7 @@ void Solver::clearNeckYaw()
     (*chainNeck)(2).setMax(neckYawMax);
     mutex.unlock();
 
-    printf("\nneck yaw cleared\n\n");
+    yInfo("neck yaw cleared");
 }
 
 
@@ -829,7 +831,7 @@ bool Solver::threadInit()
     // use eyes pseudoinverse reference generator
     eyesRefGen->enable();
 
-    printf("Starting Solver at %d ms\n",period);
+    yInfo("Starting Solver at %d ms",period);
     return true;
 }
 
@@ -837,8 +839,10 @@ bool Solver::threadInit()
 /************************************************************************/
 void Solver::afterStart(bool s)
 {
-    s?printf("Solver started successfully\n"):
-      printf("Solver did not start\n");
+    if (s)
+        yInfo("Solver started successfully");
+    else
+        yWarning("Solver did not start!");
 }
 
 
@@ -954,7 +958,7 @@ void Solver::suspend()
 {
     port_xd->lock();    
     RateThread::suspend();
-    printf("Solver has been suspended!\n");
+    yInfo("Solver has been suspended!");
 }
 
 
@@ -990,7 +994,7 @@ void Solver::resume()
 
     port_xd->unlock();
     RateThread::resume();
-    printf("Solver has been resumed!\n");
+    yInfo("Solver has been resumed!");
 }
 
 

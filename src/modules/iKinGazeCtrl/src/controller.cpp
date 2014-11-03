@@ -77,11 +77,11 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     if (neckPosCtrlOn)
     {
         neckPosCtrlOn=drvHead->view(posNeck);
-        printf("### neck control - requested POSITION mode: IPositionDirect [%s] => %s mode selected\n",
-               neckPosCtrlOn?"available":"not available",neckPosCtrlOn?"POSITION":"VELOCITY");
+        yInfo("### neck control - requested POSITION mode: IPositionDirect [%s] => %s mode selected",
+              neckPosCtrlOn?"available":"not available",neckPosCtrlOn?"POSITION":"VELOCITY");
     }
     else
-        printf("### neck control - requested VELOCITY mode => VELOCITY mode selected\n");
+        yInfo("### neck control - requested VELOCITY mode => VELOCITY mode selected");
 
     // joints bounds alignment
     lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
@@ -174,7 +174,7 @@ void Controller::findMinimumAllowedVergence()
         }
     }
 
-    printf("### computed minimum allowed vergence = %g [deg]\n",minVer*CTRL_RAD2DEG);
+    yInfo("### computed minimum allowed vergence = %g [deg]",minVer*CTRL_RAD2DEG);
     commData->get_minAllowedVergence()=minVer;
 }
 
@@ -291,14 +291,12 @@ void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
     {
         printAccTime=0.0;
 
-        printf("\n");
-        printf("norm(e)           = %g\n",norm(xd-fp));
-        printf("Target fix. point = %s\n",xd.toString().c_str());
-        printf("Actual fix. point = %s\n",fp.toString().c_str());
-        printf("Target Joints     = %s\n",qd.toString().c_str());
-        printf("Actual Joints     = %s\n",q.toString().c_str());
-        printf("Velocity          = %s\n",v.toString().c_str());
-        printf("\n");
+        yInfo("norm(e)           = %g",norm(xd-fp));
+        yInfo("Target fix. point = %s",xd.toString().c_str());
+        yInfo("Actual fix. point = %s",fp.toString().c_str());
+        yInfo("Target Joints     = %s",qd.toString().c_str());
+        yInfo("Actual Joints     = %s",q.toString().c_str());
+        yInfo("Velocity          = %s",v.toString().c_str());
     }
 }
 
@@ -310,7 +308,7 @@ bool Controller::threadInit()
     port_q.open((commData->localStemName+"/q:o").c_str());
     port_event.open((commData->localStemName+"/events:o").c_str());
 
-    printf("Starting Controller at %d ms\n",period);
+    yInfo("Starting Controller at %d ms",period);
     q_stamp=Time::now();
 
     return true;
@@ -320,8 +318,10 @@ bool Controller::threadInit()
 /************************************************************************/
 void Controller::afterStart(bool s)
 {
-    s?printf("Controller started successfully\n"):
-      printf("Controller did not start\n");
+    if (s)
+        yInfo("Controller started successfully");
+    else
+        yWarning("Controller did not start!");
 }
 
 
@@ -454,7 +454,7 @@ void Controller::run()
     q_stamp=Time::now();
     if (!getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData,&q_stamp))
     {
-        printf("\nCommunication timeout detected!\n\n");
+        yWarning("Communication timeout detected!");
         notifyEvent("comm-timeout");
         suspend();
         return;
@@ -690,7 +690,7 @@ void Controller::suspend()
     RateThread::suspend();    
     stopLimb();
     commData->get_isSaccadeUnderway()=false;
-    printf("Controller has been suspended!\n");
+    yInfo("Controller has been suspended!");
     notifyEvent("suspended");
     mutexCtrl.unlock();
 }
@@ -704,7 +704,7 @@ void Controller::resume()
     fbEyes=fbHead.subVector(3,5);
     
     RateThread::resume();
-    printf("Controller has been resumed!\n");
+    yInfo("Controller has been resumed!");
     notifyEvent("resumed");
 }
 
@@ -729,8 +729,8 @@ void Controller::setTneck(const double execTime)
     double lowerThresNeck=eyesTime+0.2;
     if (execTime<lowerThresNeck)
     {        
-        printf("Warning: neck execution time is under the lower bound!\n");
-        printf("A new neck execution time of %g s is chosen\n",lowerThresNeck);
+        yWarning("neck execution time is under the lower bound!");
+        yWarning("a new neck execution time of %g s is chosen",lowerThresNeck);
         neckTime=lowerThresNeck;
     }
     else
@@ -744,8 +744,8 @@ void Controller::setTeyes(const double execTime)
     double lowerThresEyes=10.0*Ts;
     if (execTime<lowerThresEyes)
     {        
-        printf("Warning: eyes execution time is under the lower bound!\n");
-        printf("A new eyes execution time of %g s is chosen\n",lowerThresEyes);
+        yWarning("eyes execution time is under the lower bound!");
+        yWarning("a new eyes execution time of %g s is chosen",lowerThresEyes);
         eyesTime=lowerThresEyes;
     }
     else

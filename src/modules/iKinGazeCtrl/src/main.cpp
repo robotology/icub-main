@@ -587,16 +587,16 @@ protected:
             pDrv=new PolyDriver(const_cast<Property&>(partOpt));
             bool ok=pDrv->isValid();
 
-            printf("Checking if %s part is active ... ",partName.c_str());
             if (ok)
             {
-                printf("yes\n");
+                yInfo("Checking if %s part is active ... yes",partName.c_str());
                 return pDrv;
             }
             else
             {
                 double dt=ping_robot_tmo-(Time::now()-t0);
-                printf("not yet: still %.1f [s] to timeout expiry\n",dt>0.0?dt:0.0);
+                yInfo("Checking if %s part is active ... not yet: still %.1f [s] to timeout expiry",
+                      partName.c_str(),dt>0.0?dt:0.0);
 
                 double t1=Time::now();
                 while (Time::now()-t1<1.0)
@@ -1011,7 +1011,7 @@ public:
         commData.rf_tweak.setDefaultConfigFile(commData.tweakFile.c_str());
         commData.rf_tweak.configure(0,NULL);
 
-        printf("Controller configured for head version %g\n",commData.head_version);
+        yInfo("Controller configured for head version %g",commData.head_version);
 
         commData.localStemName="/"+ctrlName;
         string remoteHeadName="/"+commData.robotName+"/"+headName;
@@ -1040,8 +1040,8 @@ public:
 
             if (!drvTorso->isValid())
             {
-                printf("Torso device driver not available!\n");
-                printf("Perhaps only the head is running; trying to continue ...\n");
+                yWarning("Torso device driver not available!");
+                yWarning("Perhaps only the head is running; trying to continue ...");
 
                 delete drvTorso;
                 drvTorso=NULL;
@@ -1049,7 +1049,7 @@ public:
         }
         else
         {
-            printf("Torso device disabled!\n");
+            yWarning("Torso device disabled!");
             drvTorso=NULL;
         }
 
@@ -1059,7 +1059,7 @@ public:
 
         if (!drvHead->isValid())
         {
-            printf("Head device driver not available!\n");
+            yError("Head device driver not available!");
 
             delete drvHead;
             delete drvTorso;
@@ -1838,7 +1838,7 @@ int main(int argc, char *argv[])
     Network yarp;
     if (!yarp.checkNetwork())
     {
-        printf("YARP server not available!\n");
+        yError("YARP server not available!");
         return -1;
     }
 
