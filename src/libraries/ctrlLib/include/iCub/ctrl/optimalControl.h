@@ -65,8 +65,8 @@
  * 
  **/ 
 
-#ifndef __RICCATI_H__
-#define __RICCATI_H__
+#ifndef __OPTIMALCONTROL_H__
+#define __OPTIMALCONTROL_H__
 
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
