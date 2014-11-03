@@ -63,11 +63,11 @@ Windows, Linux
 \author Ilaria Gori, Ugo Pattacini
 */ 
 
-#include <cstdio>
 #include <string>
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
+#include <yarp/os/Log.h>
 #include <yarp/dev/Drivers.h>
 
 #include <iCub/d4c/d4c_server.h>
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     Network yarp;
     if (!yarp.checkNetwork())
     {
-        printf("YARP server not available!\n");
+        yError("YARP server not available!");
         return -1;
     }
 
