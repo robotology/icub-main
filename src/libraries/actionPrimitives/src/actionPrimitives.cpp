@@ -364,7 +364,7 @@ bool ActionPrimitives::isValid() const
 
 
 /************************************************************************/
-void ActionPrimitives::printMessage(const int logtype, const char *format, ...)
+void ActionPrimitives::printMessage(const int logtype, const char *format, ...) const
 {
     if (verbose)
     {

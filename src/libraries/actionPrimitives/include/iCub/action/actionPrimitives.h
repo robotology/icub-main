@@ -288,7 +288,7 @@ protected:
     } actionsQueue;
     std::map<std::string,std::deque<HandWayPoint> > handSeqMap;
     
-    virtual void printMessage(const int logtype, const char *format, ...);
+    virtual void printMessage(const int logtype, const char *format, ...) const;
 
     virtual bool handleTorsoDOF(yarp::os::Property &opt, const std::string &key,const int j);
     virtual void disableTorsoDof();

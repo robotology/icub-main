@@ -15,14 +15,11 @@
  * Public License for more details
 */
 
-#include <cstdio>
-#include <cstdarg>
+#include <sstream>
 #include <iomanip>
 
 #include <gsl/gsl_math.h>
 
-#include <yarp/os/Network.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/math/Math.h>
 
 #include <iCub/ctrl/math.h>
@@ -266,30 +263,11 @@ SpringyFingersModel::SpringyFingersModel()
 
 
 /************************************************************************/
-int SpringyFingersModel::printMessage(const int level, const char *format, ...) const
-{
-    if (verbosity>=level)
-    {
-        fprintf(stdout,"*** %s: ",name.c_str());
-    
-        va_list ap;
-        va_start(ap,format);
-        int ret=vfprintf(stdout,format,ap);
-        va_end(ap);
-        
-        return ret;
-    }
-    else
-        return -1;
-}
-
-
-/************************************************************************/
 bool SpringyFingersModel::fromProperty(const Property &options)
 {
     if (!options.check("name") || !options.check("type"))
     {
-        printMessage(1,"missing mandatory options \"name\" and/or \"type\"\n");
+        printMessage(log::error,1,"missing mandatory options \"name\" and/or \"type\"");
         return false;
     }
 
@@ -316,7 +294,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     string analogPortName(("/"+robot+"/"+part_analog+"/analog:o").c_str());
     if (!Network::connect(analogPortName.c_str(),port->getName().c_str(),carrier.c_str()))
     {
-        printMessage(1,"unable to connect to %s\n",analogPortName.c_str());
+        printMessage(log::error,1,"unable to connect to %s",analogPortName.c_str());
         close();
         return false;
     }
@@ -324,7 +302,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     IEncoders *ienc; driver.view(ienc);
     int nAxes; ienc->getAxes(&nAxes);
 
-    printMessage(1,"configuring interface-based sensors ...\n");
+    printMessage(log::info,1,"configuring interface-based sensors ...");
     Property propGen;
     propGen.put("name","In_0");
     propGen.put("size",nAxes);
@@ -343,7 +321,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     sensors_ok&=sensIF[3].configure(pIF,propRing);
     sensors_ok&=sensIF[4].configure(pIF,propLittle);
 
-    printMessage(1,"configuring port-based sensors ...\n");
+    printMessage(log::info,1,"configuring port-based sensors ...");
     Property thumb_mp(  "(name Out_0) (index 1)" );
     Property thumb_ip(  "(name Out_1) (index 2)" );
     Property index_mp(  "(name Out_0) (index 4)" );
@@ -373,12 +351,12 @@ bool SpringyFingersModel::fromProperty(const Property &options)
 
     if (!sensors_ok)
     {
-        printMessage(1,"some errors occured\n");
+        printMessage(log::error,1,"some errors occured");
         close();
         return false;
     }
 
-    printMessage(1,"configuring fingers ...\n");
+    printMessage(log::info,1,"configuring fingers ...");
     Property thumb(options.findGroup("thumb").toString().c_str());
     Property index(options.findGroup("index").toString().c_str());
     Property middle(options.findGroup("middle").toString().c_str());
@@ -394,12 +372,12 @@ bool SpringyFingersModel::fromProperty(const Property &options)
 
     if (!fingers_ok)
     {
-        printMessage(1,"some errors occured\n");
+        printMessage(log::error,1,"some errors occured");
         close();
         return false;
     }
 
-    printMessage(1,"attaching sensors to fingers ...\n");
+    printMessage(log::info,1,"attaching sensors to fingers ...");
     fingers[0].attachSensor(sensIF[0]);
     fingers[0].attachSensor(sensPort[0]);
     fingers[0].attachSensor(sensPort[1]);
@@ -428,7 +406,7 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     attachNode(fingers[3]);
     attachNode(fingers[4]);
 
-    printMessage(1,"configuration complete\n");
+    printMessage(log::info,1,"configuration complete");
     return configured=true;
 }
 
@@ -526,7 +504,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
         int nAxes; ienc->getAxes(&nAxes);
         Vector qmin(nAxes),qmax(nAxes),vel(nAxes),acc(nAxes);
 
-        printMessage(1,"steering the hand to a suitable starting configuration\n");
+        printMessage(log::info,1,"steering the hand to a suitable starting configuration");
         for (int j=7; j<nAxes; j++)
         {
             imod->setControlMode(j,VOCAB_CM_POSITION);
@@ -540,7 +518,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
             ipos->positionMove(j,(j==8)?qmax[j]:qmin[j]);   // thumb in opposition
         }
 
-        printMessage(1,"proceeding with the calibration\n");
+        printMessage(log::info,1,"proceeding with the calibration");
         string tag=options.check("finger",Value("all")).asString().c_str();
         if (tag=="thumb")
         {
@@ -598,7 +576,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
         }
         else
         {
-            printMessage(1,"unknown finger request %s\n",tag.c_str());
+            printMessage(log::error,1,"unknown finger request %s",tag.c_str());
             return false;
         }
 
@@ -647,7 +625,7 @@ bool SpringyFingersModel::getOutput(Value &out) const
 void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint,
                                           const double min, const double max)
 {
-    printMessage(1,"calibrating finger %s ...\n",finger.getName().c_str());
+    printMessage(log::info,1,"calibrating finger %s ...",finger.getName().c_str());
     double margin=0.1*(max-min);
     double _min=min+margin;
     double _max=max-margin;
@@ -702,7 +680,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
 
             if (fabs(fb-fbOld)>0.5)
             {
-                printMessage(2,"feeding finger %s\n",finger.getName().c_str());
+                printMessage(log::no_info,2,"feeding finger %s",finger.getName().c_str());
                 finger.calibrate(feed);
             }
 
@@ -722,9 +700,9 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
         }
     }
 
-    printMessage(1,"training finger %s ...\n",finger.getName().c_str());    
+    printMessage(log::info,1,"training finger %s ...",finger.getName().c_str());    
     finger.calibrate(train);
-    printMessage(1,"finger %s trained!\n",finger.getName().c_str());
+    printMessage(log::info,1,"finger %s trained!",finger.getName().c_str());
 }
 
 
@@ -742,7 +720,7 @@ bool SpringyFingersModel::isCalibrated() const
 /************************************************************************/
 void SpringyFingersModel::close()
 {
-    printMessage(1,"closing ...\n");
+    printMessage(log::info,1,"closing ...");
 
     if (driver.isValid())
         driver.close();

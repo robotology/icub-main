@@ -15,13 +15,9 @@
  * Public License for more details
 */
 
-#include <cstdio>
-#include <cstdarg>
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
-
-#include <yarp/os/Network.h>
 
 #include <iCub/ctrl/math.h>
 #include <iCub/perception/private/ports.h>
@@ -82,7 +78,7 @@ bool TactileFinger::toStream(ostream &str) const
 /************************************************************************/
 bool TactileFinger::calibrate(const Property &options)
 {
-    // meaningless: not available
+    yWarning("TactileFinger: calibration not available");
     return true;
 }
 
@@ -90,7 +86,7 @@ bool TactileFinger::calibrate(const Property &options)
 /************************************************************************/
 bool TactileFinger::isCalibrated() const
 {
-    // meaningless: not available
+    yWarning("TactileFinger: calibration not available");
     return true;
 }
 
@@ -176,30 +172,11 @@ TactileFingersModel::TactileFingersModel()
 
 
 /************************************************************************/
-int TactileFingersModel::printMessage(const int level, const char *format, ...) const
-{
-    if (verbosity>=level)
-    {
-        fprintf(stdout,"*** %s: ",name.c_str());
-    
-        va_list ap;
-        va_start(ap,format);
-        int ret=vfprintf(stdout,format,ap);
-        va_end(ap);
-        
-        return ret;
-    }
-    else
-        return -1;
-}
-
-
-/************************************************************************/
 bool TactileFingersModel::fromProperty(const Property &options)
 {
     if (!options.check("name") || !options.check("type"))
     {
-        printMessage(1,"missing mandatory options \"name\" and/or \"type\"\n");
+        printMessage(log::error,1,"missing mandatory options \"name\" and/or \"type\"");
         return false;
     }
 
@@ -220,12 +197,12 @@ bool TactileFingersModel::fromProperty(const Property &options)
 
     if (!Network::connect(skinPortName.c_str(),port->getName().c_str(),carrier.c_str()))
     {
-        printMessage(1,"unable to connect to %s\n",skinPortName.c_str());
+        printMessage(log::error,1,"unable to connect to %s",skinPortName.c_str());
         close();
         return false;
     }
 
-    printMessage(1,"configuring port-based sensors ...\n");
+    printMessage(log::info,1,"configuring port-based sensors ...");
     void *pPort=static_cast<void*>(port);
     for (int j=0; j<60; j++)
     {
@@ -238,13 +215,13 @@ bool TactileFingersModel::fromProperty(const Property &options)
 
         if (!sensPort[j].configure(pPort,prop))
         {
-            printMessage(1,"some errors occured\n");
+            printMessage(log::error,1,"some errors occured");
             close();
             return false;
         }
     }
 
-    printMessage(1,"configuring fingers ...\n");
+    printMessage(log::info,1,"configuring fingers ...");
     Property thumb(options.findGroup("thumb").toString().c_str());
     Property index(options.findGroup("index").toString().c_str());
     Property middle(options.findGroup("middle").toString().c_str());
@@ -260,12 +237,12 @@ bool TactileFingersModel::fromProperty(const Property &options)
 
     if (!fingers_ok)
     {
-        printMessage(1,"some errors occured\n");
+        printMessage(log::error,1,"some errors occured");
         close();
         return false;
     }
 
-    printMessage(1,"attaching sensors to fingers ...\n");
+    printMessage(log::info,1,"attaching sensors to fingers ...");
     for (int j=0; j<12; j++)
     {
         fingers[0].attachSensor(sensPort[j+4*12]);
@@ -281,7 +258,7 @@ bool TactileFingersModel::fromProperty(const Property &options)
     attachNode(fingers[3]);
     attachNode(fingers[4]);
 
-    printMessage(1,"configuration complete\n");
+    printMessage(log::info,1,"configuration complete");
     return configured=true;
 }
 
@@ -371,7 +348,7 @@ bool TactileFingersModel::toStream(ostream &str) const
 /************************************************************************/
 bool TactileFingersModel::calibrate(const Property &options)
 {
-    printMessage(1,"calibration not available\n");
+    printMessage(log::warning,1,"calibration not available");
     return true;
 }
 
@@ -379,7 +356,7 @@ bool TactileFingersModel::calibrate(const Property &options)
 /************************************************************************/
 bool TactileFingersModel::isCalibrated() const
 {
-    printMessage(1,"calibration not available\n");
+    printMessage(log::warning,1,"calibration not available");
     return true;
 }
 
@@ -415,7 +392,7 @@ bool TactileFingersModel::getOutput(Value &out) const
 /************************************************************************/
 void TactileFingersModel::close()
 {
-    printMessage(1,"closing ...\n");
+    printMessage(log::info,1,"closing ...");
 
     if (!port->isClosed())
     {
@@ -435,6 +412,5 @@ TactileFingersModel::~TactileFingersModel()
     close();
     delete port;
 }
-
 
 
