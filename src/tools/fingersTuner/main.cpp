@@ -160,16 +160,16 @@ protected:
             pDrv=new PolyDriver(const_cast<Property&>(partOpt));
             bool ok=pDrv->isValid();
             
-            yInfo("Checking if %s is active ... ",device.c_str());
             if (ok)
             {
-                yInfo("yes");
+                yInfo("Checking if %s is active ... yes",device.c_str());
                 return pDrv;
             }
             else
             {
                 double dt=ping_robot_tmo-(Time::now()-t0);
-                yInfo("not yet: still %.1f [s] to timeout expiry",dt>0.0?dt:0.0);
+                yInfo("Checking if %s is active ... not yet: still %.1f [s] to timeout expiry",
+                      device.c_str(),dt>0.0?dt:0.0);
 
                 double t1=Time::now();
                 while (Time::now()-t1<1.0)
