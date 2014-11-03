@@ -15,7 +15,7 @@
  * Public License for more details
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 #include <sstream>
 #include <fstream>

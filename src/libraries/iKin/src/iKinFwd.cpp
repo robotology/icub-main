@@ -16,7 +16,7 @@
  * Public License for more details
 */
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <sstream>
 #include <algorithm>
 

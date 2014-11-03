@@ -156,6 +156,8 @@ yarp connect /icub/right_arm/state:o /jointVel/pos:i
 */ 
 
 #include <string>
+#include <iostream>
+#include <iomanip>
 
 #include <yarp/os/all.h>
 #include <yarp/sig/Vector.h>
@@ -326,12 +328,13 @@ int main(int argc, char *argv[])
 
     if (rf.check("help"))
     {
-        yInfo()<<"Options:";
-        yInfo()<<"\t--name   name: observer port name (default /velObs)";
-        yInfo()<<"\t--lenVel    N: velocity window's max length (default: 16)";
-        yInfo()<<"\t--thrVel    D: velocity max deviation threshold (default: 1.0)";
-        yInfo()<<"\t--lenAcc    N: acceleration window's max length (default: 25)";
-        yInfo()<<"\t--thrAcc    D: acceleration max deviation threshold (default: 1.0)";
+        cout<<"Options:";
+        cout<<"\t--name   name: observer port name (default /velObs)"<<endl;
+        cout<<"\t--lenVel    N: velocity window's max length (default: 16)"<<endl;
+        cout<<"\t--thrVel    D: velocity max deviation threshold (default: 1.0)"<<endl;
+        cout<<"\t--lenAcc    N: acceleration window's max length (default: 25)"<<endl;
+        cout<<"\t--thrAcc    D: acceleration max deviation threshold (default: 1.0)"<<endl;
+        cout<<endl;
 
         return 0;
     }

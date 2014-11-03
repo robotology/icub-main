@@ -16,6 +16,7 @@
  * Public License for more details
 */
 
+#include <cstdio>
 #include <algorithm>
 
 #include <iCub/solver.h>
@@ -291,12 +292,13 @@ void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
     {
         printAccTime=0.0;
 
-        yInfo("norm(e)           = %g",norm(xd-fp));
-        yInfo("Target fix. point = %s",xd.toString().c_str());
-        yInfo("Actual fix. point = %s",fp.toString().c_str());
-        yInfo("Target Joints     = %s",qd.toString().c_str());
-        yInfo("Actual Joints     = %s",q.toString().c_str());
-        yInfo("Velocity          = %s",v.toString().c_str());
+        printf("norm(e)           = %g\n",norm(xd-fp));
+        printf("Target fix. point = %s\n",xd.toString().c_str());
+        printf("Actual fix. point = %s\n",fp.toString().c_str());
+        printf("Target Joints     = %s\n",qd.toString().c_str());
+        printf("Actual Joints     = %s\n",q.toString().c_str());
+        printf("Velocity          = %s\n",v.toString().c_str());
+        printf("\n");
     }
 }
 

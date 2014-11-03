@@ -256,6 +256,7 @@ reply: [ack] (id (1))
 */ 
 
 #include <stdarg.h>
+#include <cstdio>
 #include <sstream>
 #include <string>
 #include <map>
@@ -1639,15 +1640,16 @@ int main(int argc, char *argv[])
 
     if (rf.check("help"))
     {
-        yInfo("Options");
-        yInfo("\t--name        <name>: collector name (default: objectsPropertiesCollector)");
-        yInfo("\t--db      <fileName>: database file name to load at startup/save at shutdown (default: dataBase.ini)");
-        yInfo("\t--context  <context>: context to search for database file (default: objectsPropertiesCollector)");
-        yInfo("\t--empty             : start an empty database");
-        yInfo("\t--nosave            : prevent from saving the content of database at shutdown");
-        yInfo("\t--sync_bc        <T>: broadcast the database content each T seconds");
-        yInfo("\t--async_bc          : broadcast the database content whenever a change occurs");
-        yInfo("\t--stats             : enable statistics printouts");
+        printf("Options\n");
+        printf("\t--name        <name>: collector name (default: objectsPropertiesCollector)\n");
+        printf("\t--db      <fileName>: database file name to load at startup/save at shutdown (default: dataBase.ini)\n");
+        printf("\t--context  <context>: context to search for database file (default: objectsPropertiesCollector)\n");
+        printf("\t--empty             : start an empty database\n");
+        printf("\t--nosave            : prevent from saving the content of database at shutdown\n");
+        printf("\t--sync_bc        <T>: broadcast the database content each T seconds\n");
+        printf("\t--async_bc          : broadcast the database content whenever a change occurs\n");
+        printf("\t--stats             : enable statistics printouts\n");
+        printf("\n");
         return 0;
     }
 

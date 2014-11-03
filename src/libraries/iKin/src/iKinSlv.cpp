@@ -16,6 +16,7 @@
  * Public License for more details
 */
 
+#include <cstdio>
 #include <algorithm>
 
 #include <gsl/gsl_math.h>
@@ -1183,14 +1184,14 @@ void CartesianSolver::printInfo(const string &typ, const Vector &xd,
     // compute error
     Vector e=xd-_x;
 
-    yInfo("   Request type       = %s",typ.c_str());
-    yInfo("  Target rxPose   [m] = %s",xd.toString().c_str());
-    yInfo("  Target txPose   [m] = %s",_x.toString().c_str());
-    yInfo("Target txJoints [deg] = %s",q.toString().c_str());
-    yInfo("  norm(rxPose-txPose) = pos [m]: %g",getNorm(e,"pos"));
+    printf("   Request type       = %s\n",typ.c_str());
+    printf("  Target rxPose   [m] = %s\n",xd.toString().c_str());
+    printf("  Target txPose   [m] = %s\n",_x.toString().c_str());
+    printf("Target txJoints [deg] = %s\n",q.toString().c_str());
+    printf("  norm(rxPose-txPose) = pos [m]: %g\n",getNorm(e,"pos"));
     if (ctrlPose==IKINCTRL_POSE_FULL)
-    yInfo("                        ang [*]: %g",getNorm(e,"ang"));
-    yInfo("    computed in   [s] = %g",t);
+    printf("                        ang [*]: %g\n",getNorm(e,"ang"));
+    printf("    computed in   [s] = %g\n",t);
 }
 
 

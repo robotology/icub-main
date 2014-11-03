@@ -190,6 +190,7 @@ Linux and Windows.
 \author Carlo Ciliberto and Ugo Pattacini
 */ 
 
+#include <cstdio>
 #include <string>
 #include <set>
 #include <vector>
@@ -960,25 +961,27 @@ int main(int argc, char *argv[])
     if (rf.check("help"))
     {
     #ifdef CV_MAJOR_VERSION
-        yInfo("This module has been compiled with OpenCV %d.%d",CV_MAJOR_VERSION,CV_MINOR_VERSION);
+        printf("This module has been compiled with OpenCV %d.%d\n",CV_MAJOR_VERSION,CV_MINOR_VERSION);
     #else
-        yInfo("This module has been compiled with an unknown version of OpenCV (probably < 1.0)");
+        printf("This module has been compiled with an unknown version of OpenCV (probably < 1.0)\n");
     #endif        
-        yInfo("Available options:");
-        yInfo("\t--name              <string>");
-        yInfo("\t--coverXratio       <double>");
-        yInfo("\t--coverYratio       <double>");
-        yInfo("\t--nodesStep         <int>");
-        yInfo("\t--winSize           <int>");
-        yInfo("\t--recogThres        <double>");
-        yInfo("\t--adjNodesThres     <int>");
-        yInfo("\t--blobMinSizeThres  <int>");
-        yInfo("\t--framesPersistence <int>");
-        yInfo("\t--cropSize          \"auto\" or <int>");
+        printf("Available options:");
+        printf("\t--name              <string>\n");
+        printf("\t--coverXratio       <double>\n");
+        printf("\t--coverYratio       <double>\n");
+        printf("\t--nodesStep         <int>\n");
+        printf("\t--winSize           <int>\n");
+        printf("\t--recogThres        <double>\n");
+        printf("\t--adjNodesThres     <int>\n");
+        printf("\t--blobMinSizeThres  <int>\n");
+        printf("\t--framesPersistence <int>\n");
+        printf("\t--cropSize          \"auto\" or <int>\n");
     #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
-        yInfo("\t--numThreads        <int>");
+        printf("\t--numThreads        <int>\n");
     #endif
-        yInfo("\t--verbosity           -");
+        printf("\t--verbosity           -\n");
+        printf("\n");
+
         return 0;
     }
 

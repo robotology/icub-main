@@ -86,7 +86,7 @@ Linux and Windows.
 \author Ugo Pattacini
 */ 
 
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 #include <deque>
 

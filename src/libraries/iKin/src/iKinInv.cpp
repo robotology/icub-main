@@ -17,6 +17,7 @@
 */
 
 #include <typeinfo>
+#include <cstdio>
 #include <algorithm>
 
 #include <gsl/gsl_math.h>
@@ -401,20 +402,22 @@ void SteepCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_INTARGET]="inTarget";
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
-        yInfo("iter #%d",iter);
-        yInfo("state   = %s",strState[state].c_str());
-        yInfo("norm(e) = %g",dist());
-        yInfo("q       = %s",(CTRL_RAD2DEG*q).toString().c_str());
-        yInfo("x       = %s",x.toString().c_str());
+        printf("iter #%d\n",iter);
+        printf("state   = %s\n",strState[state].c_str());
+        printf("norm(e) = %g\n",dist());
+        printf("q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
+        printf("x       = %s\n",x.toString().c_str());
 
         if (_verbose>1)
         {
-            yInfo("grad    = %s",grad.toString().c_str());
-            yInfo("qdot    = %s",(CTRL_RAD2DEG*qdot).toString().c_str());
+            printf("grad    = %s\n",grad.toString().c_str());
+            printf("qdot    = %s\n",(CTRL_RAD2DEG*qdot).toString().c_str());
         }
 
         if (_verbose>2)
-            yInfo("Kp      = %g",Kp);
+            printf("Kp      = %g\n",Kp);
+
+        printf("\n");
     }
 }
 
@@ -665,17 +668,19 @@ void LMCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_INTARGET]="inTarget";
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
-        yInfo("iter #%d",iter);
-        yInfo("state   = %s",strState[state].c_str());
-        yInfo("norm(e) = %g",dist());
-        yInfo("q       = %s",(CTRL_RAD2DEG*q).toString().c_str());
-        yInfo("x       = %s",x.toString().c_str());
+        printf("iter #%d\n",iter);
+        printf("state   = %s\n",strState[state].c_str());
+        printf("norm(e) = %g\n",dist());
+        printf("q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
+        printf("x       = %s\n",x.toString().c_str());
 
         if (_verbose>1)
-            yInfo("grad    = %s",grad.toString().c_str());
+            printf("grad    = %s\n",grad.toString().c_str());
 
         if (_verbose>2)
-            yInfo("mu      = %g",mu);
+            printf("mu      = %g\n",mu);
+
+        printf("\n");
     }
 }
 
@@ -923,21 +928,24 @@ void MultiRefMinJerkCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_INTARGET]="inTarget";
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
-        yInfo("state   = %s",strState[state].c_str());
-        yInfo("norm(e) = %g",dist());
-        yInfo("xd      = %s",x_set.toString().c_str());
-        yInfo("x       = %s",x.toString().c_str());
-        yInfo("qd      = %s",(CTRL_RAD2DEG*q_set).toString().c_str());
-        yInfo("q       = %s",(CTRL_RAD2DEG*q).toString().c_str());
+        printf("iter #%d\n",iter);
+        printf("state   = %s\n",strState[state].c_str());
+        printf("norm(e) = %g\n",dist());
+        printf("xd      = %s\n",x_set.toString().c_str());
+        printf("x       = %s\n",x.toString().c_str());
+        printf("qd      = %s\n",(CTRL_RAD2DEG*q_set).toString().c_str());
+        printf("q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
 
         if (_verbose>1)
         {
-            yInfo("qdot    = %s",(CTRL_RAD2DEG*qdot).toString().c_str());
-            yInfo("xdot    = %s",xdot.toString().c_str());
+            printf("qdot    = %s\n",(CTRL_RAD2DEG*qdot).toString().c_str());
+            printf("xdot    = %s\n",xdot.toString().c_str());
         }
 
         if (_verbose>2)
-            yInfo("comp    = %s",compensation.toString().c_str());
+            printf("comp    = %s\n",compensation.toString().c_str());
+
+        printf("\n");
     }
 }
 
