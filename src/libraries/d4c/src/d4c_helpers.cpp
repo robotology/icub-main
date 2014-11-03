@@ -15,7 +15,7 @@
  * Public License for more details
 */
 
-#include <stdio.h>
+#include <cstdio>
 
 #include <iCub/d4c/private/d4c_helpers.h>
 

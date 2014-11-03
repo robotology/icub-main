@@ -15,8 +15,8 @@
  * Public License for more details
 */
 
-#include <stdio.h>
-#include <stdarg.h>
+#include <cstdio>
+#include <cstdarg>
 
 #include <iCub/d4c/d4c_client.h>
 #include <iCub/d4c/private/d4c_helpers.h>

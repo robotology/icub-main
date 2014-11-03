@@ -80,15 +80,9 @@
 #include <set>
 #include <map>
 
-#include <yarp/os/RateThread.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/Bottle.h>
-#include <yarp/os/Mutex.h>
-#include <yarp/os/Event.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/CartesianControl.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/sig/Vector.h>
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
+#include <yarp/sig/all.h>
 
 #include <iCub/perception/models.h>
 
@@ -293,8 +287,9 @@ protected:
         void clear();
     } actionsQueue;
     std::map<std::string,std::deque<HandWayPoint> > handSeqMap;
+    
+    virtual void printMessage(const int logtype, const char *format, ...);
 
-    virtual int  printMessage(const char *format, ...);
     virtual bool handleTorsoDOF(yarp::os::Property &opt, const std::string &key,const int j);
     virtual void disableTorsoDof();
     virtual void enableTorsoDof();

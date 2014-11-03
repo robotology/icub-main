@@ -113,7 +113,7 @@ Windows, Linux
 */ 
 
 #include <string>
-#include <stdio.h>
+#include <cstdio>
 
 #include <gsl/gsl_math.h>
 

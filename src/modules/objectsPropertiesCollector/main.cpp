@@ -255,8 +255,8 @@ reply: [ack] (id (1))
 \author Ugo Pattacini
 */ 
 
-#include <stdarg.h>
 #include <cstdio>
+#include <cstdarg>
 #include <sstream>
 #include <string>
 #include <map>

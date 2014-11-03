@@ -63,7 +63,7 @@ Windows, Linux
 \author Ilaria Gori, Ugo Pattacini
 */ 
 
-#include <stdio.h>
+#include <cstdio>
 #include <string>
 
 #include <yarp/os/Network.h>

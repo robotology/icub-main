@@ -15,8 +15,8 @@
  * Public License for more details
 */
 
-#include <stdio.h>
-#include <stdarg.h>
+#include <cstdio>
+#include <cstdarg>
 #include <sstream>
 #include <iomanip>
 #include <algorithm>
