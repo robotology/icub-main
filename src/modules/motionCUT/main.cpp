@@ -191,6 +191,7 @@ Linux and Windows.
 */ 
 
 #include <cstdio>
+#include <cmath>
 #include <string>
 #include <set>
 #include <vector>
@@ -198,7 +199,6 @@ Linux and Windows.
 #include <algorithm>
 
 #include <cv.h>
-#include <math.h>
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
