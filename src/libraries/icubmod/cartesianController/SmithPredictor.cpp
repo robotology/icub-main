@@ -16,7 +16,7 @@
  * Public License for more details
 */
 
-#include <stdio.h>
+#include <sstream>
 #include <math.h>
 
 #include <yarp/os/Bottle.h>
@@ -97,11 +97,12 @@ void SmithPredictor::configure(Property &options, iKinChain &chain)
             lim(i,0)=chain[j].getMin();
             lim(i,1)=chain[j].getMax();
 
-            char entry[255];
-            sprintf(entry,"joint_%d",j);
-            if (options.check(entry))
+            ostringstream entry;
+            entry<<"joint_"<<j;
+            const char *entry_str=entry.str().c_str();
+            if (options.check(entry_str))
             {
-                if (Bottle *params=options.find(entry).asList())
+                if (Bottle *params=options.find(entry_str).asList())
                 {
                     if (params->check("Kp"))
                         Kp[i]=params->find("Kp").asDouble();

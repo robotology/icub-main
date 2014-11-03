@@ -66,8 +66,6 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
-#include <iostream>
-#include <iomanip>
 #include <string>
 
 #include <yarp/os/all.h>
@@ -124,7 +122,7 @@ public:
 
         if (!torso.open(optTorso) || !armR.open(optArmR) || !armL.open(optArmL))
         {
-            cout<<"Device drivers not available!"<<endl;
+            yError()<<"Device drivers not available!";
             close();
 
             return false;
@@ -134,7 +132,7 @@ public:
         {
             if (!legR.open(optLegR) || !legL.open(optLegL))
             {
-                cout<<"Device drivers not available!"<<endl;
+                yError()<<"Device drivers not available!";
                 close();
 
                 return false;
@@ -244,7 +242,7 @@ int main(int argc, char *argv[])
     Network yarp;
     if (!yarp.checkNetwork())
     {
-        cout<<"YARP server not available!"<<endl;
+        yError()<<"YARP server not available!";
         return -1;
     }
 
