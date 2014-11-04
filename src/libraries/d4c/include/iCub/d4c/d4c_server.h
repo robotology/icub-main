@@ -185,8 +185,10 @@ protected:
 
     std::deque<GuiRequest> guiQueue;
 
+    virtual void printMessage(const int logtype, const int level,
+                              const char *format, ...) const;
+
     Item* itemFactory(const yarp::os::Property &options);
-    int   printMessage(const int level, const char *format, ...) const;
     bool  read(yarp::os::ConnectionReader &connection);
     void  scheduleInitGuiTrajectory();
     void  initGuiTrajectory();

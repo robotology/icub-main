@@ -50,7 +50,8 @@ protected:
     mutable yarp::os::BufferedPort<yarp::os::Property> data;
     yarp::os::RpcClient rpc;
 
-    int printMessage(const int level, const char *format, ...) const;
+    virtual void printMessage(const int logtype, const int level,
+                              const char *format, ...) const;
 
 public:
     D4CClient();

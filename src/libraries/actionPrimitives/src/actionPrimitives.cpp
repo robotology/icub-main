@@ -16,20 +16,20 @@
  * Public License for more details
 */
 
-#include <yarp/math/Math.h>
-#include <yarp/math/Rand.h>
+#include <cstdio>
+#include <cstdarg>
+#include <sstream>
+#include <algorithm>
 
 #include <gsl/gsl_math.h>
+
+#include <yarp/math/Math.h>
+#include <yarp/math/Rand.h>
 
 #include <iCub/ctrl/math.h>
 #include <iCub/perception/springyFingers.h>
 #include <iCub/perception/tactileFingers.h>
 #include <iCub/action/actionPrimitives.h>
-
-#include <cstdio>
-#include <cstdarg>
-#include <sstream>
-#include <algorithm>
 
 #define RES_WAVER(x)                                (dynamic_cast<ArmWavingMonitor*>(x))
                                                     

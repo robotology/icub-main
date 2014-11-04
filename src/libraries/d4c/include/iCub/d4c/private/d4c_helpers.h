@@ -59,6 +59,17 @@
 #define extractProperty(value)             (Property(value.asList()->toString().c_str()))
 
 
+namespace iCub
+{
+
+namespace d4c
+{
+
+namespace log
+{
+    enum { no_info, info, warning, error };
+}
+
 inline yarp::sig::Vector getVectorPos(const yarp::sig::Vector &x)
 {
     return x.subVector(0,2);
@@ -73,6 +84,10 @@ bool copyVectorData(const yarp::sig::Vector &src, yarp::sig::Vector &dest);
 
 bool extractVector(const yarp::os::Property &prop, const std::string &option,
                    yarp::sig::Vector &res);
+
+}
+
+}
 
 #endif
 

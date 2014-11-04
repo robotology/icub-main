@@ -49,21 +49,36 @@ D4CClient::~D4CClient()
 
 
 /************************************************************************/
-int D4CClient::printMessage(const int level, const char *format, ...) const
+void D4CClient::printMessage(const int logtype, const int level,
+                             const char *format, ...) const
 {
     if (verbosity>=level)
     {
-        fprintf(stdout,"*** %s: ",local.c_str());
-    
-        va_list ap;
-        va_start(ap,format);
-        int ret=vfprintf(stdout,format,ap);
-        va_end(ap);
-        
-        return ret;
+        string str;
+        str="*** "+local+": ";
+
+        va_list arg;
+        char buf[512];
+        va_start(arg,format);        
+        vsnprintf(buf,sizeof(buf),format,arg);
+        va_end(arg);
+
+        str+=buf;
+        switch (logtype)
+        {
+        case log::error:
+            yError(str.c_str());
+            break;
+        case log::warning:
+            yWarning(str.c_str());
+            break;
+        case log::info:
+            yInfo(str.c_str());
+            break;
+        default:
+            printf("%s\n",str.c_str());
+        }
     }
-    else
-        return -1;
 }
 
 
@@ -74,7 +89,7 @@ bool D4CClient::open(const Property &options)
         remote=options.find("remote").asString().c_str();
     else
     {
-        printMessage(1,"\"remote\" option is mandatory to open the client!\n");
+        printMessage(log::error,1,"\"remote\" option is mandatory to open the client!");
         return false;
     }
 
@@ -82,7 +97,7 @@ bool D4CClient::open(const Property &options)
         local=options.find("local").asString().c_str();
     else
     {
-        printMessage(1,"\"local\" option is mandatory to open the client!\n");
+        printMessage(log::error,1,"\"local\" option is mandatory to open the client!");
         return false;
     }
 
@@ -108,20 +123,20 @@ bool D4CClient::open(const Property &options)
             {
                 if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
                 {
-                    printMessage(1,"successfully connected with the server %s!\n",remote.c_str());
+                    printMessage(log::info,1,"successfully connected with the server %s!",remote.c_str());
                     return isOpen=true;
                 }
             }
         }
 
-        printMessage(1,"unable to get correct reply from the server %s!\n",remote.c_str());
+        printMessage(log::error,1,"unable to get correct reply from the server %s!",remote.c_str());
         close();
 
         return false;
     }
     else
     {
-        printMessage(1,"unable to connect to the server %s!\n",remote.c_str());
+        printMessage(log::error,1,"unable to connect to the server %s!",remote.c_str());
         close();
 
         return false;
@@ -142,10 +157,10 @@ void D4CClient::close()
 
         isOpen=false;
 
-        printMessage(1,"client closed\n");
+        printMessage(log::info,1,"client closed");
     }
     else
-        printMessage(3,"client is already closed\n");
+        printMessage(log::warning,3,"client is already closed");
 }
 
 
@@ -155,7 +170,7 @@ bool D4CClient::addItem(const Property &options, int &item)
     if (isOpen)
     {
         string options_str=options.toString().c_str();
-        printMessage(2,"request for adding new item: %s\n",options_str.c_str());
+        printMessage(log::no_info,2,"request for adding new item: %s",options_str.c_str());
         
         Value val;
         val.fromString(("("+options_str+")").c_str());
@@ -169,24 +184,24 @@ bool D4CClient::addItem(const Property &options, int &item)
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
                 item=reply.get(1).asInt();
-                printMessage(1,"item %d successfully added\n",item);
+                printMessage(log::no_info,1,"item %d successfully added",item);
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -197,7 +212,7 @@ bool D4CClient::eraseItem(const int item)
 {
     if (isOpen)
     {
-        printMessage(2,"request for erasing item %d\n",item);
+        printMessage(log::no_info,2,"request for erasing item %d",item);
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_DEL);
@@ -207,24 +222,24 @@ bool D4CClient::eraseItem(const int item)
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"item %d successfully erased\n",item);
+                printMessage(log::no_info,1,"item %d successfully erased",item);
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -235,7 +250,7 @@ bool D4CClient::clearItems()
 {
     if (isOpen)
     {
-        printMessage(2,"request for clearing item table\n");
+        printMessage(log::no_info,2,"request for clearing item table");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_CLEAR);
@@ -244,24 +259,24 @@ bool D4CClient::clearItems()
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"all items have been successfully erased\n");
+                printMessage(log::no_info,1,"all items have been successfully erased");
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -272,7 +287,7 @@ bool D4CClient::getItems(Bottle &items)
 {
     if (isOpen)
     {
-        printMessage(2,"request for retrieving items ids list\n");
+        printMessage(log::no_info,2,"request for retrieving items ids list");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_LIST);
@@ -282,25 +297,25 @@ bool D4CClient::getItems(Bottle &items)
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
                 items=*reply.get(1).asList();
-                printMessage(1,"items ids successfully retrieved: %s\n",
+                printMessage(log::no_info,1,"items ids successfully retrieved: %s",
                              items.toString().c_str());
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -312,7 +327,7 @@ bool D4CClient::setProperty(const int item, const Property &options)
     if (isOpen)
     {     
         string options_str=options.toString().c_str();
-        printMessage(2,"request for setting item %d property: %s\n",
+        printMessage(log::no_info,2,"request for setting item %d property: %s",
                      item,options_str.c_str());
 
         Value val;
@@ -327,25 +342,25 @@ bool D4CClient::setProperty(const int item, const Property &options)
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"item %d property successfully updated: %s\n",
+                printMessage(log::no_info,1,"item %d property successfully updated: %s",
                              item,options_str.c_str());
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -356,7 +371,7 @@ bool D4CClient::getProperty(const int item, Property &options)
 {
     if (isOpen)
     {
-        printMessage(2,"request for retrieving item %d property\n",item);
+        printMessage(log::no_info,2,"request for retrieving item %d property",item);
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_GET);
@@ -367,25 +382,25 @@ bool D4CClient::getProperty(const int item, Property &options)
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
                 options=extractProperty(reply.get(1));
-                printMessage(1,"item %d property successfully retrieved: %s\n",
+                printMessage(log::no_info,1,"item %d property successfully retrieved: %s",
                              item,options.toString().c_str());
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -396,7 +411,7 @@ bool D4CClient::enableField()
 {
     if (isOpen)
     {
-        printMessage(2,"request for enabling field\n");
+        printMessage(log::no_info,2,"request for enabling field");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_ENFIELD);
@@ -405,24 +420,24 @@ bool D4CClient::enableField()
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"field enabled\n");
+                printMessage(log::no_info,1,"field enabled");
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -433,7 +448,7 @@ bool D4CClient::disableField()
 {
     if (isOpen)
     {
-        printMessage(2,"request for disabling field\n");
+        printMessage(log::no_info,2,"request for disabling field");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_DISFIELD);
@@ -442,24 +457,24 @@ bool D4CClient::disableField()
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"field disabled\n");
+                printMessage(log::no_info,1,"field disabled");
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -470,7 +485,7 @@ bool D4CClient::getFieldStatus(bool &status)
 {
     if (isOpen)
     {
-        printMessage(2,"request for retrieving field status\n");
+        printMessage(log::no_info,2,"request for retrieving field status");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_STATFIELD);
@@ -481,24 +496,24 @@ bool D4CClient::getFieldStatus(bool &status)
             {
                 string sw=reply.get(1).asString().c_str();
                 status=sw=="on";
-                printMessage(1,"field status = %s\n",sw.c_str());
+                printMessage(log::no_info,1,"field status = %s",sw.c_str());
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -509,7 +524,7 @@ bool D4CClient::enableControl()
 {
     if (isOpen)
     {
-        printMessage(2,"request for enabling control\n");
+        printMessage(log::no_info,2,"request for enabling control");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_ENCTRL);
@@ -518,24 +533,24 @@ bool D4CClient::enableControl()
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"control enabled\n");
+                printMessage(log::no_info,1,"control enabled");
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -546,7 +561,7 @@ bool D4CClient::disableControl()
 {
     if (isOpen)
     {
-        printMessage(2,"request for disabling control\n");
+        printMessage(log::no_info,2,"request for disabling control");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_DISCTRL);
@@ -555,24 +570,24 @@ bool D4CClient::disableControl()
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"control disabled\n");
+                printMessage(log::no_info,1,"control disabled");
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -583,7 +598,7 @@ bool D4CClient::getControlStatus(bool &status)
 {
     if (isOpen)
     {
-        printMessage(2,"request for retrieving control status\n");
+        printMessage(log::no_info,2,"request for retrieving control status");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_STATCTRL);
@@ -594,24 +609,24 @@ bool D4CClient::getControlStatus(bool &status)
             {
                 string sw=reply.get(1).asString().c_str();
                 status=sw=="on";
-                printMessage(1,"control status = %s\n",sw.c_str());
+                printMessage(log::no_info,1,"control status = %s",sw.c_str());
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -622,7 +637,7 @@ bool D4CClient::enableSimulation()
 {
     if (isOpen)
     {
-        printMessage(2,"request for enabling simulation\n");
+        printMessage(log::no_info,2,"request for enabling simulation");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_ENSIM);
@@ -631,24 +646,24 @@ bool D4CClient::enableSimulation()
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"simulation enabled\n");
+                printMessage(log::no_info,1,"simulation enabled");
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -659,7 +674,7 @@ bool D4CClient::disableSimulation()
 {
     if (isOpen)
     {
-        printMessage(2,"request for disabling simulation\n");
+        printMessage(log::no_info,2,"request for disabling simulation");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_DISSIM);
@@ -668,24 +683,24 @@ bool D4CClient::disableSimulation()
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"simulation disabled\n");
+                printMessage(log::no_info,1,"simulation disabled");
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -696,7 +711,7 @@ bool D4CClient::getSimulationStatus(bool &status)
 {
     if (isOpen)
     {
-        printMessage(2,"request for retrieving simulation status\n");
+        printMessage(log::no_info,2,"request for retrieving simulation status");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_STATSIM);
@@ -707,24 +722,24 @@ bool D4CClient::getSimulationStatus(bool &status)
             {
                 string sw=reply.get(1).asString().c_str();
                 status=sw=="on";
-                printMessage(1,"simulation status = %s\n",sw.c_str());
+                printMessage(log::no_info,1,"simulation status = %s",sw.c_str());
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -735,7 +750,7 @@ bool D4CClient::setPeriod(const int period)
 {
     if (isOpen)
     {
-        printMessage(2,"request for setting period to %s [ms]\n",period);
+        printMessage(log::no_info,2,"request for setting period to %s [ms]",period);
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_SETPER);
@@ -745,24 +760,24 @@ bool D4CClient::setPeriod(const int period)
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"period successfully updated\n");
+                printMessage(log::no_info,1,"period successfully updated");
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -773,7 +788,7 @@ bool D4CClient::getPeriod(int &period)
 {
     if (isOpen)
     {
-        printMessage(2,"request for retrieving period\n");
+        printMessage(log::no_info,2,"request for retrieving period");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_GETPER);
@@ -783,24 +798,24 @@ bool D4CClient::getPeriod(int &period)
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
                 period=reply.get(1).asInt();
-                printMessage(1,"period successfully retrieved: %d [ms]\n",period);
+                printMessage(log::no_info,1,"period successfully retrieved: %d [ms]",period);
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -811,7 +826,7 @@ bool D4CClient::setPointStateToTool()
 {
     if (isOpen)
     {
-        printMessage(2,"request for setting state equal to tool state\n");
+        printMessage(log::no_info,2,"request for setting state equal to tool state");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_SETSTATETOTOOL);
@@ -820,24 +835,24 @@ bool D4CClient::setPointStateToTool()
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"state successfully updated\n");
+                printMessage(log::no_info,1,"state successfully updated");
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -850,7 +865,7 @@ bool D4CClient::attachToolFrame(const yarp::sig::Vector &x, const yarp::sig::Vec
     {
         if ((x.length()<3) || (o.length()<4))
         {
-            printMessage(1,"problem with vector lengths\n");
+            printMessage(log::error,1,"problem with vector lengths");
             return false;
         }
 
@@ -862,7 +877,7 @@ bool D4CClient::attachToolFrame(const yarp::sig::Vector &x, const yarp::sig::Vec
         options.put("o",val_o);
 
         string options_str=options.toString().c_str();
-        printMessage(2,"request for attaching tool frame: %s\n",options_str.c_str());
+        printMessage(log::no_info,2,"request for attaching tool frame: %s",options_str.c_str());
 
         Value val;
         val.fromString(("("+options_str+")").c_str());
@@ -875,24 +890,24 @@ bool D4CClient::attachToolFrame(const yarp::sig::Vector &x, const yarp::sig::Vec
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"tool frame successfully attached\n");
+                printMessage(log::no_info,1,"tool frame successfully attached");
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -903,7 +918,7 @@ bool D4CClient::getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o)
 {
     if (isOpen)
     {
-        printMessage(2,"request for retrieving tool frame\n");
+        printMessage(log::no_info,2,"request for retrieving tool frame");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_GETTOOLFRAME);
@@ -916,24 +931,25 @@ bool D4CClient::getToolFrame(yarp::sig::Vector &x, yarp::sig::Vector &o)
                 extractVector(options,"x",x);
                 extractVector(options,"o",o);
 
-                printMessage(1,"tool frame successfully retrieved %s\n",options.toString().c_str());
+                printMessage(log::no_info,1,"tool frame successfully retrieved %s",
+                             options.toString().c_str());
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -944,7 +960,7 @@ bool D4CClient::removeToolFrame()
 {
     if (isOpen)
     {
-        printMessage(2,"request for removing tool frame\n");
+        printMessage(log::no_info,2,"request for removing tool frame");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_REMOVETOOLFRAME);
@@ -953,24 +969,24 @@ bool D4CClient::removeToolFrame()
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"tool successfully removed\n");
+                printMessage(log::no_info,1,"tool successfully removed");
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -981,7 +997,7 @@ bool D4CClient::getTool(yarp::sig::Vector &x, yarp::sig::Vector &o)
 {
     if (isOpen)
     {
-        printMessage(2,"request for retrieving tool\n");
+        printMessage(log::no_info,2,"request for retrieving tool");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_GETTOOL);
@@ -994,24 +1010,25 @@ bool D4CClient::getTool(yarp::sig::Vector &x, yarp::sig::Vector &o)
                 extractVector(options,"x",x);
                 extractVector(options,"o",o);
 
-                printMessage(1,"tool successfully retrieved %s\n",options.toString().c_str());
+                printMessage(log::no_info,1,"tool successfully retrieved %s",
+                             options.toString().c_str());
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -1037,7 +1054,7 @@ bool D4CClient::setPointState(const Vector &x, const Vector &o,
         options.put("xdot",val_xdot);
 
         string options_str=options.toString().c_str();
-        printMessage(2,"request for setting state: %s\n",options_str.c_str());
+        printMessage(log::no_info,2,"request for setting state: %s",options_str.c_str());
 
         Value val;
         val.fromString(("("+options_str+")").c_str());
@@ -1050,24 +1067,24 @@ bool D4CClient::setPointState(const Vector &x, const Vector &o,
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"state successfully updated\n");
+                printMessage(log::no_info,1,"state successfully updated");
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -1086,7 +1103,7 @@ bool D4CClient::setPointOrientation(const Vector &o, const Vector &odot)
         options.put("odot",val_odot);
 
         string options_str=options.toString().c_str();
-        printMessage(2,"request for setting orientation: %s\n",options_str.c_str());
+        printMessage(log::no_info,2,"request for setting orientation: %s",options_str.c_str());
 
         Value val;
         val.fromString(("("+options_str+")").c_str());
@@ -1099,24 +1116,24 @@ bool D4CClient::setPointOrientation(const Vector &o, const Vector &odot)
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"orientation successfully updated\n");
+                printMessage(log::no_info,1,"orientation successfully updated");
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -1138,13 +1155,13 @@ bool D4CClient::getPointState(Vector &x, Vector &o, Vector &xdot, Vector &odot)
         xdot=getVectorPos(this->xdot);
         odot=getVectorOrien(this->xdot);
 
-        printMessage(1,"got state: x = %s xdot = %s\n",
+        printMessage(log::no_info,1,"got state: x = %s xdot = %s",
                      this->x.toString().c_str(),this->xdot.toString().c_str());
         return true;
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -1160,13 +1177,13 @@ bool D4CClient::getField(Vector &field)
 
         field=this->field;
 
-        printMessage(1,"got field: field=%s\n",
+        printMessage(log::no_info,1,"got field: field=%s",
                      this->field.toString().c_str());
         return true;
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -1187,13 +1204,13 @@ bool D4CClient::getSimulation(Vector &xhat, Vector &ohat, Vector &qhat)
         ohat=getVectorOrien(this->xhat);
         qhat=this->qhat;
 
-        printMessage(1,"got simulated end-effector pose: xhat = %s; got part configuration: qhat = %s\n",
+        printMessage(log::no_info,1,"got simulated end-effector pose: xhat = %s; got part configuration: qhat = %s",
                      this->xhat.toString().c_str(),this->qhat.toString().c_str());
         return true;
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -1204,7 +1221,7 @@ bool D4CClient::getActiveIF(string &activeIF)
 {
     if (isOpen)
     {
-        printMessage(2,"request to know the active interface\n");
+        printMessage(log::no_info,2,"request to know the active interface");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_GETACTIF);
@@ -1214,24 +1231,24 @@ bool D4CClient::getActiveIF(string &activeIF)
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
                 activeIF=reply.get(1).asString().c_str();
-                printMessage(1,"active interface: %s\n",activeIF.c_str());
+                printMessage(log::no_info,1,"active interface: %s",activeIF.c_str());
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -1242,7 +1259,7 @@ bool D4CClient::setActiveIF(const string &activeIF)
 {
     if (isOpen)
     {
-        printMessage(2,"request to set the active interface\n");
+        printMessage(log::no_info,2,"request to set the active interface");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_SETACTIF);
@@ -1252,24 +1269,24 @@ bool D4CClient::setActiveIF(const string &activeIF)
         {
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"active interface successfully set to %s\n",activeIF.c_str());
+                printMessage(log::no_info,1,"active interface successfully set to %s",activeIF.c_str());
                 return true;
             }
             else
             {
-                printMessage(1,"something went wrong: request rejected\n");
+                printMessage(log::error,1,"something went wrong: request rejected");
                 return false;
             }
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -1281,7 +1298,7 @@ bool D4CClient::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
 {
     if (isOpen)
     {
-        printMessage(2,"request to retrieve the whole trajectory\n");
+        printMessage(log::no_info,2,"request to retrieve the whole trajectory");
 
         Bottle cmd,reply;
         cmd.addVocab(D4C_VOCAB_CMD_GETTRAJ);
@@ -1319,7 +1336,7 @@ bool D4CClient::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
                         }
 
                         okPos=true;
-                        printMessage(1,"trajectory in position has been computed\n");
+                        printMessage(log::no_info,1,"trajectory in position has been computed");
                     }
                 }
 
@@ -1342,7 +1359,7 @@ bool D4CClient::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
                         }
 
                         okOrien=true;
-                        printMessage(1,"trajectory in orientation has been computed\n");                        
+                        printMessage(log::no_info,1,"trajectory in orientation has been computed");                        
                     }
                 }
 
@@ -1350,18 +1367,18 @@ bool D4CClient::getTrajectory(deque<Vector> &trajPos, deque<Vector> &trajOrien,
                     return true;
             }
 
-            printMessage(1,"something went wrong: request rejected\n");
+            printMessage(log::error,1,"something went wrong: request rejected");
             return false;
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
@@ -1373,16 +1390,16 @@ bool D4CClient::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
 {
     if (isOpen)
     {
-        printMessage(2,"request to execute user trajectory\n");
+        printMessage(log::no_info,2,"request to execute user trajectory");
 
         if (trajPos.size()!=trajOrien.size())
         {
-            printMessage(1,"position and orientation data have different size!\n");
+            printMessage(log::error,1,"position and orientation data have different size!");
             return false;
         }
         else if (trajTime<0.0)
         {
-            printMessage(1,"negative trajectory duration provided!\n");
+            printMessage(log::error,1,"negative trajectory duration provided!");
             return false;
         }
 
@@ -1416,22 +1433,22 @@ bool D4CClient::executeTrajectory(const deque<Vector> &trajPos, const deque<Vect
         {            
             if (reply.get(0).asVocab()==D4C_VOCAB_CMD_ACK)
             {
-                printMessage(1,"trajectory executed\n");
+                printMessage(log::no_info,1,"trajectory executed");
                 return true;
             }
 
-            printMessage(1,"something went wrong: request rejected\n");
+            printMessage(log::error,1,"something went wrong: request rejected");
             return false;
         }
         else
         {
-            printMessage(1,"unable to get reply from the server %s!\n",remote.c_str());
+            printMessage(log::error,1,"unable to get reply from the server %s!",remote.c_str());
             return false;
         }
     }
     else
     {
-        printMessage(1,"client is not open\n");
+        printMessage(log::warning,1,"client is not open");
         return false;
     }
 }
