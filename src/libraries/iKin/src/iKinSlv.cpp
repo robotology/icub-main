@@ -1321,7 +1321,7 @@ bool CartesianSolver::open(Searchable &options)
     }
 
     Property DHTable; prt->lmb->toLinksProperties(DHTable);
-    yInfo()<<"DH Table: "<<DHTable.toString().c_str();  // to prevent long strings truncation
+    yInfo()<<"DH Table: "<<DHTable.toString().c_str();  // stream version to prevent long strings truncation
     
     if (options.check("ping_robot_tmo"))
         ping_robot_tmo=options.find("ping_robot_tmo").asDouble();
