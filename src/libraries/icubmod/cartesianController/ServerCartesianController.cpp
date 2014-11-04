@@ -1949,7 +1949,7 @@ bool ServerCartesianController::open(Searchable &config)
     }
 
     Property DHTable; limbState->toLinksProperties(DHTable);
-    yInfo("DH Table: %s",DHTable.toString().c_str());
+    yInfo()<<"DH Table: "<<DHTable.toString().c_str();  // to prevent long strings truncation
 
     // duplicate the limb for planning purpose
     limbPlan=new iKinLimb(*limbState);

@@ -16,12 +16,11 @@
  * Public License for more details
 */
 
-#include <cstdio>
 #include <algorithm>
 
 #include <gsl/gsl_math.h>
 
-#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
 
@@ -1322,7 +1321,7 @@ bool CartesianSolver::open(Searchable &options)
     }
 
     Property DHTable; prt->lmb->toLinksProperties(DHTable);
-    yInfo("DH Table: %s",DHTable.toString().c_str());
+    yInfo()<<"DH Table: "<<DHTable.toString().c_str();  // to prevent long strings truncation
     
     if (options.check("ping_robot_tmo"))
         ping_robot_tmo=options.find("ping_robot_tmo").asDouble();
