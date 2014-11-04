@@ -1239,10 +1239,13 @@ public:
                         else
                         {
                            motorThr->setGazeIdle();
-                           motorThr->release(command);
+                           motorThr->release(command);                           
 
                            if (!check(command,"still"))
+                           {
+                               motorThr->goUp(command,0.1);
                                motorThr->goHome(command);
+                           }
 
                            reply.addVocab(NACK);
                         }
