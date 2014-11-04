@@ -17,7 +17,7 @@
 */
 
 #include <sstream>
-#include <math.h>
+#include <cmath>
 
 #include <yarp/os/Bottle.h>
 #include <yarp/math/Math.h>
