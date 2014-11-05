@@ -154,8 +154,6 @@ extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor
     }
 
 
-#if defined(USE_MNINFO_LARGE_STATUS)
-
     const char * infotype[] =
     {
         "eomn_info_type_info",
@@ -169,9 +167,6 @@ extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor
 
     snprintf(str, sizeof(str), "[INFO]-> mn-info: ropsign = 0x%x, roptime = %04ds+%03dms+%03dus, BOARD = %d: -> info.status.properties.type = %s, info.status.data = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, sss, infostatus->data);
 
-#else
-    snprintf(str, sizeof(str), "[INFO]-> mn-info: ropsign = 0x%x, roptime = %04ds+%03dms+%03dus, BOARD = %d: -> info.status.type = %d, info.status.string = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, infostatus->type, infostatus->string);
-#endif
     printf("%s\n", str);
     fflush(stdout);
 }
