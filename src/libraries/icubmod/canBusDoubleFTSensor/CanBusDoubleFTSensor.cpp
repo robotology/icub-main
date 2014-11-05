@@ -9,7 +9,6 @@
 #include <yarp/os/Time.h>
 #include <iostream>
 #include <string.h>
-#include <boost/concept_check.hpp>
 
 const int CAN_DRIVER_BUFFER_SIZE=2047;
 

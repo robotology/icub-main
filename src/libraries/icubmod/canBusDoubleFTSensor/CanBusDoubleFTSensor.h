@@ -13,14 +13,12 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/sig/Vector.h>
-#include <boost/concept_check.hpp>
 
 using namespace yarp::os;
 using namespace yarp::dev;
 
 /**
 *  @ingroup icub_hardware_modules
-*  \defgroup canbusdoubleftsensor canbusdoubleftsensor
 *
 *
 * Driver for CAN communication with two six-axis FT sensor, mounted in parallel.
