@@ -10,6 +10,8 @@
 #include <iostream>
 #include <string.h>
 
+#include <yarp/os/Log.h>
+
 const int CAN_DRIVER_BUFFER_SIZE=2047;
 
 using namespace std;
@@ -297,19 +299,14 @@ int CanBusDoubleFTSensor::read(yarp::sig::Vector &out)
 {
     int ret_val;
 
-    mutex.wait();
-    if( this->firstSampleRead )
+    if( overallStatus == yarp::dev::IAnalogSensor::AS_OK)
     {
+        mutex.wait();
         out=this->outputData;
-        ret_val = yarp::dev::IAnalogSensor::AS_OK;
+        mutex.post();
     }
-    else
-    {
-        ret_val = yarp::dev::IAnalogSensor::AS_ERROR;
-    }
-    mutex.post();
 
-    return ret_val;
+    return this->overallStatus;
 }
 
 int CanBusDoubleFTSensor::getState(int ch)
@@ -427,7 +424,7 @@ void CanBusDoubleFTSensor::run()
         const char   type     = ((msgid&0x700)>>8);
 
         //parse data here
-        status=IAnalogSensor::AS_OK;
+        overallStatus=IAnalogSensor::AS_OK;
 
         if (type==0x03) //analog data
         {
@@ -443,6 +440,7 @@ void CanBusDoubleFTSensor::run()
             if ( sensor_number == 0 ||
                  sensor_number == 1 )
             {
+                updateOutput = true;
                 timeStamp[sensor_number]=Time::now();
                 switch (dataFormat)
                 {
@@ -450,24 +448,23 @@ void CanBusDoubleFTSensor::run()
                         if (len==6)
                         {
                             ret=decode16(buff, msgid, sensor_number);
-                            updateOutput = true;
-                            status=IAnalogSensor::AS_OK;
+                            status[sensor_number]=IAnalogSensor::AS_OK;
                         }
                         else
                         {
                             if (len==7 && buff[6] == 1)
                             {
-                                status=IAnalogSensor::AS_OVF;
+                                status[sensor_number]=IAnalogSensor::AS_OVF;
                             }
                             else
                             {
-                                status=IAnalogSensor::AS_ERROR;
+                                status[sensor_number]=IAnalogSensor::AS_ERROR;
                             }
                             ret=decode16(buff, msgid, sensor_number);
                         }
                         break;
                     default:
-                        status=IAnalogSensor::AS_ERROR;
+                        status[sensor_number]=IAnalogSensor::AS_ERROR;
                         ret=false;
                 }
             }
@@ -475,14 +472,19 @@ void CanBusDoubleFTSensor::run()
     }
 
     //if 100ms have passed since the last received message
-    if (timeStamp[0]+0.1<timeNow || timeStamp[1]+0.1<timeNow)
+    for(int sensor_number=0; sensor_number < 2; sensor_number++ )
     {
-        status=IAnalogSensor::AS_TIMEOUT;
+        if (timeStamp[sensor_number]+0.1<timeNow)
+        {
+            updateOutput = true;
+            status[sensor_number]=IAnalogSensor::AS_TIMEOUT;
+        }
     }
 
     if( updateOutput )
     {
         //If the sensor reading have been update, update also the output
+        combineDoubleSensorStatus();
         combineDoubleSensorReadings();
     }
 
@@ -520,9 +522,42 @@ void CanBusDoubleFTSensor::combineDoubleSensorReadings()
     outputData[3] += buffer[3];
     outputData[4] += buffer[4] + frontSingleDistance*buffer[2];
     outputData[5] += buffer[5] - frontSingleDistance*buffer[1];
-
-    this->firstSampleRead = true;
 }
+
+void CanBusDoubleFTSensor::combineDoubleSensorStatus()
+{
+    //If one of the sensor has an error, report an error
+    if( status[0] == IAnalogSensor::AS_ERROR ||
+        status[1] == IAnalogSensor::AS_ERROR )
+    {
+        overallStatus = IAnalogSensor::AS_ERROR;
+    }
+    else if( status[0] == IAnalogSensor::AS_TIMEOUT ||
+             status[1] == IAnalogSensor::AS_TIMEOUT )
+    {
+        overallStatus = IAnalogSensor::AS_TIMEOUT;
+    }
+    else if( status[0] == IAnalogSensor::AS_OVF ||
+             status[1] == IAnalogSensor::AS_OVF )
+    {
+        overallStatus = IAnalogSensor::AS_OVF;
+    }
+    else if( status[0] == IAnalogSensor::AS_OK &&
+             status[1] == IAnalogSensor::AS_OK )
+    {
+        overallStatus = IAnalogSensor::AS_OK;
+    }
+    else
+    {
+        //something went wrong because the status of the
+        //individual sensor have a unexpected value, returning
+        //an error
+        yError("CanBusDoubleFTSensor sensor status have unexpected values %d,%d\n",status[0],status[1]);
+        overallStatus = IAnalogSensor::AS_ERROR;
+    }
+    return;
+}
+
 
 
 void CanBusDoubleFTSensor::threadRelease()

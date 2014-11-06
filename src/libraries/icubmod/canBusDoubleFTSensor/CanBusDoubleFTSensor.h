@@ -93,7 +93,8 @@ protected:
     unsigned int       sensorsChannelsNum;
     unsigned int       outputChannelsNum;
     unsigned short     sensorBoardId[2];
-    short              status;
+    short              status[2];
+    short              overallStatus[2];
     double             timeStamp[2];
     AnalogDataFormat   dataFormat;
 
@@ -107,11 +108,12 @@ protected:
     double backSingleDistance;
     double frontSingleDistance;
 
-    bool firstSampleRead;
-
 public:
-    CanBusDoubleFTSensor(int period=20) : RateThread(period),mutex(1),firstSampleRead(false)
-    {}
+    CanBusDoubleFTSensor(int period=20) : RateThread(period),mutex(1),overallStatus(IAnalogSensor::AS_OK)
+    {
+        status[0] = IAnalogSensor::AS_OK;
+        status[1] = IAnalogSensor::AS_OK;
+    }
 
 
     ~CanBusDoubleFTSensor()
@@ -149,6 +151,7 @@ public:
      */
     bool readFullScaleAnalog(int ch, int sensor_number);
     void combineDoubleSensorReadings();
+    void combineDoubleSensorStatus();
     void openCanMask(int sensor_number);
 };
 
