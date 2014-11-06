@@ -315,7 +315,7 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
 
         for(j=0; j<numofcfg; j++)
         {
-            yError() << "special traingle cfg: " << numofcfg;
+            yDebug() << "Special triangle cfg: " << numofcfg << " on can bus: " << _canBusNum;
 
             //check if patch exist
             if(_canBusNum != triangleCfg[j].patch)
