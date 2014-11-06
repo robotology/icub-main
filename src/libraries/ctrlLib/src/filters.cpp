@@ -129,7 +129,7 @@ bool Filter::adjustCoeffs(const Vector &num, const Vector &den)
 
 
 /***************************************************************************/
-Vector Filter::filt(const Vector &u)
+const Vector& Filter::filt(const Vector &u)
 {
     yAssert(y.length()==u.length());
     for (size_t j=0; j<y.length(); j++)
@@ -190,7 +190,7 @@ void RateLimiter::setLimits(const Vector &rL, const Vector &rU)
 
 
 /**********************************************************************/
-Vector RateLimiter::filt(const Vector &u)
+const Vector& RateLimiter::filt(const Vector &u)
 {
     uD=u-uLim;
     for (size_t i=0; i<n; i++)
