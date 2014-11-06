@@ -11,6 +11,7 @@
 #include <string.h>
 
 #include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 const int CAN_DRIVER_BUFFER_SIZE=2047;
 
@@ -36,7 +37,7 @@ bool CanBusDoubleFTSensor::open(yarp::os::Searchable& config)
 
     if (!correct)
     {
-        std::cerr<<"[ERROR] insufficient parameters to CanBusDoubleFTSensor\n";
+        yError()<<"insufficient parameters to CanBusDoubleFTSensor\n";
         return false;
     }
 
@@ -61,13 +62,13 @@ bool CanBusDoubleFTSensor::open(yarp::os::Searchable& config)
     driver.open(prop);
     if (!driver.isValid())
     {
-        fprintf(stderr, "[ERROR] Error opening PolyDriver check parameters\n");
+        yError("Error opening PolyDriver check parameters\n");
         return false;
     }
     driver.view(pCanBus);
     if (!pCanBus)
     {
-        fprintf(stderr, "[ERROR] Error opening can device not available\n");
+        yError("Error opening can device not available\n");
         return false;
     }
     driver.view(pCanBufferFactory);
@@ -182,7 +183,7 @@ bool CanBusDoubleFTSensor::readFullScaleAnalog(int ch, int sensor_number)
 
     if (full_scale_read==false)
         {
-            fprintf(stderr, "[ERROR] Trying to get fullscale data from sensor %d net [%d]: no answer received or message lost (ch:%d)\n", boardId, canDeviceNum, ch);
+            yError("Trying to get fullscale data from sensor %d net [%d]: no answer received or message lost (ch:%d)\n", boardId, canDeviceNum, ch);
             return false;
         }
 
@@ -191,7 +192,7 @@ bool CanBusDoubleFTSensor::readFullScaleAnalog(int ch, int sensor_number)
 
 bool CanBusDoubleFTSensor::sensor_start(yarp::os::Searchable& analogConfig, int sensor_number)
 {
-    fprintf(stderr, "--> Initializing analog device %s\n", analogConfig.find("deviceId").toString().c_str());
+    yTrace("--> Initializing analog device %s\n", analogConfig.find("deviceId").toString().c_str());
 
     unsigned int canMessages=0;
     unsigned id = 0x200 + this->sensorBoardId[sensor_number];
@@ -206,7 +207,7 @@ bool CanBusDoubleFTSensor::sensor_start(yarp::os::Searchable& analogConfig, int 
         msg.setLen(2);
         canMessages=0;
         pCanBus->canWrite(outBuffer, 1, &canMessages);
-        fprintf(stderr, "using broadcast period %d on device %s\n", period, analogConfig.find("deviceId").toString().c_str());
+        yDebug("Using broadcast period %d on device %s\n", period, analogConfig.find("deviceId").toString().c_str());
     }
 
     //init message for strain board (checking just for safety)
@@ -224,7 +225,7 @@ bool CanBusDoubleFTSensor::sensor_start(yarp::os::Searchable& analogConfig, int 
                     b = readFullScaleAnalog(ch,sensor_number);
                     if (b==true)
                         {
-                            if (attempts>0)    fprintf(stderr, "[WARNING] Trying to get fullscale data from sensor: channel recovered (ch:%d)\n", ch);
+                            if (attempts>0)   yWarning("Trying to get fullscale data from sensor: channel recovered (ch:%d)\n", ch);
                             break;
                         }
                     attempts++;
@@ -232,7 +233,7 @@ bool CanBusDoubleFTSensor::sensor_start(yarp::os::Searchable& analogConfig, int 
                 }
                 if (attempts>=15)
                 {
-                    fprintf(stderr, "[ERROR] Trying to get fullscale data from sensor: all attempts failed (ch:%d)\n", ch);
+                    yError ("Trying to get fullscale data from sensor: all attempts failed (ch:%d)\n", ch);
                 }
             }
 
@@ -386,7 +387,7 @@ bool CanBusDoubleFTSensor::decode16(const unsigned char *msg, int msg_id, int se
             {} //skip these, they are not for us
             break;
         default:
-            fprintf(stderr, "Warning, got unexpected class 0x3 msg(s): groupId 0x%x\n", groupId);
+            yWarning("Got unexpected class 0x3 msg(s): groupId 0x%x\n", groupId);
             return false;
             break;
         }
@@ -408,7 +409,7 @@ void CanBusDoubleFTSensor::run()
     bool res=pCanBus->canRead(inBuffer,CAN_DRIVER_BUFFER_SIZE,&canMessages);
     if (!res)
     {
-        std::cerr<<"[ERROR] CanBusDoubleFTSensor canRead failed\n";
+        yError()<<"CanBusDoubleFTSensor canRead failed\n";
     }
 
     double timeNow=Time::now();
@@ -562,7 +563,6 @@ void CanBusDoubleFTSensor::combineDoubleSensorStatus()
 
 void CanBusDoubleFTSensor::threadRelease()
 {
-    printf("CanBusDoubleFTSensor Thread releasing...\n");
-    printf("... done.\n");
+    yTrace("CanBusDoubleFTSensor Thread released\n");
 }
 

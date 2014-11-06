@@ -516,7 +516,7 @@ void CanBusSkin::run() {
     bool res=pCanBus->canRead(inBuffer,CAN_DRIVER_BUFFER_SIZE,&canMessages);
     if (!res)
     {
-        std::cerr<<"canRead failed\n";
+        yError()<<"canRead failed\n";
     }
 
     for (unsigned int i=0; i<canMessages; i++)

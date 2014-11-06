@@ -496,7 +496,7 @@ void TBR_CanBackDoor::onRead(Bottle &b)
             dval[5] = 0; 
         break;
         default:
-            fprintf(stderr, "Warning: got unexpected message on backdoor: %s\n", this->getName().c_str());
+            yWarning("Got unexpected message on backdoor: %s\n", this->getName().c_str());
             return;
         break;
     }
@@ -827,7 +827,7 @@ bool TBR_AnalogSensor::decode16(const unsigned char *msg, int id, double *data)
             {} //skip these, they are not for us
             break;
         default:
-            fprintf(stderr, "Warning, got unexpected class 0x3 msg(s)\n");
+            yWarning("Got unexpected class 0x3 msg(s)\n");
             return false;
             break;
         }
@@ -864,7 +864,7 @@ bool TBR_AnalogSensor::decode8(const unsigned char *msg, int id, double *data)
             {} //skip these, they are not for us
             break;
         default:
-            fprintf(stderr, "Warning, got unexpected class 0x3 msg(s): groupId 0x%x\n", groupId);
+            yWarning("Got unexpected class 0x3 msg(s): groupId 0x%x\n", groupId);
             return false;
             break;
         }
@@ -1829,7 +1829,7 @@ bool CanBusResources::initialize (yarp::os::Searchable &config)
     polyDriver.open(config);
     if (!polyDriver.isValid())
     {
-        fprintf(stderr, "Warning could not instantiate can device\n");
+        yError("Could not instantiate CAN device\n");
         return false;
     }
 
@@ -2546,7 +2546,7 @@ TBR_AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& c
                             b = readFullScaleAnalog(analogSensor->getId(), ch, &analogSensor->getScaleFactor()[ch]);
                             if (b==true) 
                                 {
-                                    if (attempts>0)    fprintf(stderr, "*** WARNING: Trying to get fullscale data from sensor: channel recovered (ch:%d)\n", ch);
+                                    if (attempts>0)    yWarning("Trying to get fullscale data from sensor: channel recovered (ch:%d)\n", ch);
                                     break;
                                 }
                             attempts++;
@@ -3442,11 +3442,11 @@ void CanBusMotionControl:: run()
             //fprintf(stderr, "Passing messages to analog device %s\n", pAnalog->getDeviceId().c_str());
             if (!pAnalog->handleAnalog(system_resources))
             {
-                fprintf(stderr, "%s [%d] analog sensor received unexpected class 0x03 messages\n", canDevName.c_str(), r._networkN);
+                yWarning("%s [%d] analog sensor received unexpected class 0x03 messages\n", canDevName.c_str(), r._networkN);
             }
         }
         else
-            fprintf(stderr, "Warning: got null pointer this is unusual\n");
+            yWarning("Got null pointer this is unusual\n");
             
         analogIt++;
     }
@@ -3475,19 +3475,19 @@ void CanBusMotionControl:: run()
                             int id=r.requestsQueue->pop(j, msgData[0]);
                             if(id==-1)
                                 {
-                                    fprintf(stderr, "%s [%d] Received message but no threads waiting for it. (id: 0x%x, Class:%d MsgData[0]:%d)\n ", canDevName.c_str(), r._networkN, m.getId(), getClass(m), msgData[0]);
+                                    yWarning("%s [%d] Received message but no threads waiting for it. (id: 0x%x, Class:%d MsgData[0]:%d)\n ", canDevName.c_str(), r._networkN, m.getId(), getClass(m), msgData[0]);
                                     continue;
                                 }
                             ThreadTable2 *t=threadPool->getThreadTable(id);
                             if (t==0)
                                 {
-                                    fprintf(stderr, "Asked a bad thread id, this is probably a bug, check threadPool\n");
+                                    yWarning("Asked a bad thread id, this is probably a bug, check threadPool\n");
                                     continue;
                                 }
                             DEBUG_FUNC("Pushing reply\n");
                             //push reply to thread's list of replies
                             if (!t->push(m))
-                                DEBUG_FUNC("Warning, error while pushing a reply, this ir probably an error\n");
+                                yError("error while pushing a reply, this is probably an error\n");
                         }
                 }
         }

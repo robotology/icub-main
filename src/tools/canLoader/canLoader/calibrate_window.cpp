@@ -12,6 +12,7 @@
 #include <canProtocolLib/iCubCanProtocol.h>
 #include <canProtocolLib/iCubCanProto_types.h>
 #include <fstream>
+#include <yarp/os/Log.h>
 
 using namespace std;
 
@@ -546,12 +547,12 @@ bool calibration_load_v2 (char* filename, int selected_id)
 {
     if (filename==NULL)
         {
-            printf ("ERR: File not found!\n");
+            yError("File not found!\n");
             return false;
         }
     if (selected_id <1 || selected_id >= 15)
         {
-            printf ("ERR: invalid board address!\n");
+            yError("Invalid board address!\n");
             return false;
         }
 
@@ -560,7 +561,7 @@ bool calibration_load_v2 (char* filename, int selected_id)
     filestr.open (filename, fstream::in);
     if (!filestr.is_open())
         {
-            printf ("ERR: Error opening calibration file!\n");
+            yError("Error opening calibration file!\n");
             return false;
         }
 
@@ -573,7 +574,7 @@ bool calibration_load_v2 (char* filename, int selected_id)
     sscanf (buffer,"%d",&file_version);
     if (file_version!=2)
         {
-            printf ("ERR: Wrong file. Calibration version != 2\n");
+            yError("Wrong file. Calibration version != 2\n");
             return false;
         }
 
@@ -649,7 +650,7 @@ void file_load_click (GtkButton *button,    gpointer ch_p)
     buff = gtk_file_chooser_get_filename   (GTK_FILE_CHOOSER(picker_calib));
     if (buff==NULL)
         {
-            printf ("ERR: File not found!\n");
+            yError("File not found!\n");
             return;
         }
 
@@ -712,7 +713,7 @@ void file_import_click (GtkButton *button,    gpointer ch_p)
     buff = gtk_file_chooser_get_filename   (GTK_FILE_CHOOSER(picker_calib));
     if (buff==NULL)
         {
-            printf ("ERR: File not found!\n");
+            yError("File not found!\n");
             return;
         }
 
@@ -720,7 +721,7 @@ void file_import_click (GtkButton *button,    gpointer ch_p)
     filestr.open (buff, fstream::in);
     if (!filestr.is_open())
         {
-            printf ("ERR: Error opening calibration file!\n");
+            yError("Error opening calibration file!\n");
             return;
         }
 

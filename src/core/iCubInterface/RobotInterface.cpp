@@ -12,6 +12,7 @@
 #include <yarp/os/Thread.h>
 
 #include <yarp/os/Os.h>
+#include <yarp/os/Log.h>
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -170,7 +171,7 @@ bool RobotInterface::initialize(const std::string &file)
     {
         hasHead=instantiateHead(robotOptions);
         if (!hasHead)
-            fprintf(stderr, "RobotInterface::warning troubles instantiating head\n");
+            yWarning("RobotInterface::warning troubles instantiating head\n");
     }
 
     fprintf(stderr, "RobotInterface::now opening inertial\n");
@@ -178,7 +179,7 @@ bool RobotInterface::initialize(const std::string &file)
     {
         fprintf(stderr, "RobotInterface:: inertial sensor is in the conf file\n");
         if (!instantiateInertial(robotOptions))
-            fprintf(stderr, "RobotInterface::warning troubles instantiating inertial sensor\n");
+            yWarning("RobotInterface::warning troubles instantiating inertial sensor\n");
     }
     else
         fprintf(stderr, "RobotInterface::no inertial sensor defined in the config file\n");
@@ -187,21 +188,21 @@ bool RobotInterface::initialize(const std::string &file)
     {
         hasRightArm=instantiateRightArm(robotOptions);
         if (!hasRightArm)
-            fprintf(stderr, "RobotInterface::warning troubles instantiating right arm\n");
+            yWarning("RobotInterface::warning troubles instantiating right arm\n");
     }
 
     if (robotOptions.check("LEFTARM"))
     {
         hasLeftArm=instantiateLeftArm(robotOptions);
         if (!hasLeftArm)
-            fprintf(stderr, "RobotInterface::warning troubles instantiating left arm\n");
+            yWarning("RobotInterface::warning troubles instantiating left arm\n");
     }
 
     if (robotOptions.check("LEGS"))
         {
             hasLegs=instantiateLegs(robotOptions);
             if (!hasLegs)
-                fprintf(stderr, "RobotInterface::warning troubles instantiating legs\n");
+                yWarning("RobotInterface::warning troubles instantiating legs\n");
         }
 
     printf("Starting robot calibration\n");

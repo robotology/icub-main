@@ -7,6 +7,7 @@
 #include <CanBusVirtualAnalogSensor.h>
 
 #include <yarp/os/Time.h>
+#include <yarp/os/Log.h>
 #include <iostream>
 #include <string.h>
 
@@ -133,7 +134,7 @@ bool CanBusVirtualAnalogSensor::updateMeasure(yarp::sig::Vector &dval)
             if (Time::now() - curr_time > 2)
                 {
 //                    fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %+4.4f COUNT: %d \n", deviceName.c_str(), i, dval[i], count_saturation);
-                    fprintf(stderr, "[WARNING] VIRTUAL FT SENSOR can:%d id:%d SATURATED CH:%d : %+4.4f COUNT: %d \n",this->canId,this->boardId, i, dval[i], count_saturation);
+                    yWarning("VIRTUAL FT SENSOR can:%d id:%d SATURATED CH:%d : %+4.4f COUNT: %d \n",this->canId,this->boardId, i, dval[i], count_saturation);
                     curr_time = Time::now();
                 }
             dval[i] =  fullScale;
@@ -144,7 +145,7 @@ bool CanBusVirtualAnalogSensor::updateMeasure(yarp::sig::Vector &dval)
             if (Time::now() - curr_time > 2)
                 {
 //                    fprintf(stderr, "**** PORT: %s **** SATURATED CH:%d : %+4.4f COUNT: %d \n", deviceName.c_str(), i, dval[i], count_saturation);
-                    fprintf(stderr, "[WARNING] VIRTUAL FT SENSOR can:%d id:%d SATURATED CH:%d : %+4.4f COUNT: %d \n",this->canId, this->boardId, i, dval[i], count_saturation);
+                    yWarning("VIRTUAL FT SENSOR can:%d id:%d SATURATED CH:%d : %+4.4f COUNT: %d \n",this->canId, this->boardId, i, dval[i], count_saturation);
                     curr_time = Time::now();
                 }
             dval[i] = -fullScale;
@@ -600,7 +601,6 @@ void CanBusVirtualAnalogSensor::run()
 
 void CanBusVirtualAnalogSensor::threadRelease()
 {
-    printf("CanBusVirtualAnalogSensor Thread releasing...\n");
-    printf("... done.\n");
+    yTrace("CanBusVirtualAnalogSensor Thread released\n");
 }
 
