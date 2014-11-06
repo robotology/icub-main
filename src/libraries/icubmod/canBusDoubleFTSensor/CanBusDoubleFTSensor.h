@@ -94,7 +94,7 @@ protected:
     unsigned int       outputChannelsNum;
     unsigned short     sensorBoardId[2];
     short              status[2];
-    short              overallStatus[2];
+    short              overallStatus;
     double             timeStamp[2];
     AnalogDataFormat   dataFormat;
 
