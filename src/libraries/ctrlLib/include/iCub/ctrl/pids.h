@@ -109,7 +109,7 @@ public:
     * @param x is the input vector to be integrated.
     * @return the current output vector.
     */
-    yarp::sig::Vector integrate(const yarp::sig::Vector &x);
+    const yarp::sig::Vector& integrate(const yarp::sig::Vector &x);
 
     /**
     * Sets the saturation status.
@@ -146,7 +146,7 @@ public:
     * Returns the constraints matrix. 
     * @return the constraints matrix.
     */
-    yarp::sig::Matrix getLim() { return lim; }
+    const yarp::sig::Matrix& getLim() { return lim; }
 
     /**
     * Resets the internal state and sets the output vector to the 
@@ -159,7 +159,7 @@ public:
     * Returns the current output vector. 
     * @return the current output vector.
     */
-    yarp::sig::Vector get() { return y; }
+    const yarp::sig::Vector& get() const { return y; }
 };
 
 
@@ -274,7 +274,7 @@ public:
     * @param fb the actual plant feedback. 
     * @return the actual PID output.  
     */
-    virtual yarp::sig::Vector compute(const yarp::sig::Vector &ref, const yarp::sig::Vector &fb);
+    virtual const yarp::sig::Vector& compute(const yarp::sig::Vector &ref, const yarp::sig::Vector &fb);
 
     /**
     * Resets the internal state of integral and derivative part. 
@@ -378,7 +378,7 @@ public:
     * @param fb the actual plant feedback. 
     * @return the actual PID output.  
     */
-    virtual yarp::sig::Vector compute(const yarp::sig::Vector &ref, const yarp::sig::Vector &fb);
+    virtual const yarp::sig::Vector& compute(const yarp::sig::Vector &ref, const yarp::sig::Vector &fb);
 
     /**
     * Resets the internal state of integral and derivative part. 

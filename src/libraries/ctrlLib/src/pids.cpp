@@ -117,7 +117,7 @@ void Integrator::setLim(const Matrix &_lim)
 
 
 /************************************************************************/
-Vector Integrator::integrate(const Vector &x)
+const Vector& Integrator::integrate(const Vector &x)
 {
     // implements the Tustin formula
     y=saturate(y+(x+x_old)*(Ts/2));
@@ -206,7 +206,7 @@ parallelPID::parallelPID(const double _Ts,
 
 
 /************************************************************************/
-Vector parallelPID::compute(const Vector &ref, const Vector &fb)
+const Vector& parallelPID::compute(const Vector &ref, const Vector &fb)
 {
     // proportional part
     P=Kp*(Wp*ref-fb);
@@ -405,7 +405,7 @@ seriesPID::seriesPID(const double _Ts,
 
 
 /************************************************************************/
-Vector seriesPID::compute(const Vector &ref, const Vector &fb)
+const Vector& seriesPID::compute(const Vector &ref, const Vector &fb)
 {
     // compute error
     e=ref-fb;
