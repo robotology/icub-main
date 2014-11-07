@@ -300,11 +300,13 @@ int CanBusDoubleFTSensor::read(yarp::sig::Vector &out)
 {
     int ret_val;
 
-    if( overallStatus == yarp::dev::IAnalogSensor::AS_OK)
+    if( overallStatus == yarp::dev::IAnalogSensor::AS_OK
+        || overallStatus == yarp::dev::IAnalogSensor::AS_OVF )
     {
         mutex.wait();
         out=this->outputData;
         mutex.post();
+        return yarp::dev::IAnalogSensor::AS_OK;
     }
 
     return this->overallStatus;
@@ -527,6 +529,8 @@ void CanBusDoubleFTSensor::combineDoubleSensorReadings()
 
 void CanBusDoubleFTSensor::combineDoubleSensorStatus()
 {
+    //yDebug("CanBusDoubleFTSensor::combineDoubleSensorStatus()");
+    //yDebug("Status: BackSensor: %d FrontSensor %d", status[0], status[1]);
     //If one of the sensor has an error, report an error
     if( status[0] == IAnalogSensor::AS_ERROR ||
         status[1] == IAnalogSensor::AS_ERROR )
