@@ -416,7 +416,7 @@ public:
             yInfo("verbosity         = %s",verbosity?"on":"off");            
         }
         else
-            yWarning("Process did not start");
+            yError("Process did not start");
     }
 
     /************************************************************************/

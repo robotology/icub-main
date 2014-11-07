@@ -1547,7 +1547,7 @@ void ServerCartesianController::afterStart(bool s)
     if (s)
         yInfo("%s started successfully",ctrlName.c_str());
     else
-        yWarning("%s did not start!",ctrlName.c_str());
+        yError("%s did not start!",ctrlName.c_str());
 }
 
 

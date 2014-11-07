@@ -142,7 +142,7 @@ void Localizer::afterStart(bool s)
     if (s)
         yInfo("Localizer started successfully");
     else
-        yWarning("Localizer did not start!");
+        yError("Localizer did not start!");
 }
 
 

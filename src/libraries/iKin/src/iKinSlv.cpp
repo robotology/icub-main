@@ -1640,7 +1640,7 @@ void CartesianSolver::afterStart(bool s)
     if (s)
         yInfo("%s started successfully",slvName.c_str());
     else
-        yWarning("%s did not start!",slvName.c_str());
+        yError("%s did not start!",slvName.c_str());
 }
 
 

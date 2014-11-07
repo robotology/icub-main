@@ -300,7 +300,7 @@ void EyePinvRefGen::afterStart(bool s)
     if (s)
         yInfo("Pseudoinverse Reference Generator started successfully");
     else
-        yWarning("Pseudoinverse Reference Generator did not start!");
+        yError("Pseudoinverse Reference Generator did not start!");
 }
 
 
@@ -842,7 +842,7 @@ void Solver::afterStart(bool s)
     if (s)
         yInfo("Solver started successfully");
     else
-        yWarning("Solver did not start!");
+        yError("Solver did not start!");
 }
 
 

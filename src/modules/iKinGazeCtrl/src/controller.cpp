@@ -323,7 +323,7 @@ void Controller::afterStart(bool s)
     if (s)
         yInfo("Controller started successfully");
     else
-        yWarning("Controller did not start!");
+        yError("Controller did not start!");
 }
 
 
