@@ -136,11 +136,11 @@ const Vector& Filter::filt(const Vector &u)
         y[j]=b[0]*u[j];
     
     for (size_t i=1; i<m; i++)
-        for (size_t j=1; j<y.length(); j++)
+        for (size_t j=0; j<y.length(); j++)
             y[j]+=b[i]*uold[i-1][j];
     
     for (size_t i=1; i<n; i++)
-        for (size_t j=1; j<y.length(); j++)
+        for (size_t j=0; j<y.length(); j++)
             y[j]-=a[i]*yold[i-1][j];
     
     for (size_t j=0; j<y.length(); j++)
