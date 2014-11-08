@@ -26,11 +26,11 @@ service IRpcServer {
   bool set_answer(1:i32 rightAnswer)
   
   /**
-  * Add one integet to future answers.
+  * Add one integer to future answers.
   * @param x value to add
   * @return new value
   */
-  i32 add_one(1:i32 x);
+  i32 add_int(1:i32 x);
 
   /** 
   * Start service

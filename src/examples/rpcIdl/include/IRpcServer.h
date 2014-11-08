@@ -29,11 +29,11 @@ public:
    */
   virtual bool set_answer(const int32_t rightAnswer);
   /**
-   * Add one integet to future answers.
+   * Add one integer to future answers.
    * @param x value to add
    * @return new value
    */
-  virtual int32_t add_one(const int32_t x);
+  virtual int32_t add_int(const int32_t x);
   /**
    * Start service
    * @return true if service started correctly

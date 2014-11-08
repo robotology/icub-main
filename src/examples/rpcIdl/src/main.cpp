@@ -25,7 +25,7 @@ int main(int argc, char *argv[]) {
     if (!port.open("/server")) { return 1; }
     
     while (true) {
-        printf("Server running happily\n");
+        printf("Server is %s\n",server.is_running()?"running":"stopped");
         yarp::os::Time::delay(10);
     }
     port.close();
