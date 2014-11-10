@@ -263,20 +263,6 @@ void OnlineStictionEstimator::applyStictionLimit()
 
 
 /**********************************************************************/
-bool OnlineStictionEstimator::startEstimation()
-{
-    if (RateThread::start())
-    {
-        while (!isRunning())
-            Time::yield();
-        return true;
-    }
-    else
-        return false;
-}
-
-
-/**********************************************************************/
 bool OnlineStictionEstimator::threadInit()
 {
     if (!configured)
@@ -912,14 +898,7 @@ bool OnlineCompensatorDesign::startPlantEstimation(const Property &options)
     switch_timeout=options.check("switch_timeout",Value(0.0)).asDouble();
 
     mode=plant_estimation;
-    if (RateThread::start())
-    {
-        while (!isRunning())
-            Time::yield();
-        return true;
-    }
-    else
-        return false;
+    return RateThread::start();
 }
 
 
@@ -967,14 +946,7 @@ bool OnlineCompensatorDesign::startPlantValidation(const Property &options)
     predictor.init(Vector(2,0.0),P0*eye(2,2));
 
     mode=plant_validation;
-    if (RateThread::start())
-    {
-        while (!isRunning())
-            Time::yield();
-        return true;
-    }
-    else
-        return false;
+    return RateThread::start();
 }
 
 
@@ -992,14 +964,7 @@ bool OnlineCompensatorDesign::startStictionEstimation(const Property &options)
         return false;
 
     mode=stiction_estimation;
-    if (RateThread::start())
-    {
-        while (!isRunning())
-            Time::yield();
-        return true;
-    }
-    else
-        return false;
+    return RateThread::start();
 }
 
 
@@ -1053,14 +1018,7 @@ bool OnlineCompensatorDesign::startControllerValidation(const Property &options)
     }
 
     mode=controller_validation;
-    if (RateThread::start())
-    {
-        while (!isRunning())
-            Time::yield();
-        return true;
-    }
-    else
-        return false;
+    return RateThread::start();
 }
 
 
