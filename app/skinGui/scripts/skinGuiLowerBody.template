@@ -1,0 +1,103 @@
+<application>
+  <name>Skin Gui All V2 + foot</name>
+  <module>
+    <name>skinManager</name>
+    <parameters>--from skinManLowerBody.ini --context skinGui</parameters>
+    <node>icubsrv</node>
+  </module>
+  <module>
+    <name>skinManagerGui</name>
+    <parameters>--from skinManGui.ini --context skinGui --xpos 1020 --ypos 350</parameters>
+    <node>icubsrv</node>
+  </module>
+
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from torso.ini --useCalibration --xpos 320 --ypos 350 --width 300 --height 300</parameters>
+    <node>icubsrv</node>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from left_foot.ini --useCalibration  --xpos 0 --ypos 680 --width 300 --height 300</parameters>
+    <node>icubsrv</node>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from left_leg_upper.ini --useCalibration --xpos 320 --ypos 680 --width 300 --height 300</parameters>
+    <node>icubsrv</node>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from left_leg_lower.ini --useCalibration  --xpos 0 --ypos 680 --width 300 --height 300</parameters>
+    <node>icubsrv</node>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from right_foot.ini --useCalibration --xpos 320 --ypos 680 --width 300 --height 300</parameters>
+    <node>icubsrv</node>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from right_leg_upper.ini --useCalibration  --xpos 0 --ypos 680 --width 300 --height 300</parameters>
+    <node>icubsrv</node>
+  </module>
+  <module>
+    <name>iCubSkinGui</name>
+    <parameters>--from right_leg_lower.ini --useCalibration --xpos 320 --ypos 680 --width 300 --height 300</parameters>
+    <node>icubsrv</node>
+  </module>  
+  
+  <connection>
+    <from>/skinManager/skin_events:o</from>
+    <to>/wholeBodyDynamics/skin_contacts:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/skinManagerGui/rpc:o</from>
+    <to>/skinManager/rpc</to>
+    <protocol>tcp</protocol>
+  </connection>
+  <connection>
+    <from>/skinManager/monitor:o</from>
+    <to>/skinManagerGui/monitor:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/skinManager/info:o</from>
+    <to>/skinManagerGui/info:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  
+  <connection>
+    <from>/icub/skin/left_foot_comp</from>
+    <to>/skinGui/left_foot:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_foot_comp</from>
+    <to>/skinGui/right_foot:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  
+   <connection>
+    <from>/icub/skin/left_leg_upper_comp</from>
+    <to>/skinGui/left_foot:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_leg_upper_comp</from>
+    <to>/skinGui/right_foot:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  
+    <connection>
+    <from>/icub/skin/left_leg_lower_comp</from>
+    <to>/skinGui/left_foot:i</to>
+    <protocol>udp</protocol>
+  </connection>
+  <connection>
+    <from>/icub/skin/right_leg_lower_comp</from>
+    <to>/skinGui/right_foot:i</to>
+    <protocol>udp</protocol>
+  </connection>
+</application>
