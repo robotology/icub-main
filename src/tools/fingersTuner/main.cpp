@@ -307,10 +307,13 @@ protected:
         pid.st_down=floor(pResults.find("stiction").asList()->get(1).asDouble());
         yInfo("Stiction values: up = %g; down = %g",pid.st_up,pid.st_down);
 
+        IControlMode2 *imod;
         IPositionControl *ipos;
         IEncoders *ienc;
+        driver->view(imod);
         driver->view(ipos);
         driver->view(ienc);
+        imod->setControlMode(i,VOCAB_CM_POSITION);
         ipos->setRefSpeed(i,50.0);
         ipos->positionMove(i,0.0);
         yInfo("Driving the joint back to rest... ");

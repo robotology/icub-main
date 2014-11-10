@@ -276,7 +276,7 @@ public:
      *  
      * @return true iff started successfully.
      */
-    virtual bool startEstimation() { return RateThread::start(); }
+    virtual bool startEstimation();
 
     /**
      * Check the current estimation status.
