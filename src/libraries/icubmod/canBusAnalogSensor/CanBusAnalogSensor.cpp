@@ -78,7 +78,7 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     //set the internal configuration
     //this->isVirtualSensor   = false;
     this->boardId           = config.find("canAddress").asInt();
-    this->useCalibration    = (config.find("useCalibration").asInt()==1);
+    this->useCalibration    = config.find("useCalibration").asInt();
     //this->SensorFullScale = config.find("fullScale").asInt();
     unsigned int tmpFormat  = config.find("format").asInt();
     if      (tmpFormat == 8)
@@ -196,7 +196,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
     else if (channelsNum==6 && dataFormat==ANALOG_FORMAT_16_BIT)
     {
         //calibrated astrain board
-        if (useCalibration)
+        if (useCalibration>0)
         {
             yDebug("Using internal calibration on device %s\n", analogConfig.find("deviceId").toString().c_str());
             //get the full scale values from the strain board
@@ -237,12 +237,14 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
             CanMessage &msg=outBuffer[0];
             msg.setId(id);
             msg.getData()[0]=0x07;
-            msg.getData()[1]=0x00; 
+            if (useCalibration == 1)  msg.getData()[1]=0x00;
+            if (useCalibration == 2)  msg.getData()[1]=0x00;
+            if (useCalibration == 3)  msg.getData()[1]=0x00;
             msg.setLen(2);
             canMessages=0;
             pCanBus->canWrite(outBuffer, 1, &canMessages);
         }
-        //not calibrated strain board
+        //not calibrated strain board (useCalibration = 0)
         else
         {
             yInfo("Using uncalibrated raw data for device %s\n", analogConfig.find("deviceId").toString().c_str());
@@ -351,7 +353,7 @@ bool CanBusAnalogSensor::decode16(const unsigned char *msg, int msg_id, double *
                 for(int k=0;k<3;k++)
                     {
                         data[k]=(((unsigned short)(msg[2*k+1]))<<8)+msg[2*k]-0x8000;
-                        if (useCalibration==1)
+                        if (useCalibration>0)
                         {
                             data[k]=data[k]*scaleFactor[k]/float(0x8000);
                         }
@@ -363,7 +365,7 @@ bool CanBusAnalogSensor::decode16(const unsigned char *msg, int msg_id, double *
                 for(int k=0;k<3;k++)
                     {
                         data[k+3]=(((unsigned short)(msg[2*k+1]))<<8)+msg[2*k]-0x8000;
-                        if (useCalibration==1)
+                        if (useCalibration>0)
                         {
                             data[k+3]=data[k+3]*scaleFactor[k+3]/float(0x8000);
                         }
