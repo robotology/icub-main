@@ -1107,7 +1107,7 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
 #if defined(ETHRES_DEBUG_DONTREADBACK)
     yWarning() << "(!!)-> ethResources::addRegulars() is in ETHRES_DEBUG_DONTREADBACK mode";
     verify = false;
-    // return true; // uncomment to avoid sending command
+    return true; // uncomment to avoid sending command
 #endif
 
     const double delaybetweentransmissions = 0.010; // 10 ms
@@ -1152,7 +1152,7 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
     for(int i=0; i<id32vectorsize; i++)
     {
         eOprotID32_t id32 = id32vector.at(i);
-        uint16_t ss = eoprot_variable_sizeof_get(get_protBRDnumber(), id32); // sizeof data assocaited to id32
+        uint16_t ss = eoprot_variable_sizeof_get(get_protBRDnumber(), id32); // sizeof data associated to id32
         uint16_t ropsize = eo_rop_compute_size(ropctrl ,eo_ropcode_sig, ss);
         //yDebug() << "size = " << ss << "ropsize = " << ropsize;
         extrasize += ropsize;
