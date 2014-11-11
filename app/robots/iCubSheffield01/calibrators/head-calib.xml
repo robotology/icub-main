@@ -7,7 +7,7 @@
 
 		<group name="GENERAL">
 		  <param name="joints"> 6 </param> <!-- the number of joints of the robot part  in the canbus version which one is read? check how parameters are spead-->
-		    <param name="deviceName"> Head Calibrator </param>	<!-- simple string to be used in code to have a human readable description -->
+		    <param name="deviceName"> Head_Calibrator </param>	<!-- simple string to be used in code to have a human readable description -->
 		</group>
 
 <group name="HOME">
