@@ -147,6 +147,7 @@ OnlineStictionEstimator::OnlineStictionEstimator() :
     ilim=NULL;
     ienc=NULL;
     ipid=NULL;
+    iolc=NULL;
     configured=false;
 }
 
@@ -161,6 +162,7 @@ bool OnlineStictionEstimator::configure(PolyDriver &driver, const Property &opti
         ok&=driver.view(ilim);
         ok&=driver.view(ienc);
         ok&=driver.view(ipid);
+        ok&=driver.view(iolc);
 
         if (!ok)
             return false;
@@ -367,7 +369,7 @@ void OnlineStictionEstimator::run()
         intErr.reset(Vector(stiction.length(),0.0));
     }
 
-    ipid->setOffset(joint,dpos_dV*u);
+    iolc->setRefOutput(joint,dpos_dV*u);
     adaptOld=adapt;
 
     // fill in info
@@ -385,7 +387,7 @@ void OnlineStictionEstimator::run()
 /**********************************************************************/
 void OnlineStictionEstimator::threadRelease()
 {
-    ipid->setOffset(joint,0.0);
+    iolc->setRefOutput(joint,0.0);
     imod->setControlMode(joint,VOCAB_CM_POSITION);
     delete pid;
 
@@ -455,7 +457,8 @@ OnlineCompensatorDesign::OnlineCompensatorDesign() : RateThread(1000),
     ilim=NULL;
     ienc=NULL;
     ipos=NULL;
-    ipid=NULL;    
+    ipid=NULL;
+    iolc=NULL;
     configured=false;
 }
 
@@ -472,6 +475,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
     ok&=driver.view(ienc);
     ok&=driver.view(ipos);
     ok&=driver.view(ipid);
+    ok&=driver.view(iolc);
 
     if (!ok)
         return false;
@@ -638,7 +642,7 @@ void OnlineCompensatorDesign::commandJoint(double &enc, double &u)
     }
 
     u=(pwm_pos?max_pwm:-max_pwm);
-    ipid->setOffset(joint,dpos_dV*u);
+    iolc->setRefOutput(joint,dpos_dV*u);
 }
 
 
@@ -761,7 +765,7 @@ void OnlineCompensatorDesign::run()
                     {
                         pidCur=(pidCur==&pidOld?&pidNew:&pidOld);                    
                         if ((pidCur==&pidOld) && controller_validation_stiction_yarp)
-                            ipid->setOffset(joint,0.0);
+                            iolc->setRefOutput(joint,0.0);
 
                         ipid->setPid(joint,*pidCur);
                         controller_validation_num_cycles=0;
@@ -769,8 +773,8 @@ void OnlineCompensatorDesign::run()
                 }
 
                 if ((pidCur==&pidNew) && controller_validation_stiction_yarp)
-                    ipid->setOffset(joint,(x_tg==x_max)?controller_validation_stiction_up:
-                                                        controller_validation_stiction_down);
+                    iolc->setRefOutput(joint,(x_tg==x_max)?controller_validation_stiction_up:
+                                                           controller_validation_stiction_down);
 
                 if (controller_validation_ref_square)
                     ipid->setReference(joint,x_tg);
@@ -784,7 +788,7 @@ void OnlineCompensatorDesign::run()
                 info.resize(5);
 
                 info[0]=3.0;
-                ipid->getOutput(joint,&info[1]);
+                iolc->getOutput(joint,&info[1]);
                 ienc->getEncoder(joint,&info[2]);
                 ipid->getReference(joint,&info[3]);
                 info[4]=(pidCur==&pidOld?0.0:1.0);
@@ -810,7 +814,7 @@ void OnlineCompensatorDesign::threadRelease()
         // -----
         case plant_validation:
         {
-            ipid->setOffset(joint,0.0);
+            iolc->setRefOutput(joint,0.0);
             imod->setControlMode(joint,VOCAB_CM_POSITION);
             break;
         }
@@ -1094,7 +1098,7 @@ bool OnlineCompensatorDesign::getResults(Property &results)
         case controller_validation:
         {
             Vector info(3);
-            ipid->getOutput(joint,&info[0]);
+            iolc->getOutput(joint,&info[0]);
             ienc->getEncoder(joint,&info[1]);
             ipid->getReference(joint,&info[2]);
 
