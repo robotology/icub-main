@@ -142,7 +142,7 @@ inline void DEBUG_FUNC(const char *fmt, ...)
 #else
     vsnprintf(buffer, DEBUG_PRINTF_BUFFER_LENGTH, fmt, ap); 
 #endif
-    fprintf(stderr, "%s", buffer);
+    yDebug("%s", buffer);
     va_end(ap);
 #endif
 }

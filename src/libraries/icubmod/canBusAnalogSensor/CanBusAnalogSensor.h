@@ -72,7 +72,7 @@ protected:
     AnalogDataFormat   dataFormat;
     yarp::sig::Vector  data;
     yarp::sig::Vector  scaleFactor;
-    bool               useCalibration;
+    unsigned short     useCalibration;
 
 public:
     CanBusAnalogSensor(int period=20) : RateThread(period),mutex(1)

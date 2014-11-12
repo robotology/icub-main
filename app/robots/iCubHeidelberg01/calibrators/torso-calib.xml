@@ -7,7 +7,7 @@
                 
 		<group name="GENERAL">
 		    <param name="joints"> 3 </param> <!-- the number of joints of the robot part -->
-		    <param name="deviceName"> Torso Calibrator </param>
+		    <param name="deviceName"> Torso_Calibrator </param>
 		</group>
 
 <group name="HOME">

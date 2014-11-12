@@ -36,8 +36,10 @@ protected:
     yarp::sig::Vector  data;
     yarp::sig::Vector  privateData;
     
+    bool              initted;
+    int               count;
 public:
-    CanBusInertialMTB(int period=20) : RateThread(period),mutex(1)
+    CanBusInertialMTB(int period=20) : RateThread(period),mutex(1), initted(false), count(0)
     {}
     
 
