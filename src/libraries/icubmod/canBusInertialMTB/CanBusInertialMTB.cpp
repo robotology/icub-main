@@ -223,6 +223,16 @@ void CanBusInertialMTB::run()
         return;
     }
 
+    if(canMessages == 0)
+    {
+        // reading 0 messages is considered ok, so just return;
+        // This is to skip the initialization of privateData to zeros, needed if we are reading accelerometer, but not gyroscope values like in the feet
+        st=IAnalogSensor::AS_OK;
+        return;
+    }
+
+    privateData.zero();
+
     for (unsigned int i=0; i<canMessages; i++)
     {
         CanMessage &msg=inBuffer[i];
@@ -254,11 +264,25 @@ void CanBusInertialMTB::run()
         st=IAnalogSensor::AS_OK;
     }
 
-    //if 100ms have passed since the last received message
-    /*if (timeNow-timeStamp>CANBUS_INERTIAL_MTB_TIMEOUT)
+    if(initted)
     {
-        st=IAnalogSensor::AS_TIMEOUT;
-    }*/
+        //if 100ms have passed since the last received message
+        if (timeNow-timeStamp>CANBUS_INERTIAL_MTB_TIMEOUT)
+        {
+            yError("CanBusInertialMTB::run(): read timed out");
+            st=IAnalogSensor::AS_TIMEOUT;
+        }
+    }
+    else
+    {
+        // wait some time to have the device ready and avoid spurious timeout messages at startup
+        count++;
+        if(count == 10)
+            initted=true;
+    }
+
+
+    timeStamp = timeNow;
 
     mutex.wait();
     memcpy(data.data(), privateData.data(), sizeof(double)*privateData.size());
