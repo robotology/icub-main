@@ -108,13 +108,16 @@ protected:
     bool executingTraj;
     bool taskVelModeOn;
     bool motionDone;
+    bool ctrlModeAvailable;
     bool encTimedEnabled;
     bool posDirectEnabled;
     bool posDirectAvailable;
     bool multipleJointsControlEnabled;
+    bool multipleJointsVelAvailable;
     bool pidAvailable;
     bool useReferences;
     bool jointsHealthy;
+    bool debugInfoEnabled;
 
     yarp::os::ConstString ctrlName;
     yarp::os::ConstString slvName;
@@ -130,17 +133,17 @@ protected:
     yarp::os::Property plantModelProperties;
     SmithPredictor     smithPredictor;
 
-    std::deque<DriverDescriptor>              lDsc;
-    std::deque<yarp::dev::IControlMode2*>     lMod;
-    std::deque<yarp::dev::IEncoders*>         lEnc;
-    std::deque<yarp::dev::IEncodersTimed*>    lEnt;
-    std::deque<yarp::dev::IPidControl*>       lPid;
-    std::deque<yarp::dev::IControlLimits*>    lLim;
-    std::deque<yarp::dev::IVelocityControl2*> lVel;
-    std::deque<yarp::dev::IPositionDirect*>   lPos;
-    std::deque<yarp::dev::IPositionControl*>  lStp;
-    std::deque<int>                           lJnt;
-    std::deque<int*>                          lRmp;
+    std::deque<DriverDescriptor>             lDsc;
+    std::deque<yarp::dev::IControlMode2*>    lMod;
+    std::deque<yarp::dev::IEncoders*>        lEnc;
+    std::deque<yarp::dev::IEncodersTimed*>   lEnt;
+    std::deque<yarp::dev::IPidControl*>      lPid;
+    std::deque<yarp::dev::IControlLimits*>   lLim;
+    std::deque<yarp::dev::IVelocityControl*> lVel;
+    std::deque<yarp::dev::IPositionDirect*>  lPos;
+    std::deque<yarp::dev::IPositionControl*> lStp;
+    std::deque<int>                          lJnt;
+    std::deque<int*>                         lRmp;
 
     unsigned int connectCnt;
     unsigned int ctrlPose;
@@ -161,6 +164,8 @@ protected:
     yarp::os::Event syncEvent;
     yarp::os::Stamp txInfo;
     yarp::os::Stamp poseInfo;
+    yarp::os::Stamp eventInfo;
+    yarp::os::Stamp debugInfo;
 
     yarp::sig::Vector xdes;
     yarp::sig::Vector qdes;
@@ -171,11 +176,12 @@ protected:
 
     yarp::os::BufferedPort<yarp::os::Bottle>   portSlvIn;
     yarp::os::BufferedPort<yarp::os::Bottle>   portSlvOut;
-    yarp::os::Port                             portSlvRpc;
+    yarp::os::RpcClient                        portSlvRpc;
 
     yarp::os::BufferedPort<yarp::sig::Vector>  portState;
-    yarp::os::Port                             portEvent;
-    yarp::os::Port                             portRpc;
+    yarp::os::BufferedPort<yarp::os::Bottle>   portEvent;
+    yarp::os::BufferedPort<yarp::os::Bottle>   portDebugInfo;
+    yarp::os::RpcServer                        portRpc;
 
     CartesianCtrlCommandPort                  *portCmd;
     CartesianCtrlRpcProcessor                 *rpcProcessor;
@@ -195,6 +201,7 @@ protected:
         double                straightness;
         yarp::os::ConstString posePriority;
         yarp::os::Value       task_2;
+        yarp::os::Bottle      solverConvergence;
     };
 
     int contextIdCnt;
@@ -204,7 +211,11 @@ protected:
     std::multiset<double> motionOngoingEvents;
     std::multiset<double> motionOngoingEventsCurrent;
 
-    void (ServerCartesianController::*sendCtrlCmd)();
+    yarp::os::Bottle sendCtrlCmdMultipleJointsPosition();
+    yarp::os::Bottle sendCtrlCmdMultipleJointsVelocity();
+    yarp::os::Bottle sendCtrlCmdSingleJointPosition();
+    yarp::os::Bottle sendCtrlCmdSingleJointVelocity();
+    yarp::os::Bottle (ServerCartesianController::*sendCtrlCmd)();
 
     void   init();
     void   openPorts();
@@ -216,10 +227,6 @@ protected:
     bool   getNewTarget();
     bool   areJointsHealthyAndSet(yarp::sig::VectorOf<int> &jointsToSet);
     void   setJointsCtrlMode(const yarp::sig::VectorOf<int> &jointsToSet);
-    void   sendCtrlCmdMultipleJointsPosition();
-    void   sendCtrlCmdMultipleJointsVelocity();
-    void   sendCtrlCmdSingleJointPosition();
-    void   sendCtrlCmdSingleJointVelocity();
     void   stopLimb(const bool execStopPosition=true);
     bool   goTo(unsigned int _ctrlPose, const yarp::sig::Vector &xd, const double t, const bool latchToken=false);
     bool   deleteContexts(yarp::os::Bottle *contextIdList);
@@ -237,14 +244,17 @@ protected:
 
     friend class CartesianCtrlRpcProcessor;
     friend class CartesianCtrlCommandPort;
-
+    
     bool stopControlHelper();
     bool setTrackingModeHelper(const bool f);
     bool setTrajTimeHelper(const double t);
     bool setInTargetTolHelper(const double tol);
+    bool isInTargetHelper();
 
     bool getTask2ndOptions(yarp::os::Value &v);
     bool setTask2ndOptions(const yarp::os::Value &v);
+    bool getSolverConvergenceOptions(yarp::os::Bottle &options);
+    bool setSolverConvergenceOptions(const yarp::os::Bottle &options);
 
 public:
     ServerCartesianController();

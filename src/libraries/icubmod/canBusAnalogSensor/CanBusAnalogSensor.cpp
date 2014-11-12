@@ -7,6 +7,8 @@
 #include <CanBusAnalogSensor.h>
 
 #include <yarp/os/Time.h>
+#include <yarp/os/LogStream.h>
+#include <yarp/os/Log.h>
 #include <iostream>
 #include <string.h>
 
@@ -27,10 +29,11 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     correct &= config.check("format");
     correct &= config.check("period");
     correct &= config.check("channels");
+    correct &= config.check("physDevice");
     
     if (!correct)
     {
-        std::cerr<<"Error: insufficient parameters to CanBusAnalogSensor\n"; 
+        yError() << "Insufficient parameters to CanBusAnalogSensor\n"; 
         return false;
     }
 
@@ -55,13 +58,13 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     driver.open(prop);
     if (!driver.isValid())
     {
-        fprintf(stderr, "Error opening PolyDriver check parameters\n");
+        yError() << "Error opening PolyDriver check parameters";
         return false;
     }
     driver.view(pCanBus);
     if (!pCanBus)
     {
-        fprintf(stderr, "Error opening can device not available\n");
+        yError() << "Error opening can device not available";
         return false;
     }
     driver.view(pCanBufferFactory);
@@ -150,7 +153,7 @@ bool CanBusAnalogSensor::readFullScaleAnalog(int ch)
 
     if (full_scale_read==false) 
         {                            
-            fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor %d net [%d]: no answer received or message lost (ch:%d)\n", boardId, canDeviceNum, ch);
+            yError("Trying to get fullscale data from sensor %d net [%d]: no answer received or message lost (ch:%d)\n", boardId, canDeviceNum, ch);
             return false;
         }
 
@@ -159,7 +162,7 @@ bool CanBusAnalogSensor::readFullScaleAnalog(int ch)
 
 bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
 {
-    fprintf(stderr, "--> Initializing analog device %s\n", analogConfig.find("deviceId").toString().c_str());
+    yTrace("Initializing analog device %s\n", analogConfig.find("deviceId").toString().c_str());
 
     unsigned int canMessages=0;
     unsigned id = 0x200 + boardId;
@@ -174,7 +177,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
         msg.setLen(2);
         canMessages=0;
         pCanBus->canWrite(outBuffer, 1, &canMessages);
-        fprintf(stderr, "using broadcast period %d on device %s\n", period, analogConfig.find("deviceId").toString().c_str());
+        yDebug("using broadcast period %d on device %s\n", period, analogConfig.find("deviceId").toString().c_str());
     }
 
     //init message for mais board
@@ -195,7 +198,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
         //calibrated astrain board
         if (useCalibration)
         {
-            fprintf(stderr, "using internal calibration on device %s\n", analogConfig.find("deviceId").toString().c_str());
+            yDebug("Using internal calibration on device %s\n", analogConfig.find("deviceId").toString().c_str());
             //get the full scale values from the strain board
             for (int ch=0; ch<6; ch++)
             {
@@ -206,7 +209,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
                     b = readFullScaleAnalog(ch);
                     if (b==true) 
                         {
-                            if (attempts>0)    fprintf(stderr, "*** WARNING: Trying to get fullscale data from sensor: channel recovered (ch:%d)\n", ch);
+                            if (attempts>0)    yWarning("Trying to get fullscale data from sensor: channel recovered (ch:%d)\n", ch);
                             break;
                         }
                     attempts++;
@@ -214,7 +217,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
                 }
                 if (attempts>=15)
                 {
-                    fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor: all attempts failed (ch:%d)\n", ch);
+                    yError("Trying to get fullscale data from sensor: all attempts failed (ch:%d)\n", ch);
                 }
             }
 
@@ -242,7 +245,7 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
         //not calibrated strain board
         else
         {
-            fprintf(stderr, "using uncalibrated raw data for device %s\n", analogConfig.find("deviceId").toString().c_str());
+            yInfo("Using uncalibrated raw data for device %s\n", analogConfig.find("deviceId").toString().c_str());
             CanMessage &msg=outBuffer[0];
             msg.setId(id);
             msg.getData()[0]=0x07;
@@ -374,7 +377,7 @@ bool CanBusAnalogSensor::decode16(const unsigned char *msg, int msg_id, double *
             {} //skip these, they are not for us
             break;
         default:
-            fprintf(stderr, "Warning, got unexpected class 0x3 msg(s): groupId 0x%x\n", groupId);
+            yWarning("Got unexpected class 0x3 msg(s): groupId 0x%x\n", groupId);
             return false;
             break;
         }
@@ -411,7 +414,7 @@ bool CanBusAnalogSensor::decode8(const unsigned char *msg, int msg_id, double *d
             {} //skip these, they are not for us
             break;
         default:
-            fprintf(stderr, "Warning, got unexpected class 0x3 msg(s): groupId 0x%x\n", groupId);
+            yWarning("CanBusAnalogSensor got unexpected class 0x3 msg(s): groupId 0x%x\n", groupId);
             return false;
             break;
         }
@@ -431,7 +434,7 @@ void CanBusAnalogSensor::run()
     bool res=pCanBus->canRead(inBuffer,CAN_DRIVER_BUFFER_SIZE,&canMessages);
     if (!res)
     {
-        std::cerr<<"canRead failed\n";
+        yError()<<"CanBusAnalogSensor canRead failed\n";
     }
 
     double timeNow=Time::now();
@@ -497,7 +500,6 @@ void CanBusAnalogSensor::run()
 
 void CanBusAnalogSensor::threadRelease()
 {
-    printf("CanBusAnalogSensor Thread releasing...\n");
-    printf("... done.\n");
+    yTrace("CanBusVirtualAnalogSensor Thread released\n");
 }
 

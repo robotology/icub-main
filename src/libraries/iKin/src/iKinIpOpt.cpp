@@ -906,6 +906,27 @@ iKinChain &iKinIpOptMin::get2ndTaskChain()
 
 
 /************************************************************************/
+void iKinIpOptMin::setMaxIter(const int max_iter)
+{
+    if (max_iter>0)
+        CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",max_iter);
+    else
+        CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",(Index)2e9);
+
+    CAST_IPOPTAPP(App)->Initialize();
+}
+
+
+/************************************************************************/
+int iKinIpOptMin::getMaxIter() const
+{
+    int max_iter;
+    CAST_IPOPTAPP(App)->Options()->GetIntegerValue("max_iter",max_iter,"");
+    return max_iter;
+}
+
+
+/************************************************************************/
 void iKinIpOptMin::setTol(const double tol)
 {
     CAST_IPOPTAPP(App)->Options()->SetNumericValue("tol",tol);
@@ -916,14 +937,11 @@ void iKinIpOptMin::setTol(const double tol)
 
 
 /************************************************************************/
-void iKinIpOptMin::setMaxIter(const int max_iter)
+double iKinIpOptMin::getTol() const
 {
-    if (max_iter>0)
-        CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",max_iter);
-    else
-        CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",(Index)2e9);
-
-    CAST_IPOPTAPP(App)->Initialize();
+    double tol;
+    CAST_IPOPTAPP(App)->Options()->GetNumericValue("tol",tol,"");
+    return tol;
 }
 
 

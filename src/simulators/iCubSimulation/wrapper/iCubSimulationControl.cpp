@@ -58,6 +58,7 @@ iCubSimulationControl::iCubSimulationControl() :
     ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>(this),
     ImplementControlLimits2(this),
     ImplementInteractionMode(this),
+    ImplementPositionDirect(this),
     _done(0),
     _mutex(1)
 {
@@ -223,6 +224,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor);
     ImplementControlMode2::initialize(njoints, axisMap);
     ImplementInteractionMode::initialize(njoints, axisMap);
+    ImplementPositionDirect::initialize(njoints, axisMap, angleToEncoder, zeros);
 
     if (!p.check("joint_device")) {
         printf("Need a device to access the joints\n");
@@ -272,6 +274,7 @@ bool iCubSimulationControl::close (void)
         ImplementControlLimits2::uninitialize();
         ImplementControlMode2::uninitialize();
         ImplementInteractionMode::uninitialize();
+        ImplementPositionDirect::uninitialize();
     }
 
     checkAndDestroy<double>(current_pos);
@@ -330,7 +333,7 @@ void iCubSimulationControl::jointStep() {
                 else{
                     ctrl.setVelocity(next_vel[axis]);
                 }
-            } else if (controlMode[axis]==MODE_POSITION || controlMode[axis]==MODE_IMPEDANCE_POS) {
+            } else if (controlMode[axis]==MODE_POSITION || controlMode[axis]==VOCAB_CM_POSITION_DIRECT || controlMode[axis]==MODE_IMPEDANCE_POS) {
                 ctrl.setControlParameters(vels[axis],1);
                 ctrl.setPosition(next_pos[axis]);
             } else if (controlMode[axis]==MODE_TORQUE) {
@@ -1282,9 +1285,9 @@ bool iCubSimulationControl::setOpenLoopModeRaw(int j)
 int iCubSimulationControl::ControlModes_yarp2iCubSIM(int yarpMode)
 {
     int ret = VOCAB_CM_UNKNOWN;
-    std::cout << "yarpmode is " << yarp::os::Vocab::decode(yarpMode);
     switch(yarpMode)
     {
+        case VOCAB_CM_FORCE_IDLE:
         case VOCAB_CM_IDLE:
             ret = MODE_IDLE;
             break;
@@ -1309,7 +1312,7 @@ int iCubSimulationControl::ControlModes_yarp2iCubSIM(int yarpMode)
 
         // for new modes I´ll use directly the vocabs, so they are the same
         case VOCAB_CM_MIXED:
-        case VOCAB_CM_FORCE_IDLE:
+        case VOCAB_CM_POSITION_DIRECT:
         case VOCAB_CM_HW_FAULT:
         case VOCAB_CM_CALIBRATING:
         case VOCAB_CM_CALIB_DONE:
@@ -1354,8 +1357,8 @@ int iCubSimulationControl::ControlModes_iCubSIM2yarp(int iCubMode)
 
         // for new modes I´ll use directly the vocabs, so they are the same
         case MODE_MIXED:
-        case MODE_FORCE_IDLE:
         case MODE_HW_FAULT:
+        case VOCAB_CM_POSITION_DIRECT:
         case MODE_CALIBRATING:
         case MODE_CALIB_DONE:
         case MODE_NOT_CONFIGURED:
@@ -1493,6 +1496,91 @@ bool iCubSimulationControl::setInteractionModesRaw(yarp::dev::InteractionModeEnu
     for(int j=0; j<njoints; j++)
     {
         ret = ret && setInteractionModeRaw(j, modes[j]);
+    }
+    return ret;
+}
+
+// Position direct interface
+bool iCubSimulationControl::setPositionDirectModeRaw()
+{
+    bool ret = true;
+    for(int j=0; j<njoints; j++)
+    {
+        ret = ret && setControlModeRaw(j, VOCAB_POSITION_DIRECT);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::setPositionRaw(int axis, double ref)
+{
+    // This function has been copy pasted from positionMoveRaw
+    if( (axis >=0) && (axis<njoints) )
+    {
+        _mutex.wait();
+        if(ref< limitsMin[axis])
+        {
+            if (njoints == 16)
+            {
+                if ( axis == 7 )
+                    next_pos[axis] = limitsMax[axis];
+            }
+            else
+                next_pos[axis] = limitsMin[axis];
+        }
+        else if(ref > limitsMax[axis])
+        {
+            if (njoints == 16)
+            {
+                if ( axis == 7 )
+                    next_pos[axis] = fabs(limitsMax[axis] - limitsMax[axis]);
+            }
+            else
+                next_pos[axis] = limitsMax[axis];
+        }
+        else
+        {
+            if (njoints == 16)
+            {
+                if ( axis == 10 ||  axis == 12 || axis == 14 )
+                    next_pos[axis] = ref/2;
+                else if ( axis == 15 )
+                    next_pos[axis] = ref/3;
+                else if ( axis == 7 )
+                    next_pos[axis] = fabs(limitsMax[axis] - ref);
+                else
+                    next_pos[axis] = ref;
+            }else
+                next_pos[axis] = ref;
+        }
+
+        motor_on[axis]=true;
+
+        if (verbosity)
+            printf("moving joint %d of part %d to pos %f (pos direct)\n",axis, partSelec, next_pos[axis]);
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        printf("setPositionRaw joint access too high %d \n",axis);
+    return false;
+}
+
+bool iCubSimulationControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
+{
+    bool ret = true;
+    for(int i=0; i<n_joint; i++)
+    {
+        ret = ret && setPositionRaw(joints[i], refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::setPositionsRaw(const double *refs)
+{
+    bool ret = true;
+    for(int j=0; j<njoints; j++)
+    {
+        ret = ret && setPositionRaw(j, refs[j]);
     }
     return ret;
 }

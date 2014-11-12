@@ -42,15 +42,14 @@ Sensor::Sensor()
 /************************************************************************/
 bool SensorInterface::configure(void *source, const Property &options)
 {
-    Property &opt=const_cast<Property&>(options);
-    if ((source==NULL) || !opt.check("name") ||
-        !opt.check("size") || !opt.check("index"))
+    if ((source==NULL) || !options.check("name") ||
+        !options.check("size") || !options.check("index"))
         return false;
 
     this->source=source;
-    name=opt.find("name").asString().c_str();
-    size=opt.find("size").asInt();
-    index=opt.find("index").asInt();
+    name=options.find("name").asString().c_str();
+    size=options.find("size").asInt();
+    index=options.find("index").asInt();
 
     return configured=true;
 }
@@ -73,13 +72,12 @@ bool SensorInterface::getOutput(Value &in) const
 /************************************************************************/
 bool SensorPort::configure(void *source, const Property &options)
 {
-    Property &opt=const_cast<Property&>(options);
-    if ((source==NULL) || !opt.check("name") || !opt.check("index"))
+    if ((source==NULL) || !options.check("name") || !options.check("index"))
         return false;
 
     this->source=source;
-    name=opt.find("name").asString().c_str();
-    index=opt.find("index").asInt();
+    name=options.find("name").asString().c_str();
+    index=options.find("index").asInt();
 
     return configured=true;
 }

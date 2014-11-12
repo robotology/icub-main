@@ -1,0 +1,67 @@
+ 
+<?xml version="1.0" encoding="UTF-8" ?>    
+<devices>      
+    <device name="left_arm_calibrator" type="parametricCalibrator">    
+<params file="general.xml" />              
+        <group name="GENERAL">             
+            <param name="joints"> 8 </param>             
+            <param name="deviceName"> Left_Arm_Calibrator </param>     
+        </group>             
+ 
+<group name="CALIBRATION">   
+ 
+<param name="calibrationType">            3             3             3             3             0             2             2             3             </param>       
+<param name="calibration1">               2388.75       3241.875      -275.933      1535.625      800           750           750           1930          </param>       
+<param name="calibration2">               10            10            10            10            20            -10           -10           100           </param>       
+<param name="calibration3">               3182.725      2386.475      2361.734      809.9         0             0             0             0             </param>       
+<param name="positionZero">               -30           30            0             45            0             0             0             15            </param>       
+<param name="velocityZero">               10            10            10            10            30            30            30            100           </param>       
+<param name="maxPwm">                     120           120           120           120           0             0             0             0             </param>       
+<param name="posZeroThreshold">           2             2             2             2             2             2             90            90            </param>       
+</group>       
+ 
+<group name="HOME">          
+<param name="positionHome"> -30           30            0             45            0             0             40            15            </param>       
+<param name="velocityHome"> 10            10            10            10            30            30            30            100           </param>       
+</group>       
+ 
+        <param name="CALIB_ORDER">(0 1 2 3) (4 6 7) (5)</param>        
+ 
+        <action phase="startup" level="10" type="calibrate">           
+            <param name="target">left_arm_mc</param>     
+        </action>            
+ 
+        <action phase="interrupt1" level="1" type="park">              
+            <param name="target">left_arm_mc</param>     
+        </action>            
+ 
+        <action phase="interrupt3" level="1" type="abort" />           
+ 
+</device>      
+</devices>     
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

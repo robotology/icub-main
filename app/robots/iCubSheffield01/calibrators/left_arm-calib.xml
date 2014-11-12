@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubSheffield01" build="1">
+	<device name="left_arm_calibrator" type="parametricCalibratorEth">
+                <params file="general.xml" />
+
+		<group name="GENERAL">
+		    <param name="joints">  16  </param> <!-- the number of joints of the robot part -->
+		    <param name="deviceName"> LA Calibrator </param>
+		</group>
+
+<group name="HOME">
+<param name="positionHome">                       -30        30         0          45         0          0          40         15         45         0          0          0          0          0          0          0          </param>
+<param name="velocityHome">                       10         10         10         10         30         30         30         100        10         10         10         10         10         10         10         10         </param>
+</group>
+
+
+<group name="CALIBRATION">
+<param name="calibrationType">                    3          3          3          3          0          3          3          3          3          4          4          4          4          4          4          4          </param>
+<param name="calibration1">                       38229.2    51882.5    32767.9    24575.9    500.0      2047.5     2047.5     1345.0     301.0      255.0      20.0       255.0      25.0       255.0      25.0       765.0      </param>
+<param name="calibration2">                       10.0       10.0       10.0       10.0       20.0       10.0       10.0       100.0      10.0       10.0       30.0       10.0       10.0       10.0       10.0       10.0       </param>
+<param name="calibration3">                       30422.1    43582.0    32642.1    25602.1    0.0        2282.5     1179.5     0.0        0.0        6000.0     -6600.0    6000.0     7000.0     6000.0     -7000.0    -14000.0   </param>
+<param name="positionZero">                       -30.0      30.0       0.0        45.0       0.0        0.0        0.0        15.0       45.0       0.0        0.0        0.0        0.0        0.0        0.0        0.0        </param>
+<param name="velocityZero">                       10.0       10.0       10.0       10.0       30.0       30.0       30.0       100.0      100.0      100.0      100.0      100.0      100.0      100.0      100.0      100.0      </param>
+<param name="maxPwm">                             1200       1200       1200       1200       0          0          0          0          0          0          0          0          0          0          0          0          </param>
+<param name="posZeroThreshold">                   2          2          2          2          2          2          90         90         1000       1000       1000       1000       1000       1000       1000       1000       </param>
+</group>
+
+		<param name="CALIB_ORDER">(0 1 2 3) (4) (5 6 7) (8 9 11 13) (10 12 14 15) </param>
+
+		<action phase="startup" level="10" type="calibrate">
+		    <param name="target">left_arm_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt1" level="1" type="park">
+		    <param name="target">left_arm_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt3" level="1" type="abort" />
+
+	</device>
+</devices>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubSheffield01" build="1">
+	<device name="head_calibrator" type="parametricCalibratorEth">
+                <params file="general.xml" />
+
+		<group name="GENERAL">
+		  <param name="joints"> 6 </param> <!-- the number of joints of the robot part  in the canbus version which one is read? check how parameters are spead-->
+		    <param name="deviceName"> Head Calibrator </param>	<!-- simple string to be used in code to have a human readable description -->
+		</group>
+
+<group name="HOME">
+<param name="positionHome">                       -30        0       0       0          0         0            </param>
+<param name="velocityHome">                       10         10      10      10         10        10           </param>
+</group>
+
+
+
+<group name="CALIBRATION">
+<param name="calibrationType">                    3          3       3       3          0         0            </param>
+<param name="calibration1">                       2047.5     2047.5  2047.5  2047.5     900.0     900.0        </param>
+<param name="calibration2">                       10.0       10.0    10.0    10.0       20.0      20.0         </param>
+<param name="calibration3">                       3642.5     3213.5  3789.5  3763.5     0.0       0.0          </param>
+<param name="positionZero">                       0.0        0.0     0.0     0.0        0.0       0.0          </param>
+<param name="velocityZero">                       10.0       10.0    10.0    10.0       10.0      10.0         </param>
+<param name="maxPwm">                             130        130     0       0          0         0            </param>
+<param name="posZeroThreshold">                   2          2       2       2          2         2            </param>
+</group>
+
+ <!-- check old calibrator for the correct sequence, then ask to Randazz -->
+        <param name="CALIB_ORDER"> (0 1 2) (3) (4) (5) </param>
+
+		<action phase="startup" level="10" type="calibrate">
+		    <param name="target">head_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt1" level="1" type="park">
+		    <param name="target">head_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt3" level="1" type="abort" />
+
+	</device>
+</devices>

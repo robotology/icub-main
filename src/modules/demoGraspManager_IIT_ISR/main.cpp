@@ -273,8 +273,10 @@ protected:
 
     IEncoders         *encTorso;
     IEncoders         *encHead;
+    IControlMode2     *modeTorso;
     IPositionControl  *posTorso;
     IEncoders         *encArm;
+    IControlMode2     *modeArm;
     IPositionControl  *posArm;
     ICartesianControl *cartArm;
     IGazeControl      *gazeCtrl;    
@@ -716,6 +718,10 @@ protected:
 
         fprintf(stdout,"*** Homing torso\n");
 
+        VectorOf<int> modes(3);
+        modes[0]=modes[1]=modes[2]=VOCAB_CM_POSITION;
+        modeTorso->setControlModes(modes.getFirst());
+
         posTorso->setRefSpeeds(velTorso.data());
         posTorso->positionMove(homeTorso.data());
     }
@@ -737,13 +743,17 @@ protected:
 
     void steerArmToHome(const int sel=USEDARM)
     {
+        IControlMode2    *imode=modeArm;
         IPositionControl *ipos=posArm;
         string type;
 
         if (sel==LEFTARM)
         {
             if (useLeftArm)
+            {
+                drvLeftArm->view(imode);
                 drvLeftArm->view(ipos);
+            }
             else
                 return;
 
@@ -752,7 +762,10 @@ protected:
         else if (sel==RIGHTARM)
         {
             if (useRightArm)
+            {
+                drvRightArm->view(imode);
                 drvRightArm->view(ipos);
+            }
             else
                 return;
 
@@ -766,6 +779,7 @@ protected:
         fprintf(stdout,"*** Homing %s\n",type.c_str());
         for (size_t j=0; j<homeVels.length(); j++)
         {
+            imode->setControlMode(j,VOCAB_CM_POSITION);
             ipos->setRefSpeed(j,homeVels[j]);
             ipos->positionMove(j,homePoss[j]);
         }
@@ -817,6 +831,7 @@ protected:
     void stopArmJoints(const int sel=USEDARM)
     {
         IEncoders        *ienc=encArm;
+        IControlMode2    *imode=modeArm;
         IPositionControl *ipos=posArm;
         string type;
 
@@ -825,6 +840,7 @@ protected:
             if (useLeftArm)
             {
                 drvLeftArm->view(ienc);
+                drvLeftArm->view(imode);
                 drvLeftArm->view(ipos);
             }
             else
@@ -837,6 +853,7 @@ protected:
             if (useRightArm)
             {
                 drvRightArm->view(ienc);
+                drvRightArm->view(imode);
                 drvRightArm->view(ipos);
             }
             else
@@ -852,15 +869,17 @@ protected:
         fprintf(stdout,"*** Stopping %s joints\n",type.c_str());
         for (size_t j=0; j<homeVels.length(); j++)
         {
-            double fb;
-
+            double fb;            
             ienc->getEncoder(j,&fb);
+
+            imode->setControlMode(j,VOCAB_CM_POSITION);
             ipos->positionMove(j,fb);
         }
     }
 
     void moveHand(const int action, const int sel=USEDARM)
     {
+        IControlMode2    *imode=modeArm;
         IPositionControl *ipos=posArm;
         Vector *poss=NULL;
         string actionStr, type;
@@ -883,11 +902,13 @@ protected:
 
         if (sel==LEFTARM)
         {    
+            drvLeftArm->view(imode);
             drvLeftArm->view(ipos);
             type="left_hand";
         }
         else if (sel==RIGHTARM)
         {    
+            drvRightArm->view(imode);
             drvRightArm->view(ipos);
             type="right_hand";
         }
@@ -900,6 +921,7 @@ protected:
         {
             int k=homeVels.length()+j;
 
+            imode->setControlMode(k,VOCAB_CM_POSITION);
             ipos->setRefSpeed(k,handVels[j]);
             ipos->positionMove(k,(*poss)[j]);
         }
@@ -954,6 +976,7 @@ protected:
                         armSel=LEFTARM;
 
                         drvLeftArm->view(encArm);
+                        drvLeftArm->view(modeArm);
                         drvLeftArm->view(posArm);
                         drvCartLeftArm->view(cartArm);
                         armReachOffs=&leftArmReachOffs;
@@ -966,6 +989,7 @@ protected:
                         armSel=RIGHTARM;
 
                         drvRightArm->view(encArm);
+                        drvRightArm->view(modeArm);
                         drvRightArm->view(posArm);
                         drvCartRightArm->view(cartArm);
                         armReachOffs=&rightArmReachOffs;
@@ -1467,6 +1491,7 @@ public:
         }
 
         // open views
+        drvTorso->view(modeTorso);
         drvTorso->view(encTorso);
         drvTorso->view(posTorso);
         drvHead->view(encHead);
@@ -1481,6 +1506,7 @@ public:
         if (useLeftArm)
         {
             drvLeftArm->view(encArm);
+            drvLeftArm->view(modeArm);
             drvLeftArm->view(posArm);
             drvCartLeftArm->view(cartArm);
             armReachOffs=&leftArmReachOffs;
@@ -1492,6 +1518,7 @@ public:
         else if (useRightArm)
         {
             drvRightArm->view(encArm);
+            drvRightArm->view(modeArm);
             drvRightArm->view(posArm);
             drvCartRightArm->view(cartArm);
             armReachOffs=&rightArmReachOffs;
@@ -1503,6 +1530,7 @@ public:
         else
         {
             encArm=NULL;
+            modeArm=NULL;
             posArm=NULL;
             cartArm=NULL;
             armReachOffs=NULL;

@@ -91,7 +91,9 @@ class yarp::dev::iCubSimulationControl :
     public IPidControlRaw,
     public ImplementPidControl<iCubSimulationControl, IPidControl>,
     public IEncodersTimedRaw,
-    public ImplementEncodersTimed
+    public ImplementEncodersTimed,
+    public IPositionDirectRaw,
+    public ImplementPositionDirect
 
 {
  private:
@@ -286,6 +288,12 @@ class yarp::dev::iCubSimulationControl :
   virtual bool setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode);
   virtual bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
   virtual bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+
+  /////// PositionDirect
+  virtual bool setPositionDirectModeRaw();
+  virtual bool setPositionRaw(int j, double ref);
+  virtual bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
+  virtual bool setPositionsRaw(const double *refs);
 
 
 //void run(void);

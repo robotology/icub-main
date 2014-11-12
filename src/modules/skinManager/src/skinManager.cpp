@@ -18,6 +18,7 @@
  */
 
 #include <sstream>			// string stream
+#include <yarp/os/Log.h>
 #include "iCub/skinManager/skinManager.h"
  
 using std::string;
@@ -595,7 +596,7 @@ bool skinManager::updateModule() {
     double avgTimeUsed, stdDevUsed;
     myThread->getEstUsed(avgTimeUsed, stdDevUsed);     // real duration of run()
     if(avgTime > 1.3 * period){
-        printf("[WARNING] Thread too slow. Real period: %3.3f+/-%3.3f. Expected period: %3.3f.\n", avgTime, stdDev, period);
+        yWarning("Thread too slow. Real period: %3.3f+/-%3.3f. Expected period: %3.3f.\n", avgTime, stdDev, period);
         printf("Duration of 'run' method: %3.3f+/-%3.3f.\n", avgTimeUsed, stdDevUsed);
     }
     return true;

@@ -1985,7 +1985,7 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
       helpString.push_back("Ask the current calibrator to carry out the calibration. ");
       helpString.push_back("@param rm_outliers if true outliers removal is performed. ");
       helpString.push_back("@return a property containing the output in terms of ");
-      helpString.push_back("calibration errors for each subsystem: \"calibrator\", \"alignerL\", \"alignerR\". ");
+      helpString.push_back("calibration errors for each subsystem: \"calibrator\", \"aligner\". ");
     }
     if (functionName=="pushCalibrator") {
       helpString.push_back("bool pushCalibrator() ");
@@ -2090,7 +2090,7 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
       helpString.push_back("Return some progress about the ongoing exploration. ");
       helpString.push_back("@return a property that looks like ");
       helpString.push_back("(\"status\" [\"idle\"|\"ongoing\"]) (\"total_points\" <int>) (\"remaining_points\" <int>) ");
-      helpString.push_back("(\"calibrator_points\" <int>) (\"alignerL_points\" <int>) (\"alignerR_points\" <int>) ");
+      helpString.push_back("(\"calibrator_points\" <int>) (\"aligner_points\" <int>) ");
     }
     if (functionName=="clearExplorationData") {
       helpString.push_back("bool clearExplorationData() ");

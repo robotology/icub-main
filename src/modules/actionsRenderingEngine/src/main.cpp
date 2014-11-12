@@ -43,8 +43,8 @@ estimate of the 2D target.
 \section cmd_port Issuing commands
 
 The commands sent as bottles to the module port /<modName>/cmd:io
-are described in the following. The response to any command consists in the voca [ack]/[nack] in case of
-success/faliure.
+are described in the following. The response to any command    
+consists in the vocab [ack]/[nack] in case of success/failure. 
 
 Some commands require to specify a visual target for 
 the action required. In these cases the parameter [target] can be expressed as follows:
@@ -220,10 +220,13 @@ accordingly to avoid calibrating always at start-up.
 --[fingers] the robot will calibrate the fingers in order to detect
 whether correct grasp has been achieved.
 
---[kinematics] these option requires a parameter [start/stop]. when started, the system is set to cartesian
-torque control and the robot arm can be moved around by the human user. When the [calib] [kinematics] [stop]
-command is received, the system is set to velocity mode and the offset between the initial and the current
-position is stored. It is also possible to associate a specific kinematic offset to a single object. To do 
+--[kinematics] this option requires a parameter [start/stop]. 
+when started, the system is set to cartesian torque control and 
+the robot arm can be moved around by the human user. When the 
+[calib] [kinematics] [stop] command is received, the system is 
+set to stiff mode and the offset between the initial and the 
+current position is stored. It is also possible to associate a 
+specific kinematic offset to a single object. To do 
 so, it is required to issue the command [calib] [kinematics] [stop] <object_name>. Then, whenever the system
 will be asked to preform an action over such object, the system will use the learnt offset.
  
@@ -247,18 +250,25 @@ the following data:
  
 <b>GET</b> 
 format: [get] <request>
-action: the system returns the requested element. <request> can be of the form:
+action: the system returns the requested element.    
+    
+<request> can be of the form:
  
---[s2c] [target_1] ... [target_n]: returns the current cartesian coordinates of the n visual 
-targets wrt to the robot root reference frame. The number of targets is not predefined.
+--[s2c] [target_1] ... [target_n]: returns the current cartesian    
+coordinates of the n visual targets wrt to the robot root    
+reference frame. The number of targets is not predefined.    
  
---[table] : returns the current height of the table in front of the robot
+--[table]: returns the current height of the table in front of    
+  the robot  
  
---[holding] : returns true if the robot is holding an object in its active hand
-.
---[hand] [image] : returns a vector of the form (u_left v_left u_right v_right hand-head-distance) that reports
-the projection of the end-effector of the active arm in both the robot cameras together with the distance
-(in meters) between the robot forehead and its hand.
+--[holding]: returns true if the robot is holding an object in  
+its active hand.    
+    
+--[hand] [image]: returns a vector of the form (u_left v_left    
+u_right v_right hand-head-distance) that reports the projection    
+of the end-effector of the active arm in both the robot cameras    
+together with the distance (in meters) between the robot    
+forehead and its hand.    
  
 \section lib_sec Libraries 
 - YARP libraries. 
@@ -272,6 +282,11 @@ Assume that the robot interface is operative and the
 Aside from the internal ports created by \ref ActionPrimitives 
 library, we also have: 
  
+- \e /<modName>/wbd:rpc to be connected to \e
+  /wholeBodyDynamics/rpc:i in order to allow for resetting
+  force offsets in the computation of internal dynamics of the
+  robot.
+ 
 - \e /<modName>/cmd:io receives a bottle containing commands 
   whose formats are specified in the previous section. The port 
   replies as soon as the current action has been completed.
@@ -280,16 +295,20 @@ library, we also have:
     Recognized remote commands:\n
     -[help]: returns the list of available rpc commands.\n
     -[get]: get requests\n
-        * [status]:returns the bottle (gaze <status>) (left_arm <status>) (right_arm <status>) where\n
-                   <status> can be equal to "idle", "busy" or "unavailable".\n
-    -[impedance] [on]/[off]: enable/disable (if available) impedance velocity control.\n
+    -[status]: returns the bottle (gaze <status>)
+     (left_arm <status>) (right_arm <status>) where 
+     <status> can be equal to "idle", "busy" or "unavailable".\n
+    -[impedance] [on]/[off]: enable/disable (if available)
+     impedance control.\n
     -[waveing] [on]/[off]: enable/disable the iCub arm(s) waving.\n
     -[mode] [homography]/[disparity]/[network]: sets the desired stereo to cartesian mode.\n
-    -[interrupt] : interrupts any action deleting also the action queue for both arms.\n
-    -[reinstate] : if the module was interrupted reinstate it.\n
-    -[elbow] "left"|"right"|"both" <height> <weight> : to change
-     elbow parameters.
- 
+    -[interrupt]: interrupts any action deleting also the action queue for both arms.\n
+    -[reinstate]: if the module was interrupted reinstate it.\n
+    -[elbow] "left"|"right"|"both" <height> <weight>: to change
+     elbow parameters. \n
+    -[time] <time>: to change default arm movement execution
+     time (in seconds).
+
 \section parameters_sec Parameters 
 The following are the options that are not usually contained 
 within the configuration file. 
@@ -353,6 +372,7 @@ Windows, Linux
 #define RPC_REINSTATE               VOCAB4('r','e','i','n')
 #define RPC_WAVEING                 VOCAB4('w','a','v','e')
 #define RPC_ELBOW                   VOCAB4('e','l','b','o')
+#define RPC_EXECTIME                VOCAB4('t','i','m','e')
 
 #define CMD_IDLE                    VOCAB4('i','d','l','e')
 #define CMD_HOME                    VOCAB4('h','o','m','e')
@@ -646,6 +666,20 @@ public:
                 }
                 else
                     reply.addString("missing elbow parameters");
+
+                break;
+            }
+
+            case RPC_EXECTIME:
+            {
+                if (command.size()>1)
+                {
+                    double execTime=command.get(1).asDouble();
+                    motorThr->changeExecTime(execTime);
+                    reply.addString("execution time updated");
+                }
+                else
+                    reply.addString("missing execution time");
 
                 break;
             }
@@ -1205,10 +1239,13 @@ public:
                         else
                         {
                            motorThr->setGazeIdle();
-                           motorThr->release(command);
+                           motorThr->release(command);                           
 
                            if (!check(command,"still"))
+                           {
+                               motorThr->goUp(command,0.1);
                                motorThr->goHome(command);
+                           }
 
                            reply.addVocab(NACK);
                         }
@@ -1275,6 +1312,7 @@ public:
                         if(!check(command,"still"))
                         {
                             Time::delay(2.0);
+                            motorThr->goUp(command,0.1);
                             motorThr->goHome(command);
                         }
 
@@ -1301,6 +1339,7 @@ public:
                         if (!check(command,"still"))
                         {
                             motorThr->setGazeIdle();
+                            motorThr->goUp(command,0.1);
                             motorThr->goHome(command);
                         }
 
@@ -1419,7 +1458,6 @@ protected:
     bool read(ConnectionReader &connection)
     {
         Bottle command, reply;
-
         if (!command.read(connection))
             return false;
 

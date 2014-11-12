@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
 
     //SimulationRun main;
     //if (!main.run(bundle,argc,argv)) return 1;
-    MainThread thread;
+   MainThread thread;
    thread.bundle = bundle;
    thread.argc = argc;
    thread.argv = argv;
@@ -221,5 +221,4 @@ int main(int argc, char** argv) {
    thread.start();
    thread.join();
    return thread.result?0:1;
-    return 0;
 }

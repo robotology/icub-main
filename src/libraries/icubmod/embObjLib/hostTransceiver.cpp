@@ -10,18 +10,7 @@
 // - macros
 // --------------------------------------------------------------------------------------------------------------------
 
-#undef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ //if this macro is defined then ethMenager sends pkts to ems even if they are empty
-                                              //ATTENTION: is important to define also the same macro in ethManager.cpp
-
-
-
-#if defined(USE_EOPROT_OLD) | defined(USE_EOPROT_XML)
-    //#warning --> keeping USE_EOPROT_xxx from cmakelist
-#else
-    //#warning --> specifying USE_EOPROT_xxx by hand 
-    #define USE_EOPROT_OLD
-    //#define USE_EOPROT_XML
-#endif
+#define HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -38,6 +27,7 @@ using namespace std;
 #include "hostTransceiver.hpp"
 #include "FeatureInterface.h"
 
+#include "EOYmutex.h"
 #include "EOYtheSystem.h"
 #include "EOtheErrorManager.h"
 #include "EoCommon.h"
@@ -46,29 +36,9 @@ using namespace std;
 #include "EOrop.h"
 #include "EoProtocol.h"
 
+#include "ethManager.h"
 
 
-#if defined(USE_EOPROT_OLD)
-
-//#warning --> using USE_EOPROT_OLD
-
-#include "eOprot_b01.h"
-#include "eOprot_b02.h"
-#include "eOprot_b03.h"
-#include "eOprot_b04.h"
-#include "eOprot_b05.h"
-#include "eOprot_b06.h"
-#include "eOprot_b07.h"
-#include "eOprot_b08.h"
-#include "eOprot_b09.h"
-#include "eOprot_b10.h"
-#include "eOprot_b11.h"
-
-#elif   defined(USE_EOPROT_XML)
-
-//#warning --> using USE_EOPROT_XML
-
-#include "EOprotocolConfigurator.h"
 
 #include "EoProtocol.h"
 #include "EoProtocolMN.h"
@@ -76,23 +46,55 @@ using namespace std;
 #include "EoProtocolAS.h"
 #include "EoProtocolSK.h"
 
-#else
-    #error --> chose a USE_EOPROT_xxx amongst: USE_EOPROT_OLD, USE_EOPROT_XML
-#endif
 
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 
 #include <yarp/os/Time.h>
 
 
 
-hostTransceiver::hostTransceiver() : transMutex(1)
+bool hostTransceiver::lock_transceiver()
+{
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
+    htmtx->wait();
+#endif
+    return true;
+}
+
+bool hostTransceiver::unlock_transceiver()
+{
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
+    htmtx->post();
+#endif
+    return true;
+}
+
+
+bool hostTransceiver::lock_nvs()
+{
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
+    nvmtx->wait();
+#endif
+    return true;
+}
+
+bool hostTransceiver::unlock_nvs()
+{
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
+    nvmtx->post();
+#endif
+    return true;
+}
+
+
+hostTransceiver::hostTransceiver()
 {
     yTrace();
 
     ipport              = 0;
     localipaddr         = 0;
     remoteipaddr        = 0;
+    pktsizerx           = 0;
 
     protboardnumber     = eo_prot_BRDdummy;
     p_RxPkt             = NULL;
@@ -100,15 +102,31 @@ hostTransceiver::hostTransceiver() : transMutex(1)
     pc104txrx           = NULL;
     nvset               = NULL;
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
+    memset(&localTransceiverProperties, 0, sizeof(localTransceiverProperties));
+    memset(&remoteTransceiverProperties, 0, sizeof(remoteTransceiverProperties));
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
+    htmtx = new Semaphore(1);
+    nvmtx = new Semaphore(1);
+#endif
 }
 
 hostTransceiver::~hostTransceiver()
 {
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
+    delete htmtx;
+    delete nvmtx;
+#endif
+
+    // marco.accame on 11sept14: TODO: must provide a deallocator for EOpacket, EOhostTransceiver, EOprotocolConfigurator, ... what else ?
+//    eo_hosttransceiver_Delete(hosttxrx);
+//    eo_packet_Delete(p_RxPkt);
+//    eo_protconfig_Delete(protconfigurator);
+
     yTrace();
 }
 
 
-bool hostTransceiver::init(yarp::os::Searchable &config, uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsizerx, FEAT_boardnumber_t _board_n)
+bool hostTransceiver::init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsizerx, FEAT_boardnumber_t _board_n)
 {
     // the configuration of the transceiver: it is specific of a given remote board
     yTrace();
@@ -126,14 +144,10 @@ bool hostTransceiver::init(yarp::os::Searchable &config, uint32_t _localipaddr, 
     localipaddr     = _localipaddr;
     remoteipaddr    = _remoteipaddr;
     ipport          = _ipport; 
+    pktsizerx       = _pktsizerx;
 
-#if     defined(USE_EOPROT_OLD)
-        yWarning() << "hostTransceiver::init() -> using USE_EOPROT_OLD";
-#elif   defined(USE_EOPROT_XML)
-        yWarning() << "hostTransceiver::init() -> using USE_EOPROT_XML";
-#endif
 
-    if(!initProtocol(config))
+    if(!initProtocol(cfgprotocol))
     {
         yError() << "hostTransceiver::init() -> hostTransceiver::initProtocol() fails";
         return false;     
@@ -142,12 +156,12 @@ bool hostTransceiver::init(yarp::os::Searchable &config, uint32_t _localipaddr, 
 
     if(eobool_false == eoprot_board_can_be_managed(protboardnumber))
     {
-        yError() << "hostTransceiver::init() -> the board " << protboardnumber+1 << "cannot be managed by EOprotocol";
+        yError() << "hostTransceiver::init() -> the BOARD " << protboardnumber+1 << "cannot be managed by EOprotocol";
         return false; 
     }
 
 
-    if(!prepareTransceiverConfig(config))
+    if(!prepareTransceiverConfig(cfgtransceiver, cfgprotocol))
     {
         yError() << "hostTransceiver::init() -> hostTransceiver::prepareTransceiverConfig() fails";
         return false;     
@@ -155,9 +169,9 @@ bool hostTransceiver::init(yarp::os::Searchable &config, uint32_t _localipaddr, 
 
     // now hosttxrxcfg is ready, thus ...
     // initialise the transceiver: it creates a EOhostTransceiver and its EOnvSet
-    hosttxrx = eo_hosttransceiver_New(&hosttxrxcfg);            // never returns NULL. it calls its error manager
+    hosttxrx = eo_hosttransceiver_New(&hosttxrxcfg);
     if(hosttxrx == NULL)
-    {
+    {   // it never returns NULL. on allocation failure it calls its error manager. however ...
         yError() << "hostTransceiver::init(): .... eo_hosttransceiver_New() failed";
         return false;
     }
@@ -196,20 +210,28 @@ bool hostTransceiver::nvSetData(const EOnv *nv, const void *dat, eObool_t forces
         return false;
     }  
     
-    transMutex.wait();
+    lock_nvs();
+    eOresult_t eores = eo_nv_Set(nv, dat, forceset, upd);
+    unlock_nvs();
+
     bool ret = true;
-    if(eores_OK != eo_nv_Set(nv, dat, forceset, upd))
+    if(eores_OK != eores)
     {
         yError() << "hostTransceiver::nvSetData(): error while setting NV data w/ eo_nv_Set()\n";
         ret = false;
     }
-    transMutex.post();
+
     return ret;
 }
 
 // if signature is eo_rop_SIGNATUREdummy (0xffffffff) we dont send the signature. if writelocalcache is true we copy data into local ram of the EOnv 
 bool hostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32_t signature, bool writelocalrxcache)
 {
+    eOresult_t eores = eores_NOK_generic;
+    int32_t err = -1;
+    int32_t info0 = -1;
+    int32_t info1 = -1;
+    int32_t info2 = -1;
 
     if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
     {
@@ -217,8 +239,6 @@ bool hostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32
         eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
         yError() << "hostTransceiver::addSetMessage__() called w/ invalid id on protboard = " << protboardnumber <<
                     "with id: " << nvinfo;
-//                    ", ep = " << eoprot_ID2endpoint(protid) << ", entity = " << eoprot_ID2entity(protid) << "index = " << eoprot_ID2index(protid) <<
-//                    ", tag = " << eoprot_ID2tag(protid);
         return false;
     }
 
@@ -241,19 +261,19 @@ bool hostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32
             return false;
         }
 
-        transMutex.wait();
+        lock_nvs();
+        eores = eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo);
+        unlock_nvs();
 
         // marco.accame on 09 apr 2014:
         // we write data into 
-        if(eores_OK != eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo))
+        if(eores_OK != eores)
         {
             // the nv is not writeable
             yError() << "hostTransceiver::addSetMessage__(): Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
-            transMutex.post();
             return false;
         }
         
-        transMutex.post();
     }
 
     eOropdescriptor_t ropdesc = {0};
@@ -271,21 +291,23 @@ bool hostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32
 
     bool ret = false;
 
-    for(int i=0; ( (i<5) && (!ret) ); i++)
+    for(int i=0; ( (i<maxNumberOfROPloadingAttempts) && (!ret) ); i++)
     {
-        transMutex.wait();
-        if(eores_OK != eo_transceiver_OccasionalROP_Load(pc104txrx, &ropdesc))
+        lock_transceiver();
+        eores = eo_transceiver_OccasionalROP_Load(pc104txrx, &ropdesc);
+        unlock_transceiver();
+
+        if(eores_OK != eores)
         {
             char nvinfo[128];
             eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
-            yWarning() << "hostTransceiver::addSetMessage__(): eo_transceiver_OccasionalROP_Load() unsuccessfull at attempt num " << i+1 << 
+            yWarning() << "(!!)-> hostTransceiver::addSetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD" << protboardnumber+1 << "unsuccessful at attempt num " << i+1 <<
                           "with id: " << nvinfo;
-//                          " with: ep = " << eoprot_ID2endpoint(protid)  << ", entity = " << eoprot_ID2entity(protid)  <<
-//                          ", index = " << eoprot_ID2index(protid)  << ", tag = " << eoprot_ID2tag(protid);
 
-            transMutex.post();
-            yarp::os::Time::delay(0.001);
+            eo_transceiver_lasterror_tx_Get(pc104txrx, &err, &info0, &info1, &info2);
+            yWarning() << "(!!)-> hostTransceiver::addSetMessage__(): eo_transceiver_lasterror_tx_Get() detected: err=" << err << "infos = " << info0 << info1 << info2;
 
+            yarp::os::Time::delay(delayAfterROPloadingFailure);
         }
         else
         {
@@ -293,14 +315,10 @@ bool hostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32
             {
                 char nvinfo[128];
                 eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
-                yWarning() << "hostTransceiver::addSetMessage__(): eo_transceiver_OccasionalROP_Load() succesful ONLY at attempt num " << i+1 <<
-                              "with id: " << nvinfo;
-//                              " with: ep = " << eoprot_ID2endpoint(protid)  << ", entity = " << eoprot_ID2entity(protid)  <<
-//                              ", index = " << eoprot_ID2index(protid)  << ", tag = " << eoprot_ID2tag(protid);
-
-                
+                yWarning() << "(OK)-> hostTransceiver::addSetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD" << protboardnumber+1 << "successful ONLY at attempt num " << i+1 <<
+                              "with id: " << nvinfo;                
             }
-            transMutex.post();
+
             ret = true;
         }
     }
@@ -308,11 +326,10 @@ bool hostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32
     {
         char nvinfo[128];
         eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
-        yError() << "hostTransceiver::addSetMessage__(): ERROR in eo_transceiver_OccasionalROP_Load() after all attempts" <<
-//                    " with: ep = " << eoprot_ID2endpoint(protid)  << ", entity = " << eoprot_ID2entity(protid)  <<
-//                    ", index = " << eoprot_ID2index(protid)  << ", tag = " << eoprot_ID2tag(protid);
+        yError() << "hostTransceiver::addSetMessage__(): ERROR in eo_transceiver_OccasionalROP_Load() for BOARD" << protboardnumber+1 << "after all attempts" <<
                     "with id: " << nvinfo;
     }
+
     return ret;
 }
 
@@ -331,56 +348,65 @@ bool hostTransceiver::addSetMessageWithSignature(eOprotID32_t protid, uint8_t* d
     return(hostTransceiver::addSetMessage__(protid, data, sig, false));
 }
 
-
-bool hostTransceiver::addGetMessage(eOprotID32_t protid)
+bool hostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
 {
+    eOresult_t eores = eores_NOK_generic;
+    int32_t err = -1;
+    int32_t info0 = -1;
+    int32_t info1 = -1;
+    int32_t info2 = -1;
+
     if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
     {
-        yError() << "hostTransceiver::addGetMessage() called w/ invalid protid: protboard = " << protboardnumber <<
-                    ", ep = " << eoprot_ID2endpoint(protid) << ", entity = " << eoprot_ID2entity(protid) << "index = " << eoprot_ID2index(protid) <<
-                    ", tag = " << eoprot_ID2tag(protid);
+        char nvinfo[128];
+        eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+        yError() << "hostTransceiver::addGetMessage__() called w/ invalid protid: protboard = " << protboardnumber <<
+                    "with id: " << nvinfo;
         return false;
     }
-
 
     eOropdescriptor_t ropdesc = {0};
     // marco.accame: recommend to use eok_ropdesc_basic
     memcpy(&ropdesc, &eok_ropdesc_basic, sizeof(eOropdescriptor_t));
     ropdesc.control.plustime    = 1;
-    ropdesc.control.plussign    = 0;
+    ropdesc.control.plussign    = (eo_rop_SIGNATUREdummy == signature) ? 0 : 1;
     ropdesc.ropcode             = eo_ropcode_ask;
     ropdesc.id32                = protid;
     ropdesc.size                = 0;
     ropdesc.data                = NULL;
-    ropdesc.signature           = 0;
-    
+    ropdesc.signature           = signature;
+
 
     bool ret = false;
 
-    for(int i=0; ( (i<5) && (!ret) ); i++)
+    for(int i=0; ( (i<maxNumberOfROPloadingAttempts) && (!ret) ); i++)
     {
-        transMutex.wait();
-        if(eores_OK != eo_transceiver_OccasionalROP_Load(pc104txrx, &ropdesc))
+        lock_transceiver();
+        eores = eo_transceiver_OccasionalROP_Load(pc104txrx, &ropdesc);
+        unlock_transceiver();
+
+        if(eores_OK != eores)
         {
             char nvinfo[128];
             eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
-            yWarning() << "hostTransceiver::addGetMessage__(): eo_transceiver_OccasionalROP_Load() unsuccessfull at attempt num " << i+1 << 
+            yWarning() << "(!!)-> hostTransceiver::addGetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD" << protboardnumber+1 << "unsuccessfull at attempt num " << i+1 <<
                           "with id: " << nvinfo;
-//                          " with: ep = " << eoprot_ID2endpoint(protid)  << ", entity = " << eoprot_ID2entity(protid)  <<
-//                          ", index = " << eoprot_ID2index(protid)  << ", tag = " << eoprot_ID2tag(protid);
-            transMutex.post();
-            yarp::os::Time::delay(0.001);
+
+            eo_transceiver_lasterror_tx_Get(pc104txrx, &err, &info0, &info1, &info2);
+            yWarning() << "(!!)-> hostTransceiver::addGetMessage__(): eo_transceiver_lasterror_tx_Get() detected: err=" << err << "infos = " << info0 << info1 << info2;
+
+            yarp::os::Time::delay(delayAfterROPloadingFailure);
         }
         else
         {
             if(i!=0)
             {
-                yWarning() << "hostTransceiver::addGetMessage__(): eo_transceiver_OccasionalROP_Load() succesful ONLY at attempt num " << i+1 << 
-                              " with: ep = " << eoprot_ID2endpoint(protid)  << ", entity = " << eoprot_ID2entity(protid)  << 
-                              ", index = " << eoprot_ID2index(protid)  << ", tag = " << eoprot_ID2tag(protid);
-                
+                char nvinfo[128];
+                eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+                yWarning() << "(OK)-> hostTransceiver::addGetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD" << protboardnumber+1 << "succesful ONLY at attempt num " << i+1 <<
+                              "with id: " << nvinfo;
+
             }
-            transMutex.post();
             ret = true;
         }
     }
@@ -388,14 +414,23 @@ bool hostTransceiver::addGetMessage(eOprotID32_t protid)
     {
         char nvinfo[128];
         eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
-        yError() << "hostTransceiver::addGetMessage__(): ERROR in eo_transceiver_OccasionalROP_Load() after all attempts " <<
+        yError() << "hostTransceiver::addGetMessage__(): ERROR in eo_transceiver_OccasionalROP_Load() for BOARD" << protboardnumber+1 << "after all attempts " <<
                     "with id: " << nvinfo;
-//                    " with: ep = " << eoprot_ID2endpoint(protid)  << ", entity = " << eoprot_ID2entity(protid)  <<
-//                    ", index = " << eoprot_ID2index(protid)  << ", tag = " << eoprot_ID2tag(protid);
     }
     return ret;
 }
 
+
+bool hostTransceiver::addGetMessage(eOprotID32_t protid)
+{
+    return(hostTransceiver::addGetMessage__(protid, eo_rop_SIGNATUREdummy));
+}
+
+
+bool hostTransceiver::addGetMessageWithSignature(eOprotID32_t protid, uint32_t signature)
+{
+    return(hostTransceiver::addGetMessage__(protid, signature));
+}
 
 bool hostTransceiver::readBufferedValue(eOprotID32_t protid,  uint8_t *data, uint16_t* size)
 {      
@@ -405,8 +440,6 @@ bool hostTransceiver::readBufferedValue(eOprotID32_t protid,  uint8_t *data, uin
         eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
         yError() << "hostTransceiver::readBufferedValue() called w/ invalid protid: protboard = " << protboardnumber <<
                     "with id: " << nvinfo;
-//                    ", ep = " << eoprot_ID2endpoint(protid) << ", entity = " << eoprot_ID2entity(protid) << "index = " << eoprot_ID2index(protid) <<
-//                    ", tag = " << eoprot_ID2tag(protid);
         return false;
     }
     
@@ -426,12 +459,12 @@ bool hostTransceiver::readBufferedValue(eOprotID32_t protid,  uint8_t *data, uin
         yError() << "readBufferedValue: Unable to get pointer to desired NV with: " << nvinfo;
         return false;
     }
-    // protection on reading data by yarp
-    transMutex.wait();
-    bool ret = getNVvalue(nv_ptr, data, size);
-    transMutex.post();
 
-    return true;
+    // marco.accame: protection is inside getNVvalue() member function  
+    bool ret = getNVvalue(nv_ptr, data, size);
+ 
+
+    return ret;
 }
 
 
@@ -449,8 +482,6 @@ bool hostTransceiver::readSentValue(eOprotID32_t protid, uint8_t *data, uint16_t
         eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
         yError() << "hostTransceiver::readSentValue() called w/ invalid protid: protboard = " << protboardnumber <<
                     "with id: " << nvinfo;
-//                    ", ep = " << eoprot_ID2endpoint(protid) << ", entity = " << eoprot_ID2entity(protid) << "index = " << eoprot_ID2index(protid) <<
-//                    ", tag = " << eoprot_ID2tag(protid);
         return false;
     }
 
@@ -469,15 +500,19 @@ bool hostTransceiver::readSentValue(eOprotID32_t protid, uint8_t *data, uint16_t
         return false;
     }
     // protection on reading data by yarp
-    transMutex.wait();
+    lock_nvs();
     ret = (eores_OK == eo_nv_Get(nv_ptr, eo_nv_strg_volatile, data, size)) ? true : false;
-    transMutex.post();
+    unlock_nvs();
     return true;
 }
 
+int hostTransceiver::getCapacityOfRXpacket(void)
+{
+    return pktsizerx;
+}
 
 // somebody passes the received packet - this is used just as an interface
-void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
+void hostTransceiver::onMsgReception(uint64_t *data, uint16_t size)
 {
     if(NULL == data)
     {
@@ -489,9 +524,6 @@ void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
     uint64_t txtime;
     uint16_t capacityrxpkt = 0;
 
-    // protezione per la scrittura dei dati all'interno della memoria del transceiver, su ricezione di un rop.
-    // il mutex e' unico per tutto il transceiver
-    //transMutex.wait();
     eo_packet_Capacity_Get(p_RxPkt, &capacityrxpkt);
     if(size > capacityrxpkt)
     {
@@ -499,10 +531,18 @@ void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
         return;
     } 
 
-    eo_packet_Payload_Set(p_RxPkt, data, size);
+    eo_packet_Payload_Set(p_RxPkt, (uint8_t*)data, size);
     eo_packet_Addressing_Set(p_RxPkt, remoteipaddr, ipport);
+
+    // the transceiver can receive and transmit in parallel because reception manipulates memory passed externally
+    // and the two operation do not use internal memory shared between the two
+    // that iis true unless there is a say<> required upon a received ask<>. in suc a case the receiver must put the answer inside a data
+    // structure read by the transmitter. but the host transceiver does not accept ask<>, thus it is not our case.
+
+    // actually: it could be a good thing to protect the nvs as the receiver writes them
+    //lock_transceiver(); // can be removed for optimisation
     eo_transceiver_Receive(pc104txrx, p_RxPkt, &numofrops, &txtime);
-    //transMutex.post();
+    //unlock_transceiver(); // can be removed for optimisation
 }
 
 
@@ -512,40 +552,59 @@ void hostTransceiver::onMsgReception(uint8_t *data, uint16_t size)
  * The memory holding this ropframe will be written ONLY in case of a new call of eo_transceiver_Transmit function,
  * therefore it is safe to use it. No concurrency is involved here.
  */
-void hostTransceiver::getTransmit(uint8_t **data, uint16_t *size)
+bool hostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops)
 {
-    if((NULL == data) || (NULL == size))
+    // marco.accame on 14oct14: as long as this function is called by one thread only, it is possible to limit the protection to
+    //                          only one function: eo_transceiver_outpacket_Prepare().
+
+    if((NULL == data) || (NULL == size) || (NULL == numofrops))
     {
-        yError() << "eo HostTransceiver::getTransmit() called with NULL data or size";
-        return;
+        yError() << "eo HostTransceiver::getTransmit() called with NULL data or zero size or zero numofrops";
+        return false;
     }  
 
-    uint16_t numofrops;
     EOpacket* ptrpkt = NULL;
     eOresult_t res;
-    //is important set size to 0 because if size is 0 pc104 no trasmit data
-    *size = 0;
+
+
+    // it is important set all these values to NULL and zero because they are used by the caller to decide if it will tx any data or not
     *data = NULL;
+    *size = 0;
+    *numofrops = 0;
 
 
-    res = eo_transceiver_outpacket_Prepare(pc104txrx, &numofrops);
+    uint16_t tmpnumofrops = 0;
+
+    // it must be protected vs concurrent use of other threads attempting to put rops inside the transceiver.
+    lock_transceiver();
+    res = eo_transceiver_outpacket_Prepare(pc104txrx, &tmpnumofrops);
+    unlock_transceiver();
+
 #ifdef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_
     if((eores_OK != res))
 #else
-    if((eores_OK != res) || (0 == numofrops)) //transmit only if res is ok and there is at least one rop to send
+    if((eores_OK != res) || (0 == tmpnumofrops)) // transmit only if res is ok and there is at least one rop to send
 #endif
     {
-    	//if I have no rop to send don't send any pkt
-    	return;
-    }
-    res = eo_transceiver_outpacket_Get(pc104txrx, &ptrpkt);
-    if(eores_OK != res)
-    {
-    	return;
+        return false;
     }
 
-    // now ptrpkt points to internal tx packet of the transceiver.
+    // this function does not use data used by concurrent threads, thus it can be left un-protected.
+    res = eo_transceiver_outpacket_Get(pc104txrx, &ptrpkt);
+
+    if(eores_OK != res)
+    {
+        return false;
+    }
+
+    // after these two lines, in data, size and numofrops we have what we need
     eo_packet_Payload_Get(ptrpkt, data, size);
+    *numofrops = tmpnumofrops;
+
+    if(tmpnumofrops > 0)
+        return true;
+    else
+        return false;
 }
 
 
@@ -559,8 +618,6 @@ EOnv* hostTransceiver::getNVhandler(eOprotID32_t protid, EOnv* nv)
         eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
         yError() << "hostTransceiver::getNVhandler() called w/ invalid protid: protboard = " << protboardnumber <<
                     "with id: " << nvinfo;
-//                    ", ep = " << eoprot_ID2endpoint(protid) << ", entity = " << eoprot_ID2entity(protid) << "index = " << eoprot_ID2index(protid) <<
-//                    ", tag = " << eoprot_ID2tag(protid);
         return NULL;
     }
 
@@ -573,12 +630,12 @@ bool hostTransceiver::getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size)
     bool ret;
     if (NULL == nv)
     {   
-    yError() << "hostTransceiver::getNVvalue() called w/ NULL nv value: protboard = " << protboardnumber;
+        yError() << "hostTransceiver::getNVvalue() called w/ NULL nv value: protboard = " << protboardnumber;
         return false;
     }
-//     transMutex.wait();
+    lock_nvs(); 
     (eores_OK == eo_nv_Get(nv, eo_nv_strg_volatile, data, size)) ? ret = true : ret = false;
-//     _mutex.post();
+    unlock_nvs();
 
     if(false == ret)
     {
@@ -604,16 +661,18 @@ eOprotBRD_t hostTransceiver::get_protBRDnumber(void)
 }
 
 
-bool hostTransceiver::initProtocol(yarp::os::Searchable &config)
+bool hostTransceiver::initProtocol(yarp::os::Searchable &cfgprotocol)
 {
     static bool alreadyinitted = false;
 
     if(false == alreadyinitted)
     {
         // before using embOBJ we need initialing its system. it is better to init it again in case someone did not do it
-        eoy_sys_Initialise(NULL, NULL, NULL);
+        // we use the TheEthManager function ... however that was already called
+        TheEthManager::instance()->initEOYsystem();
 
-        static const uint8_t numOfBoardsinRobot =  eoprot_boards_maxnumberof; // to be initialise later or w/ a proper number from XML ...
+        // so far it is the maximum number. howver, it should be initted with the proper value, maybe taken from XML
+        static const uint8_t numOfBoardsinRobot =  eoprot_boards_maxnumberof;
 
         // init the protocol to manage all boards of the robot
         if(eores_OK != eoprot_config_board_numberof(numOfBoardsinRobot))
@@ -622,12 +681,6 @@ bool hostTransceiver::initProtocol(yarp::os::Searchable &config)
             return(false);
         }
 
-#if     defined(USE_EOPROT_OLD)
-    
-        // nothing to initialise
-
-#elif   defined(USE_EOPROT_XML)
-
 	
 	    // configure all the callbacks of all endpoints.
 	
@@ -635,15 +688,15 @@ bool hostTransceiver::initProtocol(yarp::os::Searchable &config)
 	    eoprot_override_mc();
 	    eoprot_override_as();
 	    eoprot_override_sk();
-#endif
+
         // ok. all is done correctly
 	    alreadyinitted = true;
 
-        // yWarning() << "hostTransceiver::initProtocol() CALLED W/ INITIALISATION";
+
     }
     else
     {
-        // yWarning() << "hostTransceiver::initProtocol() CALLED W/OUT INITIALISATION";
+
     }
 
     return(true);
@@ -653,9 +706,6 @@ bool hostTransceiver::initProtocol(yarp::os::Searchable &config)
 
 void hostTransceiver::eoprot_override_mn(void)
 {
-#if     defined(USE_EOPROT_OLD)
-        // nothing to do
-#elif   defined(USE_EOPROT_XML)
     static const eOprot_callbacks_endpoint_descriptor_t mn_callbacks_descriptor_endp =
     {
         EO_INIT(.endpoint)          eoprot_endpoint_management,
@@ -678,6 +728,27 @@ void hostTransceiver::eoprot_override_mn(void)
             EO_INIT(.tag)           eoprot_tag_mn_info_status,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mn_info_status
+        },
+        {   // mn_comm_status
+            EO_INIT(.endpoint)      eoprot_endpoint_management,
+            EO_INIT(.entity)        eoprot_entity_mn_comm,
+            EO_INIT(.tag)           eoprot_tag_mn_comm_status,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_mn_comm_status
+        },
+        {   // mn_comm_cmmnds_command_replynumof
+            EO_INIT(.endpoint)      eoprot_endpoint_management,
+            EO_INIT(.entity)        eoprot_entity_mn_comm,
+            EO_INIT(.tag)           eoprot_tag_mn_comm_cmmnds_command_replynumof,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof
+        },
+        {   // mn_comm_cmmnds_command_replyarray
+            EO_INIT(.endpoint)      eoprot_endpoint_management,
+            EO_INIT(.entity)        eoprot_entity_mn_comm,
+            EO_INIT(.tag)           eoprot_tag_mn_comm_cmmnds_command_replyarray,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray
         }
     };
 
@@ -700,16 +771,11 @@ void hostTransceiver::eoprot_override_mn(void)
     {
         eoprot_config_callbacks_variable_set(&mn_callbacks_descriptors_vars[i]);
     }
-#endif
 
 }
 
 void hostTransceiver::eoprot_override_mc(void)
 {
-#if     defined(USE_EOPROT_OLD)    
-        // nothing to do
-#elif   defined(USE_EOPROT_XML)
-
     static const eOprot_callbacks_endpoint_descriptor_t mc_callbacks_descriptor_endp = 
     { 
         EO_INIT(.endpoint)          eoprot_endpoint_motioncontrol, 
@@ -825,15 +891,11 @@ void hostTransceiver::eoprot_override_mc(void)
     {
         eoprot_config_callbacks_variable_set(&mc_callbacks_descriptors_vars[i]);
     }
-#endif
 }
 
 
 void hostTransceiver::eoprot_override_as(void)
 {
-#if     defined(USE_EOPROT_OLD)    
-        // nothing to do
-#elif   defined(USE_EOPROT_XML)
     static const eOprot_callbacks_endpoint_descriptor_t as_callbacks_descriptor_endp = 
     { 
         EO_INIT(.endpoint)          eoprot_endpoint_analogsensors, 
@@ -843,6 +905,13 @@ void hostTransceiver::eoprot_override_as(void)
     static const eOprot_callbacks_variable_descriptor_t as_callbacks_descriptors_vars[] = 
     { 
         // strain
+        {   // eoprot_tag_as_strain_config
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_strain,
+            EO_INIT(.tag)           eoprot_tag_as_strain_config,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_strain_config
+        },
         {   // strain_status_calibratedvalues
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
             EO_INIT(.entity)        eoprot_entity_as_strain,
@@ -857,7 +926,28 @@ void hostTransceiver::eoprot_override_as(void)
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_as_strain_status_uncalibratedvalues
         },
-        // mais
+        // mais        
+        {   // mais_config
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_mais,
+            EO_INIT(.tag)           eoprot_tag_as_mais_config,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_mais_config
+        },
+        {   // mais_config_datarate
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_mais,
+            EO_INIT(.tag)           eoprot_tag_as_mais_config_datarate,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_mais_config_datarate
+        },
+        {   // mais_config_mode
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_mais,
+            EO_INIT(.tag)           eoprot_tag_as_mais_config_mode,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_mais_config_mode
+        },
         {   // mais_status_the15values
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
             EO_INIT(.entity)        eoprot_entity_as_mais,
@@ -887,15 +977,13 @@ void hostTransceiver::eoprot_override_as(void)
     {
         eoprot_config_callbacks_variable_set(&as_callbacks_descriptors_vars[i]);
     }
-#endif   
+
 }
 
 
 void hostTransceiver::eoprot_override_sk(void)
 {
-#if     defined(USE_EOPROT_OLD)    
-        // nothing to do
-#elif   defined(USE_EOPROT_XML)
+
     static const eOprot_callbacks_endpoint_descriptor_t sk_callbacks_descriptor_endp = 
     { 
         EO_INIT(.endpoint)          eoprot_endpoint_skin, 
@@ -905,7 +993,7 @@ void hostTransceiver::eoprot_override_sk(void)
     static const eOprot_callbacks_variable_descriptor_t sk_callbacks_descriptors_vars[] = 
     { 
         // skin
-        {   // strain_status_calibratedvalues
+        {   // skin_status_arrayof10canframes
             EO_INIT(.endpoint)      eoprot_endpoint_skin,
             EO_INIT(.entity)        eoprot_entity_sk_skin,
             EO_INIT(.tag)           eoprot_tag_sk_skin_status_arrayof10canframes,
@@ -933,7 +1021,7 @@ void hostTransceiver::eoprot_override_sk(void)
     {
         eoprot_config_callbacks_variable_set(&sk_callbacks_descriptors_vars[i]);
     }
-#endif
+
 }
 
 
@@ -941,33 +1029,71 @@ void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(uint32_t remi
 {  
     long long unsigned int exp = expected_seqnum;
     long long unsigned int rec = rec_seqnum;
-    printf("Error in sequence number from 0x%x!!!! \t Expected %llu, received %llu\n", remipv4addr, exp, rec);
-};
+    char *ipaddr = (char*)&remipv4addr;
+    //printf("\nERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t received: \t%llu\n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec);
+    char errmsg[256] = {0};
+    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t Received: \t%llu \t Missing: \t%llu \n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec, rec-exp);
+    yError() << errmsg;
+}
 
 //extern "C" {
 //extern void protocol_callback_incaseoferror_in_sequencenumberReceived(uint32_t remipv4addr, uint64_t rec_seqnum, uint64_t expected_seqnum);
 //}
 
 
-bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &config)
+bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol)
 {
     // hosttxrxcfg is a class member ...
 
     // marco.accame on 10 apr 2014:
     // eo_hosttransceiver_cfg_default contains the EOK_HOSTTRANSCEIVER_* values which are good for reception of a suitable EOframe
-    // hovever, in future it would be fine to be able loading the fields inside eOhosttransceiver_cfg_t from a common eOprot_robot.h
+    // in here we init hosttxrxcfg with these default values. however, later on we shall change them properly according to what is in the xml file
+    // which is copied into variable remoteTransceiverProperties.
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
     hosttxrxcfg.remoteboardipv4addr     = remoteipaddr;
     hosttxrxcfg.remoteboardipv4port     = ipport;    
 
+
+    if(false == fillRemoteProperties(cfgtransceiver))
+    {
+        return(false);
+    }
+
+    // we build the hosttransceiver so that:
+    // 1. it can send a packet which can always be received by the board (max tx size = max rx size of remote board)
+    // 2. it has the same maxsize of rop as remote board
+    // 3. it has no regulars, no space for replies, and maximum space for occasionals.
+    // the properties of remote board are inside remoteTransceiverProperties and are taken from the xml file.
+    // after the transceiver is built and communication can happen, we shall verify if remoteTransceiverProperties has the same values
+    // of what is read from remote board. see funtion ethResources::verifyBoardTransceiver().
+
+    hosttxrxcfg.sizes.capacityoftxpacket            = remoteTransceiverProperties.maxsizeRXpacket;
+    hosttxrxcfg.sizes.capacityofrop                 = remoteTransceiverProperties.maxsizeROP;
+    hosttxrxcfg.sizes.capacityofropframeregulars    = eo_ropframe_sizeforZEROrops;
+    hosttxrxcfg.sizes.capacityofropframereplies     = eo_ropframe_sizeforZEROrops;
+    hosttxrxcfg.sizes.capacityofropframeoccasionals = (hosttxrxcfg.sizes.capacityoftxpacket - eo_ropframe_sizeforZEROrops) - hosttxrxcfg.sizes.capacityofropframeregulars - hosttxrxcfg.sizes.capacityofropframereplies;
+    hosttxrxcfg.sizes.maxnumberofregularrops        = 0;
+
+
+
     // the nvsetcfg of the board ...
-    hosttxrxcfg.nvsetdevcfg             = getNVset_DEVcfg(config);
+    hosttxrxcfg.nvsetdevcfg             = getNVset_DEVcfg(cfgprotocol);
 
     if(NULL == hosttxrxcfg.nvsetdevcfg)
     {
         return(false);
     }
 
+    // the one of pc104
+    localTransceiverProperties.listeningPort               = hosttxrxcfg.remoteboardipv4port;
+    localTransceiverProperties.destinationPort             = hosttxrxcfg.remoteboardipv4port;
+    localTransceiverProperties.maxsizeRXpacket             = pktsizerx;
+    localTransceiverProperties.maxsizeTXpacket             = hosttxrxcfg.sizes.capacityoftxpacket;
+    localTransceiverProperties.maxsizeROPframeRegulars     = hosttxrxcfg.sizes.capacityofropframeregulars;
+    localTransceiverProperties.maxsizeROPframeReplies      = hosttxrxcfg.sizes.capacityofropframereplies;
+    localTransceiverProperties.maxsizeROPframeOccasionals  = hosttxrxcfg.sizes.capacityofropframeoccasionals;
+    localTransceiverProperties.maxsizeROP                  = hosttxrxcfg.sizes.capacityofrop;
+    localTransceiverProperties.maxnumberRegularROPs        = hosttxrxcfg.sizes.maxnumberofregularrops;
 
 
     // other configurable parameters for eOhosttransceiver_cfg_t
@@ -979,101 +1105,137 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &config)
     hosttxrxcfg.extfn.onerrorseqnumber = cpp_protocol_callback_incaseoferror_in_sequencenumberReceived;
 
 
+#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
+    hosttxrxcfg.mutex_fn_new = NULL;
+    hosttxrxcfg.transprotection = eo_trans_protection_none;
+    hosttxrxcfg.nvsetprotection = eo_nvset_protection_none;
+#else
+    // mutex protection inside transceiver
+    hosttxrxcfg.mutex_fn_new = (eov_mutex_fn_mutexderived_new) eoy_mutex_New;
+    hosttxrxcfg.transprotection = eo_trans_protection_enabled; // eo_trans_protection_none
+    hosttxrxcfg.nvsetprotection = eo_nvset_protection_one_per_endpoint; // eo_nvset_protection_one_per_object // eo_nvset_protection_none
+#endif
+
     return(true);
 }
 
 
-
-const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &config)
+bool hostTransceiver::fillRemoteProperties(yarp::os::Searchable &cfgtransceiver)
 {
+    //in here i give values to remoteTransceiverProperties from XML file
 
-    const eOnvset_DEVcfg_t* nvsetdevcfg = NULL;
+    memset(&remoteTransceiverProperties, 0, sizeof(remoteTransceiverProperties));
 
-#if     defined(USE_EOPROT_OLD)
-
-    int _board_n = nvBoardNum2FeatIdBoardNum(get_protBRDnumber());
-
-    switch(_board_n)
+    if(cfgtransceiver.isNull())
     {
-    case 1:
-        nvsetdevcfg = &eoprot_b01_nvsetDEVcfg;
-        break;
-    case 2:
-        nvsetdevcfg = &eoprot_b02_nvsetDEVcfg;
-        break;
-    case 3:
-        nvsetdevcfg = &eoprot_b03_nvsetDEVcfg;
-        break;
-    case 4:
-        nvsetdevcfg = &eoprot_b04_nvsetDEVcfg;
-        break;
-    case 5:
-        nvsetdevcfg = &eoprot_b05_nvsetDEVcfg;
-        break;
-    case 6:
-        nvsetdevcfg = &eoprot_b06_nvsetDEVcfg;
-        break;
-    case 7:
-        nvsetdevcfg = &eoprot_b07_nvsetDEVcfg;
-        break;
-    case 8:
-        nvsetdevcfg = &eoprot_b08_nvsetDEVcfg;
-        break;
-    case 9:
-        nvsetdevcfg = &eoprot_b09_nvsetDEVcfg;
-        break;
-    case 10:
-        nvsetdevcfg = &eoprot_b10_nvsetDEVcfg;
-        break;
-    case 11:
-        nvsetdevcfg = &eoprot_b11_nvsetDEVcfg;
-        break;
-    default:
-        yError() << "Got a non existing board number" << _board_n;
-        //return NULL;
-        break;
+        yError() << "hostTransceiver-> BOARD " << get_protBRDnumber()+1 << " misses: entire TRANSCEIVER group";
+        return false;
+    }
+    else
+    {
+        bool error = false;
+
+        if(false == cfgtransceiver.check("listeningPort"))
+        {
+            error = true;
+        }
+        else if(false == cfgtransceiver.check("destinationPort"))
+        {
+            error = true;
+        }
+        else if(false == cfgtransceiver.check("maxSizeRXpacket"))
+        {
+            error = true;
+        }
+        else if(false == cfgtransceiver.check("maxSizeTXpacket"))
+        {
+            error = true;
+        }
+        else if(false == cfgtransceiver.check("maxSizeROPframeRegulars"))
+        {
+            error = true;
+        }
+        else if(false == cfgtransceiver.check("maxSizeROPframeReplies"))
+        {
+            error = true;
+        }
+        else if(false == cfgtransceiver.check("maxSizeROPframeOccasionals"))
+        {
+            error = true;
+        }
+        else if(false == cfgtransceiver.check("maxSizeROP"))
+        {
+            error = true;
+        }
+        else if(false == cfgtransceiver.check("maxNumberRegularROPs"))
+        {
+            error = true;
+        }
+
+        if(error)
+        {
+            yError() << "hostTransceiver-> BOARD " << get_protBRDnumber()+1 << " misses: a part of mandatory cfgtransceiver";
+            return(false);
+        }
+
+        remoteTransceiverProperties.listeningPort               = cfgtransceiver.find("listeningPort").asInt();
+        remoteTransceiverProperties.destinationPort             = cfgtransceiver.find("destinationPort").asInt();
+        remoteTransceiverProperties.maxsizeRXpacket             = cfgtransceiver.find("maxSizeRXpacket").asInt();
+        remoteTransceiverProperties.maxsizeTXpacket             = cfgtransceiver.find("maxSizeTXpacket").asInt();
+        remoteTransceiverProperties.maxsizeROPframeRegulars     = cfgtransceiver.find("maxSizeROPframeRegulars").asInt();
+        remoteTransceiverProperties.maxsizeROPframeReplies      = cfgtransceiver.find("maxSizeROPframeReplies").asInt();
+        remoteTransceiverProperties.maxsizeROPframeOccasionals  = cfgtransceiver.find("maxSizeROPframeOccasionals").asInt();
+        remoteTransceiverProperties.maxsizeROP                  = cfgtransceiver.find("maxSizeROP").asInt();
+        remoteTransceiverProperties.maxnumberRegularROPs        = cfgtransceiver.find("maxNumberRegularROPs").asInt();
+
     }
 
-#elif   defined(USE_EOPROT_XML)
+    return(true);
 
-    nvsetdevcfg = NULL;
+}
+
+const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &cfgprotocol)
+{
+    const eOnvset_DEVcfg_t* nvsetdevcfg = NULL;
 
     eOprotconfig_cfg_t protcfg;
     memcpy(&protcfg, &eo_protconfig_cfg_default, sizeof(eOprotconfig_cfg_t));
-    // ok, now i get the values from config and run ...
+    // ok, now i get the values from cfgprotocol and run ...
 
     // at least ... this one
     protcfg.board                           = get_protBRDnumber();
 
-    if(config.isNull())
+    if(cfgprotocol.isNull())
     {
-        yWarning() << "hostTransceiver-> board " << get_protBRDnumber()+1 << " misses: entire PROTOCOL group ... using max capabilities";
+        yWarning() << "(!!)-> hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: entire PROTOCOL group ... using max capabilities";
         //return false;
     }
     else
     {
         int      number;
 
-        if(false == config.check("endpointManagementIsSupported"))
+        // - endpoint management definition must always be present. if not present in the xml file, then i force its use with 1 comm, 1 appl, and 1 info entities
+
+        if(false == cfgprotocol.check("endpointManagementIsSupported"))
         {
-            yWarning() << "hostTransceiver-> board " << get_protBRDnumber()+1 << " misses: mandatory config of entire MN endpoint ... enabled w/ max capabilities" <<
+            yWarning() << "(!!)-> hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: mandatory cfgprotocol of entire MN endpoint ... enabled w/ max capabilities" <<
                           " (comm, appl, info) = (" << protcfg.en_mn_entity_comm_numberof << ", " << protcfg.en_mn_entity_appl_numberof << ", " << protcfg.en_mn_entity_info_numberof  << ")";
         }
-        else if((false == config.check("entityMNcommunicationNumberOf")) || (false == config.check("entityMNapplicationNumberOf")) || (false == config.check("entityMNinformationNumberOf")))
+        else if((false == cfgprotocol.check("entityMNcommunicationNumberOf")) || (false == cfgprotocol.check("entityMNapplicationNumberOf")) || (false == cfgprotocol.check("entityMNinformationNumberOf")))
         {
-            yWarning() << "hostTransceiver-> board " << get_protBRDnumber()+1 << " misses: mandatory config of some MN entities ... using max capabilities" <<
+            yWarning() << "(!!)-> hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: mandatory cfgprotocol of some MN entities ... using max capabilities" <<
                           " (comm, appl, info) = (" << protcfg.en_mn_entity_comm_numberof << ", " << protcfg.en_mn_entity_appl_numberof << ", " << protcfg.en_mn_entity_info_numberof  << ")";
         }
         else
         {
             // ok, retrieve the numbers ...
-            number  = config.find("endpointManagementIsSupported").asInt();
+            number  = cfgprotocol.find("endpointManagementIsSupported").asInt();
             protcfg.ep_management_is_present                = (0 == number) ? (eobool_false) : (eobool_true);
             if(eobool_true == protcfg.ep_management_is_present)
             {
-                protcfg.en_mn_entity_comm_numberof          = config.find("entityMNcommunicationNumberOf").asInt();
-                protcfg.en_mn_entity_appl_numberof          = config.find("entityMNapplicationNumberOf").asInt();
-                protcfg.en_mn_entity_info_numberof          = config.find("entityMNinformationNumberOf").asInt();
+                protcfg.en_mn_entity_comm_numberof          = cfgprotocol.find("entityMNcommunicationNumberOf").asInt();
+                protcfg.en_mn_entity_appl_numberof          = cfgprotocol.find("entityMNapplicationNumberOf").asInt();
+                protcfg.en_mn_entity_info_numberof          = cfgprotocol.find("entityMNinformationNumberOf").asInt();
             }
             else
             {
@@ -1082,37 +1244,43 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
                 protcfg.en_mn_entity_info_numberof          = 0;
             }
             // sanity check
-            if((protcfg.en_mn_entity_comm_numberof > 1) || (protcfg.en_mn_entity_appl_numberof > 1) || (protcfg.en_mn_entity_info_numberof > 1))
+            if((protcfg.en_mn_entity_comm_numberof != 1) || (protcfg.en_mn_entity_appl_numberof != 1) || (protcfg.en_mn_entity_info_numberof != 1))
             {
-                yWarning() << "hostTransceiver-> board " << get_protBRDnumber()+1 << " has: a strange number of MN entities"  <<
+                yWarning() << "(!!)-> hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of MN entities"  <<
                               " (comm, appl, info) = (" << protcfg.en_mn_entity_comm_numberof << ", " << protcfg.en_mn_entity_appl_numberof << ", " << protcfg.en_mn_entity_info_numberof << ")";
             }
 
         }
 
+        // - endpoint motioncontrol definition is not mandatory. if not present in xml file, i put mc disabled.
+        if(false == cfgprotocol.check("endpointMotionControlIsSupported"))
+        {
+            protcfg.ep_motioncontrol_is_present             = eobool_false;
+            protcfg.en_mc_entity_joint_numberof             = 0;
+            protcfg.en_mc_entity_motor_numberof             = 0;
+            protcfg.en_mc_entity_controller_numberof        = 0;
 
-        if(false == config.check("endpointMotionControlIsSupported"))
-        {
-            yWarning() << "hostTransceiver-> board " << get_protBRDnumber()+1 << " misses: mandatory config of entire MC endpoint ... enabled w/ max capabilities"  <<
-                          " (joint, motor, contr) = (" << protcfg.en_mc_entity_joint_numberof << ", " << protcfg.en_mc_entity_motor_numberof <<
-                          ", " << protcfg.en_mc_entity_controller_numberof << ")";
+            yWarning() << "(!!)-> hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of entire MC endpoint ... MC is disabled.";
         }
-        else if((false == config.check("entityMCjointNumberOf")) || (false == config.check("entityMCmotorNumberOf")) ||
-                (false == config.check("entityMCmotorNumberOf")))
+        else if((false == cfgprotocol.check("entityMCjointNumberOf")) || (false == cfgprotocol.check("entityMCmotorNumberOf")) ||
+                (false == cfgprotocol.check("entityMCmotorNumberOf")))
         {
-            yWarning() << "hostTransceiver-> board " << get_protBRDnumber()+1 << " misses: mandatory config of some MC entities ... using max capabilities"  <<
-                          " (joint, motor, contr) = (" << protcfg.en_mc_entity_joint_numberof << ", " << protcfg.en_mc_entity_motor_numberof <<
-                          ", " << protcfg.en_mc_entity_controller_numberof << ")";
+            protcfg.ep_motioncontrol_is_present             = eobool_false;
+            protcfg.en_mc_entity_joint_numberof             = 0;
+            protcfg.en_mc_entity_motor_numberof             = 0;
+            protcfg.en_mc_entity_controller_numberof        = 0;
+            yWarning() << "(!!)-> hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some MC entities ... MC is disabled";
+
         }
         else
         {
-            number  = config.find("endpointMotionControlIsSupported").asInt();
+            number  = cfgprotocol.find("endpointMotionControlIsSupported").asInt();
             protcfg.ep_motioncontrol_is_present             = (0 == number) ? (eobool_false) : (eobool_true);
             if(eobool_true == protcfg.ep_motioncontrol_is_present)
             {
-                protcfg.en_mc_entity_joint_numberof          = config.find("entityMCjointNumberOf").asInt();
-                protcfg.en_mc_entity_motor_numberof          = config.find("entityMCmotorNumberOf").asInt();
-                protcfg.en_mc_entity_controller_numberof     = config.find("entityMCcontrollerNumberOf").asInt();
+                protcfg.en_mc_entity_joint_numberof          = cfgprotocol.find("entityMCjointNumberOf").asInt();
+                protcfg.en_mc_entity_motor_numberof          = cfgprotocol.find("entityMCmotorNumberOf").asInt();
+                protcfg.en_mc_entity_controller_numberof     = cfgprotocol.find("entityMCcontrollerNumberOf").asInt();
             }
             else
             {
@@ -1122,37 +1290,43 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
             }
             // sanity check
             if((protcfg.en_mc_entity_joint_numberof > 16) || (protcfg.en_mc_entity_motor_numberof > 16) ||
-               (protcfg.en_mc_entity_controller_numberof > 1))
+               (protcfg.en_mc_entity_controller_numberof > 1) ||
+               (protcfg.en_mc_entity_joint_numberof != protcfg.en_mc_entity_motor_numberof) )
             {
-                yWarning() << "hostTransceiver-> board " << get_protBRDnumber()+1 << " has: a strange number of MC entities"  <<
+                yWarning() << "(!!)-> hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of MC entities"  <<
                           " (joint, motor, contr) = (" << protcfg.en_mc_entity_joint_numberof << ", " << protcfg.en_mc_entity_motor_numberof <<
                           ", " << protcfg.en_mc_entity_controller_numberof << ")";
             }
         }
 
 
-        if(false == config.check("endpointAnalogSensorsIsSupported"))
+        // - endpoint analogsensors definition is not mandatory. if not present in xml file, i put as disabled.
+        if(false == cfgprotocol.check("endpointAnalogSensorsIsSupported"))
         {
-            yWarning() << "hostTransceiver-> board " << get_protBRDnumber()+1 << " misses: mandatory config of entire AS endpoint ... enabled w/ max capabilities" <<
-                          " (strain, mais, extorque) = (" << protcfg.en_as_entity_strain_numberof << ", " << protcfg.en_as_entity_mais_numberof <<
-                          ", " << protcfg.en_as_entity_extorque_numberof << ")";
+            protcfg.ep_analogsensors_is_present         = eobool_false;
+            protcfg.en_as_entity_strain_numberof        = 0;
+            protcfg.en_as_entity_mais_numberof          = 0;
+            protcfg.en_as_entity_extorque_numberof      = 0;
+            yWarning() << "(!!)-> hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some AS entities ... AS is disabled.";
         }
-        else if((false == config.check("entityASstrainNumberOf")) || (false == config.check("entityASmaisNumberOf")) ||
-                (false == config.check("entityASextorqueNumberOf")))
+        else if((false == cfgprotocol.check("entityASstrainNumberOf")) || (false == cfgprotocol.check("entityASmaisNumberOf")) ||
+                (false == cfgprotocol.check("entityASextorqueNumberOf")))
         {
-            yWarning() << "hostTransceiver-> board " << get_protBRDnumber()+1 << " misses: mandatory config of some AS entities ... using max capabilities"  <<
-                          " (strain, mais, extorque) = (" << protcfg.en_as_entity_strain_numberof << ", " << protcfg.en_as_entity_mais_numberof <<
-                          ", " << protcfg.en_as_entity_extorque_numberof << ")";
+            protcfg.ep_analogsensors_is_present         = eobool_false;
+            protcfg.en_as_entity_strain_numberof        = 0;
+            protcfg.en_as_entity_mais_numberof          = 0;
+            protcfg.en_as_entity_extorque_numberof      = 0;
+            yWarning() << "(!!)-> hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some AS entities ... AS is disabled";
         }
         else
         {
-            number  = config.find("endpointAnalogSensorsIsSupported").asInt();
+            number  = cfgprotocol.find("endpointAnalogSensorsIsSupported").asInt();
             protcfg.ep_analogsensors_is_present             = (0 == number) ? (eobool_false) : (eobool_true);
             if(eobool_true == protcfg.ep_analogsensors_is_present)
             {
-                protcfg.en_as_entity_strain_numberof        = config.find("entityASstrainNumberOf").asInt();
-                protcfg.en_as_entity_mais_numberof          = config.find("entityASmaisNumberOf").asInt();
-                protcfg.en_as_entity_extorque_numberof      = config.find("entityASextorqueNumberOf").asInt();
+                protcfg.en_as_entity_strain_numberof        = cfgprotocol.find("entityASstrainNumberOf").asInt();
+                protcfg.en_as_entity_mais_numberof          = cfgprotocol.find("entityASmaisNumberOf").asInt();
+                protcfg.en_as_entity_extorque_numberof      = cfgprotocol.find("entityASextorqueNumberOf").asInt();
             }
             else
             {
@@ -1164,30 +1338,32 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
             if((protcfg.en_as_entity_strain_numberof > 1) || (protcfg.en_as_entity_mais_numberof > 1) ||
                (protcfg.en_as_entity_extorque_numberof > 16))
             {
-                yWarning() << "hostTransceiver-> board " << get_protBRDnumber()+1 << " has: a strange number of AS entities"  <<
+                yWarning() << "(!!)-> hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of AS entities"  <<
                           " (strain, mais, extorque) = (" << protcfg.en_as_entity_strain_numberof << ", " << protcfg.en_as_entity_mais_numberof <<
                           ", " << protcfg.en_as_entity_extorque_numberof << ")";
             }
         }
 
-
-        if(false == config.check("endpointSkinIsSupported"))
+        // - endpoint skin definition is not mandatory. if not present in xml file, i put sk disabled.
+        if(false == cfgprotocol.check("endpointSkinIsSupported"))
         {
-            yWarning() << "hostTransceiver-> board " << get_protBRDnumber()+1 << " misses: mandatory config of entire SK endpoint ... enabled w/ max capabilities"  <<
-                          " (skin) = (" << protcfg.en_sk_entity_skin_numberof << ")";
+            protcfg.ep_skin_is_present              = eobool_false;
+            protcfg.en_sk_entity_skin_numberof      = 0;
+            yWarning() << "(!!)-> hostTransceiver::getNVset_DEVcfg() detected thatBOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some SK entities ... SK is disabled.";
         }
-        else if((false == config.check("entitySKskinNumberOf")))
+        else if((false == cfgprotocol.check("entitySKskinNumberOf")))
         {
-            yWarning() << "hostTransceiver-> board " << get_protBRDnumber()+1 << " misses: mandatory config of some SK entities ... using max capabilities"   <<
-                          " (skin) = (" << protcfg.en_sk_entity_skin_numberof << ")";
+            protcfg.ep_skin_is_present              = eobool_false;
+            protcfg.en_sk_entity_skin_numberof      = 0;
+            yWarning() << "(!!)-> hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some SK entities ... SK is disabled";
         }
         else
         {
-            number  = config.find("endpointSkinIsSupported").asInt();
+            number  = cfgprotocol.find("endpointSkinIsSupported").asInt();
             protcfg.ep_skin_is_present             = (0 == number) ? (eobool_false) : (eobool_true);
             if(eobool_true == protcfg.ep_skin_is_present)
             {
-                protcfg.en_sk_entity_skin_numberof        = config.find("entitySKskinNumberOf").asInt();
+                protcfg.en_sk_entity_skin_numberof        = cfgprotocol.find("entitySKskinNumberOf").asInt();
             }
             else
             {
@@ -1196,12 +1372,12 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
             // sanity check
             if((protcfg.en_sk_entity_skin_numberof > 2))
             {
-                yWarning() << "hostTransceiver-> board " << get_protBRDnumber()+1 << " has: a strange number of SK entities"   <<
+                yWarning() << "(!!)-> hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of SK entities"   <<
                           " (skin) = (" << protcfg.en_sk_entity_skin_numberof << ")";
             }
 
         }
-
+#if 0
         printf("\nprotcfg --> bdr %d, mn = %d, mc = %d, as = %d, sk = %d ... co = %d, ap = %d, in = %d; jn = %d, mt = %d, ct = %d; st = %d, ma = %d, ex = %d; sk = %d\n",
                         protcfg.board,
                         protcfg.ep_management_is_present,   protcfg.ep_motioncontrol_is_present, protcfg.ep_analogsensors_is_present, protcfg.ep_skin_is_present,
@@ -1210,18 +1386,14 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
                         protcfg.en_as_entity_strain_numberof, protcfg.en_as_entity_mais_numberof, protcfg.en_as_entity_extorque_numberof,
                         protcfg.en_sk_entity_skin_numberof
             );
-
+#endif
 
     }
 
 
+    protconfigurator = eo_protconfig_New(&protcfg);
 
-    nvsetdevcfg = eo_protconfig_DEVcfg_Get(eo_protconfig_New(&protcfg));
-
-
-#else
-    #error --> define a USE_EOPROT_xxx
-#endif
+    nvsetdevcfg = eo_protconfig_DEVcfg_Get(protconfigurator);
 
 
     if(NULL == nvsetdevcfg)

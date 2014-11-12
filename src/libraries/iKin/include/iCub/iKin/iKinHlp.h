@@ -56,7 +56,7 @@ class CartesianHelper
 {
 protected:
     static void addVectorOption(yarp::os::Bottle &b, const int vcb, const yarp::sig::Vector &v);
-    static bool getDesiredOption(yarp::os::Bottle &reply, yarp::sig::Vector &xdhat,
+    static bool getDesiredOption(const yarp::os::Bottle &reply, yarp::sig::Vector &xdhat,
                                  yarp::sig::Vector &odhat, yarp::sig::Vector &qdhat);
 
 public:
@@ -123,7 +123,7 @@ public:
     * @return a pointer to the sub-bottle containing the retrieved 
     *         data.
     */
-    static yarp::os::Bottle *getTargetOption(yarp::os::Bottle &b);
+    static yarp::os::Bottle *getTargetOption(const yarp::os::Bottle &b);
 
     /**
     * Retrieves the end-effector pose data.
@@ -131,7 +131,7 @@ public:
     * @return a pointer to the sub-bottle containing the retrieved 
     *         data.
     */
-    static yarp::os::Bottle *getEndEffectorPoseOption(yarp::os::Bottle &b);
+    static yarp::os::Bottle *getEndEffectorPoseOption(const yarp::os::Bottle &b);
 
     /**
     * Retrieves the joints configuration data.
@@ -139,7 +139,7 @@ public:
     * @return a pointer to the sub-bottle containing the retrieved 
     *         data.
     */
-    static yarp::os::Bottle *getJointsOption(yarp::os::Bottle &b);
+    static yarp::os::Bottle *getJointsOption(const yarp::os::Bottle &b);
 
     /**
     * Retrieves the token from the bottle. 
@@ -148,7 +148,7 @@ public:
     * @return true iff the token property is present within the 
     *         bottle b
     */
-    static bool getTokenOption(yarp::os::Bottle &b, double *token);
+    static bool getTokenOption(const yarp::os::Bottle &b, double *token);
 
     /**
     * Retrieves current fixation point given the current kinematics

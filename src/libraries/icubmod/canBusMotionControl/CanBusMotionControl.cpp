@@ -38,7 +38,7 @@
 #include "can_string_generic.h"
 /// get the message types from the DSP code.
 #include "messages.h"
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #include "canControlConstants.h"
@@ -496,7 +496,7 @@ void TBR_CanBackDoor::onRead(Bottle &b)
             dval[5] = 0; 
         break;
         default:
-            fprintf(stderr, "Warning: got unexpected message on backdoor: %s\n", this->getName().c_str());
+            yWarning("Got unexpected message on backdoor: %s\n", this->getName().c_str());
             return;
         break;
     }
@@ -827,7 +827,7 @@ bool TBR_AnalogSensor::decode16(const unsigned char *msg, int id, double *data)
             {} //skip these, they are not for us
             break;
         default:
-            fprintf(stderr, "Warning, got unexpected class 0x3 msg(s)\n");
+            yWarning("Got unexpected class 0x3 msg(s)\n");
             return false;
             break;
         }
@@ -864,7 +864,7 @@ bool TBR_AnalogSensor::decode8(const unsigned char *msg, int id, double *data)
             {} //skip these, they are not for us
             break;
         default:
-            fprintf(stderr, "Warning, got unexpected class 0x3 msg(s): groupId 0x%x\n", groupId);
+            yWarning("Got unexpected class 0x3 msg(s): groupId 0x%x\n", groupId);
             return false;
             break;
         }
@@ -1323,7 +1323,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
            printf("Position Pids section found, new format\n");
            if (!parsePidsGroup_NewFormat(posPidsGroup, _pids))
            {
-               printf("Position Pids section: error detected in parameters syntax\n");
+               yError() << "Position Pids section: error detected in parameters syntax";
                return false;
            }
            else
@@ -1341,7 +1341,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             }
             else
             {   
-                fprintf(stderr, "Error: no PIDS group found in config file, returning\n");
+                yError () << "Error: no PIDS group found in config file, returning";
                 return false;
             }
         }
@@ -1356,7 +1356,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
            printf("Torque Pids section found, new format\n");
            if (!parsePidsGroup_NewFormat (trqPidsGroup, _tpids))
            {
-               printf("Torque Pids section: error detected in parameters syntax\n");
+               yError () << "Torque Pids section: error detected in parameters syntax";
                return false;
            }
            else
@@ -1458,7 +1458,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             _maxStep[i-1]=xtmp.get(i).asDouble();
             if (_maxStep[i-1]<0)
             {
-                fprintf(stderr,"ERROR: Invalid MaxPosStep parameter <0\n");
+                yError () << "Invalid MaxPosStep parameter <0\n";
                 return false;
             }
         }
@@ -1829,7 +1829,7 @@ bool CanBusResources::initialize (yarp::os::Searchable &config)
     polyDriver.open(config);
     if (!polyDriver.isValid())
     {
-        fprintf(stderr, "Warning could not instantiate can device\n");
+        yError("Could not instantiate CAN device\n");
         return false;
     }
 
@@ -2196,6 +2196,7 @@ bool CanBusMotionControl::open (Searchable &config)
     prop.fromString(str.c_str());
     canDevName=config.find("canbusdevice").asString(); //for backward compatibility
     if (canDevName=="") canDevName=config.findGroup("CAN").find("canbusdevice").asString();
+    if(canDevName=="") { std::cout << "\nERROR: cannot find parameter 'canbusdevice'\n" << std::endl; return false;}
     prop.unput("device");
     prop.unput("subdevice");
     prop.put("device", canDevName.c_str());
@@ -2380,7 +2381,7 @@ bool CanBusMotionControl::open (Searchable &config)
     {
         yarp::os::Time::delay(0.001);
         bool b=getFirmwareVersionRaw(j,icub_interface_protocol,&(info[j]));
-        if (b==false) fprintf(stderr,"Error reading firmware version\n");
+        if (b==false) yError() << "Error reading firmware version";
     }
     _firmwareVersionHelper = new firmwareVersionHelper(p._njoints, info, icub_interface_protocol);
     _firmwareVersionHelper->printFirmwareVersions();
@@ -2391,7 +2392,7 @@ bool CanBusMotionControl::open (Searchable &config)
     {
         RateThread::stop();
         _opened = false;
-        fprintf(stderr,"checkFirmwareVersions() failed. CanBusMotionControl::open returning false,\n");
+        yError() << "checkFirmwareVersions() failed. CanBusMotionControl::open returning false,";
         return false;
     }
     /////////////////////////////////
@@ -2402,7 +2403,7 @@ bool CanBusMotionControl::open (Searchable &config)
 #endif
 
     _opened = true;
-    fprintf(stderr,"CanBusMotionControl::open returned true\n");
+    yDebug() << "CanBusMotionControl::open returned true\n";
     return true;
 }
 
@@ -2446,7 +2447,7 @@ bool CanBusMotionControl::readFullScaleAnalog(int analog_address, int ch, double
 
     if (full_scale_read==false) 
         {                            
-            fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor: no answer received or message lost (ch:%d)\n", ch);
+            yError() << "Trying to get fullscale data from sensor: no answer received or message lost (ch:" << ch <<")";
             return false;
         }
 
@@ -2545,7 +2546,7 @@ TBR_AnalogSensor *CanBusMotionControl::instantiateAnalog(yarp::os::Searchable& c
                             b = readFullScaleAnalog(analogSensor->getId(), ch, &analogSensor->getScaleFactor()[ch]);
                             if (b==true) 
                                 {
-                                    if (attempts>0)    fprintf(stderr, "*** WARNING: Trying to get fullscale data from sensor: channel recovered (ch:%d)\n", ch);
+                                    if (attempts>0)    yWarning("Trying to get fullscale data from sensor: channel recovered (ch:%d)\n", ch);
                                     break;
                                 }
                             attempts++;
@@ -3441,11 +3442,11 @@ void CanBusMotionControl:: run()
             //fprintf(stderr, "Passing messages to analog device %s\n", pAnalog->getDeviceId().c_str());
             if (!pAnalog->handleAnalog(system_resources))
             {
-                fprintf(stderr, "%s [%d] analog sensor received unexpected class 0x03 messages\n", canDevName.c_str(), r._networkN);
+                yWarning("%s [%d] analog sensor received unexpected class 0x03 messages\n", canDevName.c_str(), r._networkN);
             }
         }
         else
-            fprintf(stderr, "Warning: got null pointer this is unusual\n");
+            yWarning("Got null pointer this is unusual\n");
             
         analogIt++;
     }
@@ -3474,19 +3475,19 @@ void CanBusMotionControl:: run()
                             int id=r.requestsQueue->pop(j, msgData[0]);
                             if(id==-1)
                                 {
-                                    fprintf(stderr, "%s [%d] Received message but no threads waiting for it. (id: 0x%x, Class:%d MsgData[0]:%d)\n ", canDevName.c_str(), r._networkN, m.getId(), getClass(m), msgData[0]);
+                                    yWarning("%s [%d] Received message but no threads waiting for it. (id: 0x%x, Class:%d MsgData[0]:%d)\n ", canDevName.c_str(), r._networkN, m.getId(), getClass(m), msgData[0]);
                                     continue;
                                 }
                             ThreadTable2 *t=threadPool->getThreadTable(id);
                             if (t==0)
                                 {
-                                    fprintf(stderr, "Asked a bad thread id, this is probably a bug, check threadPool\n");
+                                    yWarning("Asked a bad thread id, this is probably a bug, check threadPool\n");
                                     continue;
                                 }
                             DEBUG_FUNC("Pushing reply\n");
                             //push reply to thread's list of replies
                             if (!t->push(m))
-                                DEBUG_FUNC("Warning, error while pushing a reply, this ir probably an error\n");
+                                yError("error while pushing a reply, this is probably an error\n");
                         }
                 }
         }
@@ -3516,37 +3517,37 @@ void CanBusMotionControl:: run()
     // ControlMode
 bool CanBusMotionControl::setPositionModeRaw(int j)
 {
-    fprintf(stderr, "WARNING: calling DEPRECATED setPositionModeRaw\n");
+    yWarning() << " calling DEPRECATED setPositionModeRaw";
     return this->setControlModeRaw(j,VOCAB_CM_POSITION);
 }
 
 bool CanBusMotionControl::setOpenLoopModeRaw(int j)
 {
-    fprintf(stderr, "WARNING: calling DEPRECATED setOpenLoopModeRaw\n");
+    yWarning() << " calling DEPRECATED setOpenLoopModeRaw";
     return this->setControlModeRaw(j,VOCAB_CM_OPENLOOP);
 }
 
 bool CanBusMotionControl::setVelocityModeRaw(int j)
 {
-    fprintf(stderr, "WARNING: calling DEPRECATED setVelocityModeRaw\n");
+    yWarning() << " calling DEPRECATED setVelocityModeRaw";
     return this->setControlModeRaw(j,VOCAB_CM_VELOCITY);
 }
 
 bool CanBusMotionControl::setTorqueModeRaw(int j)
 {
-    fprintf(stderr, "WARNING: calling DEPRECATED setTorqueModeRaw\n");
+    yWarning() << " calling DEPRECATED setTorqueModeRaw";
     return this->setControlModeRaw(j,VOCAB_CM_TORQUE);
 }
 
 bool CanBusMotionControl::setImpedancePositionModeRaw(int j)
 {
-    fprintf(stderr, "WARNING: calling DEPRECATED setImpedancePositionModeRaw\n");
+    yWarning() << " calling DEPRECATED setImpedancePositionModeRaw";
     return this->setControlModeRaw(j,VOCAB_CM_IMPEDANCE_POS);
 }
 
 bool CanBusMotionControl::setImpedanceVelocityModeRaw(int j)
 {
-    fprintf(stderr, "WARNING: calling DEPRECATED setImpedanceVelocityModeRaw\n");
+    yWarning() << " calling DEPRECATED setImpedanceVelocityModeRaw";
     return this->setControlModeRaw(j,VOCAB_CM_IMPEDANCE_VEL);
 }
 
@@ -3779,23 +3780,6 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
 
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW SINGLE JOINT\n");
 
-    #if CAN_PROTOCOL_MINOR == 1
-    if (mode == VOCAB_CM_IDLE || mode == VOCAB_CM_FORCE_IDLE)
-    {
-        disablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-        yarp::os::Time::delay(0.001);
-        disableAmpRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-        yarp::os::Time::delay(0.001);
-    }
-    else
-    {
-        enableAmpRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-        yarp::os::Time::delay(0.001);
-        enablePidRaw(j); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-        yarp::os::Time::delay(0.001);
-    }
-    #endif
-
     int v = from_modevocab_to_modeint(mode);
     if (v==VOCAB_CM_UNKNOWN) return false;
     _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,v);
@@ -3811,7 +3795,9 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
     bool ret = true;
     for (int i=0;i<n_joints; i++)
     {
-        ret = ret && setControlModeRaw(joints[i],modes[i]);
+        int v = from_modevocab_to_modeint(modes[i]);
+        if (v==VOCAB_CM_UNKNOWN) ret = false;
+        _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,joints[i],v);
     }
     yarp::os::Time::delay(0.010);
     return ret;
@@ -3824,22 +3810,6 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
 
     for (int i = 0; i < r.getJoints(); i++)
     {
-        #if CAN_PROTOCOL_MINOR == 1
-        if (modes[i] == VOCAB_CM_IDLE || modes[i] == VOCAB_CM_FORCE_IDLE)
-        {
-            disablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-            yarp::os::Time::delay(0.001);
-            disableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-            yarp::os::Time::delay(0.001);
-        }
-        else
-        {
-            enableAmpRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-            yarp::os::Time::delay(0.001);
-            enablePidRaw(i); //@@@ TO BE REMOVED AND PUT IN FIRMWARE INSTEAD
-            yarp::os::Time::delay(0.001);
-        }
-        #endif
         int v = from_modevocab_to_modeint(modes[i]);
         if (v==VOCAB_CM_UNKNOWN) return false;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,v);
@@ -4407,17 +4377,16 @@ bool CanBusMotionControl::setReferenceRaw (int j, double ref)
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
-    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
         int mode = 0;
         getControlModeRaw(j, &mode);
         if (mode != VOCAB_CM_POSITION_DIRECT &&
             mode != VOCAB_CM_IDLE)
         {
-            yDebug() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << axis;
+            yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << axis;
+            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-            yarp::os::Time::delay(0.001);
+            #endif
         }
-    #endif
 
     return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, axis, S_32(ref));
 }
@@ -4938,6 +4907,7 @@ bool CanBusMotionControl::resetTorquePidRaw(int j)
 
 bool CanBusMotionControl::enablePidRaw(int axis)
 {
+    yWarning() << " calling DEPRECATED enablePidRaw";
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
@@ -5074,6 +5044,7 @@ bool CanBusMotionControl::setTorqueOffsetRaw(int axis, double v)
 
 bool CanBusMotionControl::disablePidRaw(int axis)
 {
+    yWarning() << " calling DEPRECATED disablePidRaw";
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
@@ -5150,7 +5121,6 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         return true;
     }
 
-#ifdef ICUB_AUTOMATIC_MODE_SWITCHING
     int mode = 0;
     getControlModeRaw(axis, &mode);
     if (mode != VOCAB_CM_POSITION &&
@@ -5158,11 +5128,11 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         mode != VOCAB_CM_IMPEDANCE_POS &&
         mode != VOCAB_CM_IDLE)
     {
-        yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << axis;
+        yWarning() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << axis;
+        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
         setControlModeRaw(axis,VOCAB_CM_POSITION);
-        yarp::os::Time::delay(0.001);
+        #endif
     }
-#endif
 
     _mutex.wait();
 
@@ -5505,7 +5475,7 @@ bool CanBusMotionControl::setBemfParamRaw (int j, double bemf)
 
 bool CanBusMotionControl::stopRaw(int j)
 {
-    bool ret=velocityMoveRaw(j, 0);
+    bool ret = true;
     ret &= _writeNone  (ICUBCANPROTO_POL_MC_CMD__STOP_TRAJECTORY, j);
     return ret;
 }
@@ -5514,16 +5484,13 @@ bool CanBusMotionControl::stopRaw()
 {
     CanBusResources& r = RES(system_resources);
     const int n=r.getJoints();
+    bool ret = true;
 
-    double *tmp = new double [n];
-    memset(tmp, 0, sizeof(double)*n);
-    bool ret=velocityMoveRaw(tmp);
     for (int j=0; j<n; j++)
     {
        ret &= _writeNone  (ICUBCANPROTO_POL_MC_CMD__STOP_TRAJECTORY, j);
     }
     
-    delete [] tmp;
     return ret;
 }
 
@@ -5534,7 +5501,6 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
     /// prepare can message.
     CanBusResources& r = RES(system_resources);
 
-#ifdef ICUB_AUTOMATIC_MODE_SWITCHING
     int mode = 0;
     getControlModeRaw(axis, &mode);
     if (mode != VOCAB_CM_VELOCITY &&
@@ -5542,11 +5508,11 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
         mode != VOCAB_CM_IMPEDANCE_VEL && 
         mode != VOCAB_CM_IDLE)
     {
-        yDebug() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << axis;
+        yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << axis;
+        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
         setControlModeRaw(axis,VOCAB_CM_VELOCITY);
-        yarp::os::Time::delay(0.001);
+        #endif
     }
-#endif
 
     _mutex.wait();
 
@@ -5739,6 +5705,7 @@ bool CanBusMotionControl::getEncoderAccelerationRaw(int j, double *v)
 
 bool CanBusMotionControl::disableAmpRaw(int axis)
 {
+    yWarning() << " calling DEPRECATED disableAmpRaw";
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
@@ -5747,6 +5714,7 @@ bool CanBusMotionControl::disableAmpRaw(int axis)
 
 bool CanBusMotionControl::enableAmpRaw(int axis)
 {
+    yWarning() << " calling DEPRECATED enableAmpRaw";
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
@@ -6070,17 +6038,16 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
     if (1/*fabs(ref-r._bcastRecvBuffer[j]._position_joint._value) < _axisPositionDirectHelper->getMaxHwStep(j)*/)
     {
 
-    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
         int mode = 0;
         getControlModeRaw(j, &mode);
         if (mode != VOCAB_CM_POSITION_DIRECT &&
             mode != VOCAB_CM_IDLE)
         {
-            yDebug() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
+            yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
+            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-            yarp::os::Time::delay(0.001);
+            #endif
         }
-    #endif
 
         return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(ref));
     }

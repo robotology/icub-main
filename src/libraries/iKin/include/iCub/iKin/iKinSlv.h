@@ -160,6 +160,10 @@
  *    of the secondary end-effector and finally the
  *    corresponding three weights.
  *  
+ * \b conv request: example [set] [conv] ((max_iter 200) (tol 
+ *    0.001) (translationalTol 0.000001)), [get] [conv]. Set/get
+ *    the options for specifying solver's convergence.
+ *  
  * Commands issued through the [ask] vocab: 
  *  
  * \b xd request: example [ask] ([xd] (x y z ax ay az theta))

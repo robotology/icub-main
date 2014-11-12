@@ -21,6 +21,7 @@
 #ifndef __SKIN_PARAMS_H__
 #define __SKIN_PARAMS_H__
 
+#include <stdio.h>
 
 //default values for SkinBoardCfgParam
 #define sk_period_default                40 //millisec
@@ -48,7 +49,7 @@ public:
 //default values for triangles
 #define skT_enabled_default      true
 #define skT_shift_default        0
-#define skT_cdcOffset_default    0
+#define skT_cdcOffset_default    0x2200
 class SkinTriangleCfgParam
 {
 public:

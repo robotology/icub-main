@@ -53,24 +53,43 @@ the reference time of the machine where the service is running.
 Anyway, a selection between these two Time Stamps is available 
 for the user through --rxTime option. 
  
-Moreover, a further file called 'info.log' is also produced 
-containing information about the data type stored within the 
-'data.log' file as well as the name of the yarp ports connected 
-or disconnected to the dumper, as in the following:
+Moreover, a file called 'info.log' is produced containing 
+information about the data type stored within the 'data.log' 
+file as well as the name of the yarp ports connected or 
+disconnected to the dumper, as in the following: 
 
 \code 
-Type: [Bottle | Image:ppm | Image:ppm; Video:avi(huffyuv)]
+Type: [Bottle | Image:ppm | Image:ppm; Video:ext(huffyuv)]
 [local-timestamp] /yarp-port-name [connected] 
 [local-timestamp] /yarp-port-name [disconnected]
 \endcode 
+ 
+Finally, a further file called 'timecodes.log' is also generated
+together with the video, which contains the timecode associated 
+to each frame given in millisecond precision. The file content 
+looks like the following: 
+ 
+\code 
+# timecode format v2
+0
+40
+80 
+\endcode 
+ 
+This is useful to recover the exact timing while post-processing 
+the video relying for example on the \e mkvmerge tool: 
+\code 
+mkvmerge -o out.mkv --timecodes 0:timecodes.log video.mkv 
+\endcode
+To get \e mkvmerge do: sudo apt-get install mkvtoolnix
  
 The module \ref dataSetPlayer can be used to re-play a dump generated 
 by the \ref dataDumper.
  
 \section lib_sec Libraries 
 - YARP libraries 
-- To record videos: OpenCV 2.0 and the <a 
-  href="http://neuron2.net/www.math.berkeley.edu/benrg/huffyuv.html">huffyuv</a>
+- To record videos: OpenCV 2.4 and the <a 
+  href="http://wiki.team-mediaportal.com/9_Glossary/Huffyuv">huffyuv</a>
   codec for lossless data compression.
  
 \section codec_installation Codec Installation 
@@ -102,8 +121,9 @@ by the \ref dataDumper.
   provided.
  
 --dir \e dirname 
-- The parameter \e dirname serves to specify the storage directory
-  explicitely.
+- The parameter \e dirname serves to specify the storage 
+  directory explicitely (relative to the location where the
+  module has been launched from).
  
 --overwrite 
 - If this option is specified, then a pre-existing storage 
@@ -118,9 +138,15 @@ by the \ref dataDumper.
  
 --addVideo
 - In case images are acquired with this option enabled, a video 
-  called 'video.avi' is also produced at the same time. This
-  option is available if OpenCV is found and the codec \e
-  huffyuv is installed in the system.
+  called 'video.ext' is also produced at the same time. The
+  extension \e ext is determined by the option \e videoType.
+  This option is available if OpenCV is found and the codec
+  \e huffyuv is installed in the system.
+ 
+--videoType \e ext 
+- If it is required to generate a video, the parameter \e ext 
+  specifies the type of the video container employed. Available
+  types are: \e mkv (default), \e avi.
  
 --downsample \e n 
 - With this option it is possible to reduce the storing rate by 
@@ -146,7 +172,7 @@ by the \ref dataDumper.
     data:
  
 \code 
-[pck id] [tx stamp] [rx stamp] [bottle content]
+[pck id] [tx stamp] [rx stamp] [message content]
 \endcode 
  
 \section portsa_sec Ports Accessed
@@ -165,9 +191,10 @@ None.
 
 \section out_data_sec Output Data Files
 Within the directory \e ./<portname> the file \e data.log is 
-created containing the acquisitions report. Beside this, if \e 
-image type has been selected, all the acquired images are also 
-stored. 
+created containing the acquisitions. Besides, if \e image type
+has been selected, all the acquired images are also stored. A 
+further file called \e info.log is also produced containing 
+meta-data relevant for the logging. 
  
 Note that in case an acquisition with the same \e <portname> was
 previously carried out, an increasing suffix will be appended 
@@ -208,12 +235,10 @@ So, now, have a look inside the directory ./log
 \sa dataSetPlayer
 */ 
 
-#include <stdio.h>
-#include <cstring>
-#include <fstream>
 #include <iostream>
-#include <sstream>
 #include <iomanip>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <deque>
 
@@ -223,8 +248,7 @@ So, now, have a look inside the directory ./log
 #endif
 
 #include <yarp/os/all.h>
-#include <yarp/sig/Image.h>
-#include <yarp/sig/ImageFile.h>
+#include <yarp/sig/all.h>
 
 using namespace std;
 using namespace yarp::os;
@@ -232,18 +256,16 @@ using namespace yarp::sig;
 
 
 /**************************************************************************/
-void createFullPath(const char* path)
+void createFullPath(const string &path)
 {
-    if (yarp::os::stat(path))
+    if (yarp::os::stat(path.c_str()))
     {
-        string strPath=string(path);
-        size_t found=strPath.find_last_of("/");
-    
-        while (strPath[found]=='/')
+        size_t found=path.find_last_of("/");    
+        while (path[found]=='/')
             found--;
 
-        createFullPath(strPath.substr(0,found+1).c_str());
-        yarp::os::mkdir(strPath.c_str());
+        createFullPath(path.substr(0,found+1).c_str());
+        yarp::os::mkdir(path.c_str());
     }
 }
 
@@ -258,7 +280,7 @@ class DumpObj
 {
 public:
     virtual ~DumpObj() { }
-    virtual const string toFile(const char*, unsigned int) = 0;
+    virtual const string toFile(const string&, unsigned int) = 0;
     virtual void *getPtr() = 0;
 };
 
@@ -277,7 +299,7 @@ public:
     const DumpBottle &operator=(const DumpBottle &obj) { *p=*(obj.p); return *this; }
     ~DumpBottle() { delete p; }
 
-    const string toFile(const char *dirName, unsigned int cnt)
+    const string toFile(const string &dirName, unsigned int cnt)
     {
         string ret=p->toString().c_str();
         return ret;
@@ -310,16 +332,17 @@ public:
     const DumpImage &operator=(const DumpImage &obj) { *p=*(obj.p); return *this; }
     ~DumpImage() { delete p; }
 
-    const string toFile(const char *dirName, unsigned int cnt)
+    const string toFile(const string &dirName, unsigned int cnt)
     {
-        char extfName[255];
-        char fName[255];
+        ostringstream fName;
+        fName << setw(8) << setfill('0') << cnt << ".ppm";
+        string ret=fName.str();
 
-        sprintf(fName,"%.8d.ppm",cnt);
-        string ret=fName;
+        string extfName=dirName;
+        extfName+="/";
+        extfName+=fName.str();
 
-        sprintf(extfName,"%s/%s",dirName,fName);
-        file::write(*p,extfName);
+        file::write(*p,extfName.c_str());
 
         return ret;
     }
@@ -432,7 +455,7 @@ private:
         {
             if (firstIncomingData)
             {
-                cout << "Incoming data detected" << endl;
+                yInfo() << "Incoming data detected";
                 firstIncomingData=false;
             }
 
@@ -464,44 +487,61 @@ private:
 class DumpThread : public RateThread
 {
 private:
-    DumpQueue     &buf;
-    DumpType       type;
-    ofstream       finfo;
-    ofstream       fdata;
-    char           dirName[255];
-    char           infoFile[255];
-    char           dataFile[255];
-    unsigned int   blockSize;
-    unsigned int   cumulSize;
-    unsigned int   counter;
-    double         oldTime;
-    
-    bool           saveData;
-    bool           videoOn;
-    bool           closing;
+    DumpQueue      &buf;
+    DumpType        type;
+    ofstream        finfo;
+    ofstream        fdata;    
+    string          dirName;
+    string          infoFile;
+    string          dataFile;
+    unsigned int    blockSize;
+    unsigned int    cumulSize;
+    unsigned int    counter;
+    double          oldTime;
+                   
+    bool            saveData;
+    bool            videoOn;
+    string          videoType;
+    bool            closing;
 
 #ifdef ADD_VIDEO
-    char           videoFile[255];    
-    bool           doImgParamsExtraction;
-    bool           doSaveFrame;
-    CvVideoWriter *videoWriter;    
+    ofstream        ftimecodes;
+    string          videoFile;
+    string          timecodesFile;
+    double          t0;
+    bool            doImgParamsExtraction;
+    bool            doSaveFrame;
+    cv::VideoWriter videoWriter;
 #endif
 
 public:
-    DumpThread(DumpType _type, DumpQueue &Q, const char *_dirName, int szToWrite, bool _saveData, bool _videoOn) :
-               RateThread(50), type(_type), buf(Q), blockSize(szToWrite), saveData(_saveData), videoOn(_videoOn)
+    DumpThread(DumpType _type, DumpQueue &Q, const string &_dirName, int szToWrite,
+               bool _saveData, bool _videoOn, const string &_videoType) :
+               RateThread(50), type(_type), buf(Q), dirName(_dirName),
+               blockSize(szToWrite), saveData(_saveData),
+               videoOn(_videoOn), videoType(_videoType)
     {
-        strcpy(dirName,_dirName);
+        infoFile=dirName;
+        infoFile+="/info.log";
 
-        strcpy(infoFile,dirName);
-        strcat(infoFile,"/info.log");
-
-        strcpy(dataFile,dirName);
-        strcat(dataFile,"/data.log");
+        dataFile=dirName;
+        dataFile+="/data.log";
 
     #ifdef ADD_VIDEO
-        strcpy(videoFile,dirName);
-        strcat(videoFile,"/video.avi");
+        transform(videoType.begin(),videoType.end(),videoType.begin(),::tolower);
+        if ((videoType!="mkv") && (videoType!="avi"))
+        {
+            yWarning() << "unknown video type '" << videoType << "' specified; "
+                       << "'mkv' type will be used.";
+            videoType="mkv";
+        }
+
+        videoFile=dirName;
+        videoFile+="/video.";
+        videoFile+=videoType;
+
+        timecodesFile=dirName;
+        timecodesFile+="/timecodes.log";
 
         doImgParamsExtraction=videoOn;
         doSaveFrame=false;
@@ -522,17 +562,10 @@ public:
         counter=0;
         closing=false;
 
-        finfo.open(infoFile);
+        finfo.open(infoFile.c_str());
         if (!finfo.is_open())
         {
-            cout << "unable to open file" << endl;
-            return false;
-        }
-
-        fdata.open(dataFile);
-        if (!fdata.is_open())
-        {
-            cout << "unable to open file" << endl;
+            yError() << "unable to open file: " << infoFile;
             return false;
         }
 
@@ -543,10 +576,30 @@ public:
         {
             finfo<<"Image:ppm;";
             if (videoOn)
-                finfo<<" Video:avi(huffyuv);";
+                finfo<<" Video:"<<videoType<<"(huffyuv);";
+        }
+        finfo<<endl;
+
+        fdata.open(dataFile.c_str());
+        if (!fdata.is_open())
+        {
+            yError() << "unable to open file: " << dataFile;
+            return false;
         }
 
-        finfo<<endl;
+    #ifdef ADD_VIDEO
+        if (videoOn)
+        {
+            ftimecodes.open(timecodesFile.c_str()); 
+            if (!ftimecodes.is_open())
+            {
+                yError() << "unable to open file: " << timecodesFile;
+                return false;
+            }
+            ftimecodes<<"# timecode format v2"<<endl;
+        }
+    #endif
+
         return true;
     }
 
@@ -582,14 +635,15 @@ public:
                 int frameW=((IplImage*)itemEnd.obj->getPtr())->width;
                 int frameH=((IplImage*)itemEnd.obj->getPtr())->height;
 
-                double dt=itemEnd.timeStamp.getStamp()-itemFront.timeStamp.getStamp();
+                t0=itemFront.timeStamp.getStamp();
+                double dt=itemEnd.timeStamp.getStamp()-t0;
                 if (dt<=0.0)
                     fps=25; // default
                 else
                     fps=int(double(sz-1)/dt);
 
-                videoWriter=cvCreateVideoWriter(videoFile,CV_FOURCC('H','F','Y','U'),
-                                                fps,cvSize(frameW,frameH),true);
+                videoWriter.open(videoFile.c_str(),CV_FOURCC('H','F','Y','U'),
+                                 fps,cvSize(frameW,frameH),true);
 
                 doImgParamsExtraction=false;
                 doSaveFrame=true;
@@ -609,14 +663,21 @@ public:
                     fdata << item.obj->toFile(dirName,counter++) << endl;
                 else
                 {
-                    char frame[255];
-                    sprintf(frame,"frame_%.8d",counter++);
-                    fdata << frame << endl;
+                    ostringstream frame;
+                    frame << "frame_" << setw(8) << setfill('0') << counter++;
+                    fdata << frame.str() << endl;
                 }
 
             #ifdef ADD_VIDEO
                 if (doSaveFrame)
-                    cvWriteFrame(videoWriter,(IplImage*)item.obj->getPtr());
+                {
+                    cv::Mat img((IplImage*)item.obj->getPtr());
+                    videoWriter<<img;
+
+                    // write the timecode of the frame
+                    int dt=(int)(1000.0*(item.timeStamp.getStamp()-t0));
+                    ftimecodes << dt << endl;
+                }
             #endif
 
                 delete item.obj;
@@ -637,8 +698,8 @@ public:
         fdata.close();
 
     #ifdef ADD_VIDEO
-        if (doSaveFrame)
-            cvReleaseVideoWriter(&videoWriter);
+        if (videoOn)
+            ftimecodes.close();
     #endif
     }
 };
@@ -672,12 +733,10 @@ private:
     DumpReporter                  reporter;
     Port                          rpcPort;
     DumpType                      type;
-    bool                          saveData;
-    bool                          videoOn;
     bool                          rxTime;
     bool                          txTime;
     unsigned int                  dwnsample;
-    char                          portName[255];
+    string                        portName;
 
 public:
     DumpModule() { }
@@ -686,26 +745,17 @@ public:
     {
         Time::turboBoost();
 
-        if (rf.check("name"))
-        {
-            strcpy(portName,rf.find("name").asString().c_str());
-            if (portName[0]!='/')
-            {
-                string slashedPortName='/'+string(portName);
-                strcpy(portName,slashedPortName.c_str());
-            }
-        }
-        else
-            strcpy(portName,"/dump");
+        portName=rf.check("name",Value("/dump")).asString().c_str();
+        if (portName[0]!='/')
+            portName="/"+portName;
 
-        saveData=true;
-        videoOn=false;
+        bool saveData=true;
+        bool videoOn=false;
+        string videoType=rf.check("videoType",Value("mkv")).asString().c_str();
 
         if (rf.check("type"))
         {
-            string optTypeName;
-            optTypeName=rf.find("type").asString().c_str();
-
+            string optTypeName=rf.find("type").asString().c_str();
             if (optTypeName=="bottle")
                 type=bottle;
             else if (optTypeName=="image")
@@ -726,13 +776,13 @@ public:
         #endif
             else
             {
-                cout << "Error: invalid type" << endl;
+                yError() << "Error: invalid type";
                 return false;
             }
         }
         else
             type=bottle;
-
+        
         dwnsample=rf.check("downsample",Value(1)).asInt();
         rxTime=rf.check("rxTime");
         txTime=rf.check("txTime");
@@ -746,25 +796,25 @@ public:
         else
         {
             // look for a proper directory
-            int i=0;
-            char checkDirName[255];
+            int i=0;            
             do
             {
+                ostringstream checkDirName;
                 if (i>0)
-                    sprintf(checkDirName,".%s_%.5d",templateDirName.c_str(),i);
+                    checkDirName << "." << templateDirName << "_" << setw(5) << setfill('0') << i;
                 else
-                    sprintf(checkDirName,".%s",templateDirName.c_str());
+                    checkDirName << "." << templateDirName;
             
-                dirName=checkDirName;
+                dirName=checkDirName.str();
                 i++;
             }
             while (!yarp::os::stat(dirName.c_str()));
         }
 
-        createFullPath(dirName.c_str());
+        createFullPath(dirName);
 
         q=new DumpQueue();
-        t=new DumpThread(type,*q,dirName.c_str(),100,saveData,videoOn);
+        t=new DumpThread(type,*q,dirName.c_str(),100,saveData,videoOn,videoType);
 
         if (!t->start())
         {
@@ -780,26 +830,22 @@ public:
         {
             p_bottle=new DumpPort<Bottle>(*q,dwnsample,rxTime,txTime);
             p_bottle->useCallback();
-            p_bottle->open(portName);
+            p_bottle->open(portName.c_str());
             p_bottle->setReporter(reporter);
         }
         else
         {
             p_image=new DumpPort<ImageOf<PixelBgr> >(*q,dwnsample,rxTime,txTime);
             p_image->useCallback();
-            p_image->open(portName);
+            p_image->open(portName.c_str());
             p_image->setReporter(reporter);
         }
 
-        char rpcPortName[255];
-        strcpy(rpcPortName,portName);
-        strcat(rpcPortName,"/rpc");
-
-        rpcPort.open(rpcPortName);
+        rpcPort.open((portName+"/rpc").c_str());
         attach(rpcPort);
 
-        cout << "Service yarp port: " << portName << endl;
-        cout << "Data stored in   : " << dirName  << endl;
+        yInfo() << "Service yarp port: " << portName;
+        yInfo() << "Data stored in   : " << dirName;
 
         return true;
     }
@@ -838,39 +884,41 @@ public:
 /**************************************************************************/
 int main(int argc, char *argv[])
 {
+    Network yarp;
+
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.configure(argc,argv);
 
     if (rf.check("help"))
     {
-        cout << "Options:" << endl << endl;
-        cout << "\t--name       port: service port name (default: /dump)"                            << endl;        
+        cout << "Options:";
+        cout << "\t--name       port: service port name (default: /dump)"                            << endl;
         cout << "\t--dir        name: provide explicit name of storage directory"                    << endl;
         cout << "\t--overwrite      : overwrite pre-existing storage directory"                      << endl;
     #ifdef ADD_VIDEO
         cout << "\t--type       type: type of the data to be dumped [bottle(default), image, video]" << endl;
         cout << "\t--addVideo       : produce video as well (if image is selected)"                  << endl;
+        cout << "\t--videoType   ext: produce video of specified container type [mkv(default), avi]" << endl;
     #else
         cout << "\t--type       type: type of the data to be dumped [bottle(default), image]"        << endl;
     #endif
         cout << "\t--downsample    n: downsample rate (default: 1 => downsample disabled)"           << endl;
         cout << "\t--rxTime         : dump the receiver time instead of the sender time"             << endl;
         cout << "\t--txTime         : dump the sender time straightaway"                             << endl;
+        cout << endl;
 
         return 0;
     }
 
-    Network yarp;
     if (!yarp.checkNetwork())
     {
-        cout<<"YARP server not available!"<<endl;
+        yError()<<"YARP server not available!";
         return -1;
     }
 
     DumpModule mod;
     return mod.runModule(rf);
 }
-
 
 

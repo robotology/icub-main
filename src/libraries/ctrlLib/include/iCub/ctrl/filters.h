@@ -129,13 +129,13 @@ public:
    * @param u reference to the actual input. 
    * @return the corresponding output. 
    */ 
-   yarp::sig::Vector filt(const yarp::sig::Vector &u);
+   const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
 
    /**
    * Return current filter output.
    * @return the filter output. 
    */ 
-   yarp::sig::Vector output() const { return y; }
+   const yarp::sig::Vector& output() const { return y; }
 };
 
 
@@ -190,7 +190,7 @@ public:
     * @param u is the current input.
     * @return the output within the thresholds.
     */
-    yarp::sig::Vector filt(const yarp::sig::Vector &u);
+    const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
 };
 
 
@@ -218,7 +218,8 @@ public:
     * @param sampleTime sample time (s).
     * @param y0 initial output.
     */ 
-    FirstOrderLowPassFilter(const double cutFrequency, const double sampleTime, const yarp::sig::Vector &y0);
+    FirstOrderLowPassFilter(const double cutFrequency, const double sampleTime,
+                            const yarp::sig::Vector &y0);
 
     /**
     * Destructor. 
@@ -266,7 +267,7 @@ public:
     * Return current filter output.
     * @return the filter output. 
     */ 
-    const yarp::sig::Vector& output() { return y; }
+    const yarp::sig::Vector& output() const { return y; }
 };
 
 }

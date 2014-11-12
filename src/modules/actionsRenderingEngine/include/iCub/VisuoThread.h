@@ -83,7 +83,7 @@ private:
 
     //MIL Ports
     Port                                    boundMILPort;
-    Port                                    cmdMILPort;
+    RpcClient                               cmdMILPort;
     BufferedPort<Bottle>                    recMILPort;
 
     //multiSensoryObjectRecognition Ports

@@ -19,10 +19,8 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 // Developed by Ugo Pattacini
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <algorithm>
 #include <sstream>
+#include <algorithm>
 
 #include "CommonCartesianController.h"
 #include "ServerCartesianController.h"
@@ -61,7 +59,6 @@ CartesianCtrlRpcProcessor::CartesianCtrlRpcProcessor(ServerCartesianController *
 bool CartesianCtrlRpcProcessor::read(ConnectionReader &connection)
 {
     Bottle cmd, reply;
-
     if (!cmd.read(connection))
         return false;
 
@@ -77,6 +74,7 @@ bool CartesianCtrlRpcProcessor::read(ConnectionReader &connection)
 CartesianCtrlCommandPort::CartesianCtrlCommandPort(ServerCartesianController *server)
 {
     this->server=server;
+    useCallback();
 }
 
 
@@ -196,8 +194,6 @@ void ServerCartesianController::openPorts()
 {
     portCmd     =new CartesianCtrlCommandPort(this);
     rpcProcessor=new CartesianCtrlRpcProcessor(this);
-
-    portCmd->useCallback();
     portRpc.setReader(*rpcProcessor);
 
     ConstString prefixName="/";
@@ -210,6 +206,9 @@ void ServerCartesianController::openPorts()
     portState.open((prefixName+"/state:o").c_str());
     portEvent.open((prefixName+"/events:o").c_str());
     portRpc.open((prefixName+"/rpc:i").c_str());
+
+    if (debugInfoEnabled)
+        portDebugInfo.open((prefixName+"/dbg:o").c_str());
 }
 
 
@@ -235,6 +234,12 @@ void ServerCartesianController::closePorts()
         portCmd->interrupt();
         portCmd->close();
         delete portCmd;
+    }
+
+    if (debugInfoEnabled)
+    {
+        portDebugInfo.interrupt();
+        portDebugInfo.close();
     }
 
     delete rpcProcessor;
@@ -312,7 +317,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
 
                 if (!portSlvRpc.write(slvCommand,reply))
                 {
-                    printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+                    yError("%s: unable to get reply from solver!",ctrlName.c_str());
                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
                 }
 
@@ -1041,14 +1046,14 @@ void ServerCartesianController::alignJointsBounds()
     double min, max; 
     int cnt=0;
 
-    printf("%s: aligning joints bounds ...\n",ctrlName.c_str());
+    yInfo("%s: aligning joints bounds ...",ctrlName.c_str());
     for (size_t i=0; i<lDsc.size(); i++)
     {
-        printf("part #%lu: %s\n",(unsigned long)i,lDsc[i].key.c_str());
+        yInfo("part #%lu: %s",(unsigned long)i,lDsc[i].key.c_str());
         for (int j=0; j<lJnt[i]; j++)
         {
             lLim[i]->getLimits(lRmp[i][j],&min,&max);
-            printf("joint #%d: [%g, %g] deg\n",cnt,min,max);
+            yInfo("joint #%d: [%g, %g] deg",cnt,min,max);
             (*chainState)[cnt].setMin(CTRL_DEG2RAD*min);
             (*chainState)[cnt].setMax(CTRL_DEG2RAD*max);
             (*chainPlan)[cnt].setMin(CTRL_DEG2RAD*min);
@@ -1165,8 +1170,8 @@ bool ServerCartesianController::getNewTarget()
         // token shall be not greater than the trasmitted one
         if (tokened && (rxToken>txToken))
         {
-            printf("%s warning: skipped message from solver due to invalid token (rx=%g)>(thr=%g)\n",
-                   ctrlName.c_str(),rxToken,txToken);
+            yWarning("%s: skipped message from solver due to invalid token (rx=%g)>(thr=%g)",
+                     ctrlName.c_str(),rxToken,txToken);
 
             return false;
         }
@@ -1177,8 +1182,8 @@ bool ServerCartesianController::getNewTarget()
         {
             if (tokened && !trackingMode && (rxToken<=txTokenLatchedStopControl))
             {
-                printf("%s warning: skipped message from solver since controller has been stopped (rx=%g)<=(thr=%g)\n",
-                       ctrlName.c_str(),rxToken,txTokenLatchedStopControl);
+                yWarning("%s: skipped message from solver since controller has been stopped (rx=%g)<=(thr=%g)",
+                         ctrlName.c_str(),rxToken,txTokenLatchedStopControl);
 
                 return false;
             }
@@ -1217,8 +1222,8 @@ bool ServerCartesianController::getNewTarget()
 
             if (_qdes.length()!=ctrl->get_dim())
             {    
-                printf("%s warning: skipped message from solver since does not match the controller dimension (qdes=%d)!=(ctrl=%d)\n",
-                       ctrlName.c_str(),(int)_qdes.length(),ctrl->get_dim());
+                yWarning("%s: skipped message from solver since does not match the controller dimension (qdes=%d)!=(ctrl=%d)",
+                         ctrlName.c_str(),(int)_qdes.length(),ctrl->get_dim());
 
                 return false;
             }
@@ -1254,7 +1259,7 @@ bool ServerCartesianController::areJointsHealthyAndSet(VectorOf<int> &jointsToSe
     int chainCnt=0;
 
     jointsToSet.clear();
-    for (int i=0; i<numDrv; i++)
+    for (int i=0; (i<numDrv) && ctrlModeAvailable; i++)
     {
         lMod[i]->getControlModes(modes.getFirst());
         for (int j=0; j<lJnt[i]; j++)
@@ -1314,22 +1319,35 @@ void ServerCartesianController::setJointsCtrlMode(const VectorOf<int> &jointsToS
 
 
 /************************************************************************/
-void ServerCartesianController::sendCtrlCmdMultipleJointsPosition()
+Bottle ServerCartesianController::sendCtrlCmdMultipleJointsPosition()
 {
+    Bottle info;
     VectorOf<int> joints;
     Vector refs;
     int cnt=0;
     int j=0;
-    int k=0;    
+    int k=0;
 
-    Vector q=ctrl->get_q();
+    info.addString("position");
+    info.addString("multiple");
+
+    Vector q=CTRL_RAD2DEG*ctrl->get_q();
     velCmd=CTRL_RAD2DEG*ctrl->get_qdot();
     for (unsigned int i=0; i<chainState->getN(); i++)
     {
         if (!(*chainState)[i].isBlocked())
         {
-            joints.push_back(lRmp[j][k]);
-            refs.push_back(CTRL_RAD2DEG*q[cnt]);
+            int joint=lRmp[j][k];
+            double ref=q[cnt];
+
+            joints.push_back(joint);
+            refs.push_back(ref);
+
+            ostringstream ss;
+            ss<<lDsc[j].key.c_str()<<"_"<<joint;
+            info.addString(ss.str().c_str());
+            info.addDouble(ref);
+
             cnt++;
         }
 
@@ -1344,40 +1362,53 @@ void ServerCartesianController::sendCtrlCmdMultipleJointsPosition()
             k=0;
         }
     }
+
+    return info;
 }
 
 
 /************************************************************************/
-void ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
+Bottle ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
 {
+    Bottle info;
     VectorOf<int> joints;
     Vector vels;
     int cnt=0;
     int j=0;
-    int k=0;    
+    int k=0;
 
-    Vector v=ctrl->get_qdot();
+    info.addString("velocity");
+    info.addString("multiple");
+
+    Vector v=CTRL_RAD2DEG*ctrl->get_qdot();
     for (unsigned int i=0; i<chainState->getN(); i++)
     {
         if (!(*chainState)[i].isBlocked())
         {
-            double v_cnt=CTRL_RAD2DEG*v[cnt];
+            int joint=lRmp[j][k];
+            double vel=v[cnt];
             double thres=lDsc[j].minAbsVels[k];
 
             // apply bang-bang control to compensate for unachievable low velocities
-            if ((v_cnt!=0.0) && (v_cnt>-thres) && (v_cnt<thres))
-                v_cnt=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
+            if ((vel!=0.0) && (fabs(vel)<thres))
+                vel=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
 
-            joints.push_back(lRmp[j][k]);
-            vels.push_back(v_cnt);
-            velCmd[cnt]=v_cnt;
+            joints.push_back(joint);
+            vels.push_back(vel);
+
+            ostringstream ss;
+            ss<<lDsc[j].key.c_str()<<"_"<<joint;
+            info.addString(ss.str().c_str());
+            info.addDouble(vel);
+
+            velCmd[cnt]=vel;
             cnt++;
         }
 
         if (++k>=lJnt[j])
         {
             if (joints.size()>0)
-                lVel[j]->velocityMove(joints.size(),joints.getFirst(),vels.data());
+                static_cast<IVelocityControl2*>(lVel[j])->velocityMove(joints.size(),joints.getFirst(),vels.data());
 
             joints.clear();
             vels.clear();
@@ -1385,53 +1416,37 @@ void ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
             k=0;
         }
     }
+
+    return info;
 }
 
 
 /************************************************************************/
-void ServerCartesianController::sendCtrlCmdSingleJointPosition()
+Bottle ServerCartesianController::sendCtrlCmdSingleJointPosition()
 {
+    Bottle info;
     int cnt=0;
     int j=0;
-    int k=0;    
+    int k=0;
 
-    Vector q=ctrl->get_q();
+    info.addString("position");
+    info.addString("single");
+
+    Vector q=CTRL_RAD2DEG*ctrl->get_q();
     velCmd=CTRL_RAD2DEG*ctrl->get_qdot();
     for (unsigned int i=0; i<chainState->getN(); i++)
     {
         if (!(*chainState)[i].isBlocked())
-            lPos[j]->setPosition(lRmp[j][k],CTRL_RAD2DEG*q[cnt++]);                
-
-        if (++k>=lJnt[j])
         {
-            j++;
-            k=0;
-        }
-    }
-}
+            int joint=lRmp[j][k];
+            double ref=q[cnt];
+            lPos[j]->setPosition(joint,ref);
 
+            ostringstream ss;
+            ss<<lDsc[j].key.c_str()<<"_"<<joint;
+            info.addString(ss.str().c_str());
+            info.addDouble(ref);
 
-/************************************************************************/
-void ServerCartesianController::sendCtrlCmdSingleJointVelocity()
-{
-    int cnt=0;
-    int j=0;
-    int k=0;    
-
-    Vector v=ctrl->get_qdot();
-    for (unsigned int i=0; i<chainState->getN(); i++)
-    {
-        if (!(*chainState)[i].isBlocked())
-        {
-            double v_cnt=CTRL_RAD2DEG*v[cnt];
-            double thres=lDsc[j].minAbsVels[k];
-
-            // apply bang-bang control to compensate for unachievable low velocities
-            if ((v_cnt!=0.0) && (v_cnt>-thres) && (v_cnt<thres))
-                v_cnt=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
-
-            lVel[j]->velocityMove(lRmp[j][k],v_cnt);
-            velCmd[cnt]=v_cnt;
             cnt++;
         }
 
@@ -1441,6 +1456,54 @@ void ServerCartesianController::sendCtrlCmdSingleJointVelocity()
             k=0;
         }
     }
+
+    return info;
+}
+
+
+/************************************************************************/
+Bottle ServerCartesianController::sendCtrlCmdSingleJointVelocity()
+{
+    Bottle info;
+    int cnt=0;
+    int j=0;
+    int k=0;
+
+    info.addString("velocity");
+    info.addString("single");
+
+    Vector v=CTRL_RAD2DEG*ctrl->get_qdot();
+    for (unsigned int i=0; i<chainState->getN(); i++)
+    {
+        if (!(*chainState)[i].isBlocked())
+        {
+            int joint=lRmp[j][k];
+            double vel=v[cnt];
+            double thres=lDsc[j].minAbsVels[k];
+
+            // apply bang-bang control to compensate for unachievable low velocities
+            if ((vel!=0.0) && (fabs(vel)<thres))
+                vel=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
+
+            lVel[j]->velocityMove(joint,vel);
+
+            ostringstream ss;
+            ss<<lDsc[j].key.c_str()<<"_"<<joint;
+            info.addString(ss.str().c_str());
+            info.addDouble(vel);
+
+            velCmd[cnt]=vel;
+            cnt++;
+        }
+
+        if (++k>=lJnt[j])
+        {
+            j++;
+            k=0;
+        }
+    }
+
+    return info;
 }
 
 
@@ -1473,8 +1536,7 @@ void ServerCartesianController::stopLimb(const bool execStopPosition)
 /************************************************************************/
 bool ServerCartesianController::threadInit()
 {
-    printf("Starting %s at %d ms\n",ctrlName.c_str(),(int)getRate());
-
+    yInfo("Starting %s at %d ms",ctrlName.c_str(),(int)getRate());
     return true;
 }
 
@@ -1482,7 +1544,10 @@ bool ServerCartesianController::threadInit()
 /************************************************************************/
 void ServerCartesianController::afterStart(bool s)
 {
-    printf("%s %s\n",ctrlName.c_str(),s?"started successfully":"did not start!");
+    if (s)
+        yInfo("%s started successfully",ctrlName.c_str());
+    else
+        yError("%s did not start!",ctrlName.c_str());
 }
 
 
@@ -1496,7 +1561,7 @@ void ServerCartesianController::run()
         VectorOf<int> jointsToSet;
         jointsHealthy=areJointsHealthyAndSet(jointsToSet);
         if (!jointsHealthy)
-            stopControlHelper();        
+            stopControlHelper();
 
         string event="none";
 
@@ -1559,7 +1624,11 @@ void ServerCartesianController::run()
                 ctrl->iterate(xdes,qdes);
 
             // handle the end-trajectory event
-            if (ctrl->isInTarget() && !taskVelModeOn)
+            bool inTarget=ctrl->isInTarget();
+            if (inTarget && posDirectEnabled)
+                inTarget=isInTargetHelper();
+            
+            if (inTarget && !taskVelModeOn)
             {
                 executingTraj=false;
                 motionDone   =true;
@@ -1573,8 +1642,18 @@ void ServerCartesianController::run()
                     setTrackingModeHelper(false);
             }            
             else
-                // send commands to the robot
-                (this->*sendCtrlCmd)();
+            {
+                // send commands to the robot                
+                if (debugInfoEnabled && (portDebugInfo.getOutputCount()>0))
+                {
+                    portDebugInfo.prepare()=(this->*sendCtrlCmd)();
+                    debugInfo.update(txInfo.getTime());
+                    portDebugInfo.setEnvelope(debugInfo);
+                    portDebugInfo.write();
+                }
+                else
+                    (this->*sendCtrlCmd)();
+            }
         }        
 
         // stream out the end-effector pose
@@ -1617,7 +1696,7 @@ void ServerCartesianController::run()
 /************************************************************************/
 void ServerCartesianController::threadRelease()
 {
-    printf("Stopping %s\n",ctrlName.c_str());
+    yInfo("Stopping %s",ctrlName.c_str());
 
     if (connected)
         stopLimb();
@@ -1629,26 +1708,26 @@ void ServerCartesianController::threadRelease()
 /************************************************************************/
 bool ServerCartesianController::open(Searchable &config)
 {
-    printf("***** Configuring cartesian controller *****\n");
+    yInfo("***** Configuring cartesian controller *****");
 
     // GENERAL group
     Bottle &optGeneral=config.findGroup("GENERAL");
     if (optGeneral.isNull())
     {
-        printf("GENERAL group is missing\n");
+        yError("GENERAL group is missing");
         close();
 
         return false;
     }
 
-    printf("Acquiring options for group GENERAL...\n");
+    yInfo("Acquiring options for group GENERAL...");
 
     // scan for required params
     if (optGeneral.check("SolverNameToConnect"))
         slvName=optGeneral.find("SolverNameToConnect").asString();
     else
     {
-        printf("SolverNameToConnect option is missing\n");
+        yError("SolverNameToConnect option is missing");
         close();
 
         return false;
@@ -1659,8 +1738,8 @@ bool ServerCartesianController::open(Searchable &config)
         kinPart=optGeneral.find("KinematicPart").asString();
         if ((kinPart!="arm") && (kinPart!="leg") && (kinPart!="custom"))
         {
-            printf("Attempt to instantiate an unknown kinematic part\n");
-            printf("Available parts are: arm, leg, custom\n");
+            yError("Attempt to instantiate an unknown kinematic part");
+            yError("Available parts are: arm, leg, custom");
             close();
 
             return false;
@@ -1668,7 +1747,7 @@ bool ServerCartesianController::open(Searchable &config)
     }
     else
     {
-        printf("KinematicPart option is missing\n");
+        yError("KinematicPart option is missing");
         close();
 
         return false;
@@ -1683,8 +1762,8 @@ bool ServerCartesianController::open(Searchable &config)
 
         if ((_partKinType!="left") && (_partKinType!="right"))
         {
-            printf("Attempt to instantiate unknown kinematic type\n");
-            printf("Available types are: left, right, left_v*, right_v*\n");
+            yError("Attempt to instantiate unknown kinematic type");
+            yError("Available types are: left, right, left_v*, right_v*");
             close();
 
             return false;
@@ -1692,7 +1771,7 @@ bool ServerCartesianController::open(Searchable &config)
     }
     else if (kinPart!="custom")
     {
-        printf("KinematicType option is missing\n");
+        yError("KinematicType option is missing");
         close();
 
         return false;
@@ -1703,7 +1782,7 @@ bool ServerCartesianController::open(Searchable &config)
         numDrv=optGeneral.find("NumberOfDrivers").asInt();
         if (numDrv<=0)
         {
-            printf("NumberOfDrivers shall be positive\n");
+            yError("NumberOfDrivers shall be positive");
             close();
 
             return false;
@@ -1711,7 +1790,7 @@ bool ServerCartesianController::open(Searchable &config)
     }
     else
     {
-        printf("NumberOfDrivers option is missing\n");
+        yError("NumberOfDrivers option is missing");
         close();
 
         return false;
@@ -1726,7 +1805,7 @@ bool ServerCartesianController::open(Searchable &config)
         ctrlName=ctrlName+"/";
         ctrlName=ctrlName+kinPart;
         ctrlName=ctrlName+_partKinType.c_str();
-        printf("default ControllerName assumed: %s",ctrlName.c_str());
+        yWarning("default ControllerName assumed: %s",ctrlName.c_str());
     }
 
     if (optGeneral.check("ControllerPeriod"))
@@ -1741,22 +1820,25 @@ bool ServerCartesianController::open(Searchable &config)
     multipleJointsControlEnabled=optGeneral.check("MultipleJointsControl",
                                                   Value(CARTCTRL_DEFAULT_MULJNTCTRL)).asString()=="on";
 
+    debugInfoEnabled=optGeneral.check("DebugInfo",Value("off")).asString()=="on";
+
     // scan DRIVER groups
     for (int i=0; i<numDrv; i++)
     {
-        char entry[255];
-        sprintf(entry,"DRIVER_%d",i);
+        ostringstream entry;
+        entry<<"DRIVER_"<<i;
+        ConstString entry_str(entry.str().c_str());
 
-        Bottle &optDrv=config.findGroup(entry);
+        Bottle &optDrv=config.findGroup(entry_str);
         if (optDrv.isNull())
         {
-            printf("%s group is missing\n",entry);
+            yError("%s group is missing",entry_str.c_str());
             close();
 
             return false;
         }
 
-        printf("Acquiring options for group %s...\n",entry);
+        yInfo("Acquiring options for group %s...",entry_str.c_str());
 
         DriverDescriptor desc;
 
@@ -1764,7 +1846,7 @@ bool ServerCartesianController::open(Searchable &config)
             desc.key=optDrv.find("Key").asString();
         else
         {
-            printf("Key option is missing\n");
+            yError("Key option is missing");
             close();
 
             return false;
@@ -1780,8 +1862,8 @@ bool ServerCartesianController::open(Searchable &config)
                 desc.jointsDirectOrder=false;
             else
             {
-                printf("Attempt to select an unknown mapping order\n");
-                printf("Available orders are: direct, reversed\n");
+                yError("Attempt to select an unknown mapping order");
+                yError("Available orders are: direct, reversed");
                 close();
 
                 return false;
@@ -1789,7 +1871,7 @@ bool ServerCartesianController::open(Searchable &config)
         }
         else
         {
-            printf("JointsOrder option is missing\n");
+            yError("JointsOrder option is missing");
             close();
 
             return false;
@@ -1810,7 +1892,7 @@ bool ServerCartesianController::open(Searchable &config)
         }
         else
         {
-            printf("MinAbsVels option is missing ... using default values\n");
+            yWarning("MinAbsVels option is missing ... using default values");
             desc.useDefaultMinAbsVel=true;
         }
 
@@ -1821,7 +1903,7 @@ bool ServerCartesianController::open(Searchable &config)
     Bottle &optPlantModel=config.findGroup("PLANT_MODEL");
     if (!optPlantModel.isNull())
     {
-        printf("PLANT_MODEL group detected\n");
+        yInfo("PLANT_MODEL group detected");
         plantModelProperties.fromString(optPlantModel.toString().c_str());
 
         // append information about the predictor's period,
@@ -1837,15 +1919,22 @@ bool ServerCartesianController::open(Searchable &config)
         limbState=new iCubArm(kinType.c_str());
     else if (kinPart=="leg")
         limbState=new iCubLeg(kinType.c_str());
-    else if (optGeneral.check("customKinFile"))     // custom kinematics case
+    else if (optGeneral.check("CustomKinFile"))     // custom kinematics case
     {
+        ResourceFinder rf_kin;
+        rf_kin.setVerbose(true);
+        if (optGeneral.check("CustomKinContext"))
+            rf_kin.setDefaultContext(optGeneral.find("CustomKinContext").asString().c_str()); 
+        rf_kin.configure(0,NULL);
+        string pathToCustomKinFile=rf_kin.findFileByName(optGeneral.find("CustomKinFile").asString()).c_str();
+
         Property linksOptions;
-        linksOptions.fromConfigFile(optGeneral.find("customKinFile").asString().c_str());
+        linksOptions.fromConfigFile(pathToCustomKinFile.c_str());
 
         limbState=new iKinLimb(linksOptions);
         if (!limbState->isValid())
         {
-            printf("Invalid links parameters\n");
+            yError("Invalid links parameters");
             close();
 
             return false;
@@ -1853,14 +1942,14 @@ bool ServerCartesianController::open(Searchable &config)
     }
     else
     {
-        printf("customKinFile option is missing\n");
+        yError("CustomKinFile option is missing");
         close();
 
         return false;
     }
 
     Property DHTable; limbState->toLinksProperties(DHTable);
-    printf("DH Table: %s\n",DHTable.toString().c_str());
+    yInfo()<<"DH Table: "<<DHTable.toString().c_str();  // stream version to prevent long strings truncation
 
     // duplicate the limb for planning purpose
     limbPlan=new iKinLimb(*limbState);
@@ -1918,20 +2007,26 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     drivers=p;
     int nd=drivers.size();
 
-    printf("***** Attaching drivers to cartesian controller %s *****\n",ctrlName.c_str());
-    printf("Received list of %d driver(s)\n",nd);
+    yInfo("***** Attaching drivers to cartesian controller %s *****",ctrlName.c_str());
+    yInfo("Received list of %d driver(s)",nd);
 
     if (nd!=numDrv)
     {
-        printf("Expected list of %d driver(s)\n",numDrv);
+        yError("Expected list of %d driver(s)",numDrv);
         return false;
     }
 
     int remainingJoints=chainState->getN();
 
+    ctrlModeAvailable=true;
+    encTimedEnabled=true;
+    pidAvailable=true;
+    posDirectAvailable=true;
+    multipleJointsVelAvailable=true;
+
     for (int i=0; i<numDrv; i++)
     {
-        printf("Acquiring info on driver %s... ",lDsc[i].key.c_str());
+        yInfo("Acquiring info on driver %s...",lDsc[i].key.c_str());
 
         // check if what we require is present within the given list
         int j;
@@ -1941,34 +2036,38 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
         if (j>=drivers.size())
         {
-            printf("None of provided drivers is of type %s\n",lDsc[i].key.c_str());
+            yError("None of provided drivers is of type %s",lDsc[i].key.c_str());
             return false;
         }
 
         // acquire interfaces and driver's info
-        encTimedEnabled=pidAvailable=posDirectAvailable=true;
         if (drivers[j]->poly->isValid())
         {
-            printf("ok\n");
+            yInfo("driver %s successfully open",lDsc[i].key.c_str());
 
             IControlMode2     *mod;
             IEncoders         *enc;
             IEncodersTimed    *ent;
             IPidControl       *pid;
             IControlLimits    *lim;
-            IVelocityControl2 *vel;
+            IVelocityControl  *vel;
+            IVelocityControl2 *vel2;
             IPositionDirect   *pos;
             IPositionControl  *stp;
             int                joints;
-
-            drivers[j]->poly->view(mod);
+            
             drivers[j]->poly->view(enc);
             drivers[j]->poly->view(lim);
+
+            ctrlModeAvailable&=drivers[j]->poly->view(mod);
+            
             drivers[j]->poly->view(vel);
-            drivers[j]->poly->view(stp);
+            multipleJointsVelAvailable&=drivers[j]->poly->view(vel2);
+
             encTimedEnabled&=drivers[j]->poly->view(ent);
             pidAvailable&=drivers[j]->poly->view(pid);
             posDirectAvailable&=drivers[j]->poly->view(pos);
+            posDirectAvailable&=drivers[j]->poly->view(stp);
 
             enc->getAxes(&joints);
 
@@ -2003,35 +2102,45 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
             lEnc.push_back(enc);
             lEnt.push_back(ent);
             lPid.push_back(pid);
-            lLim.push_back(lim);
-            lVel.push_back(vel);
+            lLim.push_back(lim);            
             lPos.push_back(pos);
             lStp.push_back(stp);
             lJnt.push_back(joints);
             lRmp.push_back(rmpTmp);
+            lVel.push_back(multipleJointsVelAvailable?
+                           static_cast<IVelocityControl*>(vel2):vel);
         }
         else
         {
-            printf("error\n");
+            yError("unable to open driver %s",lDsc[i].key.c_str());
             return false;
         }
     }
 
-    printf("%s: %s interface will be used\n",ctrlName.c_str(),
-           encTimedEnabled?"IEncodersTimed":"IEncoders");
+    yInfo("%s: IControlMode2 %s",ctrlName.c_str(),
+          ctrlModeAvailable?"available":"not available");
 
-    printf("%s: IPidControl %s\n",ctrlName.c_str(),
-           pidAvailable?"available":"not available");
+    yInfo("%s: %s interface will be used",ctrlName.c_str(),
+          encTimedEnabled?"IEncodersTimed":"IEncoders");
 
-    printf("%s: IPositionDirect %s\n",ctrlName.c_str(),
-           posDirectAvailable?"available":"not available");
+    yInfo("%s: IPidControl %s",ctrlName.c_str(),
+          pidAvailable?"available":"not available");
+
+    yInfo("%s: IPositionDirect %s",ctrlName.c_str(),
+          posDirectAvailable?"available":"not available");
+
+    yInfo("%s: IVelocityControl2 %s",ctrlName.c_str(),
+          multipleJointsVelAvailable?"available":"not available");
 
     posDirectEnabled&=posDirectAvailable;
-    printf("%s: %s interface will be used\n",ctrlName.c_str(),
-           posDirectEnabled?"IPositionDirect":"IVelocityControl");
+    yInfo("%s: %s interface will be used",ctrlName.c_str(),
+          posDirectEnabled?"IPositionDirect":
+          (multipleJointsVelAvailable?"IVelocityControl2":"IVelocityControl"));
 
-    printf("%s: %s control will be used\n",ctrlName.c_str(),
-           multipleJointsControlEnabled?"multiple joints":"single joint");
+    if (!posDirectEnabled)
+        multipleJointsControlEnabled&=multipleJointsVelAvailable; 
+    yInfo("%s: %s control will be used",ctrlName.c_str(),
+          multipleJointsControlEnabled?"multiple joints":"single joint");
 
     if (multipleJointsControlEnabled)
     {
@@ -2094,13 +2203,11 @@ bool ServerCartesianController::detachAll()
 bool ServerCartesianController::pingSolver()
 {    
     ConstString portSlvName="/";
-    portSlvName=portSlvName+slvName+"/in";
-
-    printf("%s: Checking if cartesian solver %s is alive... ",ctrlName.c_str(),slvName.c_str());
+    portSlvName=portSlvName+slvName+"/in";    
 
     bool ok=Network::exists(portSlvName.c_str(),true);
-
-    printf("%s\n",ok?"ready":"not yet");
+    yInfo("%s: Checking if cartesian solver %s is alive... %s",
+          ctrlName.c_str(),slvName.c_str(),ok?"ready":"not yet");
 
     return ok;
 }
@@ -2111,7 +2218,7 @@ bool ServerCartesianController::connectToSolver()
 {
     if (attached && !connected && pingSolver())
     {        
-        printf("%s: Connecting to cartesian solver %s...\n",ctrlName.c_str(),slvName.c_str());
+        yInfo("%s: Connecting to cartesian solver %s...",ctrlName.c_str(),slvName.c_str());
 
         ConstString portSlvName="/";
         portSlvName=portSlvName+slvName;
@@ -2123,10 +2230,10 @@ bool ServerCartesianController::connectToSolver()
         ok&=Network::connect(portSlvRpc.getName().c_str(),(portSlvName+"/rpc").c_str());
 
         if (ok)
-            printf("%s: Connections established with %s\n",ctrlName.c_str(),slvName.c_str());
+            yInfo("%s: Connections established with %s",ctrlName.c_str(),slvName.c_str());
         else
         {
-            printf("%s: Problems detected while connecting to %s\n",ctrlName.c_str(),slvName.c_str());
+            yError("%s: Problems detected while connecting to %s",ctrlName.c_str(),slvName.c_str());
             return false;
         }
 
@@ -2142,7 +2249,7 @@ bool ServerCartesianController::connectToSolver()
         // send command to solver and wait for reply
         if (!portSlvRpc.write(command,reply))
         {
-            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
             return false;
         }
 
@@ -2203,12 +2310,10 @@ bool ServerCartesianController::goTo(unsigned int _ctrlPose, const Vector &xd,
         addTokenOption(b,txToken=Time::now());
 
         skipSlvRes=false;
-
         if (latchToken)
             txTokenLatchedGoToRpc=txToken;
 
         portSlvOut.writeStrict();
-
         return true;
     }
     else
@@ -2232,7 +2337,7 @@ bool ServerCartesianController::setTrackingModeHelper(const bool f)
         // send command to solver and wait for reply
         bool ret=false;
         if (!portSlvRpc.write(command,reply))
-            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
         else if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
         {
             trackingMode=f;
@@ -2310,7 +2415,7 @@ bool ServerCartesianController::setPosePriority(const ConstString &p)
         if (portSlvRpc.write(command,reply))
             ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
         else
-            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
     }
 
     return ret;
@@ -2335,7 +2440,7 @@ bool ServerCartesianController::getPosePriority(ConstString &p)
                   "position":"orientation";
         }
         else
-            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
     }
 
     return ret;
@@ -2526,7 +2631,7 @@ bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
     if (portSlvRpc.write(command,reply))
         ret=getDesiredOption(reply,xdhat,odhat,qdhat);
     else
-        printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+        yError("%s: unable to get reply from solver!",ctrlName.c_str());         
 
     mutex.unlock();
     return ret;
@@ -2561,7 +2666,7 @@ bool ServerCartesianController::askForPose(const Vector &q0, const Vector &xd,
     if (portSlvRpc.write(command,reply))
         ret=getDesiredOption(reply,xdhat,odhat,qdhat);
     else
-        printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+        yError("%s: unable to get reply from solver!",ctrlName.c_str());         
 
     mutex.unlock();
     return ret;
@@ -2587,7 +2692,7 @@ bool ServerCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
     if (portSlvRpc.write(command,reply))
         ret=getDesiredOption(reply,xdhat,odhat,qdhat);
     else
-        printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+        yError("%s: unable to get reply from solver!",ctrlName.c_str());         
 
     mutex.unlock();
     return ret;
@@ -2614,7 +2719,7 @@ bool ServerCartesianController::askForPosition(const Vector &q0, const Vector &x
     if (portSlvRpc.write(command,reply))
         ret=getDesiredOption(reply,xdhat,odhat,qdhat);
     else
-        printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+        yError("%s: unable to get reply from solver!",ctrlName.c_str());         
 
     mutex.unlock();
     return ret;
@@ -2682,7 +2787,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
             ret=true;
         }
         else
-            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
 
         mutex.unlock();
         return ret;
@@ -2715,7 +2820,7 @@ bool ServerCartesianController::getRestPos(Vector &curRestPos)
             ret=true;            
         }
         else
-            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
 
         mutex.unlock();
         return ret;
@@ -2751,7 +2856,7 @@ bool ServerCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
             ret=true;            
         }
         else
-            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
             
         mutex.unlock();
         return ret;
@@ -2784,7 +2889,7 @@ bool ServerCartesianController::getRestWeights(Vector &curRestWeights)
             ret=true;            
         }
         else
-            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
             
         mutex.unlock();
         return ret;
@@ -2821,7 +2926,7 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
             ret=true;
         }
         else
-            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
             
         mutex.unlock();
         return ret;
@@ -2847,7 +2952,7 @@ bool ServerCartesianController::getLimits(const int axis, double *min, double *m
 
             // send command to solver and wait for reply
             if (!portSlvRpc.write(command,reply))
-                printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+                yError("%s: unable to get reply from solver!",ctrlName.c_str());         
             else if (reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK)
             {
                 *min=reply.get(1).asDouble();
@@ -2880,7 +2985,7 @@ bool ServerCartesianController::setLimits(const int axis, const double min,
 
         // send command to solver and wait for reply        
         if (!portSlvRpc.write(command,reply))
-            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
         else
             ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
 
@@ -2951,6 +3056,32 @@ bool ServerCartesianController::setInTargetTolHelper(const double tol)
     }
     else
         return false;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::isInTargetHelper()
+{
+    Matrix H=chainState->getH();
+    Vector e(6,0.0);
+
+    if (ctrlPose!=IKINCTRL_POSE_ANG)
+    {
+        e[0]=xdes[0]-H(0,3);
+        e[1]=xdes[1]-H(1,3);
+        e[2]=xdes[2]-H(2,3);
+    }
+
+    if (ctrlPose!=IKINCTRL_POSE_XYZ)
+    {
+        Matrix Des=axis2dcm(xdes.subVector(3,6));
+        Vector ax=dcm2axis(Des*SE3inv(H));
+        e[3]=ax[3]*ax[0];
+        e[4]=ax[3]*ax[1];
+        e[5]=ax[3]*ax[2];
+    }
+
+    return (norm(e)<targetTol);
 }
 
 
@@ -3089,7 +3220,7 @@ bool ServerCartesianController::attachTipFrame(const Vector &x, const Vector &o)
             }
         }
         else
-            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
 
         mutex.unlock();
         return ret;
@@ -3251,6 +3382,7 @@ bool ServerCartesianController::storeContext(int *id)
         context.straightness=ctrl->get_gamma();
         getPosePriority(context.posePriority);
         getTask2ndOptions(context.task_2);
+        getSolverConvergenceOptions(context.solverConvergence);
 
         *id=contextIdCnt++;
 
@@ -3294,6 +3426,7 @@ bool ServerCartesianController::restoreContext(const int id)
             ctrl->set_gamma(context.straightness);
             setPosePriority(context.posePriority);
             setTask2ndOptions(context.task_2);
+            setSolverConvergenceOptions(context.solverConvergence);
 
             return true;
         }
@@ -3385,14 +3518,17 @@ void ServerCartesianController::notifyEvent(const string &event,
 
     if (portEvent.getOutputCount()>0)
     {
-        Bottle bottle;
-        bottle.addString(event.c_str());
-        bottle.addDouble(time);
+        Bottle &ev=portEvent.prepare();
+        ev.clear();
 
+        ev.addString(event.c_str());
+        ev.addDouble(time);
         if (checkPoint>=0.0)
-            bottle.addDouble(checkPoint);
+            ev.addDouble(checkPoint);
 
-        portEvent.write(bottle);
+        eventInfo.update(time);
+        portEvent.setEnvelope(eventInfo);
+        portEvent.writeStrict();
     }
 
     // rise the all-events callback
@@ -3581,7 +3717,7 @@ bool ServerCartesianController::getTask2ndOptions(Value &v)
                 v=reply.get(1);
         }
         else
-            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
     }
 
     return ret;
@@ -3603,7 +3739,53 @@ bool ServerCartesianController::setTask2ndOptions(const Value &v)
         if (portSlvRpc.write(command,reply))
             ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
         else
-            printf("%s error: unable to get reply from solver!\n",ctrlName.c_str());
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
+    }
+
+    return ret;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::getSolverConvergenceOptions(Bottle &options)
+{
+    bool ret=false;
+    if (connected)
+    {
+        Bottle command, reply;
+        command.addVocab(IKINSLV_VOCAB_CMD_GET);
+        command.addVocab(IKINSLV_VOCAB_OPT_CONVERGENCE);
+
+        // send command to solver and wait for reply
+        if (portSlvRpc.write(command,reply))
+        {
+            if (ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK))
+                options=*reply.get(1).asList();
+        }
+        else
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
+    }
+
+    return ret;
+}
+
+
+/************************************************************************/
+bool ServerCartesianController::setSolverConvergenceOptions(const Bottle &options)
+{
+    bool ret=false;
+    if (connected)
+    {
+        Bottle command, reply;
+        command.addVocab(IKINSLV_VOCAB_CMD_SET);
+        command.addVocab(IKINSLV_VOCAB_OPT_CONVERGENCE);
+        command.addList()=options;
+
+        // send command to solver and wait for reply
+        if (portSlvRpc.write(command,reply))
+            ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
+        else
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
     }
 
     return ret;
@@ -3613,18 +3795,20 @@ bool ServerCartesianController::setTask2ndOptions(const Value &v)
 /************************************************************************/
 bool ServerCartesianController::tweakSet(const Bottle &options)
 {
-    Bottle &opt=const_cast<Bottle&>(options);
     mutex.lock();
-
     bool ret=true;
 
     // straightness
-    if (opt.check("straightness"))
-        ctrl->set_gamma(opt.find("straightness").asDouble());
+    if (options.check("straightness"))
+        ctrl->set_gamma(options.find("straightness").asDouble());
 
     // secondary task
-    if (opt.check("task_2"))
-        ret&=setTask2ndOptions(opt.find("task_2"));
+    if (options.check("task_2"))
+        ret&=setTask2ndOptions(options.find("task_2"));
+
+    // solver convergence options
+    if (options.check("max_iter") || options.check("tol") || options.check("translationalTol"))
+        ret&=setSolverConvergenceOptions(options);
 
     mutex.unlock();
     return ret;
@@ -3655,6 +3839,12 @@ bool ServerCartesianController::tweakGet(Bottle &options)
             task2.addString("task_2");
             task2.add(v);
         }
+
+        // solver convergence options
+        Bottle b;
+        ret&=getSolverConvergenceOptions(b);
+        if (ret)
+            options.append(b);
 
         mutex.unlock();
         return ret;

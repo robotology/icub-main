@@ -80,15 +80,9 @@
 #include <set>
 #include <map>
 
-#include <yarp/os/RateThread.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/Bottle.h>
-#include <yarp/os/Mutex.h>
-#include <yarp/os/Event.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/CartesianControl.h>
-#include <yarp/dev/ControlBoardInterfaces.h>
-#include <yarp/sig/Vector.h>
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
+#include <yarp/sig/all.h>
 
 #include <iCub/perception/models.h>
 
@@ -198,8 +192,9 @@ protected:
 
     yarp::dev::PolyDriver         polyHand;
     yarp::dev::PolyDriver         polyCart;
+    yarp::dev::IControlMode2     *modCtrl;
     yarp::dev::IEncoders         *encCtrl;
-    yarp::dev::IPositionControl  *posCtrl;
+    yarp::dev::IPositionControl2 *posCtrl;
     yarp::dev::ICartesianControl *cartCtrl;
 
     perception::Model            *graspModel;
@@ -236,18 +231,19 @@ protected:
     int jHandMax;
     int startup_context_id;
 
-    yarp::sig::Vector      enableTorsoSw;
-    yarp::sig::Vector      disableTorsoSw;
+    yarp::sig::Vector enableTorsoSw;
+    yarp::sig::Vector disableTorsoSw;
+                      
+    yarp::sig::Vector curHandFinalPoss;
+    yarp::sig::Vector curHandTols;
+    yarp::sig::Vector curGraspDetectionThres;
+    double            curHandTmo;
+    double            latchTimerHand;
 
-    yarp::sig::Vector      curHandFinalPoss;
-    yarp::sig::Vector      curHandTols;
-    yarp::sig::Vector      curGraspDetectionThres;
-    double                 curHandTmo;
-    double                 latchTimerHand;
-
-    std::set<int>          fingersJntsSet;
-    std::set<int>          fingersMovingJntsSet;
-    std::multimap<int,int> fingers2JntsMap;
+    yarp::sig::VectorOf<int> fingersJnts;
+    std::set<int>            fingersJntsSet;
+    std::set<int>            fingersMovingJntsSet;
+    std::multimap<int,int>   fingers2JntsMap;
 
     friend class ArmWayPoints;
 
@@ -291,8 +287,9 @@ protected:
         void clear();
     } actionsQueue;
     std::map<std::string,std::deque<HandWayPoint> > handSeqMap;
+    
+    virtual void printMessage(const int logtype, const char *format, ...) const;
 
-    virtual int  printMessage(const char *format, ...);
     virtual bool handleTorsoDOF(yarp::os::Property &opt, const std::string &key,const int j);
     virtual void disableTorsoDof();
     virtual void enableTorsoDof();
@@ -305,7 +302,6 @@ protected:
     virtual bool _pushAction(const yarp::sig::Vector &x, const yarp::sig::Vector &o,
                              const std::string &handSeqKey, const double execTime,
                              ActionPrimitivesCallback *clb, const bool oEnabled);
-    virtual bool stopJntTraj(const int jnt);
     virtual bool handCheckMotionDone(const int jnt);
     virtual bool wait(const Action &action);
     virtual bool cmdArm(const Action &action);
@@ -780,6 +776,19 @@ public:
     * @note it empty out the actions queue. 
     */
     virtual bool stopControl();
+
+    /**
+    * Set the default arm movement execution time.
+    * @param execTime execution time given in seconds. 
+    * @return true/false on success/failure.
+    */
+    virtual bool setDefaultExecTime(const double execTime);
+
+    /**
+    * Get the current default arm movement execution time.
+    * @return current execution time given in seconds. 
+    */
+    virtual double getDefaultExecTime() const;
 
     /**
     * Set the task space controller in tracking or non-tracking 

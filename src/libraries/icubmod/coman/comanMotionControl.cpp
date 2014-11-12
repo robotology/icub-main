@@ -19,7 +19,7 @@
 
 #include "comanDevicesHandler.hpp"
 #include "comanMotionControl.h"
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 
 using namespace yarp::dev;
 using namespace yarp::os;

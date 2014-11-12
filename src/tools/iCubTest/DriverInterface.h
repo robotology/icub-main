@@ -38,9 +38,7 @@ class iCubPart
 private:
     std::string part_names[NUM_ICUB_PARTS];
     int num_part;
-
-public:
-    iCubPart ()
+    void init()
     {
         int cnt=0;
         part_names[cnt++]="torso";
@@ -49,16 +47,26 @@ public:
         part_names[cnt++]="right_arm";
         part_names[cnt++]="left_leg";
         part_names[cnt++]="right_leg";
+    }
+
+public:
+    iCubPart ()
+    {
+        init();
         num_part = 0; //by default the part is torso
     }
+
     iCubPart (const std::string &part)
     {
+        init();
         for (int i=0; i<6; i++)
             if (part==part_names[i])
                 num_part=i;
     }
+
     iCubPart (int p)
     {
+        init();
         num_part = p;
     }
     operator int ()

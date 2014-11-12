@@ -5,7 +5,7 @@
 
  prepare_device(debugInterfaceWrapper TYPE    DebugInterfaceWrapper
                                       INCLUDE DebugInterfaceWrapper.h
-                                      WRAPPER DebugInterfaceWrapper)
+                                      WRAPPER debugInterfaceWrapper)
 
 IF (NOT SKIP_debugInterfaceWrapper)
  include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS})

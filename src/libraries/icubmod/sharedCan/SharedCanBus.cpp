@@ -10,6 +10,7 @@
 #include <vector>
 
 #include <yarp/os/Time.h>
+#include <yarp/os/Log.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/dev/PolyDriver.h>
@@ -50,7 +51,7 @@ public:
     {
         if (!config.check("physDevice"))
         {
-            fprintf(stderr, "Error: SharedCanBus::???() could not find low level can driver specification\n");         
+            yError("SharedCanBus::???() could not find low level can driver specification\n");         
             return false;
         }
 
@@ -187,7 +188,7 @@ public:
     {
         if (!theBufferFactory)
         {
-            fprintf(stderr, "Error: no buffer factory\n");
+            yError("[ERROR] no buffer factory\n");
         }
 
         return theBufferFactory;
@@ -205,7 +206,7 @@ public:
         //fprintf(stderr, "sharedCanBus::open() using the following configuration parameters: \n%s\n",config.toString().c_str());
         if (!config.check("physDevice"))
         {
-            fprintf(stderr, "Error: SharedCanBus::open() could not find low level can driver specification\n");
+            yError("SharedCanBus::open() could not find low level can driver specification\n");
             configMutex.post();         
             return false;
         }
@@ -226,7 +227,7 @@ public:
     
         if (!polyDriver.isValid())
         {
-            fprintf(stderr, "Error: could not instantiate can device\n");
+            yError("could not instantiate can device\n");
             configMutex.post();
             return false;
         }
@@ -235,7 +236,7 @@ public:
 
         if (theCanBus==NULL)
         {
-            fprintf(stderr, "Error: could not get ICanBus interface\n");
+            yError("could not get ICanBus interface\n");
             configMutex.post();
             return false;
         }
@@ -244,7 +245,7 @@ public:
 
         if (theBufferFactory==NULL)
         {
-            fprintf(stderr, "Error: could not get ICanBufferFactory interface\n");
+            yError("could not get ICanBufferFactory interface\n");
             configMutex.post();
             return false;
         }
@@ -414,8 +415,7 @@ bool yarp::dev::CanBusAccessPoint::canIdAdd(unsigned int id)
 
     if (id>=0x800)
     {
-        fprintf(stderr, "Error: Id=%d is out of 11 bit address range\n",id);
-
+        yError("Id=%d is out of 11 bit address range\n",id);
         return false;
     }
 
@@ -432,8 +432,7 @@ bool yarp::dev::CanBusAccessPoint::canIdDelete(unsigned int id)
 
     if (id>=0x800)
     {
-        fprintf(stderr, "Error: Id=%d is out of 11 bit address range\n",id);
-
+        yError("Id=%d is out of 11 bit address range\n",id);
         return false;
     }
 

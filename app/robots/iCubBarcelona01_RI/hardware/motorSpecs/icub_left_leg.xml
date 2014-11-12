@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<devices>      
+  <device name="left_leg_mspecs" type="motorspecifications">   
+     
+      <group name="DEVICE">
+          <param name="rel_candevice">left_leg_mc</param> <!-- This is the name of the device in which there are the encoder, joints and pids -->
+      </group>
+      
+<group name="MOTORS">
+    <group name="Motor0">
+        <param name="Resistance">0.664</param> <!-- * Motor Resistance [Ohm] -->
+        <param name="Inductance">0.32</param> <!-- Motor Inductance [mH] -->
+        <param name="BackEMF">0.04096648235185</param> <!-- * Motor Back ElectroMagnetic Force Constant [V/ rad/s] -->
+        <param name="Weight">0.203</param> <!-- Motor (Frameless) weight [Kg] -->
+        <param name="Inertia">0.00000847</param> <!-- Motor Inertia [Kg m^2] -->
+        <param name="NumMagnPoles">8</param> <!-- Number of magnetic poles of the motor-->
+        <param name="MaxStaticFriction">0.015</param> <!-- Max static friction [Nm] -->
+        <param name="ViscousDamping">0.00001995802986</param> <!-- * Viscous damping [Nm / rad/s] -->
+        <param name="PeakTorque">0.806</param> <!-- Peak torque [Nm] -->
+        <param name="StallTorque">0.223</param> <!-- Stall torque [Nm] -->
+        <param name="ReductionFactor">100</param> <!-- * Transmission reduction -->
+        <param name="MaxVoltage">48</param> <!-- * Maximum voltage [V] -->
+    </group>
+    <group name="Motor1">
+        <param name="Resistance">0.664</param> <!-- * Motor Resistance [Ohm] -->
+        <param name="Inductance">0.32</param> <!-- Motor Inductance [mH] -->
+        <param name="BackEMF">0.04096648235185</param> <!-- * Motor Back ElectroMagnetic Force Constant [V/ rad/s] -->
+        <param name="Weight">0.203</param> <!-- Motor (Frameless) weight [Kg] -->
+        <param name="Inertia">0.00000847</param> <!-- Motor Inertia [Kg m^2] -->
+        <param name="NumMagnPoles">8</param> <!-- Number of magnetic poles of the motor-->
+        <param name="MaxStaticFriction">0.015</param> <!-- Max static friction [Nm] -->
+        <param name="ViscousDamping">0.00001995802986</param> <!-- * Viscous damping [Nm / rad/s] -->
+        <param name="PeakTorque">0.806</param> <!-- Peak torque [Nm] -->
+        <param name="StallTorque">0.223</param> <!-- Stall torque [Nm] -->
+        <param name="ReductionFactor">100</param> <!-- * Transmission reduction -->
+        <param name="MaxVoltage">48</param> <!-- * Maximum voltage [V] -->
+    </group>
+    <group name="Motor2">
+        <param name="Resistance">0.664</param> <!-- * Motor Resistance [Ohm] -->
+        <param name="Inductance">0.32</param> <!-- Motor Inductance [mH] -->
+        <param name="BackEMF">0.04096648235185</param> <!-- * Motor Back ElectroMagnetic Force Constant [V/ rad/s] -->
+        <param name="Weight">0.203</param> <!-- Motor (Frameless) weight [Kg] -->
+        <param name="Inertia">0.00000847</param> <!-- Motor Inertia [Kg m^2] -->
+        <param name="NumMagnPoles">8</param> <!-- Number of magnetic poles of the motor-->
+        <param name="MaxStaticFriction">0.015</param> <!-- Max static friction [Nm] -->
+        <param name="ViscousDamping">0.00001995802986</param> <!-- * Viscous damping [Nm / rad/s] -->
+        <param name="PeakTorque">0.806</param> <!-- Peak torque [Nm] -->
+        <param name="StallTorque">0.223</param> <!-- Stall torque [Nm] -->
+        <param name="ReductionFactor">100</param> <!-- * Transmission reduction -->
+        <param name="MaxVoltage">48</param> <!-- * Maximum voltage [V] -->
+    </group>
+    <group name="Motor3">
+        <param name="Resistance">0.664</param> <!-- * Motor Resistance [Ohm] -->
+        <param name="Inductance">0.32</param> <!-- Motor Inductance [mH] -->
+        <param name="BackEMF">0.04096648235185</param> <!-- * Motor Back ElectroMagnetic Force Constant [V/ rad/s] -->
+        <param name="Weight">0.203</param> <!-- Motor (Frameless) weight [Kg] -->
+        <param name="Inertia">0.00000847</param> <!-- Motor Inertia [Kg m^2] -->
+        <param name="NumMagnPoles">8</param> <!-- Number of magnetic poles of the motor-->
+        <param name="MaxStaticFriction">0.015</param> <!-- Max static friction [Nm] -->
+        <param name="ViscousDamping">0.00001995802986</param> <!-- * Viscous damping [Nm / rad/s] -->
+        <param name="PeakTorque">0.806</param> <!-- Peak torque [Nm] -->
+        <param name="StallTorque">0.223</param> <!-- Stall torque [Nm] -->
+        <param name="ReductionFactor">100</param> <!-- * Transmission reduction -->
+        <param name="MaxVoltage">48</param> <!-- * Maximum voltage [V] -->
+    </group>
+    <group name="Motor4">
+        <param name="Resistance">0.664</param> <!-- * Motor Resistance [Ohm] -->
+        <param name="Inductance">0.32</param> <!-- Motor Inductance [mH] -->
+        <param name="BackEMF">0.04096648235185</param> <!-- * Motor Back ElectroMagnetic Force Constant [V/ rad/s] -->
+        <param name="Weight">0.203</param> <!-- Motor (Frameless) weight [Kg] -->
+        <param name="Inertia">0.00000847</param> <!-- Motor Inertia [Kg m^2] -->
+        <param name="NumMagnPoles">8</param> <!-- Number of magnetic poles of the motor-->
+        <param name="MaxStaticFriction">0.015</param> <!-- Max static friction [Nm] -->
+        <param name="ViscousDamping">0.00001995802986</param> <!-- * Viscous damping [Nm / rad/s] -->
+        <param name="PeakTorque">0.806</param> <!-- Peak torque [Nm] -->
+        <param name="StallTorque">0.223</param> <!-- Stall torque [Nm] -->
+        <param name="ReductionFactor">100</param> <!-- * Transmission reduction -->
+        <param name="MaxVoltage">48</param> <!-- * Maximum voltage [V] -->
+    </group>
+    <group name="Motor5">
+        <param name="Resistance">0.664</param> <!-- * Motor Resistance [Ohm] -->
+        <param name="Inductance">0.32</param> <!-- Motor Inductance [mH] -->
+        <param name="BackEMF">0.04096648235185</param> <!-- * Motor Back ElectroMagnetic Force Constant [V/ rad/s] -->
+        <param name="Weight">0.203</param> <!-- Motor (Frameless) weight [Kg] -->
+        <param name="Inertia">0.00000847</param> <!-- Motor Inertia [Kg m^2] -->
+        <param name="NumMagnPoles">8</param> <!-- Number of magnetic poles of the motor-->
+        <param name="MaxStaticFriction">0.015</param> <!-- Max static friction [Nm] -->
+        <param name="ViscousDamping">0.00001995802986</param> <!-- * Viscous damping [Nm / rad/s] -->
+        <param name="PeakTorque">0.806</param> <!-- Peak torque [Nm] -->
+        <param name="StallTorque">0.223</param> <!-- Stall torque [Nm] -->
+        <param name="ReductionFactor">100</param> <!-- * Transmission reduction -->
+        <param name="MaxVoltage">48</param> <!-- * Maximum voltage [V] -->
+    </group>
+ </group>
+ 
+  </device>    
+</devices>     
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

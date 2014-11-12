@@ -77,7 +77,6 @@ include_directories(
                             ${iCubDev_INCLUDE_DIRS}
                             ${YARP_INCLUDE_DIRS}
                             ${icub_firmware_shared_embobj_INCLUDE_DIR}
-                            ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/debugStream/
                             )
   
 add_executable(${PROJECTNAME}       ${DEMO_BOARD_SOURCE}
@@ -90,7 +89,7 @@ message(" icub_firmware_shared_embobj_LIBRARIES is ${icub_firmware_shared_embobj
 message(" icub_firmware_shared_embobj_INCLUDE_DIR is ${icub_firmware_shared_embobj_INCLUDE_DIR}\n")
 message("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} debugStream  ${icub_firmware_shared_embobj_LIBRARIES} ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${icub_firmware_shared_embobj_LIBRARIES} ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
 
 endif(board_tranceiver)
 

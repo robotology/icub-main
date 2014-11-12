@@ -113,7 +113,7 @@ Windows, Linux
 */ 
 
 #include <string>
-#include <stdio.h>
+#include <cstdio>
 
 #include <gsl/gsl_math.h>
 
@@ -445,6 +445,8 @@ public:
 /************************************************************************/
 int main(int argc, char *argv[])
 {
+    Network yarp;
+
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.configure(argc,argv);
@@ -465,7 +467,6 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    Network yarp;
     if (!yarp.checkNetwork())
     {
         printf("YARP server not available!\n");

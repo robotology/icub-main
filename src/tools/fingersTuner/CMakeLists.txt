@@ -20,8 +20,8 @@ source_group("IDL Files"    FILES ${idl_files})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include
                     ${IDL_GENERATED_CODE_DIR}/include
-					${YARP_INCLUDE_DIRS}
-					${ctrlLib_INCLUDE_DIRS})
+                    ${YARP_INCLUDE_DIRS}
+                    ${ctrlLib_INCLUDE_DIRS})
 
 add_executable(${PROJECTNAME} ${header_files} ${source_files} ${idl_files})
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ctrlLib)

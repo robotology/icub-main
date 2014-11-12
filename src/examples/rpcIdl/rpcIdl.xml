@@ -4,12 +4,12 @@
 <module>
     <!-- module's name should match its executable file's name. -->
     <name>rpcIdl</name>
-	<doxygen-group>icub_module</doxygen-group>
-	<description>Example to show idl usage.</description>
+   <doxygen-group>icub_module</doxygen-group>
+   <description>Example to show idl usage.</description>
         <copypolicy>Released under the terms of the GNU GPL v2.0</copypolicy>
-	<version>1.0</version>
-	
-	<description-long>
+   <version>1.0</version>
+   
+   <description-long>
 Implements a trivial server that provides access to an integer.
 
 You can use html, for example to add a link to <a href="http://www.yarp.it"> the yarp page</a> and Doxygen tags.
@@ -30,8 +30,8 @@ This is a detailed description, etc.
     <!-- <arguments> can have multiple <param> tags-->
     <arguments>
     <param default = "rpcIdl" desc="name of the module"> name </param>
-	<param default="" desc="configuration file name"> from </param>
-	<param default="" desc="select the current context"> context </param>
+   <param default="" desc="configuration file name"> from </param>
+   <param default="" desc="select the current context"> context </param>
     </arguments>
 
     <!-- <authors> can have multiple <author> tags. -->

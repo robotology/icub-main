@@ -13,7 +13,8 @@ SET(folder_source src/ports.cpp
                   src/springyFingers.cpp
                   src/tactileFingers.cpp)
 
-SET(folder_header_private include/iCub/perception/private/ports.h)
+SET(folder_header_private include/iCub/perception/private/ports.h
+                          include/iCub/perception/private/models.h)
 
 SET(folder_header include/iCub/perception/sensors.h
                   include/iCub/perception/nodes.h

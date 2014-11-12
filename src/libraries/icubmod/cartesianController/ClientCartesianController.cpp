@@ -19,7 +19,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 // Developed by Ugo Pattacini
 
-#include <stdio.h>
 #include <algorithm>
 #include <sstream>
 
@@ -113,7 +112,6 @@ bool ClientCartesianController::open(Searchable &config)
     portRpc.open((local+"/rpc:o").c_str());
 
     bool ok=true;
-
     ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc:i").c_str());
     if (ok)
     {
@@ -124,17 +122,17 @@ bool ClientCartesianController::open(Searchable &config)
             double server_version=info.find("server_version").asDouble();
             if (server_version!=CARTCTRL_CLIENT_VER)
             {
-                printf("Error: version mismatch => server(%g) != client(%g); please update accordingly\n",
+                yError("version mismatch => server(%g) != client(%g); please update accordingly",
                        server_version,CARTCTRL_CLIENT_VER);
                 return false;
             }
         }
         else
-            printf("Warning: unable to retrieve server version; please update the server\n");
+            yWarning("unable to retrieve server version; please update the server");
     }
     else
     {
-        printf("Error: unable to connect to the server rpc port!\n");
+        yError("unable to connect to the server rpc port!");
         return false;
     }
 
@@ -152,7 +150,7 @@ bool ClientCartesianController::open(Searchable &config)
     
         if (!portRpc.write(command,reply))
         {
-            printf("Error: unable to get reply from server!\n");
+            yError("unable to get reply from server!");
             close();
 
             return false;
@@ -163,14 +161,14 @@ bool ClientCartesianController::open(Searchable &config)
                 if (reply.get(1).asVocab()==IKINCARTCTRL_VOCAB_VAL_TRUE)
                     return connected=true;
 
-        printf("Error: unable to connect to solver!\n");
+        yError("unable to connect to solver!");
         close();
 
         return false;
     }
     else
     {
-        printf("Error: unable to connect to server!\n");
+        yError("unable to connect to server!");
         close();
 
         return false;
@@ -219,7 +217,7 @@ bool ClientCartesianController::setTrackingMode(const bool f)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -239,7 +237,7 @@ bool ClientCartesianController::getTrackingMode(bool *f)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -275,7 +273,7 @@ bool ClientCartesianController::setReferenceMode(const bool f)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -295,7 +293,7 @@ bool ClientCartesianController::getReferenceMode(bool *f)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -330,7 +328,7 @@ bool ClientCartesianController::setPosePriority(const ConstString &p)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -350,7 +348,7 @@ bool ClientCartesianController::getPosePriority(ConstString &p)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -410,7 +408,7 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o,
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -452,7 +450,9 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, con
     if (!connected || (xd.length()<3) || (od.length()<4))
         return false;
 
-    Bottle command;
+    Bottle &command=portCmd.prepare();
+    command.clear();
+
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
     command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_FULL);
     command.addDouble(t);
@@ -465,7 +465,8 @@ bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, con
         xdesPart.addDouble(od[i]);    
 
     // send command
-    return portCmd.write(command);
+    portCmd.writeStrict();
+    return true;
 }
 
 
@@ -475,7 +476,9 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
     if (!connected || (xd.length()<3))
         return false;
 
-    Bottle command;
+    Bottle &command=portCmd.prepare();
+    command.clear();
+
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_GO);
     command.addVocab(IKINCARTCTRL_VOCAB_VAL_POSE_XYZ);
     command.addDouble(t);
@@ -485,7 +488,8 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
         xdesPart.addDouble(xd[i]);    
 
     // send command
-    return portCmd.write(command);
+    portCmd.writeStrict();
+    return true;
 }
 
 
@@ -509,7 +513,7 @@ bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od,
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -534,7 +538,7 @@ bool ClientCartesianController::goToPositionSync(const Vector &xd, const double 
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -554,7 +558,7 @@ bool ClientCartesianController::getDesired(Vector &xdhat, Vector &odhat, Vector 
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -583,7 +587,7 @@ bool ClientCartesianController::askForPose(const Vector &xd, const Vector &od,
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -614,7 +618,7 @@ bool ClientCartesianController::askForPose(const Vector &q0, const Vector &xd,
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -636,7 +640,7 @@ bool ClientCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -659,7 +663,7 @@ bool ClientCartesianController::askForPosition(const Vector &q0, const Vector &x
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -679,7 +683,7 @@ bool ClientCartesianController::getDOF(Vector &curDof)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -716,7 +720,7 @@ bool ClientCartesianController::setDOF(const Vector &newDof, Vector &curDof)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -749,7 +753,7 @@ bool ClientCartesianController::getRestPos(Vector &curRestPos)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -786,7 +790,7 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -819,7 +823,7 @@ bool ClientCartesianController::getRestWeights(Vector &curRestWeights)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -857,7 +861,7 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -891,7 +895,7 @@ bool ClientCartesianController::getLimits(const int axis, double *min, double *m
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -924,7 +928,7 @@ bool ClientCartesianController::setLimits(const int axis, const double min, cons
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -947,7 +951,7 @@ bool ClientCartesianController::getTrajTime(double *t)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -977,7 +981,7 @@ bool ClientCartesianController::setTrajTime(const double t)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -997,7 +1001,7 @@ bool ClientCartesianController::getInTargetTol(double *tol)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1027,7 +1031,7 @@ bool ClientCartesianController::setInTargetTol(const double tol)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1047,7 +1051,7 @@ bool ClientCartesianController::getJointsVelocities(Vector &qdot)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1080,7 +1084,7 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1111,7 +1115,9 @@ bool ClientCartesianController::setTaskVelocities(const Vector &xdot, const Vect
     if (!connected || (xdot.length()<3) || (odot.length()<4))
         return false;
 
-    Bottle command;
+    Bottle &command=portCmd.prepare();
+    command.clear();
+
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_TASKVEL);
     Bottle &xdotPart=command.addList();
 
@@ -1122,7 +1128,8 @@ bool ClientCartesianController::setTaskVelocities(const Vector &xdot, const Vect
         xdotPart.addDouble(odot[i]);
 
     // send command
-    return portCmd.write(command);
+    portCmd.writeStrict();
+    return true;
 }
 
 
@@ -1145,7 +1152,7 @@ bool ClientCartesianController::attachTipFrame(const Vector &x, const Vector &o)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1165,7 +1172,7 @@ bool ClientCartesianController::getTipFrame(Vector &x, Vector &o)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1209,7 +1216,7 @@ bool ClientCartesianController::checkMotionDone(bool *f)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1261,7 +1268,7 @@ bool ClientCartesianController::stopControl()
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1280,7 +1287,7 @@ bool ClientCartesianController::storeContext(int *id)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1309,7 +1316,7 @@ bool ClientCartesianController::restoreContext(const int id)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1329,7 +1336,7 @@ bool ClientCartesianController::deleteContext(const int id)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1357,7 +1364,7 @@ bool ClientCartesianController::deleteContexts()
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1376,7 +1383,7 @@ bool ClientCartesianController::getInfoHelper(Bottle &info)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1476,7 +1483,7 @@ bool ClientCartesianController::registerEvent(CartesianEvent &event)
 
         if (!portRpc.write(command,reply))
         {
-            printf("Error: unable to get reply from server!\n");
+            yError("unable to get reply from server!");
             return false;
         }
 
@@ -1512,7 +1519,7 @@ bool ClientCartesianController::unregisterEvent(CartesianEvent &event)
 
         if (!portRpc.write(command,reply))
         {
-            printf("Error: unable to get reply from server!\n");
+            yError("unable to get reply from server!");
             return false;
         }
 
@@ -1542,7 +1549,7 @@ bool ClientCartesianController::tweakSet(const Bottle &options)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 
@@ -1562,7 +1569,7 @@ bool ClientCartesianController::tweakGet(Bottle &options)
 
     if (!portRpc.write(command,reply))
     {
-        printf("Error: unable to get reply from server!\n");
+        yError("unable to get reply from server!");
         return false;
     }
 

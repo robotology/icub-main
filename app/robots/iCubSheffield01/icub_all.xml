@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE robot PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<robot name="iCubSheffield01" build="1" portprefix="icub">
+    <params file="hardware/electronics/pc104.xml" />
+
+    <!-- CARTESIANS --> 
+    <devices file="cartesian/left_arm-cartesian.xml" />
+    <devices file="cartesian/right_arm-cartesian.xml" />
+    
+    <!-- HEAD -->	
+    <devices file="hardware/motorControl/head-cfw2_can0-mc.xml" />
+    <devices file="wrappers/motorControl/head-mc_wrapper.xml" />
+
+    <!-- TORSO -->
+    <devices file="hardware/motorControl/torso-ems5-mc.xml" />
+    <devices file="wrappers/motorControl/torso-mc_wrapper.xml" />
+
+    <!-- LEFT ARM -->
+    <devices file="hardware/motorControl/left_upper_arm-ems1-mc.xml" />
+    <devices file="hardware/motorControl/left_lower_arm-ems2-mc.xml" />
+    <devices file="wrappers/motorControl/left_arm-mc_wrapper.xml" /> 
+
+    <!-- RIGHT ARM -->
+    <devices file="hardware/motorControl/right_upper_arm-ems3-mc.xml" />
+    <devices file="hardware/motorControl/right_lower_arm-ems4-mc.xml" />
+    <devices file="wrappers/motorControl/right_arm-mc_wrapper.xml" />
+
+    <!-- ANALOG SENSOR FT -->
+    <devices file="wrappers/FT/left_arm-FT_wrapper.xml" /> 
+    <devices file="wrappers/FT/right_arm-FT_wrapper.xml" />
+    <devices file="hardware/FT/left_upper_arm-ems1-strain.xml" /> 
+    <devices file="hardware/FT/right_upper_arm-ems3-strain.xml" />
+	
+    <!-- VIRTUAL ANALOG SENSORS (WRAPPER ONLY-->
+    <devices file="wrappers/VFT/left_arm-VFT_wrapper.xml" /> 
+    <devices file="wrappers/VFT/right_arm-VFT_wrapper.xml" /> 
+    <devices file="wrappers/VFT/torso-VFT_wrapper.xml" /> 
+
+    <!-- ANALOG SENSOR MAIS -->
+    <devices file="wrappers/MAIS/left_hand-mais_wrapper.xml" /> 
+    <devices file="wrappers/MAIS/right_hand-mais_wrapper.xml" /> 
+    <devices file="hardware/MAIS/left_hand-ems2-mais.xml" /> 
+    <devices file="hardware/MAIS/right_hand-ems4-mais.xml" />  
+ 
+    <!-- INERTIAL SENSOR -->
+    <devices file="hardware/inertial.xml" />
+
+    <!--  SKINS -->
+    <devices file="wrappers/skin/left_arm-skin_wrapper.xml" />
+    <devices file="wrappers/skin/right_arm-skin_wrapper.xml" />  
+    <devices file="wrappers/skin/torso-skin_wrapper.xml" /> 
+    <devices file="hardware/skin/torso-cfw2_can9-skin.xml" />
+    <devices file="hardware/skin/left_arm-ems2-skin.xml" />
+    <devices file="hardware/skin/right_arm-ems4-skin.xml" />
+	
+    <!--  CALIBRATORS -->
+    <devices file="calibrators/left_arm-calib.xml" />
+    <devices file="calibrators/right_arm-calib.xml" /> 
+    <devices file="calibrators/torso-calib.xml" /> 
+    <devices file="calibrators/head-calib.xml" /> 
+ </robot> 
+
+
+
+
+
+

@@ -16,7 +16,11 @@
  * Public License for more details
 */
 
+#include <algorithm>
+
 #include <gsl/gsl_math.h>
+
+#include <yarp/os/Log.h>
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/filters.h>
 
@@ -117,7 +121,6 @@ bool Filter::adjustCoeffs(const Vector &num, const Vector &den)
     {
         b=num;
         a=den;
-
         return true;
     }
     else
@@ -126,17 +129,22 @@ bool Filter::adjustCoeffs(const Vector &num, const Vector &den)
 
 
 /***************************************************************************/
-Vector Filter::filt(const Vector &u)
+const Vector& Filter::filt(const Vector &u)
 {
-    y=b[0]*u;
+    yAssert(y.length()==u.length());
+    for (size_t j=0; j<y.length(); j++)
+        y[j]=b[0]*u[j];
     
     for (size_t i=1; i<m; i++)
-        y+=b[i]*uold[i-1];
+        for (size_t j=0; j<y.length(); j++)
+            y[j]+=b[i]*uold[i-1][j];
     
     for (size_t i=1; i<n; i++)
-        y-=a[i]*yold[i-1];
+        for (size_t j=0; j<y.length(); j++)
+            y[j]-=a[i]*yold[i-1][j];
     
-    y=(1.0/a[0])*y;
+    for (size_t j=0; j<y.length(); j++)
+        y[j]/=a[0];
     
     uold.push_front(u);
     uold.pop_back();
@@ -154,8 +162,7 @@ RateLimiter::RateLimiter(const Vector &rL, const Vector &rU) :
 {
     size_t nL=rateLowerLim.length();
     size_t nU=rateUpperLim.length();
-
-    n=nU>nL ? nL : nU;
+    n=std::min(nL,nU);
 }
 
 
@@ -183,7 +190,7 @@ void RateLimiter::setLimits(const Vector &rL, const Vector &rU)
 
 
 /**********************************************************************/
-Vector RateLimiter::filt(const Vector &u)
+const Vector& RateLimiter::filt(const Vector &u)
 {
     uD=u-uLim;
     for (size_t i=0; i<n; i++)
@@ -195,7 +202,6 @@ Vector RateLimiter::filt(const Vector &u)
     }
 
     uLim=uLim+uD;
-
     return uLim;
 }
 
@@ -205,10 +211,10 @@ FirstOrderLowPassFilter::FirstOrderLowPassFilter(const double cutFrequency,
                                                  const double sampleTime,
                                                  const Vector &y0)
 {
-    fc = cutFrequency;
-    Ts = sampleTime;
-    y = y0;
-    filter = NULL;
+    fc=cutFrequency;
+    Ts=sampleTime;
+    y=y0;
+    filter=NULL;
     computeCoeff();
 }
 
@@ -216,15 +222,14 @@ FirstOrderLowPassFilter::FirstOrderLowPassFilter(const double cutFrequency,
 /**********************************************************************/
 FirstOrderLowPassFilter::~FirstOrderLowPassFilter()
 {
-    if(filter!=NULL)
-        delete filter;
+    delete filter;
 }
 
 
 /***************************************************************************/
 void FirstOrderLowPassFilter::init(const Vector &y0)
 {
-    if(filter!=NULL)
+    if (filter!=NULL)
         filter->init(y0);
 }
 
@@ -232,10 +237,12 @@ void FirstOrderLowPassFilter::init(const Vector &y0)
 /**********************************************************************/
 bool FirstOrderLowPassFilter::setCutFrequency(const double cutFrequency)
 {
-    if(cutFrequency<=0.0)
+    if (cutFrequency<=0.0)
         return false;
-    fc = cutFrequency;
+
+    fc=cutFrequency;
     computeCoeff();
+
     return true;
 }
 
@@ -243,10 +250,12 @@ bool FirstOrderLowPassFilter::setCutFrequency(const double cutFrequency)
 /**********************************************************************/
 bool FirstOrderLowPassFilter::setSampleTime(const double sampleTime)
 {
-    if(sampleTime<=0.0)
+    if (sampleTime<=0.0)
         return false;
-    Ts = sampleTime;
+
+    Ts=sampleTime;
     computeCoeff();
+
     return true;
 }
 
@@ -254,8 +263,9 @@ bool FirstOrderLowPassFilter::setSampleTime(const double sampleTime)
 /**********************************************************************/
 const Vector& FirstOrderLowPassFilter::filt(const Vector &u)
 {
-    if(filter!=NULL)
-        y = filter->filt(u);
+    if (filter!=NULL)
+        y=filter->filt(u);
+
     return y;
 }
 
@@ -263,13 +273,14 @@ const Vector& FirstOrderLowPassFilter::filt(const Vector &u)
 /**********************************************************************/
 void FirstOrderLowPassFilter::computeCoeff()
 {
-    double tau = 1.0/(2.0*M_PI*fc);
-    Vector num = cat(Ts, Ts);
-    Vector den = cat(2.0*tau+Ts, Ts-2.0*tau);
-    if(filter!=NULL)
-        filter->adjustCoeffs(num, den);
+    double tau=1.0/(2.0*M_PI*fc);
+    Vector num=cat(Ts,Ts);
+    Vector den=cat(2.0*tau+Ts,Ts-2.0*tau);
+
+    if (filter!=NULL)
+        filter->adjustCoeffs(num,den);
     else
-        filter = new Filter(num, den, y);
+        filter=new Filter(num,den,y);
 }
 
 

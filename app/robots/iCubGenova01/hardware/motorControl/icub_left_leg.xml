@@ -28,7 +28,7 @@
 <param name="MaxDAC">       100           100           100           100           100           100           </param>       
 <param name="AxisMap">      2             3             0             1             4             5             </param>       
 <param name="Encoder">      11.375        11.375        11.375        -11.375       -11.375       11.375        </param>       
-<param name="Zeros">        187           176           180           -180          -173          185           </param>       
+<param name="Zeros">        187           176           175           -180          -176          184           </param>       
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          0x0C          0x0C          </param>       
 <param name="TorqueChan">   0             1             2             3             4             5             </param>       
 <param name="TorqueMax">    12            12            12            12            12            12            </param>       

@@ -56,14 +56,9 @@
 #ifndef __PERCEPTIVEMODELS_SPRINGYFINGERS_H__
 #define __PERCEPTIVEMODELS_SPRINGYFINGERS_H__
 
-#include <yarp/os/Value.h>
-#include <yarp/os/Property.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/Time.h>
-#include <yarp/os/Mutex.h>
-#include <yarp/os/Thread.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/sig/Vector.h>
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
+#include <yarp/sig/all.h>
 
 #include <iCub/learningMachine/FixedRangeScaler.h>
 #include <iCub/learningMachine/LSSVMLearner.h>
@@ -209,8 +204,7 @@ class SpringyFingersModel : public virtual Model
 private:
     std::string type;
     std::string robot;
-    std::string carrier;
-    int verbosity;
+    std::string carrier;    
 
     SensorInterface sensIF[5];
     SensorPort      sensPort[12];
@@ -258,8 +252,7 @@ private:
         bool isDone() const { return done; }
     };
     friend class CalibThread;
-
-    int printMessage(const int level, const char *format, ...) const;
+    
     void calibrateFinger(SpringyFinger &finger, const int joint,
                          const double min, const double max);
     void close();

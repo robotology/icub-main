@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+    <device name="left_leg_calibrator" type="parametricCalibrator">
+
+        <group name="GENERAL">
+            <param name="joints">  6  </param> 
+            <param name="deviceName"> Left_Leg_Calibrator </param>
+        </group>
+
+        <group name="CALIBRATION">   
+            <param name="calibrationType">            3             3             3             3             3             3             </param>       
+            <param name="calibration1">               2047.5        2047.5        2047.5        2047.5        2047.5        2047.5        </param>       
+            <param name="calibration2">               10            10            10            10            10            10            </param>       
+            <param name="calibration3">               3867.5        944.125       3116.75       2809.625      2366          1421.875      </param>       
+            <param name="positionZero">               0             0             0             0             0             0             </param>       
+            <param name="velocityZero">               10            10            10            10            10            10            </param>       
+            <param name="maxPwm">                     120           120           120           120           120           120           </param>       
+            <param name="posZeroThreshold">           2             2             2             2             2             2             </param>       
+        </group>       
+         
+        <group name="HOME">          
+            <param name="positionHome"> 0             0             0             0             0             0             </param>       
+            <param name="velocityHome"> 10            10            10            10            10            10            </param>       
+        </group>       
+
+        <param name="CALIB_ORDER">(0 1 2 3 4 5) </param>
+        
+        <action phase="startup" level="10" type="calibrate">
+            <param name="target">left_leg_mc_wrapper</param>
+        </action>
+
+        <action phase="interrupt1" level="1" type="park">
+            <param name="target">left_leg_mc_wrapper</param>
+        </action>
+
+        <action phase="interrupt3" level="1" type="abort" />
+
+    </device>
+</devices>

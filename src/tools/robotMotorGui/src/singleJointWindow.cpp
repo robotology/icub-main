@@ -28,6 +28,7 @@ const int UPDATE_TIME = 200;   //update time in ms
 #define DEBUG_GUI 0
 
 extern bool position_direct_enabled;
+extern bool old_impedance_enabled;
 
 /*
  * Disable PID
@@ -590,9 +591,9 @@ void partMover::slider_release(GtkRange *range, gtkClassData* currentClassData)
          ipos->setRefSpeed(*joint, valVel);
          ipos->positionMove(*joint, val);
       }
-      else if( ( mode == MODE_IMPEDANCE_POS))
+      else if( ( mode == VOCAB_CM_IMPEDANCE_POS))
       {
-         std::cout << " using old MODE_IMPEDANCE_POS, this control mode is deprecated!" << std::endl;
+         fprintf(stderr, " using old 'impedance_position' mode, this control mode is deprecated!");
          ipos->setRefSpeed(*joint, valVel);
          ipos->positionMove(*joint, val);
       }
@@ -604,13 +605,13 @@ void partMover::slider_release(GtkRange *range, gtkClassData* currentClassData)
          }
          else
          {
-             std::cout << "You cannot send direct position commands without using --direct option!" << std::endl;
+             fprintf(stderr, "You cannot send direct position commands without using --direct option!");
          }
 
       }
       else
       {
-          std::cout << " Joint not in position nor positionDirect so cannot send references" << std::endl;
+          fprintf(stderr, "Joint not in position nor positionDirect so cannot send references");
       }
     }
   return;

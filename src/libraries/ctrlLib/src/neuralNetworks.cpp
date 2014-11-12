@@ -64,7 +64,7 @@ void ff2LayNN::setItem(Property &options, const string &tag, const Vector &item)
 
 
 /***************************************************************************/
-bool ff2LayNN::getItem(Property &options, const string &tag, Vector &item) const
+bool ff2LayNN::getItem(const Property &options, const string &tag, Vector &item) const
 {
     if (Bottle *b=options.find(tag.c_str()).asList())
     {
@@ -120,46 +120,44 @@ bool ff2LayNN::configure(const Property &options)
 
     configured=false;
 
-    Property &opt=const_cast<Property&>(options);
-
     // acquire options
-    if (!opt.check("numInputNodes") || !opt.check("numHiddenNodes") || 
-        !opt.check("numOutputNodes"))
+    if (!options.check("numInputNodes") || !options.check("numHiddenNodes") || 
+        !options.check("numOutputNodes"))
         return false;
 
-    int numHiddenNodes=opt.find("numHiddenNodes").asInt();
+    int numHiddenNodes=options.find("numHiddenNodes").asInt();
     for (int i=0; i<numHiddenNodes; i++)
     {
         ostringstream tag;
         Vector item;
 
         tag<<"IW_"<<i;
-        if (getItem(opt,tag.str(),item))
+        if (getItem(options,tag.str(),item))
             IW.push_back(item);
         else
             return false;
     }
     
-    if (!getItem(opt,"b1",b1))
+    if (!getItem(options,"b1",b1))
         return false;
 
-    int numOutputNodes=opt.find("numOutputNodes").asInt();
+    int numOutputNodes=options.find("numOutputNodes").asInt();
     for (int i=0; i<numOutputNodes; i++)
     {
         ostringstream tag;
         Vector item;
 
         tag<<"LW_"<<i;
-        if (getItem(opt,tag.str(),item))
+        if (getItem(options,tag.str(),item))
             LW.push_back(item);
         else
             return false;
     }
 
-    if (!getItem(opt,"b2",b2))
+    if (!getItem(options,"b2",b2))
         return false;
 
-    int numInputNodes=opt.find("numInputNodes").asInt();
+    int numInputNodes=options.find("numInputNodes").asInt();
     for (int i=0; i<numInputNodes; i++)
     {
         ostringstream tagX, tagY;
@@ -167,7 +165,7 @@ bool ff2LayNN::configure(const Property &options)
 
         tagX<<"inMinMaxX_"<<i;
         tagY<<"inMinMaxY_"<<i;
-        if (!getItem(opt,tagX.str(),itemX) || !getItem(opt,tagY.str(),itemY))
+        if (!getItem(options,tagX.str(),itemX) || !getItem(options,tagY.str(),itemY))
             return false;
         else
         {
@@ -189,7 +187,7 @@ bool ff2LayNN::configure(const Property &options)
 
         tagX<<"outMinMaxX_"<<i;
         tagY<<"outMinMaxY_"<<i;
-        if (!getItem(opt,tagX.str(),itemX) || !getItem(opt,tagY.str(),itemY))
+        if (!getItem(options,tagX.str(),itemX) || !getItem(options,tagY.str(),itemY))
             return false;
         else
         {
