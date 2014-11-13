@@ -238,8 +238,8 @@ bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
             msg.setId(id);
             msg.getData()[0]=0x07;
             if (useCalibration == 1)  msg.getData()[1]=0x00;
-            if (useCalibration == 2)  msg.getData()[1]=0x00;
-            if (useCalibration == 3)  msg.getData()[1]=0x00;
+            if (useCalibration == 2)  msg.getData()[1]=0x04;
+            if (useCalibration == 3)  msg.getData()[1]=0x05;
             msg.setLen(2);
             canMessages=0;
             pCanBus->canWrite(outBuffer, 1, &canMessages);
