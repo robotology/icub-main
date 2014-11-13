@@ -11,8 +11,8 @@
 
     <group name="LIMITS">
                                  <!--   0             1             2                           logical axis number (ControlBoardWrapper) -->
-        <param name="Max">              50            30            70          </param>
-        <param name="Min">             -50           -30           -20          </param>
+        <param name="Max">              50            25            50          </param>
+        <param name="Min">             -50           -25           -20          </param>
         <param name="Currents">         5000          5000          5000        </param>
     </group>
 
