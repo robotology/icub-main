@@ -1990,11 +1990,38 @@ bool embObjMotionControl::doneRaw(int axis)
     type = (eOmc_controlmode_t) status.controlmodestatus;
 
     // if the control mode is no longer a calibration type, it means calibration ended
-    if( (eomc_controlmode_idle == type) || (eomc_controlmode_calib == type) )
+    if   (eomc_controlmode_idle == type)
+    {
         result = false;
+    }
+    else if (eomc_controlmode_calib == type)
+    {
+        result = false;
+    }
+    else if (eomc_controlmode_hwFault == type)
+    {
+        yError("unable to complete calibration: joint in 'hw_fault status' inside doneRaw() function"); 
+        result = false;
+    }
+    else if (eomc_controlmode_notConfigured == type)
+    {
+        yError("unable to complete calibration: joint in 'not_configured' status inside doneRaw() function"); 
+        result = false;
+    }
+    else if (eomc_controlmode_unknownError == type)
+    {
+        yError("unable to complete calibration: joint in 'unknownError' status inside doneRaw() function"); 
+        result = false;
+    }
+    else if (eomc_controlmode_configured == type)
+    {
+        yError("unable to complete calibration: joint in 'configured' status inside doneRaw() function"); 
+        result = false;
+    }
     else
+    {
         result = true;
-//    yWarning() << _fId.name << "joint " << axis << "Calibration done is " << result;
+    }
     return result;
 }
 
