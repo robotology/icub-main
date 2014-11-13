@@ -735,7 +735,7 @@ int cDownloader::strain_set_full_scale     (int target_id, unsigned char channel
      return 0;
 }
 //*****************************************************************/
-int cDownloader::strain_get_matrix_rc     (int target_id, char r, char c, unsigned int& elem)
+int cDownloader::strain_get_matrix_rc     (int target_id, char r, char c, char matrix_id, unsigned int& elem)
 {
      // check if driver is running
      if (m_candriver == NULL)
@@ -746,10 +746,11 @@ int cDownloader::strain_get_matrix_rc     (int target_id, char r, char c, unsign
 
      //read dac
      txBuffer[0].setId((2 << 8) + target_id);
-     txBuffer[0].setLen(3);
+     txBuffer[0].setLen(4);
      txBuffer[0].getData()[0]= 0x0A;
      txBuffer[0].getData()[1]= r;
      txBuffer[0].getData()[2]= c;
+     txBuffer[0].getData()[3]= matrix_id;
 
      CLEAR_RXBUFFER
      int ret = m_candriver->send_message(txBuffer, 1);
@@ -780,7 +781,7 @@ int cDownloader::strain_get_matrix_rc     (int target_id, char r, char c, unsign
 }
 
 //*****************************************************************/
-int cDownloader::strain_set_matrix_rc     (int target_id, char r, char c, unsigned int  elem)
+int cDownloader::strain_set_matrix_rc     (int target_id, char r, char c, char matrix_id, unsigned int  elem)
 {
      // check if driver is running
      if (m_candriver == NULL)
@@ -791,12 +792,13 @@ int cDownloader::strain_set_matrix_rc     (int target_id, char r, char c, unsign
 
      //set matrix
      txBuffer[0].setId((2 << 8) + target_id);
-     txBuffer[0].setLen(5);
+     txBuffer[0].setLen(6);
      txBuffer[0].getData()[0]= 0x03;
      txBuffer[0].getData()[1]= r;
      txBuffer[0].getData()[2]= c;
      txBuffer[0].getData()[3]= elem >> 8;
      txBuffer[0].getData()[4]= elem & 0xFF;
+     txBuffer[0].getData()[5]= matrix_id;
      int ret = m_candriver->send_message(txBuffer, 1);
      drv_sleep(5);
 
