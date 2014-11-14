@@ -967,7 +967,7 @@ int main(int argc, char *argv[])
     #else
         printf("This module has been compiled with an unknown version of OpenCV (probably < 1.0)\n");
     #endif        
-        printf("Available options:");
+        printf("Available options:\n");
         printf("\t--name              <string>\n");
         printf("\t--coverXratio       <double>\n");
         printf("\t--coverYratio       <double>\n");
