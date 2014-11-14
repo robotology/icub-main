@@ -10,6 +10,7 @@
 		    <param name="deviceName"> Head_Calibrator </param>	<!-- simple string to be used in code to have a human readable description -->
 		</group>
 
+
 <group name="HOME">
 <param name="positionHome">                       -30        0       0       0          0         0            </param>
 <param name="velocityHome">                       10         10      10      10         10        10           </param>
