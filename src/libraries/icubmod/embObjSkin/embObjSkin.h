@@ -40,6 +40,7 @@
 #include "FeatureInterface.h"
 #include "IethResource.h"
 #include "SkinConfigReader.h"
+#include <skinDiagnostic.h>
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -111,6 +112,12 @@ protected:
             return(idPatch-1);
     }
 
+    /** Flag to set if the skin diagnostics is active. */
+    bool useDiagnostics;
+
+    /** The detected skin errors. These are used for diagnostics purposes. */
+    yarp::sig::VectorOf<iCub::skin::diagnostics::DetectedError> errors;
+//    bool diagnoseSkin();  // for more fancy handling of errors
 
 public:
 

@@ -31,6 +31,7 @@
 
 
 using namespace std;
+using namespace iCub::skin::diagnostics;
 
 
 bool SkinPatchInfo::checkCardAddrIsInList(int cardAddr)
@@ -43,7 +44,7 @@ bool SkinPatchInfo::checkCardAddrIsInList(int cardAddr)
     return false;
 }
 
-EmbObjSkin::EmbObjSkin() :  mutex(1)
+EmbObjSkin::EmbObjSkin() :  mutex(1), useDiagnostics(false)
 {
     res         = NULL;
     ethManager  = NULL;
@@ -312,8 +313,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     yTrace() << str;
 
 
-    Bottle          groupEth, parameter;
-
+    Bottle   groupEth, parameter;
     int      port;
 
     Bottle groupTransceiver = Bottle(config.findGroup("TRANSCEIVER"));
@@ -717,9 +717,10 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
         return false;
     }
 
-   // yError() << "received data from " << patchInfoList[p].idPatch << "port";
+   // yDebug() << "received data from " << patchInfoList[p].idPatch << "port";
 
-    //for(i=0; i<arrayofcanframes->head.size; i++)
+    errors.resize(sizeofarray);
+
     for(i=0; i<sizeofarray; i++)
     {
         eOutil_canframe_t *canframe = (eOutil_canframe_t*) eo_array_At(arrayof, i);
@@ -763,27 +764,60 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
 
             //printf("mtbId=%d\n", mtbId);
             triangle = (canframe->id & 0x000f);
-            msgtype= ((canframe->data[0])& 0x80);
+            msgtype = (int) canframe->data[0];
 
             int index=16*12*mtbId + triangle*12;
 
             // marco.accame: added lock to avoid cincurrent access to this->data. i lock at triangle resolution ...
             mutex.wait();
 
-            if (msgtype)
+            if (msgtype == 0x40)
             {
-                for(int k=0; k<5; k++)
+                // Message head
+                for(int k = 0; k < 7; k++)
                 {
-                    this->data[index+k+7]=canframe->data[k+1];
-                    // yError() << "fill data " << data[index+k+7];
+                    data[index + k] = canframe->data[k + 1];
                 }
             }
-            else
+            else if (msgtype == 0xC0)
             {
-                for(int k=0; k<7; k++)
+                // Message tail
+                for(int k = 0; k < 5; k++)
                 {
-                    this->data[index+k]=canframe->data[k+1];
-                    // yError() << "fill data " << data[index+k];
+                    data[index + k + 7] = canframe->data[k + 1];
+                }
+
+                // Skin diagnostics
+                if (canframe->size == 8) {
+                    // Skin diagnostics is active
+                    useDiagnostics = true;
+
+                    // Get error code head and tail
+                    short head = canframe->data[6];
+                    short tail = canframe->data[7];
+                    int fullMsg = (head << 8) | (tail & 0xFF);
+
+                    // Store error message
+                    errors[i].net = indexpatch;
+                    errors[i].board = cardAddr;
+                    errors[i].sensor = triangle;
+                    errors[i].error = fullMsg;
+
+                    if (!(fullMsg & SkinErrorCode::StatusOK))
+                    {
+                        yError() << "canBusSkin error code: " <<
+                                    "net " << errors[i].net <<
+                                    "board " <<  errors[i].board <<
+                                    "sensor " << errors[i].sensor <<
+                                    "error " << errors[i].error;
+                    }
+                }
+                else
+                {
+                    useDiagnostics = false;
+#if 0
+                    cout << "WARNING: CanBusSkin: Board ID (" << id << "): You are using the old skin firmware which does not include skin diagnostics. You might want to consider upgrading to a newer firmware. \n";
+#endif
                 }
             }
 
@@ -807,6 +841,30 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
     return true;
 }
 
+/* *********************************************************************************************************************** */
+/* ******* Diagnose skin errors.                                            ********************************************** */
+//bool EmbObjSkin::diagnoseSkin(void) {
+//    using iCub::skin::diagnostics::DetectedError;   // FG: Skin diagnostics errors
+//    using yarp::sig::Vector;
+
+//    if (useDiagnostics) {
+//        // Write errors to port
+//        for (size_t i = 0; i < errors.size(); ++i) {
+//            Vector &out = portSkinDiagnosticsOut.prepare();
+//            out.clear();
+
+//            out.push_back(errors[i].net);
+//            out.push_back(errors[i].board);
+//            out.push_back(errors[i].sensor);
+//            out.push_back(errors[i].error);
+
+//            portSkinDiagnosticsOut.write(true);
+//        }
+//    }
+
+//    return true;
+//}
+/* *********************************************************************************************************************** */
 // eof
 
 
