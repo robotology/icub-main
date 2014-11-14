@@ -193,6 +193,7 @@ public:
     int group;
     
     void communicate() {
+      if (group!=0) return;
       if (yarp().canWrite()) {
         yarp().write(*this);
         clean();
