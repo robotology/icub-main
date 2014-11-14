@@ -31,9 +31,7 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     this->stereo= tmp?false:true;
     this->camCalibFile=rf.getHomeContextPath().c_str();
 
-
     string fileName= "outputCalib.ini"; //rf.find("from").asString().c_str();
-
     
     this->camCalibFile=this->camCalibFile+"/"+fileName.c_str();
 
@@ -62,38 +60,14 @@ bool stereoCalibThread::threadInit()
       return false;
    }    
     
-    Property option;
-    option.put("device","gazecontrollerclient");
-    option.put("remote","/iKinGazeCtrl");
-    option.put("local","/"+moduleName+"/client/gaze");
-    gazeCtrl=new PolyDriver(option);
-    if (gazeCtrl->isValid()) {
-        gazeCtrl->view(igaze);
-    }
-    else {
-        cout<<"Devices not available"<<endl;
-        return false;
-    }
-
-    Bottle p;
-    igaze->getInfo(p);
-    vergence=p.check(("min_allowed_vergence"),Value(1.0)).asDouble();
-    version=0.0;
-    yarp::sig::Vector ang(3);
-    ang=0.0;
-    ang[0]=version;
-    ang[2]=vergence;
-    igaze->lookAtAbsAngles(ang);
     Property optHead;
     optHead.put("device","remote_controlboard");
     optHead.put("remote",("/"+robotName+"/head").c_str());
     optHead.put("local","/"+moduleName+"/client/head");
     if (polyHead.open(optHead))
-    {
         polyHead.view(posHead);
-        polyHead.view(HctrlLim);
-    }
-    else {
+    else
+    {
         cout<<"Devices not available"<<endl;
         return false;
     }
@@ -104,25 +78,17 @@ bool stereoCalibThread::threadInit()
     optTorso.put("local","/"+moduleName+"/client/torso");
 
     bool useTorso=true;
-
     if (polyTorso.open(optTorso))
-    {
         polyTorso.view(posTorso);
-        polyTorso.view(TctrlLim);
-    }
-    else {
+    else
         useTorso=false;
-    }
-
 
     yarp::sig::Vector head_angles(6);
     posHead->getEncoders(head_angles.data());
 
     yarp::sig::Vector torso_angles(3,0.0);
-    if(useTorso)
-    {
+    if (useTorso)
         posTorso->getEncoders(torso_angles.data());
-    }
 
     qL.resize(torso_angles.length()+head_angles.length()-1);
     for(size_t i=0; i<torso_angles.length(); i++)
@@ -132,7 +98,6 @@ bool stereoCalibThread::threadInit()
         qL[i+torso_angles.length()]=head_angles[i];
     qL[7]=head_angles[4]+(0.5-(LEFT))*head_angles[5];
     qL=CTRL_DEG2RAD*qL;
-
 
     qR.resize(torso_angles.length()+head_angles.length()-1);
     for(size_t i=0; i<torso_angles.length(); i++)
@@ -388,8 +353,6 @@ void stereoCalibThread::threadRelease()
     outPortRight.close();
     commandPort->close();
     delete mutex;
-    delete gazeCtrl;
-
 
     if (polyHead.isValid())
         polyHead.close();
