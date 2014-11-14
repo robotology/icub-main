@@ -352,8 +352,9 @@ PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
 
 
 /************************************************************************/
-void CartesianSolver::alignJointsBounds()
+bool CartesianSolver::alignJointsBounds()
 {
+    bool ret=true;
     double min, max;
     int cnt=0;
 
@@ -362,17 +363,25 @@ void CartesianSolver::alignJointsBounds()
     {
         yInfo("part #%d: %s",i,prt->prp[i].find("part").asString().c_str());
         for (int j=0; j<jnt[i]; j++)
-        {               
-            lim[i]->getLimits(rmp[i][j],&min,&max);
+        {
+            bool jret = lim[i]->getLimits(rmp[i][j],&min,&max);
+
+            if(!jret)
+                yError("getLimits failed for joint #%d",cnt);
+
+            ret = ret && jret;
 
             yInfo("joint #%d: [%g, %g] deg",cnt,min,max);
             (*prt->chn)[cnt].setMin(CTRL_DEG2RAD*min);
             (*prt->chn)[cnt].setMax(CTRL_DEG2RAD*max);
-        
+
             cnt++;
         }
     }
+
+    return ret;
 }
+
 
 
 /************************************************************************/
@@ -1403,7 +1412,12 @@ bool CartesianSolver::open(Searchable &options)
     }
 
     // joints bounds alignment
-    alignJointsBounds();    
+    if( !alignJointsBounds() )
+    {
+        yError("Error in reading joint bounds from the controlboard");
+        close();
+        return false;
+    }
 
     // parse configuration options
     setRate(period=options.check("period",Value(CARTSLV_DEFAULT_PER)).asInt());
