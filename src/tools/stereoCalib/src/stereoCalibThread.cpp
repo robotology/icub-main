@@ -83,7 +83,7 @@ bool stereoCalibThread::threadInit()
     else
         useTorso=false;
 
-    yarp::sig::Vector head_angles(6);
+    yarp::sig::Vector head_angles(6,0.0);
     posHead->getEncoders(head_angles.data());
 
     yarp::sig::Vector torso_angles(3,0.0);
