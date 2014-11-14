@@ -29,6 +29,7 @@
 </group>
 
 
+
  <!-- check old calibrator for the correct sequence, then ask to Randazz -->
         <param name="CALIB_ORDER"> (0 1 2) (3) (4) (5) </param>
 
