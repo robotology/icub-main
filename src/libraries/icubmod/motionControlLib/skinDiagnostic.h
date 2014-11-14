@@ -1,8 +1,11 @@
-/* 
+// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
+
+
+/*
  * Copyright (C) 2014 Francesco Giovannini, iCub Facility - Istituto Italiano di Tecnologia
  * Authors: Francesco Giovannini
  * email:   francesco.giovannini@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -16,10 +19,32 @@
  * Public License for more details
  */
 
+#ifndef SKIN_DIAGNOSTIC_DEFINITIONS
+#define SKIN_DIAGNOSTIC_DEFINITIONS
+
+#include <string>
+#include <stdint.h>
+
 
 namespace iCub {
     namespace skin {
         namespace diagnostics {
+
+            /**
+             * The detected error.
+             * Fields are:
+             *      - net: The CAN bus ID
+             *      - board: The MTB board ID
+             *      - sensor: The skin sensor ID (triangle/fingertip/...)
+             *      - error: The full error message
+             */
+            struct DetectedError {
+                short net;
+                short board;
+                short sensor;
+                int error;
+            };
+
             /**
              * Enum to provide intelligible error codes for the skin.
              */
@@ -59,3 +84,5 @@ namespace iCub {
         }
     }
 }
+
+#endif  // SKIN_DIAGNOSTIC_DEFINITIONS

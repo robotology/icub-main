@@ -27,10 +27,6 @@
 #include <yarp/os/LogStream.h>
 #include <stdint.h>
 
-
-
-
-
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 
@@ -62,7 +58,6 @@ public:
     }
 
 };
-
 
 
 

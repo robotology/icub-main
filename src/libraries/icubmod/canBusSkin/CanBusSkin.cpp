@@ -22,12 +22,12 @@ const int CAN_DRIVER_BUFFER_SIZE = 2047;
 #define SKIN_DEBUG 0
 
 using namespace std;
+using namespace iCub::skin::diagnostics;
 using yarp::os::Bottle;
 using yarp::os::Property;
 using yarp::os::Value;
 using yarp::dev::CanMessage;
 using yarp::os::Time;
-
 
 
 bool CanBusSkin::open(yarp::os::Searchable& config)
@@ -527,12 +527,13 @@ void CanBusSkin::run() {
     bool res = pCanBus->canRead(inBuffer, CAN_DRIVER_BUFFER_SIZE, &canMessages);
         yError()<<"canRead failed\n";
     
+    // Allocate error vector
+    errors.resize(canMessages);
+
     if (!res) {
         std::cerr << "ERROR: CanBusSkin: CanRead failed \n";
     } else {
         for (unsigned int i = 0; i < canMessages; i++) {
-            // Allocate error vector
-            errors.resize(canMessages);
 
             CanMessage &msg = inBuffer[i];
 
@@ -583,6 +584,17 @@ void CanBusSkin::run() {
                             errors[i].board = id;
                             errors[i].sensor = sensorId;
                             errors[i].error = fullMsg;
+
+                            if (!(fullMsg & SkinErrorCode::StatusOK))
+                            {
+                                yError() << "canBusSkin error code: " <<
+                                            "net " << errors[i].net <<
+                                            "board " <<  errors[i].board <<
+                                            "sensor " << errors[i].sensor <<
+                                            "error " << errors[i].error;
+                            }
+
+
                         } else {
                             useDiagnostics = false;
 #if 0

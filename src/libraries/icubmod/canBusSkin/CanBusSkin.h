@@ -7,8 +7,6 @@
 #ifndef __SKIN_MESH_THREAD_H__
 #define __SKIN_MESH_THREAD_H__
 
-#include <CanBusSkinDiagnostics.h>
-
 #include <string>
 
 #include <yarp/os/RateThread.h>
@@ -22,6 +20,7 @@
 
 
 #include "SkinConfigReader.h"
+#include <skinDiagnostic.h>
 
 
 class CanBusSkin : public yarp::os::RateThread, public yarp::dev::IAnalogSensor, public yarp::dev::DeviceDriver 
