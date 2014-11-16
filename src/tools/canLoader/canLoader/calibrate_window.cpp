@@ -56,7 +56,7 @@ GtkWidget *full_scale_label[6];
 GtkWidget *edit_serial_number;
 gboolean timer_func (gpointer data);
 GtkWidget* label_use_calib;
-GtkWidget* edit_use_calib;
+GtkWidget* spin_use_calib;
 
 unsigned int calib_const=0;
 unsigned int full_scale_const[6]={0,0,0,0,0,0};
@@ -70,24 +70,50 @@ bool first_time[6]={1,1,1,1,1,1};
 #define START_TIMER timer_refresh = g_timeout_add (500, timer_func, NULL);
 #define STOP_TIMER {if (timer_refresh>0) g_source_remove(timer_refresh); timer_refresh=0;}
 #define HEX_VALC 0x8000
-#define KK 0
 
 int get_matrix()
 {
     int id=0;
-    const gchar* temp = gtk_entry_get_text (GTK_ENTRY (edit_use_calib));
-    int calibration = atoi(temp);
+    int calibration = (int)gtk_spin_button_get_value (GTK_SPIN_BUTTON (spin_use_calib));
     if (calibration <0 || calibration >= 4) {printf("debug: invalid value of 'edit_use_calib'.\n"); calibration = 0;}
     if (calibration<=0) id = 0; //@@@@@@@@@@@
     else                id = calibration-1;
     return id;
 }
 
+void show_matrix(int id)
+{
+    int ri=0; int ci=0;
+    if (id<0)
+    {
+        for (ri=0;ri<6;ri++) for (ci=0;ci<6;ci++) {gtk_widget_set_sensitive(GTK_WIDGET (edit_matrix[ri][ci][0]), true);}
+        for (ri=0;ri<6;ri++) for (ci=0;ci<6;ci++) {gtk_widget_set_sensitive(GTK_WIDGET (edit_matrix[ri][ci][1]), true);}
+        for (ri=0;ri<6;ri++) for (ci=0;ci<6;ci++) {gtk_widget_set_sensitive(GTK_WIDGET (edit_matrix[ri][ci][2]), true);}
+    }
+    else if (id==0)
+    {
+        for (ri=0;ri<6;ri++) for (ci=0;ci<6;ci++) {gtk_widget_set_sensitive(GTK_WIDGET (edit_matrix[ri][ci][0]), true);}
+        for (ri=0;ri<6;ri++) for (ci=0;ci<6;ci++) {gtk_widget_set_sensitive(GTK_WIDGET (edit_matrix[ri][ci][1]), false);}
+        for (ri=0;ri<6;ri++) for (ci=0;ci<6;ci++) {gtk_widget_set_sensitive(GTK_WIDGET (edit_matrix[ri][ci][2]), false);}
+    }
+    else if (id==1)
+    {
+        for (ri=0;ri<6;ri++) for (ci=0;ci<6;ci++) {gtk_widget_set_sensitive(GTK_WIDGET (edit_matrix[ri][ci][0]), false);}
+        for (ri=0;ri<6;ri++) for (ci=0;ci<6;ci++) {gtk_widget_set_sensitive(GTK_WIDGET (edit_matrix[ri][ci][1]), true);}
+        for (ri=0;ri<6;ri++) for (ci=0;ci<6;ci++) {gtk_widget_set_sensitive(GTK_WIDGET (edit_matrix[ri][ci][2]), false);}
+    }
+    else if (id==2)
+    {
+        for (ri=0;ri<6;ri++) for (ci=0;ci<6;ci++) {gtk_widget_set_sensitive(GTK_WIDGET (edit_matrix[ri][ci][0]), false);}
+        for (ri=0;ri<6;ri++) for (ci=0;ci<6;ci++) {gtk_widget_set_sensitive(GTK_WIDGET (edit_matrix[ri][ci][1]), false);}
+        for (ri=0;ri<6;ri++) for (ci=0;ci<6;ci++) {gtk_widget_set_sensitive(GTK_WIDGET (edit_matrix[ri][ci][2]), true);}
+    }
+}
+
 int get_calibration()
 {
     int id=0;
-    const gchar* temp = gtk_entry_get_text (GTK_ENTRY (edit_use_calib));
-    int calibration = atoi(temp);
+    int calibration = (int)gtk_spin_button_get_value (GTK_SPIN_BUTTON (spin_use_calib));
     if (calibration <0 || calibration >= 4) {printf("debug: invalid value of 'edit_use_calib'.\n"); calibration = 0;}
     return calibration;
 }
@@ -207,6 +233,8 @@ gboolean timer_func (gpointer data)
             gtk_widget_modify_base (edit_serial_number,GTK_STATE_NORMAL, &r_color );
         }
 
+    id = get_matrix();
+    show_matrix(id);
     if (matrix_changed[id]==false)
         {
             for (ri=0;ri<6;ri++)
@@ -473,7 +501,7 @@ void file_save_click (GtkButton *button,    gpointer ch_p)
 
     //file version
     filestr<<"File version:"<<endl;
-    filestr<<"2"<<endl;
+    filestr<<"3"<<endl;
 
     //serial number
     filestr<<"Serial number:"<<endl;
@@ -489,10 +517,26 @@ void file_save_click (GtkButton *button,    gpointer ch_p)
     }
 
     //calibration matrix
-    filestr<<"Calibration matrix:"<<endl;
+    filestr<<"Calibration matrix 0:"<<endl;
     for (i=0;i<36; i++)
     {
-        sprintf (buffer,"%x",matrix[i/6][i%6]);
+        sprintf (buffer,"%x",matrix[i/6][i%6][0]);
+        filestr<<buffer<<endl;
+    }
+
+    //calibration matrix
+    filestr<<"Calibration matrix 1:"<<endl;
+    for (i=0;i<36; i++)
+    {
+        sprintf (buffer,"%x",matrix[i/6][i%6][1]);
+        filestr<<buffer<<endl;
+    }
+
+    //calibration matrix
+    filestr<<"Calibration matrix 2:"<<endl;
+    for (i=0;i<36; i++)
+    {
+        sprintf (buffer,"%x",matrix[i/6][i%6][2]);
         filestr<<buffer<<endl;
     }
 
@@ -566,7 +610,10 @@ void reset_calib_bias_click (GtkButton *button,    gpointer ch_p)
 }
 
 //*********************************************************************************
-bool calibration_load_v2 (char* filename, int selected_id)
+bool calibration_load_v2 (char* filename, int selected_id);
+bool calibration_load_v3 (char* filename, int selected_id);
+//*********************************************************************************
+bool calibration_load_vX (char* filename, int selected_id)
 {
     if (filename==NULL)
         {
@@ -595,11 +642,65 @@ bool calibration_load_v2 (char* filename, int selected_id)
     filestr.getline (buffer,256);
     filestr.getline (buffer,256);
     sscanf (buffer,"%d",&file_version);
+    if (file_version==2)
+    {
+        filestr.close();
+        filestr.clear();
+        bool ret = calibration_load_v2(filename,selected_id);
+        return ret;
+    }
+    else
+    if (file_version==3)
+    {
+        filestr.close();
+        filestr.clear();
+        bool ret = calibration_load_v3(filename,selected_id);
+        return ret;
+    }
+    else
+    {
+        filestr.close();
+        filestr.clear();
+        yError("Wrong file version\n");
+        return false;
+    }
+}
+
+//*********************************************************************************
+bool calibration_load_v2 (char* filename, int selected_id)
+{
+    if (filename==NULL)
+    {
+        yError("File not found!\n");
+        return false;
+    }
+    if (selected_id <1 || selected_id >= 15)
+    {
+        yError("Invalid board address!\n");
+        return false;
+    }
+
+    int file_version=0;
+    fstream filestr;
+    filestr.open (filename, fstream::in);
+    if (!filestr.is_open())
+    {
+        yError("Error opening calibration file!\n");
+        return false;
+    }
+
+    int i=0;
+    char buffer[256];
+
+    //file version
+    filestr.getline (buffer,256);
+    filestr.getline (buffer,256);
+    sscanf (buffer,"%d",&file_version);
     if (file_version!=2)
-        {
-            yError("Wrong file. Calibration version != 2\n");
-            return false;
-        }
+    {
+        yError("Wrong file. Calibration version != 2\n");
+        return false;
+    }
 
     //serial number
     filestr.getline (buffer,256);
@@ -614,7 +715,7 @@ bool calibration_load_v2 (char* filename, int selected_id)
         filestr.getline (buffer,256);
         sscanf  (buffer,"%d",&offset[i]);
         downloader.strain_set_offset (downloader.board_list[selected].pid, i, offset[i]);
-		drv_sleep(200);
+        drv_sleep(200);
     }
 
     //calibration matrix
@@ -624,9 +725,132 @@ bool calibration_load_v2 (char* filename, int selected_id)
         int ri=i/6;
         int ci=i%6;
         filestr.getline (buffer,256);
-        sscanf (buffer,"%x",&calib_matrix[ri][ci][KK]);
-        printf("%d %x\n", calib_matrix[ri][ci][KK],calib_matrix[ri][ci][KK]);
-        downloader.strain_set_matrix_rc(selected_id,ri,ci,KK,calib_matrix[ri][ci][KK]);
+        sscanf (buffer,"%x",&calib_matrix[ri][ci][0]);
+        printf("%d %x\n", calib_matrix[ri][ci][0],calib_matrix[ri][ci][0]);
+        downloader.strain_set_matrix_rc(selected_id,ri,ci,0,calib_matrix[ri][ci][0]);
+    }
+
+    //matrix gain
+    filestr.getline (buffer,256);
+    filestr.getline (buffer,256);
+    int cc=0;
+    sscanf (buffer,"%d",&cc);
+    downloader.strain_set_matrix_gain(selected_id,cc);
+
+    //tare
+    filestr.getline (buffer,256);
+    for (i=0;i<6; i++)
+    {
+        filestr.getline (buffer,256);
+        sscanf  (buffer,"%d",&calib_bias[i]);
+        downloader.strain_set_calib_bias(selected_id,i,calib_bias[i]);
+    }
+
+    //full scale values
+    filestr.getline (buffer,256);
+    for (i=0;i<6; i++)
+    {
+        filestr.getline (buffer,256);
+        sscanf  (buffer,"%d",&full_scale_const[i]);
+        downloader.strain_set_full_scale(selected_id,i,full_scale_const[i]);
+    }
+
+    filestr.close();
+    filestr.clear();
+
+    matrix_changed[0]=true;
+    matrix_changed[1]=true;
+    matrix_changed[2]=true;
+    something_changed=true;
+    printf ("Calibration file loaded!\n");
+
+    return true;
+}
+
+//*********************************************************************************
+bool calibration_load_v3 (char* filename, int selected_id)
+{
+    if (filename==NULL)
+    {
+        yError("File not found!\n");
+        return false;
+    }
+    if (selected_id <1 || selected_id >= 15)
+    {
+        yError("Invalid board address!\n");
+        return false;
+    }
+
+    int file_version=0;
+    fstream filestr;
+    filestr.open (filename, fstream::in);
+    if (!filestr.is_open())
+    {
+        yError("Error opening calibration file!\n");
+        return false;
+    }
+
+    int i=0;
+    char buffer[256];
+
+    //file version
+    filestr.getline (buffer,256);
+    filestr.getline (buffer,256);
+    sscanf (buffer,"%d",&file_version);
+    if (file_version!=3)
+    {
+        yError("Wrong file. Calibration version != 3\n");
+        return false;
+    }
+
+    //serial number
+    filestr.getline (buffer,256);
+    filestr.getline (buffer,256);
+    sprintf(serial_no,"%s", buffer);
+    downloader.strain_set_serial_number(selected_id,serial_no);
+
+    //offsets
+    filestr.getline (buffer,256);
+    for (i=0;i<6; i++)
+    {
+        filestr.getline (buffer,256);
+        sscanf  (buffer,"%d",&offset[i]);
+        downloader.strain_set_offset (downloader.board_list[selected].pid, i, offset[i]);
+        drv_sleep(200);
+    }
+
+    //calibration matrix A
+    filestr.getline (buffer,256);
+    for (i=0;i<36; i++)
+    {
+        int ri=i/6;
+        int ci=i%6;
+        filestr.getline (buffer,256);
+        sscanf (buffer,"%x",&calib_matrix[ri][ci][0]);
+        printf("%d %x\n", calib_matrix[ri][ci][0],calib_matrix[ri][ci][0]);
+        downloader.strain_set_matrix_rc(selected_id,ri,ci,0,calib_matrix[ri][ci][0]);
+    }
+    //calibration matrix B
+    filestr.getline (buffer,256);
+    for (i=0;i<36; i++)
+    {
+        int ri=i/6;
+        int ci=i%6;
+        filestr.getline (buffer,256);
+        sscanf (buffer,"%x",&calib_matrix[ri][ci][1]);
+        printf("%d %x\n", calib_matrix[ri][ci][1],calib_matrix[ri][ci][1]);
+        downloader.strain_set_matrix_rc(selected_id,ri,ci,1,calib_matrix[ri][ci][1]);
+    }
+    //calibration matrix C
+    filestr.getline (buffer,256);
+    for (i=0;i<36; i++)
+    {
+        int ri=i/6;
+        int ci=i%6;
+        filestr.getline (buffer,256);
+        sscanf (buffer,"%x",&calib_matrix[ri][ci][2]);
+        printf("%d %x\n", calib_matrix[ri][ci][2],calib_matrix[ri][ci][2]);
+        downloader.strain_set_matrix_rc(selected_id,ri,ci,2,calib_matrix[ri][ci][2]);
     }
 
     //matrix gain
@@ -680,7 +904,7 @@ void file_load_click (GtkButton *button,    gpointer ch_p)
         }
 
     //load data file
-    calibration_load_v2 (buff, selected_id);
+    calibration_load_vX (buff, selected_id);
 
     //update windows graphics
     int i=0;
@@ -696,14 +920,14 @@ void file_load_click (GtkButton *button,    gpointer ch_p)
 
     drv_sleep (500);
     for (ri=0;ri<6;ri++)
-            for (ci=0;ci<6;ci++)
-                    for (id=0;id<3;id++)
-                {
-                    downloader.strain_get_matrix_rc(selected_id,ri,ci,KK,matrix[ri][ci][id]);
-                    sprintf(buffer,"%x",matrix[ri][ci][id]);
-                    gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci][id]), buffer);
-                    gtk_widget_modify_base (edit_matrix[ri][ci][id],GTK_STATE_NORMAL, NULL );
-                }
+    for (ci=0;ci<6;ci++)
+    for (id=0;id<3;id++)
+    {
+        downloader.strain_get_matrix_rc(selected_id,ri,ci,id,matrix[ri][ci][id]);
+        sprintf(buffer,"%x",matrix[ri][ci][id]);
+        gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci][id]), buffer);
+        gtk_widget_modify_base (edit_matrix[ri][ci][id],GTK_STATE_NORMAL, NULL );
+    }
     drv_sleep (500);
     int count_ok=0;
     for (id=0;id<3; id++)
@@ -720,7 +944,7 @@ void file_load_click (GtkButton *button,    gpointer ch_p)
                 printf ("Found 1 error on element %d,%d, matrix %d !!\n",ri, ci, id);
             }
         }
-    if (count_ok>=36)
+    if (count_ok>=36*3)
     {
         printf ("Calibration file applied with no errors\n");
         matrix_changed[0]=false;
@@ -757,14 +981,15 @@ void file_import_click (GtkButton *button,    gpointer ch_p)
 
     int i=0;
     char buffer[256];
+    int id = get_matrix();
     for (i=0;i<36; i++)
     {
         int ri=i/6;
         int ci=i%6;
         filestr.getline (buffer,256);
-        sscanf (buffer,"%x",&calib_matrix[ri][ci][KK]);
-        printf("%d %x\n", calib_matrix[ri][ci][KK],calib_matrix[ri][ci][KK]);
-        downloader.strain_set_matrix_rc(downloader.board_list[selected].pid,ri,ci,KK,calib_matrix[ri][ci][KK]);
+        sscanf (buffer,"%x",&calib_matrix[ri][ci][id]);
+        printf("%d %x\n", calib_matrix[ri][ci][id],calib_matrix[ri][ci][id]);
+        downloader.strain_set_matrix_rc(downloader.board_list[selected].pid,ri,ci,id,calib_matrix[ri][ci][id]);
     }
     filestr.getline (buffer,256);
     int cc=0;
@@ -790,10 +1015,10 @@ void file_import_click (GtkButton *button,    gpointer ch_p)
         for (ri=0;ri<6;ri++)
                 for (ci=0;ci<6;ci++)
                     {
-                        downloader.strain_get_matrix_rc(downloader.board_list[selected].pid,ri,ci,KK,matrix[ri][ci][KK]);
-                        sprintf(buffer,"%x",matrix[ri][ci][KK]);
-                        gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci][KK]), buffer);
-                        gtk_widget_modify_base (edit_matrix[ri][ci][KK],GTK_STATE_NORMAL, NULL );
+                        downloader.strain_get_matrix_rc(downloader.board_list[selected].pid,ri,ci,id,matrix[ri][ci][id]);
+                        sprintf(buffer,"%x",matrix[ri][ci][id]);
+                        gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci][id]), buffer);
+                        gtk_widget_modify_base (edit_matrix[ri][ci][id],GTK_STATE_NORMAL, NULL );
                     }
     }
     int count_ok=0;
@@ -801,7 +1026,7 @@ void file_import_click (GtkButton *button,    gpointer ch_p)
     {
         ri=i/6;
         ci=i%6;
-        if (calib_matrix[ri][ci][KK]==matrix[ri][ci][KK])
+        if (calib_matrix[ri][ci][id]==matrix[ri][ci][id])
         {
             count_ok++;
         }
@@ -840,7 +1065,7 @@ void matrix_change (GtkEntry *entry,    gpointer index)
     if (i>=36*2 && i <=36*3-1) gm =2;
     matrix_changed[gm]=true;
     something_changed=true;
-    printf("%d selected, calibration matrix %d changed\n", i, gm);
+    printf("%d selected, calibration matrix with id %d changed\n", i, gm);
 }
 
 //*********************************************************************************
@@ -1027,8 +1252,10 @@ void calibrate_click (GtkButton *button,    gpointer   user_data)
     label_matrix_gain = gtk_label_new_with_mnemonic ("matrix gain:");
     edit_matrix_gain = gtk_label_new_with_mnemonic ("null");
 
-    label_use_calib = gtk_label_new_with_mnemonic  ("use calib matrix");
-    edit_use_calib  = gtk_entry_new();
+    label_use_calib = gtk_label_new_with_mnemonic  ("use calib matrix:");
+    GtkAdjustment *adjustment ;
+    adjustment = (GtkAdjustment*)gtk_adjustment_new (0.0,0.0,3.0,1.0,5.0,0.0); 
+    spin_use_calib  = gtk_spin_button_new(adjustment,1.0,0);
 
     slider_gain[0] = gtk_hscale_new_with_range   (0,0x3FF,1);
     slider_gain[1] = gtk_hscale_new_with_range   (0,0x3FF,1);
@@ -1038,11 +1265,12 @@ void calibrate_click (GtkButton *button,    gpointer   user_data)
     slider_gain[5] = gtk_hscale_new_with_range   (0,0x3FF,1);
     slider_zero       = gtk_hscale_new_with_range   (0,65535,1);
 
-    int ri,ci,id=0;
-    for (ri=0;ri<6;ri++)
-        for (ci=0;ci<6;ci++)
-            for (id=0;id<3;id++)
-                edit_matrix[ri][ci][id] = gtk_entry_new ();
+    for (int ri=0;ri<6;ri++)
+    for (int ci=0;ci<6;ci++)
+    for (int id=0;id<3;id++)
+    {
+        edit_matrix[ri][ci][id] = gtk_entry_new ();
+    }
 
     edit_serial_number = gtk_entry_new ();
 
@@ -1070,13 +1298,13 @@ void calibrate_click (GtkButton *button,    gpointer   user_data)
     gtk_fixed_put(GTK_FIXED(fixed),set_curr_bias_button,c[11],r[4]-10);
     gtk_fixed_put(GTK_FIXED(fixed),reset_curr_bias_button,c[11],r[5]-10);
 
-    for (ri=0;ri<6;ri++)
-        for (ci=0;ci<6;ci++)
-            for (id=0;id<3;id++)
-            {
-             gtk_fixed_put(GTK_FIXED(fixed),edit_matrix[ci][ri][id],c[5]+ri*42+(id*6*52)-50,r[5]+40+ci*32);
-             gtk_widget_set_size_request(edit_matrix[ri][ci][id],40,20);
-            }
+    for (int ri=0;ri<6;ri++)
+    for (int ci=0;ci<6;ci++)
+    for (int id=0;id<3;id++)
+    {
+        gtk_fixed_put(GTK_FIXED(fixed),edit_matrix[ci][ri][id],c[5]+ri*42+(id*6*52)-50,r[5]+40+ci*32);
+        gtk_widget_set_size_request(edit_matrix[ri][ci][id],40,20);
+    }
 
     gtk_fixed_put(GTK_FIXED(fixed),edit_serial_number,c[1]-20,r[5]+150);
     gtk_widget_set_size_request(edit_serial_number,100,20);
@@ -1191,7 +1419,7 @@ void calibrate_click (GtkButton *button,    gpointer   user_data)
     g_signal_connect (slider_zero, "value-changed", G_CALLBACK (zero_changed),NULL);
 
     gtk_fixed_put(GTK_FIXED(fixed),label_use_calib,c[5],r[5]+60+6*32);
-    gtk_fixed_put(GTK_FIXED(fixed),edit_use_calib,c[5],r[5]+60+6*32+30);
+    gtk_fixed_put(GTK_FIXED(fixed),spin_use_calib,c[5],r[5]+60+6*32+30);
     gtk_fixed_put(GTK_FIXED(fixed),auto_button,c[1]-20,r[5]+40);
     gtk_fixed_put(GTK_FIXED(fixed),slider_zero,c[1]-20,r[5]+100);
     gtk_fixed_put(GTK_FIXED(fixed),save_button,c[2]+10,r[5]+40);
@@ -1204,8 +1432,19 @@ void calibrate_click (GtkButton *button,    gpointer   user_data)
     gtk_range_set_value (GTK_RANGE(slider_zero),calibration_value);
 
     downloader.strain_get_serial_number(downloader.board_list[selected].pid,serial_no);
+
+    char tempbuf [20];
+    for (int ri=0;ri<6;ri++)
+    for (int ci=0;ci<6;ci++)
+    for (int id=0;id<3;id++)
+    {
+        downloader.strain_get_matrix_rc(downloader.board_list[selected].pid,ri,ci,id,matrix[ri][ci][id]);
+        sprintf(tempbuf,"%x",matrix[ri][ci][id]);
+        gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci][id]), tempbuf);
+        gtk_widget_modify_base (edit_matrix[ri][ci][id],GTK_STATE_NORMAL, NULL );
+    }
+
     gtk_entry_set_text (GTK_ENTRY (edit_serial_number), serial_no);
-    gtk_entry_set_text (GTK_ENTRY (edit_use_calib), "0");
     downloader.strain_start_sampling(downloader.board_list[selected].pid);
 
     STOP_TIMER
@@ -1213,14 +1452,14 @@ void calibrate_click (GtkButton *button,    gpointer   user_data)
     timer_func (NULL);
 
     int index[6*6*3];
-    for (ri=0;ri<6;ri++)
-    for (ci=0;ci<6;ci++)
-    for (id=0;id<3;id++)
-        {
-            index[id*36+ci*6+ri]=id*36+ci*6+ri;
-            g_signal_connect(edit_matrix[ri][ci][id], "changed", G_CALLBACK (matrix_change),&index[id*36+ci*6+ri]);
-            g_signal_connect(edit_matrix[ri][ci][id], "activate", G_CALLBACK (matrix_send),&index[id*36+ci*6+ri]);
-        }
+    for (int ri=0;ri<6;ri++)
+    for (int ci=0;ci<6;ci++)
+    for (int id=0;id<3;id++)
+    {
+        index[id*36+ci*6+ri]=id*36+ci*6+ri;
+        g_signal_connect(edit_matrix[ri][ci][id], "changed", G_CALLBACK (matrix_change),&index[id*36+ci*6+ri]);
+        g_signal_connect(edit_matrix[ri][ci][id], "activate", G_CALLBACK (matrix_send),&index[id*36+ci*6+ri]);
+    }
 
     g_signal_connect(edit_serial_number, "changed", G_CALLBACK (serial_number_change),NULL);
     g_signal_connect(edit_serial_number, "activate", G_CALLBACK (serial_number_send),NULL);
