@@ -1041,7 +1041,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
 
 
 /************************************************************************/
-void ServerCartesianController::alignJointsBounds()
+bool ServerCartesianController::alignJointsBounds()
 {
     double min, max; 
     int cnt=0;
@@ -1052,7 +1052,12 @@ void ServerCartesianController::alignJointsBounds()
         yInfo("part #%lu: %s",(unsigned long)i,lDsc[i].key.c_str());
         for (int j=0; j<lJnt[i]; j++)
         {
-            lLim[i]->getLimits(lRmp[i][j],&min,&max);
+            if (!lLim[i]->getLimits(lRmp[i][j],&min,&max))
+            {
+                yError("joint #%d: failed getting limits!");
+                return false;
+            }
+
             yInfo("joint #%d: [%g, %g] deg",cnt,min,max);
             (*chainState)[cnt].setMin(CTRL_DEG2RAD*min);
             (*chainState)[cnt].setMax(CTRL_DEG2RAD*max);
@@ -1061,6 +1066,8 @@ void ServerCartesianController::alignJointsBounds()
             cnt++;
         }
     }
+
+    return true;
 }
 
 
@@ -2154,7 +2161,11 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     else
         sendCtrlCmd=&ServerCartesianController::sendCtrlCmdSingleJointVelocity;
 
-    alignJointsBounds();
+    if (!alignJointsBounds())
+    {
+        yError("unable to retrieve joints limits");
+        return false;
+    }
 
     // exclude acceleration constraints by fixing
     // thresholds at high values

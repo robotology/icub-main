@@ -221,7 +221,7 @@ protected:
     void   openPorts();
     void   closePorts();
     bool   respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);    
-    void   alignJointsBounds();
+    bool   alignJointsBounds();
     double getFeedback(yarp::sig::Vector &_fb);
     void   createController();
     bool   getNewTarget();

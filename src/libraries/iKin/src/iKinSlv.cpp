@@ -352,7 +352,7 @@ PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
 
 
 /************************************************************************/
-void CartesianSolver::alignJointsBounds()
+bool CartesianSolver::alignJointsBounds()
 {
     double min, max;
     int cnt=0;
@@ -363,7 +363,11 @@ void CartesianSolver::alignJointsBounds()
         yInfo("part #%d: %s",i,prt->prp[i].find("part").asString().c_str());
         for (int j=0; j<jnt[i]; j++)
         {               
-            lim[i]->getLimits(rmp[i][j],&min,&max);
+            if (!lim[i]->getLimits(rmp[i][j],&min,&max))
+            {
+                yError("joint #%d: failed getting limits!");
+                return false;
+            }
 
             yInfo("joint #%d: [%g, %g] deg",cnt,min,max);
             (*prt->chn)[cnt].setMin(CTRL_DEG2RAD*min);
@@ -372,6 +376,8 @@ void CartesianSolver::alignJointsBounds()
             cnt++;
         }
     }
+
+    return true;
 }
 
 
@@ -1351,7 +1357,8 @@ bool CartesianSolver::open(Searchable &options)
         int             joints;
 
         if (!pDrv->view(pLim) || !pDrv->view(pEnc))
-        {    
+        {
+            delete pDrv;
             yError("Problems acquiring interfaces!");
             close();
             return false;
@@ -1393,7 +1400,7 @@ bool CartesianSolver::open(Searchable &options)
 
     // handle dof from options
     if (Bottle *v=options.find("dof").asList())
-    {            
+    {
         Vector _dof(v->size());
         for (size_t i=0; i<_dof.length(); i++)
             _dof[i]=v->get(i).asInt();
@@ -1403,7 +1410,12 @@ bool CartesianSolver::open(Searchable &options)
     }
 
     // joints bounds alignment
-    alignJointsBounds();    
+    if (!alignJointsBounds())
+    {
+        yError("Unable to retrieve joints limits!");
+        close();
+        return false;
+    }
 
     // parse configuration options
     setRate(period=options.check("period",Value(CARTSLV_DEFAULT_PER)).asInt());
