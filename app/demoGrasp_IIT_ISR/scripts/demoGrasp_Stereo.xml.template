@@ -13,35 +13,30 @@
             <name>motionCUT</name>
             <parameters>--name motionCUT/left</parameters>
             <node>pwrNode1</node>
-            <tag>motionDetectorLeft</tag>
         </module>
    
         <module>
             <name>motionCUT</name>
             <parameters>--name motionCUT/right</parameters>
             <node>pwrNode2</node>
-            <tag>motionDetectorRight</tag>
         </module>
 
         <module>
                 <name>demoGraspManager_IIT_ISR</name>
                 <parameters>--from config_Stereo.ini</parameters>
                 <node>pwrNode3</node>
-                <tag>manager</tag>
         </module>
   
         <module>
                 <name>yarpview</name>
                 <parameters>--name /motionViewerLeft --x 0 --y 0 --RefreshTime 50</parameters>
                 <node>console</node>
-                <tag>motionDetectorViewerLeft</tag>
         </module>
   
         <module>
                 <name>yarpview</name>
                 <parameters>--name /motionViewerRight --x 320 --y 0 --RefreshTime 50</parameters>
                 <node>console</node>
-                <tag>motionDetectorViewerRight</tag>
         </module>
 
         <connection>

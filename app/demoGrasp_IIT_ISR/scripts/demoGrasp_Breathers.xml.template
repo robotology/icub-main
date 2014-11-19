@@ -1,5 +1,5 @@
 <application>
-<name>Grasping Demo with Impedance Control</name>
+<name>Grasping Demo with Breathers</name>
 
         <dependencies>
                 <port>/icub/camcalib/left/out</port>
@@ -13,22 +13,42 @@
         <module>
                 <name>pf3dTracker</name>
                 <node>pwrNode1</node>
-                <tag>PF3DTracker_tracker</tag>
         </module>
    
         <module>
                 <name>demoGraspManager_IIT_ISR</name>
-                <parameters>--from config_Impedance.ini</parameters>
                 <node>pwrNode2</node>
-                <tag>manager</tag>
         </module>
   
         <module>
                 <name>yarpview</name>
                 <parameters>--name /PF3DTracker_viewer --x 320 --y 0 --RefreshTime 50</parameters>
                 <node>console</node>
-                <tag>PF3DTracker_viewer</tag>
         </module>
+
+        <module>
+                <name>iCubBreather</name>
+                <parameters>--name iCubBreatherRA --part right_arm --autoStart</parameters>
+                <node>pwrNode2</node>
+        </module>
+
+        <module>
+                <name>iCubBreather</name>
+                <parameters>--name iCubBreatherLA --part left_arm --autoStart</parameters>
+                <node>pwrNode2</node>
+        </module>
+
+        <module>
+                <name>iCubBreather</name>
+                <parameters>--name iCubBreatherH --part head --autoStart --rate 1500</parameters>
+                <node>pwrNode2</node>
+        </module>
+  
+        <module>
+                <name>iCubBlinker</name>
+                <parameters>--autoStart</parameters>
+                <node>pwrNode2</node>
+        </module>  
   
         <connection>
                 <from>/icub/camcalib/left/out</from>
@@ -55,5 +75,26 @@
                 <to>/iCubGui/objects</to>
                 <protocol>tcp</protocol>
         </connection>
+        <connection>
+                <from>/demoGraspManager_IIT_ISR/breather/head:rpc</from>
+                <to>/iCubBreatherH/rpc:i</to>
+                <protocol>tcp</protocol>
+        </connection>
+        <connection>
+                <from>/demoGraspManager_IIT_ISR/breather/left_arm:rpc</from>
+                <to>/iCubBreatherLA/rpc:i</to>
+                <protocol>tcp</protocol>
+        </connection>
+        <connection>
+                <from>/demoGraspManager_IIT_ISR/breather/right_arm:rpc</from>
+                <to>/iCubBreatherRA/rpc:i</to>
+                <protocol>tcp</protocol>
+        </connection>
+        <connection>
+                <from>/demoGraspManager_IIT_ISR/blinker:rpc</from>
+                <to>/iCubBlinker/rpc</to>
+                <protocol>tcp</protocol>
+        </connection>
 
 </application>
+
