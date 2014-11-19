@@ -89,7 +89,21 @@ bool validate(Bottle &input, Bottle &out, const std::string &key1, const std::st
     }
 
     out=tmp;
+}
 
+bool validate_optional(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
+{
+    Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
+    if (tmp.isNull())
+    {
+        return false;
+    }
+    if(tmp.size()!=size)
+    {
+        yError("%s incorrect number of entries\n", key1.c_str());
+        return false;
+    }
+    out=tmp;
     return true;
 }
 
@@ -1452,7 +1466,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
     for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();
 
-    if (!validate(limits, xtmp, "maxPosStep", "the maximum amplitude of a position direct step", nj+1))
+    if (!validate_optional(limits, xtmp, "maxPosStep", "the maximum amplitude of a position direct step", nj+1))
     {
         yWarning("maxPosStep: Using default MaxPosStep=10 degs\n");
         for(i=1;i<nj+1; i++)

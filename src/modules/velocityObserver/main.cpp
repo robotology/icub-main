@@ -330,12 +330,12 @@ int main(int argc, char *argv[])
 
     if (rf.check("help"))
     {
-        cout<<"Options:";
-        cout<<"\t--name   name: observer port name (default /velObs)"<<endl;
-        cout<<"\t--lenVel    N: velocity window's max length (default: 16)"<<endl;
-        cout<<"\t--thrVel    D: velocity max deviation threshold (default: 1.0)"<<endl;
-        cout<<"\t--lenAcc    N: acceleration window's max length (default: 25)"<<endl;
-        cout<<"\t--thrAcc    D: acceleration max deviation threshold (default: 1.0)"<<endl;
+        cout<<"Options:"                                                             << endl;
+        cout<<"\t--name   name: observer port name (default /velObs)"                << endl;
+        cout<<"\t--lenVel    N: velocity window's max length (default: 16)"          << endl;
+        cout<<"\t--thrVel    D: velocity max deviation threshold (default: 1.0)"     << endl;
+        cout<<"\t--lenAcc    N: acceleration window's max length (default: 25)"      << endl;
+        cout<<"\t--thrAcc    D: acceleration max deviation threshold (default: 1.0)" << endl;
         cout<<endl;
 
         return 0;

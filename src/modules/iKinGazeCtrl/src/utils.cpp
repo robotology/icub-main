@@ -534,10 +534,13 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drv
 
         for (int i=0; i<nJointsTorso; i++)
         {   
-            lims->getLimits(i,&min,&max);
-        
-            (*chain)[nJointsTorso-1-i].setMin(CTRL_DEG2RAD*min); // reversed order
-            (*chain)[nJointsTorso-1-i].setMax(CTRL_DEG2RAD*max);
+            if (lims->getLimits(i,&min,&max))
+            {
+                (*chain)[nJointsTorso-1-i].setMin(CTRL_DEG2RAD*min); // reversed order
+                (*chain)[nJointsTorso-1-i].setMax(CTRL_DEG2RAD*max);
+            }
+            else
+                yError("unable to retrieve limits for torso joint #%d",i);
         }
     }
 
@@ -549,24 +552,27 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drv
 
     for (int i=0; i<nJointsHead; i++)
     {   
-        lims->getLimits(i,&min,&max);
-
-        // limit eye's tilt due to eyelids
-        if (i==3)
+        if (lims->getLimits(i,&min,&max))
         {
-            min=std::max(min,eyeTiltMin);
-            max=std::min(max,eyeTiltMax);
-        }
+            // limit eye's tilt due to eyelids
+            if (i==3)
+            {
+                min=std::max(min,eyeTiltMin);
+                max=std::min(max,eyeTiltMax);
+            }
 
-        lim(i,0)=CTRL_DEG2RAD*min;
-        lim(i,1)=CTRL_DEG2RAD*max;
+            lim(i,0)=CTRL_DEG2RAD*min;
+            lim(i,1)=CTRL_DEG2RAD*max;
 
-        // just one eye's got only 5 dofs
-        if (i<nJointsHead-1)
-        {
-            (*chain)[nJointsTorso+i].setMin(lim(i,0));
-            (*chain)[nJointsTorso+i].setMax(lim(i,1));
+            // just one eye's got only 5 dofs
+            if (i<nJointsHead-1)
+            {
+                (*chain)[nJointsTorso+i].setMin(lim(i,0));
+                (*chain)[nJointsTorso+i].setMax(lim(i,1));
+            }
         }
+        else
+            yError("unable to retrieve limits for head joint #%d",i);
     }
 
     return lim;

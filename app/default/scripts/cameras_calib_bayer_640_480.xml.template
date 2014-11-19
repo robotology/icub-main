@@ -6,49 +6,47 @@
       <name>icubmoddev</name>
       <parameters> --from camera/dragonfly2_config_left_bayer_640_480 </parameters>
 	  <node>pc104</node>
-	<tag>camera_left</tag>
    </module>
    <module>
       <name>icubmoddev</name>
       <parameters> --from camera/dragonfly2_config_right_bayer_640_480</parameters>
       <node>pc104</node>
-	<tag>camera_right</tag>
    </module>
     <module>
         <name>camCalib</name>
         <parameters>--context cameraCalibration --from icubEyes_640x480.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>  
         <node>icubsrv</node>
-        <tag>camcalib_left</tag>
     </module> 
     <module>
         <name>camCalib</name>
         <parameters>--context cameraCalibration --from icubEyes_640x480.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters> 
         <node>icubsrv</node>
-        <tag>camcalib_right</tag> 
     </module> 
    <module>
       <name>yarpview</name>
       <parameters>--name /icub/view/left --x 0 --y 0 --p 50</parameters>
       <node>icubsrv</node>
-	<tag>viewleft</tag>
    </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /icub/view/right --x 320 --y 0 --p 50</parameters>
       <node>icubsrv</node>
-	<tag>viewright</tag>
    </module>
    <module>
       <name>frameGrabberGui2</name>
 	  <parameters>--local /icub/fggui/left --remote /icub/cam/left --x 0 --y 350 --width 350 --height 500</parameters>
-	  <tag>fggui_left</tag>
-	  <node>icubsrv</node>
+      <node>icubsrv</node>
+	  <dependencies>
+         <port timeout="10">/icub/cam/left</port>
+      </dependencies>	  
    </module>
    <module>
       <name>frameGrabberGui2</name>
 	  <parameters>--local /icub/fggui/right --remote /icub/cam/right --x 320 --y 350 --width 350 --height 500</parameters>
-	  <tag>fggui_right</tag>
-	  <node>icubsrv</node>
+      <node>icubsrv</node>
+	  <dependencies>
+         <port timeout="10">/icub/cam/right</port>
+      </dependencies>	  
    </module>
 <connection>
   <output>/icub/cam/left</output>

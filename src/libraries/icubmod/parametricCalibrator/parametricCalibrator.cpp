@@ -605,7 +605,7 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
     bool finished = false;
 //    double ang[4];
     double angj = 0;
-//    double pwm[4];
+    double output = 0;
     double delta=0;
     int mode=0;
     bool done = false;
@@ -616,13 +616,14 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
         iEncoders->getEncoder(j, &angj);
         iPosition->checkMotionDone(j, &done);
         iControlMode->getControlMode(j, &mode);
+        iPids->getOutput(j, &output);
 
         delta = fabs(angj-zeroPos[j]);
-        yDebug() <<  deviceName << ": checkGoneToZeroThreshold: joint " << j << ": curr: " << angj << "des: " << zeroPos[j] << "-> delta: " << delta << "threshold: " << zeroPosThreshold[j]  << "mode: " << yarp::os::Vocab::decode(mode).c_str();
+        yDebug("%s: checkGoneToZeroThreshold: joint: %d curr: %.3f des: %.3f -> delta: %.3f threshold: %.3f output: %.3f mode: %s" ,deviceName.c_str(),j,angj, zeroPos[j],delta, zeroPosThreshold[j], output, yarp::os::Vocab::decode(mode).c_str());
 
         if (delta < zeroPosThreshold[j] && done)
         {
-            yDebug() << deviceName << ": checkGoneToZeroThreshold: joint " << j<< " completed with delta"  << delta << "over " << zeroPosThreshold[j];
+            yDebug("%s: checkGoneToZeroThreshold: joint: %d completed with delta: %.3f over: %.3f" ,deviceName.c_str(),j,delta, zeroPosThreshold[j]);
             finished=true;
             break;
         }
