@@ -16,7 +16,7 @@ class dataSetPlayer_IDL;
  */
 class dataSetPlayer_IDL : public yarp::os::Wire {
 public:
-  dataSetPlayer_IDL() { yarp().setOwner(*this); }
+  dataSetPlayer_IDL();
   /**
    * Steps the player once. The player will be stepped
    * until all parts have sent data

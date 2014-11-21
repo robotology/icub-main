@@ -206,6 +206,9 @@ bool dataSetPlayer_IDL_quit::read(yarp::os::ConnectionReader& connection) {
   return true;
 }
 
+dataSetPlayer_IDL::dataSetPlayer_IDL() {
+  yarp().setOwner(*this);
+}
 bool dataSetPlayer_IDL::step() {
   bool _return = false;
   dataSetPlayer_IDL_step helper;

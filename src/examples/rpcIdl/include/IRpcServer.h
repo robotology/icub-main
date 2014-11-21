@@ -16,7 +16,7 @@ class IRpcServer;
  */
 class IRpcServer : public yarp::os::Wire {
 public:
-  IRpcServer() { yarp().setOwner(*this); }
+  IRpcServer();
   /**
    * Get answer from server
    * @return the answer

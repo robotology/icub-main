@@ -982,6 +982,9 @@ bool depth2kin_IDL_quit::read(yarp::os::ConnectionReader& connection) {
   return true;
 }
 
+depth2kin_IDL::depth2kin_IDL() {
+  yarp().setOwner(*this);
+}
 int32_t depth2kin_IDL::getNumExperts() {
   int32_t _return = 0;
   depth2kin_IDL_getNumExperts helper;

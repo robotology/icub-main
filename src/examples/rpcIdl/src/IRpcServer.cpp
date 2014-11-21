@@ -154,6 +154,9 @@ bool IRpcServer_is_running::read(yarp::os::ConnectionReader& connection) {
   return true;
 }
 
+IRpcServer::IRpcServer() {
+  yarp().setOwner(*this);
+}
 int32_t IRpcServer::get_answer() {
   int32_t _return = 0;
   IRpcServer_get_answer helper;

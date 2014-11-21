@@ -110,6 +110,9 @@ bool fingersTuner_IDL_quit::read(yarp::os::ConnectionReader& connection) {
   return true;
 }
 
+fingersTuner_IDL::fingersTuner_IDL() {
+  yarp().setOwner(*this);
+}
 bool fingersTuner_IDL::sync(const std::string& part, const yarp::os::Value& val) {
   bool _return = false;
   fingersTuner_IDL_sync helper;

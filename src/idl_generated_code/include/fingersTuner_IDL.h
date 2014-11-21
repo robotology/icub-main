@@ -17,7 +17,7 @@ class fingersTuner_IDL;
  */
 class fingersTuner_IDL : public yarp::os::Wire {
 public:
-  fingersTuner_IDL() { yarp().setOwner(*this); }
+  fingersTuner_IDL();
   /**
    * Synchronize PID values with values stored
    * in the configuration file.
