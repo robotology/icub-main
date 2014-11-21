@@ -23,6 +23,7 @@
 
 #include <yarp/os/Time.h>
 #include <yarp/os/Semaphore.h>
+#include <yarp/os/Log.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/CanBusInterface.h>
 
@@ -79,7 +80,7 @@ public:
         if (nRecv>=mBufferSize)
         {
             synchroMutex.post();
-            fprintf(stderr, "[ERROR] recv buffer overrun (%4d > %4d) \n", nRecv, mBufferSize);
+            yError("recv buffer overrun (%4d > %4d) \n", nRecv, mBufferSize);
             return false;
         }
 
@@ -100,7 +101,7 @@ public:
     virtual bool canGetBaudRate(unsigned int *rate);
     virtual bool canSetBaudRate(unsigned int rate)
     {
-        fprintf(stderr, "[WARNING] set baud rate not allowed from CanBusAccessPoint implementation\n");
+        yWarning("Set baud rate not allowed from CanBusAccessPoint implementation\n");
         return false;
     }
 

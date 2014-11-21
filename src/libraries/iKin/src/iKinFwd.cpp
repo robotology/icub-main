@@ -16,12 +16,13 @@
  * Public License for more details
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <sstream>
 #include <algorithm>
 
 #include <gsl/gsl_math.h>
+
+#include <yarp/os/Log.h>
 
 #include <iCub/iKin/iKinFwd.h>
 
@@ -38,7 +39,7 @@ using namespace iCub::iKin;
 void iCub::iKin::notImplemented(const unsigned int verbose)
 {
     if (verbose)
-        fprintf(stderr,"iKin: not implemented\n");
+        yError("iKin: not implemented");
 }
 
 
@@ -166,7 +167,7 @@ double iKinLink::setAng(double _Ang)
             Ang=_Ang;
     }
     else if (verbose)
-        fprintf(stderr,"Attempt to set joint angle to %g while blocked\n",_Ang);
+        yWarning("Attempt to set joint angle to %g while blocked",_Ang);
 
     return Ang;
 }
@@ -317,7 +318,7 @@ bool iKinChain::addLink(const unsigned int i, iKinLink &l)
     else
     {
         if (verbose)
-            fprintf(stderr,"addLink() failed due to out of range index: %d>%d\n",i,N);
+            yError("addLink() failed due to out of range index: %d>%d",i,N);
 
         return false;
     }
@@ -339,7 +340,7 @@ bool iKinChain::rmLink(const unsigned int i)
     else
     {
         if (verbose)
-            fprintf(stderr,"rmLink() failed due to out of range index: %d>=%d\n",i,N);
+            yError("rmLink() failed due to out of range index: %d>=%d",i,N);
 
         return false;
     }
@@ -410,7 +411,7 @@ bool iKinChain::blockLink(const unsigned int i, double Ang)
     else
     {
         if (verbose)
-            fprintf(stderr,"blockLink() failed due to out of range index: %d>=%d\n",i,N);
+            yError("blockLink() failed due to out of range index: %d>=%d",i,N);
 
         return false;
     }
@@ -451,7 +452,7 @@ bool iKinChain::setBlockingValue(const unsigned int i, double Ang)
         else
         {
             if (verbose)
-                fprintf(stderr,"setBlockingValue() failed since the %dth link was not already blocked\n",i);
+                yError("setBlockingValue() failed since the %dth link was not already blocked",i);
 
             return false;
         }
@@ -459,7 +460,7 @@ bool iKinChain::setBlockingValue(const unsigned int i, double Ang)
     else
     {
         if (verbose)
-            fprintf(stderr,"setBlockingValue() failed due to out of range index: %d>=%d\n",i,N);
+            yError("setBlockingValue() failed due to out of range index: %d>=%d",i,N);
 
         return false;
     }
@@ -479,7 +480,7 @@ bool iKinChain::releaseLink(const unsigned int i)
     else
     {    
         if (verbose)
-            fprintf(stderr,"releaseLink() failed due to out of range index: %d>=%d\n",i,N);
+            yError("releaseLink() failed due to out of range index: %d>=%d",i,N);
 
         return false;
     }
@@ -494,7 +495,7 @@ bool iKinChain::isLinkBlocked(const unsigned int i)
     else
     {    
         if (verbose)
-            fprintf(stderr,"isLinkBlocked() failed due to out of range index: %d>=%d\n",i,N);
+            yError("isLinkBlocked() failed due to out of range index: %d>=%d",i,N);
 
         return false;
     }
@@ -576,7 +577,7 @@ bool iKinChain::setH0(const Matrix &_H0)
     else
     {
         if (verbose)
-            fprintf(stderr,"Attempt to reference a wrong matrix H0 (not 4x4)\n");
+            yError("Attempt to reference a wrong matrix H0 (not 4x4)");
 
         return false;
     }
@@ -594,7 +595,7 @@ bool iKinChain::setHN(const Matrix &_HN)
     else
     {
         if (verbose)
-            fprintf(stderr,"Attempt to reference a wrong matrix HN (not 4x4)\n");
+            yError("Attempt to reference a wrong matrix HN (not 4x4)");
 
         return false;
     }
@@ -607,7 +608,7 @@ Vector iKinChain::setAng(const Vector &q)
     if (DOF==0)
     {
         if (verbose)
-            fprintf(stderr,"setAng() failed since DOF==0\n");
+            yError("setAng() failed since DOF==0");
 
         return Vector(0);
     }
@@ -626,7 +627,7 @@ Vector iKinChain::getAng()
     if (DOF==0)
     {
         if (verbose)
-            fprintf(stderr,"getAng() failed since DOF==0\n");
+            yError("getAng() failed since DOF==0");
 
         return Vector(0);
     }
@@ -654,7 +655,7 @@ double iKinChain::setAng(const unsigned int i, double _Ang)
             res=allList[i]->setAng(_Ang);
     }
     else if (verbose)
-        fprintf(stderr,"setAng() failed due to out of range index: %d>=%d\n",i,N);
+        yError("setAng() failed due to out of range index: %d>=%d",i,N);
 
     return res;
 }
@@ -668,7 +669,7 @@ double iKinChain::getAng(const unsigned int i)
     if (i<N)
         res=allList[i]->getAng();
     else if (verbose)
-        fprintf(stderr,"getAng() failed due to out of range index: %d>=%d\n",i,N);
+        yError("getAng() failed due to out of range index: %d>=%d",i,N);
 
     return res;
 }
@@ -794,7 +795,7 @@ Matrix iKinChain::getH(const unsigned int i, const bool allLink)
     else
     {
         if (verbose)
-            fprintf(stderr,"getH() failed due to out of range index: %d>=%d\n",i,n);
+            yError("getH() failed due to out of range index: %d>=%d",i,n);
 
         return Matrix(0,0);
     }    
@@ -822,7 +823,7 @@ Matrix iKinChain::getH(const Vector &q)
     if (DOF==0)
     {
         if (verbose)
-            fprintf(stderr,"getH() failed since DOF==0\n");
+            yError("getH() failed since DOF==0");
     
         return Matrix(0,0);
     }
@@ -865,7 +866,7 @@ Vector iKinChain::Pose(const unsigned int i, const bool axisRep)
         }
     }
     else if (verbose)
-        fprintf(stderr,"Pose() failed due to out of range index: %d>=%d\n",i,N);
+        yError("Pose() failed due to out of range index: %d>=%d",i,N);
 
     return v;
 }
@@ -877,7 +878,7 @@ Vector iKinChain::Position(const unsigned int i)
     if (i>=N)
     {
         if (verbose)
-            fprintf(stderr,"Position() failed due to out of range index: %d>=%d\n",i,N);
+            yError("Position() failed due to out of range index: %d>=%d",i,N);
 
         return Vector(0);
     }
@@ -926,7 +927,7 @@ Vector iKinChain::EndEffPose(const Vector &q, const bool axisRep)
     if (DOF==0)
     {
         if (verbose)
-            fprintf(stderr,"EndEffPose() failed since DOF==0\n");
+            yError("EndEffPose() failed since DOF==0");
     
         return Vector(0);
     }
@@ -949,7 +950,7 @@ Vector iKinChain::EndEffPosition(const Vector &q)
     if (DOF==0)
     {
         if (verbose)
-            fprintf(stderr,"EndEffPosition() failed since DOF==0\n");
+            yError("EndEffPosition() failed since DOF==0");
     
         return Vector(0);
     }
@@ -965,7 +966,7 @@ Matrix iKinChain::AnaJacobian(const unsigned int i, unsigned int col)
     if (i>=N)
     {
         if (verbose)
-            fprintf(stderr,"AnaJacobian() failed due to out of range index: %d>=%d\n",i,N);
+            yError("AnaJacobian() failed due to out of range index: %d>=%d",i,N);
 
         return Matrix(0,0);
     }
@@ -1017,7 +1018,7 @@ Matrix iKinChain::AnaJacobian(unsigned int col)
     if (DOF==0)
     {
         if (verbose)
-            fprintf(stderr,"AnaJacobian() failed since DOF==0\n");
+            yError("AnaJacobian() failed since DOF==0");
 
         return Matrix(0,0);
     }
@@ -1068,7 +1069,7 @@ Matrix iKinChain::AnaJacobian(const Vector &q, unsigned int col)
     if (DOF==0)
     {
         if (verbose)
-            fprintf(stderr,"AnaJacobian() failed since DOF==0\n");
+            yError("AnaJacobian() failed since DOF==0");
     
         return Matrix(0,0);
     }
@@ -1084,7 +1085,7 @@ Matrix iKinChain::GeoJacobian(const unsigned int i)
     if (i>=N)
     {
         if (verbose)
-            fprintf(stderr,"GeoJacobian() failed due to out of range index: %d>=%d\n",i,N);
+            yError("GeoJacobian() failed due to out of range index: %d>=%d",i,N);
 
         return Matrix(0,0);
     }
@@ -1126,7 +1127,7 @@ Matrix iKinChain::GeoJacobian()
     if (DOF==0)
     {
         if (verbose)
-            fprintf(stderr,"GeoJacobian() failed since DOF==0\n");
+            yError("GeoJacobian() failed since DOF==0");
 
         return Matrix(0,0);
     }
@@ -1168,7 +1169,7 @@ Matrix iKinChain::GeoJacobian(const Vector &q)
     if (DOF==0)
     {
         if (verbose)
-            fprintf(stderr,"GeoJacobian() failed since DOF==0\n");
+            yError("GeoJacobian() failed since DOF==0");
     
         return Matrix(0,0);
     }
@@ -1192,7 +1193,7 @@ void iKinChain::prepareForHessian()
     if (DOF==0)
     {
         if (verbose)
-            fprintf(stderr,"prepareForHessian() failed since DOF==0\n");
+            yError("prepareForHessian() failed since DOF==0");
 
         return;
     }
@@ -1207,7 +1208,7 @@ Vector iKinChain::fastHessian_ij(const unsigned int i, const unsigned int j)
     if ((i>=DOF) || (j>=DOF))
     {
         if (verbose)
-            fprintf(stderr,"fastHessian_ij() failed due to out of range index: %d>=%d || %d>=%d\n",i,DOF,j,DOF);
+            yError("fastHessian_ij() failed due to out of range index: %d>=%d || %d>=%d",i,DOF,j,DOF);
 
         return Vector(0);
     }
@@ -1254,7 +1255,7 @@ void iKinChain::prepareForHessian(const unsigned int lnk)
     if (lnk>=N)
     {
         if (verbose)
-            fprintf(stderr,"prepareForHessian() failed due to out of range index: %d>=%d\n",lnk,N);
+            yError("prepareForHessian() failed due to out of range index: %d>=%d",lnk,N);
 
         return;
     }
@@ -1270,7 +1271,7 @@ Vector iKinChain::fastHessian_ij(const unsigned int lnk, const unsigned int i,
     if ((i>=lnk) || (j>=lnk))
     {
         if (verbose)
-            fprintf(stderr,"fastHessian_ij() failed due to out of range index: %d>=%d || %d>=%d\n",i,lnk,j,lnk);
+            yError("fastHessian_ij() failed due to out of range index: %d>=%d || %d>=%d",i,lnk,j,lnk);
 
         return Vector(0);
     }
@@ -1448,7 +1449,8 @@ void iKinLimb::pushLink(iKinLink *pl)
 
 
 /************************************************************************/
-void iKinLimb::getMatrixFromProperties(Property &options, const string &tag, Matrix &H)
+void iKinLimb::getMatrixFromProperties(const Property &options, const string &tag,
+                                       Matrix &H)
 {
     if (Bottle *bH=options.find(tag.c_str()).asList())
     {
@@ -1484,19 +1486,17 @@ void iKinLimb::setMatrixToProperties(Property &options, const string &tag, Matri
 /************************************************************************/
 bool iKinLimb::fromLinksProperties(const Property &options)
 {
-    Property &opt=const_cast<Property&>(options);
-
     dispose();    
 
-    type=opt.check("type",Value("right")).asString().c_str();
+    type=options.check("type",Value("right")).asString().c_str();
 
-    getMatrixFromProperties(opt,"H0",H0);
-    getMatrixFromProperties(opt,"HN",HN);
+    getMatrixFromProperties(options,"H0",H0);
+    getMatrixFromProperties(options,"HN",HN);
 
-    int numLinks=opt.check("numLinks",Value(0)).asInt();
+    int numLinks=options.check("numLinks",Value(0)).asInt();
     if (numLinks==0)
     {
-        fprintf(stderr,"Error: invalid number of links specified!\n");
+        yError("invalid number of links specified!");
 
         type="right";
         H0.eye();
@@ -1510,10 +1510,10 @@ bool iKinLimb::fromLinksProperties(const Property &options)
         ostringstream link;
         link<<"link_"<<i;
 
-        Bottle &bLink=opt.findGroup(link.str().c_str());
+        Bottle &bLink=options.findGroup(link.str().c_str());
         if (bLink.isNull())
         {
-            fprintf(stderr,"Error: %s is missing!\n",link.str().c_str());
+            yError("%s is missing!",link.str().c_str());
 
             type="right";
             H0.eye();

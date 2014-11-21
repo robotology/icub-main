@@ -48,8 +48,8 @@
 // embobjlib includes
 
 #include "hostTransceiver.hpp"
-//#include "debugFunctions.h"
 #include "FeatureInterface.h"
+#include "IethResource.h"
 
 // embobj includes
 #include "EoProtocol.h"
@@ -59,6 +59,39 @@
 #include <ace/ACE.h>
 #include <ace/config.h>
 #include <ace/SOCK_Dgram_Bcast.h>
+
+
+typedef struct
+{
+    uint16_t    port;
+    int         ip1;
+    int         ip2;
+    int         ip3;
+    int         ip4;
+    char        string[64];
+} ethFeatIPaddress_t;
+
+typedef enum
+{
+    ethFeatType_Management      = 0x00,
+    ethFeatType_AnalogMais      = 0x01,
+    ethFeatType_AnalogStrain    = 0x02,
+    ethFeatType_MotionControl   = 0x03,
+    ethFeatType_Skin            = 0x04,
+    ethFeatType_AnalogVirtual   = 0x05
+} ethFeatType_t;
+
+
+typedef struct
+{
+    ethFeatIPaddress_t  pc104IPaddr;
+    ethFeatIPaddress_t  boardIPaddr;
+    FEAT_boardnumber_t  boardNumber;
+    eOprotEndpoint_t    endpoint;
+    ethFeatType_t       type;
+    IethResource*       interface;
+    char                name[16];
+} ethFeature_t;
 
 
 
@@ -159,10 +192,6 @@ private:
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
     bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
     infoOfRecvPkts    *infoPkts;
-// acemor-03oct
-#if defined(WIP_UNIFIED_STATS)
-    infoOfRecvPkts    *inforx;
-#endif
 
     yarp::os::Semaphore*  objLock;
 
@@ -190,19 +219,19 @@ public:
     ~ethResources();
 
 
-    bool            open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, FEAT_ID request);
+    bool            open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
     bool            close();
 
     /*!   @fn       registerFeature(void);
      *    @grief    tells the EMS a new device requests its services.
      *    @return   true.
      */
-    bool            registerFeature(FEAT_ID *request);
+    bool            registerFeature(ethFeature_t &request);
 
     /*!   @fn       unregisterFeature();
      *    @brief    tell the EMS a user has been closed. If was the last one, close the EMS
      */
-    int             deregisterFeature(FEAT_ID request);
+    int             deregisterFeature(ethFeature_t &request);
 
     ACE_INET_Addr   getRemoteAddress(void);
 

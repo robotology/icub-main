@@ -17,11 +17,12 @@
 */
 
 #include <typeinfo>
-#include <stdio.h>
+#include <cstdio>
 #include <algorithm>
 
 #include <gsl/gsl_math.h>
 
+#include <yarp/os/Log.h>
 #include <yarp/os/Time.h>
 #include <yarp/math/SVD.h>
 #include <iCub/iKin/iKinInv.h>
@@ -401,23 +402,22 @@ void SteepCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_INTARGET]="inTarget";
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
-        fprintf(stdout,"iter #%d\n",iter);
-        fprintf(stdout,"state   = %s\n",strState[state].c_str());
-        fprintf(stdout,"norm(e) = %g\n",dist());
-        fprintf(stdout,"q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
-        fprintf(stdout,"x       = %s\n",x.toString().c_str());
+        printf("iter #%d\n",iter);
+        printf("state   = %s\n",strState[state].c_str());
+        printf("norm(e) = %g\n",dist());
+        printf("q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
+        printf("x       = %s\n",x.toString().c_str());
 
         if (_verbose>1)
         {
-
-            fprintf(stdout,"grad    = %s\n",grad.toString().c_str());
-            fprintf(stdout,"qdot    = %s\n",(CTRL_RAD2DEG*qdot).toString().c_str());
+            printf("grad    = %s\n",grad.toString().c_str());
+            printf("qdot    = %s\n",(CTRL_RAD2DEG*qdot).toString().c_str());
         }
 
         if (_verbose>2)
-            fprintf(stdout,"Kp      = %g\n",Kp);
+            printf("Kp      = %g\n",Kp);
 
-        fprintf(stdout,"\n\n");
+        printf("\n");
     }
 }
 
@@ -668,19 +668,19 @@ void LMCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_INTARGET]="inTarget";
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
-        fprintf(stdout,"iter #%d\n",iter);
-        fprintf(stdout,"state   = %s\n",strState[state].c_str());
-        fprintf(stdout,"norm(e) = %g\n",dist());
-        fprintf(stdout,"q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
-        fprintf(stdout,"x       = %s\n",x.toString().c_str());
+        printf("iter #%d\n",iter);
+        printf("state   = %s\n",strState[state].c_str());
+        printf("norm(e) = %g\n",dist());
+        printf("q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
+        printf("x       = %s\n",x.toString().c_str());
 
         if (_verbose>1)
-            fprintf(stdout,"grad    = %s\n",grad.toString().c_str());
+            printf("grad    = %s\n",grad.toString().c_str());
 
         if (_verbose>2)
-            fprintf(stdout,"mu      = %g\n",mu);
+            printf("mu      = %g\n",mu);
 
-        fprintf(stdout,"\n\n");
+        printf("\n");
     }
 }
 
@@ -928,23 +928,24 @@ void MultiRefMinJerkCtrl::printIter(const unsigned int verbose)
         strState[IKINCTRL_STATE_INTARGET]="inTarget";
         strState[IKINCTRL_STATE_DEADLOCK]="deadLock";
 
-        fprintf(stdout,"state   = %s\n",strState[state].c_str());
-        fprintf(stdout,"norm(e) = %g\n",dist());
-        fprintf(stdout,"xd      = %s\n",x_set.toString().c_str());
-        fprintf(stdout,"x       = %s\n",x.toString().c_str());
-        fprintf(stdout,"qd      = %s\n",(CTRL_RAD2DEG*q_set).toString().c_str());
-        fprintf(stdout,"q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
+        printf("iter #%d\n",iter);
+        printf("state   = %s\n",strState[state].c_str());
+        printf("norm(e) = %g\n",dist());
+        printf("xd      = %s\n",x_set.toString().c_str());
+        printf("x       = %s\n",x.toString().c_str());
+        printf("qd      = %s\n",(CTRL_RAD2DEG*q_set).toString().c_str());
+        printf("q       = %s\n",(CTRL_RAD2DEG*q).toString().c_str());
 
         if (_verbose>1)
         {
-            fprintf(stdout,"qdot    = %s\n",(CTRL_RAD2DEG*qdot).toString().c_str());
-            fprintf(stdout,"xdot    = %s\n",xdot.toString().c_str());
+            printf("qdot    = %s\n",(CTRL_RAD2DEG*qdot).toString().c_str());
+            printf("xdot    = %s\n",xdot.toString().c_str());
         }
 
         if (_verbose>2)
-            fprintf(stdout,"comp    = %s\n",compensation.toString().c_str());
+            printf("comp    = %s\n",compensation.toString().c_str());
 
-        fprintf(stdout,"\n\n");
+        printf("\n");
     }
 }
 
@@ -965,7 +966,7 @@ double MultiRefMinJerkCtrl::set_execTime(const double _execTime, const bool warn
     execTime=_execTime>lowerThres ? _execTime : lowerThres;
 
     if (warn && (execTime!=_execTime))
-        fprintf(stderr,"Warning: task execution time limited to the lower bound %g\n",lowerThres);
+        yWarning("task execution time limited to the lower bound %g",lowerThres);
 
     return execTime;
 }

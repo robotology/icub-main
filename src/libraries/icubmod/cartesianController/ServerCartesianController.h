@@ -108,10 +108,12 @@ protected:
     bool executingTraj;
     bool taskVelModeOn;
     bool motionDone;
+    bool ctrlModeAvailable;
     bool encTimedEnabled;
     bool posDirectEnabled;
     bool posDirectAvailable;
     bool multipleJointsControlEnabled;
+    bool multipleJointsVelAvailable;
     bool pidAvailable;
     bool useReferences;
     bool jointsHealthy;
@@ -131,17 +133,17 @@ protected:
     yarp::os::Property plantModelProperties;
     SmithPredictor     smithPredictor;
 
-    std::deque<DriverDescriptor>              lDsc;
-    std::deque<yarp::dev::IControlMode2*>     lMod;
-    std::deque<yarp::dev::IEncoders*>         lEnc;
-    std::deque<yarp::dev::IEncodersTimed*>    lEnt;
-    std::deque<yarp::dev::IPidControl*>       lPid;
-    std::deque<yarp::dev::IControlLimits*>    lLim;
-    std::deque<yarp::dev::IVelocityControl2*> lVel;
-    std::deque<yarp::dev::IPositionDirect*>   lPos;
-    std::deque<yarp::dev::IPositionControl*>  lStp;
-    std::deque<int>                           lJnt;
-    std::deque<int*>                          lRmp;
+    std::deque<DriverDescriptor>             lDsc;
+    std::deque<yarp::dev::IControlMode2*>    lMod;
+    std::deque<yarp::dev::IEncoders*>        lEnc;
+    std::deque<yarp::dev::IEncodersTimed*>   lEnt;
+    std::deque<yarp::dev::IPidControl*>      lPid;
+    std::deque<yarp::dev::IControlLimits*>   lLim;
+    std::deque<yarp::dev::IVelocityControl*> lVel;
+    std::deque<yarp::dev::IPositionDirect*>  lPos;
+    std::deque<yarp::dev::IPositionControl*> lStp;
+    std::deque<int>                          lJnt;
+    std::deque<int*>                         lRmp;
 
     unsigned int connectCnt;
     unsigned int ctrlPose;
@@ -219,7 +221,7 @@ protected:
     void   openPorts();
     void   closePorts();
     bool   respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);    
-    void   alignJointsBounds();
+    bool   alignJointsBounds();
     double getFeedback(yarp::sig::Vector &_fb);
     void   createController();
     bool   getNewTarget();
@@ -242,11 +244,12 @@ protected:
 
     friend class CartesianCtrlRpcProcessor;
     friend class CartesianCtrlCommandPort;
-
+    
     bool stopControlHelper();
     bool setTrackingModeHelper(const bool f);
     bool setTrajTimeHelper(const double t);
     bool setInTargetTolHelper(const double tol);
+    bool isInTargetHelper();
 
     bool getTask2ndOptions(yarp::os::Value &v);
     bool setTask2ndOptions(const yarp::os::Value &v);

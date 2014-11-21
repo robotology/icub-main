@@ -60,6 +60,8 @@ private:
   IAmplifierControl *amp;
   IControlLimits *lim;
   ITorqueControl *trq;
+  IControlMode2  *cmod;
+  IInteractionMode *imod;
   IDebugInterface *idbg;
 
   int numberOfJoints;

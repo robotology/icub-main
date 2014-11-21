@@ -16,8 +16,6 @@
  * Public License for more details
 */
 
-#include <stdio.h>
-
 #include <gsl/gsl_math.h>
 
 #include <yarp/math/SVD.h>
@@ -133,7 +131,7 @@ bool Localizer::threadInit()
     port_anglesIn.open((commData->localStemName+"/angles:i").c_str());
     port_anglesOut.open((commData->localStemName+"/angles:o").c_str());
 
-    printf("Starting Localizer at %d ms\n",period);
+    yInfo("Starting Localizer at %d ms",period);
     return true;
 }
 
@@ -141,8 +139,10 @@ bool Localizer::threadInit()
 /************************************************************************/
 void Localizer::afterStart(bool s)
 {
-    s?printf("Localizer started successfully\n"):
-      printf("Localizer did not start\n");
+    if (s)
+        yInfo("Localizer started successfully");
+    else
+        yError("Localizer did not start!");
 }
 
 
@@ -166,10 +166,9 @@ void Localizer::setPidOptions(const Bottle &options)
     mutex.lock();
 
     pid->setOptions(options);
-    Bottle &opt=const_cast<Bottle&>(options);
-    if (opt.check("dominantEye"))
+    if (options.check("dominantEye"))
     {
-        string domEye=opt.find("dominantEye").asString().c_str();
+        string domEye=options.find("dominantEye").asString().c_str();
         if ((domEye=="left") || (domEye=="right"))
             dominantEye=domEye;
     }
@@ -274,7 +273,7 @@ bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
 {
     if (x.length()<3)
     {
-        printf("Not enough values given for the point!\n");
+        yError("Not enough values given for the point!");
         return false;
     }
 
@@ -320,7 +319,7 @@ bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
     }
     else
     {
-        printf("Unspecified projection matrix for %s camera!\n",type.c_str());
+        yError("Unspecified projection matrix for %s camera!",type.c_str());
         return false;
     }
 }
@@ -374,7 +373,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
     }
     else
     {
-        printf("Unspecified projection matrix for %s camera!\n",type.c_str());
+        yError("Unspecified projection matrix for %s camera!",type.c_str());
         return false;
     }
 }
@@ -386,7 +385,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
 {
     if (plane.length()<4)
     {
-        printf("Not enough values given for the projection plane!\n");
+        yError("Not enough values given for the projection plane!");
         return false;
     }
 
@@ -405,7 +404,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
             p0[2]=-plane[3]/plane[2];
         else
         {
-            printf("Error while specifying projection plane!\n");
+            yError("Error while specifying projection plane!");
             return false;
         }
 
@@ -435,7 +434,7 @@ bool Localizer::triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x
 {
     if ((pxl.length()<2) || (pxr.length()<2))
     {
-        printf("Not enough values given for the pixels!\n");
+        yError("Not enough values given for the pixels!");
         return false;
     }
 
@@ -490,7 +489,7 @@ bool Localizer::triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x
     }
     else
     {
-        printf("Unspecified projection matrix for at least one camera!\n");
+        yError("Unspecified projection matrix for at least one camera!");
         return false;
     }
 }
@@ -518,7 +517,7 @@ void Localizer::handleMonocularInput()
             }
             else
             {
-                printf("Got wrong mono information!\n");
+                yError("Got wrong monocular information!");
                 return;
             }
 
@@ -528,11 +527,11 @@ void Localizer::handleMonocularInput()
                 if (port_xd!=NULL)
                     port_xd->set_xd(fp);
                 else
-                    printf("Internal error occured!\n");
+                    yError("Internal error occured!");
             }
         }
         else
-            printf("Got wrong mono information!\n");
+            yError("Got wrong monocular information!");
     }
 }
 
@@ -579,14 +578,14 @@ void Localizer::handleStereoInput()
                     if (port_xd!=NULL)
                         port_xd->set_xd(fp);
                     else
-                        printf("Internal error occured!\n");
+                        yError("Internal error occured!");
                 }
             }
             else
-                printf("Got wrong stereo information!\n");
+                yError("Got wrong stereo information!");
         }
         else
-            printf("Unspecified projection matrix!\n");
+            yError("Unspecified projection matrix!");
     }
 }
 
@@ -609,10 +608,10 @@ void Localizer::handleAnglesInput()
             if (port_xd!=NULL)
                 port_xd->set_xd(xd);
             else
-                printf("Internal error occured!\n");
+                yError("Internal error occured!");
         }
         else
-            printf("Got wrong angles information!\n");
+            yError("Got wrong angles information!");
     }
 }
 

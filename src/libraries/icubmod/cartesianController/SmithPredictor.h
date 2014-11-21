@@ -46,7 +46,7 @@ protected:
 public:
     SmithPredictor();
     ~SmithPredictor();
-    void configure(yarp::os::Property &options, iCub::iKin::iKinChain &chain);
+    void configure(const yarp::os::Property &options, iCub::iKin::iKinChain &chain);
     void restart(const yarp::sig::Vector &y0);
     yarp::sig::Vector computeCmd(const yarp::sig::Vector &u);
 };

@@ -7,7 +7,7 @@
 
 
 #include "Module.h"
-#include <debugStream/Debug.h>
+#include <yarp/os/LogStream.h>
 
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 
     YARP_REGISTER_DEVICES(icubmod)
 
-    yarp::os::ResourceFinder rf;
+    yarp::os::ResourceFinder &rf(yarp::os::ResourceFinder::getResourceFinderSingleton());
     rf.setVerbose();
     rf.setDefaultConfigFile("robotInterface.ini");
     rf.configure(argc, argv);

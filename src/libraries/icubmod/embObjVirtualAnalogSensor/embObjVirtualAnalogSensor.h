@@ -16,10 +16,10 @@
 #include <hostTransceiver.hpp>
 #include <yarp/dev/IVirtualAnalogSensor.h>
 #include <ethManager.h>
-#include "FeatureInterface.h"       // Interface with embObj world (callback)
-#include "FeatureInterface_hid.h"   // marco.accame: actually it contains definition of class IiCubFeature, thus IiCubFeature.h would be better
+#include "FeatureInterface.h"
+#include "IethResource.h"
 
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 
 
 namespace yarp{
@@ -36,14 +36,14 @@ class ethResources;
  */
 class yarp::dev::embObjVirtualAnalogSensor:     public yarp::dev::IVirtualAnalogSensor,
                                                 public yarp::dev::DeviceDriver,
-                                                public IiCubFeature
+                                                public IethResource
 {
 private:
 
     //! embObj stuff
     TheEthManager       *ethManager;
     ethResources        *res;
-    FEAT_ID             _fId;
+    ethFeature_t        _fId;
 
     ////////////////////
     // parameters
@@ -70,8 +70,8 @@ public:
     bool open(yarp::os::Searchable &config);
     bool close();
 
-    virtual bool isOpened();
-    virtual bool fillData(eOnvID32_t id32, double timestamp, void *rxdata);
+    virtual bool initialised();
+    virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
 
     // IvirtualAnalogSensor interface
     virtual int getState(int ch);

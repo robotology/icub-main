@@ -38,7 +38,7 @@
 #include <ethResource.h>
 #include "EoUtilities.h"
 #include "FeatureInterface.h"
-#include "FeatureInterface_hid.h"   // marco.accame: actually it contains definition of class IiCubFeature, thus IiCubFeature.h would be better
+#include "IethResource.h"
 #include "SkinConfigReader.h"
 
 using namespace yarp::os;
@@ -67,7 +67,7 @@ class SkinConfig
 
 class EmbObjSkin :  public yarp::dev::IAnalogSensor,
                     public DeviceDriver,
-                    public IiCubFeature
+                    public IethResource
 {
 
 public:
@@ -82,7 +82,7 @@ protected:
     TheEthManager   *ethManager;
     PolyDriver      resource;
     ethResources    *res;
-    FEAT_ID         _fId;
+    ethFeature_t    _fId;
     Semaphore       mutex;
     //int             totalCardsNum;
     //std::vector<SkinPatchInfo> patchInfoList;
@@ -132,11 +132,12 @@ public:
     virtual int     calibrateSensor(const yarp::sig::Vector& v);
     virtual int     calibrateChannel(int ch);
 
+#if 0
+    virtual void    setId(ethFeature_t &id);
+#endif
 
-    virtual void    setId(FEAT_ID &id);
-
-    virtual bool    isOpened();
-    virtual bool    fillData(eOnvID32_t id32, double timestamp, void *rxdata);
+    virtual bool    initialised();
+    virtual bool    update(eOprotID32_t id32, double timestamp, void *rxdata);
 
 };
 

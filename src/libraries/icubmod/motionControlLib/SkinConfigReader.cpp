@@ -8,7 +8,7 @@
  */
 
 #include <stdio.h>
-#include <Debug.h>
+#include <yarp/os/LogStream.h>
 #include <yarp/os/Bottle.h>
 #include "SkinConfigReader.h"
 

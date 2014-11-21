@@ -164,12 +164,12 @@ bool PointReq::Editor::read(yarp::os::ConnectionReader& connection) {
   }
   yarp::os::ConstString tag;
   if (!reader.readString(tag)) return false;
-  if (tag!="patch") {
+  if (tag=="help") {
     yarp::os::idl::WireWriter writer(reader);
     if (writer.isNull()) return true;
     if (!writer.writeListHeader(2)) return false;
     if (!writer.writeTag("many",1, 0)) return false;
-    if (tag=="help" && reader.getLength()>0) {
+    if (reader.getLength()>0) {
       yarp::os::ConstString field;
       if (!reader.readString(field)) return false;
       if (field=="result") {
@@ -201,11 +201,23 @@ bool PointReq::Editor::read(yarp::os::ConnectionReader& connection) {
     writer.writeString("z");
     return true;
   }
+  bool nested = true;
+  bool have_act = false;
+  if (tag!="patch") {
+    if (len%3 != 0) return false;
+    len = 1 + (len/3);
+    nested = false;
+    have_act = true;
+  }
   for (int i=1; i<len; i++) {
-    if (!reader.readListHeader(3)) return false;
+    if (nested && !reader.readListHeader(3)) return false;
     yarp::os::ConstString act;
     yarp::os::ConstString key;
-    if (!reader.readString(act)) return false;
+    if (have_act) {
+      act = tag;
+    } else {
+      if (!reader.readString(act)) return false;
+    }
     if (!reader.readString(key)) return false;
     // inefficient code follows, bug paulfitz to improve it
     if (key == "result") {
@@ -229,6 +241,10 @@ bool PointReq::Editor::read(yarp::os::ConnectionReader& connection) {
     }
   }
   reader.accept();
+  yarp::os::idl::WireWriter writer(reader);
+  if (writer.isNull()) return true;
+  writer.writeListHeader(1);
+  writer.writeVocab(VOCAB2('o','k'));
   return true;
 }
 

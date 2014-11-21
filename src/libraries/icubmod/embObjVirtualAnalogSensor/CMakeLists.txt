@@ -11,7 +11,7 @@ IF (NOT SKIP_embObjVirtualAnalogSensor)
 
   yarp_add_plugin(embObjVirtualAnalogSensor embObjVirtualAnalogSensor.cpp embObjVirtualAnalogSensor.h)
   
-  TARGET_LINK_LIBRARIES(embObjVirtualAnalogSensor debugStream  ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
+  TARGET_LINK_LIBRARIES(embObjVirtualAnalogSensor ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
  icub_export_library(embObjVirtualAnalogSensor)
 ENDIF (NOT SKIP_embObjVirtualAnalogSensor)
 

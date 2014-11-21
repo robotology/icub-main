@@ -43,7 +43,7 @@
 
 
 
-static void handle_data(FeatureType f_type, const EOnv* nv, const eOropdescriptor_t* rd);
+static void handle_data(const EOnv* nv, const eOropdescriptor_t* rd);
 
 extern void eoprot_fun_UPDT_as_strain_config(const EOnv* nv, const eOropdescriptor_t* rd)
 {
@@ -59,18 +59,18 @@ extern void eoprot_fun_UPDT_as_strain_config(const EOnv* nv, const eOropdescript
 
 extern void eoprot_fun_UPDT_as_strain_status_calibratedvalues(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    handle_data(AnalogStrain, nv, rd);
+    handle_data( nv, rd);
 }
 
 extern void eoprot_fun_UPDT_as_strain_status_uncalibratedvalues(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    handle_data(AnalogStrain, nv, rd);
+    handle_data( nv, rd);
 }
 
 
 extern void eoprot_fun_UPDT_as_mais_status_the15values(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    handle_data(AnalogMais, nv, rd);
+    handle_data(nv, rd);
 }
 
 extern void eoprot_fun_UPDT_as_mais_config(const EOnv* nv, const eOropdescriptor_t* rd)
@@ -110,7 +110,7 @@ extern void eoprot_fun_UPDT_as_mais_config_mode(const EOnv* nv, const eOropdescr
 // - definition of static functions 
 // --------------------------------------------------------------------------------------------------------------------
 
-static void handle_data(FeatureType f_type, const EOnv* nv, const eOropdescriptor_t* rd)
+static void handle_data(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     EOarray* arrayof = (EOarray*)rd->data;
     uint8_t sizeofarray = eo_array_Size(arrayof);

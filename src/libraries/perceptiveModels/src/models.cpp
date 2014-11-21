@@ -15,6 +15,12 @@
  * Public License for more details
 */
 
+#include <cstdio>
+#include <cstdarg>
+
+#include <yarp/os/Log.h>
+
+#include <iCub/perception/private/models.h>
 #include <iCub/perception/models.h>
 
 using namespace std;
@@ -26,6 +32,40 @@ using namespace iCub::perception;
 Model::Model()
 {
     name="";
+}
+
+
+/************************************************************************/
+void Model::printMessage(const int logtype, const int level,
+                         const char *format, ...) const
+{
+    if (verbosity>=level)
+    {
+        string str;
+        str="*** "+name+": ";
+
+        va_list arg;
+        char buf[512];
+        va_start(arg,format);        
+        vsnprintf(buf,sizeof(buf),format,arg);
+        va_end(arg);
+
+        str+=buf;
+        switch (logtype)
+        {
+        case log::error:
+            yError(str.c_str());
+            break;
+        case log::warning:
+            yWarning(str.c_str());
+            break;
+        case log::info:
+            yInfo(str.c_str());
+            break;
+        default:
+            printf("%s\n",str.c_str());
+        }
+    }
 }
 
 

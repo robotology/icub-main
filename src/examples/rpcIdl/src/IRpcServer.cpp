@@ -48,14 +48,14 @@ public:
   }
 };
 
-class IRpcServer_add_one : public yarp::os::Portable {
+class IRpcServer_add_int : public yarp::os::Portable {
 public:
   int32_t x;
   int32_t _return;
   virtual bool write(yarp::os::ConnectionWriter& connection) {
     yarp::os::idl::WireWriter writer(connection);
     if (!writer.writeListHeader(3)) return false;
-    if (!writer.writeTag("add_one",1,2)) return false;
+    if (!writer.writeTag("add_int",1,2)) return false;
     if (!writer.writeI32(x)) return false;
     return true;
   }
@@ -149,12 +149,12 @@ bool IRpcServer::set_answer(const int32_t rightAnswer) {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-int32_t IRpcServer::add_one(const int32_t x) {
+int32_t IRpcServer::add_int(const int32_t x) {
   int32_t _return = 0;
-  IRpcServer_add_one helper;
+  IRpcServer_add_int helper;
   helper.x = x;
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","int32_t IRpcServer::add_one(const int32_t x)");
+    fprintf(stderr,"Missing server method '%s'?\n","int32_t IRpcServer::add_int(const int32_t x)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -221,14 +221,14 @@ bool IRpcServer::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
-    if (tag == "add_one") {
+    if (tag == "add_int") {
       int32_t x;
       if (!reader.readI32(x)) {
         reader.fail();
         return false;
       }
       int32_t _return;
-      _return = add_one(x);
+      _return = add_int(x);
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -306,7 +306,7 @@ std::vector<std::string> IRpcServer::help(const std::string& functionName) {
     helpString.push_back("*** Available commands:");
     helpString.push_back("get_answer");
     helpString.push_back("set_answer");
-    helpString.push_back("add_one");
+    helpString.push_back("add_int");
     helpString.push_back("start");
     helpString.push_back("stop");
     helpString.push_back("is_running");
@@ -324,9 +324,9 @@ std::vector<std::string> IRpcServer::help(const std::string& functionName) {
       helpString.push_back("@param rightAnswer new answer ");
       helpString.push_back("@return true if connection was successful ");
     }
-    if (functionName=="add_one") {
-      helpString.push_back("int32_t add_one(const int32_t x) ");
-      helpString.push_back("Add one integet to future answers. ");
+    if (functionName=="add_int") {
+      helpString.push_back("int32_t add_int(const int32_t x) ");
+      helpString.push_back("Add one integer to future answers. ");
       helpString.push_back("@param x value to add ");
       helpString.push_back("@return new value ");
     }

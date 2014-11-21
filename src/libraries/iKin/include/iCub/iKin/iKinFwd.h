@@ -885,7 +885,7 @@ protected:
     std::string           type;
     bool                  configured;
 
-    virtual void getMatrixFromProperties(yarp::os::Property &options,
+    virtual void getMatrixFromProperties(const yarp::os::Property &options,
                                          const std::string &tag, yarp::sig::Matrix &H);
     virtual void setMatrixToProperties(yarp::os::Property &options,
                                        const std::string &tag, yarp::sig::Matrix &H);

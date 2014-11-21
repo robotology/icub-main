@@ -235,11 +235,10 @@ So, now, have a look inside the directory ./log
 \sa dataSetPlayer
 */ 
 
-#include <cstdio>
-#include <fstream>
 #include <iostream>
-#include <sstream>
 #include <iomanip>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <deque>
 
@@ -456,7 +455,7 @@ private:
         {
             if (firstIncomingData)
             {
-                cout << "Incoming data detected" << endl;
+                yInfo() << "Incoming data detected";
                 firstIncomingData=false;
             }
 
@@ -532,8 +531,8 @@ public:
         transform(videoType.begin(),videoType.end(),videoType.begin(),::tolower);
         if ((videoType!="mkv") && (videoType!="avi"))
         {
-            cout << "unknown video type '" << videoType << "' specified; ";
-            cout << "'mkv' type will be used." << endl;
+            yWarning() << "unknown video type '" << videoType << "' specified; "
+                       << "'mkv' type will be used.";
             videoType="mkv";
         }
 
@@ -566,7 +565,7 @@ public:
         finfo.open(infoFile.c_str());
         if (!finfo.is_open())
         {
-            cout << "unable to open file: " << infoFile <<endl;
+            yError() << "unable to open file: " << infoFile;
             return false;
         }
 
@@ -584,7 +583,7 @@ public:
         fdata.open(dataFile.c_str());
         if (!fdata.is_open())
         {
-            cout << "unable to open file: " << dataFile <<endl;
+            yError() << "unable to open file: " << dataFile;
             return false;
         }
 
@@ -594,7 +593,7 @@ public:
             ftimecodes.open(timecodesFile.c_str()); 
             if (!ftimecodes.is_open())
             {
-                cout << "unable to open file: " << timecodesFile << endl;
+                yError() << "unable to open file: " << timecodesFile;
                 return false;
             }
             ftimecodes<<"# timecode format v2"<<endl;
@@ -777,7 +776,7 @@ public:
         #endif
             else
             {
-                cout << "Error: invalid type" << endl;
+                yError() << "Error: invalid type";
                 return false;
             }
         }
@@ -845,8 +844,8 @@ public:
         rpcPort.open((portName+"/rpc").c_str());
         attach(rpcPort);
 
-        cout << "Service yarp port: " << portName << endl;
-        cout << "Data stored in   : " << dirName  << endl;
+        yInfo() << "Service yarp port: " << portName;
+        yInfo() << "Data stored in   : " << dirName;
 
         return true;
     }
@@ -885,14 +884,16 @@ public:
 /**************************************************************************/
 int main(int argc, char *argv[])
 {
+    Network yarp;
+
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.configure(argc,argv);
 
     if (rf.check("help"))
     {
-        cout << "Options:" << endl << endl;
-        cout << "\t--name       port: service port name (default: /dump)"                            << endl;        
+        cout << "Options:"                                                                           << endl;
+        cout << "\t--name       port: service port name (default: /dump)"                            << endl;
         cout << "\t--dir        name: provide explicit name of storage directory"                    << endl;
         cout << "\t--overwrite      : overwrite pre-existing storage directory"                      << endl;
     #ifdef ADD_VIDEO
@@ -905,20 +906,19 @@ int main(int argc, char *argv[])
         cout << "\t--downsample    n: downsample rate (default: 1 => downsample disabled)"           << endl;
         cout << "\t--rxTime         : dump the receiver time instead of the sender time"             << endl;
         cout << "\t--txTime         : dump the sender time straightaway"                             << endl;
+        cout << endl;
 
         return 0;
     }
 
-    Network yarp;
     if (!yarp.checkNetwork())
     {
-        cout<<"YARP server not available!"<<endl;
+        yError()<<"YARP server not available!";
         return -1;
     }
 
     DumpModule mod;
     return mod.runModule(rf);
 }
-
 
 

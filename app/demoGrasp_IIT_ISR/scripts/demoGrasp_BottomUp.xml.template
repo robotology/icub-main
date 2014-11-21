@@ -1,5 +1,5 @@
 <application>
-<name>Joint Grasping Demo (IIT+ISR) with Bottom-Up</name>
+<name>Grasping Demo with Bottom-Up</name>
 
         <dependencies>
                 <port>/icub/camcalib/left/out</port>
@@ -11,26 +11,22 @@
         <module>
                 <name>pf3dTracker</name>
                 <node>pwrNode1</node>
-                <tag>PF3DTracker_tracker</tag>
         </module>
 
         <module>
                 <name>pf3dBottomup</name>
                 <node>pwrNode1</node>
-                <tag>pf3dBottomup</tag>
         </module>
 
         <module>
                 <name>demoGraspManager_IIT_ISR</name>
                 <node>pwrNode2</node>
-                <tag>manager</tag>
         </module>
   
         <module>
                 <name>yarpview</name>
                 <parameters>--name /PF3DTracker_viewer --x 320 --y 0 --RefreshTime 50</parameters>
                 <node>console</node>
-                <tag>PF3DTracker_viewer</tag>
         </module>
   
         <connection>

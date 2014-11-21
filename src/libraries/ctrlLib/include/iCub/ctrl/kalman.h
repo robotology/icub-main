@@ -111,14 +111,14 @@ public:
      * 
      * @return Estimated state vector.
      */
-    yarp::sig::Vector predict(const yarp::sig::Vector &u);
+    const yarp::sig::Vector& predict(const yarp::sig::Vector &u);
 
     /**
      * Predicts the next state vector. 
      * 
      * @return Estimated state vector.
      */
-    yarp::sig::Vector predict();
+    const yarp::sig::Vector& predict();
 
     /**
      * Corrects the current estimation of the state vector given the
@@ -128,7 +128,7 @@ public:
      * 
      * @return Estimated state vector.
      */
-    yarp::sig::Vector correct(const yarp::sig::Vector &z);
+    const yarp::sig::Vector& correct(const yarp::sig::Vector &z);
 
     /**
      * Returns the estimated state vector given the current 
@@ -140,7 +140,7 @@ public:
      * 
      * @return Estimated state vector.
      */
-    yarp::sig::Vector filt(const yarp::sig::Vector &u, const yarp::sig::Vector &z);
+    const yarp::sig::Vector& filt(const yarp::sig::Vector &u, const yarp::sig::Vector &z);
 
     /**
      * Returns the estimated state vector given the current 
@@ -151,14 +151,14 @@ public:
      * 
      * @return Estimated state vector.
      */
-    yarp::sig::Vector filt(const yarp::sig::Vector &z);
+    const yarp::sig::Vector& filt(const yarp::sig::Vector &z);
 
     /**
      * Returns the estimated state.
      * 
      * @return Estimated state.
      */
-    yarp::sig::Vector get_x() const { return x; }
+    const yarp::sig::Vector& get_x() const { return x; }
 
     /**
      * Returns the estimated output.
@@ -172,14 +172,14 @@ public:
      * 
      * @return Estimated state covariance.
      */
-    yarp::sig::Matrix get_P() const { return P; }
+    const yarp::sig::Matrix& get_P() const { return P; }
 
     /**
      * Returns the estimated measurement covariance.
      * 
      * @return Estimated measurement covariance.
      */
-    yarp::sig::Matrix get_S() const { return S; }
+    const yarp::sig::Matrix& get_S() const { return S; }
 
     /**
      * Returns the validation gate.
@@ -195,42 +195,42 @@ public:
      * 
      * @return Kalman gain matrix.
      */
-    yarp::sig::Matrix get_K() const { return K; }
+    const yarp::sig::Matrix& get_K() const { return K; }
 
     /**
      * Returns the state transition matrix.
      * 
      * @return State transition matrix.
      */
-    yarp::sig::Matrix get_A() const { return A; }
+    const yarp::sig::Matrix& get_A() const { return A; }
 
     /**
      * Returns the input matrix.
      * 
      * @return Input matrix.
      */
-    yarp::sig::Matrix get_B() const { return B; }
+    const yarp::sig::Matrix& get_B() const { return B; }
 
     /**
      * Returns the measurement matrix.
      * 
      * @return Measurement matrix.
      */
-    yarp::sig::Matrix get_H() const { return H; }
+    const yarp::sig::Matrix& get_H() const { return H; }
 
     /**
      * Returns the process noise covariance matrix.
      * 
      * @return Process noise covariance matrix.
      */
-    yarp::sig::Matrix get_Q() const { return Q; }
+    const yarp::sig::Matrix& get_Q() const { return Q; }
 
     /**
      * Returns the measurement noise covariance matrix.
      * 
      * @return Measurement noise covariance matrix.
      */
-    yarp::sig::Matrix get_R() const { return R; }
+    const yarp::sig::Matrix& get_R() const { return R; }
 
     /**
      * Returns the state transition matrix. 

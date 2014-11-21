@@ -62,7 +62,12 @@ class Model
 {
 protected:
     std::string name;
+    int verbosity;
+
     std::map<std::string,Node*> nodes;
+
+    virtual void printMessage(const int logtype, const int level,
+                              const char *format, ...) const;
 
 public:
     /**

@@ -28,9 +28,9 @@
 
 #include "FeatureInterface.h"  
 
-#include "FeatureInterface_hid.h"   // marco.accame: actually it contains definition of class IiCubFeature, thus IiCubFeature.h would be better
+#include "IethResource.h"
 
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 
 
 namespace yarp{
@@ -76,7 +76,7 @@ typedef int AnalogDataFormat;
  */
 class yarp::dev::embObjAnalogSensor:    public yarp::dev::IAnalogSensor,
                                         public yarp::dev::DeviceDriver,
-                                        public IiCubFeature
+                                        public IethResource
 {
 
 public:
@@ -107,7 +107,7 @@ private:
     //! eth messaging stuff
     TheEthManager       *ethManager;
     ethResources        *res;
-    FEAT_ID             _fId;
+    ethFeature_t        _fId;
 
     bool opened;
 
@@ -214,8 +214,8 @@ public:
     // embObj interface
     bool init();
 
-    virtual bool isOpened();
-    virtual bool fillData(eOnvID32_t id32, double timestamp, void* rxdata);
+    virtual bool initialised();
+    virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
 };
 
 

@@ -219,7 +219,7 @@ bool AnalogServer::attachAll(const PolyDriverList &analog2attach)
     yTrace();
     if (analog2attach.size() != 1)
     {
-        std::cerr<<"AnalogServer: cannot attach more than one device\n";
+        yError()<<"AnalogServer: cannot attach more than one device\n";
         return false;
     }
 
@@ -331,7 +331,7 @@ bool AnalogServer::open(yarp::os::Searchable &config)
     else
     {
         _rate=20;
-        std::cout<<"Warning: part "<< id <<" using default period ("<<_rate<<")\n";
+        yWarning() <<"Warning: part "<< id <<" using default period ("<<_rate<<")\n";
     }
 
     // Read the list of ports
@@ -385,8 +385,8 @@ bool AnalogServer::open(yarp::os::Searchable &config)
 
             //check consistenty
             if(wTop-wBase != top-base){
-                cerr<<"Error: check skin port parameters in part description"<<endl;
-                cerr<<"Numbers of mapped taxels do not match.\n";
+                yError() << "Error: check skin port parameters in part description\n";
+                yError() << "Numbers of mapped taxels do not match.\n";
                 return false;
             }
             int taxels=top-base+1;
@@ -442,8 +442,8 @@ void AnalogServer::run()
                         last = analogPorts[i].offset + analogPorts[i].length - 1;
                     // check vector limit
                     if(last>=(int)v.size()){
-                        cerr<<"Error while sending analog sensor output on port "<< analogPorts[i].port_name<< endl;
-                        cerr<<"Vector size expected to be at least "<<last<<" whereas it is "<< v.size()<< endl;
+                        yError() << "Error while sending analog sensor output on port "<< analogPorts[i].port_name;
+                        yError() << "Vector size expected to be at least "<<last<<" whereas it is "<< v.size();
                         continue;
                     }
                     pv = v.subVector(first, last);

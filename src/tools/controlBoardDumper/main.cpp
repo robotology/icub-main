@@ -100,9 +100,13 @@
  * <li> getOutputs              (voltage (PWM) given to the motor)
  * <li> getCurrents             (current given to the motor)
  * <li> getTorques              (joint torques, if available)
+ * <li> getPosPidReferences     (last position referenece)
+ * <li> getTrqPidReferences     (last torque reference)
  * <li> getRotorPositions       (hires rotor position, if debug interface is available)
  * <li> getRotorSpeeds          (hires rotor velocity, if debug interface is available)
  * <li> getRotorAccelerations   (hires rotor acceleration, if debug interface is available)
+ * <li> getControlModes         (joint control mode)
+ * <li> getInteractionModes     (joint interaction mode)
  * </ul>
  * Other data can be easily added by modyfing the classes in the 
  * file genericControlBoardDumper.cpp which contains a class named
@@ -190,7 +194,7 @@
 
 YARP_DECLARE_DEVICES(icubmod)
 
-#define NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP 9
+#define NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP 12
 #define NUMBER_OF_AVAILABLE_DEBUG_DATA_TO_DUMP 3
 
 
@@ -292,15 +296,18 @@ int getDataToDump(Property p, ConstString *listOfData, int n, bool *needDebug)
     int j;
 
     // standard
-    availableDataToDump[0] = ConstString("getEncoders");
-    availableDataToDump[1] = ConstString("getEncoderSpeeds");
-    availableDataToDump[2] = ConstString("getEncoderAccelerations");
-    availableDataToDump[3] = ConstString("getPositionErrors");
-    availableDataToDump[4] = ConstString("getOutputs");
-    availableDataToDump[5] = ConstString("getCurrents");
-    availableDataToDump[6] = ConstString("getTorques");
-    availableDataToDump[7] = ConstString("getTorqueErrors");
-    availableDataToDump[8] = ConstString("getPidReferences");
+    availableDataToDump[0]  = ConstString("getEncoders");
+    availableDataToDump[1]  = ConstString("getEncoderSpeeds");
+    availableDataToDump[2]  = ConstString("getEncoderAccelerations");
+    availableDataToDump[3]  = ConstString("getPositionErrors");
+    availableDataToDump[4]  = ConstString("getOutputs");
+    availableDataToDump[5]  = ConstString("getCurrents");
+    availableDataToDump[6]  = ConstString("getTorques");
+    availableDataToDump[7]  = ConstString("getTorqueErrors");
+    availableDataToDump[8]  = ConstString("getPosPidReferences");
+    availableDataToDump[9]  = ConstString("getTrqPidReferences");
+    availableDataToDump[10] = ConstString("getControlModes");
+    availableDataToDump[11] = ConstString("getInteractionModes");
 
     // debug
     availableDebugDataToDump[0] = ConstString("getRotorPositions");
@@ -386,13 +393,19 @@ private:
     GetCurrs myGetCurrs;
     //torques
     ITorqueControl  *itrq;
-    GetTrqs myGetTrqs;
+    GetTrqs    myGetTrqs;
+    GetTrqRefs myGetTrqRefs;
     GetTrqErrs myGetTrqErrs;
     //debug
     IDebugInterface *idbg;
     GetRotorPosition     myGetRotorPoss;
     GetRotorSpeed        myGetRotorVels;
     GetRotorAcceleration myGetRotorAccs;
+    //modes
+    IControlMode2       *icmod;
+    IInteractionMode    *iimod;
+    GetControlModes     myGetControlModes;
+    GetInteractionModes myGetInteractionModes;
 
 public:
     DumpModule() : useDebugClient(false)
@@ -403,6 +416,8 @@ public:
         iamp=0;
         itrq=0;
         idbg=0;
+        icmod=0;
+        iimod=0;
     }
 
     virtual bool open(Searchable &s)
@@ -586,7 +601,7 @@ public:
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetAccs);
                         }
-                if (dataToDump[i] == "getPidReferences")
+                if (dataToDump[i] == "getPosPidReferences")
                     if (ddBoard.view(ipid))
                         {
                             fprintf(stderr, "Initializing a getErrs thread\n");
@@ -595,12 +610,60 @@ public:
                             myGetPidRefs.setInterface(ipid);
                             if (ddBoard.view(istmp))
                             {
-                                fprintf(stderr, "getPidReferences::The time stamp initalization interfaces was successfull! \n");
+                                fprintf(stderr, "getPosPidReferences::The time stamp initalization interfaces was successfull! \n");
                                 myGetPidRefs.setStamp(istmp);
                             }
                             else
                                 fprintf(stderr, "Problems getting the time stamp interfaces \n");
                             myDumper[i].setGetter(&myGetPidRefs);
+                        }
+                 if (dataToDump[i] == "getTrqPidReferences")
+                    if (ddBoard.view(itrq))
+                        {
+                            fprintf(stderr, "Initializing a getErrs thread\n");
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
+                            myDumper[i].setThetaMap(thetaMap, nJoints);
+                            myGetTrqRefs.setInterface(itrq);
+                            if (ddBoard.view(istmp))
+                            {
+                                fprintf(stderr, "getTrqPidReferences::The time stamp initalization interfaces was successfull! \n");
+                                myGetTrqRefs.setStamp(istmp);
+                            }
+                            else
+                                fprintf(stderr, "Problems getting the time stamp interfaces \n");
+                            myDumper[i].setGetter(&myGetTrqRefs);
+                        }
+                 if (dataToDump[i] == "getControlModes")
+                    if (ddBoard.view(icmod))
+                        {
+                            fprintf(stderr, "Initializing a getErrs thread\n");
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
+                            myDumper[i].setThetaMap(thetaMap, nJoints);
+                            myGetControlModes.setInterface(icmod, nJoints);
+                            if (ddBoard.view(istmp))
+                            {
+                                fprintf(stderr, "getControlModes::The time stamp initalization interfaces was successfull! \n");
+                                myGetControlModes.setStamp(istmp);
+                            }
+                            else
+                                fprintf(stderr, "Problems getting the time stamp interfaces \n");
+                            myDumper[i].setGetter(&myGetControlModes);
+                        }
+                 if (dataToDump[i] == "getInteractionModes")
+                    if (ddBoard.view(iimod))
+                        {
+                            fprintf(stderr, "Initializing a getErrs thread\n");
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
+                            myDumper[i].setThetaMap(thetaMap, nJoints);
+                            myGetInteractionModes.setInterface(iimod, nJoints);
+                            if (ddBoard.view(istmp))
+                            {
+                                fprintf(stderr, "getInteractionModes::The time stamp initalization interfaces was successfull! \n");
+                                myGetInteractionModes.setStamp(istmp);
+                            }
+                            else
+                                fprintf(stderr, "Problems getting the time stamp interfaces \n");
+                            myDumper[i].setGetter(&myGetInteractionModes);
                         }
                 if (dataToDump[i] == "getPositionErrors")
                     if (ddBoard.view(ipid))
@@ -830,13 +893,13 @@ int main(int argc, char *argv[])
     if (!p.check("dataToDump"))
     {
         Value v;
-        v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors getPidReferences)");
+        v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors)");
         p.put("dataToDump", v);
     }
     if (p.check("dataToDumpAll"))
     {
         Value v;
-        v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors getPidReferences getRotorPositions getRotorSpeeds getRotorAccelerations)");
+        v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors getPosPidReferences getTrqPidReferences getRotorPositions getRotorSpeeds getRotorAccelerations getControlModes getInteractionModes)");
         p.put("dataToDump", v);
     }
     if (p.check("help"))
@@ -854,9 +917,13 @@ int main(int argc, char *argv[])
         printf (" getOutputs              (voltage (PWM) given to the motor)\n");
         printf (" getCurrents             (current given to the motor)\n");
         printf (" getTorques              (joint torques, if available)\n");
+        printf (" getPosPidReferences     (last position referenece)\n");
+        printf (" getTrqPidReferences     (last torque reference)\n");
         printf (" getRotorPositions       (hi-res rotor position, if debug interface is available)\n");
         printf (" getRotorSpeeds          (hi-res rotor velocity, if debug interface is available)\n");
         printf (" getRotorAccelerations   (hi-res rotor acceleration, if debug interface is available)\n");
+        printf (" getControlModes         (joint control mode)\n");
+        printf (" getInteractionModes     (joint interaction mode)\n");
         printf ("\n3) controlBoardDumper --robot icub --part left_arm --rate 10  --joints \"(0 1 2)\" --dataToDumpAll\n");
         printf ("   All data from the controlBoarWrapper will be dumped, including data from the debugInterface (getRotorxxx).\n");
         printf ("\n --logToFile can be used to create log files storing the data\n\n");

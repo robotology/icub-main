@@ -26,7 +26,8 @@
         <param name="shift">            8            8         </param>       
         <param name="ko">               0            0         </param>       
         <param name="stictionUp">       0            0         </param>       
-        <param name="stictionDwn">      0            0         </param>       
+        <param name="stictionDwn">      0            0         </param>      
+        <param name="kff">              0            0         </param>          
         </group>
 
     <group name="IMPEDANCE">
@@ -43,7 +44,8 @@
         <param name="shift">        6            6         </param>       
         <param name="ko">           0            0         </param>       
         <param name="stictionUp">   0            0         </param>       
-        <param name="stictionDwn">  0            0         </param>       
+        <param name="stictionDwn">  0            0         </param>   
+        <param name="kff">          0            0         </param>           
     </group>
 
   </device>

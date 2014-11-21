@@ -13,8 +13,6 @@ set(ICUB_COMPILE_EMBOBJ_LIBRARY OFF CACHE INTERNAL "use the embObjLib lib" FORCE
 
 project(icubmod)
 
-add_subdirectory(debugStream)
-
 option (ICUB_EOPROT_MN_VERSION_1_0 "use OFF unless you want test old mode" OFF)
 mark_as_advanced (ICUB_EOPROT_MN_VERSION_1_0)
 
@@ -55,7 +53,6 @@ BEGIN_PLUGIN_LIBRARY(icubmod)
   add_subdirectory(motionControlLib)
   add_subdirectory(plxCan)
   add_subdirectory(staticgrabber)
-  add_subdirectory(torsoonlycalibrator)
   add_subdirectory(xsensmtx)
   add_subdirectory(debugInterfaceClient)
   add_subdirectory(debugInterfaceWrapper)
@@ -63,6 +60,7 @@ BEGIN_PLUGIN_LIBRARY(icubmod)
   add_subdirectory(analogServer)
   add_subdirectory(skinWrapper)
   add_subdirectory(canBusAnalogSensor)
+  add_subdirectory(canBusDoubleFTSensor)
   add_subdirectory(canBusVirtualAnalogSensor)
   add_subdirectory(canBusInertialMTB)
   add_subdirectory(canBusSkin)

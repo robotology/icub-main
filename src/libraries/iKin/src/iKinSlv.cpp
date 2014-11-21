@@ -16,11 +16,11 @@
  * Public License for more details
 */
 
-#include <stdio.h>
 #include <algorithm>
 
 #include <gsl/gsl_math.h>
 
+#include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/Time.h>
 
@@ -235,18 +235,18 @@ void InputPort::onRead(Bottle &b)
 
     if (modeOptIn)
         if (!handleMode(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_MODE)).asVocab()))
-            printf("%s: got incomplete %s command\n",slv->slvName.c_str(),
-                   Vocab::decode(IKINSLV_VOCAB_OPT_MODE).c_str());
+            yWarning("%s: got incomplete %s command",slv->slvName.c_str(),
+                     Vocab::decode(IKINSLV_VOCAB_OPT_MODE).c_str());
 
     if (dofOptIn)
         if (!handleDOF(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_DOF)).asList()))
-            printf("%s: expected %s data\n",slv->slvName.c_str(),
-                   Vocab::decode(IKINSLV_VOCAB_OPT_DOF).c_str());
+            yWarning("%s: expected %s data",slv->slvName.c_str(),
+                     Vocab::decode(IKINSLV_VOCAB_OPT_DOF).c_str());
 
     if (poseOptIn)
         if (!handlePose(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab()))
-            printf("%s: got incomplete %s command\n",slv->slvName.c_str(),
-                   Vocab::decode(IKINSLV_VOCAB_OPT_POSE).c_str());
+            yWarning("%s: got incomplete %s command",slv->slvName.c_str(),
+                     Vocab::decode(IKINSLV_VOCAB_OPT_POSE).c_str());
 
     if (slv->handleJointsRestPosition(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_REST_POS)).asList()) ||
         slv->handleJointsRestWeights(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_REST_WEIGHTS)).asList()))
@@ -260,12 +260,12 @@ void InputPort::onRead(Bottle &b)
     if (xdOptIn)
     {    
         if (!handleTarget(b.find(Vocab::decode(IKINSLV_VOCAB_OPT_XD)).asList()))
-            printf("%s: expected %s data\n",slv->slvName.c_str(),
-                   Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
+            yWarning("%s: expected %s data",slv->slvName.c_str(),
+                     Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
     }
     else
-        printf("%s: missing %s data; it shall be present\n",
-               slv->slvName.c_str(),Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
+        yWarning("%s: missing %s data; it shall be present",
+                 slv->slvName.c_str(),Vocab::decode(IKINSLV_VOCAB_OPT_XD).c_str());
 }
 
 
@@ -315,8 +315,7 @@ CartesianSolver::CartesianSolver(const string &_slvName) : RateThread(CARTSLV_DE
 /************************************************************************/
 PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
 {    
-    Property &options=const_cast<Property&>(partOpt);
-    string partName=options.find("part").asString().c_str();
+    string partName=partOpt.find("part").asString().c_str();
     PolyDriver *pDrv=NULL;
 
     double t0=Time::now();
@@ -324,21 +323,20 @@ PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
     {
         delete pDrv;
 
-        pDrv=new PolyDriver(options);
+        pDrv=new PolyDriver(const_cast<Property&>(partOpt));
         bool ok=pDrv->isValid();
-
-        printf("%s: Checking if %s part is active ... ",
-               slvName.c_str(),partName.c_str());
 
         if (ok)
         {
-            printf("ok\n");
+            yInfo("%s: Checking if %s part is active ... ok",
+                  slvName.c_str(),partName.c_str());
             return pDrv;
         }
         else
         {
             double dt=ping_robot_tmo-(Time::now()-t0);
-            printf("not yet: still %.1f [s] to timeout expiry\n",dt>0.0?dt:0.0);
+            yInfo("%s: Checking if %s part is active ... not yet: still %.1f [s] to timeout expiry",
+                  slvName.c_str(),partName.c_str(),dt>0.0?dt:0.0);
 
             double t1=Time::now();
             while (Time::now()-t1<1.0)
@@ -354,26 +352,32 @@ PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
 
 
 /************************************************************************/
-void CartesianSolver::alignJointsBounds()
+bool CartesianSolver::alignJointsBounds()
 {
     double min, max;
     int cnt=0;
 
-    printf("%s: aligning joints bounds ...\n",slvName.c_str());
+    yInfo("%s: aligning joints bounds ...",slvName.c_str());
     for (int i=0; i<prt->num; i++)
     {
-        printf("part #%d: %s\n",i,prt->prp[i].find("part").asString().c_str());
+        yInfo("part #%d: %s",i,prt->prp[i].find("part").asString().c_str());
         for (int j=0; j<jnt[i]; j++)
         {               
-            lim[i]->getLimits(rmp[i][j],&min,&max);
+            if (!lim[i]->getLimits(rmp[i][j],&min,&max))
+            {
+                yError("joint #%d: failed getting limits!");
+                return false;
+            }
 
-            printf("joint #%d: [%g, %g] deg\n",cnt,min,max);
+            yInfo("joint #%d: [%g, %g] deg",cnt,min,max);
             (*prt->chn)[cnt].setMin(CTRL_DEG2RAD*min);
             (*prt->chn)[cnt].setMax(CTRL_DEG2RAD*max);
         
             cnt++;
         }
     }
+
+    return true;
 }
 
 
@@ -464,8 +468,8 @@ void CartesianSolver::getFeedback(const bool wait)
         }
         else
         {    
-            printf("%s: timeout detected on part %s!\n",
-                   slvName.c_str(),prt->prp[i].find("part").asString().c_str());
+            yWarning("%s: timeout detected on part %s!",
+                     slvName.c_str(),prt->prp[i].find("part").asString().c_str());
 
             timeout_detected=true;
             chainCnt+=jnt[i];
@@ -972,10 +976,8 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
             //-----------------
             case IKINSLV_VOCAB_CMD_ASK:
             {
-                Bottle &options=const_cast<Bottle&>(command);
-            
-                Bottle *b_xd=getTargetOption(options);
-                Bottle *b_q=getJointsOption(options);
+                Bottle *b_xd=getTargetOption(command);
+                Bottle *b_q=getJointsOption(command);
             
                 // some integrity checks
                 if (b_xd==NULL)
@@ -1008,9 +1010,9 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                     getFeedback();  // otherwise get the current configuration
             
                 // account for the pose 
-                if (options.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
+                if (command.check(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)))
                 {
-                    int pose=options.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab();
+                    int pose=command.find(Vocab::decode(IKINSLV_VOCAB_OPT_POSE)).asVocab();
             
                     if (pose==IKINSLV_VOCAB_VAL_POSE_FULL)
                         slv->set_ctrlPose(IKINCTRL_POSE_FULL);
@@ -1092,7 +1094,7 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
             case IKINSLV_VOCAB_CMD_CFG:
             {
                 Property options(command.toString().c_str());
-                printf("Configuring with options: %s\n",options.toString().c_str());
+                yInfo("Configuring with options: %s",options.toString().c_str());
             
                 if (open(options))
                     reply.addVocab(IKINSLV_VOCAB_REP_ACK);
@@ -1187,16 +1189,14 @@ void CartesianSolver::printInfo(const string &typ, const Vector &xd,
     // compute error
     Vector e=xd-_x;
 
-    printf("\n");
     printf("   Request type       = %s\n",typ.c_str());
-    printf("  Target rxPose   [m] = %s\n",const_cast<Vector&>(xd).toString().c_str());
-    printf("  Target txPose   [m] = %s\n",const_cast<Vector&>(_x).toString().c_str());
-    printf("Target txJoints [deg] = %s\n",const_cast<Vector&>(q).toString().c_str());
+    printf("  Target rxPose   [m] = %s\n",xd.toString().c_str());
+    printf("  Target txPose   [m] = %s\n",_x.toString().c_str());
+    printf("Target txJoints [deg] = %s\n",q.toString().c_str());
     printf("  norm(rxPose-txPose) = pos [m]: %g\n",getNorm(e,"pos"));
     if (ctrlPose==IKINCTRL_POSE_FULL)
     printf("                        ang [*]: %g\n",getNorm(e,"ang"));
     printf("    computed in   [s] = %g\n",t);
-    printf("\n");
 }
 
 
@@ -1315,19 +1315,19 @@ bool CartesianSolver::open(Searchable &options)
 {    
     if (configured)
     {
-        printf("%s already configured\n",slvName.c_str());
+        yWarning("%s already configured",slvName.c_str());
         return true;
     }
 
     prt=getPartDesc(options);
     if (prt==NULL)
     {
-        printf("Detected errors while processing parts description!\n");
+        yError("Detected errors while processing parts description!");
         return false;
     }
 
     Property DHTable; prt->lmb->toLinksProperties(DHTable);
-    printf("DH Table: %s\n",DHTable.toString().c_str());
+    yInfo()<<"DH Table: "<<DHTable.toString().c_str();  // stream version to prevent long strings truncation
     
     if (options.check("ping_robot_tmo"))
         ping_robot_tmo=options.find("ping_robot_tmo").asDouble();
@@ -1336,8 +1336,8 @@ bool CartesianSolver::open(Searchable &options)
     int remainingJoints=prt->chn->getN();
     for (int i=0; i<prt->num; i++)
     {
-        printf("Allocating device driver for %s ...\n",
-               prt->prp[i].find("part").asString().c_str());
+        yInfo("Allocating device driver for %s ...",
+              prt->prp[i].find("part").asString().c_str());
 
         PolyDriver *pDrv=(ping_robot_tmo>0.0)?
                          waitPart(prt->prp[i]):
@@ -1346,7 +1346,7 @@ bool CartesianSolver::open(Searchable &options)
         if (!pDrv->isValid())
         {
             delete pDrv;
-            printf("Device driver not available!\n");            
+            yError("Device driver not available!");            
             close();
             return false;
         }
@@ -1357,8 +1357,9 @@ bool CartesianSolver::open(Searchable &options)
         int             joints;
 
         if (!pDrv->view(pLim) || !pDrv->view(pEnc))
-        {    
-            printf("Problems acquiring interfaces!\n");
+        {
+            delete pDrv;
+            yError("Problems acquiring interfaces!");
             close();
             return false;
         }
@@ -1399,7 +1400,7 @@ bool CartesianSolver::open(Searchable &options)
 
     // handle dof from options
     if (Bottle *v=options.find("dof").asList())
-    {            
+    {
         Vector _dof(v->size());
         for (size_t i=0; i<_dof.length(); i++)
             _dof[i]=v->get(i).asInt();
@@ -1409,7 +1410,12 @@ bool CartesianSolver::open(Searchable &options)
     }
 
     // joints bounds alignment
-    alignJointsBounds();    
+    if (!alignJointsBounds())
+    {
+        yError("Unable to retrieve joints limits!");
+        close();
+        return false;
+    }
 
     // parse configuration options
     setRate(period=options.check("period",Value(CARTSLV_DEFAULT_PER)).asInt());
@@ -1623,7 +1629,7 @@ void CartesianSolver::close()
         prt=NULL;
     }
 
-    printf("%s closed\n",slvName.c_str());
+    yInfo("%s closed",slvName.c_str());
     closed=true;
 }
 
@@ -1632,9 +1638,9 @@ void CartesianSolver::close()
 bool CartesianSolver::threadInit()
 {
     if (!configured)
-        printf("Error: %s not configured!\n",slvName.c_str());
+        yError("%s not configured!",slvName.c_str());
     else
-        printf("Starting %s at %d ms\n",slvName.c_str(),period);
+        yInfo("Starting %s at %d ms",slvName.c_str(),period);
 
     return configured;
 }
@@ -1643,7 +1649,10 @@ bool CartesianSolver::threadInit()
 /************************************************************************/
 void CartesianSolver::afterStart(bool s)
 {
-    printf("%s %s\n",slvName.c_str(),s?"started successfully":"did not start!");
+    if (s)
+        yInfo("%s started successfully",slvName.c_str());
+    else
+        yError("%s did not start!",slvName.c_str());
 }
 
 
@@ -1652,11 +1661,11 @@ void CartesianSolver::suspend()
 {
     if (isRunning())
     {
-        printf("%s suspended\n",slvName.c_str());
+        yInfo("%s suspended",slvName.c_str());
         RateThread::suspend();
     }
     else
-        printf("%s is already suspended\n",slvName.c_str());
+        yWarning("%s is already suspended",slvName.c_str());
 }
 
 
@@ -1665,12 +1674,12 @@ void CartesianSolver::resume()
 {
     if (isSuspended())
     {
-        printf("%s resumed\n",slvName.c_str());
+        yInfo("%s resumed",slvName.c_str());
         initPos();
         RateThread::resume();
     }
     else
-        printf("%s is already running\n",slvName.c_str());
+        yWarning("%s is already running",slvName.c_str());
 }
 
 
@@ -1710,8 +1719,8 @@ void CartesianSolver::run()
         // are detected and we are in continuous mode
         doSolve|=inPort->get_contMode() && (distExtMoves>CARTSLV_UNCTRLEDJNTS_THRES);
         if (doSolve && verbosity)
-            printf("%s: detected movements on uncontrolled joints (norm=%g>%g deg)\n",
-                   slvName.c_str(),distExtMoves,CARTSLV_UNCTRLEDJNTS_THRES);
+            yInfo("%s: detected movements on uncontrolled joints (norm=%g>%g deg)",
+                  slvName.c_str(),distExtMoves,CARTSLV_UNCTRLEDJNTS_THRES);
     }
 
     // run the solver if any input is received
@@ -1775,7 +1784,7 @@ void CartesianSolver::run()
 /************************************************************************/
 void CartesianSolver::threadRelease()
 {    
-    printf("Stopping %s ...\n",slvName.c_str());
+    yInfo("Stopping %s ...",slvName.c_str());
 }
 
 
@@ -1875,7 +1884,7 @@ bool iCubArmCartesianSolver::decodeDOF(const Vector &_dof)
         // they all shall be on or off
         newDOF[3]=newDOF[4]=newDOF[5]=dof[3];
 
-        printf("%s: attempt to set one shoulder's joint differently from others\n",slvName.c_str());
+        yWarning("%s: attempt to set one shoulder's joint differently from others",slvName.c_str());
     }
 
     return CartesianSolver::decodeDOF(newDOF);

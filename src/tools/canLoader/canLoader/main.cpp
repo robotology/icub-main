@@ -136,6 +136,7 @@ This file can be edited at src/myModule/main.cpp.
 #include <gtk/gtk.h>
 #include <gtk/gtkmain.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Log.h>
 #include <yarp/dev/Drivers.h>
 
 #include <string>   //stl string
@@ -1312,7 +1313,7 @@ static void fixed_toggled (GtkCellRendererToggle *cell, gchar *path_str, gpointe
     }
     else
     {
-        printf ("ERR: Something wrong in the selection\n");
+        yError ("Something wrong in the selection\n");
     }
 
     if (calibration_enabled)
@@ -1370,7 +1371,7 @@ static void eeprom_toggled (GtkCellRendererToggle *cell, gchar *path_str, gpoint
     }
     else
     {
-        printf ("ERR: Something wrong in the selection\n");
+        yError ("Something wrong in the selection\n");
     }
 
     // set new value

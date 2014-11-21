@@ -16,23 +16,20 @@
  * Public License for more details
 */
 
-#include <yarp/os/Network.h>
-#include <yarp/os/Time.h>
-#include <yarp/sig/Matrix.h>
-#include <yarp/math/Math.h>
-#include <yarp/math/Rand.h>
+#include <cstdio>
+#include <cstdarg>
+#include <sstream>
+#include <algorithm>
 
 #include <gsl/gsl_math.h>
+
+#include <yarp/math/Math.h>
+#include <yarp/math/Rand.h>
 
 #include <iCub/ctrl/math.h>
 #include <iCub/perception/springyFingers.h>
 #include <iCub/perception/tactileFingers.h>
 #include <iCub/action/actionPrimitives.h>
-
-#include <stdio.h>
-#include <stdarg.h>
-#include <sstream>
-#include <algorithm>
 
 #define RES_WAVER(x)                                (dynamic_cast<ArmWavingMonitor*>(x))
                                                     
@@ -60,6 +57,9 @@ using namespace iCub::ctrl;
 using namespace iCub::perception;
 using namespace iCub::action;
 
+namespace iCub { namespace action { namespace log {
+    enum { no_info, info, warning, error };
+} } }
 
 namespace iCub
 {
@@ -96,11 +96,11 @@ class ArmWayPoints : public RateThread
     void printWayPoint()
     {
         if (wayPoints[i].oEnabled)
-            action->printMessage("reaching waypoint(%d): x=[%s]; o=[%s]\n",i,
+            action->printMessage(log::no_info,"reaching waypoint(%d): x=[%s]; o=[%s]",i,
                                  wayPoints[i].x.toString(3,3).c_str(),
                                  wayPoints[i].o.toString(3,3).c_str());
         else
-            action->printMessage("reaching waypoint(%d): x=[%s]\n",i,
+            action->printMessage(log::no_info,"reaching waypoint(%d): x=[%s]",i,
                                  wayPoints[i].x.toString(3,3).c_str());
     }
 
@@ -109,9 +109,9 @@ class ArmWayPoints : public RateThread
     {
         if (wayPoints[i].callback!=NULL)
         {
-            action->printMessage("executing waypoint(%d)-end callback ...\n",i);
+            action->printMessage(log::no_info,"executing waypoint(%d)-end callback ...",i);
             wayPoints[i].callback->exec();
-            action->printMessage("... waypoint(%d)-end callback executed\n",i);
+            action->printMessage(log::no_info,"... waypoint(%d)-end callback executed",i);
         }
     }
 
@@ -364,21 +364,35 @@ bool ActionPrimitives::isValid() const
 
 
 /************************************************************************/
-int ActionPrimitives::printMessage(const char *format, ...)
+void ActionPrimitives::printMessage(const int logtype, const char *format, ...) const
 {
     if (verbose)
     {
-        fprintf(stdout,"*** %s: ",(local+"/"+part).c_str());
+        string str;
+        str="*** "+local+"/"+part+": ";
     
-        va_list ap;
-        va_start(ap,format);    
-        int ret=vfprintf(stdout,format,ap);
-        va_end(ap);
-        
-        return ret;
+        va_list arg;
+        char buf[512];
+        va_start(arg,format);        
+        vsnprintf(buf,sizeof(buf),format,arg);
+        va_end(arg);
+
+        str+=buf;
+        switch (logtype)
+        {
+        case log::error:
+            yError(str.c_str());
+            break;
+        case log::warning:
+            yWarning(str.c_str());
+            break;
+        case log::info:
+            yInfo(str.c_str());
+            break;
+        default:
+            printf("%s\n",str.c_str());
+        }
     }
-    else
-        return -1;
 }
 
 
@@ -392,7 +406,7 @@ bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key, const in
         Vector newDof(3,2.0), dummyRet;
         newDof[j]=sw?1.0:0.0;
 
-        printMessage("%s %s\n",key.c_str(),sw?"enabled":"disabled");
+        printMessage(log::no_info,"%s %s",key.c_str(),sw?"enabled":"disabled");
         cartCtrl->setDOF(newDof,dummyRet);
 
         if (sw)
@@ -418,11 +432,11 @@ bool ActionPrimitives::handleTorsoDOF(Property &opt, const string &key, const in
             }
             else
             {
-                printMessage("failed to get weights from cartesian controller\n");
+                printMessage(log::error,"failed to get weights from cartesian controller");
                 return false;
             }
 
-            printMessage("%s limits: [%g,%g] deg; weight=%g\n",key.c_str(),min,max,weights[j]);
+            printMessage(log::no_info,"%s limits: [%g,%g] deg; weight=%g",key.c_str(),min,max,weights[j]);
         }
 
         return true;
@@ -439,20 +453,20 @@ bool ActionPrimitives::configHandSeq(Property &opt)
     {
         string handSeqFile=opt.find("hand_sequences_file").asString().c_str();        
 
-        printMessage("Processing %s file\n",handSeqFile.c_str());
+        printMessage(log::info,"Processing %s file",handSeqFile.c_str());
         Property handSeqProp; handSeqProp.fromConfigFile(handSeqFile.c_str());
     
         // GENERAL group
         Bottle &bGeneral=handSeqProp.findGroup("GENERAL");
         if (bGeneral.isNull())
         {
-            printMessage("WARNING: \"GENERAL\" group is missing\n");    
+            printMessage(log::warning,"\"GENERAL\" group is missing");    
             return false;
         }
 
         if (!bGeneral.check("numSequences"))
         {
-            printMessage("WARNING: \"numSequences\" option is missing\n");    
+            printMessage(log::warning,"\"numSequences\" option is missing");    
             return false;
         }
 
@@ -467,13 +481,13 @@ bool ActionPrimitives::configHandSeq(Property &opt)
             Bottle &bSeq=handSeqProp.findGroup(seq.str().c_str());
             if (bSeq.isNull())
             {
-                printMessage("WARNING: \"%s\" group is missing\n",seq.str().c_str());
+                printMessage(log::warning,"\"%s\" group is missing",seq.str().c_str());
                 return false;
             }
 
             if (!bSeq.check("key"))
             {
-                printMessage("WARNING: \"key\" option is missing\n");
+                printMessage(log::warning,"\"key\" option is missing");
                 return false;
             }
 
@@ -481,7 +495,7 @@ bool ActionPrimitives::configHandSeq(Property &opt)
 
             if (isValidHandSeq(key))
             {
-                printMessage("WARNING: the sequence \"%s\" is already defined: skipping ...\n",
+                printMessage(log::warning,"the sequence \"%s\" is already defined: skipping ...",
                              key.c_str());
                 continue;
             }
@@ -513,12 +527,12 @@ bool ActionPrimitives::configGraspModel(Property &opt)
                     graspModel=new TactileFingersModel;
                 else
                 {
-                    printMessage("WARNING: unknown grasp model type %s!\n",modelType.c_str());
+                    printMessage(log::warning,"unknown grasp model type %s!",modelType.c_str());
                     return false;
                 }
 
                 string modelFile=opt.find("grasp_model_file").asString().c_str();                
-                printMessage("Retrieving grasp model data from %s file\n",modelFile.c_str());
+                printMessage(log::info,"Retrieving grasp model data from %s file",modelFile.c_str());
                 Property modelProp; modelProp.fromConfigFile(modelFile.c_str());
 
                 // consistency check between the model and the part
@@ -528,7 +542,7 @@ bool ActionPrimitives::configGraspModel(Property &opt)
                     type+="_arm";
                     if (type!=part)
                     {
-                        printMessage("WARNING: attempt to instantiate a grasp model of type %s while part is %s\n",
+                        printMessage(log::warning,"attempt to instantiate a grasp model of type %s while part is %s",
                                      type.c_str(),part.c_str());
                         return false;
                     }
@@ -539,7 +553,7 @@ bool ActionPrimitives::configGraspModel(Property &opt)
                 return graspModel->fromProperty(modelProp);
             }
             else
-                printMessage("WARNING: unable to find \"grasp_model_file\" option!\n");
+                printMessage(log::warning,"unable to find \"grasp_model_file\" option!");
         }
         else
             ret=true;
@@ -554,13 +568,13 @@ bool ActionPrimitives::open(Property &opt)
 {
     if (configured)
     {
-        printMessage("WARNING: already configured\n");
+        printMessage(log::warning,"already configured");
         return true;
     }
 
     if (!opt.check("local"))
     {
-        printMessage("ERROR: option \"local\" is missing\n");
+        printMessage(log::error,"option \"local\" is missing");
         return false;
     }
 
@@ -680,7 +694,7 @@ void ActionPrimitives::close()
 
     if (armWaver!=NULL)
     {
-        printMessage("stopping balancer thread ...\n");
+        printMessage(log::info,"stopping balancer thread ...");
         armWaver->stop();
 
         delete armWaver;
@@ -689,7 +703,7 @@ void ActionPrimitives::close()
 
     if (isRunning())
     {
-        printMessage("stopping main thread ...\n");
+        printMessage(log::info,"stopping main thread ...");
         stop();
     }
 
@@ -698,13 +712,13 @@ void ActionPrimitives::close()
 
     if (polyHand.isValid())
     {
-        printMessage("closing hand driver ...\n");
+        printMessage(log::info,"closing hand driver ...");
         polyHand.close();
     }
 
     if (polyCart.isValid())
     {
-        printMessage("closing cartesian driver ...\n");
+        printMessage(log::info,"closing cartesian driver ...");
         cartCtrl->restoreContext(startup_context_id);
         polyCart.close();
     }
@@ -757,7 +771,7 @@ bool ActionPrimitives::isHandSeqEnded()
                     // stop and remove if not done yet
                     if (tmpSet.find(jnt)!=tmpSet.end())
                     {
-                        printMessage("contact detected on finger %d: (%g>%g) => stopping joint %d\n",
+                        printMessage(log::info,"contact detected on finger %d: (%g>%g) => stopping joint %d",
                                      fng,val,thres,jnt);
 
                         posCtrl->stop(jnt);
@@ -771,7 +785,7 @@ bool ActionPrimitives::isHandSeqEnded()
     // handle hand timeout
     if ((Time::now()-latchTimerHand)>curHandTmo)
     {
-        printMessage("timeout (%g) expired on hand WP\n",curHandTmo);
+        printMessage(log::info,"timeout (%g) expired on hand WP",curHandTmo);
 
         for (set<int>::iterator i=fingersMovingJntsSet.begin(); i!=fingersMovingJntsSet.end(); ++i)
         {
@@ -912,7 +926,7 @@ bool ActionPrimitives::_pushAction(const Vector &x, const Vector &o,
         }
         else
         {
-            printMessage("WARNING: \"%s\" hand sequence key not found\n",
+            printMessage(log::warning,"\"%s\" hand sequence key not found",
                          handSeqKey.c_str());    
 
             return false;
@@ -1002,7 +1016,7 @@ bool ActionPrimitives::pushAction(const string &handSeqKey,
         }
         else
         {
-            printMessage("WARNING: \"%s\" hand sequence key not found\n",
+            printMessage(log::warning,"\"%s\" hand sequence key not found",
                          handSeqKey.c_str());    
 
             return false;
@@ -1091,7 +1105,7 @@ bool ActionPrimitives::pushAction(const deque<ActionPrimitivesWayPoint> &wayPoin
         }
         else
         {
-            printMessage("WARNING: \"%s\" hand sequence key not found\n",
+            printMessage(log::warning,"\"%s\" hand sequence key not found",
                          handSeqKey.c_str());    
 
             mutex.unlock();
@@ -1143,7 +1157,7 @@ bool ActionPrimitives::reachPose(const Vector &x, const Vector &o,
 
         cartCtrl->goToPose(x,o,t);
 
-        printMessage("reach at %g [s] for [%s], [%s]\n",t,
+        printMessage(log::no_info,"reach at %g [s] for [%s], [%s]",t,
                      x.toString(3,3).c_str(),
                      o.toString(3,3).c_str());
 
@@ -1172,7 +1186,7 @@ bool ActionPrimitives::reachPosition(const Vector &x, const double execTime)
         cartCtrl->goToPosition(x,t);
 
 
-        printMessage("reach at %g [s] for [%s]\n",t,
+        printMessage(log::no_info,"reach at %g [s] for [%s]",t,
                      x.toString(3,3).c_str());
 
         postReachCallback();
@@ -1266,7 +1280,7 @@ void ActionPrimitives::run()
 
         if ((t-latchTimerReachLog)>ACTIONPRIM_DUMP_PERIOD)
         {
-            printMessage("reaching... xdhat=[%s] |e|=%.3f [m]; odhat=[%s] |e|=%.3f\n",
+            printMessage(log::no_info,"reaching... xdhat=[%s] |e|=%.3f [m]; odhat=[%s] |e|=%.3f",
                          xdhat.toString(3,3).c_str(),norm(xdhat-x),
                          odhat.toString(3,3).c_str(),norm(odhat-o));
 
@@ -1290,14 +1304,14 @@ void ActionPrimitives::run()
         {
             if ((t-latchTimerReach)>reachTmo)
             {
-                printMessage("timeout (%g) expired while reaching\n",reachTmo);
+                printMessage(log::info,"timeout (%g) expired while reaching",reachTmo);
                 armMoveDone=true;
             }
         }
 
         if (armMoveDone)
         {    
-            printMessage("reaching complete\n");
+            printMessage(log::no_info,"reaching complete");
             disableTorsoDof();
         }
     }
@@ -1309,7 +1323,7 @@ void ActionPrimitives::run()
         handMoveDone=isHandSeqEnded();
         if (handMoveDone)
         {    
-            printMessage("hand WP reached\n");
+            printMessage(log::no_info,"hand WP reached");
 
             if (!handSeqTerminator)
                 if (execPendingHandSequences())     // here handMoveDone may switch false again
@@ -1325,9 +1339,9 @@ void ActionPrimitives::run()
         // execute action-end callback
         if (actionClb!=NULL)
         {
-            printMessage("executing action-end callback ...\n");
+            printMessage(log::no_info,"executing action-end callback ...");
             actionClb->exec();            
-            printMessage("... action-end callback executed\n");
+            printMessage(log::no_info,"... action-end callback executed");
 
             actionClb=NULL;
         }
@@ -1389,7 +1403,7 @@ bool ActionPrimitives::wait(const Action &action)
 {
     if (configured)
     {        
-        printMessage("wait for %g seconds\n",action.tmo);
+        printMessage(log::no_info,"wait for %g seconds",action.tmo);
         waitTmo=action.tmo;
         latchTimerWait=Time::now();
 
@@ -1418,11 +1432,11 @@ bool ActionPrimitives::cmdArm(const Action &action)
         {
             if (!cartCtrl->goToPoseSync(x,o,t))
             {
-                printMessage("reach error\n");
+                printMessage(log::error,"reach log::error");
                 return false;
             }
             
-            printMessage("reach at %g [s] for [%s], [%s]\n",t,
+            printMessage(log::no_info,"reach at %g [s] for [%s], [%s]",t,
                          x.toString(3,3).c_str(),
                          o.toString(3,3).c_str());
         }
@@ -1430,11 +1444,11 @@ bool ActionPrimitives::cmdArm(const Action &action)
         {
             if (!cartCtrl->goToPositionSync(x,t))
             {
-                printMessage("reach error\n");
+                printMessage(log::error,"reach log::error");
                 return false;
             }
 
-            printMessage("reach at %g [s] for [%s]\n",t,
+            printMessage(log::no_info,"reach at %g [s] for [%s]",t,
                          x.toString(3,3).c_str());
         }
 
@@ -1500,7 +1514,7 @@ bool ActionPrimitives::cmdHand(const Action &action)
         latchHandMoveDone=handMoveDone=false;
         handSeqTerminator=action.handSeqTerminator;
         fingersInPosition=true;
-        printMessage("\"%s\" WP: [%s] (thres = [%s]) (tmo = %g)\n",
+        printMessage(log::no_info,"\"%s\" WP: [%s] (thres = [%s]) (tmo = %g)",
                      tag.c_str(),poss.toString(3,3).c_str(),
                      thres.toString(3,3).c_str(),tmo);
 
@@ -1541,15 +1555,13 @@ bool ActionPrimitives::addHandSeqWP(const string &handSeqKey, const Vector &poss
 /************************************************************************/
 bool ActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &sequence)
 {
-    Bottle &bSeq=const_cast<Bottle&>(sequence);
-
-    if (!bSeq.check("numWayPoints"))
+    if (!sequence.check("numWayPoints"))
     {
-        printMessage("WARNING: \"numWayPoints\" option is missing\n");
+        printMessage(log::warning,"\"numWayPoints\" option is missing");
         return false;
     }
 
-    int numWayPoints=bSeq.find("numWayPoints").asInt();
+    int numWayPoints=sequence.find("numWayPoints").asInt();
     bool ret=false;
 
     for (int j=0; j<numWayPoints; j++)
@@ -1557,40 +1569,40 @@ bool ActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &s
         ostringstream wp;
         wp<<"wp_"<<j;
 
-        Bottle &bWP=bSeq.findGroup(wp.str().c_str());
+        Bottle &bWP=sequence.findGroup(wp.str().c_str());
         if (bWP.isNull())
         {
-            printMessage("WARNING: \"%s\" entry is missing\n",wp.str().c_str());
+            printMessage(log::warning,"\"%s\" entry is missing",wp.str().c_str());
             return false;
         }
 
         if (!bWP.check("poss"))
         {
-            printMessage("WARNING: \"poss\" option is missing\n");
+            printMessage(log::warning,"\"poss\" option is missing");
             return false;
         }
 
         if (!bWP.check("vels"))
         {
-            printMessage("WARNING: \"vels\" option is missing\n");
+            printMessage(log::warning,"\"vels\" option is missing");
             return false;
         }
 
         if (!bWP.check("tols"))
         {
-            printMessage("WARNING: \"tols\" option is missing\n");
+            printMessage(log::warning,"\"tols\" option is missing");
             return false;
         }
 
         if (!bWP.check("thres"))
         {
-            printMessage("WARNING: \"thres\" option is missing\n");
+            printMessage(log::warning,"\"thres\" option is missing");
             return false;
         }
 
         if (!bWP.check("tmo"))
         {
-            printMessage("WARNING: \"tmo\" option is missing\n");
+            printMessage(log::warning,"\"tmo\" option is missing");
             return false;
         }
 
@@ -1623,7 +1635,7 @@ bool ActionPrimitives::addHandSequence(const string &handSeqKey, const Bottle &s
         if (addHandSeqWP(handSeqKey,poss,vels,tols,thres,tmo))
             ret=true;   // at least one WP has been added
         else
-            printMessage("WARNING: \"%s\" entry is invalid, not added to \"%s\"\n",
+            printMessage(log::warning,"\"%s\" entry is invalid, not added to \"%s\"",
                          wp.str().c_str(),handSeqKey.c_str());
     }
 
@@ -1862,6 +1874,26 @@ bool ActionPrimitives::stopControl()
 
 
 /************************************************************************/
+bool ActionPrimitives::setDefaultExecTime(const double execTime)
+{
+    if (configured && (execTime>0.0))
+    {
+        default_exec_time=execTime; 
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+double ActionPrimitives::getDefaultExecTime() const
+{
+    return default_exec_time;
+}
+
+
+/************************************************************************/
 bool ActionPrimitives::setTrackingMode(const bool f)
 {
     if (configured)
@@ -1880,16 +1912,23 @@ bool ActionPrimitives::setTrackingMode(const bool f)
 
 
 /************************************************************************/
+bool ActionPrimitives::getTrackingMode() const
+{
+    return tracking_mode;
+}
+
+
+/************************************************************************/
 bool ActionPrimitives::enableArmWaving(const Vector &restPos)
 {
     if (configured)
     {
         RES_WAVER(armWaver)->setRestPosition(restPos);
-        printMessage("setting waving position to %s\n",
+        printMessage(log::no_info,"setting waving position to %s",
                      restPos.toString(3,3).c_str());
 
         if (RES_WAVER(armWaver)->enable())
-            printMessage("arm waving enabled\n");
+            printMessage(log::no_info,"arm waving enabled");
 
         return true;
     }
@@ -1904,7 +1943,7 @@ bool ActionPrimitives::disableArmWaving()
     if (configured)
     {
         if (RES_WAVER(armWaver)->disable())
-            printMessage("arm waving disabled\n");
+            printMessage(log::no_info,"arm waving disabled");
 
         return true;
     }
@@ -1938,13 +1977,6 @@ bool ActionPrimitives::disableReachingTimeout()
     }
     else
         return false;
-}
-
-
-/************************************************************************/
-bool ActionPrimitives::getTrackingMode() const
-{
-    return tracking_mode;
 }
 
 
@@ -2023,7 +2055,7 @@ bool ActionPrimitivesLayer1::grasp(const Vector &x, const Vector &o, const Vecto
 {
     if (configured)
     {
-        printMessage("start grasping\n");
+        printMessage(log::no_info,"start grasping");
 
         pushAction(x+d,o,"open_hand");
         pushAction(x,o);
@@ -2041,7 +2073,7 @@ bool ActionPrimitivesLayer1::touch(const Vector &x, const Vector &o, const Vecto
 {
     if (configured)
     {
-        printMessage("start touching\n");
+        printMessage(log::no_info,"start touching");
 
         pushAction(x+d,o,"karate_hand");
         pushAction(x,o);
@@ -2060,7 +2092,7 @@ bool ActionPrimitivesLayer1::tap(const Vector &x1, const Vector &o1,
 {
     if (configured)
     {
-        printMessage("start tapping\n");
+        printMessage(log::no_info,"start tapping");
 
         pushAction(x1,o1,"karate_hand");
         pushAction(x2,o2,execTime);
@@ -2081,7 +2113,7 @@ void liftAndGraspCallback::exec()
     {
         Vector x,o;
         action->cartCtrl->getPose(x,o);
-        action->printMessage("logged 3-d pos: [%s]\n",
+        action->printMessage(log::no_info,"logged 3-d pos: [%s]",
                              x.toString(3,3).c_str());
     
         action->pushAction(x+action->grasp_d2,action->grasp_o);
@@ -2173,7 +2205,7 @@ void ActionPrimitivesLayer2::run()
 
         cartCtrl->stopControl();
 
-        printMessage("contact detected on arm: external force [%s], (%g>%g) => stopping arm\n",
+        printMessage(log::warning,"contact detected on arm: external force [%s], (%g>%g) => stopping arm",
                      forceExternal.toString(3,3).c_str(),forceExternalAbs,ext_force_thres);
 
         disableTorsoDof();
@@ -2196,7 +2228,7 @@ bool ActionPrimitivesLayer2::open(Property &opt)
 
     if (configuredLayer2)
     {
-        printMessage("WARNING: already configured\n");
+        printMessage(log::warning,"already configured");
         return true;
     }
 
@@ -2211,7 +2243,7 @@ bool ActionPrimitivesLayer2::open(Property &opt)
         wbdynPortIn.open(("/"+local+"/"+part+"/wbdyn:i").c_str());
         if (!Network::connect(wbdynServerName.c_str(),wbdynPortIn.getName().c_str(),"udp"))
         {
-            printMessage("ERROR: unable to connect to port %s\n",wbdynServerName.c_str());
+            printMessage(log::error,"unable to connect to port %s",wbdynServerName.c_str());
 
             close();
             return false;
@@ -2273,7 +2305,7 @@ bool ActionPrimitivesLayer2::grasp(const Vector &x, const Vector &o,
 {
     if (configured)
     {
-        printMessage("start grasping\n");
+        printMessage(log::no_info,"start grasping");
 
         enableContactDetection();
 
@@ -2305,7 +2337,7 @@ bool ActionPrimitivesLayer2::touch(const Vector &x, const Vector &o, const Vecto
 {
     if (configured)
     {
-        printMessage("start touching\n");
+        printMessage(log::no_info,"start touching");
 
         enableContactDetection();
 

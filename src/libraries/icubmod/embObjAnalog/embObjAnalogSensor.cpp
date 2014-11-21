@@ -25,7 +25,7 @@
 // specific to this device driver.
 #include <embObjAnalogSensor.h>
 #include <ethManager.h>
-#include <Debug.h>
+#include <yarp/os/LogStream.h>
 #include "EoAnalogSensors.h"
 #include "EOnv_hid.h"
 
@@ -81,7 +81,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
   // embObj parameters, in ETH group
     Value val =_config.findGroup("ETH").check("Ems",Value(1), "Board number");
     if(val.isInt())
-        _fId.boardNum =val.asInt();
+        _fId.boardNumber = val.asInt();
     else
     {
         _as_type=AS_NONE;
@@ -189,7 +189,7 @@ embObjAnalogSensor::~embObjAnalogSensor()
         delete scaleFactor;
 }
 
-bool embObjAnalogSensor::isOpened()
+bool embObjAnalogSensor::initialised()
 {
     return opened;
 }
@@ -234,37 +234,36 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     groupEth  = Bottle(config.findGroup("ETH"));
     Bottle parameter1( groupEth.find("PC104IpAddress").asString() );    // .findGroup("IpAddress");
     port      = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
-    snprintf(_fId.PC104ipAddr.string, sizeof(_fId.PC104ipAddr.string), "%s", parameter1.toString().c_str());
-    _fId.PC104ipAddr.port = port;
+    snprintf(_fId.pc104IPaddr.string, sizeof(_fId.pc104IPaddr.string), "%s", parameter1.toString().c_str());
+    _fId.pc104IPaddr.port = port;
 
     Bottle parameter2( groupEth.find("IpAddress").asString() );    // .findGroup("IpAddress");
-    snprintf(_fId.EMSipAddr.string, sizeof(_fId.EMSipAddr.string), "%s", parameter2.toString().c_str());
-    _fId.EMSipAddr.port = port;
+    snprintf(_fId.boardIPaddr.string, sizeof(_fId.boardIPaddr.string), "%s", parameter2.toString().c_str());
+    _fId.boardIPaddr.port = port;
 
-    sscanf(_fId.EMSipAddr.string,"\"%d.%d.%d.%d", &_fId.EMSipAddr.ip1, &_fId.EMSipAddr.ip2, &_fId.EMSipAddr.ip3, &_fId.EMSipAddr.ip4);
-    sscanf(_fId.PC104ipAddr.string,"\"%d.%d.%d.%d", &_fId.PC104ipAddr.ip1, &_fId.PC104ipAddr.ip2, &_fId.PC104ipAddr.ip3, &_fId.PC104ipAddr.ip4);
+    sscanf(_fId.boardIPaddr.string,"\"%d.%d.%d.%d", &_fId.boardIPaddr.ip1, &_fId.boardIPaddr.ip2, &_fId.boardIPaddr.ip3, &_fId.boardIPaddr.ip4);
+    sscanf(_fId.pc104IPaddr.string,"\"%d.%d.%d.%d", &_fId.pc104IPaddr.ip1, &_fId.pc104IPaddr.ip2, &_fId.pc104IPaddr.ip3, &_fId.pc104IPaddr.ip4);
 
-    snprintf(_fId.EMSipAddr.string, sizeof(_fId.EMSipAddr.string), "%u.%u.%u.%u:%u", _fId.EMSipAddr.ip1, _fId.EMSipAddr.ip2, _fId.EMSipAddr.ip3, _fId.EMSipAddr.ip4, _fId.EMSipAddr.port);
-    snprintf(_fId.PC104ipAddr.string, sizeof(_fId.PC104ipAddr.string), "%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
+    snprintf(_fId.boardIPaddr.string, sizeof(_fId.boardIPaddr.string), "%u.%u.%u.%u:%u", _fId.boardIPaddr.ip1, _fId.boardIPaddr.ip2, _fId.boardIPaddr.ip3, _fId.boardIPaddr.ip4, _fId.boardIPaddr.port);
+    snprintf(_fId.pc104IPaddr.string, sizeof(_fId.pc104IPaddr.string), "%u.%u.%u.%u:%u", _fId.pc104IPaddr.ip1, _fId.pc104IPaddr.ip2, _fId.pc104IPaddr.ip3, _fId.pc104IPaddr.ip4, _fId.pc104IPaddr.port);
 
     // debug info
     memset(info, 0x00, sizeof(info));
-    snprintf(info, sizeof(info), "embObjAnalogSensor: referred to EMS: %d at address %s\n", _fId.boardNum, address);
+    snprintf(info, sizeof(info), "embObjAnalogSensor: referred to EMS: %d at address %s\n", _fId.boardNumber, address);
     snprintf(_fId.name, sizeof(_fId.name), "%s", info);       // Saving User Friendly Id
 
     // Set dummy values
-    _fId.boardNum  = 255;
+    _fId.boardNumber  = FEAT_boardnumber_dummy;
 
     Value val = config.findGroup("ETH").check("Ems", Value(1), "Board number");
     if(val.isInt())
-        _fId.boardNum = val.asInt();
+        _fId.boardNumber = val.asInt();
     else
     {
-        yError () << "embObjAnalogSensor: EMS Board number identifier not found for IP" << _fId.PC104ipAddr.string;
+        yError () << "embObjAnalogSensor: EMS Board number identifier not found for IP" << _fId.pc104IPaddr.string;
         return false;
     }
 
-    _fId.ep = eoprot_endpoint_analogsensors;
 
     ethManager = TheEthManager::instance();
     if(NULL == ethManager)
@@ -273,57 +272,63 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-    //N.B.: use a dynamic_cast to extract correct interface when using this pointer
-    _fId.handle = (this);
+    // N.B.: use a dynamic_cast<> to extract correct interface when using this pointer
+    _fId.interface = this;
+
+    _fId.endpoint = eoprot_endpoint_analogsensors;
+    if(AS_STRAIN == _as_type)
+        _fId.type = ethFeatType_AnalogStrain;
+    else if(AS_MAIS == _as_type)
+        _fId.type = ethFeatType_AnalogMais;
 
     /* Once I'm ok, ask for resources, through the _fId struct I'll give the ip addr, port and
     *  and boardNum to the ethManager in order to create the ethResource requested.
     */
-    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, &_fId);
+    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, _fId);
     if(NULL == res)
     {
-        yError() << "embObjAnalogSensor::open() fails because could not instantiate the ethResource board" << _fId.boardNum << " ... unable to continue";
+        yError() << "embObjAnalogSensor::open() fails because could not instantiate the ethResource board" << _fId.boardNumber << " ... unable to continue";
         return false;
     }
 
     if(false == res->isEPmanaged(eoprot_endpoint_analogsensors))
     {
-        yError() << "embObjAnalogSensor::open() detected that EMS "<< _fId.boardNum << " does not support analog sensors";
+        yError() << "embObjAnalogSensor::open() detected that EMS "<< _fId.boardNumber << " does not support analog sensors";
         return false;
     }
 
     if(false == res->verifyBoard(groupProtocol))
     {
-        yError() << "embObjAnalogSensor::open() fails in function verifyBoard() for board " << _fId.boardNum << ": CANNOT PROCEED ANY FURTHER";
+        yError() << "embObjAnalogSensor::open() fails in function verifyBoard() for board " << _fId.boardNumber << ": CANNOT PROCEED ANY FURTHER";
         return false;
     }
     else
     {
-        yWarning() << "(OK)-> embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNum << " is communicating correctly";
+        yWarning() << "(OK)-> embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNumber << " is communicating correctly";
     }
 
     if(!res->verifyEPprotocol(groupProtocol, eoprot_endpoint_analogsensors))
     {
-        yError() << "embObjAnalogSensor::open() fails in function verifyEPprotocol() for board "<< _fId.boardNum << ": either the board cannot be reached or it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
+        yError() << "embObjAnalogSensor::open() fails in function verifyEPprotocol() for board "<< _fId.boardNumber << ": either the board cannot be reached or it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
         return false;
     }
     else
     {
-        yWarning() << "(OK)-> embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNum << " has same protocol version for analogsensors as robotInterface";
+        yWarning() << "(OK)-> embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNumber << " has same protocol version for analogsensors as robotInterface";
     }
 
 //    // marco.accame on 04 sept 2014: we could add a verification about the entities of analog ... MAYBE in the future
 //
-//    uint8_t numberofmaisboards = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNum), eoprot_endpoint_analogsensors, eoprot_entity_as_mais);
+//    uint8_t numberofmaisboards = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNumber), eoprot_endpoint_analogsensors, eoprot_entity_as_mais);
 //    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_analogsensors, eoprot_entity_as_mais, numberofmaisboards))
 //    {   // JUST AN EXAMPLE OF HOW TO DO IT FOR THE MAIS.
-//        yError() << "embObjAnalogSensor::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNum << " and entity eoprot_entity_as_mais: VERIFY their number in board, and in XML files";
+//        yError() << "embObjAnalogSensor::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_as_mais: VERIFY their number in board, and in XML files";
 //        return false;
 //    }
-//    uint8_t numberofstrainboards = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNum), eoprot_endpoint_analogsensors, eoprot_entity_as_strain);
+//    uint8_t numberofstrainboards = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNumber), eoprot_endpoint_analogsensors, eoprot_entity_as_strain);
 //    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_analogsensors, eoprot_entity_as_strain, numberofstrainboards))
 //    {   // JUST AN EXAMPLE OF HOW TO DO IT FOR THE STRAIN.
-//        yError() << "embObjAnalogSensor::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNum << " and entity eoprot_entity_as_strain: VERIFY their number in board, and in XML files";
+//        yError() << "embObjAnalogSensor::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_as_strain: VERIFY their number in board, and in XML files";
 //        return false;
 //    }
 
@@ -371,12 +376,12 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
     if(false == res->goToRun())
     {
-        yError() << "embObjAnalogSensor::open() fails to start control loop of board" << _fId.boardNum << ": cannot continue";
+        yError() << "embObjAnalogSensor::open() fails to start control loop of board" << _fId.boardNumber << ": cannot continue";
         return false;
     }
     else
     {
-        yWarning() << "(OK)-> embObjAnalogSensor::open() correctly activated control loop of BOARD" << _fId.boardNum;
+        yWarning() << "(OK)-> embObjAnalogSensor::open() correctly activated control loop of BOARD" << _fId.boardNumber;
     }
 
     opened = true;
@@ -436,7 +441,7 @@ bool embObjAnalogSensor::sendConfig2Strain(void)
 
 #else
 
-    eOprotID32_t protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
     if(!res->addSetMessage(protoid, (uint8_t *) &strainConfig))
     {
         yError() << "embObjAnalogSensor::sendConfig2Strain() could not send a set message for eoprot_tag_as_strain_config";
@@ -490,7 +495,7 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     uint8_t datarate  = _period;
 
     // set mais datarate = 1millisec
-    eOprotID32_t protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 
 
     if(!res->addSetMessage(protoid, &datarate))
@@ -501,7 +506,7 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 
     // set tx mode continuosly
     eOas_maismode_t     maismode  = eoas_maismode_txdatacontinuously;
-    protoid = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
+    protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
 
 
     if(!res->addSetMessage(protoid, (uint8_t *) &maismode))
@@ -547,7 +552,7 @@ bool embObjAnalogSensor::getFullscaleValues()
 
     eOprotID32_t protoid_fullscale = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
 
-    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid_fullscale))
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNumber), protoid_fullscale))
     {
         char str[128];
         eoprot_ID2information(protoid_fullscale, str, sizeof(str));
@@ -578,9 +583,9 @@ bool embObjAnalogSensor::getFullscaleValues()
 
      or better, just check that initalization has been done as expected, i.e. initial size is zero.
 */
-     eOprotID32_t protoid_fullscale = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
+     eOprotID32_t protoid_fullscale = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_fullscale);
 
-    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid_fullscale))
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNumber), protoid_fullscale))
         yError() << "nvid not found";
 
     p_tmpNV = res->getNVhandler(protoid_fullscale, &tmpNV);
@@ -591,7 +596,7 @@ bool embObjAnalogSensor::getFullscaleValues()
     // when initialized, size should be zero... check it
     NVsize = eo_array_Size((EOarray*) p_tmpNV->ram);
     if(0 != NVsize)
-        yError() << "Initial size of array is different from zero (" << NVsize << ") for board" << _fId.boardNum;
+        yError() << "Initial size of array is different from zero (" << NVsize << ") for board" << _fId.boardNumber;
      
 #endif
         
@@ -601,7 +606,7 @@ bool embObjAnalogSensor::getFullscaleValues()
     strainConfig.mode                   = eoas_strainmode_acquirebutdonttx;
     strainConfig.signaloncefullscale    = eobool_true;
 
-    eOprotID32_t protoid_strain_config = eoprot_ID_get((eOprotEndpoint_t)_fId.ep, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
+    eOprotID32_t protoid_strain_config = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
 
     timeout = 5;
 
@@ -623,18 +628,18 @@ bool embObjAnalogSensor::getFullscaleValues()
         }
 
         timeout--;
-        yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): for board " << _fId.boardNum << ": full scale val not arrived yet... retrying in 1 sec";
+        yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): for board " << _fId.boardNumber << ": full scale val not arrived yet... retrying in 1 sec";
     }
 
     if((false == gotFullScaleValues) && (0 == timeout))
     {
-        yError() << "embObjAnalogSensor::getFullscaleValues(): ETH Analog sensor: request for calibration parameters timed out for board" << _fId.boardNum;
+        yError() << "embObjAnalogSensor::getFullscaleValues(): ETH Analog sensor: request for calibration parameters timed out for board" << _fId.boardNumber;
         return false;
     }
 
     if((NVsize != _channels))
     {
-        yError() << "Analog sensor Calibration data has a different size from channels number in configuration file for board" << _fId.boardNum << "Aborting";
+        yError() << "Analog sensor Calibration data has a different size from channels number in configuration file for board" << _fId.boardNumber << "Aborting";
         return false;
     }
 
@@ -643,9 +648,9 @@ bool embObjAnalogSensor::getFullscaleValues()
 
     if(gotFullScaleValues)
     {
-        yWarning() << "(!!)-> embObjAnalogSensor::getFullscaleValues() detected that already has full scale values for board" << _fId.boardNum;
+        yWarning() << "(!!)-> embObjAnalogSensor::getFullscaleValues() detected that already has full scale values for board" << _fId.boardNumber;
 
-        yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): Fullscale values for board " << _fId.boardNum << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  _channels;
+        yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): Fullscale values for board " << _fId.boardNumber << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  _channels;
 
 
         for(int i=0; i<_channels; i++)
@@ -703,7 +708,7 @@ bool embObjAnalogSensor::init()
         }
     }
 
-    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNum), protoid))
+    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNumber), protoid))
     {
         char str[128];
         eoprot_ID2information(protoid, str, sizeof(str));
@@ -827,7 +832,7 @@ int embObjAnalogSensor::calibrateChannel(int ch, double v)
     return AS_OK;
 }
 
-bool embObjAnalogSensor::fillData(eOnvID32_t id32, double timestamp, void* rxdata)
+bool embObjAnalogSensor::update(eOprotID32_t id32, double timestamp, void* rxdata)
 {
     bool ret;
 

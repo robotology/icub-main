@@ -229,7 +229,7 @@ public:
         }
         else
         {
-            if (Node *finger=model->getNode(fingerName))
+            if (iCub::perception::Node *finger=model->getNode(fingerName))
             {
                 Value data; finger->getSensorsData(data);
                 Value out;  finger->getOutput(out);

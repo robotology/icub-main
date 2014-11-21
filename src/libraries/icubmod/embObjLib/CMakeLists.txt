@@ -245,18 +245,16 @@ set(embobj_header           ${BODY_COMMON_SOURCE}
 
 SOURCE_GROUP("EmbObj Source Files" FILES ${embobj_source})
 SOURCE_GROUP("EmbObj Header Files" FILES ${embobj_header})
-  
-include_directories(   
-                            ${CMAKE_CURRENT_SOURCE_DIR}
-                            ${embObj_includes}
-                            ${iCubDev_INCLUDE_DIRS}
-                            ${YARP_INCLUDE_DIRS}
-                            )
-  
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}
+                    ${embObj_includes}
+                    ${iCubDev_INCLUDE_DIRS}
+                    ${YARP_INCLUDE_DIRS})
+
 add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
 
 #add_dependencies(${PROJECTNAME} eBcode-download)
-TARGET_LINK_LIBRARIES(${PROJECTNAME} debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES} )  
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
 
 icub_export_library(${PROJECTNAME})
 

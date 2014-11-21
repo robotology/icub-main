@@ -9,7 +9,7 @@
 #include <canProtocolLib/iCubCanProtocol.h>
 #include <yarp/os/Time.h>
 #include <iostream>
-#include <Debug.h>
+#include <yarp/os/LogStream.h>
 
 const int CAN_DRIVER_BUFFER_SIZE = 2047;
 
@@ -315,7 +315,7 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
 
         for(j=0; j<numofcfg; j++)
         {
-            yError() << "special traingle cfg: " << numofcfg;
+            yDebug() << "Special triangle cfg: " << numofcfg << " on can bus: " << _canBusNum;
 
             //check if patch exist
             if(_canBusNum != triangleCfg[j].patch)
@@ -516,7 +516,7 @@ void CanBusSkin::run() {
     bool res=pCanBus->canRead(inBuffer,CAN_DRIVER_BUFFER_SIZE,&canMessages);
     if (!res)
     {
-        std::cerr<<"canRead failed\n";
+        yError()<<"canRead failed\n";
     }
 
     for (unsigned int i=0; i<canMessages; i++)

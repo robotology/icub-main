@@ -97,7 +97,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         }
         if(p>=_skCfg.patchInfoList.size())
         {
-            yError() << "skin of board num " << _fId.boardNum << ": patch " << boardCfgList[j].patch << "not exists";
+            yError() << "skin of board num " << _fId.boardNumber << ": patch " << boardCfgList[j].patch << "not exists";
             return false;
         }
         //now p is the index of patch.
@@ -107,7 +107,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         {
             if(!_skCfg.patchInfoList[p].checkCardAddrIsInList(a))
             {
-                yError() << "skin of board num " << _fId.boardNum << " card with address " << a << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
+                yError() << "skin of board num " << _fId.boardNumber << " card with address " << a << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
                 return(false);
             }
         }
@@ -128,7 +128,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
         if(! res->addSetMessage(protoid, (uint8_t*)&bcfg))
         {
-            yError() << "skin board "<< _fId.boardNum << " Error in send special board config for mtb with addr from"<<  bcfg.addrstart << " to addr " << bcfg.addrend;
+            yError() << "skin board "<< _fId.boardNumber << " Error in send special board config for mtb with addr from"<<  bcfg.addrstart << " to addr " << bcfg.addrend;
             return false;
         }
 
@@ -155,7 +155,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         }
         if(p >= _skCfg.patchInfoList.size())
         {
-            yError() << "skin of board num " << _fId.boardNum << ": patch " << triangleCfg[j].patch << "not exists";
+            yError() << "skin of board num " << _fId.boardNumber << ": patch " << triangleCfg[j].patch << "not exists";
             return false;
         }
         //now p is index patch
@@ -163,7 +163,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         //check if bcfg.boardAddr is in my patches list
         if(!_skCfg.patchInfoList[p].checkCardAddrIsInList(triangleCfg[j].boardAddr))
         {
-            yError() << "skin of board num " << _fId.boardNum <<  " card with address " << triangleCfg[j].boardAddr << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
+            yError() << "skin of board num " << _fId.boardNumber <<  " card with address " << triangleCfg[j].boardAddr << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
             return(false);
         }
 
@@ -186,7 +186,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
         if(! res->addSetMessage(protoid, (uint8_t*)&tcfg))
         {
-            yError() << "skin board "<< _fId.boardNum << " Error in send default triangle config for mtb "<<  tcfg.boardaddr;
+            yError() << "skin board "<< _fId.boardNumber << " Error in send default triangle config for mtb "<<  tcfg.boardaddr;
             return false;
         }
     }
@@ -207,14 +207,14 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     bPatches = config.findGroup("patches", "skin patches connected to this device");
     if(bPatches.isNull())
     {
-        yError() << "skin board num " << _fId.boardNum << "patches group is missed!";
+        yError() << "skin board num " << _fId.boardNumber << "patches group is missed!";
         return(false);
     }
 
     bPatchList = bPatches.findGroup("patchesIdList");
     if(bPatchList.isNull())
     {
-        yError() << "skin board num " << _fId.boardNum << "patchesList is missed!";
+        yError() << "skin board num " << _fId.boardNumber << "patchesList is missed!";
         return(false);
     }
 
@@ -227,7 +227,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         int id = bPatchList.get(j).asInt();
         if((id!=1) && (id!=2))
         {
-            yError() << "skin board num " << _fId.boardNum << "ems expected only patch num 1 or 2";
+            yError() << "skin board num " << _fId.boardNumber << "ems expected only patch num 1 or 2";
             return false;
         }
         _skCfg.patchInfoList[j-1].idPatch = id;
@@ -251,7 +251,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         xtmp = bPatches.findGroup(tmp);
         if(xtmp.isNull())
         {
-            yError() << "skin of board num " << _fId.boardNum << "doesn't find " << tmp << "in xml file";
+            yError() << "skin of board num " << _fId.boardNumber << "doesn't find " << tmp << "in xml file";
             return false;
         }
 
@@ -334,23 +334,23 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     groupEth  = Bottle(config.findGroup("ETH"));
     Bottle parameter1( groupEth.find("PC104IpAddress").asString() );
     port      = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
-    snprintf(_fId.PC104ipAddr.string, sizeof(_fId.PC104ipAddr.string), "%s", parameter1.toString().c_str());
-    _fId.PC104ipAddr.port = port;
+    snprintf(_fId.pc104IPaddr.string, sizeof(_fId.pc104IPaddr.string), "%s", parameter1.toString().c_str());
+    _fId.pc104IPaddr.port = port;
 
     Bottle parameter2( groupEth.find("IpAddress").asString() );    // .findGroup("IpAddress");
-    snprintf(_fId.EMSipAddr.string, sizeof(_fId.EMSipAddr.string), "%s", parameter2.toString().c_str());
-    _fId.EMSipAddr.port = port;
+    snprintf(_fId.boardIPaddr.string, sizeof(_fId.boardIPaddr.string), "%s", parameter2.toString().c_str());
+    _fId.boardIPaddr.port = port;
 
-    sscanf(_fId.EMSipAddr.string,"\"%d.%d.%d.%d", &_fId.EMSipAddr.ip1, &_fId.EMSipAddr.ip2, &_fId.EMSipAddr.ip3, &_fId.EMSipAddr.ip4);
-    sscanf(_fId.PC104ipAddr.string,"\"%d.%d.%d.%d", &_fId.PC104ipAddr.ip1, &_fId.PC104ipAddr.ip2, &_fId.PC104ipAddr.ip3, &_fId.PC104ipAddr.ip4);
+    sscanf(_fId.boardIPaddr.string,"\"%d.%d.%d.%d", &_fId.boardIPaddr.ip1, &_fId.boardIPaddr.ip2, &_fId.boardIPaddr.ip3, &_fId.boardIPaddr.ip4);
+    sscanf(_fId.pc104IPaddr.string,"\"%d.%d.%d.%d", &_fId.pc104IPaddr.ip1, &_fId.pc104IPaddr.ip2, &_fId.pc104IPaddr.ip3, &_fId.pc104IPaddr.ip4);
 
-    snprintf(_fId.EMSipAddr.string, sizeof(_fId.EMSipAddr.string), "%u.%u.%u.%u:%u", _fId.EMSipAddr.ip1, _fId.EMSipAddr.ip2, _fId.EMSipAddr.ip3, _fId.EMSipAddr.ip4, _fId.EMSipAddr.port);
-    snprintf(_fId.PC104ipAddr.string, sizeof(_fId.PC104ipAddr.string), "%u.%u.%u.%u:%u", _fId.PC104ipAddr.ip1, _fId.PC104ipAddr.ip2, _fId.PC104ipAddr.ip3, _fId.PC104ipAddr.ip4, _fId.PC104ipAddr.port);
+    snprintf(_fId.boardIPaddr.string, sizeof(_fId.boardIPaddr.string), "%u.%u.%u.%u:%u", _fId.boardIPaddr.ip1, _fId.boardIPaddr.ip2, _fId.boardIPaddr.ip3, _fId.boardIPaddr.ip4, _fId.boardIPaddr.port);
+    snprintf(_fId.pc104IPaddr.string, sizeof(_fId.pc104IPaddr.string), "%u.%u.%u.%u:%u", _fId.pc104IPaddr.ip1, _fId.pc104IPaddr.ip2, _fId.pc104IPaddr.ip3, _fId.pc104IPaddr.ip4, _fId.pc104IPaddr.port);
 
     // Check input parameters
     bool correct=true;
 
-    snprintf(info, sizeof(info), "EmbObjSkin - referred to EMS: %s", _fId.EMSipAddr.string);
+    snprintf(info, sizeof(info), "EmbObjSkin - referred to EMS: %s", _fId.boardIPaddr.string);
 
     if (!correct)
     {
@@ -365,68 +365,68 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    // fill FEAT_ID data
-    _fId.type = Skin;
 
-    _fId.boardNum  = 255;
     Value val = config.findGroup("ETH").check("Ems",Value(1), "Board number");
     if(val.isInt())
     {
-        _fId.boardNum = val.asInt();
+        _fId.boardNumber = val.asInt();
     }
     else
     {
         yError() << "skin: No board number found!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
         return false;
     }
-    _fId.ep = eoprot_endpoint_skin;
 
-    //N.B.: use a dynamic_cast to extract correct interface when using this pointer
-    _fId.handle = (this);
+    _fId.endpoint = eoprot_endpoint_skin;
+    _fId.type = ethFeatType_Skin;
+
+    // N.B.: use a dynamic_cast to extract correct interface when using this pointer
+    _fId.interface = this;
+
 
     /* Once I'm ok, ask for resources, through the _fId struct I'll give the ip addr, port and
     *  and boradNum to the ethManagerin order to create the ethResource requested.
     * I'll Get back the very same sturct filled with other data useful for future handling
     * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, &_fId);
+    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, _fId);
     if(NULL == res)
     {
-        yError() << "embObjSkin::open() fails because could not instantiate the ethResource board" << _fId.boardNum << " ... unable to continue";
+        yError() << "embObjSkin::open() fails because could not instantiate the ethResource board" << _fId.boardNumber << " ... unable to continue";
         return false;
     }
 
     if(false == res->isEPmanaged(eoprot_endpoint_skin))
     {
-        yError() << "embObjSkin::open() detected that EMS "<< _fId.boardNum << " does not support skin";
+        yError() << "embObjSkin::open() detected that EMS "<< _fId.boardNumber << " does not support skin";
         return false;
     }
 
 
     if(false == res->verifyBoard(groupProtocol))
     {
-        yError() << "embObjSkin::init() fails in function verifyBoard() for board " << _fId.boardNum << ": CANNOT PROCEED ANY FURTHER";
+        yError() << "embObjSkin::init() fails in function verifyBoard() for board " << _fId.boardNumber << ": CANNOT PROCEED ANY FURTHER";
         return false;
     }
 
     if(!res->verifyEPprotocol(groupProtocol, eoprot_endpoint_skin))
     {
-        yError() << "embObjSkin::init() fails in function verifyEPprotocol() for board "<< _fId.boardNum << ": the board does not have the same eoprot_endpoint_management and/or eoprot_endpoint_skin protocol version: DO A FW UPGRADE";
+        yError() << "embObjSkin::init() fails in function verifyEPprotocol() for board "<< _fId.boardNumber << ": the board does not have the same eoprot_endpoint_management and/or eoprot_endpoint_skin protocol version: DO A FW UPGRADE";
         return false;
     }
 
     //    // marco.accame on 04 sept 2014: we could add a verification about the entities of skin ... MAYBE in the future
     //
-    //    uint8_t numberofskins = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNum), eoprot_endpoint_skin, eoprot_entity_sk_skin);
+    //    uint8_t numberofskins = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNumber), eoprot_endpoint_skin, eoprot_entity_sk_skin);
     //    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_skin, eoprot_entity_sk_skin, numberofskins))
     //    {   // JUST AN EXAMPLE OF HOW TO DO IT FOR THE SKIN.
-    //        yError() << "embObjSkin::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNum << " and entity eoprot_entity_sk_skin: VERIFY their number in board, and in XML files";
+    //        yError() << "embObjSkin::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_sk_skin: VERIFY their number in board, and in XML files";
     //        return false;
     //    }
 
 
     if(!this->fromConfig(config))
     {
-        yError() << "embObjSkin::init() fails in function fromConfig() for board " << _fId.boardNum << ": CANNOT PROCEED ANY FURTHER";
+        yError() << "embObjSkin::init() fails in function fromConfig() for board " << _fId.boardNumber << ": CANNOT PROCEED ANY FURTHER";
         return false;
     }
 
@@ -461,12 +461,12 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     if(false == res->goToRun())
     {
-        yError() << "embObjSkin::open() fails to start control loop of board" << _fId.boardNum << ": cannot continue";
+        yError() << "embObjSkin::open() fails to start control loop of board" << _fId.boardNumber << ": cannot continue";
         return false;
     }
     else
     {
-        yWarning() << "(OK)-> embObjSkin::open() correctly activated control loop of BOARD" << _fId.boardNum;
+        yWarning() << "(OK)-> embObjSkin::open() correctly activated control loop of BOARD" << _fId.boardNumber;
     }
 
     return true;
@@ -493,10 +493,13 @@ bool EmbObjSkin::close()
     return true;
 }
 
-void EmbObjSkin::setId(FEAT_ID &id)
+#if 0
+void EmbObjSkin::setId(ethFeature_t &id)
 {
     _fId=id;
 }
+#endif
+
 
 int EmbObjSkin::read(yarp::sig::Vector &out)
 {
@@ -551,12 +554,12 @@ bool EmbObjSkin::start()
     if(_newCfg)
     {
         dat = eosk_sigmode_signal;
-        yDebug()<< "  (!!)-> EmbObjSkin::start() detected that skin for board " << _fId.boardNum << "uses new signal mode";
+        yDebug()<< "  (!!)-> EmbObjSkin::start() detected that skin for board " << _fId.boardNumber << "uses new signal mode";
     }
     else
     {
         dat = eosk_sigmode_signal_oldway;
-        yDebug()<< "  (!!)-> EmbObjSkin::start() detected  that skin for board " << _fId.boardNum << "used old signal mode";
+        yDebug()<< "  (!!)-> EmbObjSkin::start() detected  that skin for board " << _fId.boardNumber << "used old signal mode";
     }
 
     for(i=0; i<_skCfg.numOfPatches;i++)
@@ -565,7 +568,7 @@ bool EmbObjSkin::start()
         ret = res->addSetMessage(protoid, &dat);
         if(!ret)
         {
-            yError() << "error in start skin for board " << _fId.boardNum << " on port " <<  _skCfg.patchInfoList[i].idPatch;
+            yError() << "error in start skin for board " << _fId.boardNumber << " on port " <<  _skCfg.patchInfoList[i].idPatch;
             return false;
         }
     }
@@ -659,7 +662,7 @@ bool EmbObjSkin::init()
 
         if(!res->addSetMessage(protoid, (uint8_t*)&defBoardCfg))
         {
-            yError() <<"skin board "<< _fId.boardNum << " Error in send default board config for mtb with addr from "<<  defBoardCfg.addrstart << "to " << defBoardCfg.addrend;
+            yError() <<"skin board "<< _fId.boardNumber << " Error in send default board config for mtb with addr from "<<  defBoardCfg.addrstart << "to " << defBoardCfg.addrend;
             return false;
         }
 
@@ -675,7 +678,7 @@ bool EmbObjSkin::init()
             defTriangleCfg.boardaddr = _skCfg.patchInfoList[i].cardAddrList[k];
             if(! res->addSetMessage(protoid, (uint8_t*)&defTriangleCfg))
             {
-                yError() << "skin board "<< _fId.boardNum<< " Error in send default triangle config for mtb "<<  defTriangleCfg.boardaddr;
+                yError() << "skin board "<< _fId.boardNumber<< " Error in send default triangle config for mtb "<<  defTriangleCfg.boardaddr;
                 return false;
             }
         }
@@ -686,12 +689,12 @@ bool EmbObjSkin::init()
     return true;
 }
 
-bool EmbObjSkin::isOpened()
+bool EmbObjSkin::initialised()
 {
     return opened;
 }
 
-bool EmbObjSkin::fillData(eOnvID32_t id32, double timestamp, void *rxdata)
+bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
 {
     uint8_t           msgtype = 0;
     uint8_t           i, triangle = 0;
@@ -710,7 +713,7 @@ bool EmbObjSkin::fillData(eOnvID32_t id32, double timestamp, void *rxdata)
     }
     if(p >= _skCfg.numOfPatches)
     {
-        yError() << "skin of board num " << _fId.boardNum << ": received data of patch with nvindex= " << indexpatch;
+        yError() << "skin of board num " << _fId.boardNumber << ": received data of patch with nvindex= " << indexpatch;
         return false;
     }
 

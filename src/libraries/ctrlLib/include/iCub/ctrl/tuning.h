@@ -159,10 +159,11 @@ public:
 class OnlineStictionEstimator : public yarp::os::RateThread
 {
 protected:
-    yarp::dev::IControlMode2  *imod;
-    yarp::dev::IControlLimits *ilim;
-    yarp::dev::IEncoders      *ienc;
-    yarp::dev::IPidControl    *ipid;
+    yarp::dev::IControlMode2    *imod;
+    yarp::dev::IControlLimits   *ilim;
+    yarp::dev::IEncoders        *ienc;
+    yarp::dev::IPidControl      *ipid;
+    yarp::dev::IOpenLoopControl *iolc;
 
     yarp::os::Mutex    mutex;
     yarp::os::Event    doneEvent;
@@ -357,6 +358,7 @@ protected:
     yarp::dev::IEncoders        *ienc;
     yarp::dev::IPositionControl *ipos;
     yarp::dev::IPidControl      *ipid;
+    yarp::dev::IOpenLoopControl *iolc;
     yarp::dev::Pid              *pidCur;
     yarp::dev::Pid               pidOld;
     yarp::dev::Pid               pidNew;

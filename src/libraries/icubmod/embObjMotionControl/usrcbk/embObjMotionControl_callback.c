@@ -47,8 +47,8 @@ static void wake(const EOnv* nv);
 
 static void wake(const EOnv* nv)
 {
-    void *handler = (void*) get_MChandler_fromEP(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), eo_nv_GetEP8(nv));
-    if(NULL == handler)
+    void *mchandler = (void*) feat_MC_handler_get(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), eo_nv_GetID32(nv));
+    if(NULL == mchandler)
     {
         printf("eoMC class not found\n");
         return;
@@ -56,7 +56,7 @@ static void wake(const EOnv* nv)
     
     eOprotID32_t id32 = eo_nv_GetID32(nv);
     eOprotProgNumber_t prognum = eoprot_endpoint_id2prognum(eo_nv_GetBRD(nv), id32);
-    MCmutex_post(handler, prognum);
+    feat_MC_mutex_post(mchandler, prognum);
 }
 
 
@@ -71,7 +71,7 @@ extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdes
 
     // i just refresh the encoder timestamp
     // i do it anyway, both if broadcasted and if a reply:
-    addEncoderTimeStamp(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32);
+    feat_addEncoderTimeStamp(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32);
 
 
     // debug:
@@ -112,7 +112,7 @@ extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdes
 extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     // i just refresh the encoder timestamp
-    addEncoderTimeStamp(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32);
+    feat_addEncoderTimeStamp(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32);
 
 #ifdef _SETPOINT_TEST_
     {

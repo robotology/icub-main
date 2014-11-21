@@ -37,10 +37,8 @@
 #ifndef __PERCEPTIVEMODELS_TACTILEFINGERS_H__
 #define __PERCEPTIVEMODELS_TACTILEFINGERS_H__
 
-#include <yarp/os/Value.h>
-#include <yarp/os/Property.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/sig/Vector.h>
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
 
 #include <iCub/perception/sensors.h>
 #include <iCub/perception/nodes.h>
@@ -156,7 +154,6 @@ private:
     std::string type;
     std::string robot;
     std::string carrier;
-    int verbosity;
 
     SensorPort    sensPort[60];
     TactileFinger fingers[5];
@@ -165,7 +162,6 @@ private:
 
     yarp::os::BufferedPort<yarp::os::Bottle> *port;
 
-    int printMessage(const int level, const char *format, ...) const;
     void close();
 
 public:

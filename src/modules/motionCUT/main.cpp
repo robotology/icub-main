@@ -190,7 +190,8 @@ Linux and Windows.
 \author Carlo Ciliberto and Ugo Pattacini
 */ 
 
-#include <stdio.h>
+#include <cstdio>
+#include <cmath>
 #include <string>
 #include <set>
 #include <vector>
@@ -198,7 +199,6 @@ Linux and Windows.
 #include <algorithm>
 
 #include <cv.h>
-#include <math.h>
 
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
@@ -390,35 +390,33 @@ public:
     {
         if (s)
         {
-            printf("Process started successfully\n");
-            printf("\n");
-            printf("Using ...\n");
-            printf("name              = %s\n",name.c_str());
-            printf("coverXratio       = %g\n",coverXratio);
-            printf("coverYratio       = %g\n",coverYratio);
-            printf("nodesStep         = %d\n",nodesStep);
-            printf("winSize           = %d\n",winSize);
-            printf("recogThres        = %g\n",recogThres);
-            printf("recogThresAbs     = %g\n",recogThresAbs);
-            printf("adjNodesThres     = %d\n",adjNodesThres);
-            printf("blobMinSizeThres  = %d\n",blobMinSizeThres);
-            printf("framesPersistence = %d\n",framesPersistence);
+            yInfo("Process started successfully");
+            yInfo("Using ...");
+            yInfo("name              = %s",name.c_str());
+            yInfo("coverXratio       = %g",coverXratio);
+            yInfo("coverYratio       = %g",coverYratio);
+            yInfo("nodesStep         = %d",nodesStep);
+            yInfo("winSize           = %d",winSize);
+            yInfo("recogThres        = %g",recogThres);
+            yInfo("recogThresAbs     = %g",recogThresAbs);
+            yInfo("adjNodesThres     = %d",adjNodesThres);
+            yInfo("blobMinSizeThres  = %d",blobMinSizeThres);
+            yInfo("framesPersistence = %d",framesPersistence);
             if (cropSize>0)
-                printf("cropSize          = %d\n",cropSize);
+                yInfo("cropSize          = %d",cropSize);
             else
-                printf("cropSize          = auto\n");
+                yInfo("cropSize          = auto");
             
         #ifdef _MOTIONCUT_MULTITHREADING_OPENMP
-            printf("numThreads        = %d\n",numThreads);
+            yInfo("numThreads        = %d",numThreads);
         #else
-            printf("numThreads        = OpenCV version does not support OpenMP multi-threading\n");
+            yInfo("numThreads        = OpenCV version does not support OpenMP multi-threading");
         #endif
             
-            printf("verbosity         = %s\n",verbosity?"on":"off");            
-            printf("\n");
+            yInfo("verbosity         = %s",verbosity?"on":"off");            
         }
         else
-            printf("Process did not start\n");
+            yError("Process did not start");
     }
 
     /************************************************************************/
@@ -483,8 +481,8 @@ public:
                 if (verbosity)
                 {
                     // log message
-                    printf("Detected image of size %dx%d;\nusing %dx%d=%d nodes;\npopulated %d nodes\n",
-                           imgMonoIn.width(),imgMonoIn.height(),nodesX,nodesY,nodesNum,cnt);
+                    yInfo("Detected image of size %dx%d; using %dx%d=%d nodes; populated %d nodes",
+                          imgMonoIn.width(),imgMonoIn.height(),nodesX,nodesY,nodesNum,cnt);
                 }
 
                 // skip to the next cycle
@@ -672,8 +670,8 @@ public:
             if (verbosity)
             {
                 // dump statistics
-                printf("cycle timing [ms]: optflow(%g), colorgrid(%g), blobdetection(%g), overall(%g)\n",
-                       1000.0*dt0,1000.0*dt1,1000.0*dt2,1000.0*(t1-t0));
+                yInfo("cycle timing [ms]: optflow(%g), colorgrid(%g), blobdetection(%g), overall(%g)",
+                      1000.0*dt0,1000.0*dt1,1000.0*dt2,1000.0*(t1-t0));
             }
         }
     }
@@ -956,19 +954,19 @@ public:
 /************************************************************************/
 int main(int argc, char *argv[])
 {
+    Network yarp;
+
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.configure(argc,argv);
 
     if (rf.check("help"))
     {
-        printf("\n");
     #ifdef CV_MAJOR_VERSION
         printf("This module has been compiled with OpenCV %d.%d\n",CV_MAJOR_VERSION,CV_MINOR_VERSION);
     #else
         printf("This module has been compiled with an unknown version of OpenCV (probably < 1.0)\n");
     #endif        
-        printf("\n");
         printf("Available options:\n");
         printf("\t--name              <string>\n");
         printf("\t--coverXratio       <double>\n");
@@ -985,14 +983,13 @@ int main(int argc, char *argv[])
     #endif
         printf("\t--verbosity           -\n");
         printf("\n");
-        
+
         return 0;
     }
 
-    Network yarp;
     if (!yarp.checkNetwork())
     {
-        printf("YARP server not available!\n");
+        yError("YARP server not available!");
         return -1;
     }
 

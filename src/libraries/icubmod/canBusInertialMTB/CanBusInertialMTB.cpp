@@ -7,6 +7,7 @@
 #include <CanBusInertialMTB.h>
 
 #include <yarp/os/Time.h>
+#include <yarp/os/Log.h>
 #include <iostream>
 #include <string.h>
 
@@ -27,7 +28,7 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
     
     if (!correct)
     {
-        fprintf(stderr, "Error: insufficient parameters to CanBusInertialMTB\n"); 
+        yError("Insufficient parameters to CanBusInertialMTB\n"); 
         return false;
     }
 
@@ -55,13 +56,13 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
     driver.open(prop);
     if (!driver.isValid())
     {
-        fprintf(stderr, "Error opening CanBusInertialMTB check parameters\n");
+        yError("Error opening CanBusInertialMTB check parameters\n");
         return false;
     }
     driver.view(pCanBus);
     if (!pCanBus)
     {
-        fprintf(stderr, "Error opening can device not available\n");
+        yError("Error opening can device not available\n");
         return false;
     }
     driver.view(pCanBufferFactory);
@@ -205,7 +206,7 @@ void CanBusInertialMTB::run()
 
     bool res=pCanBus->canRead(inBuffer,CANBUS_INERTIAL_MTB_CAN_DRIVER_BUFFER_SIZE,&canMessages);
     if (!res)
-        fprintf(stderr, "CanBusInertialMTB::run(): canRead failed\n");
+        yError("CanBusInertialMTB::run(): canRead failed\n");
 
     double timeNow=Time::now();
     double stampGyro=0.0;
@@ -217,10 +218,20 @@ void CanBusInertialMTB::run()
     //prev = yarp::os::Time::now();
     if(canMessages <0)
     {
-        fprintf(stderr, "CanBusInertialMTB::run() ERROR: get %d canMessages\n", canMessages);
+        yError("CanBusInertialMTB::run() ERROR: get %d canMessages\n", canMessages);
         st=IAnalogSensor::AS_ERROR;
         return;
     }
+
+    if(canMessages == 0)
+    {
+        // reading 0 messages is considered ok, so just return;
+        // This is to skip the initialization of privateData to zeros, needed if we are reading accelerometer, but not gyroscope values like in the feet
+        st=IAnalogSensor::AS_OK;
+        return;
+    }
+
+    privateData.zero();
 
     for (unsigned int i=0; i<canMessages; i++)
     {
@@ -253,11 +264,25 @@ void CanBusInertialMTB::run()
         st=IAnalogSensor::AS_OK;
     }
 
-    //if 100ms have passed since the last received message
-    /*if (timeNow-timeStamp>CANBUS_INERTIAL_MTB_TIMEOUT)
+    if(initted)
     {
-        st=IAnalogSensor::AS_TIMEOUT;
-    }*/
+        //if 100ms have passed since the last received message
+        if (timeNow-timeStamp>CANBUS_INERTIAL_MTB_TIMEOUT)
+        {
+            yError("CanBusInertialMTB::run(): read timed out");
+            st=IAnalogSensor::AS_TIMEOUT;
+        }
+    }
+    else
+    {
+        // wait some time to have the device ready and avoid spurious timeout messages at startup
+        count++;
+        if(count == 10)
+            initted=true;
+    }
+
+
+    timeStamp = timeNow;
 
     mutex.wait();
     memcpy(data.data(), privateData.data(), sizeof(double)*privateData.size());
@@ -267,7 +292,6 @@ void CanBusInertialMTB::run()
 
 void CanBusInertialMTB::threadRelease()
 {
-    printf("CanBusInertialMTB Thread releasing...\n");
-    printf("... done.\n");
+    yTrace("CanBusVirtualAnalogSensor Thread released\n");
 }
 
