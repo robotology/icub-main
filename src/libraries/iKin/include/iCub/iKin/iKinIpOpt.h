@@ -183,7 +183,7 @@ public:
 * \ingroup iKinIpOpt
 *
 * Class for dealing with iCub shoulder's constraints due to the 
-* cables lenght.
+* cables length.
 */
 class iCubShoulderConstr : public iKinLinIneqConstr
 {
