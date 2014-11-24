@@ -1467,7 +1467,7 @@ void OdeSdlSimulation::processWholeBodyCollisions(skinContactList& skin_contact_
       odeinit._iCub->iKinRightArm.setAng(right_arm_for_iKin);
       odeinit._iCub->iKinInertialSensor.setAng(inertial_for_iKin);
 
-      if (MY_VERBOSITY > 0) printf("OdeSdlSimulation::processWholeBodyCollisions:There were %lu iCub self-collisions to process. \n", odeinit.listOfSkinContactInfos.size());
+      if (MY_VERBOSITY > 0) printf("OdeSdlSimulation::processWholeBodyCollisions:There were %lu iCub collisions to process. \n", odeinit.listOfSkinContactInfos.size());
       for (list<OdeInit::contactOnSkin_t>::iterator it = odeinit.listOfSkinContactInfos.begin(); it!=odeinit.listOfSkinContactInfos.end(); it++){
         geoCenter_SIM_FoR_forHomo.zero(); geoCenter_SIM_FoR_forHomo(3)=1.0; //setting the extra row to 1 - for multiplication by homogenous rototransl. matrix
         normal_SIM_FoR_forHomo.zero(); normal_SIM_FoR_forHomo(3)=1.0; 
