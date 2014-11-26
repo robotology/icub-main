@@ -9,6 +9,7 @@
 class IRpcServer_get_answer : public yarp::os::Portable {
 public:
   int32_t _return;
+  void init();
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
@@ -17,6 +18,7 @@ class IRpcServer_set_answer : public yarp::os::Portable {
 public:
   int32_t rightAnswer;
   bool _return;
+  void init(const int32_t rightAnswer);
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
@@ -25,6 +27,7 @@ class IRpcServer_add_int : public yarp::os::Portable {
 public:
   int32_t x;
   int32_t _return;
+  void init(const int32_t x);
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
@@ -32,6 +35,7 @@ public:
 class IRpcServer_start : public yarp::os::Portable {
 public:
   bool _return;
+  void init();
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
@@ -39,6 +43,7 @@ public:
 class IRpcServer_stop : public yarp::os::Portable {
 public:
   bool _return;
+  void init();
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
@@ -46,6 +51,7 @@ public:
 class IRpcServer_is_running : public yarp::os::Portable {
 public:
   bool _return;
+  void init();
   virtual bool write(yarp::os::ConnectionWriter& connection);
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
@@ -67,6 +73,10 @@ bool IRpcServer_get_answer::read(yarp::os::ConnectionReader& connection) {
   return true;
 }
 
+void IRpcServer_get_answer::init() {
+  _return = 0;
+}
+
 bool IRpcServer_set_answer::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(3)) return false;
@@ -83,6 +93,11 @@ bool IRpcServer_set_answer::read(yarp::os::ConnectionReader& connection) {
     return false;
   }
   return true;
+}
+
+void IRpcServer_set_answer::init(const int32_t rightAnswer) {
+  _return = false;
+  this->rightAnswer = rightAnswer;
 }
 
 bool IRpcServer_add_int::write(yarp::os::ConnectionWriter& connection) {
@@ -103,6 +118,11 @@ bool IRpcServer_add_int::read(yarp::os::ConnectionReader& connection) {
   return true;
 }
 
+void IRpcServer_add_int::init(const int32_t x) {
+  _return = 0;
+  this->x = x;
+}
+
 bool IRpcServer_start::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
@@ -118,6 +138,10 @@ bool IRpcServer_start::read(yarp::os::ConnectionReader& connection) {
     return false;
   }
   return true;
+}
+
+void IRpcServer_start::init() {
+  _return = false;
 }
 
 bool IRpcServer_stop::write(yarp::os::ConnectionWriter& connection) {
@@ -137,6 +161,10 @@ bool IRpcServer_stop::read(yarp::os::ConnectionReader& connection) {
   return true;
 }
 
+void IRpcServer_stop::init() {
+  _return = false;
+}
+
 bool IRpcServer_is_running::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(2)) return false;
@@ -154,12 +182,17 @@ bool IRpcServer_is_running::read(yarp::os::ConnectionReader& connection) {
   return true;
 }
 
+void IRpcServer_is_running::init() {
+  _return = false;
+}
+
 IRpcServer::IRpcServer() {
   yarp().setOwner(*this);
 }
 int32_t IRpcServer::get_answer() {
   int32_t _return = 0;
   IRpcServer_get_answer helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","int32_t IRpcServer::get_answer()");
   }
@@ -169,7 +202,7 @@ int32_t IRpcServer::get_answer() {
 bool IRpcServer::set_answer(const int32_t rightAnswer) {
   bool _return = false;
   IRpcServer_set_answer helper;
-  helper.rightAnswer = rightAnswer;
+  helper.init(rightAnswer);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool IRpcServer::set_answer(const int32_t rightAnswer)");
   }
@@ -179,7 +212,7 @@ bool IRpcServer::set_answer(const int32_t rightAnswer) {
 int32_t IRpcServer::add_int(const int32_t x) {
   int32_t _return = 0;
   IRpcServer_add_int helper;
-  helper.x = x;
+  helper.init(x);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","int32_t IRpcServer::add_int(const int32_t x)");
   }
@@ -189,6 +222,7 @@ int32_t IRpcServer::add_int(const int32_t x) {
 bool IRpcServer::start() {
   bool _return = false;
   IRpcServer_start helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool IRpcServer::start()");
   }
@@ -198,6 +232,7 @@ bool IRpcServer::start() {
 bool IRpcServer::stop() {
   bool _return = false;
   IRpcServer_stop helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool IRpcServer::stop()");
   }
@@ -207,6 +242,7 @@ bool IRpcServer::stop() {
 bool IRpcServer::is_running() {
   bool _return = false;
   IRpcServer_is_running helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool IRpcServer::is_running()");
   }
@@ -219,6 +255,8 @@ bool IRpcServer::read(yarp::os::ConnectionReader& connection) {
   reader.expectAccept();
   if (!reader.readListHeader()) { reader.fail(); return false; }
   yarp::os::ConstString tag = reader.readTag();
+  bool direct = (tag=="__direct__");
+  if (direct) tag = reader.readTag();
   while (!reader.isError()) {
     // TODO: use quick lookup, this is just a test
     if (tag == "get_answer") {

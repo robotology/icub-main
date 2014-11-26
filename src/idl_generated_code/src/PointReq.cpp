@@ -204,8 +204,8 @@ bool PointReq::Editor::read(yarp::os::ConnectionReader& connection) {
   bool nested = true;
   bool have_act = false;
   if (tag!="patch") {
-    if (len%3 != 0) return false;
-    len = 1 + (len/3);
+    if ((len-1)%2 != 0) return false;
+    len = 1 + ((len-1)/2);
     nested = false;
     have_act = true;
   }
