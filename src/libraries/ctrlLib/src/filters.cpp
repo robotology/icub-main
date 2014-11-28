@@ -312,7 +312,7 @@ void MedianFilter::setOrder(const size_t n)
 
 
 /***************************************************************************/
-double MedianFilter::median(std::deque<double>& v)
+double MedianFilter::median(deque<double>& v)
 {
     size_t L=v.size()>>1;
     if (v.size()&0x01)
@@ -322,7 +322,7 @@ double MedianFilter::median(std::deque<double>& v)
     }
     else
     {
-        std::nth_element(v.begin(),v.begin()+L-1,v.end());
+        nth_element(v.begin(),v.begin()+L-1,v.end());
         return 0.5*(v[L]+v[L-1]);
     }
 }
