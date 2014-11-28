@@ -270,6 +270,61 @@ public:
     const yarp::sig::Vector& output() const { return y; }
 };
 
+
+/**
+* \ingroup Filters
+*
+* Median Filter
+*/
+class MedianFilter
+{
+protected:
+   std::deque<std::deque<double> > uold;
+   yarp::sig::Vector y;
+   size_t n;
+   size_t m;
+
+   inline double median(std::deque<double>& v);
+
+public:
+   /**
+   * Creates a median filter of the specified order.
+   * @param n the filter order.
+   * @param y0 initial output.
+   */ 
+   MedianFilter(const size_t n, const yarp::sig::Vector &y0);
+
+   /**
+   * Internal state reset. 
+   * @param y0 new internal state.
+   */ 
+   void init(const yarp::sig::Vector &y0);
+
+   /**
+   * Sets new filter order.
+   * @param n new filter order.
+   */ 
+   void setOrder(const size_t n);
+
+   /**
+   * Returns the current filter order.
+   */ 
+   size_t getOrder() const { return n; }
+
+   /**
+   * Performs filtering on the actual input.
+   * @param u reference to the actual input. 
+   * @return the corresponding output. 
+   */ 
+   const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
+
+   /**
+   * Return current filter output.
+   * @return the filter output. 
+   */ 
+   const yarp::sig::Vector& output() const { return y; }
+};
+
 }
 
 }

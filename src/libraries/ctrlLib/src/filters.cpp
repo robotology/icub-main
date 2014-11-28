@@ -284,3 +284,68 @@ void FirstOrderLowPassFilter::computeCoeff()
 }
 
 
+/***************************************************************************/
+MedianFilter::MedianFilter(const size_t n, const Vector &y0)
+{
+    this->n=n;
+    init(y0);
+}
+
+
+/***************************************************************************/
+void MedianFilter::init(const Vector &y0)
+{
+    yAssert(y0.length()>0);
+    y=y0;
+    m=y.length();
+    uold.assign(m,deque<double>());
+}
+
+
+
+/***************************************************************************/
+void MedianFilter::setOrder(const size_t n)
+{
+    this->n=n;
+    init(y);
+}
+
+
+/***************************************************************************/
+double MedianFilter::median(std::deque<double>& v)
+{
+    size_t L=v.size()>>1;
+    if (v.size()&0x01)
+    {
+        nth_element(v.begin(),v.begin()+L,v.end());
+        return v[L];
+    }
+    else
+    {
+        std::nth_element(v.begin(),v.begin()+L-1,v.end());
+        return 0.5*(v[L]+v[L-1]);
+    }
+}
+
+
+/***************************************************************************/
+const Vector& MedianFilter::filt(const Vector &u)
+{
+    yAssert(y.length()==u.length());
+    for (size_t i=0; i<m; i++)
+        uold[i].push_front(u[i]);
+
+    if (uold[0].size()>n)
+    {
+        for (size_t i=0; i<m; i++)
+        {
+            deque<double> tmp=uold[i];
+            y[i]=median(tmp);
+            uold[i].pop_back();
+        }
+    }
+
+    return y;
+}
+
+
