@@ -325,7 +325,7 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
     dContact contact[MAX_CONTACTS];   // up to MAX_CONTACTS contacts per box-box
     for (i=0; i<MAX_CONTACTS; i++) {
         contact[i].surface.mode = dContactSlip1| dContactSlip2| dContactBounce | dContactSoftCFM;
-        contact[i].surface.mu = dInfinity;
+        contact[i].surface.mu = 5;//dInfinity;
         contact[i].surface.mu2 = 0;
         contact[i].surface.bounce = 0.01;
         contact[i].surface.bounce_vel = 0.01;
