@@ -284,7 +284,7 @@ protected:
    size_t n;
    size_t m;
 
-   inline double median(std::deque<double>& v);
+   double median(std::deque<double>& v);
 
 public:
    /**
