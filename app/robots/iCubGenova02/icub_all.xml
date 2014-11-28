@@ -42,11 +42,11 @@
     <devices file="hardware/inertial.xml" />
 
     <!--  SKINS -->
-    <devices file="wrappers/skin/left_arm-skin_wrapper.xml" />
+<!--    <devices file="wrappers/skin/left_arm-skin_wrapper.xml" />
     <devices file="wrappers/skin/right_arm-skin_wrapper.xml" />  
     <devices file="hardware/skin/left_arm-ems2-skin.xml" />
     <devices file="hardware/skin/right_arm-ems4-skin.xml" />
-	
+	-->
     <!--  CALIBRATORS -->
     <devices file="calibrators/left_arm-calib.xml" />
     <devices file="calibrators/right_arm-calib.xml" /> 
