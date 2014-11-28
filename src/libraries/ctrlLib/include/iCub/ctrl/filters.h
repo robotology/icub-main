@@ -71,7 +71,7 @@ public:
    * @note den[0] shall not be 0. 
    */ 
    Filter(const yarp::sig::Vector &num, const yarp::sig::Vector &den,
-          const yarp::sig::Vector &y0);
+          const yarp::sig::Vector &y0=yarp::sig::Vector(1,0.0));
 
    /**
    * Internal state reset. 
@@ -219,7 +219,7 @@ public:
     * @param y0 initial output.
     */ 
     FirstOrderLowPassFilter(const double cutFrequency, const double sampleTime,
-                            const yarp::sig::Vector &y0);
+                            const yarp::sig::Vector &y0=yarp::sig::Vector(1,0.0));
 
     /**
     * Destructor. 
@@ -292,7 +292,7 @@ public:
    * @param n the filter order.
    * @param y0 initial output.
    */ 
-   MedianFilter(const size_t n, const yarp::sig::Vector &y0);
+   MedianFilter(const size_t n, const yarp::sig::Vector &y0=yarp::sig::Vector(1,0.0));
 
    /**
    * Internal state reset. 
