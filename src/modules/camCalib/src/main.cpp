@@ -151,7 +151,7 @@ int main(int argc, char *argv[]) {
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefaultConfigFile("camCalib.ini");    //overridden by --from parameter
-    rf.setDefaultContext("camCalib");           //overridden by --context parameter
+    rf.setDefaultContext("cameraCalibration");  //overridden by --context parameter
     rf.configure(argc, argv);
     CamCalibModule module;      
     return module.runModule(rf);

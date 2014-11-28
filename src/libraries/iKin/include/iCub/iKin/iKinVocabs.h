@@ -44,6 +44,7 @@
 #define IKINSLV_VOCAB_OPT_REST_WEIGHTS  VOCAB4('r','e','s','w')
 #define IKINSLV_VOCAB_OPT_TIP_FRAME     VOCAB3('t','i','p')
 #define IKINSLV_VOCAB_OPT_TASK2         VOCAB4('t','s','k','2')
+#define IKINSLV_VOCAB_OPT_CONVERGENCE   VOCAB4('c','o','n','v')
 #define IKINSLV_VOCAB_VAL_POSE_FULL     VOCAB4('f','u','l','l')
 #define IKINSLV_VOCAB_VAL_POSE_XYZ      VOCAB3('x','y','z')
 #define IKINSLV_VOCAB_VAL_PRIO_XYZ      VOCAB3('x','y','z')

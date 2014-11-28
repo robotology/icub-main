@@ -20,14 +20,9 @@
 #ifndef __MOTOR_THREAD__
 #define __MOTOR_THREAD__
 
-#include <yarp/os/ResourceFinder.h>
-#include <yarp/os/Network.h>
-#include <yarp/os/RateThread.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/RpcClient.h>
-#include <yarp/dev/Drivers.h>
-#include <yarp/dev/GazeControl.h>
-#include <yarp/sig/Vector.h>
+#include <yarp/os/all.h>
+#include <yarp/dev/all.h>
+#include <yarp/sig/all.h>
 #include <yarp/math/SVD.h>
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/math.h>
@@ -129,15 +124,16 @@ private:
     IEncoders                           *enc_head;
     IEncoders                           *enc_torso;
     IGazeControl                        *ctrl_gaze;
-
-    IPositionControl                    *pos_arm[2];
+        
     IPositionControl                    *pos_torso;
-    IVelocityControl                    *vel_torso;
-    IControlMode                        *ctrl_mode_torso;
+    IVelocityControl2                   *vel_torso;
+    IControlMode2                       *ctrl_mode_torso;
+    IInteractionMode                    *int_mode_torso;
     IImpedanceControl                   *ctrl_impedance_torso;
 
-
-    IControlMode                        *ctrl_mode_arm[2];
+    IControlMode2                       *ctrl_mode_arm[2];
+    IPositionControl                    *pos_arm[2];
+    IInteractionMode                    *int_mode_arm[2];
     IImpedanceControl                   *ctrl_impedance_arm[2];
 
     int                                 initial_gaze_context;
@@ -160,6 +156,7 @@ private:
     Vector                              pushAboveRelief;
     double                              targetInRangeThresh;
     double                              extForceThresh[2];
+    double                              default_exec_time;
     double                              reachingTimeout;
 
     //tool
@@ -189,7 +186,7 @@ private:
     //stereo 2 cartesian mode
     int                                 modeS2C;
     bool                                neuralNetworkAvailable;
-    Port                                disparityPort;
+    RpcClient                           disparityPort;
 
     vector<Vector>                      pos_torsoes;
     vector<Vector>                      handPoses;
@@ -238,7 +235,7 @@ private:
     bool stereoToCartesianNetwork(const Vector &stereo, Vector &xd);
     Vector randomDeployOffset();
     bool getGeneralOptions(Bottle &b);
-    bool loadKinematicOffsets(string _kinematics_path);
+    bool loadKinematicOffsets(const string &_kinematics_path);
     bool saveKinematicOffsets();
     bool getArmOptions(Bottle &b, const int &arm);
     void goHomeHelper(ActionPrimitives *action, const Vector &xin, const Vector &oin);
@@ -252,10 +249,12 @@ public:
     {
         ctrl_gaze=NULL;
         ctrl_mode_torso=NULL;
+        int_mode_torso=NULL;
         drv_head=drv_torso=drv_ctrl_gaze=NULL;
         drv_arm[LEFT]=drv_arm[RIGHT]=NULL;
         drv_car_arm[LEFT]=drv_car_arm[RIGHT]=NULL;
         ctrl_mode_arm[LEFT]=ctrl_mode_arm[RIGHT]=NULL;
+        int_mode_arm[LEFT]=int_mode_arm[RIGHT]=NULL;
         action[LEFT]=action[RIGHT]=NULL;
         closed=false;
     }
@@ -405,6 +404,7 @@ public:
     bool suspendLearningModeKinOffset(Bottle &options);
 
     bool changeElbowHeight(const int arm, const double height, const double weight);
+    bool changeExecTime(const double execTime);
 
     bool setImpedance(bool turn_on);
     bool setTorque(bool turn_on, int arm=ARM_IN_USE);

@@ -137,7 +137,7 @@ impedance_damping 60.0 60.0 60.0 20.0 0.0
 [right_arm]
 reach_offset        0.0 0.15 -0.05
 grasp_offset        0.0 0.0 -0.05
-grasp_sigma	        0.01 0.01 0.01
+grasp_sigma         0.01 0.01 0.01
 hand_orientation    -0.012968 -0.721210 0.692595 2.917075
 impedance_velocity_mode off 
 impedance_stiffness 0.5 0.5 0.5 0.2 0.1 
@@ -171,7 +171,7 @@ vels_hand       10.0 10.0  10.0 10.0 10.0 10.0 10.0 10.0  10.0
 \section tested_os_sec Tested OS
 Windows, Linux
 
-\author Ugo Pattacini
+\author Ugo Pattacini, Alessandro Roncone
 */ 
 
 #include <string>
@@ -273,8 +273,10 @@ protected:
 
     IEncoders         *encTorso;
     IEncoders         *encHead;
+    IControlMode2     *modeTorso;
     IPositionControl  *posTorso;
     IEncoders         *encArm;
+    IControlMode2     *modeArm;
     IPositionControl  *posArm;
     ICartesianControl *cartArm;
     IGazeControl      *gazeCtrl;    
@@ -284,6 +286,11 @@ protected:
     BufferedPort<Bottle> inportIMDTargetRight;
     Port outportGui;
     Port outportCmdFace;
+
+    RpcClient breatherHrpc;
+    RpcClient breatherLArpc;
+    RpcClient breatherRArpc;
+    RpcClient blinkerrpc;
 
     Vector leftArmReachOffs;
     Vector leftArmGraspOffs;
@@ -331,10 +338,39 @@ protected:
 
     Matrix R,Rx,Ry,Rz;
 
-    int state;
-    int startup_context_id_left;
-    int startup_context_id_right;
-    int startup_context_id_gaze;
+    int  state;
+    bool state_breathers;
+    int  startup_context_id_left;
+    int  startup_context_id_right;
+    int  startup_context_id_gaze;
+
+    void breathersHandler(const bool sw)
+    {
+        Bottle msg,reply;
+        msg.addString(sw?"start":"stop");
+
+        if (breatherHrpc.getOutputCount()>0)
+        {
+            breatherHrpc.write(msg,reply);
+        }
+
+        if (breatherLArpc.getOutputCount()>0)
+        {
+            breatherLArpc.write(msg,reply);
+        }
+
+        if (breatherRArpc.getOutputCount()>0)
+        {
+            breatherRArpc.write(msg,reply);
+        }
+
+        if (blinkerrpc.getOutputCount()>0)
+        {
+            blinkerrpc.write(msg,reply);
+        }
+
+        state_breathers = !sw;
+    }
 
     void getTorsoOptions(Bottle &b, const char *type, const int i, Vector &sw, Matrix &lim)
     {
@@ -625,7 +661,7 @@ protected:
             if (state==STATE_IDLE)
             {
                 resetTargetBall();
-
+                breathersHandler(false);
                 fprintf(stdout,"--- Got target => REACHING\n");
                 
                 wentHome=false;
@@ -651,6 +687,51 @@ protected:
 
     void doIdle()
     {
+        if (state==STATE_IDLE)
+        {
+            if (state_breathers)
+                if (checkForHomePos())
+                    breathersHandler(true);
+        }
+    }
+
+    bool checkForHomePos()
+    {
+        IEncoders  *iencsLA;
+        IEncoders  *iencsRA;
+        drvLeftArm->view(iencsLA);
+        drvRightArm->view(iencsRA);
+
+        if (breatherHrpc.getOutputCount()>0)
+        {
+            bool done;
+            gazeCtrl->checkMotionDone(&done);
+            if (!done)
+                return false;
+        }
+
+        int axes;
+        Vector encs;
+
+        if (breatherLArpc.getOutputCount()>0)
+        {
+            iencsLA->getAxes(&axes);
+            encs.resize(axes,0.0);
+            iencsLA->getEncoders(encs.data());
+            if (norm(encs.subVector(0,homePoss.length()-1)-homePoss)>4.0)
+                return false;
+        }
+
+        if (breatherRArpc.getOutputCount()>0)
+        {
+            iencsRA->getAxes(&axes);
+            encs.resize(axes,0.0);
+            iencsRA->getEncoders(encs.data());
+            if (norm(encs.subVector(0,homePoss.length()-1)-homePoss)>4.0)
+                return false;
+        }
+
+        return true;
     }
 
     void commandHead()
@@ -716,6 +797,10 @@ protected:
 
         fprintf(stdout,"*** Homing torso\n");
 
+        VectorOf<int> modes(3);
+        modes[0]=modes[1]=modes[2]=VOCAB_CM_POSITION;
+        modeTorso->setControlModes(modes.getFirst());
+
         posTorso->setRefSpeeds(velTorso.data());
         posTorso->positionMove(homeTorso.data());
     }
@@ -737,13 +822,17 @@ protected:
 
     void steerArmToHome(const int sel=USEDARM)
     {
+        IControlMode2    *imode=modeArm;
         IPositionControl *ipos=posArm;
         string type;
 
         if (sel==LEFTARM)
         {
             if (useLeftArm)
+            {
+                drvLeftArm->view(imode);
                 drvLeftArm->view(ipos);
+            }
             else
                 return;
 
@@ -752,7 +841,10 @@ protected:
         else if (sel==RIGHTARM)
         {
             if (useRightArm)
+            {
+                drvRightArm->view(imode);
                 drvRightArm->view(ipos);
+            }
             else
                 return;
 
@@ -766,6 +858,7 @@ protected:
         fprintf(stdout,"*** Homing %s\n",type.c_str());
         for (size_t j=0; j<homeVels.length(); j++)
         {
+            imode->setControlMode(j,VOCAB_CM_POSITION);
             ipos->setRefSpeed(j,homeVels[j]);
             ipos->positionMove(j,homePoss[j]);
         }
@@ -817,6 +910,7 @@ protected:
     void stopArmJoints(const int sel=USEDARM)
     {
         IEncoders        *ienc=encArm;
+        IControlMode2    *imode=modeArm;
         IPositionControl *ipos=posArm;
         string type;
 
@@ -825,6 +919,7 @@ protected:
             if (useLeftArm)
             {
                 drvLeftArm->view(ienc);
+                drvLeftArm->view(imode);
                 drvLeftArm->view(ipos);
             }
             else
@@ -837,6 +932,7 @@ protected:
             if (useRightArm)
             {
                 drvRightArm->view(ienc);
+                drvRightArm->view(imode);
                 drvRightArm->view(ipos);
             }
             else
@@ -852,15 +948,17 @@ protected:
         fprintf(stdout,"*** Stopping %s joints\n",type.c_str());
         for (size_t j=0; j<homeVels.length(); j++)
         {
-            double fb;
-
+            double fb;            
             ienc->getEncoder(j,&fb);
+
+            imode->setControlMode(j,VOCAB_CM_POSITION);
             ipos->positionMove(j,fb);
         }
     }
 
     void moveHand(const int action, const int sel=USEDARM)
     {
+        IControlMode2    *imode=modeArm;
         IPositionControl *ipos=posArm;
         Vector *poss=NULL;
         string actionStr, type;
@@ -883,11 +981,13 @@ protected:
 
         if (sel==LEFTARM)
         {    
+            drvLeftArm->view(imode);
             drvLeftArm->view(ipos);
             type="left_hand";
         }
         else if (sel==RIGHTARM)
         {    
+            drvRightArm->view(imode);
             drvRightArm->view(ipos);
             type="right_hand";
         }
@@ -900,6 +1000,7 @@ protected:
         {
             int k=homeVels.length()+j;
 
+            imode->setControlMode(k,VOCAB_CM_POSITION);
             ipos->setRefSpeed(k,handVels[j]);
             ipos->positionMove(k,(*poss)[j]);
         }
@@ -954,6 +1055,7 @@ protected:
                         armSel=LEFTARM;
 
                         drvLeftArm->view(encArm);
+                        drvLeftArm->view(modeArm);
                         drvLeftArm->view(posArm);
                         drvCartLeftArm->view(cartArm);
                         armReachOffs=&leftArmReachOffs;
@@ -966,6 +1068,7 @@ protected:
                         armSel=RIGHTARM;
 
                         drvRightArm->view(encArm);
+                        drvRightArm->view(modeArm);
                         drvRightArm->view(posArm);
                         drvCartRightArm->view(cartArm);
                         armReachOffs=&rightArmReachOffs;
@@ -1065,7 +1168,7 @@ protected:
     void commandFace()
     {
         if (state==STATE_IDLE)
-            setFace(FACE_SHY);
+            setFace(state_breathers?FACE_SHY:FACE_HAPPY);
         else if (state==STATE_REACH)
         {
             if (useLeftArm || useRightArm)
@@ -1231,6 +1334,11 @@ protected:
         deleteGuiTarget();
         outportGui.interrupt();
         outportGui.close();
+
+        breatherHrpc.close();
+        breatherLArpc.close();
+        breatherRArpc.close();
+        blinkerrpc.close();
     }
 
 public:
@@ -1334,6 +1442,10 @@ public:
         inportIMDTargetRight.open((name+"/imdTargetRight:i").c_str());
         outportCmdFace.open((name+"/cmdFace:rpc").c_str());
         outportGui.open((name+"/gui:o").c_str());
+        breatherHrpc.open((name+"/breather/head:rpc").c_str());
+        breatherLArpc.open((name+"/breather/left_arm:rpc").c_str());
+        breatherRArpc.open((name+"/breather/right_arm:rpc").c_str());
+        blinkerrpc.open((name+"/blinker:rpc").c_str());
 
         string fwslash="/";
 
@@ -1414,7 +1526,7 @@ public:
 
             if (leftArmImpVelMode)
             {
-                IControlMode      *imode;
+                IInteractionMode  *imode;
                 IImpedanceControl *iimp;
 
                 drvLeftArm->view(imode);
@@ -1424,9 +1536,9 @@ public:
                         leftArmJointsStiffness.length():leftArmJointsDamping.length();
 
                 for (int j=0; j<len; j++)
-                {
-                    imode->setImpedanceVelocityMode(j);
+                {                    
                     iimp->setImpedance(j,leftArmJointsStiffness[j],leftArmJointsDamping[j]);
+                    imode->setInteractionMode(j,VOCAB_IM_COMPLIANT);
                 }
             }
         }
@@ -1442,7 +1554,7 @@ public:
 
             if (rightArmImpVelMode)
             {
-                IControlMode      *imode;
+                IInteractionMode  *imode;
                 IImpedanceControl *iimp;
 
                 drvRightArm->view(imode);
@@ -1453,8 +1565,8 @@ public:
 
                 for (int j=0; j<len; j++)
                 {
-                    imode->setImpedanceVelocityMode(j);
                     iimp->setImpedance(j,rightArmJointsStiffness[j],rightArmJointsDamping[j]);
+                    imode->setInteractionMode(j,VOCAB_IM_COMPLIANT);
                 }
             }
         }
@@ -1467,6 +1579,7 @@ public:
         }
 
         // open views
+        drvTorso->view(modeTorso);
         drvTorso->view(encTorso);
         drvTorso->view(posTorso);
         drvHead->view(encHead);
@@ -1481,6 +1594,7 @@ public:
         if (useLeftArm)
         {
             drvLeftArm->view(encArm);
+            drvLeftArm->view(modeArm);
             drvLeftArm->view(posArm);
             drvCartLeftArm->view(cartArm);
             armReachOffs=&leftArmReachOffs;
@@ -1492,6 +1606,7 @@ public:
         else if (useRightArm)
         {
             drvRightArm->view(encArm);
+            drvRightArm->view(modeArm);
             drvRightArm->view(posArm);
             drvCartRightArm->view(cartArm);
             armReachOffs=&rightArmReachOffs;
@@ -1503,6 +1618,7 @@ public:
         else
         {
             encArm=NULL;
+            modeArm=NULL;
             posArm=NULL;
             cartArm=NULL;
             armReachOffs=NULL;
@@ -1539,6 +1655,7 @@ public:
 
         wentHome=false;
         state=STATE_IDLE;
+        state_breathers=true;
 
         return true;
     }
@@ -1576,14 +1693,14 @@ public:
 
             if (leftArmImpVelMode)
             {
-                IControlMode *imode;
+                IInteractionMode *imode;
                 drvLeftArm->view(imode);
 
                 int len=leftArmJointsStiffness.length()<leftArmJointsDamping.length()?
                         leftArmJointsStiffness.length():leftArmJointsDamping.length();
 
                 for (int j=0; j<len; j++)
-                    imode->setVelocityMode(j);
+                    imode->setInteractionMode(j,VOCAB_IM_STIFF);
             }
         }
 
@@ -1595,14 +1712,14 @@ public:
 
             if (rightArmImpVelMode)
             {
-                IControlMode *imode;
+                IInteractionMode *imode;
                 drvRightArm->view(imode);
 
                 int len=rightArmJointsStiffness.length()<rightArmJointsDamping.length()?
                         rightArmJointsStiffness.length():rightArmJointsDamping.length();
 
                 for (int j=0; j<len; j++)
-                    imode->setVelocityMode(j);
+                    imode->setInteractionMode(j,VOCAB_IM_STIFF);
             }
         }
 
@@ -1763,6 +1880,5 @@ int main(int argc, char *argv[])
 
     return mod.runModule(rf);
 }
-
 
 

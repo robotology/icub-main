@@ -65,7 +65,8 @@ class partMover{
   IDebugInterface *idbg;
   IControlLimits *lim;
   IControlCalibration2 *cal;
-  IControlMode *ctrlmode;
+  IControlMode2 *ctrlmode2;
+  IInteractionMode *iinteract;
 
   bool *CURRENT_POS_UPDATE;
   int *SEQUENCE_ITERATOR;
@@ -203,7 +204,8 @@ class partMover{
   inline IImpedanceControl* get_IImpedanceControl () {return imp;}
   inline IDebugInterface* get_IDebugControl () {return idbg;}
   inline IVelocityControl* get_IVelocityControl () {return iVel;}
-  inline IControlMode* get_IControlMode () {return ctrlmode;}
+  inline IControlMode2* get_IControlMode2 () {return ctrlmode2;}
+  inline IInteractionMode* get_IInteractionMode () {return iinteract;}
 };
 
 struct gtkClassData

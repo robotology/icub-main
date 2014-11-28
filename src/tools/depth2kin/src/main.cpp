@@ -15,7 +15,6 @@
  * Public License for more details
 */
 
-#include <stdio.h>
 #include <yarp/os/all.h>
 
 #include "module.h"
@@ -42,7 +41,7 @@ int main(int argc, char *argv[])
     {
         if (!yarp.checkNetwork())
         {
-            printf("YARP server not available!\n");
+            yError("YARP server not available!");
             return -1;
         }
     }

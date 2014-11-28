@@ -66,8 +66,6 @@ Windows, Linux
 \author Ugo Pattacini
 */ 
 
-#include <iostream>
-#include <iomanip>
 #include <string>
 
 #include <yarp/os/all.h>
@@ -116,9 +114,15 @@ public:
         optLegR.put("local",("/"+local+"/right_leg").c_str());
         optLegL.put("local",("/"+local+"/left_leg").c_str());
 
+        optTorso.put("writeStrict","on");
+        optArmR.put("writeStrict","on");
+        optArmL.put("writeStrict","on");
+        optLegR.put("writeStrict","on");
+        optLegL.put("writeStrict","on");
+
         if (!torso.open(optTorso) || !armR.open(optArmR) || !armL.open(optArmL))
         {
-            cout<<"Device drivers not available!"<<endl;
+            yError()<<"Device drivers not available!";
             close();
 
             return false;
@@ -128,7 +132,7 @@ public:
         {
             if (!legR.open(optLegR) || !legL.open(optLegL))
             {
-                cout<<"Device drivers not available!"<<endl;
+                yError()<<"Device drivers not available!";
                 close();
 
                 return false;
@@ -152,7 +156,15 @@ public:
         optServerLegR.fromConfigFile(rf.findFile("right_leg_file"),false);
         optServerLegL.fromConfigFile(rf.findFile("left_leg_file"),false);
 
+        IMultipleWrapper *wrapperArmR, *wrapperArmL, *wrapperLegR, *wrapperLegL;
         if (!serverArmR.open(optServerArmR) || !serverArmL.open(optServerArmL))
+        {
+            close();
+            return false;
+        }
+
+        serverArmR.view(wrapperArmR); serverArmL.view(wrapperArmL);
+        if (!wrapperArmR->attachAll(listArmR) || !wrapperArmL->attachAll(listArmL))
         {
             close();    
             return false;
@@ -162,25 +174,11 @@ public:
         {
             if (!serverLegR.open(optServerLegR) || !serverLegL.open(optServerLegL))
             {
-                close();    
+                close();
                 return false;
             }
-        }
 
-        IMultipleWrapper *wrapperArmR, *wrapperArmL, *wrapperLegR, *wrapperLegL;
-        serverArmR.view(wrapperArmR);
-        serverArmL.view(wrapperArmL);
-        serverLegR.view(wrapperLegR);
-        serverLegL.view(wrapperLegL);
-
-        if (!wrapperArmR->attachAll(listArmR) || !wrapperArmL->attachAll(listArmL))
-        {
-            close();    
-            return false;
-        }
-
-        if (!noLegs)
-        {
+            serverLegR.view(wrapperLegR); serverLegL.view(wrapperLegL);
             if (!wrapperLegR->attachAll(listLegR) || !wrapperLegL->attachAll(listLegL))
             {
                 close();    
@@ -241,25 +239,25 @@ public:
 /************************************************************************/
 int main(int argc, char *argv[])
 {
+    Network yarp;
+    if (!yarp.checkNetwork())
+    {
+        yError()<<"YARP server not available!";
+        return -1;
+    }
+
+    YARP_REGISTER_DEVICES(icubmod)
+
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.setDefaultContext("simCartesianControl");
     rf.setDefault("robot","icubSim");
     rf.setDefault("local","simCartesianControl");
-    rf.setDefault("right_arm_file","cartesianRightArm.ini");
-    rf.setDefault("left_arm_file","cartesianLeftArm.ini");
-    rf.setDefault("right_leg_file","cartesianRightLeg.ini");
-    rf.setDefault("left_leg_file","cartesianLeftLeg.ini");
+    rf.setDefault("right_arm_file","simCartesianRightArm.ini");
+    rf.setDefault("left_arm_file","simCartesianLeftArm.ini");
+    rf.setDefault("right_leg_file","simCartesianRightLeg.ini");
+    rf.setDefault("left_leg_file","simCartesianLeftLeg.ini");
     rf.configure(argc,argv);
-
-    Network yarp;
-    if (!yarp.checkNetwork())
-    {
-        cout<<"YARP server not available!"<<endl;
-        return -1;
-    }
-
-    YARP_REGISTER_DEVICES(icubmod)
 
     SimCartCtrlModule mod;
     return mod.runModule(rf);

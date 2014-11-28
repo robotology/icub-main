@@ -17,14 +17,15 @@
 */
 
 #include <string>
-#include <stdio.h>
 
 #include <gsl/gsl_math.h>
 
+#include <yarp/os/Log.h>
 #include <yarp/math/SVD.h>
 #include <iCub/ctrl/math.h>
 
 using namespace std;
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 
@@ -63,7 +64,7 @@ Vector iCub::ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB,
         v[2]=A(0,colA)*B(1,colB)-A(1,colA)*B(0,colB);
     }
     else if (verbose)
-        fprintf(stderr,"cross() failed: not 3xn input matrixes\n");
+        yError("cross() failed: not 3xn input matrixes");
 
     return v;
 }
@@ -81,7 +82,7 @@ Vector iCub::ctrl::Dcross(const Vector &a, const Vector &Da, const Vector &b,
         Dv[2]=Da[0]*b[1]+a[0]*Db[1]-Da[1]*b[0]-a[1]*Db[0];
     }
     else if (verbose)
-        fprintf(stderr,"Dcross() failed: not 3x1 input vectors\n");
+        yError("Dcross() failed: not 3x1 input vectors");
 
     return Dv;
 }
@@ -100,7 +101,7 @@ Vector iCub::ctrl::Dcross(const Matrix &A, const Matrix &DA, int colA,
         Dv[2]=DA(0,colA)*B(1,colB)+A(0,colA)*DB(1,colB)-DA(1,colA)*B(0,colB)-A(1,colA)*DB(0,colB);
     }
     else if (verbose)
-        fprintf(stderr,"Dcross() failed: not 3xn input matrixes\n");
+        yError("Dcross() failed: not 3xn input matrixes");
 
     return Dv;
 }
@@ -112,7 +113,7 @@ Vector iCub::ctrl::dcm2axis(const Matrix &R, unsigned int verbose)
     if ((R.rows()<3) || (R.cols()<3))
     {
         if (verbose)
-            fprintf(stderr,"dcm2axis() failed\n");
+            yError("dcm2axis() failed");
 
         return Vector(0);
     }
@@ -162,7 +163,7 @@ Matrix iCub::ctrl::axis2dcm(const Vector &v, unsigned int verbose)
     if (v.length()<4)
     {
         if (verbose)
-            fprintf(stderr,"axis2dcm() failed\n");
+            yError("axis2dcm() failed");
     
         return Matrix(0,0);
     }
@@ -207,7 +208,7 @@ Vector iCub::ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
     if ((R.rows()<3) || (R.cols()<3))
     {
         if (verbose)
-            fprintf(stderr,"dcm2euler() failed\n");
+            yError("dcm2euler() failed");
 
         return Vector(0);
     }
@@ -241,7 +242,7 @@ Vector iCub::ctrl::dcm2euler(const Matrix &R, unsigned int verbose)
     }
 
     if (verbose && singularity)
-        fprintf(stderr,"dcm2euler() in singularity: choosing one solution among multiple\n");
+        yWarning("dcm2euler() in singularity: choosing one solution among multiple");
 
     return v;
 }
@@ -253,7 +254,7 @@ Matrix iCub::ctrl::euler2dcm(const Vector &v, unsigned int verbose)
     if (v.length()<3)
     {
         if (verbose)
-            fprintf(stderr,"euler2dcm() failed\n");
+            yError("euler2dcm() failed");
     
         return Matrix(0,0);
     }
@@ -277,7 +278,7 @@ Vector iCub::ctrl::dcm2rpy(const Matrix &R, unsigned int verbose)
     if ((R.rows()<3) || (R.cols()<3))
     {
         if (verbose)
-            fprintf(stderr,"dcm2rpy() failed\n");
+            yError("dcm2rpy() failed");
 
         return Vector(0);
     }
@@ -309,7 +310,7 @@ Vector iCub::ctrl::dcm2rpy(const Matrix &R, unsigned int verbose)
     }
 
     if (verbose && singularity)
-        fprintf(stderr,"dcm2rpy() in singularity: choosing one solution among multiple\n");
+        yWarning("dcm2rpy() in singularity: choosing one solution among multiple");
 
     return v;
 }
@@ -321,7 +322,7 @@ Matrix iCub::ctrl::rpy2dcm(const Vector &v, unsigned int verbose)
     if (v.length()<3)
     {
         if (verbose)
-            fprintf(stderr,"rpy2dcm() failed\n");
+            yError("rpy2dcm() failed");
     
         return Matrix(0,0);
     }
@@ -345,7 +346,7 @@ Matrix iCub::ctrl::SE3inv(const Matrix &H, unsigned int verbose)
     if ((H.rows()!=4) || (H.cols()!=4))
     {
         if (verbose)
-            fprintf(stderr,"SE3inv() failed\n");
+            yError("SE3inv() failed");
 
         return Matrix(0,0);
     }
@@ -385,8 +386,8 @@ Matrix iCub::ctrl::adjoint(const Matrix &H, unsigned int verbose)
     if ((H.rows()!=4) || (H.cols()!=4))
     {
         if (verbose)
-            fprintf(stderr,"adjoint() failed: roto-translational matrix sized %dx%d instead of 4x4\n",
-                    H.rows(),H.cols());
+            yError("adjoint() failed: roto-translational matrix sized %dx%d instead of 4x4",
+                   H.rows(),H.cols());
 
         return Matrix(0,0);
     }
@@ -420,8 +421,8 @@ Matrix iCub::ctrl::adjointInv(const Matrix &H, unsigned int verbose)
     if ((H.rows()!=4) || (H.cols()!=4))
     {
         if (verbose)
-            fprintf(stderr,"adjointInv() failed: roto-translational matrix sized %dx%d instead of 4x4\n",
-                    H.rows(),H.cols());
+            yError("adjointInv() failed: roto-translational matrix sized %dx%d instead of 4x4",
+                   H.rows(),H.cols());
 
         return Matrix(0,0);
     }

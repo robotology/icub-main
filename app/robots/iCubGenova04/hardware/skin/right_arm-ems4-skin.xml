@@ -7,11 +7,10 @@
   <device name="right_lower_arm_skin" type="embObjSkin">
       <params file="general.xml" />
       <params file="hardware/electronics/right_lower_arm-ems4-eln.xml" />
-      <!--<param name="skinCanIds_canPort1"> </param> --> <!--Attention: insert can addres in decreasing order -->
-      <!-- <param name="SkinCanIds_canPort2"> 14 13 12 11 10 9 8 7 </param> -->  <!--Attention: insert can addres in decreasing order -->
       <group name="patches">
             <param name="patchesIdList"> 2  </param>
             <param name="skinCanAddrsPatch2"> 14 13 12 11 10 9 8 7 </param> 
       </group>
+      <params file="hardware/skin/right_arm-ems4-skinSpec.xml" />
   </device>  
 </devices>

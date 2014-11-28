@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-<devices robot="iCubHertfordshire01" build="0">
+<devices robot="iCubDaejeon01" build="0">
     <device name="left_arm_cartesian" type="cartesiancontrollerserver">
         <group name="GENERAL">
             <param name="ControllerName">icub/cartesianController/left_arm</param>
@@ -8,7 +8,7 @@
             <param name="TaskRefVelPeriodFactor">4</param>
             <param name="SolverNameToConnect">cartesianSolver/left_arm</param>
             <param name="KinematicPart">arm</param>
-            <param name="KinematicType">left_v1.7</param>
+            <param name="KinematicType">left_v2</param>
             <param name="PositionControl">on</param>
             <param name="NumberOfDrivers">2</param>
         </group>

@@ -57,7 +57,7 @@ Windows, Linux
 */ 
 
 #include <string>
-#include <stdio.h>
+#include <cstdio>
 
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>

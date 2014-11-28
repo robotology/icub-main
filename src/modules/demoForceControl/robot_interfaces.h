@@ -35,7 +35,8 @@ class robot_interfaces
     yarp::dev::IPositionControl     *ipos[5];
     yarp::dev::ITorqueControl       *itrq[5];
     yarp::dev::IImpedanceControl    *iimp[5];
-    yarp::dev::IControlMode         *icmd[5];
+    yarp::dev::IControlMode2        *icmd[5];
+    yarp::dev::IInteractionMode     *iint[5];
     yarp::dev::IEncoders            *ienc[5];
     yarp::dev::IPidControl          *ipid[5];
     yarp::dev::IVelocityControl     *ivel[5];

@@ -1,0 +1,67 @@
+
+<?xml version="1.0" encoding="UTF-8" ?>    
+<devices>      
+  <device name="left_hand_mspecs" type="motorspecifications">   
+      <group name="DEVICE">
+          <param name="rel_candevice">left_hand_mc</param> <!-- This is the name of the device in which there are the encoder, joints and pids -->
+      </group>
+  </device>    
+</devices>     
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

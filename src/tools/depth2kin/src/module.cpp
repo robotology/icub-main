@@ -15,8 +15,7 @@
  * Public License for more details
 */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <string>
 #include <sstream>
 #include <fstream>
@@ -93,7 +92,7 @@ bool CalibModule::createTargets(const Vector &c, const Vector &size)
             x=H*x;
             x.pop_back();
             targets.push_back(x);
-            printf("created point #%d=(%s)\n",(int)targets.size(),x.toString(3,3).c_str());
+            yInfo("created point #%d=(%s)",(int)targets.size(),x.toString(3,3).c_str());
         }
 
         Vector ax2(4,0.0);
@@ -153,7 +152,7 @@ bool CalibModule::factory(Value &v)
         if (c->fromProperty(info))
         {            
             c->toProperty(info); 
-            printf("loaded %s calibrator: %s\n",arm.c_str(),info.toString().c_str());
+            yInfo("loaded %s calibrator: %s",arm.c_str(),info.toString().c_str());
             ((arm=="left")?expertsL:expertsR)<<*c;
             return true;
         }
@@ -343,7 +342,7 @@ void CalibModule::openHand(IPositionControl *ipos)
     poss[7]=0.0;  vels[7]=50.0;
     poss[8]=0.0;  vels[8]=100.0;
 
-    printf("opening hand\n");
+    yInfo("opening hand");
     int i0=nEncs-poss.length();
     for (int i=i0; i<nEncs; i++)
     {
@@ -363,7 +362,7 @@ void CalibModule::postureHelper(const Vector &gaze_ang, const Matrix &targetL,
     int ctxtL,ctxtR;
     Vector dof;
 
-    printf("looking at target\n");
+    yInfo("looking at target");
     igaze->lookAtAbsAngles(gaze_ang);
 
     if (useArmL)
@@ -381,7 +380,7 @@ void CalibModule::postureHelper(const Vector &gaze_ang, const Matrix &targetL,
         icart->setLimits(2,0.0,0.0);
         icart->setTrajTime(1.0);
 
-        printf("reaching for left target\n");
+        yInfo("reaching for left target");
         icart->goToPoseSync(targetL.getCol(3),dcm2axis(targetL));
     }
 
@@ -399,21 +398,21 @@ void CalibModule::postureHelper(const Vector &gaze_ang, const Matrix &targetL,
         icart->setTrackingMode(true);
         icart->setTrajTime(1.0);
 
-        printf("reaching for right target\n");
+        yInfo("reaching for right target");
         icart->goToPoseSync(targetR.getCol(3),dcm2axis(targetR));
 
-        printf("waiting for right arm... ");
+        yInfo("waiting for right arm... ");
         icart->waitMotionDone();
-        printf("done\n");
+        yInfo("done");
     }
 
     if (useArmL)
     {
         drvCartL.view(icart);
 
-        printf("waiting for left arm... ");
+        yInfo("waiting for left arm... ");
         icart->waitMotionDone();
-        printf("done\n");
+        yInfo("done");
 
         icart->restoreContext(ctxtL);
         icart->deleteContext(ctxtL);
@@ -518,7 +517,7 @@ void CalibModule::prepareRobot()
     poss[7]=100.0; vels[7]=50.0;
     poss[8]=200.0; vels[8]=100.0;
 
-    printf("configuring hand... ");
+    yInfo("configuring hand... ");
     int i0=nEncs-poss.length();
     for (int i=i0; i<nEncs; i++)
     {
@@ -531,9 +530,9 @@ void CalibModule::prepareRobot()
     while (!done)
     {
         Time::delay(1.0);
-        iposs->checkMotionDone(4,&done);
+        iposs->checkMotionDone(i0+4,&done);
     }    
-    printf("done\n");
+    yInfo("done");
 
     Vector encs(nEncs);
     iencs->getEncoders(encs.data());
@@ -654,8 +653,8 @@ void CalibModule::doMotorExploration()
         rot_y[3]=(curExplorationCenter[2]>0.2?90.0:45.0)*CTRL_DEG2RAD;
 
         Vector od=dcm2axis(axis2dcm(rot_y)*Hd);
-        printf("moving to xd=(%s); od=(%s); #%d remaining points\n",
-               xd.toString(3,3).c_str(),od.toString(3,3).c_str(),(int)targetsConsumed.size());
+        yInfo("moving to xd=(%s); od=(%s); #%d remaining points",
+              xd.toString(3,3).c_str(),od.toString(3,3).c_str(),(int)targetsConsumed.size());
 
         iarm->goToPoseSync(xd,od);
         igaze->lookAtFixationPoint(xd);
@@ -698,18 +697,18 @@ void CalibModule::doTouch(const Vector &xd)
     igaze->lookAtFixationPoint(xd);
 
     Vector x=xd; x[2]+=0.05;
-    printf("moving to xd=(%s); od=(%s)\n",x.toString(3,3).c_str(),od.toString(3,3).c_str());
+    yInfo("moving to xd=(%s); od=(%s)",x.toString(3,3).c_str(),od.toString(3,3).c_str());
     iarm->goToPoseSync(x,od);
     iarm->waitMotionDone();
 
-    printf("moving to xd=(%s); od=(%s)\n",xd.toString(3,3).c_str(),od.toString(3,3).c_str());
+    yInfo("moving to xd=(%s); od=(%s)",xd.toString(3,3).c_str(),od.toString(3,3).c_str());
     iarm->setInTargetTol(0.001);
     iarm->goToPoseSync(xd,od);
     iarm->waitMotionDone(0.1,5.0);
 
     Time::delay(2.0);
 
-    printf("moving to xd=(%s); od=(%s)\n",x.toString(3,3).c_str(),od.toString(3,3).c_str());
+    yInfo("moving to xd=(%s); od=(%s)",x.toString(3,3).c_str(),od.toString(3,3).c_str());
     iarm->goToPoseSync(x,od);
     iarm->waitMotionDone();
 
@@ -718,7 +717,7 @@ void CalibModule::doTouch(const Vector &xd)
     x[0]=-0.35;
     x[1]=(arm=="left"?-0.2:0.2);
     x[2]=0.1;
-    printf("moving to xd=(%s); od=(%s)\n",x.toString(3,3).c_str(),od.toString(3,3).c_str());
+    yInfo("moving to xd=(%s); od=(%s)",x.toString(3,3).c_str(),od.toString(3,3).c_str());
     iarm->setLimits(0,0.0,0.0);
     iarm->setLimits(2,0.0,0.0);
     iarm->goToPoseSync(x,od);
@@ -736,7 +735,7 @@ void CalibModule::doTouch(const Vector &xd)
 /************************************************************************/
 void CalibModule::doTest()
 {
-    printf("running test #%d\n",test);
+    yInfo("running test #%d",test);
     Rand::init();
 
     Vector x_rad(6);
@@ -758,14 +757,14 @@ void CalibModule::doTest()
         //*******************
         case 0:
         {
-            printf("#0a \"check solver's robustness against seg-fault\"\n");
-            printf("#0b \"check correctness of first-order derivative\"\n");
+            yInfo("#0a \"check solver's robustness against seg-fault\"");
+            yInfo("#0b \"check correctness of first-order derivative\"");
 
             Vector p2d(2); p2d[0]=160.0; p2d[1]=120.0;
             Vector p3d(4); p3d[0]=-0.5;  p3d[1]=0.0; p3d[2]=0.34; p3d[3]=1.0;
-            alignerL.addPoints(p2d,p3d);
+            aligner.addPoints(p2d,p3d);
             Matrix T; double error;
-            alignerL.calibrate(T,error,ALIGN_IPOPT_MAX_ITER,5,"first-order");
+            aligner.calibrate(T,error,ALIGN_IPOPT_MAX_ITER,5,"first-order");
             ok=true;
 
             break;
@@ -774,10 +773,10 @@ void CalibModule::doTest()
         //*******************
         case 1:
         {
-            printf("#1a \"check solver's functionality\"\n");
+            yInfo("#1a \"check solver's functionality\"");
 
             // generate synthetic data
-            Matrix Prj=alignerL.getProjection();
+            Matrix Prj=aligner.getProjection();
             for (int i=0; i<100; i++)
             {
                 Vector p3d(4);
@@ -791,19 +790,19 @@ void CalibModule::doTest()
                 p2d.pop_back();
                 p2d+=NormRand::vector(2,0.0,5.0);   // add up some noise
 
-                alignerL.addPoints(p2d,p3d);
+                aligner.addPoints(p2d,p3d);
             }   
 
             Matrix H1; double error;
-            ok=alignerL.calibrate(H1,error);
+            ok=aligner.calibrate(H1,error);
             Vector x1=cat(H1.getCol(3).subVector(0,2),
                           CTRL_RAD2DEG*dcm2rpy(H1));
 
-            printf("x=(%s)\n",x_deg.toString(5,5).c_str());
-            printf("H\n%s\n\n",H.toString(5,5).c_str());
-            printf("solution_x=(%s)\n",x1.toString(5,5).c_str());
-            printf("solution_H\n%s\n\n",H1.toString(5,5).c_str());
-            printf("error=%g\n",error);
+            yInfo("x=(%s)",x_deg.toString(5,5).c_str());
+            yInfo("H\n%s",H.toString(5,5).c_str());
+            yInfo("solution_x=(%s)",x1.toString(5,5).c_str());
+            yInfo("solution_H\n%s",H1.toString(5,5).c_str());
+            yInfo("error=%g",error);
 
             break;
         }
@@ -811,7 +810,7 @@ void CalibModule::doTest()
         //*******************
         case 2:
         {
-            printf("#2a \"check exploration space\"\n");
+            yInfo("#2a \"check exploration space\"");
             ok=setExplorationSpaceDelta(0.0,0.0,0.0,0.0,0.0);
 
             break;
@@ -820,7 +819,7 @@ void CalibModule::doTest()
         //*******************
         case 3:
         {
-            printf("#3a \"check saving data\"\n");
+            yInfo("#3a \"check saving data\"");
 
             // generate synthetic data
             for (int i=0; i<10; i++)
@@ -838,11 +837,11 @@ void CalibModule::doTest()
             experts=&expertsL;
             Property ret=calibrate(false);
             pushCalibrator();
-            printf("H\n%s\n\n",H.toString(5,5).c_str());
-            printf("calibration output\n%s\n",ret.toString().c_str());
+            yInfo("H\n%s",H.toString(5,5).c_str());
+            yInfo("calibration output: %s",ret.toString().c_str());
             ok=save();
 
-            printf("#3b \"check retrieving data\"\n");
+            yInfo("#3b \"check retrieving data\"");
 
             Vector in(4);
             in[0]=1.0;
@@ -853,17 +852,17 @@ void CalibModule::doTest()
             Vector out=H*in;
             Vector pred;
             ok&=experts->retrieve(in,pred);
-            printf("in=(%s); out=H*in=(%s); pred=(%s)\n",
-                   in.subVector(0,2).toString(3,3).c_str(),
-                   out.subVector(0,2).toString(3,3).c_str(),
-                   pred.toString(3,3).c_str());
+            yInfo("in=(%s); out=H*in=(%s); pred=(%s)",
+                  in.subVector(0,2).toString(3,3).c_str(),
+                  out.subVector(0,2).toString(3,3).c_str(),
+                  pred.toString(3,3).c_str());
 
-            printf("#3c \"check logging data\"\n");
+            yInfo("#3c \"check logging data\"");
             ok&=log("experts");
         }
     }
 
-    printf("test #%d %s!\n",test,ok?"passed":"failed/unknown");
+    yInfo("test #%d %s!",test,ok?"passed":"failed/unknown");
 }
 
 
@@ -896,7 +895,7 @@ bool CalibModule::configure(ResourceFinder &rf)
 
     if (!isTypeValid(type))
     {
-        printf("Unknown method %s!\n",type.c_str());
+        yError("Unknown method %s!",type.c_str());
         return false;
     }
     
@@ -910,10 +909,8 @@ bool CalibModule::configure(ResourceFinder &rf)
     min[3]=-CTRL_DEG2RAD*15.0; max[3]=CTRL_DEG2RAD*15.0;    // roll
     min[4]=-CTRL_DEG2RAD*15.0; max[4]=CTRL_DEG2RAD*15.0;    // pitch
     min[5]=-CTRL_DEG2RAD*15.0; max[5]=CTRL_DEG2RAD*15.0;    // yaw
-    alignerL.setBounds(min,max);
-    alignerR.setBounds(min,max);
-    alignerL.setInitialGuess(eye(4,4));
-    alignerR.setInitialGuess(eye(4,4));
+    aligner.setBounds(min,max);
+    aligner.setInitialGuess(eye(4,4));
 
     if (test>=0)
     {
@@ -921,7 +918,7 @@ bool CalibModule::configure(ResourceFinder &rf)
         K(0,0)=257.34; K(1,1)=257.34;
         K(0,2)=160.0;  K(1,2)=120.0; 
 
-        alignerL.setProjection(K);
+        aligner.setProjection(K);
         return true;
     }
 
@@ -930,31 +927,31 @@ bool CalibModule::configure(ResourceFinder &rf)
     optionArmL.put("remote",("/"+robot+"/left_arm").c_str());
     optionArmL.put("local",("/"+name+"/joint/left").c_str());
     if (!drvArmL.open(optionArmL))
-        printf("Position left_arm controller not available!\n");
+        yWarning("Position left_arm controller not available!");
 
     Property optionArmR("(device remote_controlboard)");
     optionArmR.put("remote",("/"+robot+"/right_arm").c_str());
     optionArmR.put("local",("/"+name+"/joint/right").c_str());
     if (!drvArmR.open(optionArmR))
-        printf("Position right_arm controller not available!\n");
+        yWarning("Position right_arm controller not available!");
 
     Property optionCartL("(device cartesiancontrollerclient)");
     optionCartL.put("remote",("/"+robot+"/cartesianController/left_arm").c_str());
     optionCartL.put("local",("/"+name+"/cartesian/left").c_str());
     if (!drvCartL.open(optionCartL))
-        printf("Cartesian left_arm controller not available!\n");
+        yWarning("Cartesian left_arm controller not available!");
 
     Property optionCartR("(device cartesiancontrollerclient)");
     optionCartR.put("remote",("/"+robot+"/cartesianController/right_arm").c_str());
     optionCartR.put("local",("/"+name+"/cartesian/right").c_str());
     if (!drvCartR.open(optionCartR))
-        printf("Cartesian right_arm controller not available!\n");
+        yWarning("Cartesian right_arm controller not available!");
 
     Property optionGaze("(device gazecontrollerclient)");
     optionGaze.put("remote","/iKinGazeCtrl");
     optionGaze.put("local",("/"+name+"/gaze").c_str());
     if (!drvGaze.open(optionGaze))
-        printf("Gaze controller not available!\n");
+        yWarning("Gaze controller not available!");
     
     // set up some global vars
     useArmL=(drvArmL.isValid()==drvCartL.isValid());
@@ -964,7 +961,7 @@ bool CalibModule::configure(ResourceFinder &rf)
     // quitting condition
     if (!drvGaze.isValid() || (!useArmL && !useArmR))
     {
-        printf("Something wrong occured while configuring drivers... quitting!\n");
+        yError("Something wrong occured while configuring drivers... quitting!");
         terminate();
         return false;
     }
@@ -985,19 +982,11 @@ bool CalibModule::configure(ResourceFinder &rf)
     Matrix Prj;
     if (!getGazeParams("left","intrinsics",Prj))
     {
-        printf("Intrinsic parameters for left camera not available!\n");
+        yError("Intrinsic parameters for left camera not available!");
         terminate();
         return false;
     }
-    alignerL.setProjection(Prj);
-
-    if (!getGazeParams("right","intrinsics",Prj))
-    {
-        printf("Intrinsic parameters for right camera not available!\n");
-        terminate();
-        return false;
-    }
-    alignerR.setProjection(Prj);
+    aligner.setProjection(Prj);
 
     finger=iCubFinger(arm+"_index");
     deque<IControlLimits*> lim;
@@ -1008,7 +997,7 @@ bool CalibModule::configure(ResourceFinder &rf)
     if (block_eyes<minVer)
     {
         block_eyes=minVer;
-        printf("*** warning: blockEyes saturated at minimum allowed vergence angle %g\n",block_eyes);
+        yWarning("blockEyes saturated at minimum allowed vergence angle %g",block_eyes);
     }
 
     touchInPort.open(("/"+name+"/touch:i").c_str());
@@ -1039,7 +1028,7 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
     Vector c,tipl(2,0.0),tipr(2,0.0);
     igaze->get2DPixel(0,kinPoint,c);
 
-    ImageOf<PixelBgr> imgOut;    
+    ImageOf<PixelBgr> imgOut;
     cv::Rect rect=extractFingerTip(imgIn,imgOut,c,tipl);
     
     bool holdImg=false;
@@ -1063,8 +1052,8 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
                     if (exp_depth2kin)
                     {
                         calibrator->addPoints(depthPoint,kinPoint);
-                        printf("collecting calibration points: p_depth=(%s); p_kin=(%s);\n",
-                               depthPoint.toString(3,3).c_str(),kinPoint.toString(3,3).c_str());
+                        yInfo("collecting calibration points: p_depth=(%s); p_kin=(%s);",
+                              depthPoint.toString(3,3).c_str(),kinPoint.toString(3,3).c_str());
 
                         tag="acquired";
                     }
@@ -1083,29 +1072,19 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
                         He.setCol(3,xe);
                         kinPoint_e=SE3inv(He)*kinPoint4;
 
-                        alignerL.addPoints(tipl,kinPoint_e);
-                        printf("collecting points for aligning left eye: tip=(%s); p_kin=(%s);\n",
-                               tipl.toString(3,3).c_str(),kinPoint_e.toString(3,3).c_str());
-
-                        igaze->getRightEyePose(xe,oe);
-                        He=axis2dcm(oe);
-                        xe.push_back(1.0);
-                        He.setCol(3,xe);
-                        kinPoint_e=SE3inv(He)*kinPoint4;
-
-                        alignerR.addPoints(tipr,kinPoint_e);
-                        printf("collecting points for aligning right eye: tip=(%s); p_kin=(%s);\n",
-                               tipr.toString(3,3).c_str(),kinPoint_e.toString(3,3).c_str());
+                        aligner.addPoints(tipl,kinPoint_e);
+                        yInfo("collecting points for aligning eye: tip=(%s); p_kin=(%s);",
+                              tipl.toString(3,3).c_str(),kinPoint_e.toString(3,3).c_str());
 
                         tag="acquired";
                     }
                 }
                 else
-                    printf("discarding calibration points: p_depth=(%s); p_kin=(%s); (|p_depth-p_kin|=%g)>%g\n",
-                           depthPoint.toString(3,3).c_str(),kinPoint.toString(3,3).c_str(),dist,max_dist);
+                    yInfo("discarding calibration points: p_depth=(%s); p_kin=(%s); (|p_depth-p_kin|=%g)>%g",
+                          depthPoint.toString(3,3).c_str(),kinPoint.toString(3,3).c_str(),dist,max_dist);
             }
             else
-                printf("unavailable depth; discarding...\n");
+                yInfo("unavailable depth; discarding...");
         }
 
         cv::Mat img((IplImage*)imgOut.getIplImage());
@@ -1117,7 +1096,8 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
     
     if (depthOutPort.getOutputCount()>0)
     {
-        depthOutPort.write(imgOut);
+        depthOutPort.prepare()=imgOut;
+        depthOutPort.write();
         if (holdImg)
             Time::delay(0.5);
     }
@@ -1154,7 +1134,7 @@ bool CalibModule::load()
     string fileName=rf->findFile("calibrationFile").c_str();
     if (fileName.empty())
     {
-        printf("calibration file not found\n");
+        yWarning("calibration file not found");
         return false;
     }
 
@@ -1162,7 +1142,7 @@ bool CalibModule::load()
     Bottle b; b.read(data);
 
     mutex.lock();
-    printf("loading experts from file: %s\n",fileName.c_str());
+    yInfo("loading experts from file: %s",fileName.c_str());
     for (int i=0; i<b.size(); i++)
         factory(b.get(i));
     mutex.unlock();
@@ -1182,7 +1162,7 @@ bool CalibModule::save()
         string fileName=rf->find("calibrationFile").asString().c_str();
         fileName=contextPath+"/"+fileName;
         
-        printf("saving experts into file: %s\n",fileName.c_str());
+        yInfo("saving experts into file: %s",fileName.c_str());
         fout.open(fileName.c_str());
         
         if (fout.is_open())
@@ -1234,7 +1214,7 @@ bool CalibModule::log(const string &type)
     string contextPath=rf->getHomeContextPath().c_str();
     string fileName=contextPath+"/points_"+arm+"_"+type+".log";
 
-    printf("logging data into file: %s\n",fileName.c_str());
+    yInfo("logging data into file: %s",fileName.c_str());
     fout.open(fileName.c_str());
 
     bool ret=false;
@@ -1284,7 +1264,7 @@ bool CalibModule::explore()
 bool CalibModule::stop()
 {
     mutex.lock();
-    printf("received stop command => stopping exploration...\n");
+    yInfo("received stop command => stopping exploration...");
     motorExplorationAsyncStop=true;
     mutex.unlock();
     return true;
@@ -1422,17 +1402,37 @@ Property CalibModule::calibrate(const bool rm_outliers)
 
     if (exp_aligneyes)
     {
-        Matrix HN;
+        aligner.calibrate(H,error);
+        reply.put("aligner",error);
 
-        alignerL.calibrate(H,error);
-        if (getGazeParams("left","extrinsics",HN))
-            pushExtrinsics("left",HN*H);
-        reply.put("alignerL",error);
+        Matrix HL,HR;
+        if (getGazeParams("left","extrinsics",HL) && getGazeParams("right","extrinsics",HR))
+        {
+            Bottle cmd,reply;
+            cmd.addString("getH");
+            depthRpcPort.write(cmd,reply);
+            Matrix HRL; reply.write(HRL);
+            Matrix HLR=SE3inv(HRL);
 
-        alignerR.calibrate(H,error);
-        if (getGazeParams("right","extrinsics",HN))
-            pushExtrinsics("right",HN*H);
-        reply.put("alignerR",error);
+            Vector x,o;
+            igaze->getLeftEyePose(x,o);
+            Matrix TL=axis2dcm(o);
+            TL(0,3)=x[0];
+            TL(1,3)=x[1];
+            TL(2,3)=x[2];
+
+            igaze->getRightEyePose(x,o);
+            Matrix TR=axis2dcm(o);
+            TR(0,3)=x[0];
+            TR(1,3)=x[1];
+            TR(2,3)=x[2];
+
+            HL=HL*H;
+            HR=SE3inv(TR)*(TL*HL*HLR);
+
+            pushExtrinsics("left",HL);
+            pushExtrinsics("right",HR);
+        }
     }
 
     mutex.unlock();
@@ -1481,30 +1481,30 @@ bool CalibModule::touch(const int u, const int v)
     px[0]=u;
     px[1]=v;
 
-    printf("received touch request for pixel=(%d %d); => ",u,v);
+    yInfo("received touch request for pixel=(%d %d);",u,v);
 
     Vector in,pxr;
     if (getDepthAveraged(px,in,pxr))
     {
-        printf("p_depth=(%s); => ",in.toString(3,3).c_str());
+        yInfo("=> p_depth=(%s);",in.toString(3,3).c_str());
 
         Vector out;
         if (touchWithExperts)
         {
-            printf("(apply correction) => ");
+            yInfo("=> apply correction;");
             experts->retrieve(in,out);
         }
         else
             out=in;
 
-        printf("p_kin=(%s);\n",out.toString(3,3).c_str());
+        yInfo("=> p_kin=(%s);",out.toString(3,3).c_str());
         doTouch(out);
 
         return true;
     }
     else
     {
-        printf("unavailable depth; discarding...\n");
+        yInfo("unavailable depth; discarding...");
         return false;
     }
 }
@@ -1648,8 +1648,7 @@ Property CalibModule::getExplorationData()
     reply.put("total_points",(int)targets.size());
     reply.put("remaining_points",(int)targetsConsumed.size());
     reply.put("calibrator_points",(int)calibrator->getNumPoints());
-    reply.put("alignerL_points",(int)alignerL.getNumPoints());
-    reply.put("alignerR_points",(int)alignerR.getNumPoints());
+    reply.put("aligner_points",(int)aligner.getNumPoints());
 
     mutex.unlock();
     return reply;
@@ -1664,10 +1663,7 @@ bool CalibModule::clearExplorationData()
         calibrator->clearPoints(); 
 
     if (exp_aligneyes)
-    {
-        alignerL.clearPoints();
-        alignerR.clearPoints();
-    }
+        aligner.clearPoints();
 
     mutex.unlock();
     return true;

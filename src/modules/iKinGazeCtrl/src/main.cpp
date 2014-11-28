@@ -57,11 +57,11 @@ interface, please go \ref icub_gaze_interface "here".
       try to keep on working with just the head part.
  
 \note <b>If you're going to use this controller for your work, 
-      please quote it within any resulting publication</b>: U.
-      Pattacini, "Modular Cartesian Controllers for Humanoid
-      Robots: Design and Implementation on the iCub," <i>Ph.D.
-      dissertation</i>, RBCS, Istituto Italiano di Tecnologia,
-      Genova, 2010.
+      please quote it within any resulting publication</b>: <i>
+      Pattacini U., Modular Cartesian Controllers for
+      Humanoid Robots: Design and Implementation on the iCub,
+      Ph.D. Dissertation, RBCS, Istituto Italiano di
+      Tecnologia, 2011</i>.
  
 <b>Reminder</b> \n 
 If you experience a slow speed motion, please check the shift 
@@ -161,9 +161,6 @@ Factors</a>.
   rotation. To turn off the OCR just set the \e gain equal to
   0.0 (as per default).
  
---simulation
-- Simulate the presence of the robot. 
- 
 --ping_robot_tmo \e tmo 
 - The parameter \e tmo is the timeout (in seconds) to allow to
   start-up the robot before connecting to it.
@@ -190,6 +187,9 @@ Factors</a>.
 --headV2 
 - When this options is specified then the kinematic structure of
   the hardware v2 of the head is referred.
+ 
+--verbose
+- Enable some output print-out.
  
 --tweakFile \e file 
 - The parameter \e file specifies the file name (located in 
@@ -539,7 +539,7 @@ protected:
     Controller     *ctrl;
     PolyDriver     *drvTorso, *drvHead;
     exchangeData    commData;
-    Port            rpcPort;
+    RpcServer       rpcPort;
     bool            interrupting;
     bool            doSaveTweakFile;
     Mutex           savingTweakFile;
@@ -575,8 +575,7 @@ protected:
     /************************************************************************/
     PolyDriver *waitPart(const Property &partOpt, const double ping_robot_tmo)
     {    
-        Property &options=const_cast<Property&>(partOpt);
-        string partName=options.find("part").asString().c_str();
+        string partName=partOpt.find("part").asString().c_str();
         PolyDriver *pDrv=NULL;
 
         double t0=Time::now();
@@ -585,19 +584,19 @@ protected:
             if (pDrv!=NULL)
                 delete pDrv;
 
-            pDrv=new PolyDriver(options);
+            pDrv=new PolyDriver(const_cast<Property&>(partOpt));
             bool ok=pDrv->isValid();
 
-            printf("Checking if %s part is active ... ",partName.c_str());
             if (ok)
             {
-                printf("yes\n");
+                yInfo("Checking if %s part is active ... yes",partName.c_str());
                 return pDrv;
             }
             else
             {
                 double dt=ping_robot_tmo-(Time::now()-t0);
-                printf("not yet: still %.1f [s] to timeout expiry\n",dt>0.0?dt:0.0);
+                yInfo("Checking if %s part is active ... not yet: still %.1f [s] to timeout expiry",
+                      partName.c_str(),dt>0.0?dt:0.0);
 
                 double t1=Time::now();
                 while (Time::now()-t1<1.0)
@@ -764,10 +763,9 @@ protected:
     /************************************************************************/
     bool tweakSet(const Bottle &options)
     {
-        Bottle &opt=const_cast<Bottle&>(options);
         savingTweakFile.lock();
 
-        if (Bottle *pB=opt.find("camera_intrinsics_left").asList())
+        if (Bottle *pB=options.find("camera_intrinsics_left").asList())
         {
             Matrix Prj(3,4); Prj=0.0;
             loc->getIntrinsicsMatrix("left",Prj);
@@ -788,7 +786,7 @@ protected:
             doSaveTweakFile=commData.tweakOverwrite;
         }
 
-        if (Bottle *pB=opt.find("camera_intrinsics_right").asList())
+        if (Bottle *pB=options.find("camera_intrinsics_right").asList())
         {
             Matrix Prj(3,4); Prj=0.0;
             loc->getIntrinsicsMatrix("right",Prj);
@@ -810,7 +808,7 @@ protected:
         }
 
         bool doMinAllowedVer=false;
-        if (Bottle *pB=opt.find("camera_extrinsics_left").asList())
+        if (Bottle *pB=options.find("camera_extrinsics_left").asList())
         {
             Matrix HN=eye(4,4);
             loc->getExtrinsicsMatrix("left",HN);
@@ -839,7 +837,7 @@ protected:
             doMinAllowedVer=true;
         }
 
-        if (Bottle *pB=opt.find("camera_extrinsics_right").asList())
+        if (Bottle *pB=options.find("camera_extrinsics_right").asList())
         {
             Matrix HN=eye(4,4);
             loc->getExtrinsicsMatrix("right",HN);
@@ -963,7 +961,6 @@ public:
         double minAbsVel;
         bool   saccadesOn;
         bool   neckPosCtrlOn;
-        bool   Robotable;        
         double ping_robot_tmo;
         Vector counterRotGain(2);        
 
@@ -985,12 +982,12 @@ public:
         neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
         counterRotGain[0]=rf.check("vor",Value(1.0)).asDouble();
         counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();
-        Robotable=!rf.check("simulation");
 
         commData.robotName=rf.check("robot",Value("icub")).asString().c_str();
         commData.eyeTiltMin=rf.check("eyeTiltMin",Value(-1e9)).asDouble();
         commData.eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
         commData.head_version=rf.check("headV2")?2.0:1.0;
+        commData.verbose=rf.check("verbose");
         commData.tweakOverwrite=(rf.check("tweakOverwrite",Value("on")).asString()=="on");
 
         // minAbsVel is given in absolute form
@@ -1014,7 +1011,7 @@ public:
         commData.rf_tweak.setDefaultConfigFile(commData.tweakFile.c_str());
         commData.rf_tweak.configure(0,NULL);
 
-        printf("Controller configured for head version %g\n",commData.head_version);
+        yInfo("Controller configured for head version %g",commData.head_version);
 
         commData.localStemName="/"+ctrlName;
         string remoteHeadName="/"+commData.robotName+"/"+headName;
@@ -1022,60 +1019,52 @@ public:
         string remoteTorsoName="/"+commData.robotName+"/"+torsoName;
         string localTorsoName=commData.localStemName+"/"+torsoName;        
 
-        if (Robotable)
+        Property optTorso("(device remote_controlboard)");
+        optTorso.put("remote",remoteTorsoName.c_str());
+        optTorso.put("local",localTorsoName.c_str());
+        optTorso.put("part",torsoName.c_str());
+
+        Property optHead("(device remote_controlboard)");
+        optHead.put("remote",remoteHeadName.c_str());
+        optHead.put("local",localHeadName.c_str());
+        optHead.put("part",headName.c_str());
+        // mixed position/velocity control entails
+        // to send two packets per control slot
+        optHead.put("writeStrict","on");
+
+        if (torsoName!="disabled")
         {
-            Property optTorso("(device remote_controlboard)");
-            optTorso.put("remote",remoteTorsoName.c_str());
-            optTorso.put("local",localTorsoName.c_str());
-            optTorso.put("part",torsoName.c_str());
+            drvTorso=(ping_robot_tmo>0.0)?
+                     waitPart(optTorso,ping_robot_tmo):
+                     new PolyDriver(optTorso);
 
-            Property optHead("(device remote_controlboard)");
-            optHead.put("remote",remoteHeadName.c_str());
-            optHead.put("local",localHeadName.c_str());
-            optHead.put("part",headName.c_str());
-            // mixed position/velocity control entails
-            // to send two packets per control slot
-            optHead.put("writeStrict","on");
-
-            if (torsoName!="disabled")
+            if (!drvTorso->isValid())
             {
-                drvTorso=(ping_robot_tmo>0.0)?
-                         waitPart(optTorso,ping_robot_tmo):
-                         new PolyDriver(optTorso);
+                yWarning("Torso device driver not available!");
+                yWarning("Perhaps only the head is running; trying to continue ...");
 
-                if (!drvTorso->isValid())
-                {
-                    printf("Torso device driver not available!\n");
-                    printf("Perhaps only the head is running; trying to continue ...\n");
-
-                    delete drvTorso;
-                    drvTorso=NULL;
-                }
-            }
-            else
-            {
-                printf("Torso device disabled!\n");
-                drvTorso=NULL;
-            }
-
-            drvHead=(ping_robot_tmo>0.0)?
-                    waitPart(optHead,ping_robot_tmo):
-                    new PolyDriver(optHead);
-
-            if (!drvHead->isValid())
-            {
-                printf("Head device driver not available!\n");
-
-                delete drvHead;
                 delete drvTorso;
-                drvTorso=drvHead=NULL;
-                return false;
+                drvTorso=NULL;
             }
         }
         else
         {
-            printf("Controller running in simulation mode\n");
+            yWarning("Torso device disabled!");
+            drvTorso=NULL;
+        }
+
+        drvHead=(ping_robot_tmo>0.0)?
+                waitPart(optHead,ping_robot_tmo):
+                new PolyDriver(optHead);
+
+        if (!drvHead->isValid())
+        {
+            yError("Head device driver not available!");
+
+            delete drvHead;
+            delete drvTorso;
             drvTorso=drvHead=NULL;
+            return false;
         }
 
         // create and start threads
@@ -1849,7 +1838,7 @@ int main(int argc, char *argv[])
     Network yarp;
     if (!yarp.checkNetwork())
     {
-        printf("YARP server not available!\n");
+        yError("YARP server not available!");
         return -1;
     }
 

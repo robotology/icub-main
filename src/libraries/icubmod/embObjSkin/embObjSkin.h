@@ -21,7 +21,7 @@
 #ifndef __SKIN_MESH_THREAD_H__
 #define __SKIN_MESH_THREAD_H__
 
-//#include <stdio.h>
+
 #include <string>
 
 #include <yarp/os/RateThread.h>
@@ -33,58 +33,79 @@
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 
-#define EMBSK_SIZE_INFO     128
-// embObj includes
+// embObjLib includes
 #include <ethManager.h>
 #include <ethResource.h>
 #include "EoUtilities.h"
-#include "FeatureInterface_hid.h"       // Interface with embObj world (callback)
-#include "skinParams.h"
+#include "FeatureInterface.h"
+#include "IethResource.h"
+#include "SkinConfigReader.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace yarp::os::impl;
 using namespace yarp::sig;
 
+
+
 class SkinPatchInfo
 {
 public:
-    int             idPatch;
-    eOprotIndex_t   indexNv;
-    std::vector <int> cardAddrList;
+    int                     idPatch;
+    eOprotIndex_t           indexNv;
+    std::vector <int>       cardAddrList;
     bool checkCardAddrIsInList(int cardAddr);
+};
+
+class SkinConfig
+{
+   public:
+   int                             totalCardsNum;
+   std::vector<SkinPatchInfo>      patchInfoList;
+   uint8_t                         numOfPatches;
 };
 
 class EmbObjSkin :  public yarp::dev::IAnalogSensor,
                     public DeviceDriver,
-                    public IiCubFeature
+                    public IethResource
 {
+
+public:
+
+    enum { EMBSK_SIZE_INFO = 128 };
+    enum { SPECIAL_TRIANGLE_CFG_MAX_NUM = 20 };
+
+    bool            opened;
+
 protected:
+
     TheEthManager   *ethManager;
     PolyDriver      resource;
     ethResources    *res;
-    FEAT_ID         _fId;
-    bool            initted;
+    ethFeature_t    _fId;
     Semaphore       mutex;
-    int             totalCardsNum;
-    std::vector<SkinPatchInfo> patchInfoList;
+    //int             totalCardsNum;
+    //std::vector<SkinPatchInfo> patchInfoList;
     size_t          sensorsNum;
     Vector          data;
-    uint8_t         numOfPatches; //currently one patch is made up by all skin boards connected to one can port of ems.
+    //uint8_t         numOfPatches; //currently one patch is made up by all skin boards connected to one can port of ems.
     SkinBoardCfgParam _brdCfg;
     SkinTriangleCfgParam _triangCfg;
     bool            _newCfg;
+    SkinConfigReader *_cfgReader;
+    SkinConfig        _skCfg;
 
     bool            init();
     bool            fromConfig(yarp::os::Searchable& config);
     bool            initWithSpecialConfig(yarp::os::Searchable& config);
     bool            isEpManagedByBoard();
     bool            start();
+    bool            configPeriodicMessage(void);
     eOprotIndex_t convertIdPatch2IndexNv(int idPatch)
     {
       /*in xml file idPatch are number of ems canPort identified with numer 1 or 2 on electronic schematics.
       * in ethernet protocol the patch number is the index part of network variable identifier, that starts from 0 */
-        if(numOfPatches == 1)
+        if(_skCfg.numOfPatches == 1)
             return(0);
         else
             return(idPatch-1);
@@ -92,8 +113,9 @@ protected:
 
 
 public:
+
     EmbObjSkin();
-    ~EmbObjSkin()   { }
+    ~EmbObjSkin();
 
     char            info[EMBSK_SIZE_INFO];
 
@@ -110,9 +132,13 @@ public:
     virtual int     calibrateSensor(const yarp::sig::Vector& v);
     virtual int     calibrateChannel(int ch);
 
-    virtual bool    fillData(void *data, eOprotID32_t id32);
-    virtual void    setId(FEAT_ID &id);
-    bool            isInitted(void);
+#if 0
+    virtual void    setId(ethFeature_t &id);
+#endif
+
+    virtual bool    initialised();
+    virtual bool    update(eOprotID32_t id32, double timestamp, void *rxdata);
+
 };
 
 #endif

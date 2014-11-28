@@ -43,13 +43,11 @@
 #ifndef __embObjMotionControlh__
 #define __embObjMotionControlh__
 
-//#undef __cplucplus
 
 using namespace std;
 
-#define EMBMC_SIZE_INFO     128
 
-/////  Yarp stuff
+//  Yarp stuff
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Time.h>
 #include <yarp/dev/DeviceDriver.h>
@@ -60,7 +58,7 @@ using namespace std;
 #include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #include <yarp/dev/IVirtualAnalogSensor.h>
-///////////////////
+
 
 #include <iCub/FactoryInterface.h>
 
@@ -74,18 +72,32 @@ using namespace std;
 
 #include "FeatureInterface.h"
 
+
 #include "EoMotionControl.h"
-// #include <ethManager.h>
+#include <ethManager.h>
 #include <ethResource.h>
 #include "../embObjLib/hostTransceiver.hpp"
 // #include "IRobotInterface.h"
-
+#include "IethResource.h"
 #include "eoRequestsQueue.hpp"
 #include "EoMotionControl.h"
+
+
+// - public #define  --------------------------------------------------------------------------------------------------
+
+#define IMPLEMENT_DEBUG_INTERFACE
+
+#undef  VERIFY_ROP_SETIMPEDANCE     // this macro let you send setimpedence rop with signature.
+                                    // if you want use this feature, you should compiled ems firmware with same macro.
+#undef  VERIFY_ROP_SETPOSITIONRAW   // this macro let you send setposition rop with signature.
+                                    // if you want use this feature, yuo should compiled ems firmware with same macro.
+
+
 //
 //   Help structure
 //
 using namespace yarp::os;
+using namespace yarp::dev;
 
 struct ImpedanceLimits
 {
@@ -157,20 +169,7 @@ struct SpeedEstimationParameters
     }
 };
 
-#define IMPLEMENT_DEBUG_INTERFACE
 
-#ifdef _SETPOINT_TEST_
-typedef struct
-{
-    yarp::os::Semaphore     mutex;
-    uint64_t                send_time;
-    eOmeas_position_t       last_pos;
-    eOmeas_position_t       pos;
-    bool                    gotIt;
-    int                     count_old;
-    bool                    wtf;
-} debug_data_of_joint_t;
-#endif
 
 namespace yarp {
     namespace dev  {
@@ -179,9 +178,8 @@ namespace yarp {
 }
 using namespace yarp::dev;
 
-static void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
-static void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
-
+enum { MAX_SHORT = 32767, MIN_SHORT = -32768, MAX_INT = 0x7fffffff, MIN_INT = 0x80000000,  MAX_U32 = 0xffffffff, MIN_U32 = 0x00, MAX_U16 = 0xffff, MIN_U16 = 0x0000};
+enum { CAN_SKIP_ADDR = 0x80 };
 
 class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IPidControlRaw,
@@ -191,12 +189,12 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementEncodersTimed,
     public IPositionControl2Raw,
     public IVelocityControl2Raw,
-    public IControlModeRaw,
+    public IControlMode2Raw,
+    public ImplementControlMode2,
     public IControlLimits2Raw,
     public IImpedanceControlRaw,
     public ImplementImpedanceControl,
     public ImplementControlLimits2,
-    public ImplementControlMode,
     public ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>,
     public ImplementPositionControl2,
     public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
@@ -207,21 +205,28 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementTorqueControl,
     public IVirtualAnalogSensor,
     public IPositionDirectRaw,
-    public ImplementPositionDirect
-
-#ifdef IMPLEMENT_DEBUG_INTERFACE
-, public ImplementDebugInterface,
-public IDebugInterfaceRaw
-#endif
-
+    public ImplementPositionDirect,
+    public IInteractionModeRaw,
+    public ImplementInteractionMode,
+    public IOpenLoopControlRaw,
+    public ImplementOpenLoopControl,
+    public IDebugInterfaceRaw,
+    public ImplementDebugInterface,
+    public IethResource
 {
+
+public:
+
+    enum { EMBMC_SIZE_INFO = 128 };
+
 private:
+
     int           tot_packet_recv, errors;
 
-    bool initted;
-    // embObj stuff
+    bool opened;
+
     yarp::os::Semaphore     _mutex;
-    FEAT_ID                 _fId;
+    ethFeature_t            _fId;
 
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
@@ -234,7 +239,6 @@ private:
     Pid *_tpids;                                /** initial torque gains */
     bool _tpidsEnabled;                         /** abilitation for torque gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
-    //  DebugParameters *_debug_params;             /** debug parameters */
 
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_limitsMin;                         /** joint limits, max*/
@@ -254,13 +258,10 @@ private:
 
     bool         useRawEncoderData;
     bool        _pwmIsLimited;                         /** set to true if pwm is limited */
+    int         numberofmaisboards;
 
-    //debug purpose
-    
-#undef  VERIFY_ROP_SETIMPEDANCE   //this macro let you send setimpedence rop with signature.								  //if you want use this feature, you should compiled ems firmware with same macro.
-#undef VERIFY_ROP_SETPOSITIONRAW  //this macro let you send setposition rop with signature.
-								  //if you want use this feature, yuo should compiled ems firmware with same macro.
-    
+    // debug purpose
+      
 #ifdef VERIFY_ROP_SETIMPEDANCE 
     uint32_t *impedanceSignature;
 #endif
@@ -269,10 +270,6 @@ private:
     uint32_t *refRawSignature;
     bool        *sendingDirects;
 #endif
-    
-    
-    
-    
     
 
     // basic knowledge of my joints
@@ -294,31 +291,106 @@ private:
     double  *_ref_torques;      // for torque control.
 
     uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
+
 private:
+
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
-    bool configure_mais(void);
+    bool configure_mais(yarp::os::Searchable &config);
     bool dealloc();
     bool isEpManagedByBoard();
     bool parsePosPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[]);
     bool parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[]);
     bool parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[]);
+    bool getStatusBasic_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);             // helper function
+    bool getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);     // helper function
+    bool interactionModeStatusConvert_embObj2yarp(eOenum08_t embObjMode, int &vocabOut);
+    bool interactionModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut);
+
+    bool controlModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut);
+    int  controlModeCommandConvert_embObj2yarp(eOmc_controlmode_command_t embObjMode);
+
+    bool controlModeStatusConvert_yarp2embObj(int vocabMode, eOmc_controlmode_t &embOut);
+    int  controlModeStatusConvert_embObj2yarp(eOenum08_t embObjMode);
+
+    void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
+    void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
+
+
+    // saturation check and rounding for 16 bit unsigned integer
+    int U_16(double x) const
+    {
+        if (x <= double(MIN_U16) )
+            return MIN_U16;
+        else
+            if (x >= double(MAX_U16))
+                return MAX_U16;
+        else
+            return int(x + .5);
+    }
+
+    // saturation check and rounding for 16 bit signed integer
+    short S_16(double x)
+    {
+        if (x <= double(-(MAX_SHORT))-1)
+            return MIN_SHORT;
+        else
+            if (x >= double(MAX_SHORT))
+                return MAX_SHORT;
+        else
+            if  (x>0)
+                return short(x + .5);
+            else
+                return short(x - .5);
+    }
+
+    // saturation check and rounding for 32 bit unsigned integer
+    int U_32(double x) const
+    {
+        if (x <= double(MIN_U32) )
+            return MIN_U32;
+        else
+            if (x >= double(MAX_U32))
+                return MAX_U32;
+        else
+            return int(x + .5);
+    }
+
+    // saturation check and rounding for 32 bit signed integer
+    int S_32(double x) const
+    {
+        if (x <= double(-(MAX_INT))-1.0)
+            return MIN_INT;
+        else
+            if (x >= double(MAX_INT))
+                return MAX_INT;
+        else
+            if  (x>0)
+                return int(x + .5);
+            else
+                return int(x - .5);
+    }
+
 
 public:
+
     embObjMotionControl();
     ~embObjMotionControl();
 
     char                info[EMBMC_SIZE_INFO];
     Semaphore           semaphore;
-    eoRequestsQueue     *requestQueue;  // tabella che contiene la lista delle attese
+    eoRequestsQueue     *requestQueue;      // it contains the list of requests done to the remote board
 
-    // embObj stuff -- this is better if private... do a get method!!
+    // embObjLib stuff
     ethResources                *res;
     yarp::dev::TheEthManager    *ethManager;
 
-    /*Device Driver*/
+    // Device Driver
     virtual bool open(yarp::os::Searchable &par);
     virtual bool close();
     bool fromConfig(yarp::os::Searchable &config);
+
+    virtual bool initialised();
+    virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
 
     eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
     void refreshEncoderTimeStamp(int joint);
@@ -335,8 +407,8 @@ public:
     virtual bool setErrorLimitsRaw(const double *limits);
     virtual bool getErrorRaw(int j, double *err);
     virtual bool getErrorsRaw(double *errs);
-    virtual bool getOutputRaw(int j, double *out);
-    virtual bool getOutputsRaw(double *outs);
+//    virtual bool getOutputRaw(int j, double *out);    // uses iOpenLoop interface
+//    virtual bool getOutputsRaw(double *outs);         // uses iOpenLoop interface
     virtual bool getPidRaw(int j, Pid *pid);
     virtual bool getPidsRaw(Pid *pids);
     virtual bool getReferenceRaw(int j, double *ref);
@@ -401,6 +473,12 @@ public:
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int *v);
 
+    // ControlMode 2
+    virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModeRaw(const int j, const int mode);
+    virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModesRaw(int *modes);
+
     //////////////////////// BEGIN EncoderInterface
     virtual bool resetEncoderRaw(int j);
     virtual bool resetEncodersRaw();
@@ -426,7 +504,7 @@ public:
     virtual bool getAmpStatusRaw(int *st);
     virtual bool getAmpStatusRaw(int j, int *st);
     /////////////// END AMPLIFIER INTERFACE
-    FEAT_ID getFeat_id();
+    //ethFeature_t getFeat_id();
 
     // virtual analog sensor
     virtual int getState(int ch);
@@ -548,9 +626,27 @@ public:
     bool getWholeImpedanceRaw(int j, eOmc_impedance_t &imped);
 
     // PositionDirect Interface
+    bool setPositionDirectModeRaw();
     bool setPositionRaw(int j, double ref);
     bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     bool setPositionsRaw(const double *refs);
+
+    // InteractionMode interface
+    bool getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum* _mode);
+    bool getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    bool getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+    bool setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum _mode);
+    bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+
+    // OPENLOOP interface
+    bool setRefOutputRaw(int j, double v);
+    bool setRefOutputsRaw(const double *v);
+    bool getRefOutputRaw(int j, double *out);
+    bool getRefOutputsRaw(double *outs);
+    bool getOutputRaw(int j, double *out);
+    bool getOutputsRaw(double *outs);
+    bool setOpenLoopModeRaw();
 };
 
 #endif // include guard

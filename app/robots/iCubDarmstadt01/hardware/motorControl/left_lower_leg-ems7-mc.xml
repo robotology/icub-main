@@ -3,7 +3,7 @@
 
  <!-- Initialization file for EMS 7 - Left Lower Leg, 2 dof -->
 
-<devices robot="iCubGenova04" build="1">
+<devices robot="iCubDarmstadt01" build="1">
   <device name="left_lower_leg_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/left_lower_leg-ems7-eln.xml" />
@@ -11,8 +11,8 @@
 
     <group name="LIMITS">
         <!--                      0             1      -->
-        <param name="Max">        39.00         22.00		</param>
-        <param name="Min">       -20.00        -22.00		</param>
+        <param name="Max">        30.00         20.00		</param>
+        <param name="Min">       -20.00        -20.00		</param>
         <param name="Currents">   5000          5000		</param>
     </group>
 
@@ -26,7 +26,8 @@
         <param name="shift">            8            8         </param>       
         <param name="ko">               0            0         </param>       
         <param name="stictionUp">       0            0         </param>       
-        <param name="stictionDwn">      0            0         </param>       
+        <param name="stictionDwn">      0            0         </param>      
+        <param name="kff">              0            0         </param>          
         </group>
 
     <group name="IMPEDANCE">
@@ -35,15 +36,16 @@
     </group>
 
     <group name="TRQ_PIDS">
-        <param name="kp">           -200         -200      </param>       
+        <param name="kp">         -50          -50      </param>       
         <param name="kd">           0            0         </param>       
-        <param name="ki">           0            0         </param>       
-        <param name="maxPwm">       0            0         </param>       
-        <param name="maxInt">       0            0         </param>       
-        <param name="shift">        0            0         </param>       
+        <param name="ki">       -1000        -1000         </param>       
+        <param name="maxPwm">    8000            0         </param>       
+        <param name="maxInt">     500            0         </param>       
+        <param name="shift">        6            6         </param>       
         <param name="ko">           0            0         </param>       
         <param name="stictionUp">   0            0         </param>       
-        <param name="stictionDwn">  0            0         </param>       
+        <param name="stictionDwn">  0            0         </param>   
+        <param name="kff">          0            0         </param>           
     </group>
 
   </device>

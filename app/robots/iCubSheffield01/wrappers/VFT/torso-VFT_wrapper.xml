@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubSheffield01" build="1">
+	<device name="torso_VFTserver" type="virtualAnalogServer">
+		<param name="period">       10  				</param>
+		<param name="deviceId">     torso				</param>
+		
+		 <paramlist name="networks">
+		      <!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
+			<elem name="FirstSetOfJoints">  0  2  0  2 </elem> 
+		    </paramlist>
+
+		<param name="channels">       3  				</param>
+		<param name="name"> 	     /torso				</param>
+
+		<action phase="startup" level="5" type="attach">
+		    <paramlist name="networks">
+			<!-- The param value must match the device name in the corresponding emsX file -->
+			 <elem name="FirstSetOfJoints">  torso_mc </elem>	
+		    </paramlist>
+		</action>
+
+		<action phase="shutdown" level="5" type="detach" />
+	</device>
+</devices>
+
+

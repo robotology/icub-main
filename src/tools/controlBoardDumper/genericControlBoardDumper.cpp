@@ -183,6 +183,61 @@ bool GetTrqs::getData(double *e)
     return 0;
 }
 
+void GetControlModes::setInterface(IControlMode2 *i, int n_joints)
+{
+    icmd = i;
+    nj=n_joints;
+}
+
+bool GetControlModes::getData(double *e)
+{
+  //fprintf(stderr, "Entering getTrqs\n");
+  int tmp [50];
+  if (icmd)
+    {
+      icmd->getControlModes(tmp);
+      for (int i=0; i<nj; i++)
+      {
+          if      (tmp[i] == VOCAB_CM_POSITION)        e[i] = 0;
+          else if (tmp[i] == VOCAB_CM_POSITION_DIRECT) e[i] = 1;
+          else if (tmp[i] == VOCAB_CM_VELOCITY)        e[i] = 2;
+          else if (tmp[i] == VOCAB_CM_MIXED)           e[i] = 3;
+          else if (tmp[i] == VOCAB_CM_TORQUE)          e[i] = 4;
+          else if (tmp[i] == VOCAB_CM_OPENLOOP)        e[i] = 5;
+          else if (tmp[i] == VOCAB_CM_IDLE)            e[i] = 6;
+          else                                         e[i] =-1;
+      }
+      return 1;
+    }
+  else
+    return 0;
+}
+
+void GetInteractionModes::setInterface(IInteractionMode *i, int n_joints)
+{
+    iint = i;
+    nj=n_joints;
+}
+
+bool GetInteractionModes::getData(double *e)
+{
+  //fprintf(stderr, "Entering getTrqs\n");
+  yarp::dev::InteractionModeEnum tmp[50];
+  if (iint)
+    {
+      iint->getInteractionModes(tmp);
+      for (int i=0; i<nj; i++)
+      {
+          if      (tmp[i] == VOCAB_IM_STIFF)     e[i] = 0;
+          else if (tmp[i] == VOCAB_IM_COMPLIANT) e[i] = 1;
+          else                                   e[i] =-1;
+      }
+      return 1;
+    }
+  else
+    return 0;
+}
+
 void GetTrqErrs::setInterface(ITorqueControl *i)
 {
     itrq = i;
@@ -194,6 +249,23 @@ bool GetTrqErrs::getData(double *e)
   if (itrq)
     {
       itrq->getTorqueErrors(e);
+      return 1;
+    }
+  else
+    return 0;
+}
+
+void GetTrqRefs::setInterface(ITorqueControl *i)
+{
+    itrq = i;
+}
+
+bool GetTrqRefs::getData(double *e)
+{
+  //fprintf(stderr, "Entering getTrqRefs\n");
+  if (itrq)
+    {
+        itrq->getRefTorques(e);
       return 1;
     }
   else

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubSheffield01" build="1">
+    <group name="GENERAL">
+        <param name="Joints"> 12 </param> <!-- the number of joints of the robot part -->
+
+        <param name="AxisMap"> 	     0             1             2             3               4             5             6             7             8             9             10            11       </param>
+<param name="Encoder">                                                                -706.670 11.375   -11.375  3.000    23.667   -2.389   -2.794   -2.833   -2.824   -2.611   -2.965   -2.100   </param>
+<param name="Zeros">                                                                  -75.00   180.00   -180.00  473.33   43.10    -106.74  -182.53  -90.00   -180.63  -97.66   -170.00  -364.29  </param>
+       <param name="TorqueId">  0x0C     	0             0             0     		0             0              0             0            0             0            0             0              </param>
+        <param name="TorqueChan">   4     	0             0             0     		0             0              0             0            0             0            0             0          	</param>
+        <param name="TorqueMax">    2     	2             2             2     		0             0              0             0            0             0            0             0       	</param>
+        <param name="Rotor">        1     	1             1             1     		1             1              1             1            1             1            1             1       	</param>
+        <param name="Gearbox">      0     	0             0             0     		0             0              0             0            0             0            0             0       	</param>
+        <param name="Verbose">      0    </param>
+    </group>
+
+    <group name="VELOCITY">
+        <param name="MOT_speed_estimation">1             1             1             1             1             1             1             1             1             1             1             1</param>
+        <param name="MOT_accel_estimation">1             1             1             1             1             1             1             1             1             1             1             1</param>
+        <param name="JNT_accel_estimation">5             5             5             5             5             5             5             5             5             5             5             5</param>
+        <param name="JNT_speed_estimation">5             5             5             5             5             5             5             5             5             5             5             5</param>
+       <param name="Shifts">              	8             8             8             8             8             8             8             8             8             8               8             8 	</param>
+        <param name="Timeout">             	100           100           100           100           100           100           100           100           100           100           100           100           </param>
+    </group>
+
+
+</params>

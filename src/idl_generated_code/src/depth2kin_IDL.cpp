@@ -9,351 +9,142 @@
 class depth2kin_IDL_getNumExperts : public yarp::os::Portable {
 public:
   int32_t _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("getNumExperts",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readI32(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_clearExperts : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("clearExperts",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_load : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("load",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_save : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("save",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_log : public yarp::os::Portable {
 public:
   std::string type;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("log",1,1)) return false;
-    if (!writer.writeString(type)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& type);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_explore : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("explore",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_stop : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("stop",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_setMaxDist : public yarp::os::Portable {
 public:
   double max_dist;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("setMaxDist",1,1)) return false;
-    if (!writer.writeDouble(max_dist)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const double max_dist);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_getMaxDist : public yarp::os::Portable {
 public:
   double _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("getMaxDist",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readDouble(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_setRoi : public yarp::os::Portable {
 public:
   int32_t side;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("setRoi",1,1)) return false;
-    if (!writer.writeI32(side)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const int32_t side);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_getRoi : public yarp::os::Portable {
 public:
   int32_t _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("getRoi",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readI32(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_setBlockEyes : public yarp::os::Portable {
 public:
   double block_eyes;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("setBlockEyes",1,1)) return false;
-    if (!writer.writeDouble(block_eyes)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const double block_eyes);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_getBlockEyes : public yarp::os::Portable {
 public:
   double _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("getBlockEyes",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readDouble(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_blockEyes : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("blockEyes",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_clearEyes : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("clearEyes",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_setArm : public yarp::os::Portable {
 public:
   std::string arm;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("setArm",1,1)) return false;
-    if (!writer.writeString(arm)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& arm);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_getArm : public yarp::os::Portable {
 public:
   std::string _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("getArm",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readString(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_setCalibrationType : public yarp::os::Portable {
@@ -361,127 +152,51 @@ public:
   std::string type;
   std::string extrapolation;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(3)) return false;
-    if (!writer.writeTag("setCalibrationType",1,1)) return false;
-    if (!writer.writeString(type)) return false;
-    if (!writer.writeString(extrapolation)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& type, const std::string& extrapolation);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_getCalibrationType : public yarp::os::Portable {
 public:
   std::string _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("getCalibrationType",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readString(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_calibrate : public yarp::os::Portable {
 public:
   bool rm_outliers;
   yarp::os::Property _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("calibrate",1,1)) return false;
-    if (!writer.writeBool(rm_outliers)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.read(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const bool rm_outliers);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_pushCalibrator : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("pushCalibrator",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_setTouchWithExperts : public yarp::os::Portable {
 public:
   std::string sw;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("setTouchWithExperts",1,1)) return false;
-    if (!writer.writeString(sw)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& sw);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_getTouchWithExperts : public yarp::os::Portable {
 public:
   std::string _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("getTouchWithExperts",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readString(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_touch : public yarp::os::Portable {
@@ -489,23 +204,9 @@ public:
   int32_t u;
   int32_t v;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(3)) return false;
-    if (!writer.writeTag("touch",1,1)) return false;
-    if (!writer.writeI32(u)) return false;
-    if (!writer.writeI32(v)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const int32_t u, const int32_t v);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_getPoint : public yarp::os::Portable {
@@ -515,25 +216,9 @@ public:
   double y;
   double z;
   PointReq _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(5)) return false;
-    if (!writer.writeTag("getPoint",1,1)) return false;
-    if (!writer.writeString(arm)) return false;
-    if (!writer.writeDouble(x)) return false;
-    if (!writer.writeDouble(y)) return false;
-    if (!writer.writeDouble(z)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.read(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& arm, const double x, const double y, const double z);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_setExperiment : public yarp::os::Portable {
@@ -541,131 +226,53 @@ public:
   std::string exp;
   std::string v;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(3)) return false;
-    if (!writer.writeTag("setExperiment",1,1)) return false;
-    if (!writer.writeString(exp)) return false;
-    if (!writer.writeString(v)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& exp, const std::string& v);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_getExperiment : public yarp::os::Portable {
 public:
   std::string exp;
   std::string _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("getExperiment",1,1)) return false;
-    if (!writer.writeString(exp)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readString(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& exp);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_getExtrinsics : public yarp::os::Portable {
 public:
   std::string eye;
   yarp::sig::Vector _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("getExtrinsics",1,1)) return false;
-    if (!writer.writeString(eye)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.read(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& eye);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_resetExtrinsics : public yarp::os::Portable {
 public:
   std::string eye;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("resetExtrinsics",1,1)) return false;
-    if (!writer.writeString(eye)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& eye);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_setExplorationWait : public yarp::os::Portable {
 public:
   double wait;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("setExplorationWait",1,1)) return false;
-    if (!writer.writeDouble(wait)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const double wait);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_getExplorationWait : public yarp::os::Portable {
 public:
   double _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("getExplorationWait",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readDouble(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_setExplorationSpace : public yarp::os::Portable {
@@ -676,26 +283,9 @@ public:
   double a;
   double b;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(6)) return false;
-    if (!writer.writeTag("setExplorationSpace",1,1)) return false;
-    if (!writer.writeDouble(cx)) return false;
-    if (!writer.writeDouble(cy)) return false;
-    if (!writer.writeDouble(cz)) return false;
-    if (!writer.writeDouble(a)) return false;
-    if (!writer.writeDouble(b)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const double cx, const double cy, const double cz, const double a, const double b);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_setExplorationSpaceDelta : public yarp::os::Portable {
@@ -706,133 +296,921 @@ public:
   double da;
   double db;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(6)) return false;
-    if (!writer.writeTag("setExplorationSpaceDelta",1,1)) return false;
-    if (!writer.writeDouble(dcx)) return false;
-    if (!writer.writeDouble(dcy)) return false;
-    if (!writer.writeDouble(dcz)) return false;
-    if (!writer.writeDouble(da)) return false;
-    if (!writer.writeDouble(db)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const double dcx, const double dcy, const double dcz, const double da, const double db);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_getExplorationData : public yarp::os::Portable {
 public:
   yarp::os::Property _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("getExplorationData",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.read(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_clearExplorationData : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("clearExplorationData",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_posture : public yarp::os::Portable {
 public:
   std::string type;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("posture",1,1)) return false;
-    if (!writer.writeString(type)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& type);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_calibrateDepth : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("calibrateDepth",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class depth2kin_IDL_quit : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("quit",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+bool depth2kin_IDL_getNumExperts::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("getNumExperts",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getNumExperts::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readI32(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getNumExperts::init() {
+  _return = 0;
+}
+
+bool depth2kin_IDL_clearExperts::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("clearExperts",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_clearExperts::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_clearExperts::init() {
+  _return = false;
+}
+
+bool depth2kin_IDL_load::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("load",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_load::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_load::init() {
+  _return = false;
+}
+
+bool depth2kin_IDL_save::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("save",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_save::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_save::init() {
+  _return = false;
+}
+
+bool depth2kin_IDL_log::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("log",1,1)) return false;
+  if (!writer.writeString(type)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_log::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_log::init(const std::string& type) {
+  _return = false;
+  this->type = type;
+}
+
+bool depth2kin_IDL_explore::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("explore",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_explore::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_explore::init() {
+  _return = false;
+}
+
+bool depth2kin_IDL_stop::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("stop",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_stop::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_stop::init() {
+  _return = false;
+}
+
+bool depth2kin_IDL_setMaxDist::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("setMaxDist",1,1)) return false;
+  if (!writer.writeDouble(max_dist)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_setMaxDist::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_setMaxDist::init(const double max_dist) {
+  _return = false;
+  this->max_dist = max_dist;
+}
+
+bool depth2kin_IDL_getMaxDist::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("getMaxDist",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getMaxDist::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readDouble(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getMaxDist::init() {
+  _return = (double)0;
+}
+
+bool depth2kin_IDL_setRoi::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("setRoi",1,1)) return false;
+  if (!writer.writeI32(side)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_setRoi::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_setRoi::init(const int32_t side) {
+  _return = false;
+  this->side = side;
+}
+
+bool depth2kin_IDL_getRoi::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("getRoi",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getRoi::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readI32(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getRoi::init() {
+  _return = 0;
+}
+
+bool depth2kin_IDL_setBlockEyes::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("setBlockEyes",1,1)) return false;
+  if (!writer.writeDouble(block_eyes)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_setBlockEyes::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_setBlockEyes::init(const double block_eyes) {
+  _return = false;
+  this->block_eyes = block_eyes;
+}
+
+bool depth2kin_IDL_getBlockEyes::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("getBlockEyes",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getBlockEyes::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readDouble(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getBlockEyes::init() {
+  _return = (double)0;
+}
+
+bool depth2kin_IDL_blockEyes::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("blockEyes",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_blockEyes::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_blockEyes::init() {
+  _return = false;
+}
+
+bool depth2kin_IDL_clearEyes::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("clearEyes",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_clearEyes::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_clearEyes::init() {
+  _return = false;
+}
+
+bool depth2kin_IDL_setArm::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("setArm",1,1)) return false;
+  if (!writer.writeString(arm)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_setArm::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_setArm::init(const std::string& arm) {
+  _return = false;
+  this->arm = arm;
+}
+
+bool depth2kin_IDL_getArm::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("getArm",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getArm::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readString(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getArm::init() {
+  _return = "";
+}
+
+bool depth2kin_IDL_setCalibrationType::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(3)) return false;
+  if (!writer.writeTag("setCalibrationType",1,1)) return false;
+  if (!writer.writeString(type)) return false;
+  if (!writer.writeString(extrapolation)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_setCalibrationType::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_setCalibrationType::init(const std::string& type, const std::string& extrapolation) {
+  _return = false;
+  this->type = type;
+  this->extrapolation = extrapolation;
+}
+
+bool depth2kin_IDL_getCalibrationType::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("getCalibrationType",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getCalibrationType::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readString(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getCalibrationType::init() {
+  _return = "";
+}
+
+bool depth2kin_IDL_calibrate::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("calibrate",1,1)) return false;
+  if (!writer.writeBool(rm_outliers)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_calibrate::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.read(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_calibrate::init(const bool rm_outliers) {
+  _return;
+  this->rm_outliers = rm_outliers;
+}
+
+bool depth2kin_IDL_pushCalibrator::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("pushCalibrator",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_pushCalibrator::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_pushCalibrator::init() {
+  _return = false;
+}
+
+bool depth2kin_IDL_setTouchWithExperts::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("setTouchWithExperts",1,1)) return false;
+  if (!writer.writeString(sw)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_setTouchWithExperts::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_setTouchWithExperts::init(const std::string& sw) {
+  _return = false;
+  this->sw = sw;
+}
+
+bool depth2kin_IDL_getTouchWithExperts::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("getTouchWithExperts",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getTouchWithExperts::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readString(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getTouchWithExperts::init() {
+  _return = "";
+}
+
+bool depth2kin_IDL_touch::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(3)) return false;
+  if (!writer.writeTag("touch",1,1)) return false;
+  if (!writer.writeI32(u)) return false;
+  if (!writer.writeI32(v)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_touch::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_touch::init(const int32_t u, const int32_t v) {
+  _return = false;
+  this->u = u;
+  this->v = v;
+}
+
+bool depth2kin_IDL_getPoint::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(5)) return false;
+  if (!writer.writeTag("getPoint",1,1)) return false;
+  if (!writer.writeString(arm)) return false;
+  if (!writer.writeDouble(x)) return false;
+  if (!writer.writeDouble(y)) return false;
+  if (!writer.writeDouble(z)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getPoint::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.read(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getPoint::init(const std::string& arm, const double x, const double y, const double z) {
+  _return;
+  this->arm = arm;
+  this->x = x;
+  this->y = y;
+  this->z = z;
+}
+
+bool depth2kin_IDL_setExperiment::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(3)) return false;
+  if (!writer.writeTag("setExperiment",1,1)) return false;
+  if (!writer.writeString(exp)) return false;
+  if (!writer.writeString(v)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_setExperiment::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_setExperiment::init(const std::string& exp, const std::string& v) {
+  _return = false;
+  this->exp = exp;
+  this->v = v;
+}
+
+bool depth2kin_IDL_getExperiment::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("getExperiment",1,1)) return false;
+  if (!writer.writeString(exp)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getExperiment::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readString(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getExperiment::init(const std::string& exp) {
+  _return = "";
+  this->exp = exp;
+}
+
+bool depth2kin_IDL_getExtrinsics::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("getExtrinsics",1,1)) return false;
+  if (!writer.writeString(eye)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getExtrinsics::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.read(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getExtrinsics::init(const std::string& eye) {
+  _return;
+  this->eye = eye;
+}
+
+bool depth2kin_IDL_resetExtrinsics::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("resetExtrinsics",1,1)) return false;
+  if (!writer.writeString(eye)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_resetExtrinsics::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_resetExtrinsics::init(const std::string& eye) {
+  _return = false;
+  this->eye = eye;
+}
+
+bool depth2kin_IDL_setExplorationWait::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("setExplorationWait",1,1)) return false;
+  if (!writer.writeDouble(wait)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_setExplorationWait::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_setExplorationWait::init(const double wait) {
+  _return = false;
+  this->wait = wait;
+}
+
+bool depth2kin_IDL_getExplorationWait::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("getExplorationWait",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getExplorationWait::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readDouble(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getExplorationWait::init() {
+  _return = (double)0;
+}
+
+bool depth2kin_IDL_setExplorationSpace::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(6)) return false;
+  if (!writer.writeTag("setExplorationSpace",1,1)) return false;
+  if (!writer.writeDouble(cx)) return false;
+  if (!writer.writeDouble(cy)) return false;
+  if (!writer.writeDouble(cz)) return false;
+  if (!writer.writeDouble(a)) return false;
+  if (!writer.writeDouble(b)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_setExplorationSpace::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_setExplorationSpace::init(const double cx, const double cy, const double cz, const double a, const double b) {
+  _return = false;
+  this->cx = cx;
+  this->cy = cy;
+  this->cz = cz;
+  this->a = a;
+  this->b = b;
+}
+
+bool depth2kin_IDL_setExplorationSpaceDelta::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(6)) return false;
+  if (!writer.writeTag("setExplorationSpaceDelta",1,1)) return false;
+  if (!writer.writeDouble(dcx)) return false;
+  if (!writer.writeDouble(dcy)) return false;
+  if (!writer.writeDouble(dcz)) return false;
+  if (!writer.writeDouble(da)) return false;
+  if (!writer.writeDouble(db)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_setExplorationSpaceDelta::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_setExplorationSpaceDelta::init(const double dcx, const double dcy, const double dcz, const double da, const double db) {
+  _return = false;
+  this->dcx = dcx;
+  this->dcy = dcy;
+  this->dcz = dcz;
+  this->da = da;
+  this->db = db;
+}
+
+bool depth2kin_IDL_getExplorationData::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("getExplorationData",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getExplorationData::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.read(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getExplorationData::init() {
+  _return;
+}
+
+bool depth2kin_IDL_clearExplorationData::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("clearExplorationData",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_clearExplorationData::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_clearExplorationData::init() {
+  _return = false;
+}
+
+bool depth2kin_IDL_posture::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("posture",1,1)) return false;
+  if (!writer.writeString(type)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_posture::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_posture::init(const std::string& type) {
+  _return = false;
+  this->type = type;
+}
+
+bool depth2kin_IDL_calibrateDepth::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("calibrateDepth",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_calibrateDepth::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_calibrateDepth::init() {
+  _return = false;
+}
+
+bool depth2kin_IDL_quit::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("quit",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_quit::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_quit::init() {
+  _return = false;
+}
+
+depth2kin_IDL::depth2kin_IDL() {
+  yarp().setOwner(*this);
+}
 int32_t depth2kin_IDL::getNumExperts() {
   int32_t _return = 0;
   depth2kin_IDL_getNumExperts helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","int32_t depth2kin_IDL::getNumExperts()");
   }
@@ -842,6 +1220,7 @@ int32_t depth2kin_IDL::getNumExperts() {
 bool depth2kin_IDL::clearExperts() {
   bool _return = false;
   depth2kin_IDL_clearExperts helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::clearExperts()");
   }
@@ -851,6 +1230,7 @@ bool depth2kin_IDL::clearExperts() {
 bool depth2kin_IDL::load() {
   bool _return = false;
   depth2kin_IDL_load helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::load()");
   }
@@ -860,6 +1240,7 @@ bool depth2kin_IDL::load() {
 bool depth2kin_IDL::save() {
   bool _return = false;
   depth2kin_IDL_save helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::save()");
   }
@@ -869,7 +1250,7 @@ bool depth2kin_IDL::save() {
 bool depth2kin_IDL::log(const std::string& type) {
   bool _return = false;
   depth2kin_IDL_log helper;
-  helper.type = type;
+  helper.init(type);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::log(const std::string& type)");
   }
@@ -879,6 +1260,7 @@ bool depth2kin_IDL::log(const std::string& type) {
 bool depth2kin_IDL::explore() {
   bool _return = false;
   depth2kin_IDL_explore helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::explore()");
   }
@@ -888,6 +1270,7 @@ bool depth2kin_IDL::explore() {
 bool depth2kin_IDL::stop() {
   bool _return = false;
   depth2kin_IDL_stop helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::stop()");
   }
@@ -897,7 +1280,7 @@ bool depth2kin_IDL::stop() {
 bool depth2kin_IDL::setMaxDist(const double max_dist) {
   bool _return = false;
   depth2kin_IDL_setMaxDist helper;
-  helper.max_dist = max_dist;
+  helper.init(max_dist);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setMaxDist(const double max_dist)");
   }
@@ -907,6 +1290,7 @@ bool depth2kin_IDL::setMaxDist(const double max_dist) {
 double depth2kin_IDL::getMaxDist() {
   double _return = (double)0;
   depth2kin_IDL_getMaxDist helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","double depth2kin_IDL::getMaxDist()");
   }
@@ -916,7 +1300,7 @@ double depth2kin_IDL::getMaxDist() {
 bool depth2kin_IDL::setRoi(const int32_t side) {
   bool _return = false;
   depth2kin_IDL_setRoi helper;
-  helper.side = side;
+  helper.init(side);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setRoi(const int32_t side)");
   }
@@ -926,6 +1310,7 @@ bool depth2kin_IDL::setRoi(const int32_t side) {
 int32_t depth2kin_IDL::getRoi() {
   int32_t _return = 0;
   depth2kin_IDL_getRoi helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","int32_t depth2kin_IDL::getRoi()");
   }
@@ -935,7 +1320,7 @@ int32_t depth2kin_IDL::getRoi() {
 bool depth2kin_IDL::setBlockEyes(const double block_eyes) {
   bool _return = false;
   depth2kin_IDL_setBlockEyes helper;
-  helper.block_eyes = block_eyes;
+  helper.init(block_eyes);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setBlockEyes(const double block_eyes)");
   }
@@ -945,6 +1330,7 @@ bool depth2kin_IDL::setBlockEyes(const double block_eyes) {
 double depth2kin_IDL::getBlockEyes() {
   double _return = (double)0;
   depth2kin_IDL_getBlockEyes helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","double depth2kin_IDL::getBlockEyes()");
   }
@@ -954,6 +1340,7 @@ double depth2kin_IDL::getBlockEyes() {
 bool depth2kin_IDL::blockEyes() {
   bool _return = false;
   depth2kin_IDL_blockEyes helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::blockEyes()");
   }
@@ -963,6 +1350,7 @@ bool depth2kin_IDL::blockEyes() {
 bool depth2kin_IDL::clearEyes() {
   bool _return = false;
   depth2kin_IDL_clearEyes helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::clearEyes()");
   }
@@ -972,7 +1360,7 @@ bool depth2kin_IDL::clearEyes() {
 bool depth2kin_IDL::setArm(const std::string& arm) {
   bool _return = false;
   depth2kin_IDL_setArm helper;
-  helper.arm = arm;
+  helper.init(arm);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setArm(const std::string& arm)");
   }
@@ -982,6 +1370,7 @@ bool depth2kin_IDL::setArm(const std::string& arm) {
 std::string depth2kin_IDL::getArm() {
   std::string _return = "";
   depth2kin_IDL_getArm helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDL::getArm()");
   }
@@ -991,8 +1380,7 @@ std::string depth2kin_IDL::getArm() {
 bool depth2kin_IDL::setCalibrationType(const std::string& type, const std::string& extrapolation) {
   bool _return = false;
   depth2kin_IDL_setCalibrationType helper;
-  helper.type = type;
-  helper.extrapolation = extrapolation;
+  helper.init(type,extrapolation);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setCalibrationType(const std::string& type, const std::string& extrapolation)");
   }
@@ -1002,6 +1390,7 @@ bool depth2kin_IDL::setCalibrationType(const std::string& type, const std::strin
 std::string depth2kin_IDL::getCalibrationType() {
   std::string _return = "";
   depth2kin_IDL_getCalibrationType helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDL::getCalibrationType()");
   }
@@ -1011,7 +1400,7 @@ std::string depth2kin_IDL::getCalibrationType() {
 yarp::os::Property depth2kin_IDL::calibrate(const bool rm_outliers) {
   yarp::os::Property _return;
   depth2kin_IDL_calibrate helper;
-  helper.rm_outliers = rm_outliers;
+  helper.init(rm_outliers);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","yarp::os::Property depth2kin_IDL::calibrate(const bool rm_outliers)");
   }
@@ -1021,6 +1410,7 @@ yarp::os::Property depth2kin_IDL::calibrate(const bool rm_outliers) {
 bool depth2kin_IDL::pushCalibrator() {
   bool _return = false;
   depth2kin_IDL_pushCalibrator helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::pushCalibrator()");
   }
@@ -1030,7 +1420,7 @@ bool depth2kin_IDL::pushCalibrator() {
 bool depth2kin_IDL::setTouchWithExperts(const std::string& sw) {
   bool _return = false;
   depth2kin_IDL_setTouchWithExperts helper;
-  helper.sw = sw;
+  helper.init(sw);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setTouchWithExperts(const std::string& sw)");
   }
@@ -1040,6 +1430,7 @@ bool depth2kin_IDL::setTouchWithExperts(const std::string& sw) {
 std::string depth2kin_IDL::getTouchWithExperts() {
   std::string _return = "";
   depth2kin_IDL_getTouchWithExperts helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDL::getTouchWithExperts()");
   }
@@ -1049,8 +1440,7 @@ std::string depth2kin_IDL::getTouchWithExperts() {
 bool depth2kin_IDL::touch(const int32_t u, const int32_t v) {
   bool _return = false;
   depth2kin_IDL_touch helper;
-  helper.u = u;
-  helper.v = v;
+  helper.init(u,v);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::touch(const int32_t u, const int32_t v)");
   }
@@ -1060,10 +1450,7 @@ bool depth2kin_IDL::touch(const int32_t u, const int32_t v) {
 PointReq depth2kin_IDL::getPoint(const std::string& arm, const double x, const double y, const double z) {
   PointReq _return;
   depth2kin_IDL_getPoint helper;
-  helper.arm = arm;
-  helper.x = x;
-  helper.y = y;
-  helper.z = z;
+  helper.init(arm,x,y,z);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","PointReq depth2kin_IDL::getPoint(const std::string& arm, const double x, const double y, const double z)");
   }
@@ -1073,8 +1460,7 @@ PointReq depth2kin_IDL::getPoint(const std::string& arm, const double x, const d
 bool depth2kin_IDL::setExperiment(const std::string& exp, const std::string& v) {
   bool _return = false;
   depth2kin_IDL_setExperiment helper;
-  helper.exp = exp;
-  helper.v = v;
+  helper.init(exp,v);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setExperiment(const std::string& exp, const std::string& v)");
   }
@@ -1084,7 +1470,7 @@ bool depth2kin_IDL::setExperiment(const std::string& exp, const std::string& v) 
 std::string depth2kin_IDL::getExperiment(const std::string& exp) {
   std::string _return = "";
   depth2kin_IDL_getExperiment helper;
-  helper.exp = exp;
+  helper.init(exp);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","std::string depth2kin_IDL::getExperiment(const std::string& exp)");
   }
@@ -1094,7 +1480,7 @@ std::string depth2kin_IDL::getExperiment(const std::string& exp) {
 yarp::sig::Vector depth2kin_IDL::getExtrinsics(const std::string& eye) {
   yarp::sig::Vector _return;
   depth2kin_IDL_getExtrinsics helper;
-  helper.eye = eye;
+  helper.init(eye);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","yarp::sig::Vector depth2kin_IDL::getExtrinsics(const std::string& eye)");
   }
@@ -1104,7 +1490,7 @@ yarp::sig::Vector depth2kin_IDL::getExtrinsics(const std::string& eye) {
 bool depth2kin_IDL::resetExtrinsics(const std::string& eye) {
   bool _return = false;
   depth2kin_IDL_resetExtrinsics helper;
-  helper.eye = eye;
+  helper.init(eye);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::resetExtrinsics(const std::string& eye)");
   }
@@ -1114,7 +1500,7 @@ bool depth2kin_IDL::resetExtrinsics(const std::string& eye) {
 bool depth2kin_IDL::setExplorationWait(const double wait) {
   bool _return = false;
   depth2kin_IDL_setExplorationWait helper;
-  helper.wait = wait;
+  helper.init(wait);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setExplorationWait(const double wait)");
   }
@@ -1124,6 +1510,7 @@ bool depth2kin_IDL::setExplorationWait(const double wait) {
 double depth2kin_IDL::getExplorationWait() {
   double _return = (double)0;
   depth2kin_IDL_getExplorationWait helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","double depth2kin_IDL::getExplorationWait()");
   }
@@ -1133,11 +1520,7 @@ double depth2kin_IDL::getExplorationWait() {
 bool depth2kin_IDL::setExplorationSpace(const double cx, const double cy, const double cz, const double a, const double b) {
   bool _return = false;
   depth2kin_IDL_setExplorationSpace helper;
-  helper.cx = cx;
-  helper.cy = cy;
-  helper.cz = cz;
-  helper.a = a;
-  helper.b = b;
+  helper.init(cx,cy,cz,a,b);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setExplorationSpace(const double cx, const double cy, const double cz, const double a, const double b)");
   }
@@ -1147,11 +1530,7 @@ bool depth2kin_IDL::setExplorationSpace(const double cx, const double cy, const 
 bool depth2kin_IDL::setExplorationSpaceDelta(const double dcx, const double dcy, const double dcz, const double da, const double db) {
   bool _return = false;
   depth2kin_IDL_setExplorationSpaceDelta helper;
-  helper.dcx = dcx;
-  helper.dcy = dcy;
-  helper.dcz = dcz;
-  helper.da = da;
-  helper.db = db;
+  helper.init(dcx,dcy,dcz,da,db);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::setExplorationSpaceDelta(const double dcx, const double dcy, const double dcz, const double da, const double db)");
   }
@@ -1161,6 +1540,7 @@ bool depth2kin_IDL::setExplorationSpaceDelta(const double dcx, const double dcy,
 yarp::os::Property depth2kin_IDL::getExplorationData() {
   yarp::os::Property _return;
   depth2kin_IDL_getExplorationData helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","yarp::os::Property depth2kin_IDL::getExplorationData()");
   }
@@ -1170,6 +1550,7 @@ yarp::os::Property depth2kin_IDL::getExplorationData() {
 bool depth2kin_IDL::clearExplorationData() {
   bool _return = false;
   depth2kin_IDL_clearExplorationData helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::clearExplorationData()");
   }
@@ -1179,7 +1560,7 @@ bool depth2kin_IDL::clearExplorationData() {
 bool depth2kin_IDL::posture(const std::string& type) {
   bool _return = false;
   depth2kin_IDL_posture helper;
-  helper.type = type;
+  helper.init(type);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::posture(const std::string& type)");
   }
@@ -1189,6 +1570,7 @@ bool depth2kin_IDL::posture(const std::string& type) {
 bool depth2kin_IDL::calibrateDepth() {
   bool _return = false;
   depth2kin_IDL_calibrateDepth helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::calibrateDepth()");
   }
@@ -1198,6 +1580,7 @@ bool depth2kin_IDL::calibrateDepth() {
 bool depth2kin_IDL::quit() {
   bool _return = false;
   depth2kin_IDL_quit helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool depth2kin_IDL::quit()");
   }
@@ -1210,6 +1593,8 @@ bool depth2kin_IDL::read(yarp::os::ConnectionReader& connection) {
   reader.expectAccept();
   if (!reader.readListHeader()) { reader.fail(); return false; }
   yarp::os::ConstString tag = reader.readTag();
+  bool direct = (tag=="__direct__");
+  if (direct) tag = reader.readTag();
   while (!reader.isError()) {
     // TODO: use quick lookup, this is just a test
     if (tag == "getNumExperts") {
@@ -1985,7 +2370,7 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
       helpString.push_back("Ask the current calibrator to carry out the calibration. ");
       helpString.push_back("@param rm_outliers if true outliers removal is performed. ");
       helpString.push_back("@return a property containing the output in terms of ");
-      helpString.push_back("calibration errors for each subsystem: \"calibrator\", \"alignerL\", \"alignerR\". ");
+      helpString.push_back("calibration errors for each subsystem: \"calibrator\", \"aligner\". ");
     }
     if (functionName=="pushCalibrator") {
       helpString.push_back("bool pushCalibrator() ");
@@ -2090,7 +2475,7 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
       helpString.push_back("Return some progress about the ongoing exploration. ");
       helpString.push_back("@return a property that looks like ");
       helpString.push_back("(\"status\" [\"idle\"|\"ongoing\"]) (\"total_points\" <int>) (\"remaining_points\" <int>) ");
-      helpString.push_back("(\"calibrator_points\" <int>) (\"alignerL_points\" <int>) (\"alignerR_points\" <int>) ");
+      helpString.push_back("(\"calibrator_points\" <int>) (\"aligner_points\" <int>) ");
     }
     if (functionName=="clearExplorationData") {
       helpString.push_back("bool clearExplorationData() ");

@@ -13,7 +13,6 @@
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
-// #include <yarp/dev/PreciselyTimed.h>
 #include <iCub/DebugInterfaces.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
@@ -26,11 +25,12 @@
 #include <ethResource.h>
 #include <ethManager.h>
 
-#define EMBAS_SIZE_INFO     128
 
 #include "FeatureInterface.h"  
 
-#include "Debug.h"
+#include "IethResource.h"
+
+#include <yarp/os/LogStream.h>
 
 
 namespace yarp{
@@ -76,15 +76,14 @@ typedef int AnalogDataFormat;
  */
 class yarp::dev::embObjAnalogSensor:    public yarp::dev::IAnalogSensor,
                                         public yarp::dev::DeviceDriver,
-                                        public IiCubFeature
+                                        public IethResource
 {
+
 public:
-//    enum AnalogDataFormat
-//    {
-//        ANALOG_FORMAT_NONE=0,
-//        ANALOG_FORMAT_8=8,
-//        ANALOG_FORMAT_16=16,
-//    };
+
+    enum { EMBAS_SIZE_INFO  = 128 };
+
+    enum { NUMCHANNEL_STRAIN = 6, NUMCHANNEL_MAIS = 15, FORMATDATA_STRAIN = 16, FORMATDATA_MAIS = 8 };
 
     enum SensorStatus
     {
@@ -96,18 +95,21 @@ public:
     };
 
     enum AnalogSensorType
-        {
-            AS_NONE = 0,
-            AS_MAIS = 1,
-            AS_STRAIN = 2,
-        };
+    {
+        AS_NONE = 0,
+        AS_MAIS = 1,
+        AS_STRAIN = 2,
+    };
+
 
 private:
 
     //! eth messaging stuff
     TheEthManager       *ethManager;
     ethResources        *res;
-    FEAT_ID             _fId;
+    ethFeature_t        _fId;
+
+    bool opened;
 
 
     //! debug messages
@@ -131,11 +133,6 @@ private:
     double* scaleFactor;
     yarp::os::Semaphore mutex;
 
-//     yarp::os::Bottle initMsg;
-//     yarp::os::Bottle speedMsg;
-//     yarp::os::Bottle closeMsg;
-//     std::string deviceIdentifier;
-
 
     // Read useful data from config and check for correctness
     bool fromConfig(yarp::os::Searchable &config);
@@ -145,6 +142,7 @@ private:
     bool fillDatOfStrain(void *as_array_raw);
     bool fillDatOfMais(void *as_array_raw);
     bool isEpManagedByBoard();
+
 public:
 
     embObjAnalogSensor();
@@ -152,7 +150,6 @@ public:
 //     bool handleAnalog(void *);
     
     // An open function yarp factory compatible
-//     bool open(int channels, AnalogDataFormat f, short bId, short useCalib, bool isVirtualSensor);
     bool open(yarp::os::Searchable &config);
     bool close();
 
@@ -216,7 +213,9 @@ public:
     
     // embObj interface
     bool init();
-    virtual bool fillData(void *as_array, eOprotID32_t id32);
+
+    virtual bool initialised();
+    virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
 };
 
 

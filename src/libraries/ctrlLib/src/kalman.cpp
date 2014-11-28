@@ -77,7 +77,7 @@ bool Kalman::init(const Vector &_x0, const Matrix &_P0)
 
 
 /**********************************************************************/
-Vector Kalman::predict(const Vector &u)
+const Vector& Kalman::predict(const Vector &u)
 {
     x=A*x+B*u;
     P=A*P*At+Q;
@@ -88,14 +88,14 @@ Vector Kalman::predict(const Vector &u)
 
 
 /**********************************************************************/
-Vector Kalman::predict()
+const Vector& Kalman::predict()
 {
     return predict(Vector(n,0.0));
 }
 
 
 /**********************************************************************/
-Vector Kalman::correct(const Vector &z)
+const Vector& Kalman::correct(const Vector &z)
 {
     Matrix invS=pinv(S);
     K=P*Ht*invS;
@@ -108,7 +108,7 @@ Vector Kalman::correct(const Vector &z)
 
 
 /**********************************************************************/
-Vector Kalman::filt(const Vector &u, const Vector &z)
+const Vector& Kalman::filt(const Vector &u, const Vector &z)
 {
     predict(u);
     correct(z);
@@ -117,7 +117,7 @@ Vector Kalman::filt(const Vector &u, const Vector &z)
 
 
 /**********************************************************************/
-Vector Kalman::filt(const Vector &z)
+const Vector& Kalman::filt(const Vector &z)
 {
     return filt(Vector(n,0.0),z);
 }

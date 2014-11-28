@@ -15,7 +15,6 @@
  * Public License for more details
 */
 
-#include <stdio.h>
 #include <iCub/d4c/private/d4c_helpers.h>
 
 using namespace std;
@@ -24,7 +23,8 @@ using namespace yarp::sig;
 
 
 /************************************************************************/
-bool extractVector(Property &prop, const string &option, Vector &res)
+bool iCub::d4c::extractVector(const Property &prop, const string &option,
+                              Vector &res)
 {
     if (prop.check(option.c_str()))
     {
@@ -45,7 +45,7 @@ bool extractVector(Property &prop, const string &option, Vector &res)
 
 
 /************************************************************************/
-bool copyVectorData(const Vector &src, Vector &dest)
+bool iCub::d4c::copyVectorData(const Vector &src, Vector &dest)
 {
     size_t offs=0;
     if (src.length()>3)

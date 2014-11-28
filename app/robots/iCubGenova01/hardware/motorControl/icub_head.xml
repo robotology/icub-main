@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices>      
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubGenova01" build="1">
   <device name="head_mc" type="canmotioncontrol">  
   <params file="general.xml" />
   
@@ -28,7 +30,7 @@
     <param name="MaxDAC">       100           100           100           100           100           100           </param>       
     <param name="AxisMap">      0             1             2             3             4             5             </param>       
     <param name="Encoder">      11.375        -11.375       11.375        11.375        568.88        284.44        </param>       
-    <param name="Zeros">        180           -178          180           185           -45           0             </param>       
+    <param name="Zeros">        178           -178          180           185           -45           0             </param>       
     <param name="TorqueId">     0             0             0             0             0             0             </param>       
     <param name="TorqueChan">   0             0             0             0             0             0             </param>       
     <param name="TorqueMax">    0             0             0             0             0             0             </param>       

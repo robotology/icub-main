@@ -30,8 +30,8 @@
 <group name="GENERAL">       
 <param name="Joints">       4             </param>       
 <param name="AxisMap">      0             2             3             1             </param>       
-<param name="Encoder">                               11.375  11.375  11.375    0.00</param>
-<param name="Zeros">                                 180.00  180.00  180.00    0.00</param>  
+<param name="Encoder">                               11.375  11.375  11.375  0.00</param>
+<param name="Zeros">                                 180.00  179.00  180.00  0.00</param>
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          </param>       
 <param name="TorqueChan">   0             1             2             0             </param>       
 <param name="TorqueMax">    12            12            12            12            </param>       
@@ -58,7 +58,8 @@
 <group name="POS_PIDS">      
 <param name="kp">           32000         32000         32000         0             </param>       
 <param name="kd">           6000          6000          6000          0             </param>       
-<param name="ki">           60            60            60            0             </param>       
+<param name="ki">           60            60            60            0             </param>     
+<param name="limPwm">       140           140           140           140           </param>  
 <param name="maxPwm">       1333          1333          1333          1333          </param>       
 <param name="maxInt">       1333          1333          1333          1333          </param>       
 <param name="shift">        13            13            13            0             </param>       

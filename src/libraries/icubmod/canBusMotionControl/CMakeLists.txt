@@ -5,7 +5,7 @@
 
 PREPARE_DEVICE(canmotioncontrol TYPE CanBusMotionControl
     INCLUDE CanBusMotionControl.h
-    WRAPPER controlboard)
+    WRAPPER controlboardwrapper2)
 
 if (ENABLE_icubmod_canmotioncontrol)
 
@@ -15,6 +15,10 @@ if(ICUB_HAS_icub_firmware_shared)
 
    if (ICUB_CANPROTOCOL_STRICT)
        add_definitions(-DICUB_CANPROTOCOL_STRICT)
+   endif()
+
+   if (ICUB_AUTOMATIC_MODE_SWITCHING)
+	add_definitions(-DICUB_AUTOMATIC_MODE_SWITCHING)
    endif()
 
    if (ICUB_CANMASKS_STRICT_FILTER)
@@ -29,8 +33,7 @@ if(ICUB_HAS_icub_firmware_shared)
 
    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/
                        ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS}
-                       ${FIRMWARE_SHARED_INC}
-                       )
+                       ${FIRMWARE_SHARED_INC})
 
    SET(folder_source CanBusMotionControl.cpp ThreadTable2.cpp ThreadPool2.cpp)
    SET(folder_header CanBusMotionControl.h ThreadTable2.h ThreadPool2.h)

@@ -46,12 +46,23 @@
 #define MODE_TORQUE                     0x03
 #define MODE_IMPEDANCE_POS              0x04
 #define MODE_IMPEDANCE_VEL              0x05
-#define MODE_CALIB_ABS_POS_SENS         0x10
-#define MODE_CALIB_HARD_STOPS           0x20
-#define MODE_HANDLE_HARD_STOPS          0x30
-#define MODE_MARGIN_REACHED             0x40
-#define MODE_CALIB_ABS_AND_INCREMENTAL  0x41
-#define MODE_OPENLOOP               0x50
+#define MODE_OPENLOOP                   0x50
+#define MODE_MIXED                      VOCAB_CM_MIXED
+#define MODE_FORCE_IDLE                 VOCAB_CM_FORCE_IDLE
+#define MODE_HW_FAULT                   VOCAB_CM_HW_FAULT
+#define MODE_CALIBRATING                VOCAB_CM_CALIBRATING
+#define MODE_CALIB_DONE                 VOCAB_CM_CALIB_DONE
+#define MODE_NOT_CONFIGURED             VOCAB_CM_NOT_CONFIGURED
+#define MODE_CONFIGURED                 VOCAB_CM_CONFIGURED
+#define MODE_UNKNOWN                    VOCAB_CM_UNKNOWN
+
+// not used
+//#define MODE_CALIB_ABS_POS_SENS         0x10
+//#define MODE_CALIB_HARD_STOPS           0x20
+//#define MODE_HANDLE_HARD_STOPS          0x30
+//#define MODE_MARGIN_REACHED             0x40
+//#define MODE_CALIB_ABS_AND_INCREMENTAL  0x41
+
 
 namespace yarp{
     namespace dev{
@@ -61,33 +72,36 @@ namespace yarp{
 class yarp::dev::iCubSimulationControl :
     public DeviceDriver,
     //public yarp::os::RateThread, 
-    public IPidControlRaw, 
-    public IPositionControlRaw, 
-    public IVelocityControlRaw, 
-    public ITorqueControlRaw,
-//    public IEncodersRaw,
-    public IAmplifierControlRaw,
-    public IControlCalibrationRaw,
-    public IControlLimits2Raw,
-    public IControlModeRaw,
-    public ImplementTorqueControl,
-    public ImplementControlMode,
+    public IPositionControlRaw,
     public ImplementPositionControl<iCubSimulationControl, IPositionControl>,
-    public ImplementVelocityControl<iCubSimulationControl, IVelocityControl>,
-    public ImplementPidControl<iCubSimulationControl, IPidControl>,
-//    public ImplementEncoders<iCubSimulationControl, IEncoders>,
-    public ImplementControlCalibration<iCubSimulationControl, IControlCalibration>,
+    public IVelocityControl2Raw,
+    public ImplementVelocityControl2,
+    public ITorqueControlRaw,
+    public ImplementTorqueControl,
+    public IAmplifierControlRaw,
     public ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>,
-//    public ImplementControlLimits<iCubSimulationControl, IControlLimits>,
+    public IControlCalibrationRaw,
+    public ImplementControlCalibration<iCubSimulationControl, IControlCalibration>,
+    public IControlLimits2Raw,
     public ImplementControlLimits2,
+    public IControlMode2Raw,
+    public ImplementControlMode2,
+    public IInteractionModeRaw,
+    public ImplementInteractionMode,
+    public IPidControlRaw,
+    public ImplementPidControl<iCubSimulationControl, IPidControl>,
     public IEncodersTimedRaw,
-    public ImplementEncodersTimed
+    public ImplementEncodersTimed,
+    public IPositionDirectRaw,
+    public ImplementPositionDirect
 
 {
  private:
   iCubSimulationControl(const iCubSimulationControl&);
   void operator=(const iCubSimulationControl&);
- 
+  int ControlModes_yarp2iCubSIM(int yarpMode);
+  int ControlModes_iCubSIM2yarp(int iCubMode);
+
  public:
   /**
    * Default constructor. Construction is done in two stages, first build the
@@ -161,16 +175,29 @@ class yarp::dev::iCubSimulationControl :
   virtual bool stopRaw();/**/
 
   //
-  /////////////////////////////// END Position Control INTERFACE
+  //////////////////////// END Position Control INTERFACE
 
-    ///////////// Velocity control interface raw
+  //////////////////////// BEGIN Velocity control interface raw
   ///
   virtual bool setVelocityModeRaw();
   virtual bool velocityMoveRaw(int j, double sp);
   virtual bool velocityMoveRaw(const double *sp);
   //
-  /////////////////////////////// END Velocity Control INTERFACE
+  //////////////////////// END Velocity Control INTERFACE
   
+  //////////////////////// BEGIN Velocity control 2 interface raw
+
+  virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
+  virtual bool setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs);
+  virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
+  virtual bool stopRaw(const int n_joint, const int *joints);
+  virtual bool setVelPidRaw(int j, const yarp::dev::Pid &pid);
+  virtual bool setVelPidsRaw(const yarp::dev::Pid *pids);
+  virtual bool getVelPidRaw(int j, yarp::dev::Pid *pid);
+  virtual bool getVelPidsRaw(yarp::dev::Pid *pids);
+  //////////////////////// END Velocity Control INTERFACE
+
+
   //////////////////////// BEGIN EncoderInterface
   //
   virtual bool resetEncoderRaw(int j);
@@ -247,6 +274,28 @@ class yarp::dev::iCubSimulationControl :
     virtual bool getControlModeRaw(int j, int *mode);
     virtual bool getControlModesRaw(int* modes);
 
+  /////// Control Mode2 Interface
+  virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes);
+  virtual bool setControlModeRaw(const int j, const int mode);
+  virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes);
+  virtual bool setControlModesRaw(int *modes);
+
+
+  /////// InteractionMode
+  virtual bool getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode);
+  virtual bool getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+  virtual bool getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+  virtual bool setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode);
+  virtual bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+  virtual bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+
+  /////// PositionDirect
+  virtual bool setPositionDirectModeRaw();
+  virtual bool setPositionRaw(int j, double ref);
+  virtual bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
+  virtual bool setPositionsRaw(const double *refs);
+
+
 //void run(void);
 
   /////// Joint steps
@@ -322,6 +371,7 @@ protected:
     double *refAccel;
     double *controlP;
     int    *controlMode;
+    int    *interactionMode;
 
     //bool velocityMode;
 };

@@ -57,11 +57,9 @@ private:
 
     yarp::dev::PolyDriver polyHead;
     yarp::dev::IEncoders *posHead;
-    yarp::dev::IControlLimits *HctrlLim;
 
     yarp::dev::PolyDriver polyTorso;
     yarp::dev::IEncoders *posTorso;
-    yarp::dev::IControlLimits *TctrlLim;
 
     Mat R;
     Mat T;
@@ -80,9 +78,6 @@ private:
     BufferedPort<ImageOf<PixelRgb> > imagePortInRight;
     BufferedPort<ImageOf<PixelRgb> > outPortRight;
     BufferedPort<ImageOf<PixelRgb> > outPortLeft;
-
-    PolyDriver* gazeCtrl;
-    IGazeControl* igaze;
 
     Port *commandPort;
     string imageDir;

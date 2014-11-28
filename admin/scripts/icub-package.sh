@@ -12,12 +12,10 @@ export ARCHFILE_WINDOWS=iCub-$MODULE-src-$REL.zip
 export DEPFILE=iCub-$MODULE-dep-$REL.txt
 
 if [ "k$1" =  "k" ]; then
- export SVN_URL="https://svn.code.sf.net/p/robotcub/code/trunk/iCub"
+ export SVN_URL="https://github.com/robotology/icub-main/trunk"
 else
- export SVN_URL="https://svn.code.sf.net/p/robotcub/code/tags/iCub$REL"
+ export SVN_URL="https://github.com/robotology/icub-main/tags/v$REL"
 fi
-
-export ROOT_PATH=iCub
 
 mkdir $SOURCE_TMP_DIR
 cd $SOURCE_TMP_DIR
@@ -30,50 +28,50 @@ echo "See $DEPFILE for list of library dependencies." >> $versionFile
 ########### Linux
 echo "Checkout code from $SVN_URL"
 
-svn export $SVN_URL/$MODULE $ROOT_PATH/$MODULE
+svn export $SVN_URL icub-main/
 
 #store this file for later upload
 cp iCub/admin/scripts/current_dependencies.txt $DEPFILE
 
 #preparing repository
-cp iCub/admin/scripts/current_dependencies.txt $ROOT_PATH/$MODULE/$DEPFILE
-cp $versionFile $ROOT_PATH
+cp iCub/admin/scripts/current_dependencies.txt icub-main/$DEPFILE
+cp $versionFile icub-main/
 
 echo "Preparing tar file"
-tar cvfz $ARCHFILE_LINUX $ROOT_PATH
+tar cvfz $ARCHFILE_LINUX icub-main
 
 echo "Cleaning checkout"
-rm $ROOT_PATH -rf
+rm -rf icub-main
 
 echo "Done Linux"
 
 ########### Windows
-echo "Checkout code from $URL"
+echo "Checkout code from $SVN_URL"
 
-svn export $SVN_URL/$MODULE $ROOT_PATH/$MODULE --native-eol CRLF
+svn export $SVN_URL icub-main --native-eol CRLF
 
 #store this file for later upload
 cp iCub/admin/scripts/current_dependencies.txt $DEPFILE
 
 #preparing repository
-cp iCub/admin/scripts/current_dependencies.txt $ROOT_PATH/$MODULE/$DEPFILE
-cp $versionFile $ROOT_PATH
+cp iCub/admin/scripts/current_dependencies.txt icub-main/$DEPFILE
+cp $versionFile icub-main/
 
 echo "Preparing zip file"
-zip -r $ARCHFILE_WINDOWS $ROOT_PATH
+zip -r $ARCHFILE_WINDOWS icub-main
 
 echo "Cleaning checkout"
-rm $ROOT_PATH -rf
+rm -rf icub-main
 
 echo "Done Windows"
 
-REMOTE_DIR=iCub-$MODULE-$REL
-mkdir -p $REMOTE_DIR
-mv $ARCHFILE_LINUX $REMOTE_DIR
-mv $ARCHFILE_WINDOWS $REMOTE_DIR
-
-echo "rsync --recursive $REMOTE_DIR natta,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/iCub-main"
-
+#REMOTE_DIR=iCub-$MODULE-$REL
+#mkdir -p $REMOTE_DIR
+#mv $ARCHFILE_LINUX $REMOTE_DIR
+#mv $ARCHFILE_WINDOWS $REMOTE_DIR
+#
+#echo "rsync --recursive $REMOTE_DIR natta,robotcub@frs.sourceforge.net:/home/frs/project/r/ro/robotcub/iCub-main"
+#
 ################ old upload
 
 #scp $ARCHFILE_LINUX babybot@wiki.icub.org:/var/www/html/iCub/downloads/src/

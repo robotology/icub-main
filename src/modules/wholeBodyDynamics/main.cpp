@@ -596,14 +596,20 @@ public:
 
     bool close()
     {
-    //The order of execution of the following closures is important, do not change it.
+        //The order of execution of the following closures is important, do not change it.
         fprintf(stderr,"Closing wholeBodyDynamics module... \n");     
 
         if (inv_dyn)
           {
-            fprintf(stderr,"Stopping the inv_dyn module...");     
+            thread_status_enum thread_status = inv_dyn->getThreadStatus();
+            if (thread_status!=STATUS_DISCONNECTED)
+            {
+                fprintf(stderr, "Setting the icub in stiff mode\n");
+                inv_dyn->setStiffMode();
+            }
+            fprintf(stderr,"Stopping the inv_dyn thread...");     
             inv_dyn->stop();
-            fprintf(stderr,"inv_dyn module stopped\n");     
+            fprintf(stderr,"inv_dyn thread stopped\n");     
             delete inv_dyn;
             inv_dyn=0;
           }

@@ -16,14 +16,14 @@
  * Public License for more details
 */
 
-#include <stdio.h>
-
 #include <gsl/gsl_math.h>
 
+#include <yarp/os/Log.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
 #include <iCub/ctrl/optimalControl.h>
 
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
@@ -47,7 +47,8 @@ Riccati::Riccati(const Matrix &_A, const Matrix &_B, const Matrix &_V,
     N=-1;
 
     verbose=verb;
-    if(verbose) fprintf(stderr,"Riccati: problem defined, unsolved.\n");
+    if (verbose)
+        yWarning("Riccati: problem defined, unsolved.");
 }
 
 
@@ -63,12 +64,14 @@ Matrix Riccati::L(int step)
 {
     if(N<0) 
     {
-        if(verbose) fprintf(stderr,"Riccati: warning. DARE has not been solved yet.\n");
+        if (verbose)
+            yWarning("Riccati: DARE has not been solved yet.");
         return Li[0];
     }
     if(step>=0 && step>=N)
     {
-        if(verbose) fprintf(stderr,"Riccati: warning. Index for gain matrix out of bound.\n");
+        if (verbose)
+            yWarning("Riccati: Index for gain matrix out of bound.");
         return Li[0];
     }
     return Li[step];
@@ -80,12 +83,14 @@ Matrix Riccati::T(int step)
 {
     if(N<0) 
     {
-        if(verbose) fprintf(stderr,"Riccati: error. DARE has not been solved yet.\n");
+        if (verbose)
+            yError("Riccati: DARE has not been solved yet.");
         return Ti[0];
     }
     if(step>=0 && step>N)
     {
-        if(verbose) fprintf(stderr,"Riccati: error. Index for DARE matrix out of bound.\n");
+        if (verbose)
+            yError("Riccati: Index for DARE matrix out of bound.");
         return Ti[0];
     }
     return Ti[step];
@@ -106,7 +111,8 @@ void Riccati::setProblemData(const Matrix &_A, const Matrix &_B, const Matrix &_
     m=B.rows();
     N=-1;
 
-    if(verbose) fprintf(stderr,"Riccati: problem defined, unsolved.\n");
+    if (verbose)
+        yWarning("Riccati: problem defined, unsolved.");
 }
 
 
@@ -136,7 +142,9 @@ void Riccati::solveRiccati(int steps)
         //Li = (P + B' * Ti+1 * B)^-1 * B' * Ti+1 * A
         Li[i] = pinv(P + Bt*Ti[i+1]*B) *Bt * Ti[i+1] * A;	
     }
-    if(verbose) fprintf(stderr,"Riccati: DARE solved, matrices Li and Ti computed and stored.\n");
+
+    if (verbose)
+        yInfo("Riccati: DARE solved, matrices Li and Ti computed and stored.");
 }
 
 
@@ -145,13 +153,15 @@ Vector Riccati::doLQcontrol(int step, const Vector &x)
 {
     if(N<0) 
     {
-        if(verbose) fprintf(stderr,"Riccati: error. DARE has not been solved yet.\n");
+        if (verbose)
+            yError("Riccati: DARE has not been solved yet.");
         Vector ret(1,0.0);
         return ret;
     }
     if(step>=0 && step>N)
     {
-        if(verbose) fprintf(stderr,"Riccati: error. Index for DARE matrix out of bound.\n");
+        if (verbose)
+            yError("Riccati: Index for DARE matrix out of bound.");
         Vector ret(1,0.0);
         return ret;
     }
@@ -164,12 +174,14 @@ void Riccati::doLQcontrol(int step, const Vector &x, Vector &ret)
 {
     if(N<0) 
     {
-        if(verbose) fprintf(stderr,"Riccati: error. DARE has not been solved yet.\n");
+        if (verbose)
+            yError("Riccati: DARE has not been solved yet.");
         ret.zero();
     }
     else if(step>=0 && step>N)
     {
-        if(verbose) fprintf(stderr,"Riccati: error. Index for DARE matrix out of bound.\n");
+        if (verbose)
+            yError("Riccati: Index for DARE matrix out of bound.");
         ret.zero();
     }
     else

@@ -408,7 +408,7 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
 
     if (!_rf.isConfigured())
         return false;
-    
+
     string message=_rf.findFile("from").c_str();
     if (!message.empty())
     {
@@ -426,11 +426,11 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
 
                 if (verbose)
                 {
-                    printf("%s found:\n",message.c_str());
-                    printf("fx = %g\n",fx);
-                    printf("fy = %g\n",fy);
-                    printf("cx = %g\n",cx);
-                    printf("cy = %g\n",cy);
+                    yInfo("%s found:",message.c_str());
+                    yInfo("fx = %g",fx);
+                    yInfo("fy = %g",fy);
+                    yInfo("cx = %g",cx);
+                    yInfo("cy = %g",cy);
                 }
 
                 *Prj=new Matrix(eye(3,4));
@@ -450,7 +450,7 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
     }
 
     if (verbose)
-        printf("%s not found!\n",message.c_str());
+        yWarning("%s not found!",message.c_str());
 
     return false;
 }
@@ -494,8 +494,8 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
 
                     if (verbose)
                     {
-                        printf("%s found:\n",message.c_str());
-                        printf("%s\n",HN.toString(3,3).c_str());
+                        yInfo("%s found:",message.c_str());
+                        yInfo("%s",HN.toString(3,3).c_str());
                     }
 
                     return true;
@@ -509,7 +509,7 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
         }
 
         if (verbose)
-            printf("%s not found!\n",message.c_str());
+            yWarning("%s not found!",message.c_str());
     }
 
     return false;
@@ -534,10 +534,13 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drv
 
         for (int i=0; i<nJointsTorso; i++)
         {   
-            lims->getLimits(i,&min,&max);
-        
-            (*chain)[nJointsTorso-1-i].setMin(CTRL_DEG2RAD*min); // reversed order
-            (*chain)[nJointsTorso-1-i].setMax(CTRL_DEG2RAD*max);
+            if (lims->getLimits(i,&min,&max))
+            {
+                (*chain)[nJointsTorso-1-i].setMin(CTRL_DEG2RAD*min); // reversed order
+                (*chain)[nJointsTorso-1-i].setMax(CTRL_DEG2RAD*max);
+            }
+            else
+                yError("unable to retrieve limits for torso joint #%d",i);
         }
     }
 
@@ -549,24 +552,27 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drv
 
     for (int i=0; i<nJointsHead; i++)
     {   
-        lims->getLimits(i,&min,&max);
-
-        // limit eye's tilt due to eyelids
-        if (i==3)
+        if (lims->getLimits(i,&min,&max))
         {
-            min=std::max(min,eyeTiltMin);
-            max=std::min(max,eyeTiltMax);
-        }
+            // limit eye's tilt due to eyelids
+            if (i==3)
+            {
+                min=std::max(min,eyeTiltMin);
+                max=std::min(max,eyeTiltMax);
+            }
 
-        lim(i,0)=CTRL_DEG2RAD*min;
-        lim(i,1)=CTRL_DEG2RAD*max;
+            lim(i,0)=CTRL_DEG2RAD*min;
+            lim(i,1)=CTRL_DEG2RAD*max;
 
-        // just one eye's got only 5 dofs
-        if (i<nJointsHead-1)
-        {
-            (*chain)[nJointsTorso+i].setMin(lim(i,0));
-            (*chain)[nJointsTorso+i].setMax(lim(i,1));
+            // just one eye's got only 5 dofs
+            if (i<nJointsHead-1)
+            {
+                (*chain)[nJointsTorso+i].setMin(lim(i,0));
+                (*chain)[nJointsTorso+i].setMax(lim(i,1));
+            }
         }
+        else
+            yError("unable to retrieve limits for head joint #%d",i);
     }
 
     return lim;

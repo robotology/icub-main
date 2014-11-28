@@ -89,7 +89,7 @@ protected:
 
     void prepare();
     void setItem(yarp::os::Property &options, const std::string &tag, const yarp::sig::Vector &item) const;
-    bool getItem(yarp::os::Property &options, const std::string &tag, yarp::sig::Vector &item) const;
+    bool getItem(const yarp::os::Property &options, const std::string &tag, yarp::sig::Vector &item) const;
 
 public:
     /**

@@ -1,0 +1,132 @@
+
+<?xml version="1.0" encoding="UTF-8" ?>    
+<devices>      
+  <device name="right_hand_mc" type="canmotioncontrol">  
+  <params file="general.xml" />
+  
+<group name="CAN">           
+<param name="canbusdevice"> sharedcan     </param>       
+<param name="physDevice">   cfw2can       </param>       
+<param name="CanAddresses"> 5 6 7 8       </param>       
+<param name="CanDeviceNum"> 6             </param>       
+<param name="NetworkId">                  RIGHTHAND     </param>       
+<param name="CanMyAddress"> 0             </param>       
+<param name="CanPollingInterval">         10            </param>       
+<param name="CanTimeout">   300           </param>       
+<param name="CanTxTimeout"> 500           </param>       
+<param name="CanRxTimeout"> 500           </param>       
+<param name="broadcast_pos">              1             1             1             1             1             1             1             1             </param>       
+<param name="broadcast_pid">              0             0             0             0             0             0             0             0             </param>       
+<param name="broadcast_fault">            1             1             1             1             1             1             1             1             </param>       
+<param name="broadcast_current">          0             0             0             0             0             0             0             0             </param>       
+<param name="broadcast_overflow">         1             1             1             1             1             1             1             1             </param>       
+<param name="broadcast_canprint">         1             1             1             1             1             1             1             1             </param>       
+<param name="broadcast_vel_acc">          0             0             0             0             0             0             0             0             </param>       
+</group>       
+ 
+<group name="GENERAL">       
+<param name="Joints">          8                                                                                                                        </param>       
+<param name="MaxDAC">          100           100                100             100             100            100          100           100           </param>       
+<param name="AxisMap">         0             1                  2               3               4              5            6             7             </param>       
+<param name="Encoder">         16.31         -2.69              -2.46           -2.76           -2.48         -2.27         -2.67         -2.06         </param>       
+<param name="Zeros">           18.88         -94.83             -195.03         -92.54          -189.28       -94.85        -184.88       -333.73       </param>       
+<param name="Verbose">         0                                                                                                                        </param>       
+</group>       
+ 
+<group name="VELOCITY">      
+<param name="Shifts">       8             8             8             8             8             8             8             8             </param>       
+<param name="Timeout">      100           100           100           100           100           100           100           100           </param>       
+</group>       
+ 
+<group name="LIMITS">        
+<param name="Max">          90            90            180           90            180           90            180           270           </param>       
+<param name="Min">          10            0             0             0             0             0             0             0             </param>       
+<param name="Currents">     485           485           485           485           485           485           485           485           </param>       
+</group>       
+ 
+ <group name="POS_PIDS">      
+<param name="kp">           -8000         -8000         8000          -8000         -8000         -8000         8000          -120          </param>       
+<param name="kd">           -32000        -32000        32000         -32000        -32000        -32000        32000         -1250         </param>       
+<param name="ki">           -5            -5            5             -5            -5            -5            5             0             </param>       
+<param name="maxPwm">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
+<param name="maxInt">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
+<param name="shift">        10            10            10            10            10            10            10            4             </param>       
+<param name="ko">           0             0             0             0             0             0             0             0             </param>       
+<param name="stictionUp">   0             0             0             0             0             0             0             0             </param>       
+<param name="stictionDwn">  0             0             0             0             0             0             0             0             </param>       
+</group>       
+ 
+<group name="TRQ_PIDS">      
+<param name="kp">           0             0             0             0             0             0             0             0             </param>       
+<param name="kd">           0             0             0             0             0             0             0             0             </param>       
+<param name="ki">           0             0             0             0             0             0             0             0             </param>       
+<param name="maxPwm">       0             0             0             0             0             0             0             0             </param>       
+<param name="maxInt">       0             0             0             0             0             0             0             0             </param>       
+<param name="shift">        0             0             0             0             0             0             0             0             </param>       
+<param name="ko">           0             0             0             0             0             0             0             0             </param>       
+<param name="stictionUp">   0             0             0             0             0             0             0             0             </param>       
+<param name="stictionDwn">  0             0             0             0             0             0             0             0             </param>       
+</group>   
+
+  </device>    
+</devices>     
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

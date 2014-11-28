@@ -58,7 +58,8 @@
 <group name="POS_PIDS">      
 <param name="kp">           32000         -32000        32000         -32000        -32000        -32000        </param>       
 <param name="kd">           100           -100          100           -100          -100          -100          </param>       
-<param name="ki">           60            -60           60            -60           -60           -60           </param>       
+<param name="ki">           60            -60           60            -60           -60           -60           </param>
+<param name="limPwm">       140           140           140           140           140           140           </param>
 <param name="maxPwm">       800           800           800           800           800           800           </param>       
 <param name="maxInt">       800           800           800           800           800           800           </param>       
 <param name="shift">        13            13            13            13            13            13            </param>       

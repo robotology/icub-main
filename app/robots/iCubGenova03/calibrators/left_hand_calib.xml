@@ -13,8 +13,8 @@
 <group name="CALIBRATION">   
  
 <param name="calibrationType">            3             4             4             4             4             4             4             4             </param>       
-<param name="calibration1">               834.44        210           30            247           5             221           10            730           </param>       
-<param name="calibration2">               10            10            30            10            10            10            10            10            </param>       
+<param name="calibration1">               834.44        210           30            247           5             235           15            730           </param>       
+<param name="calibration2">               10            10            30            10            10            15            10            10            </param>       
 <param name="calibration3">               0             6000          6600          6000          7400          6000          -7400         14000        </param>       
 <param name="positionZero">               30            3             0             0             0             0             0             0             </param>       
 <param name="velocityZero">               100           100           100           100           100           100           100           100           </param>       

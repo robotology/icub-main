@@ -11,6 +11,7 @@
 #include "ethDriver.h"
 #include "downloader.h"
 #include <yarp/os/Time.h>
+#include <yarp/os/Log.h>
 #include <stdlib.h> //added for abs
 #include <string.h>
 
@@ -155,7 +156,7 @@ int cDownloader::strain_save_to_eeprom  (int target_id)
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -167,7 +168,7 @@ int cDownloader::strain_save_to_eeprom  (int target_id)
     // check if send_message was successful
     if (ret==0)
         {
-            printf ("ERR: Unable to send message\n");
+            yError ("Unable to send message\n");
             return -1;
         }
 
@@ -180,7 +181,7 @@ int cDownloader::sg6_get_amp_gain      (int target_id, char channel, unsigned in
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
      
@@ -193,7 +194,7 @@ int cDownloader::sg6_get_amp_gain      (int target_id, char channel, unsigned in
      // check if send_message was successful
      if (ret==0)
      {
-         printf ("ERR: Unable to send message\n");
+         yError ("Unable to send message\n");
          return -1;
      }
 
@@ -215,7 +216,7 @@ int cDownloader::sg6_get_amp_gain      (int target_id, char channel, unsigned in
                  }
                  else
                  {
-                    printf ("ERR: sg6_get_amp_gain : invalid response\n");
+                    yError ("sg6_get_amp_gain : invalid response\n");
                     return -1;
                  }
              }
@@ -230,7 +231,7 @@ int cDownloader::sg6_set_amp_gain      (int target_id, char channel, unsigned in
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -254,7 +255,7 @@ int cDownloader::strain_get_adc(int target_id, char channel, unsigned int& adc, 
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -268,7 +269,7 @@ int cDownloader::strain_get_adc(int target_id, char channel, unsigned int& adc, 
      // check if send_message was successful
      if (ret==0)
          {
-            printf ("ERR: Unable to send message\n");
+            yError ("Unable to send message\n");
             return -1;
         }
 
@@ -289,7 +290,7 @@ int cDownloader::strain_get_adc(int target_id, char channel, unsigned int& adc, 
                  }
                  else
                  {
-                    printf ("ERR: strain_get_adc : invalid response\n");
+                    yError ("strain_get_adc : invalid response\n");
                     return -1;
                  }
              }
@@ -304,7 +305,7 @@ int cDownloader::strain_get_offset(int target_id, char channel, unsigned int& of
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -333,7 +334,7 @@ int cDownloader::strain_get_offset(int target_id, char channel, unsigned int& of
                 }
                 else
                 {
-                    printf ("ERR: strain_get_offset : invalid response\n");
+                    yError ("strain_get_offset : invalid response\n");
                     return -1;
                 }
                 
@@ -348,7 +349,7 @@ int cDownloader::strain_get_calib_bias     (int target_id, char channel, signed 
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -377,7 +378,7 @@ int cDownloader::strain_set_calib_bias     (int target_id)
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -396,7 +397,7 @@ int cDownloader::strain_set_calib_bias     (int target_id, char channel, int bia
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -420,7 +421,7 @@ int cDownloader::strain_reset_calib_bias (int target_id)
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -439,7 +440,7 @@ int cDownloader::strain_get_curr_bias     (int target_id, char channel, signed i
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -468,7 +469,7 @@ int cDownloader::strain_set_curr_bias     (int target_id)
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -488,7 +489,7 @@ int cDownloader::strain_set_curr_bias     (int target_id, char channel, int bias
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -511,7 +512,7 @@ int cDownloader::strain_reset_curr_bias     (int target_id)
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -531,7 +532,7 @@ int cDownloader::strain_set_serial_number (int target_id, const char* serial_num
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -557,7 +558,7 @@ int cDownloader::strain_get_serial_number (int target_id, char* serial_number)
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -597,7 +598,7 @@ int cDownloader::strain_get_eeprom_saved (int target_id, bool* status)
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -629,7 +630,7 @@ int cDownloader::strain_get_matrix_gain     (int target_id, unsigned int& gain)
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -662,7 +663,7 @@ int cDownloader::strain_set_matrix_gain     (int target_id, unsigned int  gain)
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -684,7 +685,7 @@ int cDownloader::strain_get_full_scale     (int target_id, unsigned char channel
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -716,7 +717,7 @@ int cDownloader::strain_set_full_scale     (int target_id, unsigned char channel
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -739,7 +740,7 @@ int cDownloader::strain_get_matrix_rc     (int target_id, char r, char c, unsign
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -770,7 +771,7 @@ int cDownloader::strain_get_matrix_rc     (int target_id, char r, char c, unsign
                 }
                 else
                 {
-                    printf ("ERR: strain_get_matrix_rc : invalid response\n");
+                    yError ("strain_get_matrix_rc : invalid response\n");
                     return -1;
                 }
             }
@@ -784,7 +785,7 @@ int cDownloader::strain_set_matrix_rc     (int target_id, char r, char c, unsign
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -808,7 +809,7 @@ int cDownloader::strain_set_offset(int target_id, char channel, unsigned int off
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError (" Driver not ready\n");
             return -1;
         }
 
@@ -842,7 +843,7 @@ int cDownloader::strain_start_sampling    (int target_id)
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -855,7 +856,7 @@ int cDownloader::strain_start_sampling    (int target_id)
     // check if send_message was successful
     if (ret==0)
         {
-            printf ("ERR: Unable to send message\n");
+            yError ("Unable to send message\n");
             return -1;
         }
     return 0;
@@ -867,7 +868,7 @@ int cDownloader::strain_stop_sampling    (int target_id)
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -880,7 +881,7 @@ int cDownloader::strain_stop_sampling    (int target_id)
     // check if send_message was successful
     if (ret==0)
         {
-            printf ("ERR: Unable to send message\n");
+            yError ("Unable to send message\n");
             return -1;
         }
     return 0;
@@ -892,7 +893,7 @@ int cDownloader::strain_calibrate_offset  (int target_id, unsigned int middle_va
      // check if driver is running
      if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -917,7 +918,7 @@ int cDownloader::strain_calibrate_offset  (int target_id, unsigned int middle_va
         // check if send_message was successful
         if (ret==0)
             {
-                printf ("ERR: Unable to send message\n");
+                yError ("Unable to send message\n");
                 return -1;
             }
         //read adc
@@ -980,10 +981,10 @@ int cDownloader::strain_calibrate_offset  (int target_id, unsigned int middle_va
             ret = m_candriver->send_message(txBuffer, 1);
             // check if send_message was successful
             if (ret==0)
-                {
-                    printf ("ERR: Unable to send message\n");
-                    return -1;
-                }
+            {
+                yError ("Unable to send message\n");
+                return -1;
+            }
             //read adc
             read_messages = m_candriver->receive_message(rxBuffer, 1);
             for (i=0; i<read_messages; i++)
@@ -1014,10 +1015,10 @@ int cDownloader::get_serial_no       (int target_id, char* serial_no)
 
     // check if driver is running
     if (m_candriver == NULL)
-        {
-            printf ("ERR: Driver not ready\n");
-            return -1;
-        }
+    {
+        yError ("Driver not ready\n");
+        return -1;
+    }
 
     for (i=0; i<board_list_size; i++)
     {
@@ -1042,7 +1043,7 @@ int cDownloader::get_board_info       (int target_id, char* board_info)
     // check if driver is running
     if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -1058,7 +1059,7 @@ int cDownloader::get_board_info       (int target_id, char* board_info)
     // check if send_message was successful
     if (ret==0)
         {
-            printf ("ERR: Unable to send message\n");
+            yError ("Unable to send message\n");
             return -1;
         }
 
@@ -1119,7 +1120,7 @@ int cDownloader::change_board_info(int target_id, char* board_info)
     // check if driver is running
     if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -1146,7 +1147,7 @@ int cDownloader::change_board_info(int target_id, char* board_info)
     // check if send_message was successful
     if (ret==0)
         {
-            printf ("ERR: Unable to send message\n");
+            yError ("Unable to send message\n");
             return -1;
         }
 
@@ -1167,7 +1168,7 @@ int cDownloader::change_card_address(int target_id, int new_id, int board_type)
     // check if driver is running
     if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -1197,7 +1198,7 @@ int cDownloader::change_card_address(int target_id, int new_id, int board_type)
         break;
 
         default:
-            printf ("ERR: Unknown board type for change of CAN address\n");
+            yError ("Unknown board type for change of CAN address\n");
         return -1;
 
     }
@@ -1207,7 +1208,7 @@ int cDownloader::change_card_address(int target_id, int new_id, int board_type)
     // check if send_message was successful
     if (ret==0)
         {
-            printf ("ERR: Unable to send message\n");
+            yError ("Unable to send message\n");
             return -1;
         }
         // pause
@@ -1226,7 +1227,7 @@ int cDownloader::initschede()
     // check if driver is running
     if (m_candriver == NULL)
         {
-            printf ("ERR: Driver not ready\n");
+            yError ("Driver not ready\n");
             return -1;
         }
 
@@ -1239,7 +1240,7 @@ int cDownloader::initschede()
     // check if send_message was successful
     if (ret==0)
         {
-            printf ("ERR: Unable to send message\n");
+            yError ("Unable to send message\n");
             return -1;
         }
 
@@ -1255,7 +1256,7 @@ int cDownloader::initschede()
             //Timeout: no answers
             if (read_messages==0)
                 {
-                    printf ("ERR: No answers\n");
+                    yError ("No answers\n");
                     return -1;
                 }
 
@@ -1290,7 +1291,7 @@ int cDownloader::initschede()
                     times++;
                     if (times==100)
                         {
-                            printf ("ERR: No Boards found\n");
+                            yError ("No Boards found\n");
                             return -1;
                         }
                 }
@@ -1365,7 +1366,7 @@ int cDownloader::startscheda(int board_pid, bool board_eeprom, int board_type)
     // check if driver is running
     if (m_candriver == NULL)
         {
-            printf ("ERR: START_CMD: Driver not ready\n");
+            yError ("START_CMD: Driver not ready\n");
             return -1;
         }
 
@@ -1412,7 +1413,7 @@ int cDownloader::startscheda(int board_pid, bool board_eeprom, int board_type)
     // check if send_message was successful
     if (ret==0)
         {
-            printf ("ERR: START_CMD: Unable to send message\n");
+            yError ("START_CMD: Unable to send message\n");
             return -1;
         }
 
@@ -1438,7 +1439,7 @@ int cDownloader::startscheda(int board_pid, bool board_eeprom, int board_type)
   // return 0;  //DEBUG
 
     //ERROR
-    printf ("ERR: START_CMD: No ACK received from board %d\n", board_pid);
+    yError ("START_CMD: No ACK received from board %d\n", board_pid);
     return -1;
 
 }
@@ -1450,7 +1451,7 @@ int cDownloader::stopscheda(int board_pid)
     // check if driver is running
     if (m_candriver == NULL)
         {
-            printf ("ERR: STOP_CMD: Driver not ready\n");
+            yError ("STOP_CMD: Driver not ready\n");
             return -1;
         }
 
@@ -1463,7 +1464,7 @@ int cDownloader::stopscheda(int board_pid)
     // check if send_message was successful
     if (ret==0)
         {
-            printf ("ERR: STOP_CMD: Unable to send message\n");
+            yError ("STOP_CMD: Unable to send message\n");
             return -1;
         }
 
@@ -1487,7 +1488,7 @@ int cDownloader::stopscheda(int board_pid)
         }
 
     //ERROR
-    printf ("ERR: STOP_CMD: No ACK received from board %d\n", board_pid);
+    yError ("TOP_CMD: No ACK received from board %d\n", board_pid);
     return -1;
 }
 
@@ -1591,14 +1592,14 @@ int cDownloader::download_motorola_line(char* line, int len, int board_pid)
         }
     else
         {
-            printf ("ERR: Failed Checksum\n");
+            yError ("Failed Checksum\n");
             return -1;
         }
 
     //state: WAIT
     if (!(line[0] == 'S'))
         {
-            printf ("start tag character not found\n");
+            yError ("start tag character not found\n");
             return -1;
         }
     i=1;
@@ -1646,7 +1647,7 @@ int cDownloader::download_motorola_line(char* line, int len, int board_pid)
             // check if send_message was successful
             if (ret==0)
                 {
-                    printf ("ERR: Unable to send message\n");
+                    yError ("Unable to send message\n");
                     return -1;
                 }
 
@@ -1683,7 +1684,7 @@ int cDownloader::download_motorola_line(char* line, int len, int board_pid)
                     // check if send_message was successful
                     if (ret==0)
                         {
-                            printf ("ERR: Unable to send message\n");
+                            yError ("Unable to send message\n");
                             return -1;
                         }
 
@@ -1721,7 +1722,7 @@ int cDownloader::download_motorola_line(char* line, int len, int board_pid)
             // check if send_message was successful
             if (ret==0)
                 {
-                    printf ("ERR: Unable to send message\n");
+                    yError ("Unable to send message\n");
                     return -1;
                 }
 
@@ -1737,13 +1738,13 @@ int cDownloader::download_motorola_line(char* line, int len, int board_pid)
 
 
         default:
-            printf ("ERR: wrong format tag character %c (hex:%X)\n", sprsRecordType, sprsRecordType);
+            yError ("wrong format tag character %c (hex:%X)\n", sprsRecordType, sprsRecordType);
             return -1;
 
             break;
         }
 
-    printf ("ERR: Can't reach here!\n");
+    yError ("Can't reach here!\n");
     return -1;
 }
 
@@ -1780,7 +1781,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
     }
     else
     {
-      printf ("ERR: Failed Checksum\n");
+      yError ("Failed Checksum\n");
       return -1;
      }
 
@@ -1874,7 +1875,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
 
 
                     {
-                        printf ("ERR: Unable to send message\n");
+                        yError ("Unable to send message\n");
                         return -1;
                     }
                     //pause
@@ -1910,7 +1911,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
                         // check if send_message was successful
                         if (ret==0)
                             {
-                                printf ("ERR: Unable to send message\n");
+                                yError ("Unable to send message\n");
                                 return -1;
                             }
                         //pause
@@ -1941,7 +1942,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
                     // check if send_message was successful
                     if (ret==0)
                     {
-                        printf ("ERR: Unable to send message\n");
+                        yError ("Unable to send message\n");
                         return -1;
                     }
                     //pause
@@ -1963,14 +1964,14 @@ int cDownloader::download_hexintel_line(char* line, int len, int board_pid, bool
             } //end if
             else
             {
-            printf ("ERR: Checksum Error\n");
+            yError ("Checksum Error\n");
             }
         break;
         } //end switch
     }
     while(true);
 
-    printf ("ERR: Can't reach here!\n");
+    yError ("Can't reach here!\n");
     return -1;
 }
 //*****************************************************************/
@@ -1983,7 +1984,7 @@ int cDownloader::open_file(std::string file)
     filestr.open (file.c_str(), fstream::in);
     if (!filestr.is_open())
         {
-            printf ("ERR: Error opening file!\n");
+            yError ("Error opening file!\n");
             return -1;
         }
 
@@ -2001,7 +2002,7 @@ int cDownloader::open_file(std::string file)
     filestr.open (file.c_str(), fstream::in);
     if (!filestr.is_open())
         {
-            printf ("ERR: Error opening file!\n");
+            yError ("Error opening file!\n");
             return -1;
         }
 
@@ -2018,7 +2019,7 @@ int cDownloader::download_file(int board_pid, int download_type, bool board_eepr
 
     if (!filestr.is_open())
         {
-            printf ("ERR: File not open!\n");
+            yError ("File not open!\n");
             return -1;
         }
 

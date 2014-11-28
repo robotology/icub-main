@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<params robot="iCubGenova04" build="1">
+<params robot="iCubDarmstadt01" build="1">
     <group name="GENERAL">
         <param name="Joints">  2  </param> <!-- the number of joints of the robot part -->
 
@@ -12,7 +12,7 @@
         <param name="TorqueId">  	    0x0C            0x0C    </param>
         <param name="TorqueChan">	    4               5       </param>
         <param name="TorqueMax"> 	    12             12       </param>
-        <param name="Rotor">     	    0               0       </param>
+        <param name="Rotor">     	    1               1       </param>
         <param name="Gearbox">   	    0               0       </param>
         <param name="Verbose">		    0  </param>
     </group>

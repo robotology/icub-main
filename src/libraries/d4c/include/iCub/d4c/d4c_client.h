@@ -19,9 +19,10 @@
 #define __D4C_CLIENT_H__
 
 #include <string>
-#include <yarp/os/Property.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/sig/Vector.h>
+
+#include <yarp/os/all.h>
+#include <yarp/sig/all.h>
+
 #include <iCub/d4c/d4c.h>
 
 namespace iCub
@@ -47,9 +48,10 @@ protected:
     mutable yarp::sig::Vector qhat;
 
     mutable yarp::os::BufferedPort<yarp::os::Property> data;
-    yarp::os::Port rpc;
+    yarp::os::RpcClient rpc;
 
-    int printMessage(const int level, const char *format, ...) const;
+    virtual void printMessage(const int logtype, const int level,
+                              const char *format, ...) const;
 
 public:
     D4CClient();

@@ -97,50 +97,6 @@ void iCubShoulderConstr::clone(const iKinLinIneqConstr *obj)
 
 
 /************************************************************************/
-void iCubShoulderConstr::appendMatrixRow(yarp::sig::Matrix &dest,
-                                         const yarp::sig::Vector &row)
-{
-    yarp::sig::Matrix tmp;
-
-    // if dest is already filled with something
-    if (dest.rows())
-    {   
-        // exit if lengths do not match     
-        if (row.length()!=dest.cols())
-            return;
-
-        tmp.resize(dest.rows()+1,dest.cols());
-
-        // copy the content of dest in temp
-        for (int i=0; i<dest.rows(); i++)
-            for (int j=0; j<dest.cols(); j++)
-                tmp(i,j)=dest(i,j);
-
-        // reassign dest
-        dest=tmp;
-    }
-    else
-        dest.resize(1,row.length());
-
-    // append the last row
-    for (int i=0; i<dest.cols(); i++)
-        dest(dest.rows()-1,i)=row[i];
-}
-
-
-/************************************************************************/
-void iCubShoulderConstr::appendVectorValue(yarp::sig::Vector &dest, double val)
-{
-    yarp::sig::Vector tmp(dest.length()+1);
-    for (size_t i=0; i<dest.length(); i++)
-        tmp[i]=dest[i];
-
-    dest=tmp;
-    dest[dest.length()-1]=val;
-}
-
-
-/************************************************************************/
 iCubShoulderConstr::iCubShoulderConstr(iCubArm &arm) : iKinLinIneqConstr()
 {      
     chain=arm.asChain();
@@ -173,11 +129,13 @@ void iCubShoulderConstr::update(void*)
     // optimization won't use LinIneqConstr by default
     setActive(false);
 
-    yarp::sig::Matrix _C;
-    yarp::sig::Vector _lB;
-    yarp::sig::Vector _uB;
-
     yarp::sig::Vector row(chain->getDOF());
+
+    // these structures will grow as soon as
+    // new constraints will be added up
+    yarp::sig::Matrix _C(0,row.length());
+    yarp::sig::Vector _lB;
+    yarp::sig::Vector _uB;    
 
     // if shoulder's axes are controlled, constraint them
     if (!(*chain)[3].isBlocked() && !(*chain)[3+1].isBlocked() &&
@@ -194,35 +152,35 @@ void iCubShoulderConstr::update(void*)
         // constraints on the cables length
         row.zero();
         row[offs]=1.71; row[offs+1]=-1.71;
-        appendMatrixRow(_C,row);
-        appendVectorValue(_lB,-347.00*CTRL_DEG2RAD);
-        appendVectorValue(_uB,upperBoundInf);
+        _C=pile(_C,row);
+        _lB=cat(_lB,-347.00*CTRL_DEG2RAD);
+        _uB=cat(_uB,upperBoundInf);
 
         row.zero();
         row[offs]=1.71; row[offs+1]=-1.71; row[offs+2]=-1.71;
-        appendMatrixRow(_C,row);
-        appendVectorValue(_lB,-366.57*CTRL_DEG2RAD);
-        appendVectorValue(_uB,112.42*CTRL_DEG2RAD);
+        _C=pile(_C,row);
+        _lB=cat(_lB,-366.57*CTRL_DEG2RAD);
+        _uB=cat(_uB,112.42*CTRL_DEG2RAD);
 
         row.zero();
         row[offs+1]=1.0; row[offs+2]=1.0;
-        appendMatrixRow(_C,row);
-        appendVectorValue(_lB,-66.600*CTRL_DEG2RAD);
-        appendVectorValue(_uB,213.30*CTRL_DEG2RAD);
+        _C=pile(_C,row);
+        _lB=cat(_lB,-66.600*CTRL_DEG2RAD);
+        _uB=cat(_uB,213.30*CTRL_DEG2RAD);
 
         // constraints to prevent arm from touching torso
         row.zero();
         row[offs+1]=1.0; row[offs+2]=-shou_m;
-        appendMatrixRow(_C,row);
-        appendVectorValue(_lB,shou_n);
-        appendVectorValue(_uB,upperBoundInf);
+        _C=pile(_C,row);
+        _lB=cat(_lB,shou_n);
+        _uB=cat(_uB,upperBoundInf);
 
         // constraints to limit shoulder abduction
         row.zero();
         row[offs+1]=1.0;
-        appendMatrixRow(_C,row);
-        appendVectorValue(_lB,lowerBoundInf);
-        appendVectorValue(_uB,IKINIPOPT_SHOULDER_MAXABDUCTION);
+        _C=pile(_C,row);
+        _lB=cat(_lB,lowerBoundInf);
+        _uB=cat(_uB,IKINIPOPT_SHOULDER_MAXABDUCTION);
 
         // optimization will use LinIneqConstr
         getC()=_C;
@@ -245,15 +203,15 @@ void iCubShoulderConstr::update(void*)
         // constraints to prevent the forearm from hitting the arm
         row.zero();
         row[offs]=-elb_m; row[offs+1]=1.0;
-        appendMatrixRow(_C,row);
-        appendVectorValue(_lB,lowerBoundInf);
-        appendVectorValue(_uB,elb_n);
+        _C=pile(_C,row);
+        _lB=cat(_lB,lowerBoundInf);
+        _uB=cat(_uB,elb_n);
 
         row.zero();
         row[offs]=elb_m; row[offs+1]=1.0;
-        appendMatrixRow(_C,row);
-        appendVectorValue(_lB,-elb_n);
-        appendVectorValue(_uB,upperBoundInf);
+        _C=pile(_C,row);
+        _lB=cat(_lB,-elb_n);
+        _uB=cat(_uB,upperBoundInf);
 
         // optimization will use LinIneqConstr
         getC()=_C;
@@ -906,6 +864,27 @@ iKinChain &iKinIpOptMin::get2ndTaskChain()
 
 
 /************************************************************************/
+void iKinIpOptMin::setMaxIter(const int max_iter)
+{
+    if (max_iter>0)
+        CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",max_iter);
+    else
+        CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",(Index)2e9);
+
+    CAST_IPOPTAPP(App)->Initialize();
+}
+
+
+/************************************************************************/
+int iKinIpOptMin::getMaxIter() const
+{
+    int max_iter;
+    CAST_IPOPTAPP(App)->Options()->GetIntegerValue("max_iter",max_iter,"");
+    return max_iter;
+}
+
+
+/************************************************************************/
 void iKinIpOptMin::setTol(const double tol)
 {
     CAST_IPOPTAPP(App)->Options()->SetNumericValue("tol",tol);
@@ -916,14 +895,11 @@ void iKinIpOptMin::setTol(const double tol)
 
 
 /************************************************************************/
-void iKinIpOptMin::setMaxIter(const int max_iter)
+double iKinIpOptMin::getTol() const
 {
-    if (max_iter>0)
-        CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",max_iter);
-    else
-        CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",(Index)2e9);
-
-    CAST_IPOPTAPP(App)->Initialize();
+    double tol;
+    CAST_IPOPTAPP(App)->Options()->GetNumericValue("tol",tol,"");
+    return tol;
 }
 
 

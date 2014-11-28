@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubLisboa01" build="1">
+
+        <group name="defaultCfgBoard">
+            <param name="period">        50  </param> 
+            <param name="skinType">      0  </param> <!-- 0 ==> new skin
+                                                              1 ==> palm and fingertips skin
+                                                              2 ==> old skin without temperature compensation -->
+            <param name="noLoad">         0xf0  </param>
+            <param name="diagnostic">    true  </param>     <!-- used to config high level -->
+        </group>
+        
+        
+       <group name="defaultCfgTriangle">
+            <param name="enabled">         true  </param> 
+            <param name="shift">           2  </param>
+            <param name="cdcOffset">       0x2200  </param>
+        </group>
+
+	<group name="specialCfgTriangles">
+        <param name="numOfSets">         0x01  </param> <!-- id starts from 1 for triangleSetCfg-->
+        <!--                                 patch       boardAddr    idStart       idEnd        enabled          shift       cdcOffset      -->
+           <param name="triangleSetCfg1">      7            0xE        0             6             1              0           0x2000      </param>
+        </group> 
+
+        
+</params>

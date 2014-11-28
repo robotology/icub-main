@@ -3,7 +3,7 @@
 
  <!-- Initialization file for EMS 3 - Right Upper Arm, 4 dof -->
 
-<devices robot="iCubGenova04" build="1">
+<devices robot="iCubDarmstadt01" build="1">
   <device name="right_upper_arm_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/right_upper_arm-ems3-eln.xml" />
@@ -32,18 +32,20 @@
         <param name="ko">                0          0          0          0 </param>       
         <param name="stictionUp">        0          0          0          0 </param>       
         <param name="stictionDwn">       0          0          0          0 </param>       
+        <param name="kff">               0          0          0          0 </param>       
     </group>
 
     <group name="TRQ_PIDS">
-        <param name="kp">            200        200        200        500     </param>       
+        <param name="kp">             25         25         25         50     </param>       
         <param name="kd">              0          0          0          0     </param>       
-        <param name="ki">              0          0          0          0     </param>       
-        <param name="maxPwm">          0          0          0          0     </param>       
-        <param name="maxInt">          0          0          0          0     </param>       
-        <param name="shift">          10         10         10         10     </param>       
+        <param name="ki">           1000       1000       1000       1000     </param>       
+        <param name="maxPwm">       8000       8000       8000       8000     </param>       
+        <param name="maxInt">        500        500        500        500     </param>       
+        <param name="shift">           6          6          6          6     </param>       
         <param name="ko">              0          0          0          0     </param>       
         <param name="stictionUp">      0          0          0          0     </param>       
         <param name="stictionDwn">     0          0          0          0     </param>       
+        <param name="kff">             0          0          0          0     </param>       
     </group>
 	
   </device>

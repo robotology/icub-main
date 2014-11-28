@@ -104,46 +104,34 @@ int MotorThread::checkArm(int arm, Vector &xd, const bool applyOffset)
 
 bool MotorThread::setImpedance(bool turn_on)
 {
-
-    bool done=false;
-
-    //if the system is asked to turn on impedance control
+    bool done=true;
     if(turn_on)
     {
-    
-        done=true;
-
         for(int i=0; i<5; i++)
         {
             if(action[LEFT]!=NULL)
-                done=done && ctrl_mode_arm[LEFT]->setImpedanceVelocityMode(i);
+                done=done && int_mode_arm[LEFT]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
             if(action[RIGHT]!=NULL)
-                done=done && ctrl_mode_arm[RIGHT]->setImpedanceVelocityMode(i);
+                done=done && int_mode_arm[RIGHT]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
         }
         
-        done=done && ctrl_mode_torso->setVelocityMode(0);
-        done=done && ctrl_mode_torso->setVelocityMode(2);
+        for(int i=0; i<3; i++)
+            done=done && int_mode_torso->setInteractionMode(i,VOCAB_IM_STIFF);
 
-        //update the system status
         status_impedance_on=done;
     }
-
-    //if the system is asked to turn off impedance control
-    if(!turn_on)
+    else
     {
-        done=true;
-
         for(int i=0; i<5; i++)
         {
             if(action[LEFT]!=NULL)
-                done=done && ctrl_mode_arm[LEFT]->setVelocityMode(i);
+                done=done && int_mode_arm[LEFT]->setInteractionMode(i,VOCAB_IM_STIFF);
             if(action[RIGHT]!=NULL)
-                done=done && ctrl_mode_arm[RIGHT]->setVelocityMode(i);
+                done=done && int_mode_arm[RIGHT]->setInteractionMode(i,VOCAB_IM_STIFF);
         }
 
         for(int i=0; i<3; i++)
-            if(ctrl_mode_torso!=NULL)
-                done=done && ctrl_mode_torso->setVelocityMode(i);
+            done=done && int_mode_torso->setInteractionMode(i,VOCAB_IM_STIFF);
 
         status_impedance_on=!done;
     }
@@ -158,25 +146,19 @@ bool MotorThread::setTorque(bool turn_on, int arm)
     if(action[arm]==NULL)
         return false;
 
-    bool done=false;
+    bool done=true;
 
     //if the system is asked to turn on impedance control
     if(turn_on)
     {
-        done=true;
-
         for(int i=0; i<4; i++)
             done=done && ctrl_mode_arm[arm]->setTorqueMode(i);
 
         done=done && ctrl_mode_torso->setTorqueMode(0);
-        done=done && ctrl_mode_torso->setImpedanceVelocityMode(2);
+        done=done && int_mode_torso->setInteractionMode(2,VOCAB_IM_COMPLIANT);
     }
-
-    //if the system is asked to turn off impedance control
-    if(!turn_on)
-    {
+    else
         done=setImpedance(status_impedance_on);
-    }
 
     return done;
 }
@@ -529,7 +511,7 @@ Vector MotorThread::randomDeployOffset()
 }
 
 
-bool MotorThread::loadKinematicOffsets(string _kinematics_path)
+bool MotorThread::loadKinematicOffsets(const string &_kinematics_path)
 {
     kinematics_path=_kinematics_path;
 
@@ -561,7 +543,6 @@ bool MotorThread::loadKinematicOffsets(string _kinematics_path)
 
     //adjust the table height accordingly to a specified tolerance
     table_height+=table_height_tolerance;
-
 
     if(!bKinOffsets.check("left"))
     {
@@ -970,6 +951,7 @@ bool MotorThread::threadInit()
     drv_torso->view(pos_torso);
     drv_torso->view(vel_torso);
     drv_torso->view(ctrl_mode_torso);
+    drv_torso->view(int_mode_torso);
     drv_torso->view(ctrl_impedance_torso);
 
     if(partUsed=="both_arms" || partUsed=="left_arm")
@@ -982,6 +964,7 @@ bool MotorThread::threadInit()
         }        
 
         drv_arm[LEFT]->view(ctrl_mode_arm[LEFT]);
+        drv_arm[LEFT]->view(int_mode_arm[LEFT]);
         drv_arm[LEFT]->view(ctrl_impedance_arm[LEFT]);
         drv_arm[LEFT]->view(pos_arm[LEFT]);
         drv_arm[LEFT]->view(enc_arm[LEFT]);
@@ -1002,6 +985,7 @@ bool MotorThread::threadInit()
         }        
 
         drv_arm[RIGHT]->view(ctrl_mode_arm[RIGHT]);
+        drv_arm[RIGHT]->view(int_mode_arm[RIGHT]);
         drv_arm[RIGHT]->view(ctrl_impedance_arm[RIGHT]);
         drv_arm[RIGHT]->view(pos_arm[RIGHT]);
         drv_arm[RIGHT]->view(enc_arm[RIGHT]);
@@ -1175,11 +1159,11 @@ bool MotorThread::threadInit()
 
     option.put("local",name.c_str());
 
-    reachingTimeout=2.0*option.check("default_exec_time",Value("3.0")).asDouble();
+    default_exec_time=option.check("default_exec_time",Value("3.0")).asDouble();
+    reachingTimeout=std::max(2.0*default_exec_time,4.0);
 
     string arm_name[]={"left_arm","right_arm"};
-
-    for(int arm=0; arm<2; arm++)
+    for (int arm=0; arm<2; arm++)
     {
         if (partUsed=="both_arms" || (partUsed=="left_arm" && arm==LEFT)
                                   || (partUsed=="right_arm" && arm==RIGHT))
@@ -1824,7 +1808,6 @@ bool MotorThread::point(Bottle &options)
     if(!targetToCartesian(bTarget,target))
         return false;
 
-
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
@@ -1838,25 +1821,19 @@ bool MotorThread::point(Bottle &options)
     Vector x,o;
     action[arm]->getPose(x,o);
 
-    //set the new position
-    Vector d=0.6*(target-x);
-    xd=x+d;
+    // set the new position
+    Vector x_o=(target-x);
+    x_o/=norm(x_o);
+    xd=target-0.15*x_o;
 
-    //set the new orientation
-    Vector x_o(3),y_o(3),z_o(3);
-    x_o=(1/norm(d))*d;
-    
-    z_o=0.0;
-    if(arm==LEFT)
-        z_o[2]=1.0;
-    else
-        z_o[2]=-1.0;
+    // set the new orientation
+    Vector z_o(3,0.0);
+    z_o[2]=(arm==LEFT)?1.0:-1.0;
 
-    y_o=cross(z_o,x_o);
-    y_o=(1/norm(y_o))*y_o;
+    Vector y_o=cross(z_o,x_o);
+    y_o/=norm(y_o);
 
     z_o=cross(x_o,y_o);
-    z_o=(1/norm(z_o))*z_o;
 
     Matrix R(3,3);
     R.setCol(0,x_o);
@@ -1864,12 +1841,10 @@ bool MotorThread::point(Bottle &options)
     R.setCol(2,z_o);
 
     Vector od=dcm2axis(R);
-
     action[arm]->pushAction(xd,od,"pointing_hand");
 
     bool f;
     action[arm]->checkActionsDone(f,true);
-
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
@@ -2133,6 +2108,27 @@ bool MotorThread::changeElbowHeight(const int arm, const double height, const do
 }
 
 
+bool MotorThread::changeExecTime(const double execTime)
+{
+    if (execTime>0.0)
+    {
+        default_exec_time=execTime; 
+        reachingTimeout=std::max(2.0*default_exec_time,4.0);
+
+        bool ret=true;
+        if (action[LEFT]!=NULL)
+            ret&=action[LEFT]->setDefaultExecTime(execTime);
+
+        if (action[RIGHT]!=NULL)
+            ret&=action[RIGHT]->setDefaultExecTime(execTime);
+
+        return ret;
+    }
+    else
+        return false;
+}
+
+
 void MotorThread::goHomeHelper(ActionPrimitives *action, const Vector &xin, const Vector &oin)
 {
     ICartesianControl *ctrl;
@@ -2149,8 +2145,10 @@ void MotorThread::goHomeHelper(ActionPrimitives *action, const Vector &xin, cons
     ctrl->setLimits(1,0.0,0.0);
     ctrl->setLimits(2,0.0,0.0);
 
+    ctrl->setTrajTime(default_exec_time);
+
     ctrl->goToPoseSync(xin,oin);
-    ctrl->waitMotionDone();
+    ctrl->waitMotionDone(0.1,reachingTimeout);
 
     ctrl->restoreContext(context);
     ctrl->deleteContext(context);
@@ -2216,8 +2214,7 @@ bool MotorThread::goHome(Bottle &options)
                 action[LEFT]->enableArmWaving(homePos[LEFT]);
         }
     }
-
-    if(hand_home)
+    else if(hand_home)
     {
         if(left_arm)
             action[LEFT]->pushAction("open_hand");
@@ -2562,30 +2559,31 @@ bool MotorThread::exploreTorso(Bottle &options)
         type<<"_v2";
 
     iCubEye iKinTorso=iCubEye(type.str());
-    iKinTorso.releaseLink(0);
-    iKinTorso.releaseLink(1);
-    iKinTorso.releaseLink(2);
+    iKinTorso.releaseLink(0);   // pitch
+    iKinTorso.releaseLink(1);   // roll
+    for (size_t i=2; i<iKinTorso.getN(); i++)
+        iKinTorso.blockLink(i,0.0);
 
     //get the torso initial position
     Vector torso_init_joints(3);
     enc_torso->getEncoders(torso_init_joints.data());
 
     //initialization for the random walker
-    //the iKinTorso needs the 0 2 joints switched
-    Vector tmp_joints(8,0.0);
+    //the iKinTorso needs the {0,2} joints switched
+    Vector tmp_joints(2,0.0);
     tmp_joints[0]=CTRL_DEG2RAD*torso_init_joints[2];
     tmp_joints[1]=CTRL_DEG2RAD*torso_init_joints[1];
-    tmp_joints[2]=CTRL_DEG2RAD*torso_init_joints[0];
     iKinTorso.setAng(tmp_joints);
+    iKinTorso.setBlockingValue(2,CTRL_DEG2RAD*torso_init_joints[0]);
 
-    Matrix H=iKinTorso.getH(3);
+    Matrix H=iKinTorso.getH(3,true);
     Vector cart_init_pos(3);
     cart_init_pos[0]=H[0][3];
     cart_init_pos[1]=H[1][3];
     cart_init_pos[2]=H[2][3];
     //----------------
 
-    fprintf(stdout,"cart init pos= %s\n",cart_init_pos.toString().c_str());
+    fprintf(stdout,"cart init pos = %s\n",cart_init_pos.toString().c_str());
     
     //fixed "target" position
     Vector fixed_target(3);
@@ -2596,7 +2594,10 @@ bool MotorThread::exploreTorso(Bottle &options)
     double walking_time=20.0;
     double step_time=2.0;
     double kp_pos_torso=0.6;
-    double kp_ang_torso=0.6;
+
+    VectorOf<int> modes(3);
+    modes[0]=modes[1]=modes[2]=VOCAB_CM_VELOCITY;
+    ctrl_mode_torso->setControlModes(modes.getFirst());
 
     double init_walking_time=Time::now();
 
@@ -2626,14 +2627,14 @@ bool MotorThread::exploreTorso(Bottle &options)
             //set the current torso joints to the iKinTorso
             Vector torso_joints(3);
             enc_torso->getEncoders(torso_joints.data());
-            
-            Vector tmp_joints(8,0.0);
+
+            Vector tmp_joints(2,0.0);
             tmp_joints[0]=CTRL_DEG2RAD*torso_joints[2];
             tmp_joints[1]=CTRL_DEG2RAD*torso_joints[1];
-            tmp_joints[2]=CTRL_DEG2RAD*torso_joints[0];
             iKinTorso.setAng(tmp_joints);
+            iKinTorso.setBlockingValue(2,CTRL_DEG2RAD*torso_joints[0]);
 
-            Matrix H=iKinTorso.getH(3);
+            Matrix H=iKinTorso.getH(3,true);
             Vector curr_pos(3);
             curr_pos[0]=H[0][3];
             curr_pos[1]=H[1][3];
@@ -2654,15 +2655,21 @@ bool MotorThread::exploreTorso(Bottle &options)
             else if (q_dot_mag>q_dot_saturation)
                 q_dot=(q_dot_saturation/q_dot_mag)*q_dot;
 
-            vel_torso->velocityMove(q_dot.data());
+            // account for specific order
+            VectorOf<int> jnts(2);
+            jnts[0]=2;
+            jnts[1]=1;
+            vel_torso->velocityMove(jnts.size(),jnts.getFirst(),q_dot.data());
             Time::delay(0.01);
         }
     }
 
     //go back to torso initial position
+    modes[0]=modes[1]=modes[2]=VOCAB_CM_POSITION;
+    ctrl_mode_torso->setControlModes(modes.getFirst());
     pos_torso->positionMove(torso_init_joints.data());
     bool done=false;
-    while(isRunning() && !done)
+    while (isRunning() && !done)
     {
         Time::delay(0.1);
         pos_torso->checkMotionDone(&done);
@@ -2725,11 +2732,19 @@ bool MotorThread::exploreHand(Bottle &options)
 
     double max_step_time=2.0;
 
+    int nJnts;
+    enc_arm[arm]->getAxes(&nJnts);
+
+    VectorOf<int> modes(nJnts);
+    for (int i=0; i<nJnts; i++)
+        modes[i]=VOCAB_CM_POSITION; 
+    ctrl_mode_arm[arm]->setControlModes(modes.getFirst());
+
     //start exploration
-    Vector destination(16);
+    Vector destination(nJnts);
     for(unsigned int pose_idx=0; pose_idx<handPoses.size(); pose_idx++)
     {
-        Vector current_position(16);
+        Vector current_position(nJnts);
         enc_arm[arm]->getEncoders(current_position.data());
 
         //copy the arm configuration in the destination vector
@@ -2737,7 +2752,7 @@ bool MotorThread::exploreHand(Bottle &options)
             destination[i]=handPoses[pose_idx][i];
 
         //do not change the fingers angles
-        for(int i=handPoses[pose_idx].size(); i<16; i++)
+        for(int i=handPoses[pose_idx].size(); i<nJnts; i++)
             destination[i]=current_position[i];
 
         pos_arm[arm]->positionMove(destination.data());
@@ -2786,7 +2801,7 @@ bool MotorThread::startLearningModeAction(Bottle &options)
 
     if(action_name=="")
     {
-        fprintf(stdout,"Error! action name not specified!\n",action_name.c_str());
+        fprintf(stdout,"Error! action name not specified!\n");
         return false;
     }
 

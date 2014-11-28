@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-<devices robot="iCubHertfordshire01" build="0">
+<devices robot="iCubDaejeon01" build="0">
 	<device type="canBusVirtualAnalogSensor" name="right_arm_virtual_strain">
 		<param name="canbusDevice"> "sharedcan" </param>
         <param name="physDevice"> "cfw2can" </param>

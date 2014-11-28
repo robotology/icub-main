@@ -12,7 +12,7 @@
 #include "Robot.h"
 #include "Types.h"
 
-#include <debugStream/Debug.h>
+#include <yarp/os/LogStream.h>
 
 #include <tinyxml.h>
 #include <string>
@@ -228,7 +228,7 @@ public:
     std::string path;
     RobotInterfaceDTD dtd;
     Robot robot;
-    yarp::os::ResourceFinder rf;
+    yarp::os::ResourceFinder &rf;
 
     std::string curr_filename;
     unsigned int minorVersion;
@@ -237,7 +237,8 @@ public:
 
 
 RobotInterface::XMLReader::Private::Private(XMLReader *p) :
-    parent(p)
+    parent(p),
+    rf(yarp::os::ResourceFinder::getResourceFinderSingleton())
 {
     rf.setVerbose();
 }

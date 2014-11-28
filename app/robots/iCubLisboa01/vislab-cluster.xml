@@ -1,0 +1,16 @@
+<!-- instantiation of
+     icub-main/app/iCubCluster/conf/cluster-config.xml
+     for iCubLisboa01 -->
+
+<cluster name="icub01" user="icub">
+
+<nameserver namespace="/icub" node="chico3"> </nameserver>
+
+<node display="true">chico3</node>
+<node>pc104</node>
+<node>icubbrain1</node>>
+<node>icubbrain2</node>
+<node>cortex1</node>
+
+</cluster>
+

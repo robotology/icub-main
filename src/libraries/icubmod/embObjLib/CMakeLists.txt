@@ -51,7 +51,8 @@ include(updateSVNrepository.cmake)
 include(embObjLib.cmake)
 #--------------------------------------------------------#
 
-include_directories (  ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/)
+include_directories (  ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/
+                       ../motionControlLib)
 
 # Debug messages
 #  message(INFO " lib_cmake - embObj_includes: ${embObj_includes}")
@@ -132,6 +133,7 @@ set(CORE_FOLDER_SOURCE      ${CORE_FOLDER}/EOarray.c
                             ${CORE_FOLDER}/EOvector.c
                             ${CORE_FOLDER}/EOpacket.c
                             ${CORE_YEE}/EOYtheSystem.c
+                            ${CORE_YEE}/EOYmutex.c
                             )
 
 set(CORE_VEE_SOURCE         ${CORE_FOLDER}/EOVmutex.c
@@ -243,18 +245,16 @@ set(embobj_header           ${BODY_COMMON_SOURCE}
 
 SOURCE_GROUP("EmbObj Source Files" FILES ${embobj_source})
 SOURCE_GROUP("EmbObj Header Files" FILES ${embobj_header})
-  
-include_directories(   
-                            ${CMAKE_CURRENT_SOURCE_DIR}
-                            ${embObj_includes}
-                            ${iCubDev_INCLUDE_DIRS}
-                            ${YARP_INCLUDE_DIRS}
-                            )
-  
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}
+                    ${embObj_includes}
+                    ${iCubDev_INCLUDE_DIRS}
+                    ${YARP_INCLUDE_DIRS})
+
 add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
 
 #add_dependencies(${PROJECTNAME} eBcode-download)
-TARGET_LINK_LIBRARIES(${PROJECTNAME} debugStream ${YARP_LIBRARIES} ${ACE_LIBRARIES} )  
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
 
 icub_export_library(${PROJECTNAME})
 

@@ -40,7 +40,7 @@
 #include <yarp/dev/Wrapper.h>
 
 #include "analogServer.h"
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 
 class skinWrapper : public yarp::dev::DeviceDriver,
                     public yarp::dev::IMultipleWrapper

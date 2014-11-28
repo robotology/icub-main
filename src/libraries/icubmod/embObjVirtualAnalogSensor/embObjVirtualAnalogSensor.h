@@ -16,9 +16,10 @@
 #include <hostTransceiver.hpp>
 #include <yarp/dev/IVirtualAnalogSensor.h>
 #include <ethManager.h>
-#include "FeatureInterface.h"         // Interface with embObj world (callback)
+#include "FeatureInterface.h"
+#include "IethResource.h"
 
-#include "Debug.h"
+#include <yarp/os/LogStream.h>
 
 
 namespace yarp{
@@ -34,14 +35,15 @@ class ethResources;
  * 
  */
 class yarp::dev::embObjVirtualAnalogSensor:     public yarp::dev::IVirtualAnalogSensor,
-                                                public yarp::dev::DeviceDriver
+                                                public yarp::dev::DeviceDriver,
+                                                public IethResource
 {
 private:
 
     //! embObj stuff
     TheEthManager       *ethManager;
     ethResources        *res;
-    FEAT_ID             _fId;
+    ethFeature_t        _fId;
 
     ////////////////////
     // parameters
@@ -53,10 +55,13 @@ private:
     bool            _verbose;
     VAS_status      _status;
 
+    bool opened;
+
     // Read useful data from config and check for correctness
     bool fromConfig(yarp::os::Searchable &config);
 
 public:
+
 
     embObjVirtualAnalogSensor();
     ~embObjVirtualAnalogSensor();
@@ -64,6 +69,9 @@ public:
     // An open function yarp factory compatible
     bool open(yarp::os::Searchable &config);
     bool close();
+
+    virtual bool initialised();
+    virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
 
     // IvirtualAnalogSensor interface
     virtual int getState(int ch);

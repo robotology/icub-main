@@ -49,14 +49,16 @@ static bool NOT_YET_IMPLEMENTED(const char *txt)
 iCubSimulationControl::iCubSimulationControl() : 
     //RateThread(10),
     ImplementPositionControl<iCubSimulationControl, IPositionControl>(this),
-    ImplementVelocityControl<iCubSimulationControl, IVelocityControl>(this),
+    ImplementVelocityControl2(this),
     ImplementPidControl<iCubSimulationControl, IPidControl>(this),
     ImplementEncodersTimed(this),
     ImplementTorqueControl(this),
-    ImplementControlMode(this),
+    ImplementControlMode2(this),
     ImplementControlCalibration<iCubSimulationControl, IControlCalibration>(this),
     ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>(this),
     ImplementControlLimits2(this),
+    ImplementInteractionMode(this),
+    ImplementPositionDirect(this),
     _done(0),
     _mutex(1)
 {
@@ -101,6 +103,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     zeros = allocAndCheck<double>(njoints);
     newtonsToSensor = allocAndCheck<double>(njoints);
     controlMode = allocAndCheck<int>(njoints);
+    interactionMode = allocAndCheck<int>(njoints);
     
     limitsMin = allocAndCheck<double>(njoints);
     limitsMax = allocAndCheck<double>(njoints);
@@ -204,12 +207,12 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         inputs[axis] = 0;
         vels[axis] = 1;
         controlMode[axis] = MODE_POSITION;
+        interactionMode[axis] = VOCAB_IM_STIFF;
    }
 
     ImplementPositionControl<iCubSimulationControl, IPositionControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementVelocityControl<iCubSimulationControl, IVelocityControl>::
-        initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementVelocityControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementPidControl<iCubSimulationControl, IPidControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementEncodersTimed::initialize(njoints, axisMap, angleToEncoder, zeros);
@@ -219,7 +222,9 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlLimits2::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementTorqueControl::initialize(njoints, axisMap, angleToEncoder, zeros, newtonsToSensor);
-    ImplementControlMode::initialize(njoints, axisMap);
+    ImplementControlMode2::initialize(njoints, axisMap);
+    ImplementInteractionMode::initialize(njoints, axisMap);
+    ImplementPositionDirect::initialize(njoints, axisMap, angleToEncoder, zeros);
 
     if (!p.check("joint_device")) {
         printf("Need a device to access the joints\n");
@@ -260,12 +265,16 @@ bool iCubSimulationControl::close (void)
         //RateThread::stop();/// stops the thread first (joins too).
         
         ImplementPositionControl<iCubSimulationControl, IPositionControl>::uninitialize ();
-        ImplementVelocityControl<iCubSimulationControl, IVelocityControl>::uninitialize();
+        ImplementVelocityControl2::uninitialize();
+        ImplementTorqueControl::uninitialize();
         ImplementPidControl<iCubSimulationControl, IPidControl>::uninitialize();
         ImplementEncodersTimed::uninitialize();
         ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::uninitialize();
         ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>::uninitialize();
         ImplementControlLimits2::uninitialize();
+        ImplementControlMode2::uninitialize();
+        ImplementInteractionMode::uninitialize();
+        ImplementPositionDirect::uninitialize();
     }
 
     checkAndDestroy<double>(current_pos);
@@ -280,6 +289,7 @@ bool iCubSimulationControl::close (void)
     checkAndDestroy<double>(zeros);
     checkAndDestroy<double>(newtonsToSensor);
     checkAndDestroy<int>(controlMode);
+    checkAndDestroy<int>(interactionMode);
     checkAndDestroy<double>(limitsMin);
     checkAndDestroy<double>(limitsMax);
     checkAndDestroy<int>(axisMap);
@@ -323,7 +333,7 @@ void iCubSimulationControl::jointStep() {
                 else{
                     ctrl.setVelocity(next_vel[axis]);
                 }
-            } else if (controlMode[axis]==MODE_POSITION || controlMode[axis]==MODE_IMPEDANCE_POS) {
+            } else if (controlMode[axis]==MODE_POSITION || controlMode[axis]==VOCAB_CM_POSITION_DIRECT || controlMode[axis]==MODE_IMPEDANCE_POS) {
                 ctrl.setControlParameters(vels[axis],1);
                 ctrl.setPosition(next_pos[axis]);
             } else if (controlMode[axis]==MODE_TORQUE) {
@@ -344,6 +354,7 @@ bool iCubSimulationControl::setPidRaw (int axis, const Pid &pid)
 {
    return NOT_YET_IMPLEMENTED("setPidRaw");
 }
+
 bool iCubSimulationControl::getPidRaw (int axis, Pid *out)
 {
    return NOT_YET_IMPLEMENTED("getPidRaw");
@@ -994,6 +1005,66 @@ bool iCubSimulationControl::getVelLimitsRaw(int axis, double *min, double *max)
     return NOT_YET_IMPLEMENTED("getVelLimitsRaw");
 }
 
+bool iCubSimulationControl::velocityMoveRaw(const int n_joint, const int *joints, const double *spds)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && velocityMoveRaw(joints[j], spds[j]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && setRefAccelerationRaw(joints[j], accs[j]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && getRefAccelerationRaw(joints[j], &accs[j]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::stopRaw(const int n_joint, const int *joints)
+{
+    bool ret = true;
+    for(int j=0; j<n_joint; j++)
+    {
+        ret = ret && stopRaw(joints[j]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::setVelPidRaw(int j, const yarp::dev::Pid &pid)
+{
+    return NOT_YET_IMPLEMENTED("setVelPidRaw");
+}
+
+bool iCubSimulationControl::setVelPidsRaw(const yarp::dev::Pid *pids)
+{
+    return NOT_YET_IMPLEMENTED("setVelPidsRaw");
+}
+
+bool iCubSimulationControl::getVelPidRaw(int j, yarp::dev::Pid *pid)
+{
+    return NOT_YET_IMPLEMENTED("getVelPidRaw");
+}
+
+bool iCubSimulationControl::getVelPidsRaw(yarp::dev::Pid *pids)
+{
+    return NOT_YET_IMPLEMENTED("getVelPidsRaw");
+}
+
 
 bool iCubSimulationControl::setTorqueModeRaw( )
 {
@@ -1210,76 +1281,306 @@ bool iCubSimulationControl::setOpenLoopModeRaw(int j)
         printf("setOpenLoopModeRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
     return false; 
 }
+
+int iCubSimulationControl::ControlModes_yarp2iCubSIM(int yarpMode)
+{
+    int ret = VOCAB_CM_UNKNOWN;
+    switch(yarpMode)
+    {
+        case VOCAB_CM_FORCE_IDLE:
+        case VOCAB_CM_IDLE:
+            ret = MODE_IDLE;
+            break;
+        case VOCAB_CM_POSITION:
+            ret = MODE_POSITION;
+            break;
+        case VOCAB_CM_VELOCITY:
+            ret = MODE_VELOCITY;
+            break;
+        case VOCAB_CM_TORQUE:
+            ret = MODE_TORQUE;
+            break;
+        case VOCAB_CM_IMPEDANCE_POS:
+            ret = MODE_IMPEDANCE_POS;
+            break;
+        case VOCAB_CM_IMPEDANCE_VEL:
+            ret = MODE_IMPEDANCE_VEL;
+            break;
+        case VOCAB_CM_OPENLOOP:
+            ret = MODE_OPENLOOP;
+            break;
+
+        // for new modes I´ll use directly the vocabs, so they are the same
+        case VOCAB_CM_MIXED:
+        case VOCAB_CM_POSITION_DIRECT:
+        case VOCAB_CM_HW_FAULT:
+        case VOCAB_CM_CALIBRATING:
+        case VOCAB_CM_CALIB_DONE:
+        case VOCAB_CM_NOT_CONFIGURED:
+        case VOCAB_CM_CONFIGURED:
+            ret = yarpMode;
+            break;
+
+        default:
+            ret = MODE_UNKNOWN;
+            break;
+    }
+    return ret;
+}
+
+int iCubSimulationControl::ControlModes_iCubSIM2yarp(int iCubMode)
+{
+    int ret = VOCAB_CM_UNKNOWN;
+    switch(iCubMode)
+    {
+        case MODE_IDLE:
+            ret=VOCAB_CM_IDLE;
+            break;
+        case MODE_POSITION:
+            ret=VOCAB_CM_POSITION;
+            break;
+        case MODE_VELOCITY:
+            ret=VOCAB_CM_VELOCITY;
+            break;
+        case MODE_TORQUE:
+            ret=VOCAB_CM_TORQUE;
+            break;
+        case MODE_IMPEDANCE_POS:
+            ret=VOCAB_CM_IMPEDANCE_POS;
+            break;
+        case MODE_IMPEDANCE_VEL:
+            ret=VOCAB_CM_IMPEDANCE_VEL;
+            break;
+        case MODE_OPENLOOP:
+            ret=VOCAB_CM_OPENLOOP;
+            break;
+
+        // for new modes I´ll use directly the vocabs, so they are the same
+        case MODE_MIXED:
+        case MODE_HW_FAULT:
+        case VOCAB_CM_POSITION_DIRECT:
+        case MODE_CALIBRATING:
+        case MODE_CALIB_DONE:
+        case MODE_NOT_CONFIGURED:
+        case MODE_CONFIGURED:
+            ret = iCubMode;
+            break;
+
+        default:
+            ret=VOCAB_CM_UNKNOWN;
+            break;
+    }
+    return ret;
+}
+
 bool iCubSimulationControl::getControlModeRaw(int j, int *mode)
 {    
     if( (j >=0) && (j < njoints)) {
         _mutex.wait();
-        switch (controlMode[j])
-        {
-            case MODE_IDLE:
-                *mode=VOCAB_CM_IDLE;
-                break;
-            case MODE_POSITION:
-                *mode=VOCAB_CM_POSITION;
-                break;
-            case MODE_VELOCITY:
-                *mode=VOCAB_CM_VELOCITY;
-                break;
-            case MODE_TORQUE:
-                *mode=VOCAB_CM_TORQUE;
-                break;
-            case MODE_IMPEDANCE_POS:
-                *mode=VOCAB_CM_IMPEDANCE_POS;
-                break;
-            case MODE_IMPEDANCE_VEL:
-                *mode=VOCAB_CM_IMPEDANCE_VEL;
-                break;
-            case MODE_OPENLOOP:
-                *mode=VOCAB_CM_OPENLOOP;
-                break;
-            default:
-                *mode=VOCAB_CM_UNKNOWN;
-                break;
-        }
-         _mutex.post();
-         return true;
+        *mode = ControlModes_iCubSIM2yarp(controlMode[j]);
+        _mutex.post();
+        return true;
     }
     if (verbosity)
         printf("getControlModeRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
     return false; 
 }
+
 bool iCubSimulationControl::getControlModesRaw(int* modes)
 {
    _mutex.wait();
     for(int axis = 0;axis<njoints;axis++)
-        switch (controlMode[axis])
-        {
-            case MODE_IDLE:
-                modes[axis]=VOCAB_CM_IDLE;
-                break;
-            case MODE_POSITION:
-                modes[axis]=VOCAB_CM_POSITION;
-                break;
-            case MODE_VELOCITY:
-                modes[axis]=VOCAB_CM_VELOCITY;
-                break;
-            case MODE_TORQUE:
-                modes[axis]=VOCAB_CM_TORQUE;
-                break;
-            case MODE_IMPEDANCE_POS:
-                modes[axis]=VOCAB_CM_IMPEDANCE_POS;
-                break;
-            case MODE_IMPEDANCE_VEL:
-                modes[axis]=VOCAB_CM_IMPEDANCE_VEL;
-                break;
-            case MODE_OPENLOOP:
-                modes[axis]=VOCAB_CM_OPENLOOP;
-                break;
-            default:
-                modes[axis]=VOCAB_CM_UNKNOWN;
-                break;
-        }
+        modes[axis] = ControlModes_iCubSIM2yarp(controlMode[axis]);
     _mutex.post();
     return true;
 }
 
+/////// Control Mode2 Interface
+bool iCubSimulationControl::getControlModesRaw(const int n_joint, const int *joints, int *modes)
+{
+    bool ret = true;
+    for(int idx=0; idx< n_joint; idx++)
+        ret = ret && getControlModeRaw(joints[idx], &modes[idx]);
+    return ret;
+}
+
+bool iCubSimulationControl::setControlModeRaw(const int j, const int mode)
+{
+    int tmp;
+    if( (j >=0) && (j < njoints) )
+    {
+        tmp = ControlModes_yarp2iCubSIM(mode);
+        if(tmp == MODE_UNKNOWN)
+        {
+            std::cout << "setControlModeRaw: unknown control mode " << yarp::os::Vocab::decode(mode) << std::endl;
+        }
+        else
+        {
+            _mutex.wait();
+            controlMode[j] = ControlModes_yarp2iCubSIM(mode);
+            _mutex.post();
+        }
+       return true;
+    }
+    if (verbosity)
+        printf("setControlModeRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
+    return false;
+}
+
+bool iCubSimulationControl::setControlModesRaw(const int n_joint, const int *joints, int *modes)
+{
+    bool ret = true;
+    for(int idx=0; idx<n_joint; idx++)
+    {
+        ret = ret && setControlModeRaw(joints[idx], modes[idx]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::setControlModesRaw(int *modes)
+{
+    bool ret = true;
+    for(int j=0; j<njoints; j++)
+    {
+        ret = ret && setControlModeRaw(j, modes[j]);
+    }
+    return ret;
+}
+
+/////// InteractionMode
+bool iCubSimulationControl::getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode)
+{
+    *mode = (yarp::dev::InteractionModeEnum) interactionMode[axis];
+    return true;
+}
+
+bool iCubSimulationControl::getInteractionModesRaw(int n_joints, int *__joints, yarp::dev::InteractionModeEnum* modes)
+{
+    bool ret = true;
+    for(int idx=0; idx<n_joints; idx++)
+    {
+        ret = ret && getInteractionModeRaw(__joints[idx], &modes[idx]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    bool ret = true;
+    for(int j=0; j<njoints; j++)
+    {
+        ret = ret && getInteractionModeRaw(j, &modes[j]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode)
+{
+    interactionMode[axis] = (int)mode;
+    return true;
+}
+
+bool iCubSimulationControl::setInteractionModesRaw(int n_joints, int *__joints, yarp::dev::InteractionModeEnum* modes)
+{
+    bool ret = true;
+    for(int idx=0; idx<n_joints; idx++)
+    {
+        ret = ret && setInteractionModeRaw(__joints[idx], modes[idx]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
+{
+    bool ret = true;
+    for(int j=0; j<njoints; j++)
+    {
+        ret = ret && setInteractionModeRaw(j, modes[j]);
+    }
+    return ret;
+}
+
+// Position direct interface
+bool iCubSimulationControl::setPositionDirectModeRaw()
+{
+    bool ret = true;
+    for(int j=0; j<njoints; j++)
+    {
+        ret = ret && setControlModeRaw(j, VOCAB_POSITION_DIRECT);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::setPositionRaw(int axis, double ref)
+{
+    // This function has been copy pasted from positionMoveRaw
+    if( (axis >=0) && (axis<njoints) )
+    {
+        _mutex.wait();
+        if(ref< limitsMin[axis])
+        {
+            if (njoints == 16)
+            {
+                if ( axis == 7 )
+                    next_pos[axis] = limitsMax[axis];
+            }
+            else
+                next_pos[axis] = limitsMin[axis];
+        }
+        else if(ref > limitsMax[axis])
+        {
+            if (njoints == 16)
+            {
+                if ( axis == 7 )
+                    next_pos[axis] = fabs(limitsMax[axis] - limitsMax[axis]);
+            }
+            else
+                next_pos[axis] = limitsMax[axis];
+        }
+        else
+        {
+            if (njoints == 16)
+            {
+                if ( axis == 10 ||  axis == 12 || axis == 14 )
+                    next_pos[axis] = ref/2;
+                else if ( axis == 15 )
+                    next_pos[axis] = ref/3;
+                else if ( axis == 7 )
+                    next_pos[axis] = fabs(limitsMax[axis] - ref);
+                else
+                    next_pos[axis] = ref;
+            }else
+                next_pos[axis] = ref;
+        }
+
+        motor_on[axis]=true;
+
+        if (verbosity)
+            printf("moving joint %d of part %d to pos %f (pos direct)\n",axis, partSelec, next_pos[axis]);
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        printf("setPositionRaw joint access too high %d \n",axis);
+    return false;
+}
+
+bool iCubSimulationControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
+{
+    bool ret = true;
+    for(int i=0; i<n_joint; i++)
+    {
+        ret = ret && setPositionRaw(joints[i], refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::setPositionsRaw(const double *refs)
+{
+    bool ret = true;
+    for(int j=0; j<njoints; j++)
+    {
+        ret = ret && setPositionRaw(j, refs[j]);
+    }
+    return ret;
+}

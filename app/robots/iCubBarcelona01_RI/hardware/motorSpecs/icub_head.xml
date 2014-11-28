@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+<devices>      
+  <device name="head_mspecs" type="motorspecifications">  
+      <group name="DEVICE">
+          <param name="rel_candevice">head_mc</param> <!-- This is the name of the device in which there are the encoder, joints and pids -->
+      </group>
+  </device>    
+</devices>     
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 

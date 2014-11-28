@@ -401,19 +401,17 @@ struct firmware_info
 
     inline void print_info()
     {
-        fprintf(stderr,"%s [%d] joint: %d can_address: %2d ",network_name.c_str(),network_number,joint,board_can_id);
-        
         if (board_type==0)
         {
-            fprintf(stderr,"Unable to detect firmware version. Old firmware running?");
+            yWarning("%s [%d] joint: %d can_address: %2d Unable to detect firmware version. Old firmware running?",network_name.c_str(),network_number,joint,board_can_id);
         }
         else
         {
-           if (board_type==BOARD_TYPE_4DC) fprintf(stderr,"board type: 3 (4DC) ");
-           if (board_type==BOARD_TYPE_BLL) fprintf(stderr,"board type: 4 (BLL) ");
-           fprintf(stderr,"version:%2x.%2x build:%3d CAN_protocol:%d.%d", fw_major, fw_version, fw_build,can_protocol.major,can_protocol.minor);
+           if (board_type==BOARD_TYPE_4DC)
+           {yWarning("%s [%d] joint: %d can_address: %2d board type: 3 (4DC) version:%2x.%2x build:%3d CAN_protocol:%d.%d", network_name.c_str(),network_number,joint,board_can_id, fw_major, fw_version, fw_build,can_protocol.major,can_protocol.minor);}
+           if (board_type==BOARD_TYPE_BLL)
+           {yWarning("%s [%d] joint: %d can_address: %2d board type: 4 (BLL) version:%2x.%2x build:%3d CAN_protocol:%d.%d", network_name.c_str(),network_number,joint,board_can_id, fw_major, fw_version, fw_build,can_protocol.major,can_protocol.minor);}
         }
-        fprintf(stderr,"\n");
     }
 
 };
@@ -490,61 +488,61 @@ class firmwareVersionHelper
     }
     inline void printFirmwareVersions()
     {
-        fprintf(stderr,"\n");
-        fprintf(stderr,"**********************************\n");
-        fprintf(stderr,"iCubInterface CAN protocol: %d.%d\n",icub_protocol.major,icub_protocol.minor);
-        fprintf(stderr,"Firmware report:\n");
+        yInfo("\n");
+        yInfo("**********************************\n");
+        yInfo("iCubInterface CAN protocol: %d.%d\n",icub_protocol.major,icub_protocol.minor);
+        yInfo("Firmware report:\n");
         for (int j=0; j<jointsNum; j++)
         {
             infos[j].print_info();
         }
-        fprintf(stderr,"**********************************\n");
-        fprintf(stderr,"\n");
+        yInfo("**********************************\n");
+        yInfo("\n");
     }
     inline void printMessagePleaseUpgradeFirmware()
     {
-        fprintf(stderr,"\n");
-        fprintf(stderr,"###################################################################################\n");
-        fprintf(stderr,"###################################################################################\n");
-        fprintf(stderr,"\n");
-        fprintf(stderr,"  iCubInterface detected that your control boards are not running the latest\n");
-        fprintf(stderr,"  available firmware version, altought it is still compatible with it.\n");
-        fprintf(stderr,"  Upgrading your iCub firmware is highly recommended.\n");
-        fprintf(stderr,"  For further information please visit: http://wiki.icub.org/wiki/Firmware\n");
-        fprintf(stderr,"\n");
-        fprintf(stderr,"###################################################################################\n");
-        fprintf(stderr,"###################################################################################\n");
-        fprintf(stderr,"\n");
+        yWarning("\n");
+        yWarning("###################################################################################\n");
+        yWarning("###################################################################################\n");
+        yWarning("\n");
+        yWarning("  iCubInterface detected that your control boards are not running the latest\n");
+        yWarning("  available firmware version, although it is still compatible with it.\n");
+        yWarning("  Upgrading your iCub firmware to build %d is highly recommended.\n", LAST_BLL_BUILD);
+        yWarning("  For further information please visit: http://wiki.icub.org/wiki/Firmware\n");
+        yWarning("\n");
+        yWarning("###################################################################################\n");
+        yWarning("###################################################################################\n");
+        yWarning("\n");
     }
     inline void printMessagePleaseUpgradeiCub()
     {
-        fprintf(stderr,"\n");
-        fprintf(stderr,"#################################################################################################\n");
-        fprintf(stderr,"#################################################################################################\n");
-        fprintf(stderr,"\n");
-        fprintf(stderr,"  iCubInterface detected that your control boards are running a firmware version\n");
-        fprintf(stderr,"  which is newer than the recommended version, although it is still compatible with it.\n");
-        fprintf(stderr,"  It may also be that you are running an experimental firmware version. \n");
-        fprintf(stderr,"  An update of Yarp/iCub SW is recommended. Proceed only if you are aware of what you are doing.\n");
-        fprintf(stderr,"\n");
-        fprintf(stderr,"#################################################################################################\n");
-        fprintf(stderr,"#################################################################################################\n");
-        fprintf(stderr,"\n");
+        yWarning("\n");
+        yWarning("#################################################################################################\n");
+        yWarning("#################################################################################################\n");
+        yWarning("\n");
+        yWarning("  iCubInterface detected that your control boards are running a firmware version\n");
+        yWarning("  which is newer than the recommended version (build %d), although it is still compatible with it.\n", LAST_BLL_BUILD);
+        yWarning("  It may also be that you are running an experimental firmware version. \n");
+        yWarning("  An update of Yarp/iCub SW is recommended. Proceed only if you are aware of what you are doing.\n");
+        yWarning("\n");
+        yWarning("#################################################################################################\n");
+        yWarning("#################################################################################################\n");
+        yWarning("\n");
     }
     inline void printMessageSevereError()
     {
-        fprintf(stderr,"\n");
-        fprintf(stderr,"###################################################################################\n");
-        fprintf(stderr,"###################################################################################\n");
-        fprintf(stderr,"\n");
-        fprintf(stderr,"  It has been detected that your control boards are not using the same\n");
-        fprintf(stderr,"  CAN protocol used by iCubinterface. iCubInterface cannot continue.\n");
-        fprintf(stderr,"  Please update your system (iCubInterface and/or your control board firmware.\n");
-        fprintf(stderr,"  For further information please visit: http://wiki.icub.org/wiki/Firmware\n");
-        fprintf(stderr,"\n");
-        fprintf(stderr,"###################################################################################\n");
-        fprintf(stderr,"###################################################################################\n");
-        fprintf(stderr,"\n");
+        yError("\n");
+        yError("###################################################################################\n");
+        yError("###################################################################################\n");
+        yError("\n");
+        yError("  It has been detected that your control boards are not using the same\n");
+        yError("  CAN protocol used by iCubinterface. iCubInterface cannot continue.\n");
+        yError("  Please update your system (iCubInterface and/or your control board firmware.\n");
+        yError("  For further information please visit: http://wiki.icub.org/wiki/Firmware\n");
+        yError("\n");
+        yError("###################################################################################\n");
+        yError("###################################################################################\n");
+        yError("\n");
     }
     inline ~firmwareVersionHelper()
     {
@@ -658,7 +656,7 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ITorqueControlRaw,
             public IImpedanceControlRaw,
             public IOpenLoopControlRaw,
-            public IControlModeRaw,
+            public IControlMode2Raw,
             public IPreciselyTimed,
             public ImplementPositionControl2,
             public ImplementPositionDirect,
@@ -673,8 +671,10 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementTorqueControl,
             public ImplementImpedanceControl,
             public ImplementOpenLoopControl,
-            public ImplementControlMode,
+            public ImplementControlMode2,
             public ImplementDebugInterface,
+            public IInteractionModeRaw,
+            public ImplementInteractionMode,
             public IFactoryInterface,
             public IClientLogger
 {
@@ -790,8 +790,8 @@ public:
     virtual bool setErrorLimitsRaw(const double *limits);
     virtual bool getErrorRaw(int j, double *err);
     virtual bool getErrorsRaw(double *errs);
-    virtual bool getOutputRaw(int j, double *out);
-    virtual bool getOutputsRaw(double *outs);
+//    virtual bool getOutputRaw(int j, double *out);    // also in the openloop interface
+//    virtual bool getOutputsRaw(double *outs);         // also in the openloop interface
     virtual bool getPidRaw(int j, Pid *pid);
     virtual bool getPidsRaw(Pid *pids);
     virtual bool getReferenceRaw(int j, double *ref);
@@ -885,15 +885,23 @@ public:
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int* v);
 
+    // ControlMode 2
+    virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModeRaw(const int j, const int mode);
+    virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes);
+    virtual bool setControlModesRaw(int *modes);
+
+
     ///////////// OpenLoop control interface raw
     ///
     virtual bool setOpenLoopModeRaw();
-    virtual bool setOutputRaw(int axis, double v);
-    virtual bool setOutputsRaw(const double *v);
-    //virtual bool getOutputRaw(int j, double *out); //already in PID interface
-    //virtual bool getOutputsRaw(double *outs);      //already in PID interface
-    //
-    /////////////////////////////// END Velocity Control INTERFACE
+    virtual bool setRefOutputRaw(int axis, double v);
+    virtual bool setRefOutputsRaw(const double *v);
+    virtual bool getRefOutputRaw(int j, double *out);
+    virtual bool getRefOutputsRaw(double *outs);
+    virtual bool getOutputRaw(int j, double *out);
+    virtual bool getOutputsRaw(double *outs);
+    /////////////////////////////// END OpenLoop Control INTERFACE
 
     ///////////// Velocity control interface raw
     ///
@@ -1004,9 +1012,18 @@ public:
     bool setTorqueSource (int axis, char board_id, char board_chan );
 
     // PositionDirect Interface
+    bool setPositionDirectModeRaw();
     bool setPositionRaw(int j, double ref);
     bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     bool setPositionsRaw(const double *refs);
+
+    // InteractionMode interface
+    bool getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode);
+    bool getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    bool getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+    bool setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode);
+    bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
 
 protected:
     bool setBCastMessages (int axis, unsigned int v);
@@ -1056,6 +1073,11 @@ protected:
     firmwareVersionHelper *_firmwareVersionHelper;
     speedEstimationHelper *_speedEstimationHelper;
     axisPositionDirectHelper  *_axisPositionDirectHelper;
+
+    inline unsigned char from_modevocab_to_modeint (int modevocab);
+    inline int from_modeint_to_modevocab (unsigned char modeint);
+    inline unsigned char from_interactionvocab_to_interactionint (int interactionvocab);
+    inline int from_interactionint_to_interactionvocab (unsigned char interactionint);
 
     // internal stuff.
     double *_ref_speeds;        // used for position control.

@@ -67,7 +67,7 @@ public:
     bool getKinematicOffsets(const string &obj_name, Vector *kinematic_offset);
     bool setKinematicOffset(const string &obj_name, const Vector *kinematic_offset);
     bool getTableHeight(double &table_height);
-    bool setTableHeight(const double &table_height);
+    bool setTableHeight(const double table_height);
     bool setAction(const string &act_name, const Bottle *trajectory);
     bool getAction(const string &act_name, Bottle *trajectory);
 

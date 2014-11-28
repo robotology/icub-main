@@ -94,6 +94,10 @@ static double fov_left;
 static double fov_right;
 
 
+static int cameraSizeWidth;
+static int cameraSizeHeight;
+
+
 // # of touch sensors
 #define N_TOUCH_SENSORS 12
 // allocate feedback structs as a static array. We don't allocate feedback structs 
@@ -451,7 +455,7 @@ void OdeSdlSimulation::inspectBodyTouch_icubSensors(Bottle& reportLeft, Bottle& 
         for (int x = 0; x < 6; x++){
             if (boolean){
                 resultLeft = odeinit._iCub->checkTouchSensor( indicesLeft[x] );
-                resultRight = odeinit._iCub->checkTouchSensor( indicesLeft[x] );
+                resultRight = odeinit._iCub->checkTouchSensor( indicesRight[x] );
             }
             else{
                 resultLeft = odeinit._iCub->checkTouchSensor_continuousValued( indicesLeft[x] );
@@ -1022,7 +1026,7 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     OdeInit& odeinit = OdeInit::get();
     const dReal *pos;
     const dReal *rot;
-    glViewport(0,0,320,240);
+    glViewport(0,0,cameraSizeWidth,cameraSizeHeight);
     glMatrixMode (GL_PROJECTION);
     
     if (left){
@@ -1063,7 +1067,7 @@ void OdeSdlSimulation::drawView(bool left, bool right, bool wide) {
     }	
     if (wide){
         glLoadIdentity();
-        gluPerspective( 55.8, (float) 320/240, 0.04, 100.0 );//here nothing to do with cameras
+        gluPerspective( 55.8, (float) cameraSizeWidth/cameraSizeHeight, 0.04, 100.0 );//here nothing to do with cameras
         glMatrixMode (GL_MODELVIEW);
         glLoadIdentity();
         glLightfv(GL_LIGHT0, GL_POSITION, light_position);
@@ -1129,6 +1133,9 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
     width_left=bCalibLeft.check("w",Value(320)).asInt();
     height_left=bCalibLeft.check("h",Value(240)).asInt();
 
+    cameraSizeWidth=width_left;
+    cameraSizeHeight=height_left;
+
     double focal_length_left=bCalibLeft.check("fy",Value(257.34)).asDouble();
     fov_left=2*atan2((double)height_left,2*focal_length_left)*180.0/M_PI;
 
@@ -1179,11 +1186,11 @@ bool OdeSdlSimulation::getTrqData(Bottle data) {
 
 
 bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
-    int w = 320;
-    int h = 240;
-    int p = 3;//320 240
+    int w = cameraSizeWidth;
+    int h = cameraSizeHeight;
+    int p = 3;
 
-    char buf[ 320 * 240 * 3 ];
+    char *buf=new char[w * h * p];
     glReadPixels( 0, 0, w, h, GL_RGB, GL_UNSIGNED_BYTE, buf);
     ImageOf<PixelRgb> img;
     img.setQuantum(1);
@@ -1199,5 +1206,6 @@ bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
         }
     }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    delete[] buf;
     return true;
 }

@@ -10,7 +10,7 @@ public:
 
   virtual int32_t get_answer();
   virtual bool set_answer(const int32_t rightAnswer);
-  virtual int32_t add_one(const int32_t x);
+  virtual int32_t add_int(const int32_t x);
   virtual bool start();
   virtual bool stop();
   virtual bool is_running();

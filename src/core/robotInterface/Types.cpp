@@ -13,7 +13,7 @@
 #include <sstream>
 
 
-#include <debugStream/Debug.h>
+#include <yarp/os/LogStream.h>
 
 
 bool RobotInterface::hasParam(const RobotInterface::ParamList &list, const std::string& name)
@@ -75,7 +75,7 @@ RobotInterface::ParamList RobotInterface::mergeDuplicateGroups(const RobotInterf
                 }
                 param1.value() += std::string(" ");
                 param1.value() += param2.value();
-                params.erase(it2);
+                it2 = params.erase(it2);
             }
             else it2++;
         }

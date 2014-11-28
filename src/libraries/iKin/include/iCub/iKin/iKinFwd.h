@@ -33,7 +33,11 @@
  *   href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>.
  *  
  * \note <b>If you're going to use iKin for your work, please
- *       quote it within any resulting publication</b>.
+ *       quote it within any resulting publication</b>: <i>
+ *       Pattacini U., Modular Cartesian Controllers for
+ *       Humanoid Robots: Design and Implementation on the iCub,
+ *       Ph.D. Dissertation, RBCS, Istituto Italiano di
+ *       Tecnologia, 2011</i>.
  *  
  * \author Ugo Pattacini 
  *  
@@ -881,7 +885,7 @@ protected:
     std::string           type;
     bool                  configured;
 
-    virtual void getMatrixFromProperties(yarp::os::Property &options,
+    virtual void getMatrixFromProperties(const yarp::os::Property &options,
                                          const std::string &tag, yarp::sig::Matrix &H);
     virtual void setMatrixToProperties(yarp::os::Property &options,
                                        const std::string &tag, yarp::sig::Matrix &H);

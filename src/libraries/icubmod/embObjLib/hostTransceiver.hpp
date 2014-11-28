@@ -32,6 +32,10 @@
  **/
 
 
+
+#undef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ // if this macro is defined then ethManager sends pkts to ems even if they are empty
+
+
 // - external dependencies --------------------------------------------------------------------------------------------
 
 #include "FeatureInterface.h"
@@ -43,10 +47,7 @@
 #include "EOnv.h"
 #include "EOpacket.h"
 #include "EoProtocol.h"
-
-// Boards configurations
-
-
+#include "EOprotocolConfigurator.h"
 
 
 #include <yarp/os/Semaphore.h>
@@ -54,15 +55,19 @@
 
 using namespace yarp::dev;
 
-//static yarp::os::Semaphore _all_transceivers_mutex = 1;
 
 // debug
-void checkDataForDebug(uint8_t *data, uint16_t size);
+//void checkDataForDebug(uint8_t *data, uint16_t size);
 
 class hostTransceiver
 {
+private:
+    enum { maxNumberOfROPloadingAttempts = 5 };
+    static const double delayAfterROPloadingFailure = 0.001; // 1ms
+
 protected:
-    eOprotBRD_t             protboardnumber;    // the number of board ranging from 0 upwards, in the format that the functions in EoProtocol.h expects. it is the same type as eOnvBRD_t 
+
+    eOprotBRD_t             protboardnumber;    // the number of board ranging from 0 upwards, in the format that the functions in EoProtocol.h expects.
     EOhostTransceiver       *hosttxrx;
     EOtransceiver           *pc104txrx;
     eOhosttransceiver_cfg_t hosttxrxcfg;
@@ -71,22 +76,22 @@ protected:
     uint32_t                remoteipaddr;
     uint16_t                ipport;
     EOpacket                *p_RxPkt;
+    uint16_t                pktsizerx;
+    EOprotocolConfigurator* protconfigurator;
+
+    eOmn_transceiver_properties_t remoteTransceiverProperties;  // contains properties of the transceiver of the remote board as read from xml file
+    eOmn_transceiver_properties_t localTransceiverProperties;   // contains properties of the transceiver here instantiated.
+                                                                // properties derive from remoteTransceiverProperties, from hosttxrxcfg and from elsewhere
 
 public:
+
     hostTransceiver();
     ~hostTransceiver();
 
-    yarp::os::Semaphore   transMutex;
 
-    bool init(yarp::os::Searchable &config, uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, FEAT_boardnumber_t board_n);
 
-    /*! This method add a Set type rop in the next ropframe.
-        Parameters are:
-        protid: unique network variable identifier given the board
-        data:  pointer to the data to be copied
-        ----
-        Note: size is calculated internally by getting Network Variable associated metadata
-        */
+    bool init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, FEAT_boardnumber_t board_n);
+
     bool addSetMessage(eOprotID32_t protid, uint8_t* data);
     bool addSetMessageWithSignature(eOprotID32_t protid, uint8_t* data, uint32_t sig);   //as above, but with signature
     bool addSetMessageAndCacheLocally(eOprotID32_t protid, uint8_t* data);
@@ -96,6 +101,9 @@ public:
         protid: unique network variable identifier given the board
         */
     bool addGetMessage(eOprotID32_t protid);
+
+    bool addGetMessageWithSignature(eOprotID32_t protid, uint32_t signature);
+
 
     /*! Read data from the transceiver internal memory.
         Parameters are:
@@ -110,32 +118,53 @@ public:
     // Set user data in the local memory, ready to be loaded by the load_occasional_rop method
     bool nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd);
 
-    // somebody passes the received packet
-    void SetReceived(uint8_t *data, uint16_t size);
-    // and Processes it
-    virtual void onMsgReception(uint8_t *data, uint16_t size);
+    int getCapacityOfRXpacket(void);
+
+    // pass and process the received packet
+    void onMsgReception(uint64_t *data, uint16_t size);
 
 protected:
+
     /* Ask the transceiver to get the ropframe to be sent
      * This pointer will be modified by the getPack function to point to the TX buffer.
      * No need to allocate memory here */
-    void getTransmit(uint8_t **data, uint16_t *size);
-private:
-    bool addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32_t signature, bool writelocalrxcache = false);
+    // the function returns true if the packet can be transmitted, false if not.
+    // if _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ is undefined, the function returns false also if there are no rops
+    // inside the ropframe. in such a way the macro _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ can have
+    // a scope that is local only to hostTransceiver.cpp
+    bool getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops);
 
-    bool initProtocol(yarp::os::Searchable &config);
+private:
+
+
+    bool lock_transceiver();
+    bool unlock_transceiver();
+    yarp::os::Semaphore *htmtx;
+
+
+    bool lock_nvs();
+    bool unlock_nvs();
+    yarp::os::Semaphore *nvmtx;
+
+
+    bool addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32_t signature, bool writelocalrxcache = false);
+    bool addGetMessage__(eOprotID32_t protid, uint32_t signature);
+
+    bool initProtocol(yarp::os::Searchable &cfgprotocol);
 
     void eoprot_override_mn(void);
     void eoprot_override_mc(void);
     void eoprot_override_as(void);
     void eoprot_override_sk(void); 
 
-    bool prepareTransceiverConfig(yarp::os::Searchable &config);
+    bool prepareTransceiverConfig(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol);
 
+    bool fillRemoteProperties(yarp::os::Searchable &cfgprotocol);
 
-    const eOnvset_DEVcfg_t * getNVset_DEVcfg(yarp::os::Searchable &config);  
+    const eOnvset_DEVcfg_t * getNVset_DEVcfg(yarp::os::Searchable &cfgprotocol);
 
 public:
+
     bool getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size);
     EOnv* getNVhandler(eOprotID32_t protid, EOnv* nv);
 

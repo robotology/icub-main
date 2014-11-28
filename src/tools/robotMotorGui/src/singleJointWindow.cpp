@@ -27,25 +27,8 @@
 const int UPDATE_TIME = 200;   //update time in ms
 #define DEBUG_GUI 0
 
-#ifndef VOCAB_CM_POSITION_DIRECT
-#define VOCAB_CM_POSITION_DIRECT VOCAB4('c','m','p','d')
-#else
-#warning "VOCAB_CM_POSITION_DIRECT already defined in yarp!"
-#endif
-
-#ifndef VOCAB_CM_MIXED
-#define VOCAB_CM_MIXED VOCAB4('c','m','m','x')
-#else
-#warning "VOCAB_CM_MIXED already defined in yarp!"
-#endif
-
-#ifndef VOCAB_CM_HW_FAULT 
-#define VOCAB_CM_HW_FAULT VOCAB4('c','m','f','a')
-#else
-#warning "VOCAB_CM_HW_FAULT already defined in yarp!"
-#endif
-
-
+extern bool position_direct_enabled;
+extern bool old_impedance_enabled;
 
 /*
  * Disable PID
@@ -58,9 +41,14 @@ void partMover::dis_click(GtkButton *button, gtkClassData* currentClassData)
   IEncoders *iiencs = currentPart->iencs;
   IAmplifierControl *iamp = currentPart->amp;
   IPidControl *ipid = currentPart->pid;
+  IControlMode2 *ictrl = currentPart->ctrlmode2;
 
-  ipid->disablePid(*joint);
-  iamp->disableAmp(*joint);
+  #if 0
+  ictrl->setControlMode(*joint,VOCAB_CM_IDLE);
+  #else
+  ictrl->setControlMode(*joint,VOCAB_CM_FORCE_IDLE);
+  #endif
+  
   return;
 }
 
@@ -206,14 +194,16 @@ void partMover::run_click(GtkButton *button, gtkClassData* currentClassData)
   IEncoders *iiencs = currentPart->iencs;
   IAmplifierControl *iamp = currentPart->amp;
   IPidControl *ipid = currentPart->pid;
+  IControlMode2 *ictrl = currentPart->ctrlmode2;
   GtkWidget **sliderAry = currentPart->sliderArray;
      
   double posJoint;
     
   while (!iiencs->getEncoder(*joint, &posJoint))
     Time::delay(0.001);
-  iamp->enableAmp(*joint);
-  ipid->enablePid(*joint);
+  
+  ictrl->setControlMode(*joint,VOCAB_CM_POSITION);
+
   gtk_range_set_value ((GtkRange *) (sliderAry[*joint]), posJoint);
   return;
 }
@@ -291,7 +281,8 @@ bool partMover::entry_update(partMover *currentPart)
 
   static int slowSwitcher = 0;
 
-  IControlMode     *ictrl = currentPart->ctrlmode;
+  IControlMode     *ictrl = currentPart->ctrlmode2;
+  IInteractionMode *iint  = currentPart->iinteract;
   IPositionControl  *ipos = currentPart->pos;
   IVelocityControl  *ivel = currentPart->iVel;
   IPositionDirect   *iDir = currentPart->iDir;
@@ -318,6 +309,8 @@ bool partMover::entry_update(partMover *currentPart)
   double min_torques[MAX_NUMBER_OF_JOINTS];
   static int controlModes[MAX_NUMBER_OF_JOINTS];
   static int controlModesOld[MAX_NUMBER_OF_JOINTS];
+  static yarp::dev::InteractionModeEnum interactionModes[MAX_NUMBER_OF_JOINTS];
+  static yarp::dev::InteractionModeEnum interactionModesOld[MAX_NUMBER_OF_JOINTS];
 
   int k;
   int NUMBER_OF_JOINTS=0;
@@ -387,8 +380,10 @@ bool partMover::entry_update(partMover *currentPart)
   // the new icubinterface does not increase the bandwidth consumption
   // ret = true; useless guys!
   ret=ictrl->getControlModes(controlModes);
-
   if (ret==false) fprintf(stderr,"ictrl->getControlMode failed\n" );
+  ret=iint->getInteractionModes(interactionModes);
+  if (ret==false) fprintf(stderr,"iint->getInteractionlMode failed\n" );
+
   for (k = 0; k < NUMBER_OF_JOINTS; k++)
   {
       if (currentPart->first_time==false && controlModes[k] == controlModesOld[k]) continue;
@@ -459,42 +454,64 @@ bool partMover::entry_update(partMover *currentPart)
                 gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
-          default:
           case VOCAB_CM_HW_FAULT:
               pColor=&color_fault_red;
               strcat(frame_title," (HARDWARE_FAULT)");
-                gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
+              gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
               gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider1[k]),"---");
               gtk_frame_set_label   (GTK_FRAME(currentPart->frame_slider2[k]),"---");
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
               break;
+         case VOCAB_CM_CALIBRATING:
+              pColor=&color_grey;
+              strcat(frame_title," (CALIBRATING)");
+              gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
+              gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
+          break;
+         case VOCAB_CM_CALIB_DONE:
+              pColor=&color_grey;
+              strcat(frame_title," (CALIB DONE)");
+              gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
+              gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
+          break;
+          case VOCAB_CM_NOT_CONFIGURED:
+              pColor=&color_grey;
+              strcat(frame_title," (NOT CONFIGURED)");
+              gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
+              gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
+          break;
+          case VOCAB_CM_CONFIGURED:
+              pColor=&color_grey;
+              strcat(frame_title," (CONFIGURED)");
+              gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
+              gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
+          break;
+          default:
           case VOCAB_CM_UNKNOWN:
               pColor=&color_grey;
-              //strcat(frame_title," (UNKNOWN)");
+              strcat(frame_title," (UNKNOWN)");
               gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
               gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
           break;
       }
-
-      //  pColor=&color_blue;
-      //  gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
-      
-      int curr_amp_status=0;
-      int amp_status[60];                             //fix this!!!
-      for (int i=0; i<60; i++) amp_status[i]=0;       //fix this!!!
-      iamp->getAmpStatus(amp_status);                 //fix this!!!
-      curr_amp_status=amp_status[k];                  //fix this!!!
-
-#if 0
-      if ((amp_status[k] & 0xFF)!=0)
+  }
+  for (k = 0; k < NUMBER_OF_JOINTS; k++)
+  {
+      if (currentPart->first_time==false && interactionModes[k] == interactionModesOld[k]) continue;
+      interactionModesOld[k]=interactionModes[k];
+      switch (interactionModes[k])
       {
-         //fprintf(stderr, "FAULT DETECTED: %x\n", curr_amp_status);
-         //pColor=&color_red;
-         //strcat(frame_title," (FAULT)");
-         //gtk_frame_set_label   (GTK_FRAME(currentPart->framesArray[k]),frame_title);
-         //gtk_widget_modify_bg (colorback[k], GTK_STATE_NORMAL, pColor);
+           case VOCAB_IM_STIFF:
+               gtk_widget_modify_base ((GtkWidget*)inEntry[k], GTK_STATE_NORMAL, &color_green);
+           break;
+           case VOCAB_IM_COMPLIANT:
+               gtk_widget_modify_base ((GtkWidget*)inEntry[k], GTK_STATE_NORMAL, &color_fault_red);
+           break;
+           default:
+           case VOCAB_CM_UNKNOWN:
+               gtk_widget_modify_base ((GtkWidget*)inEntry[k], GTK_STATE_NORMAL, &color_white);
+           break;
       }
-#endif
   }
 
   currentPart->first_time =false;
@@ -532,10 +549,13 @@ void partMover::sliderVel_release(GtkRange *range, gtkClassData* currentClassDat
   IPositionControl *ipos = currentPart->pos;
   IPositionDirect  *iDir = currentPart->iDir;
   GtkWidget **sliderAry = currentPart->sliderArray;
+  IControlMode     *iCtrl = currentPart->ctrlmode2;
+  int mode;
 
   double val = gtk_range_get_value(range);
   double posit = gtk_range_get_value((GtkRange *) sliderAry[*joint]);
   ipos->setRefSpeed(*joint, val);
+  iCtrl->getControlMode(*joint, &mode);
   ipos->positionMove(*joint, posit);
   return;
 }
@@ -559,16 +579,39 @@ void partMover::slider_release(GtkRange *range, gtkClassData* currentClassData)
   double val = gtk_range_get_value(range);
   double valVel = gtk_range_get_value((GtkRange *)sliderVel[*joint]);
 
+  IControlMode     *iCtrl = currentPart->ctrlmode2;
+  int mode;
+
+  iCtrl->getControlMode(*joint, &mode);
+
   if (!POS_UPDATE[*joint])
     {
-      if (1)
+      if( ( mode == VOCAB_CM_POSITION) || (mode == VOCAB_CM_MIXED) )
       {
          ipos->setRefSpeed(*joint, valVel);
          ipos->positionMove(*joint, val);
       }
+      else if( ( mode == VOCAB_CM_IMPEDANCE_POS))
+      {
+         fprintf(stderr, " using old 'impedance_position' mode, this control mode is deprecated!");
+         ipos->setRefSpeed(*joint, valVel);
+         ipos->positionMove(*joint, val);
+      }
+      else if ( mode == VOCAB_CM_POSITION_DIRECT)
+      {
+         if (position_direct_enabled)
+         {
+             iDir->setPosition(*joint, val);
+         }
+         else
+         {
+             fprintf(stderr, "You cannot send direct position commands without using --direct option!");
+         }
+
+      }
       else
       {
-         iDir->setPosition(*joint, val);
+          fprintf(stderr, "Joint not in position nor positionDirect so cannot send references");
       }
     }
   return;

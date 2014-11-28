@@ -66,6 +66,7 @@ part is the required part as specified with --part (see below).
     -   [set] j p: move joint j to p (degrees)
     -   [svel] j v: set maximum speed for joint j to v (deg/sec)
     -   [gain] j k: set gain for joint j to k
+    -   [help] to get this help
 
 Note: commands to the module through /robot/vc/part/input are not
 fast, use /robot/vc/part/fastCommand or /robot/vc/part/command instead.
@@ -137,31 +138,29 @@ public:
   
     virtual bool respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply)
     {
+        reply.clear(); 
         fprintf(stderr,"receiving command from port\n");
         int index = 0;
         int cmdSize = command.size();
     
         while(cmdSize>0)
             {
-                switch(command.get(index).asVocab())  {
-                case  VOCAB4('s','u','s','p'):
-                    {
+                switch(command.get(index).asVocab())
+                {
+                    case  VOCAB4('s','u','s','p'):
                         reply.addVocab(Vocab::encode("ack"));
                         vc->halt();
                         cmdSize--;
                         index++;
-                        break;
-                    }
-                case VOCAB3('r','u','n'):
-                    {
+                    break;
+                    case VOCAB3('r','u','n'):
                         reply.addVocab(Vocab::encode("ack"));
                         vc->go();
                         cmdSize--;
                         index++;
-                        break;
-                    }
-                case VOCAB3('s','e','t'):
-                    {
+                    break;
+                    //this set current position reference
+                    case VOCAB3('s','e','t'):
                         if (command.size()>=3)
                             {
                                 int i=command.get(index+1).asInt();
@@ -177,10 +176,9 @@ public:
                                 fprintf(stderr, "Invalid set message, ignoring\n");
                             }
                         reply.addVocab(Vocab::encode("ack"));
-                        break;
-                    }
-                case VOCAB4('s','v','e','l'):
-                    {
+                    break;
+                    //this set maximum velocity (limiter)
+                    case VOCAB4('s','v','e','l'):
                         if(command.size()>=3)
                             {
                                 int i=command.get(index+1).asInt();
@@ -197,10 +195,8 @@ public:
                                 fprintf(stderr,"Invalid set vel message, ignoring\n");
                                 reply.addVocab(Vocab::encode("fail"));
                             }
-                        break;
-                    }
-                case VOCAB4('g','a','i','n'):
-                    {
+                    break;
+                    case VOCAB4('g','a','i','n'):
                         if(command.size()>=3)
                             {
                                 int i=command.get(index+1).asInt();
@@ -217,14 +213,37 @@ public:
                                 fprintf(stderr,"Invalid set gain message, ignoring\n");
                                 reply.addVocab(Vocab::encode("fail"));
                             }
-                        break;
-                    }
-                default:
-                    {
-                        cmdSize--;
-                        index++;
-                        return respond(command, reply); // call default
-                    }
+                    break;
+                    case VOCAB4('h','e','l','p'):
+                        fprintf(stdout,"VelocityControl module, valid commands are:\n");
+                        fprintf(stdout,"-   [susp]         suspend the controller (command zero velocity)\n");
+                        fprintf(stdout,"-   [run]          start (and resume after being suspended) the controller\n");
+                        fprintf(stdout,"-   [quit]         quit the module (exit)\n");
+                        fprintf(stdout,"-   [set]  <j> <p> move joint j to p (degrees)\n");
+                        fprintf(stdout,"-   [svel] <j> <v> set maximum speed for joint j to v (deg/sec)\n");
+                        fprintf(stdout,"-   [gain] <j> <k> set P gain for joint j to k\n");
+                        fprintf(stdout,"-   [help] to get this help\n");
+                        fprintf(stdout,"\n typical commands:\n gain 0 10\n svel 0 10\n run\n set 0 x\n\n");
+                        
+                        reply.addVocab(Vocab::encode("many"));
+                        reply.addVocab(Vocab::encode("ack"));
+                        reply.addString("VelocityControl module, valid commands are:");
+                        reply.addString("-   [susp]         suspend the controller (command zero velocity)");
+                        reply.addString("-   [run]          start (and resume after being suspended) the controller");
+                        reply.addString("-   [quit]         quit the module (exit)");
+                        reply.addString("-   [set]  <j> <p> move joint j to p (degrees)");
+                        reply.addString("-   [svel] <j> <v> set maximum speed for joint j to v (deg/sec)");
+                        reply.addString("-   [gain] <j> <k> set P gain for joint j to k");
+                        reply.addString("-   [help] to get this help");
+                        reply.addString("\n typical commands:\n gain 0 10\n svel 0 10\n run\n set 0 x\n\n");
+                    break;
+                    default:
+                        fprintf(stderr,"Invalid command, ignoring\n");
+                        reply.addVocab(Vocab::encode("fail"));
+                        //cmdSize--;
+                        //index++;
+                        //return respond(command, reply); // call default
+                    break;
                 }
                 return true;
             }
@@ -329,7 +348,7 @@ int main(int argc, char *argv[])
     
     rf.configure(argc, argv);
     rf.setVerbose(true);
-    mod.configure(rf);
+    if (mod.configure(rf)==false) return -1;
     mod.runModule();
     fprintf(stderr, "Main returning\n");
     return 0;

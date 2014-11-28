@@ -72,7 +72,12 @@ MACRO(icub_export_library target)
   ##### Append target to global list.
   icub_set_property(GLOBAL APPEND PROPERTY ICUB_TARGETS ${target})
   # Install/export rules
-  install(TARGETS ${target} EXPORT icub-targets LIBRARY DESTINATION lib ARCHIVE DESTINATION lib COMPONENT Development)
+  install(TARGETS ${target}
+          EXPORT icub-targets
+          LIBRARY DESTINATION lib
+          ARCHIVE DESTINATION lib
+          RUNTIME DESTINATION bin
+          COMPONENT Development)
   if (MSVC) 
     install ( FILES ${CMAKE_BINARY_DIR}/lib/Debug/${target}d.pdb
               DESTINATION lib

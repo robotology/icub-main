@@ -17,6 +17,26 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
+/**
+*  @ingroup icub_hardware_modules
+*  \defgroup canbusanalogsensor canbusanalogsensor
+*
+* 
+* Driver for CAN communication with analog sensors.
+*
+* Parameters accepted in the config argument of the open method:
+* | Parameter name | Type   | Units | Default Value | Required | Description | Notes |
+* |:--------------:|:------:|:-----:|:-------------:|:--------:|:-----------:|:-----:|
+* | canbusDevice   | string | -     | - | Yes | Yarp device name of CAN Bus wrapper | - |
+* | physDevice     | string | -     | - | Yes | Yarp device name for the low level CAN device driver | - |
+* | canDeviceNum   | int    | -     | - | Yes | ID of the CAN Bus line | - | 
+* | canAddress     | int    | -     | - | Yes | CAN Bus Address for the sensor board | - | 
+* | format         | int    | bits  | - | Yes | Format (i.e. number of bits) of analog data transmitted on the CAN bus (16 for STRAIN board, 8 for MAIS board) | - | 
+* | period         | int    | ms    | - | Yes | Publication period (in ms) of the sensor reading on the Can Bus | - | 
+* | channels       | int    | -     | - | Yes | Number of output channels of the sensor (6 for STRAIN board, 16 for MAIS board) | - |
+* | useCalibration | int    | -     | - | No  | If useCalibration is present and set to 1, output the calibrated readings, otherwise output the raw values | - |
+*  
+*/
 class CanBusAnalogSensor : public RateThread, public yarp::dev::IAnalogSensor, public DeviceDriver 
 {
     enum AnalogDataFormat
@@ -52,7 +72,7 @@ protected:
     AnalogDataFormat   dataFormat;
     yarp::sig::Vector  data;
     yarp::sig::Vector  scaleFactor;
-    bool               useCalibration;
+    unsigned short     useCalibration;
 
 public:
     CanBusAnalogSensor(int period=20) : RateThread(period),mutex(1)

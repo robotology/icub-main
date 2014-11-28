@@ -16,6 +16,7 @@
  * Public License for more details
 */
 
+#include <cstdio>
 #include <algorithm>
 
 #include <iCub/solver.h>
@@ -31,8 +32,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
                        eyesTime(_eyesTime), minAbsVel(_minAbsVel),         period(_period),
                        Ts(_period/1000.0),  printAccTime(0.0)
 {
-    Robotable=(drvHead!=NULL);
-
     // Instantiate objects
     neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
     eyeL=new iCubEye(commData->head_version>1.0?"left_v2":"left");
@@ -59,75 +58,43 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
         getAlignHN(commData->rf_tweak,"ALIGN_KIN_RIGHT",eyeR->asChain());
     }
 
-    if (Robotable)
+    // read number of joints
+    if (drvTorso!=NULL)
     {
-        // read number of joints
-        if (drvTorso!=NULL)
-        {
-            IEncoders *encTorso; drvTorso->view(encTorso);
-            encTorso->getAxes(&nJointsTorso);
-        }
-        else
-            nJointsTorso=3;
-        
-        IEncoders *encHead; drvHead->view(encHead);
-        encHead->getAxes(&nJointsHead);
-
-        drvHead->view(modHead);
-        drvHead->view(posHead);
-        drvHead->view(velHead);
-
-        // if requested check if position control is available
-        if (neckPosCtrlOn)
-        {
-            bool posDirAvailable=drvHead->view(posNeck); 
-            bool vel2Available=drvHead->view(velEyes);
-            neckPosCtrlOn=posDirAvailable&&vel2Available;
-
-            printf("### neck control - requested POSITION mode: IPositionDirect [%s], IVelocityControl2 [%s] => %s mode selected\n",
-                   posDirAvailable?"yes":"no",vel2Available?"yes":"no",neckPosCtrlOn?"POSITION":"VELOCITY");
-        }
-        else
-            printf("### neck control - requested VELOCITY mode => VELOCITY mode selected\n");
-
-        // joints bounds alignment
-        lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
-
-        // read starting position
-        fbTorso.resize(nJointsTorso,0.0);
-        fbHead.resize(nJointsHead,0.0);
-
-        // exclude acceleration constraints by fixing
-        // thresholds at high values
-        Vector a_robHead(nJointsHead,1e9);
-        velHead->setRefAccelerations(a_robHead.data());
+        IEncoders *encTorso; drvTorso->view(encTorso);
+        encTorso->getAxes(&nJointsTorso);
     }
     else
-    {
         nJointsTorso=3;
-        nJointsHead =6;
+    
+    IEncoders *encHead; drvHead->view(encHead);
+    encHead->getAxes(&nJointsHead);
 
-        // apply tilt bounds to eyes
-        double min=std::max(CTRL_DEG2RAD*commData->eyeTiltMin,(*chainNeck)[nJointsTorso+3].getMin());
-        double max=std::min(CTRL_DEG2RAD*commData->eyeTiltMax,(*chainNeck)[nJointsTorso+3].getMax());
-        (*chainNeck)[nJointsTorso+3].setMin(min);
-        (*chainNeck)[nJointsTorso+3].setMax(max);
-        
-        // create bounds matrix for integrators
-        lim.resize(nJointsHead,2);
-        for (int i=0; i<nJointsHead-1; i++)
-        {
-            lim(i,0)=(*chainNeck)[nJointsTorso+i].getMin();
-            lim(i,1)=(*chainNeck)[nJointsTorso+i].getMax();
-        }
+    drvHead->view(modHead);
+    drvHead->view(posHead);
+    drvHead->view(velHead);
 
-        // vergence
-        lim(nJointsHead-1,0)=0.0;
-        lim(nJointsHead-1,1)=lim(nJointsHead-2,1);
-
-        fbTorso.resize(nJointsTorso,0.0);
-        fbHead.resize(nJointsHead,0.0);
+    // if requested check if position control is available
+    if (neckPosCtrlOn)
+    {
+        neckPosCtrlOn=drvHead->view(posNeck);
+        yInfo("### neck control - requested POSITION mode: IPositionDirect [%s] => %s mode selected",
+              neckPosCtrlOn?"available":"not available",neckPosCtrlOn?"POSITION":"VELOCITY");
     }
+    else
+        yInfo("### neck control - requested VELOCITY mode => VELOCITY mode selected");
+
+    // joints bounds alignment
+    lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
+
+    // read starting position
+    fbTorso.resize(nJointsTorso,0.0);
+    fbHead.resize(nJointsHead,0.0);
+
+    // exclude acceleration constraints by fixing
+    // thresholds at high values
+    Vector a_robHead(nJointsHead,1e9);
+    velHead->setRefAccelerations(a_robHead.data());
 
     copyJointsBounds(chainNeck,chainEyeL);
     copyJointsBounds(chainEyeL,chainEyeR);
@@ -138,11 +105,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
 
     // reinforce vergence min bound
     lim(nJointsHead-1,0)=commData->get_minAllowedVergence();
-
-    if (Robotable)
-        getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
-    else
-        fbHead[5]=commData->get_minAllowedVergence();
+    getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
 
     fbNeck=fbHead.subVector(0,2);
     fbEyes=fbHead.subVector(3,5);
@@ -177,7 +140,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData
     port_xd=NULL;
     ctrlActiveRisingEdgeTime=0.0;
     saccadeStartTime=0.0;
-    tiltDone=panDone=verDone=false;
     unplugCtrlEyes=false;
     ctrlInhibited=false;
 }
@@ -213,7 +175,7 @@ void Controller::findMinimumAllowedVergence()
         }
     }
 
-    printf("### computed minimum allowed vergence = %g [deg]\n",minVer*CTRL_RAD2DEG);
+    yInfo("### computed minimum allowed vergence = %g [deg]",minVer*CTRL_RAD2DEG);
     commData->get_minAllowedVergence()=minVer;
 }
 
@@ -231,14 +193,17 @@ void Controller::notifyEvent(const string &event, const double checkPoint)
 {
     if (port_event.getOutputCount()>0)
     {
-        Bottle bottle;
-        bottle.addString(event.c_str());
-        bottle.addDouble(q_stamp);
+        Bottle &ev=port_event.prepare();
+        ev.clear();
 
+        ev.addString(event.c_str());
+        ev.addDouble(q_stamp);
         if (checkPoint>=0.0)
-            bottle.addDouble(checkPoint);
+            ev.addDouble(checkPoint);
 
-        port_event.write(bottle);
+        txInfo_event.update(q_stamp);
+        port_event.setEnvelope(txInfo_event);
+        port_event.writeStrict();
     }
 }
 
@@ -277,21 +242,17 @@ void Controller::motionOngoingEventsFlush()
 /************************************************************************/
 void Controller::stopLimb(const bool execStopPosition)
 {
-    if (Robotable)
+    if (neckPosCtrlOn)
     {
-        // note: vel==0.0 is always achievable
-        if (neckPosCtrlOn)
-        {
-            if (execStopPosition)
-                for (size_t i=0; i<neckJoints.size(); i++) 
-                    posHead->stop(neckJoints[i]);
+        if (execStopPosition)
+            posHead->stop(neckJoints.size(),neckJoints.getFirst());
 
-            for (size_t i=0; i<eyesJoints.size(); i++)
-                velEyes->velocityMove(eyesJoints[i],0.0);
-        }
-        else for (int i=0; i<nJointsHead; i++)
-            velHead->velocityMove(i,0.0);        
+        // note: vel==0.0 is always achievable
+        velHead->velocityMove(eyesJoints.size(),eyesJoints.getFirst(),
+                              Vector(eyesJoints.size(),0.0).data());
     }
+    else
+        velHead->velocityMove(Vector(nJointsHead,0.0).data());        
 
     commData->get_isCtrlActive()=false;
 }
@@ -301,6 +262,14 @@ void Controller::stopLimb(const bool execStopPosition)
 void Controller::stopControl()
 {
     mutexRun.lock();
+    stopControlHelper();
+    mutexRun.unlock();
+}
+
+
+/************************************************************************/
+void Controller::stopControlHelper()
+{
     mutexCtrl.lock();
 
     if (commData->get_isCtrlActive())
@@ -312,7 +281,6 @@ void Controller::stopControl()
     }
 
     mutexCtrl.unlock();
-    mutexRun.unlock();
 }
 
 
@@ -324,7 +292,6 @@ void Controller::printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q,
     {
         printAccTime=0.0;
 
-        printf("\n");
         printf("norm(e)           = %g\n",norm(xd-fp));
         printf("Target fix. point = %s\n",xd.toString().c_str());
         printf("Actual fix. point = %s\n",fp.toString().c_str());
@@ -343,7 +310,7 @@ bool Controller::threadInit()
     port_q.open((commData->localStemName+"/q:o").c_str());
     port_event.open((commData->localStemName+"/events:o").c_str());
 
-    printf("Starting Controller at %d ms\n",period);
+    yInfo("Starting Controller at %d ms",period);
     q_stamp=Time::now();
 
     return true;
@@ -353,13 +320,15 @@ bool Controller::threadInit()
 /************************************************************************/
 void Controller::afterStart(bool s)
 {
-    s?printf("Controller started successfully\n"):
-      printf("Controller did not start\n");
+    if (s)
+        yInfo("Controller started successfully");
+    else
+        yError("Controller did not start!");
 }
 
 
 /************************************************************************/
-void Controller::doSaccade(Vector &ang, Vector &vel)
+void Controller::doSaccade(const Vector &ang, const Vector &vel)
 {
     mutexCtrl.lock();
     if (ctrlInhibited)
@@ -368,21 +337,16 @@ void Controller::doSaccade(Vector &ang, Vector &vel)
         return;
     }
 
-    posHead->setRefSpeed(eyesJoints[0],vel[0]);
-    posHead->setRefSpeed(eyesJoints[1],vel[1]);
-    posHead->setRefSpeed(eyesJoints[2],vel[2]);
+    posHead->setRefSpeeds(eyesJoints.size(),eyesJoints.getFirst(),vel.data());
 
     // enforce joints bounds
-    ang[0]=std::min(std::max(lim(eyesJoints[0],0),ang[0]),lim(eyesJoints[0],1));
-    ang[1]=std::min(std::max(lim(eyesJoints[1],0),ang[1]),lim(eyesJoints[1],1));
-    ang[2]=std::min(std::max(lim(eyesJoints[2],0),ang[2]),lim(eyesJoints[2],1));
-
-    posHead->positionMove(eyesJoints[0],CTRL_RAD2DEG*ang[0]);
-    posHead->positionMove(eyesJoints[1],CTRL_RAD2DEG*ang[1]);
-    posHead->positionMove(eyesJoints[2],CTRL_RAD2DEG*ang[2]);
+    Vector _ang(3);
+    _ang[0]=CTRL_RAD2DEG*std::min(std::max(lim(eyesJoints[0],0),ang[0]),lim(eyesJoints[0],1));
+    _ang[1]=CTRL_RAD2DEG*std::min(std::max(lim(eyesJoints[1],0),ang[1]),lim(eyesJoints[1],1));
+    _ang[2]=CTRL_RAD2DEG*std::min(std::max(lim(eyesJoints[2],0),ang[2]),lim(eyesJoints[2],1));
+    posHead->positionMove(eyesJoints.size(),eyesJoints.getFirst(),_ang.data());
 
     saccadeStartTime=Time::now();
-    tiltDone=panDone=verDone=false;
     commData->get_isSaccadeUnderway()=true;
     unplugCtrlEyes=true;
 
@@ -403,45 +367,80 @@ void Controller::resetCtrlEyes()
 
 
 /************************************************************************/
-bool Controller::areJointsHealthy()
+bool Controller::areJointsHealthyAndSet(VectorOf<int> &jointsToSet)
 {
     VectorOf<int> modes(nJointsHead);
     modHead->getControlModes(modes.getFirst());
     for (size_t i=0; i<modes.size(); i++)
-        if (modes[i]==VOCAB_CM_IDLE)
-            return false; 
+    {
+        if ((modes[i]==VOCAB_CM_HW_FAULT) || (modes[i]==VOCAB_CM_IDLE))
+            return false;
+        else if (i<3)
+        {
+            if (neckPosCtrlOn)
+            {
+                if (modes[i]!=VOCAB_CM_POSITION_DIRECT)
+                    jointsToSet.push_back(i);
+            }
+            else if (modes[i]!=VOCAB_CM_VELOCITY)
+                jointsToSet.push_back(i);
+        }
+        else if (modes[i]!=VOCAB_CM_MIXED)
+            jointsToSet.push_back(i);
+    }
 
     return true;
 }
 
 
 /************************************************************************/
-void Controller::run()
+void Controller::setJointsCtrlMode(const VectorOf<int> &jointsToSet)
 {
-    if (!areJointsHealthy())
-    {
-        stopControl();
-        port_xd->get_new()=false;
+    if (jointsToSet.size()==0)
         return;
+
+    VectorOf<int> modes;
+    for (size_t i=0; i<jointsToSet.size(); i++)
+    {
+        if (jointsToSet[i]<3)
+        {
+            if (neckPosCtrlOn)
+                modes.push_back(VOCAB_CM_POSITION_DIRECT);
+            else
+                modes.push_back(VOCAB_CM_VELOCITY);
+        }
+        else
+            modes.push_back(VOCAB_CM_MIXED);
     }
 
-    mutexRun.lock();
+    modHead->setControlModes(jointsToSet.size(),jointsToSet.getFirst(),
+                             modes.getFirst());
+}
+
+
+/************************************************************************/
+void Controller::run()
+{
+    LockGuard guard(mutexRun);
+
+    VectorOf<int> jointsToSet;
+    bool jointsHealthy=areJointsHealthyAndSet(jointsToSet);
+    if (!jointsHealthy)
+    {
+        stopControlHelper();
+        port_xd->get_new()=false;
+    }
+
     string event="none";
 
     // verify if any saccade is still underway
     mutexCtrl.lock();
     if (commData->get_isSaccadeUnderway() && (Time::now()-saccadeStartTime>=Ts))
     {
-        if (!tiltDone)
-            posHead->checkMotionDone(eyesJoints[0],&tiltDone);
+        bool done[3];
+        posHead->checkMotionDone(eyesJoints.size(),eyesJoints.getFirst(),done);
+        commData->get_isSaccadeUnderway()=!(done[0] && done[1] && done[2]);
 
-        if (!panDone)
-            posHead->checkMotionDone(eyesJoints[1],&panDone);
-
-        if (!verDone)
-            posHead->checkMotionDone(eyesJoints[2],&verDone);
-
-        commData->get_isSaccadeUnderway()=!(tiltDone&&panDone&&verDone);
         if (!commData->get_isSaccadeUnderway())
             notifyEvent("saccade-done");
     }
@@ -455,20 +454,15 @@ void Controller::run()
 
     // read feedbacks
     q_stamp=Time::now();
-    if (Robotable)
+    if (!getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData,&q_stamp))
     {
-        if (!getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData,&q_stamp))
-        {
-            printf("\nCommunication timeout detected!\n\n");
-            notifyEvent("comm-timeout");
-            suspend();
-
-            mutexRun.unlock();
-            return;
-        }
-
-        IntState->reset(fbHead);
+        yWarning("Communication timeout detected!");
+        notifyEvent("comm-timeout");
+        suspend();
+        return;
     }
+
+    IntState->reset(fbHead);
 
     fbNeck=fbHead.subVector(0,2);
     fbEyes=fbHead.subVector(3,5);
@@ -504,7 +498,7 @@ void Controller::run()
 
         port_xd->get_new()=false;
     }
-    else
+    else if (jointsHealthy)
     {
         // inhibition is cleared upon new target arrival
         if (ctrlInhibited)
@@ -536,7 +530,10 @@ void Controller::run()
     }
 
     if (event=="motion-onset")
+    {
+        setJointsCtrlMode(jointsToSet);
         q0deg=CTRL_RAD2DEG*fbHead;
+    }
 
     qd=new_qd;
     qdNeck=qd.subVector(0,2);
@@ -567,12 +564,9 @@ void Controller::run()
 
     // apply bang-bang just in case to compensate
     // for unachievable low velocities
-    if (Robotable)
-    {
-        for (size_t i=0; i<v.length(); i++)
-            if ((v[i]!=0.0) && (v[i]>-minAbsVel) && (v[i]<minAbsVel))
-                v[i]=iCub::ctrl::sign(qd[i]-fbHead[i])*minAbsVel;
-    }
+    for (size_t i=0; i<v.length(); i++)
+        if ((v[i]!=0.0) && (v[i]>-minAbsVel) && (v[i]<minAbsVel))
+            v[i]=iCub::ctrl::sign(qd[i]-fbHead[i])*minAbsVel;
 
     // convert to degrees
     mutexData.lock();
@@ -582,7 +576,7 @@ void Controller::run()
     mutexData.unlock();
 
     // send commands to the robot
-    if (Robotable && commData->get_isCtrlActive())
+    if (commData->get_isCtrlActive())
     {
         mutexCtrl.lock();
 
@@ -590,7 +584,7 @@ void Controller::run()
         {
             Vector posdeg=(CTRL_RAD2DEG)*IntPlan->get();
             posNeck->setPositions(neckJoints.size(),neckJoints.getFirst(),posdeg.data());
-            velEyes->velocityMove(eyesJoints.size(),eyesJoints.getFirst(),vdeg.subVector(3,5).data());
+            velHead->velocityMove(eyesJoints.size(),eyesJoints.getFirst(),vdeg.subVector(3,5).data());
         }
         else
             velHead->velocityMove(vdeg.data());
@@ -599,7 +593,8 @@ void Controller::run()
     }
 
     // print info
-    printIter(xd,x,qddeg,qdeg,vdeg,1.0);
+    if (commData->verbose)
+        printIter(xd,x,qddeg,qdeg,vdeg,1.0); 
 
     // send x,q through YARP ports
     Vector q(nJointsTorso+nJointsHead);
@@ -611,16 +606,18 @@ void Controller::run()
 
     txInfo_x.update(x_stamp);
     if (port_x.getOutputCount()>0)
-    {        
+    {
+        port_x.prepare()=x;
         port_x.setEnvelope(txInfo_x);
-        port_x.write(x);
+        port_x.write();
     }
 
     txInfo_q.update(q_stamp);
     if (port_q.getOutputCount()>0)
-    {        
+    {
+        port_q.prepare()=q;
         port_q.setEnvelope(txInfo_q);
-        port_q.write(q);
+        port_q.write();
     }
 
     // update pose information
@@ -661,8 +658,6 @@ void Controller::run()
     commData->set_q(fbHead);
     commData->set_torso(fbTorso);
     commData->set_v(v);
-
-    mutexRun.unlock();
 }
 
 
@@ -697,7 +692,7 @@ void Controller::suspend()
     RateThread::suspend();    
     stopLimb();
     commData->get_isSaccadeUnderway()=false;
-    printf("Controller has been suspended!\n");
+    yInfo("Controller has been suspended!");
     notifyEvent("suspended");
     mutexCtrl.unlock();
 }
@@ -706,15 +701,12 @@ void Controller::suspend()
 /************************************************************************/
 void Controller::resume()
 {
-    if (Robotable)
-    {
-        getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
-        fbNeck=fbHead.subVector(0,2);
-        fbEyes=fbHead.subVector(3,5);
-    }
+    getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
+    fbNeck=fbHead.subVector(0,2);
+    fbEyes=fbHead.subVector(3,5);
     
     RateThread::resume();
-    printf("Controller has been resumed!\n");
+    yInfo("Controller has been resumed!");
     notifyEvent("resumed");
 }
 
@@ -739,8 +731,8 @@ void Controller::setTneck(const double execTime)
     double lowerThresNeck=eyesTime+0.2;
     if (execTime<lowerThresNeck)
     {        
-        printf("Warning: neck execution time is under the lower bound!\n");
-        printf("A new neck execution time of %g s is chosen\n",lowerThresNeck);
+        yWarning("neck execution time is under the lower bound!");
+        yWarning("a new neck execution time of %g s is chosen",lowerThresNeck);
         neckTime=lowerThresNeck;
     }
     else
@@ -754,8 +746,8 @@ void Controller::setTeyes(const double execTime)
     double lowerThresEyes=10.0*Ts;
     if (execTime<lowerThresEyes)
     {        
-        printf("Warning: eyes execution time is under the lower bound!\n");
-        printf("A new eyes execution time of %g s is chosen\n",lowerThresEyes);
+        yWarning("eyes execution time is under the lower bound!");
+        yWarning("a new eyes execution time of %g s is chosen",lowerThresEyes);
         eyesTime=lowerThresEyes;
     }
     else

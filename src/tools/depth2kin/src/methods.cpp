@@ -146,15 +146,14 @@ bool Calibrator::toProperty(Property &info) const
 /************************************************************************/
 bool Calibrator::fromProperty(const Property &info)
 {
-    Property &_info=const_cast<Property&>(info);
-    if (!_info.check("spatial_competence"))
+    if (!info.check("spatial_competence"))
         return false;
 
     spatialCompetence.A=eye(3,3);
     spatialCompetence.c=Vector(3,0.0);
     spatialCompetence.scale=1.0;
     spatialCompetence.extrapolation=true;
-    if (Bottle *values=_info.find("spatial_competence").asList())
+    if (Bottle *values=info.find("spatial_competence").asList())
     {
         spatialCompetence.extrapolation=(values->get(0).asString()=="true");
         spatialCompetence.scale=values->get(1).asDouble();
@@ -308,11 +307,10 @@ bool MatrixCalibrator::toProperty(Property &info) const
 /************************************************************************/
 bool MatrixCalibrator::fromProperty(const Property &info)
 {
-    Property &_info=const_cast<Property&>(info);
-    if (!_info.check("type"))
+    if (!info.check("type"))
         return false;
 
-    string type=_info.find("type").asString().c_str();
+    string type=info.find("type").asString().c_str();
     if ((type=="se3") || (type=="se3+scale"))
     {
         delete impl;
@@ -328,7 +326,7 @@ bool MatrixCalibrator::fromProperty(const Property &info)
 
     H=eye(4,4);
     scale=1.0;
-    if (Bottle *values=_info.find("calibration_data").asList())
+    if (Bottle *values=info.find("calibration_data").asList())
     {
         scale=values->get(0).asDouble();
 
@@ -466,18 +464,17 @@ bool LSSVMCalibrator::toProperty(Property &info) const
 /************************************************************************/
 bool LSSVMCalibrator::fromProperty(const Property &info)
 {
-    Property &_info=const_cast<Property&>(info);
-    if (!_info.check("type"))
+    if (!info.check("type"))
         return false;
 
-    string type=_info.find("type").asString().c_str();
+    string type=info.find("type").asString().c_str();
     if (type=="lssvm")
         clearPoints();
     else
         return false;
 
     bool ret=false;
-    if (Bottle *values=_info.find("calibration_data").asList())
+    if (Bottle *values=info.find("calibration_data").asList())
         if (values->size()>=1)
             ret=impl->fromString(values->toString().c_str());
 

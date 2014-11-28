@@ -174,6 +174,80 @@ void inverseDynamics::init_lower()
     FM_sens_low.resize(6,2); FM_sens_low.zero();
 }
 
+void inverseDynamics::setStiffMode()
+{
+     if (iint_arm_left)
+     {
+         for (int i=0; i<7; i++)
+            iint_arm_left->setInteractionMode(i,VOCAB_IM_STIFF);
+     }
+     if (iint_arm_right)
+     {
+         for (int i=0; i<7; i++)
+            iint_arm_right->setInteractionMode(i,VOCAB_IM_STIFF);
+     }
+     if (iint_leg_left)
+     {
+         for (int i=0; i<6; i++)
+            iint_leg_left->setInteractionMode(i,VOCAB_IM_STIFF);
+     }
+     if (iint_leg_right)
+     {
+         for (int i=0; i<6; i++)
+             iint_leg_right->setInteractionMode(i,VOCAB_IM_STIFF);
+     }
+     if (iint_torso)
+     {
+         for (int i=0; i<3; i++)
+            iint_torso->setInteractionMode(i,VOCAB_IM_STIFF);
+     }
+
+     if (icmd_arm_left)
+     {
+         for (int i=0; i<7; i++)
+             {
+                 int mode =0; icmd_arm_left->getControlMode(i, &mode);
+                 if (mode==VOCAB_CM_TORQUE)  icmd_arm_left->setControlMode(i, VOCAB_CM_POSITION);
+             }
+     }
+
+     if (icmd_arm_right)
+     {
+         for (int i=0; i<7; i++)
+             {
+                 int mode =0; icmd_arm_right->getControlMode(i, &mode);
+                 if (mode==VOCAB_CM_TORQUE)  icmd_arm_right->setControlMode(i, VOCAB_CM_POSITION);
+             }
+     }
+
+     if (icmd_leg_left)
+     {
+         for (int i=0; i<6; i++)
+             {
+                 int mode =0; icmd_leg_left->getControlMode(i, &mode);
+                 if (mode==VOCAB_CM_TORQUE)  icmd_leg_left->setControlMode(i, VOCAB_CM_POSITION);
+             }
+     }
+
+     if (icmd_leg_right)
+     {
+         for (int i=0; i<6; i++)
+             {
+                 int mode =0; icmd_leg_right->getControlMode(i, &mode);
+                 if (mode==VOCAB_CM_TORQUE)  icmd_leg_right->setControlMode(i, VOCAB_CM_POSITION);
+             }
+     }
+
+     if (icmd_torso)
+     {
+         for (int i=0; i<3; i++)
+             {
+                 int mode =0; icmd_torso->getControlMode(i, &mode);
+                 if (mode==VOCAB_CM_TORQUE)  icmd_torso->setControlMode(i, VOCAB_CM_POSITION);
+             }
+     }
+}
+
 inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddLR, PolyDriver *_ddT, string _robot_name, string _local_name, version_tag _icub_type, bool _autoconnect) : RateThread(_rate), ddAL(_ddAL), ddAR(_ddAR), ddH(_ddH), ddLL(_ddLL), ddLR(_ddLR), ddT(_ddT), robot_name(_robot_name), icub_type(_icub_type), local_name(_local_name), zero_sens_tolerance (1e-12)
 {
     status_queue_size = 10;
@@ -192,13 +266,24 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     skinContactsTimestamp = 0.0;
 
     //--------------INTERFACE INITIALIZATION-------------//
-
     iencs_arm_left = 0;
     iencs_arm_right= 0;
     iencs_head     = 0;
     iencs_leg_left = 0;
     iencs_leg_right= 0;
     iencs_torso    = 0;
+    iint_arm_left  = 0;
+    iint_arm_right = 0;
+    iint_head      = 0;
+    iint_leg_left  = 0;
+    iint_leg_right = 0;
+    iint_torso     = 0;
+    icmd_arm_left  = 0;
+    icmd_arm_right = 0;
+    icmd_head      = 0;
+    icmd_leg_left  = 0;
+    icmd_leg_right = 0;
+    icmd_torso     = 0;
 
     //---------------------PORT--------------------------//
 
@@ -345,12 +430,12 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     }
 
     //---------------------DEVICES--------------------------//
-    if (ddAL) ddAL->view(iencs_arm_left);
-    if (ddAR) ddAR->view(iencs_arm_right);
-    if (ddH)  ddH->view(iencs_head);
-    if (ddLL) ddLL->view(iencs_leg_left);
-    if (ddLR) ddLR->view(iencs_leg_right);
-    if (ddT)  ddT->view(iencs_torso);
+    if (ddAL) {ddAL->view(iencs_arm_left);  ddAL->view(iint_arm_left);  ddAL->view(icmd_arm_left);}
+    if (ddAR) {ddAR->view(iencs_arm_right); ddAR->view(iint_arm_right); ddAR->view(icmd_arm_right);}
+    if (ddH)  {ddH->view(iencs_head);       ddH ->view(iint_head);       ddH ->view(icmd_head);}
+    if (ddLL) {ddLL->view(iencs_leg_left);  ddLL->view(iint_leg_left);  ddLL->view(icmd_leg_left);}
+    if (ddLR) {ddLR->view(iencs_leg_right); ddLR->view(iint_leg_right); ddLR->view(icmd_leg_right);}
+    if (ddT)  {ddT->view(iencs_torso);      ddT ->view(iint_torso);      ddT ->view(icmd_torso);}
 
     linEstUp =new AWLinEstimator(16,1.0);
     quadEstUp=new AWQuadEstimator(25,1.0);
@@ -400,7 +485,7 @@ bool inverseDynamics::threadInit()
         bool ret = readAndUpdate(true,true);
         if (ret == false)
         {
-            printf("A problem occured during the intial readAndUpdate(), stopping... \n");
+            printf("A problem occured during the initial readAndUpdate(), stopping... \n");
             thread_status = STATUS_DISCONNECTED;
             return false;
         }

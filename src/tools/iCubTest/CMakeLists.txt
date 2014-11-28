@@ -20,9 +20,10 @@ include_directories(${GSL_INCLUDE_DIRS})
 include_directories(${YARP_INCLUDE_DIRS})
 
 add_executable(${PROJECTNAME} ${folder_main_source} ${folder_main_header} ${folder_tests_source} ${folder_tests_header})
-add_library(${PROJECTNAME}Lib ${folder_tests_source} ${folder_tests_header})
+add_library(${PROJECTNAME}Lib ${folder_main_source} ${folder_main_header} ${folder_tests_source} ${folder_tests_header})
+target_link_libraries(${PROJECTNAME}Lib ${YARP_LIBRARIES} icubmod)
 
-target_link_libraries(${PROJECTNAME} ${iCubDev_LIBRARIES} ${GSL_LIBRARIES} icubmod ${YARP_LIBRARIES})
+target_link_libraries(${PROJECTNAME} ${PROJECTNAME}Lib ${iCubDev_LIBRARIES} ${GSL_LIBRARIES} icubmod ${YARP_LIBRARIES})
 
 install(TARGETS ${PROJECTNAME}Lib DESTINATION lib)
 install(TARGETS ${PROJECTNAME} DESTINATION bin)

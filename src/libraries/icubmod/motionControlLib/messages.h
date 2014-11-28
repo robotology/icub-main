@@ -19,10 +19,10 @@
 #include "canProtocolLib/iCubCanProto_types.h"
 
 
-#define CAN_PROTOCOL_MAJOR          1
-#define CAN_PROTOCOL_MINOR          1
-#define LAST_BLL_BUILD             71
-#define LAST_MC4_BUILD             71
+#define CAN_PROTOCOL_MAJOR          1 //this must be an exact match with the firmware protocol, otherwise terminates.
+#define CAN_PROTOCOL_MINOR          2 //this must be smaller or equal than the firmware protocol, otherwise terminates.
+#define LAST_BLL_BUILD             80 //this value is used only to print "please update" message
+#define LAST_MC4_BUILD             80 //this value is used only to print "please update" message
 
 //#define MODE_IDLE                   icubCanProto_controlmode_idle
 //#define MODE_POSITION               icubCanProto_controlmode_position
@@ -163,6 +163,8 @@
 //
 //#define CAN_SET_OPENLOOP_PARAMS     114
 //#define CAN_GET_OPENLOOP_PARAMS		115
+#define CAN_SET_INTERACTION_MODE    116
+#define CAN_GET_INTERACTION_MODE    117
 
 //#define NUM_OF_MESSAGES             116
 

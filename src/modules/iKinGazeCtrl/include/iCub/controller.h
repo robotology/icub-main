@@ -53,11 +53,10 @@ protected:
     iCubHeadCenter    *neck;
     iKinChain         *chainNeck, *chainEyeL, *chainEyeR;
     PolyDriver        *drvTorso,  *drvHead;
-    IControlMode      *modHead;
-    IPositionControl  *posHead;
-    IVelocityControl  *velHead;
-    IPositionDirect   *posNeck;
-    IVelocityControl2 *velEyes;
+    IControlMode2     *modHead;
+    IPositionControl2 *posHead;
+    IVelocityControl2 *velHead;
+    IPositionDirect   *posNeck;    
     exchangeData      *commData;
     xdPort            *port_xd;
 
@@ -66,25 +65,22 @@ protected:
     Integrator        *IntState;
     Integrator        *IntPlan;
 
-    Port  port_x;
-    Port  port_q;
-    Port  port_event;
+    BufferedPort<Vector> port_x;
+    BufferedPort<Vector> port_q;
+    BufferedPort<Bottle> port_event;
     Stamp txInfo_x;
     Stamp txInfo_q;
     Stamp txInfo_pose;
+    Stamp txInfo_event;
 
     Mutex mutexRun;
     Mutex mutexChain;
     Mutex mutexCtrl;
     Mutex mutexData;
     unsigned int period;
-    bool tiltDone;
-    bool panDone;
-    bool verDone;
     bool unplugCtrlEyes;
     bool neckPosCtrlOn;
     bool ctrlInhibited;
-    bool Robotable;
     int nJointsTorso;
     int nJointsHead;
     double ctrlActiveRisingEdgeTime;
@@ -107,11 +103,13 @@ protected:
     multiset<double> motionOngoingEvents;
     multiset<double> motionOngoingEventsCurrent;
 
-    bool areJointsHealthy();
+    bool areJointsHealthyAndSet(VectorOf<int> &jointsToSet);
+    void setJointsCtrlMode(const VectorOf<int> &jointsToSet);
     void stopLimb(const bool execStopPosition=true);
     void notifyEvent(const string &event, const double checkPoint=-1.0);
     void motionOngoingEventsHandling();
-    void motionOngoingEventsFlush();    
+    void motionOngoingEventsFlush();
+    void stopControlHelper();
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
@@ -121,7 +119,7 @@ public:
     void   findMinimumAllowedVergence();
     void   minAllowedVergenceChanged();
     void   resetCtrlEyes();
-    void   doSaccade(Vector &ang, Vector &vel);    
+    void   doSaccade(const Vector &ang, const Vector &vel);
     void   stopControl();
     void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);

@@ -137,6 +137,7 @@ public:
     double         eyeTiltMin;
     double         eyeTiltMax;
     double         head_version;
+    bool           verbose;
     bool           tweakOverwrite;
     ResourceFinder rf_cameras;
     ResourceFinder rf_tweak;

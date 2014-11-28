@@ -185,16 +185,18 @@ class CtrlThread: public yarp::os::RateThread
             for (int i=jjj; i<5; i++)
             {
                 robot->icmd[LEFT_ARM]->setTorqueMode(i);
-                robot->icmd[RIGHT_ARM]->setImpedancePositionMode(i);
-                //robot->icmd[RIGHT_ARM]->setPositionMode(i);
+
+                robot->icmd[RIGHT_ARM]->setPositionMode(i);
+                robot->iint[RIGHT_ARM]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
             }
         }
         else
         {
             for (int i=jjj; i<5; i++)
             {
-                robot->icmd[LEFT_ARM]->setImpedancePositionMode(i);
-                //robot->icmd[LEFT_ARM]->setPositionMode(i);
+                robot->icmd[LEFT_ARM]->setPositionMode(i);
+                robot->iint[LEFT_ARM]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
+
                 robot->icmd[RIGHT_ARM]->setTorqueMode(i);
             }
         }
@@ -218,6 +220,8 @@ class CtrlThread: public yarp::os::RateThread
         {
             robot->icmd[LEFT_ARM] ->setPositionMode(i);
             robot->icmd[RIGHT_ARM]->setPositionMode(i);
+            robot->iint[LEFT_ARM] ->setInteractionMode(i,VOCAB_IM_STIFF);
+            robot->iint[RIGHT_ARM]->setInteractionMode(i,VOCAB_IM_STIFF);
         }
         closePort(port_skin_contacts);
         closePort(port_left_arm);

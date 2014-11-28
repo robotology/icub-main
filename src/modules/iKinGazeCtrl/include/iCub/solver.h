@@ -75,7 +75,6 @@ protected:
     Mutex mutex;
 
     unsigned int period;
-    bool Robotable;
     bool saccadesOn;
     bool saccadeUnderWayOld;
     bool genOn;
@@ -149,7 +148,6 @@ protected:
     Mutex               mutex;
 
     unsigned int period;
-    bool Robotable;
     bool solveRequest;
     int nJointsTorso;
     int nJointsHead;

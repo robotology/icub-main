@@ -327,12 +327,11 @@ bool AffinityWithMatchedPoints::setInitialGuess(const Matrix &A)
 /****************************************************************/
 bool AffinityWithMatchedPoints::setCalibrationOptions(const Property &options)
 {
-    Property opt=const_cast<Property&>(options);
-    if (opt.check("max_iter"))
-        max_iter=opt.find("max_iter").asInt();
+    if (options.check("max_iter"))
+        max_iter=options.find("max_iter").asInt();
 
-    if (opt.check("tol"))
-        tol=opt.find("tol").asDouble();
+    if (options.check("tol"))
+        tol=options.find("tol").asDouble();
 
     return true;
 }

@@ -56,14 +56,16 @@ enum SkinPart {
     SKIN_PART_UNKNOWN=0, 
     SKIN_LEFT_HAND, SKIN_LEFT_FOREARM, SKIN_LEFT_UPPER_ARM, 
     SKIN_RIGHT_HAND, SKIN_RIGHT_FOREARM, SKIN_RIGHT_UPPER_ARM, 
-    SKIN_FRONT_TORSO, 
+    SKIN_FRONT_TORSO, LEFT_LEG_UPPER, LEFT_LEG_LOWER, LEFT_FOOT,
+    RIGHT_LEG_UPPER, RIGHT_LEG_LOWER, RIGHT_FOOT,
     SKIN_PART_ALL, SKIN_PART_SIZE
 };
 const std::string SkinPart_s[] = {
     "unknown_skin_part", 
     "skin_left_hand", "skin_left_forearm", "skin_left_upper_arm", 
     "skin_right_hand", "skin_right_forearm", "skin_right_upper_arm", 
-    "skin_front_torso", 
+    "skin_front_torso", "skin_left_leg_upper",  "skin_left_leg_lower", "skin_left_foot",
+    "skin_right_leg_upper",  "skin_right_leg_lower", "skin_right_foot",
     "all_skin_parts", "skin_part_size"
 };
 
