@@ -722,6 +722,7 @@ void hostTransceiver::eoprot_override_mn(void)
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mn_appl_status
         },
+#if     defined(EOMANAGEMENT_USE_VER_2_3)
         {   // mn_info_status
             EO_INIT(.endpoint)      eoprot_endpoint_management,
             EO_INIT(.entity)        eoprot_entity_mn_info,
@@ -729,6 +730,24 @@ void hostTransceiver::eoprot_override_mn(void)
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mn_info_status
         },
+#elif   defined(EOMANAGEMENT_USE_VER_2_4)
+        {   // mn_info_status
+            EO_INIT(.endpoint)      eoprot_endpoint_management,
+            EO_INIT(.entity)        eoprot_entity_mn_info,
+            EO_INIT(.tag)           eoprot_tag_mn_info_status,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_mn_info_status
+        },
+        {   // mn_info_status_basic
+            EO_INIT(.endpoint)      eoprot_endpoint_management,
+            EO_INIT(.entity)        eoprot_entity_mn_info,
+            EO_INIT(.tag)           eoprot_tag_mn_info_status_basic,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_mn_info_status_basic
+        },
+#else
+    #error -> specify a EOMANAGEMENT_USE_VER_2_x
+#endif
         {   // mn_comm_status
             EO_INIT(.endpoint)      eoprot_endpoint_management,
             EO_INIT(.entity)        eoprot_entity_mn_comm,

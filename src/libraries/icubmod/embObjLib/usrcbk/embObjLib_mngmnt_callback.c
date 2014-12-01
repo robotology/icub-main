@@ -28,6 +28,8 @@
 // --------------------------------------------------------------------------------------------------------------------
 
 #include "EoCommon.h"
+#include "EoError.h"
+
 
 #include "string.h"
 #include "stdint.h"
@@ -65,7 +67,14 @@
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of static functions
 // --------------------------------------------------------------------------------------------------------------------
-// empty-section
+
+#if   defined(EOMANAGEMENT_USE_VER_2_3)
+//
+#elif   defined(EOMANAGEMENT_USE_VER_2_4)
+static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd);
+#else
+    #error --> unspecified EOMANAGEMENT_USE_VER_2_x
+#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
@@ -132,6 +141,7 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 }
 
 
+#if     defined(EOMANAGEMENT_USE_VER_2_3)
 
 extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
@@ -171,6 +181,110 @@ extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor
     fflush(stdout);
 }
 
+#elif   defined(EOMANAGEMENT_USE_VER_2_4)
+
+
+static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    char str[256] = {0};
+
+#if 0
+    uint64_t txsec = rd->time / 1000000;
+    uint64_t txmsec = (rd->time % 1000000) / 1000;
+    uint64_t txusec = rd->time % 1000;
+    if(1 == rd->control.plustime)
+    {
+        txsec = rd->time / 1000000;
+        txmsec = (rd->time % 1000000) / 1000;
+        txusec = rd->time % 1000;
+    }
+    else
+    {
+        txsec =  txmsec = txusec = 0;
+    }
+#endif
+
+    static const char * typestrings[] =
+    {
+        "[INFO]",
+        "[DEBUG]",
+        "[WARNING]",
+        "[ERROR",
+        "[FATAL]",
+        "[UNKNOWN]"
+    };
+
+    static const char * sourcestrings[] =
+    {
+        "LOCAL",
+        "CAN1",
+        "CAN2",
+        "UNKNOWN"
+    };
+
+    static const char nullverbalextra[] = "no extra info despite we are in verbal mode";
+    static const char emptyextra[] = "extra info";
+
+    uint32_t sec = infobasic->timestamp / 1000000;
+    uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
+    uint32_t usec = infobasic->timestamp % 1000;
+
+    eOmn_info_type_t    type        = EOMN_INFO_PROPERTIES_FLAGS_get_type(infobasic->properties.flags);
+    eOmn_info_source_t  source      = EOMN_INFO_PROPERTIES_FLAGS_get_source(infobasic->properties.flags);
+    uint16_t address                = EOMN_INFO_PROPERTIES_FLAGS_get_address(infobasic->properties.flags);
+    eOmn_info_extraformat_t extraf  = EOMN_INFO_PROPERTIES_FLAGS_get_extraformat(infobasic->properties.flags);
+    uint16_t forfutureuse           = EOMN_INFO_PROPERTIES_FLAGS_get_futureuse(infobasic->properties.flags);
+
+    const char * str_type           = (type > eomn_info_type_fatal) ? (typestrings[5]) : (typestrings[type]);
+    const char * str_source         = (source > eomn_info_source_can2) ? (sourcestrings[3]) : (sourcestrings[source]);;
+    const char * str_code           = eoerror_code2string(infobasic->properties.code);
+    const char * str_extra          = NULL;
+
+    if(eomn_info_extraformat_verbal == extraf)
+    {
+        str_extra = (NULL == extra) ? (nullverbalextra) : ((const char *)extra);
+    }
+    else
+    {
+        str_extra = emptyextra;
+    }
+
+
+    snprintf(str, sizeof(str), "%s from BOARD %d, source %s, address %d, time %ds %dm %du: (code 0x%x, param 0x%x) -> %s + %s",
+                                str_type,
+                                eo_nv_GetBRD(nv)+1,
+                                str_source,
+                                address,
+                                sec, msec, usec,
+                                infobasic->properties.code,
+                                infobasic->properties.param,
+                                str_code,
+                                str_extra
+                                );
+    printf("%s\n", str);
+    fflush(stdout);
+}
+
+
+
+extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    eOmn_info_status_t* infostatus = (eOmn_info_status_t*) rd->data;
+
+    s_eoprot_print_mninfo_status(&infostatus->basic, infostatus->extra, nv, rd);
+}
+
+
+extern void eoprot_fun_UPDT_mn_info_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    eOmn_info_basic_t* infostatusbasic = (eOmn_info_basic_t*) rd->data;
+
+    s_eoprot_print_mninfo_status(infostatusbasic, NULL, nv, rd);
+}
+
+#else
+    #error --> must specify a EOMANAGEMENT_USE_VER_2_x
+#endif
 
 
 extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor_t* rd)
