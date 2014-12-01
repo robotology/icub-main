@@ -8,6 +8,7 @@ set(ROBOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${ROBOT_NAME}")
 
 if(ICUB_INSTALL_ALL_ROBOTS) # Install all robot-specific files
   add_subdirectory(coman)
+  add_subdirectory(vizzy)
   add_subdirectory(iCubAberystwyth01)
   add_subdirectory(iCubAbuDhabi01)
   add_subdirectory(iCubAnkara01)
@@ -46,7 +47,7 @@ if(ICUB_INSTALL_ALL_ROBOTS) # Install all robot-specific files
   add_subdirectory(iCubSheffield01)
   add_subdirectory(iCubUrbana01)
   add_subdirectory(iCubZurich01)
-  add_subdirectory(SkinTableTop)
+  add_subdirectory(SkinTableTop)  
 else()
 
   if (ROBOT_NAME)

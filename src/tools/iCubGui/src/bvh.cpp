@@ -214,9 +214,9 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     if (tag=="SKIN")
     {
         QString partName=token();
-        if (partName=="head")
+        if (partName=="torso")
             skinPart=1;
-        else if (partName=="torso")
+        else if (partName=="head")
             skinPart=2;
         else if (partName=="left_arm")
             skinPart=3;

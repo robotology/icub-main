@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<robot name="vizzy">
+<!-- motor controllers wrappers -->
+<devices file="wrappers/left_arm_mc_wrapper.xml" />
+<devices file="wrappers/right_arm_mc_wrapper.xml" />
+<devices file="wrappers/shoulders_mc_wrapper.xml" />
+<devices file="wrappers/head_torso_mc.xml" />
+<devices file="hardware/vizzy_head_torso.xml" />
+<devices file="hardware/vizzy_shoulders.xml" />
+<devices file="hardware/vizzy_left_arm.xml" />
+<devices file="hardware/vizzy_right_arm.xml" />
+
+ <!-- CALIBRATORS -->
+<devices file="calibrators/head_torso_calib.xml" />
+<devices file="calibrators/shoulders_calib.xml" />
+<devices file="calibrators/left_arm_calib.xml" />
+<devices file="calibrators/right_arm_calib.xml" />
+
+<!-- MTX INERTIAL SENSOR -->
+<devices file="hardware/inertial.xml" />
+</robot> 

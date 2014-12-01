@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+<devices robot="vizzy" build="1">
+	<device name="head_mc_wrapper" type="controlboardwrapper2">
+		<param name="threadrate"> 10 </param>
+		<paramlist name="networks">
+			<elem name="head_torso_joints"> 0 4 1 5 </elem>
+		</paramlist>
+		<param name="period"> 10 </param>
+		<param name="name"> vizzy/head </param>
+		<param name="ports"> head </param>
+		<param name="joints"> 5 </param>
+	</device>
+</devices>
