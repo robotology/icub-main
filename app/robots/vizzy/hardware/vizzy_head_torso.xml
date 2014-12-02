@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-<devices robot="vizzy" build="1">
+<devices robot="vizzy" build="0">
 <device name="head_torso_mc" type="canmotioncontrol">
 <params file="general.xml" />
 <group name="CAN">
@@ -25,8 +25,8 @@
 <group name="GENERAL">
 	<param name="Joints">	10 </param>
 	<param name="MaxDAC">	100 100 100 100 100 100 0 0 0 0</param>
-	<! 			Waist NeckPan NeckTlt EyeTilt LEyePan REyePan -NC- -NC- -NC- -NC- -->
-	<!AxisMap		1	2	4	8	7	6	0	3	5	9 -->
+	<!-- 			Waist NeckPan NeckTlt EyeTilt LEyePan REyePan -NC- -NC- -NC- -NC- -->
+	<!--AxisMap		1	2	4	8	7	6	0	3	5	9 -->
 	<param name="AxisMap">	1	2	4	8	6	7	0	3	5	9 </param>
 	<param name="Encoder">	-3982.2	568.9	568.9	568.9	568.9	-568.9	0	0	0	0 </param>
 	<param name="Zeros">	30.0	-55.0	-40.0	-40.0	80.0	0	0	0	0	0 </param>
