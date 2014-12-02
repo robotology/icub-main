@@ -81,14 +81,13 @@ bool validate(Bottle &input, Bottle &out, const std::string &key1, const std::st
         yError("%s not found\n", key1.c_str());
         return false;
     }
-
     if(tmp.size()!=size)
     {
         yError("%s incorrect number of entries\n", key1.c_str());
         return false;
     }
-
     out=tmp;
+    return true;
 }
 
 bool validate_optional(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
@@ -2209,6 +2208,7 @@ bool CanBusMotionControl::open (Searchable &config)
     if(!p.fromConfig(config))
     {
         _mutex.post();
+        yError() << "One or more errors found while parsing device configuration";
         return false;
     }
 
@@ -2237,6 +2237,7 @@ bool CanBusMotionControl::open (Searchable &config)
     if (!ret)
     {
         _mutex.post();
+        yError() << "Unable to unitialize CAN driver";
         return false;
     }
 
