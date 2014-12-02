@@ -22,7 +22,7 @@
     <param default="0.04" desc="Magnetic field up-threshold for stopping bias adaption.">mag-vel-thres-up</param>
     <param default="0.01" desc="Magnetic field down-threshold for starting bias adaption.">mag-vel-thres-down</param>
     <param default="0.001" desc="Gain to integrate gyro bias.">bias-gain</param>
-    <param desc="If set enable verbosity.">verbose</param>
+    <param desc="If specified enable verbosity.">verbose</param>
   </arguments>
  
   <authors>
