@@ -42,7 +42,7 @@
 
     <output>
       <type>yarp::os::Vector</type>
-      <port carrier="tcp">/imuFilter/filter:o</port>
+      <port carrier="tcp">/imuFilter/inertial:o</port>
       <description>
         send the filtered 12 double.
       </description>

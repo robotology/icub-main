@@ -76,7 +76,7 @@ public:
         adaptGyroBias=false;
 
         iPort.open(("/"+name+"/inertial:i").c_str());
-        oPort.open(("/"+name+"/filter/:o").c_str());
+        oPort.open(("/"+name+"/inertial:o").c_str());
         bPort.open(("/"+name+"/bias:o").c_str());
 
         string imuPortName=("/"+robot+"/inertial");
