@@ -98,7 +98,7 @@
 
         <module>
                 <name>imuFilter</name>
-                <node>console</node>
+                <node>pc104</node>
                 <dependencies>
                     <port timeout="40">/icub/inertial</port>
                 </dependencies>
