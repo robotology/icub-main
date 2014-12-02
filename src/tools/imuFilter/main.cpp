@@ -61,6 +61,7 @@ public:
     bool configure(ResourceFinder &rf)
     {
         string name=rf.check("name",Value("imuFilter")).asString().c_str();
+        string robot=rf.check("robot",Value("icub")).asString().c_str();
         size_t gyro_order=(size_t)rf.check("gyro-order",Value(5)).asInt();
         size_t mag_order=(size_t)rf.check("mag-order",Value(51)).asInt();
         mag_vel_thres_up=rf.check("mag-vel-thres-up",Value(0.04)).asDouble();
@@ -77,6 +78,10 @@ public:
         iPort.open(("/"+name+"/inertial:i").c_str());
         oPort.open(("/"+name+"/filter/:o").c_str());
         bPort.open(("/"+name+"/bias:o").c_str());
+
+        string imuPortName=("/"+robot+"/inertial");
+        if (!Network::connect(imuPortName.c_str(),iPort.getName().c_str()))
+            yWarning("Unable to connect to %s",imuPortName.c_str());
 
         Time::turboBoost();
         return true;

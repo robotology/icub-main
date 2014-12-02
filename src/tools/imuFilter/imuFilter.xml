@@ -10,11 +10,13 @@
   
   <description-long>
     This module applies median filtering to the gyro and magnetometer data
-    to smooth out magnetic disturbances and remove gyro bias.
+    to smooth out magnetic disturbances and remove gyro bias. \n
+    At startup an attempt is made to connect to the IMU port of the specified robot.
   </description-long>
  
   <arguments>    
     <param default="imuFilter" desc="module's name; all the open ports will be tagged with the prefix /name.">name</param>
+    <param default="icub" desc="name of the robot to connect to.">robot</param>
     <param default="5" desc="Order of the median filter for the gyro data.">gyro-order</param>
     <param default="51" desc="Order of the median filter for the magnetometer data.">mag-order</param>
     <param default="0.04" desc="Magnetic field up-threshold for stopping bias adaption.">mag-vel-thres-up</param>
