@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-<devices robot="vizzy" build="1">
+<devices robot="vizzy" build="0">
 <device name="right_arm_calibrator" type="parametricCalibrator">
 	<params file="general.xml" />
 	<group name="GENERAL">
@@ -14,7 +14,7 @@
 		<param name="calibration3"> 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 </param>
 		<param name="positionZero"> 0.0 50.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 </param>
 		<param name="velocityZero"> 20.0 20.0 20.0 20.0 20.0 0.0 0.0 0.0 0.0 0.0 </param>
-		<param name="maxPwm"> -500.0 -300.0 600.0 700.0 -900.0 0.0 0.0 0.0 0.0 0.0 </param>
+		<param name="maxPwm"> 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 </param>
 		<param name="posZeroThreshold"> 1 1 1 1 1 0 0 0 0 0 </param>
 	</group>
 	<group name="HOME">
