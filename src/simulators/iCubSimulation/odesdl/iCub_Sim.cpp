@@ -1425,12 +1425,10 @@ bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
 
 
 void OdeSdlSimulation::processWholeBodyCollisions(skinContactList& skin_contact_list)
-{
-    
+{    
       SkinPart skinPart;             // id of the part of the skin (e.g. left_hand, right_forearm, left_upper_arm)
       BodyPart bodyPart;             // id of the body part
       bool skinCoverFlag;
-      unsigned int linkNum;          // number of the link
       Vector geoCenter_SIM_FoR_forHomo(4,0.0), normal_SIM_FoR_forHomo(4,0.0);
       Vector force_SIM_FoR_forHomo(4,0.0), moment_SIM_FoR_forHomo(4,0.0);
       Vector v1(4,0.0); //auxilliary vector
