@@ -65,8 +65,8 @@ protected:
     
 public:
     //~~~~~~~~~~~~~~~~~~~~~~
-	//   CONSTRUCTORS
-	//~~~~~~~~~~~~~~~~~~~~~~
+    //   CONSTRUCTORS
+    //~~~~~~~~~~~~~~~~~~~~~~
     /**
     * Empty contructor.
     */
@@ -146,12 +146,12 @@ public:
     */
     skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, std::vector<unsigned int> _taxelList, double _pressure, const yarp::sig::Vector &_normalDir,
-	const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
+    const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
 
 
     //~~~~~~~~~~~~~~~~~~~~~~
-	//   GET methods
-	//~~~~~~~~~~~~~~~~~~~~~~
+    //   GET methods
+    //~~~~~~~~~~~~~~~~~~~~~~
     /**
     * Get the contact geometric center, expressed in the link reference frame.
     * @return a 3-dim vector
@@ -166,7 +166,7 @@ public:
     * Get the average pressure measured at this contact.
     * @return the contact pressure
     */
-    double                              getPressure()   	    const{ return pressure; }
+    double                              getPressure()           const{ return pressure; }
     /**
     * Get the number of active taxels.
     * @return the number of taxels activated by this contact
@@ -187,51 +187,51 @@ public:
     * @return the list of taxels' id's
     */
     std::vector<unsigned int>           getTaxelList()          const{ return taxelList; }
- 	
+    
    
     //~~~~~~~~~~~~~~~~~~~~~~
-	//   SET methods
-	//~~~~~~~~~~~~~~~~~~~~~~    
+    //   SET methods
+    //~~~~~~~~~~~~~~~~~~~~~~    
     /**
      * Set the geometric center of the contact area (link reference frame).
-	 * @param _geoCenter a 3-dim vector containing the geometric center of this contact area
+     * @param _geoCenter a 3-dim vector containing the geometric center of this contact area
      * @return true if the operation succeeded, false otherwise
      */
     bool setGeoCenter(const yarp::sig::Vector &_geoCenter);
     /**
      * Set the normal direction of the contact area, expressed in link reference frame.
-	 * @param _normalDir a 3-dim vector containing the normal to the contact area
+     * @param _normalDir a 3-dim vector containing the normal to the contact area
      * @return true if the operation succeeded, false otherwise
      */
     bool setNormalDir(const yarp::sig::Vector &_normalDir);
     /**
      * Set the average contact pressure.
-	 * @param _pressure the mean contact pressure
+     * @param _pressure the mean contact pressure
      * @return true if the operation succeeded, false otherwise
      */
     bool setPressure(double _pressure);
     /**
      * Set the number of active taxels.
-	 * @param _activeTaxels the number of taxels activated by this contact
+     * @param _activeTaxels the number of taxels activated by this contact
      * @return true if the operation succeeded, false otherwise
      */
     void setActiveTaxels(unsigned int _activeTaxels);
     /**
      * Set the skin part on which this contact is applied.
-	 * @param _skinPart the skin part
+     * @param _skinPart the skin part
      * @return true if the operation succeeded, false otherwise
      */
     void setSkinPart(SkinPart _skinPart);
     /**
      * Set the list of taxels that are activated by this contact
-	 * @param list list of id's of the active taxels associated to this contact
+     * @param list list of id's of the active taxels associated to this contact
      * @return true if the operation succeeded, false otherwise
      */
     void setTaxelList(const std::vector<unsigned int> &list);
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-	//   SERIALIZATION methods
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    //   SERIALIZATION methods
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     /*
     * Read skinContact from a connection.
     * @param connection connection to read from
