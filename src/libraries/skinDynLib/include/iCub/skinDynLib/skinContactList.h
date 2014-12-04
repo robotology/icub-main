@@ -47,8 +47,8 @@ protected:
     
 public:
     //~~~~~~~~~~~~~~~~~~~~~~
-	//   CONSTRUCTORS
-	//~~~~~~~~~~~~~~~~~~~~~~
+    //   CONSTRUCTORS
+    //~~~~~~~~~~~~~~~~~~~~~~
     skinContactList();
     skinContactList(const size_type &n, const skinContact& value = skinContact());
 
@@ -66,8 +66,8 @@ public:
 
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~
-	//   SERIALIZATION methods
-	//~~~~~~~~~~~~~~~~~~~~~~~~~
+    //   SERIALIZATION methods
+    //~~~~~~~~~~~~~~~~~~~~~~~~~
     /*
     * Read skinContactList from a connection.
     * return true iff a skinContactList was read correctly
@@ -95,7 +95,7 @@ public:
     /**
      * Useful to print some information.
      */
-	virtual std::string toString(const int &precision=-1) const;
+    virtual std::string toString(const int &precision=-1) const;
 };
 
 }

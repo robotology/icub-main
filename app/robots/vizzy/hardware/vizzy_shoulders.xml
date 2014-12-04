@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-<devices robot="vizzy" build="1">
+<devices robot="vizzy" build="0">
 <device name="shoulders_mc" type="canmotioncontrol">
 <params file="general.xml" />
 <group name="CAN">
@@ -25,10 +25,10 @@
 <group name="GENERAL">
 	<param name="Joints">	6 </param>
 	<param name="MaxDAC">	100 100 100 100 100 100</param>
-	<! 						LeftScapula LShldrFlection LShldrAbduction RightScapula RShldrFlection RShldrAbduction -->
-	<!AxisMap				0	4	5	1	2	3 -->
+	<!-- 		LeftScapula LShldrFlection LShldrAbduction RightScapula RShldrFlection RShldrAbduction -->
+	<!--AxisMap		0	4	5	1	2	3 -->
 	<param name="AxisMap">	0	4	5	1	2	3 </param>
-	<param name="Encoder">	2110.58	2110.58	2110.58	-2110.58	-2110.58	-2110.58 </param>
+	<param name="Encoder">	2110.58	2110.58	2110.58	-2110.58 -2110.58 -2110.58 </param>
 	<param name="Zeros">	-20	84	-75	-20	84	-75</param>
 	<param name="TorqueId">	0	0	0	0	0	0</param>
 	<param name="TorqueChan">	0	0	0	0	0	0</param>
@@ -46,8 +46,8 @@
 </group>
 <group name="POS_PIDS">
 	<param name="kp">	5	1	750	5	1	750</param>
-	<param name="kd">	0	500	500	500	500	500	0	0	0	0</param>
-	<param name="ki">	0	0	2	0	0	2</param>
+	<param name="kd">	0	0	2	0	0	2</param>
+	<param name="ki">	0	0	3	0	0	3</param>
 	<param name="maxPwm">	1333	1333	1333	1333	1333	1333</param>
 	<param name="maxInt">	1000	1000	1000	1000	1000	1000</param>
 	<param name="shift">	4	4	13	4	4	13</param>

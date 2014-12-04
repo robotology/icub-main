@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-<devices robot="vizzy" build="1">
+<devices robot="vizzy" build="0">
 <device name="left_arm_mc" type="canmotioncontrol">
 <params file="general.xml" />
 <group name="CAN">
@@ -25,8 +25,8 @@
 <group name="GENERAL">
 	<param name="Joints">	10 </param>
 	<param name="MaxDAC">	100 100 100 100 100 100 100 100 0 0</param>
-	<! 			M3L M4L M5L M6L M7L M8L M9L M10L _NC_ _NC_ -->
-	<!AxisMap		0	1	2	3	4	5	6	7	8	9 -->
+	<!-- 			M3L M4L M5L M6L M7L M8L M9L M10L _NC_ _NC_ -->
+	<!--AxisMap		0	1	2	3	4	5	6	7	8	9 -->
 	<param name="AxisMap">	1	0	3	6	7	2	5	4	8	9 </param>
 	<param name="Encoder">	568.9 -568.9 -568.9 -568.9 568.9 1844.4 1844.4 -1844.4 0 0</param>
 	<param name="Zeros">	-90	0	90	40	-40	0	0	0	0	0 </param>
@@ -46,7 +46,7 @@
 </group>
 <group name="POS_PIDS">
 	<param name="kp">	2000	2000	2000	2000	70	50	50	50	0	0</param>
-	<param name="kd">	0	0	0	0	500	500	500	500	500</param>
+	<param name="kd">	0	0	0	0	500	500	500	500	0	0</param>
 	<param name="ki">	10	10	10	10	1	1	1	1	0	0</param>
 	<param name="maxPwm">	1333	1333	1333	1333	1333	1333	1333	1333	1333	1333</param>
 	<param name="maxInt">	1333	1333	1333	1333	1333	1333	1333	1333	1333	1333</param>
