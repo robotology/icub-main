@@ -24,6 +24,8 @@
 
 #include <yarp/dev/CanBusInterface.h>
 #include <string.h>
+#include <yarp/os/LogStream.h>
+#include <yarp/os/Log.h>
 #define MAX_STRINGS 4
 
 class can_string_generic
@@ -117,7 +119,7 @@ int can_string_generic::add_string(void* can_packet)
 
 	if (string_id>=MAX_STRINGS) 
 	{
-		printf("msg from board %d contains an ERROR! (>MAX_STRINGS)\n",data[string_id ].board_id);
+		yError("msg from board %d contains an ERROR! (>MAX_STRINGS)\n",data[string_id ].board_id);
 		return -1;
 	}
 
@@ -166,9 +168,7 @@ char* can_string_generic::print(int buffer_num, const char* canDevName, int netN
 {
 	if (buffer_num>=MAX_STRINGS) return 0;
 
-	//DEBUG ONLY
-	//ACE_OS::printf("msg from board %d, (buf:%d) : %s \r\n",data[buffer_num].board_id ,buffer_num, data[buffer_num].text_buffer);
-	fprintf(stderr, "%s [%d] msg from board %d: %s \n", canDevName, netNum, data[buffer_num].board_id , data[buffer_num].text_buffer);
+	yDebug("%s [%d] msg from board %d: %s \n", canDevName, netNum, data[buffer_num].board_id , data[buffer_num].text_buffer);
 	
 	return data[buffer_num].text_buffer;
 }

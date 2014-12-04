@@ -21,6 +21,8 @@
 #define __can_string2__
 
 #include "messages.h"
+#include <yarp/os/LogStream.h>
+#include <yarp/os/Log.h>
 
 template<class T>
 class can_string2
@@ -118,7 +120,7 @@ int can_string2<T>::add_string(void* can_packet)
 
 	if (string_id>=MAX_STRINGS) 
 	{
-		printf("msg from board %d contains an ERROR! (>MAX_STRINGS)\r\n",data[string_id ].board_id);
+		yError("msg from board %d contains an ERROR! (>MAX_STRINGS)\r\n",data[string_id ].board_id);
 		return -1;
 	}
 
@@ -168,9 +170,7 @@ char* can_string2<T>::print(int buffer_num)
 {
 	if (buffer_num>=MAX_STRINGS) return 0;
 
-	//DEBUG ONLY
-	//ACE_OS::printf("msg from board %d, (buf:%d) : %s \r\n",data[buffer_num].board_id ,buffer_num, data[buffer_num].text_buffer);
-	printf("msg from board %d: %s \r\n",data[buffer_num].board_id , data[buffer_num].text_buffer);
+	yDebug("msg from board %d: %s \r\n",data[buffer_num].board_id , data[buffer_num].text_buffer);
 	
 	return data[buffer_num].text_buffer;
 }
