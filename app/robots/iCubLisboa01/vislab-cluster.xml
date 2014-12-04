@@ -4,13 +4,12 @@
 
 <cluster name="icub01" user="icub">
 
-<nameserver namespace="/icub" node="chico3"> </nameserver>
+<nameserver namespace="/icub" node="icub-laptop"> </nameserver>
 
-<node display="true">chico3</node>
+<node display="true">icub-laptop</node>
 <node>pc104</node>
-<node>icubbrain1</node>>
+<node>icubbrain1</node>
 <node>icubbrain2</node>
-<node>cortex1</node>
 
 </cluster>
 
