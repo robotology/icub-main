@@ -43,6 +43,13 @@
 
 #include "EyeLidsController.h"
 
+//these were added for the self-collision and skin emulation 
+#include "iCub/skinDynLib/skinContactList.h"
+#include <iCub/ctrl/math.h>
+#include <yarp/math/Math.h>
+#include <map>  
+#include <iCub/iKin/iKinFwd.h>
+#include <yarp/sig/Matrix.h>
 
 #ifdef _MSC_VER
 #pragma warning(disable:4244 4305)  // for VC++, no precision loss complaints
@@ -50,6 +57,10 @@
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace std;
+
+  using namespace yarp::math;
+  using namespace iCub::skinDynLib;
+  using namespace iCub::ctrl;
 
 class ICubData{ 
 public:	
@@ -66,7 +77,7 @@ public:
 
     EyeLids *eyeLids;
     static const bool textured = true;
-    ConstString actElevation, actStartHomePos, actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actHeadCover, actWorld, actPressure, actScreen, actLegsCovers, actLeftArmCovers, actRightArmCovers, actTorsoCovers;
+    ConstString actElevation, actStartHomePos, actLegs, actTorso, actLArm, actRArm, actLHand, actRHand, actHead, actfixedHip, actVision, actHeadCover, actWorld, actPressure, actScreen, actLegsCovers, actLeftArmCovers, actRightArmCovers, actTorsoCovers, actSelfCol, actCoversCol, actSkinEmul;
     double elev;
 
     dGeomID screenGeom;
@@ -74,7 +85,12 @@ public:
     float    eyeLidRot;
     string   eyeLidsPortName;
 
-    dSpaceID    iCub;
+   dSpaceID    iCub;
+   dSpaceID iCubHeadSpace, iCubTorsoSpace, iCubLeftArmSpace, iCubRightArmSpace, iCubLegsSpace; //these are needed for the iCub self-collisions; 
+   //nevertheless, if actSelfCol == off, then they will all be set to iCub
+   std::map<dSpaceID, string> dSpaceNames; //needed for development and testing of self-collisions
+   std::map<dGeomID, string> dGeomNames; 
+   
     dGeomID     geom_cube[1];
 
     dBodyID     inertialBody;
@@ -233,7 +249,6 @@ public:
             //ConstString texture = ("C:/DEV/iCub/app/simConfig/models/blueCovers.bmp");
             setupTexture( (char* ) texture.c_str(), modelTexture);
         }
-
     };
     map<string, iCubCovers> model_ThreeD_obj;
 
@@ -251,7 +266,23 @@ public:
     Vector          jA_torso[3];
     Vector          jA_leftArm[8];
     Vector          jA_rightArm[8];
-
+    
+     //We make these class variables, besides joint position initialization (loadJointPosition()), they will be used repeatedly in the self-collision mode in ODE_process
+    iCub::iKin::iCubArm iKinLeftArm, iKinRightArm;
+    iCub::iKin::iCubInertialSensor iKinInertialSensor; //needed to get FoR 3 in the kinematics - the first neck joint -  FoR for the skin of the torso
+    
+    // Preset bottles with empty or full activation of some skin parts that can be sent to a port
+    Bottle emptySkinActivationHand;
+    Bottle emptySkinActivationForearm;
+    Bottle emptySkinActivationUpperArm;
+    Bottle emptySkinActivationTorso;
+    Bottle fullSkinActivationForearm;
+    Bottle fullSkinActivationUpperArm;
+    Bottle fullSkinActivationTorso;
+    
+    // rototranslation form robot root to simulation world reference frame and vice versa
+    Matrix H_r2w, H_w2r;
+    
     ICubSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
             RobotConfig& config);
 
@@ -271,6 +302,10 @@ public:
     double checkTouchSensor_continuousValued(int bodyToCheck);
     double checkTouchSensor_continuousValued(dBodyID id);
     void draw();
+    
+    void getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, const dGeomID geomID, SkinPart& skinPart,BodyPart& bodyPart, bool& skinCoverFlag);
+    static void printPositionOfGeom(dGeomID geomID);
+    static void printPositionOfBody(dBodyID bodyID);
 
     private:
     //int inc;
@@ -280,20 +315,20 @@ public:
                RobotConfig& config);
     void activateiCubParts(RobotConfig& config);
 
-    void initLegsOff(dWorldID world);
-    void initLegsOn(dWorldID world);
-    void initTorsoOff(dWorldID world);
-    void initTorsoOn(dWorldID world);
-    void initLeftArmOff(dWorldID world);
-    void initLeftArmOn(dWorldID world);
-    void initRightArmOff(dWorldID world);
-    void initRightArmOn(dWorldID world);
-    void initLeftHandOff(dWorldID world);
-    void initLeftHandOn(dWorldID world);
-    void initRightHandOff(dWorldID world);
-    void initRightHandOn(dWorldID world);
-    void initHead(dWorldID world);
-    void initEyes(dWorldID world);
+    void initLegsOff(dWorldID world, dSpaceID subspace);
+    void initLegsOn(dWorldID world, dSpaceID subspace);
+    void initTorsoOff(dWorldID world, dSpaceID subspace);
+    void initTorsoOn(dWorldID world, dSpaceID subspace);
+    void initLeftArmOff(dWorldID world, dSpaceID subspace);
+    void initLeftArmOn(dWorldID world, dSpaceID subspace);
+    void initRightArmOff(dWorldID world, dSpaceID subspace);
+    void initRightArmOn(dWorldID world, dSpaceID subspace);
+    void initLeftHandOff(dWorldID world, dSpaceID subspace);
+    void initLeftHandOn(dWorldID world, dSpaceID subspace);
+    void initRightHandOff(dWorldID world, dSpaceID subspace);
+    void initRightHandOn(dWorldID world, dSpaceID subspace);
+    void initHead(dWorldID world, dSpaceID subspace);
+    void initEyes(dWorldID world, dSpaceID subspace);
     void initCovers(ResourceFinder& finder);
 
     void initLegJoints();
@@ -303,6 +338,9 @@ public:
     void initLeftHandJoints();
     void initRightHandJoints();
     void initHeadJoints();
+    
+    void init_iKin();
+    void initSkinActivationBottles();
 };
 
 

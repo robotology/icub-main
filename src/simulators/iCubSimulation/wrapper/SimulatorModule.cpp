@@ -78,23 +78,82 @@ SimulatorModule::SimulatorModule(WorldManager& world, RobotConfig& config,
     failureToLaunch = false;
 }
 
-void SimulatorModule::sendTouchLeft(Bottle& report){
-    tactileLeftPort.prepare() = report;
-    tactileLeftPort.write();
+void SimulatorModule::sendTouchLeftHand(Bottle& report){
+    tactileLeftHandPort.prepare() = report;
+    tactileLeftHandPort.write();
 }
 
-void SimulatorModule::sendTouchRight(Bottle& report){
-    tactileRightPort.prepare() = report;
-    tactileRightPort.write();
+void SimulatorModule::sendTouchRightHand(Bottle& report){
+    tactileRightHandPort.prepare() = report;
+    tactileRightHandPort.write();
 }
 	
-bool SimulatorModule::shouldSendTouchLeft() {
-    return tactileLeftPort.getOutputCount()>0;
+bool SimulatorModule::shouldSendTouchLeftHand() {
+    return tactileLeftHandPort.getOutputCount()>0;
 }
 
-bool SimulatorModule::shouldSendTouchRight() {
-    return tactileRightPort.getOutputCount()>0;
+bool SimulatorModule::shouldSendTouchRightHand() {
+    return tactileRightHandPort.getOutputCount()>0;
 }
+
+
+//whole_body_skin_emul
+void SimulatorModule::sendSkinEvents(iCub::skinDynLib::skinContactList& skinContactListReport){
+    iCub::skinDynLib::skinContactList &skinEvents = skinEventsPort.prepare();
+    skinEvents.clear();
+    skinEvents.insert(skinEvents.end(), skinContactListReport.begin(), skinContactListReport.end()); 
+    skinEventsPort.write();
+}
+    
+bool SimulatorModule::shouldSendSkinEvents(){
+    return skinEventsPort.getOutputCount()>0;
+}
+
+void SimulatorModule::sendTouchLeftArm(Bottle& report){
+     tactileLeftArmPort.prepare() = report;
+     tactileLeftArmPort.write();
+}
+
+void SimulatorModule::sendTouchRightArm(Bottle& report){
+     tactileRightArmPort.prepare() = report;
+     tactileRightArmPort.write();
+}
+        
+bool SimulatorModule::shouldSendTouchLeftArm() {
+     return tactileLeftArmPort.getOutputCount()>0;
+}
+
+bool SimulatorModule::shouldSendTouchRightArm() {
+     return tactileRightArmPort.getOutputCount()>0;
+}
+
+void SimulatorModule::sendTouchLeftForearm(Bottle& report){
+    tactileLeftForearmPort.prepare() = report;
+    tactileLeftForearmPort.write();
+}
+
+void SimulatorModule::sendTouchRightForearm(Bottle& report){
+    tactileRightForearmPort.prepare() = report;
+    tactileRightForearmPort.write();
+}
+        
+bool SimulatorModule::shouldSendTouchLeftForearm() {
+    return tactileLeftForearmPort.getOutputCount()>0;
+}
+
+bool SimulatorModule::shouldSendTouchRightForearm() {
+    return tactileRightForearmPort.getOutputCount()>0;
+}
+    
+void SimulatorModule::sendTouchTorso(Bottle& report){
+    tactileTorsoPort.prepare() = report;
+    tactileTorsoPort.write();
+}
+
+bool SimulatorModule::shouldSendTouchTorso() {
+    return tactileTorsoPort.getOutputCount()>0;
+}
+//end of whole_body_skin_emul methods
 
 void SimulatorModule::sendInertial(Bottle& report){
     inertialPort.prepare() = report;
@@ -140,8 +199,14 @@ bool SimulatorModule::closeModule() {
     
     portWide.close();
     
-    tactileLeftPort.close();
-    tactileRightPort.close();
+    tactileLeftHandPort.close();
+    tactileRightHandPort.close();
+    tactileLeftArmPort.close();
+    tactileRightArmPort.close();
+    tactileLeftForearmPort.close();
+    tactileRightForearmPort.close();
+    tactileTorsoPort.close();
+
     inertialPort.close();
     cmdPort.close();
 
@@ -362,11 +427,11 @@ bool SimulatorModule::open() {
     cmdPort.setReader(*this);
     string world = moduleName + "/world";
     
-    string tactileLeft = moduleName + "/skin/left_hand";
-    string tactileRight = moduleName + "/skin/right_hand";
-    string tactileLeftrpc = moduleName + "/skin/left_hand/rpc:i";
-    string tactileRightrpc = moduleName + "/skin/right_hand/rpc:i";
-
+    string tactileLeft = moduleName + "/skin/left_hand_comp"; //Matej - changed the name to comp - this corresponds to the real iCub convention - higher values ~ higher pressure
+    string tactileRight = moduleName + "/skin/right_hand_comp";
+    string tactileLeftrpc = moduleName + "/skin/left_hand_comp/rpc:i";
+    string tactileRightrpc = moduleName + "/skin/right_hand_comp/rpc:i";
+    
     string torqueLeftLeg = moduleName +"/joint_vsens/left_leg:i";
     string torqueRightLeg = moduleName +"/joint_vsens/right_leg:i";
     string torqueTorso = moduleName +"/joint_vsens/torso:i";
@@ -375,10 +440,10 @@ bool SimulatorModule::open() {
     
     string inertial = moduleName + "/inertial";
     cmdPort.open( world.c_str() );
-    tactileLeftPort.open( tactileLeft.c_str() );
-    tactileLeftPortrpc.open( tactileLeftrpc.c_str() );
-    tactileRightPort.open( tactileRight.c_str() );
-    tactileRightPortrpc.open( tactileRightrpc.c_str() );
+    tactileLeftHandPort.open( tactileLeft.c_str() );
+    tactileLeftHandPortrpc.open( tactileLeftrpc.c_str() );
+    tactileRightHandPort.open( tactileRight.c_str() );
+    tactileRightHandPortrpc.open( tactileRightrpc.c_str() );
     inertialPort.open( inertial.c_str() );
 
     trqLeftLegPort.open( torqueLeftLeg.c_str() );
@@ -387,7 +452,20 @@ bool SimulatorModule::open() {
     trqLeftArmPort.open( torqueLeftArm.c_str() );
     trqRightArmPort.open( torqueRightArm.c_str() );
 
-
+    //whole_body_skin_emul
+    string skinEventsPortString = moduleName + "/skinManager/skin_events:o";
+    skinEventsPort.open(skinEventsPortString.c_str());
+    string tactileLeftArmPortString = moduleName + "/skin/left_arm_comp";
+    tactileLeftArmPort.open(tactileLeftArmPortString.c_str());
+    string tactileRightArmPortString = moduleName + "/skin/right_arm_comp";
+    tactileRightArmPort.open(tactileRightArmPortString.c_str());
+    string tactileLeftForearmPortString = moduleName + "/skin/left_forearm_comp";
+    tactileLeftForearmPort.open(tactileLeftForearmPortString.c_str());
+    string tactileRightForearmPortString = moduleName + "/skin/right_forearm_comp";
+    tactileRightForearmPort.open(tactileRightForearmPortString.c_str());
+    string tactileTorsoPortString = moduleName + "/skin/torso_comp";
+    tactileTorsoPort.open(tactileTorsoPortString.c_str());
+    
     if (robot_flags.actVision) {
         initImagePorts();
     }

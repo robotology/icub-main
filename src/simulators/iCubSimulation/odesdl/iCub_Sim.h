@@ -19,7 +19,7 @@
 */
 /**
  * \file iCub_Sim.h
- * \brief This class controls the simulation speed using dWorldstep for "exact" calculations, the collisions between objects/spaces and the rendering functions. It also deals with separating the physics calsulations from the rendering 
+ * \brief This class controls the simulation speed using dWorldstep for "exact" calculations, the collisions between objects/spaces and the rendering functions. It also deals with separating the physics calculations from the rendering 
  * \author Vadim Tikhanoff, Paul Fitzpatrick
  * \date 2007
  * \note Release under GNU GPL v2.0
@@ -54,6 +54,11 @@
 #include "RobotStreamer.h"
 #include "RobotConfig.h"
 #include "Simulation.h"
+
+#include "iCub/skinDynLib/skinContact.h"
+#include "iCub/skinDynLib/skinContactList.h"
+
+#define MY_VERBOSITY 0
 
 extern Semaphore ODE_access;
 
@@ -126,9 +131,9 @@ private:
     // returns true if the body with the bodyID is a touch-sensitive body, returns false otherwise.
     static bool isBodyTouchSensitive (dBodyID bodyID);
 
-    static void inspectBodyTouch_continuousValued(Bottle& report);
+    static void inspectHandTouch_continuousValued(Bottle& report);
 
-    static void inspectBodyTouch_icubSensors(Bottle& reportLeft, Bottle& reportRight, bool boolean);
+    static void inspectHandTouch_icubSensors(Bottle& reportLeft, Bottle& reportRight, bool boolean);
 
     static void getAngles(const dReal *m, float& z, float& y, float& x);
 
@@ -146,6 +151,13 @@ private:
     static int thread_ode(void *unused);
 
     static void sighandler(int sig);
+    
+    // in the self_collisions regime, this is to ignore collisions between certain geoms, such as upper arm covers colliding with torso
+    static bool selfCollisionOnIgnoreList(string geom1_string, string geom2_string);
+    
+    static void processWholeBodyCollisions(skinContactList& skin_contact_list);
+    static void inspectWholeBodyContactsAndSendTouch();
+    static std::string getGeomClassName(const int geom_class, std::string & s);
 
     //////////////////////////////
     //////////////////////////////

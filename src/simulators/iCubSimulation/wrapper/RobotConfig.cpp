@@ -81,7 +81,15 @@ void RobotConfig::setFlags() {
     ConstString actfixedHip = options.findGroup("PARTS").check("fixed_hip",Value(1),"what did the user select?").asString();
 	if (actfixedHip.length()<1 ) stopConfig("actfixedHip");//, proceed);
     FLAGIFY(flags,actfixedHip);
+    
+    ConstString actSelfCol = options.findGroup("COLLISIONS").check("self_collisions",Value(1),"what did the user select?").asString();
+    if (actSelfCol.length()<1 ) stopConfig("actSelfCol");//, proceed);
+    FLAGIFY(flags,actSelfCol);
 
+    ConstString actCoversCol = options.findGroup("COLLISIONS").check("covers_collisions",Value(1),"what did the user select?").asString();
+    if (actCoversCol.length()<1 ) stopConfig("actCoversCol");//, proceed);
+    FLAGIFY(flags,actCoversCol);
+    
     ConstString actVision = options.findGroup("VISION").check("cam",Value(1),"What did the user select?").asString();
 	if (actVision.length()<1 ) stopConfig("actVision");//, proceed);
     FLAGIFY(flags,actVision);
@@ -89,6 +97,10 @@ void RobotConfig::setFlags() {
     ConstString actPressure = options.findGroup("SENSORS").check("pressure",Value(1),"What did the user select?").asString();
 	if (actPressure.length()<1 ) stopConfig("actPressure");//, proceed);
     FLAGIFY(flags,actPressure);
+    
+    ConstString actSkinEmul = options.findGroup("SENSORS").check("whole_body_skin_emul",Value(1),"What did the user select?").asString();
+    if (actSkinEmul.length()<1 ) stopConfig("actSkinEmul");//, proceed);
+    FLAGIFY(flags,actSkinEmul);
 
     ConstString actWorld = options.findGroup("RENDER").check("objects",Value(1),"What did the user select?").asString();
 	if (actWorld.length()<1 ) stopConfig("actWorld");//, proceed);
@@ -133,8 +145,11 @@ void RobotConfig::setFlags() {
         "Right arm : " << actRArm << endl <<
         "Right hand : " << actRHand << endl <<
         "Head : " << actHead << endl <<
-        "Fixed Hip : " << actfixedHip << endl << endl << 
+        "Fixed Hip : " << actfixedHip << endl << endl <<
+        "Self-collisions : " << actSelfCol << endl <<
+        "Collisions for covers : " << actCoversCol << endl << endl <<
         "Pressure sensors: " << actPressure << endl <<
+        "Whole body skin emulation: " << actSkinEmul << endl <<
         "Cameras :" << actVision << endl  <<
         "Objects : " << actWorld << endl <<
         "Head Cover : " << actHeadCover << endl <<
