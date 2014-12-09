@@ -699,8 +699,8 @@ protected:
     {
         IEncoders  *iencsLA;
         IEncoders  *iencsRA;
-        drvLeftArm->view(iencsLA);
-        drvRightArm->view(iencsRA);
+        if (useLeftArm)   drvLeftArm->view(iencsLA);
+        if (useRightArm)  drvRightArm->view(iencsRA);
 
         if (breatherHrpc.getOutputCount()>0)
         {
@@ -713,7 +713,7 @@ protected:
         int axes;
         Vector encs;
 
-        if (breatherLArpc.getOutputCount()>0)
+        if (useLeftArm && breatherLArpc.getOutputCount()>0)
         {
             iencsLA->getAxes(&axes);
             encs.resize(axes,0.0);
@@ -722,7 +722,7 @@ protected:
                 return false;
         }
 
-        if (breatherRArpc.getOutputCount()>0)
+        if (useRightArm && breatherRArpc.getOutputCount()>0)
         {
             iencsRA->getAxes(&axes);
             encs.resize(axes,0.0);
