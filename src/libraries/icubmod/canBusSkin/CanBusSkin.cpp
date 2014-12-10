@@ -525,14 +525,16 @@ void CanBusSkin::run() {
 
     unsigned int canMessages = 0;
     bool res = pCanBus->canRead(inBuffer, CAN_DRIVER_BUFFER_SIZE, &canMessages);
-        yError()<<"canRead failed\n";
-    
-    // Allocate error vector
-    errors.resize(canMessages);
 
-    if (!res) {
+    if (!res) 
+    {
         std::cerr << "ERROR: CanBusSkin: CanRead failed \n";
-    } else {
+    } 
+    else 
+    {
+        // Allocate error vector
+        errors.resize(canMessages);
+
         for (unsigned int i = 0; i < canMessages; i++) {
 
             CanMessage &msg = inBuffer[i];
