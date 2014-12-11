@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+ <!-- Initialization file for cfw002  motor contol for the head - 6 joints -->
+<devices robot="iCubLisboa01" build="1"> 
+  <device name="left_arm_skin" type="canBusSkin">
+      <params file="general.xml" />
+
+	  <params robot="iCubLisboa01" build="1">
+        <param name="canDeviceNum"> 7         </param>
+        <param name="skinCanIds">   14 13 12 11 10 9 8  </param>
+        <param name="period"> 10              </param>
+        <param name="canbusDevice"> cfw2can   </param>
+      </params>
+    <params file="hardware/skin/left_arm-cfw2_can7-skinSpec.xml" /> 
+  </device>
+</devices>
