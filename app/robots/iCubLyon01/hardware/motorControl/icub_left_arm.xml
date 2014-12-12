@@ -1,7 +1,6 @@
  
  
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices>      
 <devices robot="iCubLyon01" build="1">     
   <device name="left_arm_mc" type="canmotioncontrol">    
 <params file="general.xml" />              
@@ -81,3 +80,4 @@
 </group>       
  
   </device>    
+</devices>     
