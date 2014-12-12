@@ -2,6 +2,7 @@
  
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
+<devices robot="iCubLyon01" build="1">     
   <device name="torso_mc" type="canmotioncontrol">       
 <params file="general.xml" />              
 <group name="CAN">           
@@ -31,7 +32,7 @@
 <param name="Joints">       4             </param>       
 <param name="AxisMap">      0             2             3             1             </param>       
 <param name="Encoder">      11.375        11.375        11.375        0             </param>       
-<param name="Zeros">        180           179           181           0             </param>       
+<param name="Zeros">        180           180           180           0             </param>       
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          </param>       
 <param name="TorqueChan">   0             1             2             0             </param>       
 <param name="TorqueMax">    12            12            12            12            </param>       
@@ -80,4 +81,3 @@
 </group>       
  
   </device>    
-</devices>     

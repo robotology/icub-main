@@ -2,6 +2,7 @@
  
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
+<devices robot="iCubLyon01" build="1">     
   <device name="head_mc" type="canmotioncontrol">        
 <params file="general.xml" />              
 <group name="CAN">           
@@ -31,7 +32,7 @@
 <param name="Joints">       6             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             </param>       
 <param name="Encoder">      11.375        -11.375       11.375        11.375        568.88        284.44        </param>       
-<param name="Zeros">        178           -178          178           178           -49           0             </param>       
+<param name="Zeros">        180           -180          180           167           -45           0             </param>       
 <param name="TorqueId">     0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             </param>       
 <param name="TorqueMax">    0             0             0             0             0             0             </param>       
@@ -61,7 +62,7 @@
 <param name="ki">           5             -5            10            -4            10            10            </param>       
 <param name="maxPwm">       800           800           1333          1333          1333          1333          </param>       
 <param name="maxInt">       800           800           1333          1333          1333          1333          </param>       
-<param name="shift">        9             9             6             4             5             5             </param>       
+<param name="shift">        8             8             6             4             5             5             </param>       
 <param name="ko">           0             0             0             0             0             0             </param>       
 <param name="stictionUp">   0             0             0             0             0             0             </param>       
 <param name="stictionDwn">  0             0             0             0             0             0             </param>       
@@ -80,4 +81,3 @@
 </group>       
  
   </device>    
-</devices>     
