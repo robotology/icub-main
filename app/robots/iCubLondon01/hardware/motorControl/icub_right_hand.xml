@@ -1,7 +1,7 @@
  
  
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices robot="iCubLondon01" build="1">     
+<devices robot="iCubLyon01" build="1">     
   <device name="right_hand_mc" type="canmotioncontrol">  
 <params file="general.xml" />              
 <group name="CAN">           
@@ -30,8 +30,8 @@
 <group name="GENERAL">       
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
-<param name="Encoder">      14.56         -2.28         -2.52         -2.28         -2.33         -2.28         -2.22         -2.02         </param>       
-<param name="Zeros">        34.35         -94.39        -183.96       -96.59        -199.33       -103.17       -211.58       -344.06       </param>       
+<param name="Encoder">      8.81          -2.44         -1.88         -2.56         -2.75         -2.76         -2.47         -1.83         </param>       
+<param name="Zeros">        158.89        -94.09        -204.42       -91.96        -180.00       -92.54        -188.09       -375.82       </param>       
 <param name="TorqueId">     0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueMax">    0             0             0             0             0             0             0             0             </param>       
