@@ -9,21 +9,9 @@
 class dataSetPlayer_IDL_step : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("step",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class dataSetPlayer_IDL_setFrame : public yarp::os::Portable {
@@ -31,152 +19,244 @@ public:
   std::string name;
   int32_t frameNum;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(3)) return false;
-    if (!writer.writeTag("setFrame",1,1)) return false;
-    if (!writer.writeString(name)) return false;
-    if (!writer.writeI32(frameNum)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& name, const int32_t frameNum);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class dataSetPlayer_IDL_getFrame : public yarp::os::Portable {
 public:
   std::string name;
   int32_t _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("getFrame",1,1)) return false;
-    if (!writer.writeString(name)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readI32(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& name);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class dataSetPlayer_IDL_load : public yarp::os::Portable {
 public:
   std::string path;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(2)) return false;
-    if (!writer.writeTag("load",1,1)) return false;
-    if (!writer.writeString(path)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& path);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class dataSetPlayer_IDL_play : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("play",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class dataSetPlayer_IDL_pause : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("pause",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class dataSetPlayer_IDL_stop : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("stop",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class dataSetPlayer_IDL_quit : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("quit",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+bool dataSetPlayer_IDL_step::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("step",1,1)) return false;
+  return true;
+}
+
+bool dataSetPlayer_IDL_step::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void dataSetPlayer_IDL_step::init() {
+  _return = false;
+}
+
+bool dataSetPlayer_IDL_setFrame::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(3)) return false;
+  if (!writer.writeTag("setFrame",1,1)) return false;
+  if (!writer.writeString(name)) return false;
+  if (!writer.writeI32(frameNum)) return false;
+  return true;
+}
+
+bool dataSetPlayer_IDL_setFrame::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void dataSetPlayer_IDL_setFrame::init(const std::string& name, const int32_t frameNum) {
+  _return = false;
+  this->name = name;
+  this->frameNum = frameNum;
+}
+
+bool dataSetPlayer_IDL_getFrame::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("getFrame",1,1)) return false;
+  if (!writer.writeString(name)) return false;
+  return true;
+}
+
+bool dataSetPlayer_IDL_getFrame::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readI32(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void dataSetPlayer_IDL_getFrame::init(const std::string& name) {
+  _return = 0;
+  this->name = name;
+}
+
+bool dataSetPlayer_IDL_load::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("load",1,1)) return false;
+  if (!writer.writeString(path)) return false;
+  return true;
+}
+
+bool dataSetPlayer_IDL_load::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void dataSetPlayer_IDL_load::init(const std::string& path) {
+  _return = false;
+  this->path = path;
+}
+
+bool dataSetPlayer_IDL_play::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("play",1,1)) return false;
+  return true;
+}
+
+bool dataSetPlayer_IDL_play::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void dataSetPlayer_IDL_play::init() {
+  _return = false;
+}
+
+bool dataSetPlayer_IDL_pause::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("pause",1,1)) return false;
+  return true;
+}
+
+bool dataSetPlayer_IDL_pause::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void dataSetPlayer_IDL_pause::init() {
+  _return = false;
+}
+
+bool dataSetPlayer_IDL_stop::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("stop",1,1)) return false;
+  return true;
+}
+
+bool dataSetPlayer_IDL_stop::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void dataSetPlayer_IDL_stop::init() {
+  _return = false;
+}
+
+bool dataSetPlayer_IDL_quit::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("quit",1,1)) return false;
+  return true;
+}
+
+bool dataSetPlayer_IDL_quit::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void dataSetPlayer_IDL_quit::init() {
+  _return = false;
+}
+
+dataSetPlayer_IDL::dataSetPlayer_IDL() {
+  yarp().setOwner(*this);
+}
 bool dataSetPlayer_IDL::step() {
   bool _return = false;
   dataSetPlayer_IDL_step helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::step()");
   }
@@ -186,8 +266,7 @@ bool dataSetPlayer_IDL::step() {
 bool dataSetPlayer_IDL::setFrame(const std::string& name, const int32_t frameNum) {
   bool _return = false;
   dataSetPlayer_IDL_setFrame helper;
-  helper.name = name;
-  helper.frameNum = frameNum;
+  helper.init(name,frameNum);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::setFrame(const std::string& name, const int32_t frameNum)");
   }
@@ -197,7 +276,7 @@ bool dataSetPlayer_IDL::setFrame(const std::string& name, const int32_t frameNum
 int32_t dataSetPlayer_IDL::getFrame(const std::string& name) {
   int32_t _return = 0;
   dataSetPlayer_IDL_getFrame helper;
-  helper.name = name;
+  helper.init(name);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","int32_t dataSetPlayer_IDL::getFrame(const std::string& name)");
   }
@@ -207,7 +286,7 @@ int32_t dataSetPlayer_IDL::getFrame(const std::string& name) {
 bool dataSetPlayer_IDL::load(const std::string& path) {
   bool _return = false;
   dataSetPlayer_IDL_load helper;
-  helper.path = path;
+  helper.init(path);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::load(const std::string& path)");
   }
@@ -217,6 +296,7 @@ bool dataSetPlayer_IDL::load(const std::string& path) {
 bool dataSetPlayer_IDL::play() {
   bool _return = false;
   dataSetPlayer_IDL_play helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::play()");
   }
@@ -226,6 +306,7 @@ bool dataSetPlayer_IDL::play() {
 bool dataSetPlayer_IDL::pause() {
   bool _return = false;
   dataSetPlayer_IDL_pause helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::pause()");
   }
@@ -235,6 +316,7 @@ bool dataSetPlayer_IDL::pause() {
 bool dataSetPlayer_IDL::stop() {
   bool _return = false;
   dataSetPlayer_IDL_stop helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::stop()");
   }
@@ -244,6 +326,7 @@ bool dataSetPlayer_IDL::stop() {
 bool dataSetPlayer_IDL::quit() {
   bool _return = false;
   dataSetPlayer_IDL_quit helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool dataSetPlayer_IDL::quit()");
   }
@@ -256,6 +339,8 @@ bool dataSetPlayer_IDL::read(yarp::os::ConnectionReader& connection) {
   reader.expectAccept();
   if (!reader.readListHeader()) { reader.fail(); return false; }
   yarp::os::ConstString tag = reader.readTag();
+  bool direct = (tag=="__direct__");
+  if (direct) tag = reader.readTag();
   while (!reader.isError()) {
     // TODO: use quick lookup, this is just a test
     if (tag == "step") {

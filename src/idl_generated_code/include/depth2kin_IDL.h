@@ -19,7 +19,7 @@ class depth2kin_IDL;
  */
 class depth2kin_IDL : public yarp::os::Wire {
 public:
-  depth2kin_IDL() { yarp().setOwner(*this); }
+  depth2kin_IDL();
   /**
    * Return the number of available experts.
    * @return the number of available experts.

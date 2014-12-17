@@ -11,23 +11,9 @@ public:
   std::string part;
   yarp::os::Value val;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(3)) return false;
-    if (!writer.writeTag("sync",1,1)) return false;
-    if (!writer.writeString(part)) return false;
-    if (!writer.write(val)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& part, const yarp::os::Value& val);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class fingersTuner_IDL_tune : public yarp::os::Portable {
@@ -35,70 +21,126 @@ public:
   std::string part;
   yarp::os::Value val;
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(3)) return false;
-    if (!writer.writeTag("tune",1,1)) return false;
-    if (!writer.writeString(part)) return false;
-    if (!writer.write(val)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init(const std::string& part, const yarp::os::Value& val);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class fingersTuner_IDL_save : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("save",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
 class fingersTuner_IDL_quit : public yarp::os::Portable {
 public:
   bool _return;
-  virtual bool write(yarp::os::ConnectionWriter& connection) {
-    yarp::os::idl::WireWriter writer(connection);
-    if (!writer.writeListHeader(1)) return false;
-    if (!writer.writeTag("quit",1,1)) return false;
-    return true;
-  }
-  virtual bool read(yarp::os::ConnectionReader& connection) {
-    yarp::os::idl::WireReader reader(connection);
-    if (!reader.readListReturn()) return false;
-    if (!reader.readBool(_return)) {
-      reader.fail();
-      return false;
-    }
-    return true;
-  }
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+bool fingersTuner_IDL_sync::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(3)) return false;
+  if (!writer.writeTag("sync",1,1)) return false;
+  if (!writer.writeString(part)) return false;
+  if (!writer.write(val)) return false;
+  return true;
+}
+
+bool fingersTuner_IDL_sync::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void fingersTuner_IDL_sync::init(const std::string& part, const yarp::os::Value& val) {
+  _return = false;
+  this->part = part;
+  this->val = val;
+}
+
+bool fingersTuner_IDL_tune::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(3)) return false;
+  if (!writer.writeTag("tune",1,1)) return false;
+  if (!writer.writeString(part)) return false;
+  if (!writer.write(val)) return false;
+  return true;
+}
+
+bool fingersTuner_IDL_tune::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void fingersTuner_IDL_tune::init(const std::string& part, const yarp::os::Value& val) {
+  _return = false;
+  this->part = part;
+  this->val = val;
+}
+
+bool fingersTuner_IDL_save::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("save",1,1)) return false;
+  return true;
+}
+
+bool fingersTuner_IDL_save::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void fingersTuner_IDL_save::init() {
+  _return = false;
+}
+
+bool fingersTuner_IDL_quit::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("quit",1,1)) return false;
+  return true;
+}
+
+bool fingersTuner_IDL_quit::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void fingersTuner_IDL_quit::init() {
+  _return = false;
+}
+
+fingersTuner_IDL::fingersTuner_IDL() {
+  yarp().setOwner(*this);
+}
 bool fingersTuner_IDL::sync(const std::string& part, const yarp::os::Value& val) {
   bool _return = false;
   fingersTuner_IDL_sync helper;
-  helper.part = part;
-  helper.val = val;
+  helper.init(part,val);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDL::sync(const std::string& part, const yarp::os::Value& val)");
   }
@@ -108,8 +150,7 @@ bool fingersTuner_IDL::sync(const std::string& part, const yarp::os::Value& val)
 bool fingersTuner_IDL::tune(const std::string& part, const yarp::os::Value& val) {
   bool _return = false;
   fingersTuner_IDL_tune helper;
-  helper.part = part;
-  helper.val = val;
+  helper.init(part,val);
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDL::tune(const std::string& part, const yarp::os::Value& val)");
   }
@@ -119,6 +160,7 @@ bool fingersTuner_IDL::tune(const std::string& part, const yarp::os::Value& val)
 bool fingersTuner_IDL::save() {
   bool _return = false;
   fingersTuner_IDL_save helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDL::save()");
   }
@@ -128,6 +170,7 @@ bool fingersTuner_IDL::save() {
 bool fingersTuner_IDL::quit() {
   bool _return = false;
   fingersTuner_IDL_quit helper;
+  helper.init();
   if (!yarp().canWrite()) {
     fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDL::quit()");
   }
@@ -140,6 +183,8 @@ bool fingersTuner_IDL::read(yarp::os::ConnectionReader& connection) {
   reader.expectAccept();
   if (!reader.readListHeader()) { reader.fail(); return false; }
   yarp::os::ConstString tag = reader.readTag();
+  bool direct = (tag=="__direct__");
+  if (direct) tag = reader.readTag();
   while (!reader.isError()) {
     // TODO: use quick lookup, this is just a test
     if (tag == "sync") {

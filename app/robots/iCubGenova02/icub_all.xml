@@ -5,9 +5,9 @@
     <params file="hardware/electronics/pc104.xml" />
 
     <!-- CARTESIANS --> 
-    <devices file="cartesian/left_arm-cartesian.xml" />
+<!--    <devices file="cartesian/left_arm-cartesian.xml" />
     <devices file="cartesian/right_arm-cartesian.xml" />
-    
+    -->
     <!-- HEAD -->	
     <devices file="hardware/motorControl/head-cfw2_can0-mc.xml" />
     <devices file="wrappers/motorControl/head-mc_wrapper.xml" />

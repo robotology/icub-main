@@ -137,7 +137,7 @@ impedance_damping 60.0 60.0 60.0 20.0 0.0
 [right_arm]
 reach_offset        0.0 0.15 -0.05
 grasp_offset        0.0 0.0 -0.05
-grasp_sigma	        0.01 0.01 0.01
+grasp_sigma         0.01 0.01 0.01
 hand_orientation    -0.012968 -0.721210 0.692595 2.917075
 impedance_velocity_mode off 
 impedance_stiffness 0.5 0.5 0.5 0.2 0.1 
@@ -171,7 +171,7 @@ vels_hand       10.0 10.0  10.0 10.0 10.0 10.0 10.0 10.0  10.0
 \section tested_os_sec Tested OS
 Windows, Linux
 
-\author Ugo Pattacini
+\author Ugo Pattacini, Alessandro Roncone
 */ 
 
 #include <string>
@@ -287,6 +287,11 @@ protected:
     Port outportGui;
     Port outportCmdFace;
 
+    RpcClient breatherHrpc;
+    RpcClient breatherLArpc;
+    RpcClient breatherRArpc;
+    RpcClient blinkerrpc;
+
     Vector leftArmReachOffs;
     Vector leftArmGraspOffs;
     Vector leftArmGraspSigma;
@@ -333,10 +338,39 @@ protected:
 
     Matrix R,Rx,Ry,Rz;
 
-    int state;
-    int startup_context_id_left;
-    int startup_context_id_right;
-    int startup_context_id_gaze;
+    int  state;
+    bool state_breathers;
+    int  startup_context_id_left;
+    int  startup_context_id_right;
+    int  startup_context_id_gaze;
+
+    void breathersHandler(const bool sw)
+    {
+        Bottle msg,reply;
+        msg.addString(sw?"start":"stop");
+
+        if (breatherHrpc.getOutputCount()>0)
+        {
+            breatherHrpc.write(msg,reply);
+        }
+
+        if (breatherLArpc.getOutputCount()>0)
+        {
+            breatherLArpc.write(msg,reply);
+        }
+
+        if (breatherRArpc.getOutputCount()>0)
+        {
+            breatherRArpc.write(msg,reply);
+        }
+
+        if (blinkerrpc.getOutputCount()>0)
+        {
+            blinkerrpc.write(msg,reply);
+        }
+
+        state_breathers = !sw;
+    }
 
     void getTorsoOptions(Bottle &b, const char *type, const int i, Vector &sw, Matrix &lim)
     {
@@ -627,7 +661,7 @@ protected:
             if (state==STATE_IDLE)
             {
                 resetTargetBall();
-
+                breathersHandler(false);
                 fprintf(stdout,"--- Got target => REACHING\n");
                 
                 wentHome=false;
@@ -653,6 +687,51 @@ protected:
 
     void doIdle()
     {
+        if (state==STATE_IDLE)
+        {
+            if (state_breathers)
+                if (checkForHomePos())
+                    breathersHandler(true);
+        }
+    }
+
+    bool checkForHomePos()
+    {
+        IEncoders  *iencsLA;
+        IEncoders  *iencsRA;
+        if (useLeftArm)   drvLeftArm->view(iencsLA);
+        if (useRightArm)  drvRightArm->view(iencsRA);
+
+        if (breatherHrpc.getOutputCount()>0)
+        {
+            bool done;
+            gazeCtrl->checkMotionDone(&done);
+            if (!done)
+                return false;
+        }
+
+        int axes;
+        Vector encs;
+
+        if (useLeftArm && breatherLArpc.getOutputCount()>0)
+        {
+            iencsLA->getAxes(&axes);
+            encs.resize(axes,0.0);
+            iencsLA->getEncoders(encs.data());
+            if (norm(encs.subVector(0,homePoss.length()-1)-homePoss)>4.0)
+                return false;
+        }
+
+        if (useRightArm && breatherRArpc.getOutputCount()>0)
+        {
+            iencsRA->getAxes(&axes);
+            encs.resize(axes,0.0);
+            iencsRA->getEncoders(encs.data());
+            if (norm(encs.subVector(0,homePoss.length()-1)-homePoss)>4.0)
+                return false;
+        }
+
+        return true;
     }
 
     void commandHead()
@@ -1089,7 +1168,7 @@ protected:
     void commandFace()
     {
         if (state==STATE_IDLE)
-            setFace(FACE_SHY);
+            setFace(state_breathers?FACE_SHY:FACE_HAPPY);
         else if (state==STATE_REACH)
         {
             if (useLeftArm || useRightArm)
@@ -1255,6 +1334,11 @@ protected:
         deleteGuiTarget();
         outportGui.interrupt();
         outportGui.close();
+
+        breatherHrpc.close();
+        breatherLArpc.close();
+        breatherRArpc.close();
+        blinkerrpc.close();
     }
 
 public:
@@ -1358,6 +1442,10 @@ public:
         inportIMDTargetRight.open((name+"/imdTargetRight:i").c_str());
         outportCmdFace.open((name+"/cmdFace:rpc").c_str());
         outportGui.open((name+"/gui:o").c_str());
+        breatherHrpc.open((name+"/breather/head:rpc").c_str());
+        breatherLArpc.open((name+"/breather/left_arm:rpc").c_str());
+        breatherRArpc.open((name+"/breather/right_arm:rpc").c_str());
+        blinkerrpc.open((name+"/blinker:rpc").c_str());
 
         string fwslash="/";
 
@@ -1567,6 +1655,7 @@ public:
 
         wentHome=false;
         state=STATE_IDLE;
+        state_breathers=true;
 
         return true;
     }
@@ -1791,6 +1880,5 @@ int main(int argc, char *argv[])
 
     return mod.runModule(rf);
 }
-
 
 

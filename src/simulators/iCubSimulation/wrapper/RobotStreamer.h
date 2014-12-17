@@ -24,16 +24,36 @@
 
 #include <yarp/os/Bottle.h>
 
+#include "iCub/skinDynLib/skinContactList.h"
+
 class RobotStreamer {
 public:
     virtual void sendVision() = 0;
-    virtual void sendTouchLeft(yarp::os::Bottle& report) = 0;
-    virtual void sendTouchRight(yarp::os::Bottle& report) = 0;
-    virtual bool shouldSendTouchLeft() = 0;
-    virtual bool shouldSendTouchRight() = 0;
+    virtual void sendTouchLeftHand(yarp::os::Bottle& report) = 0;
+    virtual void sendTouchRightHand(yarp::os::Bottle& report) = 0;
+    virtual bool shouldSendTouchLeftHand() = 0;
+    virtual bool shouldSendTouchRightHand() = 0;
     virtual void sendInertial(yarp::os::Bottle& report) = 0;
     virtual bool shouldSendInertial() = 0;
     virtual void checkTorques() = 0;
+
+    //whole_body_skin_emul
+    virtual void sendSkinEvents(iCub::skinDynLib::skinContactList& skinContactListReport) = 0;
+    virtual bool shouldSendSkinEvents() = 0;
+      
+    virtual void sendTouchLeftArm(yarp::os::Bottle& report) = 0;
+    virtual void sendTouchRightArm(yarp::os::Bottle& report) = 0;
+    virtual bool shouldSendTouchLeftArm() = 0;
+    virtual bool shouldSendTouchRightArm() = 0;
+       
+    virtual void sendTouchLeftForearm(yarp::os::Bottle& report) = 0;
+    virtual void sendTouchRightForearm(yarp::os::Bottle& report) = 0;
+    virtual bool shouldSendTouchLeftForearm() = 0;
+    virtual bool shouldSendTouchRightForearm() = 0;
+       
+    virtual void sendTouchTorso(yarp::os::Bottle& report) = 0;
+    virtual bool shouldSendTouchTorso() = 0;
+    
 };
 
 #endif

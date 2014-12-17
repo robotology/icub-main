@@ -163,13 +163,13 @@ public:
     const std::string& get_result() {
       return obj->result;
     }
-    const double get_x() {
+    double get_x() {
       return obj->x;
     }
-    const double get_y() {
+    double get_y() {
       return obj->y;
     }
-    const double get_z() {
+    double get_z() {
       return obj->z;
     }
     virtual bool will_set_result() { return true; }

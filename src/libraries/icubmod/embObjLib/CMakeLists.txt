@@ -88,6 +88,7 @@ endif(ICUB_EOPROT_DEFINED_BY_XML)
 
 set(NVS_SOURCE              ${NVS_MC_SRC_FOLDER}/EoProtocol.c
                             ${NVS_MC_SRC_FOLDER}/EoProtocolEPs.c
+                            ${PROT_FOLDER}/icub/EoError.c
                             )
  
     

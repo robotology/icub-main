@@ -339,6 +339,23 @@ ethFeature_t TheEthManager::getFeatInfo(FEAT_boardnumber_t boardnum, eOprotEndpo
 }
 #endif
 
+#if (EO_ERRMAN_VERSION == 2)
+// this function is called by the embobj error manager
+void embOBJerror(eOerrmanErrorType_t errtype, const char *info, eOerrmanCaller_t *caller, const eOerrmanDescriptor_t *des)
+{
+    const char defobjstr[] = "EO?";
+    const char *eobjstr = (NULL == caller) ? (defobjstr) : (caller->eobjstr);
+
+    yError() << "embOBJerror(): errtype = " << eo_errman_ErrorStringGet(eo_errman_GetHandle(), errtype) << "from EOobject = " << eobjstr << " w/ message = " << info;
+
+    if(errtype == eo_errortype_fatal)
+    {
+        yError() << "embOBJerror(): FATAL ERROR: the calling thread shall now be stopped in a forever loop here inside";
+        for(;;);
+    }
+
+}
+#else
 // this function is called by the embobj error manager
 void embOBJerror(eOerrmanErrorType_t errtype, eOid08_t taskid, const char *eobjstr, const char *info)
 {
@@ -353,6 +370,7 @@ void embOBJerror(eOerrmanErrorType_t errtype, eOid08_t taskid, const char *eobjs
     }
 
 }
+#endif
 
 
 TheEthManager::TheEthManager()
