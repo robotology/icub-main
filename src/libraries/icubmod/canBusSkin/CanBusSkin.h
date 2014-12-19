@@ -27,6 +27,9 @@ class CanBusSkin : public yarp::os::RateThread, public yarp::dev::IAnalogSensor,
 {
 private:
 
+    bool _verbose;
+
+
     /* *************************************************************************************** */
     // CAN Message parameters
     // 4C Message
@@ -52,8 +55,12 @@ private:
     SkinBoardCfgParam       _brdCfg;
     SkinTriangleCfgParam    _triangCfg;
     bool                    _newCfg;
-    SkinConfigReader        *_cfgReader;
+    SkinConfigReader        _cfgReader;
     int                     _canBusNum;
+    /*************************************************************/
+
+    /****************** diagnostic********************************/
+    bool _isDiagnosticPresent;       // is the diagnostic available from the firmware
     /*************************************************************/
 
 protected:
@@ -63,7 +70,6 @@ protected:
     yarp::dev::CanBuffer inBuffer;
     yarp::dev::CanBuffer outBuffer;
 
-   
     yarp::os::Semaphore mutex;
 
     /** The CAN net ID. */
@@ -74,15 +80,11 @@ protected:
 
     yarp::sig::Vector data;
 
-    /** Flag to set if the skin diagnostics is active. */
-    bool useDiagnostics;
-
     /** The detected skin errors. These are used for diagnostics purposes. */
     yarp::sig::VectorOf<iCub::skin::diagnostics::DetectedError> errors;
 
 public:
-    CanBusSkin(int period=20) : RateThread(period),mutex(1) {}
-    
+    CanBusSkin();
     ~CanBusSkin() {}
 
     virtual bool open(yarp::os::Searchable& config);
@@ -124,7 +126,8 @@ private:
      * Sends the CMD_TACT_SETUP 0x4C CAN message to the MTB boards.
      */
     bool sendCANMessage4C(void);
-    
+    bool checkFirmwareVersion(void);
+
     /**
      * Sends the CMD_TACT_SETUP2 0x4E CAN message to the MTB boards.
      */

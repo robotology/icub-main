@@ -30,6 +30,13 @@ using yarp::dev::CanMessage;
 using yarp::os::Time;
 
 
+CanBusSkin::CanBusSkin() :  RateThread(20),
+                            mutex(1),
+                            _verbose(false),
+                            _isDiagnosticPresent(false)
+{ }
+
+
 bool CanBusSkin::open(yarp::os::Searchable& config)
 {
     bool ret=true;
@@ -54,7 +61,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     _canBusNum = config.find("canDeviceNum").asInt();
     char name[80];
     sprintf(name, "canSkin on bus %d", _canBusNum);
-    _cfgReader = new SkinConfigReader(name);
+    _cfgReader.setName(name);
 
     int period=config.find("period").asInt();
     setRate(period);
@@ -109,14 +116,23 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     driver.view(pCanBufferFactory);
     pCanBus->canSetBaudRate(0); //default 1MB/s
 
-
     outBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
     inBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
 
-    if( _cfgReader->isDefaultBoardCfgPresent(config) && _cfgReader->isDefaultTriangleCfgPresent(config))
+    /* when the message will be available in the firmware
+    if(!checkFirmwareVersion())
+    {
+        diagnosticAvailable = false;
+    }
+    else
+        diagnosticAvailable = true;
+    */
+
+
+    if( _cfgReader.isDefaultBoardCfgPresent(config) && _cfgReader.isDefaultTriangleCfgPresent(config))
     {
         _newCfg = true;
-        yWarning() << "Skin on can bus " << _canBusNum << " uses new configuration version!!!";
+        yInfo() << "Skin on can bus " << _canBusNum << " uses NEW configuration version!!!";
         ret = readNewConfiguration(config);
     }
     else
@@ -160,9 +176,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
     data.resize(sensorsNum);
     data.zero();
 
-
     /* ****** Skin diagnostics ****** */
-    useDiagnostics = false;     // FG: This flag could be set via configuration file for cleaningness sake.
     portSkinDiagnosticsOut.open("/diagnostics/skin/errors:o");
 
     //if I 'm here, config is ok ==> send message to enable transmission
@@ -177,7 +191,6 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
                 return false;
         }
     }
-
 
     RateThread::start();
     return true;
@@ -264,18 +277,15 @@ bool CanBusSkin::sendCANMessage(uint8_t destAddr, uint8_t command, void *data)
 
 bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
 {
-    Bottle          bNumOfset;
-    int             numOfSets;
     int             j;
     int             numofcfg;
-
 
     /* Read special board configuration */
     numofcfg = cardId.size();   //set size of my vector boardCfgList;
                                 //in output the function returns number of special board cfg are in file xml
     SpecialSkinBoardCfgParam* boardCfgList = new SpecialSkinBoardCfgParam[numofcfg];
 
-    if(!_cfgReader->readSpecialBoardCfg(config, boardCfgList, &numofcfg))
+    if(!_cfgReader.readSpecialBoardCfg(config, boardCfgList, &numofcfg))
         return false;
 
     for(j=0; j<numofcfg; j++) //for each special board config
@@ -320,7 +330,7 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
                                     //in output the function return number of special board cfg are in file xml
         SpecialSkinTriangleCfgParam* triangleCfg = new SpecialSkinTriangleCfgParam[numofcfg];
 
-        if(! _cfgReader->readSpecialTriangleCfg(config, &triangleCfg[0], &numofcfg))
+        if(! _cfgReader.readSpecialTriangleCfg(config, &triangleCfg[0], &numofcfg))
             return false;
 
         for(j=0; j<numofcfg; j++)
@@ -362,7 +372,7 @@ bool CanBusSkin::readNewConfiguration(yarp::os::Searchable& config)
 {
     /*read skin board default configuration*/
     _brdCfg.setDefaultValues();
-    if(!_cfgReader->readDefaultBoardCfg(config, &_brdCfg))
+    if(!_cfgReader.readDefaultBoardCfg(config, &_brdCfg))
         return false;
 
     /* send default board configuration (new configuration style)*/
@@ -374,7 +384,7 @@ bool CanBusSkin::readNewConfiguration(yarp::os::Searchable& config)
 
     /*read skin triangle default configuration*/
     _triangCfg.setDefaultValues();
-    if(! _cfgReader->readDefaultTriangleCfg(config, &_triangCfg))
+    if(! _cfgReader.readDefaultTriangleCfg(config, &_triangCfg))
         return false;
     SpecialSkinTriangleCfgParam spTrCfg;
     spTrCfg.cfg = _triangCfg;
@@ -444,8 +454,8 @@ bool CanBusSkin::readOldConfiguration(yarp::os::Searchable& config)
     {
         return false;
     }
-
 }
+
 bool CanBusSkin::close()
 {
 
@@ -472,7 +482,8 @@ int CanBusSkin::read(yarp::sig::Vector &out)
 {
     mutex.wait();
     out=data;
-    diagnoseSkin();
+    if(_isDiagnosticPresent)
+        diagnoseSkin();
     mutex.post();
 
     return yarp::dev::IAnalogSensor::AS_OK;
@@ -572,36 +583,36 @@ void CanBusSkin::run() {
                         }
 
                         // Skin diagnostics
-                        if (len == 8) {
-                            // Skin diagnostics is active
-                            useDiagnostics = true;
-
-                            // Get error code head and tail
-                            short head = msg.getData()[6];
-                            short tail = msg.getData()[7];
-                            int fullMsg = (head << 8) | (tail & 0xFF);
-
-                            // Store error message
-                            errors[i].net = netID;
-                            errors[i].board = id;
-                            errors[i].sensor = sensorId;
-                            errors[i].error = fullMsg;
-
-                            if (!(fullMsg & SkinErrorCode::StatusOK))
+                        if (_brdCfg.useDiagnostic)  // if user requests to check the diagnostic
+                        {
+                            if (len == 8)   // firmware is sending diagnostic info
                             {
-                                yError() << "canBusSkin error code: " <<
-                                            "net " << errors[i].net <<
-                                            "board " <<  errors[i].board <<
-                                            "sensor " << errors[i].sensor <<
-                                            "error " << errors[i].error;
+                                _isDiagnosticPresent = true;
+
+                                // Get error code head and tail
+                                short head = msg.getData()[6];
+                                short tail = msg.getData()[7];
+                                int fullMsg = (head << 8) | (tail & 0xFF);
+
+                                // Store error message
+                                errors[i].net = netID;
+                                errors[i].board = id;
+                                errors[i].sensor = sensorId;
+                                errors[i].error = fullMsg;
+
+                                if (!(fullMsg & SkinErrorCode::StatusOK))
+                                {
+                                    yError() << "canBusSkin error code: " <<
+                                                "net " << errors[i].net <<
+                                                "board " <<  errors[i].board <<
+                                                "sensor " << errors[i].sensor <<
+                                                "error " << errors[i].error;
+                                }
                             }
-
-
-                        } else {
-                            useDiagnostics = false;
-#if 0
-                            cout << "WARNING: CanBusSkin: Board ID (" << id << "): You are using the old skin firmware which does not include skin diagnostics. You might want to consider upgrading to a newer firmware. \n";
-#endif
+                            else
+                            {
+                                _isDiagnosticPresent = false;
+                            }
                         }
                     }
                 }
@@ -612,10 +623,7 @@ void CanBusSkin::run() {
             }
         }
     }
-
-
     mutex.post();
-
 }
 
 void CanBusSkin::threadRelease()
@@ -633,25 +641,23 @@ bool CanBusSkin::diagnoseSkin(void) {
     using iCub::skin::diagnostics::DetectedError;   // FG: Skin diagnostics errors
     using yarp::sig::Vector;
 
-    if (useDiagnostics) {
-        // Write errors to port
-        for (size_t i = 0; i < errors.size(); ++i) {
-            Vector &out = portSkinDiagnosticsOut.prepare();
-            out.clear();
-            
-            out.push_back(errors[i].net);
-            out.push_back(errors[i].board);
-            out.push_back(errors[i].sensor);
-            out.push_back(errors[i].error);
-            
-            portSkinDiagnosticsOut.write(true);
-        }
+    // Write errors to port
+    for (size_t i = 0; i < errors.size(); ++i)
+    {
+        Vector &out = portSkinDiagnosticsOut.prepare();
+        out.clear();
+
+        out.push_back(errors[i].net);
+        out.push_back(errors[i].board);
+        out.push_back(errors[i].sensor);
+        out.push_back(errors[i].error);
+
+        portSkinDiagnosticsOut.write(true);
     }
 
     return true;
 }
 /* *********************************************************************************************************************** */
-
 
 /* *********************************************************************************************************************** */
 /* ******* Converts input parameter bottle into a std vector.               ********************************************** */
@@ -714,7 +720,6 @@ bool CanBusSkin::sendCANMessage4C(void) {
 
     return true;
 }
-/* *********************************************************************************************************************** */
 
 
 /* *********************************************************************************************************************** */
@@ -765,3 +770,127 @@ bool CanBusSkin::sendCANMessage4E(void) {
     return true;
 }
 /* *********************************************************************************************************************** */
+
+
+/************************************************************************************************************************ */
+
+/// When the firmware will implement this.
+bool CanBusSkin::checkFirmwareVersion(void)
+{
+    bool firmware_version_ok = true;
+
+    for (size_t i = 0; i < cardId.size(); ++i)
+    {
+#if 1 //SKIN_DEBUG
+        yDebug("CanBusSkin: check firmware version for board ID: %d. \n",cardId[i]);
+#endif
+
+        unsigned int canMessages=0;
+        unsigned int id = (ICUBCANPROTO_CLASS_POLLING_ANALOGSENSOR << 8) + (0x00 /*master address*/ << 4) + (cardId[i]);
+
+        // enable reading of messages from the bootloader class (already done?)
+        unsigned int recvId = ( (ICUBCANPROTO_CLASS_POLLING_ANALOGSENSOR << 8) + (cardId[i] << 4) );
+        pCanBus->canIdAdd(recvId);
+
+        //CanMessage &txBuffer=outBuffer[0];
+        // Send command
+        outBuffer[0].setId(id);
+        outBuffer[0].setLen(1);
+        outBuffer[0].getData()[0]= ICUBCANPROTO_POL_MC_CMD__GET_FIRMWARE_VERSION; // message for firmware version
+
+        if (!pCanBus->canWrite(outBuffer, 1, &canMessages))
+        {
+            yError() << "CanBusSkin: Could not write to the CAN interface. \n";
+            return false;
+        }
+
+
+        // pause
+        yarp::os::Time::delay(0.3);
+
+        //riceve la risposta
+        bool done=false;
+        unsigned int read_messages=0;
+        while(!done)
+        {
+            bool res = pCanBus->canRead(inBuffer, CAN_DRIVER_BUFFER_SIZE, &read_messages);
+            if (!res)
+            {
+                std::cerr << "ERROR: CanBusSkin: CanRead failed \n";
+            }
+
+            //Timeout: no answers
+            if (read_messages==0)
+            {
+                yError ("No answers\n");
+                return -1;
+            }
+
+            //One (or more) answers received
+            //Counts the number of the boards
+            for (i=0; i<read_messages; i++)
+            {
+                ///////
+#if 0
+                fprintf(stderr, "%.4x ", inBuffer[i].getId());
+                fprintf(stderr, "%.2x ", inBuffer[i].getData()[0]);
+                fprintf(stderr, "%.2x ", inBuffer[i].getData()[1]);
+                fprintf(stderr, "%.2x ", inBuffer[i].getData()[2]);
+                fprintf(stderr, "%.2x ", inBuffer[i].getData()[3]);
+                fprintf(stderr, "%.2x ", inBuffer[i].getData()[4]);
+                fprintf(stderr, "%.2x ", inBuffer[i].getData()[5]);
+                fprintf(stderr, "%.2x ", inBuffer[i].getData()[6]);
+                fprintf(stderr, "%.2x\n", inBuffer[i].getData()[7]);
+#endif
+                ////////////////
+
+                int  type;
+                int  version;
+                int  release;
+                int  build;
+
+                if (0 /* check the message received is right*/ )
+                    {
+                        /* parse it somehow */
+                        type    = 0; // inBuffer[i].getData()[1];
+                        version = 0; // inBuffer[i].getData()[2];
+                        release = 0; // inBuffer[i].getData()[3];
+                        build   = 0; // inBuffer[i].getData()[4];
+
+                        fprintf(stderr, "type %d\n", type);
+                        fprintf(stderr, "version %d\n", version);
+                        fprintf(stderr, "release %d\n", release);
+                        fprintf(stderr, "build %d\n", build);
+
+                        if(version > 2) { firmware_version_ok = true; }
+                        else
+                            if(version < 2)  { firmware_version_ok = false; }
+                        else
+                        {
+                            if(release > 16) { firmware_version_ok = true; }
+                            else
+                                if(release < 16)  { firmware_version_ok = false; }
+                            else
+                                {
+                                    if(build >= 25) { firmware_version_ok = true; }
+                                    else
+                                        { firmware_version_ok = false; }
+                                }
+                        }
+                        done = true;
+                    }
+
+                if(!firmware_version_ok)
+                {
+                    yWarning() << "Diagnostic check was enabled in the config file, but the firwmare does not support it yet! \
+                                   Please verify that the firmware version is at least 2.10.15 as shown in the canLoader\
+                                   disabling parsing of diagnostic messages";
+                }
+                 else
+                    yInfo() << "Firwmare check for skin diagnostic messages ok";
+
+            }
+        }
+    }
+    return firmware_version_ok;
+}

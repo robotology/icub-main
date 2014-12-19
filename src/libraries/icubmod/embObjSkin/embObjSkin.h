@@ -93,7 +93,7 @@ protected:
     SkinBoardCfgParam _brdCfg;
     SkinTriangleCfgParam _triangCfg;
     bool            _newCfg;
-    SkinConfigReader *_cfgReader;
+    SkinConfigReader  _cfgReader;
     SkinConfig        _skCfg;
 
     bool            init();
@@ -112,8 +112,9 @@ protected:
             return(idPatch-1);
     }
 
-    /** Flag to set if the skin diagnostics is active. */
-    bool useDiagnostics;
+    /****************** diagnostic********************************/
+    bool _isDiagnosticPresent;       // is the diagnostic available from the firmware
+    /*************************************************************/
 
     /** The detected skin errors. These are used for diagnostics purposes. */
     yarp::sig::VectorOf<iCub::skin::diagnostics::DetectedError> errors;

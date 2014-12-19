@@ -44,7 +44,7 @@ bool SkinPatchInfo::checkCardAddrIsInList(int cardAddr)
     return false;
 }
 
-EmbObjSkin::EmbObjSkin() :  mutex(1), useDiagnostics(false)
+EmbObjSkin::EmbObjSkin() :  mutex(1), _isDiagnosticPresent(false)
 {
     res         = NULL;
     ethManager  = NULL;
@@ -53,14 +53,10 @@ EmbObjSkin::EmbObjSkin() :  mutex(1), useDiagnostics(false)
     _skCfg.numOfPatches = 0;
     _skCfg.totalCardsNum = 0;
     memset(info, 0x00, sizeof(info));
-    _cfgReader = new SkinConfigReader();
 }
 
 
-EmbObjSkin::~EmbObjSkin()
-{
-    delete _cfgReader;
-}
+EmbObjSkin::~EmbObjSkin() { }
 
 
 bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
@@ -82,7 +78,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
     numofcfg = _skCfg.totalCardsNum;//set size of my vector boardCfgList;
     //in output the function return number of special board cfg are in file xml
-    bool ret = _cfgReader->readSpecialBoardCfg(config, boardCfgList, &numofcfg);
+    bool ret = _cfgReader.readSpecialBoardCfg(config, boardCfgList, &numofcfg);
 
     if(!ret)
         return false;
@@ -142,7 +138,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
     SpecialSkinTriangleCfgParam triangleCfg[SPECIAL_TRIANGLE_CFG_MAX_NUM];
     numofcfg = SPECIAL_TRIANGLE_CFG_MAX_NUM;    //set size of my vector boardCfgList;
                                                 //in output the function return number of special board cfg are in file xml
-    ret =  _cfgReader->readSpecialTriangleCfg(config, triangleCfg, &numofcfg);
+    ret =  _cfgReader.readSpecialTriangleCfg(config, triangleCfg, &numofcfg);
     if(!ret)
         return false;
 
@@ -276,10 +272,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 //        }
 //    }
 
-
-
-
-    if( _cfgReader->isDefaultBoardCfgPresent(config) && _cfgReader->isDefaultTriangleCfgPresent(config))
+    if( _cfgReader.isDefaultBoardCfgPresent(config) && _cfgReader.isDefaultTriangleCfgPresent(config))
     {
         _newCfg = true;
     }
@@ -291,12 +284,12 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 
     /*read skin board default configuration*/
     _brdCfg.setDefaultValues();
-    if(!_cfgReader->readDefaultBoardCfg(config, &_brdCfg))
+    if(!_cfgReader.readDefaultBoardCfg(config, &_brdCfg))
         return false;
 
     /*read skin triangle default configuration*/
     _triangCfg.setDefaultValues();
-    if(! _cfgReader->readDefaultTriangleCfg(config, &_triangCfg))
+    if(! _cfgReader.readDefaultTriangleCfg(config, &_triangCfg))
         return false;
 
     return true;
@@ -429,6 +422,10 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         yError() << "embObjSkin::init() fails in function fromConfig() for board " << _fId.boardNumber << ": CANNOT PROCEED ANY FURTHER";
         return false;
     }
+
+    char name[80];
+    sprintf(name, "embObjSkin on EMS %d", _fId.boardNumber);
+    _cfgReader.setName(name);
 
     // resize data vector with number of triangles found in config file
     sensorsNum = 16*12*_skCfg.totalCardsNum;     // max num of card
@@ -788,41 +785,40 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
                 }
 
                 // Skin diagnostics
-                if (canframe->size == 8) {
-                    // Skin diagnostics is active
-                    useDiagnostics = true;
-
-                    // Get error code head and tail
-                    short head = canframe->data[6];
-                    short tail = canframe->data[7];
-                    int fullMsg = (head << 8) | (tail & 0xFF);
-
-                    // Store error message
-                    errors[i].net = indexpatch;
-                    errors[i].board = cardAddr;
-                    errors[i].sensor = triangle;
-                    errors[i].error = fullMsg;
-
-                    if (!(fullMsg & SkinErrorCode::StatusOK))
+                if (_brdCfg.useDiagnostic)  // if user requests to check the diagnostic
+                {
+                    if (canframe->size == 8)
                     {
-                        yError() << "canBusSkin error code: " <<
-                                    "net " << errors[i].net <<
-                                    "board " <<  errors[i].board <<
-                                    "sensor " << errors[i].sensor <<
-                                    "error " << errors[i].error;
+                        // Skin diagnostics is active
+                        _isDiagnosticPresent = true;
+
+                        // Get error code head and tail
+                        short head = canframe->data[6];
+                        short tail = canframe->data[7];
+                        int fullMsg = (head << 8) | (tail & 0xFF);
+
+                        // Store error message
+                        errors[i].net = indexpatch;
+                        errors[i].board = cardAddr;
+                        errors[i].sensor = triangle;
+                        errors[i].error = fullMsg;
+
+                        if (!(fullMsg & SkinErrorCode::StatusOK))
+                        {
+                            yError() << "canBusSkin error code: " <<
+                                        "net " << errors[i].net <<
+                                        "board " <<  errors[i].board <<
+                                        "sensor " << errors[i].sensor <<
+                                        "error " << errors[i].error;
+                        }
+                    }
+                    else
+                    {
+                        _isDiagnosticPresent = false;
                     }
                 }
-                else
-                {
-                    useDiagnostics = false;
-#if 0
-                    cout << "WARNING: CanBusSkin: Board ID (" << id << "): You are using the old skin firmware which does not include skin diagnostics. You might want to consider upgrading to a newer firmware. \n";
-#endif
-                }
             }
-
             mutex.post();
-
         }
         else if(canframe->id == 0x100)
         {
