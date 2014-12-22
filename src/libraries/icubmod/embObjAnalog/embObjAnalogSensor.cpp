@@ -33,6 +33,8 @@
 #include "EoProtocolMN.h"
 #include "EoProtocolAS.h"
 
+#include <yarp/os/NetType.h>
+
 #ifdef WIN32
 #pragma warning(once:4355)
 #endif
@@ -179,7 +181,16 @@ embObjAnalogSensor::embObjAnalogSensor(): data(0)
     status=IAnalogSensor::AS_OK;
 
     opened = false;
-    verbosewhenok = false;
+
+    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    if (tmp != "")
+    {
+        verbosewhenok = (bool)NetType::toInt(tmp);
+    }
+    else
+    {
+        verbosewhenok = false;
+    }
 }
 
 embObjAnalogSensor::~embObjAnalogSensor()
@@ -647,7 +658,10 @@ bool embObjAnalogSensor::getFullscaleValues()
         }
 
         timeout--;
-        yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): for board " << _fId.boardNumber << ": full scale val not arrived yet... retrying in 1 sec";
+        if(verbosewhenok)
+        {
+            yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): for board " << _fId.boardNumber << ": full scale val not arrived yet... retrying in 1 sec";
+        }
     }
 
     if((false == gotFullScaleValues) && (0 == timeout))
@@ -667,10 +681,11 @@ bool embObjAnalogSensor::getFullscaleValues()
 
     if(gotFullScaleValues)
     {
-        yWarning() << "(!!)-> embObjAnalogSensor::getFullscaleValues() detected that already has full scale values for board" << _fId.boardNumber;
-
-        yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): Fullscale values for board " << _fId.boardNumber << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  _channels;
-
+        if(verbosewhenok)
+        {
+            yWarning() << "(!!)-> embObjAnalogSensor::getFullscaleValues() detected that already has full scale values for board" << _fId.boardNumber;
+            yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): Fullscale values for board " << _fId.boardNumber << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  _channels;
+        }
 
         for(int i=0; i<_channels; i++)
         {
@@ -686,7 +701,10 @@ bool embObjAnalogSensor::getFullscaleValues()
             scaleFactor[i]= ((uint16_t)(msg[0]<<8) | msg[1]);
             //scaleFactor[i]=i;
             //yError() << " scale factor[" << i << "] = " << scaleFactor[i];
-            yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): channel " << i << "full scale value " << scaleFactor[i];
+            if(verbosewhenok)
+            {
+                yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): channel " << i << "full scale value " << scaleFactor[i];
+            }
         }
     }
 

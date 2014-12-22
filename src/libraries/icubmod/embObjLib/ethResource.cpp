@@ -52,7 +52,15 @@ ethResources::ethResources()
 
     RXpacketSize = 0;
 
-    verbosewhenok = false;
+    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    if (tmp != "")
+    {
+        verbosewhenok = (bool)NetType::toInt(tmp);
+    }
+    else
+    {
+        verbosewhenok = false;
+    }
 }
 
 ethResources::~ethResources()

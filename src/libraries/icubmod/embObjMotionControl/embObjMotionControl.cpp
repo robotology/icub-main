@@ -27,6 +27,8 @@
 #include "EoProtocolMC.h"
 #include "EoProtocolAS.h"
 
+#include <yarp/os/NetType.h>
+
 using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
@@ -446,7 +448,16 @@ embObjMotionControl::embObjMotionControl() :
     useRawEncoderData = false;
     _pwmIsLimited     = false;
     numberofmaisboards = 0;
-    verbosewhenok       = false;
+
+    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    if (tmp != "")
+    {
+        verbosewhenok = (bool)NetType::toInt(tmp);
+    }
+    else
+    {
+        verbosewhenok = false;
+    }
 
 }
 

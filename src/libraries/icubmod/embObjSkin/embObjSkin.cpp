@@ -29,6 +29,8 @@
 
 #include "EOnv.h"
 
+#include <yarp/os/NetType.h>
+
 
 using namespace std;
 
@@ -53,7 +55,16 @@ EmbObjSkin::EmbObjSkin() :  mutex(1)
     _skCfg.totalCardsNum = 0;
     memset(info, 0x00, sizeof(info));
     _cfgReader = new SkinConfigReader();
-    verbosewhenok = false;
+
+    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    if (tmp != "")
+    {
+        verbosewhenok = (bool)NetType::toInt(tmp);
+    }
+    else
+    {
+        verbosewhenok = false;
+    }
 }
 
 
