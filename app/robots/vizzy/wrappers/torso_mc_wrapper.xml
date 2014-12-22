@@ -4,11 +4,18 @@
 	<device name="torso_mc_wrapper" type="controlboardwrapper2">
 		<param name="threadrate"> 10 </param>
 		<paramlist name="networks">
-			<elem name="head_torso_joints"> 0 0 0 0 </elem>
+			<elem name="torso_joints"> 0 0 0 0 </elem>
 		</paramlist>
 		<param name="period"> 10 </param>
 		<param name="name"> vizzy/torso </param>
 		<param name="ports"> torso </param>
 		<param name="joints"> 1 </param>
+		<action phase="startup" level="5" type="attach">
+			<paramlist name="networks">
+				<elem name="torso_joints"> head_torso_mc </elem>
+			</paramlist>
+		</action>
+		<action phase="shutdown" level="5" type="detach" />
 	</device>
 </devices>
+

@@ -10,23 +10,23 @@
 	<group name="CALIBRATION">
 		<param name="calibrationType"> 0 0 0 0 0 0 </param>
 		<param name="calibration1"> 300.0 300.0 800.0 1000.0 1000.0 1000.0</param>
-		<param name="calibration2"> 10.0 10.0 10.0 10.0 -20.0 -20.0 </param>
+		<param name="calibration2"> 5.0 10.0 10.0 10.0 -20.0 -20.0 </param>
 		<param name="calibration3"> 0.0 0.0 0.0 0.0 0.0 0.0 </param>
 		<param name="positionZero"> 5.0 0.0 0.0 0.0 0.0 0.0  </param>
 		<param name="velocityZero"> 10.0 10.0 10.0 10.0 10.0 10.0 </param>
 		<param name="maxPwm"> 0.0 0.0 0.0 0.0 0.0 0.0 </param>
-		<param name="posZeroThreshold"> 1 1 1 1 1 1  </param>
+		<param name="posZeroThreshold"> 1 1 1 1 180 180  </param>
 	</group>
 	<group name="HOME">
 		<param name="positionHome"> -30 0 0 0 0 0 </param>
 		<param name="velocityHome"> 10 10 10 10 10 10 </param>
 	</group>
-	<param name="CALIB_ORDER"> (1 2 3) (4) (5) </param>
+	<param name="CALIB_ORDER"> (0) (1 2 3) (4) (5) </param>
 	<action phase="startup" level="10" type="calibrate">
-		<param name="target">head_torso_mc_wrapper</param>
+		<param name="target">head_torso_mc</param>
 	</action>
 	<action phase="interrupt1" level="1" type="park">
-		<param name="target">head_torso_mc_wrapper</param>
+		<param name="target">head_torso_mc</param>
 	</action>
 	<action phase="interrupt3" level="1" type="abort" />
 	</device>
