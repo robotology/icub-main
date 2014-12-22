@@ -85,6 +85,11 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
         #endif
     }
 
+    //elements are:  // this is needed duringg initialization (readDefaultBoard)
+    sensorsNum=16*12*cardId.size();
+    data.resize(sensorsNum);
+    data.zero();
+
     Property prop;
     prop.put("device", config.find("canbusDevice").asString().c_str());
     prop.put("physDevice", config.find("physDevice").asString().c_str());
@@ -171,10 +176,7 @@ bool CanBusSkin::open(yarp::os::Searchable& config)
                 pCanBus->canIdAdd((can_msg_class << 8)+(cardId[i]<<4)+id);
             }
 
-    //elements are:
-    sensorsNum=16*12*cardId.size();
-    data.resize(sensorsNum);
-    data.zero();
+
 
     /* ****** Skin diagnostics ****** */
     portSkinDiagnosticsOut.open("/diagnostics/skin/errors:o");
@@ -297,16 +299,16 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
             return false;
         }
 
+        size_t boardIdx;
         //check if card address are in patch
         for(int a=boardCfgList[j].boardAddrStart; a<=boardCfgList[j].boardAddrEnd; a++)
         {
-            size_t i;
-            for(i=0; i<cardId.size(); i++)
+            for(boardIdx=0; boardIdx<cardId.size(); boardIdx++)
             {
-                if(cardId[i]==a)//card address is in my patch
+                if(cardId[boardIdx]==a)//card address is in my patch
                     break;
             }
-            if(i>=cardId.size())
+            if(boardIdx>=cardId.size())
             {
                 yError() << "Skin on can bus %d" << _canBusNum << ": card with address " << a << "is not present ";
                 return(false);
@@ -317,15 +319,31 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
 //        boardCfgList[j].debugPrint();
 
         //send special board cfg
-        for(int k=boardCfgList[j].boardAddrStart; k<= boardCfgList[j].boardAddrEnd; k++)
+        for(int listIdx=boardCfgList[j].boardAddrStart; listIdx<= boardCfgList[j].boardAddrEnd; listIdx++)
         {
-            if(!sendCANMessage(k, ICUBCANPROTO_POL_SK_CMD__SET_BRD_CFG, (void*)&boardCfgList[j].cfg))
+            if(!sendCANMessage(listIdx, ICUBCANPROTO_POL_SK_CMD__SET_BRD_CFG, (void*)&boardCfgList[j].cfg))
                 return false;
+
+            // Init the data vector with special config values from "noLoad" param in config file.
+            // This is to have a correct initilization for the data sent through yarp port
+            for (int triangleId = 0; triangleId < 16; triangleId++)
+            {
+                int index = 16*12*boardIdx + triangleId*12;
+
+                // Message head
+                for(int k = 0; k < 12; k++)
+                {
+                    yDebug() << "readNewSpecialConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << boardCfgList[j].cfg.noLoad;
+                    if((index+k) >= data.size())
+                        yError() << "readNewSpecialConfiguration: index too big";
+                    data[index + k] = boardCfgList[j].cfg.noLoad;
+                }
+            }
         }
     }
 
         Time::delay(0.01);
-        /* Read special traingle configuration */
+        /* Read special triangle configuration */
         numofcfg = SPECIAL_TRIANGLE_CFG_MAX_NUM; //set size of my vector boardCfgList;
                                     //in output the function return number of special board cfg are in file xml
         SpecialSkinTriangleCfgParam* triangleCfg = new SpecialSkinTriangleCfgParam[numofcfg];
@@ -374,6 +392,25 @@ bool CanBusSkin::readNewConfiguration(yarp::os::Searchable& config)
     _brdCfg.setDefaultValues();
     if(!_cfgReader.readDefaultBoardCfg(config, &_brdCfg))
         return false;
+
+    // Fill the data vector with default values from "noLoad" param in config file.
+    for (int board_idx = 0; board_idx < cardId.size(); board_idx++)
+    {
+        for (int triangleId = 0; triangleId < 16; triangleId++)
+        {
+            int index = 16*12*board_idx + triangleId*12;
+
+            // Message head
+            for(int k = 0; k < 12; k++)
+            {
+                yDebug() << "readNewConfiguration (default) size is: " << data.size() << " index is " << (index+k) << " value is: " << _brdCfg.noLoad;
+                if((index+k) >= data.size())
+                    yError() << "readNewConfiguration: index too big";
+                data[index + k] = _brdCfg.noLoad;
+            }
+        }
+    }
+
 
     /* send default board configuration (new configuration style)*/
     for(size_t i=0; i<cardId.size(); i++)
@@ -428,6 +465,9 @@ bool CanBusSkin::readOldConfiguration(yarp::os::Searchable& config)
     msg4E_EnaL = config.findGroup("4E_EnaL").tail();                  // 4E_EnaL
     msg4E_EnaH = config.findGroup("4E_EnaH").tail();                  // 4E_EnaH
 
+    yDebug() << "msg4E_NoLoad size is " << msg4E_NoLoad.size();
+    yDebug() << "msg4E_NoLoad content is " << msg4E_NoLoad.toString();
+
     int numofcards = cardId.size();
     // Check parameter list length
     // 4C Message
@@ -445,6 +485,30 @@ bool CanBusSkin::readOldConfiguration(yarp::os::Searchable& config)
     checkParameterListLength("4E_EnaH", msg4E_EnaH, numofcards, 0xFF);
     /* ********************************************** */
 
+    yDebug() << "msg4E_NoLoad size is " << msg4E_NoLoad.size();
+    yDebug() << "msg4E_NoLoad content is " << msg4E_NoLoad.toString();
+
+
+    // Fill the data vector with default values from "noLoad" param in config file.
+    for (int idx=0; idx < cardId.size(); idx++)
+    {
+        int board_idx = idx;
+        int baseLine = msg4E_NoLoad.get(idx).asInt();
+
+        for (int triangleId = 0; triangleId < 16; triangleId++)
+        {
+            int index = 16*12*board_idx + triangleId*12;
+
+            // Message head
+            for(int k = 0; k < 12; k++)
+            {
+                yDebug() << "readOldConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << baseLine;
+                if((index+k) >= data.size())
+                    yError() << "readOldConfiguration: index too big";
+                data[index + k] = baseLine;
+            }
+        }
+    }
 
     if(sendCANMessage4C())
     {
@@ -482,8 +546,8 @@ int CanBusSkin::read(yarp::sig::Vector &out)
 {
     mutex.wait();
     out=data;
-    if(_isDiagnosticPresent)
-        diagnoseSkin();
+//    if(_isDiagnosticPresent)
+//        diagnoseSkin();
     mutex.post();
 
     return yarp::dev::IAnalogSensor::AS_OK;
@@ -600,13 +664,24 @@ void CanBusSkin::run() {
                                 errors[i].sensor = sensorId;
                                 errors[i].error = fullMsg;
 
-                                if (!(fullMsg & SkinErrorCode::StatusOK))
+                                if(fullMsg != SkinErrorCode::StatusOK)
                                 {
                                     yError() << "canBusSkin error code: " <<
                                                 "net " << errors[i].net <<
                                                 "board " <<  errors[i].board <<
                                                 "sensor " << errors[i].sensor <<
                                                 "error " << errors[i].error;
+
+                                    yarp::sig::Vector &out = portSkinDiagnosticsOut.prepare();
+                                    out.clear();
+
+                                    out.push_back(errors[i].net);
+                                    out.push_back(errors[i].board);
+                                    out.push_back(errors[i].sensor);
+                                    out.push_back(errors[i].error);
+
+                                    portSkinDiagnosticsOut.write(true);
+
                                 }
                             }
                             else
