@@ -111,6 +111,8 @@ protected:
             return(idPatch-1);
     }
 
+private:
+    bool verbosewhenok;
 
 public:
 

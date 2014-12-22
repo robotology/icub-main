@@ -256,6 +256,7 @@ private:
     ImpedanceParameters *_impedance_params;     /** impedance parameters */
     eOmc_impedance_t *_cacheImpedance;			/* cache impedance value to split up the 2 sets */
 
+    bool        verbosewhenok;
     bool         useRawEncoderData;
     bool        _pwmIsLimited;                         /** set to true if pwm is limited */
     int         numberofmaisboards;

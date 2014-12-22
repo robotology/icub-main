@@ -179,6 +179,7 @@ embObjAnalogSensor::embObjAnalogSensor(): data(0)
     status=IAnalogSensor::AS_OK;
 
     opened = false;
+    verbosewhenok = false;
 }
 
 embObjAnalogSensor::~embObjAnalogSensor()
@@ -304,7 +305,10 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     }
     else
     {
-        yWarning() << "(OK)-> embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNumber << " is communicating correctly";
+        if(verbosewhenok)
+        {
+            yWarning() << "(OK)-> embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNumber << " is communicating correctly";
+        }
     }
 
     if(!res->verifyEPprotocol(groupProtocol, eoprot_endpoint_analogsensors))
@@ -314,7 +318,10 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     }
     else
     {
-        yWarning() << "(OK)-> embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNumber << " has same protocol version for analogsensors as robotInterface";
+        if(verbosewhenok)
+        {
+            yWarning() << "(OK)-> embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNumber << " has same protocol version for analogsensors as robotInterface";
+        }
     }
 
 //    // marco.accame on 04 sept 2014: we could add a verification about the entities of analog ... MAYBE in the future
@@ -381,7 +388,10 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     }
     else
     {
-        yWarning() << "(OK)-> embObjAnalogSensor::open() correctly activated control loop of BOARD" << _fId.boardNumber;
+        if(verbosewhenok)
+        {
+            yWarning() << "(OK)-> embObjAnalogSensor::open() correctly activated control loop of BOARD" << _fId.boardNumber;
+        }
     }
 
     opened = true;
@@ -434,7 +444,10 @@ bool embObjAnalogSensor::sendConfig2Strain(void)
     }
     else
     {
-        yWarning() << "(OK)-> embObjAnalogSensor::sendConfig2Strain() correctly configured strain coinfig in BOARD" << res->get_protBRDnumber()+1;
+        if(verbosewhenok)
+        {
+            yWarning() << "(OK)-> embObjAnalogSensor::sendConfig2Strain() correctly configured strain coinfig in BOARD" << res->get_protBRDnumber()+1;
+        }
     }
 
     return true;
@@ -471,7 +484,10 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     }
     else
     {
-        yWarning() << "(OK)-> embObjAnalogSensor::sendConfig2Mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->get_protBRDnumber()+1;
+        if(verbosewhenok)
+        {
+            yWarning() << "(OK)-> embObjAnalogSensor::sendConfig2Mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->get_protBRDnumber()+1;
+        }
     }
 
     // -- mais tx mode
@@ -486,7 +502,10 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     }
     else
     {
-        yWarning() << "(OK)-> embObjAnalogSensor::sendConfig2Mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->get_protBRDnumber()+1;
+        if(verbosewhenok)
+        {
+            yWarning() << "(OK)-> embObjAnalogSensor::sendConfig2Mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->get_protBRDnumber()+1;
+        }
     }
 
     return true;
@@ -728,13 +747,16 @@ bool embObjAnalogSensor::init()
     }
     else
     {
-        yWarning() << "(OK)-> embObjAnalogSensor::init() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
-        char nvinfo[128];
-        for(int r=0; r<id32v.size(); r++)
+        if(verbosewhenok)
         {
-            uint32_t id32 = id32v.at(r);
-            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-            yWarning() << "(OK)->\t it added regular rop for" << nvinfo;
+            yWarning() << "(OK)-> embObjAnalogSensor::init() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
+            char nvinfo[128];
+            for(int r=0; r<id32v.size(); r++)
+            {
+                uint32_t id32 = id32v.at(r);
+                eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+                yWarning() << "(OK)->\t it added regular rop for" << nvinfo;
+            }
         }
     }
 
