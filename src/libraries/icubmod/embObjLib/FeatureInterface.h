@@ -69,6 +69,8 @@ int8_t ace_mutex_take(void* m, uint32_t tout_usec);
 // returns 0 on success to take mutex, -1 on genric failure of releasing mutex, -2 on failure upon null pointer. m is pointer obtained w/ ace_mutex_new(),
 int8_t ace_mutex_release(void* m);
 
+void ace_mutex_delete(void* m);
+
 
 #ifdef __cplusplus
 }
