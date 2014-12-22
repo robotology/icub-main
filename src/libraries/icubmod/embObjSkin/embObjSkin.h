@@ -55,7 +55,7 @@ public:
     int                     idPatch;
     eOprotIndex_t           indexNv;
     std::vector <int>       cardAddrList;
-    bool checkCardAddrIsInList(int cardAddr);
+    int checkCardAddrIsInList(int cardAddr);
 };
 
 class SkinConfig

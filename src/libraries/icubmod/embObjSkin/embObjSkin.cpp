@@ -34,14 +34,14 @@ using namespace std;
 using namespace iCub::skin::diagnostics;
 
 
-bool SkinPatchInfo::checkCardAddrIsInList(int cardAddr)
+int SkinPatchInfo::checkCardAddrIsInList(int cardAddr)
 {
     for(int i=0; i< cardAddrList.size(); i++)
     {
         if(cardAddrList[i] == cardAddr)
-            return true;
+            return i;
     }
-    return false;
+    return -1;
 }
 
 EmbObjSkin::EmbObjSkin() :  mutex(1), _isDiagnosticPresent(false)
@@ -100,14 +100,17 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         //now p is the index of patch.
 
         //check if card address are in patch
+        int boardIdx = -1;
         for(int a=boardCfgList[j].boardAddrStart; a<=boardCfgList[j].boardAddrEnd; a++)
         {
-            if(!_skCfg.patchInfoList[p].checkCardAddrIsInList(a))
+            boardIdx = _skCfg.patchInfoList[p].checkCardAddrIsInList(a);
+            if(-1 == boardIdx)
             {
                 yError() << "skin of board num " << _fId.boardNumber << " card with address " << a << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
                 return(false);
             }
         }
+
         //prepare data to send to ems
         eOsk_cmd_boardsCfg_t bcfg;
         bcfg.addrstart = boardCfgList[j].boardAddrStart;
@@ -116,6 +119,21 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         bcfg.cfg.period = boardCfgList[j].cfg.period;
         bcfg.cfg.noload = boardCfgList[j].cfg.noLoad;
 
+        // Init the data vector with special config values from "noLoad" param in config file.
+        // This is to have a correct initilization for the data sent through yarp port
+        for (int sensorId = 0; sensorId < 16; sensorId++)
+        {
+            int index = 16*12*boardIdx + sensorId*12;
+
+            // Message head
+            for(int k = 0; k < 12; k++)
+            {
+                yDebug() << "readNewSpecialConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << boardCfgList[j].cfg.noLoad;
+                if((index+k) >= data.size())
+                    yError() << "readNewSpecialConfiguration: index too big";
+                data[index + k] = boardCfgList[j].cfg.noLoad;
+            }
+        }
 //        //uncomment for debug only
 //        yDebug() << "\n Special board cfg num " << j;
 //        boardCfgList[j].debugPrint();
@@ -158,7 +176,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         //now p is index patch
 
         //check if bcfg.boardAddr is in my patches list
-        if(!_skCfg.patchInfoList[p].checkCardAddrIsInList(triangleCfg[j].boardAddr))
+        if(-1 == _skCfg.patchInfoList[p].checkCardAddrIsInList(triangleCfg[j].boardAddr))
         {
             yError() << "skin of board num " << _fId.boardNumber <<  " card with address " << triangleCfg[j].boardAddr << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
             return(false);
@@ -286,6 +304,25 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
     _brdCfg.setDefaultValues();
     if(!_cfgReader.readDefaultBoardCfg(config, &_brdCfg))
         return false;
+
+    // Fill the data vector with default values from "noLoad" param in config file.
+    for (int board_idx = 0; board_idx < _skCfg.totalCardsNum; board_idx++)
+    {
+        for (int triangleId = 0; triangleId < 16; triangleId++)
+        {
+            int index = 16*12*board_idx + triangleId*12;
+
+            // Message head
+            for(int k = 0; k < 12; k++)
+            {
+                yDebug() << "EO readNewConfiguration (default) size is: " << data.size()
+                         << " index is " << (index+k) << " value is: " << _brdCfg.noLoad;
+                if((index+k) >= data.size())
+                    yError() << "readNewConfiguration: index too big";
+                data[index + k] = _brdCfg.noLoad;
+            }
+        }
+    }
 
     /*read skin triangle default configuration*/
     _triangCfg.setDefaultValues();
