@@ -21,12 +21,12 @@
 		<param name="positionHome"> 0 0 20 0 0 20 </param>
 		<param name="velocityHome"> 10 10 10 10 10 10 </param>
 	</group>
-	<param name="CALIB_ORDER"> (0 2 3 5) (1 4) (5) </param>
+	<param name="CALIB_ORDER"> (2 5) (0 3) (1 4) </param>
 	<action phase="startup" level="10" type="calibrate">
-		<param name="target">shoulders_mc_wrapper</param>
+		<param name="target">shoulders_mc</param>
 	</action>
 	<action phase="interrupt1" level="1" type="park">
-		<param name="target">shoulders_mc_wrapper</param>
+		<param name="target">shoulders_mc</param>
 	</action>
 	<action phase="interrupt3" level="1" type="abort" />
 	</device>
