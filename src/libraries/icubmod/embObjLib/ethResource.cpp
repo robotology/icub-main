@@ -51,6 +51,8 @@ ethResources::ethResources()
     memset(&boardCommStatus, 0, sizeof(boardCommStatus));
 
     RXpacketSize = 0;
+
+    verbosewhenok = false;
 }
 
 ethResources::~ethResources()
@@ -244,7 +246,7 @@ bool ethResources::goToConfig(void)
     }
 
 
-    // marco.accame: thi code is correct and verifies that the board goes to config. however, it requires FW version >= 1.45, thus so far i keep it commented out
+    // marco.accame: this code is correct and verifies that the board goes to config. however, it requires FW version >= 1.45, thus so far i keep it commented out
     // todo: change the eOmn_appl_status_t so that it has a FW version of the application, a build date, and a string name (the same info whcoih gives ethLoader)
  #if 0
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
@@ -291,7 +293,10 @@ bool ethResources::goToRun(void)
 
     if(true == verifyRemoteValue(id32, &status, sizeof(status)))
     {
-        yWarning() << "VERIFIED that BOARD" << get_protBRDnumber()+1 << "goes to run";
+        if(verbosewhenok)
+        {
+            yWarning() << "VERIFIED that BOARD" << get_protBRDnumber()+1 << "goes to run";
+        }
     }
     else
     {
@@ -328,7 +333,10 @@ bool ethResources::clearRegulars(bool verify)
         }
         else
         {
-             yWarning() << "(OK)-> ethResources::clearRegulars() has detected" << numberofregulars << "regulars in BOARD" << get_protBRDnumber()+1 << "now is attempting clearing them";
+            if(verbosewhenok)
+            {
+                yWarning() << "(OK)-> ethResources::clearRegulars() has detected" << numberofregulars << "regulars in BOARD" << get_protBRDnumber()+1 << "now is attempting clearing them";
+            }
         }
     }
 
@@ -376,8 +384,10 @@ bool ethResources::clearRegulars(bool verify)
             return false;
         }
 
-        yWarning() << "(OK)-> ethResources::clearRegulars() has correctly checked regulars: expected = " << usedNumberOfRegularROPs << " and number in board = " << numberofregulars;
-
+        if(verbosewhenok)
+        {
+            yWarning() << "(OK)-> ethResources::clearRegulars() has correctly checked regulars: expected = " << usedNumberOfRegularROPs << " and number in board = " << numberofregulars;
+        }
     }
 
 
@@ -507,10 +517,10 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     memcpy(&boardCommStatus, &brdstatus, sizeof(boardCommStatus));
 
 
-    #warning --> marco.accame: inside ethResources::verifyBoardTransceiver() in the future you shall use variable mnprotocolversion
+    //#warning --> marco.accame: inside ethResources::verifyBoardTransceiver() in the future you shall use variable mnprotocolversion
     // now i must verify that there is the same mn protocol version
-    const eoprot_version_t * brdversionMN = pc104versionMN; // at the moment we cannot get it from remote board
-    //const eoprot_version_t * brdversionMN = &brdstatus.mnprotocolversion;
+    //const eoprot_version_t * brdversionMN = pc104versionMN; // at the moment we cannot get it from remote board
+    eoprot_version_t * brdversionMN = (eoprot_version_t*)&brdstatus.managementprotocolversion;
 
     if(pc104versionMN->major != brdversionMN->major)
     {
@@ -639,7 +649,10 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 //    yDebug() << "ethResources::verifyBoardTransceiver() detected" << boardEPsNumber << "endpoints in BOARD" << get_protBRDnumber()+1;
 
 
-    yWarning() << "(OK)-> ethResources::verifyBoardTransceiver() has validated the transceiver of BOARD " << get_protBRDnumber()+1;
+    if(verbosewhenok)
+    {
+        yWarning() << "(OK)-> ethResources::verifyBoardTransceiver() has validated the transceiver of BOARD " << get_protBRDnumber()+1;
+    }
 
     verifiedBoardTransceiver = true;
 
@@ -670,7 +683,10 @@ bool ethResources::cleanBoardBehaviour(void)
         return(false);
     }
 
-    yWarning() << "(OK)-> ethResources::cleanBoardBehaviour() has cleaned the application in BOARD " << get_protBRDnumber()+1 << ": config mode + cleared all its regulars";
+    if(verbosewhenok)
+    {
+        yWarning() << "(OK)-> ethResources::cleanBoardBehaviour() has cleaned the application in BOARD " << get_protBRDnumber()+1 << ": config mode + cleared all its regulars";
+    }
 
     cleanedBoardBehaviour = true;
 
@@ -790,7 +806,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
 
     if(sizeofarray != boardEPsNumber)
     {
-        yWarning() << "(OK)-> ethResources::verifyEPprotocol() retrieved from BOARD" << get_protBRDnumber()+1 << ":" << sizeofarray << "endpoint descriptors, and there are" << boardEPsNumber << "endpoints";
+        yWarning() << "(!!)-> ethResources::verifyEPprotocol() retrieved from BOARD" << get_protBRDnumber()+1 << ":" << sizeofarray << "endpoint descriptors, and there are" << boardEPsNumber << "endpoints";
     }
 
 
@@ -875,7 +891,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
     // we ask the remote board a variable which is surely supported. best thing to do is asking the mn-protocol-version.
     // however, at 03 sept 2014 there is not a single variable to contain this, thus ... ask the eoprot_tag_mn_comm_status variable.
 
-    #warning --> marco.accame: inside ethResources::verifyBoardPresence() in the future you shall ask eoprot_tag_mn_comm_status_mnprotocolversion instead of eoprot_tag_mn_comm_status
+    //#warning --> marco.accame: inside ethResources::verifyBoardPresence() in the future you shall ask eoprot_tag_mn_comm_status_mnprotocolversion instead of eoprot_tag_mn_comm_status
 
     const double timeout = 0.500;   // 500 ms is more than enough if board is present. if link is not on it is a godd time to wait
     const int retries = 120;         // the number of retries depends on the above timeout and on link-up time of the EMS.
@@ -913,7 +929,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
             // get the reply
             if(false == readBufferedValue(id2wait, (uint8_t*)&brdstatus, &size))
             {
-                yWarning() << "(OK)-> ethResources::verifyBoardPresence() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
+                yWarning() << "(!!)-> ethResources::verifyBoardPresence() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
             }
             else
             {
@@ -938,7 +954,10 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
     if(pinged)
     {
         verifiedBoardPresence = true;
-        yWarning() << "(OK)-> ethResources::verifyBoardPresence() found BOARD " << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";
+        if(verbosewhenok)
+        {
+            yWarning() << "(OK)-> ethResources::verifyBoardPresence() found BOARD " << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";
+        }
     }
     else
     {
@@ -1228,8 +1247,10 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
             return false;
         }
 
-        yWarning() << "(OK)-> ethResources::addRegulars() has correctly checked regulars: expected = " << usedNumberOfRegularROPs << " and number in board = " << numberofregulars;
-
+        if(verbosewhenok)
+        {
+            yWarning() << "(OK)-> ethResources::addRegulars() has correctly checked regulars: expected = " << usedNumberOfRegularROPs << " and number in board = " << numberofregulars;
+        }
     }
 
     return(true);
@@ -1363,7 +1384,10 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
         numberisreceived = true;
         if(0 == i)
         {
-            yWarning() << "(OK)-> ethResources::numberofRegulars() retrieved value from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+            if(verbosewhenok)
+            {
+                yWarning() << "(OK)-> ethResources::numberofRegulars() retrieved value from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+            }
         }
         else
         {
@@ -1431,8 +1455,10 @@ bool ethResources::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, u
         }
         else
         {
-            yWarning() << "(OK)-> ethResources::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt;
-
+            if(verbosewhenok)
+            {
+                yWarning() << "(OK)-> ethResources::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt;
+            }
         }
     }
     else
@@ -1633,7 +1659,10 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
             {
                 if(0 == i)
                 {
-                    yWarning() << "(OK)-> ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+                    if(verbosewhenok)
+                    {
+                        yWarning() << "(OK)-> ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+                    }
                 }
                 else
                 {

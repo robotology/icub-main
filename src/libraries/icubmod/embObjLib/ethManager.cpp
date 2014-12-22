@@ -779,7 +779,7 @@ EthReceiver::EthReceiver()
     }
     else
     {
-        statPrintInterval = 30.0;
+        statPrintInterval = 0.0;
     }
 }
 
