@@ -844,7 +844,8 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
 
                         if (fullMsg != SkinErrorCode::StatusOK)
                         {
-                            yError() << "canBusSkin error code: " <<
+                            yError() << "embObjSkin error code: " <<
+                                        "EMS " << res->boardNum  <<
                                         "net " << errors[i].net <<
                                         "board " <<  errors[i].board <<
                                         "sensor " << errors[i].sensor <<
