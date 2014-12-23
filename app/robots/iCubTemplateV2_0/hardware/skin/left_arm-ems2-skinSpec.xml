@@ -51,12 +51,12 @@
 		   
 		   <!-- upperarm upper -->	
 		   
-		   <param name="triangleSetCfg16">     2            8        0              0             1              2           0x2200       </param>
-		   <param name="triangleSetCfg17">     2            8        8              9             1              2           0x2200       </param>
-		   <param name="triangleSetCfg18">     2            8        10             11            1              2           0x2200       </param>
-		   <param name="triangleSetCfg19">     2            8        13             13            1             2           0x2200       </param>
-		   <param name="triangleSetCfg20">     2            8        15             15            1             2           0x2200       </param>
-        </group>
+		   <param name="triangleSetCfg16">     2             8        0              0             1              2           0x2200       </param>
+		   <param name="triangleSetCfg17">     2             8        5              5             1              2           0x2200       </param>
+		   <param name="triangleSetCfg18">     2             8         8             11            1              2           0x2200       </param>
+		   <param name="triangleSetCfg19">     2              8        13             13            1             2           0x2200       </param>
+		   <param name="triangleSetCfg20">     2              8        15             15            1             2           0x2200       </param>
+		   </group>
 
         
 </params>
