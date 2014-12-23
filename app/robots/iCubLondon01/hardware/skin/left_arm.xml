@@ -12,6 +12,6 @@
         <param name="period"> 10              </param>
         <param name="canbusDevice"> cfw2can   </param>
       </params>
-    <params file="hardware/skin/left_arm-cfw2_can7-skinSpec.xml" /> 
+    <params file="hardware/skin/left_arm-cfw2_can7-skinSpec.xml" />  
   </device>
 </devices>
