@@ -18,11 +18,11 @@
 #include "SharedCanBus.h"
 
 const int CAN_DRIVER_BUFFER_SIZE = 500;
-
+const int DEFAULT_THREAD_PERIOD = 10;
 class SharedCanBus : public yarp::os::RateThread
 {
 public:
-    SharedCanBus() : RateThread(10), writeMutex(1), configMutex(1)
+    SharedCanBus() : RateThread(DEFAULT_THREAD_PERIOD), writeMutex(1), configMutex(1)
     {
         mBufferSize=0;
         mCanDeviceNum=-1;
@@ -51,8 +51,18 @@ public:
     {
         if (!config.check("physDevice"))
         {
-            yError("SharedCanBus::???() could not find low level can driver specification\n");         
+            yError("SharedCanBus could not find low level can driver specification\n");         
             return false;
+        }
+
+        if (config.check("sharedCanPeriod"))
+        {
+            int sharedCanPeriod = config.find("sharedCanPeriod").asInt();
+            this->setRate(sharedCanPeriod);
+        }
+        else
+        {
+            yWarning("SharedCanBus using default thread period = %dms\n", DEFAULT_THREAD_PERIOD);
         }
 
         if (mDevice!=config.find("physDevice").asString()) return false;
@@ -188,7 +198,7 @@ public:
     {
         if (!theBufferFactory)
         {
-            yError("[ERROR] no buffer factory\n");
+            yError("SharedCanBus error: no buffer factory\n");
         }
 
         return theBufferFactory;
@@ -227,7 +237,7 @@ public:
     
         if (!polyDriver.isValid())
         {
-            yError("could not instantiate can device\n");
+            yError("SharedCanBus: could not instantiate can device\n");
             configMutex.post();
             return false;
         }
@@ -236,7 +246,7 @@ public:
 
         if (theCanBus==NULL)
         {
-            yError("could not get ICanBus interface\n");
+            yError("SharedCanBus: could not get ICanBus interface\n");
             configMutex.post();
             return false;
         }
@@ -245,7 +255,7 @@ public:
 
         if (theBufferFactory==NULL)
         {
-            yError("could not get ICanBufferFactory interface\n");
+            yError("SharedCanBus: could not get ICanBufferFactory interface\n");
             configMutex.post();
             return false;
         }
@@ -415,7 +425,7 @@ bool yarp::dev::CanBusAccessPoint::canIdAdd(unsigned int id)
 
     if (id>=0x800)
     {
-        yError("Id=%d is out of 11 bit address range\n",id);
+        yError("SharedCanBus: Id=%d is out of 11 bit address range\n",id);
         return false;
     }
 
@@ -432,7 +442,7 @@ bool yarp::dev::CanBusAccessPoint::canIdDelete(unsigned int id)
 
     if (id>=0x800)
     {
-        yError("Id=%d is out of 11 bit address range\n",id);
+        yError("SharedCanBus: Id=%d is out of 11 bit address range\n",id);
         return false;
     }
 
