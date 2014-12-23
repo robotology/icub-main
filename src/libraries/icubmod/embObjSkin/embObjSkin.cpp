@@ -280,6 +280,20 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         }
     }
 
+    // resize data vector with number of triangles found in config file
+    sensorsNum = 16*12*_skCfg.totalCardsNum;     // max num of card
+
+    mutex.wait();
+
+    this->data.resize(sensorsNum);
+    int ttt = this->data.size();
+    for (int i=0; i < ttt; i++)
+    {
+        this->data[i]=(double)240;
+    }
+
+    mutex.post();
+
 //    //uncomment for debug only
 //    yError() << "totalCardsNum=" << _skCfg.totalCardsNum;
 //    for(int i=0; i<_skCfg.patchInfoList.size(); i++)
@@ -464,19 +478,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     sprintf(name, "embObjSkin on EMS %d", _fId.boardNumber);
     _cfgReader.setName(name);
 
-    // resize data vector with number of triangles found in config file
-    sensorsNum = 16*12*_skCfg.totalCardsNum;     // max num of card
 
-    mutex.wait();
-
-    this->data.resize(sensorsNum);
-    int ttt = this->data.size();
-    for (int i=0; i < ttt; i++)
-    {
-        this->data[i]=(double)255;
-    }
-
-    mutex.post();
 
     if(!init())
         return false;
@@ -840,7 +842,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
                         errors[i].sensor = triangle;
                         errors[i].error = fullMsg;
 
-                        if (!(fullMsg & SkinErrorCode::StatusOK))
+                        if (fullMsg != SkinErrorCode::StatusOK)
                         {
                             yError() << "canBusSkin error code: " <<
                                         "net " << errors[i].net <<
