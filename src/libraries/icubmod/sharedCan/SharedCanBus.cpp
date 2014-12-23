@@ -47,6 +47,11 @@ public:
         return mBufferSize;
     }
 
+    int getCanDeviceNum()
+    {
+        return mCanDeviceNum;
+    }
+
     bool IloveUmom(yarp::os::Searchable &config)
     {
         if (!config.check("physDevice"))
@@ -55,17 +60,17 @@ public:
             return false;
         }
 
-        if (config.check("sharedCanPeriod"))
-        {
-            int sharedCanPeriod = config.find("sharedCanPeriod").asInt();
-            this->setRate(sharedCanPeriod);
-        }
-        else
-        {
-            yWarning("SharedCanBus using default thread period = %dms\n", DEFAULT_THREAD_PERIOD);
-        }
-
         if (mDevice!=config.find("physDevice").asString()) return false;
+
+        if (config.findGroup("CAN").check("sharedCanPeriod"))
+        {
+            int sharedCanPeriod = config.findGroup("CAN").find("sharedCanPeriod").asInt();
+            int currentCanPeriod = this->getRate();
+            if (currentCanPeriod != sharedCanPeriod && currentCanPeriod != DEFAULT_THREAD_PERIOD)
+            {
+                yWarning("SharedCanBus: Requested a different sharedCanPeriod (%d ms) respect to previous instance (%d ms). Using: %d ms\n", sharedCanPeriod, currentCanPeriod, currentCanPeriod);
+            }
+        }
 
         if (!config.check("canDeviceNum")) return true;
 
@@ -361,6 +366,17 @@ public:
         {
             delete scb;
             return NULL;
+        }
+
+        if (config.findGroup("CAN").check("sharedCanPeriod"))
+        {
+            int sharedCanPeriod = config.findGroup("CAN").find("sharedCanPeriod").asInt();
+            scb->setRate(sharedCanPeriod);
+            //yDebug("SharedCanBus [%d] using custom thread period = %dms\n", scb->getCanDeviceNum(), sharedCanPeriod);///TOBEREMOVED
+        }
+        else
+        {
+            yWarning("SharedCanBus [%d] using default thread period = %dms\n", scb->getCanDeviceNum(), DEFAULT_THREAD_PERIOD);
         }
 
         mDevices.push_back(scb);
