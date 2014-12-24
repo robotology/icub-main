@@ -539,7 +539,9 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 
     if(pc104versionMN->minor != brdversionMN->minor)
     {
-        yWarning() << "(!!)-> ethResources::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": FW upgrade is advised";
+        yError() << "ethResources::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": cannot proceed any further. FW upgrade is required";
+        return(false);
+        //yWarning() << "(!!)-> ethResources::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": FW upgrade is advised";
     }
 
     // now i must check brdstatus.transceiver vs hostTransceiver::localTransceiverProperties
