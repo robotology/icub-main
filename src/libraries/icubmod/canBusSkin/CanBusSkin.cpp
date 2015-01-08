@@ -333,7 +333,7 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
                 // Message head
                 for(int k = 0; k < 12; k++)
                 {
-                    yDebug() << "readNewSpecialConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << boardCfgList[j].cfg.noLoad;
+//                    yDebug() << "readNewSpecialConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << boardCfgList[j].cfg.noLoad;
                     if((index+k) >= data.size())
                         yError() << "readNewSpecialConfiguration: index too big";
                     data[index + k] = boardCfgList[j].cfg.noLoad;
@@ -353,7 +353,7 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
 
         for(j=0; j<numofcfg; j++)
         {
-            yDebug() << "Special triangle cfg: " << numofcfg << " on can bus: " << _canBusNum;
+//            yDebug() << "Special triangle cfg: " << numofcfg << " on can bus: " << _canBusNum;
 
             //check if patch exist
             if(_canBusNum != triangleCfg[j].patch)
@@ -403,7 +403,7 @@ bool CanBusSkin::readNewConfiguration(yarp::os::Searchable& config)
             // Message head
             for(int k = 0; k < 12; k++)
             {
-                yDebug() << "readNewConfiguration (default) size is: " << data.size() << " index is " << (index+k) << " value is: " << _brdCfg.noLoad;
+//                yDebug() << "readNewConfiguration (default) size is: " << data.size() << " index is " << (index+k) << " value is: " << _brdCfg.noLoad;
                 if((index+k) >= data.size())
                     yError() << "readNewConfiguration: index too big";
                 data[index + k] = _brdCfg.noLoad;
@@ -465,8 +465,8 @@ bool CanBusSkin::readOldConfiguration(yarp::os::Searchable& config)
     msg4E_EnaL = config.findGroup("4E_EnaL").tail();                  // 4E_EnaL
     msg4E_EnaH = config.findGroup("4E_EnaH").tail();                  // 4E_EnaH
 
-    yDebug() << "msg4E_NoLoad size is " << msg4E_NoLoad.size();
-    yDebug() << "msg4E_NoLoad content is " << msg4E_NoLoad.toString();
+//    yDebug() << "msg4E_NoLoad size is " << msg4E_NoLoad.size();
+//    yDebug() << "msg4E_NoLoad content is " << msg4E_NoLoad.toString();
 
     int numofcards = cardId.size();
     // Check parameter list length
@@ -485,8 +485,8 @@ bool CanBusSkin::readOldConfiguration(yarp::os::Searchable& config)
     checkParameterListLength("4E_EnaH", msg4E_EnaH, numofcards, 0xFF);
     /* ********************************************** */
 
-    yDebug() << "msg4E_NoLoad size is " << msg4E_NoLoad.size();
-    yDebug() << "msg4E_NoLoad content is " << msg4E_NoLoad.toString();
+//    yDebug() << "msg4E_NoLoad size is " << msg4E_NoLoad.size();
+//    yDebug() << "msg4E_NoLoad content is " << msg4E_NoLoad.toString();
 
 
     // Fill the data vector with default values from "noLoad" param in config file.
@@ -502,7 +502,7 @@ bool CanBusSkin::readOldConfiguration(yarp::os::Searchable& config)
             // Message head
             for(int k = 0; k < 12; k++)
             {
-                yDebug() << "readOldConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << baseLine;
+//                yDebug() << "readOldConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << baseLine;
                 if((index+k) >= data.size())
                     yError() << "readOldConfiguration: index too big";
                 data[index + k] = baseLine;

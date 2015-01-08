@@ -128,7 +128,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             // Message head
             for(int k = 0; k < 12; k++)
             {
-                yDebug() << "readNewSpecialConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << boardCfgList[j].cfg.noLoad;
+//                yDebug() << "readNewSpecialConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << boardCfgList[j].cfg.noLoad;
                 if((index+k) >= data.size())
                     yError() << "readNewSpecialConfiguration: index too big";
                 data[index + k] = boardCfgList[j].cfg.noLoad;
@@ -329,8 +329,8 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
             // Message head
             for(int k = 0; k < 12; k++)
             {
-                yDebug() << "EO readNewConfiguration (default) size is: " << data.size()
-                         << " index is " << (index+k) << " value is: " << _brdCfg.noLoad;
+//                yDebug() << "EO readNewConfiguration (default) size is: " << data.size()
+//                         << " index is " << (index+k) << " value is: " << _brdCfg.noLoad;
                 if((index+k) >= data.size())
                     yError() << "readNewConfiguration: index too big";
                 data[index + k] = _brdCfg.noLoad;
@@ -590,12 +590,12 @@ bool EmbObjSkin::start()
     if(_newCfg)
     {
         dat = eosk_sigmode_signal;
-        yDebug()<< "  (!!)-> EmbObjSkin::start() detected that skin for board " << _fId.boardNumber << "uses new signal mode";
+//        yDebug()<< "  (!!)-> EmbObjSkin::start() detected that skin for board " << _fId.boardNumber << "uses new signal mode";
     }
     else
     {
         dat = eosk_sigmode_signal_oldway;
-        yDebug()<< "  (!!)-> EmbObjSkin::start() detected  that skin for board " << _fId.boardNumber << "used old signal mode";
+//        yDebug()<< "  (!!)-> EmbObjSkin::start() detected  that skin for board " << _fId.boardNumber << "used old signal mode";
     }
 
     for(i=0; i<_skCfg.numOfPatches;i++)
