@@ -226,20 +226,23 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         return(false);
     }
 
-    bPatchList = bPatches.findGroup("patchesIdList");
-    if(bPatchList.isNull())
+    _skCfg.numOfPatches=0;
+    char tmp[80];
+    for (int i=1; i<=2; i++)
     {
-        yError() << "skin board num " << _fId.boardNumber << "patchesList is missed!";
-        return(false);
+        sprintf(tmp,"skinCanAddrsPatch%d",i);
+        if (bPatches.check(tmp))
+        {
+           _skCfg.numOfPatches++;
+           bPatchList.addInt(i);
+        }
     }
-
-    _skCfg.numOfPatches = bPatchList.size()-1;
 
     _skCfg.patchInfoList.clear();
     _skCfg. patchInfoList.resize(_skCfg.numOfPatches);
     for(int j=1; j<_skCfg.numOfPatches+1; j++)
     {
-        int id = bPatchList.get(j).asInt();
+        int id = bPatchList.get(j-1).asInt();
         if((id!=1) && (id!=2))
         {
             yError() << "skin board num " << _fId.boardNumber << "ems expected only patch num 1 or 2";
@@ -845,11 +848,11 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
                         if (fullMsg != SkinErrorCode::StatusOK)
                         {
                             yError() << "embObjSkin error code: " <<
-                                        "EMS " << res->boardNum  <<
-                                        "net " << errors[i].net <<
-                                        "board " <<  errors[i].board <<
-                                        "sensor " << errors[i].sensor <<
-                                        "error " << errors[i].error;
+                                        "EMS: " << res->boardNum  <<
+                                        "canDeviceNum: " << errors[i].net <<
+                                        "board: " <<  errors[i].board <<
+                                        "sensor: " << errors[i].sensor <<
+                                        "error: " << iCub::skin::diagnostics::printErrorCode(errors[i].error).c_str();
                         }
                     }
                     else

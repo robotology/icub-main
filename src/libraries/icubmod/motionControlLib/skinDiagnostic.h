@@ -81,6 +81,23 @@ namespace iCub {
                template<typename T>
                operator T () const;
             };
+
+            inline std::string printErrorCode(int code)
+            {
+                std::string s;
+
+                if (code & (1<<0)) {s+="1";} else {s+="0";}
+                if (code & (1<<1)) {s+="1";} else {s+="0";}
+                s+="R";
+                s+="R";
+                s+=".";
+                for (int i=4; i<16; i++)
+                {
+                    if (code & (1<<i)) {s+="1";} else {s+="0";}
+                    if (i%4==3 && i!=15) s+=".";
+                }
+                return s;
+            }
         }
     }
 }

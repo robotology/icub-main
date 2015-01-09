@@ -564,7 +564,8 @@ int CanBusSkin::getChannels()
 }
 
 int CanBusSkin::calibrateSensor() {
-    sendCANMessage4C();
+    if(!_newCfg)
+        sendCANMessage4C();
 
     return AS_OK;
 }
@@ -667,10 +668,10 @@ void CanBusSkin::run() {
                                 if(fullMsg != SkinErrorCode::StatusOK)
                                 {
                                     yError() << "canBusSkin error code: " <<
-                                                "net " << errors[i].net <<
-                                                "board " <<  errors[i].board <<
-                                                "sensor " << errors[i].sensor <<
-                                                "error " << errors[i].error;
+                                                "canDeviceNum: " << errors[i].net <<
+                                                "board: " <<  errors[i].board <<
+                                                "sensor: " << errors[i].sensor <<
+                                                "error: " << iCub::skin::diagnostics::printErrorCode(errors[i].error).c_str();
 
                                     yarp::sig::Vector &out = portSkinDiagnosticsOut.prepare();
                                     out.clear();
