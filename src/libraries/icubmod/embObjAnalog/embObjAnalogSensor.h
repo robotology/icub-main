@@ -110,6 +110,7 @@ private:
     ethFeature_t        _fId;
 
     bool opened;
+    bool verbosewhenok;
 
 
     //! debug messages

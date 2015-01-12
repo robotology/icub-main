@@ -112,6 +112,8 @@ protected:
             return(idPatch-1);
     }
 
+private:
+    bool verbosewhenok;
     /****************** diagnostic********************************/
     bool _isDiagnosticPresent;       // is the diagnostic available from the firmware
     /*************************************************************/

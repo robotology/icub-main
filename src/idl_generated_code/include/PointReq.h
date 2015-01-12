@@ -33,23 +33,23 @@ public:
    * the z-coordinate.
    */
   double z;
-  
+
   // Default constructor
   PointReq() : result(""), x(0), y(0), z(0) {
   }
-  
+
   // Constructor with field values
   PointReq(const std::string& result,const double x,const double y,const double z) : result(result), x(x), y(y), z(z) {
   }
-  
+
   // Copy constructor
-  PointReq(const PointReq& __alt) {
+  PointReq(const PointReq& __alt) : WirePortable(__alt)  {
     this->result = __alt.result;
     this->x = __alt.x;
     this->y = __alt.y;
     this->z = __alt.z;
   }
-  
+
   // Assignment operator
   const PointReq& operator = (const PointReq& __alt) {
     this->result = __alt.result;
@@ -58,13 +58,13 @@ public:
     this->z = __alt.z;
     return *this;
   }
-  
+
   // read and write structure on a connection
   bool read(yarp::os::idl::WireReader& reader);
   bool read(yarp::os::ConnectionReader& connection);
   bool write(yarp::os::idl::WireWriter& writer);
   bool write(yarp::os::ConnectionWriter& connection);
-  
+
 private:
   bool write_result(yarp::os::idl::WireWriter& writer);
   bool nested_write_result(yarp::os::idl::WireWriter& writer);
@@ -84,15 +84,15 @@ private:
   bool nested_read_z(yarp::os::idl::WireReader& reader);
 
 public:
-  
+
   yarp::os::ConstString toString();
-  
+
   // if you want to serialize this class without nesting, use this helper
   typedef yarp::os::idl::Unwrapped<PointReq > unwrapped;
-  
+
   class Editor : public yarp::os::Wire, public yarp::os::PortWriter {
   public:
-    
+
     Editor() {
       group = 0;
       obj_owned = true;
@@ -100,14 +100,14 @@ public:
       dirty_flags(false);
       yarp().setOwner(*this);
     }
-    
+
     Editor(PointReq& obj) {
       group = 0;
       obj_owned = false;
       edit(obj,false);
       yarp().setOwner(*this);
     }
-    
+
     bool edit(PointReq& obj, bool dirty = true) {
       if (obj_owned) delete this->obj;
       this->obj = &obj;
@@ -115,19 +115,19 @@ public:
       dirty_flags(dirty);
       return true;
     }
-    
+
     virtual ~Editor() {
     if (obj_owned) delete obj;
     }
-    
+
     bool isValid() const {
       return obj!=0/*NULL*/;
     }
-    
+
     PointReq& state() { return *obj; }
-    
+
     void begin() { group++; }
-    
+
     void end() {
       group--;
       if (group==0&&is_dirty) communicate();
@@ -186,12 +186,12 @@ public:
     bool read(yarp::os::ConnectionReader& connection);
     bool write(yarp::os::ConnectionWriter& connection);
   private:
-    
+
     PointReq *obj;
-    
+
     bool obj_owned;
     int group;
-    
+
     void communicate() {
       if (group!=0) return;
       if (yarp().canWrite()) {

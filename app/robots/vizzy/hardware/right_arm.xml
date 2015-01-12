@@ -9,17 +9,17 @@
 	<param name="CanAddresses"> 1 2 3 4 5</param>
 	<param name="CanDeviceNum"> 3 </param>
 	<param name="NetworkId"> RIGHTARM </param>
-	<param name="CanMyAddress"> 1 </param>
+	<param name="CanMyAddress"> 0 </param>
 	<param name="CanPollingInterval"> 10 </param>
 	<param name="CanTimeout"> 500 </param>
 	<param name="CanTxTimeout"> 800 </param>
 	<param name="CanRxTimeout"> 800 </param>
-	<param name="broadcast_pos">	1	1	1	1	1	1	1	1	0	0</param>
+	<param name="broadcast_pos">	1	1	1	1	1	1	1	1	1	1</param>
 	<param name="broadcast_pid">	0	0	0	0	0	0	0	0	0	0</param>
-	<param name="broadcast_fault">	1	1	1	1	1	1	1	1	0	0</param>
+	<param name="broadcast_fault">	1	1	1	1	1	1	1	1	1	1</param>
 	<param name="broadcast_current">	0	0	0	0	0	0	0	0	0	0</param>
-	<param name="broadcast_overflow">	1	1	1	1	1	1	1	1	0	0</param>
-	<param name="broadcast_canprint">	1	1	1	1	1	1	1	1	0	0</param>
+	<param name="broadcast_overflow">	1	1	1	1	1	1	1	1	1	1</param>
+	<param name="broadcast_canprint">	1	1	1	1	1	1	1	1	1	1</param>
 	<param name="broadcast_vel_acc">	0	0	0	0	0	0	0	0	0	0</param>
 </group>
 <group name="GENERAL">
@@ -34,15 +34,22 @@
 	<param name="TorqueChan">	0	0	0	0	0	0	0	0	0	0</param>
 	<param name="TorqueMax">	0	0	0	0	0	0	0	0	0	0</param>
 	<param name="Verbose"> 0 </param>
+	<param name="Rotor">	0	0	0	0	0	0	0	0	0	0</param>
+	<param name="GearBox">	0	0	0	0	0	0	0	0	0	0</param>
+
 </group>
 <group name="VELOCITY">
 	<param name="Shifts">	8	8	8	8	8	8	0	0	0	0</param>
 	<param name="Timeout">	100	100	100	100	100	100	100	100	0	0</param>
+	<param name="MOT_speed_estimation">	0	0	0	0	0	0	0	0	0	0	</param>
+	<param name="MOT_accel_estimation">	0	0	0	0	0	0	0	0	0	0	</param>
+	<param name="JNT_accel_estimation">	0	0	0	0	0	0	0	0	0	0	</param>
+	<param name="JNT_speed_estimation">	0	0	0	0	0	0	0	0	0	0	</param>
 </group>
 <group name="LIMITS">
 	<param name="Max">	85	110	85	35	35	150	225	225	0	0</param>
 	<param name="Min">	-85	0	-85	-35	-35	0	0	0	0	0</param>
-	<param name="Currents">	2500 2000 1500 1500 1500 1500 1500 1500 0 0</param>
+	<param name="Currents">	2500 2000 1500 1500 1500 1500 1500 1500 1500 1500</param>
 </group>
 <group name="POS_PIDS">
 	<param name="kp">	2000	2000	2000	50	70	50	50	50	0	0</param>

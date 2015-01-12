@@ -268,6 +268,15 @@ int8_t ace_mutex_release(void* m)
     return(0);
 }
 
+void ace_mutex_delete(void* m)
+{
+    ACE_Recursive_Thread_Mutex* acemtx = (ACE_Recursive_Thread_Mutex*)m;
+    if(NULL != acemtx)
+    {
+        delete acemtx;
+    }
+}
+
 
 // eof
 

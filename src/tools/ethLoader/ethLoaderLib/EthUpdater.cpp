@@ -353,9 +353,16 @@ int EthUpdater::sendDataBroadcast(unsigned char* data,int size,int answers,int r
 {
     const int UPD_OK=0;
 
+#if 0
     //mSocket.SendTo(data,size,mPort,mBroadcast);
     mSocket.SendBroad(data,size,mPort);
-
+#else
+    // use multicast to all selected boards
+    for(int k=0;k<mN2Prog; k++)
+    {
+        mSocket.SendTo(data, size, mPort, mBoard2Prog[k]->mAddress);
+    }
+#endif
     ACE_UINT16 rxPort;
     ACE_UINT32 rxAddress;
 
@@ -371,7 +378,7 @@ int EthUpdater::sendDataBroadcast(unsigned char* data,int size,int answers,int r
         {
             for (int a=0; a<answers; ++a)
             {
-                if (mSocket.ReceiveFrom(mRxBuffer,1024,rxAddress,rxPort,1)>0)
+                if (mSocket.ReceiveFrom(mRxBuffer,1024,rxAddress,rxPort,10)>0)
                 {
                     if (mRxBuffer[0]==cmd)
                     {

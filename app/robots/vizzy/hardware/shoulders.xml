@@ -9,7 +9,7 @@
 	<param name="CanAddresses"> 1 2 3</param>
 	<param name="CanDeviceNum"> 1 </param>
 	<param name="NetworkId"> SHOULDERS </param>
-	<param name="CanMyAddress"> 1 </param>
+	<param name="CanMyAddress"> 0 </param>
 	<param name="CanPollingInterval"> 10 </param>
 	<param name="CanTimeout"> 500 </param>
 	<param name="CanTxTimeout"> 800 </param>
@@ -33,16 +33,22 @@
 	<param name="TorqueId">	0	0	0	0	0	0</param>
 	<param name="TorqueChan">	0	0	0	0	0	0</param>
 	<param name="TorqueMax">	0	0	0	0	0	0</param>
+	<param name="Rotor">	0	0	0	0	0	0</param>
+	<param name="GearBox">	0	0	0	0	0	0</param>
 	<param name="Verbose"> 0 </param>
 </group>
 <group name="VELOCITY">
 	<param name="Shifts">	8	8	8	8	8	8</param>
 	<param name="Timeout">	100	100	100	100	100	100</param>
+	<param name="MOT_speed_estimation">	0	0	0	0	0	0</param>
+	<param name="MOT_accel_estimation">	0	0	0	0	0	0</param>
+	<param name="JNT_accel_estimation">	0	0	0	0	0	0</param>
+	<param name="JNT_speed_estimation">	0	0	0	0	0	0</param>
 </group>
 <group name="LIMITS">
 	<param name="Max">	18	135	75	18	135	75</param>
 	<param name="Min">	-18	-75	0	-18	-75	0</param>
-	<param name="Currents">	2000	2000	2400	2000	2000	2400</param>
+	<param name="Currents">	3000	3000	3000	3000	3000	3000</param>
 </group>
 <group name="POS_PIDS">
 	<param name="kp">	5	1	750	5	1	750</param>

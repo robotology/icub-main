@@ -418,7 +418,8 @@ bool iCubSimulationControl::getErrorsRaw(double *errs)
 
 bool iCubSimulationControl::getOutputRaw(int axis, double *out)
 {
-   return NOT_YET_IMPLEMENTED("getOutputRaw");
+    *out=0.0;
+    return false;
 }
 
 bool iCubSimulationControl::getOutputsRaw(double *outs)
@@ -881,7 +882,8 @@ bool iCubSimulationControl::getEncoderAccelerationsRaw(double *v)
 
 bool iCubSimulationControl::getEncoderAccelerationRaw(int axis, double *v)
 {
-    return NOT_YET_IMPLEMENTED("getEncoderAcc");
+    *v=0.0;
+    return false; //NOT_YET_IMPLEMENTED("getEncoderAcc");
 }
 
 bool iCubSimulationControl::disableAmpRaw(int axis)
@@ -1164,7 +1166,8 @@ bool iCubSimulationControl::getTorqueErrorsRaw(double *err)
 }
 bool iCubSimulationControl::getTorquePidOutputRaw(int axis, double *out)
 {
-    return NOT_YET_IMPLEMENTED("getTorquePidOutputRaw");
+    *out=0.0;
+    return false;
 }
 bool iCubSimulationControl::getTorquePidOutputsRaw(double *out)
 {

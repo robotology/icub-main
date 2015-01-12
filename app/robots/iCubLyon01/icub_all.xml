@@ -26,7 +26,7 @@
     <devices file="wrappers/VFT/left_leg_VFT_wrapper.xml" /> 
     <devices file="wrappers/VFT/right_arm_VFT_wrapper.xml" /> 
     <devices file="wrappers/VFT/right_leg_VFT_wrapper.xml" /> 
-    
+     <devices file="wrappers/VFT/torso_VFT_wrapper.xml" /> 
     <devices file="hardware/VFT/left_arm_virtual_strain.xml" /> 
     <devices file="hardware/VFT/left_leg_virtual_strain.xml" /> 
     <devices file="hardware/VFT/right_arm_virtual_strain.xml" /> 

@@ -29,6 +29,8 @@
 
 #include "EOnv.h"
 
+#include <yarp/os/NetType.h>
+
 
 using namespace std;
 using namespace iCub::skin::diagnostics;
@@ -53,6 +55,16 @@ EmbObjSkin::EmbObjSkin() :  mutex(1), _isDiagnosticPresent(false)
     _skCfg.numOfPatches = 0;
     _skCfg.totalCardsNum = 0;
     memset(info, 0x00, sizeof(info));
+
+    ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
+    if (tmp != "")
+    {
+        verbosewhenok = (bool)NetType::toInt(tmp);
+    }
+    else
+    {
+        verbosewhenok = false;
+    }
 }
 
 
@@ -505,7 +517,10 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     }
     else
     {
-        yWarning() << "(OK)-> embObjSkin::open() correctly activated control loop of BOARD" << _fId.boardNumber;
+        if(verbosewhenok)
+        {
+            yWarning() << "(OK)-> embObjSkin::open() correctly activated control loop of BOARD" << _fId.boardNumber;
+        }
     }
 
     return true;
@@ -639,13 +654,16 @@ bool EmbObjSkin::configPeriodicMessage(void)
     }
     else
     {
-        yWarning() << "(OK)-> embObjSkin::configPeriodicMessage() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
-        char nvinfo[128];
-        for(int r=0; r<id32v.size(); r++)
+        if(verbosewhenok)
         {
-            uint32_t id32 = id32v.at(r);
-            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-            yWarning() << "(OK)->\t it added regular rop for" << nvinfo;
+            yWarning() << "(OK)-> embObjSkin::configPeriodicMessage() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
+            char nvinfo[128];
+            for(int r=0; r<id32v.size(); r++)
+            {
+                uint32_t id32 = id32v.at(r);
+                eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+                yWarning() << "(OK)->\t it added regular rop for" << nvinfo;
+            }
         }
     }
     Time::delay(0.005);  // 5 ms (m.a.a-delay: before it was 0)

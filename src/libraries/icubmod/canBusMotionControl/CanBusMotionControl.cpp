@@ -1254,7 +1254,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     for (i = 1; i < xtmp.size(); i++) 
         _angleToEncoder[i-1] = xtmp.get(i).asDouble();
 
-    if (!validate(general, xtmp, "Rotor", "a list of scales for the rotor encoders", nj+1))
+    if (!validate_optional(general, xtmp, "Rotor", "a list of scales for the rotor encoders", nj+1))
         {
             yWarning("Rotor: Using default value = 1\n");
             for(i=1;i<nj+1; i++) 
@@ -1286,7 +1286,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         }
     }
 
-    if (!validate(general, xtmp, "TorqueId","a list of associated joint torque sensor ids", nj+1))
+    if (!validate_optional(general, xtmp, "TorqueId","a list of associated joint torque sensor ids", nj+1))
     {
         yWarning("TorqueId: Using default value = 0 (disabled)\n");
         for(i=1;i<nj+1; i++) 
@@ -1297,7 +1297,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         for (i = 1; i < xtmp.size(); i++) _torqueSensorId[i-1] = xtmp.get(i).asInt();
     }
     
-    if (!validate(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", nj+1))
+    if (!validate_optional(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", nj+1))
     {
         yWarning("TorqueChan: Using default value = 0 (disabled)\n");
         for(i=1;i<nj+1; i++) 
@@ -1308,7 +1308,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
     }
 
-    if (!validate(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", nj+1))
+    if (!validate_optional(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", nj+1))
     {
         yWarning("TorqueMax: Using default value = 0\n");
         for(i=1;i<nj+1; i++) 
@@ -1536,7 +1536,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
             /////// Joint Speed Estimation
             xtmp.clear();
-            if (!validate(velocityGroup, xtmp, "JNT_speed_estimation", "a list of shift factors used by the firmware joint speed estimator", nj+1))
+            if (!validate_optional(velocityGroup, xtmp, "JNT_speed_estimation", "a list of shift factors used by the firmware joint speed estimator", nj+1))
             {
                     yWarning("JNT_speed_estimation: Using default value=5\n");
                     for(i=1;i<nj+1; i++)
@@ -1550,7 +1550,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
             /////// Motor Speed Estimation
             xtmp.clear();
-            if (!validate(velocityGroup, xtmp, "MOT_speed_estimation", "a list of shift factors used by the firmware motor speed estimator", nj+1))
+            if (!validate_optional(velocityGroup, xtmp, "MOT_speed_estimation", "a list of shift factors used by the firmware motor speed estimator", nj+1))
                 {
                     yWarning("MOT_speed_estimation: Using default value=5\n");
                     for(i=1;i<nj+1; i++)
@@ -1564,7 +1564,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
             /////// Joint Acceleration Estimation
             xtmp.clear();
-            if (!validate(velocityGroup, xtmp, "JNT_accel_estimation", "a list of shift factors used by the firmware joint speed estimator", nj+1))
+            if (!validate_optional(velocityGroup, xtmp, "JNT_accel_estimation", "a list of shift factors used by the firmware joint speed estimator", nj+1))
             {
                     yWarning("JNT_accel_estimation: Using default value=5\n");
                     for(i=1;i<nj+1; i++)
@@ -1578,7 +1578,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
             /////// Motor Acceleration Estimation
             xtmp.clear();
-            if (!validate(velocityGroup, xtmp, "MOT_accel_estimation", "a list of shift factors used by the firmware motor speed estimator", nj+1))
+            if (!validate_optional(velocityGroup, xtmp, "MOT_accel_estimation", "a list of shift factors used by the firmware motor speed estimator", nj+1))
                 {
                     yWarning("MOT_accel_estimation: Using default value=5\n");
                     for(i=1;i<nj+1; i++)
@@ -3801,12 +3801,37 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
         return false;
 
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW SINGLE JOINT\n");
+    bool ret = true;
 
     int v = from_modevocab_to_modeint(mode);
     if (v==VOCAB_CM_UNKNOWN) return false;
     _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,j,v);
-    yarp::os::Time::delay(0.010);
-    return true;
+
+    int current_mode = VOCAB_CM_UNKNOWN;
+    int timeout = 0;
+
+    do
+    {
+        getControlModeRaw(j,&current_mode);
+        if (current_mode==mode) {ret = true; break;}
+        if (current_mode==VOCAB_CM_IDLE     && mode==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
+        if (current_mode==VOCAB_CM_HW_FAULT)
+        {
+            if (mode!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint in HW_FAULT");}
+            ret = true; break;
+        }
+        yarp::os::Time::delay(0.010);
+        yWarning ("setControlModeRaw delay (joint %d), current mode: %s, requested: %s", j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(mode).c_str());
+        timeout++;
+    }
+    while (timeout < 10);
+    if (timeout>=10)
+    {
+        ret = false;
+        yError ("100ms Timeout occured in setControlModeRaw (joint %d), current mode: %s, requested: %s", j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(mode).c_str());
+    }
+
+    return ret;
 }
 
 bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *joints, int *modes)
@@ -3820,8 +3845,30 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
         int v = from_modevocab_to_modeint(modes[i]);
         if (v==VOCAB_CM_UNKNOWN) ret = false;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,joints[i],v);
+
+        int current_mode = VOCAB_CM_UNKNOWN;
+        int timeout = 0;
+        do
+        {
+            getControlModeRaw(joints[i],&current_mode);
+            if (current_mode==modes[i]) {ret = true; break;}
+            if (current_mode==VOCAB_CM_IDLE)
+            {
+                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint in HW_FAULT");}
+                ret = true; break;
+            }
+            yarp::os::Time::delay(0.010);
+            yWarning ("setControlModesRaw delay (joint %d), current mode: %s, requested: %s", joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            timeout++;
+        }
+        while (timeout < 10);
+        if (timeout>=10)
+        {
+            ret = false;
+            yError ("100ms Timeout occured in setControlModesRaw(M) (joint %d), current mode: %s, requested: %s", joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+        }
     }
-    yarp::os::Time::delay(0.010);
+
     return ret;
 }
 
@@ -3829,15 +3876,39 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
 {
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW ALL JOINT\n");
     CanBusResources& r = RES(system_resources);
+    bool ret = true;
 
     for (int i = 0; i < r.getJoints(); i++)
     {
         int v = from_modevocab_to_modeint(modes[i]);
         if (v==VOCAB_CM_UNKNOWN) return false;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,v);
+
+        int current_mode = VOCAB_CM_UNKNOWN;
+        int timeout = 0;
+        do
+        {
+            getControlModeRaw(i,&current_mode);
+            if (current_mode==modes[i]) {ret = true; break;}
+            if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
+            if (current_mode==VOCAB_CM_HW_FAULT)
+            {
+                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint in HW_FAULT");}
+                ret = true; break;
+            }
+            yarp::os::Time::delay(0.010);
+            yWarning ("setControlModesRaw delay (joint %d), current mode: %s, requested: %s", i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            timeout++;
+        }
+        while (timeout < 10);
+        if (timeout>=10)
+        {
+            ret = false;
+            yError ("100ms Timeout occured in setControlModesRaw (joint %d), current mode: %s, requested: %s", i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+        }
     }
-    yarp::os::Time::delay(0.010);
-    return true;
+
+    return ret;
 }
 
 // return the number of controlled axes.
@@ -4402,9 +4473,11 @@ bool CanBusMotionControl::setReferenceRaw (int j, double ref)
         if (mode != VOCAB_CM_POSITION_DIRECT &&
             mode != VOCAB_CM_IDLE)
         {
-            yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << axis;
             #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+            yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << axis;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
+            #else
+            yError() << "setReferenceRaw: skipping command because joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
             #endif
         }
 
@@ -5148,9 +5221,11 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         mode != VOCAB_CM_IMPEDANCE_POS &&
         mode != VOCAB_CM_IDLE)
     {
-        yWarning() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << axis;
         #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+        yWarning() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << axis;
         setControlModeRaw(axis,VOCAB_CM_POSITION);
+        #else
+        yError() << "positionMoveRaw: skipping command because joint" << axis << "is not in VOCAB_CM_POSITION mode";
         #endif
     }
 
@@ -5528,9 +5603,11 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
         mode != VOCAB_CM_IMPEDANCE_VEL && 
         mode != VOCAB_CM_IDLE)
     {
-        yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << axis;
         #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+        yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << axis;
         setControlModeRaw(axis,VOCAB_CM_VELOCITY);
+        #else
+        yError() << "velocityMoveRaw: skipping command because joint" << axis << "is not in VOCAB_CM_VELOCITY mode";
         #endif
     }
 
@@ -6063,9 +6140,11 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
         if (mode != VOCAB_CM_POSITION_DIRECT &&
             mode != VOCAB_CM_IDLE)
         {
-            yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
             #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+            yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
+            #else
+            yError() << "setPositionRaw: skipping command because joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
             #endif
         }
 
