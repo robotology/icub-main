@@ -12,8 +12,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                        ../motionControlLib/
                        ${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
 
-yarp_add_plugin(canBusSkin CanBusSkin.h CanBusSkin.cpp ../motionControlLib/SkinConfigReader.cpp)
-target_link_libraries(canBusSkin ${YARP_LIBRARIES})
+yarp_add_plugin(canBusSkin CanBusSkin.h CanBusSkin.cpp ../motionControlLib/SkinConfigReader.cpp ../motionControlLib/skinDiagnostic.h)
+target_link_libraries(canBusSkin ${YARP_LIBRARIES} ${ICUB_LIBRARIES})
 
 icub_export_library(canBusSkin)
 

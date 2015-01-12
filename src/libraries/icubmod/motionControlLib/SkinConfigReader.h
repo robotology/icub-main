@@ -20,17 +20,10 @@
 #ifndef SKIN_CONFIG_READER
 #define SKIN_CONFIG_READER
 
+#include <stdint.h>
 #include <string>
 
-
-//#include <ace/ACE.h>
 #include <yarp/os/LogStream.h>
-#include <stdint.h>
-
-
-
-
-
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 
@@ -41,6 +34,7 @@
 #define sk_period_default                40 //millisec
 #define sk_skintype_default              0
 #define sk_noLoad_default                0xf0
+#define sk_useDiagnostic_default         false
 
 class SkinBoardCfgParam
 {
@@ -48,21 +42,28 @@ public:
     uint8_t                     period;
     uint8_t                     noLoad;
     uint8_t                     skinType;
+    bool                        useDiagnostic;
 
 public:
+
+    SkinBoardCfgParam()
+    {
+        setDefaultValues();
+    }
+
     void setDefaultValues(void)
     {
         period                  = sk_period_default;
         noLoad                  = sk_noLoad_default;
         skinType                = sk_skintype_default;
-    };
+        useDiagnostic           = sk_useDiagnostic_default;
+    }
+
     void debugPrint(void)
     {
         yDebug() << "period=" << period << "; noLoad=" << noLoad << "; skinType=" << skinType;
     }
-
 };
-
 
 
 
@@ -129,8 +130,8 @@ private:
     char                _name[CONFIG_READER_NAME_LEN];
     
 public:
-    SkinConfigReader(char *name);
     SkinConfigReader();
+    void setName(char *name);
     bool isDefaultBoardCfgPresent(yarp::os::Searchable& config);
     bool readDefaultBoardCfg(yarp::os::Searchable& config, SkinBoardCfgParam *boardCfg);
     bool isDefaultTriangleCfgPresent(yarp::os::Searchable& config);

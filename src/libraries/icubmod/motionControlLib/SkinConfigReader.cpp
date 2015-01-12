@@ -14,16 +14,17 @@
 
 using namespace yarp::os;
 
-SkinConfigReader::SkinConfigReader()
-{;}
+SkinConfigReader::SkinConfigReader() { }
 
-SkinConfigReader::SkinConfigReader(char *name)
+void SkinConfigReader::setName(char *name)
 {
     if (NULL != name)
     {
         strncpy(_name, name, sizeof(_name));
     }
 }
+
+
 //bool SkinConfigReader::readPatchesList(yarp::os::Searchable& config, SkinConfig *skCfg)
 //{
 //    if(NULL == skCfg)
@@ -162,6 +163,7 @@ bool SkinConfigReader::readDefaultBoardCfg(yarp::os::Searchable& config, SkinBoa
         yError() << "skin " << _name << "doesn't find diagnostic in defaultCfgBoard group in xml file";
         return false;
     }
+    boardCfg->useDiagnostic = xtmp.get(1).asBool();
     return true;
 }
 

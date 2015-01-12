@@ -84,7 +84,7 @@
 
 #include "iCub/skinManagerGui/guiCallback.h"
 
-bool initGuiStatus(){
+bool initGuiStatus() {
     Bottle reply = sendRpcCommand(true, get_binarization);
     if(string(reply.toString().c_str()).compare("on") == 0){
         gtk_toggle_button_set_active(btnBinarization, true);
@@ -209,11 +209,13 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
 
     string driftCompRpcPortName     = rf.check("skinManRpcPort", Value("/skinManager/rpc")).asString().c_str();
     string driftCompMonitorPortName = rf.check("skinManMonitorPort", Value("/skinManager/monitor:o")).asString().c_str();
-    string driftCompInfoPortName    = rf.check("skinManInfoPort", Value("/skinManager/info:o")).asString().c_str();    
+    string skinDiagnosticsErrorPortName = rf.check("skinDiagnosticsErrorsPort", Value("/diagnostics/skin/errors:o")).asString().c_str();
+
     guiName                         = rf.check("name", Value("skinManGui")).asString().c_str();
     string guiRpcPortName           = "/" + guiName + "/rpc:o";
     string guiMonitorPortName       = "/" + guiName + "/monitor:i";
     string guiInfoPortName          = "/" + guiName + "/info:i";
+    string guiDiagnosticsErrorPortName = "/" + guiName + "/diagnostics/skin/errors:i";
     //string wholeBodyRpcPortName       = "/" + guiName + "/wholeBody/rpc";
     if (!guiRpcPort.open(guiRpcPortName.c_str())) {
         string msg = string("Unable to open port ") + guiRpcPortName.c_str();
@@ -230,6 +232,14 @@ bool initNetwork(Network& yarp, ResourceFinder &rf, int argc, char *argv[], stri
         openDialog(msg.c_str(), GTK_MESSAGE_ERROR);
         return false;
     }
+
+    // Open skin diagnostics port
+    if (!portSkinDiagnosticsErrorsIn.open(guiDiagnosticsErrorPortName.c_str())) {
+        string msg = string("Unable to open port ") + guiDiagnosticsErrorPortName.c_str();
+        openDialog(msg.c_str(), GTK_MESSAGE_ERROR);
+        return false;
+    }
+        
  //   if (!wholeBodyRpcPort.open(wholeBodyRpcPortName.c_str())){
     //  string msg = string("Unable to open port ") + wholeBodyRpcPortName.c_str();
     //  openDialog(msg.c_str(), GTK_MESSAGE_ERROR);

@@ -40,6 +40,7 @@
 #include "FeatureInterface.h"
 #include "IethResource.h"
 #include "SkinConfigReader.h"
+#include <skinDiagnostic.h>
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -54,7 +55,7 @@ public:
     int                     idPatch;
     eOprotIndex_t           indexNv;
     std::vector <int>       cardAddrList;
-    bool checkCardAddrIsInList(int cardAddr);
+    int checkCardAddrIsInList(int cardAddr);
 };
 
 class SkinConfig
@@ -92,7 +93,7 @@ protected:
     SkinBoardCfgParam _brdCfg;
     SkinTriangleCfgParam _triangCfg;
     bool            _newCfg;
-    SkinConfigReader *_cfgReader;
+    SkinConfigReader  _cfgReader;
     SkinConfig        _skCfg;
 
     bool            init();
@@ -113,6 +114,13 @@ protected:
 
 private:
     bool verbosewhenok;
+    /****************** diagnostic********************************/
+    bool _isDiagnosticPresent;       // is the diagnostic available from the firmware
+    /*************************************************************/
+
+    /** The detected skin errors. These are used for diagnostics purposes. */
+    yarp::sig::VectorOf<iCub::skin::diagnostics::DetectedError> errors;
+//    bool diagnoseSkin();  // for more fancy handling of errors
 
 public:
 

@@ -56,7 +56,12 @@ static void wake(const EOnv* nv)
     
     eOprotID32_t id32 = eo_nv_GetID32(nv);
     eOprotProgNumber_t prognum = eoprot_endpoint_id2prognum(eo_nv_GetBRD(nv), id32);
-    feat_MC_mutex_post(mchandler, prognum);
+    if(fakestdbool_false == feat_MC_mutex_post(mchandler, prognum) )
+    {
+        char nvinfo[128];
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        printf("[ERROR] while releasing mutex for variable %s", nvinfo); fflush(stdout);
+    }
 }
 
 

@@ -7,7 +7,6 @@
 #ifndef __SKIN_MESH_THREAD_H__
 #define __SKIN_MESH_THREAD_H__
 
-//#include <stdio.h>
 #include <string>
 
 #include <yarp/os/RateThread.h>
@@ -17,13 +16,19 @@
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/sig/Vector.h>
+#include <yarp/os/BufferedPort.h>
+
 
 #include "SkinConfigReader.h"
+#include <skinDiagnostic.h>
 
 
 class CanBusSkin : public yarp::os::RateThread, public yarp::dev::IAnalogSensor, public yarp::dev::DeviceDriver 
 {
 private:
+
+    bool _verbose;
+
 
     /* *************************************************************************************** */
     // CAN Message parameters
@@ -42,13 +47,20 @@ private:
     yarp::os::Bottle msg4E_EnaL;
     yarp::os::Bottle msg4E_EnaH;
     /* *************************************************************************************** */
+
+    /** Output port for skin diagnostics. */
+    yarp::os::BufferedPort<yarp::sig::Vector> portSkinDiagnosticsOut;
     
     /****************** new cfg **********************************/
     SkinBoardCfgParam       _brdCfg;
     SkinTriangleCfgParam    _triangCfg;
     bool                    _newCfg;
-    SkinConfigReader        *_cfgReader;
+    SkinConfigReader        _cfgReader;
     int                     _canBusNum;
+    /*************************************************************/
+
+    /****************** diagnostic********************************/
+    bool _isDiagnosticPresent;       // is the diagnostic available from the firmware
     /*************************************************************/
 
 protected:
@@ -58,17 +70,21 @@ protected:
     yarp::dev::CanBuffer inBuffer;
     yarp::dev::CanBuffer outBuffer;
 
-   
     yarp::os::Semaphore mutex;
+
+    /** The CAN net ID. */
+    int netID;
 
     yarp::sig::VectorOf<int> cardId;
     int sensorsNum;
 
     yarp::sig::Vector data;
 
+    /** The detected skin errors. These are used for diagnostics purposes. */
+    yarp::sig::VectorOf<iCub::skin::diagnostics::DetectedError> errors;
+
 public:
-    CanBusSkin(int period=20) : RateThread(period),mutex(1) {}
-    
+    CanBusSkin();
     ~CanBusSkin() {}
 
     virtual bool open(yarp::os::Searchable& config);
@@ -89,6 +105,13 @@ public:
 
 private:
     /**
+     * Extracts the detected errors and prints them out on a dedicated YARP port.
+     *
+     * \return true/false upon success/fail
+     */
+    bool diagnoseSkin(void);
+
+    /**
      * Checks that the given parameter list, extracted from the configuration file, is of the same lenght as the number of cards on the CAN bus.
      * If thins is not the case then the missing parameters in the list are initialised with default values.
      *
@@ -103,7 +126,8 @@ private:
      * Sends the CMD_TACT_SETUP 0x4C CAN message to the MTB boards.
      */
     bool sendCANMessage4C(void);
-    
+    bool checkFirmwareVersion(void);
+
     /**
      * Sends the CMD_TACT_SETUP2 0x4E CAN message to the MTB boards.
      */

@@ -245,10 +245,10 @@ void Compensator::calibrationFinish(){
     }
     if(baseline255 || thresholdZero){
         _isWorking = false;
-        if(baseline255)
-            sendInfoMsg("The baselines of all the taxels are 255. Probably there is a hardware problem.");
-        if(thresholdZero)
-            sendInfoMsg("The noise of all taxels is 0. Probably there is a hardware problem.");
+//        if(baseline255)
+//            sendInfoMsg("The baselines of all the taxels are 255. Probably there is a hardware problem.");
+//        if(thresholdZero)
+//            sendInfoMsg("The noise of all taxels is 0. Probably there is a hardware problem.");
     }
     for (unsigned int i=0; i<skinDim; i++) 
         touchThresholds[i] = max<double>(MIN_TOUCH_THR, touchThresholds[i]);

@@ -39,7 +39,7 @@ static void on_window_destroy_event(GtkObject *object, gpointer user_data){
 
 static void spin_threshold_value_changed(GtkSpinButton *spinbutton, gpointer user_data){
     int safetyThr = gtk_spin_button_get_value_as_int(spinbutton);
-    if(safetyThr == currentThreshold)
+    if (safetyThr == currentThreshold)
         return;
     
     // set the threshold
@@ -51,7 +51,7 @@ static void spin_threshold_value_changed(GtkSpinButton *spinbutton, gpointer use
 	Bottle getReply = sendRpcCommand(true, get_threshold);
 	currentThreshold = getReply.get(0).asInt();
 
-	if(safetyThr==currentThreshold){
+	if (safetyThr==currentThreshold){
         stringstream msg; msg << "Safety threshold changed: " << safetyThr;
         setStatusBarText(msg.str().c_str());
         return;
@@ -66,7 +66,7 @@ static void spin_threshold_value_changed(GtkSpinButton *spinbutton, gpointer use
 
 static void spin_gain_value_changed(GtkSpinButton *spinbutton, gpointer user_data){
     double compGain = gtk_spin_button_get_value(spinbutton);
-    if(compGain == currentCompGain)
+    if (compGain == currentCompGain)
         return;
 
     // set the gain
@@ -78,7 +78,7 @@ static void spin_gain_value_changed(GtkSpinButton *spinbutton, gpointer user_dat
 	Bottle getReply = sendRpcCommand(true, get_gain);
 	currentCompGain = getReply.get(0).asDouble();
 
-	if(compGain==currentCompGain){
+	if (compGain==currentCompGain){
         stringstream msg; msg << "Compensation gain changed: " << compGain;
         setStatusBarText(msg.str().c_str());
         return;
@@ -93,7 +93,7 @@ static void spin_gain_value_changed(GtkSpinButton *spinbutton, gpointer user_dat
 
 static void spin_cont_gain_value_changed(GtkSpinButton *spinbutton, gpointer user_data){
     double contCompGain = gtk_spin_button_get_value(spinbutton);
-    if(contCompGain == currentContCompGain)
+    if (contCompGain == currentContCompGain)
         return;
 
     // set the gain
@@ -105,7 +105,7 @@ static void spin_cont_gain_value_changed(GtkSpinButton *spinbutton, gpointer use
 	Bottle getReply = sendRpcCommand(true, get_cont_gain);
 	currentContCompGain = getReply.get(0).asDouble();
 
-	if(contCompGain==currentContCompGain){
+	if (contCompGain==currentContCompGain){
         stringstream msg; msg << "Contact compensation gain changed: " << contCompGain;
         setStatusBarText(msg.str().c_str());
         return;
@@ -120,7 +120,7 @@ static void spin_cont_gain_value_changed(GtkSpinButton *spinbutton, gpointer use
 
 static void spin_max_neigh_dist_value_changed(GtkSpinButton *spinbutton, gpointer user_data){
     double maxNeighDist = 1e-2*gtk_spin_button_get_value(spinbutton);
-    if(maxNeighDist == currentMaxNeighDist)
+    if (maxNeighDist == currentMaxNeighDist)
         return;
 
     // set the value
@@ -132,7 +132,7 @@ static void spin_max_neigh_dist_value_changed(GtkSpinButton *spinbutton, gpointe
 	Bottle getReply = sendRpcCommand(true, get_max_neigh_dist);
 	currentMaxNeighDist = getReply.get(0).asDouble();
 
-	if(maxNeighDist==currentMaxNeighDist){
+	if (maxNeighDist==currentMaxNeighDist){
         stringstream msg; msg << "Max neighbor distance changed: " << maxNeighDist<< " m";
         setStatusBarText(msg.str().c_str());
         return;
@@ -148,7 +148,7 @@ static void spin_max_neigh_dist_value_changed(GtkSpinButton *spinbutton, gpointe
 static gboolean scale_smooth_value_changed(GtkRange* range, GtkScrollType scroll, gdouble value, gpointer user_data){
 	// check whether the smooth factor has changed
 	double smoothFactor = round(value, 1); //double(int((value*10)+0.5))/10.0;
-	if(smoothFactor==currentSmoothFactor)
+	if (smoothFactor==currentSmoothFactor)
 		return false;
 
 	// set the smooth factor
@@ -161,7 +161,7 @@ static gboolean scale_smooth_value_changed(GtkRange* range, GtkScrollType scroll
 	currentSmoothFactor = getReply.get(0).asDouble();
 	currentSmoothFactor = round(currentSmoothFactor, 1); //double(int((currentSmoothFactor*10)+0.5))/10.0;
 
-	if(smoothFactor==currentSmoothFactor){
+	if (smoothFactor==currentSmoothFactor){
 		stringstream msg; msg << "Smooth factor changed: " << smoothFactor;
 		setStatusBarText(msg.str());
 		return false;
@@ -184,7 +184,7 @@ static gboolean toggle_button_smooth(GtkToggleButton *widget, GdkEvent *ev, gpoi
 	    b.addInt(set_smooth_filter); b.addString("on");
 	    guiRpcPort.write(b, setReply);
 		Bottle reply = sendRpcCommand(true, get_smooth_filter);
-		if(string(reply.toString().c_str()).compare("on") == 0){
+		if (string(reply.toString().c_str()).compare("on") == 0){
 			gtk_button_set_label(GTK_BUTTON(widget), "ON");
 			gtk_widget_set_sensitive(GTK_WIDGET(data), true);
 			setStatusBarText("Smooth filter turned on");
@@ -198,7 +198,7 @@ static gboolean toggle_button_smooth(GtkToggleButton *widget, GdkEvent *ev, gpoi
 	    b.addInt(set_smooth_filter); b.addString("off");
 	    guiRpcPort.write(b, setReply);
 		Bottle reply = sendRpcCommand(true, get_smooth_filter);
-		if(string(reply.toString().c_str()).compare("off") == 0){
+		if (string(reply.toString().c_str()).compare("off") == 0){
 			gtk_button_set_label(GTK_BUTTON(widget), "OFF");
 			gtk_widget_set_sensitive(GTK_WIDGET(data), false);
 			setStatusBarText("Smooth filter turned off");
@@ -218,7 +218,7 @@ static gboolean toggle_button_binarization (GtkToggleButton *widget, GdkEvent *e
 	    b.addInt(set_binarization); b.addString("on");
 	    guiRpcPort.write(b, setReply);
 		Bottle reply = sendRpcCommand(true, get_binarization);
-		if(string(reply.toString().c_str()).compare("on")==0){
+		if (string(reply.toString().c_str()).compare("on")==0){
 			gtk_button_set_label(GTK_BUTTON(widget), "ON");
 			setStatusBarText("Binarization filter turned on");
 			return false;	// propagate the event further
@@ -231,7 +231,7 @@ static gboolean toggle_button_binarization (GtkToggleButton *widget, GdkEvent *e
 	    b.addInt(set_binarization); b.addString("off");
 	    guiRpcPort.write(b, setReply);
 		Bottle reply = sendRpcCommand(true, get_binarization);
-		if(string(reply.toString().c_str()).compare("off")==0){
+		if (string(reply.toString().c_str()).compare("off")==0){
 			gtk_button_set_label(GTK_BUTTON(widget), "OFF");
 			setStatusBarText("Binarization filter turned off");
 			return false;	// propagate the event further
@@ -249,7 +249,7 @@ static gint progressbar_calibration(gpointer data){
 
 	// check whether the calibration is still in progress
 	Bottle reply = sendRpcCommand(true, is_calibrating);
-	if(string(reply.toString().c_str()).compare("yes")==0)
+	if (string(reply.toString().c_str()).compare("yes")==0)
 		return true;
 
 	gtk_widget_hide(GTK_WIDGET(progBarCalib));
@@ -266,7 +266,7 @@ static gboolean button_calibration (GtkToggleButton *widget, GdkEvent *ev, gpoin
 	gtk_widget_set_sensitive(GTK_WIDGET(widget), false);
 
 	// check whether the port is connected
-	/*if(wholeBodyRpcPort.getOutputCount()==0){
+	/*if (wholeBodyRpcPort.getOutputCount()==0){
 		printLog("Cannot reset F/T sensor offset because connection to wholeBodyDynamics not available.");
         return false;
     }*/
@@ -283,12 +283,12 @@ static gboolean button_threshold(GtkToggleButton *widget, GdkEvent *ev, gpointer
 	//printf("Button callback thread: %p\n", g_thread_self());
 	Bottle touchThr = sendRpcCommand(true, get_touch_thr);
 	int index = 0;
-    for(unsigned int j=0; j<portDim.size(); j++){
+    for (unsigned int j=0; j<portDim.size(); j++) {
 	    stringstream msg;
 		msg<< "Thresholds for port "<< portNames[j]<< ":\n";
-	    for(unsigned int i=0; i<portDim[j]; i++){            
-		    if(i%12==0){
-			    if(i!=0)
+	    for (unsigned int i=0; i<portDim[j]; i++){            
+		    if (i%12==0){
+			    if (i!=0)
 				    msg<< "\n";
 			    msg<< "TR"<< i/12<< ":\t";
 		    }
@@ -311,16 +311,16 @@ static void comboPort_changed(GtkComboBox* combo, gpointer data){
     gint newPort2plot=-1;
     GtkTreeIter iter;
     GtkTreeModel* model;
-    if( gtk_combo_box_get_active_iter(comboPort, &iter)){                    
+    if ( gtk_combo_box_get_active_iter(comboPort, &iter)){                    
         model = gtk_combo_box_get_model(comboPort);         // Obtain data model from combo box.                    
         gtk_tree_model_get( model, &iter, 0, &newPort2plot, 1, &portName, -1 ); // Obtain string from model.
     }
-    if(newPort2plot!=port2plot){    // port has changed
+    if (newPort2plot!=port2plot){    // port has changed
         port2plot = newPort2plot;
         resetPlotData();
         unsigned int numTriangles = portDim[port2plot]/12;
         gtk_list_store_clear(listTriangle);
-        for(unsigned int i=0;i<numTriangles;i++){
+        for (unsigned int i=0;i<numTriangles;i++){
             gtk_list_store_append (listTriangle, &iter);
             gtk_list_store_set (listTriangle, &iter, 0, i, -1);
         }
@@ -331,11 +331,11 @@ static void comboTriangle_changed(GtkComboBox* combo, gpointer data){
     gint newTr2plot=-1;
     GtkTreeIter iter;
     GtkTreeModel* model;
-    if( gtk_combo_box_get_active_iter(comboTriangle, &iter)){                    
+    if ( gtk_combo_box_get_active_iter(comboTriangle, &iter)){                    
         model = gtk_combo_box_get_model(comboTriangle);     // Obtain data model from combo box.                    
         gtk_tree_model_get( model, &iter, 0, &newTr2plot, -1 ); 
     }
-    if(newTr2plot!=tr2plot){    // triangle has changed
+    if (newTr2plot!=tr2plot){    // triangle has changed
         tr2plot = newTr2plot;
         resetPlotData();
     }
@@ -344,54 +344,58 @@ static void comboTaxel_changed(GtkComboBox* combo, gpointer data){
     gint newTax2plot=-1;
     GtkTreeIter iter;
     GtkTreeModel* model;
-    if( gtk_combo_box_get_active_iter(comboTaxel, &iter)){                    
+    if ( gtk_combo_box_get_active_iter(comboTaxel, &iter)){                    
         model = gtk_combo_box_get_model(comboTaxel);     // Obtain data model from combo box.                    
         gtk_tree_model_get( model, &iter, 0, &newTax2plot, -1 ); 
     }
-    if(newTax2plot!=tax2plot){    // taxel has changed
+    if (newTax2plot!=tax2plot){    // taxel has changed
         tax2plot = newTax2plot;
         resetPlotData();
     }
 }
 
-static gint periodic_timeout(gpointer data){    
-	//printf("Timeout thread: %p\n", g_thread_self());
-
+static gint periodic_timeout(gpointer data) {
     // if the gui has not been initialized yet
-    if(!initDone){
+    if (!initDone) {
         // if the rpc port is connected, then initialize the gui status
-        if(guiRpcPort.getOutputCount()>0)
+        if (guiRpcPort.getOutputCount()>0) {
             initDone = initGuiStatus();
+        }
 
-        if(initDone)
+        if (initDone) {
             printLog("GUI connected!");
-	    else
+        } else {
             return true;
+        }
     }
 
-	if(driftCompMonitorPort.getInputCount()==0){
+    if (driftCompMonitorPort.getInputCount()==0) {
         setStatusBarFreq(false, 0);
-    }else{
-		Vector* b = driftCompMonitorPort.read(false);
-        if(!b || b->size()==0){
+    } else {
+        Vector* b = driftCompMonitorPort.read(false);
+        if (!b || b->size()==0) {
             setStatusBarFreq(false, 0);
-        }else{
+        } else {
             //set the frequency
-			double freq = (*b)[0];
-			setStatusBarFreq(true, freq);
+	    double freq = (*b)[0];
+	    setStatusBarFreq(true, freq);
 
             // set the drift
             int numTax = 0;
-            for(unsigned int i=0; i<portDim.size(); i++) numTax += portDim[i];
+            for (unsigned int i=0; i<portDim.size(); i++) {
+                numTax += portDim[i];
+            }
             const int numTr = numTax/12;
-            if(numTax>0){
+            if (numTax>0){
                 // *** UPDATE TAXEL PLOT (3RD TAB)                
                 plotSem.wait();
-                for(int i=0; i<currentSampleNum-1; i++)
+                for (int i=0; i<currentSampleNum-1; i++) {
                     dataPlot[i] = dataPlot[i+1];
+                }
                 int index = 1+numTax+ tr2plot*12 + tax2plot;
-                for(int i=0;i<port2plot;i++)
+                for (int i=0;i<port2plot;i++) {
                     index += portDim[i];
+                }
                 dataPlot[currentSampleNum-1] = (gfloat)(*b)[index];
                 gtk_curve_set_vector(curveComp, currentSampleNum, &(dataPlot[0]));
                 plotSem.post();
@@ -400,77 +404,88 @@ static gint periodic_timeout(gpointer data){
                 // *** UPDATE DRIFT TREE VIEW (2ND TAB)
                 vector<gfloat> driftPerTr(numTr);
                 gdouble sumTr;
-                for(int i=0; i<numTr; i++){
-					sumTr=0;
-					for(int j=0; j<12; j++){
-						sumTr += (gfloat) (*b)(i*12+j+1);
-					}
-					driftPerTr[i] = (gfloat)round(sumTr/12.0, 2);
+                for (int i=0; i<numTr; i++) {
+		    sumTr=0;
+		    for (int j=0; j<12; j++) {
+                        sumTr += (gfloat) (*b)(i*12+j+1);
+		    }
+                    driftPerTr[i] = (gfloat)round(sumTr/12.0, 2);
                 }
 
-				GtkTreeIter iterPort, iterTr, iterTax;
-				gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(treeStoreComp), &iterPort);
-				if(!valid){
-					// create the drift list
-					for(unsigned int i=0; i<portNames.size(); i++){
-						gtk_tree_store_append(treeStoreComp, &iterPort, NULL);
-						for(unsigned int j=0; j<portDim[i]/12; j++){
-							gtk_tree_store_append(treeStoreComp, &iterTr, &iterPort);
-							for(int k=0; k<12; k++){
-								gtk_tree_store_append(treeStoreComp, &iterTax, &iterTr);
-							}
-						}
-					}
-					gtk_tree_view_set_model(treeBaselines, GTK_TREE_MODEL( treeStoreComp));
-					gtk_tree_model_get_iter_first(GTK_TREE_MODEL(treeStoreComp), &iterPort);
-				}
+		GtkTreeIter iterPort, iterTr, iterTax;
+		gboolean valid = gtk_tree_model_get_iter_first(GTK_TREE_MODEL(treeStoreComp), &iterPort);
+		if (!valid) {
+		    // create the drift list
+		    for (unsigned int i=0; i<portNames.size(); i++) {
+                        gtk_tree_store_append(treeStoreComp, &iterPort, NULL);
+                        for (unsigned int j=0; j<portDim[i]/12; j++) {
+                            gtk_tree_store_append(treeStoreComp, &iterTr, &iterPort);
+                            for (int k=0; k<12; k++) {
+                                gtk_tree_store_append(treeStoreComp, &iterTax, &iterTr);
+                            }
+                        }
+		    }
+		    gtk_tree_view_set_model(treeBaselines, GTK_TREE_MODEL( treeStoreComp));
+		    gtk_tree_model_get_iter_first(GTK_TREE_MODEL(treeStoreComp), &iterPort);
+		}
 				
                 // update the drift list
                 gdouble sumPort, meanPort;
-				stringstream trS, taxS;
-				index=1;
+                stringstream trS, taxS;
+                index=1;
                 int portIndex=0;
                 gdouble meanTr;
-				for(unsigned int i=0; i<portNames.size(); i++){		
-					sumPort = 0;
-					for(unsigned int j=0; j<portDim[i]/12; j++){						
-						meanTr = driftPerTr[portIndex];
-						portIndex++;
-						sumPort += meanTr;
-						trS.str(""); trS<<j;
-						gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(treeStoreComp), &iterTr, &iterPort, j);
-						gtk_tree_store_set((treeStoreComp), &iterTr, 1, trS.str().c_str(), 3, meanTr, -1);
-						for(int k=0; k<12; k++){
-							gdouble drift = round((*b)(index), 2);
-							index++;
-							taxS.str(""); taxS<<k;
-							if(gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(treeStoreComp), &iterTax, &iterTr, k))
-								gtk_tree_store_set((treeStoreComp), &iterTax, 2, taxS.str().c_str(), 3, drift, -1);
-						}
-					}
+		for (unsigned int i=0; i<portNames.size(); i++){		
+		    sumPort = 0;
+		    for (unsigned int j=0; j<portDim[i]/12; j++){						
+			meanTr = driftPerTr[portIndex];
+			portIndex++;
+			sumPort += meanTr;
+			trS.str(""); trS<<j;
+			gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(treeStoreComp), &iterTr, &iterPort, j);
+			gtk_tree_store_set((treeStoreComp), &iterTr, 1, trS.str().c_str(), 3, meanTr, -1);
+			for (int k=0; k<12; k++){
+			    gdouble drift = round((*b)(index), 2);
+			    index++;
+			    taxS.str(""); taxS<<k;
+			    if (gtk_tree_model_iter_nth_child(GTK_TREE_MODEL(treeStoreComp), &iterTax, &iterTr, k)) {
+                                gtk_tree_store_set((treeStoreComp), &iterTax, 2, taxS.str().c_str(), 3, drift, -1);
+                            }
+			}
+		    }
 
-					meanPort = sumPort/(portDim[i]/12);
-					gtk_tree_store_set((treeStoreComp), &iterPort, 0, portNames[i].c_str(), 3, meanPort, -1);
-					gtk_tree_model_iter_next(GTK_TREE_MODEL(treeStoreComp), &iterPort);
-				}
-            }
+		    meanPort = sumPort/(portDim[i]/12);
+		    gtk_tree_store_set((treeStoreComp), &iterPort, 0, portNames[i].c_str(), 3, meanPort, -1);
+		    gtk_tree_model_iter_next(GTK_TREE_MODEL(treeStoreComp), &iterPort);
 		}
+            }
+        }
     }
 
     // check if there are messages on the info port
     Bottle* infoMsg = driftCompInfoPort.read(false);
-    while(infoMsg){
+    while(infoMsg) {
         //openDialog(infoMsg->toString(), GTK_MESSAGE_INFO);
         printLog(infoMsg->toString().c_str());
         infoMsg = driftCompInfoPort.read(false);
     }
 
-	return true;
+    // Check for skin diagnostics error messages
+    Bottle* skinErrors = portSkinDiagnosticsErrorsIn.read(false);
+    while (skinErrors) {
+        // Extract errors and print them out
+        for (int i = 0; i < skinErrors->size(); ++i) {
+            printLog(skinErrors->get(i).asString().c_str());
+        }
+        skinErrors = driftCompInfoPort.read(false);
+    }
+            
+    return true;
 }
 
 static void spinSampleFreq_value_changed(GtkSpinButton *spinbutton, gpointer user_data){
     int freq = gtk_spin_button_get_value_as_int(spinbutton);
-    if(freq==currentSampleFreq)
+    if (freq==currentSampleFreq)
         return;
     currentSampleFreq = freq;
     guint period = (int)(1000.0/freq);
@@ -480,15 +495,16 @@ static void spinSampleFreq_value_changed(GtkSpinButton *spinbutton, gpointer use
     stringstream maxXS; maxXS<< currentSampleNum/currentSampleFreq;
     gtk_label_set_text(lblMaxX, maxXS.str().c_str());
 }
+
 static void spinSampleNum_value_changed(GtkSpinButton *spinbutton, gpointer user_data){
     int sampleNum = gtk_spin_button_get_value_as_int(spinbutton);
-    if(sampleNum==currentSampleNum)
+    if (sampleNum==currentSampleNum)
         return;
     
     plotSem.wait();
     vector<gfloat> newDataPlot(sampleNum);
     unsigned int data2copy = min(sampleNum, currentSampleNum);                
-    for(unsigned int i=1;i<=data2copy;i++){
+    for (unsigned int i=1;i<=data2copy;i++){
         newDataPlot[sampleNum-i] = dataPlot[currentSampleNum-i];
     }
     dataPlot = newDataPlot;

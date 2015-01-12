@@ -44,16 +44,25 @@
     <to>/armSkinMan/rpc</to>
     <protocol>tcp</protocol>
   </connection>
-
   <connection>
     <from>/armSkinMan/monitor:o</from>
     <to>/skinManGuiArms/monitor:i</to>
     <protocol>udp</protocol>
   </connection>
-
   <connection>
     <from>/armSkinMan/info:o</from>
     <to>/skinManGuiArms/info:i</to>
+    <protocol>tcp</protocol>
+  </connection>
+  
+  <connection>
+    <from>/diagnostics/skin/errors:o</from>
+    <to>/skinManager/diagnostics/skin/errors:i</to>
+    <protocol>tcp</protocol>
+  </connection>  
+  <connection>
+    <from>/skinManager/diagnostics/skin/errors:o</from>
+    <to>/skinManagerGui/diagnostics/skin/errors:i</to>
     <protocol>tcp</protocol>
   </connection>
   
@@ -62,19 +71,16 @@
     <to>/skinGui/left_hand:i</to>
     <protocol>udp</protocol>
   </connection>
-
   <connection>
     <from>/icub/skin/left_forearm_comp</from>
     <to>/skinGui/left_forearm:i</to>
     <protocol>udp</protocol>
-  </connection>  
- 
+  </connection>   
   <connection>
     <from>/icub/skin/right_hand_comp</from>
     <to>/skinGui/right_hand:i</to>
     <protocol>udp</protocol>
   </connection>
-
   <connection>
     <from>/icub/skin/right_forearm_comp</from>
     <to>/skinGui/right_forearm:i</to>

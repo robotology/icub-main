@@ -33,19 +33,20 @@
 
 
 using namespace std;
+using namespace iCub::skin::diagnostics;
 
 
-bool SkinPatchInfo::checkCardAddrIsInList(int cardAddr)
+int SkinPatchInfo::checkCardAddrIsInList(int cardAddr)
 {
     for(int i=0; i< cardAddrList.size(); i++)
     {
         if(cardAddrList[i] == cardAddr)
-            return true;
+            return i;
     }
-    return false;
+    return -1;
 }
 
-EmbObjSkin::EmbObjSkin() :  mutex(1)
+EmbObjSkin::EmbObjSkin() :  mutex(1), _isDiagnosticPresent(false)
 {
     res         = NULL;
     ethManager  = NULL;
@@ -54,7 +55,6 @@ EmbObjSkin::EmbObjSkin() :  mutex(1)
     _skCfg.numOfPatches = 0;
     _skCfg.totalCardsNum = 0;
     memset(info, 0x00, sizeof(info));
-    _cfgReader = new SkinConfigReader();
 
     ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
@@ -68,10 +68,7 @@ EmbObjSkin::EmbObjSkin() :  mutex(1)
 }
 
 
-EmbObjSkin::~EmbObjSkin()
-{
-    delete _cfgReader;
-}
+EmbObjSkin::~EmbObjSkin() { }
 
 
 bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
@@ -93,7 +90,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
     numofcfg = _skCfg.totalCardsNum;//set size of my vector boardCfgList;
     //in output the function return number of special board cfg are in file xml
-    bool ret = _cfgReader->readSpecialBoardCfg(config, boardCfgList, &numofcfg);
+    bool ret = _cfgReader.readSpecialBoardCfg(config, boardCfgList, &numofcfg);
 
     if(!ret)
         return false;
@@ -115,14 +112,17 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         //now p is the index of patch.
 
         //check if card address are in patch
+        int boardIdx = -1;
         for(int a=boardCfgList[j].boardAddrStart; a<=boardCfgList[j].boardAddrEnd; a++)
         {
-            if(!_skCfg.patchInfoList[p].checkCardAddrIsInList(a))
+            boardIdx = _skCfg.patchInfoList[p].checkCardAddrIsInList(a);
+            if(-1 == boardIdx)
             {
                 yError() << "skin of board num " << _fId.boardNumber << " card with address " << a << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
                 return(false);
             }
         }
+
         //prepare data to send to ems
         eOsk_cmd_boardsCfg_t bcfg;
         bcfg.addrstart = boardCfgList[j].boardAddrStart;
@@ -131,6 +131,21 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         bcfg.cfg.period = boardCfgList[j].cfg.period;
         bcfg.cfg.noload = boardCfgList[j].cfg.noLoad;
 
+        // Init the data vector with special config values from "noLoad" param in config file.
+        // This is to have a correct initilization for the data sent through yarp port
+        for (int sensorId = 0; sensorId < 16; sensorId++)
+        {
+            int index = 16*12*boardIdx + sensorId*12;
+
+            // Message head
+            for(int k = 0; k < 12; k++)
+            {
+//                yDebug() << "readNewSpecialConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << boardCfgList[j].cfg.noLoad;
+                if((index+k) >= data.size())
+                    yError() << "readNewSpecialConfiguration: index too big";
+                data[index + k] = boardCfgList[j].cfg.noLoad;
+            }
+        }
 //        //uncomment for debug only
 //        yDebug() << "\n Special board cfg num " << j;
 //        boardCfgList[j].debugPrint();
@@ -153,7 +168,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
     SpecialSkinTriangleCfgParam triangleCfg[SPECIAL_TRIANGLE_CFG_MAX_NUM];
     numofcfg = SPECIAL_TRIANGLE_CFG_MAX_NUM;    //set size of my vector boardCfgList;
                                                 //in output the function return number of special board cfg are in file xml
-    ret =  _cfgReader->readSpecialTriangleCfg(config, triangleCfg, &numofcfg);
+    ret =  _cfgReader.readSpecialTriangleCfg(config, triangleCfg, &numofcfg);
     if(!ret)
         return false;
 
@@ -173,7 +188,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         //now p is index patch
 
         //check if bcfg.boardAddr is in my patches list
-        if(!_skCfg.patchInfoList[p].checkCardAddrIsInList(triangleCfg[j].boardAddr))
+        if(-1 == _skCfg.patchInfoList[p].checkCardAddrIsInList(triangleCfg[j].boardAddr))
         {
             yError() << "skin of board num " << _fId.boardNumber <<  " card with address " << triangleCfg[j].boardAddr << "is not present in patch " << _skCfg.patchInfoList[p].idPatch;
             return(false);
@@ -223,20 +238,23 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         return(false);
     }
 
-    bPatchList = bPatches.findGroup("patchesIdList");
-    if(bPatchList.isNull())
+    _skCfg.numOfPatches=0;
+    char tmp[80];
+    for (int i=1; i<=2; i++)
     {
-        yError() << "skin board num " << _fId.boardNumber << "patchesList is missed!";
-        return(false);
+        sprintf(tmp,"skinCanAddrsPatch%d",i);
+        if (bPatches.check(tmp))
+        {
+           _skCfg.numOfPatches++;
+           bPatchList.addInt(i);
+        }
     }
-
-    _skCfg.numOfPatches = bPatchList.size()-1;
 
     _skCfg.patchInfoList.clear();
     _skCfg. patchInfoList.resize(_skCfg.numOfPatches);
     for(int j=1; j<_skCfg.numOfPatches+1; j++)
     {
-        int id = bPatchList.get(j).asInt();
+        int id = bPatchList.get(j-1).asInt();
         if((id!=1) && (id!=2))
         {
             yError() << "skin board num " << _fId.boardNumber << "ems expected only patch num 1 or 2";
@@ -277,6 +295,20 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         }
     }
 
+    // resize data vector with number of triangles found in config file
+    sensorsNum = 16*12*_skCfg.totalCardsNum;     // max num of card
+
+    mutex.wait();
+
+    this->data.resize(sensorsNum);
+    int ttt = this->data.size();
+    for (int i=0; i < ttt; i++)
+    {
+        this->data[i]=(double)240;
+    }
+
+    mutex.post();
+
 //    //uncomment for debug only
 //    yError() << "totalCardsNum=" << _skCfg.totalCardsNum;
 //    for(int i=0; i<_skCfg.patchInfoList.size(); i++)
@@ -287,10 +319,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 //        }
 //    }
 
-
-
-
-    if( _cfgReader->isDefaultBoardCfgPresent(config) && _cfgReader->isDefaultTriangleCfgPresent(config))
+    if( _cfgReader.isDefaultBoardCfgPresent(config) && _cfgReader.isDefaultTriangleCfgPresent(config))
     {
         _newCfg = true;
     }
@@ -302,12 +331,31 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 
     /*read skin board default configuration*/
     _brdCfg.setDefaultValues();
-    if(!_cfgReader->readDefaultBoardCfg(config, &_brdCfg))
+    if(!_cfgReader.readDefaultBoardCfg(config, &_brdCfg))
         return false;
+
+    // Fill the data vector with default values from "noLoad" param in config file.
+    for (int board_idx = 0; board_idx < _skCfg.totalCardsNum; board_idx++)
+    {
+        for (int triangleId = 0; triangleId < 16; triangleId++)
+        {
+            int index = 16*12*board_idx + triangleId*12;
+
+            // Message head
+            for(int k = 0; k < 12; k++)
+            {
+//                yDebug() << "EO readNewConfiguration (default) size is: " << data.size()
+//                         << " index is " << (index+k) << " value is: " << _brdCfg.noLoad;
+                if((index+k) >= data.size())
+                    yError() << "readNewConfiguration: index too big";
+                data[index + k] = _brdCfg.noLoad;
+            }
+        }
+    }
 
     /*read skin triangle default configuration*/
     _triangCfg.setDefaultValues();
-    if(! _cfgReader->readDefaultTriangleCfg(config, &_triangCfg))
+    if(! _cfgReader.readDefaultTriangleCfg(config, &_triangCfg))
         return false;
 
     return true;
@@ -324,8 +372,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     yTrace() << str;
 
 
-    Bottle          groupEth, parameter;
-
+    Bottle   groupEth, parameter;
     int      port;
 
     Bottle groupTransceiver = Bottle(config.findGroup("TRANSCEIVER"));
@@ -442,19 +489,11 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    // resize data vector with number of triangles found in config file
-    sensorsNum = 16*12*_skCfg.totalCardsNum;     // max num of card
+    char name[80];
+    sprintf(name, "embObjSkin on EMS %d", _fId.boardNumber);
+    _cfgReader.setName(name);
 
-    mutex.wait();
 
-    this->data.resize(sensorsNum);
-    int ttt = this->data.size();
-    for (int i=0; i < ttt; i++)
-    {
-        this->data[i]=(double)255;
-    }
-
-    mutex.post();
 
     if(!init())
         return false;
@@ -569,12 +608,12 @@ bool EmbObjSkin::start()
     if(_newCfg)
     {
         dat = eosk_sigmode_signal;
-        yDebug()<< "  (!!)-> EmbObjSkin::start() detected that skin for board " << _fId.boardNumber << "uses new signal mode";
+//        yDebug()<< "  (!!)-> EmbObjSkin::start() detected that skin for board " << _fId.boardNumber << "uses new signal mode";
     }
     else
     {
         dat = eosk_sigmode_signal_oldway;
-        yDebug()<< "  (!!)-> EmbObjSkin::start() detected  that skin for board " << _fId.boardNumber << "used old signal mode";
+//        yDebug()<< "  (!!)-> EmbObjSkin::start() detected  that skin for board " << _fId.boardNumber << "used old signal mode";
     }
 
     for(i=0; i<_skCfg.numOfPatches;i++)
@@ -735,9 +774,10 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
         return false;
     }
 
-   // yError() << "received data from " << patchInfoList[p].idPatch << "port";
+   // yDebug() << "received data from " << patchInfoList[p].idPatch << "port";
 
-    //for(i=0; i<arrayofcanframes->head.size; i++)
+    errors.resize(sizeofarray);
+
     for(i=0; i<sizeofarray; i++)
     {
         eOutil_canframe_t *canframe = (eOutil_canframe_t*) eo_array_At(arrayof, i);
@@ -781,32 +821,65 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
 
             //printf("mtbId=%d\n", mtbId);
             triangle = (canframe->id & 0x000f);
-            msgtype= ((canframe->data[0])& 0x80);
+            msgtype = (int) canframe->data[0];
 
             int index=16*12*mtbId + triangle*12;
 
             // marco.accame: added lock to avoid cincurrent access to this->data. i lock at triangle resolution ...
             mutex.wait();
 
-            if (msgtype)
+            if (msgtype == 0x40)
             {
-                for(int k=0; k<5; k++)
+                // Message head
+                for(int k = 0; k < 7; k++)
                 {
-                    this->data[index+k+7]=canframe->data[k+1];
-                    // yError() << "fill data " << data[index+k+7];
+                    data[index + k] = canframe->data[k + 1];
                 }
             }
-            else
+            else if (msgtype == 0xC0)
             {
-                for(int k=0; k<7; k++)
+                // Message tail
+                for(int k = 0; k < 5; k++)
                 {
-                    this->data[index+k]=canframe->data[k+1];
-                    // yError() << "fill data " << data[index+k];
+                    data[index + k + 7] = canframe->data[k + 1];
                 }
-            }
 
+                // Skin diagnostics
+                if (_brdCfg.useDiagnostic)  // if user requests to check the diagnostic
+                {
+                    if (canframe->size == 8)
+                    {
+                        // Skin diagnostics is active
+                        _isDiagnosticPresent = true;
+
+                        // Get error code head and tail
+                        short head = canframe->data[6];
+                        short tail = canframe->data[7];
+                        int fullMsg = (head << 8) | (tail & 0xFF);
+
+                        // Store error message
+                        errors[i].net = indexpatch;
+                        errors[i].board = cardAddr;
+                        errors[i].sensor = triangle;
+                        errors[i].error = fullMsg;
+
+                        if (fullMsg != SkinErrorCode::StatusOK)
+                        {
+                            yError() << "embObjSkin error code: " <<
+                                        "EMS: " << res->boardNum  <<
+                                        "canDeviceNum: " << errors[i].net <<
+                                        "board: " <<  errors[i].board <<
+                                        "sensor: " << errors[i].sensor <<
+                                        "error: " << iCub::skin::diagnostics::printErrorCode(errors[i].error).c_str();
+                        }
+                    }
+                    else
+                    {
+                        _isDiagnosticPresent = false;
+                    }
+                }
+            }
             mutex.post();
-
         }
         else if(canframe->id == 0x100)
         {
@@ -825,6 +898,30 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
     return true;
 }
 
+/* *********************************************************************************************************************** */
+/* ******* Diagnose skin errors.                                            ********************************************** */
+//bool EmbObjSkin::diagnoseSkin(void) {
+//    using iCub::skin::diagnostics::DetectedError;   // FG: Skin diagnostics errors
+//    using yarp::sig::Vector;
+
+//    if (useDiagnostics) {
+//        // Write errors to port
+//        for (size_t i = 0; i < errors.size(); ++i) {
+//            Vector &out = portSkinDiagnosticsOut.prepare();
+//            out.clear();
+
+//            out.push_back(errors[i].net);
+//            out.push_back(errors[i].board);
+//            out.push_back(errors[i].sensor);
+//            out.push_back(errors[i].error);
+
+//            portSkinDiagnosticsOut.write(true);
+//        }
+//    }
+
+//    return true;
+//}
+/* *********************************************************************************************************************** */
 // eof
 
 
