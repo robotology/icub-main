@@ -8,5 +8,6 @@
 	<param name="canDeviceNum"> 9 </param>
 	<param name="canAddress"> 0x03 </param>
     <param name="period"> 10 </param>
+    <param name="sensorType"> "acc" </param>
 </device>
 </devices>
