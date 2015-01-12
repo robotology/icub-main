@@ -105,7 +105,7 @@ bool skinManager::configure(yarp::os::ResourceFinder &rf) {
         cerr << "ERROR: SkinManager: Could not start the skin diagnostics thread. \n";
         return false;
     }
-
+    return true;
 }
 
 
