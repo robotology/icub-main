@@ -52,7 +52,7 @@ private:
     int control_rate; //in ms
 
     yarp::os::BufferedPort<yarp::os::Bottle> command_port; //deprecated
-    yarp::os::BufferedPort<yarp::sig::Vector> command_port2; //new
+    yarp::os::BufferedPort<yarp::os::Bottle> command_port2; //new
 
     double time_watch;
     double time_loop;

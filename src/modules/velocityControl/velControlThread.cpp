@@ -75,10 +75,11 @@ void velControlThread::run()
     }
 
     //getting commands from the slow port
-    yarp::sig::Vector *vec = command_port2.read(false);
-    if (vec!=0)
+    yarp::os::Bottle *vec = command_port2.read(false);
+    if (vec!=NULL)
     {
-        targets=*vec;
+        for(int k=0;k<nJoints;k++)
+            targets(k)=vec->get(k).asDouble();
     }
 
     static int count=0;
@@ -98,6 +99,7 @@ void velControlThread::run()
 
     for(int k=0;k<nJoints;k++)
     {
+      //  printf ("%+6.3f ", targets(k));
         double current_err = targets(k)-encoders(k);
         error_d(k) = (current_err - error(k))/((double)control_rate)*1000.0;
         error(k) = current_err;
@@ -108,7 +110,7 @@ void velControlThread::run()
     }
     //printf ("\n");
     //    std::cout << command.toString() << std::endl;
-
+   //     printf ("\n");
     limitSpeed(command);
 
     if (suspended)
