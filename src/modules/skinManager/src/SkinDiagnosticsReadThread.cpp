@@ -1,8 +1,8 @@
-/* 
+/*
  * Copyright (C) 2014 Francesco Giovannini, iCub Facility - Istituto Italiano di Tecnologia
  * Authors: Francesco Giovannini
  * email:   francesco.giovannini@iit.it
- * website: www.robotcub.org 
+ * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
  * later version published by the Free Software Foundation.
@@ -37,7 +37,7 @@ using yarp::os::Time;
 
 
 /* *********************************************************************************************************************** */
-/* ******* Constructor                                                      ********************************************** */   
+/* ******* Constructor                                                      ********************************************** */
 SkinDiagnosticsReadThread::SkinDiagnosticsReadThread(const int aPeriod, const yarp::os::ResourceFinder &aRf)
     : RateThread(aPeriod) {
     period = aPeriod;
@@ -49,7 +49,7 @@ SkinDiagnosticsReadThread::SkinDiagnosticsReadThread(const int aPeriod, const ya
 
 
 /* *********************************************************************************************************************** */
-/* ******* Destructor                                                       ********************************************** */   
+/* ******* Destructor                                                       ********************************************** */
 SkinDiagnosticsReadThread::~SkinDiagnosticsReadThread() {}
 /* *********************************************************************************************************************** */
 
@@ -69,9 +69,9 @@ bool SkinDiagnosticsReadThread::threadInit(void) {
     // Open ports
     portSkinDiagnosticsErrorsIn.open((portNameRoot + "/diagnostics/skin/errors:i").c_str());
     portSkinManagerErrorsOut.open((portNameRoot + "/diagnostics/skin/errors:o").c_str());
-    
+
     cout << dbgTag << "Initialised correctly. \n";
-    
+
     return true;
 }
 /* *********************************************************************************************************************** */
@@ -88,7 +88,7 @@ void SkinDiagnosticsReadThread::run(void) {
     using yarp::sig::Vector;
     using yarp::os::Bottle;
 
-    
+
     // Read sensor data from port
     Vector *data = portSkinDiagnosticsErrorsIn.read(false);
     if ((data) && (data->size() == 4)) {
@@ -100,7 +100,7 @@ void SkinDiagnosticsReadThread::run(void) {
         }
         cout << "\n";
 #endif
-    
+
         // Prepare output string
         Bottle &out = portSkinManagerErrorsOut.prepare();
         out.clear();
@@ -115,7 +115,7 @@ void SkinDiagnosticsReadThread::run(void) {
                 errorTaxels.resize(12, false);
                 int errorMask = SkinErrorCode::TaxelStuck00;
                 for (int tax = 0; tax < 12; ++tax) {
-                    errorTaxels[tax] = errorCode & errorMask;
+                    errorTaxels[tax] = ((errorCode & errorMask) != 0); // FG: Explicit (and safe) bool to int conversion
                     errorMask = errorMask * 2;  // Increment error mask
                 }
             }
@@ -123,7 +123,7 @@ void SkinDiagnosticsReadThread::run(void) {
             if (errorTaxels.size() > 0) {
                 // Errors occurred
                 stringstream ss;
-                ss << "ERROR: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1] 
+                ss << "ERROR: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1]
                     << "): Sensor ID (" << (*data)[2] << "): The following taxels are stuck/faulty: \t";
                 for (size_t i = 0; i < errorTaxels.size(); ++i) {
                     if (errorTaxels[i]) {
@@ -137,11 +137,11 @@ void SkinDiagnosticsReadThread::run(void) {
             // Handle other data
             stringstream ss;
             if (errorCode & SkinErrorCode::ErrorReading12C) {
-                ss << "ERROR: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1] 
-                    << "): Sensor ID (" << (*data)[2] << "): Cannot read from this sensor."; 
+                ss << "ERROR: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1]
+                    << "): Sensor ID (" << (*data)[2] << "): Cannot read from this sensor.";
             } else if (errorCode & SkinErrorCode::ErrorACK4C) {
-                ss << "ERROR: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1] 
-                    << "): Sensor ID (" << (*data)[2] << "): This sensor does not respond to the initialisation message (0x4C)."; 
+                ss << "ERROR: Net ID (" << (*data)[0]  << "): Board ID (" << (*data)[1]
+                    << "): Sensor ID (" << (*data)[2] << "): This sensor does not respond to the initialisation message (0x4C).";
             }
             // Check stringstream size
             ss.seekg(0, ios::end);
@@ -162,7 +162,7 @@ void SkinDiagnosticsReadThread::run(void) {
             portSkinManagerErrorsOut.write();
         }
     }
-}  
+}
 /* *********************************************************************************************************************** */
 
 
@@ -171,7 +171,7 @@ void SkinDiagnosticsReadThread::run(void) {
 /* ******* Release thread                                                   ********************************************** */
 void SkinDiagnosticsReadThread::threadRelease(void) {
     cout << dbgTag << "Releasing. \n";
-    
+
     // Interrupt ports
     portSkinDiagnosticsErrorsIn.interrupt();
     portSkinManagerErrorsOut.interrupt();
