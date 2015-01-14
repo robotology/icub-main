@@ -116,7 +116,7 @@ void SkinDiagnosticsReadThread::run(void) {
                 int errorMask = SkinErrorCode::TaxelStuck00;
                 for (int tax = 0; tax < 12; ++tax) {
                     errorTaxels[tax] = ((errorCode & errorMask) != 0); // FG: Explicit (and safe) bool to int conversion
-                    errorMask = errorMask * 2;  // Increment error mask
+                    errorMask = errorMask << 1;  // Increment error mask
                 }
             }
 
