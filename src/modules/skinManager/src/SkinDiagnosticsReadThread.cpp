@@ -107,7 +107,7 @@ void SkinDiagnosticsReadThread::run(void) {
 
         // Extract skin errors
         deque<bool> errorTaxels;   // FG: Set to true if the taxel returned an error
-        int errorCode = (*data)[3];
+        int errorCode = (int) (*data)[3];
         if (!(errorCode & SkinErrorCode::StatusOK)) {
             // An error occurred
             // Handle stuck taxel data
