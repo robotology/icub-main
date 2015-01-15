@@ -33,7 +33,6 @@
 #include <qcursor.h>
 
 #include "animationview.h"
-#include "bvh.h"
 
 #include "settings.h"
 
@@ -41,7 +40,7 @@
 #define KEY_CTRL  2
 #define KEY_ALT   4
 
-AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) : QGLWidget(parent)
+AnimationView::AnimationView(QWidget* parent) : QGLWidget(parent)
 {
     m_bInitialized=false;
 
@@ -62,6 +61,18 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
     ySelect=false;
     zSelect=false;
 
+    leftMouseButton=false;
+    modifier=0;
+
+    setMouseTracking(true);
+
+
+
+    connect(&mTimer,SIGNAL(timeout()),this,SLOT(timerTimeout()));
+}
+
+void AnimationView::init(yarp::os::ResourceFinder& config)
+{
     yarp::os::Bottle skinParams=config.findGroup("SKIN");
     if (!skinParams.isNull())
     {
@@ -75,34 +86,31 @@ AnimationView::AnimationView(QWidget* parent,yarp::os::ResourceFinder& config) :
 
     mObjectsManager=new ObjectsManager(config.find("objport").asString().c_str(),config.find("texport").asString().c_str(),config.find("forceport").asString().c_str());
     //printf("objport=%s\n",config.find("objport").asString().c_str());
+
     mSubtitlesManager = new SubtitlesManager("/speechText:i", "/dbgText:i");
 
-    leftMouseButton=false;
-    modifier=0;
-
-    setMouseTracking(true);
-#ifdef ICUB_USE_QT4_QT3_SUPPORT
     setFocusPolicy(Qt::StrongFocus);
-#else // ICUB_USE_QT4_QT3_SUPPORT
-    setFocusPolicy(QWidget::StrongFocus);
-#endif // ICUB_USE_QT4_QT3_SUPPORT
 
     pBVH=new BVH(mObjectsManager);
 
-    if (!pBVH->Create(config))
-    {
+    if (!pBVH->Create(config)){
         exit(-1);
     }
-
-    connect(&mTimer,SIGNAL(timeout()),this,SLOT(timerTimeout()));
 }
 
 AnimationView::~AnimationView()
 {
-    if (mObjectsManager) delete mObjectsManager;
-    if (mSubtitlesManager) delete mSubtitlesManager; 
+    if (mObjectsManager){
+        delete mObjectsManager;
+    }
+    if (mSubtitlesManager){
+        delete mSubtitlesManager;
+    }
 
-    if (pBVH) delete pBVH;
+
+    if (pBVH){
+        delete pBVH;
+    }
 }
 
 void AnimationView::drawFloor()
@@ -191,46 +199,44 @@ void AnimationView::draw()
 {
     if(!isValid()) initializeGL();
 
-    if(Settings::fog())
-    {
-        glEnable(GL_FOG);
+        if(Settings::fog())
         {
-            GLfloat fogColor[4]={0.5,0.5,0.5,0.3};
-            int fogMode=GL_EXP; // GL_EXP2, GL_LINEAR
-            glFogi(GL_FOG_MODE,fogMode);
-            glFogfv(GL_FOG_COLOR,fogColor);
-            glFogf(GL_FOG_DENSITY,0.005);
-            glHint(GL_FOG_HINT,GL_DONT_CARE);
-            glFogf(GL_FOG_START,200.0);
-            glFogf(GL_FOG_END,2000.0);
+            glEnable(GL_FOG);
+            {
+                GLfloat fogColor[4]={0.5,0.5,0.5,0.3};
+                int fogMode=GL_EXP; // GL_EXP2, GL_LINEAR
+                glFogi(GL_FOG_MODE,fogMode);
+                glFogfv(GL_FOG_COLOR,fogColor);
+                glFogf(GL_FOG_DENSITY,0.005);
+                glHint(GL_FOG_HINT,GL_DONT_CARE);
+                glFogf(GL_FOG_START,200.0);
+                glFogf(GL_FOG_END,2000.0);
+            }
         }
-    }
-    else
-        glDisable(GL_FOG);
+        else
+            glDisable(GL_FOG);
 
-    glClearColor(0.5,0.5,0.5,0.3); /* fog color */
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_LIGHTING);
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_COLOR_MATERIAL);
-    glShadeModel(GL_FLAT);
-    glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
+        glClearColor(0.5,0.5,0.5,0.3); /* fog color */
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glDisable(GL_LIGHTING);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_COLOR_MATERIAL);
+        glShadeModel(GL_FLAT);
+        glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
 
-    camera.setModelView();
-  
-    drawFloor();
+        camera.setModelView();
 
-    glPushMatrix();
+        drawFloor();
 
-    glRotated(-90.0,1.0,0.0,0.0);
-    glRotated( 90.0,0.0,0.0,1.0);
+        glPushMatrix();
 
-    pBVH->draw();
-    mSubtitlesManager->draw();
+        glRotated(-90.0,1.0,0.0,0.0);
+        glRotated( 90.0,0.0,0.0,1.0);
 
-    glPopMatrix();
+        pBVH->draw();
+        mSubtitlesManager->draw();
 
-    //mObjectsThread->draw();
+        glPopMatrix();
 }
 
 void AnimationView::mouseMoveEvent(QMouseEvent* event)

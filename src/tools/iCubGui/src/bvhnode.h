@@ -39,7 +39,7 @@
 #ifdef ICUB_USE_QT4_QT3_SUPPORT
 #include <q3valuelist.h>
 #else // ICUB_USE_QT4_QT3_SUPPORT
-#include <qvaluelist.h>
+#include <QList>
 #endif // ICUB_USE_QT4_QT3_SUPPORT
 
 #include "mesh.h"
@@ -274,7 +274,7 @@ protected:
 #ifdef ICUB_USE_QT4_QT3_SUPPORT
     Q3ValueList<BVHNode*> children;
 #else // ICUB_USE_QT4_QT3_SUPPORT
-    QValueList<BVHNode*> children;
+    QList<BVHNode*> children;
 #endif // ICUB_USE_QT4_QT3_SUPPORT
 
     int nEnc;

@@ -22,10 +22,10 @@
 *
 *
 * \section intro_sec Description
-* 
+*
 * Display a kinematic model of the robot from the encoders. It also
 * shows a representation of the output of the inertial sensor.
-* 
+*
 * \image html icubgui-merged.jpg "Screenshots: iCubGui running on Linux"
 * \image latex icubgui1.eps "Screenshots: iCubGui running on Linux" width=10cm
 *
@@ -33,16 +33,16 @@
 *
 * iCubGui can also display data blobs from vision modules, representing them as
 * 3D ellipsoids characterized by name, dimensions, color, transparency, position
-* and orientation. Objects in iCubGui are managed by a port specified in the 
+* and orientation. Objects in iCubGui are managed by a port specified in the
 * iCubGui.ini configuration file with the tag \e objport, as follows:
-* 
+*
 * \code
 * robot /icubSim
 * geometry skeleton.ini
 * objport /iCubGui/objects
 * \endcode
 *
-* To add an object to the display object list, send to iCubGui a bottle 
+* To add an object to the display object list, send to iCubGui a bottle
 * composed as following on the port specified in iCubGui.ini:
 *
 * \code
@@ -51,12 +51,12 @@
 * obj.addString("object"); // command to add/update an object
 * obj.addString("my_object_name");
 *
-* // object dimensions in millimiters 
+* // object dimensions in millimiters
 * // (it will be displayed as an ellipsoid with the tag "my_object_name")
 * obj.addDouble(dimX);
 * obj.addDouble(dimY);
 * obj.addDouble(dimZ);
-* 
+*
 * // object position in millimiters
 * // reference frame: X=fwd, Y=left, Z=up
 * obj.addDouble(posX);
@@ -67,7 +67,7 @@
 * obj.addDouble(rotX);
 * obj.addDouble(rotY);
 * obj.addDouble(rotZ);
-* 
+*
 * // object color (0-255)
 * obj.addInt(R);
 * obj.addInt(G);
@@ -95,7 +95,7 @@
 *
 * \section lib_sec Libraries
 *  - YARP
-*  - Qt3, glut, opengl.
+*  - Qt5, glut, opengl.
 *
 * \section parameters_sec Parameters
 * None.
@@ -120,10 +120,10 @@
 #include <signal.h>
 
 #include "qavimator.h"
-#include <qapplication.h>
+#include <QApplication>
 
 #include <yarp/os/ResourceFinder.h>
-
+#include <yarp/os/Network.h>
 #ifdef USE_ICUB_MOD
 #include "drivers.h"
 #endif
@@ -137,19 +137,19 @@ void sig_handler(int sig)
     if (mw) mw->fileExit();
 }
 
-int main( int argc, char ** argv )
+int main(int argc, char *argv[])
 {
     yarp::os::Network yarp; //initialize network, this goes before everything
 
 #ifdef USE_ICUB_MOD
     yarp::dev::DriverCollection dev;
-#endif 
+#endif
 
 #ifndef WIN32
     signal(SIGINT,sig_handler);
     signal(SIGTERM,sig_handler);
     signal(SIGHUP,sig_handler);
-#endif 
+#endif
 
     yarp::os::ResourceFinder rf;
     rf.setVerbose();
@@ -157,12 +157,10 @@ int main( int argc, char ** argv )
     rf.setDefaultConfigFile("iCubGui.ini");
     rf.configure(argc,argv);
 
-    QApplication a(argc,argv);
+    QApplication a(argc, argv);
 
     mw=new qavimator(rf);
     mw->show();
     a.connect(&a,SIGNAL(lastWindowClosed()),&a,SLOT(quit()));
     return a.exec();
 }
-
-

@@ -18,13 +18,14 @@
 #ifndef ANIMATIONVIEW_H
 #define ANIMATIONVIEW_H
 
-#include <qgl.h>
+#include <QtOpenGL/qgl.h>
 #include <qtimer.h>
 
 #include "camera.h"
 #include "bvh.h"
 #include "objectsthread.h"
 #include "subtitilessthread.h"
+
 
 //#include "rotation.h"
 //#include "prop.h"
@@ -53,11 +54,12 @@ class AnimationView : public QGLWidget
     Q_OBJECT
 
 public:
-    AnimationView(QWidget* parent,yarp::os::ResourceFinder& config);
+    AnimationView(QWidget* parent);
     ~AnimationView();
 
     // This function clears the animations
     void clear();
+    void init(yarp::os::ResourceFinder& config);
 
     void startTimer(int msec)
     {
@@ -120,7 +122,7 @@ protected:
     QTimer mTimer;
     BVH* pBVH;
     ObjectsManager* mObjectsManager;
-    SubtitlesManager* mSubtitlesManager; 
+    SubtitlesManager* mSubtitlesManager;
 
     QPoint clickPos;           // holds the mouse click position for dragging
     QPoint returnPos;          // holds the mouse position to return to after dragging
@@ -139,7 +141,6 @@ protected:
 
     void clearSelected();
     void drawCircle(int axis, float radius, int width);    
-
 };
 
 #endif

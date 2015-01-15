@@ -4,7 +4,9 @@
 
 /*
  * Copyright (C) 2009 RobotCub Consortium
- * Author: Alessandro Scalzo alessandro.scalzo@iit.it
+ * Copyright (c) 2014 iCub Facility - Istituto Italiano di Tecnologia
+ * Authors: Alessandro Scalzo <alessandro.scalzo@iit.it>
+ *          Davide Perrone <dperrone@aitek.it>
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  * Based on:
@@ -15,56 +17,40 @@
  *   Released under the terms of the GNU GPL v2.0.
  */
 
-#include "settings.h"
+
 #include "settingsdialog.h"
+#include "ui_settingsdialog.h"
+#include "settings.h"
 
-SettingsDialog::SettingsDialog(QWidget* parent) : QDialog(parent)
+SettingsDialog::SettingsDialog(QWidget *parent) :
+    QDialog(parent),
+    ui(new Ui::SettingsDialog)
 {
-  qDebug("SettingsDialog::SettingsDialog()");
-
-  setupUi(this);
-
-  useFogCheckbox->setChecked(Settings::fog());
-  floorTranslucencySpin->setValue(Settings::floorTranslucency());
+    ui->setupUi(this);
+    ui->fogCheck->setChecked(Settings::fog());
+    ui->spinBox->setValue(Settings::floorTranslucency());
 }
 
 SettingsDialog::~SettingsDialog()
 {
-  qDebug("SettingsDialog::~SettingsDialog()");
+    delete ui;
 }
 
-void SettingsDialog::on_applyButton_clicked()
+void SettingsDialog::on_btnApply_clicked()
 {
-  qDebug("accept()");
-
-  Settings::setFog(useFogCheckbox->isChecked());
-  Settings::setFloorTranslucency(floorTranslucencySpin->value());
-  emit configChanged();
-  qApp->processEvents();
+    Settings::setFog(ui->fogCheck->isChecked());
+    Settings::setFloorTranslucency(ui->spinBox->value());
+    configChanged();
+    //qApp->processEvents();
 }
 
-void SettingsDialog::on_okButton_clicked()
+void SettingsDialog::on_btnCancel_clicked()
 {
-  qDebug("acceptOk()");
-  on_applyButton_clicked();
-  accept();
+    reject();
 }
 
-void SettingsDialog::on_cancelButton_clicked()
+void SettingsDialog::on_btnOk_clicked()
 {
-  qDebug("reject()");
-  reject();
+    on_btnApply_clicked();
+    accept();
 }
-
-void SettingsDialog::on_useFogCheckbox_toggled(bool state)
-{
-  qDebug("useFogToggled(%d)",state);
-  //Settings::setFog(state);
-}
-
-void SettingsDialog::on_floorTranslucencySpin_valueChanged(int value)
-{
-  qDebug("floorTranslucencyChanged(%d)",value);
-  //Settings::setFloorTranslucency(value);
-}
-

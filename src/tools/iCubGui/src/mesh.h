@@ -39,7 +39,7 @@ inline QStringList tokenize(QString in,char sep)
     QStringList out;
     while (in.length())
     {
-        int pos=in.find(sep);
+        int pos=in.indexOf(sep);
         if (pos==-1)
         { 
             out.append(in);
@@ -59,7 +59,7 @@ public:
         nFaces=0;
         
         QFile objFile(fileName);
-        if(!objFile.open(IO_ReadOnly))
+        if(!objFile.open(QIODevice::ReadOnly))
         {
             QMessageBox::critical(0,QObject::tr("Missing Obj File"),
                                   QObject::tr("<qt>File not found:<br>%1</qt>").arg(fileName));
@@ -74,7 +74,7 @@ public:
         {
             objFile.readLine(buffer,4096);
             QString line(buffer);
-            QStringList parameters=tokenize(line.simplifyWhiteSpace(),' ');
+            QStringList parameters=tokenize(line.simplified(),' ');
             
             if (parameters[0]=="v")       ++v;
             else if (parameters[0]=="vn") ++n;
@@ -98,7 +98,7 @@ public:
                  
         nFaces=v=n=0;
         QStringList num;
-        objFile.open(IO_ReadOnly);
+        objFile.open(QIODevice::ReadOnly);
         
         double x1,y1,z1;
         double x2,y2,z2;
@@ -112,7 +112,7 @@ public:
         {
             objFile.readLine(buffer,4096);
             QString line(buffer);
-            QStringList parameters=tokenize(line.simplifyWhiteSpace(),' ');
+            QStringList parameters=tokenize(line.simplified(),' ');
             
             if (parameters[0]=="v")
             {
@@ -159,15 +159,15 @@ public:
             }
             else if (parameters[0]=="f")
             {
-                num=tokenize(parameters[1].simplifyWhiteSpace(),'/');
+                num=tokenize(parameters[1].simplified(),'/');
                 av[nFaces]=num[0].toShort()-1;
                 an[nFaces]=num[1].toShort()-1;
                 
-                num=tokenize(parameters[2].simplifyWhiteSpace(),'/');
+                num=tokenize(parameters[2].simplified(),'/');
                 bv[nFaces]=num[0].toShort()-1;
                 bn[nFaces]=num[1].toShort()-1;                
                 
-                num=tokenize(parameters[3].simplifyWhiteSpace(),'/');
+                num=tokenize(parameters[3].simplified(),'/');
                 cv[nFaces]=num[0].toShort()-1;
                 cn[nFaces]=num[1].toShort()-1;
                                               

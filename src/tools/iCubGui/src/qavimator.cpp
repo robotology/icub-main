@@ -1,10 +1,12 @@
 /*
-* qavimator.cpp   
-*/
+ * qavimator.cpp
+ */
 
 /*
  * Copyright (C) 2009 RobotCub Consortium
- * Author: Alessandro Scalzo alessandro.scalzo@iit.it
+ * Copyright (c) 2014 iCub Facility - Istituto Italiano di Tecnologia
+ * Authors: Alessandro Scalzo <alessandro.scalzo@iit.it>
+ *          Davide Perrone <dperrone@aitek.it>
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  * Based on:
@@ -15,12 +17,19 @@
  *   Released under the terms of the GNU GPL v2.0.
  */
 
-#include <qevent.h>
-#include <qmessagebox.h>
-#include <qmetaobject.h>
-#include <qsettings.h>
-
 #include "qavimator.h"
+#include "ui_qavimator.h"
+
+#include <QEvent>
+#include <QMessageBox>
+#include <QMetaObject>
+#include <QSettings>
+#include <QCloseEvent>
+#include <QLabel>
+#include <QSpinBox>
+#include <QPushButton>
+
+
 #include "animationview.h"
 #include "settings.h"
 #include "settingsdialog.h"
@@ -29,41 +38,65 @@
 #define PROP_FILTER "Props (*.prp)"
 #define PRECISION   100
 
-#define SVN_ID      "$Id: qavimator.cpp,v 1.3 2009/07/24 19:17:53 ale-scalzo Exp $"
+#define SVN_ID      "$Id: qavimator.cpp,v 1.1 2014/12/19 10:33:13 dperrone Exp $"
 
-qavimator::qavimator(yarp::os::ResourceFinder& config) :
-#ifdef ICUB_USE_QT4_QT3_SUPPORT
-    Q3MainWindow(0)
-#else // ICUB_USE_QT4_QT3_SUPPORT
-    QMainWindow(0)
-#endif // ICUB_USE_QT4_QT3_SUPPORT
+
+qavimator::qavimator(yarp::os::ResourceFinder &config, QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::qavimator)
 {
+    ui->setupUi(this);
+    setupToolBar();
+    ui->animationView->init(config);
     nFPS=10;
 
-    setupUi(this,config);
+    width=850;
+    height=600;
 
-    setCaption(GUI_NAME.c_str());
 
     readSettings();
+    // default size
 
-    connect(animationView,SIGNAL(backgroundClicked()),this,SLOT(backgroundClicked()));
-    connect(this,SIGNAL(resetCamera()),animationView,SLOT(resetCamera()));
-
-    if(qApp->argc()>1)
-    {
-        fileOpen(qApp->argv()[1]);
+    if (config.check("name")){
+        GUI_NAME=std::string(config.find("name").asString().c_str());
+    }
+    if (GUI_NAME[0]!='/'){
+        GUI_NAME=std::string("/")+GUI_NAME;
+    }
+    if (config.check("width")){
+        width=config.find("width").asInt();
+    }
+    if (config.check("height")){
+        height=config.find("height").asInt();
     }
 
-    // if opening of files didn't work or no files were specified on the
-    // command line, open a new one
-    if(openFiles.count()==0) fileNew();
+    //sanity check
+    if(width<100){
+        width=100;
+    }
+    if(height<100){
+        height=100;
+    }
 
-    // prepare play button icons
-    stopIcon.setPixmap(config.findPath("icons/stop.png").c_str(), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
-    playIcon.setPixmap(config.findPath("icons/play.png").c_str(), QIconSet::Automatic, QIconSet::Normal, QIconSet::Off);
-    // playback stopped by default
-    setPlaystate(PLAYSTATE_STOPPED);
-    nextPlaystate();
+    this->resize(width, height);
+
+    int xpos=32,ypos=32;
+    if (config.check("xpos")){
+        xpos=config.find("xpos").asInt();
+    }
+    if (config.check("ypos")){
+        ypos=config.find("ypos").asInt();
+    }
+    this->move(xpos,ypos);
+
+    setWindowTitle(GUI_NAME.c_str());
+
+    connect(ui->animationView,SIGNAL(backgroundClicked()),this,SLOT(backgroundClicked()));
+    connect(this,SIGNAL(resetCamera()),ui->animationView,SLOT(resetCamera()));
+
+    ui->animationView->startTimer(1000/nFPS);
+
+
 }
 
 qavimator::~qavimator()
@@ -73,14 +106,32 @@ qavimator::~qavimator()
     fileExit();
 }
 
-// FIXME:: implement a static Settings:: class
+void qavimator::setupToolBar()
+{
+    QToolBar *toolBar = ui->toolBar;
+    QLabel *label = new QLabel("FPS:",this);
+    QSpinBox *fpsSpin = new QSpinBox(this);
+    fpsSpin->setMaximum(1);
+    fpsSpin->setMaximum(50);
+    fpsSpin->setValue(10);
+    QIcon ico = QIcon(":/icons/resetcamera.png");
+    QPushButton *resetCamera = new QPushButton(ico,"",this);
+    resetCamera->setToolTip("Reset camera view to default position");
+    toolBar->addWidget(label);
+    toolBar->addWidget(fpsSpin);
+    toolBar->addSeparator();
+    toolBar->addWidget(resetCamera);
+    connect(fpsSpin,SIGNAL(valueChanged(int)),this,SLOT(onFpsSpinValueChanged(int)));
+    connect(resetCamera,SIGNAL(clicked()),this,SLOT(onResetCamera()));
+
+
+}
+
 void qavimator::readSettings()
 {
-    QSettings settings;
+    QSettings settings("iCub","iCubGui");
     settings.beginGroup("/qavimator");
 
-    jointLimits=true;
-    lastPath=QString::null;
 
     // OpenGL presets
     Settings::setFog(true);
@@ -91,30 +142,22 @@ void qavimator::readSettings()
     Settings::setEaseOut(false);
 
     int figureType=0;
-    int showTimelinePanel=false;
 
-    bool settingsFound=settings.readBoolEntry("/settings");
-    if(settingsFound)
-    {
-        jointLimits=settings.readBoolEntry("/joint_limits");
-        showTimelinePanel=settings.readBoolEntry("/show_timeline");
-
-        int width=settings.readNumEntry("/mainwindow_width");
-        int height=settings.readNumEntry("/mainwindow_height");
-
-        lastPath=settings.readEntry("/last_path");
+    bool settingsFound=settings.value("/settings").toBool();
+    if(settingsFound){
+        width=settings.value("/mainwindow_width").toInt();
+        height=settings.value("/mainwindow_height").toInt();
 
         // OpenGL settings
-        Settings::setFog(settings.readBoolEntry("/fog"));
-        Settings::setFloorTranslucency(settings.readNumEntry("/floor_translucency"));
+        Settings::setFog(settings.value("/fog").toBool());
+        Settings::setFloorTranslucency(settings.value("/floor_translucency").toInt());
 
-        figureType=settings.readNumEntry("/figure");
+        figureType=settings.value("/figure").toInt();
 
         settings.endGroup();
     }
 
-    optionsJointLimitsAction->setOn(jointLimits);
-    optionsShowTimelineAction->setOn(showTimelinePanel);
+
 }
 
 
@@ -124,121 +167,54 @@ void qavimator::backgroundClicked()
     emit enableRotation(false);
 }
 
-void qavimator::nextPlaystate()
-{
-    switch(playstate)
-    {
-    case PLAYSTATE_STOPPED:
-        {
-            // start looping animation
-            setPlaystate(PLAYSTATE_PLAYING);
-            animationView->startTimer(1000/nFPS);
-            break;
-        }
-    case PLAYSTATE_PLAYING:
-        {
-            setPlaystate(PLAYSTATE_STOPPED);     
-            animationView->stopTimer();
-            break;
-        }
-    default:
-        qDebug("qavimator::nextPlaystate(): unknown playstate %d",(int) playstate);
-    }
-}
 
-// ------ Menu Action Slots (Callbacks) -----------
 
-// Menu action: File / New
-void qavimator::fileNew()
-{
-}
 
-QString qavimator::selectFileToOpen(const QString& caption)
-{
-    return QString::null;
-}
-
-// Menu action: File / Open ...
-void qavimator::fileOpen()
-{
-}
-
-void qavimator::fileOpen(const QString& name)
-{
-}
-
-// Menu Action: File / Save
-void qavimator::fileSave()
-{
-}
-
-// Menu Action: File / Save As...
-void qavimator::fileSaveAs()
-{
-}
 
 
 // Menu Action: File / Exit
 void qavimator::fileExit()
 {
-    QSettings settings;
+    QSettings settings("iCub","iCubGui");
     settings.beginGroup("/qavimator");
 
     // make sure we know next time, that there actually was a settings file
-    settings.writeEntry("/settings",true);
-
-    settings.writeEntry("/joint_limits",optionsJointLimitsAction->isOn());
-    settings.writeEntry("/show_timeline",optionsShowTimelineAction->isOn());
+    settings.setValue("/settings",true);
 
     //settings.writeEntry("/figure",figureCombo->currentItem());
-    settings.writeEntry("/mainwindow_width",size().width());
-    settings.writeEntry("/mainwindow_height",size().height());
+    settings.setValue("/mainwindow_width",size().width());
+    settings.setValue("/mainwindow_height",size().height());
 
-    settings.writeEntry("/last_path",lastPath);
 
     // OpenGL settings
-    settings.writeEntry("/fog",Settings::fog());
-    settings.writeEntry("/floor_translucency",Settings::floorTranslucency());
+    settings.setValue("/fog",Settings::fog());
+    settings.setValue("/floor_translucency",Settings::floorTranslucency());
 
     // settings for ease in/ease outFrame
-    settings.writeEntry("/ease_in",Settings::easeIn());
-    settings.writeEntry("/ease_out",Settings::easeOut());
+    settings.setValue("/ease_in",Settings::easeIn());
+    settings.setValue("/ease_out",Settings::easeOut());
 
     settings.endGroup();
 
-    setPlaystate(PLAYSTATE_STOPPED);
 
-    if (animationView)
-    {
-        animationView->stopTimer();
-        delete animationView;
-    }
-    animationView=0;
+    ui->animationView->stopTimer();
 
-    // remove all widgets and close the main form
-    qApp->exit(0);
+    close();
 }
 
-// Menu Action: Options / Joint Limits
-void qavimator::setJointLimits(bool on)
-{
-    jointLimits=on;
-}
 
 // Menu Action: Options / Configure iCubGUI
 void qavimator::configure()
 {
-    SettingsDialog* dialog=new SettingsDialog(this);
-    connect(dialog,SIGNAL(configChanged()),this,SLOT(configChanged()));
+    SettingsDialog dialog;
+    connect(&dialog,SIGNAL(configChanged()),this,SLOT(configChanged()));
 
-    dialog->exec();
-
-    delete dialog;
+    dialog.exec();
 }
 
 void qavimator::configChanged()
 {
-    animationView->repaint();
+    ui->animationView->repaint();
 }
 
 // Menu Action: Help / About ...
@@ -247,121 +223,19 @@ void qavimator::helpAbout()
     QMessageBox::about(this,QObject::tr("About iCubGui"),QObject::tr("iCubGui - joint gui for iCub<br />%1").arg(SVN_ID));
 }
 
-// checks if a file already exists at the given path and displays a warning message
-// returns true if it's ok to save/overwrite, else returns false
-bool qavimator::checkFileOverwrite(const QFileInfo& fileInfo)
-{
-    // get file info
-    if(fileInfo.exists())
-    {
-        int answer=QMessageBox::question(this,tr("File Exists"),tr("A file with the name \"%1\" does already exist. Do you want to overwrite it?").arg(fileInfo.fileName()),QMessageBox::Yes,QMessageBox::No,QMessageBox::NoButton);
-        if(answer==QMessageBox::No) return false;
-    }
-    return true;
-}
-
-// helper function to prevent feedback between the two widgets
-void qavimator::setSliderValue(QSlider* slider,QLineEdit* edit,float value)
-{
-    slider->blockSignals(true);
-    edit->blockSignals(true);
-    slider->setValue((int)(value*PRECISION));
-    edit->setText(QString::number(value));
-    edit->blockSignals(false);
-    slider->blockSignals(false);
-}
-
-// convenience function to set window title in a defined way
-void qavimator::setCurrentFile(const QString& fileName)
-{
-    currentFile=fileName;
-    setCaption("iCubGui");
-}
-
-void qavimator::setPlaystate(PlayState state)
-{
-    playstate=state;
-
-    // set play button icons according to play state
-    if(state==PLAYSTATE_STOPPED)
-    {
-        playAction->setIconSet(playIcon);
-        qDebug("qavimator::setPlaystate(): STOPPED");
-    }
-    else if(state==PLAYSTATE_PLAYING)
-    {
-        playAction->setIconSet(stopIcon);
-        qDebug("qavimator::setPlaystate(): PLAYING");
-    }
-    else
-        qDebug("qavimator::setPlaystate(): unknown playstate %d",(int) state);
-}
 
 // prevent closing of main window if there are unsaved changes
 void qavimator::closeEvent(QCloseEvent* event)
 {
-    /*
-    if(!clearOpenFiles())
-    event->ignore();
-    else
-    */
-
-    setPlaystate(PLAYSTATE_STOPPED);
-
-    if (animationView)
-    {
-        animationView->stopTimer();
-
-        delete animationView;
-    }
-    animationView=0;
+    ui->animationView->stopTimer();
+    //animationView=0;
     event->accept();
-}
-
-// -------------------------------------------------------------------------
-// autoconnection from designer UI
-
-// ------- Menu Action Slots --------
-
-void qavimator::on_fileNewAction_triggered()
-{
-    qDebug("qavimator::fileNew() not implemented");
-    //fileNew();
-}
-
-void qavimator::on_fileOpenAction_triggered()
-{
-    qDebug("qavimator::fileOpen() not implemented");
-    //fileOpen();
-}
-
-void qavimator::on_fileSaveAction_triggered()
-{
-    qDebug("qavimator::fileSave() not implemented");
-    //fileSave();
-}
-
-void qavimator::on_fileSaveAsAction_triggered()
-{
-    qDebug("qavimator::fileSaveAs() not implemented");
-    //fileSaveAs();
 }
 
 void qavimator::on_fileExitAction_triggered()
 {
     //qDebug("qavimator::fileExit() not implemented");
     fileExit();
-}
-
-void qavimator::on_optionsJointLimitsAction_toggled(bool on)
-{
-    qDebug("qavimator::setJointLimits() not implemented");
-    setJointLimits(on);
-}
-
-void qavimator::on_optionsShowTimelineAction_toggled(bool on)
-{
-    qDebug("qavimator::showTimeline() not implemented");
 }
 
 void qavimator::on_optionsConfigureiCubGUIAction_triggered()
@@ -374,27 +248,27 @@ void qavimator::on_helpAboutAction_triggered()
     helpAbout();
 }
 
-// ------- Additional Toolbar Element Slots --------
 
-void qavimator::on_resetCameraAction_triggered()
+void qavimator::onResetCamera()
 {
     emit resetCamera();
 }
 
-// ------- UI Element Slots --------
-
-void qavimator::on_playAction_clicked()
-{
-    nextPlaystate();
-}
 
 
-void qavimator::on_fpsSpin_valueChanged(int newValue)
+void qavimator::onFpsSpinValueChanged(int newValue)
 {
     setFPS(newValue);
 }
+void qavimator::setFPS(int fps)
+{
+    qDebug("qavimator::setFPS(%d)",fps);
+    if (fps<1) fps=1; else if (fps>50) fps=50;
+    nFPS=fps;
 
-// end autoconnection from designer UI
-// -------------------------------------------------------------------------
+    ui->animationView->stopTimer();
+    ui->animationView->startTimer(1000/nFPS);
+
+}
 
 
