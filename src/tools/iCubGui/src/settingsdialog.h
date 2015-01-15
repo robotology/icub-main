@@ -2,14 +2,11 @@
  * settingsdialog.h
  */
 
-#ifndef SETTINGSDIALOG_H
-#define SETTINGSDIALOG_H
-
-#include "ui_settingsdialogform.h"
-
 /*
  * Copyright (C) 2009 RobotCub Consortium
- * Author: Alessandro Scalzo alessandro.scalzo@iit.it
+ * Copyright (c) 2014 iCub Facility - Istituto Italiano di Tecnologia
+ * Authors: Alessandro Scalzo <alessandro.scalzo@iit.it>
+ *          Davide Perrone <dperrone@aitek.it>
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  * Based on:
@@ -20,29 +17,33 @@
  *   Released under the terms of the GNU GPL v2.0.
  */
 
-class SettingsDialog : public QDialog, Ui::SettingsDialogForm
-{
-  Q_OBJECT
+#ifndef SETTINGSDIALOG_H
+#define SETTINGSDIALOG_H
 
-  public:
-    SettingsDialog(QWidget* parent=0);
+#include <QDialog>
+
+namespace Ui {
+class SettingsDialog;
+}
+
+class SettingsDialog : public QDialog
+{
+    Q_OBJECT
+
+public:
+    explicit SettingsDialog(QWidget *parent = 0);
     ~SettingsDialog();
 
-  signals:
+private:
+    Ui::SettingsDialog *ui;
+
+signals:
     void configChanged();
 
-  protected slots:
-    void on_applyButton_clicked();
-    void on_okButton_clicked();
-    void on_cancelButton_clicked();
-
-    void on_useFogCheckbox_toggled(bool state);
-    void on_floorTranslucencySpin_valueChanged(int value);
-
-    //void on_easeInCheckbox_toggled(bool state);
-    //void on_easeOutCheckbox_toggled(bool state);
+private slots:
+    void on_btnApply_clicked();
+    void on_btnCancel_clicked();
+    void on_btnOk_clicked();
 };
 
-#endif
-
-
+#endif // SETTINGSDIALOG_H

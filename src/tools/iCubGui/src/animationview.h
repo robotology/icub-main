@@ -18,13 +18,14 @@
 #ifndef ANIMATIONVIEW_H
 #define ANIMATIONVIEW_H
 
-#include <qgl.h>
+#include <QtOpenGL/qgl.h>
 #include <qtimer.h>
 
 #include "camera.h"
 #include "bvh.h"
 #include "objectsthread.h"
 #include "subtitilessthread.h"
+
 
 //#include "rotation.h"
 //#include "prop.h"
@@ -53,15 +54,16 @@ class AnimationView : public QGLWidget
     Q_OBJECT
 
 public:
-    AnimationView(QWidget* parent,yarp::os::ResourceFinder& config);
+    AnimationView(QWidget* parent);
     ~AnimationView();
 
     // This function clears the animations
     void clear();
+    void init(yarp::os::ResourceFinder& config);
 
     void startTimer(int msec)
     {
-        mTimer.start(msec); 
+        mTimer.start(msec);
     }
     void stopTimer()
     {
@@ -95,21 +97,6 @@ protected:
     virtual void keyReleaseEvent(QKeyEvent* event);
     virtual void resizeEvent(QResizeEvent* newSize);
 
-    // remove annyoing debug message from QT (only on windows)
-    // Checked on qt3: on Windows updateOverlayGL() does nothing
-    // but prints an annooying debug message, looks safe to remove. 
-    // On Linux updateOverlayGL() calls other functions so it is 
-    // better to keep calling it.
-    // WARNING: check carefully againe in case of porting to Qt4
-    virtual void updateOverlayGL ()
-    {
-        #ifdef WIN32
-            //do nothing
-        #else
-            QGLWidget::updateOverlayGL();
-        #endif
-    }
-
     void drawFloor();
 
     bool leftMouseButton;
@@ -120,7 +107,7 @@ protected:
     QTimer mTimer;
     BVH* pBVH;
     ObjectsManager* mObjectsManager;
-    SubtitlesManager* mSubtitlesManager; 
+    SubtitlesManager* mSubtitlesManager;
 
     QPoint clickPos;           // holds the mouse click position for dragging
     QPoint returnPos;          // holds the mouse position to return to after dragging
@@ -138,10 +125,7 @@ protected:
     void setModelView();
 
     void clearSelected();
-    void drawCircle(int axis, float radius, int width);    
-
+    void drawCircle(int axis, float radius, int width);
 };
 
 #endif
-
-

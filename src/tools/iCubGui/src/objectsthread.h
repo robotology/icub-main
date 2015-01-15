@@ -61,7 +61,7 @@ public:
     {
         mObjPort.interrupt();
         mObjPort.close();
-        
+
         mTexPort.interrupt();
         mTexPort.close();
 
@@ -139,8 +139,8 @@ public:
             manage(imgTex);
         }
 
-        for (iCub::skinDynLib::skinContactList *forces; forces=mForcePort.read(false);) 
-        {        
+        for (iCub::skinDynLib::skinContactList *forces; forces=mForcePort.read(false);)
+        {
             manage(*forces);
         }
     }
@@ -170,13 +170,13 @@ public:
             if(mTrajectoriesWorld[i]) mTrajectoriesWorld[i]->draw();
         }
     }
-    
+
 protected:
     std::vector<VisionObj*> mObjectsRoot;
     std::vector<VisionObj*> mObjectsWorld;
     std::vector<TrajectoryObj*> mTrajectoriesRoot;
     std::vector<TrajectoryObj*> mTrajectoriesWorld;
-    
+
     //double mPx,mPy,mPz;
     //double mRx,mRy,mRz;
     //double R[3][3];
@@ -205,14 +205,14 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
 
         for (int i=0; i<(int)mTrajectoriesWorld.size(); ++i) delete mTrajectoriesWorld[i];
         mTrajectoriesWorld.clear();
-        
+
         return;
     }
 
     if (cmd=="delete")
     {
         std::string name(msg->get(1).asString().c_str());
-        
+
         int size=(int)mObjectsRoot.size();
         for (int i=0; i<size; ++i)
         {
@@ -296,7 +296,7 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         for (int i=0; i<(int)mObjectsRoot.size(); ++i)
         {
             if (mObjectsRoot[i] && *mObjectsRoot[i]==name)
-            {     
+            {
                 mObjectsRoot[i]->set(dx,dy,dz,px,py,pz,rx,ry,rz,r,g,b,alpha,label);
                 return;
             }
@@ -305,26 +305,26 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         for (int i=0; i<(int)mObjectsWorld.size(); ++i)
         {
             if (mObjectsWorld[i] && *mObjectsWorld[i]==name)
-            {     
+            {
                 mObjectsWorld[i]->set(dx,dy,dz,px,py,pz,rx,ry,rz,r,g,b,alpha,label);
                 return;
             }
         }
 
         bool bWorld=(msg->size()>idd && msg->get(idd).asString()=="WORLD");
-       
+
         if (bWorld)
         {
             mObjectsWorld.push_back(new VisionObj(name,dx,dy,dz,px,py,pz,rx,ry,rz,r,g,b,alpha,label));
         }
         else
-        {        
+        {
             mObjectsRoot.push_back(new VisionObj(name,dx,dy,dz,px,py,pz,rx,ry,rz,r,g,b,alpha,label));
         }
 
         return;
     }
-    
+
     if (cmd=="trajectory")
     {
         std::string name(msg->get(1).asString().c_str());
@@ -368,10 +368,10 @@ void ObjectsManager::manage(yarp::os::Bottle *msg)
         {
             mTrajectoriesRoot.push_back(new TrajectoryObj(name,label,bufflen,persistence,R,G,B,alpha,width,bWorld));
         }
-        
+
         return;
     }
-    
+
     if (cmd=="addpoint")
     {
         std::string name(msg->get(1).asString().c_str());
@@ -506,7 +506,7 @@ void ObjectsManager::manage(iCub::skinDynLib::skinContactList &forces)
         double f=forces[i].getForceModule();
         yarp::sig::Vector F=forces[i].getForceDirection();
         yarp::sig::Vector M=forces[i].getMoment();
-        
+
         int p=forces[i].getBodyPart();
         int l=forces[i].getLinkNumber();
 
@@ -518,5 +518,3 @@ void ObjectsManager::manage(iCub::skinDynLib::skinContactList &forces)
 }
 
 #endif
-
-

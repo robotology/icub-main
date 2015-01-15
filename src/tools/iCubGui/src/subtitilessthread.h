@@ -42,7 +42,7 @@ public:
     {
         mTxtMsgPort.interrupt();
         mTxtMsgPort.close();
-        
+
         mTxtDbgPort.interrupt();
         mTxtDbgPort.close();
     }
@@ -104,5 +104,3 @@ public:
 
 
 #endif
-
-

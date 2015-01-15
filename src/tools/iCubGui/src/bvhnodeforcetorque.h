@@ -30,11 +30,11 @@
 class BVHNodeForceTorque : public BVHNodeDH
 {
     public:
-    
+
     BVHNodeForceTorque(const QString& name,const QString& portName,int enc,double a,double d,double alpha,double theta0,iCubMesh* mesh=0)
         : BVHNodeDH(name,enc,a,d,alpha,theta0,mesh)
     {
-        mPort.open((GUI_NAME+portName.ascii()).c_str());
+        mPort.open((GUI_NAME+portName.toLatin1().data()).c_str());
 
         if (pMesh)
         {
@@ -46,12 +46,12 @@ class BVHNodeForceTorque : public BVHNodeDH
 
         for (int i=0; i<6; ++i) dForceTorque[i]=0.0;
     }
-        
-	virtual ~BVHNodeForceTorque()
-    {	
+
+    virtual ~BVHNodeForceTorque()
+    {
         mPort.close();
     }
-    
+
     virtual void drawJoint()
     {
         BVHNodeDH::drawJoint();
@@ -79,7 +79,7 @@ class BVHNodeForceTorque : public BVHNodeDH
 
         //dForceTorque[0]=dForceTorque[1]=dForceTorque[2]=300.0;
 
-        // X 
+        // X
         glPushMatrix();
         glColor4f(1.0,0.0,0.0,1.0);
         glRotated(90.0,0.0,1.0,0.0);
@@ -135,10 +135,8 @@ class BVHNodeForceTorque : public BVHNodeDH
 
 protected:
     double dForceTorque[6];
-    
+
     yarp::os::BufferedPort<yarp::sig::Vector> mPort;
 };
 
 #endif
-
-

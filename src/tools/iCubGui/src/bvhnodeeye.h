@@ -20,13 +20,13 @@
 
 #include "bvhnodeend.h"
 
-class BVHNodeEYE : public BVHNodeEND 
+class BVHNodeEYE : public BVHNodeEND
 {
 public:
-    
+
     BVHNodeEYE(const QString& name,int n,double a,double d,double alpha,double theta0,iCubMesh* mesh=0)
         : BVHNodeEND(name,n,a,d,alpha,theta0,mesh){}
-        
+
     virtual void drawJoint()
     {
         glColor4f(1.0,1.0,1.0,1.0);
@@ -38,5 +38,3 @@ public:
 };
 
 #endif
-
-

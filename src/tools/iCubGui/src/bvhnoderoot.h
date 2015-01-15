@@ -24,20 +24,20 @@
 class BVHNodeROOT : public BVHNodeXYZ_RPY
 {
 public:
-    BVHNodeROOT(const QString& name,int enc,double x,double y,double z,iCubMesh* mesh,ObjectsManager* objManager) 
+    BVHNodeROOT(const QString& name,int enc,double x,double y,double z,iCubMesh* mesh,ObjectsManager* objManager)
         : BVHNodeXYZ_RPY(name,x,y,z)
     {
         nEnc=enc;
         pMesh=mesh;
         mObjectsManager=objManager;
     }
-        
+
     virtual void drawJoint(){}
-      
+
     virtual void draw(double *encoders,BVHNode *pSelected)
     {
         // world coordinates
-        glPushMatrix(); 
+        glPushMatrix();
 
         glTranslated(dX+encoders[nEnc+3],dY+encoders[nEnc+4],dZ+encoders[nEnc+5]);
 
@@ -49,11 +49,11 @@ public:
         glPushMatrix();
 
         if (pMesh)
-        { 
+        {
             glColor4f(0.9,0.8,0.7,1.0);
             pMesh->Draw();
         }
-    
+
         drawArrows();
 
         for (unsigned int i=0; i<children.count(); ++i)
@@ -78,8 +78,6 @@ public:
 
 protected:
     ObjectsManager *mObjectsManager;
-}; 
+};
 
 #endif
-
-
