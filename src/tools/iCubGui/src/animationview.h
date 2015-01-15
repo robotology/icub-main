@@ -97,21 +97,6 @@ protected:
     virtual void keyReleaseEvent(QKeyEvent* event);
     virtual void resizeEvent(QResizeEvent* newSize);
 
-    // remove annyoing debug message from QT (only on windows)
-    // Checked on qt3: on Windows updateOverlayGL() does nothing
-    // but prints an annooying debug message, looks safe to remove.
-    // On Linux updateOverlayGL() calls other functions so it is
-    // better to keep calling it.
-    // WARNING: check carefully againe in case of porting to Qt4
-    virtual void updateOverlayGL ()
-    {
-        #ifdef WIN32
-            //do nothing
-        #else
-            QGLWidget::updateOverlayGL();
-        #endif
-    }
-
     void drawFloor();
 
     bool leftMouseButton;
