@@ -47,22 +47,7 @@ endif()
 find_package(ACE)
 find_package(IPOPT)
 find_package(IPP)
-
-# Qt4 Qt3Support library is enabled by default on linux but for now we
-# keep itdisabled on windows
-if(WIN32)
-    option(ICUB_USE_QT4_QT3_SUPPORT "Use Qt4 Qt3Support library, instead of Qt3" FALSE)
-else(WIN32)
-    option(ICUB_USE_QT4_QT3_SUPPORT "Use Qt4 Qt3Support library, instead of Qt3" TRUE)
-endif(WIN32)
-
-if(ICUB_USE_QT4_QT3_SUPPORT)
-    set(QT_USE_QT3SUPPORT TRUE)
-    set(QT_USE_QTOPENGL TRUE)
-    find_package(Qt4)
-else(ICUB_USE_QT4_QT3_SUPPORT)
-    find_package(Qt3)
-endif(ICUB_USE_QT4_QT3_SUPPORT)
+find_package(Qt5 COMPONENTS Core Widgets OpenGL)
 
 message(STATUS "OpenCV version is ${OpenCV_VERSION_MAJOR}.${OpenCV_VERSION_MINOR}")
 
@@ -128,12 +113,7 @@ checkandset_dependency(ACE)
 checkandset_dependency(IPOPT)
 checkandset_dependency(IPP)
 checkandset_dependency(OpenCV)
-if(ICUB_USE_QT4_QT3_SUPPORT)
-    checkandset_dependency(QT4)
-else(ICUB_USE_QT4_QT3_SUPPORT)
-    checkandset_dependency(Qt3)
-endif(ICUB_USE_QT4_QT3_SUPPORT)
-
+checkandset_dependency(Qt5)
 
 if (YARP_HAS_LIBMATH)
     set(ICUB_HAS_YARPMATH true)

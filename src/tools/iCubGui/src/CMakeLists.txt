@@ -2,52 +2,85 @@
 # Author: Alessandro Scalzo alessandro.scalzo@iit.it
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
+include(iCubUseQt5)
+
 # Headers
-set(icubgui_MOC_HDR animationview.h qavimator.h settingsdialog.h)
+set(iCubGui_SRCS animationview.cpp
+                 bvh.cpp
+                 bvhnode.cpp
+                 camera.cpp
+                 main.cpp
+                 qavimator.cpp
+                 settings.cpp
+                 settingsdialog.cpp)
 
-file(GLOB_RECURSE icubgui_SRC *.cpp)
-file(GLOB_RECURSE icubgui_HDR *.h)
-source_group("Source Files" FILES ${icubgui_SRC})
-source_group("Header Files" FILES ${icubgui_HDR})
+set(iCubGui_HDRS animationview.h
+                 bvh.h
+                 bvhnodedh.h
+                 bvhnodeend.h
+                 bvhnodeeye.h
+                 bvhnodeforcetorque.h
+                 bvhnode.h
+                 bvhnodeinertial.h
+                 bvhnodelefthand.h
+                 bvhnoderighthand.h
+                 bvhnoderoot.h
+                 bvhnoderpy_xyz.h
+                 camera.h
+                 mesh.h
+                 objectsthread.h
+                 playstate.h
+                 qavimator.h
+                 settingsdialog.h
+                 settings.h
+                 subtitilessthread.h
+                 visionobj.h)
 
-qt_wrap_cpp(iCubGui icubgui_MOC_SRC ${icubgui_MOC_HDR})
+set(iCubGui_QRC_FILES res.qrc)
 
-# Include path to the generated header files
-include_directories(
-    ${PROJECT_SOURCE_DIR}/src
-    ${GLUT_INCLUDE_DIRS}
-    ${OpenGL_INCLUDE_DIRS}
-    ${YARP_INCLUDE_DIRS}
-    ${skinDynLib_INCLUDE_DIRS}
-)
+set(iCubGui_UI_FILES qavimator.ui
+                     settingsdialog.ui)
 
-if(ICUB_USE_QT4_QT3_SUPPORT)
-    include(${QT_USE_FILE})
-    add_definitions("-DICUB_USE_QT4_QT3_SUPPORT")
-else(ICUB_USE_QT4_QT3_SUPPORT)
-    include_directories(${Qt3_INCLUDE_DIRS})
-endif(ICUB_USE_QT4_QT3_SUPPORT)
+
+qt5_add_resources(iCubGui_QRC_GEN_SRCS ${iCubGui_QRC_FILES})
+qt5_wrap_ui(iCubGui_UI_GEN_SRCS ${iCubGui_UI_FILES})
+
+source_group("Source Files" FILES ${iCubGui_SRCS})
+source_group("Header Files" FILES ${iCubGui_HDRS})
+source_group("Resources Files" FILES ${iCubGui_QRC_FILES})
+source_group("UI Files" FILES ${iCubGui_UI_FILES})
+source_group("Generated Files" FILES ${iCubGui_QRC_GEN_SRCS}
+                                     ${iCubGui_UI_GEN_SRCS})
+
+
+include_directories(${GLUT_INCLUDE_DIRS}
+                    ${OpenGL_INCLUDE_DIRS}
+                    ${Qt5_INCLUDE_DIRS}
+                    ${YARP_INCLUDE_DIRS}
+                    ${skinDynLib_INCLUDE_DIRS})
+
+set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 # Set defines
 add_definitions(${QT_DEFINITIONS})
 
 # Compile and link
-add_executable(iCubGui ${icubgui_HDR} ${icubgui_SRC} ${icubgui_MOC_SRC})
-target_link_libraries(iCubGui
-    ${GLUT_LIBRARIES}
-    ${OpenGL_LIBRARIES}
-    ${YARP_LIBRARIES}
-    skinDynLib
-)
+add_executable(iCubGui WIN32 ${iCubGui_HDRS}
+                             ${iCubGui_SRCS}
+                             ${iCubGui_QRC_GEN_SRCS}
+                             ${iCubGui_UI_GEN_SRCS})
 
-if(ICUB_USE_QT4_QT3_SUPPORT)
-   target_link_libraries(iCubGui ${QT_QTCORE_LIBRARY}
-                                 ${QT_QTGUI_LIBRARY}
-                                 ${QT_QTOPENGL_LIBRARY}
-                                 ${QT_QT3SUPPORT_LIBRARY})
-else(ICUB_USE_QT4_QT3_SUPPORT)
-    target_link_libraries(iCubGui ${Qt3_LIBRARIES})
-endif(ICUB_USE_QT4_QT3_SUPPORT)
+target_link_libraries(iCubGui ${GLUT_LIBRARIES}
+                              ${OpenGL_LIBRARIES}
+                              ${YARP_LIBRARIES}
+                              skinDynLib)
+
+qt5_use_modules(iCubGui Widgets OpenGL)
+
+qticub_deprecate_with_cmake_version(2.8.11)
+if(WIN32 AND CMAKE_VERSION VERSION_LESS 2.8.11)
+    target_link_libraries(iCubGui Qt5::WinMain)
+endif()
 
 # Install iCubGui
 install(TARGETS iCubGui RUNTIME DESTINATION bin)
