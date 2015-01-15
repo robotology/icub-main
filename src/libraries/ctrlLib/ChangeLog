@@ -1,11 +1,14 @@
+2014-11-28 Ugo Pattacini <ugo.pattacini@iit.it>
+      * added implementation of median filter
+
 2014-03-23 Ugo Pattacini <ugo.pattacini@iit.it>
       * outliers detection module added up to the library.
 
 2014-01-24 Ugo Pattacini <ugo.pattacini@iit.it>
       * functionEncoder: framework redesigned as interface in order
-	    to add up new methods in the near future.
+       to add up new methods in the near future.
 
-		2013-02-13 Ugo Pattacini <ugo.pattacini@iit.it>
+2013-02-13 Ugo Pattacini <ugo.pattacini@iit.it>
       * tuning: added PI controller design
 
 2012-11-20 Ugo Pattacini <ugo.pattacini@iit.it>
