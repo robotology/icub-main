@@ -61,9 +61,9 @@ public:
     BVH(ObjectsManager* objManager=NULL);
     bool Create(yarp::os::ResourceFinder& config);
     ~BVH();
-   
+
     QStringList partNames,bvhChannelName;
-    
+
     void draw()
     {
         yarp::sig::Vector *enc =NULL;
@@ -85,23 +85,23 @@ public:
             encV=NULL;
 
             while (enc=portEncTorso.read(false)) encV=enc;
-            
+
             if (encV) for (int i=0; i<nJTorso; ++i) dEncTorso[i]=(*encV)[i];
         }
-        
-        if (portEncHead.getInputCount()>0) 
+
+        if (portEncHead.getInputCount()>0)
         {
             encV=NULL;
 
             while (enc=portEncHead.read(false)) encV=enc;
-            
+
             if (encV)
             {
                 for (int i=0; i<nJHead; ++i) dEncHead[i]=(*encV)[i];
 
                 double dLeftEye =dEncHead[4]-0.5*dEncHead[5];
                 double dRightEye=dEncHead[4]+0.5*dEncHead[5];
-            
+
                 dEncHead[4]=dLeftEye;
                 dEncHead[5]=dRightEye;
             }
@@ -112,7 +112,7 @@ public:
             encV=NULL;
 
             while (enc=portEncLeftArm.read(false)) encV=enc;
-            
+
             if (encV) for (int i=0; i<nJLeftArm; ++i) dEncLeftArm[i]=(*encV)[i];
         }
 
@@ -121,7 +121,7 @@ public:
             encV=NULL;
 
             while (enc=portEncRightArm.read(false)) encV=enc;
-            
+
             if (encV) for (int i=0; i<nJRightArm; ++i) dEncRightArm[i]=(*encV)[i];
         }
 
@@ -130,7 +130,7 @@ public:
             encV=NULL;
 
             while (enc=portEncLeftLeg.read(false)) encV=enc;
-            
+
             if (encV) for (int i=0; i<nJLeftLeg; ++i) dEncLeftLeg[i]=(*encV)[i];
         }
 
@@ -139,7 +139,7 @@ public:
             encV=NULL;
 
             while (enc=portEncRightLeg.read(false)) encV=enc;
-            
+
             if (encV) for (int i=0; i<nJRightLeg; ++i) dEncRightLeg[i]=(*encV)[i];
         }
 
@@ -158,19 +158,19 @@ public:
         //glPolygonMode(GL_FRONT_AND_BACK,GL_FILL);
         glEnable(GL_COLOR_MATERIAL);
         glEnable(GL_LINE_SMOOTH);
-     
+
          // save current drawing matrix
         glPushMatrix();
-        
+
         //static const double mm2inches=1.0/25.4;
         double dScale=0.075*dAvatarScale;
         glScaled(dScale,dScale,dScale);
-        
+
         // visual compensation
         glTranslated(0.0,3.5,0.0);
-        
+
         pRoot->draw(dEncBuffer,NULL);
-        
+
         glPopMatrix();
     }
 
@@ -180,7 +180,7 @@ public:
     int tokenPos;
     QString token();
     bool expect_token(const QString& expect);
-    
+
     double dAvatarScale;
     BVHNode* bvhRead(yarp::os::ResourceFinder& config);
     BVHNode* bvhReadNode(yarp::os::ResourceFinder& config);
@@ -189,18 +189,18 @@ public:
     ObjectsManager *mObjectsManager;
 
     BVHNode ***mAB;
-    
+
     // YARP
-    
+
     QString robot;
-    
+
     //PolyDriver* OpenDriver(QString part);
     //void CloseDriver(PolyDriver* &pDriver);
-    
+
     //PolyDriver *pTorsoDriver,*pHeadDriver,*pLeftArmDriver,*pRightArmDriver,*pLeftLegDriver,*pRightLegDriver;
     //IEncoders *pEncTorso,*pEncHead,*pEncLeftArm,*pEncRightArm,*pEncLeftLeg,*pEncRightLeg;
     int nJTorso,nJHead,nJLeftArm,nJRightArm,nJLeftLeg,nJRightLeg,nJBase;
-    
+
     yarp::os::BufferedPort<yarp::sig::Vector> portEncBase;
     yarp::os::BufferedPort<yarp::sig::Vector> portEncTorso;
     yarp::os::BufferedPort<yarp::sig::Vector> portEncHead;
@@ -214,5 +214,3 @@ public:
 };
 
 #endif
-
-

@@ -63,7 +63,7 @@ public:
 
     void startTimer(int msec)
     {
-        mTimer.start(msec); 
+        mTimer.start(msec);
     }
     void stopTimer()
     {
@@ -99,8 +99,8 @@ protected:
 
     // remove annyoing debug message from QT (only on windows)
     // Checked on qt3: on Windows updateOverlayGL() does nothing
-    // but prints an annooying debug message, looks safe to remove. 
-    // On Linux updateOverlayGL() calls other functions so it is 
+    // but prints an annooying debug message, looks safe to remove.
+    // On Linux updateOverlayGL() calls other functions so it is
     // better to keep calling it.
     // WARNING: check carefully againe in case of porting to Qt4
     virtual void updateOverlayGL ()
@@ -140,9 +140,7 @@ protected:
     void setModelView();
 
     void clearSelected();
-    void drawCircle(int axis, float radius, int width);    
+    void drawCircle(int axis, float radius, int width);
 };
 
 #endif
-
-

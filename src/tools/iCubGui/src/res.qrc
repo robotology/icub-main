@@ -1,7 +1,7 @@
-<RCC>
-    <qresource prefix="/">
-        <file>icons/resetcamera.png</file>
-        <file>icons/play.png</file>
-        <file>icons/stop.png</file>
-    </qresource>
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+    <file>icons/resetcamera.png</file>
+    <file>icons/play.png</file>
+    <file>icons/stop.png</file>
+</qresource>
 </RCC>

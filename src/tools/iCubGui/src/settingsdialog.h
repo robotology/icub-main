@@ -47,4 +47,3 @@ private slots:
 };
 
 #endif // SETTINGSDIALOG_H
-

@@ -268,7 +268,4 @@ void qavimator::setFPS(int fps)
 
     ui->animationView->stopTimer();
     ui->animationView->startTimer(1000/nFPS);
-
 }
-
-

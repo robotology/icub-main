@@ -191,7 +191,7 @@ void AnimationView::initializeGL()
 
     glLightfv(GL_LIGHT0,GL_POSITION,position0);
     glLightfv(GL_LIGHT1,GL_POSITION,position1);
-    
+
     m_bInitialized=true;
 }
 
@@ -283,7 +283,7 @@ void AnimationView::mouseMoveEvent(QMouseEvent* event)
 void AnimationView::mousePressEvent(QMouseEvent* event)
 {
     if (event->button()==Qt::LeftButton)
-    { 
+    {
         clickPos=QCursor::pos();
         // put in position for distance calculation
         oldDragX=clickPos.x();
@@ -298,7 +298,7 @@ void AnimationView::mouseReleaseEvent(QMouseEvent* event)
     {
         leftMouseButton=false;
     }
-  
+
     /*
     if(event->button()==Qt::LeftButton)
     {
@@ -427,7 +427,7 @@ void AnimationView::resizeEvent(QResizeEvent* newSize)
 
     int w=newSize->size().width();
     int h=newSize->size().height();
-    
+
     // reset coordinates
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -441,4 +441,3 @@ void AnimationView::resizeEvent(QResizeEvent* newSize)
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
-

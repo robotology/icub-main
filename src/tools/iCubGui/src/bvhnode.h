@@ -64,7 +64,7 @@ public:
         faz=1.0;
 
         bForce=(f>mForceThr);
-        
+
         if (bForce)
         {
             fm=mForceGain*f-20.0;
@@ -73,7 +73,7 @@ public:
             nFSec=2+int(0.005*fm);
 
             double a=fx*fx+fy*fy;
-            
+
             if (a>0.0)
             {
                 a=sqrt(a);
@@ -81,9 +81,9 @@ public:
                 fax=-fy/a;
                 fay= fx/a;
                 faz= 0.0;
-            } 
+            }
         }
-        
+
         mth=0.0;
         max=0.0;
         may=0.0;
@@ -185,7 +185,7 @@ public:
     BVHNode(const QString& name,int enc=-1,iCubMesh *mesh=0)
     {
         children.clear();
-        
+
         m_name=name;
         nEnc=enc;
         pMesh=mesh;
@@ -200,7 +200,7 @@ public:
         {
             delete children[i];
         }
-    
+
         if (pMesh) delete pMesh;
         gluDeleteQuadric(cyl);
 
@@ -213,17 +213,17 @@ public:
     {
         return m_name;
     }
-   
+
     int numChildren() const
     {
         return children.count();
     }
-    
+
     void addChild(BVHNode* pChild)
     {
         children.append(pChild);
     }
-    
+
     virtual void draw(double *encoders,BVHNode* pSelected)=0;
     virtual void setSliders(QSlider *rx,QSlider *ry,QSlider *rz,QSlider *px,QSlider *py,QSlider *pz){}
 
@@ -241,7 +241,7 @@ public:
 
         mArrows.clear();
     }
-        
+
 protected:
     virtual void drawJoint()
     {
@@ -286,5 +286,3 @@ protected:
 };
 
 #endif
-
-

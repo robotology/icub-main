@@ -58,7 +58,7 @@ bool BVH::Create(yarp::os::ResourceFinder& config)
 
     // default avatar scale for BVH and AVM files
     dAvatarScale=1.0;
-  
+
     pRoot=bvhRead(config);
     mObjectsManager->setAddressBook(mAB);
 
@@ -82,7 +82,7 @@ BVH::~ BVH()
     portEncRightArm.close();
     portEncLeftLeg.close();
     portEncRightLeg.close();
-    
+
     if (pRoot)
     {
         delete pRoot;
@@ -96,7 +96,7 @@ BVH::~ BVH()
         for (int p=0; p<8; ++p)
         {
             if (mAB[p])
-            { 
+            {
                 delete [] mAB[p];
                 mAB[p]=NULL;
             }
@@ -138,13 +138,13 @@ BVHNode* BVH::bvhRead(yarp::os::ResourceFinder& config)
         return NULL;
     }
 
-    inputFile=QString(geometryFile.readAll());    
+    inputFile=QString(geometryFile.readAll());
     geometryFile.close();
 
     tokens=tokenize(inputFile.simplified(),' ');
-  
+
     tokenPos=0;
-  
+
     Network::init();
 
     portEncBase.open((GUI_NAME+"/base:i").c_str());
@@ -160,7 +160,7 @@ BVHNode* BVH::bvhRead(yarp::os::ResourceFinder& config)
     memset(dEncBuffer,0,sizeof(dEncBuffer));
     dEncBuffer[10]=90.0;
     dEncBuffer[26]=90.0;
-    
+
     nJTorso=3;
     nJHead=6;
     nJLeftArm=16;
@@ -186,7 +186,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     if (sType=="}") return NULL;
 
     // check for node type first
-    
+
     static const int BVH_ROOT=1,BVH_JOINT=2,BVH_END=3;
     int nType;
     if      (sType=="ROOT")  nType=BVH_ROOT;
@@ -199,7 +199,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     }
 
     BVHNode *node=NULL;
-    
+
     QString sName=token();
     partNames << sName;
 
@@ -207,7 +207,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     iCubMesh *pMesh=0;
     QString tag=token();
     QString ftPortName="";
-    
+
     int skinPart=0;
     int skinLink=0;
 
@@ -246,7 +246,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
         pMesh=new iCubMesh(file,a,b,c,d,e,f);
         tag=token();
     }
-    
+
     if (tag=="FORCE_TORQUE")
     {
         ftPortName=token();
@@ -258,12 +258,12 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
     case BVH_ROOT:
         {
             int id=token().toInt();
-            
+
             double Px=token().toDouble();
             double Py=token().toDouble();
             double Pz=token().toDouble();
 
-            node=new BVHNodeROOT(sName,id,Px,Py,Pz,pMesh,mObjectsManager); 
+            node=new BVHNodeROOT(sName,id,Px,Py,Pz,pMesh,mObjectsManager);
         }
         break;
     case BVH_JOINT:
@@ -287,7 +287,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
             double e=token().toDouble();
             if (ftPortName=="")
             {
-                node=new BVHNodeDH(sName,a,b,c,d,e,pMesh); 
+                node=new BVHNodeDH(sName,a,b,c,d,e,pMesh);
             }
             else
             {
@@ -340,7 +340,7 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
             double d=token().toDouble();
             node=new BVHNodeINERTIAL(sName,a,b,c,d,robot+"/inertial",pMesh);
         }
-        break;    
+        break;
     }
 
     if (skinPart)
@@ -360,6 +360,3 @@ BVHNode* BVH::bvhReadNode(yarp::os::ResourceFinder& config)
 
     return node;
 }
-
-
-

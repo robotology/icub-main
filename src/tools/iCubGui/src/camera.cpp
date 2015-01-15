@@ -81,5 +81,3 @@ float Camera::yRotation() const
 {
     return rotY;
 }
-
-

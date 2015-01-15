@@ -44,10 +44,10 @@ public:
         mR=double(r)/255.0; mG=double(g)/255.0; mB=double(b)/255.0;
         mAlpha=alpha;
     }
-    
+
     virtual ~GuiObj(){}
     virtual void draw()=0;
-    
+
     bool operator==(std::string &name)
     {
         return mName==name;
@@ -128,14 +128,14 @@ public:
         }
         else
         {
-            if (bufflen<=mIndex) mFull=true; 
+            if (bufflen<=mIndex) mFull=true;
         }
 
         mIndex=0;
 
         mBufflen=bufflen;
     }
-    
+
     void update(double x,double y,double z)
     {
         mX[mIndex]=x;
@@ -151,10 +151,10 @@ public:
     }
 
     void draw()
-    {        
+    {
         glColor4f(mR,mG,mB,1.0);
         glLineWidth(mWidth);
-        
+
         double now=yarp::os::Time::now();
 
         glBegin(GL_LINE_STRIP);
@@ -206,21 +206,21 @@ public:
               double rotx,double roty,double rotz,
               int r,int g,int b,double alpha,std::string& label)
         : GuiObj(name,r,g,b,alpha)
-    {   
+    {
         mW=mH=0;
         nTexID=0;
         bTextured=false;
         mTextureBuffer=NULL;
-       
+
         set(dimx,dimy,dimz,posx,posy,posz,rotx,roty,rotz,r,g,b,alpha,label);
     }
 
     ~VisionObj()
     {
         if (bTextured) glDeleteTextures(1,&nTexID);
-        bTextured=false;               
+        bTextured=false;
     }
-    
+
     void set(double dimx,double dimy,double dimz,
              double posx,double posy,double posz,
              double rotx,double roty,double rotz,
@@ -239,25 +239,25 @@ public:
         if (mTextureBuffer!=NULL)
         {
             glEnable(GL_TEXTURE_2D);
-            
+
             if (bTextured) glDeleteTextures(1,&nTexID);
-            
+
             GLuint texture;
             glGenTextures(1,&texture);
             nTexID=texture;
             bTextured=true;
 
-	        glBindTexture(GL_TEXTURE_2D,texture);
-	        gluBuild2DMipmaps(GL_TEXTURE_2D,3,mW,mH,GL_RGB,GL_UNSIGNED_BYTE,mTextureBuffer);
-	        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
-	        glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
+            glBindTexture(GL_TEXTURE_2D,texture);
+            gluBuild2DMipmaps(GL_TEXTURE_2D,3,mW,mH,GL_RGB,GL_UNSIGNED_BYTE,mTextureBuffer);
+            glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S,GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T,GL_REPEAT);
             glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
 
             delete [] mTextureBuffer;
             mTextureBuffer=NULL;
             glDisable(GL_TEXTURE_2D);
         }
-        
+
         glPushMatrix();
         glTranslated(mPosx,mPosy,mPosz);
         std::string text = mName + optional_label;
@@ -277,7 +277,7 @@ public:
             glBegin(GL_QUADS);
 
             glTexCoord2f(1.0,0.0); glVertex3f( mDimx, mDimy, mDimz);
-            glTexCoord2f(0.0,0.0); glVertex3f( mDimx,-mDimy, mDimz); 
+            glTexCoord2f(0.0,0.0); glVertex3f( mDimx,-mDimy, mDimz);
             glTexCoord2f(0.0,1.0); glVertex3f( mDimx,-mDimy,-mDimz);
             glTexCoord2f(1.0,1.0); glVertex3f( mDimx, mDimy,-mDimz);
 
@@ -289,12 +289,12 @@ public:
             glTexCoord2f(1.0,0.0); glVertex3f( mDimx,-mDimy, mDimz);
             glTexCoord2f(0.0,0.0); glVertex3f(-mDimx,-mDimy, mDimz);
             glTexCoord2f(0.0,1.0); glVertex3f(-mDimx,-mDimy,-mDimz);
-            glTexCoord2f(1.0,1.0); glVertex3f( mDimx,-mDimy,-mDimz);        
-        
+            glTexCoord2f(1.0,1.0); glVertex3f( mDimx,-mDimy,-mDimz);
+
             glTexCoord2f(0.0,1.0); glVertex3f(-mDimx, mDimy,-mDimz);
             glTexCoord2f(1.0,1.0); glVertex3f(-mDimx,-mDimy,-mDimz);
             glTexCoord2f(1.0,0.0); glVertex3f(-mDimx,-mDimy, mDimz);
-            glTexCoord2f(0.0,0.0); glVertex3f(-mDimx, mDimy, mDimz); 
+            glTexCoord2f(0.0,0.0); glVertex3f(-mDimx, mDimy, mDimz);
 
             glVertex3f( mDimx, mDimy, mDimz);
             glVertex3f(-mDimx, mDimy, mDimz);
@@ -317,7 +317,7 @@ public:
             glVertex3f( mDimx,-mDimy, mDimz);
             glVertex3f( mDimx,-mDimy,-mDimz);
             glVertex3f( mDimx, mDimy,-mDimz);
-            
+
             glVertex3f( mDimx, mDimy, mDimz);
             glVertex3f( mDimx, mDimy,-mDimz);
             glVertex3f(-mDimx, mDimy,-mDimz);
@@ -331,8 +331,8 @@ public:
             glVertex3f( mDimx,-mDimy, mDimz);
             glVertex3f(-mDimx,-mDimy, mDimz);
             glVertex3f(-mDimx,-mDimy,-mDimz);
-            glVertex3f( mDimx,-mDimy,-mDimz);        
-        
+            glVertex3f( mDimx,-mDimy,-mDimz);
+
             glVertex3f( mDimx,-mDimy,-mDimz);
             glVertex3f(-mDimx,-mDimy,-mDimz);
             glVertex3f(-mDimx, mDimy,-mDimz);
@@ -341,8 +341,8 @@ public:
             glVertex3f(-mDimx, mDimy,-mDimz);
             glVertex3f(-mDimx,-mDimy,-mDimz);
             glVertex3f(-mDimx,-mDimy, mDimz);
-            glVertex3f(-mDimx, mDimy, mDimz); 
-            
+            glVertex3f(-mDimx, mDimy, mDimz);
+
             glEnd();
         }
 
@@ -353,7 +353,7 @@ public:
     bool bTextured;
     unsigned char* mTextureBuffer;
     std::string optional_label;
-    
+
 protected:
     GLuint nTexID;
     double mDimx,mDimy,mDimz;
@@ -362,5 +362,3 @@ protected:
 };
 
 #endif
-
-
