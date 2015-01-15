@@ -36,11 +36,7 @@
 #include <qstring.h>
 #include <qslider.h>
 
-#ifdef ICUB_USE_QT4_QT3_SUPPORT
-#include <q3valuelist.h>
-#else // ICUB_USE_QT4_QT3_SUPPORT
 #include <QList>
-#endif // ICUB_USE_QT4_QT3_SUPPORT
 
 #include "mesh.h"
 
@@ -271,11 +267,7 @@ protected:
 
     GLUquadricObj *cyl;
     QString m_name;
-#ifdef ICUB_USE_QT4_QT3_SUPPORT
-    Q3ValueList<BVHNode*> children;
-#else // ICUB_USE_QT4_QT3_SUPPORT
     QList<BVHNode*> children;
-#endif // ICUB_USE_QT4_QT3_SUPPORT
 
     int nEnc;
     iCubMesh *pMesh;
