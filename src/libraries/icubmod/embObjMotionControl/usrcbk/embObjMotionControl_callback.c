@@ -74,9 +74,11 @@ extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdes
         wake(nv);
     }
 
+    feat_manage_motioncontrol_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)rd->data);
+
     // i just refresh the encoder timestamp
     // i do it anyway, both if broadcasted and if a reply:
-    feat_addEncoderTimeStamp(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32);
+//    feat_addEncoderTimeStamp(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32);
 
 
     // debug:
@@ -117,7 +119,9 @@ extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdes
 extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     // i just refresh the encoder timestamp
-    feat_addEncoderTimeStamp(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32);
+    feat_manage_motioncontrol_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)rd->data);
+
+//    feat_addEncoderTimeStamp(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32);
 
 #ifdef _SETPOINT_TEST_
     {

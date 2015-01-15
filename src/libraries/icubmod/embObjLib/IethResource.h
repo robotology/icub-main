@@ -59,6 +59,9 @@
 // manages decoding of received UDP packets and calls the callbacks of the EOnv which in turn call IethResource::update().
 //
 
+class eoThreadFifo;
+class eoThreadEntry;
+
 class IethResource
 {
     public:
@@ -66,6 +69,8 @@ class IethResource
 
         virtual bool initialised() = 0;
         virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata) = 0;
+        virtual eoThreadFifo * getFifo(uint32_t variableProgNum) { return NULL;}
+        virtual eoThreadEntry *getThreadTable(int  threadId) {return NULL;}
 };
 
 

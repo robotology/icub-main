@@ -392,6 +392,8 @@ public:
 
     virtual bool initialised();
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
+    virtual eoThreadFifo * getFifo(uint32_t variableProgNum);
+    virtual eoThreadEntry *getThreadTable(int  threadId);
 
     eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
     void refreshEncoderTimeStamp(int joint);

@@ -73,6 +73,7 @@ typedef struct
 
 typedef enum
 {
+    ethFeatType_NULL            = 0xFF,
     ethFeatType_Management      = 0x00,
     ethFeatType_AnalogMais      = 0x01,
     ethFeatType_AnalogStrain    = 0x02,

@@ -290,12 +290,12 @@ bool TheEthManager::removeLUTelement(ethFeature_t &element)
     return ret;
 }
 
-IethResource * TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32)
+bool TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32, IethResource **interfacePointer, ethFeatType_t *type)
 {
     eOprotEndpoint_t ep = eoprot_ID2endpoint(id32);
 
 //     lock(); // marco.accame: found already commented. see why
-    IethResource * ret = NULL;
+    bool ret = false;
     static int _error = 0;
     std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (boardnum, ep);
 
@@ -307,7 +307,9 @@ IethResource * TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotID32_
          * Furthermore the insert method used to correctly initialze the element will fail because a (wrong)
          * element is already present preventing the map to be corrected.
          */
-        ret = boards_map.at(key).interface;
+        *interfacePointer = boards_map.at(key).interface;
+        *type = boards_map.at(key).type;
+        ret = true;
     }
     catch (const std::out_of_range& errMsg)
     {
@@ -315,9 +317,12 @@ IethResource * TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotID32_
         {
             char nvinfo[128];
             eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+            interfacePointer = NULL;
+            *type = ethFeatType_NULL;
+
             yError() << "TheEthManager::getHandle() cannot find a handle for boardNum "<< boardnum << " and nv" << nvinfo << " ... maybe the board was in running mode before robotInterface was started";
         }
-
+        ret = false;
         _error++;
     }
 //     unlock(); // marco.accame: found already commented. see why

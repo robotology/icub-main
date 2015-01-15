@@ -222,13 +222,15 @@ private:
     bool removeLUTelement(ethFeature_t &element);
 
 public:
-    /*! @fn     void *getHandleFromEP(eOnvEP_t ep);
-     *  @brief  Get a pointer to the class handling the specified EndPoint
+    /*! @fn     getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32, IethResource * interfacePointer, ethFeatType_t *type);
+     *  @brief  Get a infos about the class handling the specified network variable
      *  @param  boardnum  in range [1, max]
-     *  @param  ep  The desired EndPoint
+     *  @param  id32  The desired network variable id
+     *  @param  interfacePointer return the pointer to the IethResource of that device class
+     *  @param  type  return the type of the class (skin, analog, motionControl ... ) using the enum type ethFeatType_t
      *  @return Pointer to the class, casted to a portable void type. The user must cast it to the correct, expected type like eoMotionControl ecc..
      */
-    IethResource * getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32);
+    bool getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32, IethResource **interfacePointer, ethFeatType_t *type);
 
 #if 0
     /*! @fn     ethFeature_t getFeatInfoFromEP(eOnvEP_t ep);

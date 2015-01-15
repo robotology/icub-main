@@ -21,8 +21,6 @@
 #include <yarp/os/Semaphore.h>
 
 
-
-
 static TheEthManager *_interface2ethManager = NULL;
 
 void feat_Initialise(void *ethman)
@@ -35,13 +33,17 @@ void feat_Initialise(void *ethman)
 
 fakestdbool_t feat_addEncoderTimeStamp(FEAT_boardnumber_t boardnum, eOprotID32_t id32)
 {
-    //void *p = _interface2ethManager->getHandle(boardnum, id32);
-    IethResource* ier = _interface2ethManager->getHandle(boardnum, id32);
-    //embObjMotionControl *mc = dynamic_cast<embObjMotionControl *>(p);
-    //embObjMotionControl *mc = static_cast<embObjMotionControl *>(p);
-    embObjMotionControl *mc = dynamic_cast<embObjMotionControl *>(ier);
+    IethResource* mc = NULL;
+    ethFeatType_t type;
+    bool ret = _interface2ethManager->getHandle(boardnum, id32, &mc, &type);
 
-    if(mc == NULL)
+    if(!ret)
+    {
+        yError("EMS callback was unable to get access to the embObjMotionControl");
+        return fakestdbool_false;
+    }
+
+    if(type != ethFeatType_MotionControl)
     {
         return fakestdbool_false;
     }
@@ -51,8 +53,7 @@ fakestdbool_t feat_addEncoderTimeStamp(FEAT_boardnumber_t boardnum, eOprotID32_t
     }
     else
     {
-        int jointNum = eoprot_ID2index(id32);
-        mc->refreshEncoderTimeStamp(jointNum);
+        mc->update(id32, yarp::os::Time::now(), NULL);
     }
 
     return fakestdbool_true;
@@ -61,15 +62,17 @@ fakestdbool_t feat_addEncoderTimeStamp(FEAT_boardnumber_t boardnum, eOprotID32_t
 
 fakestdbool_t feat_manage_motioncontrol_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void* rxdata)
 {
-    //void *p = _interface2ethManager->getHandle(boardnum, id32);
-    IethResource* ier = _interface2ethManager->getHandle(boardnum, id32);
-    //IiCubFeature * icubfeatureI = static_cast<IiCubFeature *>(p);
-    // marco.accame: does not work if we start from a void* ... getHandle() should return a IiCubFeature*
-    // embObjMotionControl *mc = dynamic_cast<embObjMotionControl *>(icubfeatureI);
-    //embObjMotionControl *mc = static_cast<embObjMotionControl *>(p);
-    embObjMotionControl *mc = dynamic_cast<embObjMotionControl *>(ier);
+    IethResource* mc = NULL;
+    ethFeatType_t type;
+    bool ret = _interface2ethManager->getHandle(boardnum, id32, &mc, &type);
 
-    if(mc == NULL)
+    if(!ret)
+    {
+        yError("EMS callback was unable to get access to the embObjMotionControl");
+        return fakestdbool_false;
+    }
+
+    if(type != ethFeatType_MotionControl)
     {
         return fakestdbool_false;
     }
@@ -88,14 +91,17 @@ fakestdbool_t feat_manage_motioncontrol_data(FEAT_boardnumber_t boardnum, eOprot
 fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *arrayofcanframes)
 {   
     static int error = 0;
-    //void *p = _interface2ethManager->getHandle(boardnum, id32);
-    IethResource *ier = _interface2ethManager->getHandle(boardnum, id32);
-    //IiCubFeature * icubfeatureI = static_cast<IiCubFeature *>(p);
-    // marco.accame: does not work if we start from a void* ... getHandle() should return a IiCubFeature*
-    //EmbObjSkin *skin = static_cast<EmbObjSkin *>(p);
-    EmbObjSkin *skin = dynamic_cast<EmbObjSkin *>(ier);
+    IethResource* skin;
+    ethFeatType_t type;
+    bool ret = _interface2ethManager->getHandle(boardnum, id32, &skin, &type);
 
-    if(NULL == skin)
+    if(!ret)
+    {
+        yError("EMS callback was unable to get access to the embObjSkin");
+        return fakestdbool_false;
+    }
+
+    if(type != ethFeatType_Skin)
     {   // the ethmanager does not know this object yet or the dynamic cast failed because it is not an embObjSkin
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
@@ -120,16 +126,19 @@ fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id
 
 fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *as_array)
 {
-    //void *p = _interface2ethManager->getHandle(boardnum, id32);
-    IethResource *ier = _interface2ethManager->getHandle(boardnum, id32);
-    //IiCubFeature *icubfeatureI = static_cast<IiCubFeature *>(p);
-    //embObjAnalogSensor *sensor = dynamic_cast<embObjAnalogSensor *>(icubfeatureI);
-    //embObjAnalogSensor *sensor = static_cast<embObjAnalogSensor *>(p);
-    embObjAnalogSensor *sensor = dynamic_cast<embObjAnalogSensor *>(ier);
+    IethResource* sensor;
+    ethFeatType_t type;
+    bool ret = _interface2ethManager->getHandle(boardnum, id32, &sensor, &type);
 
-    if(NULL == sensor)
-    {   // the ethmanager does not know this object yet or the dynamic cast failed because it is not an embObjAnalogSensor
-        printf("error\n");
+    if(!ret)
+    {
+        yError("EMS callback was unable to get access to the embObjAnalogSensor");
+        return fakestdbool_false;
+    }
+
+    if(! ((type == ethFeatType_AnalogMais) || (type == ethFeatType_AnalogStrain)) )
+    {
+        yError("EMS analog sensor callback - the ethmanager does not know this object YET or a wrong pointer has been returned because it is not an embObjAnalogSensor");
         return fakestdbool_false;
     }
     else if(false == sensor->initialised())
@@ -147,16 +156,17 @@ fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprot
 
 void* feat_MC_handler_get(FEAT_boardnumber_t boardnum, eOprotID32_t id32)
 {
-    void* h = NULL;
-    h = _interface2ethManager->getHandle(boardnum, id32);
-    return h;
+    IethResource* h = NULL;
+    ethFeatType_t type;
+    _interface2ethManager->getHandle(boardnum, id32, &h, &type);
+    return (void*) h;
 }
 
 fakestdbool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
 {
     eoThreadEntry *th = NULL;
     IethResource *ier = static_cast<IethResource*>(mchandler);
-    embObjMotionControl *mc = dynamic_cast<embObjMotionControl *>(ier);
+    IethResource *mc = ier; //dynamic_cast<embObjMotionControl *>(ier);
 
     if(NULL == mc)
     {
@@ -169,7 +179,7 @@ fakestdbool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
 
 
     int threadId;
-    eoThreadFifo *fuffy = mc->requestQueue->getFifo(prognum);
+    eoThreadFifo *fuffy = mc->getFifo(prognum);
 
     if( (threadId = fuffy->pop()) < 0)
     {
@@ -178,7 +188,7 @@ fakestdbool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
     }
     else
     {
-        th = mc->requestQueue->threadPool->getThreadTable(threadId);
+        th = mc->getThreadTable(threadId);
         if(NULL == th)
             yError() << "MCmutex_post error at line " << __LINE__;
         th->push();
