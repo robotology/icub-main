@@ -5,11 +5,18 @@
 # New build system. Exploit new cmake 2.6 features (export).
 
 #reduce warning level with cmake 2.6
-cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 2.8.9)
+
 #cmake policies
-if(COMMAND cmake_policy)
-    cmake_policy(SET CMP0003 NEW)
-endif(COMMAND cmake_policy)
+# CMake Policy CMP0020 (Automatically link Qt executables to qtmain
+# target on Windows). Can be removed with
+# CMAKE_MINIMUM_REQUIRED_VERSION 2.8.11 or later.
+if(NOT ${CMAKE_MINIMUM_REQUIRED_VERSION} VERSION_LESS 2.8.11)
+    message(AUTHOR_WARNING "CMake Policy CMP0020 is now NEW by default. You can remove this.")
+endif()
+if(NOT ${CMAKE_VERSION} VERSION_LESS 2.8.11)
+    cmake_policy(SET CMP0020 NEW)
+endif()
 
 project(iCub)
 
