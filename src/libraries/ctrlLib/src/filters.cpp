@@ -201,7 +201,7 @@ const Vector& RateLimiter::filt(const Vector &u)
             uD[i]=rateLowerLim[i];
     }
 
-    uLim=uLim+uD;
+    uLim+=uD;
     return uLim;
 }
 
