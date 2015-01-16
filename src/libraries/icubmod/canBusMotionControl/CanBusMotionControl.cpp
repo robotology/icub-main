@@ -1140,24 +1140,26 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     alloc(nj);
 
     // Check useRawEncoderData = do not use calibration data!
-    bool useRawEncoderData = false;
-    Value use_raw = p.findGroup("GENERAL").find("useRawEncoderData");
+    bool useRawJointEncoderData = false;
+    bool useRawMotorEncoderData = false;
+    Value use_jnt_raw = p.findGroup("GENERAL").find("useRawEncoderData");
+    Value use_mot_raw = p.findGroup("GENERAL").find("useRawMotorEncoderData");
 
-    if(use_raw.isNull())
+    if(use_jnt_raw.isNull())
     {
-        useRawEncoderData = false;
+        useRawJointEncoderData = false;
     }
     else
     {
-        if(!use_raw.isBool())
+        if(!use_jnt_raw.isBool())
         {
             yError("useRawEncoderData bool param is different from accepted values (true / false). Assuming false\n");
-            useRawEncoderData = false;
+            useRawJointEncoderData = false;
         }
         else
         {
-            useRawEncoderData = use_raw.asBool();
-            if(useRawEncoderData)
+            useRawJointEncoderData = use_jnt_raw.asBool();
+            if(useRawJointEncoderData)
             {
                 yWarning("canBusMotionControl using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file \n");
                 yWarning("DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION! \n");
@@ -1167,6 +1169,26 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         }
     }
 
+    if(use_mot_raw.isNull())
+    {
+        useRawMotorEncoderData = false;
+    }
+    else
+    {
+        if(!use_mot_raw.isBool())
+        {
+            yError("useRawEncoderData bool param is different from accepted values (true / false). Assuming false\n");
+            useRawMotorEncoderData = false;
+        }
+        else
+        {
+            useRawMotorEncoderData = use_mot_raw.asBool();
+            if(useRawMotorEncoderData)
+            {
+                yWarning("canBusMotionControl using raw data from  motor encoders");
+            }
+        }
+    }
     // Check useRawEncoderData = do not use calibration data!
     Value use_limitedPWM = p.findGroup("GENERAL").find("useLimitedPWM");
     if(use_limitedPWM.isNull())
@@ -1273,7 +1295,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     for (i = 1; i < xtmp.size(); i++) 
         _zeros[i-1] = xtmp.get(i).asDouble();
 
-    if (useRawEncoderData)
+    if (useRawJointEncoderData)
     {
         for(i=1;i<nj+1; i++)
         {
@@ -1283,6 +1305,17 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 _angleToEncoder[i-1] = -1;
 
             _zeros[i-1] = 0;
+        }
+    }
+
+    if (useRawMotorEncoderData)
+    {
+        for(i=1;i<nj+1; i++)
+        {
+            if (_rotToEncoder[i-1] > 0)
+                _rotToEncoder[i-1] = 1;
+            else
+                _rotToEncoder[i-1] = -1;
         }
     }
 
