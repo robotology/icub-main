@@ -9,6 +9,6 @@
 	<param name="canAddress"> 8 9 10 11 12 13 </param>
     <param name="period"> 10 </param>
     <param name="sensorPeriod"> 10 </param>
-    <param name="sensorType"> "acc" "acc" "acc" "acc" "acc" "acc"</param>
+    <param name="sensorType"> "acc" </param>
 </device>
 </devices>
