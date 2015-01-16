@@ -1620,6 +1620,16 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
     return true;
 }
 
+eoThreadFifo * embObjMotionControl::getFifo(uint32_t variableProgNum)
+{
+    return requestQueue->getFifo(variableProgNum);
+}
+
+eoThreadEntry *embObjMotionControl::getThreadTable(int threadId)
+{
+    return requestQueue->threadPool->getThreadTable(threadId);
+}
+
 
 void embObjMotionControl::refreshEncoderTimeStamp(int joint)
 {
