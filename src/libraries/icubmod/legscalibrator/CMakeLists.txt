@@ -7,11 +7,12 @@ PREPARE_DEVICE(icublegscalibrator TYPE iCubLegsCalibrator INCLUDE iCubLegsCalibr
 
 if (NOT SKIP_icublegscalibrator)
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS})
-yarp_add_plugin(legscalibrator iCubLegsCalibrator.cpp iCubLegsCalibrator.h)
+    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS})
+    yarp_add_plugin(legscalibrator iCubLegsCalibrator.cpp iCubLegsCalibrator.h)
 
-target_link_libraries(legscalibrator ${YARP_LIBRARIES})
+    target_link_libraries(legscalibrator ${YARP_LIBRARIES})
 
-icub_export_library(legscalibrator)
+    icub_export_library(legscalibrator)
+    yarp_install(FILES icublegscalibrator.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 endif (NOT SKIP_icublegscalibrator)

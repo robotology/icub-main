@@ -12,4 +12,5 @@ IF (NOT SKIP_sharedcan)
     target_link_libraries(shcan ${YARP_LIBRARIES})
     
     icub_export_library(shcan)
+    yarp_install(FILES sharedcan.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 ENDIF (NOT SKIP_sharedcan)

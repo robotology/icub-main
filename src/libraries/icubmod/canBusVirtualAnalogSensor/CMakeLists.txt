@@ -8,14 +8,14 @@ if (NOT SKIP_canBusVirtualAnalogSensor)
 
 if(ICUB_HAS_icub_firmware_shared)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                       ${YARP_INCLUDE_DIRS})
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS})
 
-yarp_add_plugin(canBusVirtualAnalogSensor CanBusVirtualAnalogSensor.h CanBusVirtualAnalogSensor.cpp)
-target_link_libraries(canBusVirtualAnalogSensor ${YARP_LIBRARIES})
+    yarp_add_plugin(canBusVirtualAnalogSensor CanBusVirtualAnalogSensor.h CanBusVirtualAnalogSensor.cpp)
+    target_link_libraries(canBusVirtualAnalogSensor ${YARP_LIBRARIES})
 
-icub_export_library(canBusVirtualAnalogSensor)
-
+    icub_export_library(canBusVirtualAnalogSensor)
+    yarp_install(FILES canBusVirtualAnalogSensor.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+    
 else(ICUB_HAS_icub_firmware_shared)
   message(ERROR " canBusVirtualAnalogSensor: cannot find icub_firmware_shared library, turn off device
   embObj library can now be found in the icub-firmware-shared package that

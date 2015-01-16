@@ -6,12 +6,12 @@ PREPARE_DEVICE(skinprototype TYPE SkinPrototype INCLUDE skinprototype.h WRAPPER 
 
 if (NOT SKIP_skinprototype)
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}
-                       ${YARP_INCLUDE_DIRS})
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS})
 
-yarp_add_plugin(skinprototype skinprototype.h skinprototype.cpp)
-target_link_libraries(skinprototype ${YARP_LIBRARIES})
+    yarp_add_plugin(skinprototype skinprototype.h skinprototype.cpp)
+    target_link_libraries(skinprototype ${YARP_LIBRARIES})
 
-icub_export_library(skinprototype)
+    icub_export_library(skinprototype)
+    yarp_install(FILES skinprototype.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 endif (NOT SKIP_skinprototype)

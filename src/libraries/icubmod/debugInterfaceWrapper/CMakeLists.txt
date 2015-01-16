@@ -12,6 +12,7 @@ IF (NOT SKIP_debugInterfaceWrapper)
  yarp_add_plugin(debugInterfaceWrapper DebugInterfaceWrapper.h DebugInterfaceWrapper.cpp WrappedDevice.h WrappedDevice.cpp RpcMsgHandler.h RpcMsgHandler.cpp)
  target_link_libraries(debugInterfaceWrapper  ${YARP_LIBRARIES})
  icub_export_library(debugInterfaceWrapper)
+ yarp_install(FILES debugInterfaceWrapper.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 ENDIF (NOT SKIP_debugInterfaceWrapper)
 
 

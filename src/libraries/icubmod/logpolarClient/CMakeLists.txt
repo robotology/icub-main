@@ -20,4 +20,5 @@ IF(NOT SKIP_logpolarclient)
                                         ${YARP_LIBRARIES})
                                         
    icub_export_library(logpolarclient)
+   yarp_install(FILES logpolarclient.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 ENDIF(NOT SKIP_logpolarclient)
