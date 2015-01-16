@@ -186,7 +186,9 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IControlCalibration2Raw,
     public IAmplifierControlRaw,
     public IEncodersTimedRaw,
+    public IMotorEncodersRaw,
     public ImplementEncodersTimed,
+    public ImplementMotorEncoders,
     public IPositionControl2Raw,
     public IVelocityControl2Raw,
     public IControlMode2Raw,
@@ -392,8 +394,6 @@ public:
 
     virtual bool initialised();
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
-    virtual eoThreadFifo * getFifo(uint32_t variableProgNum);
-    virtual eoThreadEntry *getThreadTable(int  threadId);
 
     eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
     void refreshEncoderTimeStamp(int joint);
@@ -497,6 +497,24 @@ public:
 
     virtual bool getEncodersTimedRaw(double *encs, double *stamps);
     virtual bool getEncoderTimedRaw(int j, double *encs, double *stamp);
+
+    //////////////////////// BEGIN MotorEncoderInterface
+    virtual bool getNumberOfMotorEncodersRaw(int * num);
+    virtual bool resetMotorEncoderRaw(int m);
+    virtual bool resetMotorEncodersRaw();
+    virtual bool setMotorEncoderRaw(int m, const double val);
+    virtual bool setMotorEncodersRaw(const double *vals);
+    virtual bool getMotorEncoderRaw(int m, double *v);
+    virtual bool getMotorEncodersRaw(double *encs);
+    virtual bool getMotorEncoderSpeedRaw(int m, double *sp);
+    virtual bool getMotorEncoderSpeedsRaw(double *spds);
+    virtual bool getMotorEncoderAccelerationRaw(int m, double *spds);
+    virtual bool getMotorEncoderAccelerationsRaw(double *accs);
+    virtual bool getMotorEncodersTimedRaw(double *encs, double *stamps);
+    virtual bool getMotorEncoderTimedRaw(int m, double *encs, double *stamp);\
+    virtual bool getMotorEncoderCountsPerRevolutionRaw(int m, double *v);
+    virtual bool setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr);
+    ///////////////////////// END MotorEncoder Interface
 
     ////// Amplifier interface
     virtual bool enableAmpRaw(int j);

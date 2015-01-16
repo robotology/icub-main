@@ -664,6 +664,8 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementPidControl<CanBusMotionControl, IPidControl>,
             public IEncodersTimedRaw,
             public ImplementEncodersTimed,
+            public IMotorEncodersRaw,
+            public ImplementMotorEncoders,
             public ImplementControlCalibration<CanBusMotionControl, IControlCalibration>,    
             public ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>,
             public ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>,
@@ -938,6 +940,25 @@ public:
 
     virtual bool getEncodersTimedRaw(double *v, double *t);
     virtual bool getEncoderTimedRaw(int j, double *v, double *t);
+
+    //////////////////////// BEGIN MotorEncoderInterface
+    //
+    virtual bool getNumberOfMotorEncodersRaw(int* num);
+    virtual bool resetMotorEncoderRaw(int m);
+    virtual bool resetMotorEncodersRaw();
+    virtual bool setMotorEncoderRaw(int m, double val);
+    virtual bool setMotorEncodersRaw(const double *vals);
+    virtual bool getMotorEncoderRaw(int m, double *v);
+    virtual bool getMotorEncodersRaw(double *encs);
+    virtual bool getMotorEncoderCountsPerRevolutionRaw(int m, double *cpr);
+    virtual bool setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr);
+    virtual bool getMotorEncoderSpeedRaw(int m, double *sp);
+    virtual bool getMotorEncoderSpeedsRaw(double *spds);
+    virtual bool getMotorEncoderAccelerationRaw(int m, double *spds);
+    virtual bool getMotorEncoderAccelerationsRaw(double *accs);
+    virtual bool getMotorEncodersTimedRaw(double *v, double *t);
+    virtual bool getMotorEncoderTimedRaw(int m, double *v, double *t);
+    ///////////////////////// END MotorEncoderInterface
 
     ////// Amplifier interface
     //

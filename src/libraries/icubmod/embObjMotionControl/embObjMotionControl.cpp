@@ -385,6 +385,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementVelocityControl2(this),
     ImplementControlMode2(this),
     ImplementImpedanceControl(this),
+    ImplementMotorEncoders(this),
 #ifdef IMPLEMENT_DEBUG_INTERFACE
     ImplementDebugInterface(this),
 #endif
@@ -621,6 +622,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementEncodersTimed::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementMotorEncoders::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementPositionControl2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementPidControl<embObjMotionControl, IPidControl>:: initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementControlMode2::initialize(_njoints, _axisMap);
@@ -1558,6 +1560,7 @@ bool embObjMotionControl::close()
 {
     ImplementControlMode2::uninitialize();
     ImplementEncodersTimed::uninitialize();
+    ImplementMotorEncoders::uninitialize();
     ImplementPositionControl2::uninitialize();
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::uninitialize();
     ImplementVelocityControl2::uninitialize();
@@ -1615,16 +1618,6 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
     }
 
     return true;
-}
-
-eoThreadFifo * embObjMotionControl::getFifo(uint32_t variableProgNum)
-{
-    return requestQueue->getFifo(variableProgNum);
-}
-
-eoThreadEntry *embObjMotionControl::getThreadTable(int threadId)
-{
-    return requestQueue->threadPool->getThreadTable(threadId);
 }
 
 
@@ -2827,6 +2820,139 @@ bool embObjMotionControl::getEncoderTimedRaw(int j, double *encs, double *stamp)
 
     return ret;
 }
+
+//////////////////////// BEGIN EncoderInterface
+
+bool embObjMotionControl::getNumberOfMotorEncodersRaw(int* num)
+{
+    *num=_njoints;
+    return true;
+}
+
+bool embObjMotionControl::setMotorEncoderRaw(int m, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setMotorEncoder");
+}
+
+bool embObjMotionControl::setMotorEncodersRaw(const double *vals)
+{
+    return NOT_YET_IMPLEMENTED("setMotorEncoders");
+}
+
+bool embObjMotionControl::setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr)
+{
+    return NOT_YET_IMPLEMENTED("setMotorEncoderCountsPerRevolutionRaw");
+}
+
+bool embObjMotionControl::getMotorEncoderCountsPerRevolutionRaw(int m, double *cpr)
+{
+    return NOT_YET_IMPLEMENTED("getMotorEncoderCountsPerRevolutionRaw");
+}
+
+bool embObjMotionControl::resetMotorEncoderRaw(int mj)
+{
+    return NOT_YET_IMPLEMENTED("resetMotorEncoder");
+}
+
+bool embObjMotionControl::resetMotorEncodersRaw()
+{
+    return NOT_YET_IMPLEMENTED("reseMotortEncoders");
+}
+
+bool embObjMotionControl::getMotorEncoderRaw(int m, double *value)
+{
+    uint16_t      size;
+    eOmc_motor_status_basic_t     status;
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, m, eoprot_tag_mc_motor_status_basic);
+
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&status, &size);
+
+    if(ret)
+    {
+        *value = (double) status.position;
+    }
+    else
+    {
+        yError() << "embObjMotionControl while reading encoder";
+        *value = 0;
+    }
+
+    return ret;
+}
+
+bool embObjMotionControl::getMotorEncodersRaw(double *encs)
+{
+    bool ret = true;
+    for(int j=0; j< _njoints; j++)
+    {
+        ret &= getMotorEncoderRaw(j, &encs[j]);
+
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getMotorEncoderSpeedRaw(int m, double *sp)
+{
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, m, eoprot_tag_mc_motor_status_basic);
+    uint16_t      size;
+    eOmc_motor_status_basic_t  tmpMotorStatus;
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
+    // extract requested data from status
+    *sp = (double) tmpMotorStatus.velocity;
+    return true;
+}
+
+bool embObjMotionControl::getMotorEncoderSpeedsRaw(double *spds)
+{
+    bool ret = true;
+    for(int j=0; j< _njoints; j++)
+    {
+        ret &= getMotorEncoderSpeedRaw(j, &spds[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
+{
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, m, eoprot_tag_mc_motor_status_basic);
+    uint16_t      size;
+    eOmc_joint_status_basic_t  tmpMotorStatus;
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
+    *acc = (double) tmpMotorStatus.acceleration;
+    return true;
+}
+
+bool embObjMotionControl::getMotorEncoderAccelerationsRaw(double *accs)
+{
+    bool ret = true;
+    for(int j=0; j< _njoints; j++)
+    {
+        ret &= getMotorEncoderAccelerationRaw(j, &accs[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getMotorEncodersTimedRaw(double *encs, double *stamps)
+{
+    bool ret = getMotorEncodersRaw(encs);
+    _mutex.wait();
+    for(int i=0; i<_njoints; i++)
+        stamps[i] = _encodersStamp[i];
+    _mutex.post();
+
+    return ret;
+}
+
+bool embObjMotionControl::getMotorEncoderTimedRaw(int m, double *encs, double *stamp)
+{
+    bool ret = getMotorEncoderRaw(m, encs);
+    _mutex.wait();
+    *stamp = _encodersStamp[m];
+    _mutex.post();
+
+    return ret;
+}
+///////////////////////// END Motor Encoder Interface
 
 ////// Amplifier interface
 
