@@ -326,3 +326,62 @@ bool GetRotorAcceleration::getData(double *e)
     return 0;
 }
 
+void GetMotEncs::setInterface(IMotorEncoders *i)
+{
+    imotencs = i;
+}
+
+bool GetMotEncs::getData(double *e)
+{
+  if (imotencs)
+    {
+      while(!imotencs->getMotorEncoders(e))
+        fprintf(stderr, "Getting bad motor encoders! \n");
+      return 1;
+    }
+  else
+    {
+      fprintf(stderr, "Interface is not ready! \n");
+      return 0;
+    }
+}
+
+void GetMotSpeeds::setInterface(IMotorEncoders *i)
+{
+    imotencs = i;
+}
+
+bool GetMotSpeeds::getData(double *e)
+{
+  if (imotencs)
+    {
+      while(!imotencs->getMotorEncoderSpeeds(e))
+        fprintf(stderr, "Getting bad motor encoders! \n");
+      return 1;
+    }
+  else
+    {
+      fprintf(stderr, "Interface is not ready! \n");
+      return 0;
+    }
+}
+
+void GetMotAccs::setInterface(IMotorEncoders *i)
+{
+    imotencs = i;
+}
+
+bool GetMotAccs::getData(double *e)
+{
+  if (imotencs)
+    {
+      while(!imotencs->getMotorEncoderAccelerations(e))
+        fprintf(stderr, "Getting bad motor encoders! \n");
+      return 1;
+    }
+  else
+    {
+      fprintf(stderr, "Interface is not ready! \n");
+      return 0;
+    }
+}
