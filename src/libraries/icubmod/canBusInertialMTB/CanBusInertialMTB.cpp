@@ -88,14 +88,18 @@ bool checkRequiredParamIsVectorOfInt(yarp::os::Searchable& config,
     return correct;
 }
 
+// \todo TODO bug ? 
 bool checkRequiredParamIsVectorOfString(yarp::os::Searchable& config,
                                      const yarp::os::ConstString& paramName,
                                      std::vector<std::string> & output_vector)
 {
     bool correct = !(config.findGroup(paramName).isNull());
     if( correct )
+    correct = true;
     {
         Bottle ids = config.findGroup(paramName).tail();
+        std::cout << "ids : " << ids.toString() << std::endl;
+        std::cout << "ids : " << config.find(paramName).toString() << std::endl;
         output_vector.resize(ids.size());
         for(int i = 0; i < ids.size(); i++ )
         {
@@ -105,7 +109,7 @@ bool checkRequiredParamIsVectorOfString(yarp::os::Searchable& config,
 
     if( !correct )
     {
-        yError("CanBusInertialMTB: problem loading parameter %s as vector of int",paramName.c_str());
+        yError("CanBusInertialMTB: problem loading parameter %s as vector of string",paramName.c_str());
     }
 
     return correct;
@@ -113,21 +117,16 @@ bool checkRequiredParamIsVectorOfString(yarp::os::Searchable& config,
 
 
 bool CanBusInertialMTB::validateConf(yarp::os::Searchable& config,
-                                     std::vector<int> & canAddresses,
-                                     std::vector<std::string> & sensorTypes)
+                                     std::vector<int> & canAddresses)
 {
+    std::cout << "CanBusInertialMTB::validateConf : " << config.toString() << std::endl;
     bool correct=true;
 
     correct = correct && checkRequiredParamIsString(config,"canbusDevice");
     correct = correct && checkRequiredParamIsInt(config,"canDeviceNum");
     correct = correct && checkRequiredParamIsVectorOfInt(config,"canAddress",canAddresses);
     correct = correct && checkRequiredParamIsString(config,"physDevice");
-    correct = correct && checkRequiredParamIsVectorOfString(config,"sensorType",sensorTypes);
-
-    if( sensorTypes.size() != canAddresses.size() )
-    {
-        yError("CanBusInertialMTB: size of canAddress is different from size of sensorType");
-    }
+    correct = correct && checkRequiredParamIsString(config,"sensorType");
 
     return correct;
 }
@@ -135,8 +134,7 @@ bool CanBusInertialMTB::validateConf(yarp::os::Searchable& config,
 bool CanBusInertialMTB::open(yarp::os::Searchable& config)
 {
     std::vector<int> canAddresses;
-    std::vector<std::string> sensorTypes;
-    bool correct = this->validateConf(config,canAddresses,sensorTypes);
+    bool correct = this->validateConf(config,canAddresses);
 
     if (!correct)
     {
@@ -160,11 +158,12 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
     //Parse sensor type and address of all readed sensors
     this->boards.resize(canAddresses.size());
     this->nrOfTotalChannels = 0;
+    
 
     for(int board=0; board < this->boards.size(); board++ )
     {
         this->boards[board].boardId = canAddresses[board];
-        if( sensorTypes[board] == "acc" )
+        if( config.find("sensorType").asString() == "acc" )
         {
             this->boards[board].enabledSensors = CANBUS_INERTIAL_MTB_INTERNAL_ACC_BIT;
             this->boards[board].enabledGyro    = false;
@@ -172,7 +171,7 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
             this->boards[board].vectorOffset   = this->nrOfTotalChannels;
             this->nrOfTotalChannels += this->boards[board].nrOfChannels;
         }
-        else if( sensorTypes[board] == "extAccAndGyro" )
+        else if( config.find("sensorType").asString() == "extAccAndGyro" )
         {
             this->boards[board].enabledSensors = CANBUS_INERTIAL_MTB_EXTERNAL_GYRO_BIT |
                                                  CANBUS_INERTIAL_MTB_EXTERNAL_ACC_BIT;
@@ -183,7 +182,7 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
         }
         else
         {
-            yError("CanBusInertialMTB: unknown sensorType %s",sensorTypes[board].c_str());
+            yError("CanBusInertialMTB: unknown sensorType %s",config.find("sensorType").asString().c_str());
             return false;
         }
     }

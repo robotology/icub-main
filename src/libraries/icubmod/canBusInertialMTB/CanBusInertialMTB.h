@@ -40,7 +40,7 @@ using namespace yarp::dev;
 * | canDeviceNum   | int    | -     | - | Yes | ID of the CAN Bus line | - |
 * | canAddress     | vector of int    | -     | - | Yes | Vector of the CAN Bus Addresses for the sensor boards | - |
 * | period         | int    | milliseconds | 10 | No | Period of the thread reading messages from the CAN bus | - |
-* | sensorType     | vector of string |       | - | Yes | Vector of type of sensor to read from MTBs.  | Possible values: acc for the internal LIS331DLH accelerometer of the MTB,
+* | sensorType     | int |       | - | Yes | Type of sensor to read from MTBs.  | Possible values: acc for the internal LIS331DLH accelerometer of the MTB,
                                                                                                      extAccAndGyro for the external LIS331DLH accelerometer and L3G4200D gyroscope. |
 * | sensorPeriod   | int    | milliseconds | 5 | No | Every sensorPeriod milliseconds the MTB publishes the sensor measurements on the CAN Bus | Possible values: from 1 to 255 |
 */
@@ -64,8 +64,7 @@ private:
      * Validate the input configuration object
      */
     bool validateConf(yarp::os::Searchable& config,
-                      std::vector<int> & canAddresses,
-                      std::vector<std::string> & sensorTypes);
+                      std::vector<int> & canAddresses);
 
     void setPrivateBoardStatus(int boardIndex, short status);
     void setPrivateBoardAccStatus(int boardIndex, short status);
