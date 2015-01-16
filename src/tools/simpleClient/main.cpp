@@ -186,7 +186,8 @@ int main(int argc, char *argv[])
             printf("IOpenLoop:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_IOPENLOOP).c_str());
             printf("	[set] [%s] <int> <float>\n", Vocab::decode(VOCAB_OUTPUT).c_str());
             printf("	[get] [%s] <int>\n", Vocab::decode(VOCAB_OUTPUT).c_str());
-            printf("	[get] [%s]\n\n", Vocab::decode(VOCAB_OUTPUTS).c_str());
+            printf("	[get] [%s]\n", Vocab::decode(VOCAB_OUTPUTS).c_str());
+            printf("\n");
 
             printf("IControlMode:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_ICONTROLMODE).c_str());
             printf("	[set] [%s]|[%s]|[%s]|[%s]|[%s]|[%s]|[%s]|[%s][%s]|[%s]\n",
@@ -200,7 +201,8 @@ int main(int argc, char *argv[])
                     Vocab::decode(VOCAB_CM_FORCE_IDLE).c_str(),
                     Vocab::decode(VOCAB_CM_IMPEDANCE_POS).c_str(),
                     Vocab::decode(VOCAB_CM_IMPEDANCE_VEL).c_str());
-            printf("	[get] [%s] <int>\n\n", Vocab::decode(VOCAB_CM_CONTROL_MODE).c_str());
+            printf("	[get] [%s] <int>\n", Vocab::decode(VOCAB_CM_CONTROL_MODE).c_str());
+            printf("\n");
 
             printf("ITorqueControl:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_TORQUE).c_str());
             printf("	[get] [%s] <int> to read the measured torque for a single axis\n",                  Vocab::decode(VOCAB_TRQ).c_str());
@@ -208,18 +210,21 @@ int main(int argc, char *argv[])
             printf("	[set] [%s] <int> <float> to set the reference torque for a single axis\n",          Vocab::decode(VOCAB_REF).c_str());
             printf("	[set] [%s] <float list> to set the reference torque for all axes\n",        Vocab::decode(VOCAB_REFS).c_str());
             printf("	[get] [%s] <int> to read the reference torque for a single axis\n",                  Vocab::decode(VOCAB_REF).c_str());
-            printf("	[get] [%s] to read the reference torque for all axes\n\n",                      Vocab::decode(VOCAB_REFS).c_str());
+            printf("	[get] [%s] to read the reference torque for all axes\n",                      Vocab::decode(VOCAB_REFS).c_str());
+            printf("\n");
 
             printf("IImpedanceControl:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_IMPEDANCE).c_str());
             printf("	[set] [%s] <int> <float> <float> \n", Vocab::decode(VOCAB_IMP_PARAM).c_str());
             printf("	[set] [%s] <int> <float>\n\n",  Vocab::decode(VOCAB_IMP_OFFSET).c_str());
             printf("	[get] [%s] <int>\n", Vocab::decode(VOCAB_IMP_PARAM).c_str());
-            printf("	[get] [%s] <int>\n\n", Vocab::decode(VOCAB_IMP_OFFSET).c_str());
+            printf("	[get] [%s] <int>\n", Vocab::decode(VOCAB_IMP_OFFSET).c_str());
+            printf("\n");
 
             printf("IInteractionMode:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_INTERFACE_INTERACTION_MODE).c_str());
             printf("	[set] [%s]|[%s] <int>\n", Vocab::decode(VOCAB_IM_STIFF).c_str(), Vocab::decode(VOCAB_IM_COMPLIANT).c_str());
             printf("	[get] [%s] <int>\n", Vocab::decode(VOCAB_INTERACTION_MODE).c_str());
-            printf("	[get] [%s] \n\n", Vocab::decode(VOCAB_INTERACTION_MODES).c_str());
+            printf("	[get] [%s] \n", Vocab::decode(VOCAB_INTERACTION_MODES).c_str());
+            printf("\n");
 
             printf("IEncoder Interfaces:\n");
             printf("type [get] and one of the following:\n");
@@ -228,6 +233,7 @@ int main(int argc, char *argv[])
             printf("	[%s] to read the motor encoder positions for all motors\n", Vocab::decode(VOCAB_MOTOR_ENCODERS).c_str());
             printf("	[%s] to read the motor encoder speeds for all motors\n", Vocab::decode(VOCAB_MOTOR_ENCODER_SPEEDS).c_str());
             printf("	[%s] to read the motor encoder accelerations for all motors\n", Vocab::decode(VOCAB_MOTOR_ENCODER_ACCELERATIONS).c_str());
+            printf("\n");
 
             printf("Standard Interfaces:\n");
             printf("type [get] and one of the following:\n");
@@ -265,6 +271,7 @@ int main(int argc, char *argv[])
             printf("	[%s] <int> <double> to set the encoder value for a single axis\n", Vocab::decode(VOCAB_ENCODER).c_str());
             printf("	[%s] <list> to set the encoder value for all axes\n", Vocab::decode(VOCAB_ENCODERS).c_str());
             printf("\n");
+
             printf("NOTES: - A list is a sequence of numbers in parenthesis, e.g. (10 2 1 10)\n");
             printf("       - Pids are expressed as a list of 7 numbers, type get pid <int> to see an example\n");
             printf("\n");

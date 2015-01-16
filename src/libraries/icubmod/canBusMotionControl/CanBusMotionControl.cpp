@@ -1077,7 +1077,7 @@ bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, 
     //optional PWM limit
     if(_pwmIsLimited)
     {   // check for value in the file
-        if (!validate(pidsGroup, xtmp, "limPwm", "Limited PWD", _njoints+1))
+        if (!validate(pidsGroup, xtmp, "limPwm", "Limited PWM", _njoints+1))
         {
             yError() << "The PID parameter limPwm was requested but was not correctly set in the configuration file, please fill it.";
             return false;
@@ -2247,6 +2247,14 @@ bool CanBusMotionControl::open (Searchable &config)
     _writerequested = false;
     _noreply = false;
 
+    double *tmpZeros = new double [p._njoints];
+    double *tmpOnes  = new double [p._njoints];
+    for (int i=0; i< p._njoints; i++)
+    {
+        tmpZeros[i]=0.0;
+        tmpOnes[i]=1.0;
+    }
+
     ImplementPositionControl2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
     ImplementVelocityControl2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
@@ -2261,7 +2269,7 @@ bool CanBusMotionControl::open (Searchable &config)
 
     ImplementEncodersTimed::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementMotorEncoders::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementMotorEncoders::initialize(p._njoints, p._axisMap, p._rotToEncoder, tmpZeros);
 
     ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
@@ -2284,6 +2292,9 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementPositionDirect::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
     ImplementInteractionMode::initialize(p._njoints, p._axisMap);
     _axisPositionDirectHelper = new axisPositionDirectHelper(p._njoints, p._axisMap, p._angleToEncoder, p._maxStep);
+
+    delete [] tmpZeros; tmpZeros=0;
+    delete [] tmpOnes;  tmpOnes=0;
 
     // temporary variables used by the ddriver.
     _ref_positions = allocAndCheck<double>(p._njoints);
@@ -4805,7 +4816,7 @@ bool CanBusMotionControl::getRotorPositionRaw(int axis, double* value)
 
 bool CanBusMotionControl::getRotorPositionsRaw(double* value)
 {
-    return false;
+    return NOT_YET_IMPLEMENTED("getRotorPositionsRaw");
 }
 
 bool CanBusMotionControl::getRotorSpeedRaw(int axis, double* value)
@@ -4821,7 +4832,7 @@ bool CanBusMotionControl::getRotorSpeedRaw(int axis, double* value)
 
 bool CanBusMotionControl::getRotorSpeedsRaw(double* value)
 {
-    return false;
+    return NOT_YET_IMPLEMENTED("getRotorSpeedsRaw");
 }
 
 bool CanBusMotionControl::getRotorAccelerationRaw(int axis, double* value)
@@ -4837,7 +4848,7 @@ bool CanBusMotionControl::getRotorAccelerationRaw(int axis, double* value)
 
 bool CanBusMotionControl::getRotorAccelerationsRaw(double* value)
 {
-    return false;
+    return NOT_YET_IMPLEMENTED("getRotorAccelerationsRaw");
 }
 
 bool CanBusMotionControl::getJointPositionRaw(int axis, double* value)
@@ -4853,7 +4864,7 @@ bool CanBusMotionControl::getJointPositionRaw(int axis, double* value)
 
 bool CanBusMotionControl::getJointPositionsRaw(double* value)
 {
-    return false;
+    return NOT_YET_IMPLEMENTED("getJointPositionsRaw");
 }
 
 bool CanBusMotionControl::getDebugReferencePositionRaw(int axis, double* value)
@@ -5807,46 +5818,22 @@ bool CanBusMotionControl::getEncoderAccelerationRaw(int j, double *v)
 
 bool CanBusMotionControl::setMotorEncoderRaw(int m, double val)
 {
-    const int axis = m;
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_ENCODER_POSITION, axis, S_32(val));
+    return NOT_YET_IMPLEMENTED("setMotorEncoderRaw");
 }
 
 bool CanBusMotionControl::setMotorEncodersRaw(const double *vals)
 {
-    CanBusResources& r = RES(system_resources);
-
-    int i;
-    for (i = 0; i < r.getJoints(); i++)
-    {
-        if (_writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_ENCODER_POSITION, i, S_32(vals[i])) != true)
-            return false;
-    }
-
-    return true;
+    return NOT_YET_IMPLEMENTED("setMotorEncodersRaw");
 }
 
 bool CanBusMotionControl::resetMotorEncoderRaw(int m)
 {
-    return setMotorEncoderRaw(m, 0);
+    return NOT_YET_IMPLEMENTED("resetMotorEncoderRaw");
 }
 
 bool CanBusMotionControl::resetMotorEncodersRaw()
 {
-    int n=RES(system_resources).getJoints();
-    double *tmp = new double [n];
-    ACE_ASSERT (tmp != NULL);
-
-    for(int i=0;i<n;i++)
-        tmp[i]=0;
-
-    bool ret= setEncodersRaw(tmp);
-
-    delete [] tmp;
-
-    return ret;
+    return NOT_YET_IMPLEMENTED("resetMotorEncodersRaw");
 }
 
 bool CanBusMotionControl::getMotorEncodersRaw(double *v)
@@ -5858,10 +5845,10 @@ bool CanBusMotionControl::getMotorEncodersRaw(double *v)
     
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
-        v[i] = double(r._bcastRecvBuffer[i]._position_joint._value);
+        v[i] = double(r._bcastRecvBuffer[i]._position_rotor._value);
 
-        if (stamp<r._bcastRecvBuffer[i]._position_joint._stamp)
-            stamp=r._bcastRecvBuffer[i]._position_joint._stamp;
+        if (stamp<r._bcastRecvBuffer[i]._position_rotor._stamp)
+            stamp=r._bcastRecvBuffer[i]._position_rotor._stamp;
     }
 
     stampEncoders.update(stamp);
@@ -5870,21 +5857,13 @@ bool CanBusMotionControl::getMotorEncodersRaw(double *v)
     return true;
 }
 
-/*Stamp CanBusMotionControl::getLastInputStamp()
-{
-    _mutex.wait();
-    Stamp ret=stampEncoders;
-    _mutex.post();
-    return ret;
-}*/
-
 bool CanBusMotionControl::getMotorEncoderRaw(int m, double *v)
 {
     CanBusResources& r = RES(system_resources);
     if (!(m >= 0 && m <= r.getJoints()))return false;
 
     _mutex.wait();
-    *v = double(r._bcastRecvBuffer[m]._position_joint._value);
+    *v = double(r._bcastRecvBuffer[m]._position_rotor._value);
     _mutex.post();
 
     return true;
@@ -5899,11 +5878,11 @@ bool CanBusMotionControl::getMotorEncodersTimedRaw(double *v, double *t)
     
     double stamp=0;
     for (i = 0; i < r.getJoints(); i++) {
-        v[i] = double(r._bcastRecvBuffer[i]._position_joint._value);
-        t[i] = r._bcastRecvBuffer[i]._position_joint._stamp;
+        v[i] = double(r._bcastRecvBuffer[i]._position_rotor._value);
+        t[i] = r._bcastRecvBuffer[i]._position_rotor._stamp;
 
-        if (stamp<r._bcastRecvBuffer[i]._position_joint._stamp)
-            stamp=r._bcastRecvBuffer[i]._position_joint._stamp;
+        if (stamp<r._bcastRecvBuffer[i]._position_rotor._stamp)
+            stamp=r._bcastRecvBuffer[i]._position_rotor._stamp;
     }
 
     stampEncoders.update(stamp);
@@ -5918,8 +5897,8 @@ bool CanBusMotionControl::getMotorEncoderTimedRaw(int m, double *v, double *t)
     if (!(m >= 0 && m <= r.getJoints()))return false;
 
     _mutex.wait();
-    *v = double(r._bcastRecvBuffer[m]._position_joint._value);
-    *t = r._bcastRecvBuffer[m]._position_joint._stamp;
+    *v = double(r._bcastRecvBuffer[m]._position_rotor._value);
+    *t = r._bcastRecvBuffer[m]._position_rotor._stamp;
     _mutex.post();
 
     return true;
@@ -5948,8 +5927,8 @@ bool CanBusMotionControl::getMotorEncoderSpeedsRaw(double *v)
     int i;
     _mutex.wait();
     for (i = 0; i < r.getJoints(); i++) {
-        int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Vel_estimator_shift));
-        v[i] = (double(r._bcastRecvBuffer[i]._speed_joint)*1000.0)/vel_factor;
+        int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Vel_estimator_shift));
+        v[i] = (double(r._bcastRecvBuffer[i]._speed_rotor._value)*1000.0)/vel_factor;
     }
     _mutex.post();
     return true;
@@ -5958,45 +5937,39 @@ bool CanBusMotionControl::getMotorEncoderSpeedsRaw(double *v)
 bool CanBusMotionControl::getMotorEncoderSpeedRaw(int m, double *v)
 {
     CanBusResources& r = RES(system_resources);
-    //ACE_ASSERT (j >= 0 && j <= r.getJoints());
-    if (!(m >= 0 && m <= r.getJoints()))
-        return false;
+    if (!(m >= 0 && m <= r.getJoints()))return false;
 
     _mutex.wait();
-    int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).jnt_Vel_estimator_shift));
-    *v = (double(r._bcastRecvBuffer[m]._speed_joint)*1000.0)/vel_factor;
+    int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Vel_estimator_shift));
+    *v = (double(r._bcastRecvBuffer[m]._speed_rotor._value)*1000.0)/vel_factor;
     _mutex.post();
-
     return true;
 }
 
-bool CanBusMotionControl::getMotorEncoderAccelerationsRaw(double *v)
+bool CanBusMotionControl::getMotorEncoderAccelerationsRaw(double *accs)
 {
     CanBusResources& r = RES(system_resources);
     int i;
     _mutex.wait();
     for (i = 0; i < r.getJoints(); i++) {
-        int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Vel_estimator_shift));
-        int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).jnt_Acc_estimator_shift));
-        v[i] = (double(r._bcastRecvBuffer[i]._accel_joint)*1000000.0)/(vel_factor*acc_factor);
+        int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Vel_estimator_shift));
+        int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Acc_estimator_shift));
+        accs[i] = (double(r._bcastRecvBuffer[i]._accel_rotor._value)*1000000.0)/(vel_factor*acc_factor);
     }
     _mutex.post();
     return true;
 }
 
-bool CanBusMotionControl::getMotorEncoderAccelerationRaw(int m, double *v)
+bool CanBusMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
 {
     CanBusResources& r = RES(system_resources);
-    //ACE_ASSERT (j >= 0 && j <= r.getJoints());
-    if (!(m >= 0 && m <= r.getJoints()))
-        return false;
+    if (!(m >= 0 && m <= r.getJoints()))return false;
 
     _mutex.wait();
-    int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).jnt_Vel_estimator_shift));
-    int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).jnt_Acc_estimator_shift));
-    *v = (double(r._bcastRecvBuffer[m]._accel_joint)*1000000.0)/(vel_factor*acc_factor);
+    int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Vel_estimator_shift));
+    int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Acc_estimator_shift));
+    *acc = (double(r._bcastRecvBuffer[m]._accel_rotor._value)*1000000.0)/(vel_factor*acc_factor);
     _mutex.post();
-
     return true;
 }
 
