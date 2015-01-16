@@ -2873,17 +2873,16 @@ bool embObjMotionControl::getMotorEncoderRaw(int m, double *value)
 {
     uint16_t      size;
     eOmc_motor_status_basic_t     status;
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, m, eoprot_tag_mc_motor_status_basic);
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_status_basic);
 
     bool ret = res->readBufferedValue(protid, (uint8_t *)&status, &size);
-
     if(ret)
     {
         *value = (double) status.position;
     }
     else
     {
-        yError() << "embObjMotionControl while reading encoder";
+        yError() << "embObjMotionControl while reading motor encoder position";
         *value = 0;
     }
 
@@ -2903,12 +2902,19 @@ bool embObjMotionControl::getMotorEncodersRaw(double *encs)
 
 bool embObjMotionControl::getMotorEncoderSpeedRaw(int m, double *sp)
 {
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, m, eoprot_tag_mc_motor_status_basic);
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_status_basic);
     uint16_t      size;
     eOmc_motor_status_basic_t  tmpMotorStatus;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
-    // extract requested data from status
-    *sp = (double) tmpMotorStatus.velocity;
+    if(ret)
+    {
+        *sp = (double) tmpMotorStatus.velocity;
+    }
+    else
+    {
+        yError() << "embObjMotionControl while reading motor encoder speed";
+        *sp = 0;
+    }
     return true;
 }
 
@@ -2924,11 +2930,19 @@ bool embObjMotionControl::getMotorEncoderSpeedsRaw(double *spds)
 
 bool embObjMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
 {
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, m, eoprot_tag_mc_motor_status_basic);
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_status_basic);
     uint16_t      size;
     eOmc_joint_status_basic_t  tmpMotorStatus;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
-    *acc = (double) tmpMotorStatus.acceleration;
+    if(ret)
+    {
+        *acc = (double) tmpMotorStatus.acceleration;
+    }
+    else
+    {
+        yError() << "embObjMotionControl while reading motor encoder acceleration";
+        *acc = 0;
+    }
     return true;
 }
 
