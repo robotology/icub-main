@@ -14,6 +14,8 @@
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/sig/Vector.h>
 
+#include <vector>
+
 using namespace yarp::os;
 using namespace yarp::dev;
 
@@ -28,18 +30,32 @@ using namespace yarp::dev;
 *
 * The minimum MTB firmware version supported by this device is 2.10.17 .
 *
+* It is possible to read from multiple MTB. This readings will be combined in a single vector.
+*
 * Parameters accepted in the config argument of the open method:
 * | Parameter name | Type   | Units | Default Value | Required | Description | Notes |
 * |:--------------:|:------:|:-----:|:-------------:|:--------:|:-----------:|:-----:|
 * | canbusDevice   | string | -     | - | Yes | Yarp device name of CAN Bus wrapper | - |
 * | physDevice     | string | -     | - | Yes | Yarp device name for the low level CAN device driver | - |
 * | canDeviceNum   | int    | -     | - | Yes | ID of the CAN Bus line | - |
-* | canAddress     | int    | -     | - | Yes | CAN Bus Address for the sensor board | - |
+* | canAddress     | vector of int    | -     | - | Yes | Vector of the CAN Bus Addresses for the sensor boards | - |
 * | period         | int    | milliseconds | 10 | No | Period of the thread reading messages from the CAN bus | - |
-* | sensorType     | string |       | - | Yes | Type of sensor to read from MTB.  | Possible values: acc for the internal LIS331DLH accelerometer of the MTB,
+* | sensorType     | vector of string |       | - | Yes | Vector of type of sensor to read from MTBs.  | Possible values: acc for the internal LIS331DLH accelerometer of the MTB,
                                                                                                      extAccAndGyro for the external LIS331DLH accelerometer and L3G4200D gyroscope. |
 * | sensorPeriod   | int    | milliseconds | 5 | No | Every sensorPeriod milliseconds the MTB publishes the sensor measurements on the CAN Bus | Possible values: from 1 to 255 |
 */
+
+struct MTBInertialBoardInfo
+{
+        unsigned short     boardId;
+        double             accTimeStamp;
+        double             gyroTimeStamp;
+        unsigned char      enabledSensors;
+        unsigned char      sensorPeriod;
+        bool               enabledGyro;
+        unsigned int       nrOfChannels; ///< 6 if extAccAndGyro, 3 if acc
+        unsigned int       vectorOffset; ///< offset of the board data in the output vector
+};
 
 class CanBusInertialMTB : public RateThread, public yarp::dev::IAnalogSensor, public DeviceDriver
 {
@@ -47,7 +63,14 @@ private:
     /**
      * Validate the input configuration object
      */
-    bool validateConf(yarp::os::Searchable& config);
+    bool validateConf(yarp::os::Searchable& config,
+                      std::vector<int> & canAddresses,
+                      std::vector<std::string> & sensorTypes);
+
+    void setPrivateBoardStatus(int boardIndex, short status);
+    void setPrivateBoardAccStatus(int boardIndex, short status);
+    void setPrivateBoardGyroStatus(int boardIndex, short status);
+
 
 protected:
     PolyDriver         driver;
@@ -58,17 +81,16 @@ protected:
 
     yarp::os::Semaphore mutex;
 
-    unsigned int       channelsNum;
-    unsigned short     boardId;
-    short              status;
-    double             accTimeStamp;
-    double             gyroTimeStamp;
-    unsigned char      enabledSensors;
-    unsigned char      sensorPeriod;
-    bool               enabledGyro;
+    std::vector<MTBInertialBoardInfo> boards;
+
+    int nrOfTotalChannels;
 
     yarp::sig::Vector  data;
     yarp::sig::Vector  privateData;
+    std::vector<short> sharedStatus;
+    std::vector<short> privateStatus;
+    short sharedGlobalStatus;
+    short privateGlobalStatus;
 
     bool              initted;
     int               count;
