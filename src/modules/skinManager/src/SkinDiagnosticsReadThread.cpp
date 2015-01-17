@@ -17,7 +17,7 @@
  */
 
 #include "iCub/skinManager/SkinDiagnosticsReadThread.h"
-#include <skinDiagnostic.h>
+#include <SkinDiagnostics.h>
 
 #include <iostream>
 #include <ios>

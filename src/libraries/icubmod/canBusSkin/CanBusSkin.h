@@ -20,7 +20,7 @@
 
 
 #include "SkinConfigReader.h"
-#include <skinDiagnostic.h>
+#include <SkinDiagnostics.h>
 
 
 class CanBusSkin : public yarp::os::RateThread, public yarp::dev::IAnalogSensor, public yarp::dev::DeviceDriver 
