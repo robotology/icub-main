@@ -40,8 +40,7 @@ using namespace yarp::dev;
 * | canDeviceNum   | int    | -     | - | Yes | ID of the CAN Bus line | - |
 * | canAddress     | vector of int    | -     | - | Yes | Vector of the CAN Bus Addresses for the sensor boards | - |
 * | period         | int    | milliseconds | 10 | No | Period of the thread reading messages from the CAN bus | - |
-* | sensorType     | int |       | - | Yes | Type of sensor to read from MTBs.  | Possible values: acc for the internal LIS331DLH accelerometer of the MTB,
-                                                                                                     extAccAndGyro for the external LIS331DLH accelerometer and L3G4200D gyroscope. |
+* | sensorType     | int |       | - | Yes | Type of sensor to read from MTBs.  | Possible values: acc for the internal LIS331DLH accelerometer of the MTB, extAccAndGyro for the external LIS331DLH accelerometer and L3G4200D gyroscope. |
 * | sensorPeriod   | int    | milliseconds | 5 | No | Every sensorPeriod milliseconds the MTB publishes the sensor measurements on the CAN Bus | Possible values: from 1 to 255 |
 */
 
@@ -57,6 +56,12 @@ struct MTBInertialBoardInfo
         unsigned int       vectorOffset; ///< offset of the board data in the output vector
 };
 
+/**
+ * Class implementing the canBusInertialMTB device driver. 
+ * 
+ * Check \ref canbusinertialmtb for more information about this driver and the required parameters.
+ * 
+ */
 class CanBusInertialMTB : public RateThread, public yarp::dev::IAnalogSensor, public DeviceDriver
 {
 private:
