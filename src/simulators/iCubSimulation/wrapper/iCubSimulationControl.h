@@ -92,6 +92,8 @@ class yarp::dev::iCubSimulationControl :
     public ImplementPidControl<iCubSimulationControl, IPidControl>,
     public IEncodersTimedRaw,
     public ImplementEncodersTimed,
+    public IMotorEncodersRaw,
+    public ImplementMotorEncoders,
     public IPositionDirectRaw,
     public ImplementPositionDirect
 
@@ -213,6 +215,25 @@ class yarp::dev::iCubSimulationControl :
 
   ///////////////////////// END Encoder Interface
 
+  //////////////////////// BEGIN MotorEncoderInterface
+  //
+  virtual bool getNumberOfMotorEncodersRaw(int* num);
+  virtual bool resetMotorEncoderRaw(int m);
+  virtual bool resetMotorEncodersRaw();
+  virtual bool setMotorEncoderRaw(int m, double val);
+  virtual bool setMotorEncodersRaw(const double *vals);
+  virtual bool getMotorEncoderRaw(int m, double *v);
+  virtual bool setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr);
+  virtual bool getMotorEncoderCountsPerRevolutionRaw(int m, double *cpr);
+  virtual bool getMotorEncodersRaw(double *encs);
+  virtual bool getMotorEncoderSpeedRaw(int m, double *sp);
+  virtual bool getMotorEncoderSpeedsRaw(double *spds);
+  virtual bool getMotorEncoderAccelerationRaw(int m, double *spds);
+  virtual bool getMotorEncoderAccelerationsRaw(double *accs);
+  virtual bool getMotorEncodersTimedRaw(double *encs, double *stamps);
+  virtual bool getMotorEncoderTimedRaw(int m, double *encs, double *stamp);
+
+  ///////////////////////// END Encoder Interface
   ////// Amplifier interface
   //
   virtual bool enableAmpRaw(int j);

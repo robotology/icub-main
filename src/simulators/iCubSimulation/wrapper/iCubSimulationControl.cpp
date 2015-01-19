@@ -59,6 +59,7 @@ iCubSimulationControl::iCubSimulationControl() :
     ImplementControlLimits2(this),
     ImplementInteractionMode(this),
     ImplementPositionDirect(this),
+    ImplementMotorEncoders(this),
     _done(0),
     _mutex(1)
 {
@@ -216,6 +217,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementPidControl<iCubSimulationControl, IPidControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementEncodersTimed::initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementMotorEncoders::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>::
@@ -269,6 +271,7 @@ bool iCubSimulationControl::close (void)
         ImplementTorqueControl::uninitialize();
         ImplementPidControl<iCubSimulationControl, IPidControl>::uninitialize();
         ImplementEncodersTimed::uninitialize();
+        ImplementMotorEncoders::uninitialize();
         ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::uninitialize();
         ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>::uninitialize();
         ImplementControlLimits2::uninitialize();
@@ -881,6 +884,133 @@ bool iCubSimulationControl::getEncoderAccelerationsRaw(double *v)
 }
 
 bool iCubSimulationControl::getEncoderAccelerationRaw(int axis, double *v)
+{
+    *v=0.0;
+    return false; //NOT_YET_IMPLEMENTED("getEncoderAcc");
+}
+
+bool iCubSimulationControl::setMotorEncoderRaw(int axis, double val)
+{
+    return NOT_YET_IMPLEMENTED("setMotorEncoderRaw");
+}
+
+bool iCubSimulationControl::setMotorEncodersRaw(const double *vals)
+{
+    return NOT_YET_IMPLEMENTED("setMotorEncodersRaw");
+}
+
+bool iCubSimulationControl::resetMotorEncoderRaw(int axis)
+{
+    return NOT_YET_IMPLEMENTED("resetMotorEncoderRaw");
+}
+
+bool iCubSimulationControl::resetMotorEncodersRaw()
+{
+   return NOT_YET_IMPLEMENTED("resetMotorEncodersRaw");
+}
+
+bool iCubSimulationControl::getMotorEncodersRaw(double *v)
+{
+   _mutex.wait();
+    for(int axis = 0;axis<njoints;axis++)
+    {
+        if ( axis == 10 ||  axis == 12 || axis == 14 ) 
+            v[axis] = current_pos[axis]*2;
+        else if ( axis == 15 ) 
+            v[axis] = current_pos[axis]*3;
+        else if ( axis == 7 ) 
+            v[axis] = limitsMax[axis] - current_pos[axis]; 
+        else 
+            v[axis] = current_pos[axis];
+    }
+    _mutex.post();
+    return true;
+}
+
+bool iCubSimulationControl::getMotorEncoderRaw(int axis, double *v)
+{
+    if((axis>=0) && (axis<njoints)) {
+        _mutex.wait();
+        
+        if ( axis == 10 ||  axis == 12 || axis == 14 ) 
+            *v = current_pos[axis]*2;
+        else if ( axis == 15 ) 
+            *v = current_pos[axis]*3;
+        else if ( axis == 7 ) 
+            *v = limitsMax[axis] - current_pos[axis];
+        else 
+            *v = current_pos[axis];
+
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        printf("getMotorEncoderRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    return false;
+}
+
+bool iCubSimulationControl::getNumberOfMotorEncodersRaw(int* num)
+{
+    *num=njoints;
+    return true;
+}
+
+bool iCubSimulationControl::setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr)
+{
+    return NOT_YET_IMPLEMENTED("setMotorEncoderCountsPerRevolutionRaw");
+}
+
+bool iCubSimulationControl::getMotorEncoderCountsPerRevolutionRaw(int m, double* cpr)
+{
+   return NOT_YET_IMPLEMENTED("getMotorEncoderCountsPerRevolutionRaw");
+}
+
+
+bool iCubSimulationControl::getMotorEncodersTimedRaw(double *encs, double *stamps)
+{
+    double timeNow = Time::now();
+    for(int axis = 0;axis<njoints;axis++)
+    {
+        stamps[axis] = timeNow;
+    }
+    return getMotorEncodersRaw(encs);
+}
+
+bool iCubSimulationControl::getMotorEncoderTimedRaw(int axis, double *enc, double *stamp)
+{
+    *stamp = Time::now();
+    return getMotorEncoderRaw(axis, enc);
+}
+
+
+bool iCubSimulationControl::getMotorEncoderSpeedsRaw(double *v)
+{
+   _mutex.wait();
+    for(int axis = 0; axis<njoints; axis++)
+        v[axis] = current_vel[axis];//* 10;
+    _mutex.post();
+    return true;
+}
+
+bool iCubSimulationControl::getMotorEncoderSpeedRaw(int axis, double *v)
+{
+    if( (axis>=0) && (axis<njoints) ) {
+        _mutex.wait();
+        *v = current_vel[axis];// * 10;
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        printf("getEncoderSpeedRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    return false;
+}
+
+bool iCubSimulationControl::getMotorEncoderAccelerationsRaw(double *v)
+{
+  	return NOT_YET_IMPLEMENTED("getMotorEncoderAccelerationsRaw");
+}
+
+bool iCubSimulationControl::getMotorEncoderAccelerationRaw(int axis, double *v)
 {
     *v=0.0;
     return false; //NOT_YET_IMPLEMENTED("getEncoderAcc");
