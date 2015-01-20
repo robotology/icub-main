@@ -2075,22 +2075,22 @@ bool embObjMotionControl::doneRaw(int axis)
     }
     else if (eomc_controlmode_hwFault == type)
     {
-        yError("unable to complete calibration: joint in 'hw_fault status' inside doneRaw() function"); 
+        yError("unable to complete calibration: joint %d in 'hw_fault status' inside doneRaw() function", axis); 
         result = false;
     }
     else if (eomc_controlmode_notConfigured == type)
     {
-        yError("unable to complete calibration: joint in 'not_configured' status inside doneRaw() function"); 
+        yError("unable to complete calibration: joint %d in 'not_configured' status inside doneRaw() function", axis); 
         result = false;
     }
     else if (eomc_controlmode_unknownError == type)
     {
-        yError("unable to complete calibration: joint in 'unknownError' status inside doneRaw() function"); 
+        yError("unable to complete calibration: joint %d in 'unknownError' status inside doneRaw() function", axis); 
         result = false;
     }
     else if (eomc_controlmode_configured == type)
     {
-        yError("unable to complete calibration: joint in 'configured' status inside doneRaw() function"); 
+        yError("unable to complete calibration: joint %d in 'configured' status inside doneRaw() function", axis); 
         result = false;
     }
     else
@@ -2592,6 +2592,7 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 {
     eOenum08_t      valSet;
     eOenum08_t      valGot;
+    bool ret = true;
 
     //yDebug() << "SetControlMode: received setControlMode command (SINGLE) for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
 
@@ -2607,68 +2608,88 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
         yError() << "setControlModeRaw failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
         return false;
     }
+    
+    int timeout = 0;
+    int current_mode = VOCAB_CM_UNKNOWN;
 
-//    // ask back the controlMode to verify everithing went correctly (boards can be in fault)
-//    yarp::os::Time::delay(0.1);
-//    bool ret = getStatusBasic_withWait(1, &j, &valGot);
-
-//    printf("Got %s  (%d)\n", Vocab::decode(controlModeStatusConvert_embObj2yarp(valGot)).c_str(), controlModeStatusConvert_embObj2yarp(valGot) );
-//    printf("***********************************************************************\n");
-
-//    if( (!ret) || (valGot != valSet) )
-//    {
-//        yError() << "setControlModeRaw failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
-//        return false;
-//    }
-
-    yarp::os::Time::delay(0.010);
-    return true;
+    do
+    {
+        bool ret = getStatusBasic_withWait(1, &j, &valGot);
+        if (ret == false) {yError ("An error occurred inside setControlModesRaw()"); break;}
+        current_mode = controlModeStatusConvert_embObj2yarp(valGot);
+        if (current_mode==_mode) {ret = true; break;}
+        if (current_mode==VOCAB_CM_IDLE     && _mode==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
+        if (current_mode==VOCAB_CM_HW_FAULT)
+        {
+            if (_mode!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%d) in HW_FAULT", j);}
+            ret = true; break;
+        }
+        yarp::os::Time::delay(0.010);
+        yWarning ("setControlModeRaw delay (joint %d), current mode: %s, requested: %s", j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(_mode).c_str());
+        timeout++;
+    }
+    while (timeout < 10);
+    if (timeout>=10)
+    {
+        ret = false;
+        yError ("100ms Timeout occured in setControlModeRaw (joint %d), current mode: %s, requested: %s", j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(_mode).c_str());
+    }
+    return ret;
 }
 
 bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joints, int *modes)
 {
     eOenum08_t          *valSet = new eOenum08_t[n_joint];
     eOenum08_t          *valGot = new eOenum08_t[n_joint];
+    bool ret = true;
 
     //yDebug() << "SetControlMode: received setControlMode (GROUP) command for board " << _fId.boardNumber << " mode " << Vocab::decode(modes[0]);
 
-    for(int idx=0; idx<n_joint; idx++)
+    for(int i=0; i<n_joint; i++)
     {
-        if(!controlModeCommandConvert_yarp2embObj(modes[idx], valSet[idx]) )
+        if(!controlModeCommandConvert_yarp2embObj(modes[i], valSet[i]) )
         {
-            yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNumber << " joint " << joints[idx] << " mode " << Vocab::decode(modes[idx]);
+            yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNumber << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
             delete valSet; delete valGot;
             return false;
         }
 
-        eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joints[idx], eoprot_tag_mc_joint_cmmnds_controlmode);
-        if(! res->addSetMessage(protid, (uint8_t*) &valSet[idx]) )
+        eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joints[i], eoprot_tag_mc_joint_cmmnds_controlmode);
+        if(! res->addSetMessage(protid, (uint8_t*) &valSet[i]) )
         {
-            yError() << "setControlModeRaw failed for board " << _fId.boardNumber << " joint " << joints[idx] << " mode " << Vocab::decode(modes[idx]);
+            yError() << "setControlModeRaw failed for board " << _fId.boardNumber << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
             delete valSet; delete valGot;
             return false;
+        }
+
+        int current_mode = VOCAB_CM_UNKNOWN;
+        int timeout = 0;
+        do
+        {
+            bool ret = getStatusBasic_withWait(1, &joints[i], &valGot[i]);
+            if (ret == false) {yError ("An error occurred inside setControlModesRaw()"); break;}
+            current_mode = controlModeStatusConvert_embObj2yarp(valGot[i]);
+            if (current_mode==modes[i]) {ret = true; break;}
+            if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
+            if (current_mode==VOCAB_CM_HW_FAULT)
+            {
+                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%d) in HW_FAULT",  joints[i]);}
+                ret = true; break;
+            }
+            yarp::os::Time::delay(0.010);
+            yWarning ("setControlModesRaw delay (joint %d), current mode: %s, requested: %s",  joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            timeout++;
+        }
+        while (timeout < 10);
+        if (timeout>=10)
+        {
+            ret = false;
+            yError ("100ms Timeout occured in setControlModesRaw (joint %d), current mode: %s, requested: %s",  joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
         }
     }
 
-//    // ask back the controlMode to verify everithing went correctly (boards can be in fault)
-//    if(!getStatusBasic_withWait(n_joint, joints, valGot) )
-//    {
-//        yError() << "setControlModeRaw failed while checking if the new controlmode was correctly set";
-//        return false;
-//    }
-
-//    for(int idx=0; idx<n_joint; idx++)
-//    {
-//        if( valGot[idx] != (eOmc_controlmode_t) valSet[idx])
-//        {
-//            yError() << "setControlModeRaw failed for board " << _fId.boardNumber << " joint " << joints[idx] << " because of mode mismatching \n\tSet " << Vocab::decode(modes[idx]) << " Got " << Vocab::decode(controlModeStatusConvert_embObj2yarp(valGot[idx]));
-//            return false;
-//        }
-//    }
-
-    yarp::os::Time::delay(0.010);
     delete valSet; delete valGot;
-    return true;
+    return ret;
 }
 
 bool embObjMotionControl::setControlModesRaw(int *modes)
@@ -2677,46 +2698,54 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
 
     eOenum08_t          *valSet = new eOenum08_t[_njoints];
     eOenum08_t          *valGot = new eOenum08_t[_njoints];
+    bool ret = true;
 
-    for(int j=0; j<_njoints; j++)
+    for(int i=0; i<_njoints; i++)
     {
-        jointVector[j] = j;
-        if(!controlModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
+        jointVector[i] = i;
+        if(!controlModeCommandConvert_yarp2embObj(modes[i], valSet[i]) )
         {
-            yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNumber << " joint " << i << " mode " << Vocab::decode(modes[i]);
             delete jointVector; delete valSet; delete valGot;
             return false;
         }
 
-        eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-        if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
+        eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, i, eoprot_tag_mc_joint_cmmnds_controlmode);
+        if(! res->addSetMessage(protid, (uint8_t*) &valSet[i]) )
         {
-            yError() << "setControlModesRaw failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]);
+            yError() << "setControlModesRaw failed for board " << _fId.boardNumber << " joint " << i << " mode " << Vocab::decode(modes[i]);
             delete jointVector; delete valSet; delete valGot;
             return false;
+        }
+
+        int current_mode = VOCAB_CM_UNKNOWN;
+        int timeout = 0;
+        do
+        {
+            bool ret = getStatusBasic_withWait(1, &i, &valGot[i]);
+            if (ret == false) {yError ("An error occurred inside setControlModesRaw()"); break;}
+            current_mode = controlModeStatusConvert_embObj2yarp(valGot[i]);
+            if (current_mode==modes[i]) {ret = true; break;}
+            if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
+            if (current_mode==VOCAB_CM_HW_FAULT)
+            {
+                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%d) in HW_FAULT", i);}
+                ret = true; break;
+            }
+            yarp::os::Time::delay(0.010);
+            yWarning ("setControlModesRaw delay (joint %d), current mode: %s, requested: %s", i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            timeout++;
+        }
+        while (timeout < 10);
+        if (timeout>=10)
+        {
+            ret = false;
+            yError ("100ms Timeout occured in setControlModesRaw (joint %d), current mode: %s, requested: %s", i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
         }
     }
 
-//    // ask back the controlMode to verify everything went correctly (boards can be in fault)
-//    if(!getStatusBasic_withWait(_njoints, jointVector, valGot) )
-//    {
-//        yError() << "setControlModeRaw failed while checking if the new controlmode was correctly set";
-//        return false;
-//    }
-
-//    for(int j=0; j<_njoints; j++)
-//    {
-//        if( valGot[j] != (eOmc_controlmode_t)valSet[j])
-//        {
-//            yError() << "setControlModeRaw failed for board " << _fId.boardNumber << " joint " << j << " because of mode mismatching \n\tSet " << Vocab::decode(modes[j]) << " Got " << Vocab::decode(controlModeStatusConvert_embObj2yarp(valGot[j]));
-//            return false;
-//        }
-//    }
-
-    yarp::os::Time::delay(0.010);
-
     delete jointVector; delete valSet; delete valGot;
-    return true;
+    return ret;
 }
 
 

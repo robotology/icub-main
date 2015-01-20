@@ -3865,7 +3865,7 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
         if (current_mode==VOCAB_CM_IDLE     && mode==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
         if (current_mode==VOCAB_CM_HW_FAULT)
         {
-            if (mode!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint in HW_FAULT");}
+            if (mode!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%d) in HW_FAULT", j);}
             ret = true; break;
         }
         yarp::os::Time::delay(0.010);
@@ -3902,7 +3902,7 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
             if (current_mode==modes[i]) {ret = true; break;}
             if (current_mode==VOCAB_CM_IDLE)
             {
-                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint in HW_FAULT");}
+                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%d) in HW_FAULT", joints[i]);}
                 ret = true; break;
             }
             yarp::os::Time::delay(0.010);
@@ -3941,7 +3941,7 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
             if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
             if (current_mode==VOCAB_CM_HW_FAULT)
             {
-                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint in HW_FAULT");}
+                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%d) in HW_FAULT", i);}
                 ret = true; break;
             }
             yarp::os::Time::delay(0.010);
