@@ -385,6 +385,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementVelocityControl2(this),
     ImplementControlMode2(this),
     ImplementImpedanceControl(this),
+    ImplementMotorEncoders(this),
 #ifdef IMPLEMENT_DEBUG_INTERFACE
     ImplementDebugInterface(this),
 #endif
@@ -621,6 +622,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementEncodersTimed::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementMotorEncoders::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementPositionControl2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementPidControl<embObjMotionControl, IPidControl>:: initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementControlMode2::initialize(_njoints, _axisMap);
@@ -1558,6 +1560,7 @@ bool embObjMotionControl::close()
 {
     ImplementControlMode2::uninitialize();
     ImplementEncodersTimed::uninitialize();
+    ImplementMotorEncoders::uninitialize();
     ImplementPositionControl2::uninitialize();
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::uninitialize();
     ImplementVelocityControl2::uninitialize();
@@ -1677,17 +1680,18 @@ bool embObjMotionControl::setPidsRaw(const Pid *pids)
 
 bool embObjMotionControl::setReferenceRaw(int j, double ref)
 {
-    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-    // fix to emulate behaviour pre-controlMode2
-    int mode;
+    int mode = 0;
     getControlModeRaw(j, &mode);
-    if( mode != VOCAB_CM_POSITION_DIRECT &&
+    if (mode != VOCAB_CM_POSITION_DIRECT &&
         mode != VOCAB_CM_IDLE)
     {
-        yDebug() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
-        setControlModeRaw(j, VOCAB_CM_POSITION_DIRECT);
+        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+        yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
+        setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
+        #else
+        yError() << "setReferenceRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
+        #endif
     }
-    #endif
 
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
     eOmc_setpoint_t setpoint = {0};
@@ -1906,16 +1910,20 @@ bool embObjMotionControl::setVelocityModeRaw()
 
 bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 {
-    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-    // fix to emulate behaviour pre-controlMode2
-    int mode;
+    int mode=0;
     getControlModeRaw(j, &mode);
-    if( (mode != VOCAB_CM_VELOCITY) && (mode != VOCAB_CM_MIXED) && (mode != VOCAB_CM_IMPEDANCE_VEL) && (mode != VOCAB_CM_IDLE))
+    if( (mode != VOCAB_CM_VELOCITY) &&
+        (mode != VOCAB_CM_MIXED) &&
+        (mode != VOCAB_CM_IMPEDANCE_VEL) &&
+        (mode != VOCAB_CM_IDLE))
     {
-        yDebug() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << j;
+        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+        yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << j;
         setControlModeRaw(j, VOCAB_CM_VELOCITY);
+        #else
+        yError() << "velocityMoveRaw: skipping command because joint" << j << "is not in VOCAB_CM_VELOCITY mode";
+        #endif
     }
-    #endif
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
 
@@ -2126,18 +2134,21 @@ bool embObjMotionControl::setPositionModeRaw()
 
 bool embObjMotionControl::positionMoveRaw(int j, double ref)
 {
-
-    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-    // fix to emulate behaviour pre-controlMode2
-    int mode;
+    int mode = 0;
     getControlModeRaw(j, &mode);
-    if( (mode != VOCAB_CM_POSITION) && (mode != VOCAB_CM_MIXED) && (mode != VOCAB_CM_IMPEDANCE_POS) && (mode != VOCAB_CM_IDLE))
+    if( (mode != VOCAB_CM_POSITION) &&
+        (mode != VOCAB_CM_MIXED) &&
+        (mode != VOCAB_CM_IMPEDANCE_POS) &&
+        (mode != VOCAB_CM_IDLE))
     {
+        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
         yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << j;
         setControlModeRaw(j, VOCAB_CM_POSITION);
+        #else
+        yError() << "positionMoveRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION mode";
+        #endif
     }
-    #endif
-
+    
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
     _ref_positions[j] = ref;   // save internally the new value of pos.
 
@@ -2827,6 +2838,153 @@ bool embObjMotionControl::getEncoderTimedRaw(int j, double *encs, double *stamp)
 
     return ret;
 }
+
+//////////////////////// BEGIN EncoderInterface
+
+bool embObjMotionControl::getNumberOfMotorEncodersRaw(int* num)
+{
+    *num=_njoints;
+    return true;
+}
+
+bool embObjMotionControl::setMotorEncoderRaw(int m, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setMotorEncoder");
+}
+
+bool embObjMotionControl::setMotorEncodersRaw(const double *vals)
+{
+    return NOT_YET_IMPLEMENTED("setMotorEncoders");
+}
+
+bool embObjMotionControl::setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr)
+{
+    return NOT_YET_IMPLEMENTED("setMotorEncoderCountsPerRevolutionRaw");
+}
+
+bool embObjMotionControl::getMotorEncoderCountsPerRevolutionRaw(int m, double *cpr)
+{
+    return NOT_YET_IMPLEMENTED("getMotorEncoderCountsPerRevolutionRaw");
+}
+
+bool embObjMotionControl::resetMotorEncoderRaw(int mj)
+{
+    return NOT_YET_IMPLEMENTED("resetMotorEncoder");
+}
+
+bool embObjMotionControl::resetMotorEncodersRaw()
+{
+    return NOT_YET_IMPLEMENTED("reseMotortEncoders");
+}
+
+bool embObjMotionControl::getMotorEncoderRaw(int m, double *value)
+{
+    uint16_t      size;
+    eOmc_motor_status_basic_t     status;
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_status_basic);
+
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&status, &size);
+    if(ret)
+    {
+        *value = (double) status.position;
+    }
+    else
+    {
+        yError() << "embObjMotionControl while reading motor encoder position";
+        *value = 0;
+    }
+
+    return ret;
+}
+
+bool embObjMotionControl::getMotorEncodersRaw(double *encs)
+{
+    bool ret = true;
+    for(int j=0; j< _njoints; j++)
+    {
+        ret &= getMotorEncoderRaw(j, &encs[j]);
+
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getMotorEncoderSpeedRaw(int m, double *sp)
+{
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_status_basic);
+    uint16_t      size;
+    eOmc_motor_status_basic_t  tmpMotorStatus;
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
+    if(ret)
+    {
+        *sp = (double) tmpMotorStatus.velocity;
+    }
+    else
+    {
+        yError() << "embObjMotionControl while reading motor encoder speed";
+        *sp = 0;
+    }
+    return true;
+}
+
+bool embObjMotionControl::getMotorEncoderSpeedsRaw(double *spds)
+{
+    bool ret = true;
+    for(int j=0; j< _njoints; j++)
+    {
+        ret &= getMotorEncoderSpeedRaw(j, &spds[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
+{
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_status_basic);
+    uint16_t      size;
+    eOmc_joint_status_basic_t  tmpMotorStatus;
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
+    if(ret)
+    {
+        *acc = (double) tmpMotorStatus.acceleration;
+    }
+    else
+    {
+        yError() << "embObjMotionControl while reading motor encoder acceleration";
+        *acc = 0;
+    }
+    return true;
+}
+
+bool embObjMotionControl::getMotorEncoderAccelerationsRaw(double *accs)
+{
+    bool ret = true;
+    for(int j=0; j< _njoints; j++)
+    {
+        ret &= getMotorEncoderAccelerationRaw(j, &accs[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getMotorEncodersTimedRaw(double *encs, double *stamps)
+{
+    bool ret = getMotorEncodersRaw(encs);
+    _mutex.wait();
+    for(int i=0; i<_njoints; i++)
+        stamps[i] = _encodersStamp[i];
+    _mutex.post();
+
+    return ret;
+}
+
+bool embObjMotionControl::getMotorEncoderTimedRaw(int m, double *encs, double *stamp)
+{
+    bool ret = getMotorEncoderRaw(m, encs);
+    _mutex.wait();
+    *stamp = _encodersStamp[m];
+    _mutex.post();
+
+    return ret;
+}
+///////////////////////// END Motor Encoder Interface
 
 ////// Amplifier interface
 
@@ -3549,7 +3707,20 @@ bool embObjMotionControl::setPositionRaw(int j, double ref)
 {
     // needs to send both position and velocit as well as positionMove
     // does the same as setReferenceRaw, with some more misterious (missing) checks.
-	return setReferenceRaw(j, ref);
+    int mode = 0;
+    getControlModeRaw(j, &mode);
+    if (mode != VOCAB_CM_POSITION_DIRECT &&
+        mode != VOCAB_CM_IDLE)
+    {
+        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+        yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
+        setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
+        #else
+        yError() << "setPositionRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
+        #endif
+    }
+
+    return setReferenceRaw(j, ref);
 }
 
 bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)

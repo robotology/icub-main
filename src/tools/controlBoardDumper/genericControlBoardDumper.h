@@ -38,6 +38,33 @@ public:
   
 };
 
+class GetMotEncs : public GetData
+{
+public:
+  void setInterface (IMotorEncoders *);
+  virtual bool getData(double *);
+
+  IMotorEncoders *imotencs;
+};
+
+class GetMotSpeeds : public GetData
+{
+public:
+  void setInterface (IMotorEncoders *);
+  virtual bool getData(double *);
+
+  IMotorEncoders *imotencs;
+};
+
+class GetMotAccs : public GetData
+{
+public:
+  void setInterface (IMotorEncoders *);
+  virtual bool getData(double *);
+
+  IMotorEncoders *imotencs;
+};
+
 class GetEncs : public GetData
 {
 public:

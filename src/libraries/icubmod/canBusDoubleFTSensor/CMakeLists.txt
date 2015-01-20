@@ -16,6 +16,7 @@ target_link_libraries(canBusDoubleFTSensor ${YARP_LIBRARIES})
 
 icub_export_library(canBusDoubleFTSensor)
 
+yarp_install(FILES CanBusDoubleFTSensor.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 else(ICUB_HAS_icub_firmware_shared)
   message(ERROR " canBusDoubleFTSensor: cannot find icub_firmware_shared library, turn off device

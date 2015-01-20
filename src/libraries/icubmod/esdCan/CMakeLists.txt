@@ -22,6 +22,7 @@ IF (NOT SKIP_ecan)
     TARGET_LINK_LIBRARIES(esdCan ${ESDCANAPI_LIB} ${YARP_LIBRARIES})
     
     icub_export_library(esdCan)
+    yarp_install(FILES esdcan.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
   ENDIF(NOT ESDCANAPI_FOUND)
 
 ENDIF (NOT SKIP_ecan)

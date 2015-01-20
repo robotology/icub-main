@@ -16,6 +16,7 @@ target_link_libraries(canBusAnalogSensor ${YARP_LIBRARIES})
 
 icub_export_library(canBusAnalogSensor)
 
+yarp_install(FILES canBusAnalogSensor.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 else(ICUB_HAS_icub_firmware_shared)
   message(ERROR " canBusAnalogSensor: cannot find icub_firmware_shared library, turn off device

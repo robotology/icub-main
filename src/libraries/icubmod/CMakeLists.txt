@@ -91,3 +91,20 @@ target_link_libraries(icubmoddev YARP::YARP_OS YARP::YARP_dev YARP::YARP_init)
 INSTALL(TARGETS icubmoddev DESTINATION bin)
 #INSTALL(TARGETS icubmod DESTINATION lib)
 
+
+
+# generate path.ini file for both build and install
+get_target_property(YARP_LIBRARY_PATH icubmod LOCATION)
+get_target_property(YARP_LIBRARY_TYPE icubmod TYPE)
+
+string(REPLACE "STATIC_LIBRARY" "static" YARP_LIBRARY_TYPE ${YARP_LIBRARY_TYPE})
+string(REPLACE "SHARED_LIBRARY" "shared" YARP_LIBRARY_TYPE ${YARP_LIBRARY_TYPE})
+get_filename_component(YARP_LIBRARY_EXTENSION ${YARP_LIBRARY_PATH} EXT)
+get_filename_component(YARP_LIBRARY_PREFIX ${YARP_LIBRARY_PATH} NAME_WE)
+string(REPLACE "icubmod" "" YARP_LIBRARY_PREFIX ${YARP_LIBRARY_PREFIX})
+get_filename_component(YARP_LIBRARY_PATH ${YARP_LIBRARY_PATH} ABSOLUTE)
+get_filename_component(YARP_LIBRARY_PATH ${YARP_LIBRARY_PATH} PATH)
+configure_file(${YARP_MODULE_DIR}/template/YarpPluginPath.cmake  ${CMAKE_BINARY_DIR}/${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR}/path_icubmod.ini @ONLY)
+set(YARP_LIBRARY_PATH ${CMAKE_INSTALL_FULL_LIBDIR})
+configure_file(${YARP_MODULE_DIR}/template/YarpPluginPath.cmake  ${CMAKE_BINARY_DIR}/path_for_install.ini @ONLY)
+install(FILES ${CMAKE_BINARY_DIR}/path_for_install.ini RENAME path_icubmod.ini COMPONENT configuration DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})

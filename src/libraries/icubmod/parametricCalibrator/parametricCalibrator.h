@@ -90,6 +90,7 @@ private:
     bool checkCalibrateJointEnded(std::list<int> set);
     bool checkGoneToZero(int j);
     bool checkGoneToZeroThreshold(int j);
+    bool checkHwFault(int j);
 
     IControlCalibration2 *iCalibrate;
     IPidControl *iPids;
@@ -117,6 +118,7 @@ private:
     bool    abortParking;
     bool    isCalibrated;
     bool    skipCalibration;
+    bool    clearHwFault;
 
     std::string deviceName;
 };

@@ -1077,7 +1077,7 @@ bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, 
     //optional PWM limit
     if(_pwmIsLimited)
     {   // check for value in the file
-        if (!validate(pidsGroup, xtmp, "limPwm", "Limited PWD", _njoints+1))
+        if (!validate(pidsGroup, xtmp, "limPwm", "Limited PWM", _njoints+1))
         {
             yError() << "The PID parameter limPwm was requested but was not correctly set in the configuration file, please fill it.";
             return false;
@@ -1140,24 +1140,26 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     alloc(nj);
 
     // Check useRawEncoderData = do not use calibration data!
-    bool useRawEncoderData = false;
-    Value use_raw = p.findGroup("GENERAL").find("useRawEncoderData");
+    bool useRawJointEncoderData = false;
+    bool useRawMotorEncoderData = false;
+    Value use_jnt_raw = p.findGroup("GENERAL").find("useRawEncoderData");
+    Value use_mot_raw = p.findGroup("GENERAL").find("useRawMotorEncoderData");
 
-    if(use_raw.isNull())
+    if(use_jnt_raw.isNull())
     {
-        useRawEncoderData = false;
+        useRawJointEncoderData = false;
     }
     else
     {
-        if(!use_raw.isBool())
+        if(!use_jnt_raw.isBool())
         {
             yError("useRawEncoderData bool param is different from accepted values (true / false). Assuming false\n");
-            useRawEncoderData = false;
+            useRawJointEncoderData = false;
         }
         else
         {
-            useRawEncoderData = use_raw.asBool();
-            if(useRawEncoderData)
+            useRawJointEncoderData = use_jnt_raw.asBool();
+            if(useRawJointEncoderData)
             {
                 yWarning("canBusMotionControl using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file \n");
                 yWarning("DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION! \n");
@@ -1167,6 +1169,26 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         }
     }
 
+    if(use_mot_raw.isNull())
+    {
+        useRawMotorEncoderData = false;
+    }
+    else
+    {
+        if(!use_mot_raw.isBool())
+        {
+            yError("useRawEncoderData bool param is different from accepted values (true / false). Assuming false\n");
+            useRawMotorEncoderData = false;
+        }
+        else
+        {
+            useRawMotorEncoderData = use_mot_raw.asBool();
+            if(useRawMotorEncoderData)
+            {
+                yWarning("canBusMotionControl using raw data from  motor encoders");
+            }
+        }
+    }
     // Check useRawEncoderData = do not use calibration data!
     Value use_limitedPWM = p.findGroup("GENERAL").find("useLimitedPWM");
     if(use_limitedPWM.isNull())
@@ -1273,7 +1295,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     for (i = 1; i < xtmp.size(); i++) 
         _zeros[i-1] = xtmp.get(i).asDouble();
 
-    if (useRawEncoderData)
+    if (useRawJointEncoderData)
     {
         for(i=1;i<nj+1; i++)
         {
@@ -1283,6 +1305,17 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 _angleToEncoder[i-1] = -1;
 
             _zeros[i-1] = 0;
+        }
+    }
+
+    if (useRawMotorEncoderData)
+    {
+        for(i=1;i<nj+1; i++)
+        {
+            if (_rotToEncoder[i-1] > 0)
+                _rotToEncoder[i-1] = 1;
+            else
+                _rotToEncoder[i-1] = -1;
         }
     }
 
@@ -2174,6 +2207,7 @@ ImplementControlMode2(this),
 ImplementDebugInterface(this),
 ImplementPositionDirect(this),
 ImplementInteractionMode(this),
+ImplementMotorEncoders(this),
 _mutex(1),
 _done(0)
 {
@@ -2246,6 +2280,14 @@ bool CanBusMotionControl::open (Searchable &config)
     _writerequested = false;
     _noreply = false;
 
+    double *tmpZeros = new double [p._njoints];
+    double *tmpOnes  = new double [p._njoints];
+    for (int i=0; i< p._njoints; i++)
+    {
+        tmpZeros[i]=0.0;
+        tmpOnes[i]=1.0;
+    }
+
     ImplementPositionControl2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
     ImplementVelocityControl2::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
@@ -2259,6 +2301,8 @@ bool CanBusMotionControl::open (Searchable &config)
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementEncodersTimed::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+
+    ImplementMotorEncoders::initialize(p._njoints, p._axisMap, p._rotToEncoder, tmpZeros);
 
     ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
@@ -2281,6 +2325,9 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementPositionDirect::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
     ImplementInteractionMode::initialize(p._njoints, p._axisMap);
     _axisPositionDirectHelper = new axisPositionDirectHelper(p._njoints, p._axisMap, p._angleToEncoder, p._maxStep);
+
+    delete [] tmpZeros; tmpZeros=0;
+    delete [] tmpOnes;  tmpOnes=0;
 
     // temporary variables used by the ddriver.
     _ref_positions = allocAndCheck<double>(p._njoints);
@@ -2714,6 +2761,7 @@ bool CanBusMotionControl::close (void)
 
         ImplementPidControl<CanBusMotionControl, IPidControl>::uninitialize();
         ImplementEncodersTimed::uninitialize();
+        ImplementMotorEncoders::uninitialize();
         ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::uninitialize();
         ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>::uninitialize();
         ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>::uninitialize();
@@ -4477,7 +4525,7 @@ bool CanBusMotionControl::setReferenceRaw (int j, double ref)
             yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << axis;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
             #else
-            yError() << "setReferenceRaw: skipping command because joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
+            yError() << "setReferenceRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
             #endif
         }
 
@@ -4801,7 +4849,7 @@ bool CanBusMotionControl::getRotorPositionRaw(int axis, double* value)
 
 bool CanBusMotionControl::getRotorPositionsRaw(double* value)
 {
-    return false;
+    return NOT_YET_IMPLEMENTED("getRotorPositionsRaw");
 }
 
 bool CanBusMotionControl::getRotorSpeedRaw(int axis, double* value)
@@ -4817,7 +4865,7 @@ bool CanBusMotionControl::getRotorSpeedRaw(int axis, double* value)
 
 bool CanBusMotionControl::getRotorSpeedsRaw(double* value)
 {
-    return false;
+    return NOT_YET_IMPLEMENTED("getRotorSpeedsRaw");
 }
 
 bool CanBusMotionControl::getRotorAccelerationRaw(int axis, double* value)
@@ -4833,7 +4881,7 @@ bool CanBusMotionControl::getRotorAccelerationRaw(int axis, double* value)
 
 bool CanBusMotionControl::getRotorAccelerationsRaw(double* value)
 {
-    return false;
+    return NOT_YET_IMPLEMENTED("getRotorAccelerationsRaw");
 }
 
 bool CanBusMotionControl::getJointPositionRaw(int axis, double* value)
@@ -4849,7 +4897,7 @@ bool CanBusMotionControl::getJointPositionRaw(int axis, double* value)
 
 bool CanBusMotionControl::getJointPositionsRaw(double* value)
 {
-    return false;
+    return NOT_YET_IMPLEMENTED("getJointPositionsRaw");
 }
 
 bool CanBusMotionControl::getDebugReferencePositionRaw(int axis, double* value)
@@ -5800,6 +5848,164 @@ bool CanBusMotionControl::getEncoderAccelerationRaw(int j, double *v)
     return true;
 }
 
+
+bool CanBusMotionControl::setMotorEncoderRaw(int m, double val)
+{
+    return NOT_YET_IMPLEMENTED("setMotorEncoderRaw");
+}
+
+bool CanBusMotionControl::setMotorEncodersRaw(const double *vals)
+{
+    return NOT_YET_IMPLEMENTED("setMotorEncodersRaw");
+}
+
+bool CanBusMotionControl::resetMotorEncoderRaw(int m)
+{
+    return NOT_YET_IMPLEMENTED("resetMotorEncoderRaw");
+}
+
+bool CanBusMotionControl::resetMotorEncodersRaw()
+{
+    return NOT_YET_IMPLEMENTED("resetMotorEncodersRaw");
+}
+
+bool CanBusMotionControl::getMotorEncodersRaw(double *v)
+{
+    CanBusResources& r = RES(system_resources);
+    int i;
+
+    _mutex.wait();
+    
+    double stamp=0;
+    for (i = 0; i < r.getJoints(); i++) {
+        v[i] = double(r._bcastRecvBuffer[i]._position_rotor._value);
+
+        if (stamp<r._bcastRecvBuffer[i]._position_rotor._stamp)
+            stamp=r._bcastRecvBuffer[i]._position_rotor._stamp;
+    }
+
+    stampEncoders.update(stamp);
+
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getMotorEncoderRaw(int m, double *v)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(m >= 0 && m <= r.getJoints()))return false;
+
+    _mutex.wait();
+    *v = double(r._bcastRecvBuffer[m]._position_rotor._value);
+    _mutex.post();
+
+    return true;
+}
+
+bool CanBusMotionControl::getMotorEncodersTimedRaw(double *v, double *t)
+{
+    CanBusResources& r = RES(system_resources);
+    int i;
+
+    _mutex.wait();
+    
+    double stamp=0;
+    for (i = 0; i < r.getJoints(); i++) {
+        v[i] = double(r._bcastRecvBuffer[i]._position_rotor._value);
+        t[i] = r._bcastRecvBuffer[i]._position_rotor._stamp;
+
+        if (stamp<r._bcastRecvBuffer[i]._position_rotor._stamp)
+            stamp=r._bcastRecvBuffer[i]._position_rotor._stamp;
+    }
+
+    stampEncoders.update(stamp);
+
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getMotorEncoderTimedRaw(int m, double *v, double *t)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(m >= 0 && m <= r.getJoints()))return false;
+
+    _mutex.wait();
+    *v = double(r._bcastRecvBuffer[m]._position_rotor._value);
+    *t = r._bcastRecvBuffer[m]._position_rotor._stamp;
+    _mutex.post();
+
+    return true;
+}
+
+bool CanBusMotionControl::getMotorEncoderCountsPerRevolutionRaw(int m, double *cpr)
+{
+    return NOT_YET_IMPLEMENTED("getMotorEncodersCountsPerRevolutionRaw");
+}
+
+bool CanBusMotionControl::setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr)
+{
+    return NOT_YET_IMPLEMENTED("setMotorEncodersCountsPerRevolutionRaw");
+}
+
+bool CanBusMotionControl::getNumberOfMotorEncodersRaw(int* m)
+{
+    CanBusResources& r = RES(system_resources);
+    *m=r.getJoints();
+    return true;
+}
+
+bool CanBusMotionControl::getMotorEncoderSpeedsRaw(double *v)
+{
+    CanBusResources& r = RES(system_resources);
+    int i;
+    _mutex.wait();
+    for (i = 0; i < r.getJoints(); i++) {
+        int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Vel_estimator_shift));
+        v[i] = (double(r._bcastRecvBuffer[i]._speed_rotor._value)*1000.0)/vel_factor;
+    }
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getMotorEncoderSpeedRaw(int m, double *v)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(m >= 0 && m <= r.getJoints()))return false;
+
+    _mutex.wait();
+    int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Vel_estimator_shift));
+    *v = (double(r._bcastRecvBuffer[m]._speed_rotor._value)*1000.0)/vel_factor;
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getMotorEncoderAccelerationsRaw(double *accs)
+{
+    CanBusResources& r = RES(system_resources);
+    int i;
+    _mutex.wait();
+    for (i = 0; i < r.getJoints(); i++) {
+        int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Vel_estimator_shift));
+        int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(i).mot_Acc_estimator_shift));
+        accs[i] = (double(r._bcastRecvBuffer[i]._accel_rotor._value)*1000000.0)/(vel_factor*acc_factor);
+    }
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(m >= 0 && m <= r.getJoints()))return false;
+
+    _mutex.wait();
+    int vel_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Vel_estimator_shift));
+    int acc_factor = (1 << int(_speedEstimationHelper->getEstimationParameters(m).mot_Acc_estimator_shift));
+    *acc = (double(r._bcastRecvBuffer[m]._accel_rotor._value)*1000000.0)/(vel_factor*acc_factor);
+    _mutex.post();
+    return true;
+}
+
 bool CanBusMotionControl::disableAmpRaw(int axis)
 {
     yWarning() << " calling DEPRECATED disableAmpRaw";
@@ -6144,7 +6350,7 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
             yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
             #else
-            yError() << "setPositionRaw: skipping command because joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
+            yError() << "setPositionRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
             #endif
         }
 

@@ -7,10 +7,10 @@ PREPARE_DEVICE(icubhandcalibrator TYPE iCubHandCalibrator INCLUDE iCubHandCalibr
 
 if (NOT SKIP_icubhandcalibrator)
 
-INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS})
-yarp_add_plugin(handcalibrator iCubHandCalibrator.cpp iCubHandCalibrator.h)
-target_link_libraries(handcalibrator ${YARP_LIBRARIES})
+    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS})
+    yarp_add_plugin(handcalibrator iCubHandCalibrator.cpp iCubHandCalibrator.h)
+    target_link_libraries(handcalibrator ${YARP_LIBRARIES})
 
-icub_export_library(handcalibrator)
-    
+    icub_export_library(handcalibrator)
+    yarp_install(FILES icubhandcalibrator.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 endif(NOT SKIP_icubhandcalibrator)

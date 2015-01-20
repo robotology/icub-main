@@ -56,6 +56,7 @@ private:
   IPositionControl *pos;
   IVelocityControl *vel;
   IEncoders *enc;
+  IMotorEncoders *imotenc;
   IPidControl *pid;
   IAmplifierControl *amp;
   IControlLimits *lim;

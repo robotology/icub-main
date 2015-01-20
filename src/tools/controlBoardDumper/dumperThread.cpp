@@ -44,6 +44,8 @@ void boardDumperThread::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int 
     ok &= board_d->view(trq);
     ok &= board_d->view(cmod);
     ok &= board_d->view(imod);
+    ok &= board_d->view(imotenc);
+
     if(debug_d->isValid())
         ok &= debug_d->view(idbg);
 
@@ -122,6 +124,7 @@ boardDumperThread::boardDumperThread():RateThread(500)
     pos      = 0;
     vel      = 0;
     enc      = 0;
+    imotenc  = 0;
     pid      = 0;
     amp      = 0;
     lim      = 0;
@@ -167,7 +170,7 @@ void boardDumperThread::run()
         getter -> getData(data);
 
         //fprintf(stderr, "Time is %lf \n", stmp.getTime());
-
+        
         Bottle bData;
         for (int i = 0; i < numberOfJointsRead; i++)
         {
@@ -175,7 +178,7 @@ void boardDumperThread::run()
             dataRead[i] = data[dataMap[i]];
             bData.addDouble(dataRead[i]);
         }
-
+        
         if (getter->getStamp(stmp)) 
         {
             if (stmp.isValid())
@@ -204,7 +207,7 @@ void boardDumperThread::run()
             fputs (bData.toString().c_str(),logFile);
             fputs ("\n",logFile);
         }
-
+        
         port->write(bData);
     }
 }  

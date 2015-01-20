@@ -23,7 +23,7 @@ if (NOT SKIP_pcan)
         TARGET_LINK_LIBRARIES(pcan ${PLXCANAPI_LIB} ${YARP_LIBRARIES})
         
         icub_export_library(pcan)
-	
+        yarp_install(FILES pcan.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
   ENDIF (NOT PLXCANAPI_FOUND)
   
 endif (NOT SKIP_pcan)
