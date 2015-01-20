@@ -65,7 +65,8 @@ parametricCalibrator::parametricCalibrator() :
     abortCalib(false),
     isCalibrated(false),
     calibMutex(1),
-    skipCalibration(false)
+    skipCalibration(false),
+    clearHwFault(false)
 {
 }
 
@@ -103,6 +104,27 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
         str=config.toString().c_str();
         yTrace() << deviceName.c_str() << str;
     }  
+
+    // Check clearHwFaultBeforeCalibration
+    Value val_clearHwFault = config.findGroup("GENERAL").find("clearHwFaultBeforeCalibration");
+    if(val_clearHwFault.isNull())
+    {
+        clearHwFault = false;
+    }
+    else
+    {
+        if(!val_clearHwFault.isBool())
+        {
+            yError() << deviceName.c_str() << ": clearHwFaultBeforeCalibration bool param is different from accepted values (true / false). Assuming false";
+            clearHwFault = false;
+        }
+        else
+        {
+            clearHwFault = val_clearHwFault.asBool();
+            if(clearHwFault)
+                yInfo() << deviceName.c_str() << ":  clearHwFaultBeforeCalibration option enabled\n";
+        }
+    }
 
     // Check Vanilla = do not use calibration!
     skipCalibration =config.findGroup("GENERAL").find("skipCalibration").asBool() ;// .check("Vanilla",Value(1), "Vanilla config");
@@ -317,6 +339,12 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
     {
         yError() << deviceName << ": error getting number of axes" ;
         return false;
+    }
+
+    //before starting the calibration, checks for joints in hardware fault, and clears them if the user set the clearHwFaultBeforeCalibration option
+    for (int i=0; i<nj; i++)
+    {
+        checkHwFault(nj);
     }
 
     std::list<int>  currentSetList;
@@ -588,6 +616,42 @@ bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
     return calibration_ok;
 }
 
+bool parametricCalibrator::checkHwFault(int j)
+{
+    int mode=0;
+    iControlMode->getControlMode(j,&mode);
+    if (mode == VOCAB_CM_HW_FAULT)
+    {
+        if (clearHwFault)
+        {
+            iControlMode->setControlMode(j,VOCAB_CM_FORCE_IDLE);
+            yWarning() << deviceName <<": detected an hardware fault on joint " << j << ". An attempt will be made to clear it.";
+            Time::delay(0.02f);
+            iControlMode->getControlMode(j,&mode);
+            if (mode == VOCAB_CM_HW_FAULT)
+            {
+                yError() << deviceName <<": unable to clear the hardware fault detected on joint " << j << " before starting the calibration procedure!";
+                return false;
+            }
+            else if (mode == VOCAB_CM_IDLE)
+            {
+                yWarning() << deviceName <<": hardware fault on joint " << j << " successfully cleared.";
+                return true;
+            }
+            else
+            {
+                yError() << deviceName <<": an unknown error occured while trying the hardware fault on joint " << j ;
+                return false;
+            }
+        }
+        else
+        {
+            yError() << deviceName <<": detected an hardware fault on joint " << j << " before starting the calibration procedure!";
+            return false;
+        }
+    }
+    return true;
+}
 
 void parametricCalibrator::goToZero(int j)
 {
