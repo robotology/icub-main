@@ -4525,7 +4525,7 @@ bool CanBusMotionControl::setReferenceRaw (int j, double ref)
             yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << axis;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
             #else
-            yError() << "setReferenceRaw: skipping command because joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
+            yError() << "setReferenceRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
             #endif
         }
 
@@ -6350,7 +6350,7 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
             yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
             #else
-            yError() << "setPositionRaw: skipping command because joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
+            yError() << "setPositionRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
             #endif
         }
 

@@ -1680,17 +1680,18 @@ bool embObjMotionControl::setPidsRaw(const Pid *pids)
 
 bool embObjMotionControl::setReferenceRaw(int j, double ref)
 {
-    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-    // fix to emulate behaviour pre-controlMode2
-    int mode;
+    int mode = 0;
     getControlModeRaw(j, &mode);
-    if( mode != VOCAB_CM_POSITION_DIRECT &&
+    if (mode != VOCAB_CM_POSITION_DIRECT &&
         mode != VOCAB_CM_IDLE)
     {
-        yDebug() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
-        setControlModeRaw(j, VOCAB_CM_POSITION_DIRECT);
+        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+        yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
+        setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
+        #else
+        yError() << "setReferenceRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
+        #endif
     }
-    #endif
 
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
     eOmc_setpoint_t setpoint = {0};
@@ -1909,16 +1910,20 @@ bool embObjMotionControl::setVelocityModeRaw()
 
 bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 {
-    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-    // fix to emulate behaviour pre-controlMode2
-    int mode;
+    int mode=0;
     getControlModeRaw(j, &mode);
-    if( (mode != VOCAB_CM_VELOCITY) && (mode != VOCAB_CM_MIXED) && (mode != VOCAB_CM_IMPEDANCE_VEL) && (mode != VOCAB_CM_IDLE))
+    if( (mode != VOCAB_CM_VELOCITY) &&
+        (mode != VOCAB_CM_MIXED) &&
+        (mode != VOCAB_CM_IMPEDANCE_VEL) &&
+        (mode != VOCAB_CM_IDLE))
     {
-        yDebug() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << j;
+        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+        yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << j;
         setControlModeRaw(j, VOCAB_CM_VELOCITY);
+        #else
+        yError() << "velocityMoveRaw: skipping command because joint" << j << "is not in VOCAB_CM_VELOCITY mode";
+        #endif
     }
-    #endif
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
 
@@ -2129,18 +2134,21 @@ bool embObjMotionControl::setPositionModeRaw()
 
 bool embObjMotionControl::positionMoveRaw(int j, double ref)
 {
-
-    #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-    // fix to emulate behaviour pre-controlMode2
-    int mode;
+    int mode = 0;
     getControlModeRaw(j, &mode);
-    if( (mode != VOCAB_CM_POSITION) && (mode != VOCAB_CM_MIXED) && (mode != VOCAB_CM_IMPEDANCE_POS) && (mode != VOCAB_CM_IDLE))
+    if( (mode != VOCAB_CM_POSITION) &&
+        (mode != VOCAB_CM_MIXED) &&
+        (mode != VOCAB_CM_IMPEDANCE_POS) &&
+        (mode != VOCAB_CM_IDLE))
     {
+        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
         yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << j;
         setControlModeRaw(j, VOCAB_CM_POSITION);
+        #else
+        yError() << "positionMoveRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION mode";
+        #endif
     }
-    #endif
-
+    
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
     _ref_positions[j] = ref;   // save internally the new value of pos.
 
@@ -3699,7 +3707,20 @@ bool embObjMotionControl::setPositionRaw(int j, double ref)
 {
     // needs to send both position and velocit as well as positionMove
     // does the same as setReferenceRaw, with some more misterious (missing) checks.
-	return setReferenceRaw(j, ref);
+    int mode = 0;
+    getControlModeRaw(j, &mode);
+    if (mode != VOCAB_CM_POSITION_DIRECT &&
+        mode != VOCAB_CM_IDLE)
+    {
+        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+        yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
+        setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
+        #else
+        yError() << "setPositionRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
+        #endif
+    }
+
+    return setReferenceRaw(j, ref);
 }
 
 bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
