@@ -73,6 +73,8 @@ This file can be edited at \in src/gravityCompensator/main.cpp.
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/sig/Vector.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <iCub/ctrl/math.h>
@@ -166,13 +168,13 @@ public:
             //check if the timeout (60s) is expired
             if (current_time-start_time > 60.0)
             {
-                fprintf(stderr,"It is not possible to instantiate the device driver. I tried %d times!\n", trials);
+                yError("It is not possible to instantiate the device driver. I tried %d times!\n", trials);
                 return false;
             }
 
             yarp::os::Time::delay(5);
             trials++;
-            fprintf(stderr,"\nUnable to connect the device driver, trying again...\n");
+            yWarning("Unable to connect the device driver, trying again...\n");
         }
         while (true);
 
@@ -188,7 +190,7 @@ public:
         ok = ok & _dd->view(tqs);
         if (!ok)
         {
-            fprintf(stderr,"ERROR: one or more devices has not been viewed\nreturning...");
+            yError("One or more devices has not been viewed\nreturning...");
             return false;
         }
 
@@ -217,7 +219,7 @@ public:
         version_tag icub_type;
         if (rf.check("headV2"))
         {
-            fprintf(stderr,"'headV2' option found. Using icubV2 head kinematics.\n");
+            yInfo("'headV2' option found. Using icubV2 head kinematics.\n");
             icub_type.head_version = 2;
         }
 
@@ -225,19 +227,19 @@ public:
         if (rf.check("no_legs"))
         {
             legs_enabled= false;
-            fprintf(stderr,"'no_legs' option found. Legs will be disabled.\n");
+            yInfo("'no_legs' option found. Legs will be disabled.\n");
         }
         //------------------CHECK IF ARMS ARE ENABLED-----------//
         if (rf.check("no_left_arm"))
         {
             left_arm_enabled= false;
-            fprintf(stderr,"'no_left_arm' option found. Left arm will be disabled.\n");
+            yInfo("'no_left_arm' option found. Left arm will be disabled.\n");
         }
         //------------------CHECK IF ARMS ARE ENABLED-----------//
         if (rf.check("no_right_arm"))
         {
             right_arm_enabled= false;
-            fprintf(stderr,"'no_right_arm' option found. Right arm will be disabled.\n");
+            yInfo("'no_right_arm' option found. Right arm will be disabled.\n");
         }
         //---------------------DEVICES--------------------------//
         
@@ -247,11 +249,11 @@ public:
 
         if (!createDriver(dd_head, OptionsHead))
         {
-            fprintf(stderr,"ERROR: unable to create head device driver...quitting\n");
+            yError("unable to create head device driver...quitting\n");
             return false;
         }
         else
-            fprintf(stderr,"device driver created\n");
+            yInfo("device driver created\n");
         
         if (left_arm_enabled)
         {
@@ -260,7 +262,7 @@ public:
             OptionsLeftArm.put("remote",string("/"+robot_name+"/left_arm").c_str());
             if (!createDriver(dd_left_arm,OptionsLeftArm))
             {
-                fprintf(stderr,"ERROR: unable to create left arm device driver...quitting\n");
+                yError("unable to create left arm device driver...quitting\n");
                 return false;
             }
         }
@@ -272,7 +274,7 @@ public:
             OptionsRightArm.put("remote",string("/"+robot_name+"/right_arm").c_str());
             if (!createDriver(dd_right_arm,OptionsRightArm))
             {
-                fprintf(stderr,"ERROR: unable to create right arm device driver...quitting\n");
+                yError("unable to create right arm device driver...quitting\n");
                 return false;
             }
         }
@@ -284,7 +286,7 @@ public:
             OptionsLeftLeg.put("remote",string("/"+robot_name+"/left_leg").c_str());
             if (!createDriver(dd_left_leg,OptionsLeftLeg))
             {
-                fprintf(stderr,"ERROR: unable to create left leg device driver...quitting\n");
+                yError("unable to create left leg device driver...quitting\n");
                 return false;
             }
 
@@ -293,7 +295,7 @@ public:
             OptionsRightLeg.put("remote",string("/"+robot_name+"/right_leg").c_str());
             if (!createDriver(dd_right_leg,OptionsRightLeg))
             {
-                fprintf(stderr,"ERROR: unable to create right leg device driver...quitting\n");
+                yError("unable to create right leg device driver...quitting\n");
                 return false;
             }
         }
@@ -304,11 +306,11 @@ public:
 
         if (!createDriver(dd_torso,OptionsTorso))
         {
-            fprintf(stderr,"ERROR: unable to create head device driver...quitting\n");
+            yError("unable to create head device driver...quitting\n");
             return false;
         }
         else
-            fprintf(stderr,"device driver created\n");
+            yInfo("device driver created\n");
 
         rpcPort.open(("/"+name+"/rpc").c_str());
         attach(rpcPort);        
@@ -317,9 +319,9 @@ public:
         //--------------------------THREAD--------------------------
 
         g_comp = new gravityCompensatorThread(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, icub_type);
-        fprintf(stderr,"ft thread istantiated...\n");
+        yInfo("ft thread istantiated...\n");
         g_comp->start();
-        fprintf(stderr,"thread started\n");
+        yInfo("thread started\n");
         return true;
     }
 
@@ -408,12 +410,12 @@ public:
             return true;
         else if (thread_status==STATUS_DISCONNECTED)
         {
-            printf ("gravityCompensator module lost connection with iCubInterface, now closing...\n");
+            yError("gravityCompensator module lost connection with iCubInterface, now closing...\n");
             return false;
         }
         else
         {
-            fprintf(stderr,"gravityCompensator module was closed successfully! \n");    
+            yInfo("gravityCompensator module was closed successfully! \n");    
             return true;
         }
     }

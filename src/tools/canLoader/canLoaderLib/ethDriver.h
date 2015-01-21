@@ -7,6 +7,8 @@
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/os/Searchable.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 //#include <string>
 
@@ -171,7 +173,7 @@ public:
 
         if (!mSocket.create(3334,local))
         {
-            fprintf(stderr,"ERROR: invalid address\n");
+            yError("invalid address\n");
             return -1;
         }
 

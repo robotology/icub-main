@@ -21,6 +21,8 @@
 #include "iCub_Sim.h"
 
 #include "OdeInit.h"
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 using namespace yarp::sig;
 
@@ -1155,7 +1157,7 @@ void OdeSdlSimulation::simLoop(int h,int w) {
     //thread = SDL_CreateThread(thread_func, NULL);
 
     if ( ode_thread == NULL ) {
-        fprintf(stderr, "Unable to create thread: %s\n", SDL_GetError());
+        yError("Unable to create thread: %s\n", SDL_GetError());
         return;
     }
 
@@ -1502,7 +1504,7 @@ void OdeSdlSimulation::processWholeBodyCollisions(skinContactList& skin_contact_
                     moment_SIM_FoR_forHomo(k)=fb->t2[k];
                 }
                 else{
-                    printf("ERROR:OdeSdlSimulation::processWholeBodyCollisions: unexpected body_index for colliding body: %d.\n",(*it).body_index);
+                    yError("OdeSdlSimulation::processWholeBodyCollisions: unexpected body_index for colliding body: %d.\n",(*it).body_index);
                 }
             }
             forceOnBody_magnitude=sqrt(force_SIM_FoR_forHomo(0)*force_SIM_FoR_forHomo(0) + force_SIM_FoR_forHomo(1)*force_SIM_FoR_forHomo(1) 

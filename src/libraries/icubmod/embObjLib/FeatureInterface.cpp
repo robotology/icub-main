@@ -106,7 +106,7 @@ fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         if(0 == (error%1000) )
-            yWarning() << "(!!)-> feat_manage_skin_data() received a request from BOARD" << boardnum << "with ID:" << nvinfo << "but no class was jet instatiated for it";
+            yWarning() << "feat_manage_skin_data() received a request from BOARD" << boardnum << "with ID:" << nvinfo << "but no class was jet instatiated for it";
 
         error++;
         return fakestdbool_false;

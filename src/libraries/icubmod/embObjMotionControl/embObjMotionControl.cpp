@@ -549,7 +549,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     {
         if(!use_raw.isBool())
         {
-            yWarning() << "(!!)-> embObjMotionControl::open() detected that useRawEncoderData bool param is different from accepted values (true / false). Assuming false";
+            yWarning() << "embObjMotionControl::open() detected that useRawEncoderData bool param is different from accepted values (true / false). Assuming false";
             useRawEncoderData = false;
         }
         else
@@ -557,9 +557,9 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
             useRawEncoderData = use_raw.asBool();
             if(useRawEncoderData)
             {
-                yWarning() << "(!!)-> embObjMotionControl::open() detected that it is using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file";
-                yWarning() << "(!!)-> DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION!";
-                yWarning() << "(!!)-> CHECK IF THE FAULT BUTTON IS PRESSED and press ENTER to continue";
+                yWarning() << "embObjMotionControl::open() detected that it is using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file";
+                yWarning() << "DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION!";
+                yWarning() << "CHECK IF THE FAULT BUTTON IS PRESSED and press ENTER to continue";
                 getchar();
             }
         }
@@ -675,7 +675,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjMotionControl::open() has verified that BOARD "<< _fId.boardNumber << " is communicating correctly";
+            yDebug() << "embObjMotionControl::open() has verified that BOARD "<< _fId.boardNumber << " is communicating correctly";
         }
     }
 
@@ -688,7 +688,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjMotionControl::open() has succesfully verified that BOARD "<< _fId.boardNumber << " has same protocol version for motioncontrol as robotInterface";
+            yDebug() << "embObjMotionControl::open() has succesfully verified that BOARD "<< _fId.boardNumber << " has same protocol version for motioncontrol as robotInterface";
         }
     }
 
@@ -699,7 +699,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 //    else
 //    {
-//        yWarning() << "(OK)-> embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNumber << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_joint";
+//        yDebug() << "embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNumber << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_joint";
 //    }
 
 
@@ -710,7 +710,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 //    else
 //    {
-//        yWarning() << "(OK)-> embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNumber << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_motor";
+//        yDebug() << "embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNumber << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_motor";
 //    }
 
 
@@ -728,7 +728,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjMotionControl::init() has succesfully initted board "<< _fId.boardNumber;
+            yDebug() << "embObjMotionControl::init() has succesfully initted board "<< _fId.boardNumber;
         }
     }
 
@@ -749,7 +749,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         {
             if(verbosewhenok)
             {
-                yWarning() << "(OK)-> embObjMotionControl::open() detected that there is a mais, thus called verifyProtocol() of eoprot_endpoint_analogsensors for board "<< _fId.boardNumber;
+                yDebug() << "embObjMotionControl::open() detected that there is a mais, thus called verifyProtocol() of eoprot_endpoint_analogsensors for board "<< _fId.boardNumber;
             }
         }
 
@@ -771,7 +771,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         {
             if(verbosewhenok)
             {
-                yWarning() << "(OK)-> embObjMotionControl::open() succesfully configured the MAIS attached to board" << _fId.boardNumber;
+                yDebug() << "embObjMotionControl::open() succesfully configured the MAIS attached to board" << _fId.boardNumber;
             }
         }
     }
@@ -786,7 +786,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjMotionControl::open() correctly activated control loop of BOARD" << _fId.boardNumber;
+            yDebug() << "embObjMotionControl::open() correctly activated control loop of BOARD" << _fId.boardNumber;
         }
     }
 
@@ -1029,7 +1029,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         posPidsGroup=config.findGroup("POS_PIDS", "Position Pid parameters new format");
         if (posPidsGroup.isNull()==false)
         {
-           yDebug()<< "  (!!)-> embObjMotionControl::fromConfig() did not find Position Pids new format";
+           yWarning()<< "embObjMotionControl::fromConfig() did not find Position Pids new format";
            if (!parsePidsGroup_NewFormat (posPidsGroup, _pids))
            {
                yError() << "embObjMotionControl::fromConfig(): Position Pids section: error detected in parameters syntax";
@@ -1039,7 +1039,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
            {
                if(verbosewhenok)
                {
-                    yDebug() << "  (OK)-> embObjMotionControl::fromConfig(): Position Pids successfully loaded";
+                    yDebug() << "embObjMotionControl::fromConfig(): Position Pids successfully loaded";
                }
            }
         }
@@ -1048,7 +1048,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             Bottle posPidsGroup2=config.findGroup("PIDS", "Position Pid parameters old format");
             if (posPidsGroup2.isNull()==false)
             {
-                yDebug() << "  (!!)-> embObjMotionControl::fromConfig(): Position Pids section found, old format";
+                yWarning() << "embObjMotionControl::fromConfig(): Position Pids section found, old format";
                 parsePosPidsGroup_OldFormat (posPidsGroup2, _pids);
             }
             else
@@ -1066,7 +1066,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         trqPidsGroup=config.findGroup("TRQ_PIDS", "Torque Pid parameters new format");
         if (trqPidsGroup.isNull()==false)
         {
-           yDebug() << "  (!!)-> embObjMotionControl::fromConfig(): Torque Pids section found, new format";
+           yWarning() << "embObjMotionControl::fromConfig(): Torque Pids section found, new format";
            if (!parsePidsGroup_NewFormat (trqPidsGroup, _tpids))
            {
                yError() << "embObjMotionControl::fromConfig(): Torque Pids section: error detected in parameters syntax";
@@ -1076,7 +1076,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
            {
                if(verbosewhenok)
                {
-                    yDebug() << "  (OK)-> embObjMotionControl::fromConfig(): Torque Pids new format successfully loaded";
+                    yDebug() << "embObjMotionControl::fromConfig(): Torque Pids new format successfully loaded";
                }
                _tpidsEnabled = true;
            }
@@ -1086,7 +1086,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             Bottle trqPidsGroup2=config.findGroup("TORQUE_PIDS", "Torque Pid parameters old format");
             if (trqPidsGroup2.isNull()==false)
             {
-                yDebug() << "  (!!)-> embObjMotionControl::fromConfig(): Torque Pids section found, old format";
+                yWarning() << "embObjMotionControl::fromConfig(): Torque Pids section found, old format";
                 if(!parseTrqPidsGroup_OldFormat (trqPidsGroup2, _tpids))
                 {
                      yError() << "embObjMotionControl::fromConfig(): Torque Pids section: error detected in parameters syntax";
@@ -1096,14 +1096,14 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                 {
                     if(verbosewhenok)
                     {
-                        yDebug() << "  (OK)-> embObjMotionControl::fromConfig(): Torque Pids new format successfully loaded";
+                        yDebug() << "embObjMotionControl::fromConfig(): Torque Pids new format successfully loaded";
                     }
                    _tpidsEnabled = true;
                 }
             }
             else
             {
-                yWarning() << "(!!)-> embObjMotionControl::fromConfig() detected that TORQUE_PIDS section is NOT enabled, skipping...";
+                yWarning() << "embObjMotionControl::fromConfig() detected that TORQUE_PIDS section is NOT enabled, skipping...";
             }
         }
     }
@@ -1111,7 +1111,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (!extractGroup(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", _njoints))
     {
-        yWarning() <<  "(!!)-> embObjMotionControl::fromConfig() detected that TorqueChan is not present: sing default value = 0 (disabled)";
+        yWarning() <<  "embObjMotionControl::fromConfig() detected that TorqueChan is not present: sing default value = 0 (disabled)";
         for(i=1; i<_njoints+1; i++)
             _torqueSensorChan[i-1] = 0;
     }
@@ -1124,7 +1124,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjMotionControl::fromConfig() detected that IMPEDANCE parameters section is found";
+            yDebug() << "embObjMotionControl::fromConfig() detected that IMPEDANCE parameters section is found";
         }
         for(j=0; j<_njoints; j++)
         {
@@ -1141,7 +1141,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
     else
     {
-        yWarning() << "(!!)-> embObjMotionControl::fromConfig() detected that IMPEDANCE section is NOT enabled: skipping.";
+        yWarning() << "embObjMotionControl::fromConfig() detected that IMPEDANCE section is NOT enabled: skipping.";
     }
 
     ////// IMPEDANCE LIMITS DEFAULT VALUES (UNDER TESTING)
@@ -1161,7 +1161,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     Bottle &limits=config.findGroup("LIMITS");
     if (limits.isNull())
     {
-        yWarning() << "(!!)-> embObjMotionControl::fromConfig() detected that Group LIMITS is not found in configuration file";
+        yWarning() << "embObjMotionControl::fromConfig() detected that Group LIMITS is not found in configuration file";
         return false;
     }
     // current limit
@@ -1343,13 +1343,13 @@ bool embObjMotionControl::init()
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjMotionControl::init() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjMotionControl::init() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
             char nvinfo[128];
             for(int r=0; r<id32v.size(); r++)
             {
                 uint32_t id32 = id32v.at(r);
                 eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-                yWarning() << "(OK)->\t it added regular rop for" << nvinfo;
+                yDebug() << "\t it added regular rop for" << nvinfo;
             }
         }
     }   
@@ -1404,7 +1404,7 @@ bool embObjMotionControl::init()
         {
             if(verbosewhenok)
             {
-                yWarning() << "(OK)-> embObjMotionControl::init() correctly configured joint config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+                yDebug() << "embObjMotionControl::init() correctly configured joint config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
             }
         }
 
@@ -1435,7 +1435,7 @@ bool embObjMotionControl::init()
         {
             if(verbosewhenok)
             {
-                yWarning() << "(OK)-> embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+                yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
             }
         }
 
@@ -1480,7 +1480,7 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjMotionControl::configure_mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjMotionControl::configure_mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->get_protBRDnumber()+1;
         }
     }
 
@@ -1498,7 +1498,7 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjMotionControl::configure_mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjMotionControl::configure_mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->get_protBRDnumber()+1;
         }
     }
 

@@ -1536,46 +1536,46 @@ void fatal_error(int err)
     switch (err)
     {
         case INVALID_CMD_STRING:
-            printf("Error parsing the command line. The correct format is:\n");
-            printf("canLoader --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S\n");
-            printf("canLoader --canDeviceType EMS --canDeviceNum 1|2 --boardId y --firmware myFirmware.out.S --boardIPAddr aaa.aaa.aaa.aaa\n");
+            yError("Unable to parse the command line. The correct format is:\n");
+            yError("canLoader --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S\n");
+            yError("canLoader --canDeviceType EMS --canDeviceNum 1|2 --boardId y --firmware myFirmware.out.S --boardIPAddr aaa.aaa.aaa.aaa\n");
             ::exit(err);
         break;
         case INVALID_PARAM_CANTYPE:
-            printf("ERROR: invalid --canDeviceType parameter \n");
-            printf("must be 'ecan' or 'pcan' or 'cfw2' or 'socketcan'\n");
+            yError("invalid --canDeviceType parameter \n");
+            yError("must be 'ecan' or 'pcan' or 'cfw2' or 'socketcan'\n");
             ::exit(err);
         break;
         case INVALID_PARAM_CANNUM:
-            printf("ERROR: invalid --canDeviceNum parameter \n");
-            printf("must be between 0 and 3\n");
+            yError("invalid --canDeviceNum parameter \n");
+            yError("must be between 0 and 3\n");
             ::exit(err);
         break;
         case INVALID_PARAM_BOARDID:
-            printf("ERROR: invalid --boardId parameter \n");
-            printf("must be between 0 and 15\n");
+            yError("invalid --boardId parameter \n");
+            yError("must be between 0 and 15\n");
             ::exit(err);
         break;
         case INVALID_PARAM_FILE:
-            printf("ERROR: invalid --firmware parameter \n");
-            printf("file not found\n");
+            yError("invalid --firmware parameter \n");
+            yError("file not found\n");
             ::exit(err);
         break;
         case ERR_NO_BOARDS_FOUND:
-            printf("ERROR: no boards found \n");
-            printf("check canbus cable, power supply connection etc.\n");
+            yError("no boards found \n");
+            yError("check canbus cable, power supply connection etc.\n");
             ::exit(err);
         break;
         case ERR_BOARD_ID_NOT_FOUND:
-            printf("ERROR: the specified board is not available \n");
+            printf("the specified board is not available \n");
             ::exit(err);
         break;
         case ERR_NO_NETWORK_INTERFACE:
-            printf("ERROR: could not find network interface\n");
+            yError("could not find network interface\n");
             ::exit(err);
         case ERR_UNKNOWN:
         default:
-            printf("Unknown error\n");
+            yError("Unknown error\n");
             ::exit(ERR_UNKNOWN);
         break;
 

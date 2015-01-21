@@ -600,7 +600,7 @@ void TBR_CanBackDoor::onRead(Bottle &b)
            }
            else
            {
-               yError("ERROR: Echobuffer full \n");
+               yError("Echobuffer full \n");
            }
        }
 
@@ -1387,7 +1387,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             }
             else
             {   
-                yError () << "Error: no PIDS group found in config file, returning";
+                yError () << "no PIDS group found in config file, returning";
                 return false;
             }
         }
@@ -2450,7 +2450,7 @@ bool CanBusMotionControl::open (Searchable &config)
     {
         yarp::os::Time::delay(0.001);
         bool b=getFirmwareVersionRaw(j,icub_interface_protocol,&(info[j]));
-        if (b==false) yError() << "Error reading firmware version";
+        if (b==false) yError() << "Unable to read firmware version";
     }
     _firmwareVersionHelper = new firmwareVersionHelper(p._njoints, info, icub_interface_protocol);
     _firmwareVersionHelper->printFirmwareVersions();

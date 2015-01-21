@@ -19,6 +19,7 @@
 
 #include <sstream>			// string stream
 #include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include "iCub/skinManager/skinManager.h"
  
 using std::string;
@@ -95,14 +96,14 @@ bool skinManager::configure(yarp::os::ResourceFinder &rf) {
 	    zeroUpRawData, period, binarization, smoothFilter, smoothFactor);
     /* now start the thread to do the work */
     if(!myThread->start()) { // this calls threadInit() and it if returns true, it then calls run()
-        cerr << "ERROR: SkinManager: Could not start the compensator thread. \n";
+        yError() << "SkinManager: Could not start the compensator thread. \n";
         return false;
     }
 
     // Skin diagnostics thread
     thSkinDiagnostics = new SkinDiagnosticsReadThread(20, rf);
     if (!thSkinDiagnostics->start()) {
-        cerr << "ERROR: SkinManager: Could not start the skin diagnostics thread. \n";
+        yError() << "SkinManager: Could not start the skin diagnostics thread. \n";
         return false;
     }
     return true;

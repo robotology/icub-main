@@ -152,7 +152,7 @@ protected:
     {
         if (error.GetType()!=FlyCapture2::PGRERROR_OK)
         {
-            fprintf(stderr,"ERROR: %s\n",error.GetDescription());
+            yError("%s\n",error.GetDescription());
             if (pToUnlock)
             {
                 pToUnlock->post();

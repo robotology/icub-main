@@ -147,7 +147,7 @@ protected:
     {
         if (error!=DC1394_SUCCESS)
         {
-            fprintf(stderr,"ERROR: %d\n",error);
+            yError("%d\n",error);
             if (pToUnlock)
             {
                 pToUnlock->post();
