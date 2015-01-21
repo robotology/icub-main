@@ -2249,6 +2249,7 @@ bool CanBusMotionControl::open (Searchable &config)
     std::string str=config.toString().c_str();
     Property prop;
     prop.fromString(str.c_str());
+    networkName=config.find("NetworkId").asString();
     canDevName=config.find("canbusdevice").asString(); //for backward compatibility
     if (canDevName=="") canDevName=config.findGroup("CAN").find("canbusdevice").asString();
     if(canDevName=="") { yError() << "cannot find parameter 'canbusdevice'\n"; return false;}
@@ -3865,18 +3866,18 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
         if (current_mode==VOCAB_CM_IDLE     && mode==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
         if (current_mode==VOCAB_CM_HW_FAULT)
         {
-            if (mode!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%d) in HW_FAULT", j);}
+            if (mode!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%s j:%d) in HW_FAULT", networkName.c_str(), j);}
             ret = true; break;
         }
         yarp::os::Time::delay(0.010);
-        yWarning ("setControlModeRaw delay (joint %d), current mode: %s, requested: %s", j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(mode).c_str());
+        if (timeout >0) yWarning ("setControlModeRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(mode).c_str());
         timeout++;
     }
     while (timeout < 10);
     if (timeout>=10)
     {
         ret = false;
-        yError ("100ms Timeout occured in setControlModeRaw (joint %d), current mode: %s, requested: %s", j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(mode).c_str());
+        yError ("100ms Timeout occured in setControlModeRaw (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(mode).c_str());
     }
 
     return ret;
@@ -3902,18 +3903,18 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
             if (current_mode==modes[i]) {ret = true; break;}
             if (current_mode==VOCAB_CM_IDLE)
             {
-                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%d) in HW_FAULT", joints[i]);}
+                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%s j:%d) in HW_FAULT", networkName.c_str(), joints[i]);}
                 ret = true; break;
             }
             yarp::os::Time::delay(0.010);
-            yWarning ("setControlModesRaw delay (joint %d), current mode: %s, requested: %s", joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            if (timeout >0) yWarning ("setControlModesRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
             timeout++;
         }
         while (timeout < 10);
         if (timeout>=10)
         {
             ret = false;
-            yError ("100ms Timeout occured in setControlModesRaw(M) (joint %d), current mode: %s, requested: %s", joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            yError ("100ms Timeout occured in setControlModesRaw(M) (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
         }
     }
 
@@ -3941,18 +3942,18 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
             if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
             if (current_mode==VOCAB_CM_HW_FAULT)
             {
-                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%d) in HW_FAULT", i);}
+                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%s j:%d) in HW_FAULT", networkName.c_str(), i);}
                 ret = true; break;
             }
             yarp::os::Time::delay(0.010);
-            yWarning ("setControlModesRaw delay (joint %d), current mode: %s, requested: %s", i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            if (timeout >0) yWarning ("setControlModesRaw delay (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
             timeout++;
         }
         while (timeout < 10);
         if (timeout>=10)
         {
             ret = false;
-            yError ("100ms Timeout occured in setControlModesRaw (joint %d), current mode: %s, requested: %s", i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            yError ("100ms Timeout occured in setControlModesRaw (%s j:%d), current mode: %s, requested: %s", networkName.c_str(), i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
         }
     }
 
@@ -4522,10 +4523,10 @@ bool CanBusMotionControl::setReferenceRaw (int j, double ref)
             mode != VOCAB_CM_IDLE)
         {
             #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-            yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << axis;
+            yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, " << networkName.c_str() << " joint: " << axis;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
             #else
-            yError() << "setReferenceRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
+            yError() << "setReferenceRaw: skipping command because " << networkName.c_str() << " joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
             #endif
         }
 
@@ -5270,10 +5271,10 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         mode != VOCAB_CM_IDLE)
     {
         #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << axis;
+        yWarning() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, " << networkName.c_str() << " joint: " << axis;
         setControlModeRaw(axis,VOCAB_CM_POSITION);
         #else
-        yError() << "positionMoveRaw: skipping command because joint" << axis << "is not in VOCAB_CM_POSITION mode";
+        yError() << "positionMoveRaw: skipping command because " << networkName.c_str() << " joint " << axis << "is not in VOCAB_CM_POSITION mode";
         #endif
     }
 
@@ -5652,10 +5653,10 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
         mode != VOCAB_CM_IDLE)
     {
         #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << axis;
+        yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, " << networkName.c_str() << " joint: " << axis;
         setControlModeRaw(axis,VOCAB_CM_VELOCITY);
         #else
-        yError() << "velocityMoveRaw: skipping command because joint" << axis << "is not in VOCAB_CM_VELOCITY mode";
+        yError() << "velocityMoveRaw: skipping command because " << networkName.c_str() << " joint " << axis << "is not in VOCAB_CM_VELOCITY mode";
         #endif
     }
 
@@ -6347,18 +6348,17 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
             mode != VOCAB_CM_IDLE)
         {
             #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-            yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
+            yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, " << networkName.c_str() << " joint: " << j;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
             #else
-            yError() << "setPositionRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
+            yError() << "setPositionRaw: skipping command because " << networkName.c_str() << " joint " << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
             #endif
         }
-
         return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(ref));
     }
     else
     { 
-        yWarning("skipping setPosition() on %s [%d], joint %d (req: %.1f curr %.1f) \n", canDevName.c_str(), r._networkN, j,
+        yWarning("skipping setPosition() on %s, joint %d (req: %.1f curr %.1f) \n", networkName.c_str() , j,
         _axisPositionDirectHelper->posE2A(ref, j),
         _axisPositionDirectHelper->posE2A(r._bcastRecvBuffer[j]._position_joint._value, j));
         //double saturated_cmd = _axisPositionDirectHelper->getSaturatedValue(j,r._bcastRecvBuffer[j]._position_joint._value,ref);

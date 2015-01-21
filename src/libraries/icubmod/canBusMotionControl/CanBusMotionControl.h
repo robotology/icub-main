@@ -699,6 +699,7 @@ private:
     std::list<TBR_AnalogSensor *> analogSensors;
 
     yarp::os::ConstString canDevName;
+    yarp::os::ConstString networkName;
 
     IServerLogger *mServerLogger;
 
