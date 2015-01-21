@@ -519,7 +519,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjSkin::open() correctly activated control loop of BOARD" << _fId.boardNumber;
+            yDebug() << "embObjSkin::open() correctly activated control loop of BOARD" << _fId.boardNumber;
         }
     }
 
@@ -608,12 +608,12 @@ bool EmbObjSkin::start()
     if(_newCfg)
     {
         dat = eosk_sigmode_signal;
-//        yDebug()<< "  (!!)-> EmbObjSkin::start() detected that skin for board " << _fId.boardNumber << "uses new signal mode";
+//        yWarning()<< "EmbObjSkin::start() detected that skin for board " << _fId.boardNumber << "uses new signal mode";
     }
     else
     {
         dat = eosk_sigmode_signal_oldway;
-//        yDebug()<< "  (!!)-> EmbObjSkin::start() detected  that skin for board " << _fId.boardNumber << "used old signal mode";
+//        yWarning()<< "EmbObjSkin::start() detected  that skin for board " << _fId.boardNumber << "used old signal mode";
     }
 
     for(i=0; i<_skCfg.numOfPatches;i++)
@@ -622,7 +622,7 @@ bool EmbObjSkin::start()
         ret = res->addSetMessage(protoid, &dat);
         if(!ret)
         {
-            yError() << "error in start skin for board " << _fId.boardNumber << " on port " <<  _skCfg.patchInfoList[i].idPatch;
+            yError() << "unable to start skin for board " << _fId.boardNumber << " on port " <<  _skCfg.patchInfoList[i].idPatch;
             return false;
         }
     }
@@ -656,13 +656,13 @@ bool EmbObjSkin::configPeriodicMessage(void)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjSkin::configPeriodicMessage() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjSkin::configPeriodicMessage() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
             char nvinfo[128];
             for(int r=0; r<id32v.size(); r++)
             {
                 uint32_t id32 = id32v.at(r);
                 eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-                yWarning() << "(OK)->\t it added regular rop for" << nvinfo;
+                yDebug() << "\t it added regular rop for" << nvinfo;
             }
         }
     }

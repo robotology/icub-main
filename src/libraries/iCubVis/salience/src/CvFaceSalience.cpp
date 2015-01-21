@@ -7,6 +7,8 @@
  */
 
 #include <iCub/vis/CvFaceSalience.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 using namespace yarp::sig;
 using namespace yarp::os;
@@ -46,12 +48,12 @@ bool CvFaceSalience::configure(yarp::os::Searchable& config){
                             Value(""),
                             "Absolute path to the haar cascade xml file (string).").asString().c_str();
     if (cascadeFile == string("")){
-        cout << endl << "No haar cascade data file specified." << endl << endl;
+        yError() << "No haar cascade data file specified.";
         return false;
     }
     _haarCascade = (CvHaarClassifierCascade*)cvLoad( cascadeFile.c_str(), 0, 0, 0 );
     if (!_haarCascade){
-        cout << endl << "ERROR: Could not load classifier cascade (" << cascadeFile << ")" << endl << endl;;
+        yError() << "Could not load classifier cascade (" << cascadeFile << ")";
         return false;
     }
     _storage = cvCreateMemStorage(0);

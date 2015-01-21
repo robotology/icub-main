@@ -102,7 +102,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
     else
     {
         _period = xtmp.get(1).asInt();
-        yDebug() << "  (!!)-> embObjAnalogSensor::fromConfig() detects embObjAnalogSensor Using value of" << _period;
+        yDebug() << "embObjAnalogSensor::fromConfig() detects embObjAnalogSensor Using value of" << _period;
     }
 
     if (!extractGroup(config, xtmp, "Channels","Number of channels of the Analog Sensor", 1))
@@ -318,7 +318,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNumber << " is communicating correctly";
+            yDebug() << "embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNumber << " is communicating correctly";
         }
     }
 
@@ -331,7 +331,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNumber << " has same protocol version for analogsensors as robotInterface";
+            yDebug() << "embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNumber << " has same protocol version for analogsensors as robotInterface";
         }
     }
 
@@ -401,7 +401,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjAnalogSensor::open() correctly activated control loop of BOARD" << _fId.boardNumber;
+            yDebug() << "embObjAnalogSensor::open() correctly activated control loop of BOARD" << _fId.boardNumber;
         }
     }
 
@@ -457,7 +457,7 @@ bool embObjAnalogSensor::sendConfig2Strain(void)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjAnalogSensor::sendConfig2Strain() correctly configured strain coinfig in BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjAnalogSensor::sendConfig2Strain() correctly configured strain coinfig in BOARD" << res->get_protBRDnumber()+1;
         }
     }
 
@@ -497,7 +497,7 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjAnalogSensor::sendConfig2Mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjAnalogSensor::sendConfig2Mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->get_protBRDnumber()+1;
         }
     }
 
@@ -515,7 +515,7 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjAnalogSensor::sendConfig2Mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjAnalogSensor::sendConfig2Mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->get_protBRDnumber()+1;
         }
     }
 
@@ -660,7 +660,7 @@ bool embObjAnalogSensor::getFullscaleValues()
         timeout--;
         if(verbosewhenok)
         {
-            yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): for board " << _fId.boardNumber << ": full scale val not arrived yet... retrying in 1 sec";
+            yWarning() << "embObjAnalogSensor::getFullscaleValues(): for board " << _fId.boardNumber << ": full scale val not arrived yet... retrying in 1 sec";
         }
     }
 
@@ -683,8 +683,8 @@ bool embObjAnalogSensor::getFullscaleValues()
     {
         if(verbosewhenok)
         {
-            yWarning() << "(!!)-> embObjAnalogSensor::getFullscaleValues() detected that already has full scale values for board" << _fId.boardNumber;
-            yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): Fullscale values for board " << _fId.boardNumber << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  _channels;
+            yWarning() << "embObjAnalogSensor::getFullscaleValues() detected that already has full scale values for board" << _fId.boardNumber;
+            yDebug()   << "embObjAnalogSensor::getFullscaleValues(): Fullscale values for board " << _fId.boardNumber << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  _channels;
         }
 
         for(int i=0; i<_channels; i++)
@@ -703,7 +703,7 @@ bool embObjAnalogSensor::getFullscaleValues()
             //yError() << " scale factor[" << i << "] = " << scaleFactor[i];
             if(verbosewhenok)
             {
-                yDebug() << "  (!!)-> embObjAnalogSensor::getFullscaleValues(): channel " << i << "full scale value " << scaleFactor[i];
+                yDebug() << "embObjAnalogSensor::getFullscaleValues(): channel " << i << "full scale value " << scaleFactor[i];
             }
         }
     }
@@ -767,13 +767,13 @@ bool embObjAnalogSensor::init()
     {
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> embObjAnalogSensor::init() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjAnalogSensor::init() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
             char nvinfo[128];
             for(int r=0; r<id32v.size(); r++)
             {
                 uint32_t id32 = id32v.at(r);
                 eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-                yWarning() << "(OK)->\t it added regular rop for" << nvinfo;
+                yDebug() << "\t it added regular rop for" << nvinfo;
             }
         }
     }

@@ -408,9 +408,9 @@ struct firmware_info
         else
         {
            if (board_type==BOARD_TYPE_4DC)
-           {yWarning("%s [%d] joint: %d can_address: %2d board type: 3 (4DC) version:%2x.%2x build:%3d CAN_protocol:%d.%d", network_name.c_str(),network_number,joint,board_can_id, fw_major, fw_version, fw_build,can_protocol.major,can_protocol.minor);}
+           {yInfo("%s [%d] joint: %d can_address: %2d board type: 3 (4DC) version:%2x.%2x build:%3d CAN_protocol:%d.%d", network_name.c_str(),network_number,joint,board_can_id, fw_major, fw_version, fw_build,can_protocol.major,can_protocol.minor);}
            if (board_type==BOARD_TYPE_BLL)
-           {yWarning("%s [%d] joint: %d can_address: %2d board type: 4 (BLL) version:%2x.%2x build:%3d CAN_protocol:%d.%d", network_name.c_str(),network_number,joint,board_can_id, fw_major, fw_version, fw_build,can_protocol.major,can_protocol.minor);}
+           {yInfo("%s [%d] joint: %d can_address: %2d board type: 4 (BLL) version:%2x.%2x build:%3d CAN_protocol:%d.%d", network_name.c_str(),network_number,joint,board_can_id, fw_major, fw_version, fw_build,can_protocol.major,can_protocol.minor);}
         }
     }
 

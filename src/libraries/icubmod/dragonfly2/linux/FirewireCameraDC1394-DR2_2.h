@@ -25,6 +25,8 @@
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Stamp.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
 
 #define NUM_DMA_BUFFERS 4
@@ -147,7 +149,7 @@ protected:
     {
         if (error!=DC1394_SUCCESS)
         {
-            fprintf(stderr,"ERROR: %d\n",error);
+            yError("%d\n",error);
             if (pToUnlock)
             {
                 pToUnlock->post();

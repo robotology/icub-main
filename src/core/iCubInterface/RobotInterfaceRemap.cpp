@@ -16,6 +16,8 @@
 #include <yarp/os/Thread.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/Os.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 #include <iCub/FactoryInterface.h>
 
@@ -149,7 +151,7 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 
     if (!analog)
     {
-        std::cerr<<"Error: part "<<id<<" device " << devicename << " does not implement analog interface"<<endl;
+        yError() <<"part "<<id<<" device " << devicename << " does not implement analog interface";
         driver.close();
         return false;
     }
@@ -185,8 +187,8 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 
 			if (parameters.size()!=5)
 			{
-				cerr<<"Error: check skin port parameters in part description"<<endl;
-				cerr<<"--> I was expecting "<<ports->get(k).asString().c_str() << " followed by four integers"<<endl;
+				yError()<<"check skin port parameters in part description";
+				yError()<<"--> I was expecting "<<ports->get(k).asString().c_str() << " followed by four integers";
 				return false;
 			}
 
@@ -199,8 +201,8 @@ bool SkinPartEntry::open(yarp::os::Property &deviceP, yarp::os::Property &partP)
 
 			//check consistenty
 			if(wTop-wBase != top-base){
-				cerr<<"Error: check skin port parameters in part description"<<endl;
-				cerr<<"Numbers of mapped taxels do not match.\n";
+				yError()<<"check skin port parameters in part description";
+				yError()<<"Numbers of mapped taxels do not match.\n";
 				return false;
 			}
 			int taxels=top-base+1;
@@ -572,10 +574,10 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         cout << "Instantiating network " << netid.c_str() << "...";
         if (!instantiateNetwork(PATH, tmpProp, *netEntry))
         {
-            cerr << endl << "ERROR: troubles instantiating " << netid.c_str() << endl;
+            yError() << "troubles instantiating " << netid.c_str();
         }
         else
-            cout << "Network "<< netid.c_str() << " instantiated correctly"<< endl;
+            yError() << "Network "<< netid.c_str() << " instantiated correctly";
 
         netit++;
     }
@@ -853,7 +855,7 @@ bool RobotInterfaceRemap::instantiateNetwork(std::string &path, Property &robotO
         }
         else
         {
-            std::cerr<<"Error: requested automatic ids but no id was found for network " << netid << endl;
+            yError()<<"requested automatic ids but no id was found for network " << netid ;
             return false;
         }
     }

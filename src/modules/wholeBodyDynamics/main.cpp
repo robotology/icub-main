@@ -255,13 +255,13 @@ public:
             //check if the timeout (60s) is expired
             if (current_time-start_time > 60.0)
             {
-                fprintf(stderr,"It is not possible to instantiate the device driver. I tried %d times!\n", trials);
+                yError("It is not possible to instantiate the device driver. I tried %d times!\n", trials);
                 return false;
             }
 
             yarp::os::Time::delay(5);
             trials++;
-            fprintf(stderr,"\nUnable to connect the device driver, trying again...\n");
+            yWarning("\nUnable to connect the device driver, trying again...\n");
         }
         while (true);
 
@@ -271,7 +271,7 @@ public:
         ok = ok & _dd->view(encs);
         if (!ok)
         {
-            fprintf(stderr,"ERROR: one or more devices has not been viewed\nreturning...");
+            yError("one or more devices has not been viewed\nreturning...");
             return false;
         }
 
@@ -286,14 +286,14 @@ public:
         {
             if (command.get(0).asInt()==0)
             {
-                fprintf(stderr,"Asking recalibration...\n");
+                yInfo("Asking recalibration...\n");
                 if (inv_dyn)
                 {
                     inv_dyn->suspend();
                     inv_dyn->calibrateOffset(); 
                     inv_dyn->resume();
                 }
-                fprintf(stderr,"Recalibration complete.\n");
+                yInfo("Recalibration complete.\n");
                 reply.addString("Recalibrated");
                 return true;
             }
@@ -313,7 +313,7 @@ public:
             }
             else if (command.get(0).asString()=="calib")
             {
-                fprintf(stderr,"Asking recalibration...\n");
+                yInfo("Asking recalibration...\n");
                 if (inv_dyn)
                 {
                     calib_enum calib_code=CALIB_ALL;
@@ -326,7 +326,7 @@ public:
                     inv_dyn->calibrateOffset(calib_code);
                     inv_dyn->resume();
                 }
-                fprintf(stderr,"Recalibration complete.\n");
+                yInfo("Recalibration complete.\n");
                 reply.addString("Recalibrated");
                 return true;
             }
@@ -360,14 +360,14 @@ public:
 
         if (rf.check("headV2"))
         {
-            fprintf(stderr,"'headV2' option found. Using icubV2 head kinematics.\n");
+            yInfo("'headV2' option found. Using icubV2 head kinematics.\n");
             icub_type.head_version = 2;
         }
 
         //----------SPECIAL PARAM TO DEFINE LEGS VERSION--------//
         if(rf.check("legsV2"))
         {
-            fprintf(stderr, "'legsV2' option found. Using legsV2 kinematics. \n");
+            yInfo("'legsV2' option found. Using legsV2 kinematics. \n");
             icub_type.legs_version = 2;
         }
 
@@ -375,7 +375,7 @@ public:
         bool autoconnect;
         if (rf.check("autoconnect"))
         {
-             fprintf(stderr,"'autoconnect' option enabled.\n");
+             yInfo("'autoconnect' option enabled.\n");
              autoconnect = true;
         }
         else
@@ -387,53 +387,53 @@ public:
         if (rf.check("no_com"))
         {
             com_enabled= false;
-            fprintf(stderr,"'no_com' option found. COM computation will be disabled.\n");
+            yInfo("'no_com' option found. COM computation will be disabled.\n");
         }
 
         //------------DEBUG ONLY-----------//
         if (rf.check("disable_w0_dw0"))
         {
             w0_dw0_enabled= false;
-            fprintf(stderr,"'disable_w0_dw0' option found. w0 and dw0 will be set to zero.\n");
+            yInfo("'disable_w0_dw0' option found. w0 and dw0 will be set to zero.\n");
         }
         //------------DEBUG ONLY-----------//
         if (rf.check("enable_w0_dw0"))
         {
             w0_dw0_enabled= true;
-            fprintf(stderr,"'enable_w0_dw0' option found. w0 and dw0 will be used.\n");
+            yInfo("'enable_w0_dw0' option found. w0 and dw0 will be used.\n");
         }
 
         //------------CHECK IF COM VELOCITY COMPUTATION IS ENABLED-----------//
         if (rf.check("experimental_com_vel"))
         {
             com_vel_enabled= true;
-            fprintf(stderr,"'enable_com_vel' option found. Extra COM velocity computation will be enabled.\n");
+            yInfo("'enable_com_vel' option found. Extra COM velocity computation will be enabled.\n");
         }
 
         //------------------CHECK IF LEGS ARE ENABLED-----------//
         if (rf.check("no_legs"))
         {
             legs_enabled= false;
-            fprintf(stderr,"'no_legs' option found. Legs will be disabled.\n");
+            yInfo("'no_legs' option found. Legs will be disabled.\n");
         }
 
         //------------------CHECK IF HEAD IS ENABLED-----------//
         if (rf.check("no_head"))
         {
             head_enabled= false;
-            fprintf(stderr,"'no_head' option found. Head will be disabled.\n");
+            yInfo("'no_head' option found. Head will be disabled.\n");
         }
 
         //------------------CHECK IF ARMS ARE ENABLED-----------//
         if (rf.check("no_left_arm"))
         {
             left_arm_enabled= false;
-            fprintf(stderr,"'no_left_arm' option found. Left arm will be disabled.\n");
+            yInfo("'no_left_arm' option found. Left arm will be disabled.\n");
         }
         if (rf.check("no_right_arm"))
         {
             right_arm_enabled= false;
-            fprintf(stderr,"'no_right_arm' option found. Right arm will be disabled.\n");
+            yInfo("'no_right_arm' option found. Right arm will be disabled.\n");
         }
 
         //---------------------RATE-----------------------------//
@@ -441,11 +441,11 @@ public:
         if (rf.check("rate"))
         {
             rate = rf.find("rate").asInt();
-            fprintf(stderr,"rateThread working at %d ms\n", rate);
+            yInfo("rateThread working at %d ms\n", rate);
         }
         else
         {
-            fprintf(stderr,"Could not find rate in the config file\nusing 10ms as default");
+            yInfo("Could not find rate in the config file\nusing 10ms as default");
             rate = 10;
         }
 
@@ -453,26 +453,26 @@ public:
         if (rf.check("dummy_ft"))
         {
             dummy_ft = true;
-            fprintf(stderr,"Using dummy FT sensors (debug mode)\n");
+            yInfo("Using dummy FT sensors (debug mode)\n");
         }
 
         //---------------------DUMP-VEL-------------------------//
         if (rf.check("dumpvel"))
         {
             dump_vel_enabled = true;
-            fprintf(stderr,"Dumping joint velocities and accelerations (debug mode)\n");
+            yInfo("Dumping joint velocities and accelerations (debug mode)\n");
         }
 
         if (rf.check("auto_drift_comp"))
         {
             auto_drift_comp = true;
-            fprintf(stderr,"Enabling automatic drift compensation (experimental)\n");
+            yInfo("Enabling automatic drift compensation (experimental)\n");
         }
 
         if (rf.check("default_ee_cont"))
         {
             default_ee_cont = true;
-            fprintf(stderr,"Default contact at the end effector\n");
+            yInfo("Default contact at the end effector\n");
         }
 
         //---------------------DEVICES--------------------------//
@@ -484,11 +484,11 @@ public:
 
             if (!createDriver(dd_head, OptionsHead))
             {
-                fprintf(stderr,"ERROR: unable to create head device driver...quitting\n");
+                yError("unable to create head device driver...quitting\n");
                 return false;
             }
             else
-                fprintf(stderr,"device driver created\n");
+                yInfo("device driver created\n");
         }
 
         if (left_arm_enabled)
@@ -499,7 +499,7 @@ public:
 
             if (!createDriver(dd_left_arm, OptionsLeftArm))
             {
-                fprintf(stderr,"ERROR: unable to create left arm device driver...quitting\n");
+                yError("unable to create left arm device driver...quitting\n");
                 return false;
             }
         }
@@ -512,7 +512,7 @@ public:
 
             if (!createDriver(dd_right_arm, OptionsRightArm))
             {
-                fprintf(stderr,"ERROR: unable to create right arm device driver...quitting\n");
+                yError("unable to create right arm device driver...quitting\n");
                 return false;
             }
         }
@@ -525,7 +525,7 @@ public:
 
             if (!createDriver(dd_left_leg, OptionsLeftLeg))
             {
-                fprintf(stderr,"ERROR: unable to create left leg device driver...quitting\n");
+                yError("unable to create left leg device driver...quitting\n");
                 return false;
             }
 
@@ -535,7 +535,7 @@ public:
 
             if (!createDriver(dd_right_leg, OptionsRightLeg))
             {
-                fprintf(stderr,"ERROR: unable to create right leg device driver...quitting\n");
+                yError("unable to create right leg device driver...quitting\n");
                 return false;
             }
         }
@@ -546,11 +546,11 @@ public:
 
         if (!createDriver(dd_torso, OptionsTorso))
         {
-            fprintf(stderr,"ERROR: unable to create head device driver...quitting\n");
+            yError("unable to create head device driver...quitting\n");
             return false;
         }
         else
-            fprintf(stderr,"device driver created\n");
+            yInfo("device driver created\n");
 
         //--------------------CHECK FT SENSOR------------------------
         if (!dummy_ft)
@@ -560,7 +560,7 @@ public:
                 (dd_left_leg  && Network::exists(string("/"+robot_name+"/left_leg/analog:o").c_str())  == false ) ||
                 (dd_right_leg && Network::exists(string("/"+robot_name+"/right_leg/analog:o").c_str()) == false ) )
                 {     
-                    fprintf(stderr,"Unable to detect the presence of F/T sensors in your iCub...quitting\n");
+                    yError("Unable to detect the presence of F/T sensors in your iCub...quitting\n");
                     return false;
                 }
         }     
@@ -586,67 +586,67 @@ public:
         inv_dyn->dumpvel_enabled=dump_vel_enabled;
         inv_dyn->default_ee_cont=default_ee_cont;
 
-        fprintf(stderr,"ft thread istantiated...\n");
+        yInfo("ft thread istantiated...\n");
         Time::delay(5.0);
 
         inv_dyn->start();
-        fprintf(stderr,"thread started\n");
+        yInfo("thread started\n");
         return true;
     }
 
     bool close()
     {
         //The order of execution of the following closures is important, do not change it.
-        fprintf(stderr,"Closing wholeBodyDynamics module... \n");     
+        yInfo("Closing wholeBodyDynamics module... \n");     
 
         if (inv_dyn)
           {
             thread_status_enum thread_status = inv_dyn->getThreadStatus();
             if (thread_status!=STATUS_DISCONNECTED)
             {
-                fprintf(stderr, "Setting the icub in stiff mode\n");
+                yInfo("Setting the icub in stiff mode\n");
                 inv_dyn->setStiffMode();
             }
-            fprintf(stderr,"Stopping the inv_dyn thread...");     
+            yInfo("Stopping the inv_dyn thread...");     
             inv_dyn->stop();
-            fprintf(stderr,"inv_dyn thread stopped\n");     
+            yInfo("inv_dyn thread stopped\n");     
             delete inv_dyn;
             inv_dyn=0;
           }
 
         if(port_inertial_input)
         {
-            fprintf(stderr,"Closing the inertial input port \n");     
+            yInfo("Closing the inertial input port \n");     
             port_inertial_input->interrupt();
             port_inertial_input->close();
             delete port_inertial_input;
             port_inertial_input=0;
         }
 
-        fprintf(stderr,"Closing the filtered inertial output port \n");     
+        yInfo("Closing the filtered inertial output port \n");     
         port_filtered_output.interrupt();
         port_filtered_output.close();
 
-        fprintf(stderr,"Closing the rpc port \n");     
+        yInfo("Closing the rpc port \n");     
         rpcPort.close();
 
         if (dd_left_arm)
         {
-            fprintf(stderr,"Closing dd_left_arm \n");     
+            yInfo("Closing dd_left_arm \n");     
             dd_left_arm->close();
             delete dd_left_arm;
             dd_left_arm=0;
         }
         if (dd_right_arm)
         {
-            fprintf(stderr,"Closing dd_right_arm \n");     
+            yInfo("Closing dd_right_arm \n");     
             dd_right_arm->close();
             delete dd_right_arm;
             dd_right_arm=0;
         }
         if (dd_head)
         {
-            fprintf(stderr,"Closing dd_head \n");     
+            yInfo("Closing dd_head \n");     
             dd_head->close();
             delete dd_head;
             dd_head=0;
@@ -654,27 +654,27 @@ public:
 
         if (dd_left_leg)
         {
-            fprintf(stderr,"Closing dd_left_leg \n");     
+            yInfo("Closing dd_left_leg \n");     
             dd_left_leg->close();
             delete dd_left_leg;
             dd_left_leg=0;
         }
         if (dd_right_leg)
         {
-            fprintf(stderr,"Closing dd_right_leg \n");     
+            yInfo("Closing dd_right_leg \n");     
             dd_right_leg->close();
             delete dd_right_leg;
             dd_right_leg=0;
         }
         if (dd_torso)
         {
-            fprintf(stderr,"Closing dd_torso \n");     
+            yInfo("Closing dd_torso \n");     
             dd_torso->close();
             delete dd_torso;
             dd_torso=0;
         }
 
-        fprintf(stderr,"wholeBodyDynamics module was closed successfully! \n");     
+        yInfo("wholeBodyDynamics module was closed successfully! \n");     
         return true;
     }
 
@@ -711,7 +711,7 @@ public:
         }
         else
         {
-            fprintf(stderr,"wholeBodyDynamics module was closed successfully! \n");    
+            yInfo("wholeBodyDynamics module was closed successfully! \n");    
             return true;
         }
             
@@ -753,7 +753,7 @@ int main(int argc, char * argv[])
 
     if (!yarp.checkNetwork())
     {
-        fprintf(stderr, "Sorry YARP network does not seem to be available, is the yarp server available?\n");
+        yError("Sorry YARP network does not seem to be available, is the yarp server available?\n");
         return -1;
     }
 

@@ -211,13 +211,13 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
     driver.open(prop);
     if (!driver.isValid())
     {
-        yError("Error opening CanBusInertialMTB check parameters\n");
+        yError("Unable to open CanBusInertialMTB check parameters\n");
         return false;
     }
     driver.view(pCanBus);
     if (!pCanBus)
     {
-        yError("Error opening can device not available\n");
+        yError("Unable to open CAN device not available\n");
         return false;
     }
     driver.view(pCanBufferFactory);
@@ -384,7 +384,7 @@ void CanBusInertialMTB::run()
 
     if(canMessages <0)
     {
-        yError("CanBusInertialMTB::run() ERROR: get %d canMessages\n", canMessages);
+        yError("CanBusInertialMTB::run() get %d canMessages\n", canMessages);
         for(int board=0; board < this->boards.size(); board++ )
         {
             setPrivateBoardStatus(board,IAnalogSensor::AS_ERROR);
