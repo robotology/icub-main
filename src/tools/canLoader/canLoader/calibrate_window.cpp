@@ -57,6 +57,7 @@ GtkWidget *edit_serial_number;
 gboolean timer_func (gpointer data);
 GtkWidget* label_use_calib;
 GtkWidget* spin_use_calib;
+GtkWidget* check_importFullScale;
 
 unsigned int calib_const=0;
 unsigned int full_scale_const[6]={0,0,0,0,0,0};
@@ -467,6 +468,17 @@ void close_window (GtkDialog *window,    gpointer   user_data)
 }
 
 //*********************************************************************************
+void spin_use_calib_changed (GtkSpinButton *button,    gpointer ch_p)
+{
+    int calibration = (int)gtk_spin_button_get_value (GTK_SPIN_BUTTON (spin_use_calib));
+    if (calibration == 0 || 
+        calibration == 1) 
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check_importFullScale), true);
+    else
+        gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (check_importFullScale), false);
+}
+
+//*********************************************************************************
 void slider_changed (GtkButton *button,    gpointer ch_p)
 {
     int chan = *(int*)ch_p;
@@ -563,6 +575,10 @@ void file_save_click (GtkButton *button,    gpointer ch_p)
 
     printf ("Calibration file saved!\n");
     filestr.close();
+}
+
+void check_importFullscale_click (GtkButton *button,    gpointer ch_p)
+{
 }
 
 //*********************************************************************************
@@ -995,12 +1011,17 @@ void file_import_click (GtkButton *button,    gpointer ch_p)
     int cc=0;
     sscanf (buffer,"%d",&cc);
     downloader.strain_set_matrix_gain(downloader.board_list[selected].pid,cc);
-    for (i=0;i<6; i++)
+
+    if (GTK_TOGGLE_BUTTON (check_importFullScale)->active==true)
     {
-        filestr.getline (buffer,256);
-        sscanf (buffer,"%d",&cc);
-        downloader.strain_set_full_scale(downloader.board_list[selected].pid,i,cc);
+        for (i=0;i<6; i++)
+        {
+            filestr.getline (buffer,256);
+            sscanf (buffer,"%d",&cc);
+            downloader.strain_set_full_scale(downloader.board_list[selected].pid,i,cc);
+        }
     }
+
     filestr.close();
 
     something_changed=true;
@@ -1253,6 +1274,7 @@ void calibrate_click (GtkButton *button,    gpointer   user_data)
     edit_matrix_gain = gtk_label_new_with_mnemonic ("null");
 
     label_use_calib = gtk_label_new_with_mnemonic  ("use calib matrix:");
+    check_importFullScale = gtk_toggle_button_new_with_label  ("import fullscale");
     GtkAdjustment *adjustment ;
     adjustment = (GtkAdjustment*)gtk_adjustment_new (0.0,0.0,3.0,1.0,5.0,0.0); 
     spin_use_calib  = gtk_spin_button_new(adjustment,1.0,0);
@@ -1408,6 +1430,8 @@ void calibrate_click (GtkButton *button,    gpointer   user_data)
     g_signal_connect (reset_calib_bias_button, "clicked", G_CALLBACK (reset_calib_bias_click),NULL);
     g_signal_connect (set_curr_bias_button, "clicked", G_CALLBACK (set_curr_bias_click),NULL);
     g_signal_connect (reset_curr_bias_button, "clicked", G_CALLBACK (reset_curr_bias_click),NULL);
+    g_signal_connect (spin_use_calib, "value-changed", G_CALLBACK (spin_use_calib_changed),NULL);
+    g_signal_connect (check_importFullScale, "clicked", G_CALLBACK (check_importFullscale_click),NULL);
 
 
     g_signal_connect (slider_gain[0], "value-changed", G_CALLBACK (slider_changed),&ch[0]);
@@ -1427,7 +1451,8 @@ void calibrate_click (GtkButton *button,    gpointer   user_data)
     gtk_fixed_put(GTK_FIXED(fixed),file_save_button,c[2]+10,r[5]+140);
     gtk_fixed_put(GTK_FIXED(fixed),file_import_button,c[2]+10,r[5]+190);
 
-    gtk_fixed_put(GTK_FIXED(fixed),picker_calib,c[2]+10,r[5]+240);
+    gtk_fixed_put(GTK_FIXED(fixed),check_importFullScale,c[2]+10,r[5]+240);
+    gtk_fixed_put(GTK_FIXED(fixed),picker_calib,c[2]+10,r[5]+280);
 
     gtk_range_set_value (GTK_RANGE(slider_zero),calibration_value);
 
