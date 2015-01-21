@@ -1654,7 +1654,7 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 
     if(!res->addSetMessage(protoId, (uint8_t *) &outPid))
     {
-        yError() << "while setting position PIDs for board" << _fId.boardNumber << "joint " << j;
+        yError() << "while setting position PIDs for board " << _fId.boardNumber << " joint " << j;
         return false;
     }
 
@@ -1662,7 +1662,7 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
     protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidvelocity);
     if(!res->addSetMessage(protoId, (uint8_t *) &outPid))
     {
-        yError() << "while setting velocity PIDs for board" << _fId.boardNumber << "joint " << j;
+        yError() << "while setting velocity PIDs for board " << _fId.boardNumber << " joint " << j;
         return false;
     }
     return true;
@@ -1686,10 +1686,10 @@ bool embObjMotionControl::setReferenceRaw(int j, double ref)
         mode != VOCAB_CM_IDLE)
     {
         #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
+        yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, board " << _fId.boardNumber << " joint "<< j;
         setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
         #else
-        yError() << "setReferenceRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
+        yError() << "setReferenceRaw: skipping command because board " << _fId.boardNumber << " joint " << j << " is not in VOCAB_CM_POSITION_DIRECT mode";
         #endif
     }
 
@@ -1766,7 +1766,7 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 
     if(!res->addGetMessage(protid) )
     {
-        yError() << "Can't send get pid request for board" << _fId.boardNumber << "joint " << j;
+        yError() << "Can't send get pid request for board " << _fId.boardNumber << " joint " << j;
         return false;
     }
 
@@ -1774,7 +1774,7 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
     if(-1 == tt->synch() )
     {
         int threadId;
-        yError () << "embObjMotionControl::getPidRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+        yError () << "embObjMotionControl::getPidRaw() timed out the wait of reply from board " << _fId.boardNumber << " joint " << j;
 
         if(requestQueue->threadPool->getId(&threadId))
             requestQueue->cleanTimeouts(threadId);
@@ -1918,10 +1918,10 @@ bool embObjMotionControl::velocityMoveRaw(int j, double sp)
         (mode != VOCAB_CM_IDLE))
     {
         #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, joint: " << j;
+        yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, board " << _fId.boardNumber << " joint " << j;
         setControlModeRaw(j, VOCAB_CM_VELOCITY);
         #else
-        yError() << "velocityMoveRaw: skipping command because joint" << j << "is not in VOCAB_CM_VELOCITY mode";
+        yError() << "velocityMoveRaw: skipping command because board " << _fId.boardNumber << " joint " << j << " is not in VOCAB_CM_VELOCITY mode";
         #endif
     }
 
@@ -2142,10 +2142,10 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
         (mode != VOCAB_CM_IDLE))
     {
         #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, joint: " << j;
+        yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, board " << _fId.boardNumber << " joint " << j;
         setControlModeRaw(j, VOCAB_CM_POSITION);
         #else
-        yError() << "positionMoveRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION mode";
+        yError() << "positionMoveRaw: skipping command because board " << _fId.boardNumber << " joint " << j << " is not in VOCAB_CM_POSITION mode";
         #endif
     }
     
@@ -2621,18 +2621,18 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
         if (current_mode==VOCAB_CM_IDLE     && _mode==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
         if (current_mode==VOCAB_CM_HW_FAULT)
         {
-            if (_mode!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%d) in HW_FAULT", j);}
+            if (_mode!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of board %d joint %d in HW_FAULT", _fId.boardNumber, j);}
             ret = true; break;
         }
         yarp::os::Time::delay(0.010);
-        yWarning ("setControlModeRaw delay (joint %d), current mode: %s, requested: %s", j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(_mode).c_str());
+        if (timeout>0) yWarning ("setControlModeRaw delay (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(_mode).c_str());
         timeout++;
     }
     while (timeout < 10);
     if (timeout>=10)
     {
         ret = false;
-        yError ("100ms Timeout occured in setControlModeRaw (joint %d), current mode: %s, requested: %s", j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(_mode).c_str());
+        yError ("100ms Timeout occured in setControlModeRaw (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(_mode).c_str());
     }
     return ret;
 }
@@ -2673,18 +2673,18 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
             if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
             if (current_mode==VOCAB_CM_HW_FAULT)
             {
-                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%d) in HW_FAULT",  joints[i]);}
+                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of board %d joint %d in HW_FAULT", _fId.boardNumber, joints[i]);}
                 ret = true; break;
             }
             yarp::os::Time::delay(0.010);
-            yWarning ("setControlModesRaw delay (joint %d), current mode: %s, requested: %s",  joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            if (timeout>0) yWarning ("setControlModesRaw delay (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
             timeout++;
         }
         while (timeout < 10);
         if (timeout>=10)
         {
             ret = false;
-            yError ("100ms Timeout occured in setControlModesRaw (joint %d), current mode: %s, requested: %s",  joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            yError ("100ms Timeout occured in setControlModesRaw (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
         }
     }
 
@@ -2729,18 +2729,18 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
             if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
             if (current_mode==VOCAB_CM_HW_FAULT)
             {
-                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of a joint (%d) in HW_FAULT", i);}
+                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of board %d joint %d in HW_FAULT", _fId.boardNumber, i);}
                 ret = true; break;
             }
             yarp::os::Time::delay(0.010);
-            yWarning ("setControlModesRaw delay (joint %d), current mode: %s, requested: %s", i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            if (timeout>0) yWarning ("setControlModesRaw delay (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
             timeout++;
         }
         while (timeout < 10);
         if (timeout>=10)
         {
             ret = false;
-            yError ("100ms Timeout occured in setControlModesRaw (joint %d), current mode: %s, requested: %s", i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
+            yError ("100ms Timeout occured in setControlModesRaw (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
         }
     }
 
@@ -3742,10 +3742,10 @@ bool embObjMotionControl::setPositionRaw(int j, double ref)
         mode != VOCAB_CM_IDLE)
     {
         #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, joint: " << j;
+        yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, board " << _fId.boardNumber << " joint " << j;
         setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
         #else
-        yError() << "setPositionRaw: skipping command because joint" << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
+        yError() << "setPositionRaw: skipping command because board " << _fId.boardNumber << " joint " << j << " is not in VOCAB_CM_POSITION_DIRECT mode";
         #endif
     }
 
@@ -3790,7 +3790,7 @@ bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const i
 
         if(!res->addGetMessage(protid[idx]) )
         {
-            yError() << "Can't send getInteractionMode_withWait request for board " << _fId.boardNumber << "joint " << joints[idx];
+            yError() << "Can't send getInteractionMode_withWait request for board " << _fId.boardNumber << " joint " << joints[idx];
             delete protid;
             return false;
         }
@@ -3803,7 +3803,7 @@ bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const i
         if(-1 == tt[idx]->synch() )
         {
             int threadId;
-            yError () << "embObjMotionControl::getInteractionMode_withWait() timed out the reply from BOARD "<< _fId.boardNumber << " joint " << joints[idx];
+            yError () << "embObjMotionControl::getInteractionMode_withWait() timed out the reply from board "<< _fId.boardNumber << " joint " << joints[idx];
 
             if(requestQueue->threadPool->getId(&threadId))
                 requestQueue->cleanTimeouts(threadId);

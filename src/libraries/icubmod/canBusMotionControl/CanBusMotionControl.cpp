@@ -6351,7 +6351,7 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
             yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, " << networkName.c_str() << " joint: " << j;
             setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
             #else
-            yError() << "setPositionRaw: skipping command because " << networkName.c_str() << " joint " << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
+            yError() << "setPositionRaw: skipping command because " << networkName.c_str() << " joint " << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
             #endif
         }
         return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(ref));
