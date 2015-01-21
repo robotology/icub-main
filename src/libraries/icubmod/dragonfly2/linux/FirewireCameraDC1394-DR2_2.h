@@ -25,6 +25,8 @@
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Time.h>
 #include <yarp/os/Stamp.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
 
 #define NUM_DMA_BUFFERS 4

@@ -16,6 +16,8 @@
 #include <stdlib.h>
 #include "linux/FirewireCameraDC1394-DR2_2.h"
 #include <arpa/inet.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 #define POINTGREY_REGISTER_TIMESTAMP 0x12F8
 
