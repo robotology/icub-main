@@ -171,7 +171,7 @@ bool Cfw2Can::canGetErrors(CanErrors &err)
 
 CanMessage &Cfw2CanMessage::operator=(const CanMessage &l)
 {
-    const Cfw2CanMessage &tmp=static_cast<const Cfw2CanMessage &>(l);
+    const Cfw2CanMessage &tmp=reinterpret_cast<const Cfw2CanMessage &>(l);
     memcpy(msg, tmp.msg, sizeof(CFWCAN_MSG));
     return *this;
 }
