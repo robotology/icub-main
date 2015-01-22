@@ -192,7 +192,7 @@ public:
     }
     virtual ~BVHNode()
     {
-        for(unsigned int i=0; i<children.count(); ++i)
+        for(int i=0; i<children.count(); ++i)
         {
             delete children[i];
         }
