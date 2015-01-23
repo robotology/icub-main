@@ -42,7 +42,8 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
 
     Property prop;
 
-    prop.put("device", config.find("canbusDevice").asString().c_str());
+    network_name = config.find("canbusDevice").asString().c_str();
+    prop.put("device", network_name.c_str());
     prop.put("physDevice", config.find("physDevice").asString().c_str());
     prop.put("canTxTimeout", 500);
     prop.put("canRxTimeout", 500);
@@ -103,6 +104,9 @@ bool CanBusAnalogSensor::open(yarp::os::Searchable& config)
     scaleFactor.resize(channelsNum);
     scaleFactor.zero();
 
+    //check fw version
+    bool b = checkFwVersion();
+
     //start the sensor broadcast
     sensor_start(config);
 
@@ -158,6 +162,75 @@ bool CanBusAnalogSensor::readFullScaleAnalog(int ch)
         }
 
     return true;
+}
+
+#define PROTOCOL_MAJOR 1
+#define PROTOCOL_MINOR 0
+
+bool CanBusAnalogSensor::checkFwVersion()
+{
+    bool ret = false;
+    unsigned int canMessages=0;
+    unsigned id = 0x200 + boardId;
+
+    //fw version check
+    CanMessage &msg=outBuffer[0];
+    msg.setId(id);
+    msg.getData()[0]=0x1C;
+    msg.getData()[1]=PROTOCOL_MAJOR;
+    msg.getData()[2]=PROTOCOL_MINOR;
+    msg.setLen(3);
+    canMessages=0;
+    pCanBus->canWrite(outBuffer, 1, &canMessages);
+
+    int timeout =0 ;
+    do 
+    {
+        unsigned int max_messages=CAN_DRIVER_BUFFER_SIZE;
+        unsigned int read_messages = 0;
+        bool b = pCanBus->canRead(inBuffer,max_messages,&read_messages,false);
+        for (unsigned int i=0; i<read_messages; i++)
+        {
+            CanMessage& m= inBuffer[i];
+            unsigned int currId=m.getId();
+            if (currId==(0x0200 | boardId << 4))
+                if (m.getLen()==8 &&
+                    m.getData()[0]==0x1C)
+                    {
+                        board_type    = m.getData()[1];
+                        board_version = m.getData()[2];
+                        board_release = m.getData()[3];
+                        board_build   = m.getData()[4];
+                        board_protocol_major = m.getData()[5];
+                        board_protocol_min   = m.getData()[6];
+                        board_ack           = (m.getData()[7]==1);
+                        break;
+                    }
+        }
+        yarp::os::Time::delay(0.002);
+        timeout++;
+    }
+    while(timeout<32);
+
+    yInfo("**********************************\n");
+    yInfo("AnalogSensor protocol check: %d.%d\n",PROTOCOL_MAJOR,PROTOCOL_MINOR);
+    yInfo("%s [%d] can_address: %2d board type: %d version:%2x.%2x build:%3d CAN_protocol:%d.%d ACK:%d",
+          network_name.c_str(),
+          canDeviceNum,
+          boardId, board_type,
+          board_version, board_release, board_build,
+          board_protocol_major,board_protocol_min,board_ack);
+    if (board_ack == 1)
+    {
+        ret = true;
+    }
+    else
+    {
+        yWarning("Can protocol version mismatch. Please update board FW.\n");
+        ret = false;
+    }
+    yInfo("**********************************\n");
+    return ret;
 }
 
 bool CanBusAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)

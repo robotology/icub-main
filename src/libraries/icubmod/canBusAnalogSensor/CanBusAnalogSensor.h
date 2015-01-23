@@ -62,6 +62,7 @@ protected:
     CanBuffer          inBuffer;
     CanBuffer          outBuffer;
     int                canDeviceNum;
+    std::string        network_name;
    
     yarp::os::Semaphore mutex;
 
@@ -73,6 +74,15 @@ protected:
     yarp::sig::Vector  data;
     yarp::sig::Vector  scaleFactor;
     unsigned short     useCalibration;
+
+    int board_type    ;
+    int board_version ;
+    int board_release ;
+    int board_build   ;
+    int board_protocol_major;
+    int board_protocol_min  ;
+    bool board_ack          ;
+
 
 public:
     CanBusAnalogSensor(int period=20) : RateThread(period),mutex(1)
@@ -108,6 +118,7 @@ public:
     bool sensor_start (yarp::os::Searchable& config);
     bool sensor_stop  ();
     bool readFullScaleAnalog(int ch);
+    bool checkFwVersion();
 };
 
 
