@@ -40,7 +40,7 @@
 #include "FeatureInterface.h"
 #include "IethResource.h"
 #include "SkinConfigReader.h"
-#include <skinDiagnostic.h>
+#include <SkinDiagnostics.h>
 
 using namespace yarp::os;
 using namespace yarp::dev;
