@@ -59,7 +59,7 @@ public:
     //DC1394Slider(){}
     virtual ~DC1394Slider();
     DC1394Slider(dc1394feature_id_t feature,char* label,Gtk::VBox &vbox,FrameGrabberGUIControl2 *fg);
-    
+
     void Refresh();
     void Propagate();
 
@@ -88,7 +88,7 @@ public:
 
     void Refresh();
     void Propagate();
-    
+
     void slider_handler();
     void onepush_handler();
     void automan_handler();

@@ -26,7 +26,7 @@
  *
  * Usage:\n
  * frameGrabberGui2 --local <localportname> --remote <grabberport> [--width <gui_width>] [--height <gui_height>] [--x <gui_x_pos>] [--y <gui_y_pos>]
- * 
+ *
  * \see yarp::dev::RemoteFrameGrabber, FrameGrabberGUIControl
  *
  * \author Alessandro Scalzo
@@ -42,7 +42,7 @@
 #include <gtkmm.h>
 #include <FrameGrabberGUIControl2.h>
 
-#include <yarp/os/Property.h> 
+#include <yarp/os/Property.h>
 #include <yarp/os/Network.h>
 #include <string.h>
 
@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
     {
         yarp::os::Property options;
         options.fromCommand(argc,argv);
-    
+
         printf("%s\n",options.toString().c_str());
 
         // switch to subsections if available
@@ -81,15 +81,15 @@ int main(int argc, char *argv[])
         //if (Program->isNull()) { Program = &options; }
 
         yarp::os::Value *val;
-    
+
         char portName[256]="",outPortName[256]="";
 
-        if (Network->check("PortName",val)||Network->check("local",val)) 
+        if (Network->check("PortName",val)||Network->check("local",val))
         {
             strcpy(portName, val->asString().c_str());
         }
 
-        if (Network->check("OutPortName",val)||Network->check("remote",val)) 
+        if (Network->check("OutPortName",val)||Network->check("remote",val))
         {
             strcpy(outPortName, val->asString().c_str());
         }

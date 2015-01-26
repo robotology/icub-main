@@ -13,7 +13,7 @@
 static const char *video_mode_labels[]={
     "160x120 YUV444",
     "320x240 YUV422",
-    "640x480 YUV411", 
+    "640x480 YUV411",
     "640x480 YUV422",
     "640x480 RGB8",
     "640x480 MONO8",
@@ -28,7 +28,7 @@ static const char *video_mode_labels[]={
     "1024x768 MONO16",
     "1280x960 YUV422",
     "1280x960 RGB8",
-    "1280x960_MONO8", 
+    "1280x960_MONO8",
     "1600x1200 YUV422",
     "1600x1200 RGB8",
     "1600x1200 MONO8",
@@ -58,7 +58,7 @@ static const char *op_mode_labels[]={"LEGACY","1394b"};
 #include "Sliders.h"
 
 /**
- *  A graphical control interface for a remote framegrabber.    
+ *  A graphical control interface for a remote framegrabber.
  */
 class FrameGrabberGUIControl2 : public Gtk::Window, virtual public yarp::dev::RemoteFrameGrabberControlsDC1394
 {
@@ -68,24 +68,24 @@ public:
      *
      *  Creates a graphical control interface for a remote framegrabber.
      *  @param loc local yarp port
-     *  @param rem remote framegrabber yarp port 
+     *  @param rem remote framegrabber yarp port
      */
-    FrameGrabberGUIControl2(char* loc, char* rem) : 
+    FrameGrabberGUIControl2(char* loc, char* rem) :
       // base classes
       Gtk::Window(),
       yarp::dev::RemoteFrameGrabberControlsDC1394(),
-      
-      //members   
+
+      //members
       m_Refresh1("Refresh"),
       m_Refresh2("Refresh"),
       m_broadcast("Broadcast"),
       m_propagate("Propagate"),
       m_LabelControls1("Features"),
-      m_LabelControls2("Features (adv)"),      
+      m_LabelControls2("Features (adv)"),
       m_LabelFormat("Format"),
       m_LabelCamera("Camera"),
       m_LabelMaxXDim("Max width"),
-      m_LabelMaxYDim("Max height"),  
+      m_LabelMaxYDim("Max height"),
       m_xdim(2.0,0),
       m_ydim(2.0,0),
       m_xoff(2.0,0),
@@ -105,13 +105,13 @@ public:
 
         // GTKMM
         set_title("Grabber Remote GUI");
-        
+
         // REFRESH & BROADCAST
 
         /*
         m_propagate.set_sensitive(false);
         pHBox->pack_start(m_propagate,Gtk::PACK_EXPAND_PADDING);
-        
+
         pHBox->pack_start(m_broadcast,Gtk::PACK_EXPAND_PADDING);
         m_VBoxFeat1.pack_start(*pHBox,Gtk::PACK_SHRINK,12);
         */
@@ -122,7 +122,7 @@ public:
 
         // FEATURES
         m_nFeatures=0;
-        
+
         m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_SHUTTER,(char*)"Shutter",m_VBoxFeat1,this);
         m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_BRIGHTNESS,(char*)"Brightness",m_VBoxFeat1,this);
         m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_GAIN,(char*)"Gain",m_VBoxFeat1,this);
@@ -145,7 +145,7 @@ public:
         //m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_TRIGGER,(char*)"Trigger",m_VBoxFeat2,this);
         //m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_TRIGGER_DELAY,(char*)"Trigger delay",m_VBoxFeat2,this);
         //m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_WHITE_SHADING,(char*)"White shading",m_VBoxFeat2,this);
-    
+
         int height_panel_2=DC1394SliderBase::GetHeight()-height_panel_1;
 
         pHBox=new Gtk::HBox();
@@ -154,7 +154,7 @@ public:
 
         m_Notebook.append_page(m_VBoxFeat1,m_LabelControls1);
         m_Notebook.append_page(m_VBoxFeat2,m_LabelControls2);
-    
+
         // FORMAT
         m_MenuMode.set_name("Video Format");
         unsigned int mask=getVideoModeMaskDC1394();
@@ -165,9 +165,9 @@ public:
             {
                 m_VideoModeLut[e]=i;
                 m_MenuMode.insert_text(e++,video_mode_labels[i]);
-            }       
+            }
         }
-        
+
         pHBox=new Gtk::HBox();
         m_MenuMode.set_size_request(64,32);
         Gtk::Label *pLabel=new Gtk::Label("Video Format");
@@ -175,7 +175,7 @@ public:
         pHBox->pack_start(*(pLabel),Gtk::PACK_SHRINK,6);
         pHBox->pack_start(m_MenuMode,Gtk::PACK_EXPAND_WIDGET,6);
         m_VBoxForm.pack_start(*(pHBox),Gtk::PACK_SHRINK,2);
-                
+
         m_MenuFPS.set_name("Framerate");
         m_MenuFPS.clear_items();
         mask=getFPSMaskDC1394();
@@ -194,7 +194,7 @@ public:
         pHBox->pack_start(*pLabel,Gtk::PACK_SHRINK,6);
         pHBox->pack_start(m_MenuFPS,Gtk::PACK_EXPAND_WIDGET,6);
         m_VBoxForm.pack_start(*(pHBox),Gtk::PACK_SHRINK,2);
-                
+
         m_MenuISO.set_name("ISO Speed");
         m_MenuISO.insert_text(0,iso_speed_labels[0]);
         m_MenuISO.insert_text(1,iso_speed_labels[1]);
@@ -208,7 +208,7 @@ public:
         pHBox->pack_start(*(pLabel),Gtk::PACK_SHRINK,6);
         pHBox->pack_start(m_MenuISO,Gtk::PACK_EXPAND_WIDGET,6);
         m_VBoxForm.pack_start(*(pHBox),Gtk::PACK_SHRINK,2);
-        
+
         // FORMAT 7
 
         m_VBoxForm.pack_start(*(new Gtk::HSeparator()),Gtk::PACK_SHRINK,16);
@@ -216,7 +216,7 @@ public:
 
         m_MenuColorCoding.set_name("Color coding");
         mask=getColorCodingMaskDC1394(getVideoModeDC1394());
-       
+
         printf("COLOR CODING MASK %x\n",mask);
 
         for (int i=0,e=0; i<32; ++i)
@@ -225,7 +225,7 @@ public:
             {
                 m_ColorCodingLut[e]=i;
                 m_MenuColorCoding.insert_text(e++,color_coding_labels[i]);
-            }       
+            }
         }
         m_MenuColorCoding.set_size_request(64,32);
         pHBox=new Gtk::HBox();
@@ -246,7 +246,7 @@ public:
         m_ydim.set_numeric();
         m_xoff.set_numeric();
         m_yoff.set_numeric();
-    
+
         m_xdim.set_update_policy(Gtk::UPDATE_IF_VALID);
         m_ydim.set_update_policy(Gtk::UPDATE_IF_VALID);
         m_xoff.set_update_policy(Gtk::UPDATE_IF_VALID);
@@ -276,7 +276,7 @@ public:
         packBox->pack_start(*(new Gtk::Label("% size bytes per packet")),Gtk::PACK_SHRINK,8);
         pHBox->pack_start(*(packBox),Gtk::PACK_EXPAND_PADDING,8);
         m_VBoxForm.pack_start(*(pHBox),Gtk::PACK_SHRINK,8);
-        
+
         m_Notebook.append_page(m_VBoxForm,m_LabelFormat);
 
         // CAMERA
@@ -319,7 +319,7 @@ public:
         set_size_request(340,height_panel_1+32);
 
         Init();
-        
+
         // handlers
         m_Refresh1.signal_clicked().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_refresh_pressed));
         m_Refresh2.signal_clicked().connect(sigc::mem_fun(*this,&FrameGrabberGUIControl2::on_refresh_pressed));
@@ -344,7 +344,7 @@ public:
     /**
      *  Destructor.
      *
-     *  Closes the remote framegrabber interface. 
+     *  Closes the remote framegrabber interface.
      */
     virtual ~FrameGrabberGUIControl2()
     {
@@ -352,7 +352,7 @@ public:
 
         close();
     }
-    
+
     void Reload()
     {
         unsigned int video_mode=getVideoModeDC1394();
@@ -360,7 +360,7 @@ public:
         m_MenuMode.set_active_text(video_mode_labels[video_mode]);
         printf("video mode %s %d\n",video_mode_labels[video_mode],video_mode);
 
-        m_MenuColorCoding.unset_active();        
+        m_MenuColorCoding.unset_active();
         m_MenuColorCoding.clear_items();
 
         unsigned int mask=getColorCodingMaskDC1394(video_mode);
@@ -371,7 +371,7 @@ public:
             {
                 m_ColorCodingLut[e]=i;
                 m_MenuColorCoding.insert_text(e++,color_coding_labels[i]);
-            }       
+            }
         }
 
         unsigned int xmax,ymax,xstep,ystep,xoffstep,yoffstep;
@@ -379,7 +379,7 @@ public:
         unsigned int xdim=0,ydim=0;
         int x0=0,y0=0;
         getFormat7WindowDC1394(xdim,ydim,x0,y0);
-     
+
         m_xdim.set_sensitive(false);
         m_ydim.set_sensitive(false);
         m_xoff.set_sensitive(false);
@@ -387,7 +387,7 @@ public:
 
         if (xstep<2) xstep=2;
         if (ystep<2) ystep=2;
-        
+
         m_xdim.set_range(0,xmax);
         m_ydim.set_range(0,ymax);
         m_xdim.set_increments(xstep,0);
@@ -409,7 +409,7 @@ public:
         sprintf(buff,"Max width %d",xmax);
         m_LabelMaxXDim.set_text(buff);
         sprintf(buff,"Max height %d",ymax);
-        m_LabelMaxYDim.set_text(buff); 
+        m_LabelMaxYDim.set_text(buff);
 
         if (mask) // FORMAT 7
         {
@@ -422,18 +422,18 @@ public:
 
             m_bpp.set_sensitive(true);
             ++m_bppCNT;
-            m_bpp.set_value(getBytesPerPacketDC1394());    
+            m_bpp.set_value(getBytesPerPacketDC1394());
             m_xdim.set_sensitive(true);
-            m_ydim.set_sensitive(true); 
+            m_ydim.set_sensitive(true);
             m_xoff.set_sensitive(true);
-            m_yoff.set_sensitive(true); 
+            m_yoff.set_sensitive(true);
         }
         else
         {
             m_MenuFPS.set_sensitive(false);
-            m_MenuFPS.unset_active();        
+            m_MenuFPS.unset_active();
             m_MenuFPS.clear_items();
-            
+
             mask=getFPSMaskDC1394();
 
             for (int i=0,e=0; i<8; ++i)
@@ -444,11 +444,11 @@ public:
                     m_MenuFPS.insert_text(e++,video_rate_labels[i]);
                 }
             }
-             
-            m_MenuFPS.set_active_text(video_rate_labels[getFPSDC1394()]);
-            m_MenuFPS.set_sensitive(true);   
 
-            m_MenuColorCoding.set_sensitive(false);         
+            m_MenuFPS.set_active_text(video_rate_labels[getFPSDC1394()]);
+            m_MenuFPS.set_sensitive(true);
+
+            m_MenuColorCoding.set_sensitive(false);
             m_bpp.set_sensitive(false);
         }
 
@@ -486,7 +486,7 @@ protected:
 
     Gtk::SpinButton m_xdim,m_ydim,m_xoff,m_yoff;
     Gtk::SpinButton m_bpp;
- 
+
     Gtk::Notebook m_Notebook;
     Gtk::Label m_LabelControls1,m_LabelControls2,m_LabelFormat,m_LabelFormat7,m_LabelCamera;
     Gtk::Label m_LabelMaxXDim,m_LabelMaxYDim;
@@ -502,19 +502,19 @@ protected:
         printf("video mode %s\n",video_mode_labels[getVideoModeDC1394()]);
 
         bool bFormat7=getVideoModeDC1394()>=24;
-    
+
         m_MenuColorCoding.set_sensitive(bFormat7);
         m_xdim.set_sensitive(bFormat7);
         m_ydim.set_sensitive(bFormat7);
         m_xoff.set_sensitive(bFormat7);
         m_yoff.set_sensitive(bFormat7);
-       
+
         m_MenuFPS.set_sensitive(!bFormat7);
         if (!bFormat7)
         {
             m_MenuFPS.set_active_text(video_rate_labels[getFPSDC1394()]);
             //printf("fps=%d\n",m_FPSLut[getFPSDC1394()]);
-        }        
+        }
 
         m_MenuISO.set_active_text(iso_speed_labels[getISOSpeedDC1394()]);
         m_MenuOpMode.set_active_text(getOperationModeDC1394()?"1394b":"LEGACY");
@@ -526,10 +526,10 @@ protected:
         unsigned int xdim,ydim;
         int x0,y0;
         getFormat7WindowDC1394(xdim,ydim,x0,y0);
-        
+
         if (xstep<2) xstep=2;
         if (ystep<2) ystep=2;
-        
+
         m_xdim.set_range(0,xmax);
         m_ydim.set_range(0,ymax);
         m_xdim.set_increments(xstep,0);
@@ -584,7 +584,7 @@ protected:
 
     /// Refresh button pressed
     virtual void on_refresh_pressed()
-    { 
+    {
         printf("on_refresh_pressed()\n");
         Reload();
         //if (m_broadcast.get_active()) Propagate();
@@ -616,31 +616,31 @@ protected:
     virtual void on_color_coding_change()
     {
         if (!m_MenuColorCoding.is_sensitive()) return;
-        
+
         if (m_MenuColorCodingCNT)
         {
             --m_MenuColorCodingCNT;
             return;
         }
-        
-        int row_number=m_MenuColorCoding.get_active_row_number();       
+
+        int row_number=m_MenuColorCoding.get_active_row_number();
 
         if (row_number<0) return;
 
         printf("on_color_coding_change()\n");
         setColorCodingDC1394(m_ColorCodingLut[row_number]);
-        
+
         for (int n=0; n<m_nFeatures; ++n) m_pSli[n]->Refresh();
-        //Refresh();    
+        //Refresh();
     }
 
     virtual void on_framerate_change()
     {
         if (!m_MenuFPS.is_sensitive()) return;
 
-        int row_number=m_MenuFPS.get_active_row_number();       
+        int row_number=m_MenuFPS.get_active_row_number();
 
-        if (row_number<0) return;      
+        if (row_number<0) return;
 
         printf("on_framerate_change()\n");
         setFPSDC1394(m_FPSLut[row_number]);
@@ -649,13 +649,13 @@ protected:
     virtual void on_bpp_change()
     {
       if (!m_bpp.is_sensitive()) return;
-    
+
       if (m_bppCNT)
       {
           --m_bppCNT;
           return;
       }
-    
+
       printf("on_bpp_change()\n");
       setBytesPerPacketDC1394((unsigned int)m_bpp.get_value());
     }
@@ -691,7 +691,7 @@ protected:
         printf("on_power_onoff_change()\n");
         setPowerDC1394(m_power.get_active());
     }
-    
+
     virtual void on_transmission_onoff_change()
     {
         printf("on_transmission_onoff_change()\n");
