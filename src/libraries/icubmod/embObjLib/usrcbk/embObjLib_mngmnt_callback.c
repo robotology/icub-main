@@ -68,13 +68,9 @@
 // - declaration of static functions
 // --------------------------------------------------------------------------------------------------------------------
 
-#if   defined(EOMANAGEMENT_USE_VER_2_3)
-//
-#elif   defined(EOMANAGEMENT_USE_VER_2_4)
+
 static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd);
-#else
-    #error --> unspecified EOMANAGEMENT_USE_VER_2_x
-#endif
+
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
@@ -140,48 +136,6 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 
 }
 
-
-#if     defined(EOMANAGEMENT_USE_VER_2_3)
-
-extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    char str[256] = {0};
-
-    eOmn_info_status_t* infostatus = (eOmn_info_status_t*) rd->data;
-
-    uint64_t sec = rd->time / 1000000;
-    uint64_t msec = (rd->time % 1000000) / 1000;
-    uint64_t usec = rd->time % 1000;
-    if(1 == rd->control.plustime)
-    {
-        sec = rd->time / 1000000;
-        msec = (rd->time % 1000000) / 1000;
-        usec = rd->time % 1000;
-    }
-    else
-    {
-        sec =  msec = usec = 0;
-    }
-
-
-    const char * infotype[] =
-    {
-        "eomn_info_type_info",
-        "eomn_info_type_debug",
-        "eomn_info_type_warning",
-        "eomn_info_type_error",
-        "unknown"
-    };
-
-    const char * sss = (infostatus->properties.type > 3) ? (infotype[4]) : (infotype[infostatus->properties.type]);
-
-    snprintf(str, sizeof(str), "[INFO]-> mn-info: ropsign = 0x%x, roptime = %04ds+%03dms+%03dus, BOARD = %d: -> info.status.properties.type = %s, info.status.data = %s", rd->signature, (uint32_t)sec, (uint32_t)msec, (uint32_t)usec, eo_nv_GetBRD(nv)+1, sss, infostatus->data);
-
-    printf("%s\n", str);
-    fflush(stdout);
-}
-
-#elif   defined(EOMANAGEMENT_USE_VER_2_4)
 
 
 static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
@@ -282,9 +236,6 @@ extern void eoprot_fun_UPDT_mn_info_status_basic(const EOnv* nv, const eOropdesc
     s_eoprot_print_mninfo_status(infostatusbasic, NULL, nv, rd);
 }
 
-#else
-    #error --> must specify a EOMANAGEMENT_USE_VER_2_x
-#endif
 
 
 extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor_t* rd)

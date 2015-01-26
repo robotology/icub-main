@@ -1441,6 +1441,52 @@ bool embObjMotionControl::init()
 
     }
 
+#if defined(EOMOTIONCONTROL_USE_VER_1_3)
+
+    {   // config of the joint coupling matrix inside the controller
+
+        float xmlmatrix[4][4] =
+        {
+            { 0.4, 1.3, 3.0, 2.1 },
+            { 0.5, 1.6, 9.0, 0.1 },
+            { 5.4, 1.8, 1.0, 3.1 },
+            { 9.4, 1.7, 3.4, 2.9 }
+        };
+
+        //#warning --> marco.accame but it is eoprot_tag_mc_controller_config_jointcoupling
+        eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_controller, 0, eoprot_tag_mc_controller_config_jointcoupling);
+
+        eOq17_14_t protmatrix[4][4] = {0};
+        printf("\n printing the joint coupling matrix\n");
+        for(int i=0; i<4; i++)
+        {
+            for(int j=0; j<4; j++)
+            {
+                protmatrix[i][j] = eo_common_float_to_Q17_14(xmlmatrix[i][j]);
+                printf("pos = %d %d: xml=%f, prot=%x, conv = %f\n", i, j, xmlmatrix[i][j], protmatrix[i][j], eo_common_Q17_14_to_float(protmatrix[i][j]));
+            }
+        }
+
+        if(false == res->setRemoteValueUntilVerified(id32, protmatrix, sizeof(protmatrix), 10, 0.010, 0.050, 2))
+        {
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for mc controller config joint coupling matrix" << "in BOARD" << res->get_protBRDnumber()+1;
+            return false;
+        }
+        else
+        {
+            if(verbosewhenok)
+            {
+                yDebug() << "embObjMotionControl::init() correctly configured mc controller config joint coupling matrix" << "in BOARD" << res->get_protBRDnumber()+1;
+            }
+        }
+
+    }
+
+#elif defined(EOMOTIONCONTROL_USE_VER_1_2)
+#else
+    #error defoifvwevewv
+#endif
+
     yTrace() << "EmbObj Motion Control for board " << _fId.boardNumber << " istantiated correctly\n";
     return true;
 }

@@ -298,5 +298,18 @@ extern void eoprot_fun_UPDT_mc_joint_status_interactionmodestatus(const EOnv* nv
 }
 
 
+extern void eoprot_fun_UPDT_mc_controller_config_jointcoupling(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
+    {
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        {
+            printf("ERROR: eoprot_fun_UPDT_mc_controller_config_jointcoupling() has received an unexpected message\n");
+            return;
+        }
+    }
+
+}
+
 // eof
 
