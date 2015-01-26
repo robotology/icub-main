@@ -129,6 +129,7 @@ Windows, Linux
 #include <string>
 #include <sstream>
 
+#include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 
@@ -150,25 +151,25 @@ protected:
     {
         if (!options.check("robot"))
         {
-            cout<<"Error: \"robot\" option is missing!"<<endl;
+            yError()<<"\"robot\" option is missing!";
             return NULL;
         }
 
         if (!options.check("NumberOfDrivers"))
         {
-            cout<<"Error: \"NumberOfDrivers\" option is missing!"<<endl;
+            yError()<<"\"NumberOfDrivers\" option is missing!";
             return NULL;
         }
 
         string robot=options.find("robot").asString().c_str();
-        cout<<"Configuring solver for "<<robot<<" ..."<<endl;
+        yInfo()<<"Configuring solver for "<<robot<<" ...";
 
         Property linksOptions;
         linksOptions.fromConfigFile(pathToCustomKinFile.c_str());
         iKinLimb *limb=new iKinLimb(linksOptions);
         if (!limb->isValid())
         {
-            cout<<"Error: invalid links parameters!"<<endl;
+            yError()<<"invalid links parameters!";
             delete limb;
             return NULL;
         }
@@ -187,21 +188,21 @@ protected:
             Bottle &driver=options.findGroup(str.str().c_str());
             if (driver.isNull())
             {
-                cout<<"Error: \""<<str.str()<<"\" option is missing!"<<endl;
+                yError()<<"\""<<str.str()<<"\" option is missing!";
                 failure=true;
                 break;
             }
 
             if (!driver.check("Key"))
             {
-                cout<<"Error: \"Key\" option is missing!"<<endl;
+                yError()<<"\"Key\" option is missing!";
                 failure=true;
                 break;
             }
 
             if (!driver.check("JointsOrder"))
             {
-                cout<<"Error: \"JointsOrder\" option is missing!"<<endl;
+                yError()<<"\"JointsOrder\" option is missing!";
                 failure=true;
                 break;
             }
@@ -257,14 +258,14 @@ public:
             part=rf.find("part").asString().c_str();
         else
         {
-            cout<<"Error: part option is not specified"<<endl;
+            yError()<<"part option is not specified";
             return false;
         }
 
         Bottle &group=rf.findGroup(part.c_str());
         if (group.isNull())
         {
-            cout<<"Error: unable to locate "<<part<<" definition"<<endl;
+            yError()<<"unable to locate "<<part<<" definition";
             return false;
         }
 
@@ -272,13 +273,13 @@ public:
             slvName=group.find("name").asString().c_str();
         else
         {
-            cout<<"Error: name option is missing"<<endl;
+            yError()<<"name option is missing";
             return false;
         }
 
         if (group.check("CustomKinFile"))
         {
-            cout<<"Custom Cartesian Solver detected!"<<endl;
+            yInfo()<<"Custom Cartesian Solver detected!";
 
             ResourceFinder rf_kin;
             rf_kin.setVerbose(true);
@@ -294,7 +295,7 @@ public:
             slv=new iCubLegCartesianSolver(slvName);
         else
         {
-            cout<<"Error: "<<part<<" is invalid"<<endl;
+            yError()<<part<<" is invalid";
             return false;
         }
 
@@ -352,7 +353,7 @@ int main(int argc, char *argv[])
     Network yarp;
     if (!yarp.checkNetwork())
     {
-        cout<<"YARP server not available!"<<endl;
+        yError()<<"YARP server not available!";
         return -1;
     }
 

@@ -8,6 +8,8 @@
 
 #include <canProtocolLib/iCubCanProtocol.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 #include <iostream>
 #include <yarp/os/LogStream.h>
@@ -604,7 +606,7 @@ void CanBusSkin::run() {
 
     if (!res) 
     {
-        std::cerr << "ERROR: CanBusSkin: CanRead failed \n";
+        yError("CanBusSkin: CanRead failed");
     } 
     else 
     {
@@ -892,7 +894,7 @@ bool CanBusSkin::checkFirmwareVersion(void)
             bool res = pCanBus->canRead(inBuffer, CAN_DRIVER_BUFFER_SIZE, &read_messages);
             if (!res)
             {
-                std::cerr << "ERROR: CanBusSkin: CanRead failed \n";
+                yError() << "CanBusSkin: CanRead failed \n";
             }
 
             //Timeout: no answers

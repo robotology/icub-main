@@ -836,7 +836,7 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
         yError() << "ERROR inGetSockOpt SO_RCVBUF";
     }
 
-    yDebug() << "  (!!)-> in EthReceiver::config() the config socket has queue size = "<< sock_input_buf_size<< "; you request ETHRECEIVER_BUFFER_SIZE=" << _dgram_buffer_size;
+    yWarning() << "in EthReceiver::config() the config socket has queue size = "<< sock_input_buf_size<< "; you request ETHRECEIVER_BUFFER_SIZE=" << _dgram_buffer_size;
 
 
     for(int i=0; i<TheEthManager::maxBoards; i++)

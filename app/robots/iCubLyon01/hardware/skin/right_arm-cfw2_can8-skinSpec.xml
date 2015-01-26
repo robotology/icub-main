@@ -9,7 +9,7 @@
                                                               1 ==> palm and fingertips skin
                                                               2 ==> old skin without temperature compensation -->
             <param name="noLoad">         0xf0  </param>
-            <param name="diagnostic">    true  </param>     <!-- used to config high level -->
+            <param name="diagnostic">    false  </param>     <!-- used to config high level -->
         </group>
         
         

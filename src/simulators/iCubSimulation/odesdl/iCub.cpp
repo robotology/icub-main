@@ -29,6 +29,8 @@
 #include <string.h>
 #include <yarp/os/ConstString.h>
 #include <yarp/os/Bottle.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include <yarp/math/Math.h>
 #include <iCub/iKin/iKinFwd.h>
 #include <iCub/ctrl/math.h>
@@ -3154,7 +3156,7 @@ void ICubSim::initCovers(ResourceFinder& finder)
                     model_ThreeD_obj[(*itr).first].geom = dCreateTriMesh(iCubLegsSpace, model_TriData[(*itr).first], 0, 0, 0);
                 } 
                 else 
-                printf("ERROR: ICubSim::initCovers(): unknown trimesh: %s.\n",(*itr).first.c_str()); 
+                yError("ICubSim::initCovers(): unknown trimesh: %s.\n",(*itr).first.c_str()); 
             }
             dGeomSetData(model_ThreeD_obj[(*itr).first].geom,model_TriData[(*itr).first]);
             //dGeomSetPosition(model_ThreeD_obj[(*itr).first].geom,0.0,0.5,0.5);
@@ -3365,7 +3367,7 @@ void ICubSim::initCovers(ResourceFinder& finder)
                     }
                 } //leg 
                 else{ 
-                    printf("ERROR: ICubSim::initCovers(): unknown trimesh: %s.\n",(*itr).first.c_str()); 
+                    yError("ICubSim::initCovers(): unknown trimesh: %s.\n",(*itr).first.c_str()); 
                 }
              }  //if(actCoversCol=="on") - otherwise, no need to do anything, the covers will be just drawn as eye candy in draw()
        } //else - trimesh exists
@@ -4254,7 +4256,7 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
         }
     }
        
-    printf("ERROR: ICubSim::getSkinAndBodyPartFromSpaceAndGeomID: Unknown skin part and body part on collision in left arm space.\n");
+    yError("ICubSim::getSkinAndBodyPartFromSpaceAndGeomID: Unknown skin part and body part on collision in left arm space.\n");
     skinPart =  SKIN_PART_UNKNOWN; 
     bodyPart =  BODY_PART_UNKNOWN;
     return;
@@ -4327,7 +4329,7 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
         }
     }
     
-    printf("ERROR: ICubSim::getSkinAndBodyPartFromSpaceAndGeomID: Unknown skin part and body part on collision in right arm space.\n");
+    yError("ICubSim::getSkinAndBodyPartFromSpaceAndGeomID: Unknown skin part and body part on collision in right arm space.\n");
     skinPart =  SKIN_PART_UNKNOWN; 
     bodyPart =  BODY_PART_UNKNOWN;
     return;
@@ -4343,7 +4345,7 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
     return;
   }
   else {
-    printf("ERROR:ICubSim::getSkinAndBodyPartFromSpaceAndGeomID:unknown iCub space.");
+    yError("ICubSim::getSkinAndBodyPartFromSpaceAndGeomID:unknown iCub space.");
     skinPart =  SKIN_PART_UNKNOWN; 
     bodyPart =  BODY_PART_UNKNOWN;
     return; 

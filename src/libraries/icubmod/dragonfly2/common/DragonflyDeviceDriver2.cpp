@@ -13,8 +13,8 @@
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
-//#include <ace/Log_Msg.h>
-//#include <ace/OS.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 using namespace yarp::os;
 using namespace yarp::dev;

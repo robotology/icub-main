@@ -56,7 +56,7 @@ public:
 
         drawArrows();
 
-        for (unsigned int i=0; i<children.count(); ++i)
+        for (int i=0; i<children.count(); ++i)
         {
             children[i]->draw(encoders,pSelected);
         }

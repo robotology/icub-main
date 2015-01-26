@@ -326,7 +326,7 @@ double  ethResources::getLastRecvMsgTimestamp(void)
 bool ethResources::clearRegulars(bool verify)
 {
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "(!!)-> ethResources::clearRegulars() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "ethResources::clearRegulars() is in ETHRES_DEBUG_DONTREADBACK mode";
     // execute but force verify to false
     verify = false;
 #endif
@@ -343,7 +343,7 @@ bool ethResources::clearRegulars(bool verify)
         {
             if(verbosewhenok)
             {
-                yWarning() << "(OK)-> ethResources::clearRegulars() has detected" << numberofregulars << "regulars in BOARD" << get_protBRDnumber()+1 << "now is attempting clearing them";
+                yDebug() << "ethResources::clearRegulars() has detected" << numberofregulars << "regulars in BOARD" << get_protBRDnumber()+1 << "now is attempting clearing them";
             }
         }
     }
@@ -394,7 +394,7 @@ bool ethResources::clearRegulars(bool verify)
 
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> ethResources::clearRegulars() has correctly checked regulars: expected = " << usedNumberOfRegularROPs << " and number in board = " << numberofregulars;
+            yDebug() << "ethResources::clearRegulars() has correctly checked regulars: expected = " << usedNumberOfRegularROPs << " and number in board = " << numberofregulars;
         }
     }
 
@@ -471,7 +471,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "(!!)-> ethResources::verifyBoardTransceiver() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "ethResources::verifyBoardTransceiver() is in ETHRES_DEBUG_DONTREADBACK mode";
     verifiedBoardTransceiver = true;
     return true;
 #endif
@@ -541,7 +541,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     {
         yError() << "ethResources::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": cannot proceed any further. FW upgrade is required";
         return(false);
-        //yWarning() << "(!!)-> ethResources::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": FW upgrade is advised";
+        //yWarning() << "ethResources::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": FW upgrade is advised";
     }
 
     // now i must check brdstatus.transceiver vs hostTransceiver::localTransceiverProperties
@@ -567,7 +567,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     }
     else
  //   {
- //       yWarning() << "(OK)-> ethResources::verifyBoardTransceiver() detected that local max size of rx packet = " << localTransceiverProperties.maxsizeRXpacket << "can accept board tx packet of max size = " << brdstatus.transceiver.maxsizeTXpacket;
+ //       yDebug() << "ethResources::verifyBoardTransceiver() detected that local max size of rx packet = " << localTransceiverProperties.maxsizeRXpacket << "can accept board tx packet of max size = " << brdstatus.transceiver.maxsizeTXpacket;
  //   }
 
     if(localTransceiverProperties.maxsizeTXpacket > brdstatus.transceiver.maxsizeRXpacket)
@@ -577,25 +577,25 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     }
     else
  //   {
- //       yWarning() << "(OK)-> ethResources::verifyBoardTransceiver() detected that local max size of tx packet = " << localTransceiverProperties.maxsizeTXpacket << "can be accepted by remote board with max rx size = " << brdstatus.transceiver.maxsizeRXpacket;
+ //       yDebug() << "ethResources::verifyBoardTransceiver() detected that local max size of tx packet = " << localTransceiverProperties.maxsizeTXpacket << "can be accepted by remote board with max rx size = " << brdstatus.transceiver.maxsizeRXpacket;
  //   }
 
     if(remoteTransceiverProperties.maxsizeROPframeRegulars != brdstatus.transceiver.maxsizeROPframeRegulars)
     {
-        yWarning() << "(!!)-> ethResources::verifyBoardTransceiver() detected different maxsizeROPframeRegulars: from xml =" << remoteTransceiverProperties.maxsizeROPframeRegulars << ", board=" << brdstatus.transceiver.maxsizeROPframeRegulars << ": correct xml file";
+        yWarning() << "ethResources::verifyBoardTransceiver() detected different maxsizeROPframeRegulars: from xml =" << remoteTransceiverProperties.maxsizeROPframeRegulars << ", board=" << brdstatus.transceiver.maxsizeROPframeRegulars << ": correct xml file";
         //return(false); // it is not a fatal error because for this value we use what we have received from the board
     }
 
     if(remoteTransceiverProperties.maxsizeROPframeReplies != brdstatus.transceiver.maxsizeROPframeReplies)
     {
-        yWarning() << "(!!)-> ethResources::verifyBoardTransceiver() detected different maxsizeROPframeReplies: from xml =" << remoteTransceiverProperties.maxsizeROPframeReplies << ", board=" << brdstatus.transceiver.maxsizeROPframeReplies << ": correct xml file";
+        yWarning() << "ethResources::verifyBoardTransceiver() detected different maxsizeROPframeReplies: from xml =" << remoteTransceiverProperties.maxsizeROPframeReplies << ", board=" << brdstatus.transceiver.maxsizeROPframeReplies << ": correct xml file";
         //return(false); // it is not a fatal error because we dont use this value
     }
 
 
     if(remoteTransceiverProperties.maxsizeROPframeOccasionals != brdstatus.transceiver.maxsizeROPframeOccasionals)
     {
-        yWarning() << "(!!)-> ethResources::verifyBoardTransceiver() detected different maxsizeROPframeOccasionals: from xml =" << remoteTransceiverProperties.maxsizeROPframeOccasionals << ", board=" << brdstatus.transceiver.maxsizeROPframeOccasionals << ": correct xml file";
+        yWarning() << "ethResources::verifyBoardTransceiver() detected different maxsizeROPframeOccasionals: from xml =" << remoteTransceiverProperties.maxsizeROPframeOccasionals << ", board=" << brdstatus.transceiver.maxsizeROPframeOccasionals << ": correct xml file";
         //return(false); // it is not a fatal error because we dont use this value
     }
 
@@ -609,7 +609,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 
     if(remoteTransceiverProperties.maxnumberRegularROPs != brdstatus.transceiver.maxnumberRegularROPs)
     {
-        yWarning() << "(!!)-> ethResources::verifyBoardTransceiver() detected different maxnumberRegularROPs: from xml =" << remoteTransceiverProperties.maxnumberRegularROPs << ", board=" << brdstatus.transceiver.maxnumberRegularROPs << ": correct xml file";
+        yWarning() << "ethResources::verifyBoardTransceiver() detected different maxnumberRegularROPs: from xml =" << remoteTransceiverProperties.maxnumberRegularROPs << ", board=" << brdstatus.transceiver.maxnumberRegularROPs << ": correct xml file";
         //return(false); // it is not a fatal error because for this value we use what we have received from the board
     }
 
@@ -661,7 +661,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 
     if(verbosewhenok)
     {
-        yWarning() << "(OK)-> ethResources::verifyBoardTransceiver() has validated the transceiver of BOARD " << get_protBRDnumber()+1;
+        yDebug() << "ethResources::verifyBoardTransceiver() has validated the transceiver of BOARD " << get_protBRDnumber()+1;
     }
 
     verifiedBoardTransceiver = true;
@@ -695,7 +695,7 @@ bool ethResources::cleanBoardBehaviour(void)
 
     if(verbosewhenok)
     {
-        yWarning() << "(OK)-> ethResources::cleanBoardBehaviour() has cleaned the application in BOARD " << get_protBRDnumber()+1 << ": config mode + cleared all its regulars";
+        yDebug() << "ethResources::cleanBoardBehaviour() has cleaned the application in BOARD " << get_protBRDnumber()+1 << ": config mode + cleared all its regulars";
     }
 
     cleanedBoardBehaviour = true;
@@ -727,7 +727,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
     verifiedEPprotocol[ep] =  true;
-    yWarning() << "(!!)-> ethResources::verifyEPprotocol() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "ethResources::verifyEPprotocol() is in ETHRES_DEBUG_DONTREADBACK mode";
     return true;
 #endif
 
@@ -816,7 +816,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
 
     if(sizeofarray != boardEPsNumber)
     {
-        yWarning() << "(!!)-> ethResources::verifyEPprotocol() retrieved from BOARD" << get_protBRDnumber()+1 << ":" << sizeofarray << "endpoint descriptors, and there are" << boardEPsNumber << "endpoints";
+        yWarning() << "ethResources::verifyEPprotocol() retrieved from BOARD" << get_protBRDnumber()+1 << ":" << sizeofarray << "endpoint descriptors, and there are" << boardEPsNumber << "endpoints";
     }
 
 
@@ -835,8 +835,8 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
             }
             if(pc104versionMN->minor != epd->version.minor)
             {
-                yWarning() << "(!!)-> ethResources::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionMN->minor << "and board.version.minor =" << epd->version.minor;
-                yWarning() << "(!!)-> ethResources::verifyEPprotocol() detected mismatching protocol version.minor BOARD " << get_protBRDnumber()+1 << "for eoprot_endpoint_management: FW upgrade is advised";
+                yWarning() << "ethResources::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionMN->minor << "and board.version.minor =" << epd->version.minor;
+                yWarning() << "ethResources::verifyEPprotocol() detected mismatching protocol version.minor BOARD " << get_protBRDnumber()+1 << "for eoprot_endpoint_management: FW upgrade is advised";
             }
         }
         if(epd->endpoint == ep)
@@ -888,7 +888,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "(!!)-> ethResources::verifyBoardPresence() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "ethResources::verifyBoardPresence() is in ETHRES_DEBUG_DONTREADBACK mode";
     verifiedBoardPresence =  true;
     return true;
 #endif
@@ -925,7 +925,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
         // send ask message
         if(false == addGetMessage(id2send))
         {
-            yWarning() << "(!!)-> ethResources::verifyBoardPresence() cannot transmit a request about the communication status to BOARD" << get_protBRDnumber()+1;
+            yWarning() << "ethResources::verifyBoardPresence() cannot transmit a request about the communication status to BOARD" << get_protBRDnumber()+1;
         }
 
         // wait for a say message arriving from the board. the eoprot_fun_UPDT_mn_xxx() function shall release the waiting semaphore
@@ -939,7 +939,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
             // get the reply
             if(false == readBufferedValue(id2wait, (uint8_t*)&brdstatus, &size))
             {
-                yWarning() << "(!!)-> ethResources::verifyBoardPresence() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
+                yWarning() << "ethResources::verifyBoardPresence() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
             }
             else
             {
@@ -952,7 +952,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 
         if(!pinged)
         {
-            yWarning() << "(!!)-> ethResources::verifyBoardPresence() cannot reach BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
+            yWarning() << "ethResources::verifyBoardPresence() cannot reach BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
         }
 
     }
@@ -966,7 +966,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
         verifiedBoardPresence = true;
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> ethResources::verifyBoardPresence() found BOARD " << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";
+            yDebug() << "ethResources::verifyBoardPresence() found BOARD " << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";
         }
     }
     else
@@ -984,7 +984,7 @@ bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_e
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "(!!)-> ethResources::verifyENTITYnumber() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "ethResources::verifyENTITYnumber() is in ETHRES_DEBUG_DONTREADBACK mode";
     return true;
 #endif
 
@@ -1092,7 +1092,7 @@ bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_e
 
     if(sizeofarray != entities_in_endpoint)
     {
-        yWarning() << "(!!)-> ethResources::verifyEPprotocol() retrieved from BOARD" << get_protBRDnumber()+1 << ":" << sizeofarray << "entity descriptors, BUT there are" << entities_in_endpoint << "in local protocol";
+        yWarning() << "ethResources::verifyEPprotocol() retrieved from BOARD" << get_protBRDnumber()+1 << ":" << sizeofarray << "entity descriptors, BUT there are" << entities_in_endpoint << "in local protocol";
     }
 
 
@@ -1134,7 +1134,7 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "(!!)-> ethResources::addRegulars() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "ethResources::addRegulars() is in ETHRES_DEBUG_DONTREADBACK mode";
     verify = false;
     return true; // uncomment to avoid sending command
 #endif
@@ -1259,7 +1259,7 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
 
         if(verbosewhenok)
         {
-            yWarning() << "(OK)-> ethResources::addRegulars() has correctly checked regulars: expected = " << usedNumberOfRegularROPs << " and number in board = " << numberofregulars;
+            yDebug() << "ethResources::addRegulars() has correctly checked regulars: expected = " << usedNumberOfRegularROPs << " and number in board = " << numberofregulars;
         }
     }
 
@@ -1271,7 +1271,7 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "(!!)-> ethResources::numberofRegulars() is in ETHRES_DEBUG_DONTREADBACK mode and always gives back 0";
+    yWarning() << "ethResources::numberofRegulars() is in ETHRES_DEBUG_DONTREADBACK mode and always gives back 0";
     return true;
 #endif
 
@@ -1343,7 +1343,7 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
         // send set message
         if(false == addSetMessage(id2send, (uint8_t*)&command))
         {
-            yWarning() << "(!!)-> ethResources::numberofRegulars() cannot transmit a request about the number of regulars to BOARD" << get_protBRDnumber()+1;
+            yWarning() << "ethResources::numberofRegulars() cannot transmit a request about the number of regulars to BOARD" << get_protBRDnumber()+1;
             //yError() << "ethResources::numberofRegulars() cannot transmit a request about the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
             //return(false);
         }
@@ -1363,7 +1363,7 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
 
             if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
             {
-                yWarning() << "(!!)-> ethResources::numberofRegulars() cannot read the number of regulars of BOARD" << get_protBRDnumber()+1;
+                yWarning() << "ethResources::numberofRegulars() cannot read the number of regulars of BOARD" << get_protBRDnumber()+1;
             }
             else
             {
@@ -1377,7 +1377,7 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
 
         if(!replied)
         {
-            yWarning() << "(!!)-> ethResources::numberofRegulars() cannot have a reply from BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
+            yWarning() << "ethResources::numberofRegulars() cannot have a reply from BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
         }
 
     }
@@ -1396,12 +1396,12 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
         {
             if(verbosewhenok)
             {
-                yWarning() << "(OK)-> ethResources::numberofRegulars() retrieved value from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+                yDebug() << "ethResources::numberofRegulars() retrieved value from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
             }
         }
         else
         {
-            yWarning() << "(!!)-> ethResources::numberofRegulars() retrieved value from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+            yWarning() << "ethResources::numberofRegulars() retrieved value from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
         }
 
     }
@@ -1431,12 +1431,12 @@ bool ethResources::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, u
 
         if(!addSetMessage(id32, (uint8_t *) value))
         {
-            yWarning() << "(!!)-> ethResources::setRemoteValueUntilVerified() had an error while calling addSetMessage() in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt+1;
+            yWarning() << "ethResources::setRemoteValueUntilVerified() had an error while calling addSetMessage() in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt+1;
             continue;
         }
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-        yWarning() << "(!!)-> ethResources::setRemoteValueUntilVerified() is in ETHRES_DEBUG_DONTREADBACK";
+        yWarning() << "ethResources::setRemoteValueUntilVerified() is in ETHRES_DEBUG_DONTREADBACK";
         return true;
 #endif
 
@@ -1445,7 +1445,7 @@ bool ethResources::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, u
 
         if(false == verifyRemoteValue(id32, (uint8_t *) value, size, verificationtimeout, verificationretries))
         {
-            yWarning() << "(!!)-> ethResources::setRemoteValueUntilVerified() had an error while calling verifyRemoteValue() in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt+1;
+            yWarning() << "ethResources::setRemoteValueUntilVerified() had an error while calling verifyRemoteValue() in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt+1;
         }
         else
         {
@@ -1461,13 +1461,13 @@ bool ethResources::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, u
     {
         if(attempt > 1)
         {
-            yWarning() << "(!!)-> ethResources::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt;
+            yWarning() << "ethResources::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt;
         }
         else
         {
             if(verbosewhenok)
             {
-                yWarning() << "(OK)-> ethResources::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt;
+                yDebug() << "ethResources::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt;
             }
         }
     }
@@ -1487,7 +1487,7 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-        yWarning() << "(!!)-> ethResources::verifyRemoteValue() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not verify";
+        yWarning() << "ethResources::verifyRemoteValue() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not verify";
         return true;
 #endif
 
@@ -1568,7 +1568,7 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
             }
             else
             {
-                yWarning() << "(OK)-> ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1;
+                yDebug() << "ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1;
             }
         }
     }
@@ -1602,7 +1602,7 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
             // send ask message
             if(false == addGetMessageWithSignature(id2send, signature))
             {
-                yWarning() << "(!!)-> ethResources::verifyRemoteValue() cannot transmit a request to BOARD" << get_protBRDnumber()+1;
+                yWarning() << "ethResources::verifyRemoteValue() cannot transmit a request to BOARD" << get_protBRDnumber()+1;
             //    free(datainside);
             //    stopNetworkQuerySession(sem);
             //    yError() << "ethResources::verifyRemoteValue() cannot transmit a request about" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
@@ -1626,7 +1626,7 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
                 //    stopNetworkQuerySession(sem);
                 //    yError() << "ethResources::verifyRemoteValue() received a reply about" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
                 //    return false;
-                    yWarning() << "(!!)-> ethResources::verifyRemoteValue() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
+                    yWarning() << "ethResources::verifyRemoteValue() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
                 }
                 else
                 {
@@ -1640,7 +1640,7 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
 
             if(!replied)
             {
-                yWarning() << "(!!)-> ethResources::verifyRemoteValue() cannot have a reply from BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
+                yWarning() << "ethResources::verifyRemoteValue() cannot have a reply from BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
             }
 
         }
@@ -1671,12 +1671,12 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
                 {
                     if(verbosewhenok)
                     {
-                        yWarning() << "(OK)-> ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+                        yDebug() << "ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
                     }
                 }
                 else
                 {
-                    yWarning() << "(!!)-> ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+                    yWarning() << "ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
                 }
                 valueisverified = true;
             }

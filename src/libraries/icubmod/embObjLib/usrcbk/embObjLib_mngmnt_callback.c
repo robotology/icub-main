@@ -209,7 +209,7 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
         "[INFO]",
         "[DEBUG]",
         "[WARNING]",
-        "[ERROR",
+        "[ERROR]",
         "[FATAL]",
         "[UNKNOWN]"
     };

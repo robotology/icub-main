@@ -201,7 +201,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
     if (!(m_pBusManager=new FlyCapture2::BusManager()))
     {
-        fprintf(stderr,"ERROR: failed to open Firewire Bus Manager\n");
+        yError("failed to open Firewire Bus Manager\n");
         return false;
     }
 
@@ -210,7 +210,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
     if (!m_nNumCameras)
     {
-        fprintf(stderr,"ERROR: no active cameras\n");
+        yError("no active cameras\n");
         return false;
     }
 
@@ -231,12 +231,12 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     {
         if (config.check("d"))
         {
-            //fprintf(stderr,"WARNING: --d <unit_number> parameter is deprecated, use --guid <64_bit_global_unique_identifier> instead\n");
+            //yWarning("WARNING: --d <unit_number> parameter is deprecated, use --guid <64_bit_global_unique_identifier> instead\n");
             //idCamera=config.find("d").asInt();
 
             if (idCamera<0 || idCamera>=m_nNumCameras)
             {
-                fprintf(stderr,"ERROR: invalid camera number\n");
+                yError("invalid camera number\n");
                 return false;       
             }
         }
@@ -247,7 +247,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
     if (!(m_pCamera=new FlyCapture2::Camera()))
     {
-        fprintf(stderr,"ERROR: failed to create camera\n");
+        yError("failed to create camera\n");
         return false;
     }
 
@@ -257,8 +257,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     error=m_pCamera->GetCameraInfo(&m_CameraInfo);
     if (manage(error)) return false;
 
-    fprintf(stderr,"GUID = %x%x",Guid.value[0],Guid.value[1]);
-    fprintf(stderr,"%x%x\n",Guid.value[2],Guid.value[3]);
+    yInfo("GUID = %x%x",Guid.value[0],Guid.value[1]);
+    yInfo("%x%x\n",Guid.value[2],Guid.value[3]);
 
     mHires=(strcmp("1032x776",m_CameraInfo.sensorResolution)==0);
 
@@ -361,7 +361,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         break;
 
     default:
-        fprintf(stderr,"Reading video format from camera\n");    
+        yInfo("Reading video format from camera\n");    
     }
 
     for (int f=FlyCapture2::BRIGHTNESS; f<=FlyCapture2::TEMPERATURE; ++f)
@@ -381,7 +381,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
                 error=m_pCamera->GetProperty(&prop);
                 if (error.GetType()!=FlyCapture2::PGRERROR_OK)
                 {
-                    fprintf(stderr,"WARNING: feature %d %s\n",f,error.GetDescription());
+                    yWarning("feature %d %s\n",f,error.GetDescription());
                 }
                 prop.onOff=(f!=FlyCapture2::AUTO_EXPOSURE && f!=FlyCapture2::IRIS && f<FlyCapture2::TRIGGER_MODE);
                 prop.autoManualMode=false;
@@ -389,17 +389,17 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
                 error=m_pCamera->SetProperty(&prop);
                 if (error.GetType()!=FlyCapture2::PGRERROR_OK)
                 {
-                    fprintf(stderr,"WARNING: feature %d %s\n",f,error.GetDescription());
+                    yWarning("feature %d %s\n",f,error.GetDescription());
                 }
             }
             else
             {
-                fprintf(stderr,"Feature %d not present\n");
+                yError("Feature %d not present\n");
             }
         }
         else
         {
-            fprintf(stderr,"Feature %d %s\n",f,error.GetDescription());
+            yError("Feature %d %s\n",f,error.GetDescription());
         }
     }
 
@@ -580,7 +580,7 @@ bool CFWCamera_DR2_2::SetF7(int mode,int xdim,int ydim,int pixel_format,int spee
     {
         if (mode==SKIP) // we're not in F7 mode and no mode is specified!
         {
-            fprintf(stderr,"ERROR: no format 7 mode specified\n");
+            yError("no format 7 mode specified\n");
             return false;
         }
 
@@ -596,7 +596,7 @@ bool CFWCamera_DR2_2::SetF7(int mode,int xdim,int ydim,int pixel_format,int spee
     // is given mode supported?
     if (!bSupported)
     {
-        fprintf(stderr,"ERROR: format 7 mode %d not supported\n",m_F7Info.mode);
+        yError("format 7 mode %d not supported\n",m_F7Info.mode);
         return false;
     }
 
@@ -609,7 +609,7 @@ bool CFWCamera_DR2_2::SetF7(int mode,int xdim,int ydim,int pixel_format,int spee
         }
         else
         {
-            fprintf(stderr,"ERROR: invalid format 7 pixel format %d\n",m_F7ImageSettings.pixelFormat);
+            yError("invalid format 7 pixel format %d\n",m_F7ImageSettings.pixelFormat);
             return false;
         }
     }
@@ -674,7 +674,7 @@ bool CFWCamera_DR2_2::SetF7(int mode,int xdim,int ydim,int pixel_format,int spee
 
     if (!bSettingsAreValid)
     {
-        fprintf(stderr,"ERROR: invalid format 7 settings\n");
+        yError("invalid format 7 settings\n");
         return false;
     }
 
@@ -1496,7 +1496,7 @@ bool CFWCamera_DR2_2::setFormat7WindowDC1394(unsigned int xdim,unsigned int ydim
 {
     m_AcqMutex.wait();
 
-    fprintf(stderr,"setFormat7WindowDC1394(%d,%d)\n",xdim,ydim);
+    yInfo("setFormat7WindowDC1394(%d,%d)\n",xdim,ydim);
 
     if (!m_pCamera)
     {
@@ -1683,7 +1683,7 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int bpp)
 {
     m_AcqMutex.wait();
 
-    fprintf(stderr,"setBytesPerPacketDC1394(%d)\n",bpp);
+    yInfo("setBytesPerPacketDC1394(%d)\n",bpp);
 
     if (!m_pCamera)
     {

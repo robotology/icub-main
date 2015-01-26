@@ -10,6 +10,8 @@
 #include <yarp/os/Log.h>
 #include <iostream>
 #include <string.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 const int CAN_DRIVER_BUFFER_SIZE=2047;
 
@@ -32,7 +34,7 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
     
     if (!correct)
     {
-        std::cerr<<"Error: insufficient parameters to CanBusVirtualAnalogSensor\n"; 
+        yError()<<"insufficient parameters to CanBusVirtualAnalogSensor\n"; 
         return false;
     }
 
@@ -56,13 +58,13 @@ bool CanBusVirtualAnalogSensor::open(yarp::os::Searchable& config)
     driver.open(prop);
     if (!driver.isValid())
     {
-        fprintf(stderr, "Error opening PolyDriver check parameters\n");
+        yError("Error opening PolyDriver check parameters\n");
         return false;
     }
     driver.view(pCanBus);
     if (!pCanBus)
     {
-        fprintf(stderr, "Error opening can device not available\n");
+        yError ("Error opening can device not available\n");
         return false;
     }
     driver.view(pCanBufferFactory);
@@ -229,7 +231,7 @@ bool CanBusVirtualAnalogSensor::readFullScaleAnalog(int ch)
 
     if (full_scale_read==false) 
         {                            
-            fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor 0x%X: no answer received or message lost (ch:%d)\n", boardId, ch);
+            yError("Trying to get fullscale data from sensor 0x%X: no answer received or message lost (ch:%d)\n", boardId, ch);
             return false;
         }
 
@@ -291,7 +293,7 @@ bool CanBusVirtualAnalogSensor::sensor_start(yarp::os::Searchable& analogConfig)
                 }
                 if (attempts>=15)
                 {
-                    fprintf(stderr, "*** ERROR: Trying to get fullscale data from sensor  0x%X: all attempts failed (ch:%d)\n", boardId, ch);
+                    yError("Trying to get fullscale data from sensor  0x%X: all attempts failed (ch:%d)\n", boardId, ch);
                 }
             }
 
