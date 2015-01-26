@@ -392,7 +392,7 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
     //before starting the calibration, checks for joints in hardware fault, and clears them if the user set the clearHwFaultBeforeCalibration option
     for (int i=0; i<nj; i++)
     {
-        checkHwFault(nj);
+        checkHwFault(i);
     }
 
     std::list<int>  currentSetList;
