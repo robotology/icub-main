@@ -52,7 +52,7 @@ include(embObjLib.cmake)
 #--------------------------------------------------------#
 
 include_directories (  ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/
-                       ../motionControlLib)
+                       ../skinLib)
 
 # Debug messages
 #  message(INFO " lib_cmake - embObj_includes: ${embObj_includes}")
