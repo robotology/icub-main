@@ -404,7 +404,6 @@ embObjMotionControl::embObjMotionControl() :
     _tpids        = NULL;
     res           = NULL;
     requestQueue  = NULL;
-    _tpidsEnabled = false;
     _njoints      = 0;
     _axisMap      = NULL;
     _zeros        = NULL;
@@ -808,62 +807,15 @@ bool embObjMotionControl::isEpManagedByBoard()
     return false;
 }
 
-
-bool embObjMotionControl::parsePosPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[])
+bool embObjMotionControl::parseImpedanceGroup_NewFormat(Bottle& pidsGroup, ImpedanceParameters vals[])
 {
     int j=0;
-    for(j=0; j<_njoints; j++)
-    {
-        char tmp[80];
-        sprintf(tmp, "Pid%d", j);
-
-        Bottle &xtmp = pidsGroup.findGroup(tmp);
-        myPid[j].kp = xtmp.get(1).asDouble();
-        myPid[j].kd = xtmp.get(2).asDouble();
-        myPid[j].ki = xtmp.get(3).asDouble();
-
-        myPid[j].max_int = xtmp.get(4).asDouble();
-        myPid[j].max_output = xtmp.get(5).asDouble();
-
-        myPid[j].scale = xtmp.get(6).asDouble();
-        myPid[j].offset = xtmp.get(7).asDouble();
-
-        if (xtmp.size()==10)
-        {
-            myPid[j].stiction_up_val = xtmp.get(8).asDouble();
-            myPid[j].stiction_down_val = xtmp.get(9).asDouble();
-        }
-    }
+    Bottle xtmp;
+    if (!extractGroup(pidsGroup, xtmp, "stiffness", "stiffness parameter", _njoints))  return false; for (j=0; j<_njoints; j++) vals[j].stiffness = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "damping", "damping parameter", _njoints))      return false; for (j=0; j<_njoints; j++) vals[j].damping = xtmp.get(j+1).asDouble();
     return true;
 }
 
-bool embObjMotionControl::parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[])
-{
-    int j=0;
-    for(j=0; j<_njoints; j++)
-    {
-        char tmp[80];
-        sprintf(tmp, "TPid%d", j);
-
-        Bottle &xtmp = pidsGroup.findGroup(tmp);
-        myPid[j].kp = xtmp.get(1).asDouble();
-        myPid[j].kd = xtmp.get(2).asDouble();
-        myPid[j].ki = xtmp.get(3).asDouble();
-
-        myPid[j].max_int = xtmp.get(4).asDouble();
-        myPid[j].max_output = xtmp.get(5).asDouble();
-
-        myPid[j].scale = xtmp.get(6).asDouble();
-        myPid[j].offset = xtmp.get(7).asDouble();
-
-        if (xtmp.size()==10)
-        {
-            myPid[j].stiction_up_val = xtmp.get(8).asDouble();
-            myPid[j].stiction_down_val = xtmp.get(9).asDouble();
-        }
-    }
-    return true;
-}
 bool embObjMotionControl::parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[])
 {
     int j=0;
@@ -1031,33 +983,24 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         posPidsGroup=config.findGroup("POS_PIDS", "Position Pid parameters new format");
         if (posPidsGroup.isNull()==false)
         {
-           yWarning()<< "embObjMotionControl::fromConfig() did NOT find Position Pids new format";
+           yWarning()<< "embObjMotionControl::fromConfig() did NOT find POS_PIDS new format";
            if (!parsePidsGroup_NewFormat (posPidsGroup, _pids))
            {
-               yError() << "embObjMotionControl::fromConfig(): Position Pids section: error detected in parameters syntax";
+               yError() << "embObjMotionControl::fromConfig(): POS_PIDS section: error detected in parameters syntax";
                return false;
            }
            else
            {
                if(verbosewhenok)
                {
-                    yDebug() << "embObjMotionControl::fromConfig(): Position Pids new format successfully loaded";
+                    yDebug() << "embObjMotionControl::fromConfig(): POS_PIDS new format successfully loaded";
                }
            }
         }
         else
         {
-            Bottle posPidsGroup2=config.findGroup("PIDS", "Position Pid parameters old format");
-            if (posPidsGroup2.isNull()==false)
-            {
-                yWarning() << "embObjMotionControl::fromConfig(): Position Pids section found, old format";
-                parsePosPidsGroup_OldFormat (posPidsGroup2, _pids);
-            }
-            else
-            {
-                yError() <<"embObjMotionControl::fromConfig(): Error: no PIDS group found in config file, returning";
-                return false;
-            }
+            yError() <<"embObjMotionControl::fromConfig(): Error: no POS_PIDS group found in config file, returning";
+            return false;
         }
     }
 
@@ -1068,45 +1011,24 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         trqPidsGroup=config.findGroup("TRQ_PIDS", "Torque Pid parameters new format");
         if (trqPidsGroup.isNull()==false)
         {
-           yWarning() << "embObjMotionControl::fromConfig() did NOT find Torque Pids new format";
+           yWarning() << "embObjMotionControl::fromConfig() did NOT find TRQ_PIDS new format";
            if (!parsePidsGroup_NewFormat (trqPidsGroup, _tpids))
            {
-               yError() << "embObjMotionControl::fromConfig(): Torque Pids section: error detected in parameters syntax";
+               yError() << "embObjMotionControl::fromConfig(): TRQ_PIDS section: error detected in parameters syntax";
                return false;
            }
            else
            {
                if(verbosewhenok)
                {
-                    yDebug() << "embObjMotionControl::fromConfig(): Torque Pids new format successfully loaded";
+                    yDebug() << "embObjMotionControl::fromConfig(): TRQ_PIDS new format successfully loaded";
                }
-               _tpidsEnabled = true;
            }
         }
         else
         {
-            Bottle trqPidsGroup2=config.findGroup("TORQUE_PIDS", "Torque Pid parameters old format");
-            if (trqPidsGroup2.isNull()==false)
-            {
-                yWarning() << "embObjMotionControl::fromConfig(): Torque Pids section found, old format";
-                if(!parseTrqPidsGroup_OldFormat (trqPidsGroup2, _tpids))
-                {
-                     yError() << "embObjMotionControl::fromConfig(): Torque Pids section: error detected in parameters syntax";
-                     return false;
-                }
-                else
-                {
-                    if(verbosewhenok)
-                    {
-                        yDebug() << "embObjMotionControl::fromConfig(): Torque Pids old format successfully loaded";
-                    }
-                   _tpidsEnabled = true;
-                }
-            }
-            else
-            {
-                yWarning() << "embObjMotionControl::fromConfig() detected that TORQUE_PIDS section is NOT enabled, skipping...";
-            }
+            yError() <<"embObjMotionControl::fromConfig(): Error: no TRQ_PIDS group found in config file, returning";
+            return false;
         }
     }
 
@@ -1122,28 +1044,28 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
     }
 
-    if (general.check("IMPEDANCE","DEFAULT IMPEDANCE parameters")==true)
+    Bottle impedanceGroup;
+    impedanceGroup=config.findGroup("IMPEDANCE","IMPEDANCE parameters");
+    if (impedanceGroup.isNull()==false)
     {
         if(verbosewhenok)
         {
             yDebug() << "embObjMotionControl::fromConfig() detected that IMPEDANCE parameters section is found";
         }
-        for(j=0; j<_njoints; j++)
+        if (!parseImpedanceGroup_NewFormat (impedanceGroup, _impedance_params))
         {
-            char str2[80];
-            sprintf(str2, "Imp%d", j);
-            if (config.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").check(str2)==true)
-            {
-                xtmp = config.findGroup("IMPEDANCE","DEFAULT IMPEDANCE parameters").findGroup(str2);
-                _impedance_params[j].enabled=true;
-                _impedance_params[j].stiffness = xtmp.get(1).asDouble();
-                _impedance_params[j].damping   = xtmp.get(2).asDouble();
-            }
+            yError("IMPEDANCE section: error detected in parameters syntax\n");
+            return false;
+        }
+        else
+        {
+            yInfo("IMPEDANCE section: parameters successfully loaded\n");
         }
     }
     else
     {
-        yWarning() << "embObjMotionControl::fromConfig() detected that IMPEDANCE section is NOT enabled: skipping.";
+        yError() <<"embObjMotionControl::fromConfig(): Error: no IMPEDANCE group found in config file, returning";
+        return false;
     }
 
     ////// IMPEDANCE LIMITS DEFAULT VALUES (UNDER TESTING)

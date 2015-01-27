@@ -10,7 +10,6 @@
       <params file="hardware/mechanicals/torso-ems5-mec.xml" />
 
     <group name="LIMITS">
-                                 <!--   0             1             2                           logical axis number (ControlBoardWrapper) -->
         <param name="Max">              50            30            70          </param>
         <param name="Min">             -50           -30           -20          </param>
         <param name="Currents">         5000          5000          5000        </param>
@@ -42,7 +41,11 @@
         <param name="stictionDwn">     0          0          0  </param>      
         <param name="kff">             0          0          0  </param>          
     </group>
-	
+    
+    <group name="IMPEDANCE">
+        <param name="stiffness">       0      0      0     </param>    
+        <param name="damping">         0      0      0     </param>    
+    </group>	
 	
   </device>
 </devices>

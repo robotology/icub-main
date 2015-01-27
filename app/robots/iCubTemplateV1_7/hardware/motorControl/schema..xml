@@ -64,16 +64,7 @@
 <param name="TPid3">        76            0             0             800           800           14            0             </param>       
 <param name="TPid4">        0             0             0             800           800           14            0             </param>       
 <param name="TPid5">        0             0             0             800           800           14            0             </param>       
-</group>       
- 
-<group name="IMPEDANCE">     
-<param name="Imp0">         0.6           0.01          </param>       
-<param name="Imp1">         0.6           0.01          </param>       
-<param name="Imp2">         0.4           0.01          </param>       
-<param name="Imp3">         0.4           0.01          </param>       
-<param name="Imp4">         0.4           0.01          </param>       
-<param name="Imp5">         0.4           0.01          </param>       
-</group>        
+</group>           
  
   </device>    
 </devices>     

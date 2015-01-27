@@ -15,18 +15,11 @@
         <param name="Currents">         5000            5000            5000          5000      </param>
     </group>
 
-    <group name ="JOINTS_COUPLING">
-        <param name="kinematic_mj">   1.00    0.00    0.00    0.00
-                                      1.00    0.625   0.00    0.00
-                                      0.00    -0.625  0.625   0.00
-                                      0.00    0.00    0.00    1.00   </param>  
-    </group>
-
     <group name="IMPEDANCE">
-      <param name="stiffness">	0.1     0.1   0.1    0.1    </param>
-      <param name="damping">	0.05   0.05  0.05   0.05    </param>
+        <param name="stiffness">       0         0         0         0         </param>    
+        <param name="damping">         0         0         0         0         </param>    
     </group>
-
+    
     <group name="POS_PIDS">
         <param name="kp">             1000       1500       1000       1500 </param>       
         <param name="kd">                0          0          0          0 </param>       

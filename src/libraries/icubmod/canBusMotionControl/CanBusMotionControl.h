@@ -145,9 +145,8 @@ public:
     {
         double stiffness;
         double damping;
-        bool   enabled;
         ImpedanceLimits limits;
-        ImpedanceParameters() {stiffness=0; damping=0; enabled=false;}
+        ImpedanceParameters() {stiffness=0; damping=0;}
     };
 
     bool parsePosPidsGroup_OldFormat(yarp::os::Bottle& pidsGroup, int nj, Pid myPid[]);

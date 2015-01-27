@@ -4,7 +4,6 @@
 <params robot="iCubGenova04" build="1">
     <group name="GENERAL">
         <param name="Joints"> 4 </param> <!-- the number of joints of the robot part -->
-
         <param name="AxisMap">      0             1             2             3         	</param>
         <param name="Encoder">      182.044       182.044       182.044       182.044       </param>
         <param name="Zeros">        180           180           180           180</param>
@@ -16,8 +15,6 @@
         <param name="Verbose">0</param>
     </group>
 
-
-
     <group name="VELOCITY">
         <param name="MOT_speed_estimation">	1             1             1             1	</param>
         <param name="MOT_accel_estimation">	1             1             1             1	</param>
@@ -25,35 +22,6 @@
         <param name="JNT_speed_estimation">	5             5             5             5 	</param>
         <param name="Shifts">              	8             8             8             8	</param>
         <param name="Timeout">             	100           100           100           100	</param>
-    </group>
-
-    <group name="LIMITS">
-        <!--                                    0             1             2             3         -->
-        <param name="Max">                      90            90            78            0     </param>
-        <param name="Min">                      -30           0             -80           -120  </param>
-        <param name="Currents">                 5000          5000          5000          5000  </param>
-    </group>
-
-    <group name="IMPEDANCE">
-      <param name="Imp0">	0.2	0.05	</param>
-      <param name="Imp1">	0.2	0.05	</param>
-      <param name="Imp2">	0.2	0.05	</param>
-      <param name="Imp3">	0.2	0.05	</param>
-    </group>
-
-    <group name="PIDS">
-        <!--                 Proportional  Derivative    Integral      Integral Limit              PWM Limit     scale factor >>             offset -->
-        <param name="Pid0">      1280            0         6250           750                        8000             8                          0   </param>
-        <param name="Pid1">     -1280            0        -6250           750                        8000             8                          0   </param>
-        <param name="Pid2">      1280            0         6250           750                        8000             8                          0   </param>
-        <param name="Pid3">     -1280            0        -6250           750                        8000             8                          0   </param>
-    </group>
-
-    <group name="TORQUE_PIDS">
-        <param name="TPid0"> 	 32              0           0             0                         8000             6                          0    	</param>
-        <param name="TPid1">    -32              0           0             0                         8000             6                          0   	</param>
-        <param name="TPid2">     32              0           0             0                         8000             6                          0   	</param>
-        <param name="TPid3">    -32              0           0             0                         8000             6                          0  	</param>
     </group>
 
 </params>

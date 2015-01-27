@@ -2374,11 +2374,10 @@ bool CanBusMotionControl::open (Searchable &config)
 
     // impedance parameters
     for (int j=0; j<p._njoints; j++)
-        if (p._impedance_params[j].enabled==true)
-        {
-            yarp::os::Time::delay(0.001);
-            setImpedance(j,p._impedance_params[j].stiffness,p._impedance_params[j].damping);
-        }
+    {
+        yarp::os::Time::delay(0.001);
+        setImpedance(j,p._impedance_params[j].stiffness,p._impedance_params[j].damping);
+    }
 
     int i;
     for(i = 0; i < p._njoints; i++)

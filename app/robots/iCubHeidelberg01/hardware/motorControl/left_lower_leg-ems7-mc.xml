@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
- <!-- Initialization file for EMS 7 - Left Lower Leg, 2 dof -->
-
 <devices robot="iCubHeidelberg01" build="1">
   <device name="left_lower_leg_mc" type="embObjMotionControl">
       <params file="general.xml" />
@@ -10,7 +8,6 @@
       <params file="hardware/mechanicals/left_lower_leg-ems7-mec.xml" />
 
     <group name="LIMITS">
-        <!--                      0             1      -->
         <param name="Max">        30.00         20.00		</param>
         <param name="Min">       -20.00        -20.00		</param>
         <param name="Currents">   5000          5000		</param>

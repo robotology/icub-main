@@ -7,6 +7,32 @@
       <params file="general.xml"/>
       <params file="hardware/electronics/left_upper_arm-ems1-eln.xml" />
       <params file="hardware/mechanicals/left_upper_arm-ems1-mec.xml" />
+
+    <group name="LIMITS">
+        <param name="Max">              10              160.8            80           106       </param>
+        <param name="Min">              -95.5           0               -37           15        </param>
+        <param name="Currents">         5000            5000            5000          5000      </param>
+    </group>
+
+    <group name="PIDS">
+        <param name="Pid0">  -1280             0             -1250        750            8000             8          0          </param>
+        <param name="Pid1">  -1280             0             -1250        750            8000             8          0          </param>
+        <param name="Pid2">  -1280             0             -1250        750            8000             8          0          </param>
+        <param name="Pid3">  -1280             0             -1250        750            8000             8          0          </param>
+    </group>
+
+    <group name="TORQUE_PIDS">
+        <param name="TPid0"> -13  	        0   	    	0	          0        		  8000    	       6  	    0          </param>
+        <param name="TPid1"> -13  	        0	            0		      0		          8000    	       6  	    0 	       </param>
+        <param name="TPid2"> -13 	        0   		    0   		  0    		      8000    	       6  	    0 	       </param>
+        <param name="TPid3"> -32            0   		    0   		  0    		      8000    	       6  	    0 	       </param>
+    </group>
+
+    <group name="IMPEDANCE">
+        <param name="stiffness">       0      0      0      0      </param>    
+        <param name="damping">         0      0      0      0      </param>    
+    </group>
+    
   </device>
 </devices>
 

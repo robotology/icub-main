@@ -10,15 +10,14 @@
       <params file="hardware/mechanicals/right_upper_arm-ems3-mec.xml" />
 
     <group name="LIMITS">
-        <!--                      0             1               2            3      -->
         <param name="Max">        10            160.8         80            106         </param>
         <param name="Min">        -95.5         0             -37           15          </param>
         <param name="Currents">   5000          5000          5000          5000        </param>
     </group>
 
     <group name="IMPEDANCE">
-      <param name="stiffness">	0.1   0.1   0.1 0.1   </param>
-      <param name="damping">	0.05 0.05 0.05 0.05   </param>
+        <param name="stiffness">	0.1     0.1     0.1    0.1   </param>
+        <param name="damping">	   0.05    0.05    0.05   0.05   </param>
     </group>
 
     <group name="POS_PIDS">

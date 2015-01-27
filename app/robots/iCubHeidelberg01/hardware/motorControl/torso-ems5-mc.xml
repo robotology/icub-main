@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
- <!-- Initialization file for EMS 5 - Torso, 3 dof -->
-
 <devices robot="iCubHeidelberg01" build="1">
   <device name="torso_mc" type="embObjMotionControl">
       <params file="general.xml" />
@@ -10,12 +8,16 @@
       <params file="hardware/mechanicals/torso-ems5-mec.xml" />
 
     <group name="LIMITS">
-                                 <!--   0             1             2                           logical axis number (ControlBoardWrapper) -->
         <param name="Max">              50            25            50          </param>
         <param name="Min">             -50           -25           -20          </param>
         <param name="Currents">         5000          5000          5000        </param>
     </group>
-
+    
+    <group name="IMPEDANCE">
+        <param name="stiffness">         0.0	     0.0	   0.0       </param>
+        <param name="damping">           0.0	     0.0	   0.0       </param>
+    </group>
+    
 	<group name="POS_PIDS">
         <param name="kp">              1000   -1500   -1500 </param>       
         <param name="kd">                 0       0       0 </param>       

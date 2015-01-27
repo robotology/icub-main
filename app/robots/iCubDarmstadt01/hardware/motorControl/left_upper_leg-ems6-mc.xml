@@ -10,17 +10,9 @@
       <params file="hardware/mechanicals/left_upper_leg-ems6-mec.xml" />
 
     <group name="LIMITS">
-        <!--                                    0             1             2             3         -->
         <param name="Max">                      85            90            70            0     </param>
         <param name="Min">                      -30           0             -70           -100  </param>
         <param name="Currents">                 5000          5000          5000          5000  </param>
-    </group>
-
-    <group name="IMPEDANCE">
-      <param name="Imp0">	0.2	0.05	</param>
-      <param name="Imp1">	0.2	0.05	</param>
-      <param name="Imp2">	0.2	0.05	</param>
-      <param name="Imp3">	0.2	0.05	</param>
     </group>
 
     <group name="POS_PIDS">
@@ -36,7 +28,12 @@
         <param name="stictionDwn">         0           0          0          0 </param>       
         <param name="kff">                 0           0          0          0 </param>  
     </group>
-	
+    
+     <group name="IMPEDANCE">
+        <param name="stiffness">       0      0      0      0     </param>    
+        <param name="damping">         0      0      0      0     </param>    
+    </group>
+    
 	<group name="TRQ_PIDS">
         <param name="kp">             40        -25         25         25     </param>       
         <param name="kd">              0          0          0          0     </param>       

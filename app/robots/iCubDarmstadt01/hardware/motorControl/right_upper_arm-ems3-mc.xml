@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
- <!-- Initialization file for EMS 3 - Right Upper Arm, 4 dof -->
-
 <devices robot="iCubDarmstadt01" build="1">
   <device name="right_upper_arm_mc" type="embObjMotionControl">
       <params file="general.xml" />
@@ -17,8 +15,8 @@
     </group>
 
     <group name="IMPEDANCE">
-      <param name="stiffness">	0.1   0.1   0.1 0.1   </param>
-      <param name="damping">	0.05 0.05 0.05 0.05   </param>
+      <param name="stiffness">	 0.1   0.1   0.1  0.1   </param>
+      <param name="damping">	0.05  0.05  0.05 0.05   </param>
     </group>
 
     <group name="POS_PIDS">

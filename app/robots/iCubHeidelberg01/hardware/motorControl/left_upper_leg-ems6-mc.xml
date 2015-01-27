@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
- <!-- Initialization file for EMS 6 - Left Upper Leg, 4 dof -->
-
 <devices robot="iCubHeidelberg01" build="1">
   <device name="left_upper_leg_mc" type="embObjMotionControl">
       <params file="general.xml" />
@@ -10,19 +8,16 @@
       <params file="hardware/mechanicals/left_upper_leg-ems6-mec.xml" />
 
     <group name="LIMITS">
-        <!--                                    0             1             2             3         -->
-        <param name="Max">                      85            70             70            0     </param>
-        <param name="Min">                      -30           0             -70           -100  </param>
-        <param name="Currents">                 5000          5000          5000          5000  </param>
+        <param name="Max">                85          70         70           0  </param>
+        <param name="Min">               -30           0        -70        -100  </param>
+        <param name="Currents">         5000        5000       5000        5000  </param>
     </group>
 
     <group name="IMPEDANCE">
-      <param name="Imp0">	0.2	0.05	</param>
-      <param name="Imp1">	0.2	0.05	</param>
-      <param name="Imp2">	0.2	0.05	</param>
-      <param name="Imp3">	0.2	0.05	</param>
+        <param name="stiffness">         0.0	     0.0	   0.0         0.0 </param>
+        <param name="damping">           0.0	     0.0	   0.0         0.0 </param>
     </group>
-
+    
     <group name="POS_PIDS">
         <param name="kp">              -1500        1500      -1000       1280 </param>       
         <param name="kd">                  0           0          0          0 </param>       

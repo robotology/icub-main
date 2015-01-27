@@ -16,6 +16,10 @@
         <param name="Currents">   500           800           800           485           485           485           485           485           485           485           485           485   	</param>
     </group>
 
+    <group name="IMPEDANCE">
+        <param name="stiffness">       0      0      0      0      0      0      0      0      0      0      0      0    </param>    
+        <param name="damping">         0      0      0      0      0      0      0      0      0      0      0      0    </param>    
+    </group>
     
 	<group name="POS_PIDS">
         <param name="kp">           -200          1000          -1000         200   -500          -8000         8000          -8000         -8000         -8000         8000          -1200    </param>       

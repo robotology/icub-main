@@ -143,14 +143,8 @@ struct ImpedanceParameters
 {
     double stiffness;
     double damping;
-    bool   enabled;
-    //ImpedanceLimits limits;
-    ImpedanceParameters()
-    {
-        stiffness=0;
-        damping=0;
-        enabled=false;
-    }
+    ImpedanceLimits limits;
+    ImpedanceParameters() {stiffness=0; damping=0;}
 };
 
 struct SpeedEstimationParameters
@@ -239,7 +233,6 @@ private:
     double *_zeros;                             /** encoder zeros */
     Pid *_pids;                                 /** initial gains */
     Pid *_tpids;                                /** initial torque gains */
-    bool _tpidsEnabled;                         /** abilitation for torque gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
 
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
@@ -302,9 +295,9 @@ private:
     bool configure_mais(yarp::os::Searchable &config);
     bool dealloc();
     bool isEpManagedByBoard();
-    bool parsePosPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[]);
-    bool parseTrqPidsGroup_OldFormat(Bottle& pidsGroup, Pid myPid[]);
     bool parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[]);
+    bool parseImpedanceGroup_NewFormat(Bottle& pidsGroup, ImpedanceParameters vals[]);
+       
     bool getStatusBasic_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);             // helper function
     bool getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);     // helper function
     bool interactionModeStatusConvert_embObj2yarp(eOenum08_t embObjMode, int &vocabOut);

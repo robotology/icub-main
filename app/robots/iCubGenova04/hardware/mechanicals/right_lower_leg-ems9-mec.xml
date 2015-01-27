@@ -17,8 +17,6 @@
         <param name="Verbose">   0   </param>
     </group>
 
-
-
     <group name="VELOCITY">
         <param name="MOT_speed_estimation">     1		1	</param>
         <param name="MOT_accel_estimation">     1		1	</param>
@@ -26,29 +24,6 @@
         <param name="JNT_speed_estimation">     5		5	</param>
         <param name="Shifts">                   8		8	</param>
         <param name="Timeout">                  100		100	</param>
-    </group>
-
-    <group name="LIMITS">
-        <!--                                    0             1      -->
-        <param name="Max">                      39            22        </param>
-        <param name="Min">                     -20           -22        </param>
-        <param name="Currents">                 5000          5000      </param>
-    </group>
-
-    <group name="IMPEDANCE">
-      <param name="Imp0">	0.2	0.05	</param>
-      <param name="Imp1">	0.2	0.05	</param>
-    </group>
-
-    <group name="PIDS">
-        <!--                 Proportional  Derivative    Integral      Integral Limit      PWM Limit     scale factor   offset -->
-        <param name="Pid0">     1280            0          6250            750                5000          8           0             </param>
-        <param name="Pid1">     1280            0          6250            750                5000          8           0             </param>
-    </group>
-
-    <group name="TORQUE_PIDS">
-        <param name="TPid0"> 	12              0             0             0          	      5000          6           0 		</param>
-        <param name="TPid1">	12              0             0             0          	      5000          6           0 		</param>
     </group>
 
 </params>

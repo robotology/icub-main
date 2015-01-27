@@ -29,6 +29,11 @@
         <param name="stictionDwn">        0       0       0 </param>       
         <param name="kff">                0       0       0 </param>       
     </group>
+
+    <group name="IMPEDANCE">
+        <param name="stiffness">       0         0          0    </param>    
+        <param name="damping">         0         0          0    </param>    
+    </group>
 	
 	<group name="TRQ_PIDS">
         <param name="kp">             50         50         50  </param>       
