@@ -3,6 +3,7 @@
 
 #include <QDialog>
 #include <QTimer>
+#include <QMutex>
 namespace Ui {
 class LoadingWidget;
 }
