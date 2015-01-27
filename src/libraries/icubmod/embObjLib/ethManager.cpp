@@ -10,7 +10,6 @@
 #include <string>
 #include <ethManager.h>
 #include <ethResource.h>
-#include <yarp/os/impl/PlatformTime.h>
 #include <errno.h>
 
 #include "EOYtheSystem.h"
@@ -945,7 +944,7 @@ void EthReceiver::run()
 
 
     ACE_Time_Value recvTimeOut;
-    fromDouble(recvTimeOut, 0.010); // timeout of socket reception is 10 milliseconds
+    recvTimeOut.set(0.010f);
 
     while(!isStopping())
     {   // forever loop... almost
@@ -1054,7 +1053,7 @@ void EthReceiver::run()
 
 
     ACE_Time_Value recvTimeOut;
-    fromDouble(recvTimeOut, 0.010); // timeout of socket reception is 10 milliseconds
+    recvTimeOut.set(0.010f); // timeout of socket reception is 10 milliseconds
 
 #ifdef ETHRECEIVER_STATISTICS_ON
     bool isFirst =true;
@@ -1226,7 +1225,8 @@ void EthReceiver::run()
 
 
     ACE_Time_Value recvTimeOut;
-    fromDouble(recvTimeOut, 0.01);
+    recvTimeOut.set(0.010f); // timeout of socket reception is 10 milliseconds
+
     double myTestTimeout = recvTimeOut.sec() + (double)recvTimeOut.msec()/1000.0f;
 
 
