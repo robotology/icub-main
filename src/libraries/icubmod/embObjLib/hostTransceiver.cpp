@@ -886,7 +886,7 @@ void hostTransceiver::eoprot_override_mc(void)
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mc_controller_config_jointcoupling
         }
-#elif defined(EOMOTIONCONTROL_USE_VER_1_3)
+#elif defined(EOMOTIONCONTROL_USE_VER_1_2)
 #else
  #error specify one
 #endif
