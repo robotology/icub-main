@@ -15,6 +15,10 @@ add_subdirectory(embObjProtoTools/boardTransceiver)
 add_subdirectory(canLoader)
 add_subdirectory(ethLoader)
 
+if(ICUB_USE_Qt5)
+   add_subdirectory(iCubSkinGui-qt)
+endif()
+
 if(ICUB_USE_GTK2)
    add_subdirectory(robotMotorGui)
    add_subdirectory(iCubSkinGui-gtk)
