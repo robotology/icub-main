@@ -1,1 +1,0 @@
-Template for the robot with ETHERNET BOARDS, but mechanics V1
