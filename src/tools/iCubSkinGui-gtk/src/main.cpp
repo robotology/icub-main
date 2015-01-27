@@ -286,7 +286,11 @@ int main(int argc, char *argv[])
     gpActivationMap=new double[gImageArea];
     gpImageBuff=new guchar[gImageSize];
 
+#if !GLIB_CHECK_VERSION(2, 32, 0)
+    // since Glib 2.32 g_thread_init is deprecated
     g_thread_init (NULL);
+#endif
+
     gdk_threads_init ();
     gdk_threads_enter ();
     gtk_init(&argc,&argv);
