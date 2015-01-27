@@ -312,6 +312,7 @@ bool embObjMotionControl::alloc(int nj)
 
     _limitsMax=allocAndCheck<double>(nj);
     _limitsMin=allocAndCheck<double>(nj);
+    _kinematic_mj=allocAndCheck<double>(16);
     _currentLimits=allocAndCheck<double>(nj);
     checking_motiondone=allocAndCheck<bool>(nj);
 
@@ -357,6 +358,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_estim_params);
     checkAndDestroy(_limitsMax);
     checkAndDestroy(_limitsMin);
+    checkAndDestroy(_kinematic_mj);
     checkAndDestroy(_currentLimits);
     checkAndDestroy(checking_motiondone);
     checkAndDestroy(_velocityShifts);
@@ -1029,7 +1031,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         posPidsGroup=config.findGroup("POS_PIDS", "Position Pid parameters new format");
         if (posPidsGroup.isNull()==false)
         {
-           yWarning()<< "embObjMotionControl::fromConfig() did not find Position Pids new format";
+           yWarning()<< "embObjMotionControl::fromConfig() did NOT find Position Pids new format";
            if (!parsePidsGroup_NewFormat (posPidsGroup, _pids))
            {
                yError() << "embObjMotionControl::fromConfig(): Position Pids section: error detected in parameters syntax";
@@ -1039,7 +1041,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
            {
                if(verbosewhenok)
                {
-                    yDebug() << "embObjMotionControl::fromConfig(): Position Pids successfully loaded";
+                    yDebug() << "embObjMotionControl::fromConfig(): Position Pids new format successfully loaded";
                }
            }
         }
@@ -1066,7 +1068,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         trqPidsGroup=config.findGroup("TRQ_PIDS", "Torque Pid parameters new format");
         if (trqPidsGroup.isNull()==false)
         {
-           yWarning() << "embObjMotionControl::fromConfig(): Torque Pids section found, new format";
+           yWarning() << "embObjMotionControl::fromConfig() did NOT find Torque Pids new format";
            if (!parsePidsGroup_NewFormat (trqPidsGroup, _tpids))
            {
                yError() << "embObjMotionControl::fromConfig(): Torque Pids section: error detected in parameters syntax";
@@ -1096,7 +1098,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                 {
                     if(verbosewhenok)
                     {
-                        yDebug() << "embObjMotionControl::fromConfig(): Torque Pids new format successfully loaded";
+                        yDebug() << "embObjMotionControl::fromConfig(): Torque Pids old format successfully loaded";
                     }
                    _tpidsEnabled = true;
                 }
@@ -1157,6 +1159,28 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         _impedance_limits[j].param_c=   0.013;
     }
 
+    /////// JOINTS_COUPLING
+    if (_njoints<=4)
+    {
+        Bottle &coupling=config.findGroup("JOINTS_COUPLING");
+        if (coupling.isNull())
+        {
+            yWarning() << "embObjMotionControl::fromConfig() detected that Group JOINTS_COUPLING is not found in configuration file";
+            //return false;
+        }
+        // current limit
+        if (!extractGroup(coupling, xtmp, "kinematic_mj","the kinematic matrix 4x4 which tranforms from joint space to motor space", 16))
+        {
+            for(i=1; i<xtmp.size(); i++) _kinematic_mj[i-1]=0.0;
+        }
+        else
+            for(i=1; i<xtmp.size(); i++) _kinematic_mj[i-1]=xtmp.get(i).asDouble();
+    }
+    else
+    {
+        //we are skipping JOINTS_COUPLING for EMS boards which control MC4 boards (for now)
+    }
+    
     /////// LIMITS
     Bottle &limits=config.findGroup("LIMITS");
     if (limits.isNull())
@@ -1441,31 +1465,23 @@ bool embObjMotionControl::init()
 
     }
 
-#undef SET_JMATRIX
-    // marco.accame: this code is for marco.randazzo
-#if defined(SET_JMATRIX)
+    /////////////////////////////////////////////
+    // invia la configurazione del controller  //
+    /////////////////////////////////////////////
+    
+    {   // configuration of the joint coupling matrix inside the controller
 
-    {   // config of the joint coupling matrix inside the controller
-
-        float xmlmatrix[4][4] =
-        {
-            { 0.4, 1.3, 3.0, 2.1 },
-            { 0.5, 1.6, 9.0, 0.1 },
-            { 5.4, 1.8, 1.0, 3.1 },
-            { 9.4, 1.7, 3.4, 2.9 }
-        };
-
-        //#warning --> marco.accame but it is eoprot_tag_mc_controller_config_jointcoupling
         eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_controller, 0, eoprot_tag_mc_controller_config_jointcoupling);
 
         eOq17_14_t protmatrix[4][4] = {0};
-        printf("\n printing the joint coupling matrix\n");
+ 
         for(int i=0; i<4; i++)
         {
             for(int j=0; j<4; j++)
             {
-                protmatrix[i][j] = eo_common_float_to_Q17_14(xmlmatrix[i][j]);
-                printf("pos = %d %d: xml=%f, prot=%x, conv = %f\n", i, j, xmlmatrix[i][j], protmatrix[i][j], eo_common_Q17_14_to_float(protmatrix[i][j]));
+                int k=i*4+j;
+                protmatrix[i][j] = eo_common_float_to_Q17_14(_kinematic_mj[k]);
+                //printf("pos = %d %d: xml=%f, prot=%x, conv = %f\n", i, j, _kinematic_mj[k], protmatrix[i][j], eo_common_Q17_14_to_float(protmatrix[i][j]));
             }
         }
 
@@ -1483,8 +1499,6 @@ bool embObjMotionControl::init()
         }
 
     }
-
-#endif
 
     yTrace() << "EmbObj Motion Control for board " << _fId.boardNumber << " istantiated correctly\n";
     return true;

@@ -245,6 +245,7 @@ private:
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
+    double *_kinematic_mj;                      /** the kinematic coupling matrix from joints space to motor space */
     double *_currentLimits;                     /** current limits */
     int *_velocityShifts;                       /** velocity shifts */
     int *_velocityTimeout;                      /** velocity shifts */
