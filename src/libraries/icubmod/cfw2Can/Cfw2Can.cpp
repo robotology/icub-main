@@ -171,7 +171,12 @@ bool Cfw2Can::canGetErrors(CanErrors &err)
 
 CanMessage &Cfw2CanMessage::operator=(const CanMessage &l)
 {
-    const Cfw2CanMessage &tmp=dynamic_cast<const Cfw2CanMessage &>(l);
+    // reinterpret_cast is used here for performance reasons, and it works 
+    // with the current version of the iCub software. However it can hide bugs
+    // if this operator is used in a reckless way (i.e. assigning 
+    // a CanMessage of different type to a Cfw2CanMessage).
+    // For more information, check https://github.com/robotology/icub-main/pull/82
+    const Cfw2CanMessage &tmp=reinterpret_cast<const Cfw2CanMessage &>(l);
     memcpy(msg, tmp.msg, sizeof(CFWCAN_MSG));
     return *this;
 }
