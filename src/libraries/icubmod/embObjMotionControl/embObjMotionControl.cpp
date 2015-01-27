@@ -1441,7 +1441,9 @@ bool embObjMotionControl::init()
 
     }
 
-#if defined(EOMOTIONCONTROL_USE_VER_1_3)
+#undef SET_JMATRIX
+    // marco.accame: this code is for marco.randazzo
+#if defined(SET_JMATRIX)
 
     {   // config of the joint coupling matrix inside the controller
 
@@ -1482,9 +1484,6 @@ bool embObjMotionControl::init()
 
     }
 
-#elif defined(EOMOTIONCONTROL_USE_VER_1_2)
-#else
-    #error defoifvwevewv
 #endif
 
     yTrace() << "EmbObj Motion Control for board " << _fId.boardNumber << " istantiated correctly\n";

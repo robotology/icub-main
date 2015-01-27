@@ -876,9 +876,7 @@ void hostTransceiver::eoprot_override_mc(void)
             EO_INIT(.tag)           eoprot_tag_mc_motor_status_basic,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mc_motor_status_basic
-        }
-#if defined(EOMOTIONCONTROL_USE_VER_1_3)
-,
+        },
         {   // controller_config_jointcoupling
             EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
             EO_INIT(.entity)        eoprot_entity_mc_controller,
@@ -886,10 +884,6 @@ void hostTransceiver::eoprot_override_mc(void)
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mc_controller_config_jointcoupling
         }
-#elif defined(EOMOTIONCONTROL_USE_VER_1_2)
-#else
- #error specify one
-#endif
     };
 
 
