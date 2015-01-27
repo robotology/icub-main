@@ -3,7 +3,6 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 add_subdirectory(controlBoardDumper)
-add_subdirectory(dataDumper)
 add_subdirectory(simpleClient)
 add_subdirectory(testStereoMatch)
 add_subdirectory(iCubTest)
@@ -77,19 +76,8 @@ else(ICUB_USE_OpenCV)
     message(STATUS "OpenCV not found/selected, skipping stereoCalib")
 endif(ICUB_USE_OpenCV)
 
-if(ICUB_USE_GTK2 AND ICUB_USE_OpenCV)
-    if(ICUB_OpenCV_LEGACY)
-        message(STATUS "OpenCV legacy detected, skipping dataSetPlayer")
-    else(ICUB_OpenCV_LEGACY)
-        add_subdirectory(dataSetPlayer)
-    endif(ICUB_OpenCV_LEGACY)
-else(ICUB_USE_GTK2 AND ICUB_USE_OpenCV)
-    message(STATUS "OpenCV or GTK2 not found/selected, skipping dataSetPlayer")
-endif(ICUB_USE_GTK2 AND ICUB_USE_OpenCV)
-
 if((ICUB_USE_GSL AND ICUB_USE_IPOPT) AND (ICUB_USE_OpenCV AND (NOT ICUB_OpenCV_LEGACY)))
     add_subdirectory(depth2kin)
 else()
     message(STATUS "Unmatched dependencies, skipping depth2kin")
 endif()
-

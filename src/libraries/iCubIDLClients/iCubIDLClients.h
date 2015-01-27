@@ -23,7 +23,6 @@
 // 1. #include "new_service_IDL.h"
 // 2. @ref new_service_IDL
 
-#include "dataSetPlayer_IDL.h"
 #include "depth2kin_IDL.h"
 #include "fingersTuner_IDL.h"
 
@@ -36,7 +35,6 @@
 * interface to the IDL services made available by iCub 
 * software. \n 
 * Available services are listed below: \n 
-* - @ref dataSetPlayer_IDL 
 * - @ref depth2kin_IDL 
 * - @ref fingersTuner_IDL 
 */
