@@ -51,7 +51,12 @@ class yarp::dev::Cfw2CanMessage:public yarp::dev::CanMessage
     virtual ~Cfw2CanMessage()
     {
     }
-
+     
+    /**
+      * This operator is defined in a general way, but it will crash if you 
+      * try to assign to a Cfw2CanMessage a CanMessage of a different type. 
+      * For more information, check https://github.com/robotology/icub-main/pull/82
+      */
     virtual CanMessage &operator=(const CanMessage &l);
 
     virtual unsigned int getId() const
