@@ -2,7 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QDebug>
 #include "log.h"
-#include "dc1394Slider.h"
+#include "dc1394slider.h"
 #include "dc1394sliderwb.h"
 
 static QStringList video_mode_labels;
