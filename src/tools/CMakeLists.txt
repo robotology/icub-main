@@ -17,7 +17,7 @@ add_subdirectory(ethLoader)
 
 if(ICUB_USE_GTK2)
    add_subdirectory(robotMotorGui)
-   add_subdirectory(iCubSkinGui)
+   add_subdirectory(iCubSkinGui-gtk)
    if(ICUB_GTK2_LEGACY)
       message(STATUS "GTK2 legacy detected, skipping skinManagerGui")
    else(ICUB_GTK2_LEGACY)
