@@ -1,12 +1,34 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
- <!-- Initialization file for EMS 5 - Torso, 3 dof -->
-
 <devices robot="iCubGenova04" build="1">
   <device name="torso_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/torso-ems5-eln.xml" />
       <params file="hardware/mechanicals/torso-ems5-mec.xml" />
+  
+    <group name="LIMITS">
+        <param name="Max">              50            30            70          </param>
+        <param name="Min">             -50           -30           -20          </param>
+        <param name="Currents">         5000          5000          5000        </param>
+    </group>
+
+    <group name="PIDS">
+        <param name="Pid0">     1792          0             6250            750              8000          8            0    </param>
+        <param name="Pid1">     2560          0             6250            750              8000          8            0    </param>
+        <param name="Pid2">     2560          0             6250           1500             16000          8            0    </param>
+    </group>
+
+    <group name="TORQUE_PIDS">
+        <param name="TPid0">      19             0             0          0          	     8000          6            0  </param>
+        <param name="TPid1">      26             0             0          0          	     8000          6            0  </param>
+        <param name="TPid2">      26             0             0          0                  8000          6            0  </param>
+    </group>
+    
+    <group name="IMPEDANCE">
+      <param name="stiffness">	0      0      0    </param>
+      <param name="damping">	0      0      0    </param>
+    </group>
+    
   </device>
 </devices>
