@@ -298,6 +298,17 @@ extern void eoprot_fun_UPDT_mc_joint_status_interactionmodestatus(const EOnv* nv
 }
 
 
+
+extern void eoprot_fun_UPDT_mc_joint_config_bemf(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if(eo_ropcode_say == rd->ropcode)
+    {
+        // This is an answer to a specific question, so wake up someone!
+        wake(nv);
+    }
+}
+
+
 extern void eoprot_fun_UPDT_mc_controller_config_jointcoupling(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
