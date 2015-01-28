@@ -273,7 +273,7 @@ bool embObjMotionControl::extractGroup(Bottle &input, Bottle &out, const std::st
     Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
     if (tmp.isNull())
     {
-        yError () << key1.c_str() << " not found\n";
+        yError () << key1.c_str() << " parameter not found";
         return false;
     }
 
@@ -318,6 +318,7 @@ bool embObjMotionControl::alloc(int nj)
 
     _velocityShifts=allocAndCheck<int>(nj);
     _velocityTimeout=allocAndCheck<int>(nj);
+    _kbemf=allocAndCheck<double>(nj);
 
     // Reserve space for data stored locally. values are initialize to 0
     _ref_positions = allocAndCheck<double>(nj);
@@ -363,6 +364,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(checking_motiondone);
     checkAndDestroy(_velocityShifts);
     checkAndDestroy(_velocityTimeout);
+    checkAndDestroy(_kbemf);
     checkAndDestroy(_ref_positions);
     checkAndDestroy(_command_speeds);
     checkAndDestroy(_ref_speeds);
@@ -844,21 +846,6 @@ bool embObjMotionControl::parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[
         for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
     }
 
-    //optional kff
-    xtmp = pidsGroup.findGroup("kff");
-    if (!xtmp.isNull())
-    {
-        if(xtmp.size() != _njoints+1)
-        {
-            printf("Found Pid kff parameter, but with icorrect number of entries, expected %d, got %d\n", _njoints, xtmp.size() -1);
-            return false;
-        }
-        for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
-    }
-    else
-    {
-         for (j=0; j<_njoints; j++) myPid[j].kff = 0;
-    }
     return true;
 }
 
@@ -925,7 +912,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             	_zeros[i-1] = xtmp.get(i).asDouble();
 
 
-    // Torque Id
+    // Torque sensors stuff
     if (!extractGroup(general, xtmp, "TorqueId","a list of associated joint torque sensor ids", _njoints))
     {
         fprintf(stderr, "Using default value = 0 (disabled)\n");
@@ -940,7 +927,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (!extractGroup(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", _njoints))
     {
-        fprintf(stderr, "Using default value = 0 (disabled)\n");
+        yWarning() <<  "embObjMotionControl::fromConfig() detected that TorqueChan is not present: using default value = 0 (disabled)";
         for(i=1; i<_njoints+1; i++)
             _torqueSensorChan[i-1] = 0;
     }
@@ -948,7 +935,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     {
         for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
     }
-
 
     if (!extractGroup(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", _njoints))
     {
@@ -968,14 +954,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         }
     }
 
-//    ////// PIDS
-//    Bottle pidsGroup=config.findGroup("PIDS", "PID parameters");
-//    if (pidsGroup.isNull())
-//    {
-//        yError() << ": no PIDS group found in for board" << _fId.boardNumber << "... closing";
-//        return false;
-//    }
-
 
     ////// POSITION PIDS
     {
@@ -983,7 +961,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         posPidsGroup=config.findGroup("POS_PIDS", "Position Pid parameters new format");
         if (posPidsGroup.isNull()==false)
         {
-           yWarning()<< "embObjMotionControl::fromConfig() did NOT find POS_PIDS new format";
            if (!parsePidsGroup_NewFormat (posPidsGroup, _pids))
            {
                yError() << "embObjMotionControl::fromConfig(): POS_PIDS section: error detected in parameters syntax";
@@ -1011,7 +988,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         trqPidsGroup=config.findGroup("TRQ_PIDS", "Torque Pid parameters new format");
         if (trqPidsGroup.isNull()==false)
         {
-           yWarning() << "embObjMotionControl::fromConfig() did NOT find TRQ_PIDS new format";
            if (!parsePidsGroup_NewFormat (trqPidsGroup, _tpids))
            {
                yError() << "embObjMotionControl::fromConfig(): TRQ_PIDS section: error detected in parameters syntax";
@@ -1030,20 +1006,18 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             yError() <<"embObjMotionControl::fromConfig(): Error: no TRQ_PIDS group found in config file, returning";
             return false;
         }
+        if (!extractGroup(trqPidsGroup, xtmp, "kbemf", "Pid kbemf parameter", _njoints))
+        {
+            yError() <<"embObjMotionControl::fromConfig(): Error: no kbemf parameter found in TRQ_PIDS section";
+            return false;
+        }
+        else
+        {
+            for (j=0; j<_njoints; j++) _kbemf[j] = xtmp.get(j+1).asDouble();
+        }
     }
 
-
-    if (!extractGroup(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", _njoints))
-    {
-        yWarning() <<  "embObjMotionControl::fromConfig() detected that TorqueChan is not present: sing default value = 0 (disabled)";
-        for(i=1; i<_njoints+1; i++)
-            _torqueSensorChan[i-1] = 0;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
-    }
-
+    ////// IMPEDANCE PARAMETERS
     Bottle impedanceGroup;
     impedanceGroup=config.findGroup("IMPEDANCE","IMPEDANCE parameters");
     if (impedanceGroup.isNull()==false)
@@ -1335,8 +1309,7 @@ bool embObjMotionControl::init()
         jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[logico]);
         jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[logico]);
 
-        #warning --> marco.accame: so far jconfig.bemf at startup is still configured zero. we must take its value from xml
-        jconfig.bemf.value = 0;
+        jconfig.bemf.value = _kbemf[logico];
         jconfig.bemf.offset = 0;
         jconfig.bemf.dummy = 0;
 
@@ -3534,11 +3507,9 @@ bool embObjMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, 
 
 bool embObjMotionControl::getBemfParamRaw(int j, double *bemf)
 {
-#if 0
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_bemf);
 
     // Sign up for waiting the reply
-
     eoThreadEntry *tt = appendWaitRequest(j, id32);
     tt->setPending(1);
 
@@ -3565,31 +3536,24 @@ bool embObjMotionControl::getBemfParamRaw(int j, double *bemf)
     res->readBufferedValue(id32, (uint8_t *)&eobemf, &size);
 
     yWarning() << "embObjMotionControl::getBemfParamRaw() is temporarily obtaining bemf converting from int16_t to double: TODO: find out correct conversion.";
-
     #warning -> marco.accame: the double bemf is now just casted from int16_t. TODO: find out correct conversion.
 
     *bemf = (double)eobemf.value;
 
     return true;
-
-#else
-    #warning -> marco.accame: in embObjMotionControl::getBemfParamRaw() uncomment code to get value of variable eoprot_tag_mc_joint_config_bemf
-    return NOT_YET_IMPLEMENTED("getBemfParamRaw");
-#endif
 }
 
 bool embObjMotionControl::setBemfParamRaw(int j, double bemf)
 {
-#if 0
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_bemf);
     eOmc_bemf_t eobemf = {0};
 
     #warning -> marco.accame: the bemf is now just casted as an int16_t. TODO: find out correct conversion.
-    eobemf.value    = (int16_t)bemf;
+    yWarning() << "embObjMotionControl::setBemfParamRaw() is temporarily converting bemf from double to int16_t: TODO: find out correct conversion.";
+
+    eobemf.value    = (int16_t) bemf;
     eobemf.offset   = 0;
     eobemf.dummy    = 0;
-
-    yWarning() << "embObjMotionControl::setBemfParamRaw() is temporarily converting bemf from double to int16_t: TODO: find out correct conversion.";
 
     if(!res->addSetMessage(id32, (uint8_t *) &eobemf))
     {
@@ -3598,11 +3562,6 @@ bool embObjMotionControl::setBemfParamRaw(int j, double bemf)
     }
 
     return true;
-
-#else
-    #warning -> marco.accame: in embObjMotionControl::setBemfParamRaw() uncomment code to set value of variable eoprot_tag_mc_joint_config_bemf
-    return NOT_YET_IMPLEMENTED("setBemfParamRaw");
-#endif
 }
 
 bool embObjMotionControl::setTorqueErrorLimitRaw(int j, double limit)
