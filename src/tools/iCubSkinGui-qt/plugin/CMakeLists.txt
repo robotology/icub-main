@@ -5,7 +5,8 @@
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
-include_directories(${YARP_INCLUDE_DIRS})
+include_directories(${YARP_INCLUDE_DIRS}
+                    ${GSL_INCLUDE_DIRS})
 
 set(QtICubSkinGuiPlugin_SRCS Fingertip2Left.cpp
                              Fingertip2Right.cpp
@@ -46,7 +47,8 @@ target_link_libraries(QtICubSkinGuiPlugin YARP::YARP_OS
                                           YARP::YARP_init
                                           YARP::YARP_sig
                                           YARP::YARP_dev
-                                          icubmod)
+                                          icubmod
+                                          ${GSL_LIBRARIES})
 qt5_use_modules(QtICubSkinGuiPlugin Quick)
 
 qticub_qml_plugin(QtICubSkinGuiPlugin "${QtICubSkinGuiPlugin_QMLDIR}")
