@@ -42,6 +42,7 @@
         <param name="stictionDwn">     0      0      0      0      0      0      0      0      0      0      0      0    </param>       
         <param name="kff">             0      0      0      0      0      0      0      0      0      0      0      0    </param>   
         <param name="kbemf">           0      0      0      0      0      0      0      0      0      0      0      0    </param>   
+        <param name="useFilter">       0      0      0      0      0      0      0      0      0      0      0      0    </param>   
     </group>
 	
     <group name="IMPEDANCE">
