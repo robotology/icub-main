@@ -44,6 +44,34 @@
         <param name="TPid10"> 0  0   0   0    0    0  0 </param>
         <param name="TPid11"> 0  0   0   0    0    0  0</param>
     </group>
+	
+	<group name="POS_PIDS">
+        <param name="kp">          200           100           100           200     8000          -8000         8000         -8000         -8000          -8000         8000         -120         </param>       
+        <param name="kd">          1000          100           100           200     32000        -32000         32000        -32000        -32000         -32000        32000        -1250        </param>       
+        <param name="ki">          1             2             2             1       5            -5             5            -5            -5             -5            5             0            </param>       
+        <param name="limPwm">      1333          1333          1333          1333    1333          1333          1333          1333          1333          1333          1333          1333         </param>       
+        <param name="maxPwm">      1333          1333          1333          1333    1333          1333          1333          1333          1333          1333          1333          1333         </param>       
+        <param name="maxInt">      1333          1333          1333          1333    1333          1333          1333          1333          1333          1333          1333          1333         </param>       
+        <param name="shift">       6             6             6             5       12            10             8            10            10            10            10            4            </param>       
+        <param name="ko">          0             0             0             0       0             0             0             0             0             0             0             0            </param>       
+        <param name="stictionUp">  0             0             0             0       0             0             0             0             0             0             0             0            </param>       
+        <param name="stictionDwn"> 0             0             0             0       0             0             0             0             0             0             0             0            </param>     
+        <param name="kff">         0             0             0             0       0             0             0             0             0             0             0             0            </param>             
+    </group>
+   
+    <group name="TRQ_PIDS">
+        <param name="kp">             50      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="kd">              0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="ki">              0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="maxPwm">       1333      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="maxInt">       1333      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="shift">          10      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="ko">              0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="stictionUp">      0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="stictionDwn">     0      0      0      0      0      0      0      0      0      0      0      0    </param>       
+        <param name="kff">             0      0      0      0      0      0      0      0      0      0      0      0    </param>   
+        <param name="kbemf">           0      0      0      0      0      0      0      0      0      0      0      0    </param>   
+    </group>
     
     <group name="IMPEDANCE">
         <param name="stiffness">       0      0      0      0      0      0      0      0      0      0      0      0    </param>    

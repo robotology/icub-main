@@ -13,22 +13,41 @@
         <param name="Currents">         5000          5000          5000        </param>
     </group>
 
-    <group name="PIDS">
-        <param name="Pid0">     1792          0             6250            750              8000          8            0    </param>
-        <param name="Pid1">     2560          0             6250            750              8000          8            0    </param>
-        <param name="Pid2">     2560          0             6250           1500             16000          8            0    </param>
+   
+    
+	
+		<group name="POS_PIDS">
+        <param name="kp">              1792   2560 2560</param>       
+        <param name="kd">                 0      0    0</param>       
+        <param name="ki">              6250   6250 6250</param>       
+        <param name="limPwm">          4000   4000 8000</param>       
+        <param name="maxPwm">          8000   8000 16000</param>  
+        <param name="maxInt">           750    750  1500</param>       
+        <param name="shift">              8      8    8</param>       
+        <param name="ko">                 0      0    0</param>       
+        <param name="stictionUp">         0      0    0</param>       
+        <param name="stictionDwn">        0      0    0</param>       
+        <param name="kff">                0      0    0</param>     
     </group>
-
-    <group name="TORQUE_PIDS">
-        <param name="TPid0">      19             0             0          0          	     8000          6            0  </param>
-        <param name="TPid1">      26             0             0          0          	     8000          6            0  </param>
-        <param name="TPid2">      26             0             0          0                  8000          6            0  </param>
+	
+	<group name="TRQ_PIDS">
+        <param name="kp">             19      26      26 </param>       
+        <param name="kd">              0       0       0 </param>       
+        <param name="ki">              0       0       0 </param>       
+        <param name="maxPwm">       8000    8000    8000 </param>       
+        <param name="maxInt">          0       0       0 </param>       
+        <param name="shift">           6       6       6 </param>       
+        <param name="ko">              0       0       0 </param>       
+        <param name="stictionUp">      0       0       0 </param>       
+        <param name="stictionDwn">     0       0       0 </param>      
+        <param name="kff">             0       0       0 </param>      
+        <param name="kbemf">           0       0       0 </param>           
     </group>
     
     <group name="IMPEDANCE">
-      <param name="stiffness">	0      0      0    </param>
-      <param name="damping">	0      0      0    </param>
+        <param name="stiffness">       0      0      0     </param>    
+        <param name="damping">         0      0      0     </param>    
     </group>
-    
+	
   </device>
 </devices>
