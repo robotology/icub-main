@@ -30,9 +30,9 @@
     </group>
 
     <group name="TRQ_PIDS">
-        <param name="kp">            -13       -13       -13   -32     </param>       
+        <param name="kp">            -13       -13       -13   -32    </param>       
         <param name="kd">              0         0         0     0    </param>       
-        <param name="ki">              0         0         0     0     </param>       
+        <param name="ki">              0         0         0     0    </param>       
         <param name="maxPwm">       8000      8000     88000  8000    </param>       
         <param name="maxInt">          0         0         0     0    </param>       
         <param name="shift">           6         6         6     6    </param>       
@@ -40,7 +40,8 @@
         <param name="stictionUp">      0         0         0     0    </param>       
         <param name="stictionDwn">     0         0         0     0    </param>       
         <param name="kff">             0         0         0     0    </param>   
-        <param name="kbemf">           0         0         0     0    </param>           
+        <param name="kbemf">           0         0         0     0    </param>  
+        <param name="filterType">      0         0         0     0    </param>           
     </group>
 	
     <group name="IMPEDANCE">
