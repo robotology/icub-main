@@ -152,7 +152,8 @@ private:
     void checkErrors();
     bool doesBaselineExceed(unsigned int &compInd, unsigned int &taxInd, double &baseline, double &initialBaseline);
 	void sendMonitorData();
-    void sendInfoMsg(string msg);
+    void sendDebugMsg(string msg);
+    void sendErrorMsg(string msg);
     void sendSkinEvents();
 
 };

@@ -48,7 +48,7 @@ CompensationThread::CompensationThread(string name, ResourceFinder* rf, string r
 
 bool CompensationThread::threadInit() 
 {
-    fprintf(stderr, "THREAD INIT\n\n");
+    yTrace("threadInit()\n");
 
    /* initialize variables and create data-structures if needed */
 	readErrorCounter = 0;
@@ -61,13 +61,13 @@ bool CompensationThread::threadInit()
     string infoPortName = "/" + moduleName + "/info:o";         // output occasional data
 	if(!monitorPort.open(monitorPortName.c_str())){
 		stringstream msg; msg<< "Unable to open port " << monitorPortName << endl;
-        sendInfoMsg(msg.str());
+        sendErrorMsg(msg.str());
         initializationFinished = true;
 		return false;
 	}
     if(!infoPort.open(infoPortName.c_str())){
 		stringstream msg; msg<< "Unable to open port " << infoPortName << endl;
-        sendInfoMsg(msg.str());
+        sendErrorMsg(msg.str());
         initializationFinished = true;
 		return false;
 	}
@@ -75,7 +75,7 @@ bool CompensationThread::threadInit()
 	// open the input and output ports for the skin data
     if(!rf->check("outputPorts") || !rf->check("inputPorts")){
         stringstream msg; msg<< "Input ports and/or output ports missing. Closing the module.";
-        sendInfoMsg(msg.str());
+        sendErrorMsg(msg.str());
         initializationFinished = true;
         return false;
     }
@@ -87,7 +87,7 @@ bool CompensationThread::threadInit()
         stringstream msg;
 		msg<< "No input port specified or mismatching number of input and output ports ("
 			<< portNum<< " out ports; "<< inputPortList->size()<< " in ports).";
-        sendInfoMsg(msg.str());
+        sendErrorMsg(msg.str());
         initializationFinished = true;
 		return false;
 	}
@@ -101,7 +101,8 @@ bool CompensationThread::threadInit()
     FOR_ALL_PORTS(i){
 		string outputPortName = outputPortList->get(i).asString().c_str();
 		string inputPortName = inputPortList->get(i).asString().c_str();
-        cout<< "\nInput port: "<< inputPortName<< " -> Output port: "<< outputPortName<< endl;
+        // cout << "Input port: "<< inputPortName<< " -> Output port: "<< outputPortName<< endl;
+        yInfo("Input port: %s  -> Output port: %s",inputPortName.c_str(),outputPortName.c_str());
         stringstream name;
         name<< moduleName<< i;
 		compensators[i] = new Compensator(name.str(), robotName, outputPortName, inputPortName, &infoPort,
@@ -117,11 +118,11 @@ bool CompensationThread::threadInit()
             stringstream msg;
             msg<< "[ERROR] Compensator "<< compensators[i]->getInputPortName().c_str()
                 << " did not open correctly. Removing the port.";
-            sendInfoMsg(msg.str());
+            sendErrorMsg(msg.str());
             if(compensatorCounter==1){
                 msg.str("");
                 msg<< "No input port left. Stopping the thread.";
-                sendInfoMsg(msg.str());
+                sendErrorMsg(msg.str());
                 this->threadRelease();
                 initializationFinished = true;
                 return false;
@@ -139,7 +140,7 @@ bool CompensationThread::threadInit()
         cout<< "SKIN_EVENTS section found\n";
         string eventPortName = "/" + moduleName + "/skin_events:o";  // output skin events
 	    if(!skinEventsPort.open(eventPortName.c_str()))
-            sendInfoMsg("Unable to open port "+eventPortName);
+            sendErrorMsg("Unable to open port "+eventPortName);
         else
             skinEventsOn = true;
 
@@ -149,10 +150,11 @@ bool CompensationThread::threadInit()
                 stringstream msg;
                 msg<< "ERROR: the number of skin part ids is not equal to the number of input ports ("
                     << skinPartList->size()<< "!="<< portNum<< "). Skin parts will not be set.";
-                sendInfoMsg(msg.str());
+                sendDebugMsg(msg.str());
             }else{
                 FOR_ALL_PORTS(i){
-                    cout<< "Skin part "<< SkinPart_s[skinPartList->get(i).asInt()]<< endl;
+                    // cout<< "Skin part "<< SkinPart_s[skinPartList->get(i).asInt()]<< endl;
+                    yInfo("Skin part %s",SkinPart_s[skinPartList->get(i).asInt()].c_str());
                     compensators[i]->setSkinPart((SkinPart)skinPartList->get(i).asInt());
                 }
             }
@@ -166,7 +168,7 @@ bool CompensationThread::threadInit()
                     <<portNum<< " in ports; "<< taxelPosFiles->size()<< " taxel position files). ";
                 msg<< "Taxel positions will not be set.";
                 msg<< ". Taxel position file list: "<< taxelPosFiles->toString().c_str();
-                sendInfoMsg(msg.str());
+                sendDebugMsg(msg.str());
             }
             else{
                 maxNeighDist = skinEventsConf.check("maxNeighborDist", Value(MAX_NEIGHBOR_DISTANCE)).asDouble();
@@ -184,9 +186,9 @@ bool CompensationThread::threadInit()
         }
 	}
     if(skinEventsOn)
-        sendInfoMsg("Skin events ENABLED.");
+        sendDebugMsg("Skin events ENABLED.");
     else
-        sendInfoMsg("Skin events DISABLED.");
+        sendDebugMsg("Skin events DISABLED.");
 
     initializationFinished = true;
 	return true;
@@ -238,7 +240,7 @@ void CompensationThread::run(){
 	}
 	else{
 		stateSem.post();
-        sendInfoMsg("[ERROR] Unknown state in CompensationThread. Suspending the thread.\n");
+        sendDebugMsg("[ERROR] Unknown state in CompensationThread. Suspending the thread.\n");
 		this->suspend();
 		return;
     }	
@@ -295,7 +297,7 @@ void CompensationThread::checkErrors(){
         msg<< "Baseline of the taxel "<< taxInd<< " of port "<< compensators[compInd]->getInputPortName()
             << " saturated (current baseline="<< baseline<< "; initial baseline="<< initialBaseline<< 
             ")! A skin calibration is suggested.";
-        sendInfoMsg(msg.str());
+        sendDebugMsg(msg.str());
     }
 }
 
@@ -364,9 +366,18 @@ void CompensationThread::sendMonitorData(){
     }
 }
 
-void CompensationThread::sendInfoMsg(string msg){
+void CompensationThread::sendDebugMsg(string msg){
     //printf("\n");
-    printf("CompensationThread: %s\n", msg.c_str());
+    yDebug("[CompensationThread] %s", msg.c_str());
+    Bottle& b = infoPort.prepare();
+    b.clear();
+    b.addString(msg.c_str());
+    infoPort.write(true);
+}
+
+void CompensationThread::sendErrorMsg(string msg){
+    //printf("\n");
+    yError("[CompensationThread] %s", msg.c_str());
     Bottle& b = infoPort.prepare();
     b.clear();
     b.addString(msg.c_str());

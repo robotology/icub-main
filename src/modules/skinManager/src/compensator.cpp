@@ -880,7 +880,7 @@ void Compensator::updateNeighbors(unsigned int taxelId){
     }
 }
 void Compensator::sendInfoMsg(string msg){
-    printf("[%s]: %s\n", getInputPortName().c_str(), msg.c_str());
+    yInfo("[%s]: %s", getInputPortName().c_str(), msg.c_str());
     Bottle& b = infoPort->prepare();
     b.clear();
     b.addString(getInputPortName().c_str());
