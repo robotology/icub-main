@@ -43,7 +43,8 @@ add_executable(frameGrabberGui2-qt WIN32 ${frameGrabberGui2_qt_SRCS}
                                     ${frameGrabberGui2_qt_QRC_GEN_SRCS}
                                     ${frameGrabberGui2_qt_UI_GEN_SRCS})
 target_link_libraries(frameGrabberGui2-qt YARP::YARP_OS
-                                          YARP::YARP_init)
+                                          YARP::YARP_init
+                                          YARP::YARP_dev)
 qt5_use_modules(frameGrabberGui2-qt Widgets
                                     Concurrent)
 qticub_deprecate_with_cmake_version(2.8.11)
