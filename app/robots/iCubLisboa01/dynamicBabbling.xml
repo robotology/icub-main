@@ -21,7 +21,7 @@
         </module>
         <module>
                 <name>dynamicMover</name>
-                <node>chico3</node>
+                <node>icub-laptop</node>
                 <tag>dynMove</tag>
         </module>
         

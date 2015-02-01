@@ -6,10 +6,13 @@
 
 <nameserver namespace="/icub" node="icub-laptop"> </nameserver>
 
-<node display="true">icub-laptop</node>
+<!-- specify nodes, if you want to enable display on desktop please specify which desktop to use
+this is usually the value of the DISPLAY variable when logged on -->
+<node display=":0">icub-laptop</node>
 <node>pc104</node>
 <node>icubbrain1</node>
 <node>icubbrain2</node>
+<node>icub-cuda</node>
 
 </cluster>
 
