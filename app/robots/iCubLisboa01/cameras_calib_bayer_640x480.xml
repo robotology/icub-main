@@ -36,26 +36,26 @@
    <module>
       <name>yarpview</name>
       <parameters>--name /icub/view/left --x 0 --y 0 --p 50</parameters>
-      <node>chico3</node>
+      <node>icub-laptop</node>
 	<tag>viewleft</tag>
    </module>
    <module>
       <name>yarpview</name>
       <parameters>--name /icub/view/right --x 700 --y 0 --p 50</parameters>
-      <node>chico3</node>
+      <node>icub-laptop</node>
 	<tag>viewright</tag>
    </module>
    <module>
       <name>frameGrabberGui2</name>
 	  <parameters>--local /icub/fggui/left --remote /icub/cam/left --x 0 --y 350 --width 350 --height 500</parameters>
 	  <tag>fggui_left</tag>
-	  <node>chico3</node>
+	  <node>icub-laptop</node>
    </module>
    <module>
       <name>frameGrabberGui2</name>
 	  <parameters>--local /icub/fggui/right --remote /icub/cam/right --x 320 --y 350 --width 350 --height 500</parameters>
 	  <tag>fggui_right</tag>
-	  <node>chico3</node>
+	  <node>icub-laptop</node>
    </module>
 
 <connection>
