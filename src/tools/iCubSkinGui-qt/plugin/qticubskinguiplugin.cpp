@@ -286,10 +286,10 @@ bool QtICubSkinGuiPlugin::parseParameters(QStringList params)
 
     bool useCan = rf.check("useCan");
     if (useCan==true){
-        printf("CAN version: Reading data directly from CAN\n");
+        yInfo("CAN version: Reading data directly from CAN");
         TheadType=TYPE_CAN;
     } else {
-        printf("YARP version: reading data from a Yarp port\n");
+        yInfo("YARP version: reading data from a Yarp port");
         TheadType=TYPE_PORT;
     }
 
@@ -301,7 +301,7 @@ bool QtICubSkinGuiPlugin::parseParameters(QStringList params)
     widthChanged();
     heightChanged();
 
-    qDebug("%s",rf.toString().data());
+    yDebug("RF: %s",rf.toString().data());
 
     gRowStride=3*gWidth;
     gImageSize=gRowStride*gHeight;
@@ -339,8 +339,10 @@ void QtICubSkinGuiPlugin::onTimeout()
 
 void QtICubSkinGuiPlugin::onInit()
 {
+    int period = rf.check("period")?rf.find("period").asInt():50;
+
     if (TheadType==TYPE_CAN){
-        gpSkinMeshThreadCan=new SkinMeshThreadCan(rf,50);
+        gpSkinMeshThreadCan=new SkinMeshThreadCan(rf,period);
         gpSkinMeshThreadCan->start();
 
 
@@ -348,7 +350,7 @@ void QtICubSkinGuiPlugin::onInit()
         //delete gpSkinMeshThreadCan;
     } else if (TheadType==TYPE_PORT){
 
-        gpSkinMeshThreadPort=new SkinMeshThreadPort(rf,50);
+        gpSkinMeshThreadPort=new SkinMeshThreadPort(rf,period);
         gpSkinMeshThreadPort->start();
 
         //gtk_widget_destroy(mainWindow);

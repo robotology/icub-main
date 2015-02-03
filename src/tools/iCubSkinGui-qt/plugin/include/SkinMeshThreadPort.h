@@ -15,6 +15,7 @@
 
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
+#include <yarp/os/Log.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CanBusInterface.h>
@@ -48,6 +49,7 @@ protected:
 public:
 	SkinMeshThreadPort(Searchable& config,int period) : RateThread(period),mutex(1)
     {
+        yDebug("SkinMeshThreadPort running at %g ms.",getRate());
         mbSimpleDraw=config.check("light");
 
         sensorsNum=0;
@@ -74,11 +76,11 @@ public:
 		bool useCalibration = config.check("useCalibration");
 		if (useCalibration==true) 
 		{
-			printf("Using calibrated skin values (0-255)\n");
+			yInfo("Using calibrated skin values (0-255)");
 		}
 		else
 		{
-			printf("Using raw skin values (255-0)\n");
+			yDebug("Using raw skin values (255-0)");
 		}
         
         Bottle *color = config.find("color").asList();
@@ -87,19 +89,19 @@ public:
         {
             if(color->size()<3 || !color->get(0).isInt() || !color->get(1).isInt() || !color->get(2).isInt())
             {
-                printf("Error while reading the parameter color: three integer values should be specified (%s).\n", color->toString().c_str());
+                yError("Error while reading the parameter color: three integer values should be specified (%s).", color->toString().c_str());
             }
             else
             {
                 r = color->get(0).asInt();
                 g = color->get(1).asInt();
                 b = color->get(2).asInt();
-                printf("Using specified color: %d %d %d\n", r, g, b);
+                yInfo("Using specified color: %d %d %d", r, g, b);
             }
         }
         else
         {
-            printf("Using red as default color.\n");
+            yDebug("Using red as default color.");
         }
 
         yarp::os::Bottle sensorSetConfig=config.findGroup("SENSORS").tail();
@@ -119,13 +121,13 @@ public:
 				int    lrMirror=sensorConfig.get(6).asInt();
 				int    layoutNum=sensorConfig.get(7).asInt();
 
-                printf("%s %d %f\n",type.c_str(),id,gain);
+                yDebug("%s %d %f",type.c_str(),id,gain);
 
                 if (id>=0 && id<MAX_SENSOR_NUM)
                 {
                     if (sensor[id])
                     {
-                        printf("WARNING: triangle %d already exists.\n",id);
+                        yWarning("WARNING: triangle %d already exists.",id);
                     }
                     else
                     {
@@ -176,12 +178,12 @@ public:
                 }
                 else
                 {
-                    printf("WARNING: %d is invalid triangle Id [0:%d].\n",id, MAX_SENSOR_NUM-1);
+                    yWarning(" %d is invalid triangle Id [0:%d].",id, MAX_SENSOR_NUM-1);
                 }
             }
             else
             {
-                printf("WARNING: sensor type %s unknown, discarded.\n",type.c_str());
+                yWarning(" sensor type %s unknown, discarded.",type.c_str());
             }
         }
 
