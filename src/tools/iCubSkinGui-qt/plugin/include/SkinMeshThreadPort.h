@@ -61,7 +61,8 @@ public:
         
         if (config.check("name"))
         {
-            part=config.find("name").asString().c_str();
+            part ="/";
+            part+=config.find("name").asString().c_str();
             part+="/";
         }
 
