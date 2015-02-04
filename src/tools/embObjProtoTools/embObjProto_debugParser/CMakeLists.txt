@@ -22,12 +22,12 @@ set(EXTRA_FOLDER  		${CMAKE_CURRENT_SOURCE_DIR}/)
 
 FIND_PACKAGE(icub_firmware_shared)
 
-
 if(icub_firmware_shared_embobj_FOUND)
     set(BASE         ${icub_firmware_shared_embobj_INCLUDE_DIR})
 else()
     set(BASE         $ENV{ICUB_ROOT}/src/libraries/icubmod/embObjLib/embObj/embobj/)
 endif()
+message(INFO " Using ${BASE} base folder")
 
 set(EOPROT_USE_MN_VERSION_2_0 ON)
 
@@ -96,9 +96,10 @@ set(embobj_source
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_searchPosSetpoint.cpp )
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_enaDisaJoints.cpp)
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_startupConfig.cpp)
-set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_fullscale.cpp)
+#set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_fullscale.cpp)
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_seqNum.cpp)
 #set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_posleftlegj0.cpp)
+set(PARSER_CFG_FILE    ${EXTRA_FOLDER}/parser_cfg_calibration.cpp)
 
 message(INFO "  you are using  ${PARSER_CFG_FILE} for parser cfg!!!")
 
