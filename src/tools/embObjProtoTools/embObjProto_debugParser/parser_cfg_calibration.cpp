@@ -28,7 +28,9 @@
 
 #include <unistd.h>
 #include <stdio.h>
-
+#include <ctime>
+#include <time.h>
+#include <string>
 
 // ACE stuff
 #include <ace/ACE.h>
@@ -72,7 +74,17 @@
 
 
 
+const std::string currentDateTime() {
+    time_t     now = time(0);
+    struct tm  tstruct;
+    char       buf[80];
+    tstruct = *localtime(&now);
+    // Visit http://en.cppreference.com/w/cpp/chrono/c/strftime
+    // for more information about date/time format
+    strftime(buf, sizeof(buf), "%d-%m-%Y %X", &tstruct);
 
+    return buf;
+}
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of extern variables, but better using _get(), _set()
@@ -89,7 +101,7 @@ const eODeb_eoProtoParser_cfg_t  deb_eoParserCfg =
 	{
 		EO_INIT(.seqNum)
 		{
-			EO_INIT(.cbk_onErrSeqNum)           my_cbk_onErrorSeqNum,
+			EO_INIT(.cbk_onErrSeqNum)           NULL, //my_cbk_onErrorSeqNum,
 		},
 
 		EO_INIT(.nv)
@@ -178,8 +190,15 @@ return;
 static void my_cbk_fullScaleFound(eOethLowLevParser_packetInfo_t *pktInfo_ptr, eODeb_eoProtoParser_ropAdditionalInfo_t *ropAddInfo_ptr)
 {
         eOas_strain_config_t *straincfg_ptr = (eOas_strain_config_t *)ropAddInfo_ptr->desc.data;
+   
+//    time_t t = time(0);   // get time now
+//    struct tm * now = localtime( & t );
+//    printf(" %d - %d - %d - ", (now->tm_year + 1900), (now->tm_mon + 1), now->tm_mday);
+    printf("date %s \n\t", currentDateTime().c_str());
 
-    printf("fullscale found!!: id=0x%x ropcode=0x%x plussig=%d sig=%d seqnum=%ld\n",
+    printf("Calibration MSG found: from 0x%x to 0x%x protoId=0x%x ropcode=0x%x plussig=%d sig=%d seqnum=%ld\n",
+        pktInfo_ptr->src_addr,
+        pktInfo_ptr->dst_addr,
 		ropAddInfo_ptr->desc.id32, 
 		ropAddInfo_ptr->desc.ropcode, 
 		ropAddInfo_ptr->desc.control.plussign, 
