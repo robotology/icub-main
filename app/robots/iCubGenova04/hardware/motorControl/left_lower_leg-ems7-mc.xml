@@ -14,25 +14,9 @@
         <param name="Min">       -20.00        -22.00		</param>
         <param name="Currents">   5000          5000		</param>
     </group>
-
-    <group name="PIDS">
-        <param name="Pid0">     -1280            0         -6250             750             5000             8              0    </param>
-        <param name="Pid1">     -1280            0         -6250             750             5000             8              0    </param>
-    </group>
-
-    <group name="TORQUE_PIDS">
-        <param name="TPid0">  -12             0             0             0          		5000          6            0  </param>
-        <param name="TPid1">  -12             0             0             0          		5000          6            0 </param>
-    </group>
-    
-    <group name="IMPEDANCE">
-        <param name="stiffness">       0      0     </param>    
-        <param name="damping">         0      0     </param>    
-    </group>
 	
-	
-	 <group name="POS_PIDS">
-        <param name="kp">           -1280        -1280        </param>       
+	<group name="POS_PIDS">
+        <param name="kp">           -1280        -1280         </param>       
         <param name="kd">               0            0         </param>       
         <param name="ki">           -6250        -6250         </param>       
         <param name="limPwm">        5000         5000         </param>       
@@ -61,7 +45,8 @@
         <param name="stictionUp">    0           0          </param>       
         <param name="stictionDwn">   0           0          </param>   
         <param name="kff">           0           0          </param>     
-        <param name="kbemf">         0           0          </param>         
+        <param name="kbemf">         0           0          </param> 
+        <param name="filterType">    0           0          </param>           
     </group>
     
   </device>  

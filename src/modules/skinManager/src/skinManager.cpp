@@ -145,6 +145,7 @@ bool skinManager::respond(const Bottle& command, Bottle& reply) {
     if(command.get(0).isInt()){
         // if first value is int then it is the id of the command
         com = (SkinManagerCommand)command.get(0).asInt();
+        yInfo("[rpc] Command received: %s", SkinManagerCommandList[com].c_str());
         params = command.tail();
     }
 	else if(!identifyCommand(command, com, params)){

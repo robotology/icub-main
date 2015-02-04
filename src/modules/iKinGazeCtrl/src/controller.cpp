@@ -437,9 +437,9 @@ void Controller::run()
     mutexCtrl.lock();
     if (commData->get_isSaccadeUnderway() && (Time::now()-saccadeStartTime>=Ts))
     {
-        bool done[3];
-        posHead->checkMotionDone(eyesJoints.size(),eyesJoints.getFirst(),done);
-        commData->get_isSaccadeUnderway()=!(done[0] && done[1] && done[2]);
+        bool done;
+        posHead->checkMotionDone(eyesJoints.size(),eyesJoints.getFirst(),&done);
+        commData->get_isSaccadeUnderway()=!done;
 
         if (!commData->get_isSaccadeUnderway())
             notifyEvent("saccade-done");

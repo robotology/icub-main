@@ -15,10 +15,10 @@ const int CAN_DRIVER_BUFFER_SIZE=2047;
 
 bool SkinMeshThreadPort::threadInit()
 {
-	printf("SkinMeshThreadPort initialising...\n");
-    printf("... done!\n");
+	yDebug("SkinMeshThreadPort initialising..");
+    yDebug("..done!");
 
-	printf("Waiting for port connection\n");
+	yInfo("Waiting for port connection..");
     return true;
 }
 

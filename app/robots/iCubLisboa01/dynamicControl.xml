@@ -22,12 +22,12 @@
         </module>
         <module>
                 <name>dynamicControl</name>
-                <node>chico3</node>
+                <node>icub-laptop</node>
                 <tag>dynMove</tag>
         </module>
         <module>
                 <name>onlineLearner12to4</name>
-                <node>chico3</node>
+                <node>icub-laptop</node>
                 <tag>imleLearner</tag>
         </module>
         
