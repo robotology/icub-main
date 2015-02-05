@@ -259,6 +259,9 @@ bool ethResources::goToConfig(void)
 
 #if defined(ETHRES_CHECK_MN_APPL_STATUS)
 
+    // this delay is required because we dont wnat the two rops (go2state and ask-state) being in the same packets
+    Time::delay(0.010);
+
     yDebug() << "ethResources::goToConfig() called for BOARD" << get_protBRDnumber()+1;
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
@@ -316,6 +319,9 @@ bool ethResources::goToRun(void)
     }
 
 #if defined(ETHRES_CHECK_MN_APPL_STATUS)
+
+    // this delay is required because we dont wnat the two rops (go2state and ask-state) being in the same packets
+    Time::delay(0.010);
 
     yDebug() << "ethResources::goToRun() called for BOARD" << get_protBRDnumber()+1;
 
