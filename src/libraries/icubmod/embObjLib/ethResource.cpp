@@ -27,6 +27,9 @@ using namespace yarp::os::impl;
 // marco.accame: define it only for debugging robotInterface w/out boards
 // #define ETHRES_DEBUG_DONTREADBACK
 
+
+#define ETHRES_CHECK_MN_APPL_STATUS
+
 // - class ethResources
 
 ethResources::ethResources()
@@ -243,7 +246,7 @@ ACE_INET_Addr ethResources::getRemoteAddress()
 
 bool ethResources::goToConfig(void)
 {
-    // stop the control loop (if running) and force the board to enter config mode
+    // stop the control loop (if running) and force the board to enter in config mode
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
 
     eOenum08_t command_go2state = applstate_config;
@@ -254,24 +257,46 @@ bool ethResources::goToConfig(void)
     }
 
 
-    // marco.accame: this code is correct and verifies that the board goes to config. however, it requires FW version >= 1.45, thus so far i keep it commented out
-    // todo: change the eOmn_appl_status_t so that it has a FW version of the application, a build date, and a string name (the same info whcoih gives ethLoader)
- #if 0
+#if defined(ETHRES_CHECK_MN_APPL_STATUS)
+
+    yDebug() << "ethResources::goToConfig() called for BOARD" << get_protBRDnumber()+1;
+
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
     eOmn_appl_status_t status = {0};
-    status.currstate = applstate_config;
-    status.runmode = applrunMode__default;
-    memset(&status.filler06, 0, sizeof(status.filler06));
+    uint16_t size = 0;
+    const char* statestr[] = {"applstate_config", "applstate_running", "applstate_error", "unknown error"};
 
-    if(true == verifyRemoteValue(id32, &status, sizeof(status)))
+    if(true == getRemoteValue(id32, &status, size))
     {
-        yWarning() << "VERIFIED that BOARD" << get_protBRDnumber()+1 << "goes to config";
+        const char *name = (const char*)status.name;
+
+        if(applstate_config == status.currstate)
+        {
+            yDebug() << "ethResources::goToConfig() successfully sent BOARD" << get_protBRDnumber()+1 << "in cfg mode";
+            yDebug() << "ethResources::goToConfig() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
+
+            isInRunningMode = false;
+            return true;
+        }
+        else
+        {
+            yError() << "ethResources::goToConfig() could not send BOARD" << get_protBRDnumber()+1 << "in cfg mode";
+            int index = (status.currstate > 2) ? (3) : (status.currstate);
+            yError() << "ethResources::goToConfig() detected BOARD" << get_protBRDnumber()+1 << "in" << statestr[index];
+            yDebug() << "ethResources::goToConfig() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
+            isInRunningMode = false;
+            return false;
+        }
+
     }
     else
     {
-        yError() << "DID NOT VERIFY that BOARD" << get_protBRDnumber()+1 << "goes to config";
+        isInRunningMode = false;
+        return false;
     }
+
 #endif
+
 
     isInRunningMode = false;
     return true;
@@ -290,27 +315,46 @@ bool ethResources::goToRun(void)
         return false;
     }
 
-    // marco.accame: the code is correct and verifies that the board goes to run. however, it requires FW version >= 1.45, thus so far i keep it commented out
-    // todo: change the eOmn_appl_status_t so that it has a FW version of the application, a build date, and a string name (the same info whcoih gives ethLoader)
-#if 0
+#if defined(ETHRES_CHECK_MN_APPL_STATUS)
+
+    yDebug() << "ethResources::goToRun() called for BOARD" << get_protBRDnumber()+1;
+
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
     eOmn_appl_status_t status = {0};
-    status.currstate = applstate_running;
-    status.runmode = applrunMode__default;
-    memset(&status.filler06, 0, sizeof(status.filler06));
+    uint16_t size = 0;
+    const char* statestr[] = {"applstate_config", "applstate_running", "applstate_error", "unknown error"};
 
-    if(true == verifyRemoteValue(id32, &status, sizeof(status)))
+    if(true == getRemoteValue(id32, &status, size))
     {
-        if(verbosewhenok)
+        const char *name = (const char*)status.name;
+
+        if(applstate_running == status.currstate)
         {
-            yWarning() << "VERIFIED that BOARD" << get_protBRDnumber()+1 << "goes to run";
+            yDebug() << "ethResources::goToRun() successfully sent BOARD" << get_protBRDnumber()+1 << "in run mode";
+            yDebug() << "ethResources::goToRun() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
+
+            isInRunningMode = true;
+            return true;
         }
+        else
+        {
+            yError() << "ethResources::goToRun() could not send BOARD" << get_protBRDnumber()+1 << "in run mode";
+            int index = (status.currstate > 2) ? (3) : (status.currstate);
+            yError() << "ethResources::goToRun() detected BOARD" << get_protBRDnumber()+1 << "in" << statestr[index];
+            yDebug() << "ethResources::goToRun() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
+            isInRunningMode = false;
+            return false;
+        }
+
     }
     else
     {
-        yError() << "DID NOT VERIFY that BOARD" << get_protBRDnumber()+1 << "goes to run";
+        isInRunningMode = false;
+        return false;
     }
+
 #endif
+
 
     isInRunningMode = true;
     return true;
@@ -1701,6 +1745,124 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
 }
 
 
+
+bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size, double timeout, int retries)
+{
+
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+        yWarning() << "ethResources::getRemoteValue() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not verify";
+        return true;
+#endif
+
+    bool myverbosewhenok = verbosewhenok;
+
+    //myverbosewhenok = false;
+
+    eOprotBRD_t brd = get_protBRDnumber();
+    char nvinfo[128];
+    eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+    uint32_t signature = 0xaa000000;
+
+    if(eobool_false == eoprot_id_isvalid(brd, id32))
+    {
+        yError() << "ethResources::getRemoteValue() detected an invalid" << nvinfo << "for BOARD" << get_protBRDnumber()+1;
+        return false;
+    }
+
+    if((NULL == value))
+    {
+        yError() << "ethResources::getRemoteValue() detected an value or size" << nvinfo << "for BOARD" << get_protBRDnumber()+1;
+        return false;
+    }
+
+
+
+    eOprotID32_t id2send = id32;
+    eOprotID32_t id2wait = id32;
+    bool replied = false;
+    int i = 0; // must be in here because it count the number of attempts
+    // the semaphore used for waiting for replies from the board
+    yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, signature);
+
+
+    double start_time = yarp::os::Time::now();
+
+    for(i=0; i<retries; i++)
+    {
+        // attempt the request until either a reply arrives or the max retries are reached
+
+
+        // send ask message
+        if(false == addGetMessageWithSignature(id2send, signature))
+        {
+            yWarning() << "ethResources::getRemoteValue() cannot transmit a request to BOARD" << get_protBRDnumber()+1;
+        }
+
+        // wait for a say message arriving from the board. the proper function shall release the waiting semaphore
+        if(false == waitForNetworkQueryReply(sem, timeout))
+        {
+
+        }
+        else
+        {
+            uint16_t ss = 0;
+            // get the reply
+            if(false == readBufferedValue(id2wait, (uint8_t*)value, &ss))
+            {
+                yWarning() << "ethResources::getRemoteValue() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
+            }
+            else
+            {
+                // ok: i have a reply: i just done read it ...
+                size = ss;
+                replied = true;
+                // stop attempts
+                break;
+            }
+
+        }
+
+        if(!replied)
+        {
+            yWarning() << "ethResources::getRemoteValue() cannot have a reply from BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
+        }
+
+    }
+
+
+    // must release the semaphore
+    stopNetworkQuerySession(sem);
+
+    double end_time = yarp::os::Time::now();
+
+
+    if(replied)
+    {
+        // ok: i have a reply: compare it with a memcmp
+
+        if(0 == i)
+        {
+            if(myverbosewhenok)
+            {
+                yDebug() << "ethResources::getRemoteValue() obtained value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+            }
+        }
+        else
+        {
+            yWarning() << "ethResources::getRemoteValue() obtained value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+        }
+
+    }
+    else
+    {
+        yError() << "  FATAL: ethResources::getRemoteValue() DID NOT have replies from BOARD " << get_protBRDnumber()+1 << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+    }
+
+
+    // return result
+    return replied;
+
+}
 
 // - class infoOfRecvPkts
 
