@@ -933,6 +933,13 @@ void hostTransceiver::eoprot_override_as(void)
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_as_strain_config
         },
+        {   // eoprot_tag_as_strain_status_fullscale
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_strain,
+            EO_INIT(.tag)           eoprot_tag_as_strain_status_fullscale,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_strain_status_fullscale
+        },
         {   // strain_status_calibratedvalues
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
             EO_INIT(.entity)        eoprot_entity_as_strain,
