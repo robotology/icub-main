@@ -401,14 +401,15 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
             if ( ((*lit) <0) || ((*lit) >= nj) )   // check the axes actually exists
             {
                 yError() << deviceName << ": asked to calibrate joint" << (*lit) << ", which is negative OR bigger than the number of axes for this part ("<< nj << ")";
-                return false;
+                abortCalib = true;
+                break;
             }
 
             if(!iPids->getPid((*lit), &original_pid[(*lit)]) )
             {
                 yError() << deviceName << ": getPid joint " << (*lit) << "failed... aborting calibration";
                 abortCalib = true;
-                return false;
+                break;
             }
             limited_pid[(*lit)]=original_pid[(*lit)];
 
@@ -449,6 +450,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
         Time::delay(0.1f);
         if(abortCalib)
         {
+            Bit++;
             continue;
         }
 
@@ -470,6 +472,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
 
         if(abortCalib)
         {
+            Bit++;
             continue;
         }
 
@@ -505,6 +508,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
 
         if(abortCalib)
         {
+            Bit++;
             continue;
         }
         Time::delay(0.5f);    // needed?
@@ -518,6 +522,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
 
         if(abortCalib)
         {
+            Bit++;
             continue;
         }
         Time::delay(1.0);     // needed?
@@ -531,6 +536,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
 
         if(abortCalib)
         {
+            Bit++;
             continue;
         }
 
