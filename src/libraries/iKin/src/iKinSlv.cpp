@@ -1033,13 +1033,11 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 Vector x=prt->chn->EndEffPose(q);
             
                 // change to degrees
-                q=CTRL_RAD2DEG*q;
+                q*=CTRL_RAD2DEG;
             
                 // dump on screen
                 if (verbosity)
                     printInfo("ask",xd,x,q,t1-t0);
-            
-                unlock();
             
                 // prepare the complete joints configuration
                 Vector _q(prt->chn->getN());
@@ -1050,6 +1048,8 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                 reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                 addVectorOption(reply,IKINSLV_VOCAB_OPT_X,x);
                 addVectorOption(reply,IKINSLV_VOCAB_OPT_Q,_q);
+
+                unlock();
             
                 break;
             }
@@ -1761,7 +1761,7 @@ void CartesianSolver::run()
         Vector x=prt->chn->EndEffPose(q);
         
         // change to degrees
-        q=CTRL_RAD2DEG*q;
+        q*=CTRL_RAD2DEG;
 
         // send data
         send(xd,x,q,pToken);
