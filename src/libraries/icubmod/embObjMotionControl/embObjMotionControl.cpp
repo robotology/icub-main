@@ -319,6 +319,7 @@ bool embObjMotionControl::alloc(int nj)
     _velocityShifts=allocAndCheck<int>(nj);
     _velocityTimeout=allocAndCheck<int>(nj);
     _kbemf=allocAndCheck<double>(nj);
+    _filterType=allocAndCheck<int>(nj);
 
     // Reserve space for data stored locally. values are initialize to 0
     _ref_positions = allocAndCheck<double>(nj);
@@ -365,6 +366,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_velocityShifts);
     checkAndDestroy(_velocityTimeout);
     checkAndDestroy(_kbemf);
+    checkAndDestroy(_filterType);
     checkAndDestroy(_ref_positions);
     checkAndDestroy(_command_speeds);
     checkAndDestroy(_ref_speeds);
@@ -1015,6 +1017,15 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         {
             for (j=0; j<_njoints; j++) _kbemf[j] = xtmp.get(j+1).asDouble();
         }
+        if (!extractGroup(trqPidsGroup, xtmp, "filterType", "useFilterType, integer describes the alorith type", _njoints))
+        {
+            yError() <<"embObjMotionControl::fromConfig(): Error: no useFilter parameter found in TRQ_PIDS section";
+            return false;
+        }
+        else
+        {
+            for (j=0; j<_njoints; j++) _filterType[j] = xtmp.get(j+1).asInt();
+        }
     }
 
     ////// IMPEDANCE PARAMETERS
@@ -1310,8 +1321,10 @@ bool embObjMotionControl::init()
         jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[logico]);
 
         jconfig.bemf.value = _kbemf[logico];
-        jconfig.bemf.offset = 0;
+        jconfig.bemf.scale = 0;
         jconfig.bemf.dummy = 0;
+        
+        jconfig.tcfiltertype=_filterType[logico];
 
 
         if(false == res->setRemoteValueUntilVerified(protid, &jconfig, sizeof(jconfig), 10, 0.010, 0.050, 2))
@@ -3552,7 +3565,7 @@ bool embObjMotionControl::setBemfParamRaw(int j, double bemf)
     yWarning() << "embObjMotionControl::setBemfParamRaw() is temporarily converting bemf from double to int16_t: TODO: find out correct conversion.";
 
     eobemf.value    = (int16_t) bemf;
-    eobemf.offset   = 0;
+    eobemf.scale    = 0;
     eobemf.dummy    = 0;
 
     if(!res->addSetMessage(id32, (uint8_t *) &eobemf))

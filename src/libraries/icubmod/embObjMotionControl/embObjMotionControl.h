@@ -243,6 +243,7 @@ private:
     int *_velocityShifts;                       /** velocity shifts */
     int *_velocityTimeout;                      /** velocity shifts */
     double *_kbemf;                             /** back-emf compensation parameter */
+    int * _filterType;                          /** the filter type (int value) used by the force control algorithm */
     int *_torqueSensorId;                       /** Id of associated Joint Torque Sensor */
     int *_torqueSensorChan;                     /** Channel of associated Joint Torque Sensor */
     double *_maxTorque;                         /** Max torque of a joint */
