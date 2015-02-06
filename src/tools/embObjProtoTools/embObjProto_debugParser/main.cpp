@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
     //1) init data
     sprintf(dev, "eth1");
     sprintf(filter_exp, "src host 10.0.1.104");
-    sprintf(filter_exp, " ");
+//    sprintf(filter_exp, " ");
 
     //2) parse arguments
     if(argc>1)

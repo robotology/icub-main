@@ -116,18 +116,18 @@ const eODeb_eoProtoParser_cfg_t  deb_eoParserCfg =
 				},
 				EO_INIT(.data)
 				{
-                    0x100000E,           // calibration message
-                    0x100010E,
-                    0x100020E,
-                    0x100030E,
-                    0x100040E,
-                    0x100050E,
-                    0x100060E,
-                    0x100070E,
-                    0x100080E,
-                    0x100090E,
-                    0x1000A0E,
-                    0x1000B0E
+                    0x100000F,           // calibration message
+                    0x100010F,
+                    0x100020F,
+                    0x100030F,
+                    0x100040F,
+                    0x100050F,
+                    0x100060F,
+                    0x100070F,
+                    0x100080F,
+                    0x100090F,
+                    0x1000A0F,
+                    0x1000B0F
                 }
 
 			},
@@ -196,9 +196,10 @@ static void my_cbk_fullScaleFound(eOethLowLevParser_packetInfo_t *pktInfo_ptr, e
 //    printf(" %d - %d - %d - ", (now->tm_year + 1900), (now->tm_mon + 1), now->tm_mday);
     printf("date %s \n\t", currentDateTime().c_str());
 
-    printf("Calibration MSG found: from 0x%x to 0x%x protoId=0x%x ropcode=0x%x plussig=%d sig=%d seqnum=%ld\n",
+    printf("Calibration MSG found: from 0x%x to 0x%x protoId=0x%x (%d) ropcode=0x%x plussig=%d sig=%d seqnum=%ld\n",
         pktInfo_ptr->src_addr,
         pktInfo_ptr->dst_addr,
+		ropAddInfo_ptr->desc.id32, 
 		ropAddInfo_ptr->desc.id32, 
 		ropAddInfo_ptr->desc.ropcode, 
 		ropAddInfo_ptr->desc.control.plussign, 
