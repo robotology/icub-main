@@ -146,7 +146,10 @@ X, Y and Z are the estimated coordinates of the tracked ball in the eye referenc
 The tracker requires three input files: an image file used to build the colour model of the tracked ball, a file defining the motion model applied to the estimate of the ball between frames, and a shape model for the ball, defining its size and the distance between inner and outer contours (see the paper cited in the description section). For more detail on these files, please have a look at the parameters section.
 
 \section out_data_sec Output Data Files 
-The module produces one output file that is only useful for debugging (current_histogram.csv) and can be configured to save the images it produces to files, but this is not recommended: use the dataDumper module instead.
+The module produces one output file that is only useful for 
+debugging (current_histogram.csv) and can be configured to save 
+the images it produces to files, but this is not recommended: 
+use yarpdatadumper instead. 
 
 \section tested_os_sec Tested OS
 Ubuntu Linux, Windows

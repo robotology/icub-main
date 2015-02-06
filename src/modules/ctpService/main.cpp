@@ -56,7 +56,7 @@ starting from offset j
  
 or 
  
-[ctpf] filename (in dataDumper format)
+[ctpf] filename (in yarpdatadumper format)
  
 Example:
 This requires 1 second movement of joints 5,6,7 to 10 10 10 respectively:

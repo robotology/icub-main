@@ -23,21 +23,21 @@
         </module>
 
         <module>
-                <name>dataDumper</name>
+                <name>yarpdatadumper</name>
                 <parameters>--name /log/left --rxTime</parameters>
                 <node>console</node>
                 <tag>loggerLeft</tag>
         </module>
 
         <module>
-                <name>dataDumper</name>
+                <name>yarpdatadumper</name>
                 <parameters>--name /log/right --rxTime</parameters>
                 <node>console</node>
                 <tag>loggerRight</tag>
         </module>
 
         <module>
-                <name>dataDumper</name>
+                <name>yarpdatadumper</name>
                 <parameters>--name /log/head --rxTime</parameters>
                 <node>console</node>
                 <tag>loggerHead</tag>

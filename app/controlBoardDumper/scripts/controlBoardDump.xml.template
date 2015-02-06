@@ -4,19 +4,19 @@
     <port>/icub01</port>
   </dependencies>
   <module>
-    <name>dataDumper</name>
+    <name>yarpdatadumper</name>
     <parameters>--name /icub/headDump/getEncoders</parameters>
     <node>console</node>
     <tag>dumpHeadEncs</tag>
   </module>
   <module>
-    <name>dataDumper</name>
+    <name>yarpdatadumper</name>
     <parameters>--name /icub/headDump/getErrors</parameters>
     <node>console</node>
     <tag>dumpHeadErrs</tag>
   </module>
   <module>
-    <name>dataDumper</name>
+    <name>yarpdatadumper</name>
     <parameters>--name /icub/headDump/getOutputs</parameters>
     <node>console</node>
     <tag>dumpHeadOuts</tag>

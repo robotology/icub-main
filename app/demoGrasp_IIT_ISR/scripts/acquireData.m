@@ -1,6 +1,6 @@
 function [in,out]=acquireData(dataLogFileLeft,dataLogFileRight,dataLogFileHead)
 % This function returns the formatted data to learn the network upon.
-% The three input files are the ones logged through the dataDumper module.
+% The three input files are the ones logged through yarpdatadumper.
 
 % import raw data from log files
 dataL=dlmread(dataLogFileLeft);

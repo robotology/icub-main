@@ -13,7 +13,7 @@ Assumes \ref icub_iCubInterface is running.
 \section int_sec Instantiated Modules
 - \ref icub_controlBoardDumper 
 
-- \ref dataDumper
+- yarpdatadumper
 
 \section parameters_sec Parameters
 
@@ -35,7 +35,7 @@ configuration files (conf/config.sh and conf/config-nodes.sh) and single parts c
 <ul>
 <li> The config.sh file describes the part to be dumped (variable $PARTS_TO_DUMP). 
 <li> The config-nodes.sh file describes the machines where the single modules 
-(\ref icub_controlBoardDumper and \ref dataDumper) will be executed. In particular,
+(\ref icub_controlBoardDumper and yarpdatadumper) will be executed. In particular,
 the $NODE_DUMPERS variable defines the machines where data will be dumped 
 (usally in the directory $NODE_DUMPERS:/tmp/icub/dataDumper).
 <li> The icubHead.ini file is the file used by the \ref icub_controlBoardDumper to 

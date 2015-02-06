@@ -26,8 +26,8 @@
  * A basic module for collecting data (position, current, 
  * applied voltage, pid errors, ...) from a controlBoard
  * and sending them trough a yarp port. These data can then
- * be dumped to a file using the \ref dataDumper. Time stamp
- * is forwarded if present in the collected data. If not present
+ * be dumped to a file using yarpdatadumper. Time stamp is
+ * forwarded if present in the collected data. If not present
  * a time stamp is added. <b> Remark: </b> all collected data
  * are obtained by a remoteControlBoard connected with a controlBoard.
  * Therefore, collected data needs to be available to the controlBoard.
