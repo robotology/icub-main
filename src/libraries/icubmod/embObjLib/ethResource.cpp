@@ -257,52 +257,84 @@ bool ethResources::goToConfig(void)
     }
 
 
-#if defined(ETHRES_CHECK_MN_APPL_STATUS)
+#if !defined(ETHRES_CHECK_MN_APPL_STATUS)
 
-    // this delay is required because we dont wnat the two rops (go2state and ask-state) being in the same packets
-    Time::delay(0.010);
+    isInRunningMode = false;
+    return true;
+
+#else
+
+    // this delay is required because we want to force the two rops (go2state comamnd and ask<state>) to be in different udp packets
+    //Time::delay(0.010);
+    // however, if we do the loop over maxAttempts then we dont need it anymore. if the board can execute the order
+    // then at most there will be two iterations of the for() loop.
 
     yDebug() << "ethResources::goToConfig() called for BOARD" << get_protBRDnumber()+1;
+
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
     eOmn_appl_status_t status = {0};
     uint16_t size = 0;
     const char* statestr[] = {"applstate_config", "applstate_running", "applstate_error", "unknown error"};
 
-    if(true == getRemoteValue(id32, &status, size))
+    const int maxAttempts = 5;
+    bool verified = false;
+    bool found = false;
+
+    for(int i=0; i<maxAttempts; i++)
     {
-        const char *name = (const char*)status.name;
-
-        if(applstate_config == status.currstate)
+        // getRemoteValue() sends a request and blocks until the value arrives from the board.
+        // if the value does not arrive within a timeout it asks again and again
+        if(true == getRemoteValue(id32, &status, size))
         {
-            yDebug() << "ethResources::goToConfig() successfully sent BOARD" << get_protBRDnumber()+1 << "in cfg mode";
-            yDebug() << "ethResources::goToConfig() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
+            found = true;
 
-            isInRunningMode = false;
-            return true;
+            const char *name = (const char*)status.name;
+
+            if(applstate_config == status.currstate)
+            {
+                yDebug() << "ethResources::goToConfig() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
+                yDebug() << "ethResources::goToConfig() successfully sent BOARD" << get_protBRDnumber()+1 << "in cfg mode";
+                verified = true;
+                isInRunningMode = false;
+                break;
+                //return true;
+            }
+            else
+            {
+                // we have received a reply from the board but: if i is equal to 0, the board may not have processed the order yet (it takes 1 ms = 1 cycle of its control-loop).
+                // or ... the remote board have processed the order but it cannot execute it.
+                // we keep on asking some more times because if we dont verify then we must quit robotInterface
+            }
         }
         else
         {
-            yError() << "ethResources::goToConfig() could not send BOARD" << get_protBRDnumber()+1 << "in cfg mode";
-            int index = (status.currstate > 2) ? (3) : (status.currstate);
-            yError() << "ethResources::goToConfig() detected BOARD" << get_protBRDnumber()+1 << "in" << statestr[index];
-            yDebug() << "ethResources::goToConfig() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
-            isInRunningMode = false;
-            return false;
+            // in here if we havent received any reply from the remote board. it is unlikely but possible. maybe the board crashed.
+            // ok, there is also teh possibility that id32 is wrong (unlikely) or &status is NULL (unlikely).
+            yError() << "ethResources::goToConfig() called getRemoteValue() and there was no reply from BOARD" << get_protBRDnumber()+1;
         }
+    }
+
+    if(false == found)
+    {
+        yError() << "ethResources::goToConfig() could not verify the status of BOARD" << get_protBRDnumber()+1 << "because it could not find it";
 
     }
-    else
+    else if(false == verified)
     {
-        isInRunningMode = false;
-        return false;
+        const char *name = (const char*)status.name;
+        int index = (status.currstate > 2) ? (3) : (status.currstate);
+
+        yDebug() << "ethResources::goToConfig() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
+        yError() << "ethResources::goToConfig() could not send BOARD" << get_protBRDnumber()+1 << "in cfg mode.";
+        yError() << "ethResources::goToConfig() detected instead that BOARD" << get_protBRDnumber()+1 << "is in state" << statestr[index];
+        isInRunningMode = (applstate_running == status.currstate) ? true : false; // we quit robotInterface ... it means nothing to set this value
     }
+
+    return verified;
 
 #endif
 
-
-    isInRunningMode = false;
-    return true;
 }
 
 
@@ -318,10 +350,18 @@ bool ethResources::goToRun(void)
         return false;
     }
 
-#if defined(ETHRES_CHECK_MN_APPL_STATUS)
+#if !defined(ETHRES_CHECK_MN_APPL_STATUS)
 
-    // this delay is required because we dont wnat the two rops (go2state and ask-state) being in the same packets
-    Time::delay(0.010);
+    isInRunningMode = true;
+    return true;
+
+#else
+
+    // this delay is required because we want to force the two rops (go2state comamnd and ask<state>) to be in different udp packets
+    //Time::delay(0.010);
+    // however, if we do the loop over maxAttempts then we dont need it anymore. if the board can execute the order
+    // then at most there will be two iterations of the for() loop.
+
 
     yDebug() << "ethResources::goToRun() called for BOARD" << get_protBRDnumber()+1;
 
@@ -330,40 +370,70 @@ bool ethResources::goToRun(void)
     uint16_t size = 0;
     const char* statestr[] = {"applstate_config", "applstate_running", "applstate_error", "unknown error"};
 
-    if(true == getRemoteValue(id32, &status, size))
+    const int maxAttempts = 5;
+    bool verified = false;
+    bool found = false;
+
+    for(int i=0; i<maxAttempts; i++)
     {
-        const char *name = (const char*)status.name;
-
-        if(applstate_running == status.currstate)
+        // getRemoteValue() sends a request and blocks until the value arrives from the board.
+        // if the value does not arrive within a timeout it asks again and again
+        if(true == getRemoteValue(id32, &status, size))
         {
-            yDebug() << "ethResources::goToRun() successfully sent BOARD" << get_protBRDnumber()+1 << "in run mode";
-            yDebug() << "ethResources::goToRun() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
+            found = true;
 
-            isInRunningMode = true;
-            return true;
+            const char *name = (const char*)status.name;
+
+            if(applstate_running == status.currstate)
+            {
+                yDebug() << "ethResources::goToRun() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
+                yDebug() << "ethResources::goToRun() successfully sent BOARD" << get_protBRDnumber()+1 << "in run mode";
+
+                verified = true;
+                isInRunningMode = true;
+                break;
+                //return true;
+            }
+            else
+            {
+                // we have received a reply from the board but: if i is equal to 0, the board may not have processed the order yet (it must decode the whole udp packet containing the order before it can change state).
+                // or ... the remote board have processed the order but it cannot execute it. this second situation may happen if the board cannot find the required can boards attached to it.
+                // in any case, we ask some more times because if we dont set verified equal to true, then we must quit robotInterface
+            }
         }
         else
         {
-            yError() << "ethResources::goToRun() could not send BOARD" << get_protBRDnumber()+1 << "in run mode";
-            int index = (status.currstate > 2) ? (3) : (status.currstate);
-            yError() << "ethResources::goToRun() detected BOARD" << get_protBRDnumber()+1 << "in" << statestr[index];
-            yDebug() << "ethResources::goToRun() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
-            isInRunningMode = false;
-            return false;
+            // in here if we havent received any reply from the remote board. it is unlikely but possible. maybe the board crashed.
+            // ok, there is also teh possibility that id32 is wrong (unlikely) or &status is NULL (unlikely).
+            yError() << "ethResources::goToRun() called getRemoteValue() and there was no reply from BOARD" << get_protBRDnumber()+1;
         }
+    }
+
+
+    if(false == found)
+    {
+        yError() << "ethResources::goToRun() could not verify the status of BOARD" << get_protBRDnumber()+1 << "because it could not find it";
 
     }
-    else
+    else if(false == verified)
     {
-        isInRunningMode = false;
-        return false;
+        const char *name = (const char*)status.name;
+        int index = (status.currstate > 2) ? (3) : (status.currstate);
+
+        yDebug() << "ethResources::goToRun() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
+        yError() << "ethResources::goToRun() could not send BOARD" << get_protBRDnumber()+1 << "in run mode";
+        yError() << "ethResources::goToRun() detected instead that BOARD" << get_protBRDnumber()+1 << "is in state" << statestr[index];
+        if(applstate_config == status.currstate)
+        {
+            yError() << "It may be that the BOARD is not ready yet to enter in run mode: PLEASE WAIT A FEW SECONDS AND RELAUNCH robotInterface";
+        }
+        isInRunningMode = (applstate_running == status.currstate) ? true : false; // we quit robotInterface ... it means nothing to set this value
     }
+
+    return verified;
 
 #endif
 
-
-    isInRunningMode = true;
-    return true;
 }
 
 
