@@ -30,43 +30,61 @@
 #include "EoCommon.h"
 #include "EOnv.h"
 #include "EoProtocol.h"
-#include "EoProtocolMC.h"
 
 #include "EoProtocolMC_overridden_fun.h"
 #include <FeatureInterface.h>
 
 
+// --------------------------------------------------------------------------------------------------------------------
+// - declaration of extern public interface
+// --------------------------------------------------------------------------------------------------------------------
+
+#include "EoProtocolMC.h"
+
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - #define with internal scope
+// --------------------------------------------------------------------------------------------------------------------
+
+#undef ENABLE_DEBUG_CONTROLMODESTATUS
+
 #define DEG_2_ICUBDEG  182.04444
 
 
+// --------------------------------------------------------------------------------------------------------------------
+// - declaration of static functions
+// --------------------------------------------------------------------------------------------------------------------
+
 static void wake(const EOnv* nv);
 
+
+static eObool_t s_debug_is_controlmodestatus_tobemonitored(eOnvBRD_t board, uint8_t joint);
+
+static void s_debug_monitor_controlmodestatus(eOnvBRD_t board, uint8_t joint, eOenum08_t ctrlmodestatus);
+
+
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of static functions
+// - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
 
-static void wake(const EOnv* nv)
-{
-    void *mchandler = (void*) feat_MC_handler_get(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), eo_nv_GetID32(nv));
-    if(NULL == mchandler)
-    {
-        printf("eoMC class not found\n");
-        return;
-    }
-    
-    eOprotID32_t id32 = eo_nv_GetID32(nv);
-    eOprotProgNumber_t prognum = eoprot_endpoint_id2prognum(eo_nv_GetBRD(nv), id32);
-    if(fakestdbool_false == feat_MC_mutex_post(mchandler, prognum) )
-    {
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        printf("[ERROR] while releasing mutex for variable %s", nvinfo); fflush(stdout);
-    }
-}
+// max 4 boards: eb1, eb2, eb3, and eb4 (values 1 and 3)
+// max 12 joints
+// inital value is 0: eomc_controlmode_cmd_idle
+// target boards are eb2 and eb4 (index 1 and 3)
+// target joint is: 4:
+static eOenum08_t s_debug_some_controlmodevalues[4][12] = {0};
 
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition of extern public functions
+// --------------------------------------------------------------------------------------------------------------------
 
 extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
 {
+
+    eOmc_joint_status_basic_t *jsb = (eOmc_joint_status_basic_t*)rd->data;
+    s_debug_monitor_controlmodestatus(eo_nv_GetBRD(nv), eoprot_ID2index(rd->id32), jsb->controlmodestatus);
     
     if(eo_ropcode_say == rd->ropcode)
     {
@@ -118,6 +136,9 @@ extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdes
 
 extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
+    eOmc_joint_status_t *js = (eOmc_joint_status_t*)rd->data;
+    s_debug_monitor_controlmodestatus(eo_nv_GetBRD(nv), eoprot_ID2index(rd->id32), js->basic.controlmodestatus);
+
     // i just refresh the encoder timestamp
     feat_manage_motioncontrol_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)rd->data);
 
@@ -322,5 +343,84 @@ extern void eoprot_fun_UPDT_mc_controller_config_jointcoupling(const EOnv* nv, c
 
 }
 
-// eof
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition of static functions
+// --------------------------------------------------------------------------------------------------------------------
+
+
+static void wake(const EOnv* nv)
+{
+    void *mchandler = (void*) feat_MC_handler_get(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), eo_nv_GetID32(nv));
+    if(NULL == mchandler)
+    {
+        printf("eoMC class not found\n");
+        return;
+    }
+
+    eOprotID32_t id32 = eo_nv_GetID32(nv);
+    eOprotProgNumber_t prognum = eoprot_endpoint_id2prognum(eo_nv_GetBRD(nv), id32);
+    if(fakestdbool_false == feat_MC_mutex_post(mchandler, prognum) )
+    {
+        char nvinfo[128];
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        printf("[ERROR] while releasing mutex for variable %s", nvinfo); fflush(stdout);
+    }
+}
+
+
+
+
+static eObool_t s_debug_is_controlmodestatus_tobemonitored(eOnvBRD_t board, uint8_t joint)
+{
+
+#if defined(ENABLE_DEBUG_CONTROLMODESTATUS)
+    if((1 == board) && (4 == joint))
+    {
+        return(eobool_true);
+    }
+    if((3 == board) && (4 == joint))
+    {
+        return(eobool_true);
+    }
+#endif
+
+    return(eobool_false);
+}
+
+
+
+
+static void s_debug_monitor_controlmodestatus(eOnvBRD_t board, uint8_t joint, eOenum08_t ctrlmodestatus)
+{
+    eOenum08_t *stored = NULL;
+
+    if(eobool_false == s_debug_is_controlmodestatus_tobemonitored(board, joint))
+    {
+        return;
+    }
+
+    stored = &s_debug_some_controlmodevalues[board][joint];
+
+    if(ctrlmodestatus != *stored)
+    {
+        // 1. print the values together with the current time
+        double time = feat_yarp_time_now();
+
+        printf("DEBUG: controlmodestatus changes %d -> %d at time %f\n", *stored, ctrlmodestatus, time);
+
+
+        // 2. change the value
+        *stored = ctrlmodestatus;
+    }
+
+}
+
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - end-of-file (leave a blank line after)
+// --------------------------------------------------------------------------------------------------------------------
+
+
 
