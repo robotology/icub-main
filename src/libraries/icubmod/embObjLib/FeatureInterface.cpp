@@ -39,7 +39,7 @@ fakestdbool_t feat_addEncoderTimeStamp(FEAT_boardnumber_t boardnum, eOprotID32_t
 
     if(!ret)
     {
-        yError("EMS callback was unable to get access to the embObjMotionControl");
+        yDebug("EMS callback was unable to get access to the embObjMotionControl");
         return fakestdbool_false;
     }
 
@@ -68,7 +68,7 @@ fakestdbool_t feat_manage_motioncontrol_data(FEAT_boardnumber_t boardnum, eOprot
 
     if(!ret)
     {
-        yError("EMS callback was unable to get access to the embObjMotionControl");
+        yDebug("EMS callback was unable to get access to the embObjMotionControl");
         return fakestdbool_false;
     }
 
@@ -97,7 +97,7 @@ fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id
 
     if(!ret)
     {
-        yError("EMS callback was unable to get access to the embObjSkin");
+        yDebug("EMS callback was unable to get access to the embObjSkin");
         return fakestdbool_false;
     }
 
@@ -132,7 +132,7 @@ fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprot
 
     if(!ret)
     {
-        yError("EMS callback was unable to get access to the embObjAnalogSensor");
+        yDebug("EMS callback was unable to get access to the embObjAnalogSensor");
         return fakestdbool_false;
     }
 
