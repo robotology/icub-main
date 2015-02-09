@@ -6,6 +6,8 @@ cmake_minimum_required(VERSION 2.8)
 
 set(PROJECTNAME embObjProto_debugParser)
 
+project(${PROJECTNAME})
+
 file(GLOB folder_header *.h)
 file(GLOB folder_source *.cpp)
 
