@@ -1574,6 +1574,11 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
 
     rxdata = rxdata;
 
+    // marco.accame: pay attention using rxdata. the rxdata depends on the id32.
+    // now the function update() is called with rxdata of different types.
+    // if the tag is eoprot_tag_mc_joint_status, then rxdata is of type eOmc_joint_status_t*
+    // if the tag is eoprot_tag_mc_joint_status_basic, then rxdata is of type eOmc_joint_status_basic_t*
+
 
     // for the case of id32 which contains an encoder value .... we refresh the timestamp of that encoder
 
