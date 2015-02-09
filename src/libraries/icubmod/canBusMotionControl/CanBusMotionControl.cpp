@@ -1408,9 +1408,20 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
            else
            {
                 yInfo("Torque Pids successfully loaded\n");
+
                 xtmp = trqPidsGroup.findGroup("kbemf"); 
-                if (!xtmp.isNull()) {for (j=0;j<nj;j++) this->_bemfGain[j] = xtmp.get(j+1).asDouble();}
-               _tpidsEnabled = true;
+                if (!xtmp.isNull())
+                {for (j=0;j<nj;j++) this->_bemfGain[j] = xtmp.get(j+1).asDouble();}
+                else
+                {for (j=0;j<nj;j++) this->_bemfGain[j] = 0; yWarning ("TORQUE_PIDS: 'kbemf' param missing");}
+                
+                xtmp = trqPidsGroup.findGroup("filterType"); 
+                if (!xtmp.isNull())
+                {for (j=0;j<nj;j++) this->_filterType[j] = xtmp.get(j+1).asInt();}
+                else
+                {for (j=0;j<nj;j++) this->_filterType[j] = 0; yWarning ("TORQUE_PIDS: 'filterType' param missing");}
+                
+                _tpidsEnabled = true;
            }
         }
         else
@@ -1754,12 +1765,13 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _angleToEncoder = allocAndCheck<double>(nj);
     _rotToEncoder = allocAndCheck<double>(nj);
     _zeros = allocAndCheck<double>(nj);
-    _torqueSensorId= allocAndCheck<int>(nj);                    
+    _torqueSensorId= allocAndCheck<int>(nj);
     _torqueSensorChan= allocAndCheck<int>(nj);
     _maxTorque=allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
     _bemfGain=allocAndCheck<double>(nj);
     _maxStep=allocAndCheck<double>(nj);
+    _filterType=allocAndCheck<int>(nj);
 
     _pids=allocAndCheck<Pid>(nj);
     _tpids=allocAndCheck<Pid>(nj);
@@ -1817,6 +1829,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<double>(_newtonsToSensor);
     checkAndDestroy<double>(_bemfGain);
     checkAndDestroy<double>(_maxStep);
+    checkAndDestroy<int>(_filterType);
 
     checkAndDestroy<Pid>(_pids);
     checkAndDestroy<Pid>(_tpids);
@@ -2350,6 +2363,8 @@ bool CanBusMotionControl::open (Searchable &config)
         for (int i=0; i<p._njoints; i++)
         {
             this->setBemfParam(i,p._bemfGain[i]);
+            yarp::os::Time::delay(0.002);
+            this->setFilterTypeRaw(i,p._filterType[i]);
             yarp::os::Time::delay(0.002);
         }
     }
@@ -5585,6 +5600,27 @@ bool CanBusMotionControl::getBemfParamRaw (int axis, double *bemf)
     }
     else
         return false;
+
+    return true;
+}
+
+bool CanBusMotionControl::setFilterTypeRaw (int j, int type)
+{
+    const int axis = j;
+
+     /// prepare Can message.
+    CanBusResources& r = RES(system_resources);
+
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    _mutex.wait();
+        r.startPacket();
+        r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_TCFILTER_TYPE, axis);
+        *((short *)(r._writeBuffer[0].getData()+1)) = S_16(type);
+        r._writeBuffer[0].setLen(2);
+        r.writePacket();
+    _mutex.post();
 
     return true;
 }

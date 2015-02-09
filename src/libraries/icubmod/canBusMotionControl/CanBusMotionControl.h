@@ -186,6 +186,7 @@ public:
     ImpedanceParameters *_impedance_params;     /** impedance parameters */
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_bemfGain;                          /** bemf compensation gain */
+    int    *_filterType;
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_currentLimits;                     /** current limits */
@@ -843,6 +844,7 @@ public:
     virtual bool getTorqueRangesRaw(double *min, double *max);
     virtual bool getBemfParamRaw(int j, double *trq);
     virtual bool setBemfParamRaw(int j, double trq);
+    virtual bool setFilterTypeRaw(int j, int type);
 
     virtual bool setTorquePidRaw(int j, const Pid &pid);
     virtual bool setTorquePidsRaw( const Pid *pid);
