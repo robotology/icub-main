@@ -1,0 +1,10 @@
+<application>
+<name>Vizzy Startup part</name>
+	<dependencies>
+	</dependencies>
+
+	<module>
+		<name>robotInterface</name>
+		<node>vizzy-desktop</node>
+	</module>
+</application>
