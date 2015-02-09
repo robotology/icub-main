@@ -1017,9 +1017,9 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         {
             for (j=0; j<_njoints; j++) _kbemf[j] = xtmp.get(j+1).asDouble();
         }
-        if (!extractGroup(trqPidsGroup, xtmp, "filterType", "useFilterType, integer describes the alorith type", _njoints))
+        if (!extractGroup(trqPidsGroup, xtmp, "filterType", "type of filter used by the torque controller, integer describes the algoritmh type", _njoints))
         {
-            yError() <<"embObjMotionControl::fromConfig(): Error: no useFilter parameter found in TRQ_PIDS section";
+            yError() <<"embObjMotionControl::fromConfig(): Error: no filterType parameter found in TRQ_PIDS section";
             return false;
         }
         else
