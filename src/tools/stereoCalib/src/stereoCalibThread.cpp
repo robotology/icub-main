@@ -21,8 +21,9 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     Bottle stereoCalibOpts=rf.findGroup("STEREO_CALIBRATION_CONFIGURATION");
     this->boardWidth=  stereoCalibOpts.check("boardWidth", Value(8)).asInt();
     this->boardHeight= stereoCalibOpts.check("boardHeight", Value(6)).asInt();
-    this->numOfPairs=stereoCalibOpts.check("numberOfPairs", Value(30)).asInt();
+    this->numOfPairs= stereoCalibOpts.check("numberOfPairs", Value(30)).asInt();
     this->squareSize= (float)stereoCalibOpts.check("boardSize", Value(0.09241)).asDouble();
+    this->boardType=  stereoCalibOpts.check("boardType", Value("CHESSBOARD")).asString();
     this->commandPort=commPort;
     this->imageDir=imageDir;
     this->startCalibration=0;
@@ -58,7 +59,10 @@ bool stereoCalibThread::threadInit()
     if (!outPortRight.open(outNameRight.c_str())) {
       cout << ": unable to open port " << outNameRight << endl;
       return false;
-   }    
+   }
+
+    //mono calibration does not need the joint positions initialised below
+    if(!stereo) return true;
     
     Property optHead;
     optHead.put("device","remote_controlboard");
@@ -179,8 +183,16 @@ void stereoCalibThread::stereoCalibRun()
 
                 std::vector<Point2f> pointbufL;
                 std::vector<Point2f> pointbufR;
-                foundL = findChessboardCorners( Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH & CV_CALIB_CB_FAST_CHECK & CV_CALIB_CB_NORMALIZE_IMAGE);
-                foundR = findChessboardCorners( Right, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH & CV_CALIB_CB_FAST_CHECK & CV_CALIB_CB_NORMALIZE_IMAGE);
+                if(boardType == "CIRCLES_GRID") {
+                    foundL = findCirclesGridDefault(Left, boardSize, pointbufL, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
+                    foundR = findCirclesGridDefault(Right, boardSize, pointbufR, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
+                } else if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
+                    foundL = findCirclesGridDefault(Left, boardSize, pointbufL, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
+                    foundR = findCirclesGridDefault(Right, boardSize, pointbufR, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
+                } else {
+                    foundL = findChessboardCorners( Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                    foundR = findChessboardCorners( Right, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                }
                 
                 if(foundL && foundR) {
                         cvCvtColor(imgL,imgL,CV_RGB2BGR);
@@ -239,6 +251,7 @@ void stereoCalibThread::stereoCalibRun()
             if(foundL && foundR && startCalibration==1)
                 Time::delay(2.0);
             initL=initR=false;
+            cout.flush();
         }
    }
 
@@ -299,7 +312,14 @@ void stereoCalibThread::stereoCalibRun()
                 Mat Left(imgL);
                 std::vector<Point2f> pointbufL;
 
-                foundL = findChessboardCorners( Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH & CV_CALIB_CB_FAST_CHECK & CV_CALIB_CB_NORMALIZE_IMAGE);
+                if(boardType == "CIRCLES_GRID") {
+                    foundL = findCirclesGridDefault(Left, boardSize, pointbufL, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
+                } else if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
+                    foundL = findCirclesGridDefault(Left, boardSize, pointbufL, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
+                } else {
+                    foundL = findChessboardCorners(Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+                }
+
                 if(foundL) {
                         cvCvtColor(imgL,imgL,CV_RGB2BGR);
                         saveImage(pathImg.c_str(),imgL,count);
@@ -339,6 +359,7 @@ void stereoCalibThread::stereoCalibRun()
 
             if(foundL && startCalibration==1)
                 Time::delay(2.0);
+            cout.flush();
 
         }
    }
@@ -610,10 +631,17 @@ void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boa
          view = cv::imread(imageList[i], 1);
          imageSize = view.size();
          vector<Point2f> pointbuf;
-         cvtColor(view, viewGray, CV_BGR2GRAY); 
+         cvtColor(view, viewGray, CV_BGR2GRAY);
 
-         bool found = findChessboardCorners( view, boardSize, pointbuf,
-                                            CV_CALIB_CB_ADAPTIVE_THRESH & CV_CALIB_CB_FAST_CHECK & CV_CALIB_CB_NORMALIZE_IMAGE);
+         bool found = false;
+         if(boardType == "CIRCLES_GRID") {
+             found = findCirclesGridDefault(view, boardSize, pointbuf, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
+         } else if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
+             found = findCirclesGridDefault(view, boardSize, pointbuf, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
+         } else {
+             found = findChessboardCorners( view, boardSize, pointbuf,
+                                            CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
+         }
 
          if(found) 
          {
@@ -640,6 +668,7 @@ void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boa
     double rms = calibrateCamera(objectPoints, imagePoints, imageSize, K,
                     Dist, rvecs, tvecs,CV_CALIB_FIX_K3);
     printf("RMS error reported by calibrateCamera: %g\n", rms);
+    cout.flush();
 }
 
 
@@ -691,8 +720,16 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
                     timg = img;
                 else
                     resize(img, timg, Size(), scale, scale);
-                found = findChessboardCorners(timg, boardSize, corners, 
-                    CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
+
+                if(boardType == "CIRCLES_GRID") {
+                    found = findCirclesGridDefault(timg, boardSize, corners, CALIB_CB_SYMMETRIC_GRID  | CALIB_CB_CLUSTERING);
+                } else if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
+                    found = findCirclesGridDefault(timg, boardSize, corners, CALIB_CB_ASYMMETRIC_GRID | CALIB_CB_CLUSTERING);
+                } else {
+                    found = findChessboardCorners(timg, boardSize, corners,
+                                                  CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_NORMALIZE_IMAGE);
+                }
+
                 if( found )
                 {
                     if( scale > 1 )
@@ -790,6 +827,7 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
         npoints += npt;
     }
     fprintf(stdout,"average reprojection err = %f\n",err/npoints);
+    cout.flush();
 }
 
 
@@ -823,11 +861,17 @@ void stereoCalibThread::saveCalibration(const string& extrinsicFilePath, const s
 void stereoCalibThread::calcChessboardCorners(Size boardSize, float squareSize, vector<Point3f>& corners)
 {
     corners.resize(0);
-    
-    for( int i = 0; i < boardSize.height; i++ )
-        for( int j = 0; j < boardSize.width; j++ )
-            corners.push_back(Point3f(float(j*squareSize),
-                                      float(i*squareSize), 0));
+
+    if(boardType == "ASYMMETRIC_CIRCLES_GRID") {
+        for( int i = 0; i < boardSize.height; i++ )
+            for( int j = 0; j < boardSize.width; j++ )
+                corners.push_back(Point3f(float((2*j + i % 2)*squareSize), float(i*squareSize), 0));
+    } else {
+        for( int i = 0; i < boardSize.height; i++ )
+            for( int j = 0; j < boardSize.width; j++ )
+                corners.push_back(Point3f(float(j*squareSize),
+                                          float(i*squareSize), 0));
+    }
 }
 
 bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupname)
