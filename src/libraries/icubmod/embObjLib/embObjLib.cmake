@@ -82,6 +82,7 @@ set(PATH_TO_CALLBACK ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/)
                                 ${TRANSCEIVER_FOLDER}/tools/
                                 ${ACE_INCLUDE_DIR}
                                 ${DEBUG_FOLDER}
+                                ${icub_firmware_shared_canProtocolLib_INCLUDE_DIR}/canProtocolLib
                                 )
 
 include_directories (${embObj_includes})
