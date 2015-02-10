@@ -2402,8 +2402,6 @@ bool MotorThread::calibTable(Bottle &options)
 
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
-        //setGazeIdle();
-
         setGazeIdle();
         ctrl_gaze->restoreContext(default_gaze_context);
         //keepFixation(options);
