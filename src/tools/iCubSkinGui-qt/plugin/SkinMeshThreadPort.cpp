@@ -11,8 +11,6 @@
 
 #include <yarp/os/Time.h>
 
-const int CAN_DRIVER_BUFFER_SIZE=2047;
-
 bool SkinMeshThreadPort::threadInit()
 {
 	yDebug("SkinMeshThreadPort initialising..");
@@ -26,7 +24,7 @@ void SkinMeshThreadPort::run()
 {
     mutex.wait();
 
-    for (Bottle *input=NULL; input=skin_port.read(false);) 
+    if (Bottle *input=skin_port.read(false)) 
     {    
         yarp::sig::Vector skin_value;
         skin_value.resize(input->size());
