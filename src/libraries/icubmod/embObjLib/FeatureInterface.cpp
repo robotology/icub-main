@@ -19,9 +19,39 @@
 
 #include <yarp/os/Time.h>
 #include <yarp/os/Semaphore.h>
-
+#include <yarp/os/LogStream.h>
 
 static TheEthManager *_interface2ethManager = NULL;
+
+void embObjPrintTrace(char *string)
+{
+    yTrace("%s", string);
+}
+
+void embObjPrintDebug(char *string)
+{
+    yDebug("%s", string);
+}
+
+void embObjPrintInfo(char *string)
+{
+    yInfo("%s", string);
+}
+
+void embObjPrintWarning(char *string)
+{
+    yWarning("%s", string);
+}
+
+void embObjPrintError(char *string)
+{
+    yError("%s", string);
+}
+
+void embObjPrintFatal(char *string)
+{
+    yError("EMS received the following FATAL error: %s", string);
+}
 
 void feat_Initialise(void *ethman)
 {

@@ -158,16 +158,6 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
     }
 #endif
 
-    static const char * typestrings[] =
-    {
-        "[INFO]",
-        "[DEBUG]",
-        "[WARNING]",
-        "[ERROR]",
-        "[FATAL]",
-        "[UNKNOWN]"
-    };
-
     static const char * sourcestrings[] =
     {
         "LOCAL",
@@ -189,7 +179,6 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
     eOmn_info_extraformat_t extraf  = EOMN_INFO_PROPERTIES_FLAGS_get_extraformat(infobasic->properties.flags);
     uint16_t forfutureuse           = EOMN_INFO_PROPERTIES_FLAGS_get_futureuse(infobasic->properties.flags);
 
-    const char * str_type           = (type > eomn_info_type_fatal) ? (typestrings[5]) : (typestrings[type]);
     const char * str_source         = (source > eomn_info_source_can2) ? (sourcestrings[3]) : (sourcestrings[source]);;
     const char * str_code           = eoerror_code2string(infobasic->properties.code);
     const char * str_extra          = NULL;
@@ -204,8 +193,7 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
     }
 
 
-    snprintf(str, sizeof(str), "%s from BOARD %d, source %s, address %d, time %ds %dm %du: (code 0x%x, param 0x%x) -> %s + %s",
-                                str_type,
+    snprintf(str, sizeof(str), " from BOARD %d, source %s, address %d, time %ds %dm %du: (code 0x%x, param 0x%x) -> %s + %s",
                                 eo_nv_GetBRD(nv)+1,
                                 str_source,
                                 address,
@@ -215,8 +203,32 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
                                 str_code,
                                 str_extra
                                 );
-    printf("%s\n", str);
-    fflush(stdout);
+
+
+    if(type == eomn_info_type_debug)
+    {
+        embObjPrintDebug(str);
+    }
+
+    if(type == eomn_info_type_info)
+    {
+        embObjPrintInfo(str);
+    }
+
+    if(type == eomn_info_type_warning)
+    {
+        embObjPrintWarning(str);
+    }
+
+    if(type == eomn_info_type_error)
+    {
+        embObjPrintError(str);
+    }
+
+    if(type == eomn_info_type_fatal)
+    {
+        embObjPrintFatal(str);
+    }
 }
 
 
@@ -240,7 +252,6 @@ extern void eoprot_fun_UPDT_mn_info_status_basic(const EOnv* nv, const eOropdesc
 
 extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-
     if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
     {
         printf("ERROR: eoprot_fun_UPDT_mn_comm_status() has received an unexpected message\n");

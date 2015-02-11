@@ -30,7 +30,12 @@ extern "C"
 {
 #endif
 
-
+void embObjPrintTrace(char *string);
+void embObjPrintDebug(char *string);
+void embObjPrintInfo(char *string);
+void embObjPrintWarning(char *string);
+void embObjPrintError(char *string);
+void embObjPrintFatal(char *string);
 
 
 typedef uint8_t FEAT_boardnumber_t;     // boards are numbered in range [1, maxnum]. moreover 0xff is the invalid value.
