@@ -1024,9 +1024,9 @@ void hostTransceiver::eoprot_override_sk(void)
         {   // skin_status_arrayof10canframes
             EO_INIT(.endpoint)      eoprot_endpoint_skin,
             EO_INIT(.entity)        eoprot_entity_sk_skin,
-            EO_INIT(.tag)           eoprot_tag_sk_skin_status_arrayof10canframes,
+            EO_INIT(.tag)           eoprot_tag_sk_skin_status_arrayofcandata,
             EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_sk_skin_status_arrayof10canframes
+            EO_INIT(.update)        eoprot_fun_UPDT_sk_skin_status_arrayofcandata
         }    
     };
 

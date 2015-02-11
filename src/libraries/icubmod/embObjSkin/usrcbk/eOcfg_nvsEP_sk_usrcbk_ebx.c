@@ -62,9 +62,8 @@
 // - declaration of extern functions
 // --------------------------------------------------------------------------------------------------------------------
 
-extern void eoprot_fun_UPDT_sk_skin_status_arrayof10canframes(const EOnv* nv, const eOropdescriptor_t* rd)
+extern void eoprot_fun_UPDT_sk_skin_status_arrayofcandata(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    //EOarray_of_10canframes *arrayofcanframes = (EOarray_of_10canframes *)rd->data;
     EOarray* arrayof = (EOarray*)rd->data;
     uint8_t sizeofarray = eo_array_Size(arrayof);
     if(0 != sizeofarray)

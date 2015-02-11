@@ -118,7 +118,7 @@ fakestdbool_t feat_manage_motioncontrol_data(FEAT_boardnumber_t boardnum, eOprot
     return fakestdbool_true;
 }
 
-fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *arrayofcanframes)
+fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *arrayofcandata)
 {   
     static int error = 0;
     IethResource* skin;
@@ -147,7 +147,7 @@ fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id
     }
     else
     {   // the object exists and is completed: it can be used
-        skin->update(id32, yarp::os::Time::now(), (void *)arrayofcanframes);
+        skin->update(id32, yarp::os::Time::now(), (void *)arrayofcandata);
     }
 
     return fakestdbool_true;

@@ -150,7 +150,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 //        yDebug() << "\n Special board cfg num " << j;
 //        boardCfgList[j].debugPrint();
 
-        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmd_boardscfg);
+        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmmnds_boardscfg);
 
 
         if(! res->addSetMessage(protoid, (uint8_t*)&bcfg))
@@ -195,10 +195,10 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         }
 
         //prepare data to send to ems
-        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmd_trianglescfg);
+        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmmnds_trianglescfg);
 
 
-        eOsk_cmd_trianglesCfg_t tcfg;
+        eOsk_cmd_trianglesCfg_t tcfg = {0};
         tcfg.boardaddr = triangleCfg[j].boardAddr;
         tcfg.idstart = triangleCfg[j].triangleStart;
         tcfg.idend = triangleCfg[j].triangleEnd;
@@ -641,7 +641,7 @@ bool EmbObjSkin::configPeriodicMessage(void)
 
     for(int i=0; i<_skCfg.numOfPatches; i++)
     {
-        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[i].indexNv, eoprot_tag_sk_skin_status_arrayof10canframes);
+        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[i].indexNv, eoprot_tag_sk_skin_status_arrayofcandata);
         id32v.push_back(protoid);
     }
 
@@ -699,7 +699,7 @@ bool EmbObjSkin::init()
 
     for(i=0; i<_skCfg.numOfPatches;i++)
     {
-        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[i].indexNv, eoprot_tag_sk_skin_cmd_boardscfg);
+        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[i].indexNv, eoprot_tag_sk_skin_cmmnds_boardscfg);
 
         // get min and max address
         uint8_t minAddr = 16;
@@ -724,11 +724,11 @@ bool EmbObjSkin::init()
         }
 
     }
-    Time::delay(0.01);
+    Time::delay(0.010);
 
     for(i=0; i<_skCfg.numOfPatches;i++)
     {
-        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[i].indexNv, eoprot_tag_sk_skin_cmd_trianglescfg);
+        protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[i].indexNv, eoprot_tag_sk_skin_cmmnds_trianglescfg);
 
         for(k=0; k<_skCfg.patchInfoList[i].cardAddrList.size(); k++)
         {
@@ -755,7 +755,6 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
 {
     uint8_t           msgtype = 0;
     uint8_t           i, triangle = 0;
-    //EOarray_of_10canframes 	*arrayofcanframes = (EOarray_of_10canframes*) rxdata;
     static int error = 0;
     int p;
     EOarray* arrayof = (EOarray*)rxdata;
@@ -779,12 +778,21 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
     errors.resize(sizeofarray);
 
     for(i=0; i<sizeofarray; i++)
-    {
-        eOutil_canframe_t *canframe = (eOutil_canframe_t*) eo_array_At(arrayof, i);
+    {       
+        eOsk_candata_t *candata = (eOsk_candata_t*) eo_array_At(arrayof, i);
 
-        //uint8_t  j; 
-        uint8_t mtbId =255; //unknown mtb card addr
-        uint8_t  cardAddr, valid = 0;
+        if(NULL == candata)
+        {
+            break;
+        }
+
+        uint16_t canframeid11 = EOSK_CANDATA_INFO2IDCAN(candata->info);
+        uint8_t  canframesize = EOSK_CANDATA_INFO2SIZE(candata->info);
+        uint8_t *canframedata = candata->data;
+
+        uint8_t mtbId = 255; // unknown mtb card addr
+        uint8_t cardAddr = 0;
+        uint8_t valid = 0;
         uint8_t skinClass;
 
         if(_newCfg)
@@ -793,14 +801,12 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
             skinClass = ICUBCANPROTO_CLASS_PERIODIC_ANALOGSENSOR;
 
 
-        //canframe = (eOutil_canframe_t*) &arrayofcanframes->data[i*sizeof(eOutil_canframe_t)];
-        //canframe = (eOutil_canframe_t*) eo_array_At(arrayof, i);
 
-        valid = (((canframe->id & 0x0F00) >> 8) == skinClass) ? 1 : 0;
+        valid = (((canframeid11 & 0x0f00) >> 8) == skinClass) ? 1 : 0;
 
         if(valid)
         {
-            cardAddr = (canframe->id & 0x00f0) >> 4;
+            cardAddr = (canframeid11 & 0x00f0) >> 4;
             //get index of start of data of board with addr cardId.
             for(int cId_index = 0; cId_index< _skCfg.patchInfoList[p].cardAddrList.size(); cId_index++)
             {
@@ -820,8 +826,8 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
             }
 
             //printf("mtbId=%d\n", mtbId);
-            triangle = (canframe->id & 0x000f);
-            msgtype = (int) canframe->data[0];
+            triangle = (canframeid11 & 0x000f);
+            msgtype = (int) canframedata[0];
 
             int index=16*12*mtbId + triangle*12;
 
@@ -833,7 +839,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
                 // Message head
                 for(int k = 0; k < 7; k++)
                 {
-                    data[index + k] = canframe->data[k + 1];
+                    data[index + k] = canframedata[k + 1];
                 }
             }
             else if (msgtype == 0xC0)
@@ -841,20 +847,20 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
                 // Message tail
                 for(int k = 0; k < 5; k++)
                 {
-                    data[index + k + 7] = canframe->data[k + 1];
+                    data[index + k + 7] = canframedata[k + 1];
                 }
 
                 // Skin diagnostics
                 if (_brdCfg.useDiagnostic)  // if user requests to check the diagnostic
                 {
-                    if (canframe->size == 8)
+                    if (canframesize == 8)
                     {
                         // Skin diagnostics is active
                         _isDiagnosticPresent = true;
 
                         // Get error code head and tail
-                        short head = canframe->data[6];
-                        short tail = canframe->data[7];
+                        short head = canframedata[6];
+                        short tail = canframedata[7];
                         int fullMsg = (head << 8) | (tail & 0xFF);
 
                         // Store error message
@@ -881,7 +887,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
             }
             mutex.post();
         }
-        else if(canframe->id == 0x100)
+        else if(canframeid11 == 0x100)
         {
             /* Can frame with id =0x100 contains Debug info. SO I skip it.*/
             return true;
@@ -889,7 +895,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
         else
         {
             if(error == 0)
-                yError() << "EMS: " << res->boardNum << " Unknown Message received from skin (" << i<<"/"<< sizeofarray <<"): frameID=" << canframe->id << " len="<<canframe->size << "canframe.data="<<canframe->data[0] << " " <<canframe->data[1] << " " <<canframe->data[2] << " " <<canframe->data[3] <<"\n" ;
+                yError() << "EMS: " << res->boardNum << " Unknown Message received from skin (" << i<<"/"<< sizeofarray <<"): frameID=" << canframeid11<< " len="<<canframesize << "canframe.data="<<canframedata[0] << " " <<canframedata[1] << " " <<canframedata[2] << " " <<canframedata[3] <<"\n" ;
             error++;
             if (error == 10000)
                 error = 0;
