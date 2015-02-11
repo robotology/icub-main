@@ -272,9 +272,6 @@ bool QtICubSkinGuiPlugin::parseParameters(QStringList params)
         return false;
     }
 
-
-
-
     gWidth =rf.find("width" ).asInt();
     gHeight=rf.find("height").asInt();
     if (rf.check("xpos")){
@@ -341,22 +338,16 @@ void QtICubSkinGuiPlugin::onInit()
 {
     int period = rf.check("period")?rf.find("period").asInt():50;
 
-    if (TheadType==TYPE_CAN){
+    if (TheadType==TYPE_CAN)
+    {
         gpSkinMeshThreadCan=new SkinMeshThreadCan(rf,period);
         gpSkinMeshThreadCan->start();
 
-
-        //gpSkinMeshThreadCan->stop();
-        //delete gpSkinMeshThreadCan;
-    } else if (TheadType==TYPE_PORT){
-
+    }
+    else if (TheadType==TYPE_PORT)
+    {
         gpSkinMeshThreadPort=new SkinMeshThreadPort(rf,period);
         gpSkinMeshThreadPort->start();
-
-        //gtk_widget_destroy(mainWindow);
-
-//        gpSkinMeshThreadPort->stop();
-//        delete gpSkinMeshThreadPort;
     }
 
     done();
