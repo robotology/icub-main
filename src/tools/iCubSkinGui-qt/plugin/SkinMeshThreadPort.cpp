@@ -75,9 +75,11 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThre
         yarp::os::Bottle sensorConfig(sensorSetConfig.get(t).toString());
 
         std::string type(sensorConfig.get(0).asString());
-      if (type=="triangle" || type=="fingertip" || type=="fingertip2L" || type=="fingertip2R" || type=="triangle_10pad" || type=="quad16" || type=="palmR" || type=="palmL")
-         {
-            int id=sensorConfig.get(1).asInt();
+      
+        if (type=="triangle"       || type=="fingertip" || type=="fingertip2L" || type=="fingertip2R" ||
+            type=="triangle_10pad" || type=="quad16"    || type=="palmR"       || type=="palmL")
+        {
+            int    id=sensorConfig.get(1).asInt();
             double xc=sensorConfig.get(2).asDouble();
             double yc=sensorConfig.get(3).asDouble();
             double th=sensorConfig.get(4).asDouble();
@@ -91,52 +93,44 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThre
             {
                 if (sensor[id])
                 {
-                    yWarning("WARNING: triangle %d already exists.",id);
+                    yError("Triangle %d already exists.",id);
                 }
                 else
                 {
                     if (type=="triangle")
                     {
                         sensor[id]=new Triangle(xc,yc,th,gain,layoutNum,lrMirror);
-                        sensor[id]->setCalibrationFlag(useCalibration);
                     }
                     if (type=="triangle_10pad")
                     {
                         sensor[id]=new Triangle_10pad(xc,yc,th,gain,layoutNum,lrMirror);
-                        sensor[id]->setCalibrationFlag(useCalibration);
                     }
                     if (type=="fingertip")
                     {
                         sensor[id]=new Fingertip(xc,yc,th,gain,layoutNum,lrMirror);
-                        sensor[id]->setCalibrationFlag(useCalibration);
                     }
                     if (type=="fingertip2L")
                     {
                         sensor[id]=new Fingertip2L(xc,yc,th,gain,layoutNum,lrMirror);
-                        sensor[id]->setCalibrationFlag(useCalibration);
                     }
                     if (type=="fingertip2R")
                     {
                         sensor[id]=new Fingertip2R(xc,yc,th,gain,layoutNum,lrMirror);
-                        sensor[id]->setCalibrationFlag(useCalibration);
                     }
                     if (type=="quad16")
                     {
-                        printf("Quad16");
                         sensor[id]=new Quad16(xc,yc,th,gain,layoutNum,lrMirror);
-                        sensor[id]->setCalibrationFlag(useCalibration);
-                        }
+                    }
                     if (type=="palmR")
                     {
                         sensor[id]=new PalmR(xc,yc,th,gain,layoutNum,lrMirror);
-                        sensor[id]->setCalibrationFlag(useCalibration);
                     }
                     if (type=="palmL")
                     {
                         sensor[id]=new PalmL(xc,yc,th,gain,layoutNum,lrMirror);
-                        sensor[id]->setCalibrationFlag(useCalibration);
                     }
-                  
+
+                    sensor[id]->setCalibrationFlag(useCalibration);
                     ++sensorsNum;
                 }
             }
