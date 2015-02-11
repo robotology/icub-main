@@ -31,7 +31,7 @@
 </module>
 <module>
     <name>blobSpotter</name>
-    <parameters>--name blobSpotterPC</parameters>
+    <parameters>--name blobSpotterPC --minArea 40</parameters>
     <node>icub-laptop</node>
     <tag>blobSpoPC</tag>
 </module>
