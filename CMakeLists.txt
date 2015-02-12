@@ -24,7 +24,7 @@ project(iCub)
 set(ICUB_REQYARP_VERSION_MAJOR "2")
 set(ICUB_REQYARP_VERSION_MINOR "3")
 set(ICUB_REQYARP_VERSION_PATCH "63")
-set(ICUB_REQYARP_VERSION_TWEAK "3")
+set(ICUB_REQYARP_VERSION_TWEAK "4")
 
 if(ICUB_REQYARP_VERSION_TWEAK)
     set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH}.${ICUB_REQYARP_VERSION_TWEAK})
@@ -138,7 +138,7 @@ mark_as_advanced(ICUB_APPLICATIONS_PREFIX)
 
 # new "data" installation - available with yarp2.4
 include(YarpInstallationHelpers)
-yarp_configure_external_installation(iCub)
+yarp_configure_external_installation(iCub WITH_PLUGINS)
 
 # temporary options for debugging/testing new functionalities
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
