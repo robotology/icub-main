@@ -1414,6 +1414,12 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 {for (j=0;j<nj;j++) this->_bemfGain[j] = xtmp.get(j+1).asDouble();}
                 else
                 {for (j=0;j<nj;j++) this->_bemfGain[j] = 0; yWarning ("TORQUE_PIDS: 'kbemf' param missing");}
+
+                xtmp = trqPidsGroup.findGroup("ktau"); 
+                if (!xtmp.isNull())
+                {for (j=0;j<nj;j++) this->_ktau[j] = xtmp.get(j+1).asDouble();}
+                else
+                {for (j=0;j<nj;j++) this->_ktau[j] = 1.0; yWarning ("TORQUE_PIDS: 'ktau' param missing");}
                 
                 xtmp = trqPidsGroup.findGroup("filterType"); 
                 if (!xtmp.isNull())
@@ -1744,6 +1750,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _impedance_limits=0;
     _estim_params=0;
     _bemfGain=0;
+    _ktau=0;
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1770,6 +1777,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _maxTorque=allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
     _bemfGain=allocAndCheck<double>(nj);
+    _ktau=allocAndCheck<double>(nj);
     _maxStep=allocAndCheck<double>(nj);
     _filterType=allocAndCheck<int>(nj);
 
@@ -1828,6 +1836,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<double>(_maxTorque);
     checkAndDestroy<double>(_newtonsToSensor);
     checkAndDestroy<double>(_bemfGain);
+    checkAndDestroy<double>(_ktau);
     checkAndDestroy<double>(_maxStep);
     checkAndDestroy<int>(_filterType);
 
@@ -2362,6 +2371,8 @@ bool CanBusMotionControl::open (Searchable &config)
         
         for (int i=0; i<p._njoints; i++)
         {
+            //this->setKtau(i,p._ktau[i]);
+            yarp::os::Time::delay(0.002);
             this->setBemfParam(i,p._bemfGain[i]);
             yarp::os::Time::delay(0.002);
             this->setFilterTypeRaw(i,p._filterType[i]);

@@ -319,6 +319,7 @@ bool embObjMotionControl::alloc(int nj)
     _velocityShifts=allocAndCheck<int>(nj);
     _velocityTimeout=allocAndCheck<int>(nj);
     _kbemf=allocAndCheck<double>(nj);
+    _ktau=allocAndCheck<double>(nj);
     _filterType=allocAndCheck<int>(nj);
 
     // Reserve space for data stored locally. values are initialize to 0
@@ -366,6 +367,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_velocityShifts);
     checkAndDestroy(_velocityTimeout);
     checkAndDestroy(_kbemf);
+    checkAndDestroy(_ktau);
     checkAndDestroy(_filterType);
     checkAndDestroy(_ref_positions);
     checkAndDestroy(_command_speeds);
@@ -1017,6 +1019,15 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         {
             for (j=0; j<_njoints; j++) _kbemf[j] = xtmp.get(j+1).asDouble();
         }
+        if (!extractGroup(trqPidsGroup, xtmp, "ktau", "Pid ktau parameter", _njoints))
+        {
+            yError() <<"embObjMotionControl::fromConfig(): Error: no ktau parameter found in TRQ_PIDS section";
+            return false;
+        }
+        else
+        {
+            for (j=0; j<_njoints; j++) _ktau[j] = xtmp.get(j+1).asDouble();
+        }
         if (!extractGroup(trqPidsGroup, xtmp, "filterType", "type of filter used by the torque controller, integer describes the algoritmh type", _njoints))
         {
             yError() <<"embObjMotionControl::fromConfig(): Error: no filterType parameter found in TRQ_PIDS section";
@@ -1323,6 +1334,10 @@ bool embObjMotionControl::init()
         jconfig.bemf.value = _kbemf[logico];
         jconfig.bemf.scale = 0;
         jconfig.bemf.dummy = 0;
+ 
+        //jconfig.ktau.value = _ktau[logico];
+        //jconfig.ktau.scale = 0;
+        //jconfig.ktau.dummy = 0;
         
         jconfig.tcfiltertype=_filterType[logico];
 

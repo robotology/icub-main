@@ -186,6 +186,7 @@ public:
     ImpedanceParameters *_impedance_params;     /** impedance parameters */
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_bemfGain;                          /** bemf compensation gain */
+    double *_ktau;                              /** motor torque constant */
     int    *_filterType;
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
