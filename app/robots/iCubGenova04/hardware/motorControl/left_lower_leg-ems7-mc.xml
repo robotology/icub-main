@@ -46,7 +46,8 @@
         <param name="stictionDwn">   0           0          </param>   
         <param name="kff">           0           0          </param>     
         <param name="kbemf">         0           0          </param> 
-        <param name="filterType">    0           0          </param>           
+        <param name="filterType">    0           0          </param>  
+        <param name="ktau">          1           1          </param>          
     </group>
     
   </device>  
