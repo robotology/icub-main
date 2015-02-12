@@ -85,6 +85,7 @@ private:
     int boardWidth;
     int boardHeight;
     float squareSize;
+    string boardType;
     char pathL[256];
     char pathR[256];
     void printMatrix(Mat &matrix);
