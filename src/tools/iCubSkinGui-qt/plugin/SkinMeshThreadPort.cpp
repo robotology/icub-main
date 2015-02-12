@@ -11,7 +11,7 @@
 
 #include <yarp/os/Time.h>
 
-#define REAL_SKIN_THRESHOLD 10.0
+#define SKIN_THRESHOLD 15.0
 
 SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThread(period),mutex(1)
 {
@@ -78,6 +78,9 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThre
     defaultColor.push_back(r);
     defaultColor.push_back(g);
     defaultColor.push_back(b);
+
+    skinThreshold = config.check("skinThreshold")?config.find("skinThreshold").asDouble():SKIN_THRESHOLD;
+    yDebug("Skin Threshold set to %g", skinThreshold);
 
     yarp::os::Bottle sensorSetConfig=config.findGroup("SENSORS").tail();
 
@@ -245,7 +248,7 @@ void SkinMeshThreadPort::run()
         {
             for (int i=sensor[sensorId]->min_tax; i<=sensor[sensorId]->max_tax; i++)
             {
-                if (skin_value[i]>REAL_SKIN_THRESHOLD)
+                if (skin_value[i]>skinThreshold)
                 {
                     isRealSensorOverThreshold = true;
                     break;
@@ -259,7 +262,7 @@ void SkinMeshThreadPort::run()
         {
             for (int i=sensor[sensorId]->min_tax; i<=sensor[sensorId]->max_tax; i++)
             {
-                if (skin_value_virtual[i]>REAL_SKIN_THRESHOLD)
+                if (skin_value_virtual[i]>skinThreshold)
                 {
                     isVirtualSensorOverThreshold = true;
                     break;

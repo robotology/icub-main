@@ -50,6 +50,8 @@ protected:
     
     std::vector<unsigned char> defaultColor;
 
+    double skinThreshold;
+
 public:
 	SkinMeshThreadPort(Searchable& config,int period);
 
