@@ -211,6 +211,12 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 //        yDebug() << "\n Special triangle cfg num " << j;
 //        boardCfgList[j].debugPrint();
 
+        // allow the remote board to process one command at a time. 
+        // otherwise the board sends up a diagnostics message telling that it cannot send a message in can bus
+        // we do that by ... sic ... adding a small delay. 
+        // the above "yDebug() << "\n Special triangle cfg num " << j;" used to test was probably doing the same effect as a delay of a few ms
+        Time::delay(0.010);
+
         if(! res->addSetMessage(protoid, (uint8_t*)&tcfg))
         {
             yError() << "skin board "<< _fId.boardNumber << " Error in send default triangle config for mtb "<<  tcfg.boardaddr;
