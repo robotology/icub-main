@@ -2371,9 +2371,10 @@ bool CanBusMotionControl::open (Searchable &config)
         
         for (int i=0; i<p._njoints; i++)
         {
-            //this->setKtau(i,p._ktau[i]);
             yarp::os::Time::delay(0.002);
             this->setBemfParam(i,p._bemfGain[i]);
+            //this->setMotorParam(i,p._bemfGain[i]); //ktau e bmef qui!
+
             yarp::os::Time::delay(0.002);
             this->setFilterTypeRaw(i,p._filterType[i]);
             yarp::os::Time::delay(0.002);
@@ -5605,13 +5606,69 @@ bool CanBusMotionControl::getBemfParamRaw (int axis, double *bemf)
 
     short value = 0;
 
-    if (_readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_BACKEMF_PARAMS, axis, value))
+    if (_readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_MOTOR_PARAMS, axis, value))
     {
         *bemf = double (value);
     }
     else
         return false;
 
+    return true;
+}
+
+bool CanBusMotionControl::getMotorParamRaw (int axis, MotorParam *param)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    if (!ENABLED(axis))
+    {
+        param->bemf = 0;
+        param->ktau = 0;
+        return true;
+    }
+
+    _mutex.wait();
+    int id;
+    if (!threadPool->getId(id))
+    {
+        yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
+        _mutex.post();
+        return false;
+    }
+
+    r.startPacket();
+    r.addMessage (id, axis, ICUBCANPROTO_POL_MC_CMD__GET_MOTOR_PARAMS);
+
+    r.writePacket();
+
+    ThreadTable2 *t=threadPool->getThreadTable(id);
+    t->setPending(r._writeMessages);
+    _mutex.post();
+    t->synch();
+
+    if (!r.getErrorStatus() || (t->timedOut()))
+    {
+        yError("getMotorParamRaw: message timed out\n");
+        param->bemf = 0;
+        param->ktau = 0;
+        return false;
+    }
+
+    CanMessage *m=t->get(0);
+    if (m==0)
+    {
+        param->bemf = 0;
+        param->ktau = 0;
+        return false;
+    }
+
+    param->bemf = *((short *)(m->getData()+1)); //1&2
+    //3 dummy
+    param->ktau = *((short *)(m->getData()+4)); //4&5 
+    //6 dummy
+    //7 dummy
     return true;
 }
 
@@ -5636,7 +5693,6 @@ bool CanBusMotionControl::setFilterTypeRaw (int j, int type)
     return true;
 }
 
-/// cmd is a SingleAxis poitner with 1 double arg
 bool CanBusMotionControl::setBemfParamRaw (int j, double bemf)
 {
     const int axis = j;
@@ -5649,11 +5705,36 @@ bool CanBusMotionControl::setBemfParamRaw (int j, double bemf)
 
     _mutex.wait();
         r.startPacket();
-        r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_BACKEMF_PARAMS, axis);
+        r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_MOTOR_PARAMS, axis);
         *((short *)(r._writeBuffer[0].getData()+1)) = S_16(bemf);
         *((unsigned char  *)(r._writeBuffer[0].getData()+3)) = (unsigned char) (0);
         *((unsigned char  *)(r._writeBuffer[0].getData()+4)) = (unsigned char) (0);
         *((unsigned char  *)(r._writeBuffer[0].getData()+5)) = (unsigned char) (0);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+6)) = (unsigned char) (0);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+7)) = (unsigned char) (0);
+        r._writeBuffer[0].setLen(8);
+        r.writePacket();
+    _mutex.post();
+
+    return true;
+}
+
+bool CanBusMotionControl::setMotorParamRaw (int j, MotorParam param)
+{
+    const int axis = j;
+
+     /// prepare Can message.
+    CanBusResources& r = RES(system_resources);
+
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    _mutex.wait();
+        r.startPacket();
+        r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_MOTOR_PARAMS, axis);
+        *((short *)(r._writeBuffer[0].getData()+1)) = S_16(param.bemf);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+3)) = (unsigned char) (0);
+        *((short *)(r._writeBuffer[0].getData()+4)) = S_16(param.ktau);
         *((unsigned char  *)(r._writeBuffer[0].getData()+6)) = (unsigned char) (0);
         *((unsigned char  *)(r._writeBuffer[0].getData()+7)) = (unsigned char) (0);
         r._writeBuffer[0].setLen(8);

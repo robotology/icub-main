@@ -832,6 +832,13 @@ public:
     //
     /////////////////////////////// END Position Control INTERFACE
 
+    //not complete yet
+    struct MotorParam
+    {
+        double bemf;
+        double ktau;
+    };
+
     //
     /// TORQUE CONTROL INTERFACE RAW
 //    virtual bool getAxes(int *ax);
@@ -845,6 +852,8 @@ public:
     virtual bool getTorqueRangesRaw(double *min, double *max);
     virtual bool getBemfParamRaw(int j, double *trq);
     virtual bool setBemfParamRaw(int j, double trq);
+    virtual bool getMotorParamRaw(int j, MotorParam *params);
+    virtual bool setMotorParamRaw(int j, MotorParam params);
     virtual bool setFilterTypeRaw(int j, int type);
 
     virtual bool setTorquePidRaw(int j, const Pid &pid);
