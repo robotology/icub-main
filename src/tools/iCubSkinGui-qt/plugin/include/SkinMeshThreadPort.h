@@ -12,6 +12,7 @@
 
 //#include <stdio.h>
 #include <string>
+#include <vector>
 
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
@@ -38,13 +39,16 @@ class SkinMeshThreadPort : public RateThread
 protected:
 	static const int MAX_SENSOR_NUM = 128;
 
-	BufferedPort<Bottle> skin_port;							
+	BufferedPort<Bottle> skin_port;
+    BufferedPort<Bottle> skin_port_virtual;
 	TouchSensor *sensor[MAX_SENSOR_NUM];
 
     yarp::os::Semaphore mutex;
 
     int sensorsNum;
     bool mbSimpleDraw;
+    
+    std::vector<unsigned char> defaultColor;
 
 public:
 	SkinMeshThreadPort(Searchable& config,int period);
