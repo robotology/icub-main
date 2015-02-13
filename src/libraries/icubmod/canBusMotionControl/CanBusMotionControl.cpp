@@ -5616,16 +5616,17 @@ bool CanBusMotionControl::getBemfParamRaw (int axis, double *bemf)
     return true;
 }
 
-bool CanBusMotionControl::getMotorParamRaw (int axis, MotorParam *param)
+bool CanBusMotionControl::getMotorTorqueParamsRaw (int axis, MotorTorqueParameters *param)
 {
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
+    MotorTorqueParameters pzero;
+    *param = pzero;
+
     if (!ENABLED(axis))
     {
-        param->bemf = 0;
-        param->ktau = 0;
         return true;
     }
 
@@ -5650,24 +5651,20 @@ bool CanBusMotionControl::getMotorParamRaw (int axis, MotorParam *param)
 
     if (!r.getErrorStatus() || (t->timedOut()))
     {
-        yError("getMotorParamRaw: message timed out\n");
-        param->bemf = 0;
-        param->ktau = 0;
+        yError("getMotorTorqueParamsRaw: message timed out\n");
         return false;
     }
 
     CanMessage *m=t->get(0);
     if (m==0)
     {
-        param->bemf = 0;
-        param->ktau = 0;
         return false;
     }
 
     param->bemf = *((short *)(m->getData()+1)); //1&2
-    //3 dummy
+    param->bemf_scale = 0;
     param->ktau = *((short *)(m->getData()+4)); //4&5 
-    //6 dummy
+    param->ktau_scale = 0;
     //7 dummy
     return true;
 }
@@ -5719,7 +5716,7 @@ bool CanBusMotionControl::setBemfParamRaw (int j, double bemf)
     return true;
 }
 
-bool CanBusMotionControl::setMotorParamRaw (int j, MotorParam param)
+bool CanBusMotionControl::setMotorTorqueParamsRaw (int j, MotorTorqueParameters param)
 {
     const int axis = j;
 
@@ -5733,9 +5730,9 @@ bool CanBusMotionControl::setMotorParamRaw (int j, MotorParam param)
         r.startPacket();
         r.addMessage (ICUBCANPROTO_POL_MC_CMD__SET_MOTOR_PARAMS, axis);
         *((short *)(r._writeBuffer[0].getData()+1)) = S_16(param.bemf);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+3)) = (unsigned char) (0);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+3)) = (unsigned char) (param.bemf_scale);
         *((short *)(r._writeBuffer[0].getData()+4)) = S_16(param.ktau);
-        *((unsigned char  *)(r._writeBuffer[0].getData()+6)) = (unsigned char) (0);
+        *((unsigned char  *)(r._writeBuffer[0].getData()+6)) = (unsigned char) (param.ktau_scale);
         *((unsigned char  *)(r._writeBuffer[0].getData()+7)) = (unsigned char) (0);
         r._writeBuffer[0].setLen(8);
         r.writePacket();

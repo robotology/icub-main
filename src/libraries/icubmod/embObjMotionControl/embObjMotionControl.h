@@ -612,6 +612,8 @@ public:
     bool disableTorquePidRaw(int j);
     bool enableTorquePidRaw(int j);
     bool setTorqueOffsetRaw(int j, double v);
+    bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params);
+    bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
     int32_t getRefSpeedInTbl(uint8_t boardNum, int j, eOmeas_position_t pos);
 
     // IVelocityControl2

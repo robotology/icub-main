@@ -3647,6 +3647,16 @@ bool embObjMotionControl::setTorqueOffsetRaw(int j, double v)
     return NOT_YET_IMPLEMENTED("setTorqueOffsetRaw");
 }
 
+bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params)
+{
+    return NOT_YET_IMPLEMENTED("getMotorTorqueParamsRaw");
+}
+
+bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params)
+{
+    return NOT_YET_IMPLEMENTED("setMotorTorqueParamsRaw");
+}
+    
 // IVelocityControl2
 bool embObjMotionControl::velocityMoveRaw(const int n_joint, const int *joints, const double *spds)
 {
