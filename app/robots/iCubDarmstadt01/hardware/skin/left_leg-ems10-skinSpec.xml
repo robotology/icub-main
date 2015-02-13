@@ -9,7 +9,7 @@
                                                               1 ==> palm and fingertips skin
                                                               2 ==> old skin without temperature compensation -->
             <param name="noLoad">         0xf0  </param>
-            <param name="diagnostic">    true  </param>     <!-- used to config high level -->
+            <param name="diagnostic">    false  </param>     <!-- used to config high level -->
         </group>
         
         
@@ -19,13 +19,9 @@
             <param name="cdcOffset">       0x2200  </param>
         </group>
 		
-		<group name="specialCfgTriangles">
-        <param name="numOfSets">         32  </param> <!-- id starts from 1 for triangleSetCfg-->
-        <!--                                 patch       boardAddr    idStart       idEnd        enabled          shift       cdcOffset      -->
-        
-			<!-- UPPER LEG -->
-			
-		   <param name="triangleSetCfg1">      1            1            0            15             1              2            0x2200      </param>
+	 <!-- 	<group name="specialCfgTriangles">
+        <param name="numOfSets">         32  </param>
+ 		   <param name="triangleSetCfg1">      1            1            0            15             1              2            0x2200      </param>
 		   
 		   <param name="triangleSetCfg2">      1            2            0             0             1              2            0x2200      </param>
 		   <param name="triangleSetCfg3">      1            2            3             6             1              2            0x2200      </param>
@@ -49,7 +45,7 @@
 		   <param name="triangleSetCfg16">      1            7           8            8              1              2            0x2200       </param>
 		   <param name="triangleSetCfg17">      1            7          10           15              1              2            0x2200       </param>
 		  
-		   <!-- LOWER LEG -->
+		   <!-- LOWER LEG ->
 
     	   <param name="triangleSetCfg18">      2            8           0            0               1              2            0x2200       </param>
 		   <param name="triangleSetCfg19">      2            8           3            6               1              2            0x2200       </param>
@@ -68,7 +64,7 @@
 		   <param name="triangleSetCfg29">      2            11             1             8             1              2            0x2200      </param>
 		   <param name="triangleSetCfg30">      2            11            12            13             1              2            0x2200      </param>
 		  		   
-		   <!-- FOOT -->
+		   <!-- FOOT ->
 		   
 		   <param name="triangleSetCfg31">      2            13             0             4             1              2            0x2200      </param>
 		   <param name="triangleSetCfg32">      2            13             8            15             1              2            0x2200      </param>
@@ -77,7 +73,7 @@
 		   <param name="triangleSetCfg32">      2            12             8            13             1             2            0x2200      </param>
         </group>
         
-			<!-- UPPER LEG -->
+			<!-- UPPER LEG ->
 			
 		   <param name="triangleSetCfg1">      1            1            0            15             1              2            0x2200      </param>
 		   
@@ -103,7 +99,7 @@
 		   <param name="triangleSetCfg16">      1            7           8            8              1              2            0x2200       </param>
 		   <param name="triangleSetCfg17">      1            7          10           15              1              2            0x2200       </param>
 		  
-		   <!-- LOWER LEG -->
+		   <!-- LOWER LEG ->
 
     	   <param name="triangleSetCfg18">      2            8           0            0               1              2            0x2200       </param>
 		   <param name="triangleSetCfg19">      2            8           3            6               1              2            0x2200       </param>
@@ -122,7 +118,7 @@
 		   <param name="triangleSetCfg29">      1            11             1             8             1              2            0x2200      </param>
 		   <param name="triangleSetCfg30">      1            11            12            13             1              2            0x2200      </param>
 		  		   
-		   <!-- FOOT -->
+		   <!-- FOOT ->
 		   
 		   <param name="triangleSetCfg31">      1            13             0             4             1              2            0x2200      </param>
 		   <param name="triangleSetCfg32">      1            13             8            15             1              2            0x2200      </param>
@@ -130,5 +126,6 @@
 		   <param name="triangleSetCfg31">      1            12             1             6             1             2            0x2200      </param>
 		   <param name="triangleSetCfg32">      1            12             8            13             1             2            0x2200      </param>
         </group>
+         -->
         
 </params>
