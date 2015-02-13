@@ -77,6 +77,12 @@ static inline bool NOT_YET_IMPLEMENTED(const char *txt)
     return true;
 }
 
+static inline bool DEPRECATED(const char *txt)
+{
+    yError() << txt << " has been deprecated for embObjMotionControl";
+    return true;
+}
+
 #define NV_NOT_FOUND	return nv_not_found();
 
 static bool nv_not_found(void)
@@ -1331,13 +1337,10 @@ bool embObjMotionControl::init()
         jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[logico]);
         jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[logico]);
 
-        jconfig.bemf.value = _kbemf[logico];
-        jconfig.bemf.scale = 0;
-        jconfig.bemf.dummy = 0;
- 
-        //jconfig.ktau.value = _ktau[logico];
-        //jconfig.ktau.scale = 0;
-        //jconfig.ktau.dummy = 0;
+        jconfig.motor_params.bemf_value = _kbemf[logico];
+        jconfig.motor_params.bemf_scale = 0;
+        jconfig.motor_params.ktau_value = _ktau[logico];
+        jconfig.motor_params.ktau_scale = 0;
         
         jconfig.tcfiltertype=_filterType[logico];
 
@@ -3540,61 +3543,12 @@ bool embObjMotionControl::getCurrentImpedanceLimitRaw(int j, double *min_stiff, 
 
 bool embObjMotionControl::getBemfParamRaw(int j, double *bemf)
 {
-    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_bemf);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, id32);
-    tt->setPending(1);
-
-    if(!res->addGetMessage(id32) )
-    {
-        yError() << "embObjMotionControl::getBemfParamRaw() could not send get message for BOARD" << _fId.boardNumber << "joint " << j;
-        return false;
-    }
-
-    // wait here
-    if(-1 == tt->synch() )
-    {
-        int threadId;
-        yError () << "embObjMotionControl::getBemfParamRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
-
-        if(requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
-    uint16_t size;
-    eOmc_bemf_t eobemf = {0};
-    res->readBufferedValue(id32, (uint8_t *)&eobemf, &size);
-
-    yWarning() << "embObjMotionControl::getBemfParamRaw() is temporarily obtaining bemf converting from int16_t to double: TODO: find out correct conversion.";
-    #warning -> marco.accame: the double bemf is now just casted from int16_t. TODO: find out correct conversion.
-
-    *bemf = (double)eobemf.value;
-
-    return true;
+    return DEPRECATED("getBemfParamRaw");
 }
 
 bool embObjMotionControl::setBemfParamRaw(int j, double bemf)
 {
-    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_bemf);
-    eOmc_bemf_t eobemf = {0};
-
-    #warning -> marco.accame: the bemf is now just casted as an int16_t. TODO: find out correct conversion.
-    yWarning() << "embObjMotionControl::setBemfParamRaw() is temporarily converting bemf from double to int16_t: TODO: find out correct conversion.";
-
-    eobemf.value    = (int16_t) bemf;
-    eobemf.scale    = 0;
-    eobemf.dummy    = 0;
-
-    if(!res->addSetMessage(id32, (uint8_t *) &eobemf))
-    {
-        yError() << "embObjMotionControl::setBemfParamRaw() could not send set message for BOARD" << _fId.boardNumber << "joint " << j;
-        return false;
-    }
-
-    return true;
+    return DEPRECATED("setBemfParamRaw");
 }
 
 bool embObjMotionControl::setTorqueErrorLimitRaw(int j, double limit)
@@ -3649,12 +3603,59 @@ bool embObjMotionControl::setTorqueOffsetRaw(int j, double v)
 
 bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params)
 {
-    return NOT_YET_IMPLEMENTED("getMotorTorqueParamsRaw");
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, id32);
+    tt->setPending(1);
+
+    if(!res->addGetMessage(id32) )
+    {
+        yError() << "embObjMotionControl::getMotorTorqueParamsRaw() could not send get message for BOARD" << _fId.boardNumber << "joint " << j;
+        return false;
+    }
+
+    // wait here
+    if(-1 == tt->synch() )
+    {
+        int threadId;
+        yError () << "embObjMotionControl::getMotorTorqueParamsRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if(requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_params_t eo_params = {0};
+    res->readBufferedValue(id32, (uint8_t *)&eo_params, &size);
+
+    params->bemf       = eo_params.bemf_value;
+    params->bemf_scale = eo_params.bemf_scale;
+    params->ktau       = eo_params.ktau_value;
+    params->ktau_scale = eo_params.ktau_scale;
+
+    return true;
 }
 
 bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params)
 {
-    return NOT_YET_IMPLEMENTED("setMotorTorqueParamsRaw");
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
+    eOmc_motor_params_t eo_params = {0};
+
+    eo_params.bemf_value    = (int16_t) params.bemf;
+    eo_params.bemf_scale    = (uint8_t) params.bemf_scale;
+    eo_params.ktau_value    = (int16_t) params.ktau;
+    eo_params.ktau_scale    = (uint8_t) params.ktau_scale;
+
+    if(!res->addSetMessage(id32, (uint8_t *) &eo_params))
+    {
+        yError() << "embObjMotionControl::setMotorTorqueParamsRaw() could not send set message for BOARD" << _fId.boardNumber << "joint " << j;
+        return false;
+    }
+
+    return true;
 }
     
 // IVelocityControl2

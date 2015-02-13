@@ -320,7 +320,7 @@ extern void eoprot_fun_UPDT_mc_joint_status_interactionmodestatus(const EOnv* nv
 
 
 
-extern void eoprot_fun_UPDT_mc_joint_config_bemf(const EOnv* nv, const eOropdescriptor_t* rd)
+extern void eoprot_fun_UPDT_mc_joint_config_motor_params(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     if(eo_ropcode_say == rd->ropcode)
     {

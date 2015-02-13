@@ -820,12 +820,12 @@ void hostTransceiver::eoprot_override_mc(void)
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_config_pidtorque
         },
-        {   // joint_config_bemf
+        {   // joint_config_motor
             EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
             EO_INIT(.entity)        eoprot_entity_mc_joint,
-            EO_INIT(.tag)           eoprot_tag_mc_joint_config_bemf,
+            EO_INIT(.tag)           eoprot_tag_mc_joint_config_motor_params,
             EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_config_bemf
+            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_config_motor_params
         },
         {   // joint_status
             EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
