@@ -123,6 +123,14 @@
  *    constraint while reaching in position is handled as an
  *    objective.
  *  
+ * \note Caveat. If priority is given to [ang], then commands
+ *       such as [set] [pose] will need still to be used with
+ *       the tag [xyz] in order to reach for a non-full pose.
+ *       This choice, even if counter-intuitive, ensures
+ *       back-compatibility and in the end does not represent a
+ *       big hitch since orientation is very rarely prioritized
+ *       over position.
+ *  
  * \b mode request: example [set] [mode] [cont]/[shot], [get] 
  *    [mode].
  *  
