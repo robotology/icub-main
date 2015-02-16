@@ -299,7 +299,7 @@ int CanBusAnalogSensor::read(yarp::sig::Vector &out)
     out=data;
     mutex.post();
 
-    return yarp::dev::IAnalogSensor::AS_OK;
+    return status;
 }
 
 int CanBusAnalogSensor::getState(int ch)
