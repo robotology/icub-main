@@ -304,7 +304,7 @@ int CanBusAnalogSensor::read(yarp::sig::Vector &out)
 
 int CanBusAnalogSensor::getState(int ch)
 {
-    return yarp::dev::IAnalogSensor::AS_OK;
+    return status;
 }
 
 int CanBusAnalogSensor::getChannels()
