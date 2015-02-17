@@ -11,6 +11,6 @@
 	<param name="channels"> 6 </param>
 	<param name="period"> 1 </param>
 	<param name="useCalibration"> 1 </param>
-    <param name="diagnostic"> 1 </param>
+	<param name="diagnostic"> 1 </param>
 </device>
 </devices>
