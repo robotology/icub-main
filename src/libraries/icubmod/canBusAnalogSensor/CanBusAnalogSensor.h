@@ -21,7 +21,7 @@ using namespace yarp::dev;
 *  @ingroup icub_hardware_modules
 *  \defgroup canbusanalogsensor canbusanalogsensor
 *
-* 
+*
 * Driver for CAN communication with analog sensors.
 *
 * Parameters accepted in the config argument of the open method:
@@ -29,15 +29,15 @@ using namespace yarp::dev;
 * |:--------------:|:------:|:-----:|:-------------:|:--------:|:-----------:|:-----:|
 * | canbusDevice   | string | -     | - | Yes | Yarp device name of CAN Bus wrapper | - |
 * | physDevice     | string | -     | - | Yes | Yarp device name for the low level CAN device driver | - |
-* | canDeviceNum   | int    | -     | - | Yes | ID of the CAN Bus line | - | 
-* | canAddress     | int    | -     | - | Yes | CAN Bus Address for the sensor board | - | 
-* | format         | int    | bits  | - | Yes | Format (i.e. number of bits) of analog data transmitted on the CAN bus (16 for STRAIN board, 8 for MAIS board) | - | 
-* | period         | int    | ms    | - | Yes | Publication period (in ms) of the sensor reading on the Can Bus | - | 
+* | canDeviceNum   | int    | -     | - | Yes | ID of the CAN Bus line | - |
+* | canAddress     | int    | -     | - | Yes | CAN Bus Address for the sensor board | - |
+* | format         | int    | bits  | - | Yes | Format (i.e. number of bits) of analog data transmitted on the CAN bus (16 for STRAIN board, 8 for MAIS board) | - |
+* | period         | int    | ms    | - | Yes | Publication period (in ms) of the sensor reading on the Can Bus | - |
 * | channels       | int    | -     | - | Yes | Number of output channels of the sensor (6 for STRAIN board, 16 for MAIS board) | - |
-* | useCalibration | int    | -     | - | No  | If useCalibration is present and set to 1, output the calibrated readings, otherwise output the raw values | - |
-*  
+* | useCalibration | int    | -     | - | No  | If useCalibration is present and set to 1 output the calibrated readings, otherwise output the raw values | - |
+* | diagnostic  | int    | -     | - | No  | If diagnostic is present and set to 1 properly return the state of the sensor, otherwise always return IAnalogSensor::AS_OK | - |
 */
-class CanBusAnalogSensor : public RateThread, public yarp::dev::IAnalogSensor, public DeviceDriver 
+class CanBusAnalogSensor : public RateThread, public yarp::dev::IAnalogSensor, public DeviceDriver
 {
     enum AnalogDataFormat
     {
@@ -62,7 +62,7 @@ protected:
     CanBuffer          inBuffer;
     CanBuffer          outBuffer;
     int                canDeviceNum;
-   
+
     yarp::os::Semaphore mutex;
 
     unsigned int       channelsNum;
@@ -73,11 +73,12 @@ protected:
     yarp::sig::Vector  data;
     yarp::sig::Vector  scaleFactor;
     unsigned short     useCalibration;
+    bool               diagnostic;
 
 public:
     CanBusAnalogSensor(int period=20) : RateThread(period),mutex(1)
     {}
-    
+
 
     ~CanBusAnalogSensor()
     {
@@ -85,8 +86,8 @@ public:
 
     virtual bool open(yarp::os::Searchable& config);
     virtual bool close();
-   
-    
+
+
     //IAnalogSensor interface
     virtual int read(yarp::sig::Vector &out);
     virtual int getState(int ch);
