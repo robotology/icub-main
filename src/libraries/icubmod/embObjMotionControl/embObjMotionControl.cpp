@@ -477,12 +477,118 @@ embObjMotionControl::embObjMotionControl() :
 
 embObjMotionControl::~embObjMotionControl()
 {
+    yTrace() << "embObjMotionControl::~embObjMotionControl()";
     dealloc();
 }
 
 bool embObjMotionControl::initialised()
 {
     return opened;
+}
+
+bool embObjMotionControl::verifyMotionControlProtocol(Bottle groupProtocol )
+{
+    if(false == res->isEPmanaged(eoprot_endpoint_motioncontrol))
+    {
+        yError() << "embObjMotionControl::open() detected that EMS "<< _fId.boardNumber << " does not support motion control";
+        return false;
+    }
+
+
+    if(false == res->verifyBoard(groupProtocol))
+    {
+        yError() << "embObjMotionControl::open() fails in function verifyBoard() for board " << _fId.boardNumber << ": CANNOT PROCEED ANY FURTHER";
+        return false;
+    }
+    else
+    {
+        if(verbosewhenok)
+        {
+            yDebug() << "embObjMotionControl::open() has verified that BOARD "<< _fId.boardNumber << " is communicating correctly";
+        }
+    }
+
+    if(false == res->verifyEPprotocol(groupProtocol, eoprot_endpoint_motioncontrol))
+    {
+        yError() << "embObjMotionControl::open() fails in function verifyProtocol() for BOARD "<< _fId.boardNumber << ": probably it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_motioncontrol protocol version: DO A FW UPGRADE";
+        return false;
+    }
+    else
+    {
+        if(verbosewhenok)
+        {
+            yDebug() << "embObjMotionControl::open() has succesfully verified that BOARD "<< _fId.boardNumber << " has same protocol version for motioncontrol as robotInterface";
+        }
+    }
+
+    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, _njoints))
+    {
+        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for BOARD "<< _fId.boardNumber << " and entity eoprot_entity_mc_joint: VERIFY their number in board, and in XML files";
+        return false;
+    }
+//    else
+//    {
+//        yDebug() << "embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNumber << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_joint";
+//    }
+
+
+    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, _njoints))
+    {
+        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_mc_motor: VERIFY their number in board, and in XML files";
+        return false;
+    }
+//    else
+//    {
+//        yDebug() << "embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNumber << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_motor";
+//    }
+
+    return true;
+}
+
+bool embObjMotionControl::verifyMaisProtocol(Bottle groupProtocol)
+{
+    numberofmaisboards = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNumber), eoprot_endpoint_analogsensors, eoprot_entity_as_mais);
+
+    if(0 != numberofmaisboards)
+    {
+        // must verify protocol and then the entity number
+
+        if(false == res->verifyEPprotocol(groupProtocol, eoprot_endpoint_analogsensors))
+        {
+            yError() << "embObjMotionControl::open() fails in function verifyProtocol() of eoprot_endpoint_analogsensors for BOARD "<< _fId.boardNumber << ": probably it does not have the same eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
+            return false;
+        }
+        else
+        {
+            if(verbosewhenok)
+            {
+                yDebug() << "embObjMotionControl::open() detected that there is a mais, thus called verifyProtocol() of eoprot_endpoint_analogsensors for board "<< _fId.boardNumber;
+            }
+        }
+
+
+
+        if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_analogsensors, eoprot_entity_as_mais))
+        {
+            yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_as_mais: VERIFY their number in board, and in XML files";
+            return false;
+        }
+
+
+        if(false == configure_mais(groupProtocol))
+        {
+            yError() << "embObjMotionControl::open() had an error while configuring mais for board " << _fId.boardNumber;
+            return false;
+        }
+        else
+        {
+            if(verbosewhenok)
+            {
+                yDebug() << "embObjMotionControl::open() succesfully configured the MAIS attached to board" << _fId.boardNumber;
+            }
+        }
+    }
+    return true;
 }
 
 bool embObjMotionControl::open(yarp::os::Searchable &config)
@@ -672,61 +778,12 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if(false == res->isEPmanaged(eoprot_endpoint_motioncontrol))
+
+    if(!verifyMotionControlProtocol(groupProtocol) )
     {
-        yError() << "embObjMotionControl::open() detected that EMS "<< _fId.boardNumber << " does not support motion control";
+        cleanup();
         return false;
     }
-
-
-    if(false == res->verifyBoard(groupProtocol))
-    {
-        yError() << "embObjMotionControl::open() fails in function verifyBoard() for board " << _fId.boardNumber << ": CANNOT PROCEED ANY FURTHER";
-        return false;
-    }
-    else
-    {
-        if(verbosewhenok)
-        {
-            yDebug() << "embObjMotionControl::open() has verified that BOARD "<< _fId.boardNumber << " is communicating correctly";
-        }
-    }
-
-    if(false == res->verifyEPprotocol(groupProtocol, eoprot_endpoint_motioncontrol))
-    {
-        yError() << "embObjMotionControl::open() fails in function verifyProtocol() for BOARD "<< _fId.boardNumber << ": probably it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_motioncontrol protocol version: DO A FW UPGRADE";
-        return false;
-    }
-    else
-    {
-        if(verbosewhenok)
-        {
-            yDebug() << "embObjMotionControl::open() has succesfully verified that BOARD "<< _fId.boardNumber << " has same protocol version for motioncontrol as robotInterface";
-        }
-    }
-
-    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, _njoints))
-    {
-        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for BOARD "<< _fId.boardNumber << " and entity eoprot_entity_mc_joint: VERIFY their number in board, and in XML files";
-        return false;
-    }
-//    else
-//    {
-//        yDebug() << "embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNumber << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_joint";
-//    }
-
-
-    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, _njoints))
-    {
-        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_mc_motor: VERIFY their number in board, and in XML files";
-        return false;
-    }
-//    else
-//    {
-//        yDebug() << "embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNumber << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_motor";
-//    }
-
-
 
 
     NVnumber = res->getNVnumber(eoprot_endpoint_motioncontrol);
@@ -747,52 +804,17 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
     // now if this device has a mais ... we configure it
 
-    numberofmaisboards = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNumber), eoprot_endpoint_analogsensors, eoprot_entity_as_mais);
-
-    if(0 != numberofmaisboards)
+    if(!verifyMaisProtocol(groupProtocol))
     {
-        // must verify protocol and then the entity number
-
-        if(false == res->verifyEPprotocol(groupProtocol, eoprot_endpoint_analogsensors))
-        {
-            yError() << "embObjMotionControl::open() fails in function verifyProtocol() of eoprot_endpoint_analogsensors for BOARD "<< _fId.boardNumber << ": probably it does not have the same eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
-            return false;
-        }
-        else
-        {
-            if(verbosewhenok)
-            {
-                yDebug() << "embObjMotionControl::open() detected that there is a mais, thus called verifyProtocol() of eoprot_endpoint_analogsensors for board "<< _fId.boardNumber;
-            }
-        }
-
-
-
-        if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_analogsensors, eoprot_entity_as_mais))
-        {
-            yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_as_mais: VERIFY their number in board, and in XML files";
-            return false;
-        }
-
-
-        if(false == configure_mais(groupProtocol))
-        {
-            yError() << "embObjMotionControl::open() had an error while configuring mais for board " << _fId.boardNumber;
-            return false;
-        }
-        else
-        {
-            if(verbosewhenok)
-            {
-                yDebug() << "embObjMotionControl::open() succesfully configured the MAIS attached to board" << _fId.boardNumber;
-            }
-        }
+        cleanup();
+        return false;
     }
 
 
     if(false == res->goToRun())
     {
         yError() << "embObjMotionControl::open() fails to start control loop of board" << _fId.boardNumber << ": cannot continue";
+        cleanup();
         return false;
     }
     else
@@ -805,7 +827,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
 
     opened = true;
-
     return true;
 }
 
@@ -1543,6 +1564,8 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
 
 bool embObjMotionControl::close()
 {
+    yTrace() << " embObjMotionControl::close()";
+
     ImplementControlMode2::uninitialize();
     ImplementEncodersTimed::uninitialize();
     ImplementMotorEncoders::uninitialize();
@@ -1557,12 +1580,21 @@ bool embObjMotionControl::close()
     ImplementPositionDirect::uninitialize();
     ImplementOpenLoopControl::uninitialize();
     ImplementInteractionMode::uninitialize();
+    cleanup();
+
+    return true;
+}
+
+void embObjMotionControl::cleanup(void)
+{
+    if(ethManager == NULL) return;
+
     int ret = ethManager->releaseResource(_fId);
     res = NULL;
     if(ret == -1)
         ethManager->killYourself();
-    return true;
 }
+
 
 #if 0
 ethFeature_t embObjMotionControl::getFeat_id()
@@ -2456,7 +2488,7 @@ bool embObjMotionControl::setPositionModeRaw(int j)
 
 bool embObjMotionControl::setVelocityModeRaw(int j)
 {
-    yTrace() << j;
+    yTrace() << "setVelocityMode " << j;
     eOmc_controlmode_command_t    val = eomc_controlmode_cmd_velocity;
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
 

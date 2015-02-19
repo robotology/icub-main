@@ -463,6 +463,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     if(false == res->isEPmanaged(eoprot_endpoint_skin))
     {
         yError() << "embObjSkin::open() detected that EMS "<< _fId.boardNumber << " does not support skin";
+        cleanup();
         return false;
     }
 
@@ -470,12 +471,14 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     if(false == res->verifyBoard(groupProtocol))
     {
         yError() << "embObjSkin::init() fails in function verifyBoard() for board " << _fId.boardNumber << ": CANNOT PROCEED ANY FURTHER";
+        cleanup();
         return false;
     }
 
     if(!res->verifyEPprotocol(groupProtocol, eoprot_endpoint_skin))
     {
         yError() << "embObjSkin::init() fails in function verifyEPprotocol() for board "<< _fId.boardNumber << ": the board does not have the same eoprot_endpoint_management and/or eoprot_endpoint_skin protocol version: DO A FW UPGRADE";
+        cleanup();
         return false;
     }
 
@@ -492,6 +495,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     if(!this->fromConfig(config))
     {
         yError() << "embObjSkin::init() fails in function fromConfig() for board " << _fId.boardNumber << ": CANNOT PROCEED ANY FURTHER";
+        cleanup();
         return false;
     }
 
@@ -508,17 +512,27 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     Time::delay(0.5);
 
     if(!initWithSpecialConfig(config))
+    {
+        cleanup();
         return false;
+    }
 
     if(!configPeriodicMessage())
+    {
+        cleanup();
         return false;
+    }
 
     if(!start())
+    {
+        cleanup();
         return false;
+    }
 
     if(false == res->goToRun())
     {
         yError() << "embObjSkin::open() fails to start control loop of board" << _fId.boardNumber << ": cannot continue";
+        cleanup();
         return false;
     }
     else
@@ -543,13 +557,19 @@ bool EmbObjSkin::isEpManagedByBoard()
     return false;
 }
 
-
-bool EmbObjSkin::close()
+void EmbObjSkin::cleanup(void)
 {
+    if(ethManager == NULL) return;
+
     int ret = ethManager->releaseResource(_fId);
     res = NULL;
     if(ret == -1)
         ethManager->killYourself();
+}
+
+bool EmbObjSkin::close()
+{
+    cleanup();
     return true;
 }
 

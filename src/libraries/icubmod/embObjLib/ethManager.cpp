@@ -52,7 +52,7 @@ bool TheEthManager::unlock()
 
 ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request)
 {
-    yTrace() << request.boardNumber;
+    yTrace() << " Requested EMS" << request.boardNumber;
     // Check if local socket is initted, if not do it.
     ACE_TCHAR       address[64];
     snprintf(address, sizeof(address), "%s:%d", request.pc104IPaddr.string, request.pc104IPaddr.port);
@@ -60,17 +60,14 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
     if(request.boardNumber > TheEthManager::maxBoards)
     {
         yError() << "FATAL ERROR: TheEthManager::requestResource() detected a board number beyond the maximum allowed (max, rqst) =" << maxBoards << request.boardNumber << ")";
-        yError() << "entering forever loop";
-        for(;;);
+        return NULL;
     }
 
     if(request.boardIPaddr.ip4 != request.boardNumber)
     {
         yError() << "FATAL ERROR: TheEthManager::requestResource() detected a board number different from its ip4 address (boardNumber, ip4) =" << request.boardNumber << request.boardIPaddr.ip4 << ")";
-        yError() << "entering forever loop";
-        for(;;);
+        return NULL;
     }
-
 
     ACE_UINT32 hostip = (request.pc104IPaddr.ip1 << 24) | (request.pc104IPaddr.ip2 << 16) | (request.pc104IPaddr.ip3 << 8) | (request.pc104IPaddr.ip4);
     ACE_INET_Addr myIP((u_short)request.pc104IPaddr.port, hostip);
@@ -80,25 +77,26 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
     if(!createSocket(myIP) )
     {  return NULL;  }
 
+
+    int justCreated = false;
     ethResources *newRes = NULL;
 
 
-    lock(); // lock so that we can use EMS_list in exclusive way
+    lock();          // lock so that we can use EMS_list in exclusive way
+    ethResIt it = EMS_list.begin();
+    ethResIt itend = EMS_list.end();
 
-    int justCreated = false;
-    ethResIt iterator = EMS_list.begin();
-    while(iterator != EMS_list.end())
+    while(it != itend)
     {
-        (*iterator)->getRemoteAddress().addr_to_string(tmp_addr, 64);
+        (*it)->getRemoteAddress().addr_to_string(tmp_addr, 64);
         if( strcmp(tmp_addr, request.boardIPaddr.string) == 0 )
         {
             // device already exists, return the pointer.
-            newRes = (*iterator);
+            newRes = (*it);
             break;
         }
-        iterator++;
+        it++;
     }
-
     unlock(); // must unlock now. because ethResources::open() need to use the receiver which uses the lock() to get the EMS_list
 
     if(NULL == newRes)
@@ -148,13 +146,13 @@ int TheEthManager::releaseResource(ethFeature_t &resource)
     ethResources *tmpEthRes;
     ACE_INET_Addr  tmp_ace_addr;
 
+    lock();
+    ethResIt it = EMS_list.begin();
+    ethResIt itend = EMS_list.end();
+    unlock();
+
     if(false == emsAlreadyClosed)
     {
-        lock();
-        ethResIt it = EMS_list.begin();
-        ethResIt itend = EMS_list.end();
-        unlock();
-
         while(it != itend)
         {
             tmpEthRes = (*it);
@@ -168,21 +166,18 @@ int TheEthManager::releaseResource(ethFeature_t &resource)
     }
     stopThreads();
 
-    
-    lock();
-
     removeLUTelement(resource);
 
-    ethResIt iterator = EMS_list.begin();
-    while(iterator != EMS_list.end())
+    lock();
+    while(it != itend)
     {
-        tmpEthRes = (*iterator);
+        tmpEthRes = (*it);
         tmp_ace_addr = tmpEthRes->getRemoteAddress();
         tmp_ace_addr.addr_to_string(tmp_addr, 64);
         if( strcmp(tmp_addr, resource.boardIPaddr.string) == 0)
         {
             // device exists
-            res2release = (*iterator);
+            res2release = (*it);
             stillUsed = res2release->deregisterFeature(resource);
             if( !! stillUsed)
             {
@@ -198,7 +193,7 @@ int TheEthManager::releaseResource(ethFeature_t &resource)
                 break;
             }
         }
-        iterator++;
+        it++;
     }
 
     if(     (EMS_list.size() == 0 ) && (boards_map.size() != 0 )
@@ -383,6 +378,7 @@ TheEthManager::TheEthManager()
     memset(info, 0, sizeof(info));
     snprintf(info, sizeof(info), "TheEthManager");
 
+    EMS_list.clear();
     UDP_initted = false;
     UDP_socket  = NULL;
     emsAlreadyClosed = false;
@@ -547,15 +543,17 @@ bool TheEthManager::stopThreads()
 TheEthManager::~TheEthManager()
 {
     yTrace();
-    int timeout = 5;
 
     // Close UDP socket
     if(isInitted())
     {
+        managerMutex.wait();
         UDP_socket->close();
         delete UDP_socket;
         UDP_initted = false;
+        managerMutex.post();
     }
+
 
     lock();
     // Destroy all EMS boards
@@ -580,6 +578,8 @@ TheEthManager::~TheEthManager()
         }
     }
     unlock();
+    handle = NULL;
+    managerMutex.post();
 }
 
 int TheEthManager::send(void *data, size_t len, ACE_INET_Addr remote_addr)

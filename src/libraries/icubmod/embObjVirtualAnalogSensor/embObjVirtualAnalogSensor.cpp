@@ -252,7 +252,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     ethManager = TheEthManager::instance();
     if(NULL == ethManager)
     {
-        yFatal() << "Unable to instantiate ethManager";
+        yError() << "Unable to instantiate ethManager";
         return false;
     }
 
@@ -268,6 +268,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     if(NULL == res)
     {
         yError() << "EMS device not instantiated... unable to continue";
+        cleanup();
         return false;
     }
 
@@ -286,7 +287,6 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     yTrace() << "EmbObj Virtual Analog Sensor for board "<< _fId.boardNumber << "instantiated correctly";
 
     opened = true;
-
     return true;
 }
 
@@ -335,6 +335,16 @@ bool embObjVirtualAnalogSensor::updateMeasure(int ch, double &measure)
     // measure should to saturated to resolution -2.0 to avoid casting problem.
     eOmeas_torque_t meas_torque = (eOmeas_torque_t)( measure * ((_resolution[ch]-2.0)/_fullscale[ch]));
     return res->addSetMessageAndCacheLocally(protid, (uint8_t*) &meas_torque);
+}
+
+void embObjVirtualAnalogSensor::cleanup(void)
+{
+    if(ethManager == NULL) return;
+
+    int ret = ethManager->releaseResource(_fId);
+    res = NULL;
+    if(ret == -1)
+        ethManager->killYourself();
 }
 
 bool embObjVirtualAnalogSensor::close()

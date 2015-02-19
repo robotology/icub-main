@@ -384,6 +384,10 @@ public:
     ethResources                *res;
     yarp::dev::TheEthManager    *ethManager;
 
+    bool verifyMotionControlProtocol(Bottle groupProtocol);
+    bool verifyMaisProtocol(Bottle groupProtocol);
+    void cleanup(void);
+
     // Device Driver
     virtual bool open(yarp::os::Searchable &par);
     virtual bool close();

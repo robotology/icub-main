@@ -68,6 +68,7 @@ public:
     
     // An open function yarp factory compatible
     bool open(yarp::os::Searchable &config);
+    void cleanup(void);
     bool close();
 
     virtual bool initialised();

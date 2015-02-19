@@ -153,6 +153,7 @@ public:
     // An open function yarp factory compatible
     bool open(yarp::os::Searchable &config);
     bool close();
+    void cleanup(void);
 
     // IAnalogSensor interface
     virtual int read(yarp::sig::Vector &out);

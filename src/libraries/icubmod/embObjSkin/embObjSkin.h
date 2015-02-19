@@ -132,6 +132,7 @@ public:
     virtual bool    open(yarp::os::Searchable& config);
 
     virtual bool    close();
+    void            cleanup(void);
 
     virtual int     read(yarp::sig::Vector &out);
     virtual int     getState(int ch);

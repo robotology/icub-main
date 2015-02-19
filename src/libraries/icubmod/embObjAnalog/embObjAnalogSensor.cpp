@@ -306,12 +306,14 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     if(false == res->isEPmanaged(eoprot_endpoint_analogsensors))
     {
         yError() << "embObjAnalogSensor::open() detected that EMS "<< _fId.boardNumber << " does not support analog sensors";
+        cleanup();
         return false;
     }
 
     if(false == res->verifyBoard(groupProtocol))
     {
         yError() << "embObjAnalogSensor::open() fails in function verifyBoard() for board " << _fId.boardNumber << ": CANNOT PROCEED ANY FURTHER";
+        cleanup();
         return false;
     }
     else
@@ -325,6 +327,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     if(!res->verifyEPprotocol(groupProtocol, eoprot_endpoint_analogsensors))
     {
         yError() << "embObjAnalogSensor::open() fails in function verifyEPprotocol() for board "<< _fId.boardNumber << ": either the board cannot be reached or it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
+        cleanup();
         return false;
     }
     else
@@ -384,17 +387,22 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         }
     }
     if(!ret)
+    {
+        cleanup();
         return false;
-
+    }
 
     // Set variable to be signalled
     if(! init())
+    {
+        cleanup();
         return false;
-
+    }
 
     if(false == res->goToRun())
     {
         yError() << "embObjAnalogSensor::open() fails to start control loop of board" << _fId.boardNumber << ": cannot continue";
+        cleanup();
         return false;
     }
     else
@@ -406,7 +414,6 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     }
 
     opened = true;
-
     return true;
 }
 
@@ -998,15 +1005,20 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
 }
 
 
-
-
 bool embObjAnalogSensor::close()
 {
+    cleanup();
+    return true;
+}
+
+void embObjAnalogSensor::cleanup(void)
+{
+    if(ethManager == NULL) return;
+
     int ret = ethManager->releaseResource(_fId);
+    res = NULL;
     if(ret == -1)
         ethManager->killYourself();
-    res = NULL;
-    return true;
 }
 
 // eof
