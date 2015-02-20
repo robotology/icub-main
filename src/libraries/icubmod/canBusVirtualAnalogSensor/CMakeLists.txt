@@ -2,7 +2,7 @@
 # Authors: Marco Randazzo <marco.randazzo@iit.it>
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-PREPARE_DEVICE(canBusVirtualAnalogSensor TYPE CanBusVirtualAnalogSensor INCLUDE CanBusVirtualAnalogSensor.h WRAPPER grabber)
+yarp_prepare_device(canBusVirtualAnalogSensor TYPE CanBusVirtualAnalogSensor INCLUDE CanBusVirtualAnalogSensor.h WRAPPER grabber)
 
 if (NOT SKIP_canBusVirtualAnalogSensor)
 
@@ -13,7 +13,7 @@ if(ICUB_HAS_icub_firmware_shared)
     yarp_add_plugin(canBusVirtualAnalogSensor CanBusVirtualAnalogSensor.h CanBusVirtualAnalogSensor.cpp)
     target_link_libraries(canBusVirtualAnalogSensor ${YARP_LIBRARIES})
 
-    icub_export_library(canBusVirtualAnalogSensor)
+    icub_export_plugin(canBusVirtualAnalogSensor)
     yarp_install(FILES canBusVirtualAnalogSensor.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
     
 else(ICUB_HAS_icub_firmware_shared)

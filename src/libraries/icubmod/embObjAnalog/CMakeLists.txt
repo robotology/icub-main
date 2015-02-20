@@ -2,7 +2,9 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-PREPARE_DEVICE(embObjAnalogSensor TYPE embObjAnalogSensor   INCLUDE embObjAnalogSensor.h   WRAPPER AnalogServer)
+yarp_prepare_device(embObjAnalogSensor TYPE yarp::dev::embObjAnalogSensor
+                                       INCLUDE embObjAnalogSensor.h
+                                       WRAPPER AnalogServer)
 
 IF (NOT SKIP_embObjAnalogSensor)
 
@@ -14,9 +16,9 @@ IF (NOT SKIP_embObjAnalogSensor)
 
   yarp_add_plugin(embObjAnalogSensor embObjAnalogSensor.cpp embObjAnalogSensor.h)
   TARGET_LINK_LIBRARIES(embObjAnalogSensor ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
-  icub_export_library(embObjAnalogSensor)
-  
+  icub_export_plugin(embObjAnalogSensor)
+
   yarp_install(FILES embObjAnalogSensor.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
-  
+
 ENDIF (NOT SKIP_embObjAnalogSensor)
 

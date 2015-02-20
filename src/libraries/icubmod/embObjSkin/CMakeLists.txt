@@ -2,7 +2,7 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-PREPARE_DEVICE(embObjSkin TYPE EmbObjSkin INCLUDE embObjSkin.h WRAPPER skinWrapper)
+yarp_prepare_device(embObjSkin TYPE EmbObjSkin INCLUDE embObjSkin.h WRAPPER skinWrapper)
 
 if (NOT SKIP_embObjSkin)
     set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
@@ -16,6 +16,6 @@ if (NOT SKIP_embObjSkin)
 
     yarp_add_plugin(embObjSkin embObjSkin.h embObjSkin.cpp ../skinLib/SkinConfigReader.cpp ../skinLib/SkinDiagnostics.h)
     target_link_libraries(embObjSkin ethResources ${YARP_LIBRARIES})
-    icub_export_library(embObjSkin)
+    icub_export_plugin(embObjSkin)
     yarp_install(FILES embObjSkin.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 endif (NOT SKIP_embObjSkin)

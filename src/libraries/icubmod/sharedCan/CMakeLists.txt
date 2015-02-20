@@ -2,7 +2,7 @@
 # Authors: Lorenzo Natale, Alessandro Scalzo
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-PREPARE_DEVICE(sharedcan TYPE CanBusAccessPoint
+yarp_prepare_device(sharedcan TYPE yarp::dev::CanBusAccessPoint
     INCLUDE SharedCanBus.h)
 
 
@@ -11,6 +11,6 @@ IF (NOT SKIP_sharedcan)
     yarp_add_plugin(shcan SharedCanBus.h SharedCanBus.cpp)
     target_link_libraries(shcan ${YARP_LIBRARIES})
     
-    icub_export_library(shcan)
+    icub_export_plugin(shcan)
     yarp_install(FILES sharedcan.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 ENDIF (NOT SKIP_sharedcan)
