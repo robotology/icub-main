@@ -2,7 +2,7 @@
 # Authors: Marco Randazzo <marco.randazzo@iit.it>
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-PREPARE_DEVICE(canBusDoubleFTSensor TYPE CanBusDoubleFTSensor INCLUDE CanBusDoubleFTSensor.h WRAPPER AnalogServer)
+yarp_prepare_device(canBusDoubleFTSensor TYPE CanBusDoubleFTSensor INCLUDE CanBusDoubleFTSensor.h WRAPPER AnalogServer)
 
 if(NOT SKIP_canBusDoubleFTSensor)
 
@@ -14,7 +14,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 yarp_add_plugin(canBusDoubleFTSensor CanBusDoubleFTSensor.h CanBusDoubleFTSensor.cpp)
 target_link_libraries(canBusDoubleFTSensor ${YARP_LIBRARIES})
 
-icub_export_library(canBusDoubleFTSensor)
+icub_export_plugin(canBusDoubleFTSensor)
 
 yarp_install(FILES CanBusDoubleFTSensor.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 

@@ -2,7 +2,7 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-PREPARE_DEVICE(esdsniffer TYPE EsdMessageSniffer
+yarp_prepare_device(esdsniffer TYPE yarp::dev::EsdMessageSniffer
     INCLUDE EsdMessageSniffer.h 
     WRAPPER "")
 
@@ -17,7 +17,7 @@ IF(NOT SKIP_esdsniffer)
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${ESDCANAPI_INC_DIRS} ${YARP_INCLUDE_DIRS})
     yarp_add_plugin(esdsniffer EsdMessageSniffer.cpp EsdMessageSniffer.h)
     TARGET_LINK_LIBRARIES(esdsniffer  ${ESDCANAPI_LIB} ${YARP_LIBRARIES})
-    icub_export_library(esdsniffer)
+    icub_export_plugin(esdsniffer)
     yarp_install(FILES esdsniffer.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
   ENDIF(NOT ESDCANAPI_FOUND)
 
