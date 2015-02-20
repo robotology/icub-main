@@ -160,7 +160,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
         }
     }
     return true;
-};
+}
 
 
 embObjAnalogSensor::embObjAnalogSensor(): data(0)
@@ -492,7 +492,7 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 
     // -- mais datarate
 
-    uint8_t datarate  = _period;  // set mais datarate = 1millisec
+    uint8_t datarate  = _period;
     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 
     if(false == res->setRemoteValueUntilVerified(id32, &datarate, sizeof(datarate), 10, 0.010, 0.050, 2))

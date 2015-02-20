@@ -34,6 +34,11 @@ using namespace yarp::os;
 using namespace yarp::os::impl;
 
 
+// macros
+
+
+
+
 // Utilities
 
 void embObjMotionControl::copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
@@ -461,7 +466,9 @@ embObjMotionControl::embObjMotionControl() :
 
     useRawEncoderData = false;
     _pwmIsLimited     = false;
+#if !defined(EMBOBJMC_DONT_USE_MAIS)
     numberofmaisboards = 0;
+#endif // defined(EMBOBJMC_DONT_USE_MAIS)
 
     ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
@@ -545,6 +552,8 @@ bool embObjMotionControl::verifyMotionControlProtocol(Bottle groupProtocol )
     return true;
 }
 
+#if !defined(EMBOBJMC_DONT_USE_MAIS)
+
 bool embObjMotionControl::verifyMaisProtocol(Bottle groupProtocol)
 {
     numberofmaisboards = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNumber), eoprot_endpoint_analogsensors, eoprot_entity_as_mais);
@@ -590,6 +599,9 @@ bool embObjMotionControl::verifyMaisProtocol(Bottle groupProtocol)
     }
     return true;
 }
+
+#endif // !defined(EMBOBJMC_DONT_USE_MAIS)
+
 
 bool embObjMotionControl::open(yarp::os::Searchable &config)
 {
@@ -802,6 +814,9 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         }
     }
 
+
+#if !defined(EMBOBJMC_DONT_USE_MAIS)
+
     // now if this device has a mais ... we configure it
 
     if(!verifyMaisProtocol(groupProtocol))
@@ -810,6 +825,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
+#endif // !defined(EMBOBJMC_DONT_USE_MAIS)
 
     if(false == res->goToRun())
     {
@@ -1275,11 +1291,11 @@ bool embObjMotionControl::init()
     {
         int fisico = _axisMap[logico];
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, fisico, eoprot_tag_mc_joint_cmmnds_controlmode);
-        eOmc_controlmode_command_t controlMode = eomc_controlmode_cmd_switch_everything_off;
+        eOenum08_t controlMode = eomc_controlmode_cmd_idle;
 
         if(!res->addSetMessage(protid, (uint8_t *) &controlMode))
         {
-            yError() << "embObjMotionControl::init() had an error while setting eomc_controlmode_cmd_switch_everything_off in BOARD" << res->get_protBRDnumber()+1;
+            yError() << "embObjMotionControl::init() had an error while setting eomc_controlmode_cmd_idle in BOARD" << res->get_protBRDnumber()+1;
             // return(false); i dont return false. because even if a failure, that is not a severe error.
             // MOREOVER: to verify we must read the status of the joint and NOT the command ... THINK OF IT
         }
@@ -1451,6 +1467,7 @@ bool embObjMotionControl::init()
     return true;
 }
 
+#if !defined(EMBOBJMC_DONT_USE_MAIS)
 
 bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
 {
@@ -1561,6 +1578,9 @@ bool embObjMotionControl::configure_mais(yarp::os::Searchable &config)
 
 #endif
 }
+
+#endif // !defined(EMBOBJMC_DONT_USE_MAIS)
+
 
 bool embObjMotionControl::close()
 {
@@ -1871,7 +1891,7 @@ bool embObjMotionControl::disablePidRaw(int j)
     _enabledAmp[j ] = false;
     _enabledPid[j ] = false;
 
-    eOmc_controlmode_command_t val = eomc_controlmode_cmd_switch_everything_off;
+    eOenum08_t val = eomc_controlmode_cmd_idle;
     if(! res->addSetMessage(protid, (uint8_t *) &val) )
     {
         yError() << "while disabling pid";
@@ -3054,7 +3074,7 @@ bool embObjMotionControl::disableAmpRaw(int j)
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
     // yDebug() << "disableAmpRaw AMP status " << _enabledAmp[j ];
-    eOmc_controlmode_command_t val = eomc_controlmode_cmd_switch_everything_off;
+    eOenum08_t val = eomc_controlmode_cmd_idle;
     return res->addSetMessage(protid, (uint8_t*) &val);
 }
 

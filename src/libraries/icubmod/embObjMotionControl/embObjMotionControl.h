@@ -92,6 +92,12 @@ using namespace std;
 #undef  VERIFY_ROP_SETPOSITIONRAW   // this macro let you send setposition rop with signature.
                                     // if you want use this feature, yuo should compiled ems firmware with same macro.
 
+// marco.accame:    we dont manage mais anymore from the embObjMotionControl class.
+//                  the mais is now initted by the ems board with default params (datarate = 10, mode = eoas_maismode_txdatacontinuously)
+//                  and never swicthed off.
+//                  only embObjAnalog can override its behaviour
+
+#define     EMBOBJMC_DONT_USE_MAIS
 
 //
 //   Help structure
@@ -258,7 +264,10 @@ private:
     bool        verbosewhenok;
     bool         useRawEncoderData;
     bool        _pwmIsLimited;                         /** set to true if pwm is limited */
+
+#if !defined(EMBOBJMC_DONT_USE_MAIS)
     int         numberofmaisboards;
+#endif
 
     // debug purpose
       
@@ -295,7 +304,9 @@ private:
 private:
 
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
+#if !defined(EMBOBJMC_DONT_USE_MAIS)
     bool configure_mais(yarp::os::Searchable &config);
+#endif
     bool dealloc();
     bool isEpManagedByBoard();
     bool parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[]);
@@ -385,7 +396,9 @@ public:
     yarp::dev::TheEthManager    *ethManager;
 
     bool verifyMotionControlProtocol(Bottle groupProtocol);
+#if !defined(EMBOBJMC_DONT_USE_MAIS)
     bool verifyMaisProtocol(Bottle groupProtocol);
+#endif
     void cleanup(void);
 
     // Device Driver

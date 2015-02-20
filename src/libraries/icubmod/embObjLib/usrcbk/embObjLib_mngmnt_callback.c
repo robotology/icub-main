@@ -167,7 +167,7 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
     };
 
     static const char nullverbalextra[] = "no extra info despite we are in verbal mode";
-    static const char emptyextra[] = "extra info";
+    static const char emptyextra[] = "NO MORE";
 
     uint32_t sec = infobasic->timestamp / 1000000;
     uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
@@ -193,13 +193,16 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
     }
 
 
-    snprintf(str, sizeof(str), " from BOARD %d, source %s, address %d, time %ds %dm %du: (code 0x%x, param 0x%x) -> %s + %s",
+    uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
+
+    snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: (code 0x%x, par16 0x%x par64 0x%x%x%x%x%x%x%x%x) -> %s + INFO = %s",
                                 eo_nv_GetBRD(nv)+1,
                                 str_source,
                                 address,
                                 sec, msec, usec,
                                 infobasic->properties.code,
-                                infobasic->properties.param,
+                                infobasic->properties.par16,
+                                p64[7], p64[6], p64[5], p64[4], p64[3], p64[2], p64[1], p64[0],
                                 str_code,
                                 str_extra
                                 );
