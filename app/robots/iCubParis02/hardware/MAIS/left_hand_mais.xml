@@ -8,5 +8,6 @@
 	<param name="format"> 8 </param>
 	<param name="channels"> 16 </param>
 	<param name="period"> 1 </param>
+	<param name="diagnostic"> 1 </param>
 </device>
 </devices>
