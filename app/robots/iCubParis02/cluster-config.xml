@@ -12,9 +12,6 @@
 <node display=":0.0">macsi03</node>
 <node display=":0.0">macsi04</node>
 <node>macsi05</node>
-<node display=":0.0">serena-laptop</node>
-<node display=":0.0">laptop2</node>
-<node>stagiaire</node>
 </cluster>
 
 
