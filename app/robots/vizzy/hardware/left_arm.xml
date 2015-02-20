@@ -28,7 +28,7 @@
 	<!-- 			M3L	M4L	M5L	M6L	M7L	M8L	M9L	M10L	_NC_ _NC_ -->
 	<!--AxisMap		0	1	2	3	4	5	6	7	8	9 -->
 	<param name="AxisMap">	1	0	3	6	7	2	5	4	8	9 </param>
-	<param name="Encoder">	568.9 -568.9 -568.9 -568.9 568.9 -1844.4 -1844.4 -1844.4 0 0</param>
+	<param name="Encoder">	568.9 -568.9 -568.9 -568.9 568.9 -1844.4 1844.4 -1844.4 0 0</param>
 	<param name="Zeros">	-90	0	90	40	-40	0	0	0	0	0 </param>
 	<param name="TorqueId">	0	0	0	0	0	0	0	0	0	0</param>
 	<param name="TorqueChan">	0	0	0	0	0	0	0	0	0	0</param>
