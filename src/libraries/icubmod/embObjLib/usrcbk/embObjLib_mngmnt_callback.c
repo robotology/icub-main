@@ -195,7 +195,7 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
 
     uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
 
-    snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: (code 0x%x, par16 0x%x par64 0x%x%x%x%x%x%x%x%x) -> %s + INFO = %s",
+    snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + INFO = %s",
                                 eo_nv_GetBRD(nv)+1,
                                 str_source,
                                 address,
