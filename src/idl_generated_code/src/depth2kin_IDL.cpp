@@ -774,7 +774,6 @@ bool depth2kin_IDL_calibrate::read(yarp::os::ConnectionReader& connection) {
 }
 
 void depth2kin_IDL_calibrate::init(const bool rm_outliers) {
-  _return;
   this->rm_outliers = rm_outliers;
 }
 
@@ -890,7 +889,6 @@ bool depth2kin_IDL_getPoint::read(yarp::os::ConnectionReader& connection) {
 }
 
 void depth2kin_IDL_getPoint::init(const std::string& arm, const double x, const double y, const double z) {
-  _return;
   this->arm = arm;
   this->x = x;
   this->y = y;
@@ -964,7 +962,6 @@ bool depth2kin_IDL_getExtrinsics::read(yarp::os::ConnectionReader& connection) {
 }
 
 void depth2kin_IDL_getExtrinsics::init(const std::string& eye) {
-  _return;
   this->eye = eye;
 }
 
@@ -1115,7 +1112,6 @@ bool depth2kin_IDL_getExplorationData::read(yarp::os::ConnectionReader& connecti
 }
 
 void depth2kin_IDL_getExplorationData::init() {
-  _return;
 }
 
 bool depth2kin_IDL_clearExplorationData::write(yarp::os::ConnectionWriter& connection) {
