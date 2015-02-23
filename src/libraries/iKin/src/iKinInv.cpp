@@ -99,34 +99,23 @@ Vector iKinCtrl::calc_e()
     // x must be previously set
     if (x.length()>6)
     {
-        if (ctrlPose==IKINCTRL_POSE_XYZ)
-        {
-           e[0]=x_set[0]-x[0];
-           e[1]=x_set[1]-x[1];
-           e[2]=x_set[2]-x[2];
-           e[3]=e[4]=e[5]=0.0;
-        }
-        else
-        {
-            Vector v=x_set.subVector(3,6);
-            Matrix Des=axis2dcm(v);
-            Des(0,3)=x_set[0];
-            Des(1,3)=x_set[1];
-            Des(2,3)=x_set[2];
+        Matrix H=chain.getH();
+        e=0.0;
 
-            Matrix H=chain.getH();
-            Matrix E=Des*SE3inv(H);
-            v=dcm2axis(E);
-            
+        if (ctrlPose!=IKINCTRL_POSE_ANG)
+        {
             e[0]=x_set[0]-H(0,3);
             e[1]=x_set[1]-H(1,3);
             e[2]=x_set[2]-H(2,3);
-            e[3]=v[3]*v[0];
-            e[4]=v[3]*v[1];
-            e[5]=v[3]*v[2];
-    
-            if (ctrlPose==IKINCTRL_POSE_ANG)
-               e[0]=e[1]=e[2]=0.0;
+        }
+
+        if (ctrlPose!=IKINCTRL_POSE_XYZ)
+        {
+            Matrix Des=axis2dcm(x_set.subVector(3,6));
+            Vector ax=dcm2axis(Des*SE3inv(H));
+            e[3]=ax[3]*ax[0];
+            e[4]=ax[3]*ax[1];
+            e[5]=ax[3]*ax[2];
         }
     }
     else
