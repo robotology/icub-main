@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
-    <device name="head_calibrator" type="icubheadcalibrator">          
+    <device name="head_calibrator" type="parametricCalibrator">
                              
         <group name="GENERAL">             
             <param name="joints"> 6 </param>             
-            <param name="deviceName"> Head_Calibrator </param>         
+            <param name="deviceName"> HeadV1_Calibrator </param>
         </group>             
  
 <group name="CALIBRATION">   
- 
 <param name="calibrationType">            0             0             0             0             0             0             </param>       
 <param name="calibration1">               500           1333          1333          600           500           500           </param>       
 <param name="calibration2">               20            20            20            -20           20            20            </param>       
@@ -16,15 +15,15 @@
 <param name="positionZero">               0             0             0             0             0             0             </param>       
 <param name="velocityZero">               10            10            10            10            10            10            </param>       
 <param name="maxPwm">                     0             0             0             0             0             0             </param>       
-<param name="posZeroThreshold">           2             2             2             2             2             2             </param>       
+            <param name="posZeroThreshold">           2             2             2             2             180           180           </param>       
 </group>       
  
 <group name="HOME">          
-<param name="positionHome"> -40           0             0             0             0             0             </param>       
+            <param name="positionHome">              -30            0             0             0             0             0             </param>       
 <param name="velocityHome"> 10            10            10            10            10            10            </param>       
 </group>       
  
-        <param name="CALIB_ORDER"> (0 1 2 3) (4) (5) </param>          
+        <param name="CALIB_ORDER"> (0 1 2) (3) (4) (5) </param>
                
         <action phase="startup" level="10" type="calibrate">           
             <param name="target">head_mc_wrapper</param>               
@@ -38,30 +37,3 @@
  
     </device>  
 </devices>     
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
- 
