@@ -388,9 +388,8 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_enabledAmp);
     checkAndDestroy(_enabledPid);
     checkAndDestroy(_calibrated);
-
-    delete requestQueue;
-
+    if(requestQueue)
+        delete requestQueue;
     return true;
 }
 
@@ -449,6 +448,10 @@ embObjMotionControl::embObjMotionControl() :
     _ref_positions    = NULL;
     _ref_speeds       = NULL;
     _ref_torques      = NULL;
+    _kinematic_mj     = NULL;
+    _kbemf            = NULL;
+    _ktau             = NULL;
+    _filterType       = NULL;
 
     checking_motiondone = NULL;
     // debug connection
