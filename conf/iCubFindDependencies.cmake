@@ -28,7 +28,13 @@ endmacro (checkandset_dependency)
 message(STATUS "Detecting required libraries")
 message(STATUS "CMake modules directory: ${CMAKE_MODULE_PATH}")
 
-find_package(icub_firmware_shared 0.0.1 COMPONENTS canProtocolLib)
+# This is a workaround to enable the warning only if
+# icub_firmware_shared was found, but the version is not compatible with
+# the requested one.
+find_package(icub_firmware_shared COMPONENTS canProtocolLib QUIET)
+if(icub_firmware_shared_FOUND)
+  find_package(icub_firmware_shared 0.0.1 COMPONENTS canProtocolLib)
+endif()
 
 find_package(GSL)
 find_package(GLUT)
