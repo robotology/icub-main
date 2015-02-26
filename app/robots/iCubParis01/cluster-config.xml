@@ -8,7 +8,6 @@
 
 <node>pc104</node>
 <node display=":0.0">macsi01</node>
-<node display=":0.0">macsi02</node>
 <node display=":0.0">macsi03</node>
 <node display=":0.0">macsi04</node>
 <node>macsi05</node>
