@@ -3,7 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 
-yarp_prepare_device(canmotioncontrol TYPE yarp::dev::CanBusMotionControl
+PREPARE_DEVICE(canmotioncontrol TYPE CanBusMotionControl
     INCLUDE CanBusMotionControl.h
     WRAPPER controlboardwrapper2)
 
@@ -44,7 +44,7 @@ if(ICUB_HAS_icub_firmware_shared)
    yarp_add_plugin(canmotioncontrol ${folder_source} ${folder_header})
    TARGET_LINK_LIBRARIES(canmotioncontrol ${ACE_LIBRARIES} iCubDev ${YARP_LIBRARIES})
 
-   icub_export_plugin(canmotioncontrol)
+   icub_export_library(canmotioncontrol)
    yarp_install(FILES canmotioncontrol.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 else(ICUB_HAS_icub_firmware_shared)

@@ -2,7 +2,7 @@
 # Authors: Marco Randazzo <marco.randazzo@iit.it>
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(canBusAnalogSensor TYPE CanBusAnalogSensor INCLUDE CanBusAnalogSensor.h WRAPPER AnalogServer)
+PREPARE_DEVICE(canBusAnalogSensor TYPE CanBusAnalogSensor INCLUDE CanBusAnalogSensor.h WRAPPER AnalogServer)
 
 if(NOT SKIP_canBusAnalogSensor)
 
@@ -14,7 +14,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 yarp_add_plugin(canBusAnalogSensor CanBusAnalogSensor.h CanBusAnalogSensor.cpp)
 target_link_libraries(canBusAnalogSensor ${YARP_LIBRARIES})
 
-icub_export_plugin(canBusAnalogSensor)
+icub_export_library(canBusAnalogSensor)
 
 yarp_install(FILES canBusAnalogSensor.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 

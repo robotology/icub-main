@@ -2,7 +2,7 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(embObjVirtualAnalogSensor TYPE yarp::dev::embObjVirtualAnalogSensor   INCLUDE embObjVirtualAnalogSensor.h   WRAPPER virtualAnalogServer)
+PREPARE_DEVICE(embObjVirtualAnalogSensor TYPE embObjVirtualAnalogSensor   INCLUDE embObjVirtualAnalogSensor.h   WRAPPER virtualAnalogServer)
 
 IF (NOT SKIP_embObjVirtualAnalogSensor)
     set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
@@ -12,7 +12,7 @@ IF (NOT SKIP_embObjVirtualAnalogSensor)
     yarp_add_plugin(embObjVirtualAnalogSensor embObjVirtualAnalogSensor.cpp embObjVirtualAnalogSensor.h)
 
     TARGET_LINK_LIBRARIES(embObjVirtualAnalogSensor ethResources ${YARP_LIBRARIES} ${ACE_LIBRARIES})
-    icub_export_plugin(embObjVirtualAnalogSensor)
+    icub_export_library(embObjVirtualAnalogSensor)
     yarp_install(FILES embObjVirtualAnalogSensor.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 ENDIF (NOT SKIP_embObjVirtualAnalogSensor)
 

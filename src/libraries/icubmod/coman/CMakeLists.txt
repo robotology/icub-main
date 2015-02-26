@@ -13,10 +13,10 @@ SET(COMAN_JT comanJointTorqueSensor)
 
 PROJECT(coman)
 
-yarp_prepare_device(${COMAN_MC} TYPE yarp::dev::${COMAN_MC} INCLUDE ${COMAN_MC}.h  WRAPPER controlboardwrapper)
-yarp_prepare_device(${COMAN_FT} TYPE yarp::dev::${COMAN_FT} INCLUDE ${COMAN_FT}.h  WRAPPER analogServer)
-yarp_prepare_device(${COMAN_VO} TYPE yarp::dev::${COMAN_VO} INCLUDE ${COMAN_VO}.h  WRAPPER analogServer)
-yarp_prepare_device(${COMAN_JT} TYPE yarp::dev::${COMAN_JT} INCLUDE ${COMAN_JT}.h  WRAPPER analogServer)
+PREPARE_DEVICE(${COMAN_MC} TYPE ${COMAN_MC} INCLUDE ${COMAN_MC}.h  WRAPPER controlboardwrapper)
+PREPARE_DEVICE(${COMAN_FT} TYPE ${COMAN_FT} INCLUDE ${COMAN_FT}.h  WRAPPER analogServer)
+PREPARE_DEVICE(${COMAN_VO} TYPE ${COMAN_VO} INCLUDE ${COMAN_VO}.h  WRAPPER analogServer)
+PREPARE_DEVICE(${COMAN_JT} TYPE ${COMAN_JT} INCLUDE ${COMAN_JT}.h  WRAPPER analogServer)
 
 
 if (USE_REALTIME)
@@ -41,7 +41,7 @@ IF (NOT SKIP_${COMAN_MC} )
     yarp_add_plugin(${COMAN_MC} ${COMAN_MC_SRC} )
 #    set_target_properties(${COMAN_MC} PROPERTIES COMPILE_FLAGS ${coman_build_flags})
     target_link_libraries(${COMAN_MC} coman_handler_lib iCubDev ${YARP_LIBRARIES})
-    icub_export_plugin(${COMAN_MC} )
+    icub_export_library(${COMAN_MC} )
 ENDIF (NOT SKIP_${COMAN_MC} )
 
 
@@ -50,7 +50,7 @@ IF (NOT SKIP_${COMAN_FT} )
     yarp_add_plugin(${COMAN_FT} ${COMAN_FT_SRC})
 #    set_target_properties(${COMAN_FT} PROPERTIES COMPILE_FLAGS ${coman_build_flags})
     target_link_libraries(${COMAN_FT} coman_handler_lib ${COMAN_LIB} iCubDev ${YARP_LIBRARIES})
-    icub_export_plugin(${COMAN_FT} )
+    icub_export_library(${COMAN_FT} )
 ENDIF (NOT SKIP_${COMAN_FT} )
 
 
@@ -59,7 +59,7 @@ IF (NOT SKIP_${COMAN_VO} )
     yarp_add_plugin(${COMAN_VO} ${COMAN_VO_SRC})
 #    set_target_properties(${COMAN_VO} PROPERTIES COMPILE_FLAGS ${coman_build_flags})
     target_link_libraries(${COMAN_VO} coman_handler_lib ${COMAN_LIB} iCubDev ${YARP_LIBRARIES})
-    icub_export_plugin(${COMAN_VO} )
+    icub_export_library(${COMAN_VO} )
 ENDIF (NOT SKIP_${COMAN_VO} )
 
 
@@ -68,5 +68,5 @@ IF (NOT SKIP_${COMAN_JT} )
     yarp_add_plugin(${COMAN_JT} ${COMAN_JT_SRC})
 #    set_target_properties(${COMAN_JT} PROPERTIES COMPILE_FLAGS ${coman_build_flags})
     target_link_libraries(${COMAN_JT} coman_handler_lib ${COMAN_LIB} iCubDev ${YARP_LIBRARIES})
-    icub_export_plugin(${COMAN_JT} )
+    icub_export_library(${COMAN_JT} )
 ENDIF (NOT SKIP_${COMAN_JT} )

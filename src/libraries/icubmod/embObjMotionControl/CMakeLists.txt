@@ -2,7 +2,7 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(embObjMotionControl TYPE yarp::dev::embObjMotionControl
+PREPARE_DEVICE(embObjMotionControl TYPE embObjMotionControl
     INCLUDE embObjMotionControl.h
     WRAPPER controlboardwrapper2)
 
@@ -19,7 +19,7 @@ yarp_prepare_device(embObjMotionControl TYPE yarp::dev::embObjMotionControl
 #    yarp_add_plugin(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h usrcbk/eOcfg_nvsEP_mc_usrcbk_pippo.c )
     yarp_add_plugin(embObjMotionControl embObjMotionControl.cpp embObjMotionControl.h)
     TARGET_LINK_LIBRARIES(embObjMotionControl ethResources iCubDev ${YARP_LIBRARIES} ${ACE_LIBRARIES})
-    icub_export_plugin(embObjMotionControl)
+    icub_export_library(embObjMotionControl)
     
     yarp_install(FILES embObjMotionControl.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
         

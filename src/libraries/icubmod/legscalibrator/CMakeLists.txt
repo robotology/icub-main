@@ -2,7 +2,7 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(icublegscalibrator TYPE yarp::dev::iCubLegsCalibrator INCLUDE iCubLegsCalibrator.h)
+PREPARE_DEVICE(icublegscalibrator TYPE iCubLegsCalibrator INCLUDE iCubLegsCalibrator.h)
 
 
 if (NOT SKIP_icublegscalibrator)
@@ -12,7 +12,7 @@ if (NOT SKIP_icublegscalibrator)
 
     target_link_libraries(legscalibrator ${YARP_LIBRARIES})
 
-    icub_export_plugin(legscalibrator)
+    icub_export_library(legscalibrator)
     yarp_install(FILES icublegscalibrator.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 endif (NOT SKIP_icublegscalibrator)

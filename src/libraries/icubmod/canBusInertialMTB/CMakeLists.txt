@@ -2,7 +2,7 @@
 # Authors: Marco Randazzo and Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(canBusInertialMTB TYPE CanBusInertialMTB INCLUDE CanBusInertialMTB.h WRAPPER AnalogSensor)
+PREPARE_DEVICE(canBusInertialMTB TYPE CanBusInertialMTB INCLUDE CanBusInertialMTB.h WRAPPER AnalogSensor)
 
 if (NOT SKIP_canBusInertialMTB)
 
@@ -15,7 +15,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 yarp_add_plugin(canBusInertialMTB CanBusInertialMTB.h CanBusInertialMTB.cpp)
 target_link_libraries(canBusInertialMTB ${YARP_LIBRARIES})
 
-icub_export_plugin(canBusInertialMTB)
+icub_export_library(canBusInertialMTB)
 
 yarp_install(FILES canBusInertialMTB.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 

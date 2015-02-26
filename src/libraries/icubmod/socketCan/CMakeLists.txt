@@ -2,7 +2,7 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(socketcan TYPE yarp::dev::SocketCan
+PREPARE_DEVICE(socketcan TYPE SocketCan
     INCLUDE SocketCan.h 
     WRAPPER controlboard)
 
@@ -14,7 +14,7 @@ IF (NOT SKIP_socketcan)
 	    INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS})
 	    yarp_add_plugin(socketcan SocketCan.cpp SocketCan.h)
 	    TARGET_LINK_LIBRARIES(socketcan ${YARP_LIBRARIES})   
-	    icub_export_plugin(socketcan)
+	    icub_export_library(socketcan)
        yarp_install(FILES socketcan.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
     ENDIF(WIN32)
 

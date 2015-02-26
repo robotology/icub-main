@@ -3,7 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
-yarp_prepare_device(gazecontrollerclient TYPE ClientGazeController
+PREPARE_DEVICE(gazecontrollerclient TYPE    ClientGazeController 
                                     INCLUDE ClientGazeController.h
                                     WRAPPER gazecontrollerclient)
 
@@ -17,7 +17,7 @@ IF (NOT SKIP_gazecontrollerclient)
 
    TARGET_LINK_LIBRARIES(gazecontrollerclient ${YARP_LIBRARIES})
 
-   icub_export_plugin(gazecontrollerclient)
+   icub_export_library(gazecontrollerclient)
 #  do not install gaze controller as plugin for now because it depends on iKin
 #    yarp_install(FILES gazecontrollerclient.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 ENDIF (NOT SKIP_gazecontrollerclient)

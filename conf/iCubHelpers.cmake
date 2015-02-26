@@ -198,16 +198,6 @@ MACRO(icub_export_library target)
 
 ENDMACRO(icub_export_library)
 
-
-macro(icub_export_plugin target)
-    yarp_install(TARGETS ${target}
-                 EXPORT icub-targets
-                 COMPONENT Runtime
-                 LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
-                 ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR})
-endmacro()
-
-
 #
 # Taken from kitware wiki, easy support for macro with variable parameters.
 # See icub_export_library2 for usage.

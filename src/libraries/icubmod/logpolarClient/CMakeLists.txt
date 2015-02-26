@@ -2,7 +2,7 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(logpolarclient TYPE yarp::dev::ClientLogpolarFrameGrabber
+PREPARE_DEVICE(logpolarclient TYPE ClientLogpolarFrameGrabber
     INCLUDE yarp/dev/ClientLogpolarFrameGrabber.h)
 
 IF(NOT SKIP_logpolarclient)
@@ -19,6 +19,6 @@ IF(NOT SKIP_logpolarclient)
 										logpolar
                                         ${YARP_LIBRARIES})
                                         
-   icub_export_plugin(logpolarclient)
+   icub_export_library(logpolarclient)
    yarp_install(FILES logpolarclient.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 ENDIF(NOT SKIP_logpolarclient)

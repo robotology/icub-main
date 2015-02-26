@@ -2,7 +2,7 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(canBusSkin TYPE CanBusSkin INCLUDE CanBusSkin.h WRAPPER grabber)
+YARP_PREPARE_DEVICE(canBusSkin TYPE CanBusSkin INCLUDE CanBusSkin.h WRAPPER grabber)
 
 if (NOT SKIP_canBusSkin)
 if(ICUB_HAS_icub_firmware_shared)
@@ -15,7 +15,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 yarp_add_plugin(canBusSkin CanBusSkin.h CanBusSkin.cpp ../skinLib/SkinConfigReader.cpp ../skinLib/SkinDiagnostics.h)
 target_link_libraries(canBusSkin ${YARP_LIBRARIES} ${ICUB_LIBRARIES})
 
-icub_export_plugin(canBusSkin)
+icub_export_library(canBusSkin)
 yarp_install(FILES canBusSkin.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 else(ICUB_HAS_icub_firmware_shared)

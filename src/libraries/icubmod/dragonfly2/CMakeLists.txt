@@ -5,12 +5,12 @@
 #
 
 
-yarp_prepare_device(dragonfly2 TYPE yarp::dev::DragonflyDeviceDriver2Rgb INCLUDE DragonflyDeviceDriver2.h WRAPPER grabber)
+yarp_prepare_device(dragonfly2 TYPE DragonflyDeviceDriver2Rgb INCLUDE DragonflyDeviceDriver2.h WRAPPER grabber)
 
 # dragonfly2raw is always enabled when dragonfly2 is enabled
 # This is a workaround to enable the creation of the additional source files and to hide the entry in ccmake
 set(ENABLE_icubmod_dragonfly2raw ${ENABLE_icubmod_dragonfly2} CACHE INTERNAL "Enable/disable compilation of icubmod_dragonfly2raw")
-yarp_prepare_device(dragonfly2raw TYPE yarp::dev::DragonflyDeviceDriver2Raw INCLUDE DragonflyDeviceDriver2.h WRAPPER grabber)
+yarp_prepare_device(dragonfly2raw TYPE DragonflyDeviceDriver2Raw INCLUDE DragonflyDeviceDriver2.h WRAPPER grabber)
 
 IF(NOT SKIP_dragonfly2)
   FIND_PACKAGE(DRAGONFLYAPI)
@@ -39,7 +39,7 @@ IF(NOT SKIP_dragonfly2)
 
   yarp_add_plugin(dragonfly2 common/DragonflyDeviceDriver2.h common/DragonflyDeviceDriver2.cpp ${EXTRA_SOURCES})
   target_link_libraries(dragonfly2 ${YARP_LIBRARIES} ${DRAGONFLYAPI_LIB})
-  icub_export_plugin(dragonfly2)
+  icub_export_library(dragonfly2)
   yarp_install(FILES dragonfly2.ini dragonfly2raw.ini DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
   if(NOT WIN32)

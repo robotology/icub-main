@@ -32,7 +32,7 @@ add_definitions(-D_WIP_CHECK_PROTOCOL_VERSION_)
 else(WIP_FEATURE_CHECK_PROTOCOL_VERSION)
 endif(WIP_FEATURE_CHECK_PROTOCOL_VERSION)
 
-yarp_begin_plugin_library(icubmod)
+BEGIN_PLUGIN_LIBRARY(icubmod)
   add_subdirectory(armcalibrator)
   add_subdirectory(canBusMotionControl)
   add_subdirectory(cartesianController)
@@ -72,7 +72,7 @@ if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
   add_subdirectory(coman)
   add_subdirectory(imu3DM_GX3)
 endif()
-yarp_end_plugin_library(icubmod)
+END_PLUGIN_LIBRARY(icubmod)
 
 if(ICUB_COMPILE_COMAN_LIBRARY )
 # adding subdirectory for common library used by coman devices, if anyone of them is selected
@@ -86,7 +86,7 @@ endif(ICUB_COMPILE_EMBOBJ_LIBRARY)
 
 icub_export_library(icubmod)
 
-yarp_add_plugin_yarpdev_executable(icubmoddev icubmod)
-#target_link_libraries(icubmoddev YARP::YARP_OS YARP::YARP_dev YARP::YARP_init)
+ADD_PLUGIN_LIBRARY_EXECUTABLE(icubmoddev icubmod)
+target_link_libraries(icubmoddev YARP::YARP_OS YARP::YARP_dev YARP::YARP_init)
 INSTALL(TARGETS icubmoddev DESTINATION bin)
 #INSTALL(TARGETS icubmod DESTINATION lib)

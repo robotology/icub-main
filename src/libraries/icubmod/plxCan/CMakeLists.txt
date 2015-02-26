@@ -2,7 +2,7 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(pcan TYPE yarp::dev::PlxCan
+PREPARE_DEVICE(pcan TYPE PlxCan
     INCLUDE PlxCan.h 
     WRAPPER "")
 
@@ -22,7 +22,7 @@ if (NOT SKIP_pcan)
 
         TARGET_LINK_LIBRARIES(pcan ${PLXCANAPI_LIB} ${YARP_LIBRARIES})
         
-        icub_export_plugin(pcan)
+        icub_export_library(pcan)
         yarp_install(FILES pcan.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
   ENDIF (NOT PLXCANAPI_FOUND)
   
