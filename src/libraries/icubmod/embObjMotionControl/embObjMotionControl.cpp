@@ -3109,6 +3109,16 @@ bool embObjMotionControl::setMaxCurrentRaw(int j, double val)
     return res->addSetMessage(protid, (uint8_t*) &val);
 }
 
+bool embObjMotionControl::getMaxCurrentRaw(int j, double *val)
+{
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_maxcurrentofmotor);
+    uint16_t size;
+    eOmeas_current_t  maxCurrent;
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&maxCurrent, &size);
+    *value = (double) maxCurrent;
+    return true;
+}
+
 bool embObjMotionControl::getAmpStatusRaw(int j, int *st)
 {
     (_enabledAmp[j ]) ? *st = 1 : *st = 0;
@@ -4128,6 +4138,36 @@ bool embObjMotionControl::getOutputsRaw(double *outs)
         ret &= getOutputRaw(j, &outs[j]);
     }
     return ret;
+}
+
+bool embObjMotionControl::getTemperatureRaw(int m, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getTemperatureRaw");
+}
+
+bool embObjMotionControl::getTemperaturesRaw(double *vals)
+{
+    return NOT_YET_IMPLEMENTED("getTemperaturesRaw");
+}
+
+bool embObjMotionControl::getTemperatureLimitRaw(int m, double *temp)
+{
+    return NOT_YET_IMPLEMENTED("getTemperatureLimitRaw");
+}
+
+bool embObjMotionControl::setTemperatureLimitRaw(int m, const double temp)
+{
+    return NOT_YET_IMPLEMENTED("setTemperatureLimitRaw");
+}
+
+bool embObjMotionControl::getMotorOutputLimitRaw(int m, double *limit)
+{
+    return NOT_YET_IMPLEMENTED("getMotorOutputLimitRaw");
+}
+
+bool embObjMotionControl::setMotorOutputLimitRaw(int m, const double limit)
+{
+    return NOT_YET_IMPLEMENTED("setMotorOutputLimitRaw");
 }
 
 
