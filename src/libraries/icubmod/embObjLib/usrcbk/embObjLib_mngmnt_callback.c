@@ -140,7 +140,27 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 
 static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    char str[256] = {0};
+
+#define DROPCODES_FROM_LIST
+
+#if defined(DROPCODES_FROM_LIST)
+    static const eOerror_code_t codes2drop_value[] =
+    {
+        EOERRORCODE(eoerror_category_System, eoerror_value_SYS_canservices_parsingfailure)
+    };
+
+    static const int codes2drop_number = sizeof(codes2drop_value) / sizeof(eOerror_code_t);
+
+    int i;
+
+    for(i=0; i<codes2drop_number; i++)
+    {
+        if(codes2drop_value[i] == infobasic->properties.code)
+        {
+            return;
+        }
+    }
+#endif
 
 #if 0
     uint64_t txsec = rd->time / 1000000;
@@ -158,6 +178,7 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
     }
 #endif
 
+    char str[256] = {0};
     static const char * sourcestrings[] =
     {
         "LOCAL",
