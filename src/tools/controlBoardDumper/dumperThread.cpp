@@ -44,6 +44,7 @@ void boardDumperThread::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int 
     ok &= board_d->view(trq);
     ok &= board_d->view(cmod);
     ok &= board_d->view(imod);
+    ok &= board_d->view(imot);
     ok &= board_d->view(imotenc);
 
     if(debug_d->isValid())
@@ -133,6 +134,7 @@ boardDumperThread::boardDumperThread():RateThread(500)
     imod     = 0;
     idbg     = 0;
     logFile  = 0;
+    imot     = 0;
     logToFile = false;
 }
 

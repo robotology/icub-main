@@ -63,6 +63,7 @@ private:
   ITorqueControl *trq;
   IControlMode2  *cmod;
   IInteractionMode *imod;
+  IMotor          *imot;
   IDebugInterface *idbg;
 
   int numberOfJoints;

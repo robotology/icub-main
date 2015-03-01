@@ -3115,7 +3115,7 @@ bool embObjMotionControl::getMaxCurrentRaw(int j, double *val)
     uint16_t size;
     eOmeas_current_t  maxCurrent;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&maxCurrent, &size);
-    *value = (double) maxCurrent;
+    *val = (double) maxCurrent;
     return true;
 }
 
