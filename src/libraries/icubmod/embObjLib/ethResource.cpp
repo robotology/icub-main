@@ -1940,6 +1940,46 @@ bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size
 
 }
 
+bool ethResources::CANPrintHandler(CanMessage* msg, eOmn_info_basic_t *infobasic)
+{
+    //At the moment, I only print the single message, without regarding if they are splitted or not
+    char str[256];
+
+    //Set the CAN source
+    static const char * sourcestrings[] =
+    {
+        "LOCAL",
+        "CAN1",
+        "CAN2",
+        "UNKNOWN"
+    };
+    int source                      = EOMN_INFO_PROPERTIES_FLAGS_get_source(infobasic->properties.flags);
+    const char * str_source         = (source > eomn_info_source_can2) ? (sourcestrings[3]) : (sourcestrings[source]);
+
+    uint16_t address                = EOMN_INFO_PROPERTIES_FLAGS_get_address(infobasic->properties.flags);
+
+    uint32_t sec = infobasic->timestamp / 1000000;
+    uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
+    uint32_t usec = infobasic->timestamp % 1000;
+
+    unsigned char *candata=msg->getData();
+    int offset = (candata[1]&0x0F);
+
+    snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du:CAN PRINT MESSAGE[id %d, part %d] -> %s",
+                                //get_protBRDnumber(),
+                                this->boardNum,
+                                str_source,
+                                address,
+                                sec,
+                                msec,
+                                usec,
+                                msg->getId(),
+                                offset,
+                                msg->getData()
+                                );
+    embObjPrintInfo(str);
+}
+
 // - class infoOfRecvPkts
 
 

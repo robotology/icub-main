@@ -20,6 +20,8 @@
 #include <yarp/os/Time.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/LogStream.h>
+#include <yarp/dev/CanBusInterface.h>
+#include "can_string_generic.h"
 
 static TheEthManager *_interface2ethManager = NULL;
 
@@ -266,6 +268,21 @@ fakestdbool_t feat_signal_network_reply(eOprotBRD_t brd, eOprotID32_t id32, uint
     return(ethres->aNetworkQueryReplyHasArrived(id32, signature));
 }
 
+fakestdbool_t feat_embObjCANPrintHandler(eOprotBRD_t brd, eOmn_info_basic_t* infobasic)
+{
+    ethResources* ethres = _interface2ethManager->GetEthResource(nvBoardNum2FeatIdBoardNum(brd));
+
+    //Cast the p64 to CanMessage
+    uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
+
+    yarp::dev::CanMessage* msg;
+    msg->setBuffer(p64);
+    msg->setId(p64[1]>>4);
+    msg->setLen(infobasic->properties.par16);
+
+    //Call the ethres manager
+    return ethres->CANPrintHandler(msg, infobasic);
+}
 
 #include <ace/ACE.h>
 #include <ace/config.h>

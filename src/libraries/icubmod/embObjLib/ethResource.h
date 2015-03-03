@@ -39,6 +39,7 @@
 // Yarp includes
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/CanBusInterface.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Semaphore.h>
@@ -315,6 +316,7 @@ public:
     bool stopNetworkQuerySession(Semaphore* sem);
 
     bool printRXstatistics(void);
+    bool CANPrintHandler(CanMessage* msg,  eOmn_info_basic_t* infobasic);
 
 
 private:
