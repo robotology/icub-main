@@ -241,7 +241,8 @@ int main(int argc, char *argv[])
             printf("type [set] and one of the following:\n");
             printf("    [%s] <int> to set the temperature limit for a single motor\n", Vocab::decode(VOCAB_TEMPERATURE_LIMIT).c_str());
             printf("    [%s] <int> to set the output limit for a single motor\n", Vocab::decode(VOCAB_MOTOR_OUTPUT_LIMIT).c_str());
-            
+            printf("\n");
+
             printf("IMotorEncoder Interfaces:\n");
             printf("type [get] and one of the following:\n");
             printf("    [%s] <int> to read the cpr value for a single motor\n", Vocab::decode(VOCAB_MOTOR_CPR).c_str());
@@ -267,7 +268,7 @@ int main(int argc, char *argv[])
             printf("    [%s] to read the reference acceleration for all axes\n", Vocab::decode(VOCAB_REF_ACCELERATIONS).c_str());
             printf("    [%s] <int> to read the reference acceleration for a single axis\n", Vocab::decode(VOCAB_REF_ACCELERATION).c_str());
             printf("    [%s] to read the current consumption for all axes\n", Vocab::decode(VOCAB_AMP_CURRENTS).c_str());
-            printf("    [%s] <int> <double> to get the current limit of single motor\n", Vocab::decode(VOCAB_AMP_MAXCURRENT).c_str());
+            printf("    [%s] <int> to get the current limit of single motor\n", Vocab::decode(VOCAB_AMP_MAXCURRENT).c_str());
             printf("\n");
 
             printf("type [set] and one of the following:\n");
@@ -346,6 +347,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_MOTOR_ENCODERS: {
+                    if (iMotEnc==0) {printf ("unavailable interface\n"); break;}
                     iMotEnc->getMotorEncoders(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_MOTOR_ENCODERS).c_str());
                     for(i = 0; i < jnts; i++)
@@ -355,6 +357,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_MOTOR_ENCODER_SPEEDS: {
+                    if (iMotEnc==0) {printf ("unavailable interface\n"); break;}
                     iMotEnc->getMotorEncoderSpeeds(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_MOTOR_ENCODER_SPEEDS).c_str());
                     for(i = 0; i < jnts; i++)
@@ -364,6 +367,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_MOTOR_ENCODER_ACCELERATIONS: {
+                    if (iMotEnc==0) {printf ("unavailable interface\n"); break;}
                     iMotEnc->getMotorEncoderAccelerations(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_MOTOR_ENCODER_ACCELERATIONS).c_str());
                     for(i = 0; i < jnts; i++)
@@ -374,6 +378,7 @@ int main(int argc, char *argv[])
 
                 case VOCAB_MOTOR_CPR:
                 {
+                    if (iMotEnc==0) {printf ("unavailable interface\n"); break;}
                     int j = p.get(2).asInt();
                     double v;
                     iMotEnc->getMotorEncoderCountsPerRevolution(j, &v);
@@ -385,6 +390,7 @@ int main(int argc, char *argv[])
 
                 case VOCAB_AMP_MAXCURRENT:
                 {
+                    if (amp==0) {printf ("unavailable interface\n"); break;}
                     int j = p.get(2).asInt();
                     double v;
                     amp->getMaxCurrent(j, &v);
@@ -392,9 +398,11 @@ int main(int argc, char *argv[])
                     printf("%.2f ", v);
                     printf("\n");
                 }
+                break;
 
                 case VOCAB_MOTORS_NUMBER:
                 {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
                     int v;
                     imot->getNumberOfMotors(&v);
                     printf("%s: ", Vocab::decode(VOCAB_MOTORS_NUMBER).c_str());
@@ -405,6 +413,7 @@ int main(int argc, char *argv[])
 
                 case VOCAB_MOTOR_ENCODER_NUMBER:
                 {
+                    if (iMotEnc==0) {printf ("unavailable interface\n"); break;}
                     int v;
                     iMotEnc->getNumberOfMotorEncoders(&v);
                     printf("%s: ", Vocab::decode(VOCAB_MOTOR_ENCODER_NUMBER).c_str());
@@ -469,6 +478,7 @@ int main(int argc, char *argv[])
                 break;
                 
                 case VOCAB_TEMPERATURES: {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
                     imot->getTemperatures(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_TEMPERATURES).c_str());
                     for(i = 0; i < jnts; i++)
@@ -478,6 +488,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_TEMPERATURE: {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
                     int j = p.get(2).asInt();
                     double v;
                     imot->getTemperature(j, &v);
@@ -488,6 +499,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_TEMPERATURE_LIMIT: {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
                     int j = p.get(2).asInt();
                     double v;
                     imot->getTemperatureLimit(j, &v);
@@ -498,6 +510,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_MOTOR_OUTPUT_LIMIT: {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
                     int j = p.get(2).asInt();
                     double v;
                     imot->getMotorOutputLimit(j, &v);
@@ -508,6 +521,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_OUTPUTS: {
+                    if (iopenloop==0) {printf ("unavailable interface\n"); break;}
                     iopenloop->getOutputs(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_OUTPUTS).c_str());
                     for(i = 0; i < jnts; i++)
@@ -517,6 +531,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_OUTPUT: {
+                    if (iopenloop==0) {printf ("unavailable interface\n"); break;}
                     int j = p.get(2).asInt();
                     double v;
                     iopenloop->getOutput(j, &v);
@@ -734,6 +749,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_TEMPERATURE_LIMIT: {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
                     int j=p.get(2).asInt();
                     double v=p.get(3).asDouble();
                     imot->setTemperatureLimit(j,v);
@@ -742,6 +758,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_MOTOR_OUTPUT_LIMIT: {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
                     int j=p.get(2).asInt();
                     double v=p.get(3).asDouble();
                     imot->setMotorOutputLimit(j,v);
