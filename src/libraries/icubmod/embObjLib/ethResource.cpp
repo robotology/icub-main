@@ -1964,15 +1964,16 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
 
     uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
 
-    char canmessage[6];
+    char canmessage[7];
     int can_mess_size = infobasic->properties.par16;
-    char *current_mess = (char*)&p64[2];
-    strncat (canmessage, current_mess, (can_mess_size-2)*sizeof(char));
+
+    memcpy(canmessage, &p64[2], can_mess_size-2);
+    canmessage[can_mess_size-2]=0;
+
     int msg_id = (p64[1]&0xF0) >> 4;
     int offset =  p64[1]&0x0F;
 
-    snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du:CAN PRINT MESSAGE[code 0x%.4x,id %d,part %d] -> %s",
-                                //get_protBRDnumber(),
+    snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[code 0x%.2x,id %d,part %d] -> %s",
                                 this->boardNum,
                                 str_source,
                                 address,
