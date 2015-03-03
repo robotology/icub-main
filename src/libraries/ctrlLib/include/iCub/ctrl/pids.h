@@ -257,7 +257,7 @@ public:
     * @param _Wi are the setpoint weigths for integral part.
     * @param _Wd are the setpoint weigths for derivative part.
     * @param _N  are derivative low-pass filter bandwidth (3 to 20, 
-    *            typ. 10).
+    *            typ. 10, must be > 0).
     * @param _Tt are anti-windup reset time (0.1 to 1 times the value of
     *            Ti=Kp/Ki, greater than Td).
     * @param _satLim is the saturation thresholds matrix 
@@ -364,7 +364,7 @@ public:
     *            part cannot be switched off).
     * @param _Kd are the derivative gains. 
     * @param _N  are derivative low-pass filter bandwidth (3 to 20, 
-    *            typ. 10).
+    *            typ. 10, must be > 0).
     * @param _satLim is the saturation thresholds matrix 
     *                (min_i=satLim(i,0), max_i=satLim(i,1)).
     */
