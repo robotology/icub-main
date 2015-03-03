@@ -1940,7 +1940,7 @@ bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size
 
 }
 
-bool ethResources::CANPrintHandler(CanMessage* msg, eOmn_info_basic_t *infobasic)
+bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
 {
     //At the moment, I only print the single message, without regarding if they are splitted or not
     char str[256];
@@ -1962,8 +1962,13 @@ bool ethResources::CANPrintHandler(CanMessage* msg, eOmn_info_basic_t *infobasic
     uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
     uint32_t usec = infobasic->timestamp % 1000;
 
-    unsigned char *candata=msg->getData();
-    int offset = (candata[1]&0x0F);
+    uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
+
+    char canmessage[6];
+    char *current_mess = (char*)&p64[2];
+    strncat (canmessage, current_mess, 6*sizeof(char));
+    int msg_id = p64[1]&0xF0;
+    int offset = p64[1]&0x0F;
 
     snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du:CAN PRINT MESSAGE[id %d, part %d] -> %s",
                                 //get_protBRDnumber(),
@@ -1973,9 +1978,9 @@ bool ethResources::CANPrintHandler(CanMessage* msg, eOmn_info_basic_t *infobasic
                                 sec,
                                 msec,
                                 usec,
-                                msg->getId(),
+                                msg_id,
                                 offset,
-                                msg->getData()
+                                canmessage
                                 );
     embObjPrintInfo(str);
 }

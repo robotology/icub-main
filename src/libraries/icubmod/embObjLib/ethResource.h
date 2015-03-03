@@ -316,7 +316,7 @@ public:
     bool stopNetworkQuerySession(Semaphore* sem);
 
     bool printRXstatistics(void);
-    bool CANPrintHandler(CanMessage* msg,  eOmn_info_basic_t* infobasic);
+    bool CANPrintHandler(eOmn_info_basic_t* infobasic);
 
 
 private:

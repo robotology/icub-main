@@ -271,17 +271,22 @@ fakestdbool_t feat_signal_network_reply(eOprotBRD_t brd, eOprotID32_t id32, uint
 fakestdbool_t feat_embObjCANPrintHandler(eOprotBRD_t brd, eOmn_info_basic_t* infobasic)
 {
     ethResources* ethres = _interface2ethManager->GetEthResource(nvBoardNum2FeatIdBoardNum(brd));
-
+    /*
+    static ICanBufferFactory  *pCanBufferFactory;
     //Cast the p64 to CanMessage
     uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
-
-    yarp::dev::CanMessage* msg;
-    msg->setBuffer(p64);
-    msg->setId(p64[1]>>4);
-    msg->setLen(infobasic->properties.par16);
+    CanBuffer buf;
+    buf = pCanBufferFactory->createBuffer(1);
+    yarp::dev::CanMessage &msg = buf[0];
+    msg.setBuffer(p64);
+    msg.setId(p64[1]>>4);
+    msg.setLen(infobasic->properties.par16);
+    */
 
     //Call the ethres manager
-    return ethres->CANPrintHandler(msg, infobasic);
+    bool res = ethres->CANPrintHandler(infobasic);
+    //pCanBufferFactory->destroyBuffer(buf);
+    return res;
 }
 
 #include <ace/ACE.h>
