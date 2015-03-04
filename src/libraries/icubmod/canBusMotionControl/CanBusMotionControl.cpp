@@ -2230,6 +2230,7 @@ ImplementDebugInterface(this),
 ImplementPositionDirect(this),
 ImplementInteractionMode(this),
 ImplementMotorEncoders(this),
+ImplementMotor(this),
 _mutex(1),
 _done(0)
 {
@@ -2326,6 +2327,8 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementEncodersTimed::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementMotorEncoders::initialize(p._njoints, p._axisMap, p._rotToEncoder, tmpZeros);
+
+    ImplementMotor::initialize(p._njoints, p._axisMap);
 
     ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
@@ -6073,6 +6076,13 @@ bool CanBusMotionControl::setMotorEncoderCountsPerRevolutionRaw(int m, const dou
 }
 
 bool CanBusMotionControl::getNumberOfMotorEncodersRaw(int* m)
+{
+    CanBusResources& r = RES(system_resources);
+    *m=r.getJoints();
+    return true;
+}
+
+bool CanBusMotionControl::getNumberOfMotorsRaw(int* m)
 {
     CanBusResources& r = RES(system_resources);
     *m=r.getJoints();

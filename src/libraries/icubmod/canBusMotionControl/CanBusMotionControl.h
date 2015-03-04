@@ -667,6 +667,8 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementEncodersTimed,
             public IMotorEncodersRaw,
             public ImplementMotorEncoders,
+            public IMotorRaw,
+            public ImplementMotor,
             public ImplementControlCalibration<CanBusMotionControl, IControlCalibration>,    
             public ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>,
             public ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>,
@@ -979,6 +981,7 @@ public:
     /////////////// END AMPLIFIER INTERFACE
 
     /// IMotor
+    virtual bool getNumberOfMotorsRaw(int* m);
     virtual bool getTemperatureRaw(int m, double* val);
     virtual bool getTemperaturesRaw(double *vals);
     virtual bool getTemperatureLimitRaw(int m, double *temp);
