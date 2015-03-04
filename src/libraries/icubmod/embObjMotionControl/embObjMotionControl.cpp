@@ -412,6 +412,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementPositionDirect(this),
     ImplementOpenLoopControl(this),
     ImplementInteractionMode(this),
+    ImplementMotor(this),
     _mutex(1),
     SAFETY_THRESHOLD(2.0)
 {
@@ -771,6 +772,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementOpenLoopControl::initialize(_njoints, _axisMap);
     ImplementInteractionMode::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
+    ImplementMotor::initialize(_njoints, _axisMap);
 
     /*
     *  Once I'm sure every input data required is present and correct, instantiate the EMS, transceiver etc...
@@ -4138,6 +4140,12 @@ bool embObjMotionControl::getOutputsRaw(double *outs)
         ret &= getOutputRaw(j, &outs[j]);
     }
     return ret;
+}
+
+bool embObjMotionControl::getNumberOfMotorsRaw(int* num)
+{
+    *num=_njoints;
+    return true;
 }
 
 bool embObjMotionControl::getTemperatureRaw(int m, double* val)

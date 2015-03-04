@@ -189,6 +189,8 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IMotorEncodersRaw,
     public ImplementEncodersTimed,
     public ImplementMotorEncoders,
+    public IMotorRaw,
+    public ImplementMotor,
     public IPositionControl2Raw,
     public IVelocityControl2Raw,
     public IControlMode2Raw,
@@ -680,6 +682,7 @@ public:
     bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
 
     // IMotor interface
+    bool getNumberOfMotorsRaw(int * num);
     bool getTemperatureRaw(int m, double* val);
     bool getTemperaturesRaw(double *vals);
     bool getTemperatureLimitRaw(int m, double *temp);
