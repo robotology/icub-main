@@ -20,8 +20,6 @@
 #include <yarp/os/Time.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/LogStream.h>
-#include <yarp/dev/CanBusInterface.h>
-#include "can_string_generic.h"
 
 static TheEthManager *_interface2ethManager = NULL;
 

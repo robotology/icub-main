@@ -19,6 +19,8 @@
 #include "EoProtocol.h"
 #include "EoManagement.h"
 #include "EoProtocolMN.h"
+//#include "can_string_generic.h"
+#include "can_string_eth.h"
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -55,6 +57,9 @@ ethResources::ethResources()
 
     RXpacketSize = 0;
 
+    for(int i = 0; i<16; i++)
+        c_string_handler[i]     = NULL;
+
     ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
@@ -79,6 +84,13 @@ ethResources::~ethResources()
     delete networkQuerySem;
     delete isbusyNQsem;
     delete iswaitingNQsem;
+
+    //Delete every can_string_eth object eventually initialized
+    for(int i=0; i<16; i++)
+    {
+        if (c_string_handler[i] != NULL)
+            delete c_string_handler[i];
+    }
 }
 
 bool ethResources::lock()
@@ -1942,8 +1954,74 @@ bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size
 
 bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
 {
+#define TEST_NEW_METHOD
+//#undef TEST_NEW_METHOD
+
+
+#if defined(TEST_NEW_METHOD)
+    char str[256];
+    char canfullmessage[22];
+
+    static const char * sourcestrings[] =
+    {
+        "LOCAL",
+        "CAN1",
+        "CAN2",
+        "UNKNOWN"
+    };
+    int source                      = EOMN_INFO_PROPERTIES_FLAGS_get_source(infobasic->properties.flags);
+    const char * str_source         = (source > eomn_info_source_can2) ? (sourcestrings[3]) : (sourcestrings[source]);
+    uint16_t address                = EOMN_INFO_PROPERTIES_FLAGS_get_address(infobasic->properties.flags);
+    uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
+
+    int msg_id = (p64[1]&0xF0) >> 4;
+    int offset =  p64[1]&0x0F;
+
+    // Validity check
+    if(address > 15)
+        return false;
+    // Initialization needed?
+    if (c_string_handler[address] == NULL)
+        c_string_handler[address] = new can_string_eth();
+
+    CanFrame can_msg;
+    can_msg.setCanData(infobasic->properties.par64);
+    can_msg.setId(msg_id);
+    can_msg.setSize(infobasic->properties.par16);
+    int ret = c_string_handler[address]->add_string(&can_msg);
+    // String finished?
+    if (ret != -1)
+    {
+        memcpy(canfullmessage, c_string_handler[address]->get_string(ret), sizeof(canfullmessage));
+        canfullmessage[21] = 0;
+        c_string_handler[address]->clear_string(ret);
+        //Delete can_msg?
+        //delete[] can_msg;
+    }
+
+    uint32_t sec = infobasic->timestamp / 1000000;
+    uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
+    uint32_t usec = infobasic->timestamp % 1000;
+
+    snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[code 0x%.2x,id %d,part %d] -> %s",
+                                this->boardNum,
+                                str_source,
+                                address,
+                                sec,
+                                msec,
+                                usec,
+                                p64[0],
+                                msg_id,
+                                offset,
+                                canfullmessage
+                                );
+    embObjPrintInfo(str);
+
+    return true;
+#else
     //At the moment, I only print the single message, without regarding if they are splitted or not
     char str[256];
+    char canmessage[7];
 
     //Set the CAN source
     static const char * sourcestrings[] =
@@ -1958,13 +2036,8 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
 
     uint16_t address                = EOMN_INFO_PROPERTIES_FLAGS_get_address(infobasic->properties.flags);
 
-    uint32_t sec = infobasic->timestamp / 1000000;
-    uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
-    uint32_t usec = infobasic->timestamp % 1000;
-
     uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
 
-    char canmessage[7];
     int can_mess_size = infobasic->properties.par16;
 
     memcpy(canmessage, &p64[2], can_mess_size-2);
@@ -1972,6 +2045,10 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
 
     int msg_id = (p64[1]&0xF0) >> 4;
     int offset =  p64[1]&0x0F;
+
+    uint32_t sec = infobasic->timestamp / 1000000;
+    uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
+    uint32_t usec = infobasic->timestamp % 1000;
 
     snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[code 0x%.2x,id %d,part %d] -> %s",
                                 this->boardNum,
@@ -1986,6 +2063,8 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
                                 canmessage
                                 );
     embObjPrintInfo(str);
+    return true;
+#endif
 }
 
 // - class infoOfRecvPkts

@@ -47,7 +47,6 @@
 #include "statExt.h"
 
 // embobjlib includes
-
 #include "hostTransceiver.hpp"
 #include "FeatureInterface.h"
 #include "IethResource.h"
@@ -95,7 +94,7 @@ typedef struct
     char                name[16];
 } ethFeature_t;
 
-
+class can_string_eth;
 
 namespace yarp{
     namespace dev{
@@ -212,6 +211,8 @@ private:
     eOmn_comm_status_t  boardCommStatus;
     uint16_t            usedNumberOfRegularROPs;
     uint16_t            usedSizeOfRegularROPframe;
+
+    can_string_eth*     c_string_handler[16];
 
 public:
     TheEthManager     *ethManager;          //!< Pointer to the Singleton handling the UDP socket
