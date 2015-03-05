@@ -2,7 +2,7 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-PREPARE_DEVICE(ecan TYPE EsdCan
+yarp_prepare_device(ecan TYPE yarp::dev::EsdCan
     INCLUDE EsdCan.h 
     WRAPPER controlboard)
 
@@ -21,7 +21,7 @@ IF (NOT SKIP_ecan)
     
     TARGET_LINK_LIBRARIES(esdCan ${ESDCANAPI_LIB} ${YARP_LIBRARIES})
     
-    icub_export_library(esdCan)
+    icub_export_plugin(esdCan)
     yarp_install(FILES esdcan.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
   ENDIF(NOT ESDCANAPI_FOUND)
 

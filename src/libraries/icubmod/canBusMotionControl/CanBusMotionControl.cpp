@@ -2230,6 +2230,7 @@ ImplementDebugInterface(this),
 ImplementPositionDirect(this),
 ImplementInteractionMode(this),
 ImplementMotorEncoders(this),
+ImplementMotor(this),
 _mutex(1),
 _done(0)
 {
@@ -2326,6 +2327,8 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementEncodersTimed::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementMotorEncoders::initialize(p._njoints, p._axisMap, p._rotToEncoder, tmpZeros);
+
+    ImplementMotor::initialize(p._njoints, p._axisMap);
 
     ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::
         initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
@@ -6079,6 +6082,13 @@ bool CanBusMotionControl::getNumberOfMotorEncodersRaw(int* m)
     return true;
 }
 
+bool CanBusMotionControl::getNumberOfMotorsRaw(int* m)
+{
+    CanBusResources& r = RES(system_resources);
+    *m=r.getJoints();
+    return true;
+}
+
 bool CanBusMotionControl::getMotorEncoderSpeedsRaw(double *v)
 {
     CanBusResources& r = RES(system_resources);
@@ -6187,12 +6197,56 @@ bool CanBusMotionControl::setMaxCurrentRaw(int axis, double v)
     return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_CURRENT_LIMIT, axis, S_32(v));
 }
 
+bool CanBusMotionControl::getMaxCurrentRaw(int axis, double* v)
+{
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    return NOT_YET_IMPLEMENTED("getMaxCurrentRaw");
+    //int tmp=0;
+    //v=0;
+    //bool ret = _readDWord (ICUBCANPROTO_POL_MC_CMD__GET_CURRENT_LIMIT, axis, tmp);
+    //if (ret) *v=tmp; 
+    //return ret;
+}
+
+
 bool CanBusMotionControl::setVelocityShiftRaw(int axis, double shift)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
 
     return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_VEL_SHIFT, axis, S_16(shift));
+}
+
+bool CanBusMotionControl::getTemperatureRaw(int m, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getTemperatureRaw");
+}
+
+bool CanBusMotionControl::getTemperaturesRaw(double *vals)
+{
+    return NOT_YET_IMPLEMENTED("getTemperaturesRaw");
+}
+
+bool CanBusMotionControl::getTemperatureLimitRaw(int m, double *temp)
+{
+    return NOT_YET_IMPLEMENTED("getTemperatureLimitRaw");
+}
+
+bool CanBusMotionControl::setTemperatureLimitRaw(int m, const double temp)
+{
+    return NOT_YET_IMPLEMENTED("setTemperatureLimitRaw");
+}
+
+bool CanBusMotionControl::getMotorOutputLimitRaw(int m, double *limit)
+{
+    return NOT_YET_IMPLEMENTED("getMotorOutputLimitRaw");
+}
+
+bool CanBusMotionControl::setMotorOutputLimitRaw(int m, const double limit)
+{
+    return NOT_YET_IMPLEMENTED("setMotorOutputLimitRaw");
 }
 
 bool CanBusMotionControl::setSpeedEstimatorShiftRaw(int axis, double jnt_speed, double jnt_acc, double mot_speed, double mot_acc)
@@ -6251,7 +6305,7 @@ bool CanBusMotionControl::doneRaw(int axis)
 
 bool CanBusMotionControl::setPrintFunction(int (*f) (const char *fmt, ...))
 {
-    yError("Calling obsolete funzion setPrintFunction\n");
+    yError("Calling obsolete function setPrintFunction\n");
     return true;
 }
 

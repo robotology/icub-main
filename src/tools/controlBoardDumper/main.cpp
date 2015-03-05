@@ -197,7 +197,7 @@
 
 YARP_DECLARE_DEVICES(icubmod)
 
-#define NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP 15
+#define NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP 16
 #define NUMBER_OF_AVAILABLE_DEBUG_DATA_TO_DUMP 3
 
 
@@ -313,6 +313,7 @@ int getDataToDump(Property p, std::string *listOfData, int n, bool *needDebug)
     availableDataToDump[12] = ConstString("getMotorEncoders");
     availableDataToDump[13] = ConstString("getMotorSpeeds");
     availableDataToDump[14] = ConstString("getMotorAccelerations");
+    availableDataToDump[15] = ConstString("getTemperature");
 
     // debug
     availableDebugDataToDump[0] = ConstString("getRotorPositions");
@@ -388,6 +389,9 @@ private:
     GetSpeeds myGetSpeeds;
     GetAccs myGetAccs;
     GetEncs myGetEncs;
+    //motor
+    IMotor *imot;
+    GetTemps myGetTemps;
     //motor encoders
     IMotorEncoders *imotenc;
     GetMotSpeeds myGetMotorSpeeds;
@@ -852,6 +856,24 @@ public:
                             return false;
                         }
                     }
+                else if (dataToDump[i] == "getTemperatures")
+                {
+                    if (ddBoard.view(imotenc))
+                        {
+                            yInfo("Initializing a getTemps thread\n");
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
+                            myDumper[i].setThetaMap(thetaMap, nJoints);
+                            myGetTemps.setInterface(imot);
+                            if (ddBoard.view(istmp))
+                            {
+                                yInfo("getEncoders::The time stamp initalization interfaces was successfull! \n");
+                                myGetTemps.setStamp(istmp);
+                            }
+                            else
+                                yError("Problems getting the time stamp interfaces \n");
+                            myDumper[i].setGetter(&myGetTemps);
+                        }
+                }
                 else if (dataToDump[i] == "getMotorEncoders")
                 {
                     if (ddBoard.view(imotenc))
@@ -979,7 +1001,7 @@ int main(int argc, char *argv[])
     if (p.check("dataToDumpAll"))
     {
         Value v;
-      v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors getPosPidReferences getTrqPidReferences getMotorEncoders getMotorEncoderSpeeds getMotorEncoderAccelerations getControlModes getInteractionModes)");
+      v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors getPosPidReferences getTrqPidReferences getMotorEncoders getMotorEncoderSpeeds getMotorEncoderAccelerations getControlModes getInteractionModes getTemperatures)");
     //    v.fromString("(getControlModes getInteractionModes)");
         
         p.put("dataToDump", v);
@@ -1006,6 +1028,7 @@ int main(int argc, char *argv[])
         printf (" getMotorEncoderAccelerations  (motor encoder acceleration\n");
         printf (" getControlModes         (joint control mode)\n");
         printf (" getInteractionModes     (joint interaction mode)\n");
+        printf (" getTemperatures         (motor temperatures)\n");
         printf ("\n3) controlBoardDumper --robot icub --part left_arm --rate 10  --joints \"(0 1 2)\" --dataToDumpAll\n");
         printf ("   All data from the controlBoarWrapper will be dumped, including data from the debugInterface (getRotorxxx).\n");
         printf ("\n --logToFile can be used to create log files storing the data\n\n");

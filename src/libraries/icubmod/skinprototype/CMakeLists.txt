@@ -2,7 +2,7 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-PREPARE_DEVICE(skinprototype TYPE SkinPrototype INCLUDE skinprototype.h WRAPPER skinWrapper)
+yarp_prepare_device(skinprototype TYPE SkinPrototype INCLUDE skinprototype.h WRAPPER skinWrapper)
 
 if (NOT SKIP_skinprototype)
 
@@ -11,7 +11,7 @@ if (NOT SKIP_skinprototype)
     yarp_add_plugin(skinprototype skinprototype.h skinprototype.cpp)
     target_link_libraries(skinprototype ${YARP_LIBRARIES})
 
-    icub_export_library(skinprototype)
+    icub_export_plugin(skinprototype)
     yarp_install(FILES skinprototype.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 
 endif (NOT SKIP_skinprototype)

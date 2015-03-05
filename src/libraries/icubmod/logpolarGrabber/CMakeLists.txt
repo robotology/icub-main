@@ -2,7 +2,7 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-PREPARE_DEVICE(logpolargrabber TYPE ServerLogpolarFrameGrabber
+yarp_prepare_device(logpolargrabber TYPE yarp::dev::ServerLogpolarFrameGrabber
     INCLUDE yarp/dev/ServerLogpolarFrameGrabber.h 
     WRAPPER logpolargrabber)
 
@@ -15,6 +15,6 @@ IF(NOT SKIP_logpolargrabber)
                                         ${iCubDev_LIBRARIES} 
                                         ${YARP_LIBRARIES})
                                         
-    icub_export_library(logpolargrabber)
+    icub_export_plugin(logpolargrabber)
     yarp_install(FILES logpolargrabber.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 ENDIF(NOT SKIP_logpolargrabber)

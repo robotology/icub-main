@@ -189,6 +189,8 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IMotorEncodersRaw,
     public ImplementEncodersTimed,
     public ImplementMotorEncoders,
+    public IMotorRaw,
+    public ImplementMotor,
     public IPositionControl2Raw,
     public IVelocityControl2Raw,
     public IControlMode2Raw,
@@ -538,6 +540,7 @@ public:
     virtual bool getCurrentsRaw(double *vals);
     virtual bool getCurrentRaw(int j, double *val);
     virtual bool setMaxCurrentRaw(int j, double val);
+    virtual bool getMaxCurrentRaw(int j, double *val);
     virtual bool getAmpStatusRaw(int *st);
     virtual bool getAmpStatusRaw(int j, int *st);
     /////////////// END AMPLIFIER INTERFACE
@@ -678,6 +681,15 @@ public:
     bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
     bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
 
+    // IMotor interface
+    bool getNumberOfMotorsRaw(int * num);
+    bool getTemperatureRaw(int m, double* val);
+    bool getTemperaturesRaw(double *vals);
+    bool getTemperatureLimitRaw(int m, double *temp);
+    bool setTemperatureLimitRaw(int m, const double temp);
+    bool getMotorOutputLimitRaw(int m, double *limit);
+    bool setMotorOutputLimitRaw(int m, const double limit);
+    
     // OPENLOOP interface
     bool setRefOutputRaw(int j, double v);
     bool setRefOutputsRaw(const double *v);

@@ -5,7 +5,7 @@
 SET(PROJECTNAME skinWrapper)
 PROJECT(${PROJECTNAME})
 
-PREPARE_DEVICE(${PROJECTNAME} TYPE ${PROJECTNAME} INCLUDE ${PROJECTNAME}.h)
+yarp_prepare_device(${PROJECTNAME} TYPE skinWrapper INCLUDE ${PROJECTNAME}.h)
 
 IF (NOT SKIP_${PROJECTNAME})
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/libraries/icubmod/analogServer)
@@ -13,6 +13,6 @@ IF (NOT SKIP_${PROJECTNAME})
 
   yarp_add_plugin(${PROJECTNAME} ${PROJECTNAME}.cpp ${PROJECTNAME}.h ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/analogServer/analogServer.cpp ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/analogServer/analogServer.h)
   TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES} ${ACE_LIBRARIES})
-  icub_export_library(${PROJECTNAME})
+  icub_export_plugin(${PROJECTNAME})
   yarp_install(FILES skinWrapper.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 ENDIF (NOT SKIP_${PROJECTNAME})

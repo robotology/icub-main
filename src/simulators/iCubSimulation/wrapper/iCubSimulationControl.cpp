@@ -1064,6 +1064,11 @@ bool iCubSimulationControl::setMaxCurrentRaw(int axis, double v)
     return NOT_YET_IMPLEMENTED("setMaxCurrentRaw");
 }
 
+bool iCubSimulationControl::getMaxCurrentRaw(int axis, double* v)
+{
+    return NOT_YET_IMPLEMENTED("getMaxCurrentRaw");
+}
+
 bool iCubSimulationControl::calibrateRaw(int axis, double p)
 {
     return NOT_YET_IMPLEMENTED("calibrateRaw");

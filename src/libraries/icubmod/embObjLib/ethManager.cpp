@@ -169,6 +169,8 @@ int TheEthManager::releaseResource(ethFeature_t &resource)
     removeLUTelement(resource);
 
     lock();
+    it = EMS_list.begin();
+    itend = EMS_list.end();
     while(it != itend)
     {
         tmpEthRes = (*it);
