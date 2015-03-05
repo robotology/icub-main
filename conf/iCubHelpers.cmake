@@ -200,11 +200,16 @@ ENDMACRO(icub_export_library)
 
 
 macro(icub_export_plugin target)
-    yarp_install(TARGETS ${target}
-                 EXPORT icub-targets
-                 COMPONENT Runtime
-                 LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
-                 ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR})
+    get_target_property(_type ${target} TYPE)
+    if("${_type}" STREQUAL "MODULE_LIBRARY")
+        yarp_install(TARGETS ${target}
+                     EXPORT icub-targets
+                     COMPONENT Runtime
+                     LIBRARY DESTINATION ${ICUB_DYNAMIC_PLUGINS_INSTALL_DIR}
+                     ARCHIVE DESTINATION ${ICUB_STATIC_PLUGINS_INSTALL_DIR})
+    else()
+        icub_export_library(${target})
+    endif()
 endmacro()
 
 
