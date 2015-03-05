@@ -123,45 +123,15 @@ public:
     */
         inline int add_string(CanFrame* can_packet);
 
-        /**
-    * Prints a string buffer. The buffer can be already completed (all parts of the can
-        * string have been already received or not). If the string contains a "hole" (a can
-        * packet is not arrived yet), the string will be printed till the first missing packet.
-    * @param buffer_num is the number of the buffer.  0 <= buffer_num <= MAX_STRINGS
-    * @return the content of the buffer.
-    */
-        inline char* print(int buffer_num, const char* canDevName, int netNum);
-
-        /**
-    * Resets the string buffer
-    * @param cbuffer_num is the number of the buffer.  0 <= buffer_num <= MAX_STRINGS
-    */
-        inline void  clear_string(int buffer_num);
-
         inline char* get_string(int buffer_num);
 };
 
 can_string_eth::can_string_eth()
 {
-        int j=0;
-        for (j=0; j<MAX_STRINGS; j++)	clear_string(j);
 }
 
 can_string_eth::~can_string_eth()
 {
-}
-
-void can_string_eth::clear_string(int buffer_num)
-{
-        if (buffer_num >= MAX_STRINGS) return ;
-
-        for (int i = 0; i < 256; i++) data[buffer_num].text_buffer[i]=0;
-        data[buffer_num].complete=false;
-        data[buffer_num].maybe_last_part=false;
-        data[buffer_num].expected_length = 0;
-        data[buffer_num].board_id=0;
-        data[buffer_num].current_length = 0;
-
 }
 
 int can_string_eth::add_string(CanFrame* can_packet)
@@ -174,14 +144,15 @@ int can_string_eth::add_string(CanFrame* can_packet)
 
     id=can_packet->getId();
     size=can_packet->getSize();
-    char *candata=(char*)can_packet->getData();
+    uint64_t candatabytes = can_packet->getData();
+    char *candata=(char*)&candatabytes;
 
     string_id = (candata[1]>>4);
     offset = (candata[1]&0x0F);
     data[string_id].board_id = char(id>>4&0xf);
     if (string_id>=MAX_STRINGS)
     {
-        yError("msg from board %d contains an ERROR! (>MAX_STRINGS)\n",data[string_id ].board_id);
+        yError("CANPrint msg from board %d contains an ERROR! (>MAX_STRINGS)\n",data[string_id ].board_id);
         return -1;
     }
     for (j=0 ; j<size-2; j++)
@@ -198,7 +169,7 @@ int can_string_eth::add_string(CanFrame* can_packet)
         data[string_id].current_length=strlen(data[string_id].text_buffer);
 
         if (data[string_id].expected_length==data[string_id].current_length)
-        data[string_id].complete = true; //check me
+            data[string_id].complete = true; //check me
     }
 /*
         if (data[string_id].complete)
@@ -208,20 +179,16 @@ int can_string_eth::add_string(CanFrame* can_packet)
         }
 */
         if (data[string_id].complete) return string_id;
-        else return -1;
-}
-
-char* can_string_eth::print(int buffer_num, const char* canDevName, int netNum)
-{
-        if (buffer_num>=MAX_STRINGS) return 0;
-
-        yDebug("%s [%d] msg from board %d: %s \n", canDevName, netNum, data[buffer_num].board_id , data[buffer_num].text_buffer);
-
-        return data[buffer_num].text_buffer;
+            else return -1;
 }
 
 char* can_string_eth::get_string(int buffer_num)
 {
+    if ((buffer_num < 0) || (buffer_num > MAX_STRINGS))
+    {
+       yError("Can't get CANPrint msg from board %d (>MAX_STRINGS)\n",data[buffer_num].board_id);
+       return NULL;
+    }
     return data[buffer_num].text_buffer;
 }
 

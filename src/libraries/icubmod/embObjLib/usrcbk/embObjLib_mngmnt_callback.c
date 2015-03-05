@@ -165,7 +165,8 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
     if (infobasic->properties.code == eoerror_value_SYS_canservices_canprint)
     {
 #if defined(CAN_PRINT_PARSING)
-    /*
+     // FIRST VERSION
+     /*
         static char can_message[11][256];
         //End of the message, I can print
         if(p64[0] == 0x86)

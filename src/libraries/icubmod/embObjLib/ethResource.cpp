@@ -89,7 +89,10 @@ ethResources::~ethResources()
     for(int i=0; i<16; i++)
     {
         if (c_string_handler[i] != NULL)
+        {
             delete c_string_handler[i];
+            c_string_handler[i] = NULL;
+        }
     }
 }
 
@@ -1995,28 +1998,24 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
         memcpy(canfullmessage, c_string_handler[address]->get_string(ret), sizeof(canfullmessage));
         canfullmessage[21] = 0;
         c_string_handler[address]->clear_string(ret);
-        //Delete can_msg?
-        //delete[] can_msg;
+        uint32_t sec = infobasic->timestamp / 1000000;
+        uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
+        uint32_t usec = infobasic->timestamp % 1000;
+
+        snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[code 0x%.2x,id %d,part %d] -> %s",
+                                    this->boardNum,
+                                    str_source,
+                                    address,
+                                    sec,
+                                    msec,
+                                    usec,
+                                    p64[0],
+                                    msg_id,
+                                    offset,
+                                    canfullmessage
+                                    );
+        embObjPrintInfo(str);
     }
-
-    uint32_t sec = infobasic->timestamp / 1000000;
-    uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
-    uint32_t usec = infobasic->timestamp % 1000;
-
-    snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[code 0x%.2x,id %d,part %d] -> %s",
-                                this->boardNum,
-                                str_source,
-                                address,
-                                sec,
-                                msec,
-                                usec,
-                                p64[0],
-                                msg_id,
-                                offset,
-                                canfullmessage
-                                );
-    embObjPrintInfo(str);
-
     return true;
 #else
     //At the moment, I only print the single message, without regarding if they are splitted or not
