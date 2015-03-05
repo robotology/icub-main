@@ -1995,7 +1995,8 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
     // String finished?
     if (ret != -1)
     {
-        memcpy(canfullmessage, c_string_handler[address]->get_string(ret), sizeof(canfullmessage));
+        char* themsg = c_string_handler[address]->get_string(ret);
+        memcpy(canfullmessage, themsg, sizeof(themsg));
         canfullmessage[21] = 0;
         c_string_handler[address]->clear_string(ret);
         uint32_t sec = infobasic->timestamp / 1000000;
@@ -2012,7 +2013,7 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
                                     p64[0],
                                     msg_id,
                                     offset,
-                                    canfullmessage
+                                    themsg
                                     );
         embObjPrintInfo(str);
     }

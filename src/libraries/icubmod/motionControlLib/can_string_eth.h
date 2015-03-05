@@ -147,8 +147,10 @@ int can_string_eth::add_string(CanFrame* can_packet)
     uint64_t candatabytes = can_packet->getData();
     char *candata=(char*)&candatabytes;
 
-    string_id = (candata[1]>>4);
-    offset = (candata[1]&0x0F);
+    string_id = (candata[1]&0xF0)>>4;
+    offset    = (candata[1]&0x0F);
+    data[string_id].maybe_last_part = false;
+    data[string_id].complete = false;
     data[string_id].board_id = char(id>>4&0xf);
     if (string_id>=MAX_STRINGS)
     {
@@ -178,8 +180,8 @@ int can_string_eth::add_string(CanFrame* can_packet)
                 clear_string(string_id);
         }
 */
-        if (data[string_id].complete) return string_id;
-            else return -1;
+    if (data[string_id].complete) return string_id;
+    else return -1;
 }
 
 char* can_string_eth::get_string(int buffer_num)
