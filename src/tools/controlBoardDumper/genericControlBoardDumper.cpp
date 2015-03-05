@@ -346,6 +346,27 @@ bool GetMotEncs::getData(double *e)
     }
 }
 
+
+void GetTemps::setInterface(IMotor *i)
+{
+    imot = i;
+}
+
+bool GetTemps::getData(double *temp)
+{
+  if (imot)
+    {
+      while(!imot->getTemperatures(temp))
+        fprintf(stderr, "Getting bad motortemperatures! \n");
+      return 1;
+    }
+  else
+    {
+      fprintf(stderr, "Interface is not ready! \n");
+      return 0;
+    }
+}
+
 void GetMotSpeeds::setInterface(IMotorEncoders *i)
 {
     imotencs = i;

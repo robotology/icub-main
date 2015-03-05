@@ -38,6 +38,15 @@ public:
   
 };
 
+class GetTemps : public GetData
+{
+public:
+  void setInterface (IMotor *);
+  virtual bool getData(double *);
+
+  IMotor *imot;
+};
+
 class GetMotEncs : public GetData
 {
 public:

@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
     }
 
     Network::init();
-	Time::turboBoost();
+    Time::turboBoost();
     
     std::string name;
     Value& v = options.find("robot");
@@ -90,17 +90,17 @@ int main(int argc, char *argv[])
         options.put("device", "remote_controlboard");
     }
     if (!options.check("local", val)) {
-		name="/"+std::string(v.asString().c_str())+"/"+std::string(part.asString().c_str())+"/simpleclient";
+        name="/"+std::string(v.asString().c_str())+"/"+std::string(part.asString().c_str())+"/simpleclient";
         //sprintf(&name[0], "/%s/%s/client", v.asString().c_str(), part.asString().c_str());
         options.put("local", name.c_str());
     }
     if (!options.check("remote", val)) {
         name="/"+std::string(v.asString().c_str())+"/"+std::string(part.asString().c_str());    
-		//sprintf(&name[0], "/%s/%s", v.asString().c_str(), part.asString().c_str());
+        //sprintf(&name[0], "/%s/%s", v.asString().c_str(), part.asString().c_str());
         options.put("remote", name.c_str());
     }
 
-	fprintf(stderr, "%s", options.toString().c_str());
+    fprintf(stderr, "%s", options.toString().c_str());
 
     
     // create a device 
@@ -121,9 +121,10 @@ int main(int argc, char *argv[])
     IControlLimits *lim=0;
 //    IControlMode *icm=0;
     IControlMode2 *iMode2=0;
+    IMotor *imot=0;
     ITorqueControl *itorque=0;
     IOpenLoopControl *iopenloop=0;
-	IImpedanceControl *iimp=0;
+    IImpedanceControl *iimp=0;
     IInteractionMode *iInteract=0;
     IMotorEncoders *iMotEnc=0;
 
@@ -137,7 +138,7 @@ int main(int argc, char *argv[])
 //    ok &= dd.view(icm);
     ok &= dd.view(itorque);
     ok &= dd.view(iopenloop);
-	ok &= dd.view(iimp);
+    ok &= dd.view(iimp);
     ok &= dd.view(posDir);
     ok &= dd.view(iMode2);
     ok &= dd.view(iInteract);
@@ -149,7 +150,11 @@ int main(int argc, char *argv[])
 
     ok &=dd.view(iMotEnc); 
     if (!ok) {
-        yWarning("Problems acquiring optional interfaces\n");
+        yWarning("Problems acquiring optional interface IMotorEncoders\n");
+    }
+    ok &=dd.view(imot); 
+    if (!ok) {
+        yWarning("Problems acquiring optional interface iMotor\n");
     }
 
     pos->getAxes(&jnts);
@@ -184,13 +189,13 @@ int main(int argc, char *argv[])
             printf("-------------------\n\n");
 
             printf("IOpenLoop:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_IOPENLOOP).c_str());
-            printf("	[set] [%s] <int> <float>\n", Vocab::decode(VOCAB_OUTPUT).c_str());
-            printf("	[get] [%s] <int>\n", Vocab::decode(VOCAB_OUTPUT).c_str());
-            printf("	[get] [%s]\n", Vocab::decode(VOCAB_OUTPUTS).c_str());
+            printf("    [set] [%s] <int> <float>\n", Vocab::decode(VOCAB_OUTPUT).c_str());
+            printf("    [get] [%s] <int>\n", Vocab::decode(VOCAB_OUTPUT).c_str());
+            printf("    [get] [%s]\n", Vocab::decode(VOCAB_OUTPUTS).c_str());
             printf("\n");
 
             printf("IControlMode:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_ICONTROLMODE).c_str());
-            printf("	[set] [%s]|[%s]|[%s]|[%s]|[%s]|[%s]|[%s]|[%s][%s]|[%s]\n",
+            printf("    [set] [%s]|[%s]|[%s]|[%s]|[%s]|[%s]|[%s]|[%s][%s]|[%s]\n",
                     Vocab::decode(VOCAB_CM_POSITION).c_str(),
                     Vocab::decode(VOCAB_CM_POSITION_DIRECT).c_str(),
                     Vocab::decode(VOCAB_CM_VELOCITY).c_str(),
@@ -201,75 +206,89 @@ int main(int argc, char *argv[])
                     Vocab::decode(VOCAB_CM_FORCE_IDLE).c_str(),
                     Vocab::decode(VOCAB_CM_IMPEDANCE_POS).c_str(),
                     Vocab::decode(VOCAB_CM_IMPEDANCE_VEL).c_str());
-            printf("	[get] [%s] <int>\n", Vocab::decode(VOCAB_CM_CONTROL_MODE).c_str());
+            printf("    [get] [%s] <int>\n", Vocab::decode(VOCAB_CM_CONTROL_MODE).c_str());
             printf("\n");
 
             printf("ITorqueControl:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_TORQUE).c_str());
-            printf("	[get] [%s] <int> to read the measured torque for a single axis\n",                  Vocab::decode(VOCAB_TRQ).c_str());
-            printf("	[get] [%s]  to read the measured torque for all axes\n",                      Vocab::decode(VOCAB_TRQS).c_str());
-            printf("	[set] [%s] <int> <float> to set the reference torque for a single axis\n",          Vocab::decode(VOCAB_REF).c_str());
-            printf("	[set] [%s] <float list> to set the reference torque for all axes\n",        Vocab::decode(VOCAB_REFS).c_str());
-            printf("	[get] [%s] <int> to read the reference torque for a single axis\n",                  Vocab::decode(VOCAB_REF).c_str());
-            printf("	[get] [%s] to read the reference torque for all axes\n",                      Vocab::decode(VOCAB_REFS).c_str());
+            printf("    [get] [%s] <int> to read the measured torque for a single axis\n",                  Vocab::decode(VOCAB_TRQ).c_str());
+            printf("    [get] [%s]  to read the measured torque for all axes\n",                      Vocab::decode(VOCAB_TRQS).c_str());
+            printf("    [set] [%s] <int> <float> to set the reference torque for a single axis\n",          Vocab::decode(VOCAB_REF).c_str());
+            printf("    [set] [%s] <float list> to set the reference torque for all axes\n",        Vocab::decode(VOCAB_REFS).c_str());
+            printf("    [get] [%s] <int> to read the reference torque for a single axis\n",                  Vocab::decode(VOCAB_REF).c_str());
+            printf("    [get] [%s] to read the reference torque for all axes\n",                      Vocab::decode(VOCAB_REFS).c_str());
             printf("\n");
 
             printf("IImpedanceControl:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_IMPEDANCE).c_str());
-            printf("	[set] [%s] <int> <float> <float> \n", Vocab::decode(VOCAB_IMP_PARAM).c_str());
-            printf("	[set] [%s] <int> <float>\n\n",  Vocab::decode(VOCAB_IMP_OFFSET).c_str());
-            printf("	[get] [%s] <int>\n", Vocab::decode(VOCAB_IMP_PARAM).c_str());
-            printf("	[get] [%s] <int>\n", Vocab::decode(VOCAB_IMP_OFFSET).c_str());
+            printf("    [set] [%s] <int> <float> <float> \n", Vocab::decode(VOCAB_IMP_PARAM).c_str());
+            printf("    [set] [%s] <int> <float>\n\n",  Vocab::decode(VOCAB_IMP_OFFSET).c_str());
+            printf("    [get] [%s] <int>\n", Vocab::decode(VOCAB_IMP_PARAM).c_str());
+            printf("    [get] [%s] <int>\n", Vocab::decode(VOCAB_IMP_OFFSET).c_str());
             printf("\n");
 
             printf("IInteractionMode:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_INTERFACE_INTERACTION_MODE).c_str());
-            printf("	[set] [%s]|[%s] <int>\n", Vocab::decode(VOCAB_IM_STIFF).c_str(), Vocab::decode(VOCAB_IM_COMPLIANT).c_str());
-            printf("	[get] [%s] <int>\n", Vocab::decode(VOCAB_INTERACTION_MODE).c_str());
-            printf("	[get] [%s] \n", Vocab::decode(VOCAB_INTERACTION_MODES).c_str());
+            printf("    [set] [%s]|[%s] <int>\n", Vocab::decode(VOCAB_IM_STIFF).c_str(), Vocab::decode(VOCAB_IM_COMPLIANT).c_str());
+            printf("    [get] [%s] <int>\n", Vocab::decode(VOCAB_INTERACTION_MODE).c_str());
+            printf("    [get] [%s] \n", Vocab::decode(VOCAB_INTERACTION_MODES).c_str());
             printf("\n");
 
-            printf("IEncoder Interfaces:\n");
+            printf("IMotor Interfaces:\n");
             printf("type [get] and one of the following:\n");
-            printf("	[%s] <int> to read the cpr value for a single motor\n", Vocab::decode(VOCAB_MOTOR_CPR).c_str());
-            printf("	[%s] to read get the number of motor encoders\n", Vocab::decode(VOCAB_MOTOR_ENCODER_NUMBER).c_str());
-            printf("	[%s] to read the motor encoder positions for all motors\n", Vocab::decode(VOCAB_MOTOR_ENCODERS).c_str());
-            printf("	[%s] to read the motor encoder speeds for all motors\n", Vocab::decode(VOCAB_MOTOR_ENCODER_SPEEDS).c_str());
-            printf("	[%s] to read the motor encoder accelerations for all motors\n", Vocab::decode(VOCAB_MOTOR_ENCODER_ACCELERATIONS).c_str());
+            printf("    [%s] to read get the number of motors\n", Vocab::decode(VOCAB_MOTORS_NUMBER).c_str());
+            printf("    [%s] <int> to read the temperature value for a single motor\n", Vocab::decode(VOCAB_TEMPERATURE).c_str());
+            printf("    [%s] <int> to read the temperatures of all motors\n", Vocab::decode(VOCAB_TEMPERATURES).c_str());
+            printf("    [%s] <int> to read the temperature limit for a single motor\n", Vocab::decode(VOCAB_TEMPERATURE_LIMIT).c_str());
+            printf("    [%s] <int> to read the output limit for a single motor\n", Vocab::decode(VOCAB_MOTOR_OUTPUT_LIMIT).c_str());
+            printf("type [set] and one of the following:\n");
+            printf("    [%s] <int> to set the temperature limit for a single motor\n", Vocab::decode(VOCAB_TEMPERATURE_LIMIT).c_str());
+            printf("    [%s] <int> to set the output limit for a single motor\n", Vocab::decode(VOCAB_MOTOR_OUTPUT_LIMIT).c_str());
+            printf("\n");
+
+            printf("IMotorEncoder Interfaces:\n");
+            printf("type [get] and one of the following:\n");
+            printf("    [%s] <int> to read the cpr value for a single motor\n", Vocab::decode(VOCAB_MOTOR_CPR).c_str());
+            printf("    [%s] to read get the number of motor encoders\n", Vocab::decode(VOCAB_MOTOR_ENCODER_NUMBER).c_str());
+            printf("    [%s] to read the motor encoder positions for all motors\n", Vocab::decode(VOCAB_MOTOR_ENCODERS).c_str());
+            printf("    [%s] to read the motor encoder speeds for all motors\n", Vocab::decode(VOCAB_MOTOR_ENCODER_SPEEDS).c_str());
+            printf("    [%s] to read the motor encoder accelerations for all motors\n", Vocab::decode(VOCAB_MOTOR_ENCODER_ACCELERATIONS).c_str());
             printf("\n");
 
             printf("Standard Interfaces:\n");
             printf("type [get] and one of the following:\n");
-            printf("	[%s] to read the number of controlled axes\n", Vocab::decode(VOCAB_AXES).c_str());
-            printf("	[%s] to read the encoder value for all axes\n", Vocab::decode(VOCAB_ENCODERS).c_str());
-            printf("	[%s] to read the PID values for all axes\n", Vocab::decode(VOCAB_PIDS).c_str());
-            printf("	[%s] <int> to read the PID values for a single axis\n", Vocab::decode(VOCAB_PID).c_str());
-            printf("	[%s] <int> to read the limit values for a single axis\n", Vocab::decode(VOCAB_LIMITS).c_str());
-            printf("	[%s] to read the PID error for all axes\n", Vocab::decode(VOCAB_ERRS).c_str());
-            printf("	[%s] to read the PID output for all axes\n", Vocab::decode(VOCAB_OUTPUTS).c_str());
-            printf("	[%s] to read the reference position for all axes\n", Vocab::decode(VOCAB_REFERENCES).c_str());
-            printf("	[%s] <int> to read the reference position for a single axis\n", Vocab::decode(VOCAB_REFERENCE).c_str());
-            printf("	[%s] to read the reference speed for all axes\n", Vocab::decode(VOCAB_REF_SPEEDS).c_str());
-            printf("	[%s] <int> to read the reference speed for a single axis\n", Vocab::decode(VOCAB_REF_SPEED).c_str());
-            printf("	[%s] to read the reference acceleration for all axes\n", Vocab::decode(VOCAB_REF_ACCELERATIONS).c_str());
-            printf("	[%s] <int> to read the reference acceleration for a single axis\n", Vocab::decode(VOCAB_REF_ACCELERATION).c_str());
-            printf("	[%s] to read the current consumption for all axes\n", Vocab::decode(VOCAB_AMP_CURRENTS).c_str());
+            printf("    [%s] to read the number of controlled axes\n", Vocab::decode(VOCAB_AXES).c_str());
+            printf("    [%s] to read the encoder value for all axes\n", Vocab::decode(VOCAB_ENCODERS).c_str());
+            printf("    [%s] to read the PID values for all axes\n", Vocab::decode(VOCAB_PIDS).c_str());
+            printf("    [%s] <int> to read the PID values for a single axis\n", Vocab::decode(VOCAB_PID).c_str());
+            printf("    [%s] <int> to read the limit values for a single axis\n", Vocab::decode(VOCAB_LIMITS).c_str());
+            printf("    [%s] to read the PID error for all axes\n", Vocab::decode(VOCAB_ERRS).c_str());
+            printf("    [%s] to read the PID output for all axes\n", Vocab::decode(VOCAB_OUTPUTS).c_str());
+            printf("    [%s] to read the reference position for all axes\n", Vocab::decode(VOCAB_REFERENCES).c_str());
+            printf("    [%s] <int> to read the reference position for a single axis\n", Vocab::decode(VOCAB_REFERENCE).c_str());
+            printf("    [%s] to read the reference speed for all axes\n", Vocab::decode(VOCAB_REF_SPEEDS).c_str());
+            printf("    [%s] <int> to read the reference speed for a single axis\n", Vocab::decode(VOCAB_REF_SPEED).c_str());
+            printf("    [%s] to read the reference acceleration for all axes\n", Vocab::decode(VOCAB_REF_ACCELERATIONS).c_str());
+            printf("    [%s] <int> to read the reference acceleration for a single axis\n", Vocab::decode(VOCAB_REF_ACCELERATION).c_str());
+            printf("    [%s] to read the current consumption for all axes\n", Vocab::decode(VOCAB_AMP_CURRENTS).c_str());
+            printf("    [%s] <int> to get the current limit of single motor\n", Vocab::decode(VOCAB_AMP_MAXCURRENT).c_str());
             printf("\n");
 
             printf("type [set] and one of the following:\n");
-            printf("	[%s] <int> <double> to move a single axis\n", Vocab::decode(VOCAB_POSITION_MOVE).c_str());
-            printf("	[%s] <int> <double> to accelerate a single axis to a given speed\n", Vocab::decode(VOCAB_VELOCITY_MOVE).c_str());            
-            printf("	[%s] <int> <double> to set the reference speed for a single axis\n", Vocab::decode(VOCAB_REF_SPEED).c_str());
-            printf("	[%s] <int> <double> to set the reference acceleration for a single axis\n", Vocab::decode(VOCAB_REF_ACCELERATION).c_str());
-            printf("	[%s] <list> to move multiple axes\n", Vocab::decode(VOCAB_POSITION_MOVES).c_str());
-            printf("	[%s] <list> to accelerate multiple axes to a given speed\n", Vocab::decode(VOCAB_VELOCITY_MOVES).c_str());
-            printf("	[%s] <list> to set the reference speed for all axes\n", Vocab::decode(VOCAB_REF_SPEEDS).c_str());
-            printf("	[%s] <list> to set the reference acceleration for all axes\n", Vocab::decode(VOCAB_REF_ACCELERATIONS).c_str());          
-            printf("	[%s] <int> to stop a single axis\n", Vocab::decode(VOCAB_STOP).c_str());
-            printf("	[%s] <int> to stop all axes\n", Vocab::decode(VOCAB_STOPS).c_str());
-            printf("	[%s] <int> <list> to set the PID values for a single axis\n", Vocab::decode(VOCAB_PID).c_str());
-            printf("	[%s] <int> <list> to set the limits for a single axis\n", Vocab::decode(VOCAB_LIMITS).c_str());
-            printf("	[%s] <int> to disable the PID control for a single axis\n", Vocab::decode(VOCAB_DISABLE).c_str());
-            printf("	[%s] <int> to enable the PID control for a single axis\n", Vocab::decode(VOCAB_ENABLE).c_str());
-            printf("	[%s] <int> <double> to set the encoder value for a single axis\n", Vocab::decode(VOCAB_ENCODER).c_str());
-            printf("	[%s] <list> to set the encoder value for all axes\n", Vocab::decode(VOCAB_ENCODERS).c_str());
+            printf("    [%s] <int> <double> to move a single axis\n", Vocab::decode(VOCAB_POSITION_MOVE).c_str());
+            printf("    [%s] <int> <double> to accelerate a single axis to a given speed\n", Vocab::decode(VOCAB_VELOCITY_MOVE).c_str());            
+            printf("    [%s] <int> <double> to set the reference speed for a single axis\n", Vocab::decode(VOCAB_REF_SPEED).c_str());
+            printf("    [%s] <int> <double> to set the reference acceleration for a single axis\n", Vocab::decode(VOCAB_REF_ACCELERATION).c_str());
+            printf("    [%s] <list> to move multiple axes\n", Vocab::decode(VOCAB_POSITION_MOVES).c_str());
+            printf("    [%s] <list> to accelerate multiple axes to a given speed\n", Vocab::decode(VOCAB_VELOCITY_MOVES).c_str());
+            printf("    [%s] <list> to set the reference speed for all axes\n", Vocab::decode(VOCAB_REF_SPEEDS).c_str());
+            printf("    [%s] <list> to set the reference acceleration for all axes\n", Vocab::decode(VOCAB_REF_ACCELERATIONS).c_str());          
+            printf("    [%s] <int> to stop a single axis\n", Vocab::decode(VOCAB_STOP).c_str());
+            printf("    [%s] <int> to stop all axes\n", Vocab::decode(VOCAB_STOPS).c_str());
+            printf("    [%s] <int> <list> to set the PID values for a single axis\n", Vocab::decode(VOCAB_PID).c_str());
+            printf("    [%s] <int> <list> to set the limits for a single axis\n", Vocab::decode(VOCAB_LIMITS).c_str());
+            printf("    [%s] <int> to disable the PID control for a single axis\n", Vocab::decode(VOCAB_DISABLE).c_str());
+            printf("    [%s] <int> to enable the PID control for a single axis\n", Vocab::decode(VOCAB_ENABLE).c_str());
+            printf("    [%s] <int> <double> to set the encoder value for a single axis\n", Vocab::decode(VOCAB_ENCODER).c_str());
+            printf("    [%s] <list> to set the encoder value for all axes\n", Vocab::decode(VOCAB_ENCODERS).c_str());
+            printf("    [%s] <int> <double> to set the current limit for single motor\n", Vocab::decode(VOCAB_AMP_MAXCURRENT).c_str());
             printf("\n");
 
             printf("NOTES: - A list is a sequence of numbers in parenthesis, e.g. (10 2 1 10)\n");
@@ -328,6 +347,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_MOTOR_ENCODERS: {
+                    if (iMotEnc==0) {printf ("unavailable interface\n"); break;}
                     iMotEnc->getMotorEncoders(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_MOTOR_ENCODERS).c_str());
                     for(i = 0; i < jnts; i++)
@@ -337,6 +357,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_MOTOR_ENCODER_SPEEDS: {
+                    if (iMotEnc==0) {printf ("unavailable interface\n"); break;}
                     iMotEnc->getMotorEncoderSpeeds(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_MOTOR_ENCODER_SPEEDS).c_str());
                     for(i = 0; i < jnts; i++)
@@ -346,6 +367,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_MOTOR_ENCODER_ACCELERATIONS: {
+                    if (iMotEnc==0) {printf ("unavailable interface\n"); break;}
                     iMotEnc->getMotorEncoderAccelerations(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_MOTOR_ENCODER_ACCELERATIONS).c_str());
                     for(i = 0; i < jnts; i++)
@@ -356,6 +378,7 @@ int main(int argc, char *argv[])
 
                 case VOCAB_MOTOR_CPR:
                 {
+                    if (iMotEnc==0) {printf ("unavailable interface\n"); break;}
                     int j = p.get(2).asInt();
                     double v;
                     iMotEnc->getMotorEncoderCountsPerRevolution(j, &v);
@@ -365,8 +388,32 @@ int main(int argc, char *argv[])
                 }
                 break;
 
+                case VOCAB_AMP_MAXCURRENT:
+                {
+                    if (amp==0) {printf ("unavailable interface\n"); break;}
+                    int j = p.get(2).asInt();
+                    double v;
+                    amp->getMaxCurrent(j, &v);
+                    printf("%s: ", Vocab::decode(VOCAB_AMP_MAXCURRENT).c_str());
+                    printf("%.2f ", v);
+                    printf("\n");
+                }
+                break;
+
+                case VOCAB_MOTORS_NUMBER:
+                {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
+                    int v;
+                    imot->getNumberOfMotors(&v);
+                    printf("%s: ", Vocab::decode(VOCAB_MOTORS_NUMBER).c_str());
+                    printf("%d ", v);
+                    printf("\n");
+                }
+                break;
+
                 case VOCAB_MOTOR_ENCODER_NUMBER:
                 {
+                    if (iMotEnc==0) {printf ("unavailable interface\n"); break;}
                     int v;
                     iMotEnc->getNumberOfMotorEncoders(&v);
                     printf("%s: ", Vocab::decode(VOCAB_MOTOR_ENCODER_NUMBER).c_str());
@@ -422,15 +469,59 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_ERRS: {
-					pid->getErrors(tmp);
+                    pid->getErrors(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_ERRS).c_str());
                     for(i = 0; i < jnts; i++)
                         printf ("%.2f ", tmp[i]);
                     printf (")\n");
                 }
                 break;
+                
+                case VOCAB_TEMPERATURES: {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
+                    imot->getTemperatures(tmp);
+                    printf ("%s: (", Vocab::decode(VOCAB_TEMPERATURES).c_str());
+                    for(i = 0; i < jnts; i++)
+                        printf ("%.2f ", tmp[i]);
+                    printf (")\n");
+                }
+                break;
+
+                case VOCAB_TEMPERATURE: {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
+                    int j = p.get(2).asInt();
+                    double v;
+                    imot->getTemperature(j, &v);
+                    printf("%s: ", Vocab::decode(VOCAB_TEMPERATURE).c_str());
+                    printf("%.2f ", v);
+                    printf("\n");
+                }
+                break;
+
+                case VOCAB_TEMPERATURE_LIMIT: {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
+                    int j = p.get(2).asInt();
+                    double v;
+                    imot->getTemperatureLimit(j, &v);
+                    printf("%s: ", Vocab::decode(VOCAB_TEMPERATURE_LIMIT).c_str());
+                    printf("%.2f ", v);
+                    printf("\n");
+                }
+                break;
+
+                case VOCAB_MOTOR_OUTPUT_LIMIT: {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
+                    int j = p.get(2).asInt();
+                    double v;
+                    imot->getMotorOutputLimit(j, &v);
+                    printf("%s: ", Vocab::decode(VOCAB_MOTOR_OUTPUT_LIMIT).c_str());
+                    printf("%.2f ", v);
+                    printf("\n");
+                }
+                break;
 
                 case VOCAB_OUTPUTS: {
+                    if (iopenloop==0) {printf ("unavailable interface\n"); break;}
                     iopenloop->getOutputs(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_OUTPUTS).c_str());
                     for(i = 0; i < jnts; i++)
@@ -440,6 +531,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_OUTPUT: {
+                    if (iopenloop==0) {printf ("unavailable interface\n"); break;}
                     int j = p.get(2).asInt();
                     double v;
                     iopenloop->getOutput(j, &v);
@@ -449,9 +541,9 @@ int main(int argc, char *argv[])
                 }
                 break;
 
-				case VOCAB_REFERENCE: {
-					double ref_pos;
-					int j = p.get(2).asInt();
+                case VOCAB_REFERENCE: {
+                    double ref_pos;
+                    int j = p.get(2).asInt();
                     pid->getReference(j,&ref_pos);
                     printf ("%s: (", Vocab::decode(VOCAB_REFERENCE).c_str());
                     printf ("%.2f ", ref_pos);
@@ -477,9 +569,9 @@ int main(int argc, char *argv[])
                 }
                 break;
 
-				case VOCAB_REF_SPEED: {
-					double ref_speed;
-					int j = p.get(2).asInt();
+                case VOCAB_REF_SPEED: {
+                    double ref_speed;
+                    int j = p.get(2).asInt();
                     pos->getRefSpeed(j,&ref_speed);
                     printf ("%s: (", Vocab::decode(VOCAB_REF_SPEED).c_str());
                     printf ("%.2f ", ref_speed);
@@ -487,9 +579,9 @@ int main(int argc, char *argv[])
                 }
                 break;
 
-				case VOCAB_REF_ACCELERATION: {
-					double ref_acc;
-					int j = p.get(2).asInt();
+                case VOCAB_REF_ACCELERATION: {
+                    double ref_acc;
+                    int j = p.get(2).asInt();
                     pos->getRefAcceleration(j,&ref_acc);
                     printf ("%s: (", Vocab::decode(VOCAB_REF_ACCELERATION).c_str());
                     printf ("%.2f ", ref_acc);
@@ -656,6 +748,33 @@ int main(int argc, char *argv[])
                 }
                 break;
 
+                case VOCAB_TEMPERATURE_LIMIT: {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
+                    int j=p.get(2).asInt();
+                    double v=p.get(3).asDouble();
+                    imot->setTemperatureLimit(j,v);
+                    printf("%s: setting temperature limit for axis %d to %f\n", Vocab::decode(VOCAB_TEMPERATURE_LIMIT).c_str(), j, v);            
+                }
+                break;
+
+                case VOCAB_MOTOR_OUTPUT_LIMIT: {
+                    if (imot==0) {printf ("unavailable interface\n"); break;}
+                    int j=p.get(2).asInt();
+                    double v=p.get(3).asDouble();
+                    imot->setMotorOutputLimit(j,v);
+                    printf("%s: setting output for axis %d to %f\n", Vocab::decode(VOCAB_MOTOR_OUTPUT_LIMIT).c_str(), j, v);            
+                }
+                break;
+
+                
+                case VOCAB_AMP_MAXCURRENT: {
+                    int j=p.get(2).asInt();
+                    double v=p.get(3).asDouble();
+                    amp->setMaxCurrent(j,v);
+                    printf("%s: setting max current for motor %d to %f\n", Vocab::decode(VOCAB_AMP_MAXCURRENT).c_str(), j, v);            
+                }
+                break;
+
                 case VOCAB_DISABLE: {
                     int j = p.get(2).asInt();
                     printf("%s: disabling control for axis %d\n", Vocab::decode(VOCAB_DISABLE).c_str(), j);
@@ -706,7 +825,7 @@ void handleTorqueMsg(ITorqueControl *torque, const yarp::os::Bottle& cmd,
 {
     fprintf(stderr, "Handling ITorque messages\n");
 
-	if (!torque)
+    if (!torque)
         {
             fprintf(stderr, "Error, I do not have a valid ITorque interface\n");
             *ok=false;
@@ -716,22 +835,22 @@ void handleTorqueMsg(ITorqueControl *torque, const yarp::os::Bottle& cmd,
     int controlledJoints;
     torque->getAxes(&controlledJoints);
 
-	int code = cmd.get(1).asVocab();
+    int code = cmd.get(1).asVocab();
     switch (code)
         {
-		case VOCAB_SET:
-			{
-				*rec = true;
-	            
-				switch(cmd.get(2).asVocab())
+        case VOCAB_SET:
+            {
+                *rec = true;
+                
+                switch(cmd.get(2).asVocab())
                     {
-					case VOCAB_REF: 
+                    case VOCAB_REF: 
                         {
                             *ok = torque->setRefTorque(cmd.get(3).asInt(), cmd.get(4).asDouble());
                         }
                         break;
 
-					case VOCAB_REFS: 
+                    case VOCAB_REFS: 
                         {
                             Bottle& b = *(cmd.get(3).asList());
                             int i;
@@ -747,13 +866,13 @@ void handleTorqueMsg(ITorqueControl *torque, const yarp::os::Bottle& cmd,
                         }
                         break;
 
-					case VOCAB_LIM: 
+                    case VOCAB_LIM: 
                         {
                             *ok = torque->setTorqueErrorLimit (cmd.get(3).asInt(), cmd.get(4).asDouble());
                         }
                         break;
 
-					case VOCAB_LIMS: 
+                    case VOCAB_LIMS: 
                         {
                             Bottle& b = *(cmd.get(3).asList());
                             int i;
@@ -769,7 +888,7 @@ void handleTorqueMsg(ITorqueControl *torque, const yarp::os::Bottle& cmd,
                         }
                         break;
 
-					case VOCAB_PID: 
+                    case VOCAB_PID: 
                         {
                             Pid p;
                             int j = cmd.get(3).asInt();
@@ -785,7 +904,7 @@ void handleTorqueMsg(ITorqueControl *torque, const yarp::os::Bottle& cmd,
                         }
                         break;
 
-					case VOCAB_PIDS: 
+                    case VOCAB_PIDS: 
                         {
                             Bottle& b = *(cmd.get(3).asList());
                             int i;
@@ -810,132 +929,132 @@ void handleTorqueMsg(ITorqueControl *torque, const yarp::os::Bottle& cmd,
                         }
                         break;
 
-					case VOCAB_RESET: 
-						{
-							*ok = torque->resetTorquePid (cmd.get(3).asInt());
-						}
+                    case VOCAB_RESET: 
+                        {
+                            *ok = torque->resetTorquePid (cmd.get(3).asInt());
+                        }
                         break;
 
-					case VOCAB_DISABLE:
-						{
-							*ok = torque->disableTorquePid (cmd.get(3).asInt());              
-						}
+                    case VOCAB_DISABLE:
+                        {
+                            *ok = torque->disableTorquePid (cmd.get(3).asInt());              
+                        }
                         break;
 
-					case VOCAB_ENABLE: 
-						{
-							*ok = torque->enableTorquePid (cmd.get(3).asInt());                   
-						}
+                    case VOCAB_ENABLE: 
+                        {
+                            *ok = torque->enableTorquePid (cmd.get(3).asInt());                   
+                        }
                         break;
 
-					case VOCAB_TORQUE_MODE: 
+                    case VOCAB_TORQUE_MODE: 
                         {
                             *ok = torque->setTorqueMode();
-						}
+                        }
                         break;
 
                     }
-			}
+            }
             break;
 
-		case VOCAB_GET:
-			{
-				*rec = true;
+        case VOCAB_GET:
+            {
+                *rec = true;
 
-				int tmp = 0;
-				double dtmp = 0.0;
-				response.addVocab(VOCAB_IS);
-				response.add(cmd.get(1));
+                int tmp = 0;
+                double dtmp = 0.0;
+                response.addVocab(VOCAB_IS);
+                response.add(cmd.get(1));
 
-				switch(cmd.get(2).asVocab()) 
+                switch(cmd.get(2).asVocab()) 
                     {
-					case VOCAB_AXES:
-						{
-							int tmp;
-							*ok = torque->getAxes(&tmp);
-							response.addInt(tmp);
-						}
+                    case VOCAB_AXES:
+                        {
+                            int tmp;
+                            *ok = torque->getAxes(&tmp);
+                            response.addInt(tmp);
+                        }
                         break;
 
-					case VOCAB_TRQ:
-						{
-							*ok = torque->getTorque(cmd.get(3).asInt(), &dtmp);
-							response.addDouble(dtmp);
-						}
+                    case VOCAB_TRQ:
+                        {
+                            *ok = torque->getTorque(cmd.get(3).asInt(), &dtmp);
+                            response.addDouble(dtmp);
+                        }
                         break;
 
-					case VOCAB_TRQS:
-						{
-							double *p = new double[controlledJoints];
-							*ok = torque->getTorques(p);
-							Bottle& b = response.addList();
-							int i;
-							for (i = 0; i < controlledJoints; i++)
-								b.addDouble(p[i]);
-							delete[] p;
-						}
+                    case VOCAB_TRQS:
+                        {
+                            double *p = new double[controlledJoints];
+                            *ok = torque->getTorques(p);
+                            Bottle& b = response.addList();
+                            int i;
+                            for (i = 0; i < controlledJoints; i++)
+                                b.addDouble(p[i]);
+                            delete[] p;
+                        }
                         break;
 
-				    case VOCAB_ERR: 
-						{
-							*ok = torque->getTorqueError(cmd.get(3).asInt(), &dtmp);
-							response.addDouble(dtmp);
-						}
-						break;
+                    case VOCAB_ERR: 
+                        {
+                            *ok = torque->getTorqueError(cmd.get(3).asInt(), &dtmp);
+                            response.addDouble(dtmp);
+                        }
+                        break;
 
-					case VOCAB_ERRS: 
-						{
-							double *p = new double[controlledJoints];
-							*ok = torque->getTorqueErrors(p);
-							Bottle& b = response.addList();
-							int i;
-							for (i = 0; i < controlledJoints; i++)
-								b.addDouble(p[i]);
-							delete[] p;
-						}
-						break;
+                    case VOCAB_ERRS: 
+                        {
+                            double *p = new double[controlledJoints];
+                            *ok = torque->getTorqueErrors(p);
+                            Bottle& b = response.addList();
+                            int i;
+                            for (i = 0; i < controlledJoints; i++)
+                                b.addDouble(p[i]);
+                            delete[] p;
+                        }
+                        break;
 
-					case VOCAB_OUTPUT: 
-						{
-							*ok = torque->getTorquePidOutput(cmd.get(3).asInt(), &dtmp);
-							response.addDouble(dtmp);
-						}
-						break;
+                    case VOCAB_OUTPUT: 
+                        {
+                            *ok = torque->getTorquePidOutput(cmd.get(3).asInt(), &dtmp);
+                            response.addDouble(dtmp);
+                        }
+                        break;
 
-					case VOCAB_OUTPUTS: 
-						{
-							double *p = new double[controlledJoints];
-							*ok = torque->getTorquePidOutputs(p);
-							Bottle& b = response.addList();
-							int i;
-							for (i = 0; i < controlledJoints; i++)
-								b.addDouble(p[i]);
-							delete[] p;
-						}
-						break;
+                    case VOCAB_OUTPUTS: 
+                        {
+                            double *p = new double[controlledJoints];
+                            *ok = torque->getTorquePidOutputs(p);
+                            Bottle& b = response.addList();
+                            int i;
+                            for (i = 0; i < controlledJoints; i++)
+                                b.addDouble(p[i]);
+                            delete[] p;
+                        }
+                        break;
 
-					case VOCAB_PID: 
-						{
-							Pid p;
-							*ok = torque->getTorquePid(cmd.get(3).asInt(), &p);
-							Bottle& b = response.addList();
-							b.addDouble(p.kp);
-							b.addDouble(p.kd);
-							b.addDouble(p.ki);
-							b.addDouble(p.max_int);
-							b.addDouble(p.max_output);
-							b.addDouble(p.offset);
-							b.addDouble(p.scale);
-						}
-						break;
+                    case VOCAB_PID: 
+                        {
+                            Pid p;
+                            *ok = torque->getTorquePid(cmd.get(3).asInt(), &p);
+                            Bottle& b = response.addList();
+                            b.addDouble(p.kp);
+                            b.addDouble(p.kd);
+                            b.addDouble(p.ki);
+                            b.addDouble(p.max_int);
+                            b.addDouble(p.max_output);
+                            b.addDouble(p.offset);
+                            b.addDouble(p.scale);
+                        }
+                        break;
 
-					case VOCAB_PIDS: 
-						{
-							Pid *p = new Pid[controlledJoints];
-							*ok = torque->getTorquePids(p);
-							Bottle& b = response.addList();
-							int i;
-							for (i = 0; i < controlledJoints; i++)
+                    case VOCAB_PIDS: 
+                        {
+                            Pid *p = new Pid[controlledJoints];
+                            *ok = torque->getTorquePids(p);
+                            Bottle& b = response.addList();
+                            int i;
+                            for (i = 0; i < controlledJoints; i++)
                                 {
                                     Bottle& c = b.addList();
                                     c.addDouble(p[i].kp);
@@ -946,56 +1065,56 @@ void handleTorqueMsg(ITorqueControl *torque, const yarp::os::Bottle& cmd,
                                     c.addDouble(p[i].offset);
                                     c.addDouble(p[i].scale);
                                 }
-							delete[] p;
-						}
-						break;
+                            delete[] p;
+                        }
+                        break;
 
-					case VOCAB_REFERENCE: 
-						{
-							*ok = torque->getRefTorque(cmd.get(3).asInt(), &dtmp);
-							response.addDouble(dtmp);
-						}
-						break;
+                    case VOCAB_REFERENCE: 
+                        {
+                            *ok = torque->getRefTorque(cmd.get(3).asInt(), &dtmp);
+                            response.addDouble(dtmp);
+                        }
+                        break;
 
-					case VOCAB_REFERENCES:
-						{
-							double *p = new double[controlledJoints];
-							*ok = torque->getRefTorques(p);
+                    case VOCAB_REFERENCES:
+                        {
+                            double *p = new double[controlledJoints];
+                            *ok = torque->getRefTorques(p);
                             Bottle& b = response.addList();
-							int i;
-							for (i = 0; i < controlledJoints; i++)
-								b.addDouble(p[i]);
-							delete[] p;
-						}
-						break;
+                            int i;
+                            for (i = 0; i < controlledJoints; i++)
+                                b.addDouble(p[i]);
+                            delete[] p;
+                        }
+                        break;
 
-					case VOCAB_LIM:
-						{
-							*ok = torque->getTorqueErrorLimit(cmd.get(3).asInt(), &dtmp);
-							response.addDouble(dtmp);
-						}
-						break;
+                    case VOCAB_LIM:
+                        {
+                            *ok = torque->getTorqueErrorLimit(cmd.get(3).asInt(), &dtmp);
+                            response.addDouble(dtmp);
+                        }
+                        break;
 
-					case VOCAB_LIMS: 
-						{
-							double *p = new double[controlledJoints];
-							*ok = torque->getTorqueErrorLimits(p);
-							Bottle& b = response.addList();
-							int i;
-							for (i = 0; i < controlledJoints; i++)
-								b.addDouble(p[i]);
-							delete[] p;
-						}
-						break;
+                    case VOCAB_LIMS: 
+                        {
+                            double *p = new double[controlledJoints];
+                            *ok = torque->getTorqueErrorLimits(p);
+                            Bottle& b = response.addList();
+                            int i;
+                            for (i = 0; i < controlledJoints; i++)
+                                b.addDouble(p[i]);
+                            delete[] p;
+                        }
+                        break;
 
                     }
-			}
+            }
             break;
         }
     //rec --> true se il comando e' riconosciuto
     //ok --> contiene il return value della chiamata all'interfaccia
     // ...*ok=torque->setPid();
-	//torque->
+    //torque->
 }
 
 void handleImpedanceMsg(IImpedanceControl *iimp, const yarp::os::Bottle& cmd,
@@ -1003,7 +1122,7 @@ void handleImpedanceMsg(IImpedanceControl *iimp, const yarp::os::Bottle& cmd,
 {
     fprintf(stderr, "Handling IImpedance messages\n");
 
-	if (!iimp)
+    if (!iimp)
         {
             fprintf(stderr, "Error, I do not have a valid IImpedance interface\n");
             *ok=false;
@@ -1013,65 +1132,65 @@ void handleImpedanceMsg(IImpedanceControl *iimp, const yarp::os::Bottle& cmd,
     int controlledJoints;
     iimp->getAxes(&controlledJoints);
 
-	int code = cmd.get(1).asVocab();
+    int code = cmd.get(1).asVocab();
     switch (code)
         {
-		case VOCAB_SET:
-			{
-				*rec = true;
-	            
-				switch(cmd.get(2).asVocab())
+        case VOCAB_SET:
+            {
+                *rec = true;
+                
+                switch(cmd.get(2).asVocab())
                     {
-					case VOCAB_IMP_PARAM: 
+                    case VOCAB_IMP_PARAM: 
                         {
                             *ok = iimp->setImpedance(cmd.get(3).asInt(), cmd.get(4).asDouble(),cmd.get(5).asDouble());
                         }
                         break;
-					case VOCAB_IMP_OFFSET: 
+                    case VOCAB_IMP_OFFSET: 
                         {
                             *ok = iimp->setImpedanceOffset (cmd.get(3).asInt(), cmd.get(4).asDouble());
                         }
                         break;
                     }
-			}
+            }
             break;
 
-		case VOCAB_GET:
-			{
-				*rec = true;
+        case VOCAB_GET:
+            {
+                *rec = true;
 
-				int tmp = 0;
-				double dtmp0 = 0.0;
-				double dtmp1 = 0.0;
-				double dtmp2 = 0.0;
-				response.addVocab(VOCAB_IS);
-				response.add(cmd.get(1));
+                int tmp = 0;
+                double dtmp0 = 0.0;
+                double dtmp1 = 0.0;
+                double dtmp2 = 0.0;
+                response.addVocab(VOCAB_IS);
+                response.add(cmd.get(1));
 
-				switch(cmd.get(2).asVocab()) 
+                switch(cmd.get(2).asVocab()) 
                     {
 
-					case VOCAB_IMP_PARAM:
-						{
-							*ok = iimp->getImpedance(cmd.get(3).asInt(), &dtmp0, &dtmp1);
-							response.addDouble(dtmp0);
-							response.addDouble(dtmp1);
-						}
+                    case VOCAB_IMP_PARAM:
+                        {
+                            *ok = iimp->getImpedance(cmd.get(3).asInt(), &dtmp0, &dtmp1);
+                            response.addDouble(dtmp0);
+                            response.addDouble(dtmp1);
+                        }
                         break;
 
-				    case VOCAB_IMP_OFFSET: 
-						{
-							*ok = iimp->getImpedanceOffset(cmd.get(3).asInt(), &dtmp0);
-							response.addDouble(dtmp0);
-						}
-						break;
+                    case VOCAB_IMP_OFFSET: 
+                        {
+                            *ok = iimp->getImpedanceOffset(cmd.get(3).asInt(), &dtmp0);
+                            response.addDouble(dtmp0);
+                        }
+                        break;
                     }
-			}
+            }
             break;
         }
     //rec --> true se il comando e' riconosciuto
     //ok --> contiene il return value della chiamata all'interfaccia
     // ...*ok=torque->setPid();
-	//torque->
+    //torque->
 }
 
 
@@ -1093,19 +1212,19 @@ void handleControlModeMsg(IControlMode2 *iMode, const yarp::os::Bottle& cmd,
         {
         case VOCAB_SET:
             {
-				int axis = cmd.get(3).asInt();
+                int axis = cmd.get(3).asInt();
                 int mode=cmd.get(2).asVocab();
-				switch (mode)
-					{
+                switch (mode)
+                    {
                     case VOCAB_CM_POSITION:
                         *ok = iMode->setPositionMode(axis);
-						break;
+                        break;
                     case VOCAB_CM_POSITION_DIRECT:
                         *ok = iMode->setControlMode(axis, VOCAB_CM_POSITION_DIRECT);
-						break;
+                        break;
                     case VOCAB_CM_VELOCITY:
                         *ok = iMode->setVelocityMode(axis);
-						break;
+                        break;
                     case VOCAB_CM_MIXED:
                         *ok = iMode->setControlMode(axis, VOCAB_CM_MIXED);
                         break;
@@ -1129,8 +1248,8 @@ void handleControlModeMsg(IControlMode2 *iMode, const yarp::os::Bottle& cmd,
                         break;
                     default:
                         *ok = false;
-						break;
-					}
+                        break;
+                    }
                 *rec=true; //or false
             }
             break;
@@ -1147,7 +1266,7 @@ void handleControlModeMsg(IControlMode2 *iMode, const yarp::os::Bottle& cmd,
                         response.addInt(axis);
                         response.addVocab(VOCAB_CM_CONTROL_MODE);       
                         response.addVocab(p);
-			
+            
                         //fprintf(stderr, "Returning %d\n", p);
                         *rec=true;
                     }
