@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+	<device name="right_arm_mtb_wrapper" type="analogServer">
+		<param name="period">       10  				</param>
+		<param name="deviceId">     right_hand_inertial			</param>
+		
+		<action phase="startup" level="6" type="attach">
+		    <paramlist name="networks">
+		        <elem name="FirstDevice">  right_hand_inertial_mtb </elem>
+		    </paramlist>
+		</action>
+
+		<action phase="shutdown" level="6" type="detach" />
+	</device>
+</devices>
