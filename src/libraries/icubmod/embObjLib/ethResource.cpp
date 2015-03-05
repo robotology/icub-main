@@ -1992,16 +1992,17 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
     can_msg.setId(msg_id);
     can_msg.setSize(infobasic->properties.par16);
     int ret = c_string_handler[address]->add_string(&can_msg);
+
+    uint32_t sec = infobasic->timestamp / 1000000;
+    uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
+    uint32_t usec = infobasic->timestamp % 1000;
     // String finished?
     if (ret != -1)
     {
         char* themsg = c_string_handler[address]->get_string(ret);
-        memcpy(canfullmessage, themsg, sizeof(themsg));
+        memcpy(canfullmessage, themsg, sizeof(canfullmessage));
         canfullmessage[21] = 0;
         c_string_handler[address]->clear_string(ret);
-        uint32_t sec = infobasic->timestamp / 1000000;
-        uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
-        uint32_t usec = infobasic->timestamp % 1000;
 
         snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[code 0x%.2x,id %d,part %d] -> %s",
                                     this->boardNum,
@@ -2013,9 +2014,25 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
                                     p64[0],
                                     msg_id,
                                     offset,
-                                    themsg
+                                    canfullmessage
                                     );
         embObjPrintInfo(str);
+    }
+    else if(ret == -1)
+    {
+        snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[code 0x%.2x,id %d,part %d] -> Seems"
+                                  "that the message is not complete yet",
+                                    this->boardNum,
+                                    str_source,
+                                    address,
+                                    sec,
+                                    msec,
+                                    usec,
+                                    p64[0],
+                                    msg_id,
+                                    offset
+                                    );
+        embObjPrintWarning(str);
     }
     return true;
 #else

@@ -87,9 +87,6 @@ uint64_t CanFrame::getData()
 }
 
 
-
-
-
 class can_string_eth :public can_string_generic
 {
 private:
@@ -102,8 +99,7 @@ struct data_struct{
         int expected_length;
         int current_length;
 };
-        data_struct data[MAX_STRINGS];
-
+        data_struct data_can[MAX_STRINGS];
 public:
         /**
     * Default constructor.
@@ -116,18 +112,25 @@ public:
         inline ~can_string_eth();
 
         /**
-    * Process a string can packet. All can packets belonging to the same string are joined
+        * Process a string can packet. All can packets belonging to the same string are joined
         * in the same string buffer untill the string is complete.
-    * @param can_packet is the can message (CMSG* type). It must belong to the CAN_BCAST_PRINT class.
-    * @return the number of the buffer where the string part has been inserted. 0 <= buffer_num <= MAX_STRINGS
-    */
+        * @param can_packet is the can message (CMSG* type). It must belong to the CAN_BCAST_PRINT class.
+        * @return the number of the buffer where the string part has been inserted. 0 <= buffer_num <= MAX_STRINGS
+        */
         inline int add_string(CanFrame* can_packet);
-
+         /**
+        * Resets the string buffer
+        * @param cbuffer_num is the number of the buffer.  0 <= buffer_num <= MAX_STRINGS
+        */
+        inline void  clear_string(int buffer_num);
+        
         inline char* get_string(int buffer_num);
 };
 
 can_string_eth::can_string_eth()
 {
+    int j=0;
+    for (j=0; j<MAX_STRINGS; j++)	clear_string(j);
 }
 
 can_string_eth::~can_string_eth()
@@ -149,49 +152,60 @@ int can_string_eth::add_string(CanFrame* can_packet)
 
     string_id = (candata[1]&0xF0)>>4;
     offset    = (candata[1]&0x0F);
-    data[string_id].maybe_last_part = false;
-    data[string_id].complete = false;
-    data[string_id].board_id = char(id>>4&0xf);
+    data_can[string_id].board_id = char(id>>4&0xf);
     if (string_id>=MAX_STRINGS)
     {
-        yError("CANPrint msg from board %d contains an ERROR! (>MAX_STRINGS)\n",data[string_id ].board_id);
+        yError("CANPrint msg from board %d contains an ERROR! (>MAX_STRINGS)\n",data_can[string_id ].board_id);
         return -1;
     }
     for (j=0 ; j<size-2; j++)
-        data[string_id].text_buffer[j+offset*6]=candata[j+2];
+        data_can[string_id].text_buffer[j+offset*6]=candata[j+2];
 
     if (candata[0]==ICUBCANPROTO_PER_MC_MSG__PRINT + 128)
     {
-        data[string_id].maybe_last_part = true;
-        data[string_id].expected_length=offset*6+size-2;
+        data_can[string_id].maybe_last_part = true;
+        data_can[string_id].expected_length=offset*6+size-2;
     }
 
-    if (data[string_id].maybe_last_part)
+    if (data_can[string_id].maybe_last_part)
     {
-        data[string_id].current_length=strlen(data[string_id].text_buffer);
+        data_can[string_id].current_length=strlen(data_can[string_id].text_buffer);
 
-        if (data[string_id].expected_length==data[string_id].current_length)
-            data[string_id].complete = true; //check me
+        if (data_can[string_id].expected_length==data_can[string_id].current_length)
+            data_can[string_id].complete = true; //check me
     }
 /*
-        if (data[string_id].complete)
+        if (data_can[string_id].complete)
         {
                 print(string_id);
                 clear_string(string_id);
         }
 */
-    if (data[string_id].complete) return string_id;
+    if (data_can[string_id].complete) return string_id;
     else return -1;
+}
+
+void can_string_eth::clear_string(int buffer_num)
+{
+	if (buffer_num >= MAX_STRINGS) return ;
+
+	for (int i = 0; i < 256; i++) data_can[buffer_num].text_buffer[i]=0;
+	data_can[buffer_num].complete=false;
+	data_can[buffer_num].maybe_last_part=false;
+	data_can[buffer_num].expected_length = 0;
+	data_can[buffer_num].board_id=0;
+	data_can[buffer_num].current_length = 0;
+
 }
 
 char* can_string_eth::get_string(int buffer_num)
 {
     if ((buffer_num < 0) || (buffer_num > MAX_STRINGS))
     {
-       yError("Can't get CANPrint msg from board %d (>MAX_STRINGS)\n",data[buffer_num].board_id);
+       yError("Can't get CANPrint msg from board %d (>MAX_STRINGS)\n",data_can[buffer_num].board_id);
        return NULL;
     }
-    return data[buffer_num].text_buffer;
+    return data_can[buffer_num].text_buffer;
 }
 
 #endif // CAN_STRING_ETH_H
