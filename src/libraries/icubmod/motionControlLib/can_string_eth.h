@@ -19,8 +19,6 @@
 #define CAN_STRING_ETH_H
 
 #include "messages.h"
-#include <can_string_generic.h>
-//#include <yarp/dev/CanBusInterface.h>
 #include <string.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Log.h>
@@ -87,7 +85,7 @@ uint64_t CanFrame::getData()
 }
 
 
-class can_string_eth :public can_string_generic
+class can_string_eth
 {
 private:
 

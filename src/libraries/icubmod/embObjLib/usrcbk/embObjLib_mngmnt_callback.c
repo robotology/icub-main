@@ -118,6 +118,17 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 
     printf("%s\n", str);
 
+    //if running, print the control loop timings
+    if (appstatus->currstate == 1)
+    {
+        snprintf(str, sizeof(str), "                        control loop timings: RX->%dus, DO->%dus, TX->%dus",
+                                                            appstatus->cloop_timings[0],
+                                                            appstatus->cloop_timings[1],
+                                                            appstatus->cloop_timings[2]);
+
+        printf("%s\n", str);
+    }
+
     snprintf(str, sizeof(str), "                        state = %s", state);
 
     printf("%s\n", str);

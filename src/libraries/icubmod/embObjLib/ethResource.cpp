@@ -19,7 +19,6 @@
 #include "EoProtocol.h"
 #include "EoManagement.h"
 #include "EoProtocolMN.h"
-//#include "can_string_generic.h"
 #include "can_string_eth.h"
 
 using namespace yarp::dev;
