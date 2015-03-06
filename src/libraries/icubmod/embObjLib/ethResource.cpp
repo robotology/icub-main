@@ -1957,13 +1957,8 @@ bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size
 
 bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
 {
-#define TEST_NEW_METHOD
-//#undef TEST_NEW_METHOD
-
-
-#if defined(TEST_NEW_METHOD)
     char str[256];
-    char canfullmessage[22];
+    char canfullmessage[32];
 
     static const char * sourcestrings[] =
     {
@@ -1978,7 +1973,6 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
     uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
 
     int msg_id = (p64[1]&0xF0) >> 4;
-    int offset =  p64[1]&0x0F;
 
     // Validity check
     if(address > 15)
@@ -2001,87 +1995,22 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
     {
         char* themsg = c_string_handler[address]->get_string(ret);
         memcpy(canfullmessage, themsg, sizeof(canfullmessage));
-        canfullmessage[21] = 0;
+        canfullmessage[31] = 0;
         c_string_handler[address]->clear_string(ret);
 
-        snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[code 0x%.2x,id %d,part %d] -> %s",
+        snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
                                     this->boardNum,
                                     str_source,
                                     address,
                                     sec,
                                     msec,
                                     usec,
-                                    p64[0],
                                     msg_id,
-                                    offset,
                                     canfullmessage
                                     );
         embObjPrintInfo(str);
     }
-    else if(ret == -1)
-    {
-        snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[code 0x%.2x,id %d,part %d] -> Seems"
-                                  "that the message is not complete yet",
-                                    this->boardNum,
-                                    str_source,
-                                    address,
-                                    sec,
-                                    msec,
-                                    usec,
-                                    p64[0],
-                                    msg_id,
-                                    offset
-                                    );
-        embObjPrintWarning(str);
-    }
     return true;
-#else
-    //At the moment, I only print the single message, without regarding if they are splitted or not
-    char str[256];
-    char canmessage[7];
-
-    //Set the CAN source
-    static const char * sourcestrings[] =
-    {
-        "LOCAL",
-        "CAN1",
-        "CAN2",
-        "UNKNOWN"
-    };
-    int source                      = EOMN_INFO_PROPERTIES_FLAGS_get_source(infobasic->properties.flags);
-    const char * str_source         = (source > eomn_info_source_can2) ? (sourcestrings[3]) : (sourcestrings[source]);
-
-    uint16_t address                = EOMN_INFO_PROPERTIES_FLAGS_get_address(infobasic->properties.flags);
-
-    uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
-
-    int can_mess_size = infobasic->properties.par16;
-
-    memcpy(canmessage, &p64[2], can_mess_size-2);
-    canmessage[can_mess_size-2]=0;
-
-    int msg_id = (p64[1]&0xF0) >> 4;
-    int offset =  p64[1]&0x0F;
-
-    uint32_t sec = infobasic->timestamp / 1000000;
-    uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
-    uint32_t usec = infobasic->timestamp % 1000;
-
-    snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[code 0x%.2x,id %d,part %d] -> %s",
-                                this->boardNum,
-                                str_source,
-                                address,
-                                sec,
-                                msec,
-                                usec,
-                                p64[0],
-                                msg_id,
-                                offset,
-                                canmessage
-                                );
-    embObjPrintInfo(str);
-    return true;
-#endif
 }
 
 // - class infoOfRecvPkts

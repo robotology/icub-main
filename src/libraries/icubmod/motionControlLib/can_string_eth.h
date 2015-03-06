@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 The RobotCub Consortium
+ * Copyright (C) 2014 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Davide Pollarolo
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
@@ -20,7 +20,7 @@
 
 #include "messages.h"
 #include <can_string_generic.h>
-#include <yarp/dev/CanBusInterface.h>
+//#include <yarp/dev/CanBusInterface.h>
 #include <string.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Log.h>
@@ -149,10 +149,14 @@ int can_string_eth::add_string(CanFrame* can_packet)
     size=can_packet->getSize();
     uint64_t candatabytes = can_packet->getData();
     char *candata=(char*)&candatabytes;
+    int code = candata[0]&0xFF; 
 
     string_id = (candata[1]&0xF0)>>4;
     offset    = (candata[1]&0x0F);
     data_can[string_id].board_id = char(id>>4&0xf);
+
+    //yWarning("CANPrint msg info: ID->%d, COUNTER->%d, SIZE->%d, CODE->0x%.2x", id, offset, size, code);
+
     if (string_id>=MAX_STRINGS)
     {
         yError("CANPrint msg from board %d contains an ERROR! (>MAX_STRINGS)\n",data_can[string_id ].board_id);
@@ -161,7 +165,7 @@ int can_string_eth::add_string(CanFrame* can_packet)
     for (j=0 ; j<size-2; j++)
         data_can[string_id].text_buffer[j+offset*6]=candata[j+2];
 
-    if (candata[0]==ICUBCANPROTO_PER_MC_MSG__PRINT + 128)
+    if (code==ICUBCANPROTO_PER_MC_MSG__PRINT + 128)
     {
         data_can[string_id].maybe_last_part = true;
         data_can[string_id].expected_length=offset*6+size-2;

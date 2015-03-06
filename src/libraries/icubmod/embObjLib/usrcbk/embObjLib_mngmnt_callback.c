@@ -140,12 +140,10 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 
 static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
 {
+#define DROPCODES_FROM_LIST
+#define CAN_PRINT_FULL_PARSING
 
     static const eOerror_code_t codecanprint = EOERRORCODE(eoerror_category_System, eoerror_value_SYS_canservices_canprint);
-
-
-#define DROPCODES_FROM_LIST
-#define CAN_PRINT_PARSING
 
 #if defined(DROPCODES_FROM_LIST)
     static const eOerror_code_t codes2drop_value[] =
@@ -165,52 +163,6 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
         }
     }
 #endif
-    if (infobasic->properties.code == eoerror_value_SYS_canservices_canprint)
-    {
-#if defined(CAN_PRINT_PARSING)
-     // FIRST VERSION
-     /*
-        static char can_message[11][256];
-        //End of the message, I can print
-        if(p64[0] == 0x86)
-        {
-            //Append the last characters
-            uint8_t i;
-            for (i = 2; i < (infobasic->properties.par16 + 2); i++)
-            {
-                char *ch = (char*)&p64[i];
-                strncat (can_message[eo_nv_GetBRD(nv)], ch, sizeof(char));
-            }
-            snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: (code 0x%.8x).CAN PRINT MESSAGE: %s",
-                                    eo_nv_GetBRD(nv)+1,
-                                    str_source,
-                                    address,
-                                    sec, msec, usec,
-                                    infobasic->properties.code,
-                                    can_message[eo_nv_GetBRD(nv)]
-                                    );
-            embObjPrintInfo(str);
-            //Clear the string associated to the board
-            memset(can_message[eo_nv_GetBRD(nv)], 0, sizeof(can_message[eo_nv_GetBRD(nv)]));
-            return;
-        }
-        // Message in progress, I only append the characters
-        else if(p64[0] == 0x06)
-        {
-            uint8_t i;
-            for (i = 2; i < 8; i++)
-            {
-                char *ch = (char*)&p64[i];
-                strncat(can_message[eo_nv_GetBRD(nv)], ch, sizeof(char));
-            }
-            return;
-        }
-    */
-    feat_embObjCANPrintHandler(eo_nv_GetBRD(nv), infobasic);
-    return;
-#endif
-    }
-
 #if 0
     uint64_t txsec = rd->time / 1000000;
     uint64_t txmsec = (rd->time % 1000000) / 1000;
@@ -266,7 +218,12 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
     uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
 
     if(codecanprint == infobasic->properties.code)
-    {   // it is a canprint: treat it in a particular way.
+    {
+#if defined(CAN_PRINT_FULL_PARSING)
+        feat_embObjCANPrintHandler(eo_nv_GetBRD(nv), infobasic);
+        return;
+#endif
+        // it is a canprint: treat it in a particular way.
         // in first step: just print the 6 bytes (at most) of the payload: now on 03/03/15 we have implemented first step
         // in second step: do the same inside ethResources
         // in third step: inside ethResources it is called the proper class can_string_generic with one instance per can board.
