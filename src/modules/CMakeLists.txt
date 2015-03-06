@@ -3,7 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 add_subdirectory(ctpService)
-add_subdirectory(demoGraspManager_IIT_ISR)
+add_subdirectory(demoGraspManager)
 add_subdirectory(learningMachine)
 add_subdirectory(iCubDemoY3)
 add_subdirectory(iSpeak)

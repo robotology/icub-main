@@ -3,7 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
-SET(PROJECTNAME demoGraspManager_IIT_ISR)
+SET(PROJECTNAME demoGraspManager)
 
 PROJECT(${PROJECTNAME})
 
