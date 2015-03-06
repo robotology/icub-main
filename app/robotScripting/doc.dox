@@ -3,9 +3,9 @@
 
 \defgroup icub_robotscripting robotScripting
 
-This application allows performing nice preprogrammed demonstrations with the robot. It just starts 
-an instance of \ref icub_ctpservice for each part. Commands will be sent from shell (but see 
-also the cripting.py utility in this app directory).
+This application allows performing nice preprogrammed demonstrations with the robot. It just starts
+an instance of \ref icub_ctpservice for each part. Commands will be sent from shell (but see
+also the scripting.py utility in this app directory).
 
 \section dep_sec Dependencies
 \ref icub_iCubInterface.
