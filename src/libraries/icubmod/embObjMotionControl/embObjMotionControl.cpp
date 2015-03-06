@@ -44,16 +44,16 @@ using namespace yarp::os::impl;
 void embObjMotionControl::copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
 {
     memset(out, 0, sizeof(eOmc_PID_t));     // marco.accame: it is good thing to clear the out struct before copying. this prevent future members of struct not yet managed to be dirty.
-    out->kp = (int16_t) S_16(in->kp);
-    out->ki = (int16_t) S_16(in->ki);
-    out->kd = (int16_t) S_16(in->kd);
-    out->limitonintegral = (int16_t) S_16(in->max_int);
-    out->limitonoutput = (int16_t) S_16(in->max_output);
-    out->offset = (int16_t) S_16(in->offset);
+    out->kp = (float) (in->kp);
+    out->ki = (float) (in->ki);
+    out->kd = (float) (in->kd);
+    out->limitonintegral = (float)(in->max_int);
+    out->limitonoutput = (float)(in->max_output);
+    out->offset = (float) (in->offset);
     out->scale = (int8_t) (in->scale);
-    out->kff = (int16_t)in->kff;
-    out->stiction_down_val = (int16_t)in->stiction_down_val;
-    out->stiction_up_val = (int16_t)in->stiction_up_val;
+    out->kff = (float) (in->kff);
+    out->stiction_down_val = (float)(in->stiction_down_val);
+    out->stiction_up_val = (float)(in->stiction_up_val);
 }
 
 void embObjMotionControl::copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
