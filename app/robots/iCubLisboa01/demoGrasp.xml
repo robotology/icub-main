@@ -1,5 +1,5 @@
 <!-- instantiation of
-     icub-main/app/demoGrasp_IIT_ISR/scripts/demoGrasp.xml.template
+     icub-main/app/demoGrasp/scripts/demoGrasp.xml.template
      for iCubLisboa01 -->
 
 <application>
@@ -20,7 +20,7 @@
         </module>
    
         <module>
-                <name>demoGraspManager_IIT_ISR</name>
+                <name>demoGraspManager</name>
                 <node>icubbrain2</node>
         </module>
   
@@ -42,16 +42,16 @@
         </connection>
         <connection>
                 <from>/pf3dTracker/data:o</from>
-                <to>/demoGraspManager_IIT_ISR/trackTarget:i</to>
+                <to>/demoGraspManager/trackTarget:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/demoGraspManager_IIT_ISR/cmdFace:rpc</from>
+                <from>/demoGraspManager/cmdFace:rpc</from>
                 <to>/icub/face/emotions/in</to>
                 <protocol>tcp</protocol>
         </connection>
         <connection>
-                <from>/demoGraspManager_IIT_ISR/gui:o</from>
+                <from>/demoGraspManager/gui:o</from>
                 <to>/iCubGui/objects</to>
                 <protocol>tcp</protocol>
         </connection>

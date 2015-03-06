@@ -17,7 +17,7 @@
 */
 
 /** 
-\defgroup demoGraspManager_IIT_ISR demoGraspManager_IIT_ISR
+\defgroup demoGraspManager demoGraspManager
  
 @ingroup icub_module  
  
@@ -59,25 +59,25 @@ the ICartesianControl interface must be available. The
  
 \section portsc_sec Ports Created 
  
-- \e /demoGraspManager_IIT_ISR/trackTarget:i receives the 3-d 
+- \e /demoGraspManager/trackTarget:i receives the 3-d 
   position to track.
  
-- \e /demoGraspManager_IIT_ISR/imdTargetLeft:i receives the 
+- \e /demoGraspManager/imdTargetLeft:i receives the 
   blobs list as produced by the \ref motionCUT module for the
   left eye.
  
-- \e /demoGraspManager_IIT_ISR/imdTargetRight:i receives the 
+- \e /demoGraspManager/imdTargetRight:i receives the 
   blobs list as produced by the \ref motionCUT module for the
   right eye.
  
-- \e /demoGraspManager_IIT_ISR/cmdFace:o sends out commands to 
+- \e /demoGraspManager/cmdFace:o sends out commands to 
   the face expression high level interface in order to give an
   emotional representation of the current robot state.
  
-- \e /demoGraspManager_IIT_ISR/gui:o sends out info to update target
+- \e /demoGraspManager/gui:o sends out info to update target
   within the \ref icub_gui.
 
-- \e /demoGraspManager_IIT_ISR/rpc remote procedure 
+- \e /demoGraspManager/rpc remote procedure 
     call. Recognized remote commands:
     -'quit' quit the module
  
@@ -1871,12 +1871,12 @@ int main(int argc, char *argv[])
     ResourceFinder rf;
     rf.setVerbose(true);
     rf.setMonitor(&rep);
-    rf.setDefaultContext("demoGrasp_IIT_ISR");
+    rf.setDefaultContext("demoGrasp");
     rf.setDefaultConfigFile("config.ini");
     rf.configure(argc,argv);
 
     managerModule mod;
-    mod.setName("/demoGraspManager_IIT_ISR");
+    mod.setName("/demoGraspManager");
 
     return mod.runModule(rf);
 }

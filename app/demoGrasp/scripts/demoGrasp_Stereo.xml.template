@@ -22,7 +22,7 @@
         </module>
 
         <module>
-                <name>demoGraspManager_IIT_ISR</name>
+                <name>demoGraspManager</name>
                 <parameters>--from config_Stereo.ini</parameters>
                 <node>pwrNode3</node>
         </module>
@@ -54,13 +54,13 @@
 
         <connection>
                 <from>/motionCUT/left/blobs:o</from>
-                <to>/demoGraspManager_IIT_ISR/imdTargetLeft:i</to>
+                <to>/demoGraspManager/imdTargetLeft:i</to>
                 <protocol>udp</protocol>
         </connection>
 
         <connection>
                 <from>/motionCUT/right/blobs:o</from>
-                <to>/demoGraspManager_IIT_ISR/imdTargetRight:i</to>
+                <to>/demoGraspManager/imdTargetRight:i</to>
                 <protocol>udp</protocol>
         </connection>
 
@@ -79,12 +79,12 @@
 
 
         <connection>
-                <from>/demoGraspManager_IIT_ISR/cmdFace:rpc</from>
+                <from>/demoGraspManager/cmdFace:rpc</from>
                 <to>/icub/face/emotions/in</to>
                 <protocol>tcp</protocol>
         </connection>
         <connection>
-                <from>/demoGraspManager_IIT_ISR/gui:o</from>
+                <from>/demoGraspManager/gui:o</from>
                 <to>/iCubGui/objects</to>
                 <protocol>tcp</protocol>
         </connection>
