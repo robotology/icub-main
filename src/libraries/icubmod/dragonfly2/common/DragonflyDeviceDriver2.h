@@ -281,12 +281,12 @@ This file can be edited at /src/libraries/icubmod/dragonfly2/common/DragonflyDev
 /**
 * dragonfly2 and dragonfly2raw device driver implementation.
 */
-class yarp::dev::DragonflyDeviceDriver2 : 
+class yarp::dev::DragonflyDeviceDriver2 :
+    public DeviceDriver,
     public IPreciselyTimed,
-    public virtual IFrameGrabber,
-    public virtual IFrameGrabberRgb, 
-    public IFrameGrabberControlsDC1394, 
-    public DeviceDriver
+    public IFrameGrabber,
+    public IFrameGrabberRgb,
+    public IFrameGrabberControlsDC1394
 {
 private:
     DragonflyDeviceDriver2(const DragonflyDeviceDriver2&);

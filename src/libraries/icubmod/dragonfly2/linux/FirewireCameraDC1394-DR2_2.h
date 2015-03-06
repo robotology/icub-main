@@ -51,10 +51,15 @@
 class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394
 {
 public:   
-    CFWCamera_DR2_2(bool raw) : mRawDriver(raw)
+    CFWCamera_DR2_2(bool raw) : mRawDriver(raw),
+                                m_pCamera(NULL),
+                                m_pCameraList(NULL),
+                                m_dc1394_handle(NULL),
+                                m_LastSecond(0),
+                                m_SecondOffset(0)
+
     {
-        m_LastSecond = 0;
-        m_SecondOffset = 0;
+        m_ConvFrame.image=NULL;
     }
 
     virtual ~CFWCamera_DR2_2()
