@@ -308,6 +308,7 @@ bool embObjMotionControl::alloc(int nj)
     _encoderconversionfactor = allocAndCheck<float>(nj);
 
     _rotToEncoder = allocAndCheck<double>(nj);
+    _gearbox = allocAndCheck<double>(nj);
     _zeros = allocAndCheck<double>(nj);
     _torqueSensorId= allocAndCheck<int>(nj);
     _torqueSensorChan= allocAndCheck<int>(nj);
@@ -360,6 +361,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_encoderconversionoffset);
     checkAndDestroy(_encoderconversionfactor);
     checkAndDestroy(_rotToEncoder);
+    checkAndDestroy(_gearbox);
     checkAndDestroy(_zeros);
     checkAndDestroy(_torqueSensorId);
     checkAndDestroy(_torqueSensorChan);
@@ -953,6 +955,21 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             _rotToEncoder[i-1] = xtmp.get(i).asDouble();
     }
 
+    // Gearbox
+    if (!extractGroup(general, xtmp, "Gearbox", "The gearbox reduction ratio", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+        {
+            _gearbox[i-1] = xtmp.get(i).asDouble();
+            if (_gearbox[i-1]==0) {yError() << "Using a gearbox value = 0 may cause problems! Check your configuration files";}
+        }
+    }
+    
     // Zero Values
     if (!extractGroup(general, xtmp, "Zeros","a list of offsets for the zero point", _njoints))
         return false;
@@ -1414,10 +1431,9 @@ bool embObjMotionControl::init()
     for(int logico=0; logico<_njoints; logico++)
     {
         int fisico = _axisMap[logico];
+
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_maxcurrentofmotor);
-
         eOmeas_current_t	current = (eOmeas_current_t) S_16(_currentLimits[logico]);
-
         if(false == res->setRemoteValueUntilVerified(protid, &current, sizeof(current), 10, 0.010, 0.050, 2))
         {
             yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
@@ -1431,6 +1447,20 @@ bool embObjMotionControl::init()
             }
         }
 
+   /*     protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_gearboxratio);
+        int32_t gearbox = (int32_t) (_gearbox[logico]);
+        if(false == res->setRemoteValueUntilVerified(protid, &current, sizeof(current), 10, 0.010, 0.050, 2))
+        {
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+            return false;
+        }
+        else
+        {
+            if(verbosewhenok)
+            {
+                yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+            }
+        }        */
     }
 
     /////////////////////////////////////////////
@@ -2829,7 +2859,7 @@ bool embObjMotionControl::getEncoderRaw(int j, double *value)
     if(ret)
     {
         eOmc_controlmode_t type = (eOmc_controlmode_t) status.controlmodestatus;
-        *value = (double) status.position;
+        *value = (double) status.jnt_position;
     }
     else
     {
@@ -2858,7 +2888,7 @@ bool embObjMotionControl::getEncoderSpeedRaw(int j, double *sp)
     eOmc_joint_status_basic_t  tmpJointStatus;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpJointStatus, &size);
     // extract requested data from status
-    *sp = (double) tmpJointStatus.velocity;
+    *sp = (double) tmpJointStatus.jnt_velocity;
     return true;
 }
 
@@ -2878,7 +2908,7 @@ bool embObjMotionControl::getEncoderAccelerationRaw(int j, double *acc)
     uint16_t      size;
     eOmc_joint_status_basic_t  tmpJointStatus;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpJointStatus, &size);
-    *acc = (double) tmpJointStatus.acceleration;
+    *acc = (double) tmpJointStatus.jnt_acceleration;
     return true;
 }
 
@@ -2962,7 +2992,7 @@ bool embObjMotionControl::getMotorEncoderRaw(int m, double *value)
     bool ret = res->readBufferedValue(protid, (uint8_t *)&status, &size);
     if(ret)
     {
-        *value = (double) status.position;
+        *value = (double) status.mot_position;
     }
     else
     {
@@ -2992,7 +3022,7 @@ bool embObjMotionControl::getMotorEncoderSpeedRaw(int m, double *sp)
     bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
     if(ret)
     {
-        *sp = (double) tmpMotorStatus.velocity;
+        *sp = (double) tmpMotorStatus.mot_velocity;
     }
     else
     {
@@ -3014,13 +3044,15 @@ bool embObjMotionControl::getMotorEncoderSpeedsRaw(double *spds)
 
 bool embObjMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
 {
+    return NOT_YET_IMPLEMENTED("getMotorEncoderAccelerationRaw");
+    /*
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_status_basic);
     uint16_t      size;
-    eOmc_joint_status_basic_t  tmpMotorStatus;
+    eOmc_motor_status_basic_t  tmpMotorStatus;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
     if(ret)
     {
-        *acc = (double) tmpMotorStatus.acceleration;
+        *acc = (double) tmpMotorStatus.mot_acceleration;
     }
     else
     {
@@ -3028,6 +3060,7 @@ bool embObjMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
         *acc = 0;
     }
     return true;
+    */
 }
 
 bool embObjMotionControl::getMotorEncoderAccelerationsRaw(double *accs)
@@ -3090,7 +3123,7 @@ bool embObjMotionControl::getCurrentRaw(int j, double *value)
     eOmc_motor_status_basic_t  tmpMotorStatus;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
 
-    *value = (double) tmpMotorStatus.current;
+    *value = (double) tmpMotorStatus.mot_current;
     return true;
 }
 
@@ -3157,7 +3190,7 @@ bool embObjMotionControl::getRotorPositionRaw         (int j, double* value)
     eOmc_motor_status_basic_t  tmpMotorStatus;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
 
-    *value = (double) tmpMotorStatus.position;
+    *value = (double) tmpMotorStatus.mot_position;
     return true;
 }
 
@@ -3177,7 +3210,7 @@ bool embObjMotionControl::getRotorSpeedRaw            (int j, double* value)
     eOmc_motor_status_basic_t  tmpMotorStatus;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
 
-    *value = (double) tmpMotorStatus.velocity;
+    *value = (double) tmpMotorStatus.mot_velocity;
     return true;
 }
 
