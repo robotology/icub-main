@@ -3741,9 +3741,9 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
     eOmc_motor_params_t eo_params = {0};
 
-    eo_params.bemf_value    = (int16_t) params.bemf;
+    eo_params.bemf_value    = (float) params.bemf;
     eo_params.bemf_scale    = (uint8_t) params.bemf_scale;
-    eo_params.ktau_value    = (int16_t) params.ktau;
+    eo_params.ktau_value    = (float) params.ktau;
     eo_params.ktau_scale    = (uint8_t) params.ktau_scale;
 
     if(!res->addSetMessage(id32, (uint8_t *) &eo_params))
