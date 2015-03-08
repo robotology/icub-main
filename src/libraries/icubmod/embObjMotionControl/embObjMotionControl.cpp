@@ -1447,9 +1447,9 @@ bool embObjMotionControl::init()
             }
         }
 
-   /*     protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_gearboxratio);
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_gearboxratio);
         int32_t gearbox = (int32_t) (_gearbox[logico]);
-        if(false == res->setRemoteValueUntilVerified(protid, &current, sizeof(current), 10, 0.010, 0.050, 2))
+        if(false == res->setRemoteValueUntilVerified(protid, &gearbox, sizeof(gearbox), 10, 0.010, 0.050, 2))
         {
             yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
             return false;
@@ -1460,7 +1460,7 @@ bool embObjMotionControl::init()
             {
                 yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
             }
-        }        */
+        }        
     }
 
     /////////////////////////////////////////////
