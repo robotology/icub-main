@@ -448,7 +448,17 @@ public:
             return false;
         }
 
-        // get command file options
+        std::string dumpername; 
+        // get dumepr name
+        if (options.check("name"))
+        {
+            dumpername = options.find("name").asString();
+            dumpername += "/";
+        }
+        else
+        {
+            dumpername = "/controlBoardDumper/";
+        }
 
         Value& robot = options.find("robot");
         Value& part = options.find("part");
@@ -490,7 +500,7 @@ public:
     
         ConstString localPortName = name;
         ConstString localDebugPortName = name;
-        localPortName = localPortName + "/controlBoardDumper/";
+        localPortName = localPortName + dumpername.c_str();
         localDebugPortName = localPortName + "debug/";
         //localPortName = localPortName + robot.asString();
         localPortName = localPortName + part.asString();
@@ -548,8 +558,7 @@ public:
         bool logToFile = false;
         if (options.check("logToFile")) logToFile = true;
 
-        portPrefix = "/";
-        portPrefix= portPrefix + "controlBoardDumper/" + part.asString() + "/";
+        portPrefix= dumpername.c_str() + part.asString() + "/";
         //boardDumperThread *myDumper = new boardDumperThread(&dd, rate, portPrefix, dataToDump[0]);
         //myDumper->setThetaMap(thetaMap, nJoints);
 
