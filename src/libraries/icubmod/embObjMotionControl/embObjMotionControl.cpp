@@ -966,7 +966,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         for (i = 1; i < xtmp.size(); i++)
         {
             _gearbox[i-1] = xtmp.get(i).asDouble();
-            if (_gearbox[i-1]==0) {yError() << "Using a gearbox value = 0 may cause problems! Check your configuration files";}
+            if (_gearbox[i-1]==0) {yError() << "Using a gearbox value = 0 may cause problems! Check your configuration files"; return false;}
         }
     }
     
@@ -3044,8 +3044,6 @@ bool embObjMotionControl::getMotorEncoderSpeedsRaw(double *spds)
 
 bool embObjMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
 {
-    return NOT_YET_IMPLEMENTED("getMotorEncoderAccelerationRaw");
-    /*
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_status_basic);
     uint16_t      size;
     eOmc_motor_status_basic_t  tmpMotorStatus;
@@ -3060,7 +3058,6 @@ bool embObjMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
         *acc = 0;
     }
     return true;
-    */
 }
 
 bool embObjMotionControl::getMotorEncoderAccelerationsRaw(double *accs)
