@@ -1,0 +1,35 @@
+# Copyright (C) 2010 RobotCub Consortium
+# Authors: Andrea del Prete
+# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+
+set(PROJECTNAME skinManagerGui-gtk)
+project(${PROJECTNAME})
+
+file(GLOB folder_source src/*.cpp)
+file(GLOB folder_header include/iCub/skinManagerGui/*.h)
+source_group("Source Files" FILES ${folder_source})
+source_group("Header Files" FILES ${folder_header})
+
+add_definitions(${GTK2_DEFINITIONS})
+
+include_directories(${PROJECT_SOURCE_DIR}/include
+                    ${YARP_INCLUDE_DIRS}
+                    ${ICUB_INCLUDE_DIRS}
+                    ${GTK2_INCLUDE_DIRS}
+                    ${skinDynLib_INCLUDE_DIRS})
+
+add_executable(${PROJECTNAME}  ${folder_source} ${folder_header})
+
+target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}
+                                     ${GTK2_LIBRARIES}
+                                     skinDynLib)
+
+if(WIN32)
+    set_target_properties(${PROJECTNAME} PROPERTIES COMPILE_FLAGS /wd4996)
+endif(WIN32)
+
+install(TARGETS ${PROJECTNAME} RUNTIME DESTINATION bin)
+
+if(NOT TARGET skinManagerGui-qt OR ICUB_DEFAULT_GTK)
+  set_target_properties(skinManagerGui-gtk PROPERTIES OUTPUT_NAME skinManagerGui)
+endif()
