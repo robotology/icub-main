@@ -1957,7 +1957,7 @@ bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size
 bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
 {
     char str[256];
-    char canfullmessage[32];
+    char canfullmessage[64];
 
     static const char * sourcestrings[] =
     {
@@ -1973,30 +1973,14 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
 
     int msg_id = (p64[1]&0xF0) >> 4;
 
-    // Validity check
-    if(address > 15)
-        return false;
-    // Initialization needed?
-    if (c_string_handler[address] == NULL)
-        c_string_handler[address] = new can_string_eth();
-
-    CanFrame can_msg;
-    can_msg.setCanData(infobasic->properties.par64);
-    can_msg.setId(msg_id);
-    can_msg.setSize(infobasic->properties.par16);
-    int ret = c_string_handler[address]->add_string(&can_msg);
-
     uint32_t sec = infobasic->timestamp / 1000000;
     uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
     uint32_t usec = infobasic->timestamp % 1000;
-    // String finished?
-    if (ret != -1)
-    {
-        char* themsg = c_string_handler[address]->get_string(ret);
-        memcpy(canfullmessage, themsg, sizeof(canfullmessage));
-        canfullmessage[31] = 0;
-        c_string_handler[address]->clear_string(ret);
 
+    // Validity check
+    if(address > 15)
+    {
+        snprintf(canfullmessage,sizeof(canfullmessage),"Error while parsing the message: CAN address detected is out of allowed range");
         snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
                                     this->boardNum,
                                     str_source,
@@ -2007,7 +1991,40 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
                                     msg_id,
                                     canfullmessage
                                     );
+        embObjPrintError(str);
+    }
+    else
+    {
+        // Initialization needed?
+        if (c_string_handler[address] == NULL)
+            c_string_handler[address] = new can_string_eth();
+
+        CanFrame can_msg;
+        can_msg.setCanData(infobasic->properties.par64);
+        can_msg.setId(msg_id);
+        can_msg.setSize(infobasic->properties.par16);
+        int ret = c_string_handler[address]->add_string(&can_msg);
+
+        // String finished?
+        if (ret != -1)
+        {
+            char* themsg = c_string_handler[address]->get_string(ret);
+            memcpy(canfullmessage, themsg, sizeof(canfullmessage));
+            canfullmessage[63] = 0;
+            c_string_handler[address]->clear_string(ret);
+
+            snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
+                                        this->boardNum,
+                                        str_source,
+                                        address,
+                                        sec,
+                                        msec,
+                                        usec,
+                                        msg_id,
+                                        canfullmessage
+                                        );
         embObjPrintInfo(str);
+        }
     }
     return true;
 }
