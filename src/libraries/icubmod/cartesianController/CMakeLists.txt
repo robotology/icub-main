@@ -18,8 +18,7 @@ if(NOT SKIP_cartesiancontrollerserver)
    yarp_add_plugin(cartesiancontrollerserver ${server_source} ${server_header})
    target_link_libraries(cartesiancontrollerserver iKin ${YARP_LIBRARIES})
    icub_export_plugin(cartesiancontrollerserver)
-#  do not install catesians as plugin for now because they depend on iKin
-#   yarp_install(FILES cartesiancontrollerserver.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+   yarp_install(FILES cartesiancontrollerserver.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 endif()
 
 yarp_prepare_device(cartesiancontrollerclient TYPE ClientCartesianController
@@ -36,8 +35,7 @@ if(NOT SKIP_cartesiancontrollerclient)
    target_link_libraries(cartesiancontrollerclient iKin ${YARP_LIBRARIES})
 
    icub_export_plugin(cartesiancontrollerclient)
-#  do not install catesians as plugin for now because they depend on iKin
-#   yarp_install(FILES cartesiancontrollerclient.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+   yarp_install(FILES cartesiancontrollerclient.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 endif()
 
 

@@ -181,6 +181,7 @@ private:
     Property OptionsRightLeg;
     Property OptionsTorso;
     bool     legs_enabled;
+    bool     torso_enabled;
     bool     com_enabled;
     bool     w0_dw0_enabled;
     bool     com_vel_enabled;
@@ -219,6 +220,7 @@ public:
         com_vel_enabled=false;
         com_enabled=true;
         legs_enabled = true;
+        torso_enabled = true;
         left_arm_enabled = true;
         right_arm_enabled = true;
         head_enabled = true;
@@ -417,6 +419,20 @@ public:
             yInfo("'no_legs' option found. Legs will be disabled.\n");
         }
 
+        //------------------CHECK IF TORSO IS ENABLED-----------//
+        if (rf.check("no_torso_legs"))
+        {
+            torso_enabled= false;
+            legs_enabled= false;
+            yInfo("no_torso_legs' option found. Torso and legs will be disabled.\n");
+        }
+        if (rf.check("no_torso"))
+        {
+            torso_enabled= false;
+            yInfo("'no_torso' option found. Torso will be disabled.\n");
+        }
+
+
         //------------------CHECK IF HEAD IS ENABLED-----------//
         if (rf.check("no_head"))
         {
@@ -540,17 +556,20 @@ public:
             }
         }
 
-        OptionsTorso.put("device","remote_controlboard");
-        OptionsTorso.put("local",string("/"+local_name+"/torso/client").c_str());
-        OptionsTorso.put("remote",string("/"+robot_name+"/torso").c_str());
-
-        if (!createDriver(dd_torso, OptionsTorso))
+        if (torso_enabled)
         {
-            yError("unable to create head device driver...quitting\n");
-            return false;
+            OptionsTorso.put("device","remote_controlboard");
+            OptionsTorso.put("local",string("/"+local_name+"/torso/client").c_str());
+            OptionsTorso.put("remote",string("/"+robot_name+"/torso").c_str());
+
+            if (!createDriver(dd_torso, OptionsTorso))
+            {
+                yError("unable to create head device driver...quitting\n");
+                return false;
+            }
+            else
+                yInfo("device driver created\n");
         }
-        else
-            yInfo("device driver created\n");
 
         //--------------------CHECK FT SENSOR------------------------
         if (!dummy_ft)

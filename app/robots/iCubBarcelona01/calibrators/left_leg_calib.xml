@@ -1,6 +1,6 @@
  
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices robot="iCubBarcelona01" build="1">     
+<devices robot="iCubLyon01" build="1">     
     <device name="left_leg_calibrator" type="parametricCalibrator">    
 <params file="general.xml" />              
         <group name="GENERAL">             
@@ -13,7 +13,7 @@
 <param name="calibrationType">            3             3             3             3             3             3             </param>       
 <param name="calibration1">               2047.5        2047.5        2047.5        2047.5        2047.5        2047.5        </param>       
 <param name="calibration2">               10            10            10            10            10            10            </param>       
-<param name="calibration3">               2704.5        3319.5        541.5         2592.5        610.5         1683.5        </param>       
+<param name="calibration3">               3817.5        937.5         3115.5        2840.5        2388.5        1423.5        </param>       
 <param name="positionZero">               0             0             0             0             0             0             </param>       
 <param name="velocityZero">               10            10            10            10            10            10            </param>       
 <param name="maxPwm">                     120           120           120           120           120           120           </param>       

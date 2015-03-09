@@ -1,5 +1,5 @@
 <!-- instantiation of
-     icub-main/app/demoGrasp_IIT_ISR/scripts/demoGrasp.xml.template
+     icub-main/app/demoGrasp/scripts/demoGrasp.xml.template
      for Vizzy -->
 
 <application>
@@ -40,7 +40,7 @@
         </connection>
         <connection>
                 <from>/pf3dTracker/data:o</from>
-                <to>/demoGraspManager_IIT_ISR/trackTarget:i</to>
+                <to>/demoGraspManager/trackTarget:i</to>
                 <protocol>udp</protocol>
         </connection>
 </application>

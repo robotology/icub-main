@@ -238,6 +238,7 @@ private:
     float *_encoderconversionfactor;            /** iCubDegrees to encoder conversion factors */
     float *_encoderconversionoffset;            /** iCubDegrees offset */
     double *_rotToEncoder;                      /** angle to rotor conversion factors */
+    double *_gearbox;                           /** the gearbox ratio */
     double *_zeros;                             /** encoder zeros */
     Pid *_pids;                                 /** initial gains */
     Pid *_tpids;                                /** initial torque gains */

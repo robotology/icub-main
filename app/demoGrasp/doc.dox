@@ -1,6 +1,6 @@
 /**
 @ingroup  icub_applications
-\defgroup icub_demoGrasp_IIT_ISR demoGrasp_IIT_ISR
+\defgroup icub_demoGrasp demoGrasp
 
 The Joint Grasping application developed by IIT and ISR.
 
@@ -22,11 +22,11 @@ interface implemented) and \ref iKinGazeCtrl are running.
 
 - \ref motionCUT "motionCUT"
 
-- \ref demoGraspManager_IIT_ISR "demoGraspManager_IIT_ISR"
+- \ref demoGraspManager "demoGraspManager"
 
 \section config_sec Configuration Files
 The file ./conf/config.ini contains the initialization parameters for the 
-demoGraspManager_IIT_ISR module.
+demoGraspManager module.
 The file ./conf/network.ini contains the network weights.
 
 \section howto_sec How to run the Application
@@ -45,7 +45,7 @@ Copyright (C) 2009 RobotCub Consortium
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-This file can be edited at app/demoGrasp_IIT_ISR/doc.dox
+This file can be edited at app/demoGrasp/doc.dox
 */
 
 
