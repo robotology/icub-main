@@ -6,7 +6,8 @@ include(iCubUseQt5)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
-include_directories(${YARP_INCLUDE_DIRS})
+include_directories(${YARP_INCLUDE_DIRS}
+                    ${skinDynLib_INCLUDE_DIRS})
 
 set(skinManagerGui_qt_SRCS main.cpp
                            loadingwidget.cpp
@@ -40,7 +41,8 @@ add_executable(skinManagerGui-qt WIN32 ${skinManagerGui_qt_SRCS}
                                        ${skinManagerGui_qt_UI_GEN_SRCS})
 target_link_libraries(skinManagerGui-qt YARP::YARP_OS
                                         YARP::YARP_init
-                                        YARP::YARP_sig)
+                                        YARP::YARP_sig
+                                        skinDynLib)
 
 qt5_use_modules(skinManagerGui-qt Widgets PrintSupport)
 qticub_deprecate_with_cmake_version(2.8.11)
