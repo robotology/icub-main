@@ -51,7 +51,7 @@ endif()
 find_package(ACE)
 find_package(IPOPT)
 find_package(IPP)
-find_package(Qt5 COMPONENTS Core Widgets OpenGL Quick Qml Concurrent QUIET)
+find_package(Qt5 COMPONENTS Core Widgets OpenGL Quick Qml Concurrent PrintSupport QUIET)
 
 message(STATUS "OpenCV version is ${OpenCV_VERSION_MAJOR}.${OpenCV_VERSION_MINOR}")
 
