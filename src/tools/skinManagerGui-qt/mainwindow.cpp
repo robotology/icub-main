@@ -592,11 +592,11 @@ void MainWindow::onUpdateTimer()
                 }
 
                 if(ui->treeCompensation->topLevelItemCount() <= 0){
-                    for(int i=0; i<portNames.size();i++){
+                    for(size_t i=0; i<portNames.size();i++){
                         QTreeWidgetItem *portItem = new QTreeWidgetItem();
                         ui->treeCompensation->addTopLevelItem(portItem);
 
-                        for(int j=0; j<portDim[i]/12; j++){
+                        for(unsigned int j=0; j<portDim[i]/12; j++){
                             QTreeWidgetItem *trItem = new QTreeWidgetItem();
                             portItem->addChild(trItem);
 
@@ -615,12 +615,12 @@ void MainWindow::onUpdateTimer()
                 int portIndex=0;
                 double meanTr;
 
-                for(int i=0; i<portNames.size();i++){
+                for(size_t i=0; i<portNames.size();i++){
                     sumPort = 0;
 
                     QTreeWidgetItem *portItem = ui->treeCompensation->topLevelItem(i);
 
-                    for(int j=0; j<portDim[i]/12; j++){
+                    for(unsigned int j=0; j<portDim[i]/12; j++){
                         meanTr = driftPerTr[portIndex];
                         portIndex++;
                         sumPort += meanTr;
