@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/splash/bg1.png</file>
+        <file>images/splash/bg2.png</file>
+        <file>images/splash/bg3.png</file>
+        <file>images/splash/bg4.png</file>
+        <file>images/splash/bg5.png</file>
+        <file>images/splash/bg6.png</file>
+        <file>images/splash/bg7.png</file>
+        <file>images/splash/bg8.png</file>
+        <file>images/splitter.png</file>
+    </qresource>
+</RCC>
