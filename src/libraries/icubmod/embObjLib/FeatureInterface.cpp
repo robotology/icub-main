@@ -266,6 +266,14 @@ fakestdbool_t feat_signal_network_reply(eOprotBRD_t brd, eOprotID32_t id32, uint
     return(ethres->aNetworkQueryReplyHasArrived(id32, signature));
 }
 
+fakestdbool_t feat_embObjCANPrintHandler(eOprotBRD_t brd, eOmn_info_basic_t* infobasic)
+{
+    ethResources* ethres = _interface2ethManager->GetEthResource(nvBoardNum2FeatIdBoardNum(brd));
+
+    //Call the ethres manager
+    bool res = ethres->CANPrintHandler(infobasic);
+    return res;
+}
 
 #include <ace/ACE.h>
 #include <ace/config.h>

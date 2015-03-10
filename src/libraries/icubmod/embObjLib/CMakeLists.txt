@@ -40,6 +40,7 @@ if(NOT ICUB_HAS_icub_firmware_shared)
        https://github.com/robotology/icub-firmware-shared
   .    ")
 else(NOT ICUB_HAS_icub_firmware_shared)
+    set(FIRMWARE_SHARED_INC         ${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
 
 #--------------------------------------------------------#
 # download embObjlib from firmware repository
@@ -250,7 +251,9 @@ SOURCE_GROUP("EmbObj Header Files" FILES ${embobj_header})
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
                     ${embObj_includes}
                     ${iCubDev_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS})
+                    ${YARP_INCLUDE_DIRS}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/
+                    ${FIRMWARE_SHARED_INC})
 
 add_library(${PROJECTNAME} ${embobj_source} ${embobj_header})
 

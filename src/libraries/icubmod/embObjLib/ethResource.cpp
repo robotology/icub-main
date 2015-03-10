@@ -19,6 +19,7 @@
 #include "EoProtocol.h"
 #include "EoManagement.h"
 #include "EoProtocolMN.h"
+#include "can_string_eth.h"
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -55,6 +56,9 @@ ethResources::ethResources()
 
     RXpacketSize = 0;
 
+    for(int i = 0; i<16; i++)
+        c_string_handler[i]     = NULL;
+
     ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
     {
@@ -79,6 +83,16 @@ ethResources::~ethResources()
     delete networkQuerySem;
     delete isbusyNQsem;
     delete iswaitingNQsem;
+
+    //Delete every can_string_eth object eventually initialized
+    for(int i=0; i<16; i++)
+    {
+        if (c_string_handler[i] != NULL)
+        {
+            delete c_string_handler[i];
+            c_string_handler[i] = NULL;
+        }
+    }
 }
 
 bool ethResources::lock()
@@ -1938,6 +1952,81 @@ bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size
     // return result
     return replied;
 
+}
+
+bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
+{
+    char str[256];
+    char canfullmessage[64];
+
+    static const char * sourcestrings[] =
+    {
+        "LOCAL",
+        "CAN1",
+        "CAN2",
+        "UNKNOWN"
+    };
+    int source                      = EOMN_INFO_PROPERTIES_FLAGS_get_source(infobasic->properties.flags);
+    const char * str_source         = (source > eomn_info_source_can2) ? (sourcestrings[3]) : (sourcestrings[source]);
+    uint16_t address                = EOMN_INFO_PROPERTIES_FLAGS_get_address(infobasic->properties.flags);
+    uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
+
+    int msg_id = (p64[1]&0xF0) >> 4;
+
+    uint32_t sec = infobasic->timestamp / 1000000;
+    uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
+    uint32_t usec = infobasic->timestamp % 1000;
+
+    // Validity check
+    if(address > 15)
+    {
+        snprintf(canfullmessage,sizeof(canfullmessage),"Error while parsing the message: CAN address detected is out of allowed range");
+        snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
+                                    this->boardNum,
+                                    str_source,
+                                    address,
+                                    sec,
+                                    msec,
+                                    usec,
+                                    msg_id,
+                                    canfullmessage
+                                    );
+        embObjPrintError(str);
+    }
+    else
+    {
+        // Initialization needed?
+        if (c_string_handler[address] == NULL)
+            c_string_handler[address] = new can_string_eth();
+
+        CanFrame can_msg;
+        can_msg.setCanData(infobasic->properties.par64);
+        can_msg.setId(msg_id);
+        can_msg.setSize(infobasic->properties.par16);
+        int ret = c_string_handler[address]->add_string(&can_msg);
+
+        // String finished?
+        if (ret != -1)
+        {
+            char* themsg = c_string_handler[address]->get_string(ret);
+            memcpy(canfullmessage, themsg, sizeof(canfullmessage));
+            canfullmessage[63] = 0;
+            c_string_handler[address]->clear_string(ret);
+
+            snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
+                                        this->boardNum,
+                                        str_source,
+                                        address,
+                                        sec,
+                                        msec,
+                                        usec,
+                                        msg_id,
+                                        canfullmessage
+                                        );
+        embObjPrintInfo(str);
+        }
+    }
+    return true;
 }
 
 // - class infoOfRecvPkts

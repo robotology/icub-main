@@ -39,6 +39,7 @@
 // Yarp includes
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/CanBusInterface.h>
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/Semaphore.h>
@@ -46,7 +47,6 @@
 #include "statExt.h"
 
 // embobjlib includes
-
 #include "hostTransceiver.hpp"
 #include "FeatureInterface.h"
 #include "IethResource.h"
@@ -94,7 +94,7 @@ typedef struct
     char                name[16];
 } ethFeature_t;
 
-
+class can_string_eth;
 
 namespace yarp{
     namespace dev{
@@ -212,6 +212,8 @@ private:
     uint16_t            usedNumberOfRegularROPs;
     uint16_t            usedSizeOfRegularROPframe;
 
+    can_string_eth*     c_string_handler[16];
+
 public:
     TheEthManager     *ethManager;          //!< Pointer to the Singleton handling the UDP socket
     int               boardNum;             // the number of ems board with range [1, TheEthManager::maxBoards]
@@ -315,6 +317,7 @@ public:
     bool stopNetworkQuerySession(Semaphore* sem);
 
     bool printRXstatistics(void);
+    bool CANPrintHandler(eOmn_info_basic_t* infobasic);
 
 
 private:

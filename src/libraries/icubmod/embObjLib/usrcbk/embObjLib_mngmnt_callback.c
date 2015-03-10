@@ -118,6 +118,17 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 
     printf("%s\n", str);
 
+    //if running, print the control loop timings
+    if (appstatus->currstate == 1)
+    {
+        snprintf(str, sizeof(str), "                        control loop timings: RX->%dus, DO->%dus, TX->%dus",
+                                                            appstatus->cloop_timings[0],
+                                                            appstatus->cloop_timings[1],
+                                                            appstatus->cloop_timings[2]);
+
+        printf("%s\n", str);
+    }
+
     snprintf(str, sizeof(str), "                        state = %s", state);
 
     printf("%s\n", str);
@@ -140,11 +151,10 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 
 static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
 {
+#define DROPCODES_FROM_LIST
+#define CAN_PRINT_FULL_PARSING
 
     static const eOerror_code_t codecanprint = EOERRORCODE(eoerror_category_System, eoerror_value_SYS_canservices_canprint);
-
-
-#define DROPCODES_FROM_LIST
 
 #if defined(DROPCODES_FROM_LIST)
     static const eOerror_code_t codes2drop_value[] =
@@ -164,7 +174,6 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
         }
     }
 #endif
-
 #if 0
     uint64_t txsec = rd->time / 1000000;
     uint64_t txmsec = (rd->time % 1000000) / 1000;
@@ -220,7 +229,12 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
     uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
 
     if(codecanprint == infobasic->properties.code)
-    {   // it is a canprint: treat it in a particular way.
+    {
+#if defined(CAN_PRINT_FULL_PARSING)
+        feat_embObjCANPrintHandler(eo_nv_GetBRD(nv), infobasic);
+        return;
+#endif
+        // it is a canprint: treat it in a particular way.
         // in first step: just print the 6 bytes (at most) of the payload: now on 03/03/15 we have implemented first step
         // in second step: do the same inside ethResources
         // in third step: inside ethResources it is called the proper class can_string_generic with one instance per can board.
