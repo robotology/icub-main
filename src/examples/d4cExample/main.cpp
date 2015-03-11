@@ -68,7 +68,6 @@ Windows, Linux
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/CartesianControl.h>
 
-#include <iCub/ctrl/math.h>
 #include <iCub/d4c/d4c_client.h>
 
 YARP_DECLARE_DEVICES(icubmod)
@@ -77,7 +76,6 @@ using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
-using namespace iCub::ctrl;
 using namespace iCub::d4c;
 
 
