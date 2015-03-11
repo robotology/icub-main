@@ -278,8 +278,8 @@ protected:
         int scale=(int)pid.scale; int shift=1<<scale;
         double fwKp=floor(Kp*pid.encs_ratio*shift);
         double fwKi=floor(Ki*pid.encs_ratio*shift/1000.0);
-        pid.Kp=iCub::ctrl::sign(pid.Kp*fwKp)>0.0?fwKp:-fwKp;
-        pid.Ki=iCub::ctrl::sign(pid.Ki*fwKi)>0.0?fwKi:-fwKi;
+        pid.Kp=yarp::math::sign(pid.Kp*fwKp)>0.0?fwKp:-fwKp;
+        pid.Ki=yarp::math::sign(pid.Ki*fwKi)>0.0?fwKi:-fwKi;
         pid.Kd=0.0;
         yInfo("Kp (FW) = %g; Ki (FW) = %g; Kd (FW) = %g; shift factor = %d",pid.Kp,pid.Ki,pid.Kd,scale);
 

@@ -1,3 +1,6 @@
+2015-03-10 Ugo Pattacini <ugo.pattacini@iit.it>
+      * moved math functions into yarp
+
 2014-11-28 Ugo Pattacini <ugo.pattacini@iit.it>
       * added implementation of median filter
 
@@ -15,7 +18,7 @@
       * tuning: added classes for pid online tuning
 
 2012-30-03 Andrea Del Prete <andrea.delprete@iit.it>
-      * minJerkCtrl: add class minJerkTrajGen that can generate approximately minimum 
+      * minJerkCtrl: add class minJerkTrajGen that can generate approximately minimum
         jerk pos/vel/acc trajectories using a third order LTI dynamical system.
 
 2011-19-01 Ugo Pattacini <ugo.pattacini@iit.it>
@@ -49,10 +52,10 @@
       * optimalControl module added
 
 2010-01-15 Ugo Pattacini <ugo.pattacini@iit.it>
-      * adaptWinPolyEstimator: reset() method added 
+      * adaptWinPolyEstimator: reset() method added
 
 2009-12-22 Ugo Pattacini <ugo.pattacini@iit.it>
-      * trajectoryGenerator: new feedback sampling algorithm 
+      * trajectoryGenerator: new feedback sampling algorithm
 
 2009-11-11 Ugo Pattacini <ugo.pattacini@iit.it>
       * ctrlMath: some functions moved to Yarp layer
@@ -91,5 +94,3 @@
 
 2009-03-17 Ugo Pattacini <ugo.pattacini@iit.it>
       * Added anti-windup to parallelPID
-
-
