@@ -1092,7 +1092,7 @@ Vector iDynNode::TESTING_computePose(unsigned int iChainA, JacobType dirA, unsig
     if (axisRep)
     {
         v.resize(7);
-        Vector r=dcm2axis(Pn,verbose);
+        Vector r=dcm2axis(Pn);
         v[0]=Pn(0,3);
         v[1]=Pn(1,3);
         v[2]=Pn(2,3);
@@ -1158,7 +1158,7 @@ Vector iDynNode::TESTING_computePose(unsigned int iChainA, JacobType dirA, unsig
     if (axisRep)
     {
         v.resize(7);
-        Vector r=dcm2axis(Pn,verbose);
+        Vector r=dcm2axis(Pn);
         v[0]=Pn(0,3);
         v[1]=Pn(1,3);
         v[2]=Pn(2,3);

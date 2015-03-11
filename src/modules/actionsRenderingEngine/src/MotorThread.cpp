@@ -2610,7 +2610,7 @@ bool MotorThread::exploreTorso(Bottle &options)
         {
             double tmp_rnd=Rand::scalar(-random_pos_y,random_pos_y);
             if ((tmp_rnd>-0.1) && (tmp_rnd<0.1))
-                tmp_rnd=0.1*iCub::ctrl::sign(tmp_rnd);
+                tmp_rnd=0.1*yarp::math::sign(tmp_rnd);
 
             random_pos[1]+=tmp_rnd;
         }

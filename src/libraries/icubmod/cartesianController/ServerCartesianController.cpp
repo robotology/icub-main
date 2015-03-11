@@ -1398,7 +1398,7 @@ Bottle ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
 
             // apply bang-bang control to compensate for unachievable low velocities
             if ((vel!=0.0) && (fabs(vel)<thres))
-                vel=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
+                vel=yarp::math::sign(qdes[cnt]-fb[cnt])*thres;
 
             joints.push_back(joint);
             vels.push_back(vel);
@@ -1490,7 +1490,7 @@ Bottle ServerCartesianController::sendCtrlCmdSingleJointVelocity()
 
             // apply bang-bang control to compensate for unachievable low velocities
             if ((vel!=0.0) && (fabs(vel)<thres))
-                vel=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
+                vel=yarp::math::sign(qdes[cnt]-fb[cnt])*thres;
 
             lVel[j]->velocityMove(joint,vel);
 
