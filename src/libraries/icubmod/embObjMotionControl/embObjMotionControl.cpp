@@ -1007,12 +1007,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (!extractGroup(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", _njoints))
     {
-        fprintf(stderr, "Using default value = 0\n");
-        for(i=1; i<_njoints+1; i++)
-        {
-            _maxTorque[i-1] = 0;
-            _newtonsToSensor[i-1]=1;
-        }
+        return false;
     }
     else
     {
