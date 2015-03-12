@@ -654,7 +654,7 @@ double axisPositionDirectHelper::getSaturatedValue (int hw_j, double hw_curr_val
     return hw_val;
 }
 
-torqueControlHelper::torqueControlHelper(int njoints, double* p_angleToEncoders, double* p_newtonsTosens )
+CanBusMotionControl::torqueControlHelper::torqueControlHelper(int njoints, double* p_angleToEncoders, double* p_newtonsTosens )
 {
    jointsNum=njoints;
    newtonsToSensor = new double  [jointsNum];

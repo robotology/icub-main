@@ -598,37 +598,6 @@ class axisPositionDirectHelper
     inline double getSaturatedValue (int j, double curr_value, double ref_value); 
 };
 
-class torqueControlHelper
-{
-    int  jointsNum;
-    double* newtonsToSensor;
-    double* angleToEncoders;
-
-    public:
-    torqueControlHelper(int njoints, double* angleToEncoders, double* newtons2sens);
-    inline ~torqueControlHelper()
-    {
-        if (newtonsToSensor)   delete [] newtonsToSensor;
-        if (angleToEncoders)   delete [] angleToEncoders;
-        newtonsToSensor=0;
-        angleToEncoders=0;
-    }
-    inline double getNewtonsToSensor (int jnt)
-    {
-        if (jnt>=0 && jnt<jointsNum) return newtonsToSensor[jnt];
-        return 0;
-    }
-    inline double getAngleToEncoders (int jnt)
-    {
-        if (jnt>=0 && jnt<jointsNum) return angleToEncoders[jnt];
-        return 0;
-    }
-    inline int getNumberOfJoints ()
-    {
-        return jointsNum;
-    }
-};
-
 class axisTorqueHelper
 {
     int  jointsNum;
@@ -716,6 +685,37 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public IFactoryInterface,
             public IClientLogger
 {
+    class torqueControlHelper
+    {
+        int  jointsNum;
+        double* newtonsToSensor;
+        double* angleToEncoders;
+
+        public:
+        torqueControlHelper(int njoints, double* angleToEncoders, double* newtons2sens);
+        inline ~torqueControlHelper()
+        {
+            if (newtonsToSensor)   delete [] newtonsToSensor;
+            if (angleToEncoders)   delete [] angleToEncoders;
+            newtonsToSensor=0;
+            angleToEncoders=0;
+        }
+        inline double getNewtonsToSensor (int jnt)
+        {
+            if (jnt>=0 && jnt<jointsNum) return newtonsToSensor[jnt];
+            return 0;
+        }
+        inline double getAngleToEncoders (int jnt)
+        {
+            if (jnt>=0 && jnt<jointsNum) return angleToEncoders[jnt];
+            return 0;
+        }
+        inline int getNumberOfJoints ()
+        {
+            return jointsNum;
+        }
+    };
+
 private:
     CanBusMotionControl(const CanBusMotionControl&);
     void operator=(const CanBusMotionControl&);
