@@ -1149,10 +1149,10 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                    }
                    else
                    {
+                       _torqueControlEnabled = true;
                        if(verbosewhenok)
                        {
                             yDebug() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL new format successfully loaded";
-                            _torqueControlEnabled = true;
                        }
                    }
                }
@@ -1447,11 +1447,11 @@ bool embObjMotionControl::init()
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
         copyPid_iCub2eo(&_pids[logico],  &jconfig.pidposition);
         copyPid_iCub2eo(&_pids[logico],  &jconfig.pidvelocity);
-        _tpids[logico].kp = _tpids[logico].kp * _torqueControlHelper->getNewtonsToSensor(logico);
-        _tpids[logico].ki = _tpids[logico].ki * _torqueControlHelper->getNewtonsToSensor(logico);
-        _tpids[logico].kd = _tpids[logico].kd * _torqueControlHelper->getNewtonsToSensor(logico);
-        _tpids[logico].stiction_up_val   = _tpids[logico].stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(logico);
-        _tpids[logico].stiction_down_val = _tpids[logico].stiction_down_val * _torqueControlHelper->getNewtonsToSensor(logico);
+        _tpids[logico].kp = _tpids[logico].kp / _torqueControlHelper->getNewtonsToSensor(logico);  //[PWM/Nm]
+        _tpids[logico].ki = _tpids[logico].ki / _torqueControlHelper->getNewtonsToSensor(logico);  //[PWM/Nm]
+        _tpids[logico].kd = _tpids[logico].kd / _torqueControlHelper->getNewtonsToSensor(logico);  //[PWM/Nm]
+        _tpids[logico].stiction_up_val   = _tpids[logico].stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(logico); //[Nm]
+        _tpids[logico].stiction_down_val = _tpids[logico].stiction_down_val * _torqueControlHelper->getNewtonsToSensor(logico); //[Nm]
         copyPid_iCub2eo(&_tpids[logico], &jconfig.pidtorque);
 
         jconfig.impedance.damping   = (eOmeas_damping_t)   U_32(_impedance_params[logico].damping * 1000);
@@ -3528,11 +3528,11 @@ bool embObjMotionControl::setTorquePidRaw(int j, const Pid &pid)
 {
     eOmc_PID_t  outPid;
     Pid hwPid = pid;  
-    hwPid.kp = hwPid.kp * _torqueControlHelper->getNewtonsToSensor(j);
-    hwPid.ki = hwPid.ki * _torqueControlHelper->getNewtonsToSensor(j);
-    hwPid.kd = hwPid.kd * _torqueControlHelper->getNewtonsToSensor(j);
-    hwPid.stiction_up_val   = hwPid.stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(j);
-    hwPid.stiction_down_val = hwPid.stiction_down_val * _torqueControlHelper->getNewtonsToSensor(j);      
+    hwPid.kp = hwPid.kp / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+    hwPid.ki = hwPid.ki / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+    hwPid.kd = hwPid.kd / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+    hwPid.stiction_up_val   = hwPid.stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(j);  //[Nm]
+    hwPid.stiction_down_val = hwPid.stiction_down_val * _torqueControlHelper->getNewtonsToSensor(j);  //[Nm]    
     //printf("DEBUG setTorquePidRaw: %f %f %f %f %f\n",hwPid.kp ,  hwPid.ki, hwPid.kd , hwPid.stiction_up_val , hwPid.stiction_down_val );
 
     copyPid_iCub2eo(&hwPid, &outPid);
@@ -3612,11 +3612,11 @@ bool embObjMotionControl::getTorquePidRaw(int j, Pid *pid)
     copyPid_eo2iCub(&eoPID, pid);
     //printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
 
-    pid->kp = pid->kp / _torqueControlHelper->getNewtonsToSensor(j);
-    pid->ki = pid->ki / _torqueControlHelper->getNewtonsToSensor(j);
-    pid->kd = pid->kd / _torqueControlHelper->getNewtonsToSensor(j);
-    pid->stiction_up_val   = pid->stiction_up_val   / _torqueControlHelper->getNewtonsToSensor(j);
-    pid->stiction_down_val = pid->stiction_down_val / _torqueControlHelper->getNewtonsToSensor(j);  
+    pid->kp = pid->kp * _torqueControlHelper->getNewtonsToSensor(j); //[PWM/Nm]
+    pid->ki = pid->ki * _torqueControlHelper->getNewtonsToSensor(j); //[PWM/Nm]
+    pid->kd = pid->kd * _torqueControlHelper->getNewtonsToSensor(j); //[PWM/Nm]
+    pid->stiction_up_val   = pid->stiction_up_val   / _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
+    pid->stiction_down_val = pid->stiction_down_val / _torqueControlHelper->getNewtonsToSensor(j); //[Nm] 
 
     return ret;
 }
@@ -3840,9 +3840,9 @@ bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *
     eOmc_motor_params_t eo_params = {0};
     res->readBufferedValue(id32, (uint8_t *)&eo_params, &size);
 
-    params->bemf       = eo_params.bemf_value / _torqueControlHelper->getNewtonsToSensor(j) *  _torqueControlHelper->getAngleToEncoders(j);
+    params->bemf       = eo_params.bemf_value / _torqueControlHelper->getNewtonsToSensor(j) *  _torqueControlHelper->getAngleToEncoders(j);  //[Nm/deg/s]
     params->bemf_scale = eo_params.bemf_scale;
-    params->ktau       = eo_params.ktau_value / _torqueControlHelper->getNewtonsToSensor(j);
+    params->ktau       = eo_params.ktau_value * _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
     params->ktau_scale = eo_params.ktau_scale;
     //printf("debug getMotorTorqueParamsRaw %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale);
 
@@ -3854,9 +3854,9 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
     eOmc_motor_params_t eo_params = {0};
 
-    eo_params.bemf_value    = (float) params.bemf * _torqueControlHelper->getNewtonsToSensor(j) /  _torqueControlHelper->getAngleToEncoders(j);
+    eo_params.bemf_value    = (float) params.bemf * _torqueControlHelper->getNewtonsToSensor(j) /  _torqueControlHelper->getAngleToEncoders(j); //[Nm/deg/s]
     eo_params.bemf_scale    = (uint8_t) params.bemf_scale;
-    eo_params.ktau_value    = (float) params.ktau * _torqueControlHelper->getNewtonsToSensor(j);
+    eo_params.ktau_value    = (float) params.ktau / _torqueControlHelper->getNewtonsToSensor(j); //[PWM/Nm]
     eo_params.ktau_scale    = (uint8_t) params.ktau_scale;
     //printf("DEBUG setMotorTorqueParamsRaw: %f %f %f %f\n",  params.bemf, params.bemf_scale, params.ktau,params.ktau_scale);
 
