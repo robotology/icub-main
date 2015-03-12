@@ -1,8 +1,10 @@
  
  
 <?xml version="1.0" encoding="UTF-8" ?>    
+<devices robot="iCubParis02" build="1">  
 <devices>      
   <device name="right_arm_mc" type="canmotioncontrol">   
+  <params file="general.xml" />
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
 <param name="physDevice">   cfw2can       </param>       

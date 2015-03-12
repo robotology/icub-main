@@ -1,7 +1,9 @@
-<?xml version="1.0" encoding="UTF-8" ?>    
-<devices>      
+<?xml version="1.0" encoding="UTF-8" ?>   
+<devices robot="iCubParis02" build="1">   
+<devices>    
+  
     <device name="left_hand_calibrator" type="parametricCalibrator">   
- 
+ <params file="general.xml" />
         <group name="GENERAL">             
             <param name="joints"> 8 </param>             
             <param name="deviceName"> Left_Hand_Calibrator </param>    
