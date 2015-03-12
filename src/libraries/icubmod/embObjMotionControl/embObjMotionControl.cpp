@@ -40,6 +40,23 @@ using namespace yarp::os::impl;
 
 
 // Utilities
+torqueControlHelper::torqueControlHelper(int njoints, double* p_angleToEncoders, double* p_newtonsTosens )
+{
+   jointsNum=njoints;
+   newtonsToSensor = new double  [jointsNum];
+   angleToEncoders = new double  [jointsNum];
+
+   if (p_angleToEncoders!=0)
+       memcpy(angleToEncoders, p_angleToEncoders, sizeof(double)*jointsNum);
+   else
+       for (int i=0; i<jointsNum; i++) {angleToEncoders[i]=1.0;}
+
+   if (p_newtonsTosens!=0)
+       memcpy(newtonsToSensor, p_newtonsTosens, sizeof(double)*jointsNum);
+   else
+       for (int i=0; i<jointsNum; i++) {newtonsToSensor[i]=1.0;}
+}
+
 
 void embObjMotionControl::copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
 {
@@ -455,6 +472,9 @@ embObjMotionControl::embObjMotionControl() :
     _kbemf            = NULL;
     _ktau             = NULL;
     _filterType       = NULL;
+    _torqueControlUnits = MACHINE_UNITS;
+    _torqueControlEnabled = false;
+    _torqueControlHelper = NULL;
 
     checking_motiondone = NULL;
     // debug connection
@@ -755,7 +775,14 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
     //  INIT ALL INTERFACES
-
+    double *tmpZeros = new double [_njoints];
+    double *tmpOnes  = new double [_njoints];
+    for (int i=0; i< _njoints; i++)
+    {
+        tmpZeros[i]=0.0;
+        tmpOnes[i]=1.0;
+    }
+    
     ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementEncodersTimed::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
@@ -771,11 +798,19 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementControlLimits2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
+    
+    if      (_torqueControlUnits==MACHINE_UNITS) {_torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes, tmpOnes);}
+    else if (_torqueControlUnits==METRIC_UNITS)  {_torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);}
+    else    {yError() << "Invalid _torqueControlUnits value: %d" << _torqueControlUnits; return false;}
+    
     ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementOpenLoopControl::initialize(_njoints, _axisMap);
     ImplementInteractionMode::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementMotor::initialize(_njoints, _axisMap);
 
+    delete [] tmpZeros; tmpZeros=0;
+    delete [] tmpOnes;  tmpOnes=0;
+    
     /*
     *  Once I'm sure every input data required is present and correct, instantiate the EMS, transceiver etc...
     */
@@ -1085,6 +1120,20 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         trqPidsGroup=config.findGroup("TORQUE_CONTROL", "Torque control parameters new format");
         if (trqPidsGroup.isNull()==false)
         {
+           Value &controlUnits=trqPidsGroup.find("controlUnits");
+           if  (controlUnits.isNull() == false && controlUnits.isString() == true)
+           {
+                if      (controlUnits.toString()==string("metric_units"))  {_torqueControlUnits=METRIC_UNITS;}
+                else if (controlUnits.toString()==string("machine_units")) {_torqueControlUnits=MACHINE_UNITS;}
+                else    {yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: invalid controlUnits value";
+                         return false;}
+           }
+           else
+           {
+                yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: missing controlUnits parameter. Assuming machine_units. Please fix your configuration file.";
+                _torqueControlUnits=MACHINE_UNITS;
+           }
+           
            Value &controlLaw=trqPidsGroup.find("controlLaw");
            if (controlLaw.isNull() == false && controlLaw.isString() == true)
            {
@@ -1388,9 +1437,7 @@ bool embObjMotionControl::init()
 
     //////////////////////////////////////////
     // invia la configurazione dei GIUNTI   //
-    //////////////////////////////////////////
-
-
+    //////////////////////////////////////////  
     for(int logico=0; logico< _njoints; logico++)
     {
         int fisico = _axisMap[logico];
@@ -1400,6 +1447,11 @@ bool embObjMotionControl::init()
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
         copyPid_iCub2eo(&_pids[logico],  &jconfig.pidposition);
         copyPid_iCub2eo(&_pids[logico],  &jconfig.pidvelocity);
+        _tpids[logico].kp = _tpids[logico].kp * _torqueControlHelper->getNewtonsToSensor(logico);
+        _tpids[logico].ki = _tpids[logico].ki * _torqueControlHelper->getNewtonsToSensor(logico);
+        _tpids[logico].kd = _tpids[logico].kd * _torqueControlHelper->getNewtonsToSensor(logico);
+        _tpids[logico].stiction_up_val   = _tpids[logico].stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(logico);
+        _tpids[logico].stiction_down_val = _tpids[logico].stiction_down_val * _torqueControlHelper->getNewtonsToSensor(logico);
         copyPid_iCub2eo(&_tpids[logico], &jconfig.pidtorque);
 
         jconfig.impedance.damping   = (eOmeas_damping_t)   U_32(_impedance_params[logico].damping * 1000);
@@ -1450,7 +1502,7 @@ bool embObjMotionControl::init()
         params.bemf_scale = 0;
         params.ktau = _ktau[logico];
         params.ktau_scale = 0;
-        //use the yarp method to get the values properly converted from [SI] to HW units
+        //use the yarp method to get the values properly converted from [SI] to HW units (if necessary)
         setMotorTorqueParams(logico,params);
     }
 
@@ -1667,6 +1719,9 @@ bool embObjMotionControl::close()
     ImplementPositionDirect::uninitialize();
     ImplementOpenLoopControl::uninitialize();
     ImplementInteractionMode::uninitialize();
+    
+    if (_torqueControlHelper)  {delete _torqueControlHelper; _torqueControlHelper=0;}
+    
     cleanup();
 
     return true;
@@ -3472,7 +3527,13 @@ bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
 bool embObjMotionControl::setTorquePidRaw(int j, const Pid &pid)
 {
     eOmc_PID_t  outPid;
-    copyPid_iCub2eo(&pid, &outPid);
+    Pid hwPid = pid;  
+    hwPid.kp = hwPid.kp * _torqueControlHelper->getNewtonsToSensor(j);
+    hwPid.ki = hwPid.ki * _torqueControlHelper->getNewtonsToSensor(j);
+    hwPid.kd = hwPid.kd * _torqueControlHelper->getNewtonsToSensor(j);
+    hwPid.stiction_up_val   = hwPid.stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(j);
+    hwPid.stiction_down_val = hwPid.stiction_down_val * _torqueControlHelper->getNewtonsToSensor(j);      
+    copyPid_iCub2eo(&hwPid, &outPid);
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque);
     return res->addSetMessage(protid, (uint8_t *)&outPid);
 }
@@ -3547,6 +3608,11 @@ bool embObjMotionControl::getTorquePidRaw(int j, Pid *pid)
     eOmc_PID_t eoPID;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&eoPID, &size);
     copyPid_eo2iCub(&eoPID, pid);
+    pid[j].kp = pid[j].kp / _torqueControlHelper->getNewtonsToSensor(j);
+    pid[j].ki = pid[j].ki / _torqueControlHelper->getNewtonsToSensor(j);
+    pid[j].kd = pid[j].kd / _torqueControlHelper->getNewtonsToSensor(j);
+    pid[j].stiction_up_val   = pid[j].stiction_up_val   / _torqueControlHelper->getNewtonsToSensor(j);
+    pid[j].stiction_down_val = pid[j].stiction_down_val / _torqueControlHelper->getNewtonsToSensor(j);  
     return ret;
 }
 
@@ -3769,9 +3835,9 @@ bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *
     eOmc_motor_params_t eo_params = {0};
     res->readBufferedValue(id32, (uint8_t *)&eo_params, &size);
 
-    params->bemf       = eo_params.bemf_value;
+    params->bemf       = eo_params.bemf_value / _torqueControlHelper->getNewtonsToSensor(j) *  _torqueControlHelper->getAngleToEncoders(j);
     params->bemf_scale = eo_params.bemf_scale;
-    params->ktau       = eo_params.ktau_value;
+    params->ktau       = eo_params.ktau_value / _torqueControlHelper->getNewtonsToSensor(j);
     params->ktau_scale = eo_params.ktau_scale;
     //printf("debug getMotorTorqueParamsRaw %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale);
 
@@ -3784,9 +3850,9 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
     eOmc_motor_params_t eo_params = {0};
 
-    eo_params.bemf_value    = (float) params.bemf;
+    eo_params.bemf_value    = (float) params.bemf * _torqueControlHelper->getNewtonsToSensor(j) /  _torqueControlHelper->getAngleToEncoders(j);
     eo_params.bemf_scale    = (uint8_t) params.bemf_scale;
-    eo_params.ktau_value    = (float) params.ktau;
+    eo_params.ktau_value    = (float) params.ktau * _torqueControlHelper->getNewtonsToSensor(j);
     eo_params.ktau_scale    = (uint8_t) params.ktau_scale;
     //printf("DEBUG setMotorTorqueParamsRaw: %f %f %f %f\n",  params.bemf, params.bemf_scale, params.ktau,params.ktau_scale);
 

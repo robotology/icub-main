@@ -34,6 +34,7 @@
 
     <group name="TORQUE_CONTROL">
         <param name="controlLaw">    motor_pid_with_friction_v1 </param> 
+        <param name="controlUnits">  metric_units               </param> 
         <param name="kp">          50           50              </param>       
         <param name="kd">           0            0              </param>       
         <param name="ki">           0            0              </param>       

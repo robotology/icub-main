@@ -2851,13 +2851,13 @@ bool CanBusMotionControl::close (void)
     }
 
     if (threadPool != 0)
-        delete threadPool;
+       {delete threadPool; threadPool = 0;}
     if (_axisTorqueHelper != 0)
-        delete _axisTorqueHelper;
+       {delete _axisTorqueHelper; _axisTorqueHelper = 0;}
     if (_torqueControlHelper != 0)
-        delete _torqueControlHelper;
+       {delete _torqueControlHelper; _torqueControlHelper=0;}
     if (_firmwareVersionHelper != 0)
-        delete _firmwareVersionHelper;
+       {delete _firmwareVersionHelper; _firmwareVersionHelper =0;}
 
     checkAndDestroy<double> (_ref_positions);
     checkAndDestroy<double> (_command_speeds);
