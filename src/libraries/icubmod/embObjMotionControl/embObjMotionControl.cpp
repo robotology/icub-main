@@ -872,7 +872,7 @@ bool embObjMotionControl::parseImpedanceGroup_NewFormat(Bottle& pidsGroup, Imped
     return true;
 }
 
-bool embObjMotionControl::parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[])
+bool embObjMotionControl::parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[])
 {
     int j=0;
     Bottle xtmp;
@@ -903,6 +903,39 @@ bool embObjMotionControl::parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[
     return true;
 }
 
+bool embObjMotionControl::parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], double kbemf[], double ktau[], int filterType[])
+{
+    int j=0;
+    Bottle xtmp;
+    if (!extractGroup(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "maxPwm", "Pid maxPwm parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "kff",   "Pid kff parameter", _njoints))       return false; for (j=0; j<_njoints; j++) myPid[j].kff  = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "kbemf", "kbemf parameter", _njoints))         return false; for (j=0; j<_njoints; j++) kbemf[j]      = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "ktau", "ktau parameter", _njoints))           return false; for (j=0; j<_njoints; j++) ktau[j]       = xtmp.get(j+1).asDouble(); 
+    if (!extractGroup(pidsGroup, xtmp, "filterType", "filterType param", _njoints))   return false; for (j=0; j<_njoints; j++) filterType[j] = xtmp.get(j+1).asDouble();
+ 
+    //optional PWM limit
+    if(_pwmIsLimited)
+    {   // check for value in the file
+        if (!extractGroup(pidsGroup, xtmp, "limPwm", "Limited PWD", _njoints))
+        {
+            yError() << "The PID parameter limPwm was requested but was not correctly set in the configuration file, please fill it.";
+            return false;
+        }
+
+        fprintf(stderr,  "embObjMotionControl using LIMITED PWM!! \n");
+        for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    }
+
+    return true;
+}
 
 bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 {
@@ -1025,7 +1058,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         posPidsGroup=config.findGroup("POS_PIDS", "Position Pid parameters new format");
         if (posPidsGroup.isNull()==false)
         {
-           if (!parsePidsGroup_NewFormat (posPidsGroup, _pids))
+           if (!parsePositionPidsGroup (posPidsGroup, _pids))
            {
                yError() << "embObjMotionControl::fromConfig(): POS_PIDS section: error detected in parameters syntax";
                return false;
@@ -1049,53 +1082,47 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     ////// TORQUE PIDS
     {
         Bottle trqPidsGroup;
-        trqPidsGroup=config.findGroup("TRQ_PIDS", "Torque Pid parameters new format");
+        trqPidsGroup=config.findGroup("TORQUE_CONTROL", "Torque control parameters new format");
         if (trqPidsGroup.isNull()==false)
         {
-           if (!parsePidsGroup_NewFormat (trqPidsGroup, _tpids))
+           Value &controlLaw=trqPidsGroup.find("controlLaw");
+           if (controlLaw.isNull() == false && controlLaw.isString() == true)
            {
-               yError() << "embObjMotionControl::fromConfig(): TRQ_PIDS section: error detected in parameters syntax";
-               return false;
-           }
-           else
-           {
-               if(verbosewhenok)
+               string s_controlaw = controlLaw.toString();
+               if (s_controlaw==string("motor_pid_with_friction_v1"))
                {
-                    yDebug() << "embObjMotionControl::fromConfig(): TRQ_PIDS new format successfully loaded";
+                   yDebug() << "control law" << s_controlaw << " will be use for torque control";
+                   if (!parseTorquePidsGroup (trqPidsGroup, _tpids, _kbemf, _ktau, _filterType))
+                   {
+                       yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: error detected in parameters syntax";
+                       _torqueControlEnabled = false;
+                       return false;
+                   }
+                   else
+                   {
+                       if(verbosewhenok)
+                       {
+                            yDebug() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL new format successfully loaded";
+                            _torqueControlEnabled = true;
+                       }
+                   }
+               }
+               else
+               {
+                  yError() << "Unable to use control law " << s_controlaw << ". Disabling torque control";
+                  _torqueControlEnabled = false;
                }
            }
+           else
+           { 
+                yError() << "Unable to find a valid control law parameter. Disabling torque control";    
+               _torqueControlEnabled = false;
+           }           
         }
         else
         {
-            yError() <<"embObjMotionControl::fromConfig(): Error: no TRQ_PIDS group found in config file, returning";
-            return false;
-        }
-        if (!extractGroup(trqPidsGroup, xtmp, "kbemf", "Pid kbemf parameter", _njoints))
-        {
-            yError() <<"embObjMotionControl::fromConfig(): Error: no kbemf parameter found in TRQ_PIDS section";
-            return false;
-        }
-        else
-        {
-            for (j=0; j<_njoints; j++) _kbemf[j] = xtmp.get(j+1).asDouble();
-        }
-        if (!extractGroup(trqPidsGroup, xtmp, "ktau", "Pid ktau parameter", _njoints))
-        {
-            yError() <<"embObjMotionControl::fromConfig(): Error: no ktau parameter found in TRQ_PIDS section";
-            return false;
-        }
-        else
-        {
-            for (j=0; j<_njoints; j++) _ktau[j] = xtmp.get(j+1).asDouble();
-        }
-        if (!extractGroup(trqPidsGroup, xtmp, "filterType", "type of filter used by the torque controller, integer describes the algoritmh type", _njoints))
-        {
-            yError() <<"embObjMotionControl::fromConfig(): Error: no filterType parameter found in TRQ_PIDS section";
-            return false;
-        }
-        else
-        {
-            for (j=0; j<_njoints; j++) _filterType[j] = xtmp.get(j+1).asInt();
+            yError() <<"embObjMotionControl::fromConfig(): Error: no TORQUE_CONTROL group found in config file";
+            _torqueControlEnabled = false;
         }
     }
 
@@ -2558,7 +2585,7 @@ bool embObjMotionControl::setVelocityModeRaw(int j)
 
 bool embObjMotionControl::setTorqueModeRaw(int j)
 {
-
+    if (_torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
     eOmc_controlmode_command_t    val =  eomc_controlmode_cmd_torque;
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
 
@@ -2567,6 +2594,7 @@ bool embObjMotionControl::setTorqueModeRaw(int j)
 
 bool embObjMotionControl::setImpedancePositionModeRaw(int j)
 {
+    if (_torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
     bool ret = setInteractionModeRaw(j, VOCAB_IM_COMPLIANT);
     ret = setControlModeRaw(j, VOCAB_CM_POSITION) && ret;
     return ret;
@@ -2574,6 +2602,7 @@ bool embObjMotionControl::setImpedancePositionModeRaw(int j)
 
 bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
 {
+    if (_torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
     bool ret = setInteractionModeRaw(j, VOCAB_IM_COMPLIANT);
     ret = setControlModeRaw(j, VOCAB_CM_VELOCITY) && ret;
     return ret;
@@ -2678,6 +2707,8 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 
     //yDebug() << "SetControlMode: received setControlMode command (SINGLE) for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
 
+    if (_mode == VOCAB_CM_TORQUE && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
+
     if(!controlModeCommandConvert_yarp2embObj(_mode, valSet) )
     {
         yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
@@ -2729,6 +2760,8 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
 
     for(int i=0; i<n_joint; i++)
     {
+        if (modes[i] == VOCAB_CM_TORQUE && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+
         if(!controlModeCommandConvert_yarp2embObj(modes[i], valSet[i]) )
         {
             yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNumber << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
@@ -2785,6 +2818,9 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
     for(int i=0; i<_njoints; i++)
     {
         jointVector[i] = i;
+        
+        if (modes[i] == VOCAB_CM_TORQUE && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+            
         if(!controlModeCommandConvert_yarp2embObj(modes[i], valSet[i]) )
         {
             yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNumber << " joint " << i << " mode " << Vocab::decode(modes[i]);
@@ -3960,6 +3996,8 @@ bool embObjMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionMod
 
 //    yDebug() << "received setInteractionModeRaw command (SINGLE) for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
 
+    if (_mode == VOCAB_IM_COMPLIANT && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
+
     if(!interactionModeCommandConvert_yarp2embObj(_mode, valSet) )
     {
         yError() << "setInteractionModeRaw: received unknown mode for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
@@ -3996,6 +4034,8 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
 
     for(int j=0; j<n_joints; j++)
     {
+        if (modes[j] == VOCAB_IM_COMPLIANT && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+
         if(!interactionModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
         {
             yError() << "setInteractionModeRaw: received unknown interactionMode for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]) << " " << modes[j];
@@ -4047,6 +4087,8 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 
     for(int j=0; j<_njoints; j++)
     {
+        if (modes[j] == VOCAB_IM_COMPLIANT && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+
         jointVector[j] = j;
         if(!interactionModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
         {

@@ -265,8 +265,9 @@ private:
     eOmc_impedance_t *_cacheImpedance;			/* cache impedance value to split up the 2 sets */
 
     bool        verbosewhenok;
-    bool         useRawEncoderData;
+    bool        useRawEncoderData;
     bool        _pwmIsLimited;                         /** set to true if pwm is limited */
+    bool        _torqueControlEnabled;                 /** set to true if the torque control parameters are successfully loaded. If false, boards cannot switch in torque mode */
 
 #if !defined(EMBOBJMC_DONT_USE_MAIS)
     int         numberofmaisboards;
@@ -312,7 +313,8 @@ private:
 #endif
     bool dealloc();
     bool isEpManagedByBoard();
-    bool parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[]);
+    bool parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[]);
+    bool parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], double kbemf[], double ktau[], int filterType[]);
     bool parseImpedanceGroup_NewFormat(Bottle& pidsGroup, ImpedanceParameters vals[]);
        
     bool getStatusBasic_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);             // helper function
