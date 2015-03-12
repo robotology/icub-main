@@ -2,7 +2,7 @@
  
 <?xml version="1.0" encoding="UTF-8" ?>   
 <devices robot="iCubParis02" build="1">   
-<devices>      
+   
   <device name="right_hand_mc" type="canmotioncontrol">  
   <params file="general.xml" />
 <group name="CAN">           
