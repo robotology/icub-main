@@ -3608,11 +3608,11 @@ bool embObjMotionControl::getTorquePidRaw(int j, Pid *pid)
     eOmc_PID_t eoPID;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&eoPID, &size);
     copyPid_eo2iCub(&eoPID, pid);
-    pid[j].kp = pid[j].kp / _torqueControlHelper->getNewtonsToSensor(j);
-    pid[j].ki = pid[j].ki / _torqueControlHelper->getNewtonsToSensor(j);
-    pid[j].kd = pid[j].kd / _torqueControlHelper->getNewtonsToSensor(j);
-    pid[j].stiction_up_val   = pid[j].stiction_up_val   / _torqueControlHelper->getNewtonsToSensor(j);
-    pid[j].stiction_down_val = pid[j].stiction_down_val / _torqueControlHelper->getNewtonsToSensor(j);  
+    pid->kp = pid->kp / _torqueControlHelper->getNewtonsToSensor(j);
+    pid->ki = pid->ki / _torqueControlHelper->getNewtonsToSensor(j);
+    pid->kd = pid->kd / _torqueControlHelper->getNewtonsToSensor(j);
+    pid->stiction_up_val   = pid->stiction_up_val   / _torqueControlHelper->getNewtonsToSensor(j);
+    pid->stiction_down_val = pid->stiction_down_val / _torqueControlHelper->getNewtonsToSensor(j);  
     return ret;
 }
 
