@@ -3533,6 +3533,8 @@ bool embObjMotionControl::setTorquePidRaw(int j, const Pid &pid)
     hwPid.kd = hwPid.kd * _torqueControlHelper->getNewtonsToSensor(j);
     hwPid.stiction_up_val   = hwPid.stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(j);
     hwPid.stiction_down_val = hwPid.stiction_down_val * _torqueControlHelper->getNewtonsToSensor(j);      
+    //printf("DEBUG setTorquePidRaw: %f %f %f %f %f\n",hwPid.kp ,  hwPid.ki, hwPid.kd , hwPid.stiction_up_val , hwPid.stiction_down_val );
+
     copyPid_iCub2eo(&hwPid, &outPid);
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque);
     return res->addSetMessage(protid, (uint8_t *)&outPid);
@@ -3608,11 +3610,14 @@ bool embObjMotionControl::getTorquePidRaw(int j, Pid *pid)
     eOmc_PID_t eoPID;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&eoPID, &size);
     copyPid_eo2iCub(&eoPID, pid);
+    //printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
+
     pid->kp = pid->kp / _torqueControlHelper->getNewtonsToSensor(j);
     pid->ki = pid->ki / _torqueControlHelper->getNewtonsToSensor(j);
     pid->kd = pid->kd / _torqueControlHelper->getNewtonsToSensor(j);
     pid->stiction_up_val   = pid->stiction_up_val   / _torqueControlHelper->getNewtonsToSensor(j);
     pid->stiction_down_val = pid->stiction_down_val / _torqueControlHelper->getNewtonsToSensor(j);  
+
     return ret;
 }
 
@@ -3840,7 +3845,6 @@ bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *
     params->ktau       = eo_params.ktau_value / _torqueControlHelper->getNewtonsToSensor(j);
     params->ktau_scale = eo_params.ktau_scale;
     //printf("debug getMotorTorqueParamsRaw %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale);
-
 
     return true;
 }
