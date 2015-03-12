@@ -654,6 +654,23 @@ double axisPositionDirectHelper::getSaturatedValue (int hw_j, double hw_curr_val
     return hw_val;
 }
 
+torqueControlHelper::torqueControlHelper(int njoints, double* p_angleToEncoders, double* p_newtonsTosens )
+{
+   jointsNum=njoints;
+   newtonsToSensor = new double  [jointsNum];
+   angleToEncoders = new double  [jointsNum];
+
+   if (p_angleToEncoders!=0)
+       memcpy(angleToEncoders, p_angleToEncoders, sizeof(double)*jointsNum);
+   else
+       for (int i=0; i<jointsNum; i++) {angleToEncoders[i]=1.0;}
+
+   if (p_newtonsTosens!=0)
+       memcpy(newtonsToSensor, p_newtonsTosens, sizeof(double)*jointsNum);
+   else
+       for (int i=0; i<jointsNum; i++) {newtonsToSensor[i]=1.0;}
+}
+
 axisTorqueHelper::axisTorqueHelper(int njoints, int* id, int* chan, double* maxTrq, double* newtons2sens )
 {
     jointsNum=njoints;
@@ -1422,6 +1439,18 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 else
                 {for (j=0;j<nj;j++) this->_filterType[j] = 0; yWarning ("TORQUE_PIDS: 'filterType' param missing");}
                 
+                xtmp = trqPidsGroup.findGroup("controlUnits"); 
+                if (!xtmp.isNull())
+                {    
+                     if      (xtmp.toString()==std::string("metric_units"))  {this->_torqueControlUnits=METRIC_UNITS;}
+                     else if (xtmp.toString()==std::string("machine_units")) {this->_torqueControlUnits=MACHINE_UNITS;}
+                     else    {yError() << "invalid controlUnits value"; return false;}
+                }
+                else
+                {
+                     this->_torqueControlUnits = MACHINE_UNITS; yError ("TORQUE_PIDS: 'controlUnits' param missing. Assuming machine_units. Please fix your configuration file.");
+                }
+                
                 _tpidsEnabled = true;
            }
         }
@@ -1757,6 +1786,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _txTimeout = 20;/** 20ms timeout */
     _rxTimeout = 20;
     _broadcast_mask=0;
+    _torqueControlUnits=MACHINE_UNITS;
 }
 
 bool CanBusMotionControlParameters::alloc(int nj)
@@ -2233,6 +2263,7 @@ _done(0)
     ACE_ASSERT (system_resources != NULL);
     _opened = false;
     _axisTorqueHelper = 0;
+    _torqueControlHelper = 0;
     _firmwareVersionHelper = 0;
     _speedEstimationHelper = 0;
 
@@ -2339,6 +2370,11 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementControlMode2::initialize(p._njoints, p._axisMap);
     ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     _axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
+    
+    if      (p._torqueControlUnits==CanBusMotionControlParameters::MACHINE_UNITS) {_torqueControlHelper = new torqueControlHelper(p._njoints, tmpOnes, tmpOnes);}
+    else if (p._torqueControlUnits==CanBusMotionControlParameters::METRIC_UNITS)  {_torqueControlHelper = new torqueControlHelper(p._njoints, p._angleToEncoder, p._newtonsToSensor);}
+    else    {yError() << "Invalid _torqueControlUnits value: %d" << p._torqueControlUnits; return false;}
+    
     _axisImpedanceHelper = new axisImpedanceHelper(p._njoints, p._impedance_limits);
     ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
@@ -2818,6 +2854,8 @@ bool CanBusMotionControl::close (void)
         delete threadPool;
     if (_axisTorqueHelper != 0)
         delete _axisTorqueHelper;
+    if (_torqueControlHelper != 0)
+        delete _torqueControlHelper;
     if (_firmwareVersionHelper != 0)
         delete _firmwareVersionHelper;
 

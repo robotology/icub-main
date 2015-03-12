@@ -199,6 +199,8 @@ public:
     int *_torqueSensorChan;                     /** Channel of associated Joint Torque Sensor */
     double *_maxTorque;                         /** Max torque of a joint */
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
+    enum       torqueControlUnitsType {MACHINE_UNITS=0, METRIC_UNITS=1};
+    torqueControlUnitsType _torqueControlUnits;
 };
 
 class TBR_AnalogData
@@ -596,6 +598,37 @@ class axisPositionDirectHelper
     inline double getSaturatedValue (int j, double curr_value, double ref_value); 
 };
 
+class torqueControlHelper
+{
+    int  jointsNum;
+    double* newtonsToSensor;
+    double* angleToEncoders;
+
+    public:
+    torqueControlHelper(int njoints, double* angleToEncoders, double* newtons2sens);
+    inline ~torqueControlHelper()
+    {
+        if (newtonsToSensor)   delete [] newtonsToSensor;
+        if (angleToEncoders)   delete [] angleToEncoders;
+        newtonsToSensor=0;
+        angleToEncoders=0;
+    }
+    inline double getNewtonsToSensor (int jnt)
+    {
+        if (jnt>=0 && jnt<jointsNum) return newtonsToSensor[jnt];
+        return 0;
+    }
+    inline double getAngleToEncoders (int jnt)
+    {
+        if (jnt>=0 && jnt<jointsNum) return angleToEncoders[jnt];
+        return 0;
+    }
+    inline int getNumberOfJoints ()
+    {
+        return jointsNum;
+    }
+};
+
 class axisTorqueHelper
 {
     int  jointsNum;
@@ -632,10 +665,10 @@ class axisTorqueHelper
     }
     inline ~axisTorqueHelper()
     {
-        delete [] torqueSensorId;
-        delete [] torqueSensorChan;
-        delete [] maximumTorque;
-        delete [] newtonsToSensor;
+        if (torqueSensorId)   delete [] torqueSensorId;
+        if (torqueSensorChan) delete [] torqueSensorChan;
+        if (maximumTorque)    delete [] maximumTorque;
+        if (newtonsToSensor)  delete [] newtonsToSensor;
         torqueSensorId=0;
         torqueSensorChan=0;
         maximumTorque=0;
@@ -1106,6 +1139,7 @@ protected:
     bool _writeByte8 (int msg, int axis, int value);
     bool _writeByteWords16(int msg, int axis, unsigned char value, short s1, short s2, short s3);
     axisTorqueHelper      *_axisTorqueHelper;
+    torqueControlHelper   *_torqueControlHelper;
     axisImpedanceHelper   *_axisImpedanceHelper;
     firmwareVersionHelper *_firmwareVersionHelper;
     speedEstimationHelper *_speedEstimationHelper;
