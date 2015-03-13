@@ -277,7 +277,7 @@ public:
     /**
     * Copy constructor.
     */
-    minJerkTrajGen(const minJerkTrajGen &o);
+    minJerkTrajGen(const minJerkTrajGen &z);
 
     /**
     * Assignment operator.
@@ -287,19 +287,19 @@ public:
     /**
     * Destructor. 
     */
-    ~minJerkTrajGen();
+    virtual ~minJerkTrajGen();
 
     /**
     * Initialize the trajectory.
     * @param y0 initial value of the trajectory
     */
-    void init(const yarp::sig::Vector &y0);
+    virtual void init(const yarp::sig::Vector &y0);
 
     /**
     * Compute the next position, velocity and acceleration.
     * @param yd desired final value of the trajectory
     */
-    void computeNextValues(const yarp::sig::Vector &yd);
+    virtual void computeNextValues(const yarp::sig::Vector &yd);
 
     /**
     * Get the current position.
@@ -399,6 +399,17 @@ public:
     minJerkRefGen(const minJerkRefGen &z);
 
     /**
+    * Destructor. 
+    */
+    virtual ~minJerkRefGen();
+
+    /**
+    * Resets the trajectory to a given value.
+    * @param y0 initial value of the trajectory
+    */
+    virtual void init(const yarp::sig::Vector &y0);
+
+    /**
     * Computes the position, velocity and acceleration references.
     * @param y  current position
     * @param yd desired final value of the trajectory
@@ -410,12 +421,6 @@ public:
     * @param y  current position
     */
     virtual void computeNextValues(const yarp::sig::Vector &y);
-
-    /**
-    * Resets the trajectory to a given value.
-    * @param y0 initial value of the trajectory
-    */
-    virtual void init(const yarp::sig::Vector &y0);
 
     /**
     * Get the current position.
@@ -457,11 +462,6 @@ public:
     * @return true if operation succeeded, false otherwise
     */
     bool setTs(const double _Ts);
-
-    /**
-    * Destructor. 
-    */
-    virtual ~minJerkRefGen();
 };
 
 }

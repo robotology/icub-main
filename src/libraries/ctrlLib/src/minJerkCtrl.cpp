@@ -400,6 +400,23 @@ void minJerkTrajGen::computeCoeffs()
 
 
 /*******************************************************************************************/
+void minJerkTrajGen::init(const Vector &y0)
+{
+    // save initial state y0, so that if setT() or setTs() are called afterwards
+    // the vel and acc filters are initialized with the right value (i.e. y0) 
+    lastRef = pos = y0; 
+    if (posFilter!=NULL)
+        posFilter->init(y0);
+
+    if (velFilter!=NULL)
+        velFilter->init(zeros(dim), y0);
+
+    if (accFilter!=NULL)
+        accFilter->init(zeros(dim), y0);
+}
+
+
+/*******************************************************************************************/
 void minJerkTrajGen::computeNextValues(const Vector &ref)
 {
     lastRef = ref;
@@ -434,23 +451,6 @@ bool minJerkTrajGen::setTs(const double _Ts)
     Ts = _Ts;
     computeCoeffs();
     return true;
-}
-
-
-/*******************************************************************************************/
-void minJerkTrajGen::init(const Vector &y0)
-{
-    // save initial state y0, so that if setT() or setTs() are called afterwards
-    // the vel and acc filters are initialized with the right value (i.e. y0) 
-    lastRef = pos = y0; 
-    if (posFilter!=NULL)
-        posFilter->init(y0);
-
-    if (velFilter!=NULL)
-        velFilter->init(zeros(dim), y0);
-
-    if (accFilter!=NULL)
-        accFilter->init(zeros(dim), y0);
 }
 
 
@@ -563,6 +563,22 @@ void minJerkRefGen::computeCoeffs()
 
 
 /*******************************************************************************************/
+void minJerkRefGen::init(const Vector &y0)
+{
+    lastRef = pos = y0;
+
+    if (posFilter!=NULL)
+        posFilter->init(y0);
+
+    if (velFilter!=NULL)
+        velFilter->init(zeros(dim), y0);
+
+    if (accFilter!=NULL)
+        accFilter->init(zeros(dim), y0);
+}
+
+
+/*******************************************************************************************/
 void minJerkRefGen::computeNextValues(const yarp::sig::Vector &y)
 {
     if (posFilter!=NULL)
@@ -608,22 +624,6 @@ bool minJerkRefGen::setTs(const double _Ts)
     Ts = _Ts;
     computeCoeffs();
     return true;
-}
-
-
-/*******************************************************************************************/
-void minJerkRefGen::init(const Vector &y0)
-{
-    lastRef = pos = y0;
-
-    if (posFilter!=NULL)
-        posFilter->init(y0);
-
-    if (velFilter!=NULL)
-        velFilter->init(zeros(dim), y0);
-
-    if (accFilter!=NULL)
-        accFilter->init(zeros(dim), y0);
 }
 
 
