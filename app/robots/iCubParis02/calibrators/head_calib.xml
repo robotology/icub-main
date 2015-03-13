@@ -1,3 +1,4 @@
+ 
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
     <device name="head_calibrator" type="parametricCalibrator">        
@@ -12,7 +13,7 @@
 <param name="calibrationType">            3             3             3             3             0             0             </param>       
 <param name="calibration1">               2047.5        2047.5        2047.5        2047.5        900           900           </param>       
 <param name="calibration2">               10            10            10            10            20            20            </param>       
-<param name="calibration3">               393.575       1801.8        4056.325      1942.85       3583.125      0             </param>       
+<param name="calibration3">               2354.625      3816.313      2053.188      3977.838      3583.125      0             </param>       
 <param name="positionZero">               0             0             0             0             0             0             </param>       
 <param name="velocityZero">               10            10            10            10            10            10            </param>       
 <param name="maxPwm">                     120           120           0             0             0             0             </param>       
@@ -38,7 +39,6 @@
  
     </device>  
 </devices>     
- 
  
  
  
