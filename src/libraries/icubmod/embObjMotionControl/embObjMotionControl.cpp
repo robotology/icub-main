@@ -56,7 +56,22 @@ torqueControlHelper::torqueControlHelper(int njoints, double* p_angleToEncoders,
    else
        for (int i=0; i<jointsNum; i++) {newtonsToSensor[i]=1.0;}
 }
+torqueControlHelper::torqueControlHelper(int njoints, float* p_angleToEncoders, double* p_newtonsTosens )
+{
+   jointsNum=njoints;
+   newtonsToSensor = new double  [jointsNum];
+   angleToEncoders = new double  [jointsNum];
 
+   if (p_angleToEncoders!=0)
+       for (int i=0; i<jointsNum; i++) {angleToEncoders[i] = p_angleToEncoders[i];}
+   else
+       for (int i=0; i<jointsNum; i++) {angleToEncoders[i]=1.0;}
+
+   if (p_newtonsTosens!=0)
+       memcpy(newtonsToSensor, p_newtonsTosens, sizeof(double)*jointsNum);
+   else
+       for (int i=0; i<jointsNum; i++) {newtonsToSensor[i]=1.0;}
+}
 
 void embObjMotionControl::copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
 {
@@ -105,7 +120,7 @@ static inline bool DEPRECATED(const char *txt)
     return true;
 }
 
-#define NV_NOT_FOUND	return nv_not_found();
+#define NV_NOT_FOUND    return nv_not_found();
 
 static bool nv_not_found(void)
 {
@@ -800,7 +815,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     
     if      (_torqueControlUnits==MACHINE_UNITS) {_torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes, tmpOnes);}
-    else if (_torqueControlUnits==METRIC_UNITS)  {_torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);}
+    else if (_torqueControlUnits==METRIC_UNITS)  {_torqueControlHelper = new torqueControlHelper(_njoints, _encoderconversionfactor, _newtonsToSensor);}
     else    {yError() << "Invalid _torqueControlUnits value: %d" << _torqueControlUnits; return false;}
     
     ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
@@ -996,12 +1011,12 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
             if(useRawEncoderData)   // do not use any configuration, this is intended for doing the very first calibration
             {
-            	tmp_A2E > 0 ? _encoderconversionfactor[i-1] = 1 : _encoderconversionfactor[i-1] = -1;
+                tmp_A2E > 0 ? _encoderconversionfactor[i-1] = 1 : _encoderconversionfactor[i-1] = -1;
                 _angleToEncoder[i-1] = 1;
             }
             else
             {
-                _angleToEncoder[i-1] =  (1<<16) / 360.0;		// conversion factor from degrees to iCubDegrees
+                _angleToEncoder[i-1] =  (1<<16) / 360.0;        // conversion factor from degrees to iCubDegrees
                 _encoderconversionfactor[i-1] = float((tmp_A2E  ) / _angleToEncoder[i-1]);
             }
 
@@ -1046,7 +1061,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             if(useRawEncoderData)   // do not use any configuration, this is intended for doing the very first calibration
                 _zeros[i-1] = 0;
             else
-            	_zeros[i-1] = xtmp.get(i).asDouble();
+                _zeros[i-1] = xtmp.get(i).asDouble();
 
 
     // Torque sensors stuff
@@ -1517,7 +1532,7 @@ bool embObjMotionControl::init()
         int fisico = _axisMap[logico];
 
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_maxcurrentofmotor);
-        eOmeas_current_t	current = (eOmeas_current_t) S_16(_currentLimits[logico]);
+        eOmeas_current_t    current = (eOmeas_current_t) S_16(_currentLimits[logico]);
         if(false == res->setRemoteValueUntilVerified(protid, &current, sizeof(current), 10, 0.010, 0.050, 2))
         {
             yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
@@ -2135,13 +2150,13 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 //    if(!_enabledAmp[j ] )
 //    {
 //        yWarning () << "Called calibrate for joint " << j << "with PWM(AMP) not enabled, forcing it!!";
-//        //		return false;
+//        //        return false;
 //    }
 
 //    if(!_enabledPid[j ])
 //    {
 //        yWarning () << "Called calibrate for joint " << j << "with PID not enabled, forcing it!!";
-//        //		return false;
+//        //        return false;
 //    }
 
     //   There is no explicit command "go to calibration mode" but it is implicit in the calibration command
@@ -2355,7 +2370,7 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 
 //    EOnv *nvRoot_config = res->getNVhandler(protid, &tmpnv_config);
 //
-//    //	printf("nvid of check motion done 0x%04X\n", nvid_config);
+//    //    printf("nvid of check motion done 0x%04X\n", nvid_config);
 //    if(NULL == nvRoot_config)
 //    {
 //        NV_NOT_FOUND;
@@ -2395,17 +2410,17 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 
         // to stop monitoring when set point is reached... this create problems when using the other version of
         // the function with all axis togheter. A for loop cannot be used. Skip it for now
-        //		eOmc_motionmonitormode_t tmp = eomc_motionmonitormode_dontmonitor;
-        //		if( eomc_motionmonitormode_dontmonitor != *nvRoot_config->motionmonitormode)
-        //		{
-        //			if( !res->nvSetData(nvRoot_config, &val, eobool_true, eo_nv_upd_dontdo))
-        //			{
-        //				// print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
-        //				return false;
-        //			}
-        //			res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.endpoint, nvid_config);
-        //		}
-        //		checking_motiondone[j ]= false;
+        //        eOmc_motionmonitormode_t tmp = eomc_motionmonitormode_dontmonitor;
+        //        if( eomc_motionmonitormode_dontmonitor != *nvRoot_config->motionmonitormode)
+        //        {
+        //            if( !res->nvSetData(nvRoot_config, &val, eobool_true, eo_nv_upd_dontdo))
+        //            {
+        //                // print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
+        //                return false;
+        //            }
+        //            res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.endpoint, nvid_config);
+        //        }
+        //        checking_motiondone[j ]= false;
     }
     else
         *flag = false;
@@ -3266,7 +3281,7 @@ bool embObjMotionControl::getAmpStatusRaw(int *sts)
 
 #ifdef IMPLEMENT_DEBUG_INTERFACE
 //----------------------------------------------\\
-//	Debug interface
+//    Debug interface
 //----------------------------------------------\\
 
 bool embObjMotionControl::setParameterRaw(int j, unsigned int type, double value)   {       return NOT_YET_IMPLEMENTED("setParameterRaw"); }
@@ -3419,23 +3434,37 @@ bool embObjMotionControl::updateMeasure(yarp::sig::Vector &fTorques)
 bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorque)
 {
     int j = _axisMap[userLevel_jointNumber];
-	double NEWTON2SCALE=32767.0/_maxTorque[j];
+    double NEWTON2SCALE=32767.0/_maxTorque[j];
 
-	eOmeas_torque_t meas_torque = 0;
-
-	if(0 != _maxTorque[j])
-	{
-		if(fTorque < (- _maxTorque[j] ))
-		{
-			fTorque = (- _maxTorque[j]);
-		}
-		if(fTorque > _maxTorque[j])
-		{
-			fTorque = _maxTorque[j];
-		}
+    eOmeas_torque_t meas_torque = 0;
+    static double curr_time = Time::now();
+    static int    count_saturation=0;
+       
+    if(0 != _maxTorque[j])
+    {
+        if(fTorque < (- _maxTorque[j] ))
+        {
+            if (Time::now() - curr_time > 2.0)
+            {
+                yWarning ("embObjMotionControl::updateMeasure() torque measure saturated to %+4.4f on joint %d, count: %d", _maxTorque[j], userLevel_jointNumber, count_saturation);
+                curr_time = Time::now();
+            }
+            fTorque = (- _maxTorque[j]);
+            count_saturation++;
+        }
+        if(fTorque > _maxTorque[j])
+        {
+            if (Time::now() - curr_time > 2.0)
+            {
+                yWarning ("embObjMotionControl::updateMeasure() torque measure saturated to %+4.4f on joint %d, count: %d", _maxTorque[j], userLevel_jointNumber, count_saturation);
+                curr_time = Time::now();
+            }
+            fTorque = _maxTorque[j];
+            count_saturation++;
+        }
 
         meas_torque = (eOmeas_torque_t) S_16(NEWTON2SCALE*fTorque);
-	}
+    }
 
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
     return res->addSetMessageAndCacheLocally(protoid, (uint8_t*) &meas_torque);
@@ -3697,9 +3726,9 @@ bool embObjMotionControl::setImpedanceRaw(int j, double stiffness, double dampin
     _cacheImpedance[j].stiffness = (eOmeas_stiffness_t) U_32(stiffness * 1000.0);
     _cacheImpedance[j].damping   = (eOmeas_damping_t) U_32(damping * 1000.0);
 
-	val.stiffness 	= _cacheImpedance[j].stiffness;
-	val.damping 	= _cacheImpedance[j].damping;
-	val.offset      = _cacheImpedance[j].offset;
+    val.stiffness     = _cacheImpedance[j].stiffness;
+    val.damping     = _cacheImpedance[j].damping;
+    val.offset      = _cacheImpedance[j].offset;
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_impedance);
     
@@ -3718,9 +3747,9 @@ bool embObjMotionControl::setImpedanceOffsetRaw(int j, double offset)
 //        return false;
 
     _cacheImpedance[j].offset   = (eOmeas_torque_t) S_16(offset);
-	val.stiffness 	= _cacheImpedance[j].stiffness;
-	val.damping 	= _cacheImpedance[j].damping;
-    val.offset  	= _cacheImpedance[j].offset;
+    val.stiffness     = _cacheImpedance[j].stiffness;
+    val.damping     = _cacheImpedance[j].damping;
+    val.offset      = _cacheImpedance[j].offset;
     
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_impedance);
     
@@ -3854,6 +3883,8 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
     eOmc_motor_params_t eo_params = {0};
 
+    //printf("getAngleToEncoders: %f\n",_torqueControlHelper->getAngleToEncoders(j));
+
     eo_params.bemf_value    = (float) params.bemf * _torqueControlHelper->getNewtonsToSensor(j) /  _torqueControlHelper->getAngleToEncoders(j); //[Nm/deg/s]
     eo_params.bemf_scale    = (uint8_t) params.bemf_scale;
     eo_params.ktau_value    = (float) params.ktau / _torqueControlHelper->getNewtonsToSensor(j); //[PWM/Nm]
@@ -3955,13 +3986,13 @@ bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, 
     {
         ret &= setReferenceRaw(joints[i], refs[i]);
     }
-	return ret;
+    return ret;
 }
 
 bool embObjMotionControl::setPositionsRaw(const double *refs)
 {
     // needs to send both position and velocit as well as positionMove
-	return setReferencesRaw(refs);
+    return setReferencesRaw(refs);
 }
 
 

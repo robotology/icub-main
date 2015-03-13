@@ -177,6 +177,7 @@ class torqueControlHelper
 
     public:
     torqueControlHelper(int njoints, double* angleToEncoders, double* newtons2sens);
+    torqueControlHelper(int njoints, float* angleToEncoders, double* newtons2sens);
     inline ~torqueControlHelper()
     {
         if (newtonsToSensor)   delete [] newtonsToSensor;
