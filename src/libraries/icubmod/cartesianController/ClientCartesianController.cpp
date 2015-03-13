@@ -75,7 +75,7 @@ ClientCartesianController::ClientCartesianController(Searchable &config)
 void ClientCartesianController::init()
 {
     connected=false;
-    closed=false;
+    closed=true;
 
     timeout=CARTCTRL_DEFAULT_TMO;
     lastPoseMsgArrivalTime=0.0;
@@ -101,15 +101,16 @@ bool ClientCartesianController::open(Searchable &config)
     else
         return false;
     
+    closed=false;
     carrier=config.check("carrier",Value("udp")).asString();
 
     if (config.check("timeout"))
         timeout=config.find("timeout").asDouble();
-
+    
     portCmd.open((local+"/command:o").c_str());
     portState.open((local+"/state:i").c_str());
     portEvents.open((local+"/events:i").c_str());
-    portRpc.open((local+"/rpc:o").c_str());
+    portRpc.open((local+"/rpc:o").c_str());    
 
     bool ok=true;
     ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc:i").c_str());
@@ -124,6 +125,7 @@ bool ClientCartesianController::open(Searchable &config)
             {
                 yError("version mismatch => server(%g) != client(%g); please update accordingly",
                        server_version,CARTCTRL_CLIENT_VER);
+                close();
                 return false;
             }
         }
@@ -133,6 +135,7 @@ bool ClientCartesianController::open(Searchable &config)
     else
     {
         yError("unable to connect to the server rpc port!");
+        close();
         return false;
     }
 
@@ -152,7 +155,6 @@ bool ClientCartesianController::open(Searchable &config)
         {
             yError("unable to get reply from server!");
             close();
-
             return false;
         }
 
@@ -163,14 +165,12 @@ bool ClientCartesianController::open(Searchable &config)
 
         yError("unable to connect to solver!");
         close();
-
         return false;
     }
     else
     {
         yError("unable to connect to server!");
         close();
-
         return false;
     }
 }
@@ -198,7 +198,6 @@ bool ClientCartesianController::close()
     portRpc.close();
 
     connected=false;
-
     return closed=true;
 }
 

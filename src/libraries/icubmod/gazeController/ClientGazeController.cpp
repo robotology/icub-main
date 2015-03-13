@@ -73,7 +73,7 @@ ClientGazeController::ClientGazeController(Searchable &config)
 void ClientGazeController::init()
 {
     connected=false;
-    closed=false;
+    closed=true;
 
     timeout=GAZECTRL_DEFAULT_TMO;
     lastFpMsgArrivalTime=0.0;
@@ -101,11 +101,12 @@ bool ClientGazeController::open(Searchable &config)
     else
         return false;
 
+    closed=false;
     carrier=config.check("carrier",Value("udp")).asString();
 
     if (config.check("timeout"))
         timeout=config.find("timeout").asDouble();
-    
+        
     portCmdFp.open((local+"/xd:o").c_str());
     portCmdAng.open((local+"/angles:o").c_str());
     portCmdMono.open((local+"/mono:o").c_str());
@@ -114,7 +115,7 @@ bool ClientGazeController::open(Searchable &config)
     portStateAng.open((local+"/angles:i").c_str());
     portStateHead.open((local+"/q:i").c_str());
     portEvents.open((local+"/events:i").c_str());
-    portRpc.open((local+"/rpc").c_str());
+    portRpc.open((local+"/rpc").c_str());    
 
     bool ok=true;
     ok&=Network::connect(portRpc.getName().c_str(),(remote+"/rpc").c_str());
@@ -129,6 +130,7 @@ bool ClientGazeController::open(Searchable &config)
             {
                 yError("version mismatch => server(%g) != client(%g); please update accordingly",
                        server_version,GAZECTRL_CLIENT_VER);
+                close();
                 return false;
             }
         }
@@ -138,6 +140,7 @@ bool ClientGazeController::open(Searchable &config)
     else
     {
         yError("unable to connect to the server rpc port!");
+        close();
         return false;
     }
 
@@ -186,7 +189,6 @@ bool ClientGazeController::close()
     portRpc.close();
 
     connected=false;
-
     return closed=true;
 }
 
