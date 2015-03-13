@@ -253,29 +253,31 @@ protected:
 public:
     /**
     * Constructor.
-    * @param _dim number of variables
-    * @param _Ts sample time in seconds
+    * @param _dim number of variables.
+    * @param _Ts sample time in seconds.
     * @param _T trajectory reference time (90% of steady-state value 
-    *           in t=_T, transient extinguished for t>=1.5*_T)
+    *           in t=_T, transient extinguished for t>=1.5*_T).
     */
     minJerkBaseGen(const unsigned int _dim, const double _Ts, const double _T);
 
     /**
     * Constructor with initial value.
-    * @param _y0 initial value of the trajectory
-    * @param _Ts sample time in seconds
+    * @param _y0 initial value of the trajectory.
+    * @param _Ts sample time in seconds.
     * @param _T trajectory reference time (90% of steady-state value 
-    *           in t=_T, transient extinguished for t>=1.5*_T)
+    *           in t=_T, transient extinguished for t>=1.5*_T).
     */
     minJerkBaseGen(const yarp::sig::Vector &y0, const double _Ts, const double _T);
 
     /**
-    * Copy constructor.
+    * Copy constructor. 
+    * @param z the object to copy. 
     */
     minJerkBaseGen(const minJerkBaseGen &z);
 
     /**
-    * Assignment operator.
+    * Assignment operator. 
+    * @param z the object to copy. 
     */
     minJerkBaseGen& operator=(const minJerkBaseGen &z);
 
@@ -286,13 +288,13 @@ public:
 
     /**
     * Initialize the trajectory.
-    * @param y0 initial value of the trajectory
+    * @param y0 initial value of the trajectory.
     */
     virtual void init(const yarp::sig::Vector &y0);
 
     /**
     * Compute the next position, velocity and acceleration.
-    * @param yd desired final value of the trajectory
+    * @param yd desired final value of the trajectory.
     */
     virtual void computeNextValues(const yarp::sig::Vector &yd)=0;
 
@@ -326,15 +328,15 @@ public:
     /**
     * Set the trajectory reference time
     * (90% of steady-state value in t=_T, transient extinguished for t>=1.5*_T).
-    * @param _T trajectory reference time in seconds
-    * @return true if operation succeeded, false otherwise
+    * @param _T trajectory reference time in seconds.
+    * @return true if operation succeeded, false otherwise.
     */
     bool setT(const double _T);
 
     /**
     * Set the sample time.
-    * @param _Ts sample time in seconds
-    * @return true if operation succeeded, false otherwise
+    * @param _Ts sample time in seconds.
+    * @return true if operation succeeded, false otherwise.
     */
     bool setTs(const double _Ts);
 };
@@ -360,35 +362,37 @@ protected:
 public:
     /**
     * Constructor.
-    * @param _dim number of variables
-    * @param _Ts sample time in seconds
+    * @param _dim number of variables.
+    * @param _Ts sample time in seconds.
     * @param _T trajectory reference time (90% of steady-state value 
-    *           in t=_T, transient extinguished for t>=1.5*_T)
+    *           in t=_T, transient extinguished for t>=1.5*_T).
     */
     minJerkTrajGen(const unsigned int _dim, const double _Ts, const double _T);
 
     /**
     * Constructor with initial value.
-    * @param _y0 initial value of the trajectory
-    * @param _Ts sample time in seconds
+    * @param _y0 initial value of the trajectory.
+    * @param _Ts sample time in seconds.
     * @param _T trajectory reference time (90% of steady-state value 
-    *           in t=_T, transient extinguished for t>=1.5*_T)
+    *           in t=_T, transient extinguished for t>=1.5*_T).
     */
     minJerkTrajGen(const yarp::sig::Vector &y0, const double _Ts, const double _T);
 
     /**
-    * Copy constructor.
+    * Copy constructor. 
+    * @param z the object to copy. 
     */
     minJerkTrajGen(const minJerkTrajGen &z);
 
     /**
-    * Assignment operator.
+    * Assignment operator. 
+    * @param z the object to copy. 
     */
     minJerkTrajGen& operator=(const minJerkTrajGen &z);
 
     /**
     * Compute the next position, velocity and acceleration.
-    * @param yd desired final value of the trajectory
+    * @param yd desired final value of the trajectory.
     */
     void computeNextValues(const yarp::sig::Vector &yd);
 };
@@ -411,42 +415,44 @@ protected:
 public:
     /**
     * Constructor.
-    * @param _dim number of variables
-    * @param _Ts sample time in seconds
+    * @param _dim number of variables.
+    * @param _Ts sample time in seconds.
     * @param _T trajectory reference time (90% of steady-state value 
-    *           in t=_T, transient extinguished for t>=1.5*_T)
+    *           in t=_T, transient extinguished for t>=1.5*_T).
     */
     minJerkRefGen(const unsigned int _dim, const double _Ts, const double _T);
 
     /**
     * Constructor with initial value.
-    * @param _y0 initial value of the trajectory
-    * @param _Ts sample time in seconds
+    * @param _y0 initial value of the trajectory.
+    * @param _Ts sample time in seconds.
     * @param _T trajectory reference time (90% of steady-state value 
-    *           in t=_T, transient extinguished for t>=1.5*_T)
+    *           in t=_T, transient extinguished for t>=1.5*_T).
     */
     minJerkRefGen(const yarp::sig::Vector &y0, const double _Ts, const double _T);
 
     /**
-    * Copy constructor.
+    * Copy constructor. 
+    * @param z the object to copy. 
     */
     minJerkRefGen(const minJerkRefGen &z);
 
     /**
-    * Assignment operator.
+    * Assignment operator. 
+    * @param z the object to copy. 
     */
     minJerkRefGen& operator=(const minJerkRefGen &z);
 
     /**
     * Computes the position, velocity and acceleration references.
-    * @param y  current position
+    * @param y  current position.
     */
     void computeNextValues(const yarp::sig::Vector &y);
 
     /**
     * Computes the position, velocity and acceleration references.
-    * @param y  current position
-    * @param yd desired final value of the trajectory
+    * @param y  current position.
+    * @param yd desired final value of the trajectory.
     */
     virtual void computeNextValues(const yarp::sig::Vector &y,
                                    const yarp::sig::Vector &yd);
