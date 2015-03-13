@@ -2,8 +2,7 @@
  
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
-  <device name="left_arm_mc" type="canmotioncontrol">   
- <params file="general.xml" />  
+  <device name="left_arm_mc" type="canmotioncontrol">    
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
 <param name="physDevice">   cfw2can       </param>       

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
     <device name="left_arm_calibrator" type="parametricCalibrator">    
-  <params file="general.xml" />
+ 
         <group name="GENERAL">             
             <param name="joints"> 8 </param>             
             <param name="deviceName"> Left_Arm_Calibrator </param>     
