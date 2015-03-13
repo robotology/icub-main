@@ -1,7 +1,9 @@
  
  
 <?xml version="1.0" encoding="UTF-8" ?>    
+  <params file="general.xml" />            
 <devices>      
+  <params file="general.xml" />            
   <device name="left_leg_mc" type="canmotioncontrol">    
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
@@ -79,5 +81,3 @@
 </group>       
  
   </device>    
-</devices>     
- 

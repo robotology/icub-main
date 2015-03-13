@@ -1,6 +1,7 @@
  
  
 <?xml version="1.0" encoding="UTF-8" ?>    
+  <params file="general.xml" />            
 <devices>      
   <device name="left_hand_mc" type="canmotioncontrol">   
 <group name="CAN">           
@@ -80,4 +81,3 @@
  
   </device>    
 </devices>     
- 
