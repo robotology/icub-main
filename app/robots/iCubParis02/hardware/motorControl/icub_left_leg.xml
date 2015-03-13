@@ -1,9 +1,9 @@
  
  
 <?xml version="1.0" encoding="UTF-8" ?>    
-  <params file="general.xml" />            
+ 
 <devices>      
-  <params file="general.xml" />            
+ 
   <device name="left_leg_mc" type="canmotioncontrol">    
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
@@ -27,7 +27,7 @@
 <param name="broadcast_rotor_vel_acc">    0             0             0             0             0             0             </param>       
 </group>       
  
- 
+  <params file="general.xml" />            
 <group name="GENERAL">       
 <param name="Joints">       6             </param>       
 <param name="AxisMap">      2             3             0             1             4             5             </param>       
