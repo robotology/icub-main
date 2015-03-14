@@ -272,12 +272,14 @@ public:
     /**
     * Copy constructor. 
     * @param z the object to copy. 
+    * @note After copy, internal filters are reset. 
     */
     minJerkBaseGen(const minJerkBaseGen &z);
 
     /**
     * Assignment operator. 
     * @param z the object to copy. 
+    * @note After copy, internal filters are reset. 
     */
     minJerkBaseGen& operator=(const minJerkBaseGen &z);
 
@@ -381,12 +383,14 @@ public:
     /**
     * Copy constructor. 
     * @param z the object to copy. 
+    * @note After copy, internal filters are reset. 
     */
     minJerkTrajGen(const minJerkTrajGen &z);
 
     /**
     * Assignment operator. 
     * @param z the object to copy. 
+    * @note After copy, internal filters are reset. 
     */
     minJerkTrajGen& operator=(const minJerkTrajGen &z);
 
@@ -434,12 +438,14 @@ public:
     /**
     * Copy constructor. 
     * @param z the object to copy. 
+    * @note After copy, internal filters are reset. 
     */
     minJerkRefGen(const minJerkRefGen &z);
 
     /**
     * Assignment operator. 
     * @param z the object to copy. 
+    * @note After copy, internal filters are reset. 
     */
     minJerkRefGen& operator=(const minJerkRefGen &z);
 
