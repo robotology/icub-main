@@ -23,6 +23,7 @@
 #include "OdeInit.h"
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
+#include <set>
 
 using namespace yarp::sig;
 
@@ -95,11 +96,17 @@ static int height_right;
 static double fov_left;
 static double fov_right;
 
-
 static int cameraSizeWidth;
 static int cameraSizeHeight;
 
-
+struct contactICubSkinEmul_t{
+    bool coverTouched;
+    bool indivTaxelResolution; 
+    std::set<unsigned int> taxelsTouched;
+};
+    
+static std::map<SkinPart,contactICubSkinEmul_t> contactICubSkinEmulMap;
+    
 /* For every collision detected by ODE, contact joints (up to MAX_CONTACTS per collison) are created and a feedback structs may be associated with them - that will carry information about the contact.
  * The number of collisions and contact joints may vary, but we allocate these as a static array for performance issues.
  * (Allocating feedback structs at every simulation step would degrade simulation performance).
@@ -546,6 +553,9 @@ bool OdeSdlSimulation::selfCollisionOnIgnoreList(string geom1_string, string geo
   if ( ( (geom1_string.compare("upper right arm cover")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("upper right arm cover")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
       return true; 
   }
+  if ( ( (geom1_string.compare("geom[5]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[5]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
+      return true; 
+  } //geom[5] is the cylinder in upper right arm (when it is "on"; when off, it will not go into the torso)
 
   if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torsoGeom[4]")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torsoGeom[4]")==0) ) ){
       return true; 
@@ -553,6 +563,9 @@ bool OdeSdlSimulation::selfCollisionOnIgnoreList(string geom1_string, string geo
   if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
       return true; 
   }
+  if ( ( (geom1_string.compare("geom[4]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[4]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
+      return true; 
+  } //geom[4] is the cylinder in upper left arm  (when it is "on"; when off, it will not go into the torso)
   
   return false;  
 } 
@@ -1056,26 +1069,48 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
         }
     }
     else{ // actSkinEmul == "on"
-        if( (odeinit._iCub->actCoversCol == "on") && (robot_streamer->shouldSendTouchLeftHand() || robot_streamer->shouldSendTouchRightHand() ||
+          if(robot_streamer->shouldSendSkinEvents() || (robot_streamer->shouldSendTouchLeftHand() || robot_streamer->shouldSendTouchRightHand() ||
             robot_streamer->shouldSendTouchLeftArm() || robot_streamer->shouldSendTouchLeftForearm() || 
             robot_streamer->shouldSendTouchRightArm() || robot_streamer->shouldSendTouchRightForearm() || 
-            robot_streamer->shouldSendTouchTorso())){
-            //these are emulating the skin in the covers on the iCub body. For the moment, whole skin part will be activated if it was touched 
-            inspectWholeBodyContactsAndSendTouch(); 
-        }
-        if(robot_streamer->shouldSendSkinEvents()){ //note that these are generated here for any body parts - not only those that have tactile sensors in the real robot
-        // the contacts can be visualized using the icubGui (not skinGui) 
-            skinContactList mySkinContactList;
-            if (! odeinit.listOfSkinContactInfos.empty()){
-               if ((odeinit._iCub->actHead=="off") || (odeinit._iCub->actTorso=="off") || (odeinit._iCub->actLArm=="off") || (odeinit._iCub->actRArm=="off")){
-                    mySkinContactList.clear();
-                    printf("Warning: With self-collisions on but head/torso/left_arm/right_arm off, the skinContactList can't be created.\n");
+            robot_streamer->shouldSendTouchTorso())){ 
+               if (! odeinit.listOfSkinContactInfos.empty()){ //if someone is reading AND there are contacts to process 
+                    inspectWholeBodyContactsAndSendTouch(); 
                }
-               else{
-                  processWholeBodyCollisions(mySkinContactList);   
-               }
-            }
-            robot_streamer->sendSkinEvents(mySkinContactList); //we send even if empty
+               else{ //someone is reading but no contacts, we send empty lists
+                   if(robot_streamer->shouldSendSkinEvents()){
+                        skinContactList emptySkinContactList;
+                        emptySkinContactList.clear();
+                        robot_streamer->sendSkinEvents(emptySkinContactList); 
+                   }
+                   if(robot_streamer->shouldSendTouchLeftHand()){
+                         Bottle bottleLeftHand = Bottle(odeinit._iCub->emptySkinActivationHand);    
+                         robot_streamer->sendTouchLeftHand(bottleLeftHand);
+                   }
+                   if(robot_streamer->shouldSendTouchRightHand()){
+                         Bottle bottleRightHand = Bottle(odeinit._iCub->emptySkinActivationHand);  
+                         robot_streamer->sendTouchRightHand(bottleRightHand);
+                   }
+                   if(robot_streamer->shouldSendTouchLeftArm()){
+                         Bottle bottleLeftArm = Bottle(odeinit._iCub->emptySkinActivationUpperArm); 
+                         robot_streamer->sendTouchLeftArm(bottleLeftArm);
+                   }
+                   if(robot_streamer->shouldSendTouchLeftForearm()){
+                         Bottle bottleLeftForearm = Bottle(odeinit._iCub->emptySkinActivationForearm);    
+                         robot_streamer->sendTouchLeftForearm(bottleLeftForearm);
+                   }
+                   if(robot_streamer->shouldSendTouchRightArm()){
+                         Bottle bottleRightArm = Bottle(odeinit._iCub->emptySkinActivationUpperArm);
+                         robot_streamer->sendTouchRightArm(bottleRightArm);
+                   }
+                   if(robot_streamer->shouldSendTouchRightForearm()){
+                         Bottle bottleRightForearm = Bottle(odeinit._iCub->emptySkinActivationForearm);
+                         robot_streamer->sendTouchRightForearm(bottleRightForearm);
+                   }
+                   if(robot_streamer->shouldSendTouchTorso()){
+                        Bottle bottleTorso = Bottle(odeinit._iCub->emptySkinActivationTorso);
+                        robot_streamer->sendTouchTorso(bottleTorso);
+                   }
+              }
         }
         odeinit.listOfSkinContactInfos.clear();
     }
@@ -1372,6 +1407,87 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
         printf("Adding video texture %s\n", name.c_str());
         video->add(options.findGroup(name.c_str()));
     }
+    
+    initContactICubSkinEmulMap();
+   
+};
+
+void OdeSdlSimulation::initContactICubSkinEmulMap(void)
+{
+
+    contactICubSkinEmul_t skin_emul_struct;
+    
+    //SKIN_LEFT_HAND
+    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.indivTaxelResolution = true;
+    contactICubSkinEmulMap[SKIN_LEFT_HAND]=skin_emul_struct;
+    
+    //SKIN_LEFT_FOREARM
+    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.indivTaxelResolution = false;
+    contactICubSkinEmulMap[SKIN_LEFT_FOREARM]=skin_emul_struct;
+    
+    //SKIN_LEFT_UPPER_ARM
+    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.indivTaxelResolution = false;
+    contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM]=skin_emul_struct;
+    
+    //SKIN_RIGHT_HAND
+    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.indivTaxelResolution = true;
+    contactICubSkinEmulMap[SKIN_RIGHT_HAND]=skin_emul_struct;
+    
+    //SKIN_RIGHT_FOREARM
+    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.indivTaxelResolution = false;
+    contactICubSkinEmulMap[SKIN_RIGHT_FOREARM]=skin_emul_struct;
+    
+    //SKIN_RIGHT_UPPER_ARM
+    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.indivTaxelResolution = false;
+    contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM]=skin_emul_struct;
+ 
+    //SKIN_FRONT_TORSO
+    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.indivTaxelResolution = false;
+    contactICubSkinEmulMap[SKIN_FRONT_TORSO]=skin_emul_struct;
+   
+    //LEFT_LEG_UPPER
+    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.indivTaxelResolution = false;
+    contactICubSkinEmulMap[LEFT_LEG_UPPER]=skin_emul_struct;
+    
+     //LEFT_LEG_LOWER
+    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.indivTaxelResolution = false;
+    contactICubSkinEmulMap[LEFT_LEG_LOWER]=skin_emul_struct;
+    
+     //LEFT_FOOT
+    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.indivTaxelResolution = false;
+    contactICubSkinEmulMap[LEFT_FOOT]=skin_emul_struct;
+    
+     //RIGHT_LEG_UPPER
+    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.indivTaxelResolution = false;
+    contactICubSkinEmulMap[RIGHT_LEG_UPPER]=skin_emul_struct;
+    
+     //RIGHT_LEG_LOWER
+    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.indivTaxelResolution = false;
+    contactICubSkinEmulMap[RIGHT_LEG_LOWER]=skin_emul_struct;
+    
+     //RIGHT_FOOT
+    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.indivTaxelResolution = false;
+    contactICubSkinEmulMap[RIGHT_FOOT]=skin_emul_struct;
+    
+    if (MY_VERBOSITY > 2){ 
+        printf("OdeSdlSimulation::initContactICubSkinEmulMap \n");
+        for (std::map<SkinPart,contactICubSkinEmul_t>::const_iterator it=contactICubSkinEmulMap.begin(); it!=contactICubSkinEmulMap.end(); ++it){
+            printf("key: %d, cover touched: %d, indivTaxelResolution: %d \n", it->first,it->second.coverTouched,it->second.indivTaxelResolution);
+        }
+    }
 }
 
 OdeSdlSimulation::~OdeSdlSimulation() {
@@ -1424,13 +1540,12 @@ bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
     return true;
 }
 
-
-
-void OdeSdlSimulation::processWholeBodyCollisions(skinContactList& skin_contact_list)
-{    
-      SkinPart skinPart;             // id of the part of the skin (e.g. left_hand, right_forearm, left_upper_arm)
-      BodyPart bodyPart;             // id of the body part
-      bool skinCoverFlag;
+void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
+{
+      SkinPart skinPart;    // id of the part of the skin (e.g. SKIN_LEFT_FOREARM; from skinDynLib/common.h)
+      BodyPart bodyPart;    // id of the body part
+     
+      //coordinate transformations for skinEvents and for emulating ind. taxel groups per skin part
       Vector geoCenter_SIM_FoR_forHomo(4,0.0), normal_SIM_FoR_forHomo(4,0.0);
       Vector force_SIM_FoR_forHomo(4,0.0), moment_SIM_FoR_forHomo(4,0.0);
       Vector v1(4,0.0); //auxilliary vector
@@ -1442,334 +1557,505 @@ void OdeSdlSimulation::processWholeBodyCollisions(skinContactList& skin_contact_
       Matrix T_root_to_link = yarp::math::zeros(4,4);
       Matrix T_link_to_root = yarp::math::zeros(4,4);
       std::vector<unsigned int> taxel_list;  
-     
-      taxel_list.push_back(1); // we will always emulate one activated "taxel" per contact joint - say taxel "1"
+      bool upper_body_transforms_available = false;
+      
+      bool skinCoverFlag = false;
+      bool left_hand_notCover_touched = false;
+      bool right_hand_notCover_touched = false;
       OdeInit& odeinit = OdeInit::get();
-      odeinit._controls[PART_ARM_LEFT]->getEncodersRaw(left_arm_encoders); //! do not use the BODY_PART enums from skinDynLib to index here - in the simulator the order of "controls[]" is different
-      odeinit._controls[PART_ARM_RIGHT]->getEncodersRaw(right_arm_encoders);
-      odeinit._controls[PART_TORSO]->getEncodersRaw(torso_encoders);
-      odeinit._controls[PART_HEAD]->getEncodersRaw(head_encoders); //first three are probably neck joints, then the eyes
+      skinContactList mySkinContactList;
+      mySkinContactList.clear();
+          
+      if ((odeinit._iCub->actHead=="off") || (odeinit._iCub->actTorso=="off") || (odeinit._iCub->actLArm=="off") || (odeinit._iCub->actRArm=="off")){
+        upper_body_transforms_available = false;
+        printf("Warning: With self-collisions on but head/torso/left_arm/right_arm off, the upper body transforms are unavailable and skinContactList can't be created.\n");
+      }
+      else{
+           upper_body_transforms_available = true;
+          
+           odeinit._controls[PART_ARM_LEFT]->getEncodersRaw(left_arm_encoders); //! do not use the BODY_PART enums from skinDynLib to index here - in the simulator the order of "controls[]" is different
+           odeinit._controls[PART_ARM_RIGHT]->getEncodersRaw(right_arm_encoders);
+           odeinit._controls[PART_TORSO]->getEncodersRaw(torso_encoders);
+           odeinit._controls[PART_HEAD]->getEncodersRaw(head_encoders); //first three are probably neck joints, then the eyes
+           for (int j=0;j<TORSO_DOF;j++){
+               left_arm_for_iKin(j)=torso_encoders[j]; //first 3 joints - 0 to 2 - in iKin arm are torso joints
+               right_arm_for_iKin(j)=torso_encoders[j];
+               inertial_for_iKin(j)=torso_encoders[j];
+           }
+           for (int l=0;l<7;l++){
+               left_arm_for_iKin(l+TORSO_DOF) = left_arm_encoders[l]; // then we put seven arm joints (we ignore the rest of the encoders up to 16 - these are fingers)
+               right_arm_for_iKin(l+TORSO_DOF) = right_arm_encoders[l]; 
+           }
+           for (int m=0;m<3;m++){
+               inertial_for_iKin(m+TORSO_DOF) = head_encoders[m]; //we put the second three - the neck joints and ignore the rest of head_encoders (the eyes)
+           }
+           odeinit._iCub->iKinLeftArm.setAng(left_arm_for_iKin);
+           odeinit._iCub->iKinRightArm.setAng(right_arm_for_iKin);
+           odeinit._iCub->iKinInertialSensor.setAng(inertial_for_iKin);
+      }
       
-      for (int j=0;j<TORSO_DOF;j++){
-        left_arm_for_iKin(j)=torso_encoders[j]; //first 3 joints - 0 to 2 - in iKin arm are torso joints
-        right_arm_for_iKin(j)=torso_encoders[j];
-        inertial_for_iKin(j)=torso_encoders[j];
-      }
-      for (int l=0;l<7;l++){
-        left_arm_for_iKin(l+TORSO_DOF) = left_arm_encoders[l]; // then we put seven arm joints (we ignore the rest of the encoders up to 16 - these are fingers)
-        right_arm_for_iKin(l+TORSO_DOF) = right_arm_encoders[l]; 
-      }
-      for (int m=0;m<3;m++){
-          inertial_for_iKin(m+TORSO_DOF) = head_encoders[m]; //we put the second three - the neck joints and ignore the rest of head_encoders (the eyes)
-      }
-      
-      odeinit._iCub->iKinLeftArm.setAng(left_arm_for_iKin);
-      odeinit._iCub->iKinRightArm.setAng(right_arm_for_iKin);
-      odeinit._iCub->iKinInertialSensor.setAng(inertial_for_iKin);
-
-      if (MY_VERBOSITY > 0) printf("OdeSdlSimulation::processWholeBodyCollisions:There were %lu iCub collisions to process. \n", odeinit.listOfSkinContactInfos.size());
+      if (MY_VERBOSITY > 0) printf("OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch:There were %lu iCub collisions to process. \n", odeinit.listOfSkinContactInfos.size());
+      //main loop through all the contacts
       for (list<OdeInit::contactOnSkin_t>::iterator it = odeinit.listOfSkinContactInfos.begin(); it!=odeinit.listOfSkinContactInfos.end(); it++){
-        geoCenter_SIM_FoR_forHomo.zero(); geoCenter_SIM_FoR_forHomo(3)=1.0; //setting the extra row to 1 - for multiplication by homogenous rototransl. matrix
-        normal_SIM_FoR_forHomo.zero(); normal_SIM_FoR_forHomo(3)=1.0; 
-        force_SIM_FoR_forHomo.zero(); force_SIM_FoR_forHomo(3)=1.0; 
-        moment_SIM_FoR_forHomo.zero(); moment_SIM_FoR_forHomo(3)=1.0;
-        geoCenter_link_FoR.zero();normal_link_FoR.zero();
-        moment_link_FoR.zero();force_link_FoR.zero();
-        forceOnBody_magnitude=0.0;
-        skinPart = SKIN_PART_UNKNOWN; bodyPart = BODY_PART_UNKNOWN; skinCoverFlag = false;
-        T_root_to_link.zero(); T_link_to_root.zero();
-        
-        odeinit._iCub->getSkinAndBodyPartFromSpaceAndGeomID((*it).body_geom_space_id,(*it).body_geom_id,skinPart,bodyPart,skinCoverFlag);
-        for (int i=0;i<3;i++){
-            geoCenter_SIM_FoR_forHomo(i)= (*it).contact_geom.pos[i]; //in global (i.e. simulator) coordinates
-            normal_SIM_FoR_forHomo(i) = (*it).contact_geom.normal[i];
-        }
-        dJointFeedback * fb = dJointGetFeedback ((*it).contact_joint);
-        if (fb==NULL){
-            printf("Warning:OdeSdlSimulation::processWholeBodyCollisions: This joint (at %d skin part) has no feedback structure defined - contact force not available: setting to -1.\n",skinPart); 
-            forceOnBody_magnitude = -1;
-        }
-        else{
-        //printf("OdeSdlSimulation::processWholeBodyCollisions: joint feedback structure:\n.");
-        //printf("f1 force vector in simulator FoR: %f %f %f \n",fb->f1[0],fb->f1[1],fb->f1[2]); // assuming it is global ODE FoR ~ simulator FoR
-        //printf("f2 force vector: %f %f %f \n",fb->f2[0],fb->f2[1],fb->f2[2]);
-        //f2 force vector has same magnitude but opposite direction than f1
-            for(int k=0;k<3;k++){
-                if((*it).body_index == 1){
-                    force_SIM_FoR_forHomo(k)=fb->f1[k];
-                    moment_SIM_FoR_forHomo(k)=fb->t1[k];
+          skinPart = SKIN_PART_UNKNOWN; bodyPart = BODY_PART_UNKNOWN; skinCoverFlag = false;
+          taxel_list.clear();
+          odeinit._iCub->getSkinAndBodyPartFromSpaceAndGeomID((*it).body_geom_space_id,(*it).body_geom_id,skinPart,bodyPart,skinCoverFlag);
+          if(upper_body_transforms_available){
+              geoCenter_SIM_FoR_forHomo.zero(); geoCenter_SIM_FoR_forHomo(3)=1.0; //setting the extra row to 1 - for multiplication by homogenous rototransl. matrix
+              normal_SIM_FoR_forHomo.zero(); normal_SIM_FoR_forHomo(3)=1.0; 
+              force_SIM_FoR_forHomo.zero(); force_SIM_FoR_forHomo(3)=1.0; 
+              moment_SIM_FoR_forHomo.zero(); moment_SIM_FoR_forHomo(3)=1.0;
+              geoCenter_link_FoR.zero();normal_link_FoR.zero();
+              moment_link_FoR.zero();force_link_FoR.zero();
+              forceOnBody_magnitude=0.0;
+              T_root_to_link.zero(); T_link_to_root.zero();
+              for (int i=0;i<3;i++){
+                  geoCenter_SIM_FoR_forHomo(i)= (*it).contact_geom.pos[i]; //in global (i.e. simulator) coordinates
+                  normal_SIM_FoR_forHomo(i) = (*it).contact_geom.normal[i];
+              }
+              dJointFeedback * fb = dJointGetFeedback ((*it).contact_joint);
+              if (fb==NULL){
+                  printf("Warning:OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch: This joint (at %d skin part) has no feedback structure defined - contact force not available: setting to -1.\n",skinPart); 
+                  forceOnBody_magnitude = -1;
+              }
+              else{
+              //printf("OdeSdlSimulation::processWholeBodyCollisions: joint feedback structure:\n.");
+              //printf("f1 force vector in simulator FoR: %f %f %f \n",fb->f1[0],fb->f1[1],fb->f1[2]); // assuming it is global ODE FoR ~ simulator FoR
+              //printf("f2 force vector: %f %f %f \n",fb->f2[0],fb->f2[1],fb->f2[2]);
+              //f2 force vector has same magnitude but opposite direction than f1
+                  for(int k=0;k<3;k++){
+                      if((*it).body_index == 1){
+                          force_SIM_FoR_forHomo(k)=fb->f1[k];
+                          moment_SIM_FoR_forHomo(k)=fb->t1[k];
+                      }
+                      else if((*it).body_index == 2){
+                          force_SIM_FoR_forHomo(k)=fb->f2[k];
+                          moment_SIM_FoR_forHomo(k)=fb->t2[k];
+                      }
+                      else{
+                          yError("OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch: unexpected body_index for colliding body: %d.\n",(*it).body_index);
+                      }
                 }
-                else if((*it).body_index == 2){
-                    force_SIM_FoR_forHomo(k)=fb->f2[k];
-                    moment_SIM_FoR_forHomo(k)=fb->t2[k];
+                  forceOnBody_magnitude=sqrt(force_SIM_FoR_forHomo(0)*force_SIM_FoR_forHomo(0) + force_SIM_FoR_forHomo(1)*force_SIM_FoR_forHomo(1) 
+                      + force_SIM_FoR_forHomo(2)*force_SIM_FoR_forHomo(2)); 
+              }
+              //Let's do all the transformations
+              //Assuming, dJointFeedback and contact_geom data from ODE are in global ODE frame; the contact_geom.pos is the position; the contact_geom.normal and the dJointFeedback
+              // vectors (f1, m1) are originating from the global origin, i.e. they need to be translated to contact_geom.pos;
+              //see the post in ode-users group "dJointFeedback and dContactGeom reference frame", 6.12.2013; local FoR of the contact point; 
+                        
+              switch(bodyPart){
+                  case LEFT_ARM:
+                      T_root_to_link = odeinit._iCub->iKinLeftArm.getH(SkinPart_2_LinkNum[skinPart].linkNum + TORSO_DOF);
+                      //e.g. skinPart LEFT_UPPER_ARM gives link number 2, which means we ask iKin for getH(2+3), which gives us  FoR 6 - at the first elbow joint, which is the FoR for the upper arm 
+                      break;
+                  case RIGHT_ARM:
+                      T_root_to_link = odeinit._iCub->iKinRightArm.getH(SkinPart_2_LinkNum[skinPart].linkNum + TORSO_DOF);
+                      break;
+                  case TORSO:
+                      T_root_to_link = odeinit._iCub->iKinInertialSensor.getH(SkinPart_2_LinkNum[skinPart].linkNum); 
+                      // SkinPart_2_LinkNum[SKIN_FRONT_TORSO].linkNum  is 2, this should give us the FoR 3 - the first neck joint which is the expected torso FoR
+                      //- check " SKIN torso 2" in iCub/main/app/iCubGui/skeleton.ini
+                      //- importantly, this needs to be the iKinInertialSensor, not the iKin Arm; 
+                      break;
+                  default:
+                      if (MY_VERBOSITY > 0) printf("OdeSdlSimulation::processWholeBodyCollisions: FoR transforms to BODY PART %d not implemented yet\n",bodyPart);
+                          continue;
+              }
+              T_link_to_root = SE3inv(T_root_to_link);
+                    
+              v1.zero();      
+              v1 = T_link_to_root * (odeinit._iCub->H_r2w) * geoCenter_SIM_FoR_forHomo; //first transform to robot coordinates, then transform to local FoR of respective body part
+              geoCenter_link_FoR = v1.subVector(0,2); //strip the last one away
+                  
+              v1.zero();
+              v1 = T_link_to_root * (odeinit._iCub->H_r2w) * normal_SIM_FoR_forHomo; 
+              normal_link_FoR = v1.subVector(0,2);
+              
+              v1.zero();
+              v1 = T_link_to_root * (odeinit._iCub->H_r2w) * force_SIM_FoR_forHomo;
+              force_link_FoR = v1.subVector(0,2); 
+                
+              v1.zero();
+              v1 = T_link_to_root * (odeinit._iCub->H_r2w) * moment_SIM_FoR_forHomo;
+              moment_link_FoR = v1.subVector(0,2); 
+                
+              //Note that the normal, force, and moment are just carrying the orientation (and apart from the normal also magnitude) - they will still need to be translated to the 
+              //appropariate CoP / geoCenter to make the arrow to the taxel
+              //Note also the dJointFeedback force vector does not necessarily point along the normal at the contact point (which points into the colliding body) - as is a sum of the 
+              //forces along the normal and frictional forces perpendicular to the normal
+              //alternatively, I could just take the magnitude from the force and send the normal as the direction
+                
+              //printf("Contact coordinates in ODE / SIM FoR: %s\n",geoCenter_SIM_FoR_forHomo.subVector(0,2).toString().c_str());
+              Vector temp_v4(4,0.0);
+              temp_v4 =  (odeinit._iCub->H_r2w) * geoCenter_SIM_FoR_forHomo;
+              //printf("Contact coordinates in robot root FoR: %s\n",temp_v4.subVector(0,2).toString().c_str());
+              //printf("Left arm for iKin:\n %s \n",left_arm_for_iKin.toString().c_str());
+              //printf("Rototranslation matrix root to link:\n %s\n",T_root_to_link.toString().c_str());
+              //printf("Contact coordinates in link FoR: %s\n",geoCenter_link_FoR.toString().c_str());
+              /*for (int l=0;l<2;l++){ geoCenter_link_FoR(l)=0.0;  force_link_FoR(l)=1.0;  normal_link_FoR(l)=1.0; moment_link_FoR(l)=1.0;
+              } */
+              //forceOnBody_magnitude=10.0;
+              if (contactICubSkinEmulMap[skinPart].indivTaxelResolution && skinCoverFlag){ //indiv taxels get emulated only on covers - where the actual skin is 
+                  mapPositionIntoTaxelList(skinPart,geoCenter_link_FoR,taxel_list); 
+              }
+              else{    
+                  taxel_list.push_back(FAKE_TAXEL_ID); // we will eemulate one non-existent activated "taxel" per contact joint - say taxel "10000"
+              }
+              skinContact c(bodyPart, skinPart, getLinkNum(skinPart), geoCenter_link_FoR, geoCenter_link_FoR,taxel_list, forceOnBody_magnitude, normal_link_FoR,force_link_FoR,moment_link_FoR);       
+              //we have only one source of information - the contact as detected by ODE - therefore, we take the coordinates and set them both to CoP 
+              //(which is supposed to come from the dynamic estimation, and as geoCenter - from skin; Similarly, we derive the pressure directly from the force vector from ODE.
+              if (MY_VERBOSITY > 0) printf("Creating skin contact as follows: %s.\n",c.toString().c_str());
+              mySkinContactList.push_back(c); 
+          } //if(upper_body_transforms_available){
+          // here we collect the info per emulating the skin ports (compensated tactile ports) 
+          if(skinCoverFlag){ 
+                //if it was a cover that was touched, we will emulate the skin there - this includes the palm cover
+                contactICubSkinEmulMap[skinPart].coverTouched = true;
+                if (contactICubSkinEmulMap[skinPart].indivTaxelResolution){
+                    if (!taxel_list.empty()){
+                        unsigned int first_taxel_in_list = taxel_list[0];
+                        if (first_taxel_in_list != FAKE_TAXEL_ID){
+                            for (std::vector<unsigned int>::const_iterator it = taxel_list.begin() ; it != taxel_list.end(); ++it){
+                                contactICubSkinEmulMap[skinPart].taxelsTouched.insert(*it); //inserting the taxel IDs into the set
+                            }                 
+                        }
+                    }
+                }
+          }
+          else if(skinPart == SKIN_LEFT_HAND) {
+            left_hand_notCover_touched = true;  //these need special treatment because for the fingertip, we check the geoms, there are no covers there
+          }   
+          else if(skinPart == SKIN_RIGHT_HAND) {
+            right_hand_notCover_touched = true;  //these need special treatment because for the fingertip, we check the geoms, there are no covers there
+          }   
+      } //cycle through odeinit.listOfSkinContactInfos
+      
+      //all contacts have been processed, now we produce the output
+      
+      if(robot_streamer->shouldSendSkinEvents()){ //note that these are generated here for any body parts - not only those that have tactile sensors in the real robot
+        // the contacts can be visualized using the icubGui (not skinGui) 
+          robot_streamer->sendSkinEvents(mySkinContactList); //we send even if empty
+      }  
+   
+      //rewritten based on original inspectTouch_icubSensors, the output of actual pressure values is discontinued; the collisions with palm cover are added
+      // the palm cover replaces sensing in the palm body
+      if(robot_streamer->shouldSendTouchLeftHand()){
+            Bottle bottleLeftHand;
+            if (left_hand_notCover_touched ||  contactICubSkinEmulMap[SKIN_LEFT_HAND].coverTouched){ 
+                if (left_hand_notCover_touched){ // some part other than the palm cover was touched, need to check fingertips
+                    int bodyIndicesLeft[5] = {24, 25, 26, 27, 30};
+                    double resultLeft=0;
+                    for (int x = 0; x < 5; x++){
+                            if (odeinit._iCub->actLHand == "on"){ 
+                                resultLeft = odeinit._iCub->checkTouchSensor(bodyIndicesLeft[x]);
+                            }
+                            else{
+                                resultLeft = odeinit._iCub->checkTouchSensor(odeinit._iCub->l_hand);
+                            } 
+                            //now filling up the bottle - the port output where 1-60 are taxels of fingertips (12 each);
+                            for (int i = 0; i < 12; i++){
+                                bottleLeftHand.addDouble(resultLeft * 255);
+                            }
+                    }
+                }
+                else{ //we fill the fingertip positions with 0s
+                    for (int i = 0; i <= 59; i++){
+                        bottleLeftHand.addDouble(0.0);
+                    }
+                }
+                //now filling up the bottle - the port output: 61-96 zeros; taxel IDs 60-95
+                for (int y = 60; y<=95; y++){           
+                        bottleLeftHand.addDouble(0.0);
+                }
+                if(contactICubSkinEmulMap[SKIN_LEFT_HAND].coverTouched){ //palm cover
+                //positions 97-144 palm taxels; taxel IDs have index by one lower (inside these, IDs 107, 119, 131, and 139 are thermal pads ~ 0s); 
+                    if (contactICubSkinEmulMap[SKIN_LEFT_HAND].indivTaxelResolution){
+                        for (int y = 96; y<=143; y++){ 
+                            if (contactICubSkinEmulMap[SKIN_LEFT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
+                                bottleLeftHand.addDouble(255.0); 
+                            }
+                            else{
+                                 bottleLeftHand.addDouble(0.0); 
+                            }
+                        }
+                    }
+                    else{ //we fill the whole palm
+                        for (int y = 96; y<=143; y++){ 
+                            bottleLeftHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
+                        }
+                    }
                 }
                 else{
-                    yError("OdeSdlSimulation::processWholeBodyCollisions: unexpected body_index for colliding body: %d.\n",(*it).body_index);
+                    for (int y = 96; y<=143; y++){ 
+                        bottleLeftHand.addDouble(0.0); //we ignore the thermal pad positions which should be 0s for now
+                    }
                 }
-            }
-            forceOnBody_magnitude=sqrt(force_SIM_FoR_forHomo(0)*force_SIM_FoR_forHomo(0) + force_SIM_FoR_forHomo(1)*force_SIM_FoR_forHomo(1) 
-                + force_SIM_FoR_forHomo(2)*force_SIM_FoR_forHomo(2)); 
-        }
-
-        //Let's do all the transformations
-        //Assuming, dJointFeedback and contact_geom data from ODE are in global ODE frame; the contact_geom.pos is the position; the contact_geom.normal and the dJointFeedback
-        // vectors (f1, m1) are originating from the global origin, i.e. they need to be translated to contact_geom.pos;
-        //see the post in ode-users group "dJointFeedback and dContactGeom reference frame", 6.12.2013local FoR of the contact point; 
-                
-        switch(bodyPart){
-        case LEFT_ARM:
-            T_root_to_link = odeinit._iCub->iKinLeftArm.getH(SkinPart_2_LinkNum[skinPart].linkNum + TORSO_DOF);
-            //e.g. skinPart LEFT_UPPER_ARM gives link number 2, which means we ask iKin for getH(2+3), which gives us  FoR 6 - at the first elbow joint, which is the FoR for the upper arm 
-            break;
-        case RIGHT_ARM:
-            T_root_to_link = odeinit._iCub->iKinRightArm.getH(SkinPart_2_LinkNum[skinPart].linkNum + TORSO_DOF);
-            break;
-        case TORSO:
-            T_root_to_link = odeinit._iCub->iKinInertialSensor.getH(SkinPart_2_LinkNum[skinPart].linkNum); 
-            // SkinPart_2_LinkNum[SKIN_FRONT_TORSO].linkNum  is 2, this should give us the FoR 3 - the first neck joint which is the expected torso FoR
-            //- check " SKIN torso 2" in iCub/main/app/iCubGui/skeleton.ini
-            //- importantly, this needs to be the iKinInertialSensor, not the iKin Arm; 
-            break;
-        default:
-            if (MY_VERBOSITY > 0) printf("OdeSdlSimulation::processWholeBodyCollisions: FoR transforms to BODY PART %d not implemented yet\n",bodyPart);
-            continue;
-        }
-        T_link_to_root = SE3inv(T_root_to_link);
-            
-        v1.zero();		
-        v1 = T_link_to_root * (odeinit._iCub->H_r2w) * geoCenter_SIM_FoR_forHomo; //first transform to robot coordinates, then transform to local FoR of respective body part
-        geoCenter_link_FoR = v1.subVector(0,2); //strip the last one away
-            
-        v1.zero();
-        v1 = T_link_to_root * (odeinit._iCub->H_r2w) * normal_SIM_FoR_forHomo; 
-        normal_link_FoR = v1.subVector(0,2);
-        
-        v1.zero();
-        v1 = T_link_to_root * (odeinit._iCub->H_r2w) * force_SIM_FoR_forHomo;
-        force_link_FoR = v1.subVector(0,2); 
-        
-        v1.zero();
-        v1 = T_link_to_root * (odeinit._iCub->H_r2w) * moment_SIM_FoR_forHomo;
-        moment_link_FoR = v1.subVector(0,2); 
-        
-        //Note that the normal, force, and moment are just carrying the orientation (and apart from the normal also magnitude) - they will still need to be translated to the 
-        //appropariate CoP / geoCenter to make the arrow to the taxel
-        //Note also the dJointFeedback force vector does not necessarily point along the normal at the contact point (which points into the colliding body) - as is a sum of the 
-        //forces along the normal and frictional forces perpendicular to the normal
-        //alternatively, I could just take the magnitude from the force and send the normal as the direction
-        
-        //printf("Contact coordinates in ODE / SIM FoR: %s\n",geoCenter_SIM_FoR_forHomo.subVector(0,2).toString().c_str());
-        Vector temp_v4(4,0.0);
-        temp_v4 =  (odeinit._iCub->H_r2w) * geoCenter_SIM_FoR_forHomo;
-        //printf("Contact coordinates in robot root FoR: %s\n",temp_v4.subVector(0,2).toString().c_str());
-        //printf("Left arm for iKin:\n %s \n",left_arm_for_iKin.toString().c_str());
-        //printf("Rototranslation matrix root to link:\n %s\n",T_root_to_link.toString().c_str());
-        //printf("Contact coordinates in link FoR: %s\n",geoCenter_link_FoR.toString().c_str());
-        /*for (int l=0;l<2;l++){
-        geoCenter_link_FoR(l)=0.0;
-        force_link_FoR(l)=1.0;
-        normal_link_FoR(l)=1.0;
-        moment_link_FoR(l)=1.0;
-        } */
-        //forceOnBody_magnitude=10.0;
-        
-        skinContact c(bodyPart, skinPart, getLinkNum(skinPart), geoCenter_link_FoR, geoCenter_link_FoR,taxel_list, forceOnBody_magnitude, normal_link_FoR,force_link_FoR,moment_link_FoR);       
-        //we have only one source of information - the contact as detected by ODE - therefore, we take the coordinates and set them both to CoP 
-        //(which is supposed to come from the dynamic estimation, and as geoCenter - from skin; Similarly, we derive the pressure directly from the force vector from ODE.
-        if (MY_VERBOSITY > 0) printf("Creating skin contact as follows: %s.\n",c.toString().c_str());
-        skin_contact_list.push_back(c);
-   } // odeinit.listOfSkinContactInfos - iterator
-}
-
-void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
-{
-    
-    std::map<SkinPart,bool> skinPartsTouched;
-    SkinPart skinPart;  // id of the part of the skin - from skinDynLib/common.h 
-    BodyPart bodyPart;             // id of the body part
-    bool skinCoverFlag = false;
-    bool left_hand_notCover_touched = false;
-    bool right_hand_notCover_touched = false;
-    OdeInit& odeinit = OdeInit::get();
-    
-    skinPartsTouched[SKIN_LEFT_FOREARM]=false; skinPartsTouched[SKIN_LEFT_UPPER_ARM]=false;
-    skinPartsTouched[SKIN_RIGHT_FOREARM]=false; skinPartsTouched[SKIN_RIGHT_FOREARM]=false;
-    skinPartsTouched[SKIN_FRONT_TORSO]=false;
-   
-    for (list<OdeInit::contactOnSkin_t>::iterator it = odeinit.listOfSkinContactInfos.begin(); it!=odeinit.listOfSkinContactInfos.end(); it++){
-        skinPart = SKIN_PART_UNKNOWN; bodyPart = BODY_PART_UNKNOWN; skinCoverFlag = false;
-        odeinit._iCub->getSkinAndBodyPartFromSpaceAndGeomID((*it).body_geom_space_id,(*it).body_geom_id,skinPart,bodyPart,skinCoverFlag);
-        //We emulate the skin of the iCub - covers + fingertips;  the rest of the geoms will only be processed by the skinEvents
-        if(skinCoverFlag){ 
-            //if it was a cover that was touched, we will emulate the skin there - this includes the palm cover
-            skinPartsTouched[skinPart]=true; //if the skinPart comes back as UNKNOWN, this is fine, we set it to true 
-        }
-        else if(skinPart == SKIN_LEFT_HAND) {
-           left_hand_notCover_touched = true;  //these need special treatment because for the fingertip, we check the geoms, there are no covers there
-        }   
-        else if(skinPart == SKIN_RIGHT_HAND) {
-           right_hand_notCover_touched = true;  //these need special treatment because for the fingertip, we check the geoms, there are no covers there
-        }   
-    }
-    
-     //rewritten based on original inspectTouch_icubSensors, the output of actual pressure values is discontinued; the collisions with palm cover are added
-     // the palm cover replaces sensing in the palm body
-     if(robot_streamer->shouldSendTouchLeftHand()){
-        Bottle bottleLeftHand;
-        if (left_hand_notCover_touched ||  skinPartsTouched[SKIN_LEFT_HAND]){ 
-            if (left_hand_notCover_touched){ // some part other than the palm cover was touched, need to check fingertips
-                int bodyIndicesLeft[5] = {24, 25, 26, 27, 30};
-                double resultLeft=0;
-                for (int x = 0; x < 5; x++){
-                        if (odeinit._iCub->actLHand == "on"){ 
-                            resultLeft = odeinit._iCub->checkTouchSensor(bodyIndicesLeft[x]);
-                        }
-                        else{
-                            resultLeft = odeinit._iCub->checkTouchSensor(odeinit._iCub->l_hand);
-                        } 
-                        //now filling up the bottle - the port output where 1-60 are taxels of fingertips (12 each);
-                        for (int i = 0; i < 12; i++){
-                            bottleLeftHand.addDouble(resultLeft * 255);
-                        }
-                }
-            }
-            else{ //we fill the fingertip positions with 0s
-                for (int i = 0; i < 60; i++){
+                //filling the rest: 145-192 zeros. IDs: 144-191
+                for (int y = 144; y<=191; y++){ 
                     bottleLeftHand.addDouble(0.0);
                 }
             }
-            //now filling up the bottle - the port output: 61-96 zeros; 
-            for (int y = 0; y<36; y++){            //positions 61-96
-                    bottleLeftHand.addDouble(0.0);
-            }
-            if(skinPartsTouched[SKIN_LEFT_HAND]){ //palm cover
-            //97-144 palm taxels (inside these, 107, 119, 131, and 139 are thermal pads ~ 0s); 
-                for (int y = 0; y<48; y++){ 
-                    bottleLeftHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
-                }
-            }
             else{
-                for (int y = 0; y<48; y++){ 
-                    bottleLeftHand.addDouble(0.0); //we ignore the thermal pad positions which should be 0s for now
-                }
+                bottleLeftHand = Bottle(odeinit._iCub->emptySkinActivationHand);
             }
-            //filling the rest: 145-192 zeros. 
-            for (int y = 0; y<48; y++){ 
-                bottleLeftHand.addDouble(0.0);
-            }
+            robot_streamer->sendTouchLeftHand(bottleLeftHand);
       }
-      else{
-           bottleLeftHand = Bottle(odeinit._iCub->emptySkinActivationHand);
-      }
-      robot_streamer->sendTouchLeftHand(bottleLeftHand);
-    }
-    
-     //rewritten based on original inspectTouch_icubSensors, the output of actual pressure values is discontinued; the collisions with palm cover are added
-     // the palm cover replaces sensing in the palm body
-     if(robot_streamer->shouldSendTouchRightHand()){
-        Bottle bottleRightHand;
-        if (right_hand_notCover_touched ||  skinPartsTouched[SKIN_RIGHT_HAND]){ 
-            if (right_hand_notCover_touched){ // some part other than the palm cover was touched, need to check fingertips
-                int bodyIndicesRight[5] = {43, 44, 45, 46, 49};
-                double resultRight=0;
-                for (int x = 0; x < 5; x++){
-                        if (odeinit._iCub->actRHand == "on"){ 
-                            resultRight = odeinit._iCub->checkTouchSensor(bodyIndicesRight[x]);
+        
+      //rewritten based on original inspectTouch_icubSensors, the output of actual pressure values is discontinued; the collisions with palm cover are added
+      // the palm cover replaces sensing in the palm body
+      if(robot_streamer->shouldSendTouchRightHand()){
+          Bottle bottleRightHand;
+          if (right_hand_notCover_touched ||  contactICubSkinEmulMap[SKIN_RIGHT_HAND].coverTouched){ 
+              if (right_hand_notCover_touched){ // some part other than the palm cover was touched, need to check fingertips
+                  int bodyIndicesRight[5] = {43, 44, 45, 46, 49};
+                  double resultRight=0;
+                  for (int x = 0; x < 5; x++){
+                          if (odeinit._iCub->actRHand == "on"){ 
+                              resultRight = odeinit._iCub->checkTouchSensor(bodyIndicesRight[x]);
+                          }
+                          else{
+                              resultRight = odeinit._iCub->checkTouchSensor(odeinit._iCub->r_hand);
+                          } 
+                          //now filling up the bottle - the port output where 1-60 are taxels of fingertips (12 each);
+                          for (int i = 0; i < 12; i++){
+                              bottleRightHand.addDouble(resultRight * 255);
+                          }
+                  }
+              }
+              else{ //we fill the fingertip positions with 0s
+                  for (int i = 0; i <= 59; i++){
+                      bottleRightHand.addDouble(0.0);
+                  }
+              }
+              //now filling up the bottle - the port output: 61-96 zeros; IDs 60-95
+              for (int y = 60; y<=95; y++){           
+                      bottleRightHand.addDouble(0.0);
+              }
+              if(contactICubSkinEmulMap[SKIN_RIGHT_HAND].coverTouched){ //palm cover
+              //positions 97-144 palm taxels; taxel IDs have index by one lower (inside these, IDs 107, 119, 131, and 139 are thermal pads ~ 0s); 
+                  if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].indivTaxelResolution){
+                      for (int y = 96; y<=143; y++){ 
+                          if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
+                                bottleRightHand.addDouble(255.0); 
+                            }
+                            else{
+                                 bottleRightHand.addDouble(0.0); 
+                            }
                         }
-                        else{
-                            resultRight = odeinit._iCub->checkTouchSensor(odeinit._iCub->r_hand);
-                        } 
-                        //now filling up the bottle - the port output where 1-60 are taxels of fingertips (12 each);
-                        for (int i = 0; i < 12; i++){
-                            bottleRightHand.addDouble(resultRight * 255);
+                  }
+                  else{ //we fill the whole palm
+                        for (int y = 96; y<=143; y++){ 
+                            bottleRightHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
                         }
-                }
-            }
-            else{ //we fill the fingertip positions with 0s
-                for (int i = 0; i < 60; i++){
+                  }                               
+                  //filling the rest: 145-192 zeros. IDs: 144-191
+                  for (int y = 144; y<=191; y++){ 
                     bottleRightHand.addDouble(0.0);
+                  }
+            }
+        }
+        else{
+            bottleRightHand = Bottle(odeinit._iCub->emptySkinActivationHand);
+        }
+        // printf("bottleRightHand: %s \n",bottleRightHand.toString().c_str());  
+        robot_streamer->sendTouchRightHand(bottleRightHand);
+     }
+        
+     if(robot_streamer->shouldSendTouchLeftArm()){
+         Bottle bottleLeftArm;
+         if (contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM].coverTouched){
+             if (contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM].indivTaxelResolution){
+                for (int y = 0; y<=767; y++){ 
+                    if (contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
+                             bottleLeftArm.addDouble(255.0); 
+                    }
+                    else{
+                             bottleLeftArm.addDouble(0.0); 
+                    }
                 }
-            }
-            //now filling up the bottle - the port output: 61-96 zeros; 
-            for (int y = 0; y<36; y++){            //positions 61-96
-                    bottleRightHand.addDouble(0.0);
-            }
-            if(skinPartsTouched[SKIN_RIGHT_HAND]){ //palm cover
-            //97-144 palm taxels (inside these, 107, 119, 131, and 139 are thermal pads ~ 0s); 
-                for (int y = 0; y<48; y++){ 
-                    bottleRightHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
+             }
+             else{ //we fill the whole upper arm 
+                  bottleLeftArm = Bottle(odeinit._iCub->fullSkinActivationUpperArm);
+             }     
+         }
+         else{
+             bottleLeftArm = Bottle(odeinit._iCub->emptySkinActivationUpperArm);
+         }
+         robot_streamer->sendTouchLeftArm(bottleLeftArm);
+     }
+     if(robot_streamer->shouldSendTouchLeftForearm()){
+         Bottle bottleLeftForearm;
+          if (contactICubSkinEmulMap[SKIN_LEFT_FOREARM].coverTouched){
+             if (contactICubSkinEmulMap[SKIN_LEFT_FOREARM].indivTaxelResolution){
+                for (int y = 0; y<=383; y++){ 
+                    if (contactICubSkinEmulMap[SKIN_LEFT_FOREARM].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
+                             bottleLeftForearm.addDouble(255.0); 
+                    }
+                    else{
+                             bottleLeftForearm.addDouble(0.0); 
+                    }
                 }
-            }
-            else{
-                for (int y = 0; y<48; y++){ 
-                    bottleRightHand.addDouble(0.0); //we ignore the thermal pad positions which should be 0s for now
+             }
+             else{ //we fill the whole forearm 
+                  bottleLeftForearm = Bottle(odeinit._iCub->fullSkinActivationForearm);
+             }     
+         }
+         else{
+             bottleLeftForearm = Bottle(odeinit._iCub->emptySkinActivationForearm);
+         }
+         robot_streamer->sendTouchLeftForearm(bottleLeftForearm);
+     }
+     if(robot_streamer->shouldSendTouchRightArm()){
+         Bottle bottleRightArm;
+         if (contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM].coverTouched){
+             if (contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM].indivTaxelResolution){
+                for (int y = 0; y<=767; y++){ 
+                    if (contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
+                        bottleRightArm.addDouble(255.0); 
+                    }
+                    else{
+                        bottleRightArm.addDouble(0.0); 
+                    }
                 }
-            }
-            //filling the rest: 145-192 zeros. 
-            for (int y = 0; y<48; y++){ 
-                bottleRightHand.addDouble(0.0);
-            }
+             }
+             else{ //we fill the whole upper arm 
+                  bottleRightArm = Bottle(odeinit._iCub->fullSkinActivationUpperArm);
+             }     
+         }
+         else{
+             bottleRightArm = Bottle(odeinit._iCub->emptySkinActivationUpperArm);
+         }
+         robot_streamer->sendTouchRightArm(bottleRightArm);
       }
-      else{
-           bottleRightHand = Bottle(odeinit._iCub->emptySkinActivationHand);
-      }
-     // printf("bottleRightHand: %s \n",bottleRightHand.toString().c_str());  
-     robot_streamer->sendTouchRightHand(bottleRightHand);
-    }
-     
-    if(robot_streamer->shouldSendTouchLeftArm()){
-        Bottle bottleLeftArm;
-        if (skinPartsTouched[SKIN_LEFT_UPPER_ARM]){
-            bottleLeftArm = Bottle(odeinit._iCub->fullSkinActivationUpperArm);
-        }
-        else{
-            bottleLeftArm = Bottle(odeinit._iCub->emptySkinActivationUpperArm);
-        }
-        robot_streamer->sendTouchLeftArm(bottleLeftArm);
-    }
-    if(robot_streamer->shouldSendTouchLeftForearm()){
-        Bottle bottleLeftForearm;
-        if(skinPartsTouched[SKIN_LEFT_FOREARM]){
-            bottleLeftForearm = Bottle(odeinit._iCub->fullSkinActivationForearm);
-          //  printf("bottleLeftForearm: %s \n",bottleLeftForearm.toString().c_str());
-        }
-        else{
-            bottleLeftForearm = Bottle(odeinit._iCub->emptySkinActivationForearm);
-        }
-        robot_streamer->sendTouchLeftForearm(bottleLeftForearm);
-    }
-    if(robot_streamer->shouldSendTouchRightArm()){
-        Bottle bottleRightArm;
-        if (skinPartsTouched[SKIN_RIGHT_UPPER_ARM]){
-            bottleRightArm = Bottle(odeinit._iCub->fullSkinActivationUpperArm);
-        }
-        else{
-            bottleRightArm = Bottle(odeinit._iCub->emptySkinActivationUpperArm);
-        }
-        robot_streamer->sendTouchRightArm(bottleRightArm);
-    }
-    if(robot_streamer->shouldSendTouchRightForearm()){
-        Bottle bottleRightForearm;
-        if(skinPartsTouched[SKIN_RIGHT_FOREARM]){
-            bottleRightForearm = Bottle(odeinit._iCub->fullSkinActivationForearm);
-        }
-        else{
+      if(robot_streamer->shouldSendTouchRightForearm()){
+         Bottle bottleRightForearm;
+          if (contactICubSkinEmulMap[SKIN_RIGHT_FOREARM].coverTouched){
+             if (contactICubSkinEmulMap[SKIN_RIGHT_FOREARM].indivTaxelResolution){
+                for (int y = 0; y<=383; y++){ 
+                    if (contactICubSkinEmulMap[SKIN_RIGHT_FOREARM].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
+                             bottleRightForearm.addDouble(255.0); 
+                    }
+                    else{
+                             bottleRightForearm.addDouble(0.0); 
+                    }
+                }
+             }
+             else{ //we fill the whole forearm 
+                  bottleRightForearm = Bottle(odeinit._iCub->fullSkinActivationForearm);
+             }     
+         }
+         else{
              bottleRightForearm = Bottle(odeinit._iCub->emptySkinActivationForearm);
-        }
-        robot_streamer->sendTouchRightForearm(bottleRightForearm);
-    }
-    if(robot_streamer->shouldSendTouchTorso()){
-        Bottle bottleTorso;
-        if(skinPartsTouched[SKIN_FRONT_TORSO]){
-            bottleTorso = Bottle(odeinit._iCub->fullSkinActivationTorso);
-        }
-        else{
-              bottleTorso = Bottle(odeinit._iCub->emptySkinActivationTorso);
-        }
-        robot_streamer->sendTouchTorso(bottleTorso);
-    }   
+         }
+         robot_streamer->sendTouchRightForearm(bottleRightForearm);
+      }
+      if(robot_streamer->shouldSendTouchTorso()){
+         Bottle bottleTorso;
+         if (contactICubSkinEmulMap[SKIN_FRONT_TORSO].coverTouched){
+             if (contactICubSkinEmulMap[SKIN_FRONT_TORSO].indivTaxelResolution){
+                for (int y = 0; y<=767; y++){ 
+                    if (contactICubSkinEmulMap[SKIN_FRONT_TORSO].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
+                             bottleTorso.addDouble(255.0); 
+                    }
+                    else{
+                             bottleTorso.addDouble(0.0); 
+                    }
+                }
+             }
+             else{ //we fill the whole torso 
+                  bottleTorso = Bottle(odeinit._iCub->fullSkinActivationTorso);
+             }     
+         }
+         else{
+             bottleTorso = Bottle(odeinit._iCub->emptySkinActivationTorso);
+         }
+         robot_streamer->sendTouchTorso(bottleTorso);
+     } 
 }
+
      
+void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const Vector geo_center_link_FoR,std::vector<unsigned int>& list_of_taxels){
+ 
+    switch (skin_part){
+        case SKIN_LEFT_HAND:
+            if ((geo_center_link_FoR[0]<3.0) && (geo_center_link_FoR[0]>-12.0) && (geo_center_link_FoR[1]>-26.0) && (geo_center_link_FoR[1]<-5.5)){
+                list_of_taxels.push_back(121);list_of_taxels.push_back(122);list_of_taxels.push_back(123);
+                list_of_taxels.push_back(124);list_of_taxels.push_back(125);list_of_taxels.push_back(126);
+                list_of_taxels.push_back(127);list_of_taxels.push_back(128);
+                //list_of_taxels.push_back();list_of_taxels.push_back();list_of_taxels.push_back();
+            }
+            else if ((geo_center_link_FoR[0]<3.0) && (geo_center_link_FoR[0]>-12.0) && (geo_center_link_FoR[1]>-5.5) && (geo_center_link_FoR[1]<10)){
+                list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98); 
+                list_of_taxels.push_back(99);list_of_taxels.push_back(102);list_of_taxels.push_back(103);
+                list_of_taxels.push_back(120);list_of_taxels.push_back(129);list_of_taxels.push_back(130);
+            }
+            else if ((geo_center_link_FoR[0]<3.0) && (geo_center_link_FoR[0]>-14.0) && (geo_center_link_FoR[1]>10.0) && (geo_center_link_FoR[1]<30.0) ){
+                    list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(104);  
+                    list_of_taxels.push_back(105);list_of_taxels.push_back(106);list_of_taxels.push_back(113);  
+                    list_of_taxels.push_back(116);list_of_taxels.push_back(117);  
+            }
+            else if ((geo_center_link_FoR[0]<-14.0) && (geo_center_link_FoR[0]>-24.0) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<30.0) ){
+                    list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(110);  
+                    list_of_taxels.push_back(111);list_of_taxels.push_back(112);list_of_taxels.push_back(114);  
+                    list_of_taxels.push_back(115);list_of_taxels.push_back(118); list_of_taxels.push_back(142); 
+                    list_of_taxels.push_back(143);
+            }   
+            else if ((geo_center_link_FoR[0]<-24.0) && (geo_center_link_FoR[0]>-40.0) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<30.0) ){
+                    list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);  
+                    list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);  
+                    list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);                   
+            } 
+            else{
+                printf("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, coordinates: %f %f %f, but no taxels asigned to this position. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]); 
+            }
+            break;
+         case SKIN_RIGHT_HAND:
+            if ((geo_center_link_FoR[0]<3.0) && (geo_center_link_FoR[0]>-12.0) && (geo_center_link_FoR[1]>-26.0) && (geo_center_link_FoR[1]<-5.5)){
+                list_of_taxels.push_back(120);list_of_taxels.push_back(121);list_of_taxels.push_back(122);
+                list_of_taxels.push_back(123);list_of_taxels.push_back(124);list_of_taxels.push_back(125);
+                list_of_taxels.push_back(126);list_of_taxels.push_back(128);
+                //list_of_taxels.push_back();list_of_taxels.push_back();list_of_taxels.push_back();
+            }
+            else if ((geo_center_link_FoR[0]<3.0) && (geo_center_link_FoR[0]>-12.0) && (geo_center_link_FoR[1]>-5.5) && (geo_center_link_FoR[1]<10)){
+                list_of_taxels.push_back(99);list_of_taxels.push_back(102);list_of_taxels.push_back(103); 
+                list_of_taxels.push_back(104);list_of_taxels.push_back(105);list_of_taxels.push_back(106);
+                list_of_taxels.push_back(127);list_of_taxels.push_back(129);list_of_taxels.push_back(130);
+            }
+            else if ((geo_center_link_FoR[0]<3.0) && (geo_center_link_FoR[0]>-14.0) && (geo_center_link_FoR[1]>10.0) && (geo_center_link_FoR[1]<30.0) ){
+                    list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98);  
+                    list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(110);  
+                    list_of_taxels.push_back(111);list_of_taxels.push_back(112);  
+            }
+            else if ((geo_center_link_FoR[0]<-14.0) && (geo_center_link_FoR[0]>-24.0) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<30.0) ){
+                    list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(113);  
+                    list_of_taxels.push_back(114);list_of_taxels.push_back(115);list_of_taxels.push_back(116);  
+                    list_of_taxels.push_back(117);list_of_taxels.push_back(118); list_of_taxels.push_back(142); 
+                    list_of_taxels.push_back(143);
+            }   
+            else if ((geo_center_link_FoR[0]<-24.0) && (geo_center_link_FoR[0]>-40.0) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<30.0) ){
+                    list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);  
+                    list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);  
+                    list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);                   
+            } 
+            else{
+                printf("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, coordinates: %f %f %f, but no taxels asigned to this position. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]); 
+            }
+            break;
+         default:  
+            printf("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, but no taxel resolution implemented for this skin part. \n",skin_part); 
+    }
+    
+     if (MY_VERBOSITY > 2) {
+         printf("OdeSdlSimulation::mapPositionIntoTaxelList: contact at part: %d, coordinates: %f %f %f. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]); 
+         printf("    Taxel list: ");
+         for (std::vector<unsigned int>::const_iterator it = list_of_taxels.begin() ; it != list_of_taxels.end(); ++it){
+                printf("%d,",*it);
+         }
+         printf("\n");
+     }
+     return;
+}
 
 //Auxiliary function to print class of geom - according to section 9.5 of ODE manual
 std::string OdeSdlSimulation::getGeomClassName(const int geom_class,std::string & s)
