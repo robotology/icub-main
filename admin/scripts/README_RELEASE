@@ -1,6 +1,6 @@
 == Instructions for release == 
 
-* Checkout latest master and make sure that there are no local modifications
+1) Checkout latest master and make sure that there are no local modifications
 
   git checkout -f master
   git fetch origin
@@ -8,11 +8,11 @@
   git status 
   (check that there are no uncommitted modifications or new files)
 
-* Update conf/iCubVersion.cmake
+2) Update conf/iCubVersion.cmake
 
-* Update yarp version info inside admin/scripts/current_dependencies.txt 
+3) Update yarp version info inside admin/scripts/current_dependencies.txt 
 
-* Update licensing info
+4) Update licensing info
   rm -rf license_check
   ./admin/scripts/update-license.sh
   Check COPYING_new
@@ -20,9 +20,9 @@
   mv COPYING_new COPYING
   mv AUTHORS_new AUTHORS
 
-* Update ChangeLog with tag notice
+5) Update ChangeLog with tag notice
 
-* Make sure the YARP min required version in CMakeLists.txt matches the 
+6) Make sure the YARP min required version in CMakeLists.txt matches the 
   the latest release of YARP (in pariticular if ICUB_REQYARP_VERSION_TWEAK is not 0).
   Update it if needed the following lines:
 	SET(ICUB_REQYARP_VERSION_MAJOR "x")
@@ -32,22 +32,23 @@
     
     (twk should be zero since we do not release YARP versions with twk != 0)
 
-* Commit :
+7) Commit :
   git commit -a -m "iCub x.y.x"
 
-* Tag:
+8) Tag:
   git tag -a -m "iCub release x.y.z" vx.y.z HEAD
 
-* Further checks :
+9) Further checks :
   git log --oneline --graph --decorate origin/master...HEAD
  (Check that the only commit is like "* xxxxxxx (tag: v2.3.21, HEAD, master) YARP 2.3.21)
 
-* Push your modifications
+10) Push your modifications
   git push origin master
   git push origin v2.3.21
 
+11) reapet steps 8 to 10  on icub-firmware-shared tagging it with the same version as icub-main
 
-* Build source packages:
+12) Build source packages:
   ./admin/scripts/icub-package.sh x.y.z
 
-* Upload to sourceforge
+13) Upload the package to sourceforge
