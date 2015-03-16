@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>    
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">               
-<devices robot="iCubEdinburgh01" build="1">               
+<devices robot="iCubGrenoble01" build="1">               
     <device name="head_face_calibrator" type="parametricCalibrator">   
-                             <params file="general.xml" />  
+                             
         <group name="GENERAL">             
             <param name="joints"> 12 </param>            
             <param name="deviceName"> TalkingHeadFace_Calibrator </param>            
@@ -13,7 +13,7 @@
 <param name="calibrationType">            3             3             3             3             0             0             3             3             0             0             0             0             </param>       
 <param name="calibration1">               2047.5        2047.5        2047.5        2047.5        900           900           2047.5        2047.5        800           400           400           900           </param>       
 <param name="calibration2">               10            10            10            10            20            20            10            10            -20           10            20            20            </param>       
-<param name="calibration3">               154.7         503.9125      2951.813      773.5         0             0             1535.625      1592.5        0             0             0             0             </param>       
+<param name="calibration3">               3429.5625     2426.288      2203.338      2582.125      0             0             1535.625      1592.5        0             0             0             0             </param>       
 <param name="positionZero">               0             0             0             0             0             0             15            0             -30           28            -30           0             </param>       
 <param name="velocityZero">               10            10            10            10            10            10            10            10            10            10            10            10            </param>       
 <param name="maxPwm">                     120           120           120           0             0             0             0             0             0             0             0             0             </param>       
