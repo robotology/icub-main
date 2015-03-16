@@ -1007,12 +1007,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (!extractGroup(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", _njoints))
     {
-        fprintf(stderr, "Using default value = 0\n");
-        for(i=1; i<_njoints+1; i++)
-        {
-            _maxTorque[i-1] = 0;
-            _newtonsToSensor[i-1]=1;
-        }
+        return false;
     }
     else
     {
@@ -1396,9 +1391,9 @@ bool embObjMotionControl::init()
         jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[logico]);
         jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[logico]);
 
-        jconfig.motor_params.bemf_value = _kbemf[logico];
+        jconfig.motor_params.bemf_value = 0;
         jconfig.motor_params.bemf_scale = 0;
-        jconfig.motor_params.ktau_value = _ktau[logico];
+        jconfig.motor_params.ktau_value = 0;
         jconfig.motor_params.ktau_scale = 0;
         
         jconfig.tcfiltertype=_filterType[logico];
@@ -1416,11 +1411,21 @@ bool embObjMotionControl::init()
                 yDebug() << "embObjMotionControl::init() correctly configured joint config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
             }
         }
-
-
     }
 
-
+    /////////////////////////////////////////////////////////
+    // invia la configurazione dei parametri di stiction   //
+    /////////////////////////////////////////////////////////
+    for(int logico=0; logico< _njoints; logico++)
+    {
+        MotorTorqueParameters params;
+        params.bemf = _kbemf[logico];
+        params.bemf_scale = 0;
+        params.ktau = _ktau[logico];
+        params.ktau_scale = 0;
+        //use the yarp method to get the values properly converted from [SI] to HW units
+        setMotorTorqueParams(logico,params);
+    }
 
     //////////////////////////////////////////
     // invia la configurazione dei MOTORI   //
@@ -3732,6 +3737,8 @@ bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *
     params->bemf_scale = eo_params.bemf_scale;
     params->ktau       = eo_params.ktau_value;
     params->ktau_scale = eo_params.ktau_scale;
+    //printf("debug getMotorTorqueParamsRaw %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale);
+
 
     return true;
 }
@@ -3745,6 +3752,7 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
     eo_params.bemf_scale    = (uint8_t) params.bemf_scale;
     eo_params.ktau_value    = (float) params.ktau;
     eo_params.ktau_scale    = (uint8_t) params.ktau_scale;
+    //printf("DEBUG setMotorTorqueParamsRaw: %f %f %f %f\n",  params.bemf, params.bemf_scale, params.ktau,params.ktau_scale);
 
     if(!res->addSetMessage(id32, (uint8_t *) &eo_params))
     {

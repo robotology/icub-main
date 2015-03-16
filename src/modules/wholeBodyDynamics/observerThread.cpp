@@ -912,11 +912,11 @@ void inverseDynamics::run()
     angles[0] = 0;
     angles[1] = -90/180.0*M_PI;
     angles[2] = 0;
-    yarp::sig::Matrix r1 = iCub::ctrl::euler2dcm(angles);
-    yarp::sig::Matrix ilhl = iCub::ctrl::SE3inv(lhl);
+    yarp::sig::Matrix r1 = yarp::math::euler2dcm(angles);
+    yarp::sig::Matrix ilhl = yarp::math::SE3inv(lhl);
     yarp::sig::Matrix foot_root_mat = r1*ilhl;
     
-    yarp::sig::Vector foot_tmp = iCub::ctrl::dcm2rpy(foot_root_mat);
+    yarp::sig::Vector foot_tmp = yarp::math::dcm2rpy(foot_root_mat);
     //printf ("before\n %s\n", foot_root_mat.toString().c_str());
     yarp::sig::Vector foot_root_vec (6,0.0); 
     foot_root_vec[3] = foot_root_mat[0][3]*1000;

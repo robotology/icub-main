@@ -161,7 +161,7 @@ void ServerCartesianController::init()
 
     attached     =false;
     connected    =false;
-    closed       =false;
+    closed       =true;
     trackingMode =false;
     executingTraj=false;
     taskVelModeOn=false;
@@ -1398,7 +1398,7 @@ Bottle ServerCartesianController::sendCtrlCmdMultipleJointsVelocity()
 
             // apply bang-bang control to compensate for unachievable low velocities
             if ((vel!=0.0) && (fabs(vel)<thres))
-                vel=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
+                vel=yarp::math::sign(qdes[cnt]-fb[cnt])*thres;
 
             joints.push_back(joint);
             vels.push_back(vel);
@@ -1490,7 +1490,7 @@ Bottle ServerCartesianController::sendCtrlCmdSingleJointVelocity()
 
             // apply bang-bang control to compensate for unachievable low velocities
             if ((vel!=0.0) && (fabs(vel)<thres))
-                vel=iCub::ctrl::sign(qdes[cnt]-fb[cnt])*thres;
+                vel=yarp::math::sign(qdes[cnt]-fb[cnt])*thres;
 
             lVel[j]->velocityMove(joint,vel);
 
@@ -1716,6 +1716,7 @@ void ServerCartesianController::threadRelease()
 bool ServerCartesianController::open(Searchable &config)
 {
     yInfo("***** Configuring cartesian controller *****");
+    closed=false;
 
     // GENERAL group
     Bottle &optGeneral=config.findGroup("GENERAL");
@@ -1723,7 +1724,6 @@ bool ServerCartesianController::open(Searchable &config)
     {
         yError("GENERAL group is missing");
         close();
-
         return false;
     }
 
@@ -1736,7 +1736,6 @@ bool ServerCartesianController::open(Searchable &config)
     {
         yError("SolverNameToConnect option is missing");
         close();
-
         return false;
     }
 
@@ -1748,7 +1747,6 @@ bool ServerCartesianController::open(Searchable &config)
             yError("Attempt to instantiate an unknown kinematic part");
             yError("Available parts are: arm, leg, custom");
             close();
-
             return false;
         }
     }
@@ -1756,7 +1754,6 @@ bool ServerCartesianController::open(Searchable &config)
     {
         yError("KinematicPart option is missing");
         close();
-
         return false;
     }
 
@@ -1772,7 +1769,6 @@ bool ServerCartesianController::open(Searchable &config)
             yError("Attempt to instantiate unknown kinematic type");
             yError("Available types are: left, right, left_v*, right_v*");
             close();
-
             return false;
         }
     }
@@ -1780,7 +1776,6 @@ bool ServerCartesianController::open(Searchable &config)
     {
         yError("KinematicType option is missing");
         close();
-
         return false;
     }
 
@@ -1791,7 +1786,6 @@ bool ServerCartesianController::open(Searchable &config)
         {
             yError("NumberOfDrivers shall be positive");
             close();
-
             return false;
         }
     }
@@ -1799,7 +1793,6 @@ bool ServerCartesianController::open(Searchable &config)
     {
         yError("NumberOfDrivers option is missing");
         close();
-
         return false;
     }
 
@@ -1841,7 +1834,6 @@ bool ServerCartesianController::open(Searchable &config)
         {
             yError("%s group is missing",entry_str.c_str());
             close();
-
             return false;
         }
 
@@ -1855,7 +1847,6 @@ bool ServerCartesianController::open(Searchable &config)
         {
             yError("Key option is missing");
             close();
-
             return false;
         }
 
@@ -1872,7 +1863,6 @@ bool ServerCartesianController::open(Searchable &config)
                 yError("Attempt to select an unknown mapping order");
                 yError("Available orders are: direct, reversed");
                 close();
-
                 return false;
             }
         }
@@ -1880,7 +1870,6 @@ bool ServerCartesianController::open(Searchable &config)
         {
             yError("JointsOrder option is missing");
             close();
-
             return false;
         }
 
@@ -1943,7 +1932,6 @@ bool ServerCartesianController::open(Searchable &config)
         {
             yError("Invalid links parameters");
             close();
-
             return false;
         }
     }
@@ -1951,7 +1939,6 @@ bool ServerCartesianController::open(Searchable &config)
     {
         yError("CustomKinFile option is missing");
         close();
-
         return false;
     }
 

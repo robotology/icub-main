@@ -844,7 +844,7 @@ Vector iKinChain::Pose(const unsigned int i, const bool axisRep)
         if (axisRep)
         {
             v.resize(7);
-            Vector r=dcm2axis(H,verbose);
+            Vector r=dcm2axis(H);
             v[0]=H(0,3);
             v[1]=H(1,3);
             v[2]=H(2,3);
@@ -896,7 +896,7 @@ Vector iKinChain::EndEffPose(const bool axisRep)
     if (axisRep)
     {
         v.resize(7);
-        Vector r=dcm2axis(H,verbose);
+        Vector r=dcm2axis(H);
         v[0]=H(0,3);
         v[1]=H(1,3);
         v[2]=H(2,3);

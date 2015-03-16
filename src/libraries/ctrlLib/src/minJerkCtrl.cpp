@@ -279,29 +279,28 @@ minJerkVelCtrlForNonIdealPlant::~minJerkVelCtrlForNonIdealPlant()
 
 
 /*******************************************************************************************/
-minJerkTrajGen::minJerkTrajGen(const unsigned int _dim, const double _Ts, const double _T)
+minJerkBaseGen::minJerkBaseGen(const unsigned int _dim, const double _Ts, const double _T)
     :dim(_dim), Ts(_Ts), T(_T)
 {
     posFilter = velFilter = accFilter = NULL;
     pos = vel = acc = lastRef = zeros(dim);
-    computeCoeffs();
 }
 
 
 /*******************************************************************************************/
-minJerkTrajGen::minJerkTrajGen(const Vector &y0, const double _Ts, const double _T)
+minJerkBaseGen::minJerkBaseGen(const Vector &y0, const double _Ts, const double _T)
     :dim(y0.size()), Ts(_Ts), T(_T)
 {
     posFilter = velFilter = accFilter = NULL;
     lastRef = pos = y0;
     vel = acc = zeros(dim);
-    computeCoeffs();
 }
 
 
 /*******************************************************************************************/
-minJerkTrajGen::minJerkTrajGen(const minJerkTrajGen &z)
+minJerkBaseGen::minJerkBaseGen(const minJerkBaseGen &z)
 {
+    posFilter = velFilter = accFilter = NULL;
     pos = z.pos;
     vel = z.vel;
     acc = z.acc;
@@ -309,13 +308,11 @@ minJerkTrajGen::minJerkTrajGen(const minJerkTrajGen &z)
     T = z.T;
     Ts = z.Ts;
     dim = z.dim;
-
-    computeCoeffs();
 }
 
 
 /*******************************************************************************************/
-minJerkTrajGen::~minJerkTrajGen()
+minJerkBaseGen::~minJerkBaseGen()
 {
     delete posFilter;
     delete velFilter;
@@ -324,8 +321,13 @@ minJerkTrajGen::~minJerkTrajGen()
 
 
 /*******************************************************************************************/
-minJerkTrajGen& minJerkTrajGen::operator=(const minJerkTrajGen &z)
+minJerkBaseGen& minJerkBaseGen::operator=(const minJerkBaseGen &z)
 {
+    delete posFilter;
+    delete velFilter;
+    delete accFilter;
+    posFilter = velFilter = accFilter = NULL;
+
     pos = z.pos;
     vel = z.vel;
     acc = z.acc;
@@ -333,112 +335,13 @@ minJerkTrajGen& minJerkTrajGen::operator=(const minJerkTrajGen &z)
     T = z.T;
     Ts = z.Ts;
     dim = z.dim;
-    
-    computeCoeffs();
 
     return *this;
 }
 
 
 /*******************************************************************************************/
-void minJerkTrajGen::computeCoeffs()
-{
-    // 90% of steady-state value in t=T
-    // transient extinguished for t>=1.5*T
-    double a = -150.765868956161/(T*T*T);
-    double b = -84.9812819469538/(T*T);
-    double c = -15.9669610709384/T;
-    double m = 4.0*c*Ts;
-    double n = 2.0*b*Ts*Ts;
-    double p = a*Ts*Ts*Ts;
-
-    // implementing F(s)=-a/(s^3-c*s^2-b*s-a)
-    Vector num(4);
-    Vector den(4);
-
-    num[0] = p;
-    num[1] = 3.0*p;
-    num[2] = 3.0*p;
-    num[3] = p;
-
-    den[0] = m+n+p-8.0;
-    den[1] = -m+n+3.0*p+24.0;
-    den[2] = -m-n+3.0*p-24.0;
-    den[3] = m-n+p+8.0;
-
-    if (posFilter==NULL)
-        posFilter=new Filter(num,den,pos);
-    else
-        posFilter->adjustCoeffs(num,den);
-
-    // implementing F(s)=-a*s/(s^3-c*s^2-b*s-a)
-    p = 2.0*a*Ts*Ts;
-    num[0] = p;
-    num[1] = p;
-    num[2] = -p;
-    num[3] = -p;
-
-    if (velFilter==NULL)
-        velFilter=new Filter(num,den,vel);
-    else
-        velFilter->adjustCoeffs(num,den);
-    velFilter->init(zeros(dim), pos);  //init filter to avoid spikes at the start
-
-    // implementing F(s)=-a*s^2/(s^3-c*s^2-b*s-a)
-    p = 4.0*a*Ts;
-    num[0] = p;
-    num[1] = -p;
-    num[2] = -p;
-    num[3] = p;
-
-    if (accFilter==NULL)
-        accFilter=new Filter(num,den,acc);
-    else
-        accFilter->adjustCoeffs(num,den);
-    accFilter->init(zeros(dim), pos);  //init filter to avoid spikes at the start
-}
-
-
-/*******************************************************************************************/
-void minJerkTrajGen::computeNextValues(const Vector &ref)
-{
-    lastRef = ref;
-
-    if (posFilter!=NULL)
-        pos = posFilter->filt(ref);
-
-    if (velFilter!=NULL)
-        vel = velFilter->filt(ref);
-
-    if (accFilter!=NULL)
-        acc = accFilter->filt(ref);
-}
-
-
-/*******************************************************************************************/
-bool minJerkTrajGen::setT(const double _T)
-{
-    if(_T<=0.0)
-        return false;
-    T = _T;
-    computeCoeffs();
-    return true;
-}
-
-
-/*******************************************************************************************/
-bool minJerkTrajGen::setTs(const double _Ts)
-{
-    if(_Ts<=0.0)
-        return false;
-    Ts = _Ts;
-    computeCoeffs();
-    return true;
-}
-
-
-/*******************************************************************************************/
-void minJerkTrajGen::init(const Vector &y0)
+void minJerkBaseGen::init(const Vector &y0)
 {
     // save initial state y0, so that if setT() or setTs() are called afterwards
     // the vel and acc filters are initialized with the right value (i.e. y0) 
@@ -455,63 +358,145 @@ void minJerkTrajGen::init(const Vector &y0)
 
 
 /*******************************************************************************************/
-minJerkRefGen::minJerkRefGen(const unsigned int _dim, const double _Ts, const double _T)
-    :dim(_dim), Ts(_Ts), T(_T)
+bool minJerkBaseGen::setT(const double _T)
 {
-    posFilter = velFilter = accFilter = NULL;
-    pos = vel = acc = lastRef = zeros(dim);
+    if(_T<=0.0)
+        return false;
+    T = _T;
+    computeCoeffs();
+    return true;
+}
+
+
+/*******************************************************************************************/
+bool minJerkBaseGen::setTs(const double _Ts)
+{
+    if(_Ts<=0.0)
+        return false;
+    Ts = _Ts;
+    computeCoeffs();
+    return true;
+}
+
+
+/*******************************************************************************************/
+minJerkTrajGen::minJerkTrajGen(const unsigned int _dim, const double _Ts, const double _T)
+    :minJerkBaseGen(_dim,_Ts,_T)
+{
+    computeCoeffs();
+}
+
+
+/*******************************************************************************************/
+minJerkTrajGen::minJerkTrajGen(const Vector &y0, const double _Ts, const double _T)
+    :minJerkBaseGen(y0,_Ts,_T)
+{
+    computeCoeffs();
+}
+
+
+/*******************************************************************************************/
+minJerkTrajGen::minJerkTrajGen(const minJerkTrajGen &z)
+    :minJerkBaseGen(z)
+{
+    computeCoeffs();
+}
+
+
+/*******************************************************************************************/
+minJerkTrajGen& minJerkTrajGen::operator=(const minJerkTrajGen &z)
+{
+    minJerkBaseGen::operator=(z);
+    computeCoeffs();
+    return *this;
+}
+
+
+/*******************************************************************************************/
+void minJerkTrajGen::computeCoeffs()
+{
+    // 90% of steady-state value in t=T
+    // transient extinguished for t>=1.5*T
+    double a = -150.765868956161/(T*T*T);
+    double b = -84.9812819469538/(T*T);
+    double c = -15.9669610709384/T;
+
+    // implementing F(s)=-a/(s^3-c*s^2-b*s-a)
+    double m = 4.0*c*Ts;
+    double n = 2.0*b*Ts*Ts;
+    double p = a*Ts*Ts*Ts;
+    Vector num = cat(p, 3.0*p, 3.0*p, p);
+    Vector den = cat(m+n+p-8.0, -m+n+3.0*p+24.0, -m-n+3.0*p-24.0, m-n+p+8.0);
+    if (posFilter==NULL)
+        posFilter=new Filter(num,den,pos);
+    else
+        posFilter->adjustCoeffs(num,den);
+
+    // implementing F(s)=-a*s/(s^3-c*s^2-b*s-a)
+    p = 2.0*a*Ts*Ts;
+    num = cat(p, p, -p, -p);
+    if (velFilter==NULL)
+        velFilter=new Filter(num,den,vel);
+    else
+        velFilter->adjustCoeffs(num,den);
+    velFilter->init(zeros(dim), pos);  //init filter to avoid spikes at the start
+
+    // implementing F(s)=-a*s^2/(s^3-c*s^2-b*s-a)
+    p = 4.0*a*Ts;
+    num = cat(p, -p, -p, p);
+    if (accFilter==NULL)
+        accFilter=new Filter(num,den,acc);
+    else
+        accFilter->adjustCoeffs(num,den);
+    accFilter->init(zeros(dim), pos);  //init filter to avoid spikes at the start
+}
+
+
+/*******************************************************************************************/
+void minJerkTrajGen::computeNextValues(const Vector &yd)
+{
+    lastRef = yd;
+
+    if (posFilter!=NULL)
+        pos = posFilter->filt(yd);
+
+    if (velFilter!=NULL)
+        vel = velFilter->filt(yd);
+
+    if (accFilter!=NULL)
+        acc = accFilter->filt(yd);
+}
+
+
+/*******************************************************************************************/
+minJerkRefGen::minJerkRefGen(const unsigned int _dim, const double _Ts, const double _T)
+    :minJerkBaseGen(_dim,_Ts,_T)
+{
     computeCoeffs();
 }
 
 
 /*******************************************************************************************/
 minJerkRefGen::minJerkRefGen(const Vector &y0, const double _Ts, const double _T)
-    :dim(y0.size()), Ts(_Ts), T(_T)
+    :minJerkBaseGen(y0,_Ts,_T)
 {
-    posFilter = velFilter = accFilter = NULL;
-    lastRef = pos = y0;
-    vel = acc = zeros(dim);
     computeCoeffs();
 }
 
 
 /*******************************************************************************************/
 minJerkRefGen::minJerkRefGen(const minJerkRefGen &z)
+    :minJerkBaseGen(z)
 {
-    pos = z.pos;
-    vel = z.vel;
-    acc = z.acc;
-    lastRef = z.lastRef;
-    T = z.T;
-    Ts = z.Ts;
-    dim = z.dim;
-
     computeCoeffs();
-}
-
-
-/*******************************************************************************************/
-minJerkRefGen::~minJerkRefGen()
-{
-    delete posFilter;
-    delete velFilter;
-    delete accFilter;
 }
 
 
 /*******************************************************************************************/
 minJerkRefGen& minJerkRefGen::operator=(const minJerkRefGen &z)
 {
-    pos = z.pos;
-    vel = z.vel;
-    acc = z.acc;
-    lastRef = z.lastRef;
-    T = z.T;
-    Ts = z.Ts;
-    dim = z.dim;
-    
+    minJerkBaseGen::operator=(z);
     computeCoeffs();
-
     return *this;
 }
 
@@ -530,7 +515,7 @@ void minJerkRefGen::computeCoeffs()
     double n = 2.0*b*Ts*Ts;
     double p = a*Ts*Ts*Ts;
     Vector num = cat(p, 3.0*p, 3.0*p, p);
-    Vector den = cat( m+n+p-8.0, -m+n+3.0*p+24.0, -m-n+3.0*p-24.0, m-n+p+8.0);
+    Vector den = cat(m+n+p-8.0, -m+n+3.0*p+24.0, -m-n+3.0*p-24.0, m-n+p+8.0);
     if (posFilter==NULL)
         posFilter=new Filter(num,den,pos);
     else
@@ -586,44 +571,6 @@ void minJerkRefGen::computeNextValues(const yarp::sig::Vector &y, const yarp::si
 {
     lastRef = yd;
     computeNextValues(y);
-}
-
-
-/*******************************************************************************************/
-bool minJerkRefGen::setT(const double _T)
-{
-    if(_T<=0.0)
-        return false;
-    T = _T;
-    computeCoeffs();
-    return true;
-}
-
-
-/*******************************************************************************************/
-bool minJerkRefGen::setTs(const double _Ts)
-{
-    if(_Ts<=0.0)
-        return false;
-    Ts = _Ts;
-    computeCoeffs();
-    return true;
-}
-
-
-/*******************************************************************************************/
-void minJerkRefGen::init(const Vector &y0)
-{
-    lastRef = pos = y0;
-
-    if (posFilter!=NULL)
-        posFilter->init(y0);
-
-    if (velFilter!=NULL)
-        velFilter->init(zeros(dim), y0);
-
-    if (accFilter!=NULL)
-        accFilter->init(zeros(dim), y0);
 }
 
 

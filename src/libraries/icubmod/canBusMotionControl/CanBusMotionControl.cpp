@@ -1341,14 +1341,9 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
     }
 
-    if (!validate_optional(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", nj+1))
+    if (!validate(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", nj+1))
     {
-        yWarning("TorqueMax: Using default value = 0\n");
-        for(i=1;i<nj+1; i++) 
-        {
-                _maxTorque[i-1] = 0;
-                _newtonsToSensor[i-1]=1;
-        }
+        return false;
     }
     else
     {
