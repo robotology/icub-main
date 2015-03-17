@@ -1071,12 +1071,6 @@ public:
     iCubArm(const std::string &_type);
 
     /**
-    * Creates a new Arm from an already existing Arm object.
-    * @param arm is the Arm to be copied.
-    */
-    iCubArm(const iCubArm &arm);
-
-    /**
     * Alignes the Arm joints bounds with current values set aboard 
     * the iCub. 
     * @param lim is the ordered list of control interfaces that 
@@ -1103,7 +1097,7 @@ protected:
     std::string version;
 
     virtual void allocate(const std::string &_type);
-    virtual void clone(const iKinLimb &limb);
+    virtual void clone(const iCubFinger &finger);
 
 public:
     /**
@@ -1134,6 +1128,13 @@ public:
     * @param sensor is the object to be copied.
     */
     iCubFinger(const iCubFinger &finger);
+
+    /**
+    * Copies a Finger object into the current one.
+    * @param finger is a reference to an object of type iCubFinger.
+    * @return a reference to the current object.
+    */
+    iCubFinger &operator=(const iCubFinger &finger);
 
     /**
     * Alignes the finger joints bounds with current values set 
@@ -1193,12 +1194,6 @@ public:
     iCubLeg(const std::string &_type);
 
     /**
-    * Creates a new Leg from an already existing Leg object.
-    * @param leg is the Leg to be copied.
-    */
-    iCubLeg(const iCubLeg &leg);
-
-    /**
     * Alignes the Leg joints bounds with current values set aboard 
     * the iCub. 
     * @param lim is the ordered list of control interfaces that 
@@ -1232,12 +1227,6 @@ public:
     *              "[left|right]_v[1|2]".
     */
     iCubEye(const std::string &_type);
-
-    /**
-    * Creates a new Eye from an already existing Eye object.
-    * @param eye is the Eye to be copied.
-    */
-    iCubEye(const iCubEye &eye);
 
     /**
     * Alignes the Eye joints bounds with current values set aboard 
@@ -1274,12 +1263,6 @@ public:
     *              "left_v2" and "right_v2".
     */
     iCubEyeNeckRef(const std::string &_type);
-
-    /**
-    * Creates a new Eye from an already existing Eye object.
-    * @param eye is the Eye to be copied.
-    */
-    iCubEyeNeckRef(const iCubEyeNeckRef &eye);
 };
 
 
@@ -1307,13 +1290,6 @@ public:
     *              "[left|right]_v[1|2]".
     */
     iCubHeadCenter(const std::string &_type);
-
-    /**
-    * Creates a new iCubHeadCenter from an already existing 
-    * iCubHeadCenter object. 
-    * @param head is the iCubHeadCenter object to be copied.
-    */
-    iCubHeadCenter(const iCubHeadCenter &head);
 };
 
 
@@ -1340,12 +1316,6 @@ public:
     *              hardware versions.
     */
     iCubInertialSensor(const std::string &_type);
-
-    /**
-    * Creates a new Inertial Sensor from an already existing object.
-    * @param sensor is the object to be copied.
-    */
-    iCubInertialSensor(const iCubInertialSensor &sensor);
 
     /**
     * Alignes the Inertial Sensor joints bounds with current values 

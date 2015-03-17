@@ -1651,31 +1651,22 @@ void iKinLimb::dispose()
 
 
 /************************************************************************/
-iCubArm::iCubArm()
+iCubArm::iCubArm() : iKinLimb()
 {
     allocate("right");
 }
 
 
 /************************************************************************/
-iCubArm::iCubArm(const string &_type)
+iCubArm::iCubArm(const string &_type) : iKinLimb(_type)
 {
     allocate(_type);
 }
 
 
 /************************************************************************/
-iCubArm::iCubArm(const iCubArm &arm)
-{
-    clone(arm);
-}
-
-
-/************************************************************************/
 void iCubArm::allocate(const string &_type)
 {
-    iKinLimb::allocate(_type);
-
     Matrix H0(4,4);
     H0.zero();
     H0(0,1)=-1.0;
@@ -1782,14 +1773,14 @@ bool iCubArm::alignJointsBounds(const deque<IControlLimits*> &lim)
 
 
 /************************************************************************/
-iCubFinger::iCubFinger()
+iCubFinger::iCubFinger() : iKinLimb()
 {
     allocate("right_index");
 }
 
 
 /************************************************************************/
-iCubFinger::iCubFinger(const string &_type)
+iCubFinger::iCubFinger(const string &_type) : iKinLimb(_type)
 {
     type="right_index_na";
     hand="right";
@@ -1801,17 +1792,15 @@ iCubFinger::iCubFinger(const string &_type)
 
 
 /************************************************************************/
-iCubFinger::iCubFinger(const iCubFinger &finger)
+iCubFinger::iCubFinger(const iCubFinger &finger) : iKinLimb(finger)
 {
     clone(finger);
 }
 
 
 /************************************************************************/
-void iCubFinger::clone(const iKinLimb &limb)
+void iCubFinger::clone(const iCubFinger &finger)
 {
-    iKinLimb::clone(limb);
-    const iCubFinger &finger=static_cast<const iCubFinger&>(limb);
     this->hand=finger.hand;
     this->finger=finger.finger;
     this->version=finger.version;
@@ -1819,10 +1808,19 @@ void iCubFinger::clone(const iKinLimb &limb)
 
 
 /************************************************************************/
+iCubFinger &iCubFinger::operator=(const iCubFinger &finger)
+{
+    dispose();
+    iKinLimb::clone(finger);
+    clone(finger);
+
+    return *this;
+}
+
+
+/************************************************************************/
 void iCubFinger::allocate(const string &_type)
 {
-    iKinLimb::allocate(_type);
-
     size_t underscore=getType().find('_');
     if (underscore!=string::npos)
     {
@@ -2042,31 +2040,22 @@ bool iCubFinger::getChainJoints(const Vector &robotEncoders, Vector &chainJoints
 
 
 /************************************************************************/
-iCubLeg::iCubLeg()
+iCubLeg::iCubLeg() : iKinLimb()
 {
     allocate("right");
 }
 
 
 /************************************************************************/
-iCubLeg::iCubLeg(const string &_type)
+iCubLeg::iCubLeg(const string &_type) : iKinLimb(_type)
 {
     allocate(_type);
 }
 
 
 /************************************************************************/
-iCubLeg::iCubLeg(const iCubLeg &leg)
-{
-    clone(leg);
-}
-
-
-/************************************************************************/
 void iCubLeg::allocate(const string &_type)
 {
-    iKinLimb::allocate(_type);
-
     Matrix H0(4,4);
     H0.zero();
     H0(0,0)=1.0;
@@ -2150,31 +2139,22 @@ bool iCubLeg::alignJointsBounds(const deque<IControlLimits*> &lim)
 
 
 /************************************************************************/
-iCubEye::iCubEye()
+iCubEye::iCubEye() : iKinLimb()
 {
     allocate("right");
 }
 
 
 /************************************************************************/
-iCubEye::iCubEye(const string &_type)
+iCubEye::iCubEye(const string &_type) : iKinLimb(_type)
 {
     allocate(_type);
 }
 
 
 /************************************************************************/
-iCubEye::iCubEye(const iCubEye &eye)
-{
-    clone(eye);
-}
-
-
-/************************************************************************/
 void iCubEye::allocate(const string &_type)
 {
-    iKinLimb::allocate(_type);
-
     Matrix H0(4,4);
     H0.zero();
     H0(0,1)=-1.0;
@@ -2271,23 +2251,16 @@ bool iCubEye::alignJointsBounds(const deque<IControlLimits*> &lim)
 
 
 /************************************************************************/
-iCubEyeNeckRef::iCubEyeNeckRef()
+iCubEyeNeckRef::iCubEyeNeckRef() : iCubEye()
 {
     allocate("right");
 }
 
 
 /************************************************************************/
-iCubEyeNeckRef::iCubEyeNeckRef(const string &_type)
+iCubEyeNeckRef::iCubEyeNeckRef(const string &_type) : iCubEye(_type)
 {
     allocate(_type);
-}
-
-
-/************************************************************************/
-iCubEyeNeckRef::iCubEyeNeckRef(const iCubEyeNeckRef &eye)
-{
-    clone(eye);
 }
 
 
@@ -2307,23 +2280,16 @@ void iCubEyeNeckRef::allocate(const string &_type)
 
 
 /************************************************************************/
-iCubHeadCenter::iCubHeadCenter()
+iCubHeadCenter::iCubHeadCenter() : iCubEye()
 {
     allocate("right");
 }
 
 
 /************************************************************************/
-iCubHeadCenter::iCubHeadCenter(const string &_type)
+iCubHeadCenter::iCubHeadCenter(const string &_type) : iCubEye(_type)
 {
     allocate(_type);
-}
-
-
-/************************************************************************/
-iCubHeadCenter::iCubHeadCenter(const iCubHeadCenter &head)
-{
-    clone(head);
 }
 
 
@@ -2340,31 +2306,22 @@ void iCubHeadCenter::allocate(const string &_type)
 
 
 /************************************************************************/
-iCubInertialSensor::iCubInertialSensor()
+iCubInertialSensor::iCubInertialSensor() : iKinLimb()
 {
     allocate("v1");
 }
 
 
 /************************************************************************/
-iCubInertialSensor::iCubInertialSensor(const string &_type)
+iCubInertialSensor::iCubInertialSensor(const string &_type) : iKinLimb(_type)
 {
     allocate(_type);
 }
 
 
 /************************************************************************/
-iCubInertialSensor::iCubInertialSensor(const iCubInertialSensor &sensor)
-{
-    clone(sensor);
-}
-
-
-/************************************************************************/
 void iCubInertialSensor::allocate(const string &_type)
 {
-    iKinLimb::allocate(_type);
-
     Matrix H0(4,4);
     H0.zero();
     H0(0,1)=-1.0;
