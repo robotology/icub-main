@@ -169,7 +169,37 @@ struct SpeedEstimationParameters
     }
 };
 
+class torqueControlHelper
+{
+    int  jointsNum;
+    double* newtonsToSensor;
+    double* angleToEncoders;
 
+    public:
+    torqueControlHelper(int njoints, double* angleToEncoders, double* newtons2sens);
+    torqueControlHelper(int njoints, float* angleToEncoders, double* newtons2sens);
+    inline ~torqueControlHelper()
+    {
+        if (newtonsToSensor)   delete [] newtonsToSensor;
+        if (angleToEncoders)   delete [] angleToEncoders;
+        newtonsToSensor=0;
+        angleToEncoders=0;
+    }
+    inline double getNewtonsToSensor (int jnt)
+    {
+        if (jnt>=0 && jnt<jointsNum) return newtonsToSensor[jnt];
+        return 0;
+    }
+    inline double getAngleToEncoders (int jnt)
+    {
+        if (jnt>=0 && jnt<jointsNum) return angleToEncoders[jnt];
+        return 0;
+    }
+    inline int getNumberOfJoints ()
+    {
+        return jointsNum;
+    }
+};
 
 namespace yarp {
     namespace dev  {
@@ -265,9 +295,14 @@ private:
     eOmc_impedance_t *_cacheImpedance;			/* cache impedance value to split up the 2 sets */
 
     bool        verbosewhenok;
-    bool         useRawEncoderData;
+    bool        useRawEncoderData;
     bool        _pwmIsLimited;                         /** set to true if pwm is limited */
-
+    bool        _torqueControlEnabled;                 /** set to true if the torque control parameters are successfully loaded. If false, boards cannot switch in torque mode */
+    
+    enum       torqueControlUnitsType {MACHINE_UNITS=0, METRIC_UNITS=1};
+    torqueControlUnitsType _torqueControlUnits;
+    torqueControlHelper    *_torqueControlHelper;
+    
 #if !defined(EMBOBJMC_DONT_USE_MAIS)
     int         numberofmaisboards;
 #endif
@@ -312,7 +347,8 @@ private:
 #endif
     bool dealloc();
     bool isEpManagedByBoard();
-    bool parsePidsGroup_NewFormat(Bottle& pidsGroup, Pid myPid[]);
+    bool parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[]);
+    bool parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], double kbemf[], double ktau[], int filterType[]);
     bool parseImpedanceGroup_NewFormat(Bottle& pidsGroup, ImpedanceParameters vals[]);
        
     bool getStatusBasic_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);             // helper function

@@ -180,7 +180,6 @@ public:
     Pid *_pids;                                 /** initial gains */
     Pid *_tpids;                                /** initial torque gains */
     bool _pwmIsLimited;                         /** set to true if pwm is limited */
-    bool _tpidsEnabled;                         /** abilitation for torque gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
     DebugParameters *_debug_params;             /** debug parameters */
     ImpedanceParameters *_impedance_params;     /** impedance parameters */
@@ -199,6 +198,9 @@ public:
     int *_torqueSensorChan;                     /** Channel of associated Joint Torque Sensor */
     double *_maxTorque;                         /** Max torque of a joint */
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
+    enum       torqueControlUnitsType {MACHINE_UNITS=0, METRIC_UNITS=1};
+    torqueControlUnitsType _torqueControlUnits;
+    bool _torqueControlEnabled;                 /** abilitation for torque control */
 };
 
 class TBR_AnalogData
@@ -632,10 +634,10 @@ class axisTorqueHelper
     }
     inline ~axisTorqueHelper()
     {
-        delete [] torqueSensorId;
-        delete [] torqueSensorChan;
-        delete [] maximumTorque;
-        delete [] newtonsToSensor;
+        if (torqueSensorId)   delete [] torqueSensorId;
+        if (torqueSensorChan) delete [] torqueSensorChan;
+        if (maximumTorque)    delete [] maximumTorque;
+        if (newtonsToSensor)  delete [] newtonsToSensor;
         torqueSensorId=0;
         torqueSensorChan=0;
         maximumTorque=0;
@@ -683,6 +685,37 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public IFactoryInterface,
             public IClientLogger
 {
+    class torqueControlHelper
+    {
+        int  jointsNum;
+        double* newtonsToSensor;
+        double* angleToEncoders;
+
+        public:
+        torqueControlHelper(int njoints, double* angleToEncoders, double* newtons2sens);
+        inline ~torqueControlHelper()
+        {
+            if (newtonsToSensor)   delete [] newtonsToSensor;
+            if (angleToEncoders)   delete [] angleToEncoders;
+            newtonsToSensor=0;
+            angleToEncoders=0;
+        }
+        inline double getNewtonsToSensor (int jnt)
+        {
+            if (jnt>=0 && jnt<jointsNum) return newtonsToSensor[jnt];
+            return 0;
+        }
+        inline double getAngleToEncoders (int jnt)
+        {
+            if (jnt>=0 && jnt<jointsNum) return angleToEncoders[jnt];
+            return 0;
+        }
+        inline int getNumberOfJoints ()
+        {
+            return jointsNum;
+        }
+    };
+
 private:
     CanBusMotionControl(const CanBusMotionControl&);
     void operator=(const CanBusMotionControl&);
@@ -1106,6 +1139,7 @@ protected:
     bool _writeByte8 (int msg, int axis, int value);
     bool _writeByteWords16(int msg, int axis, unsigned char value, short s1, short s2, short s3);
     axisTorqueHelper      *_axisTorqueHelper;
+    torqueControlHelper   *_torqueControlHelper;
     axisImpedanceHelper   *_axisImpedanceHelper;
     firmwareVersionHelper *_firmwareVersionHelper;
     speedEstimationHelper *_speedEstimationHelper;
@@ -1122,6 +1156,7 @@ protected:
     double *_ref_accs;            // for velocity control, in position min jerk eq is used.
     double *_ref_torques;        // for torque control.
     double *_ref_positions;        // for position control.
+    bool _MCtorqueControlEnabled;
 
     enum { MAX_SHORT = 32767, MIN_SHORT = -32768, MAX_INT = 0x7fffffff, MIN_INT = 0x80000000 };
     enum { CAN_SKIP_ADDR = 0x80 };

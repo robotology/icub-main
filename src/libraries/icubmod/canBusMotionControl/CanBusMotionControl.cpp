@@ -654,6 +654,23 @@ double axisPositionDirectHelper::getSaturatedValue (int hw_j, double hw_curr_val
     return hw_val;
 }
 
+CanBusMotionControl::torqueControlHelper::torqueControlHelper(int njoints, double* p_angleToEncoders, double* p_newtonsTosens )
+{
+   jointsNum=njoints;
+   newtonsToSensor = new double  [jointsNum];
+   angleToEncoders = new double  [jointsNum];
+
+   if (p_angleToEncoders!=0)
+       memcpy(angleToEncoders, p_angleToEncoders, sizeof(double)*jointsNum);
+   else
+       for (int i=0; i<jointsNum; i++) {angleToEncoders[i]=1.0;}
+
+   if (p_newtonsTosens!=0)
+       memcpy(newtonsToSensor, p_newtonsTosens, sizeof(double)*jointsNum);
+   else
+       for (int i=0; i<jointsNum; i++) {newtonsToSensor[i]=1.0;}
+}
+
 axisTorqueHelper::axisTorqueHelper(int njoints, int* id, int* chan, double* maxTrq, double* newtons2sens )
 {
     jointsNum=njoints;
@@ -1422,7 +1439,19 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 else
                 {for (j=0;j<nj;j++) this->_filterType[j] = 0; yWarning ("TORQUE_PIDS: 'filterType' param missing");}
                 
-                _tpidsEnabled = true;
+                xtmp = trqPidsGroup.findGroup("controlUnits"); 
+                if (!xtmp.isNull())
+                {    
+                     if      (xtmp.toString()==std::string("metric_units"))  {this->_torqueControlUnits=METRIC_UNITS;}
+                     else if (xtmp.toString()==std::string("machine_units")) {this->_torqueControlUnits=MACHINE_UNITS;}
+                     else    {yError() << "invalid controlUnits value"; return false;}
+                }
+                else
+                {
+                     this->_torqueControlUnits = MACHINE_UNITS; yError ("TORQUE_PIDS: 'controlUnits' param missing. Assuming machine_units. Please fix your configuration file.");
+                }
+                
+                _torqueControlEnabled = true;
            }
         }
         else
@@ -1432,10 +1461,11 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             {
                 yWarning ("TORQUE_PIDS: Torque Pids section found, old format\n");
                 parseTrqPidsGroup_OldFormat (trqPidsGroup2, nj, _tpids);
-                _tpidsEnabled=true;
+                _torqueControlEnabled=true;
             }
             else
             {   
+                _torqueControlEnabled=false;
                 yWarning("Torque Pids section NOT enabled, skipping...\n");
             }
         }
@@ -1728,7 +1758,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _zeros=0;
     _pids=0;
     _tpids=0;
-    _tpidsEnabled=false;
+    _torqueControlEnabled=false;
     _pwmIsLimited=false;
     _limitsMax=0;
     _limitsMin=0;
@@ -1757,6 +1787,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _txTimeout = 20;/** 20ms timeout */
     _rxTimeout = 20;
     _broadcast_mask=0;
+    _torqueControlUnits=MACHINE_UNITS;
 }
 
 bool CanBusMotionControlParameters::alloc(int nj)
@@ -2233,9 +2264,10 @@ _done(0)
     ACE_ASSERT (system_resources != NULL);
     _opened = false;
     _axisTorqueHelper = 0;
+    _torqueControlHelper = 0;
     _firmwareVersionHelper = 0;
     _speedEstimationHelper = 0;
-
+    _MCtorqueControlEnabled = false;
     mServerLogger = NULL;
 }
 
@@ -2339,6 +2371,11 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementControlMode2::initialize(p._njoints, p._axisMap);
     ImplementTorqueControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     _axisTorqueHelper = new axisTorqueHelper(p._njoints,p._torqueSensorId,p._torqueSensorChan, p._maxTorque, p._newtonsToSensor);
+    
+    if      (p._torqueControlUnits==CanBusMotionControlParameters::MACHINE_UNITS) {_torqueControlHelper = new torqueControlHelper(p._njoints, tmpOnes, tmpOnes);}
+    else if (p._torqueControlUnits==CanBusMotionControlParameters::METRIC_UNITS)  {_torqueControlHelper = new torqueControlHelper(p._njoints, p._angleToEncoder, p._newtonsToSensor);}
+    else    {yError() << "Invalid _torqueControlUnits value: %d" << p._torqueControlUnits; return false;}
+    
     _axisImpedanceHelper = new axisImpedanceHelper(p._njoints, p._impedance_limits);
     ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
@@ -2362,8 +2399,9 @@ bool CanBusMotionControl::open (Searchable &config)
     yarp::os::Time::delay(0.005);
     setPids(p._pids);
     
-    if (p._tpidsEnabled==true)
+    if (p._torqueControlEnabled==true)
     {
+        _MCtorqueControlEnabled = true;
         yarp::os::Time::delay(0.005);
         setTorquePids(p._tpids);
         
@@ -2815,11 +2853,13 @@ bool CanBusMotionControl::close (void)
     }
 
     if (threadPool != 0)
-        delete threadPool;
+       {delete threadPool; threadPool = 0;}
     if (_axisTorqueHelper != 0)
-        delete _axisTorqueHelper;
+       {delete _axisTorqueHelper; _axisTorqueHelper = 0;}
+    if (_torqueControlHelper != 0)
+       {delete _torqueControlHelper; _torqueControlHelper=0;}
     if (_firmwareVersionHelper != 0)
-        delete _firmwareVersionHelper;
+       {delete _firmwareVersionHelper; _firmwareVersionHelper =0;}
 
     checkAndDestroy<double> (_ref_positions);
     checkAndDestroy<double> (_command_speeds);
@@ -3873,6 +3913,8 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
     if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
         return false;
 
+    if (mode == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
+
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW SINGLE JOINT\n");
     bool ret = true;
 
@@ -3915,6 +3957,8 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
     bool ret = true;
     for (int i=0;i<n_joints; i++)
     {
+        if (modes[i] == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+
         int v = from_modevocab_to_modeint(modes[i]);
         if (v==VOCAB_CM_UNKNOWN) ret = false;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,joints[i],v);
@@ -3953,6 +3997,8 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
 
     for (int i = 0; i < r.getJoints(); i++)
     {
+        if (modes[i] == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+
         int v = from_modevocab_to_modeint(modes[i]);
         if (v==VOCAB_CM_UNKNOWN) return false;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,v);
@@ -7225,6 +7271,7 @@ bool CanBusMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionMod
 
     DEBUG_FUNC("Calling SET_INTERACTION_MODE RAW\n");
 
+    if (mode == VOCAB_IM_COMPLIANT && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
     int v = from_interactionvocab_to_interactionint(mode);
     if (v==icubCanProto_interactionmode_unknownError) return false;
     _writeByte8(CAN_SET_INTERACTION_MODE,j,v);
@@ -7252,6 +7299,8 @@ bool CanBusMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 
     for (int i = 0; i < r.getJoints(); i++)
     {
+       if (modes[i] == VOCAB_IM_COMPLIANT && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+
        int v = from_interactionvocab_to_interactionint(modes[i]);
        if (v==icubCanProto_interactionmode_unknownError) return false;
        _writeByte8(CAN_SET_INTERACTION_MODE,i,v);
