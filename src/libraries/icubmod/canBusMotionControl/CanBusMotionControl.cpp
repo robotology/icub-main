@@ -1451,7 +1451,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                      this->_torqueControlUnits = MACHINE_UNITS; yError ("TORQUE_PIDS: 'controlUnits' param missing. Assuming machine_units. Please fix your configuration file.");
                 }
                 
-                _tpidsEnabled = true;
+                _torqueControlEnabled = true;
            }
         }
         else
@@ -1461,10 +1461,11 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             {
                 yWarning ("TORQUE_PIDS: Torque Pids section found, old format\n");
                 parseTrqPidsGroup_OldFormat (trqPidsGroup2, nj, _tpids);
-                _tpidsEnabled=true;
+                _torqueControlEnabled=true;
             }
             else
             {   
+                _torqueControlEnabled=false;
                 yWarning("Torque Pids section NOT enabled, skipping...\n");
             }
         }
@@ -1757,7 +1758,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _zeros=0;
     _pids=0;
     _tpids=0;
-    _tpidsEnabled=false;
+    _torqueControlEnabled=false;
     _pwmIsLimited=false;
     _limitsMax=0;
     _limitsMin=0;
@@ -2266,7 +2267,7 @@ _done(0)
     _torqueControlHelper = 0;
     _firmwareVersionHelper = 0;
     _speedEstimationHelper = 0;
-
+    _MCtorqueControlEnabled = false;
     mServerLogger = NULL;
 }
 
@@ -2398,8 +2399,9 @@ bool CanBusMotionControl::open (Searchable &config)
     yarp::os::Time::delay(0.005);
     setPids(p._pids);
     
-    if (p._tpidsEnabled==true)
+    if (p._torqueControlEnabled==true)
     {
+        _MCtorqueControlEnabled = true;
         yarp::os::Time::delay(0.005);
         setTorquePids(p._tpids);
         
@@ -3911,6 +3913,8 @@ bool CanBusMotionControl::setControlModeRaw(const int j, const int mode)
     if (!(j >= 0 && j <= (CAN_MAX_CARDS-1)*2))
         return false;
 
+    if (mode == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
+
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW SINGLE JOINT\n");
     bool ret = true;
 
@@ -3953,6 +3957,8 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
     bool ret = true;
     for (int i=0;i<n_joints; i++)
     {
+        if (modes[i] == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+
         int v = from_modevocab_to_modeint(modes[i]);
         if (v==VOCAB_CM_UNKNOWN) ret = false;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,joints[i],v);
@@ -3991,6 +3997,8 @@ bool CanBusMotionControl::setControlModesRaw(int *modes)
 
     for (int i = 0; i < r.getJoints(); i++)
     {
+        if (modes[i] == VOCAB_CM_TORQUE && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+
         int v = from_modevocab_to_modeint(modes[i]);
         if (v==VOCAB_CM_UNKNOWN) return false;
         _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,v);
@@ -7263,6 +7271,7 @@ bool CanBusMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionMod
 
     DEBUG_FUNC("Calling SET_INTERACTION_MODE RAW\n");
 
+    if (mode == VOCAB_IM_COMPLIANT && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
     int v = from_interactionvocab_to_interactionint(mode);
     if (v==icubCanProto_interactionmode_unknownError) return false;
     _writeByte8(CAN_SET_INTERACTION_MODE,j,v);
@@ -7290,6 +7299,8 @@ bool CanBusMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 
     for (int i = 0; i < r.getJoints(); i++)
     {
+       if (modes[i] == VOCAB_IM_COMPLIANT && _MCtorqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+
        int v = from_interactionvocab_to_interactionint(modes[i]);
        if (v==icubCanProto_interactionmode_unknownError) return false;
        _writeByte8(CAN_SET_INTERACTION_MODE,i,v);

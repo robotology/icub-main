@@ -180,7 +180,6 @@ public:
     Pid *_pids;                                 /** initial gains */
     Pid *_tpids;                                /** initial torque gains */
     bool _pwmIsLimited;                         /** set to true if pwm is limited */
-    bool _tpidsEnabled;                         /** abilitation for torque gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
     DebugParameters *_debug_params;             /** debug parameters */
     ImpedanceParameters *_impedance_params;     /** impedance parameters */
@@ -201,6 +200,7 @@ public:
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
     enum       torqueControlUnitsType {MACHINE_UNITS=0, METRIC_UNITS=1};
     torqueControlUnitsType _torqueControlUnits;
+    bool _torqueControlEnabled;                 /** abilitation for torque control */
 };
 
 class TBR_AnalogData
@@ -1156,6 +1156,7 @@ protected:
     double *_ref_accs;            // for velocity control, in position min jerk eq is used.
     double *_ref_torques;        // for torque control.
     double *_ref_positions;        // for position control.
+    bool _MCtorqueControlEnabled;
 
     enum { MAX_SHORT = 32767, MIN_SHORT = -32768, MAX_INT = 0x7fffffff, MIN_INT = 0x80000000 };
     enum { CAN_SKIP_ADDR = 0x80 };
