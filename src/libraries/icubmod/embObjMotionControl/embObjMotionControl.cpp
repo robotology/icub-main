@@ -1171,6 +1171,24 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                        }
                    }
                }
+               else if (s_controlaw==string("joint_pid"))
+               {
+                    yDebug() << "control law" << s_controlaw << " will be use for torque control";
+                    if (!parseTorquePidsGroup (trqPidsGroup, _tpids, _kbemf, _ktau, _filterType))
+                    {
+                       yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: error detected in parameters syntax";
+                       _torqueControlEnabled = false;
+                       return false;
+                    }
+                    else
+                    {
+                       _torqueControlEnabled = true;
+                       if(verbosewhenok)
+                       {
+                            yDebug() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL new format successfully loaded";
+                       }
+                    }
+               }
                else
                {
                   yError() << "Unable to use control law " << s_controlaw << ". Disabling torque control";
