@@ -2,8 +2,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>    
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">               
 <devices robot="iCubEdinburgh01" build="1">     
-   <params file="general.xml" />                
-  <device name="head_mc" type="canmotioncontrol">        
+                
+  <device name="head_mc" type="canmotioncontrol">   
+<params file="general.xml" />     
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
 <param name="physDevice">   cfw2can       </param>       
@@ -31,7 +32,7 @@
 <param name="Joints">       6             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             </param>       
 <param name="Encoder">                            11.375     -11.375 11.375  11.375     568.880   284.440      </param>
-<param name="Zeros">                              180.00     -180.00 180.00  175.00     -49.00    0.00         </param>     
+<param name="Zeros">                              180.00     -179.00 190.00  180.00     -45.00    0.00         </param> 
 <param name="TorqueId">     0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             </param>       
 <param name="TorqueMax">    0             0             0             0             0             0             </param>       
