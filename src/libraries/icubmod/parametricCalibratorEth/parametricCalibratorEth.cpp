@@ -459,6 +459,7 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
                 abortCalib = true;
                 break;
             }
+
             limited_pid[(*lit)]=original_pid[(*lit)];
 
             if (maxPWM[(*lit)]==0)
@@ -468,9 +469,16 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
             }
             else
             {
-                limited_pid[(*lit)].max_int=maxPWM[(*lit)];
-                limited_pid[(*lit)].max_output=maxPWM[(*lit)];
-                iPids->setPid((*lit),limited_pid[(*lit)]);
+                if (maxPWM[(*lit)]<limited_pid[(*lit)].max_output)
+                {
+                    limited_pid[(*lit)].max_int=maxPWM[(*lit)];
+                    limited_pid[(*lit)].max_output=maxPWM[(*lit)];
+                    iPids->setPid((*lit),limited_pid[(*lit)]);
+                }
+                else
+                {
+                    yDebug() << deviceName << ": joint " << (*lit) << " has max_output already limited to a safe value: " << limited_pid[(*lit)].max_output;
+                }
             }
         }
 
