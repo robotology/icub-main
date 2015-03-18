@@ -8,6 +8,7 @@
             <param name="deviceName"> TalkingFace_Calibrator </param>  
         </group>             
  
+
 <group name="HOME">
 <param name="positionHome">                       0          0       -30     0          -30       0            </param>
 <param name="velocityHome">                       10         10      10      10         10        10           </param>
@@ -19,12 +20,12 @@
 <param name="calibrationType">                    3          3       0       0          0         0            </param>
 <param name="calibration1">                       2047.5     2047.5  800.0   400.0      400.0     900.0        </param>
 <param name="calibration2">                       10.0       10.0    -20.0   10.0       20.0      20.0         </param>
-<param name="calibration3">                       3756.5     3527.5  0.0     0.0        0.0       0.0          </param>
+<param name="calibration3">                       3756.5     352.5   0.0     0.0        0.0       0.0          </param>
 <param name="positionZero">                       0.0        0.0     -30.0   28.0       -30.0     0.0          </param>
 <param name="velocityZero">                       10.0       10.0    10.0    10.0       10.0      10.0         </param>
 <param name="maxPwm">                             0          0       0       0          0         0            </param>
 <param name="posZeroThreshold">                   90         90      90      90         90        90           </param>
-</group>     
+</group> 
  
         <param name="CALIB_ORDER"> (0 1 2 3 4 5) </param>              
                
