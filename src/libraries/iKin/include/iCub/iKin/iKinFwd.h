@@ -1049,6 +1049,40 @@ public:
 /**
 * \ingroup iKinFwd
 *
+* A class for defining the iCub Torso.
+*/
+class iCubTorso : public iKinLimb
+{
+protected:
+    virtual void allocate(const std::string &_type);
+
+public:
+    /**
+    * Default constructor. 
+    */
+    iCubTorso();
+
+    /**
+    * Constructor. 
+    * @param _type is a string for specifying different kinematic 
+    *              versions.
+    */
+    iCubTorso(const std::string &_type);
+
+    /**
+    * Alignes the Torso joints bounds with current values set aboard
+    * the iCub. 
+    * @param lim is the ordered list of control interfaces that 
+    *            allows to access the Torso limits.
+    * @return true/false on success/failure. 
+    */
+    virtual bool alignJointsBounds(const std::deque<yarp::dev::IControlLimits*> &lim);
+};
+
+
+/**
+* \ingroup iKinFwd
+*
 * A class for defining the iCub Arm.
 */
 class iCubArm : public iKinLimb

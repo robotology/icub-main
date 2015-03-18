@@ -1651,6 +1651,61 @@ void iKinLimb::dispose()
 
 
 /************************************************************************/
+iCubTorso::iCubTorso() : iKinLimb()
+{
+    allocate("");
+}
+
+
+/************************************************************************/
+iCubTorso::iCubTorso(const string &_type) : iKinLimb(string(""))
+{
+    allocate("");
+}
+
+
+/************************************************************************/
+void iCubTorso::allocate(const string &_type)
+{
+    Matrix H0(4,4);
+    H0.zero();
+    H0(0,1)=-1.0;
+    H0(1,2)=-1.0;
+    H0(2,0)=1.0;
+    H0(3,3)=1.0;
+    setH0(H0);
+
+    pushLink(new iKinLink(     0.032,      0.0,  M_PI/2.0,                 0.0, -22.0*CTRL_DEG2RAD,  84.0*CTRL_DEG2RAD));
+    pushLink(new iKinLink(       0.0,  -0.0055,  M_PI/2.0,           -M_PI/2.0, -39.0*CTRL_DEG2RAD,  39.0*CTRL_DEG2RAD));
+    pushLink(new iKinLink(-0.0233647,  -0.1433,  M_PI/2.0, -105.0*CTRL_DEG2RAD, -59.0*CTRL_DEG2RAD,  59.0*CTRL_DEG2RAD));
+}
+
+
+/************************************************************************/
+bool iCubTorso::alignJointsBounds(const deque<IControlLimits*> &lim)
+{
+    if (lim.size()==0)
+        return false;
+
+    IControlLimits &limTorso=*lim[0];
+
+    unsigned int iTorso;
+    double min, max;
+
+    for (iTorso=0; iTorso<3; iTorso++)
+    {   
+        if (!limTorso.getLimits(iTorso,&min,&max))
+            return false;
+
+        (*this)[2-iTorso].setMin(CTRL_DEG2RAD*min);
+        (*this)[2-iTorso].setMax(CTRL_DEG2RAD*max);
+    }
+
+    return true;
+}
+
+
+/************************************************************************/
 iCubArm::iCubArm() : iKinLimb()
 {
     allocate("right");
