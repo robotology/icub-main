@@ -1,8 +1,9 @@
  
  
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices>      
-  <device name="left_hand_mc" type="canmotioncontrol">   
+<devices robot="iCubParis02" build="1">      
+  <device name="left_hand_mc" type="canmotioncontrol"> 
+ <params file="general.xml" />  
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
 <param name="physDevice">   cfw2can       </param>       
@@ -29,8 +30,9 @@
 <group name="GENERAL">       
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
-<param name="Encoder">      7.78          -1.97         -2.44         -2.50         -2.22         -2.39         -2.39         -2.14         </param>       
-<param name="Zeros">        164.57        -120.51       -196.36       -102.00       -220.50       -102.56       -205.12       -350.47       </param>       
+<param name="Encoder">                                                                                                    8.867    -2.222   -2.782   -2.833   -2.488   -2.711   -2.712   -2.148   </param>
+<param name="Zeros">                                                                                                      142.33   -106.20  -173.59  -90.00   -198.94  -90.00   -177.38  -349.63  </param>
+  
 <param name="TorqueId">     0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueMax">    0             0             0             0             0             0             0             0             </param>       
