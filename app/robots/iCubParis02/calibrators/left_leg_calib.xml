@@ -12,18 +12,16 @@
 <param name="velocityHome">                       10.00          10.00      10.00        10.00       10.00     10.00       </param>
 </group>
 
-
-
 <group name="CALIBRATION">
 <param name="calibrationType">                    3              3          3            3           3         3           </param>
 <param name="calibration1">                       2047.5         2047.5     2047.5       2047.5      2047.5    2047.5      </param>
 <param name="calibration2">                       10.0           10.0       10.0         10.0        10.0      10.0        </param>
-<param name="calibration3">                       20.5           4090.5     4061.5       4020.5      4037.5    4075.5      </param>
+<param name="calibration3">                       2713.5         2873.5     4028.5       549.5       2189.5    1944.5      </param>
 <param name="positionZero">                       0.0            0.0        0.0          0.0         0.0       0.0         </param>
 <param name="velocityZero">                       10.0           10.0       10.0         10.0        10.0      10.0        </param>
 <param name="maxPwm">                             120            120        120          120         120       120         </param>
 <param name="posZeroThreshold">                   2              2          2            2           2         2           </param>
-</group>     
+</group>  
  
         <param name="CALIB_ORDER">(0 1 2 3 4 5) </param>               
                
