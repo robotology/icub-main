@@ -30,10 +30,6 @@
 #include "EoCommon.h"
 #include "EoError.h"
 
-
-#include "string.h"
-#include "stdint.h"
-#include "stdlib.h"
 #include <math.h>
 #include "FeatureInterface.h"
 
@@ -72,6 +68,7 @@
 static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd);
 
 
+
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
@@ -87,6 +84,37 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern public functions
 // --------------------------------------------------------------------------------------------------------------------
+
+extern void eoprot_fun_ONSAY_mn(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    // marco.accame on 18 mar 2014: this function is called when a say<id32, data> rop is received
+    // and the id32 is about the management endpoint. this function is common to every board.
+    // it is used this function and not another one because inside the hostTransceiver object it was called:
+    // eoprot_config_onsay_endpoint_set(eoprot_endpoint_management, eoprot_fun_ONSAY_mn);
+
+    // the aim of this function is to wake up a thread which is blocked because it has sent an ask<id32>
+    // the wake up funtionality is implemented in one mode only:
+    // a. in initialisation, someone sets some values and then reads them back.
+    //    the read back sends an ask<id32, signature=0xaa000000>. in such a case the board sends back
+    //    a say<id32, data, signature = 0xaa000000>. thus, if the received signature is 0xaa000000, then
+    //    we must unblock using feat_signal_network_reply().
+
+    if(0xaa000000 == rd->signature)
+    {   // case a:
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        {
+            char str[256] = {0};
+            char nvinfo[128];
+            eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
+            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_mn() received an unexpected message w/ 0xaa000000 signature for %s", nvinfo);
+            embObjPrintWarning(str);
+            return;
+       }
+    }
+}
+
+
+
 
 void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
@@ -135,19 +163,78 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 
 
     fflush(stdout);
+}
 
-    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
-    {
+
+
+
+extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    eOmn_info_status_t* infostatus = (eOmn_info_status_t*) rd->data;
+
+    s_eoprot_print_mninfo_status(&infostatus->basic, infostatus->extra, nv, rd);
+}
+
+
+extern void eoprot_fun_UPDT_mn_info_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    eOmn_info_basic_t* infostatusbasic = (eOmn_info_basic_t*) rd->data;
+
+    s_eoprot_print_mninfo_status(infostatusbasic, NULL, nv, rd);
+}
+
+
+
+extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+}
+
+extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    // marco.accame on 19 mar 2014: the ethResource class sends a set<command, value> and it blocks to wait a reply.
+    // the reply arrives in the form sig<command, value>. the signature in here does not work, as it works only with
+    // ask<> / say<>.
+
+    if(eo_ropcode_sig == rd->ropcode)
+    {   // in here we have a sig and we cannot have the 0xaa000000 signature
         if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
         {
-            printf("ERROR: eoprot_fun_UPDT_mn_appl_status() has received an unexpected message\n");
+            printf("ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() has received an unexpected message\n");
             return;
         }
     }
 
 }
 
+extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    // marco.accame on 19 mar 2014: the ethResource class sends a set<command, value> and it blocks to wait a reply.
+    // the reply arrives in the form sig<command, value>. the signature in here does not work, as it works only with
+    // ask<> / say<>.
 
+    if(eo_ropcode_sig == rd->ropcode)
+    {   // in here we have a sig and we cannot have the 0xaa000000 signature
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        {
+            printf("ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() has received an unexpected message\n");
+            return;
+        }
+    }
+
+}
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition of extern hidden functions 
+// --------------------------------------------------------------------------------------------------------------------
+// empty-section
+
+
+
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition of static functions 
+// --------------------------------------------------------------------------------------------------------------------
 
 static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
 {
@@ -172,21 +259,6 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
         {
             return;
         }
-    }
-#endif
-#if 0
-    uint64_t txsec = rd->time / 1000000;
-    uint64_t txmsec = (rd->time % 1000000) / 1000;
-    uint64_t txusec = rd->time % 1000;
-    if(1 == rd->control.plustime)
-    {
-        txsec = rd->time / 1000000;
-        txmsec = (rd->time % 1000000) / 1000;
-        txusec = rd->time % 1000;
-    }
-    else
-    {
-        txsec =  txmsec = txusec = 0;
     }
 #endif
 
@@ -319,64 +391,6 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
 }
 
 
-
-extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    eOmn_info_status_t* infostatus = (eOmn_info_status_t*) rd->data;
-
-    s_eoprot_print_mninfo_status(&infostatus->basic, infostatus->extra, nv, rd);
-}
-
-
-extern void eoprot_fun_UPDT_mn_info_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    eOmn_info_basic_t* infostatusbasic = (eOmn_info_basic_t*) rd->data;
-
-    s_eoprot_print_mninfo_status(infostatusbasic, NULL, nv, rd);
-}
-
-
-
-extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
-    {
-        printf("ERROR: eoprot_fun_UPDT_mn_comm_status() has received an unexpected message\n");
-        return;
-    }
-}
-
-extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
-    {
-        printf("ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() has received an unexpected message\n");
-        return;
-    }
-}
-
-extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
-    {
-        printf("ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() has received an unexpected message\n");
-        return;
-    }
-}
-
-// --------------------------------------------------------------------------------------------------------------------
-// - definition of extern hidden functions 
-// --------------------------------------------------------------------------------------------------------------------
-// empty-section
-
-
-
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// - definition of static functions 
-// --------------------------------------------------------------------------------------------------------------------
-// empty-section
 
 
 

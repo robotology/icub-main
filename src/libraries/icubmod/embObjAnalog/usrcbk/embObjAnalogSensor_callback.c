@@ -27,35 +27,78 @@
 // - external dependencies
 // --------------------------------------------------------------------------------------------------------------------
 
-#include "stdlib.h" 
-#include "string.h"
-#include "stdio.h"
-#include "stdint.h"
 
 #include "EoCommon.h"
 #include "EoProtocol.h"
-#include "EoProtocolAS.h"
 #include "EOnv.h"
 #include "EOarray.h"
 
-#include "EoProtocolAS_overridden_fun.h"
-
 #include "FeatureInterface.h"
 
+// --------------------------------------------------------------------------------------------------------------------
+// - declaration of extern public interface
+// --------------------------------------------------------------------------------------------------------------------
 
+#include "EoProtocolAS.h"
+
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - #define with internal scope
+// --------------------------------------------------------------------------------------------------------------------
+// empty-section
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - declaration of static functions
+// --------------------------------------------------------------------------------------------------------------------
 
 static void handle_data(const EOnv* nv, const eOropdescriptor_t* rd);
 
-extern void eoprot_fun_UPDT_as_strain_config(const EOnv* nv, const eOropdescriptor_t* rd)
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition (and initialisation) of static variables
+// --------------------------------------------------------------------------------------------------------------------
+// empty section
+
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition of extern public functions
+// --------------------------------------------------------------------------------------------------------------------
+
+
+extern void eoprot_fun_ONSAY_as(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
-    {
+    // marco.accame on 18 mar 2014: this function is called when a say<id32, data> rop is received
+    // and the id32 is about the analog sensors endpoint. this function is common to every board.
+    // it is used this function and not another one because inside the hostTransceiver object it was called:
+    // eoprot_config_onsay_endpoint_set(eoprot_endpoint_analogsensors, eoprot_fun_ONSAY_as);
+
+    // the aim of this function is to wake up a thread which is blocked because it has sent an ask<id32>
+    // the wake up funtionality is implemented in one mode only:
+    // a. in initialisation, embObjAnalogSensor sets some values and then reads them back.
+    //    the read back sends an ask<id32, signature=0xaa000000>. in such a case the board sends back
+    //    a say<id32, data, signature = 0xaa000000>. thus, if the received signature is 0xaa000000, then
+    //    we must unblock using feat_signal_network_reply().
+
+    if(0xaa000000 == rd->signature)
+    {   // case a:
         if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
         {
-            printf("ERROR: eoprot_fun_UPDT_as_strain_config() has received an unexpected message\n");
+            char str[256] = {0};
+            char nvinfo[128];
+            eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
+            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_as() received an unexpected message w/ 0xaa000000 signature for %s", nvinfo);
+            embObjPrintWarning(str);
             return;
         }
     }
+}
+
+
+extern void eoprot_fun_UPDT_as_strain_config(const EOnv* nv, const eOropdescriptor_t* rd)
+{
 }
 
 
@@ -103,36 +146,16 @@ extern void eoprot_fun_UPDT_as_mais_status_the15values(const EOnv* nv, const eOr
 
 extern void eoprot_fun_UPDT_as_mais_config(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
-    {
-        printf("ERROR: eoprot_fun_UPDT_as_mais_config() has received an unexpected message\n");
-        return;
-    }
 }
 
 extern void eoprot_fun_UPDT_as_mais_config_datarate(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
-    {
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
-        {
-            printf("ERROR: eoprot_fun_UPDT_as_mais_config_datarate() has received an unexpected message\n");
-            return;
-        }
-    }
 }
 
 extern void eoprot_fun_UPDT_as_mais_config_mode(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
-    {
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
-        {
-            printf("ERROR: eoprot_fun_UPDT_as_mais_config_mode() has received an unexpected message\n");
-            return;
-        }
-    }
 }
+
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of static functions 
@@ -148,5 +171,10 @@ static void handle_data(const EOnv* nv, const eOropdescriptor_t* rd)
     }
 }
 
-// eof
+
+// --------------------------------------------------------------------------------------------------------------------
+// - end-of-file (leave a blank line after)
+// --------------------------------------------------------------------------------------------------------------------
+
+
 

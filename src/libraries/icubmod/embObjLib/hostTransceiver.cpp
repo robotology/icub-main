@@ -767,6 +767,12 @@ void hostTransceiver::eoprot_override_mn(void)
     //eoprot_config_callbacks_endpoint_set(&mn_callbacks_descriptor_endp);
 
 
+    // -----------------------------------------------------------------------------------------------------------------------------------
+    // -- initialisation of onsay() function common in mn endpoint for every board
+
+    eoprot_config_onsay_endpoint_set(eoprot_endpoint_management, eoprot_fun_ONSAY_mn);
+
+
     // ------------------------------------------------------------------------------------------------------------------------------------
     // -- override of the callbacks of variables of mc. common to every board. we use the id, even if the eoprot_config_variable_callback()
     //    operates on any index.
@@ -841,13 +847,13 @@ void hostTransceiver::eoprot_override_mc(void)
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_status_basic
         },
-        {   // joint_cmmnds_setpoint
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_joint,
-            EO_INIT(.tag)           eoprot_tag_mc_joint_cmmnds_setpoint,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_cmmnds_setpoint
-        },
+//        {   // joint_cmmnds_setpoint
+//            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
+//            EO_INIT(.entity)        eoprot_entity_mc_joint,
+//            EO_INIT(.tag)           eoprot_tag_mc_joint_cmmnds_setpoint,
+//            EO_INIT(.init)          NULL,
+//            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_cmmnds_setpoint
+//        },
         {   // joint_config_limitsofjoint
             EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
             EO_INIT(.entity)        eoprot_entity_mc_joint,
@@ -906,6 +912,12 @@ void hostTransceiver::eoprot_override_mc(void)
     
     // we dont do any general initialisation, even if we could do it with a xxeoprot_fun_INITIALISE_mc() function
     //eoprot_config_callbacks_endpoint_set(&mc_callbacks_descriptor_endp);
+
+
+    // -----------------------------------------------------------------------------------------------------------------------------------
+    // -- initialisation of onsay() function common in mc endpoint for every board
+
+    eoprot_config_onsay_endpoint_set(eoprot_endpoint_motioncontrol, eoprot_fun_ONSAY_mc);
 
 
     // ------------------------------------------------------------------------------------------------------------------------------------
@@ -1000,6 +1012,11 @@ void hostTransceiver::eoprot_override_as(void)
     //eoprot_config_callbacks_endpoint_set(&as_callbacks_descriptor_endp);
 
 
+    // -----------------------------------------------------------------------------------------------------------------------------------
+    // -- initialisation of onsay() function common in as endpoint for every board
+
+    eoprot_config_onsay_endpoint_set(eoprot_endpoint_analogsensors, eoprot_fun_ONSAY_as);
+
 
     // ------------------------------------------------------------------------------------------------------------------------------------
     // -- override of the callbacks of variables of mc. common to every board. we use the id, even if the eoprot_config_variable_callback()
@@ -1043,6 +1060,12 @@ void hostTransceiver::eoprot_override_sk(void)
     
     // we dont do any general initialisation, even if we could do it with a xxeoprot_fun_INITIALISE_sk() function
     //eoprot_config_callbacks_endpoint_set(&sk_callbacks_descriptor_endp);
+
+
+    // -----------------------------------------------------------------------------------------------------------------------------------
+    // -- initialisation of onsay() function common in sk endpoint for every board
+
+    eoprot_config_onsay_endpoint_set(eoprot_endpoint_skin, eoprot_fun_ONSAY_sk);
 
 
     // ------------------------------------------------------------------------------------------------------------------------------------

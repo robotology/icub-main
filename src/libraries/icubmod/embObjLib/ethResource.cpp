@@ -617,6 +617,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 
     // step 1: we ask the remote board the eoprot_tag_mn_comm_status variable and then we verify vs transceiver properties and .. mn protocol version
 
+    uint32_t signature = 0xaa000000;
     const eoprot_version_t * pc104versionMN = eoprot_version_of_endpoint_get(eoprot_endpoint_management);
     const double timeout = 0.100;   // now the timeout can be reduced because the board is already connected.
 
@@ -625,11 +626,11 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     eOmn_comm_status_t brdstatus = {0};
     uint16_t size = 0;
     // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, 0);
+    yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, signature);
 
 
     // send ask message
-    if(false == addGetMessage(id2send))
+    if(false == addGetMessageWithSignature(id2send, signature))
     {
         yError() << "ethResources::verifyBoardTransceiver() cannot transmit a request about the communication status to board" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
@@ -1040,12 +1041,13 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
     const double timeout = 0.500;   // 500 ms is more than enough if board is present. if link is not on it is a godd time to wait
     const int retries = 120;         // the number of retries depends on the above timeout and on link-up time of the EMS.
 
+    uint32_t signature = 0xaa000000;
     eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status);
     eOprotID32_t id2wait = id2send;
     eOmn_comm_status_t brdstatus = {0};
     uint16_t size = 0;
     // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, 0);
+    yarp::os::Semaphore* sem = startNetworkQuerySession(id2wait, signature);
 
     bool pinged = false;
     int i; // kept in here because i want to see it also outside of the loop
@@ -1057,7 +1059,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
         // attempt the request until either a reply arrives or the max retries are reached
 
         // send ask message
-        if(false == addGetMessage(id2send))
+        if(false == addGetMessageWithSignature(id2send, signature))
         {
             yWarning() << "ethResources::verifyBoardPresence() cannot transmit a request about the communication status to BOARD" << get_protBRDnumber()+1;
         }

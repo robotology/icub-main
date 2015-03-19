@@ -22,16 +22,11 @@
 // - external dependencies
 // --------------------------------------------------------------------------------------------------------------------
 
-#include "stdlib.h"
-#include "string.h"
-#include "stdio.h"
-#include "stdint.h"
 
 #include "EoCommon.h"
 #include "EOnv.h"
 #include "EoProtocol.h"
 
-#include "EoProtocolMC_overridden_fun.h"
 #include <FeatureInterface.h>
 
 
@@ -49,8 +44,6 @@
 
 #undef ENABLE_DEBUG_CONTROLMODESTATUS
 
-#define DEG_2_ICUBDEG  182.04444
-
 
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of static functions
@@ -59,233 +52,122 @@
 static void wake(const EOnv* nv);
 
 
+#if defined(ENABLE_DEBUG_CONTROLMODESTATUS)
 static eObool_t s_debug_is_controlmodestatus_tobemonitored(eOnvBRD_t board, uint8_t joint);
-
 static void s_debug_monitor_controlmodestatus(eOnvBRD_t board, uint8_t joint, eOenum08_t ctrlmodestatus);
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// - definition (and initialisation) of static variables
-// --------------------------------------------------------------------------------------------------------------------
-
 // max 4 boards: eb1, eb2, eb3, and eb4 (values 1 and 3)
 // max 12 joints
 // inital value is 0: eomc_controlmode_cmd_idle
 // target boards are eb2 and eb4 (index 1 and 3)
 // target joint is: 4:
 static eOenum08_t s_debug_some_controlmodevalues[4][12] = {0};
+#endif
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition (and initialisation) of static variables
+// --------------------------------------------------------------------------------------------------------------------
+// empty section
+
 
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern public functions
 // --------------------------------------------------------------------------------------------------------------------
 
-extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
+extern void eoprot_fun_ONSAY_mc(const EOnv* nv, const eOropdescriptor_t* rd)
 {
+    // marco.accame on 18 mar 2014: this function is called when a say<id32, data> rop is received
+    // and the id32 is about the motion control endpoint. this function is common to every board.
+    // it is used this function and not another one because inside the hostTransceiver object it was called:
+    // eoprot_config_onsay_endpoint_set(eoprot_endpoint_motioncontrol, eoprot_fun_ONSAY_mc);
 
-    eOmc_joint_status_basic_t *jsb = (eOmc_joint_status_basic_t*)rd->data;
-    s_debug_monitor_controlmodestatus(eo_nv_GetBRD(nv), eoprot_ID2index(rd->id32), jsb->controlmodestatus);
-    
-    if(eo_ropcode_say == rd->ropcode)
-    {
-        // This is an answer to a specific question, so wake up someone!
-        wake(nv);
-    }
-
-    feat_manage_motioncontrol_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)rd->data);
-
-    // i just refresh the encoder timestamp
-    // i do it anyway, both if broadcasted and if a reply:
-//    feat_addEncoderTimeStamp(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32);
+    // the aim of this function is to wake up a thread which is blocked because it has sent an ask<id32>
+    // the wake up funtionality is implemented in two modes, depending on the wait mechanism used:
+    // a. in initialisation, embObjMotionControl sets some values and then reads them back.
+    //    the read back sends an ask<id32, signature=0xaa000000>. in such a case the board sends back
+    //    a say<id32, data, signature = 0xaa000000>. thus, if the received signature is 0xaa000000, then
+    //    we must unblock using feat_signal_network_reply().
+    // b. during runtime, some methods send a blocking ask<id32> without signature. It is the case of instance
+    //    of getPidRaw() which waits with a eoThreadEntry::synch() call. in such a case the board send back a
+    //    normal say<id32, data> with nos signature. in this case we unlock with wake().
 
 
-    // debug:
-#undef _debug_jstatus_basic_
-#ifdef _debug_jstatus_basic_
-    static int i = 0;
-    static uint8_t print = 0;
-
-    if( (1 == print) && (i>= 2000) && (xx == 0) )
-    {
-        i = 0;
-        print = 0;
-    }
-
-    if(xx == 0)
-        i++;
-
-    if(i >= 2000)
-    {
-        print = 1;
-    }
-
-    if(print)
-    {
-        eOmc_joint_status_basic_t *jstatus_b = (eOmc_joint_status_basic_t*)rd->data;
-        printf("\njstatus__basic for Joint num = %d\n", xx);
-        printf("ep = 0x%X\n", eo_nv_GetEP8(nv));
-        printf("jstatus_b->acceleration = 0x%X\n", jstatus_b->acceleration);
-        printf("jstatus_b->controlmodestatus = 0x%X\n", jstatus_b->controlmodestatus);
-        printf("jstatus_b->motionmonitorstatus = 0x%X\n", jstatus_b->motionmonitorstatus);
-        printf("jstatus_b->position = 0x%X\n", jstatus_b->position);
-        printf("jstatus_b->torque = 0x%X\n", jstatus_b->torque);
-        printf("jstatus_b->velocity = 0x%X\n", jstatus_b->velocity);
-    }
-#endif
-}
-
-extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    eOmc_joint_status_t *js = (eOmc_joint_status_t*)rd->data;
-    s_debug_monitor_controlmodestatus(eo_nv_GetBRD(nv), eoprot_ID2index(rd->id32), js->basic.controlmodestatus);
-
-    // i just refresh the encoder timestamp
-    feat_manage_motioncontrol_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)rd->data);
-
-//    feat_addEncoderTimeStamp(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32);
-
-#ifdef _SETPOINT_TEST_
-    {
-    // per test
-    static setpoint_test_data_t *rec_test_data_ptr;
-    eOmc_joint_status_t *jstatus = (eOmc_joint_status_t*)rd->data;
-    uint8_t *aux = (uint8_t*)jstatus;
-    rec_test_data_ptr = (setpoint_test_data_t *)&aux[16];
-    check_received_debug_data(&id, jointNum, rec_test_data_ptr);
-    }
-#endif
-}
-
-extern void eoprot_fun_UPDT_mc_motor_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    //eOprotIndex_t xx = eoprot_ID2index(rd->id32);
-
-#undef _debug_mstatus_basic_
-#ifdef _debug_mstatus_basic_
-    static int i = 0;
-    static bool print = false;
-
-    if( (print) && (i>= 2000) && (xx == 0) )
-    {
-        i = 0;
-        print = false;
-    }
-
-    if(xx == 0)
-        i++;
-
-    if(i >= 2000)
-    {
-        print = true;
-    }
-
-    if(print)
-    {
-        eOmc_motor_status_basic_t *mstatus_b = (eOmc_motor_status_basic_t*)rd->data;
-//		printf("mstatus__basic for motor num = %d\n", xx);
-//		printf("id32 = 0x%X\n", rd->id32);
-//		printf("mstatus_b->current  = 0x%X\n", mstatus_b->current);
-//		printf("mstatus_b->filler02 = 0x%X\n", mstatus_b->filler02);
-        printf("mstatus_b->position = 0x%X\n", mstatus_b->position);
-//		printf("mstatus_b->velocity = 0x%X\n", mstatus_b->velocity);
-    }
-#endif
-}
-
-extern void eoprot_fun_UPDT_mc_joint_config(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    //eOprotIndex_t xx = eoprot_ID2index(rd->id32);
-#ifdef _debug_jxx_jconfig_
-    eOmc_joint_config_t *jConfig = (eOmc_joint_config_t*)rd->data;
-    printf("\nmaxpositionofjoint for Joint num = %d\n", xx);
-    printf("jConfig->pidposition.kp 	= 0x%X\n",	jConfig->pidposition.kp		);
-    printf("jConfig->pidposition.ki 	= 0x%X\n",	jConfig->pidposition.ki		);
-    printf("jConfig->pidposition.kd 	= 0x%X\n",		jConfig->pidposition.kd);
-    printf("jConfig->pidposition.limitonintegral = 0x%X\n",	jConfig->pidposition.limitonintegral);
-    printf("jConfig->pidposition.limitonoutput = 0x%X\n",	jConfig->pidposition.limitonoutput);
-    printf("jConfig->pidposition.offset 	= 0x%X\n",		jConfig->pidposition.offset);
-    printf("jConfig->pidposition.scale 		= 0x%X\n",	jConfig->pidposition.scale);
-    printf("jConfig->minpositionofjoint		= 0x%X\n",	jConfig->minpositionofjoint);
-    printf("jConfig->maxpositionofjoint		= 0x%X\n",	jConfig->maxpositionofjoint);
-    printf("jConfig->controlmode			= 0x%X\n",	jConfig->motionmonitormode);
-    printf("ep = 0x%X\n", eoprot_ID2endpoint(rd->id32));
-#endif
-
-    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
-    {
+    if(0xaa000000 == rd->signature)
+    {   // case a:
         if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
         {
-            printf("ERROR: eoprot_fun_UPDT_mc_joint_config() has received an unexpected message\n");
+            char str[256] = {0};
+            char nvinfo[128];
+            eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
+            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_mc() received an unexpected message w/ 0xaa000000 signature for %s", nvinfo);
+            embObjPrintWarning(str);
             return;
         }
     }
+    else
+    {   //case b:
+        wake(nv);
+    }
+}
 
+
+extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+#if defined(ENABLE_DEBUG_CONTROLMODESTATUS)
+    eOmc_joint_status_basic_t *jsb = (eOmc_joint_status_basic_t*)rd->data;
+    s_debug_monitor_controlmodestatus(eo_nv_GetBRD(nv), eoprot_ID2index(rd->id32), jsb->controlmodestatus);
+#endif
+    feat_manage_motioncontrol_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)rd->data);
+}
+
+
+extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+#if defined(ENABLE_DEBUG_CONTROLMODESTATUS)
+    eOmc_joint_status_t *js = (eOmc_joint_status_t*)rd->data;
+    s_debug_monitor_controlmodestatus(eo_nv_GetBRD(nv), eoprot_ID2index(rd->id32), js->basic.controlmodestatus);
+#endif
+    feat_manage_motioncontrol_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)rd->data);
+}
+
+
+extern void eoprot_fun_UPDT_mc_motor_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+}
+
+
+extern void eoprot_fun_UPDT_mc_joint_config(const EOnv* nv, const eOropdescriptor_t* rd)
+{
 }
 
 extern void eoprot_fun_UPDT_mc_motor_config(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    //eOprotIndex_t xx = eoprot_ID2index(rd->id32);
-
-#undef _debug_mxx_mconfig_
-#ifdef _debug_mxx_mconfig_
-    eOmc_motor_config_t *jConfig = (eOmc_motor_config_t*)rd->data;
-    printf("\nmaxpositionofjoint for Joint num = %d\n", xx);
-    printf("mConfig->pidcurrent.kp 	= 0x%X\n",	jConfig->pidcurrent.kp		);
-    printf("mConfig->pidcurrent.ki 	= 0x%X\n",	jConfig->pidcurrent.ki		);
-    printf("mConfig->pidcurrent.kd 	= 0x%X\n",		jConfig->pidcurrent.kd);
-    printf("mConfig->pidcurrent.limitonintegral = 0x%X\n",	jConfig->pidcurrent.limitonintegral);
-    printf("mConfig->pidcurrent.limitonoutput = 0x%X\n",	jConfig->pidcurrent.limitonoutput);
-    printf("mConfig->pidcurrent.offset 	= 0x%X\n",		jConfig->pidcurrent.offset);
-    printf("mConfig->pidcurrent.scale 		= 0x%X\n",	jConfig->pidcurrent.scale);
-    printf("mConfig->maxvelocityofmotor		= 0x%X\n",	jConfig->maxvelocityofmotor);
-    printf("mConfig->maxcurrentofmotor		= 0x%X\n",	jConfig->maxcurrentofmotor);
-    printf("id32 = 0x%X\n", rd->id32);
-#endif
 }
 
 
 
 extern void eoprot_fun_UPDT_mc_joint_config_limitsofjoint(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    wake(nv);
 }
 
 extern void eoprot_fun_UPDT_mc_motor_config_maxcurrentofmotor(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    // eOmeas_current_t *jMaxCurrent_b = (eOmeas_current_t*)rd->data;
-
-    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
-    {
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
-        {
-            printf("ERROR: eoprot_fun_UPDT_mc_motor_config_maxcurrentofmotor() has received an unexpected message\n");
-            return;
-        }
-    }
 }
 
 extern void eoprot_fun_UPDT_mc_motor_config_gearboxratio(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
-    {
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
-        {
-            printf("ERROR: eoprot_fun_UPDT_mc_motor_config_gearboxratio() has received an unexpected message\n");
-            return;
-        }
-    }
 }
 
 extern void eoprot_fun_UPDT_mc_joint_config_pidposition(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    wake(nv);
 }
 
 extern void eoprot_fun_UPDT_mc_joint_config_pidtorque(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    wake(nv);
 }
 
+#if 0
+#define DEG_2_ICUBDEG  182.04444
 #warning --> marco.accame on 16 oct 2014: the reception of a rop containing a setpoint command is not a good practice. remove this mechanism. see comment below
 // marco.accame: the pc104 should send set<id32_cmmnd_setpoint, value_cmmnd_setpoint> and never send ask<id32_cmmnd_setpoint>.
 //               the cmmnd variables should be write-only ....
@@ -313,45 +195,27 @@ extern void eoprot_fun_UPDT_mc_joint_cmmnds_setpoint(const EOnv* nv, const eOrop
     prev = checkProg[1];
     wake(nv);
 }
+#endif
+
 
 extern void eoprot_fun_UPDT_mc_joint_config_impedance(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    wake(nv);
 }
 
 
 extern void eoprot_fun_UPDT_mc_joint_status_interactionmodestatus(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    if(eo_ropcode_say == rd->ropcode)
-    {
-        // This is an answer to a specific question, so wake up someone!
-        wake(nv);
-    }
 }
 
 
 
 extern void eoprot_fun_UPDT_mc_joint_config_motor_params(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    if(eo_ropcode_say == rd->ropcode)
-    {
-        // This is an answer to a specific question, so wake up someone!
-        wake(nv);
-    }
 }
 
 
 extern void eoprot_fun_UPDT_mc_controller_config_jointcoupling(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    if((eo_ropcode_say == rd->ropcode) && (0xaa000000 == rd->signature))
-    {
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
-        {
-            printf("ERROR: eoprot_fun_UPDT_mc_controller_config_jointcoupling() has received an unexpected message\n");
-            return;
-        }
-    }
-
 }
 
 
@@ -375,17 +239,18 @@ static void wake(const EOnv* nv)
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        printf("[ERROR] while releasing mutex for variable %s", nvinfo); fflush(stdout);
+        char str[256] = {0};
+        snprintf(str, sizeof(str),"while releasing mutex in BOARD %d for variable %s", eo_nv_GetBRD(nv)+1, nvinfo); 
+        embObjPrintWarning(str);
     }
 }
 
 
 
-
+#if defined(ENABLE_DEBUG_CONTROLMODESTATUS)
 static eObool_t s_debug_is_controlmodestatus_tobemonitored(eOnvBRD_t board, uint8_t joint)
 {
 
-#if defined(ENABLE_DEBUG_CONTROLMODESTATUS)
     if((1 == board) && (4 == joint))
     {
         return(eobool_true);
@@ -394,13 +259,9 @@ static eObool_t s_debug_is_controlmodestatus_tobemonitored(eOnvBRD_t board, uint
     {
         return(eobool_true);
     }
-#endif
 
     return(eobool_false);
 }
-
-
-
 
 static void s_debug_monitor_controlmodestatus(eOnvBRD_t board, uint8_t joint, eOenum08_t ctrlmodestatus)
 {
@@ -426,6 +287,7 @@ static void s_debug_monitor_controlmodestatus(eOnvBRD_t board, uint8_t joint, eO
     }
 
 }
+#endif
 
 
 
