@@ -395,6 +395,9 @@ protected:
     int    *controlMode;
     int    *interactionMode;
 
+    Pid    *position_pid;
+    Pid    *torque_pid;
+
     //bool velocityMode;
 };
 
