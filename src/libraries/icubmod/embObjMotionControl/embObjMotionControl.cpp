@@ -450,6 +450,7 @@ embObjMotionControl::embObjMotionControl() :
     _mutex(1),
     SAFETY_THRESHOLD(2.0)
 {
+    _gearbox       = 0;
     opened        = 0;
     _pids         = NULL;
     _tpids        = NULL;
