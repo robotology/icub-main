@@ -158,6 +158,10 @@ extern void eoprot_fun_UPDT_mc_motor_config_gearboxratio(const EOnv* nv, const e
 {
 }
 
+extern void eoprot_fun_UPDT_mc_motor_config_rotorencoder(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+}
+
 extern void eoprot_fun_UPDT_mc_joint_config_pidposition(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 }
