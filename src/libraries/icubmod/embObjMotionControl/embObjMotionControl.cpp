@@ -1578,7 +1578,22 @@ bool embObjMotionControl::init()
             {
                 yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
             }
-        }        
+        }    
+
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_rotorencoder);
+        int32_t rotor = (int32_t) (_rotToEncoder[logico]);
+        if(false == res->setRemoteValueUntilVerified(protid, &rotor, sizeof(rotor), 10, 0.010, 0.050, 2))
+        {
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+            return false;
+        }
+        else
+        {
+            if(verbosewhenok)
+            {
+                yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+            }
+        }
     }
 
     /////////////////////////////////////////////
