@@ -1004,7 +1004,9 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     double tmp_A2E;
     // Encoder scales
     if (!extractGroup(general, xtmp, "Encoder", "a list of scales for the encoders", _njoints))
+	{
         return false;
+	}
     else
         for (i = 1; i < xtmp.size(); i++)
         {
@@ -1028,9 +1030,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     // Rotor scales
     if (!extractGroup(general, xtmp, "Rotor", "a list of scales for the rotor encoders", _njoints))
     {
-        fprintf(stderr, "Using default value = 1\n");
-        for(i=1; i<_njoints+1; i++)
-            _rotToEncoder[i-1] = 1.0;
+        return false;
     }
     else
     {
