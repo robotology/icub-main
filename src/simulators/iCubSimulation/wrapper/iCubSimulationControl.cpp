@@ -914,7 +914,7 @@ bool iCubSimulationControl::getEncoderAccelerationRaw(int axis, double *v)
     return false; //NOT_YET_IMPLEMENTED("getEncoderAcc");
 }
 
-bool iCubSimulationControl::setMotorEncoderRaw(int axis, double val)
+bool iCubSimulationControl::setMotorEncoderRaw(int axis, const double val)
 {
     return NOT_YET_IMPLEMENTED("setMotorEncoderRaw");
 }

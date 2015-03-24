@@ -986,7 +986,7 @@ public:
     virtual bool getNumberOfMotorEncodersRaw(int* num);
     virtual bool resetMotorEncoderRaw(int m);
     virtual bool resetMotorEncodersRaw();
-    virtual bool setMotorEncoderRaw(int m, double val);
+    virtual bool setMotorEncoderRaw(int m, const double val);
     virtual bool setMotorEncodersRaw(const double *vals);
     virtual bool getMotorEncoderRaw(int m, double *v);
     virtual bool getMotorEncodersRaw(double *encs);

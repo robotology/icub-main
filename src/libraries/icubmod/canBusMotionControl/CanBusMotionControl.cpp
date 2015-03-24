@@ -6018,7 +6018,7 @@ bool CanBusMotionControl::getEncoderAccelerationRaw(int j, double *v)
 }
 
 
-bool CanBusMotionControl::setMotorEncoderRaw(int m, double val)
+bool CanBusMotionControl::setMotorEncoderRaw(int m, const double val)
 {
     return NOT_YET_IMPLEMENTED("setMotorEncoderRaw");
 }
