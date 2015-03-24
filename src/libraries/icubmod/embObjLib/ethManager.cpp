@@ -238,19 +238,19 @@ void TheEthManager::addLUTelement(ethFeature_t &id)
 
     std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (brdnum, id.endpoint);
     try
-        {
-            // USE .at AND NOT the '[ ]' alternative!!! It will create a bug!!!
-            /* The bug is caused by the fact that the [] version will create an unitialized element inside the map,
-             * causing the return of a wrong pointer.
-             * Furthermore the insert method used to correctly initialze the element will fail because a (wrong)
-             * element is already present preventing the map to be corrected.
-             */
-            IethResource * ret = boards_map.at(key).interface;
-        }
-        catch (const std::out_of_range& errMsg)
-        {
-            yError() << "Error after  LUT insertion!!!";
-        }
+    {
+        // USE .at AND NOT the '[ ]' alternative!!! It will create a bug!!!
+        /* The bug is caused by the fact that the [] version will create an unitialized element inside the map,
+            * causing the return of a wrong pointer.
+            * Furthermore the insert method used to correctly initialze the element will fail because a (wrong)
+            * element is already present preventing the map to be corrected.
+            */
+        IethResource * ret = boards_map.at(key).interface;
+    }
+    catch (const std::out_of_range& errMsg)
+    {
+        yError() << "Error after  LUT insertion!!! (" << errMsg.what() << ")";
+    }
 }
 
 bool TheEthManager::removeLUTelement(ethFeature_t &element)
@@ -316,7 +316,7 @@ bool TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32, Ie
             interfacePointer = NULL;
             *type = ethFeatType_NULL;
 
-            yError() << "TheEthManager::getHandle() cannot find a handle for boardNum "<< boardnum << " and nv" << nvinfo << " ... maybe the board was in running mode before robotInterface was started";
+            yError() << "TheEthManager::getHandle() cannot find a handle for boardNum "<< boardnum << " and nv" << nvinfo << " ... maybe the board was in running mode before robotInterface was started (" << errMsg.what() <<")";
         }
         ret = false;
         _error++;
@@ -414,6 +414,7 @@ bool TheEthManager::getEMSlistRiterators(ethResRIt& rbegin, ethResRIt& rend)
     rbegin = EMS_list.rbegin();
     rend = EMS_list.rend();
     unlock();
+    return true;
 }
 
 void TheEthManager::initEOYsystem(void)

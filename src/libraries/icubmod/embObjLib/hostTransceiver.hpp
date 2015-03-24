@@ -63,7 +63,7 @@ class hostTransceiver
 {
 private:
     enum { maxNumberOfROPloadingAttempts = 5 };
-    static const double delayAfterROPloadingFailure = 0.001; // 1ms
+    const double delayAfterROPloadingFailure;
 
 protected:
 

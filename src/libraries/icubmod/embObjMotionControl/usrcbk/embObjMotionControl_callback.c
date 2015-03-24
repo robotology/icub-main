@@ -226,6 +226,8 @@ extern void eoprot_fun_UPDT_mc_controller_config_jointcoupling(const EOnv* nv, c
 
 static void wake(const EOnv* nv)
 {
+    eOprotID32_t id32 = 0;
+    eOprotProgNumber_t prognum = 0 ;
     void *mchandler = (void*) feat_MC_handler_get(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), eo_nv_GetID32(nv));
     if(NULL == mchandler)
     {
@@ -233,13 +235,13 @@ static void wake(const EOnv* nv)
         return;
     }
 
-    eOprotID32_t id32 = eo_nv_GetID32(nv);
-    eOprotProgNumber_t prognum = eoprot_endpoint_id2prognum(eo_nv_GetBRD(nv), id32);
+    id32 = eo_nv_GetID32(nv);
+    prognum = eoprot_endpoint_id2prognum(eo_nv_GetBRD(nv), id32);
     if(fakestdbool_false == feat_MC_mutex_post(mchandler, prognum) )
     {
         char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         char str[256] = {0};
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         snprintf(str, sizeof(str),"while releasing mutex in BOARD %d for variable %s", eo_nv_GetBRD(nv)+1, nvinfo); 
         embObjPrintWarning(str);
     }

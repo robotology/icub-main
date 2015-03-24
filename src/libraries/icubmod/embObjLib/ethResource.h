@@ -122,7 +122,7 @@ class infoOfRecvPkts
 
 private:
     enum { DEFAULT_MAX_COUNT_STAT = 60000 }; // 1 minute expressed in ms
-    static const double DEFAULT_TIMEOUT_STAT  = 0.010; // 100 ms expessed in sec
+    const double DEFAULT_TIMEOUT_STAT;
 
 private:
     int             board;              // the number of ems board with range [1, TheEthManager::maxBoards]

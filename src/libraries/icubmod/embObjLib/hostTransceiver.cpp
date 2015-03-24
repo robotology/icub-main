@@ -87,7 +87,7 @@ bool hostTransceiver::unlock_nvs()
 }
 
 
-hostTransceiver::hostTransceiver()
+hostTransceiver::hostTransceiver():delayAfterROPloadingFailure(0.001) // 1ms
 {
     yTrace();
 

@@ -2257,7 +2257,7 @@ bool embObjMotionControl::doneRaw(int axis)
 
     Time::delay(0.1);
 
-    #warning --> marco.accame: embObjMotionControl::doneRaw() uses delay of 100ms to wait for something ... review this thing.
+    //#warning --> marco.accame: embObjMotionControl::doneRaw() uses delay of 100ms to wait for something ... review this thing.
 
     res->readBufferedValue(protid, (uint8_t*) &status, &size);
     type = (eOmc_controlmode_t) status.controlmodestatus;

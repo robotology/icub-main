@@ -262,77 +262,103 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
     }
 #endif
 
-    char str[256] = {0};
-    static const char * sourcestrings[] =
     {
-        "LOCAL",
-        "CAN1",
-        "CAN2",
-        "UNKNOWN"
-    };
-
-    static const char nullverbalextra[] = "no extra info despite we are in verbal mode";
-    static const char emptyextra[] = "NO MORE";
-
-    uint32_t sec = infobasic->timestamp / 1000000;
-    uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
-    uint32_t usec = infobasic->timestamp % 1000;
-
-    eOmn_info_type_t    type        = EOMN_INFO_PROPERTIES_FLAGS_get_type(infobasic->properties.flags);
-    eOmn_info_source_t  source      = EOMN_INFO_PROPERTIES_FLAGS_get_source(infobasic->properties.flags);
-    uint16_t address                = EOMN_INFO_PROPERTIES_FLAGS_get_address(infobasic->properties.flags);
-    eOmn_info_extraformat_t extraf  = EOMN_INFO_PROPERTIES_FLAGS_get_extraformat(infobasic->properties.flags);
-    uint16_t forfutureuse           = EOMN_INFO_PROPERTIES_FLAGS_get_futureuse(infobasic->properties.flags);
-
-    const char * str_source         = (source > eomn_info_source_can2) ? (sourcestrings[3]) : (sourcestrings[source]);;
-    const char * str_code           = eoerror_code2string(infobasic->properties.code);
-    const char * str_extra          = NULL;
-
-    if(eomn_info_extraformat_verbal == extraf)
-    {
-        str_extra = (NULL == extra) ? (nullverbalextra) : ((const char *)extra);
-    }
-    else
-    {
-        str_extra = emptyextra;
-    }
-
-
-    uint8_t *p64 = (uint8_t*)&(infobasic->properties.par64);
-
-    if(codecanprint == infobasic->properties.code)
-    {
-#if defined(CAN_PRINT_FULL_PARSING)
-        feat_embObjCANPrintHandler(eo_nv_GetBRD(nv), infobasic);
-        return;
-#endif
-        // it is a canprint: treat it in a particular way.
-        // in first step: just print the 6 bytes (at most) of the payload: now on 03/03/15 we have implemented first step
-        // in second step: do the same inside ethResources
-        // in third step: inside ethResources it is called the proper class can_string_generic with one instance per can board.
-        //                maybe to save memory, we can instantiate the can_string_generic in runtime only when the can board sends a canprint.
-        //                this third step allows to concatenate the can print frames into a single message as robotInterface
-        //                does with can-based robots
-
-        char canframestring[7] = {0};
-        u_int16_t len = infobasic->properties.par16;
-        if((len > 2) && (len <=8))
+        char str[256] = {0};
+        static const char * sourcestrings[] =
         {
-            // we have a valid canframe
-            memcpy(canframestring, &p64[2], len-2);
-            canframestring[len-2] = 0;  // string terminator
-            snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: CANPRINT: %s [size = %d, D0 = 0x%.2x, D1 = 0x%.2x]",
-                                        eo_nv_GetBRD(nv)+1,
-                                        str_source,
-                                        address,
-                                        sec, msec, usec,
-                                        canframestring,
-                                        len, p64[0], p64[1]
-                                        );
+            "LOCAL",
+            "CAN1",
+            "CAN2",
+            "UNKNOWN"
+        };
+    
+        static const char nullverbalextra[] = "no extra info despite we are in verbal mode";
+        static const char emptyextra[] = "NO MORE";
+    
+        uint32_t sec = infobasic->timestamp / 1000000;
+        uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
+        uint32_t usec = infobasic->timestamp % 1000;
+    
+        eOmn_info_type_t    type        = EOMN_INFO_PROPERTIES_FLAGS_get_type(infobasic->properties.flags);
+        eOmn_info_source_t  source      = EOMN_INFO_PROPERTIES_FLAGS_get_source(infobasic->properties.flags);
+        uint16_t address                = EOMN_INFO_PROPERTIES_FLAGS_get_address(infobasic->properties.flags);
+        eOmn_info_extraformat_t extraf  = EOMN_INFO_PROPERTIES_FLAGS_get_extraformat(infobasic->properties.flags);
+        uint16_t forfutureuse           = EOMN_INFO_PROPERTIES_FLAGS_get_futureuse(infobasic->properties.flags);
+        
+        const char * str_source = NULL;
+        const char * str_code = NULL;
+        const char * str_extra = NULL;
+        uint8_t *p64 = NULL;
+    
+        str_source         = (source > eomn_info_source_can2) ? (sourcestrings[3]) : (sourcestrings[source]);
+        str_code           = eoerror_code2string(infobasic->properties.code);
+        str_extra          = NULL;
+    
+        if(eomn_info_extraformat_verbal == extraf)
+        {
+            str_extra = (NULL == extra) ? (nullverbalextra) : ((const char *)extra);
         }
         else
         {
-            snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: CANPRINT is malformed (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + INFO = %s",
+            str_extra = emptyextra;
+        }
+    
+        p64 = (uint8_t*)&(infobasic->properties.par64);
+    
+        if(codecanprint == infobasic->properties.code)
+        {
+            uint16_t len = 0;
+            char canframestring[7] = {0};
+    
+    #if defined(CAN_PRINT_FULL_PARSING)
+            feat_embObjCANPrintHandler(eo_nv_GetBRD(nv), infobasic);
+            return;
+    #endif
+            // it is a canprint: treat it in a particular way.
+            // in first step: just print the 6 bytes (at most) of the payload: now on 03/03/15 we have implemented first step
+            // in second step: do the same inside ethResources
+            // in third step: inside ethResources it is called the proper class can_string_generic with one instance per can board.
+            //                maybe to save memory, we can instantiate the can_string_generic in runtime only when the can board sends a canprint.
+            //                this third step allows to concatenate the can print frames into a single message as robotInterface
+            //                does with can-based robots
+    
+            len = infobasic->properties.par16;
+            if((len > 2) && (len <=8))
+            {
+                // we have a valid canframe
+                memcpy(canframestring, &p64[2], len-2);
+                canframestring[len-2] = 0;  // string terminator
+                snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: CANPRINT: %s [size = %d, D0 = 0x%.2x, D1 = 0x%.2x]",
+                                            eo_nv_GetBRD(nv)+1,
+                                            str_source,
+                                            address,
+                                            sec, msec, usec,
+                                            canframestring,
+                                            len, p64[0], p64[1]
+                                            );
+            }
+            else
+            {
+                snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: CANPRINT is malformed (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + INFO = %s",
+                                            eo_nv_GetBRD(nv)+1,
+                                            str_source,
+                                            address,
+                                            sec, msec, usec,
+                                            infobasic->properties.code,
+                                            infobasic->properties.par16,
+                                            p64[7], p64[6], p64[5], p64[4], p64[3], p64[2], p64[1], p64[0],
+                                            str_code,
+                                            str_extra
+                                            );
+    
+            }
+    
+    
+        }
+        else
+        {   // treat it as the normal case
+    
+            snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + INFO = %s",
                                         eo_nv_GetBRD(nv)+1,
                                         str_source,
                                         address,
@@ -343,50 +369,32 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
                                         str_code,
                                         str_extra
                                         );
-
         }
-
-
-    }
-    else
-    {   // treat it as the normal case
-
-        snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + INFO = %s",
-                                    eo_nv_GetBRD(nv)+1,
-                                    str_source,
-                                    address,
-                                    sec, msec, usec,
-                                    infobasic->properties.code,
-                                    infobasic->properties.par16,
-                                    p64[7], p64[6], p64[5], p64[4], p64[3], p64[2], p64[1], p64[0],
-                                    str_code,
-                                    str_extra
-                                    );
-    }
-
-    if(type == eomn_info_type_debug)
-    {
-        embObjPrintDebug(str);
-    }
-
-    if(type == eomn_info_type_info)
-    {
-        embObjPrintInfo(str);
-    }
-
-    if(type == eomn_info_type_warning)
-    {
-        embObjPrintWarning(str);
-    }
-
-    if(type == eomn_info_type_error)
-    {
-        embObjPrintError(str);
-    }
-
-    if(type == eomn_info_type_fatal)
-    {
-        embObjPrintFatal(str);
+    
+        if(type == eomn_info_type_debug)
+        {
+            embObjPrintDebug(str);
+        }
+    
+        if(type == eomn_info_type_info)
+        {
+            embObjPrintInfo(str);
+        }
+    
+        if(type == eomn_info_type_warning)
+        {
+            embObjPrintWarning(str);
+        }
+    
+        if(type == eomn_info_type_error)
+        {
+            embObjPrintError(str);
+        }
+    
+        if(type == eomn_info_type_fatal)
+        {
+            embObjPrintFatal(str);
+        }
     }
 }
 

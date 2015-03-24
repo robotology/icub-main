@@ -194,6 +194,7 @@ int ethResources::getRXpacketCapacity()
 bool ethResources::printRXstatistics(void)
 {
     infoPkts->forceReport();
+    return true;
 }
 
 
@@ -2034,7 +2035,7 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
 // - class infoOfRecvPkts
 
 
-infoOfRecvPkts::infoOfRecvPkts()
+infoOfRecvPkts::infoOfRecvPkts() : DEFAULT_TIMEOUT_STAT(0.010) // 100 ms expessed in sec
 {
     board = 0;      // after ethresource is opened, then this board num is set
     initted = false;
