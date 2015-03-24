@@ -463,6 +463,7 @@ int main(int argc, char *argv[])
         printf("\t--DOF9              : control the torso yaw/pitch as well\n");
         printf("\t--DOF8              : control the torso yaw as well\n");
         printf("\t--onlyXYZ           : disable orientation control\n");
+        printf("\t--reinstate_context : reinstate controller context upon target reception\n");        
         printf("\n");
 
         return 0;
