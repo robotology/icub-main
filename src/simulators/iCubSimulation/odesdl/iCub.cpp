@@ -1571,10 +1571,10 @@ void ICubSim::setPosition(dReal agentX, dReal agentY, dReal agentZ ) {
 
 void ICubSim::activateiCubParts(RobotConfig& config) {
 
-    ConstString general = config.getFinder().findFile("general");
+    ConstString parts = config.getFinder().findFile("parts");
 
     Property options;
-    options.fromConfigFile(general.c_str());
+    options.fromConfigFile(parts.c_str());
 
     RobotFlags& flags = config.getFlags();
 

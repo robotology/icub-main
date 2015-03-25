@@ -34,10 +34,10 @@ static void set_flag(bool& flag,const ConstString& str) {
 #define FLAGIFY(flags,name) set_flag(flags.name,name)
 
 void RobotConfig::setFlags() {
-    ConstString general = getFinder().findFile("general");
+    ConstString parts = getFinder().findFile("parts");
   
     Property options;
-    options.fromConfigFile(general.c_str());
+    options.fromConfigFile(parts.c_str());
 
     RobotFlags& flags = getFlags();
 	//bool proceed = false;

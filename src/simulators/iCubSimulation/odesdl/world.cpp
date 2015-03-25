@@ -198,8 +198,8 @@ void worldSim::activateWorld(RobotConfig& config) {
 
     Property options;
     //start left arm device driver
-    ConstString general = finder.findFile("general");
-    options.fromConfigFile(general.c_str());
+    ConstString parts = finder.findFile("parts");
+    options.fromConfigFile(parts.c_str());
 
     actWorld = options.findGroup("RENDER").check("objects",Value(1),"What did the user select?").asString();
 }
