@@ -193,6 +193,7 @@ protected:
     bool connected;
     Property          drvOptions;
     PolyDriver       *drv;
+    IControlMode2    *mode;
     IPositionControl *pos;
     IEncoders        *enc;
     Actions actions;
@@ -242,6 +243,12 @@ protected:
             if (disp[i]<0.0)
                 disp[i]=-disp[i];
         }
+
+        // don't blend together the two "for"
+        // since we have to enforce the modes on the whole
+        // prior to commanding the joints
+        for (size_t i=0; i<disp.length(); i++)
+            mode->setControlMode(offset+i,VOCAB_CM_POSITION);
 
         for (size_t i=0; i<disp.length(); i++)
         {
@@ -325,7 +332,9 @@ public:
         drv=new PolyDriver(drvOptions);
 
         if (drv->isValid())
-            connected=drv->view(pos)&&drv->view(enc);
+            connected=drv->view(mode) &&
+                      drv->view(pos) && 
+                      drv->view(enc);
         else
             connected=false;
 
