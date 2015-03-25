@@ -816,7 +816,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     
     if      (_torqueControlUnits==MACHINE_UNITS) {_torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes, tmpOnes);}
-    else if (_torqueControlUnits==METRIC_UNITS)  {_torqueControlHelper = new torqueControlHelper(_njoints, _encoderconversionfactor, _newtonsToSensor);}
+    else if (_torqueControlUnits==METRIC_UNITS)  {_torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);}
     else    {yError() << "Invalid _torqueControlUnits value: %d" << _torqueControlUnits; return false;}
     
     ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
