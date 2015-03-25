@@ -238,7 +238,7 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, co
 
 static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
 {
-#define DROPCODES_FROM_LIST
+#undef DROPCODES_FROM_LIST
 #define CAN_PRINT_FULL_PARSING
 
     static const eOerror_code_t codecanprint = EOERRORCODE(eoerror_category_System, eoerror_value_SYS_canservices_canprint);
