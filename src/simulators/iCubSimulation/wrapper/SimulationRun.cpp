@@ -39,7 +39,8 @@ bool SimulationRun::run(SimulationBundle *bundle, int argc, char *argv[]) {
 
     SimConfig config;
     string moduleName;
-    config.configure(argc, argv, moduleName);
+    int verbosity;
+    config.configure(argc, argv, moduleName, verbosity);
 
     LogicalJoints *icub_joints = bundle->createJoints(config);
     if (icub_joints==NULL) {

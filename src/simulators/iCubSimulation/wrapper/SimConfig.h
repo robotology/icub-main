@@ -52,7 +52,7 @@ public:
     // can't actually configure from command line yet, since
     // some config files get loaded before main() - this needs
     // to be fixed.
-    std::string configure(int argc, char *argv[], std::string & moduleName);
+    std::string configure(int argc, char *argv[], std::string &moduleName, int &verbosity);
     
     //yarp::os::ConstString find(const char *fileName);
     //yarp::os::ConstString findPath(const char *key);
@@ -64,6 +64,10 @@ public:
 
     virtual yarp::os::ConstString getModuleName() {
         return moduleName.c_str();
+    }
+    
+    virtual int getVerbosity() {
+        return verbosity;
     }
 
     virtual yarp::os::ResourceFinder& getFinder() {
@@ -130,6 +134,7 @@ public:
 
 private:
     std::string moduleName;    
+    int verbosity;
     RobotFlags flags;
 
     bool odeParamRead;

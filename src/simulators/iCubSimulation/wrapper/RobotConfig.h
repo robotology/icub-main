@@ -53,6 +53,7 @@ public:
 class RobotConfig {
 public:
     virtual yarp::os::ConstString getModuleName() = 0;
+    virtual int getVerbosity() = 0;
     virtual yarp::os::ResourceFinder& getFinder() = 0;
     virtual RobotFlags& getFlags() = 0;
 

@@ -220,11 +220,12 @@ int main(int argc, char** argv) {
         bundle = new OdeSdlSimulationBundle;
 #endif
     }
-    if (options.check("verbose"))
+    //This was not used - replacing with int verbosity at wrapper/RobotConfig.h and SimConfig.h
+    /*if (options.check("verbose"))
     {
         bundle->verbose = true;
         fprintf(stdout, "Starting the simulator with verbose flag on\n");
-    }
+    }*/
     if (bundle==NULL) {
         fprintf(stderr,"Failed to allocate simulator\n");
         return 1;

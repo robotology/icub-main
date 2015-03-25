@@ -58,7 +58,6 @@
 #include "iCub/skinDynLib/skinContact.h"
 #include "iCub/skinDynLib/skinContactList.h"
 
-#define MY_VERBOSITY 0
 #define FAKE_TAXEL_ID 10000
 
 extern Semaphore ODE_access;

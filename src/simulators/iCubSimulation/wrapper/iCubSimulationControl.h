@@ -323,7 +323,7 @@ class yarp::dev::iCubSimulationControl :
   /////// Joint steps
   void jointStep();
 
-  bool verbosity;
+  int verbosity;
 
 protected:
     yarp::dev::PolyDriver joints;

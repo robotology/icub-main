@@ -28,7 +28,8 @@ OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config)
     world = dWorldCreate();
     space = dHashSpaceCreate (0);
     contactgroup = dJointGroupCreate (0);
-    verbose = false;
+    //verbose = false;
+    verbosity = config->getVerbosity();
     
     dWorldSetGravity (world,0,-9.8,0);
     dWorldSetERP(world, config->getWorldERP());   // error reduction parameter: in [0.1,0.8], the higher, the more springy constraints are

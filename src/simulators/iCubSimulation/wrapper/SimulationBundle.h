@@ -40,7 +40,8 @@ public:
 
     virtual bool onEnd() = 0;
 
-    bool verbose;
+    //bool verbose;
+    int verbosity;
 };
 
 #endif

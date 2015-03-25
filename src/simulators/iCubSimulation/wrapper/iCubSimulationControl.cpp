@@ -255,7 +255,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     _mutex.post();
     _opened = true;
 
-    verbosity = odeinit.verbose;
+    verbosity = odeinit.verbosity;
     return true;
 }
 

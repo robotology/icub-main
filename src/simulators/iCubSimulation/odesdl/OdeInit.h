@@ -67,7 +67,8 @@ public:
     worldSim *_wrld;
     bool stop;
     bool sync;
-    bool verbose;
+    //bool verbose;
+    int verbosity;
     string name;
     iCubSimulationControl **_controls;
     

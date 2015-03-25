@@ -44,7 +44,7 @@ void SimConfig::deleteFinder(){
 */
 
 static string configureFinder(int argc, char *argv[], 
-                              string &moduleName,
+                              string &moduleName, int & verbosity,
                               ResourceFinder& finder) {
     //string moduleName;
     finder.setVerbose();
@@ -60,7 +60,15 @@ static string configureFinder(int argc, char *argv[],
     }
     else {    
         moduleName ="/icubSim";
-        cout << "OLD MODULE NAME " << moduleName << endl;
+        cout << "default module name: " << moduleName << endl;
+    }
+    if ( finder.check( "verbosity" ) ) {
+        verbosity = finder.find( "verbosity" ).asInt();
+        cout << "custom verbosity level: " << verbosity << endl;
+    }
+    else {    
+        verbosity = 0;
+        cout << "default verbosity level: " << verbosity << endl;
     }
     return moduleName;
 }
@@ -84,12 +92,13 @@ ConstString SimConfig::findPath(const char *key) {
 }
 */
 
-string SimConfig::configure(int argc, char *argv[], string &moduleName )
+string SimConfig::configure(int argc, char *argv[], string &moduleName, int &verbosity)
 {
     printf("SimConfig::configure\n");
     //string moduleName;
-    ::configureFinder( argc, argv, moduleName, *this );
+    ::configureFinder( argc, argv, moduleName, verbosity, *this );
     this->moduleName = moduleName;
+    this->verbosity = verbosity;
     return moduleName;
 }
 
