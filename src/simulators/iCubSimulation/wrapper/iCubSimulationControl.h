@@ -285,6 +285,8 @@ class yarp::dev::iCubSimulationControl :
     virtual bool disableTorquePidRaw(int);
     virtual bool enableTorquePidRaw(int);
     virtual bool setTorqueOffsetRaw(int,double);
+    virtual bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params);
+    virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
 
    /////// Control Mode Interface
     virtual bool setPositionModeRaw(int j);
@@ -397,6 +399,7 @@ protected:
 
     Pid    *position_pid;
     Pid    *torque_pid;
+    MotorTorqueParameters *motor_torque_params;
 
     //bool velocityMode;
 };

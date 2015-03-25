@@ -129,7 +129,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     error_tol = allocAndCheck<double>(njoints);
     position_pid = allocAndCheck <Pid>(njoints);
     torque_pid = allocAndCheck  <Pid>(njoints);
-
+    motor_torque_params = allocAndCheck <MotorTorqueParameters>(njoints);
     
 //  joint_dev = new DeviceTag[njoints];
 
@@ -311,7 +311,8 @@ bool iCubSimulationControl::close (void)
     checkAndDestroy<bool>(motor_on);
     checkAndDestroy<Pid>(position_pid);
     checkAndDestroy<Pid>(torque_pid);
-    
+    checkAndDestroy<MotorTorqueParameters>(motor_torque_params);
+
   //  delete[] jointNames;
 
     _opened = false;
@@ -1318,6 +1319,32 @@ bool iCubSimulationControl::setTorquePidsRaw(const yarp::dev::Pid *pid)
     NOT_YET_IMPLEMENTED("setTorquePidsRaw");
     return true; //fake
 }
+bool iCubSimulationControl::getMotorTorqueParamsRaw(int axis, MotorTorqueParameters *params)
+{
+    if( (axis >=0) && (axis<njoints) )
+    {
+         params->bemf=motor_torque_params[axis].bemf;
+         params->bemf_scale=motor_torque_params[axis].bemf_scale;
+         params->ktau=motor_torque_params[axis].ktau;
+         params->ktau_scale=motor_torque_params[axis].ktau_scale;
+    }
+    NOT_YET_IMPLEMENTED("getMotorTorqueParamsRaw");
+    return true; //fake
+
+}
+bool iCubSimulationControl::setMotorTorqueParamsRaw(int axis, const MotorTorqueParameters params)
+{
+    if( (axis >=0) && (axis<njoints) )
+    {
+        motor_torque_params[axis].bemf=params.bemf;
+        motor_torque_params[axis].bemf_scale=params.bemf_scale;
+        motor_torque_params[axis].ktau=params.ktau;
+        motor_torque_params[axis].ktau_scale=params.ktau_scale;
+    }
+    NOT_YET_IMPLEMENTED("setMotorTorqueParamsRaw");
+    return true; //fake
+}
+
 bool iCubSimulationControl::setTorqueErrorLimitRaw(int axis, double lim)
 {
     return NOT_YET_IMPLEMENTED("setTorqueErrorLimitRaw");
