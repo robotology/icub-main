@@ -2,11 +2,24 @@
 % the file to be loaded is just a log of the stateExt:o port
 % it can be obtained with the following command:
 % yarp read ... /icub/left_arm/stateExt:o > logarm.txt
-logdata=logtorso;
+robotname='heid';
+load_ll;
+load_rl;
+load_to;
+% load_la;
+% load_ra;
+
+
+%%
+logdata=log_ll;
+%logdata=log_rl;
+%logdata=log_to;
+% logdata=log_la;
+% logdata=log_la;
 
 % the following variable defines the number of joints logged by the port
-number_of_joints = 3;
-number_of_joints_to_plot = 3;
+number_of_joints = 6;
+number_of_joints_to_plot = 6;
 
 i=0;
 jp = logdata(:,i*number_of_joints+1:i*number_of_joints+number_of_joints);i=i+1;i*number_of_joints % 0
