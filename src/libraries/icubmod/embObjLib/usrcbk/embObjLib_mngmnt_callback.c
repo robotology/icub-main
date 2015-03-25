@@ -246,7 +246,9 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
 #if defined(DROPCODES_FROM_LIST)
     static const eOerror_code_t codes2drop_value[] =
     {
-        EOERRORCODE(eoerror_category_System, eoerror_value_SYS_canservices_parsingfailure)
+        EOERRORCODE(eoerror_category_System, eoerror_value_SYS_canservices_parsingfailure),
+        EOERRORCODE(eoerror_category_System, eoerror_value_SYS_canservices_rxmaisbug),
+        EOERRORCODE(eoerror_category_System, eoerror_value_SYS_canservices_rxfromwrongboard)
     };
 
     static const int codes2drop_number = sizeof(codes2drop_value) / sizeof(eOerror_code_t);
