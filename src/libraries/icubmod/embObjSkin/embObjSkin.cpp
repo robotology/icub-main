@@ -77,7 +77,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
     int             numOfSets;
     eOprotID32_t    protoid;
     int             p, j;
-    SpecialSkinBoardCfgParam boardCfgList[_skCfg.totalCardsNum];
+    SpecialSkinBoardCfgParam* boardCfgList = new SpecialSkinBoardCfgParam[_skCfg.totalCardsNum]; //please add cleanup!
     int             numofcfg;
 
     if(!_newCfg)

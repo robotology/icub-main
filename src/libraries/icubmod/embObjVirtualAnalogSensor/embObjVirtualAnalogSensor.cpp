@@ -25,6 +25,7 @@
 // specific to this device driver.
 #include <embObjVirtualAnalogSensor.h>
 #include <ethManager.h>
+#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
 #include <yarp/dev/ControlBoardInterfacesImpl.h>
@@ -52,13 +53,13 @@ static inline bool extractGroup(Bottle &input, Bottle &out, const std::string &k
     Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
     if (tmp.isNull())
     {
-        fprintf(stderr, "%s not found\n", key1.c_str());
+        yError("%s not found\n", key1.c_str());
         return false;
     }
 
     if(tmp.size()!=size)
     {
-        fprintf(stderr, "%s incorrect number of entries\n", key1.c_str());
+        yError("%s incorrect number of entries\n", key1.c_str());
         return false;
     }
 
@@ -103,8 +104,7 @@ bool embObjVirtualAnalogSensor::fromConfig(yarp::os::Searchable &_config)
 
     if (!extractGroup(config, xtmp, "UseCalibration","Calibration parameters are needed", 1))
     {
-        fprintf(stderr, "embObjVirtualAnalogSensor: Using default value = 0 (Don't use calibration)\n");
-        _useCalibration = 0;
+        return false;
     }
     else
     {

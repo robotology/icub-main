@@ -15,6 +15,8 @@
 
 // Yarp Includes
 #include <yarp/os/Time.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <yarp/dev/PolyDriver.h>
@@ -60,13 +62,13 @@ static inline bool extractGroup(Bottle &input, Bottle &out, const std::string &k
     Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
     if (tmp.isNull())
     {
-        fprintf(stderr, "%s not found\n", key1.c_str());
+        yError ("%s not found\n", key1.c_str());
         return false;
     }
 
     if(tmp.size()!=size)
     {
-        fprintf(stderr, "%s incorrect number of entries\n", key1.c_str());
+        yError("%s incorrect number of entries\n", key1.c_str());
         return false;
     }
 
@@ -107,7 +109,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
 
     if (!extractGroup(config, xtmp, "Channels","Number of channels of the Analog Sensor", 1))
     {
-        fprintf(stderr, "embObjAnalogSensor: Using default value = 0 (disabled)\n");
+        yWarning("embObjAnalogSensor: Using default value = 0 (disabled)\n");
         _channels = 0;
         _period   = 0;
         _as_type=AS_NONE;
@@ -120,7 +122,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
 
     if (!extractGroup(config, xtmp, "Format","data format of the Analog Sensor", 1))
     {
-        fprintf(stderr, "embObjAnalogSensor: Using default value = 0 (disabled)\n");
+        yWarning("embObjAnalogSensor: Using default value = 0 (disabled)");
         _channels = 0;
         _period   = 0;
         _as_type=AS_NONE;
@@ -151,8 +153,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
     {
         if (!extractGroup(config, xtmp, "UseCalibration","Calibration parameters are needed", 1))
         {
-            fprintf(stderr, "embObjAnalogSensor: Using default value = 0 (Don't use calibration)\n");
-            _useCalibration = 0;
+            return false;
         }
         else
         {
@@ -558,7 +559,7 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 #endif
 }
 
-#warning --> marco.accame: review function embObjAnalogSensor::getFullscaleValues() as in comment below
+//#warning --> marco.accame: review function embObjAnalogSensor::getFullscaleValues() as in comment below
 // it is better to change the behaviour of the function so that: 1. we send the request, 2. we wait for the sig<> and unblock a mutex
 // current implementation relies on a wait of 1 sec and check of non-zero length of an array: smart but not the rigth way to do it.
 bool embObjAnalogSensor::getFullscaleValues()
@@ -883,7 +884,7 @@ bool embObjAnalogSensor::update(eOprotID32_t id32, double timestamp, void* rxdat
 {
     bool ret;
 
-#warning --> marco.accame: retrieve the entity from id32 and see is it is mais or strain.
+//#warning --> marco.accame: retrieve the entity from id32 and see is it is mais or strain.
     switch(_as_type)
     {
         case AS_MAIS:
