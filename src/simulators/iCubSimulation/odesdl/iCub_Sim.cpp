@@ -359,11 +359,11 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
       indentString = indentString + " --- ";
     }
      
-    if (odeinit.verbosity > 2) printf("%s nearCallback()\n",indentString.c_str());
+    if (odeinit.verbosity > 3) printf("%s nearCallback()\n",indentString.c_str());
    
     if (dGeomIsSpace(o1)){
         space1 = (dSpaceID)o1;
-        if (odeinit.verbosity > 2){
+        if (odeinit.verbosity > 3){
           printf("%s Object nr. 1: %s, sublevel: %d, contained within: %s, nr. geoms: %d. \n",indentString.c_str(),odeinit._iCub->dSpaceNames[space1].c_str(),dSpaceGetSublevel(space1),odeinit._iCub->dSpaceNames[dGeomGetSpace(o1)].c_str(),dSpaceGetNumGeoms(space1));
         }
     }
@@ -373,16 +373,16 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
         geom1namesIt = odeinit._iCub->dGeomNames.find(o1);
         if (geom1namesIt != odeinit._iCub->dGeomNames.end()){
            geom1name = geom1namesIt->second;   
-           if (odeinit.verbosity > 2) printf("%s Object nr. 1: geom: %s, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),geom1name.c_str(),geom1className.c_str(),odeinit._iCub->dSpaceNames[superSpace1].c_str(),dSpaceGetSublevel(superSpace1));
+           if (odeinit.verbosity > 3) printf("%s Object nr. 1: geom: %s, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),geom1name.c_str(),geom1className.c_str(),odeinit._iCub->dSpaceNames[superSpace1].c_str(),dSpaceGetSublevel(superSpace1));
         }
         else{
-           if (odeinit.verbosity > 2) printf("%s Object nr. 1: A geom, ID: %p, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),o1,geom1className.c_str(),odeinit._iCub->dSpaceNames[superSpace1].c_str(),dSpaceGetSublevel(superSpace1));
+           if (odeinit.verbosity > 3) printf("%s Object nr. 1: A geom, ID: %p, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),o1,geom1className.c_str(),odeinit._iCub->dSpaceNames[superSpace1].c_str(),dSpaceGetSublevel(superSpace1));
         }
     }
  
     if (dGeomIsSpace(o2)){
         space2 = (dSpaceID)o2;
-        if (odeinit.verbosity > 2){
+        if (odeinit.verbosity > 3){
                printf("%s Object nr. 2: %s, sublevel: %d, contained within: %s, nr. geoms: %d. \n",indentString.c_str(),odeinit._iCub->dSpaceNames[space2].c_str(),dSpaceGetSublevel(space2),odeinit._iCub->dSpaceNames[dGeomGetSpace(o2)].c_str(),dSpaceGetNumGeoms(space2));
         }
     } else {
@@ -391,10 +391,10 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
         geom2namesIt = odeinit._iCub->dGeomNames.find(o2);
         if (geom2namesIt != odeinit._iCub->dGeomNames.end()){
            geom2name = geom2namesIt->second;
-           if (odeinit.verbosity > 2) printf("%s Object nr. 2: geom: %s, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),geom2name.c_str(),geom2ClassName.c_str(),odeinit._iCub->dSpaceNames[superSpace2].c_str(),dSpaceGetSublevel(superSpace2));
+           if (odeinit.verbosity > 3) printf("%s Object nr. 2: geom: %s, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),geom2name.c_str(),geom2ClassName.c_str(),odeinit._iCub->dSpaceNames[superSpace2].c_str(),dSpaceGetSublevel(superSpace2));
         }
         else{
-           if (odeinit.verbosity > 2) printf("%s Object nr. 2: A geom, ID: %p, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),o2,geom2ClassName.c_str(),odeinit._iCub->dSpaceNames[superSpace2].c_str(),dSpaceGetSublevel(superSpace2));
+           if (odeinit.verbosity > 3) printf("%s Object nr. 2: A geom, ID: %p, class: %s, contained within %s (sublevel %d).\n",indentString.c_str(),o2,geom2ClassName.c_str(),odeinit._iCub->dSpaceNames[superSpace2].c_str(),dSpaceGetSublevel(superSpace2));
         }
     }
     
@@ -402,11 +402,11 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
     if (dGeomIsSpace(o1) || dGeomIsSpace(o2)){
       if (dGeomIsSpace(o1) && dGeomIsSpace(o2)){ //if both are spaces, we exclude special combinations from the checking
           if (((space1 == odeinit._iCub->iCubHeadSpace) && (space2 == odeinit._iCub->iCubTorsoSpace)) || ((space1 == odeinit._iCub->iCubTorsoSpace) && (space2 == odeinit._iCub->iCubHeadSpace))){
-              if (odeinit.verbosity > 2) printf("%s Ignoring head vs. torso collision space checking.\n",indentString.c_str()); 
+              if (odeinit.verbosity > 3) printf("%s Ignoring head vs. torso collision space checking.\n",indentString.c_str()); 
                 //these are unnecessary geoms to check, moreover 2 of these were colliding while not connected by a joint
           }
           else if (((space1 == odeinit._iCub->iCubLegsSpace) && (space2 == odeinit._iCub->iCubTorsoSpace)) || ((space1 == odeinit._iCub->iCubTorsoSpace) && (space2 == odeinit._iCub->iCubLegsSpace))){
-             if (odeinit.verbosity > 2) printf("%s Ignoring legs vs. torso collision space checking.\n",indentString.c_str()); 
+             if (odeinit.verbosity > 3) printf("%s Ignoring legs vs. torso collision space checking.\n",indentString.c_str()); 
             //these are unnecessary geoms to check - it always check collisions of geoms connected by a joint
           }
           else{
@@ -430,19 +430,19 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
     dBodyID b1 = dGeomGetBody(o1);
     dBodyID b2 = dGeomGetBody(o2);
     if (b1 && b2 && dAreConnectedExcluding (b1,b2,dJointTypeContact)){
-      if (odeinit.verbosity > 2) printf("%s Collision ignored: the bodies of o1 and o2 are connected by a joint.\n",indentString.c_str());
+      if (odeinit.verbosity > 3) printf("%s Collision ignored: the bodies of o1 and o2 are connected by a joint.\n",indentString.c_str());
       return;
     }
     // list of self-collisions to ignore
     if (selfCollisionOnIgnoreList(geom1name,geom2name)){
-       if (odeinit.verbosity > 2){
+       if (odeinit.verbosity > 3){
            printf("%s geom: %s (class: %s, contained within %s) AND geom: %s (class: %s, contained within %s).\n",indentString.c_str(),geom1name.c_str(),geom1className.c_str(),odeinit._iCub->dSpaceNames[superSpace1].c_str(),geom2name.c_str(),geom2ClassName.c_str(),odeinit._iCub->dSpaceNames[superSpace2].c_str());
            printf("%s Collision ignored (ignore list).\n",indentString.c_str());
        }
        return;
     }
        
-    if (odeinit.verbosity > 2) printf("%s Collision candidate. Preparing contact joints.\n",indentString.c_str());
+    if (odeinit.verbosity > 3) printf("%s Collision candidate. Preparing contact joints.\n",indentString.c_str());
     dContact contact[MAX_CONTACTS];   // up to MAX_CONTACTS contacts per box-box
     int i;
     for (i=0; i<MAX_CONTACTS; i++) {
@@ -457,17 +457,17 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
     }
     int numc = dCollide (o1,o2,MAX_CONTACTS,&contact[0].geom,sizeof(dContact)); 
     if (numc > 0){          
-        if (odeinit.verbosity > 2) printf("%s Collision suspect confirmed. There are %d contacts - creating joints.\n",indentString.c_str(),numc);
+        if (odeinit.verbosity > 3) printf("%s Collision suspect confirmed. There are %d contacts - creating joints.\n",indentString.c_str(),numc);
         dMatrix3 RI;
         dRSetIdentity (RI);
         if(contact[0].geom.pos[1]>CONTACT_HEIGHT_TRESHOLD_METERS){ //non-foot contact
-            if (odeinit.verbosity > 1){
+            if (odeinit.verbosity > 2){
                printf("%s   ****** non-ground COLLISION, %d contacts - creating joints************************************************************\n",indentString.c_str(),numc);
-               printf("%s geom: %s (%s, contained within %s) AND geom: %s (%s, contained within %s).\n",indentString.c_str(),geom1name.c_str(),geom1className.c_str(),odeinit._iCub->dSpaceNames[superSpace1].c_str(),geom2name.c_str(),geom2ClassName.c_str(),odeinit._iCub->dSpaceNames[superSpace2].c_str());
+               printf("%s geom: %s (%s, contained within %s) AND geom: %s (%s, contained within %s)\n",indentString.c_str(),geom1name.c_str(),geom1className.c_str(),odeinit._iCub->dSpaceNames[superSpace1].c_str(),geom2name.c_str(),geom2ClassName.c_str(),odeinit._iCub->dSpaceNames[superSpace2].c_str());
             }
         }
         for (i=0; i<numc; i++) {
-            if (odeinit.verbosity > 2) printf("%s	Contact joint nr. %d (index:%d): at (%f,%f,%f), depth: %f \n",indentString.c_str(),i+1,i,contact[i].geom.pos[0],contact[i].geom.pos[1],contact[i].geom.pos[2],contact[i].geom.depth);
+            if (odeinit.verbosity > 4) printf("%s	Contact joint nr. %d (index:%d): at (%f,%f,%f), depth: %f \n",indentString.c_str(),i+1,i,contact[i].geom.pos[0],contact[i].geom.pos[1],contact[i].geom.pos[2],contact[i].geom.depth);
             dJointID c = dJointCreateContact (odeinit.world,odeinit.contactgroup,contact+i);
             dJointAttach (c,b1,b2);
             // if (show_contacts) dsDrawBox (contact[i].geom.pos,RI,ss);
@@ -506,7 +506,7 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
         
                 // if (geom1isiCubPart || geom2isiCubPart){ //we don't have the legs and head implemented yet - these don't have skin in the real robot - but legs will -> should do that
                 if ( geom1isTorsoOrArm || geom2isTorsoOrArm){
-                    if (odeinit.verbosity > 2) printf("%s	Adding tactile feedback for whole-body skinContact to this contact (ODE joint feedback counter: %d).\n",indentString.c_str(),nFeedbackStructs);
+                    if (odeinit.verbosity > 3) printf("%s	Adding tactile feedback for whole-body skinContact to this contact (ODE joint feedback counter: %d).\n",indentString.c_str(),nFeedbackStructs);
                     if (nFeedbackStructs >= MAX_DJOINT_FEEDBACKSTRUCTS){
                         printf("Warning: out of contact joint feedback structures for ODE (exceeded %d) - some contact joints will not have info about forces stored\n.",MAX_DJOINT_FEEDBACKSTRUCTS); 
                     }
@@ -533,14 +533,14 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
                     }
                 } 
                 else {
-                    if (odeinit.verbosity > 2) printf("%s Ignoring skin contact - so far only arms and torso are implemented.\n",indentString.c_str());
+                    if (odeinit.verbosity > 3) printf("%s Ignoring skin contact - so far only arms and torso are implemented.\n",indentString.c_str());
                 }
             }   //whole_body_skin_emul ~ actSkinEmul is on
-            if (odeinit.verbosity > 2) printf("\n");
+            if (odeinit.verbosity > 3) printf("\n");
         } // for numc - contacts
     } // if (numc > 0)
     else{
-       if (odeinit.verbosity > 2) printf("%s Collision suspect NOT confirmed. There were %d contacts.\n",indentString.c_str(),numc);
+       if (odeinit.verbosity > 3) printf("%s Collision suspect NOT confirmed. There were %d contacts.\n",indentString.c_str(),numc);
     }
 }
 
@@ -1035,18 +1035,18 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
     odeinit.mutex.wait();
     nFeedbackStructs=0;
     
-    if (odeinit.verbosity > 2) printf("\n ***info code collision detection ***\n"); 
-    if (odeinit.verbosity > 2) printf("OdeSdlSimulation::ODE_process: dSpaceCollide(odeinit.space,0,&nearCallback): will test iCub space against the rest of the world (e.g. ground).\n");
+    if (odeinit.verbosity > 3) printf("\n ***info code collision detection ***\n"); 
+    if (odeinit.verbosity > 3) printf("OdeSdlSimulation::ODE_process: dSpaceCollide(odeinit.space,0,&nearCallback): will test iCub space against the rest of the world (e.g. ground).\n");
     dSpaceCollide(odeinit.space,0,&nearCallback); //determines which pairs of geoms in a space may potentially intersect, and calls a callback function with each candidate pair
     if (odeinit._iCub->actSelfCol == "on"){
            if (START_SELF_COLLISION_DETECTION){ 
-                if (odeinit.verbosity > 2){
+                if (odeinit.verbosity > 3){
                     printf("OdeSdlSimulation::ODE_process: dSpaceCollide(odeinit._iCub->iCub,0,&nearCallback): will test iCub subspaces against each other.\n");
                 }
                 dSpaceCollide(odeinit._iCub->iCub,0,&nearCallback); //determines which pairs of geoms in a space may potentially intersect, and calls a callback function with each candidate pair
         }
     }
-    if (odeinit.verbosity > 2) printf("***END OF info code collision detection ***\n"); 
+    if (odeinit.verbosity > 3) printf("***END OF info code collision detection ***\n"); 
     
     dWorldStep(odeinit.world, dstep);
     // do 1 TIMESTEP in controllers (ok to run at same rate as ODE: 1 iteration takes about 300 times less computation time than dWorldStep)
@@ -1707,12 +1707,12 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
                   mapPositionIntoTaxelList(skinPart,geoCenter_link_FoR,taxel_list); 
               }
               else{    
-                  taxel_list.push_back(FAKE_TAXEL_ID); // we will eemulate one non-existent activated "taxel" per contact joint - say taxel "10000"
+                  taxel_list.push_back(FAKE_TAXEL_ID); // we will emulate one non-existent activated "taxel" per contact joint - say taxel "10000"
               }
               skinContact c(bodyPart, skinPart, getLinkNum(skinPart), geoCenter_link_FoR, geoCenter_link_FoR,taxel_list, forceOnBody_magnitude, normal_link_FoR,force_link_FoR,moment_link_FoR);       
               //we have only one source of information - the contact as detected by ODE - therefore, we take the coordinates and set them both to CoP 
               //(which is supposed to come from the dynamic estimation, and as geoCenter - from skin; Similarly, we derive the pressure directly from the force vector from ODE.
-              if (odeinit.verbosity > 0) printf("Creating skin contact as follows: %s.\n",c.toString().c_str());
+              if (odeinit.verbosity > 4) printf("Creating skin contact as follows: %s.\n",c.toString().c_str());
               mySkinContactList.push_back(c); 
           } //if(upper_body_transforms_available){
           // here we collect the info per emulating the skin ports (compensated tactile ports) 
