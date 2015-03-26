@@ -608,6 +608,27 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
         prefix+=tmp->id.c_str();
         tmpProp.put("name", prefix.c_str());
         //open wrapper
+
+        if( tmpProp.check("file") )
+        {
+            std::string file=tmpProp.find("file").asString().c_str();
+            if(file != "")
+            {
+                std::string fullFilename;
+                fullFilename=PATH;
+                if (fullFilename.length()!=0 && fullFilename[fullFilename.length()-1]!='/')
+                {
+                    fullFilename.append("/",1);
+                }
+                fullFilename.append(file.c_str(), file.length());
+
+                Property deviceParameters;
+                deviceParameters.fromConfigFile(fullFilename.c_str());
+                tmpProp.fromString(deviceParameters.toString(), false);
+            }
+        }
+
+        tmpProp.fromString(deviceParameters.toString(), false);
         std::cout<<"Opening wrapper for " << tmp->id << endl;
         //std::cout<<"Parameter list:"<<endl;
         //std::cout<<tmpProp.toString();
