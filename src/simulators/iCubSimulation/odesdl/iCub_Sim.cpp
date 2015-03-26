@@ -1628,7 +1628,7 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
            odeinit._iCub->iKinInertialSensor.setAng(inertial_for_iKin);
       }
       
-      if (odeinit.verbosity > 0) printf("OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch:There were %lu iCub collisions to process. \n", odeinit.listOfSkinContactInfos.size());
+      if (odeinit.verbosity > 4) printf("OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch:There were %lu iCub collisions to process. \n", odeinit.listOfSkinContactInfos.size());
       //main loop through all the contacts
       for (list<OdeInit::contactOnSkin_t>::iterator it = odeinit.listOfSkinContactInfos.begin(); it!=odeinit.listOfSkinContactInfos.end(); it++){
           skinPart = SKIN_PART_UNKNOWN; bodyPart = BODY_PART_UNKNOWN; skinCoverFlag = false;
@@ -1872,10 +1872,10 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
                       for (int y = 96; y<=143; y++){ 
                           if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
                                 bottleRightHand.addDouble(255.0); 
-                            }
-                            else{
+                          }
+                          else{
                                  bottleRightHand.addDouble(0.0); 
-                            }
+                          }
                         }
                   }
                   else{ //we fill the whole palm
