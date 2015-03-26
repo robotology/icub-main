@@ -628,7 +628,6 @@ bool RobotInterfaceRemap::initialize20(const std::string &inifile)
             }
         }
 
-        tmpProp.fromString(deviceParameters.toString(), false);
         std::cout<<"Opening wrapper for " << tmp->id << endl;
         //std::cout<<"Parameter list:"<<endl;
         //std::cout<<tmpProp.toString();
