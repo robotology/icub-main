@@ -35,6 +35,9 @@ static void set_flag(bool& flag,const ConstString& str) {
 
 void RobotConfig::setFlags() {
     ConstString parts = getFinder().findFile("parts");
+    if (parts == ""){
+         parts = getFinder().findFile("general");
+    }
   
     Property options;
     options.fromConfigFile(parts.c_str());
