@@ -11,7 +11,7 @@
         <param name="TorqueId">  	0x0B          0x0B          0x0B          0x0B 		</param>
         <param name="TorqueChan">	0             1             2             3		</param>
         <param name="TorqueMax"> 	24            24            24            24		</param>
-        <param name="Rotor">     	1.000         1.000         1.000         1.000		</param>
+        <param name="Rotor">     	-1.000         1.000        -1.000        -1.000		</param>
         <param name="Gearbox">   	100.000       100.000       100.000       100.000		</param>
         <param name="Verbose">0</param>
     </group>

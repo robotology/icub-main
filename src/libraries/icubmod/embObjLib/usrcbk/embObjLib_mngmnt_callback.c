@@ -390,6 +390,7 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
     
         if(type == eomn_info_type_error)
         {
+            if (infobasic->properties.code!=eoerror_code_get(eoerror_category_MotionControl, eoerror_value_MC_aea_abs_enc_spikes))
             embObjPrintError(str);
         }
     
