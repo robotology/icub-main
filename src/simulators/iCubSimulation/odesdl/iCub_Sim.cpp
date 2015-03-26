@@ -556,7 +556,10 @@ bool OdeSdlSimulation::selfCollisionOnIgnoreList(string geom1_string, string geo
   if ( ( (geom1_string.compare("geom[5]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[5]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
       return true; 
   } //geom[5] is the cylinder in upper right arm (when it is "on"; when off, it will not go into the torso)
-
+  if ( ( (geom1_string.compare("geom[5]")==0)  &&  (geom2_string.compare("torsoGeom[5]")==0) )  || ( (geom2_string.compare("geom[5]")==0)  &&  (geom1_string.compare("torsoGeom[5]")==0) ) ){
+      return true; 
+  } //upper arm cylinder colliding with torso box
+  
   if ( ( (geom1_string.compare("upper left arm cover")==0)  &&  (geom2_string.compare("torsoGeom[4]")==0) )  || ( (geom2_string.compare("upper left arm cover")==0)  &&  (geom1_string.compare("torsoGeom[4]")==0) ) ){
       return true; 
   }
@@ -566,6 +569,10 @@ bool OdeSdlSimulation::selfCollisionOnIgnoreList(string geom1_string, string geo
   if ( ( (geom1_string.compare("geom[4]")==0)  &&  (geom2_string.compare("torso cover")==0) )  || ( (geom2_string.compare("geom[4]")==0)  &&  (geom1_string.compare("torso cover")==0) ) ){
       return true; 
   } //geom[4] is the cylinder in upper left arm  (when it is "on"; when off, it will not go into the torso)
+  if ( ( (geom1_string.compare("geom[4]")==0)  &&  (geom2_string.compare("torsoGeom[5]")==0) )  || ( (geom2_string.compare("geom[4]")==0)  &&  (geom1_string.compare("torsoGeom[5]")==0) ) ){
+      return true; 
+  } //upper arm cylinder colliding with torso box
+
   
   return false;  
 } 
