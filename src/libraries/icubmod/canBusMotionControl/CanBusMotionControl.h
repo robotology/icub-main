@@ -1157,6 +1157,8 @@ protected:
     double *_ref_torques;        // for torque control.
     double *_ref_positions;        // for position control.
     bool _MCtorqueControlEnabled;
+    #define MAX_POSITION_MOVE_INTERVAL 0.080
+    double *_last_position_move_time;           /** time stamp for last received position move command*/
 
     enum { MAX_SHORT = 32767, MIN_SHORT = -32768, MAX_INT = 0x7fffffff, MIN_INT = 0x80000000 };
     enum { CAN_SKIP_ADDR = 0x80 };
