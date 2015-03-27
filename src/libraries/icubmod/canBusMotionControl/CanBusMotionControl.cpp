@@ -2268,12 +2268,25 @@ _done(0)
     _firmwareVersionHelper = 0;
     _speedEstimationHelper = 0;
     _MCtorqueControlEnabled = false;
+    _ref_positions=0;
+    _command_speeds=0;
+    _ref_speeds=0;
+    _ref_accs=0;
+    _ref_torques=0;
+    _last_position_move_time = 0;
     mServerLogger = NULL;
 }
 
 
 CanBusMotionControl::~CanBusMotionControl ()
 {
+    checkAndDestroy<double>(_ref_positions);
+    checkAndDestroy<double>(_command_speeds);
+    checkAndDestroy<double>(_ref_speeds);
+    checkAndDestroy<double>(_ref_accs);
+    checkAndDestroy<double>(_ref_torques);
+    checkAndDestroy<double>(_last_position_move_time);
+
     if (system_resources != NULL)
         delete (CanBusResources *)system_resources;
     system_resources = NULL;
@@ -2393,6 +2406,9 @@ bool CanBusMotionControl::open (Searchable &config)
     _ref_speeds = allocAndCheck<double>(p._njoints);
     _ref_accs = allocAndCheck<double>(p._njoints);
     _ref_torques = allocAndCheck<double>(p._njoints);
+    _last_position_move_time=allocAndCheck<double>(p._njoints);
+    memset(_last_position_move_time, 0, sizeof(double)*p._njoints);
+
     _mutex.post ();
 
     // default initialization for this device driver.
@@ -5332,6 +5348,13 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         _ref_positions[axis] = ref;
         return true;
     }
+
+    if (_last_position_move_time[axis] == 0) _last_position_move_time[axis] = yarp::os::Time::now()-1.0;
+    if (yarp::os::Time::now()-_last_position_move_time[axis]<MAX_POSITION_MOVE_INTERVAL) 
+    {
+        yWarning() << "Performance warning: You are using positionMove commands at high rate (<"<< MAX_POSITION_MOVE_INTERVAL*1000.0 <<" ms). Probably position control mode is not the right control mode to use.";
+    }
+    _last_position_move_time[axis] = yarp::os::Time::now();
 
     int mode = 0;
     getControlModeRaw(axis, &mode);
