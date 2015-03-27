@@ -303,7 +303,7 @@ public:
     double checkTouchSensor_continuousValued(dBodyID id);
     void draw();
     
-    void getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, const dGeomID geomID, SkinPart& skinPart,BodyPart& bodyPart, bool& skinCoverFlag);
+    void getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, const dGeomID geomID, SkinPart& skinPart,BodyPart& bodyPart, HandPart& handPart, bool& skinCoverFlag, bool& fingertipFlag);
     static void printPositionOfGeom(dGeomID geomID);
     static void printPositionOfBody(dBodyID bodyID);
 

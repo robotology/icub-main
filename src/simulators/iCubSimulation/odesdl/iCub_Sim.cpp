@@ -1147,6 +1147,7 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
               }
         }
         odeinit.listOfSkinContactInfos.clear();
+        resetContactICubSkinEmulMap();
     }
     
     dJointGroupEmpty (odeinit.contactgroup);
@@ -1452,7 +1453,7 @@ void OdeSdlSimulation::initContactICubSkinEmulMap(void)
     contactICubSkinEmul_t skin_emul_struct;
     
     //SKIN_LEFT_HAND
-    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.coverTouched = false; //for the hand, this comprises also fingertips - they are treated like covers
     skin_emul_struct.indivTaxelResolution = true;
     contactICubSkinEmulMap[SKIN_LEFT_HAND]=skin_emul_struct;
     
@@ -1467,7 +1468,7 @@ void OdeSdlSimulation::initContactICubSkinEmulMap(void)
     contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM]=skin_emul_struct;
     
     //SKIN_RIGHT_HAND
-    skin_emul_struct.coverTouched = false;
+    skin_emul_struct.coverTouched = false; //for the hand, this comprises also fingertips - they are treated like covers
     skin_emul_struct.indivTaxelResolution = true;
     contactICubSkinEmulMap[SKIN_RIGHT_HAND]=skin_emul_struct;
     
@@ -1524,6 +1525,64 @@ void OdeSdlSimulation::initContactICubSkinEmulMap(void)
 //     }
 }
 
+void OdeSdlSimulation::resetContactICubSkinEmulMap(void)
+{
+
+    //SKIN_LEFT_HAND
+    contactICubSkinEmulMap[SKIN_LEFT_HAND].coverTouched="false";
+    contactICubSkinEmulMap[SKIN_LEFT_HAND].taxelsTouched.clear();
+    
+    //SKIN_LEFT_FOREARM
+    contactICubSkinEmulMap[SKIN_LEFT_FOREARM].coverTouched="false";
+    contactICubSkinEmulMap[SKIN_LEFT_FOREARM].taxelsTouched.clear();
+    
+    //SKIN_LEFT_UPPER_ARM
+    contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM].coverTouched="false";
+    contactICubSkinEmulMap[SKIN_LEFT_UPPER_ARM].taxelsTouched.clear();
+    
+    //SKIN_RIGHT_HAND
+    contactICubSkinEmulMap[SKIN_RIGHT_HAND].coverTouched="false";
+    contactICubSkinEmulMap[SKIN_RIGHT_HAND].taxelsTouched.clear();
+    
+    //SKIN_RIGHT_FOREARM
+    contactICubSkinEmulMap[SKIN_RIGHT_FOREARM].coverTouched="false";
+    contactICubSkinEmulMap[SKIN_RIGHT_FOREARM].taxelsTouched.clear();
+    
+    //SKIN_RIGHT_UPPER_ARM
+    contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM].coverTouched="false";
+    contactICubSkinEmulMap[SKIN_RIGHT_UPPER_ARM].taxelsTouched.clear();
+    
+    //SKIN_FRONT_TORSO
+    contactICubSkinEmulMap[SKIN_FRONT_TORSO].coverTouched="false";
+    contactICubSkinEmulMap[SKIN_FRONT_TORSO].taxelsTouched.clear();
+    
+    //LEFT_LEG_UPPER
+    contactICubSkinEmulMap[LEFT_LEG_UPPER].coverTouched="false";
+    contactICubSkinEmulMap[LEFT_LEG_UPPER].taxelsTouched.clear();
+    
+    //LEFT_LEG_LOWER
+    contactICubSkinEmulMap[LEFT_LEG_LOWER].coverTouched="false";
+    contactICubSkinEmulMap[LEFT_LEG_LOWER].taxelsTouched.clear();
+    
+     //LEFT_FOOT
+    contactICubSkinEmulMap[LEFT_FOOT].coverTouched="false";
+    contactICubSkinEmulMap[LEFT_FOOT].taxelsTouched.clear();
+    
+     //RIGHT_LEG_UPPER
+    contactICubSkinEmulMap[RIGHT_LEG_UPPER].coverTouched="false";
+    contactICubSkinEmulMap[RIGHT_LEG_UPPER].taxelsTouched.clear();
+    
+     //RIGHT_LEG_LOWER
+    contactICubSkinEmulMap[RIGHT_LEG_LOWER].coverTouched="false";
+    contactICubSkinEmulMap[RIGHT_LEG_LOWER].taxelsTouched.clear();
+    
+     //RIGHT_FOOT
+    contactICubSkinEmulMap[RIGHT_FOOT].coverTouched="false";
+    contactICubSkinEmulMap[RIGHT_FOOT].taxelsTouched.clear();
+}
+
+
+
 OdeSdlSimulation::~OdeSdlSimulation() {
     delete video;
 }
@@ -1576,8 +1635,10 @@ bool OdeSdlSimulation::getImage(ImageOf<PixelRgb>& target) {
 
 void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
 {
+      //SkinDynLib enums
       SkinPart skinPart;    // id of the part of the skin (e.g. SKIN_LEFT_FOREARM; from skinDynLib/common.h)
       BodyPart bodyPart;    // id of the body part
+      HandPart handPart;    // id of the hand part  - INDEX, MIDDLE, RING, LITTLE, THUMB, PALM, ALL_HAND_PARTS, HAND_PART_SIZE
      
       //coordinate transformations for skinEvents and for emulating ind. taxel groups per skin part
       Vector geoCenter_SIM_FoR_forHomo(4,0.0), normal_SIM_FoR_forHomo(4,0.0);
@@ -1594,6 +1655,7 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
       bool upper_body_transforms_available = false;
       
       bool skinCoverFlag = false;
+      bool fingertipFlag = true;
       bool left_hand_notCover_touched = false;
       bool right_hand_notCover_touched = false;
       OdeInit& odeinit = OdeInit::get();
@@ -1631,9 +1693,9 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
       if (odeinit.verbosity > 4) printf("OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch:There were %lu iCub collisions to process. \n", odeinit.listOfSkinContactInfos.size());
       //main loop through all the contacts
       for (list<OdeInit::contactOnSkin_t>::iterator it = odeinit.listOfSkinContactInfos.begin(); it!=odeinit.listOfSkinContactInfos.end(); it++){
-          skinPart = SKIN_PART_UNKNOWN; bodyPart = BODY_PART_UNKNOWN; skinCoverFlag = false;
+          skinPart = SKIN_PART_UNKNOWN; bodyPart = BODY_PART_UNKNOWN;  handPart = ALL_HAND_PARTS; fingertipFlag = false;
           taxel_list.clear();
-          odeinit._iCub->getSkinAndBodyPartFromSpaceAndGeomID((*it).body_geom_space_id,(*it).body_geom_id,skinPart,bodyPart,skinCoverFlag);
+          odeinit._iCub->getSkinAndBodyPartFromSpaceAndGeomID((*it).body_geom_space_id,(*it).body_geom_id,skinPart,bodyPart,handPart,skinCoverFlag,fingertipFlag);
           if(upper_body_transforms_available){
               geoCenter_SIM_FoR_forHomo.zero(); geoCenter_SIM_FoR_forHomo(3)=1.0; //setting the extra row to 1 - for multiplication by homogenous rototransl. matrix
               normal_SIM_FoR_forHomo.zero(); normal_SIM_FoR_forHomo(3)=1.0; 
@@ -1730,8 +1792,13 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
               /*for (int l=0;l<2;l++){ geoCenter_link_FoR(l)=0.0;  force_link_FoR(l)=1.0;  normal_link_FoR(l)=1.0; moment_link_FoR(l)=1.0;
               } */
               //forceOnBody_magnitude=10.0;
-              if (contactICubSkinEmulMap[skinPart].indivTaxelResolution && skinCoverFlag){ //indiv taxels get emulated only on covers - where the actual skin is 
-                  mapPositionIntoTaxelList(skinPart,geoCenter_link_FoR,taxel_list); 
+              if (contactICubSkinEmulMap[skinPart].indivTaxelResolution && (skinCoverFlag || fingertipFlag)){ //indiv taxels get emulated only on covers - where the actual skin is 
+                    if(skinCoverFlag){
+                        mapPositionIntoTaxelList(skinPart,geoCenter_link_FoR,taxel_list);
+                    }
+                    else if(fingertipFlag){
+                        mapFingertipIntoTaxelList(handPart,taxel_list);   
+                    }
               }
               else{    
                   taxel_list.push_back(FAKE_TAXEL_ID); // we will emulate one non-existent activated "taxel" per contact joint - say taxel "10000"
@@ -1743,8 +1810,8 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
               mySkinContactList.push_back(c); 
           } //if(upper_body_transforms_available){
           // here we collect the info for emulating the skin ports (compensated tactile ports) 
-          if(skinCoverFlag){ 
-                //if it was a cover that was touched, we will emulate the skin there - this includes the palm cover
+          if(skinCoverFlag || fingertipFlag){ 
+                //if it was a cover (including palm cover) or fingertip that was touched, we will append the taxels touched to respective contactICubSkinEmulMap
                 contactICubSkinEmulMap[skinPart].coverTouched = true;
                 if (contactICubSkinEmulMap[skinPart].indivTaxelResolution){
                     if (!taxel_list.empty()){
@@ -1756,13 +1823,7 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
                         }
                     }
                 }
-          }
-          else if(skinPart == SKIN_LEFT_HAND) {
-            left_hand_notCover_touched = true;  //these need special treatment because for the fingertip, we check the geoms, there are no covers there
-          }   
-          else if(skinPart == SKIN_RIGHT_HAND) {
-            right_hand_notCover_touched = true;  //these need special treatment because for the fingertip, we check the geoms, there are no covers there
-          }   
+          }         
       } //cycle through odeinit.listOfSkinContactInfos
       
       //all contacts have been processed, now we produce the output
@@ -1772,129 +1833,116 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
           robot_streamer->sendSkinEvents(mySkinContactList); //we send even if empty
       }  
    
-      //rewritten based on original inspectTouch_icubSensors, the output of actual pressure values is discontinued; the collisions with palm cover are added
-      // the palm cover replaces sensing in the palm body
+      //for hands, this is now done differently than in the original inspectTouch_icubSensors, where finger bodies were inspected, whether they have contact joints attached to them
+       // the palm cover replaces sensing in the palm body 
+      //now all info about contacts has come from cycling through the odeinit.listOfSkinContactInfos above and it has beem filled into appropriate structs
+      //the output of actual pressure values is discontinued; 
+      int y=0;
       if(robot_streamer->shouldSendTouchLeftHand()){
             Bottle bottleLeftHand;
-            if (left_hand_notCover_touched ||  contactICubSkinEmulMap[SKIN_LEFT_HAND].coverTouched){ 
-                if (left_hand_notCover_touched){ // some part other than the palm cover was touched, need to check fingertips
-                    int bodyIndicesLeft[5] = {24, 25, 26, 27, 30};
-                    double resultLeft=0;
-                    for (int x = 0; x < 5; x++){
-                            if (odeinit._iCub->actLHand == "on"){ 
-                                resultLeft = odeinit._iCub->checkTouchSensor(bodyIndicesLeft[x]);
-                            }
-                            else{
-                                resultLeft = odeinit._iCub->checkTouchSensor(odeinit._iCub->l_hand);
-                            } 
-                            //now filling up the bottle - the port output where 1-60 are taxels of fingertips (12 each);
-                            for (int i = 0; i < 12; i++){
-                                bottleLeftHand.addDouble(resultLeft * 255);
-                            }
-                    }
-                }
-                else{ //we fill the fingertip positions with 0s
-                    for (int i = 0; i <= 59; i++){
-                        bottleLeftHand.addDouble(0.0);
-                    }
-                }
-                //now filling up the bottle - the port output: 61-96 zeros; taxel IDs 60-95
-                for (int y = 60; y<=95; y++){           
-                        bottleLeftHand.addDouble(0.0);
-                }
-                if(contactICubSkinEmulMap[SKIN_LEFT_HAND].coverTouched){ //palm cover
-                //positions 97-144 palm taxels; taxel IDs have index by one lower (inside these, IDs 107, 119, 131, and 139 are thermal pads ~ 0s); 
-                    if (contactICubSkinEmulMap[SKIN_LEFT_HAND].indivTaxelResolution){
-                        for (int y = 96; y<=143; y++){ 
-                            if (contactICubSkinEmulMap[SKIN_LEFT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                                bottleLeftHand.addDouble(255.0); 
-                            }
-                            else{
-                                 bottleLeftHand.addDouble(0.0); 
-                            }
+            if (contactICubSkinEmulMap[SKIN_LEFT_HAND].coverTouched){ 
+                //prepare the bottle
+                //first 60 are fingers
+                if (contactICubSkinEmulMap[SKIN_LEFT_HAND].indivTaxelResolution){
+                    for (y = 0; y<=59; y++){ 
+                        if (contactICubSkinEmulMap[SKIN_LEFT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
+                            bottleLeftHand.addDouble(255.0); 
                         }
-                    }
-                    else{ //we fill the whole palm
-                        for (int y = 96; y<=143; y++){ 
-                            bottleLeftHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
+                        else{
+                            bottleLeftHand.addDouble(0.0); 
                         }
                     }
                 }
-                else{
+                else{ //we fill them all
+                   for (y = 0; y<=59; y++){ 
+                        bottleLeftHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
+                    }
+                }
+                //zero padding - the port output: 61-96 zeros; taxel IDs 60-95
+                for (y = 60; y<=95; y++){           
+                        bottleLeftHand.addDouble(0.0);
+                }
+                
+                //pam - positions 97-144 palm taxels; taxel IDs have index by one lower (inside these, IDs 107, 119, 131, and 139 are thermal pads ~ 0s); 
+                if (contactICubSkinEmulMap[SKIN_LEFT_HAND].indivTaxelResolution){
+                    for (y = 96; y<=143; y++){ 
+                        if (contactICubSkinEmulMap[SKIN_LEFT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
+                            bottleLeftHand.addDouble(255.0); 
+                        }
+                        else{
+                            bottleLeftHand.addDouble(0.0); 
+                        }
+                    }
+                }
+                else{ //we fill the whole palm
                     for (int y = 96; y<=143; y++){ 
-                        bottleLeftHand.addDouble(0.0); //we ignore the thermal pad positions which should be 0s for now
+                        bottleLeftHand.addDouble(255.0); //we ignore the thermal pad positions, which should be 0s, for now
                     }
                 }
                 //filling the rest: 145-192 zeros. IDs: 144-191
                 for (int y = 144; y<=191; y++){ 
                     bottleLeftHand.addDouble(0.0);
                 }
-            }
-            else{
-                bottleLeftHand = Bottle(odeinit._iCub->emptySkinActivationHand);
-            }
-            robot_streamer->sendTouchLeftHand(bottleLeftHand);
+          }
+          else{
+              bottleLeftHand = Bottle(odeinit._iCub->emptySkinActivationHand);
+          }
+          robot_streamer->sendTouchLeftHand(bottleLeftHand);
       }
-        
-      //rewritten based on original inspectTouch_icubSensors, the output of actual pressure values is discontinued; the collisions with palm cover are added
-      // the palm cover replaces sensing in the palm body
+     
+      
       if(robot_streamer->shouldSendTouchRightHand()){
-          Bottle bottleRightHand;
-          if (right_hand_notCover_touched ||  contactICubSkinEmulMap[SKIN_RIGHT_HAND].coverTouched){ 
-              if (right_hand_notCover_touched){ // some part other than the palm cover was touched, need to check fingertips
-                  int bodyIndicesRight[5] = {43, 44, 45, 46, 49};
-                  double resultRight=0;
-                  for (int x = 0; x < 5; x++){
-                          if (odeinit._iCub->actRHand == "on"){ 
-                              resultRight = odeinit._iCub->checkTouchSensor(bodyIndicesRight[x]);
-                          }
-                          else{
-                              resultRight = odeinit._iCub->checkTouchSensor(odeinit._iCub->r_hand);
-                          } 
-                          //now filling up the bottle - the port output where 1-60 are taxels of fingertips (12 each);
-                          for (int i = 0; i < 12; i++){
-                              bottleRightHand.addDouble(resultRight * 255);
-                          }
-                  }
-              }
-              else{ //we fill the fingertip positions with 0s
-                  for (int i = 0; i <= 59; i++){
-                      bottleRightHand.addDouble(0.0);
-                  }
-              }
-              //now filling up the bottle - the port output: 61-96 zeros; IDs 60-95
-              for (int y = 60; y<=95; y++){           
-                      bottleRightHand.addDouble(0.0);
-              }
-              if(contactICubSkinEmulMap[SKIN_RIGHT_HAND].coverTouched){ //palm cover
-              //positions 97-144 palm taxels; taxel IDs have index by one lower (inside these, IDs 107, 119, 131, and 139 are thermal pads ~ 0s); 
-                  if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].indivTaxelResolution){
-                      for (int y = 96; y<=143; y++){ 
-                          if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
-                                bottleRightHand.addDouble(255.0); 
-                          }
-                          else{
-                                 bottleRightHand.addDouble(0.0); 
-                          }
+            Bottle bottleRightHand;
+            if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].coverTouched){ 
+                //prepare the bottle
+                //first 60 are fingers
+                if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].indivTaxelResolution){
+                    for (y = 0; y<=59; y++){ 
+                        if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
+                            bottleRightHand.addDouble(255.0); 
                         }
-                  }
-                  else{ //we fill the whole palm
-                        for (int y = 96; y<=143; y++){ 
-                            bottleRightHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
+                        else{
+                            bottleRightHand.addDouble(0.0); 
                         }
-                  }                               
-                  //filling the rest: 145-192 zeros. IDs: 144-191
-                  for (int y = 144; y<=191; y++){ 
+                    }
+                }
+                else{ //we fill them all
+                   for (y = 0; y<=59; y++){ 
+                        bottleRightHand.addDouble(255); //we ignore the thermal pad positions which should be 0s for now
+                    }
+                }
+                //zero padding - the port output: 61-96 zeros; taxel IDs 60-95
+                for (y = 60; y<=95; y++){           
+                        bottleRightHand.addDouble(0.0);
+                }
+                
+                //pam - positions 97-144 palm taxels; taxel IDs have index by one lower (inside these, IDs 107, 119, 131, and 139 are thermal pads ~ 0s); 
+                if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].indivTaxelResolution){
+                    for (y = 96; y<=143; y++){ 
+                        if (contactICubSkinEmulMap[SKIN_RIGHT_HAND].taxelsTouched.count(y)){ // if element (taxel ID) is in the set, count returns 1
+                            bottleRightHand.addDouble(255.0); 
+                        }
+                        else{
+                            bottleRightHand.addDouble(0.0); 
+                        }
+                    }
+                }
+                else{ //we fill the whole palm
+                    for (int y = 96; y<=143; y++){ 
+                        bottleRightHand.addDouble(255.0); //we ignore the thermal pad positions, which should be 0s, for now
+                    }
+                }
+                //filling the rest: 145-192 zeros. IDs: 144-191
+                for (int y = 144; y<=191; y++){ 
                     bottleRightHand.addDouble(0.0);
-                  }
-            }
-        }
-        else{
-            bottleRightHand = Bottle(odeinit._iCub->emptySkinActivationHand);
-        }
-        // printf("bottleRightHand: %s \n",bottleRightHand.toString().c_str());  
-        robot_streamer->sendTouchRightHand(bottleRightHand);
-     }
+                }
+          }
+          else{
+              bottleRightHand = Bottle(odeinit._iCub->emptySkinActivationHand);
+          }
+          robot_streamer->sendTouchRightHand(bottleRightHand);
+      }
+     
         
      if(robot_streamer->shouldSendTouchLeftArm()){
          Bottle bottleLeftArm;
@@ -2013,29 +2061,29 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
  
     switch (skin_part){
         case SKIN_LEFT_HAND:
-            if ((geo_center_link_FoR[0]<3.0) && (geo_center_link_FoR[0]>-12.0) && (geo_center_link_FoR[1]>-26.0) && (geo_center_link_FoR[1]<-5.5)){
+            if ((geo_center_link_FoR[0]<0.003) && (geo_center_link_FoR[0]>-0.012) && (geo_center_link_FoR[1]>-0.026) && (geo_center_link_FoR[1]<-0.0055)){
                 list_of_taxels.push_back(121);list_of_taxels.push_back(122);list_of_taxels.push_back(123);
                 list_of_taxels.push_back(124);list_of_taxels.push_back(125);list_of_taxels.push_back(126);
                 list_of_taxels.push_back(127);list_of_taxels.push_back(128);
                 //list_of_taxels.push_back();list_of_taxels.push_back();list_of_taxels.push_back();
             }
-            else if ((geo_center_link_FoR[0]<3.0) && (geo_center_link_FoR[0]>-12.0) && (geo_center_link_FoR[1]>-5.5) && (geo_center_link_FoR[1]<10)){
+            else if ((geo_center_link_FoR[0]<0.003) && (geo_center_link_FoR[0]>-0.012) && (geo_center_link_FoR[1]>-0.0055) && (geo_center_link_FoR[1]<0.01)){
                 list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98); 
                 list_of_taxels.push_back(99);list_of_taxels.push_back(102);list_of_taxels.push_back(103);
                 list_of_taxels.push_back(120);list_of_taxels.push_back(129);list_of_taxels.push_back(130);
             }
-            else if ((geo_center_link_FoR[0]<3.0) && (geo_center_link_FoR[0]>-14.0) && (geo_center_link_FoR[1]>10.0) && (geo_center_link_FoR[1]<30.0) ){
+            else if ((geo_center_link_FoR[0]<0.003) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>0.01) && (geo_center_link_FoR[1]<0.03) ){
                     list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(104);  
                     list_of_taxels.push_back(105);list_of_taxels.push_back(106);list_of_taxels.push_back(113);  
                     list_of_taxels.push_back(116);list_of_taxels.push_back(117);  
             }
-            else if ((geo_center_link_FoR[0]<-14.0) && (geo_center_link_FoR[0]>-24.0) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<30.0) ){
+            else if ((geo_center_link_FoR[0]<-0.014) && (geo_center_link_FoR[0]>-0.024) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<0.03) ){
                     list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(110);  
                     list_of_taxels.push_back(111);list_of_taxels.push_back(112);list_of_taxels.push_back(114);  
                     list_of_taxels.push_back(115);list_of_taxels.push_back(118); list_of_taxels.push_back(142); 
                     list_of_taxels.push_back(143);
             }   
-            else if ((geo_center_link_FoR[0]<-24.0) && (geo_center_link_FoR[0]>-40.0) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<30.0) ){
+            else if ((geo_center_link_FoR[0]<-0.024) && (geo_center_link_FoR[0]>-0.04) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<0.03) ){
                     list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);  
                     list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);  
                     list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);                   
@@ -2045,29 +2093,29 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
             }
             break;
          case SKIN_RIGHT_HAND:
-            if ((geo_center_link_FoR[0]<3.0) && (geo_center_link_FoR[0]>-12.0) && (geo_center_link_FoR[1]>-26.0) && (geo_center_link_FoR[1]<-5.5)){
+            if ((geo_center_link_FoR[0]<0.003) && (geo_center_link_FoR[0]>-0.012) && (geo_center_link_FoR[1]>-0.026) && (geo_center_link_FoR[1]<-0.0055)){
                 list_of_taxels.push_back(120);list_of_taxels.push_back(121);list_of_taxels.push_back(122);
                 list_of_taxels.push_back(123);list_of_taxels.push_back(124);list_of_taxels.push_back(125);
                 list_of_taxels.push_back(126);list_of_taxels.push_back(128);
                 //list_of_taxels.push_back();list_of_taxels.push_back();list_of_taxels.push_back();
             }
-            else if ((geo_center_link_FoR[0]<3.0) && (geo_center_link_FoR[0]>-12.0) && (geo_center_link_FoR[1]>-5.5) && (geo_center_link_FoR[1]<10)){
+            else if ((geo_center_link_FoR[0]<0.003) && (geo_center_link_FoR[0]>-0.012) && (geo_center_link_FoR[1]>-0.0055) && (geo_center_link_FoR[1]<0.01)){
                 list_of_taxels.push_back(99);list_of_taxels.push_back(102);list_of_taxels.push_back(103); 
                 list_of_taxels.push_back(104);list_of_taxels.push_back(105);list_of_taxels.push_back(106);
                 list_of_taxels.push_back(127);list_of_taxels.push_back(129);list_of_taxels.push_back(130);
             }
-            else if ((geo_center_link_FoR[0]<3.0) && (geo_center_link_FoR[0]>-14.0) && (geo_center_link_FoR[1]>10.0) && (geo_center_link_FoR[1]<30.0) ){
+            else if ((geo_center_link_FoR[0]<0.003) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>0.01) && (geo_center_link_FoR[1]<0.03) ){
                     list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98);  
                     list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(110);  
                     list_of_taxels.push_back(111);list_of_taxels.push_back(112);  
             }
-            else if ((geo_center_link_FoR[0]<-14.0) && (geo_center_link_FoR[0]>-24.0) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<30.0) ){
+            else if ((geo_center_link_FoR[0]<-0.014) && (geo_center_link_FoR[0]>-0.024) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<0.03) ){
                     list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(113);  
                     list_of_taxels.push_back(114);list_of_taxels.push_back(115);list_of_taxels.push_back(116);  
                     list_of_taxels.push_back(117);list_of_taxels.push_back(118); list_of_taxels.push_back(142); 
                     list_of_taxels.push_back(143);
             }   
-            else if ((geo_center_link_FoR[0]<-24.0) && (geo_center_link_FoR[0]>-40.0) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<30.0) ){
+            else if ((geo_center_link_FoR[0]<-0.024) && (geo_center_link_FoR[0]>-0.040) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<0.03) ){
                     list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);  
                     list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);  
                     list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);                   
@@ -2089,6 +2137,45 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
 //          printf("\n");
 //      }
      return;
+}
+
+void OdeSdlSimulation::mapFingertipIntoTaxelList(const HandPart hand_part,std::vector<unsigned int>& list_of_taxels)
+{
+    int i=0;
+    switch(hand_part)
+    {
+        case INDEX:
+            for(i=0; i<=11; i++){
+                list_of_taxels.push_back(i);
+            }
+            break;
+        case MIDDLE:
+            for(i=12; i<=23; i++){
+                list_of_taxels.push_back(i);
+            }
+            break;
+        case RING:
+            for(i=24; i<=35; i++){
+                list_of_taxels.push_back(i);
+            }
+            break;    
+        case LITTLE:
+            for(i=36; i<=47; i++){
+                list_of_taxels.push_back(i);
+            }
+            break;
+        case THUMB:
+            for(i=48; i<=59; i++){
+                list_of_taxels.push_back(i);
+            }
+            break;    
+        default:    
+            printf("Warning: OdeSdlSimulation::mapFingertipIntoTaxelList: unexpected HandPart: %d. Pushing fake taxel ID \n",hand_part);
+            list_of_taxels.push_back(FAKE_TAXEL_ID);
+        
+    }
+    
+    
 }
 
 //Auxiliary function to print class of geom - according to section 9.5 of ODE manual

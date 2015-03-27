@@ -2427,6 +2427,7 @@ void ICubSim::initLeftHandOff(dWorldID world, dSpaceID subspace)
     dMass m, m2;
     dMatrix3 Rtx;
 
+    //palm
     l_hand = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);
     l_hand0_geom = dCreateBox (subspace,0.022,0.069,0.065);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
     dGeomNames[l_hand0_geom] = "l_hand0_geom"; 
@@ -2434,6 +2435,7 @@ void ICubSim::initLeftHandOff(dWorldID world, dSpaceID subspace)
     dGeomSetOffsetPosition(l_hand0_geom,-m2.c[0], -m2.c[0], -m2.c[0]);
     dMassAdd (&m, &m2);
 
+    //index
     l_hand1_geom = dCreateCylinder (subspace,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
     dGeomNames[l_hand1_geom] = "l_hand1_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
@@ -2442,6 +2444,7 @@ void ICubSim::initLeftHandOff(dWorldID world, dSpaceID subspace)
     dGeomSetOffsetPosition(l_hand1_geom,-m2.c[0], -0.0745-m2.c[0], 0.02275-m2.c[0]);
     dMassAdd (&m, &m2);
 
+    //middle
     l_hand2_geom = dCreateCylinder (subspace,0.0065,0.084);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.084);
     dGeomNames[l_hand2_geom] = "l_hand2_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
@@ -2450,6 +2453,7 @@ void ICubSim::initLeftHandOff(dWorldID world, dSpaceID subspace)
     dGeomSetOffsetPosition(l_hand2_geom,-m2.c[0], -0.0745-m2.c[0], 0.0065-m2.c[0]);
     dMassAdd (&m, &m2);
 
+    //ring
     l_hand3_geom = dCreateCylinder (subspace,0.0065,0.08);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.08);
     dGeomNames[l_hand3_geom] = "l_hand3_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
@@ -2458,6 +2462,7 @@ void ICubSim::initLeftHandOff(dWorldID world, dSpaceID subspace)
     dGeomSetOffsetPosition(l_hand3_geom,-m2.c[0], -0.0745-m2.c[0], -0.00975-m2.c[0]);
     dMassAdd (&m, &m2);
 
+    //little
     l_hand4_geom = dCreateCylinder (subspace,0.0065,0.073);dMassSetCylinderTotal(&m2,0.030947,3,0.0065,0.073);
     dGeomNames[l_hand4_geom] = "l_hand4_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
@@ -2466,6 +2471,7 @@ void ICubSim::initLeftHandOff(dWorldID world, dSpaceID subspace)
     dGeomSetOffsetPosition(l_hand4_geom,-m2.c[0], -0.071-m2.c[0], -0.026-m2.c[0]);
     dMassAdd (&m, &m2);
 
+    //thumb
     l_hand5_geom = dCreateCylinder (subspace,0.0065,0.064);dMassSetCylinderTotal(&m2,0.02341,3,0.0065,0.064);
     dGeomNames[l_hand5_geom] = "l_hand5_geom"; 
     dGeomSetBody(l_hand5_geom,l_hand);
@@ -2491,19 +2497,23 @@ void ICubSim::initLeftHandOn(dWorldID world, dSpaceID subspace)
     geom[10] = dCreateBox (subspace,0.022,0.069,0.065);dGeomSetBody (geom[10],body[10]);
     dGeomNames[geom[10]] = "geom[10]"; 
     
+    //most proximal part of index finger
     body[12] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.012);
     dBodySetMass(body[12],&m);
     dBodySetQuaternion(body[12],q);
     geom[12] = dCreateCylinder (subspace,0.0065,0.012);dGeomSetBody(geom[12],body[12]);
     dGeomNames[geom[12]] = "geom[12]"; 
     
+    //most proximal part of middle finger
     body[13] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.012);
     dBodySetMass(body[13],&m);
     dBodySetQuaternion(body[13],q);
     geom[13] = dCreateCylinder (subspace,0.0065,0.012);dGeomSetBody(geom[13],body[13]);
     dGeomNames[geom[13]] = "geom[13]"; 
     
+    //most proximal part of ring and little finger - they have one body because they move together
     lhandfingers0 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
+    //most proximal part ring finger?
     lhandfings0_geom = dCreateCylinder (subspace,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
     dGeomNames[lhandfings0_geom] = "lhandfings0_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
@@ -2511,7 +2521,7 @@ void ICubSim::initLeftHandOn(dWorldID world, dSpaceID subspace)
     dGeomSetOffsetRotation(lhandfings0_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(lhandfings0_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
-    //second object
+    //second object - most proximal part little finger? 
     lhandfings1_geom = dCreateCylinder (subspace,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
     dGeomNames[lhandfings1_geom] = "lhandfings1_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
@@ -2526,18 +2536,21 @@ void ICubSim::initLeftHandOn(dWorldID world, dSpaceID subspace)
     //Set mass to the actual body
     dBodySetMass(lhandfingers0,&m);
 
+    //2nd most proximal bit of index 
     body[16] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.026);
     dBodySetMass(body[16],&m);
     dBodySetQuaternion(body[16],q);
     geom[16] = dCreateCylinder (subspace,0.0065,0.026);dGeomSetBody(geom[16],body[16]);
     dGeomNames[geom[16]] = "geom[16]"; 
     
+    //2nd most proximal bit of middle
     body[17] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.028);
     dBodySetMass(body[17],&m);
     dBodySetQuaternion(body[17],q);
     geom[17] = dCreateCylinder (subspace,0.0065,0.028);dGeomSetBody(geom[17],body[17]);
     dGeomNames[geom[17]] = "geom[17]"; 
     
+    //2nd most proximal bits of ring and little
     lhandfingers1 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
     lhandfings2_geom = dCreateCylinder (subspace,0.0065,0.026);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.026);
     dGeomNames[lhandfings2_geom] = "lhandfings2_geom"; 
@@ -2557,13 +2570,16 @@ void ICubSim::initLeftHandOn(dWorldID world, dSpaceID subspace)
     dMassAdd (&m, &m2);
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers1,&m);
 
+    //3rd most proximal bit of index
     body[20] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.022);dBodySetMass(body[20],&m);
     dBodySetQuaternion(body[20],q);geom[20] = dCreateCylinder(subspace, 0.0065,0.022);dGeomSetBody(geom[20],body[20]);
     dGeomNames[geom[20]] = "geom[20]"; 
+    //3rd most proximal bit of middle
     body[21] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.024);dBodySetMass(body[21],&m);
     dBodySetQuaternion(body[21],q);geom[21] = dCreateCylinder(subspace, 0.0065,0.024);dGeomSetBody(geom[21],body[21]);
     dGeomNames[geom[21]] = "geom[21]"; 
 
+    //3rd most proximal bits of ring and little
     lhandfingers2 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
     lhandfings4_geom = dCreateCylinder (subspace,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
     dGeomNames[lhandfings4_geom] = "lhandfings4_geom"; 
@@ -2583,13 +2599,16 @@ void ICubSim::initLeftHandOn(dWorldID world, dSpaceID subspace)
     dMassAdd (&m, &m2);
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers2,&m);
 
+    //fingertip index 
     body[24] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.02);dBodySetMass(body[24],&m);
     dBodySetQuaternion(body[24],q);geom[24] = dCreateCylinder(subspace, 0.0065,0.02);dGeomSetBody(geom[24],body[24]);
     dGeomNames[geom[24]] = "geom[24]"; 
+    //fingertip middle
     body[25] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.02);dBodySetMass(body[25],&m);
     dBodySetQuaternion(body[25],q);geom[25] = dCreateCylinder(subspace, 0.0065,0.02);dGeomSetBody(geom[25],body[25]);
     dGeomNames[geom[25]] = "geom[25]"; 
 
+    //fingertips ring and little
     lhandfingers3 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
     lhandfings6_geom = dCreateCylinder (subspace,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
     dGeomNames[lhandfings6_geom] = "lhandfings6_geom"; 
@@ -2609,16 +2628,19 @@ void ICubSim::initLeftHandOn(dWorldID world, dSpaceID subspace)
     dMassAdd (&m, &m2);
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(lhandfingers3,&m);
 
+    //thumb most proximal
     body[28] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.026);
     dBodySetMass(body[28],&m);//dBodySetQuaternion(body[28],q1);
     geom[28] = dCreateCylinder(subspace,0.0065,0.026);dGeomSetBody(geom[28],body[28]);
     dGeomNames[geom[28]] = "geom[28]"; 
 
+    //thumb middle bit
     body[29] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.022);
     dBodySetMass(body[29],&m);//dBodySetQuaternion(body[29],q1);
     geom[29] = dCreateCylinder(subspace,0.0065,0.022);dGeomSetBody(geom[29],body[29]);
     dGeomNames[geom[29]] = "geom[29]"; 
     
+    //thumb fingertip
     body[30] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.016);
     dBodySetMass(body[30],&m);//dBodySetQuaternion(body[30],q1);
     geom[30] = dCreateCylinder(subspace,0.0065,0.016);dGeomSetBody(geom[30],body[30]);
@@ -2688,24 +2710,29 @@ void ICubSim::initRightHandOn(dWorldID world, dSpaceID subspace)
     dQFromAxisAndAngle(q,1,0,0, M_PI * 0.5);
 
     //Create all right fingers
+    //palm
     body[11] = dBodyCreate (world);dMassSetZero(&m);dMassSetBoxTotal(&m,0.19099,0.024,0.069,0.065);
     dBodySetMass(body[11],&m);
     geom[11] = dCreateBox (subspace,0.022,0.069,0.065);dGeomSetBody (geom[11],body[11]);
     dGeomNames[geom[11]] = "geom[11]"; 
     
+    //most proximal part of index finger
     body[31] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.012);
     dBodySetMass(body[31],&m);
     dBodySetQuaternion(body[31],q);
     geom[31] = dCreateCylinder (subspace,0.0065,0.012);dGeomSetBody(geom[31],body[31]);
     dGeomNames[geom[31]] = "geom[31]"; 
     
+    //most proximal part of middle finger
     body[32] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.012);
     dBodySetMass(body[32],&m);
     dBodySetQuaternion(body[32],q);
     geom[32] = dCreateCylinder (subspace,0.0065,0.012);dGeomSetBody(geom[32],body[32]);
     dGeomNames[geom[32]] = "geom[32]"; 
     
+    //most proximal body for rign and little finger
     rhandfingers0 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
+    //probably most proximal bit of ring finger geom
     rhandfings0_geom = dCreateCylinder (subspace,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
     dGeomNames[rhandfings0_geom] = "rhandfings0_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
@@ -2713,7 +2740,7 @@ void ICubSim::initRightHandOn(dWorldID world, dSpaceID subspace)
     dGeomSetOffsetRotation(rhandfings0_geom,Rtx);//dGeomSetPosition (rightLeg_1 , 0.0, 1.0, 0.0);
     dGeomSetOffsetPosition(rhandfings0_geom,-m2.c[0], -m2.c[0], 0.008125-m2.c[0]);//dMassRotate(&m2,Rtx);
     dMassAdd (&m, &m2);
-    //second object
+    //second object - probably most proximal bit of little finger geom
     rhandfings1_geom = dCreateCylinder (subspace,0.0065,0.012);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.012);
     dGeomNames[rhandfings1_geom] = "rhandfings1_geom"; 
     dRFromAxisAndAngle(Rtx,1,0,0,M_PI * 0.5);
@@ -2728,18 +2755,21 @@ void ICubSim::initRightHandOn(dWorldID world, dSpaceID subspace)
     //Set mass to the actual body
     dBodySetMass(rhandfingers0,&m);
 
+    //2nd most proximal bit of index
     body[35] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.026);
     dBodySetMass(body[35],&m);
     dBodySetQuaternion(body[35],q);
     geom[35] = dCreateCylinder (subspace,0.0065,0.026);dGeomSetBody(geom[35],body[35]);
     dGeomNames[geom[35]] = "geom[35]"; 
     
+    //2nd most proximal bit of middle
     body[36] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.028);
     dBodySetMass(body[36],&m);
     dBodySetQuaternion(body[36],q);
     geom[36] = dCreateCylinder (subspace,0.0065,0.028);dGeomSetBody(geom[36],body[36]);
     dGeomNames[geom[36]] = "geom[36]"; 
-        
+    
+    //2nd most proximal bits of ring and little
     rhandfingers1 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
     rhandfings2_geom = dCreateCylinder (subspace,0.0065,0.026);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.026);
     dGeomNames[rhandfings2_geom] = "rhandfings2_geom"; 
@@ -2759,13 +2789,16 @@ void ICubSim::initRightHandOn(dWorldID world, dSpaceID subspace)
     dMassAdd (&m, &m2);
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers1,&m);
 
+    //3rd most proximal bit of index
     body[39] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.022);dBodySetMass(body[39],&m);
     dBodySetQuaternion(body[39],q);geom[39] = dCreateCylinder(subspace, 0.0065,0.022);dGeomSetBody(geom[39],body[39]);
     dGeomNames[geom[39]] = "geom[39]"; 
+    //3rd most proximal bit of middle
     body[40] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.024);dBodySetMass(body[40],&m);
     dBodySetQuaternion(body[40],q);geom[40] = dCreateCylinder(subspace, 0.0065,0.024);dGeomSetBody(geom[40],body[40]);
     dGeomNames[geom[40]] = "geom[40]";     
     
+    //3rd most proximal bits of ring and little
     rhandfingers2 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
     rhandfings4_geom = dCreateCylinder (subspace,0.0065,0.022);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.022);
     dGeomNames[rhandfings4_geom] = "rhandfings4_geom"; 
@@ -2785,13 +2818,16 @@ void ICubSim::initRightHandOn(dWorldID world, dSpaceID subspace)
     dMassAdd (&m, &m2);
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers2,&m);
 
+    //fingertip index
     body[43] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.02);dBodySetMass(body[43],&m);
     dBodySetQuaternion(body[43],q);geom[43] = dCreateCylinder(subspace, 0.0065,0.02);dGeomSetBody(geom[43],body[43]);
     dGeomNames[geom[43]] = "geom[43]"; 
+    //fingertip middle
     body[44] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.02);dBodySetMass(body[44],&m);
     dBodySetQuaternion(body[44],q);geom[44] = dCreateCylinder(subspace, 0.0065,0.02);dGeomSetBody(geom[44],body[44]);
     dGeomNames[geom[44]] = "geom[44]"; 
     
+    //fingertips ring and little
     rhandfingers3 = dBodyCreate (world);dMassSetZero(&m);dMassSetZero(&m2);//CreateCylinder(0.0065,0.012);
     rhandfings6_geom = dCreateCylinder (subspace,0.0065,0.02);dMassSetCylinderTotal(&m2,0.002,3,0.0065,0.02);
     dGeomNames[rhandfings6_geom] = "rhandfings6_geom"; 
@@ -2811,16 +2847,19 @@ void ICubSim::initRightHandOn(dWorldID world, dSpaceID subspace)
     dMassAdd (&m, &m2);
     dMassTranslate(&m,-m.c[0],-m.c[1],-m.c[2]);dBodySetMass(rhandfingers3,&m);
 
+    //most proximal bit of thumb
     body[47] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.026);
     dBodySetMass(body[47],&m);//dBodySetQuaternion(body[28],q1);
     geom[47] = dCreateCylinder(subspace,0.0065,0.026);dGeomSetBody(geom[47],body[47]);
     dGeomNames[geom[47]] = "geom[47]"; 
-    
+  
+    //2nd most proximal bit of thumb
     body[48] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.022);
     dBodySetMass(body[48],&m);//dBodySetQuaternion(body[29],q1);
     geom[48] = dCreateCylinder(subspace,0.0065,0.022);dGeomSetBody(geom[48],body[48]);
     dGeomNames[geom[48]] = "geom[48]"; 
     
+    //fingertip thumb
     body[49] = dBodyCreate (world);dMassSetZero(&m);dMassSetCylinderTotal(&m,0.002,3,0.0065,0.016);
     dBodySetMass(body[49],&m);//dBodySetQuaternion(body[30],q1);
     geom[49] = dCreateCylinder(subspace,0.0065,0.016);dGeomSetBody(geom[49],body[49]);
@@ -3855,7 +3894,7 @@ void ICubSim::initRightHandJoints()
     dJointSetHingeParam(RAjoints[22],  dParamLoStop, (dReal)-2.7925);dJointSetHingeParam(RAjoints[22],  dParamHiStop, (dReal) 2.7925);
     */
 
-    dJointAttach (RAjoints[22],body[11],body[47]); //joint Universal left lower arm and left hand
+    dJointAttach (RAjoints[22],body[11],body[47]); //palm to first thumb
     dJointSetUniversalAnchor (RAjoints[22],  jP_rightArm[7][1],elev + jP_rightArm[6][2]-0.045/*fabs(jP_rightArm[7][2]-jP_rightArm[6][2])+0.016*/, jP_rightArm[7][0]+0.045 -0.013);
     dJointSetUniversalAxis1 (RAjoints[22],0,1.5,-0.5);dJointSetUniversalAxis2 (RAjoints[22], 1,0,0);
     dJointSetUniversalParam(RAjoints[22], dParamLoStop, -2.7925);dJointSetUniversalParam(RAjoints[22], dParamHiStop, 2.7925);
@@ -4173,7 +4212,7 @@ void ICubSim::printPositionOfBody(dBodyID bodyID)
 
 
 
-void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, const dGeomID geomID, SkinPart& skinPart, BodyPart& bodyPart, bool& skinCoverFlag)
+void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, const dGeomID geomID, SkinPart& skinPart, BodyPart& bodyPart, HandPart & handPart, bool& skinCoverFlag, bool& fingertipFlag)
 {
    OdeInit& odeinit = OdeInit::get();
       
@@ -4192,9 +4231,11 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
   else if (geomSpaceID == odeinit._iCub->iCubLeftArmSpace){
     if (odeinit._iCub->actLHand == "off"){
       if ((geomID == l_hand0_geom) || (geomID == l_hand1_geom) || (geomID == l_hand2_geom) || (geomID == l_hand3_geom) || (geomID == l_hand4_geom)
-	|| (geomID == l_hand5_geom)){
+        || (geomID == l_hand5_geom))
+      {
         skinPart = SKIN_LEFT_HAND;
         bodyPart = LEFT_ARM;
+        //when the hand part is "off", there is no means to distinguish whether the fingertip was touched, so we will not emulate indiv. taxels and hence we don't need more details
         return;
       }
     }
@@ -4203,10 +4244,33 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
 	|| (geomID == geom[20]) || (geomID == geom[21]) || (geomID == geom[24]) || (geomID == geom[25]) 
 	|| (geomID == geom[28]) || (geomID == geom[29]) || (geomID == geom[30]) 
         || (geomID == lhandfings0_geom) || (geomID == lhandfings1_geom) || (geomID == lhandfings2_geom) || (geomID == lhandfings3_geom)
-	|| (geomID == lhandfings4_geom) || (geomID == lhandfings5_geom) || (geomID == lhandfings6_geom) || (geomID == lhandfings7_geom)){
-	skinPart = SKIN_LEFT_HAND;
-	bodyPart = LEFT_ARM;
-	return; 
+	|| (geomID == lhandfings4_geom) || (geomID == lhandfings5_geom) || (geomID == lhandfings6_geom) || (geomID == lhandfings7_geom))
+      {
+        skinPart = SKIN_LEFT_HAND;
+        bodyPart = LEFT_ARM;
+        if(geomID==geom[30]){
+            handPart = THUMB;
+            fingertipFlag = true;
+        }
+        else if(geomID==geom[24]){
+            handPart = INDEX;
+            fingertipFlag = true;
+        }
+        else if(geomID==geom[25]){
+            handPart = MIDDLE;
+            fingertipFlag = true;
+        }
+        else if(geomID==lhandfings6_geom){
+            handPart = RING;
+            fingertipFlag = true;
+        }
+        else if(geomID==lhandfings7_geom){
+            handPart = LITTLE;
+            fingertipFlag = true;
+        };
+        // N.B. we could set the handPart like this for every geom on the hand, but for the non-fingertip, we will not need it - no skin emulation
+        
+        return; 
       }   
     }
        
@@ -4275,9 +4339,32 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
             || (geomID == geom[39]) || (geomID == geom[40]) || (geomID == geom[43]) || (geomID == geom[44]) 
             || (geomID == geom[47]) || (geomID == geom[48]) || (geomID == geom[49]) 
             || (geomID == rhandfings0_geom) || (geomID == rhandfings1_geom) || (geomID == rhandfings2_geom) || (geomID == rhandfings3_geom)
-            || (geomID == rhandfings4_geom) || (geomID == rhandfings5_geom) || (geomID == rhandfings6_geom) || (geomID == rhandfings7_geom)){
+            || (geomID == rhandfings4_geom) || (geomID == rhandfings5_geom) || (geomID == rhandfings6_geom) || (geomID == rhandfings7_geom))
+        {
                 skinPart = SKIN_RIGHT_HAND;
                 bodyPart = RIGHT_ARM;
+         
+                 if(geomID==geom[49]){
+                    handPart = THUMB;
+                    fingertipFlag = true;
+                }
+                else if(geomID==geom[43]){
+                    handPart = INDEX;
+                    fingertipFlag = true;
+                }
+                else if(geomID==geom[44]){
+                    handPart = MIDDLE;
+                    fingertipFlag = true;
+                }
+                else if(geomID==rhandfings6_geom){
+                    handPart = RING;
+                    fingertipFlag = true;
+                }
+                else if(geomID==rhandfings7_geom){
+                    handPart = LITTLE;
+                    fingertipFlag = true;
+                };
+                // N.B. we could set the handPart like this for every geom on the hand, but for the non-fingertip, we will not need it - no skin emulation        
                 return; 
         }   
      }
