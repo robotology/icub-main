@@ -365,6 +365,7 @@ bool embObjMotionControl::alloc(int nj)
     _kbemf=allocAndCheck<double>(nj);
     _ktau=allocAndCheck<double>(nj);
     _filterType=allocAndCheck<int>(nj);
+    _last_position_move_time=allocAndCheck<double>(nj);
 
     // Reserve space for data stored locally. values are initialize to 0
     _ref_positions = allocAndCheck<double>(nj);
@@ -422,6 +423,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_enabledAmp);
     checkAndDestroy(_enabledPid);
     checkAndDestroy(_calibrated);
+    checkAndDestroy(_last_position_move_time);
     if(requestQueue)
         delete requestQueue;
     return true;
@@ -2347,6 +2349,13 @@ bool embObjMotionControl::setPositionModeRaw()
 
 bool embObjMotionControl::positionMoveRaw(int j, double ref)
 {
+    if (_last_position_move_time[j] == 0) _last_position_move_time[j] = yarp::os::Time::now()-1.0;
+    if (yarp::os::Time::now()-_last_position_move_time[j]<MAX_POSITION_MOVE_INTERVAL) 
+    {
+        yWarning() << "Performance warning: You are using positionMove commands at high rate (<"<< MAX_POSITION_MOVE_INTERVAL*1000.0 <<" ms). Probably position control mode is not the right control mode to use.";
+    }
+    _last_position_move_time[j] = yarp::os::Time::now();
+
     int mode = 0;
     getControlModeRaw(j, &mode);
     if( (mode != VOCAB_CM_POSITION) &&

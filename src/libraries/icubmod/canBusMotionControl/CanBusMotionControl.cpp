@@ -5349,8 +5349,8 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         return true;
     }
 
-    if (_last_position_move_time[axis] == 0) _last_position_move_time[axis] = yarp::os::Time::now();
-    if (yarp::os::Time::now()-_last_position_move_time[axis]>MAX_POSITION_MOVE_INTERVAL) 
+    if (_last_position_move_time[axis] == 0) _last_position_move_time[axis] = yarp::os::Time::now()-1.0;
+    if (yarp::os::Time::now()-_last_position_move_time[axis]<MAX_POSITION_MOVE_INTERVAL) 
     {
         yWarning() << "Performance warning: You are using positionMove commands at high rate (<"<< MAX_POSITION_MOVE_INTERVAL*1000.0 <<" ms). Probably position control mode is not the right control mode to use.";
     }
