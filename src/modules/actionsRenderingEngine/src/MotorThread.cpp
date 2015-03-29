@@ -176,34 +176,38 @@ int MotorThread::setStereoToCartesianMode(const int &mode, Bottle &reply)
     {
         case S2C_DISPARITY:
         {
-            if(Network::isConnected(disparityPort.getName().c_str(),"/stereoDisparity/rpc"))
+            if (Network::isConnected(disparityPort.getName().c_str(),"/stereoDisparity/rpc"))
             {
                 modeS2C=S2C_DISPARITY;
-                yInfo("[Stereo -> Cartesian]: Disparity\n");
-                reply.addString("[Stereo -> Cartesian]: Disparity");
+                string tmp="[Stereo -> Cartesian]: Disparity";
+                yInfo(tmp.c_str());
+                reply.addString(tmp.c_str());
             }
             else
             {
                 modeS2C=S2C_HOMOGRAPHY;
-                yInfo("[Stereo -> Cartesian]: Homography\n");
-                reply.addString("[Stereo -> Cartesian]: Homography");
+                string tmp="[Stereo -> Cartesian]: Homography";
+                yInfo(tmp.c_str());
+                reply.addString(tmp.c_str());
             }
             break;
         }
 
         case S2C_NETWORK:
         {
-            if(neuralNetworkAvailable)
+            if (neuralNetworkAvailable)
             {
                 modeS2C=S2C_NETWORK;
-                yInfo("[Stereo -> Cartesian]: Neural Net\n");
-                reply.addString("[Stereo -> Cartesian]: Neural Net");
+                string tmp="[Stereo -> Cartesian]: Neural Net";
+                yInfo(tmp.c_str());
+                reply.addString(tmp.c_str());
             }
             else
             {
                 modeS2C=S2C_HOMOGRAPHY;
-                yInfo("[Stereo -> Cartesian]: Homography\n");
-                reply.addString("[Stereo -> Cartesian]: Homography");
+                string tmp="[Stereo -> Cartesian]: Homography";
+                yInfo(tmp.c_str());
+                reply.addString(tmp.c_str());
             }
             break;
         }
@@ -211,8 +215,9 @@ int MotorThread::setStereoToCartesianMode(const int &mode, Bottle &reply)
         default:
         {
             modeS2C=S2C_HOMOGRAPHY;
-            yInfo("[Stereo -> Cartesian]: Homography\n");
-            reply.addString("[Stereo -> Cartesian]: Homography");
+            string tmp="[Stereo -> Cartesian]: Homography";
+            yInfo(tmp.c_str());
+            reply.addString(tmp.c_str());
             break;
         }
     }
@@ -306,7 +311,7 @@ bool MotorThread::stereoToCartesian(const Vector &stereo, Vector &xd)
 
     if(arm_mode!=ARM_MODE_IDLE)
     {
-        yWarning("System is busy!\n");
+        yWarning("System is busy!");
         return false;
     }
 
@@ -345,7 +350,6 @@ bool MotorThread::loadExplorationPoses(const string &file_name)
     if(!optExpl.check("torso") ||!optExpl.check("hand") ||!optExpl.check("head"))
         return false;
 
-    yDebug("\nTORSO\n");
     Bottle &tmpTorso=optExpl.findGroup("torso");
     for(int i=1; i<tmpTorso.size(); i++)
     {
@@ -353,11 +357,9 @@ bool MotorThread::loadExplorationPoses(const string &file_name)
         Vector v(b->size());
         for(int j=0; j<b->size(); j++)
             v[j]=b->get(j).asDouble();
-        yDebug("%s\n",v.toString().c_str());
         pos_torsoes.push_back(v);
     }
 
-    yDebug("\nHAND\n");
     Bottle &tmpHand=optExpl.findGroup("hand");
     for(int i=1; i<tmpHand.size(); i++)
     {
@@ -365,11 +367,9 @@ bool MotorThread::loadExplorationPoses(const string &file_name)
         Vector v(b->size());
         for(int j=0; j<b->size(); j++)
             v[j]=b->get(j).asDouble();
-        yDebug("%s\n",v.toString().c_str());
         handPoses.push_back(v);
     }
     
-    yDebug("\nHEAD\n");
     Bottle &tmpHead=optExpl.findGroup("head");
     for(int i=1; i<tmpHead.size(); i++)
     {
@@ -377,7 +377,6 @@ bool MotorThread::loadExplorationPoses(const string &file_name)
         Vector v(b->size());
         for(int j=0; j<b->size(); j++)
             v[j]=b->get(j).asDouble();
-        yDebug("%s\n",v.toString().c_str());
         headPoses.push_back(v);
     }
 
@@ -519,7 +518,7 @@ bool MotorThread::loadKinematicOffsets(const string &_kinematics_path)
 
     if(!kin_fin.is_open())
     {
-        yError("!!! Error. Kinematics file not found.\n");
+        yError("Kinematics file not found!");
         return false;
     }
 
@@ -882,7 +881,7 @@ bool MotorThread::threadInit()
 
     if(bMotor.isNull())
     {
-        yError("Motor part is missing!\n");
+        yError("Motor part is missing!");
         return false;
     }
 
@@ -1075,7 +1074,7 @@ bool MotorThread::threadInit()
     string exploration_name=bMotor.find("exploration_poses").asString().c_str();
     if(!loadExplorationPoses(exploration_name))
     {
-        yError("Error while loading exploration poses!\n");
+        yError("Error while loading exploration poses!");
         close();
         return false;
     }
@@ -1086,19 +1085,19 @@ bool MotorThread::threadInit()
     netOptions.fromConfigFile(rf.findFile(net_name.c_str()).c_str());
     if(net.configure(netOptions))
     {
-        yInfo("Neural network configured successfully\n");
+        yInfo("Neural network configured successfully");
         neuralNetworkAvailable=true;
     }
     else
     {
-        yError("Error while loading neural network!\n");
+        yError("Error while loading neural network!");
         neuralNetworkAvailable=false;
     }
 
     // get the general options
     if(!getGeneralOptions(bMotor))
     {
-        yError("Error extracting general options!\n");
+        yError("Error extracting general options!");
         close();
         return false;
     }
@@ -1124,7 +1123,7 @@ bool MotorThread::threadInit()
         }
         else
         {
-            yError("Error: invalid option!\n");
+            yError("Error: invalid option!");
             close();
             return false;
         }
@@ -1171,13 +1170,13 @@ bool MotorThread::threadInit()
             // parsing arm-dependent config options
             if (bArm[arm].isNull())
             {
-                yError("Missing %s parameter list!\n",arm_name[arm].c_str());
+                yError("Missing %s parameter list!",arm_name[arm].c_str());
                 close();
                 return false;
             }
             else if(!getArmOptions(bArm[arm],arm))
             {
-                yError("Error extracting %s options!\n",arm_name[arm].c_str());
+                yError("Error extracting %s options!",arm_name[arm].c_str());
                 close();
                 return false;
             }
@@ -1188,7 +1187,7 @@ bool MotorThread::threadInit()
             string tmpGraspFile=rf.findFile(bArm[arm].find("grasp_model_file").asString().c_str());
             option_tmp.put("grasp_model_file",tmpGraspFile.c_str());
 
-            yInfo("***** Instantiating primitives for %s\n",arm_name[arm].c_str());
+            yInfo("***** Instantiating primitives for %s",arm_name[arm].c_str());
             action[arm]=new ActionPrimitivesLayer2(option_tmp);
             if (!action[arm]->isValid())
             {
@@ -1201,14 +1200,14 @@ bool MotorThread::threadInit()
             action[arm]->enableReachingTimeout(reachingTimeout);
 
             deque<string> q=action[arm]->getHandSeqList();
-            yInfo("***** List of available %s hand sequence keys:\n",arm_name[arm].c_str());
+            yInfo("***** List of available %s hand sequence keys:",arm_name[arm].c_str());
             for (size_t i=0; i<q.size(); i++)
             {
                 Bottle sequence;
                 action[arm]->getHandSequence(q[i],sequence);
 
-                yInfo("***** %s:\n",q[i].c_str());
-                yInfo("%s\n",sequence.toString().c_str());
+                yInfo("***** %s:",q[i].c_str());
+                yInfo("%s",sequence.toString().c_str());
             }
 
             ICartesianControl *tmpCtrl;
@@ -1219,7 +1218,6 @@ bool MotorThread::threadInit()
 
             double tmpTargetTol;
             tmpCtrl->getInTargetTol(&tmpTargetTol);
-            yDebug("new arm target tol %g\n",tmpTargetTol);
 
             // set elbow parameters
             if (Bottle *pB=bArm[arm].find("elbow_height").asList())
@@ -1243,7 +1241,7 @@ bool MotorThread::threadInit()
     status_impedance_on=false;
     bool impedance_from_start=bMotor.check("impedance",Value("off")).asString()=="on";
     setImpedance(impedance_from_start);
-    yDebug("Impedance set %s\n",(status_impedance_on?"on":"off"));
+    yInfo("Impedance set to %s",(status_impedance_on?"on":"off"));
 
     //init the kinematics offsets and table height
     string kinematics_file=bMotor.find("kinematics_file").asString().c_str();
@@ -1343,9 +1341,7 @@ void MotorThread::run()
 
                     Vector px(2);
                     px[0]=stereo[2*eye_in_use];
-                    px[1]=stereo[2*eye_in_use+1];
-
-                    yDebug("px[dominant_eye]=%s\n",px.toString().c_str());
+                    px[1]=stereo[2*eye_in_use+1];                    
                     ctrl_gaze->lookAtMonoPixel(dominant_eye,px,0.4);
                 }
             }
@@ -1399,8 +1395,6 @@ void MotorThread::run()
         
             dragger.ctrl->getPose(x,o);
 
-            yDebug("curr arm pos= %s \n",x.toString().c_str());
-
             if(Time::now()-dragger.t0 > dragger.samplingRate)
             {
                 //add the new position to the list of actions
@@ -1426,8 +1420,6 @@ void MotorThread::run()
 
             //dragCtrl->askForPosition(x,xd,od,qd);
 
-            //yDebug("desired torso positions = %f\t%f\t%f\n\n",qd[0],qd[1],qd[2]);
-
             //pos_torso->positionmove(0,qd[0]);
             //pos_torso->positionmove(1,qd[1]);
             //pos_torso->positionmove(2,qd[2]);
@@ -1450,22 +1442,20 @@ void MotorThread::run()
                 force[1]=wrench[1];
                 force[2]=wrench[2];
 
-                yDebug("force = %f. thresh = %f\n",norm(force),dragger.extForceThresh);
+                yDebug("force = %f. thresh = %f",norm(force),dragger.extForceThresh);
 
                 if (norm(force)<dragger.extForceThresh)
                     force=0.0;
                 else
                     D/=5.0;
-
                 
-                yDebug("force= %s\n", force.toString().c_str());
+                yDebug("force= %s",force.toString().c_str());
 
                 Vector b=(1.0/dragger.inertia)*force;
-                yDebug("(1.0/dragger.inertia)*force = %s\n", b.toString().c_str());
-
+                yDebug("(1.0/dragger.inertia)*force = %s",b.toString().c_str());
 
                 Vector c=D*dragger.I->get();
-                yDebug("D*dragger.I->get() = %s\n",c.toString().c_str());
+                yDebug("D*dragger.I->get() = %s",c.toString().c_str());
 
                 Vector a=(1.0/dragger.inertia)*force-D*dragger.I->get();
                 Vector zeros4d(4);
@@ -1931,9 +1921,6 @@ bool MotorThread::takeTool(Bottle &options)
         Time::delay(0.1);
     }
 
-    if (!contact_detected)
-        yDebug("damn!\n");
-
     if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
 
@@ -1974,9 +1961,6 @@ bool MotorThread::expect(Bottle &options)
             contact_detected=true;
         Time::delay(0.1);
     }    
-    
-    if(!contact_detected)
-        yDebug("damn!\n");
     
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
@@ -2451,13 +2435,13 @@ bool MotorThread::calibTable(Bottle &options)
         //save the table height also in the object database
         opcPort.setTableHeight(table_height);
 
-        yWarning("########## Table height found: %f\n",table_height);
+        yWarning("########## Table height found: %f",table_height);
         
         //adjust the table height accordingly to a specified tolerance
         table_height+=table_height_tolerance;
     }
     else
-        yWarning("########## Table height not found.\n");
+        yWarning("########## Table height not found!");
 
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
@@ -2581,8 +2565,6 @@ bool MotorThread::exploreTorso(Bottle &options)
     cart_init_pos[2]=H[2][3];
     //----------------
 
-    yDebug("cart init pos = %s\n",cart_init_pos.toString().c_str());
-    
     //fixed "target" position
     Vector fixed_target(3);
     fixed_target[0]=-0.5;
@@ -2616,7 +2598,6 @@ bool MotorThread::exploreTorso(Bottle &options)
         }
 
         random_pos=(norm(cart_init_pos)/norm(random_pos))*random_pos;
-        yDebug("random pos = %s\n\n",random_pos.toString().c_str());
 
         //wait to reach that point
         double init_step_time=Time::now();
@@ -2685,7 +2666,7 @@ bool MotorThread::exploreHand(Bottle &options)
 {
     if(arm_mode!=ARM_MODE_IDLE)
     {
-        yError("Error! The requested arm is busy!\n");
+        yError("Error! The requested arm is busy!");
         return false;
     }
 
@@ -2697,7 +2678,7 @@ bool MotorThread::exploreHand(Bottle &options)
 
     if(action[arm]==NULL)
     {
-        yError("Error! requested arm is not working!\n");
+        yError("Error! requested arm is not working!");
         return false;
     }
 
@@ -2791,7 +2772,7 @@ bool MotorThread::startLearningModeAction(Bottle &options)
 {
     if(arm_mode!=ARM_MODE_IDLE)
     {
-        yError("Error! The requested arm is busy!\n");
+        yError("Error: The requested arm is busy!");
         return false;
     }
 
@@ -2799,7 +2780,7 @@ bool MotorThread::startLearningModeAction(Bottle &options)
 
     if(action_name=="")
     {
-        yError("action name not specified!\n");
+        yError("action name not specified!");
         return false;
     }
 
@@ -2814,7 +2795,7 @@ bool MotorThread::startLearningModeAction(Bottle &options)
     string fileName=rf.findFile((actions_path+"/"+arm_name+"/"+action_name+".action").c_str());
     if(!fileName.empty())
     {
-        yError("Action '%s' already learned... stopping\n",action_name.c_str());
+        yWarning("Action '%s' already learned... stopping",action_name.c_str());
         return false;
     }
 
@@ -2828,7 +2809,7 @@ bool MotorThread::startLearningModeAction(Bottle &options)
 
     if(dragger.ctrl==NULL)
     {
-        yError("Could not find the cartesian arm interface!\n");
+        yError("Could not find the cartesian arm interface!");
         return false;
     }
 
@@ -2840,7 +2821,7 @@ bool MotorThread::startLearningModeAction(Bottle &options)
 
     if(!setTorque(true,arm))
     {
-        yError("Could not set torque control mode\n");
+        yError("Could not set torque control mode!");
         return false;
     }
 
@@ -2871,7 +2852,7 @@ bool MotorThread::suspendLearningModeAction(Bottle &options)
             ofstream action_fout(fileName.c_str());
             if(!action_fout.is_open())
             {
-                yError("Unable to open file '%s' for action %s\n",(actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str(),dragger.actionName.c_str());
+                yError("Unable to open file '%s' for action %s!",(actions_path+"/"+arm_name+"/"+dragger.actionName+".action").c_str(),dragger.actionName.c_str());
                 success=false;
             }
             else
@@ -2992,14 +2973,14 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
     action[dragger.arm]->getCartesianIF(dragger.ctrl);
     if(dragger.ctrl==NULL)
     {
-        yError("Could not find the arm controller\n");
+        yError("Could not find the arm controller!");
         return false;
     }
 
     //if the impedance control is available use it otherwise employ adimttance control
     dragger.using_impedance=setTorque(true,dragger.arm);
     if (!dragger.using_impedance)
-        yWarning("!!! Impedance control not available. Using admittance control!\n");
+        yWarning("Impedance control not available. Using admittance control!");
 
     Vector x(3),o(4);
     dragger.ctrl->getPose(x,o);

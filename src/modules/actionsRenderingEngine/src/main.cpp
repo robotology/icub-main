@@ -1054,28 +1054,21 @@ public:
                     {
                         string obj_name=command.get(1).asString().c_str();
                         if(motorThr->isHolding(command)) // 
-                        {
-                            yDebug("Deploying %s.\n",obj_name.c_str());
                             motorThr->deploy(command);
-                        }
 
                         //if it is not currently tracking anything, start learning what it has in fixation
                         Vector stereo;
                         if(!visuoThr->isTracking())
                         {
                             Value v("fix");
-                                    visuoThr->getTarget(v,command);
+                            visuoThr->getTarget(v,command);
                         }
+
                         visuoThr->startLearningMIL(obj_name.c_str());
-
-                        yDebug("Looking at %s.\n",obj_name.c_str());
                         motorThr->exploreTorso(command);
-
                         visuoThr->trainMIL();
 
                         reply.addString((obj_name + " learned").c_str());
-                        yDebug("'%s' learned.\n",obj_name.c_str());
-
                         break;
                     }
 
@@ -1506,7 +1499,7 @@ public:
 
         if(!are->initialize(rf))
         {
-            yError("ARE could not initialize\n");
+            yError("ARE could not be initialized!");
             return false;
         }
 
