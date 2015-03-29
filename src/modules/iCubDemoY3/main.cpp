@@ -87,6 +87,8 @@ This file can be edited at \in src/iCubDemoY3/main.cpp.
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/Property.h>
 #include <yarp/os/Vocab.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include <yarp/os/Terminator.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -181,7 +183,7 @@ public:
                         Vector vect;
                         vect.resize(nj);
                         if (nj!=xtmp.size()-1)
-                            fprintf(stdout,"**** WARNING: mismatch of sizes in the input file! nj=%d, xtmp=%d \n", nj, xtmp.size());
+                            yWarning("**** WARNING: mismatch of sizes in the input file! nj=%d, xtmp=%d \n", nj, xtmp.size());
                         for(int l=0;l<xtmp.size()-1;l++)
                             vect[l]=xtmp.get(l+1).asDouble();
                         sequences[k].push_back(vect);
@@ -420,7 +422,7 @@ public:
                             {
                                 if (!spoke)
                                     {
-                                        fprintf(stderr, "Waiting for encoders!\n");
+                                        yDebug("Waiting for encoders!\n");
                                         spoke=true;
                                     }
                                 
@@ -520,11 +522,11 @@ int main(int argc, char *argv[])
     bool diagnostic=finder.check("diagnostic");
 
     if (inifile=="") {
-        fprintf(stderr, "No position file specified\n");
+        yError("No position file specified\n");
         return 0;
     } 
     else {
-        fprintf(stderr, "Reading positions file from %s\n", inifile.c_str());
+        yInfo("Reading positions file from %s\n", inifile.c_str());
     }
 
     std::string prefix=string("/")+robotName+"/";
@@ -581,7 +583,7 @@ int main(int argc, char *argv[])
 
     if(!icub.createDevices())
     {
-        fprintf(stderr, "Error creating devices, check parameters\n");
+        yError("Error creating devices, check parameters\n");
         return -1;
     }
 
@@ -602,7 +604,7 @@ int main(int argc, char *argv[])
             std::cin>>reply;
         }
 
-	fprintf(stderr, "icub demo --> Received a quit message\n");
+    yInfo("icub demo --> Received a quit message\n");
     robot_mover->stop();
 
     delete robot_mover;

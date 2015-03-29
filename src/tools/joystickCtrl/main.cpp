@@ -75,6 +75,8 @@ Windows, Linux
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/math/Math.h>
 
@@ -177,13 +179,13 @@ public:
         // get params from the RF
         if (rf.check("silent"))
         {
-            fprintf ( stderr, "Running in silent mode\n");
+            yInfo ("Running in silent mode\n");
             silent=true;
         }
 
         if (rf.check("force_configuration"))
         {
-            fprintf ( stderr, "Force configuration option found\n");
+            yInfo ( "Force configuration option found\n");
             force_cfg=true;
         }
 
@@ -196,11 +198,11 @@ public:
             outputMin = new double [num_inputs];
             jointDeadband = new double [num_inputs];
             reverse = new int [num_inputs];
-            fprintf ( stderr, "Number of input axes in the configuration options: %d \n",num_inputs);
+            yDebug ("Number of input axes in the configuration options: %d \n",num_inputs);
         }
         else
         {
-            fprintf ( stderr, "Unable to find number of input axes in the configuration options\n");
+            yError ("Unable to find number of input axes in the configuration options\n");
             return false;
         }
 
@@ -212,38 +214,38 @@ public:
             {
                 for (int i = 1; i < b.size(); i++) reverse[i-1] = b.get(i).asInt();
             }
-        else {fprintf ( stderr, "Configuration error: invalid number of entries 'Reverse'\n"); return false;}
+        else {yError ( "Configuration error: invalid number of entries 'Reverse'\n"); return false;}
         b = rf.findGroup("INPUTS").findGroup("InputMax");
         if (b.size()-1 == num_inputs)
             {
                 for (int i = 1; i < b.size(); i++) inputMax[i-1] = b.get(i).asDouble();
             }
-        else {fprintf ( stderr, "Configuration error: invalid number of entries 'InputMax'\n"); return false;}
+        else {yError ( "Configuration error: invalid number of entries 'InputMax'\n"); return false;}
         b = rf.findGroup("INPUTS").findGroup("InputMin");
         if (b.size()-1 == num_inputs)
             {
                  for (int i = 1; i < b.size(); i++) inputMin[i-1] = b.get(i).asDouble();
             }
-        else {fprintf ( stderr, "Configuration error: invalid number of entries 'InputMin'\n"); return false;}
+        else {yError ( "Configuration error: invalid number of entries 'InputMin'\n"); return false;}
         b = rf.findGroup("INPUTS").findGroup("OutputMax");
         if (b.size()-1 == num_inputs)
             {
                 for (int i = 1; i < b.size(); i++) outputMax[i-1] = b.get(i).asDouble();
             }
-        else {fprintf ( stderr, "Configuration error: invalid number of entries 'OutputMax'\n"); return false;}
+        else {yError ( "Configuration error: invalid number of entries 'OutputMax'\n"); return false;}
         b = rf.findGroup("INPUTS").findGroup("OutputMin");
         if (b.size()-1 == num_inputs)
             {
                 for (int i = 1; i < b.size(); i++) outputMin[i-1] = b.get(i).asDouble();
             }
-        else {fprintf ( stderr, "Configuration error: invalid number of entries 'OutputMin'\n"); return false;}
+        else {yError ( "Configuration error: invalid number of entries 'OutputMin'\n"); return false;}
 
         b = rf.findGroup("INPUTS").findGroup("Deadband");
         if (b.size()-1 == num_inputs)
             {
                 for (int i = 1; i < b.size(); i++) jointDeadband[i-1] = b.get(i).asDouble();
             }
-        else {fprintf ( stderr, "Configuration error: invalid number of entries 'Deadband'\n"); return false;}
+        else {yError ( "Configuration error: invalid number of entries 'Deadband'\n"); return false;}
 
         if (rf.findGroup("OUTPUTS").check("OutputsNumber"))
         {
@@ -252,7 +254,7 @@ public:
         }
         else
         {
-            fprintf ( stderr, "Unable to find number of output axes in the configuration options\n");
+            yError ( "Unable to find number of output axes in the configuration options\n");
             return false;
         }
 
@@ -262,7 +264,7 @@ public:
             sprintf (tmp,"Ax%d",i);
             if (!rf.findGroup("OUTPUTS").check(tmp))
             {
-                fprintf ( stderr, "Error reading [OUTPUT] block, unable to find Ax%d identifier\n",i);
+                yError ( "Error reading [OUTPUT] block, unable to find Ax%d identifier\n",i);
                 return false;
             }
             b = rf.findGroup("OUTPUTS").findGroup(tmp);
@@ -315,7 +317,7 @@ public:
         else
         {
             output_port_name = "/joystickCtrl:o";
-            fprintf ( stderr, "outputPortName not found, using %s \n", output_port_name.c_str());
+            yWarning ( "outputPortName not found, using %s \n", output_port_name.c_str());
         }
         port_command.open(output_port_name.c_str());
         //@@@ TO BE COMPLETED: port name prefix to be set in the ini file
@@ -327,7 +329,7 @@ public:
         int joystick_actions_count = 0;
         if (!exec_comm_bottle.isNull())
         {
-            printf ( "associating the following actions to the buttons: \n");
+            yInfo ( "associating the following actions to the buttons: \n");
             do
             {
                 char tmp[80];
@@ -348,7 +350,7 @@ public:
         }
         if (joystick_actions_count==0)
         {
-            fprintf ( stderr, "no actions specified for the joystick buttons. \n");
+            yInfo ( "no actions specified for the joystick buttons. \n");
         }
 
         // start SDL subsystem
@@ -356,7 +358,7 @@ public:
         //SDL_SetVideoMode(640, 480, 16, SDL_DOUBLEBUF);
         if ( SDL_InitSubSystem ( SDL_INIT_JOYSTICK ) < 0 )
         {
-            fprintf ( stderr, "Unable to initialize Joystick: %s\n", SDL_GetError() );
+            yError ( "Unable to initialize Joystick: %s\n", SDL_GetError() );
             return false;
         }
 
@@ -366,33 +368,33 @@ public:
         int joystick_num = SDL_NumJoysticks ();
         if (joystick_num == 0)
         {
-            fprintf ( stderr, "Error: No joysticks found\n"); return false;
+            yError ( "Error: No joysticks found\n"); return false;
         }
         else if (joystick_num == 1)
         {
             joy_id=0;
-            fprintf ( stderr, "One joystick found \n");
-            fprintf ( stderr, "Using joystick: %s \n", SDL_JoystickName(joy_id));
+            yInfo ( "One joystick found \n");
+            yInfo ( "Using joystick: %s \n", SDL_JoystickName(joy_id));
         }
         else
         {
-            fprintf ( stderr, "More than one joystick found:\n");
+            yInfo ( "More than one joystick found:\n");
             for (int i=0; i<joystick_num; i++)
             {
-                fprintf ( stderr, "%d: %s\n",i,SDL_JoystickName(i));
+                yInfo ( "%d: %s\n",i,SDL_JoystickName(i));
             }
-            fprintf ( stderr, "\n");
+            yInfo ( "\n");
 
             // choose between multiple joysticks
             if (rf.findGroup("GENERAL").check("DefaultJoystickNumber"))
             {
                 joy_id = rf.findGroup("GENERAL").find("DefaultJoystickNumber").asInt();
-                fprintf ( stderr, "Multiple joysticks found, using #%d, as specified in the configuration options\n", joy_id);
+                yInfo ( "Multiple joysticks found, using #%d, as specified in the configuration options\n", joy_id);
             }
             else
             {
-                fprintf ( stderr, "No default joystick specified in the configuration options\n");
-                fprintf ( stderr, "Which joystick you want to use? (choose number) \n");
+                yWarning ( "No default joystick specified in the configuration options\n");
+                yWarning ( "Which joystick you want to use? (choose number) \n");
                 cin >> joy_id;
             }
         }
@@ -401,7 +403,7 @@ public:
         joy1 = SDL_JoystickOpen ( joy_id );
         if ( joy1 == NULL )
         {
-            printf ( "Could not open joystick\n" );
+            yError ( "Could not open joystick\n" );
             return false;
         }
 
@@ -410,17 +412,17 @@ public:
         numBalls = SDL_JoystickNumBalls ( joy1 );
         numHats = SDL_JoystickNumHats ( joy1 );
         numButtons = SDL_JoystickNumButtons ( joy1 );
-        fprintf ( stderr, "Characteristics of joy %d: \n", joy_id);
-        fprintf ( stderr, "%i Axes\n", numAxes );
-        fprintf ( stderr, "%i Balls\n", numBalls );
-        fprintf ( stderr, "%i Hats\n",  numHats );
-        fprintf ( stderr, "%i Buttons\n", numButtons );
-        fprintf ( stderr, "\n");
+        yInfo (  "Characteristics of joy %d: \n", joy_id);
+        yInfo (  "%i Axes\n", numAxes );
+        yInfo (  "%i Balls\n", numBalls );
+        yInfo (  "%i Hats\n",  numHats );
+        yInfo (  "%i Buttons\n", numButtons );
+        yInfo (  "\n");
 
         // check: selected joint MUST have at least one axis
         if (numAxes<=0) 
         {
-            fprintf ( stderr, "Error: selected joystick has %d Axes?!\n",numAxes );
+            yError ( "Error: selected joystick has %d Axes?!\n",numAxes );
             return false;
         }
 
@@ -428,27 +430,27 @@ public:
         {
             if (force_cfg == false)
             {
-                fprintf ( stderr, "Warning: # of joystick axes (%d) differs from # of configured input axes (%d)!\n",numAxes,num_inputs );
-                fprintf ( stderr, "This probably means that your .ini file does not containt a correct configuration.\n");
-                fprintf ( stderr, "Do you want to continue anyway (y/n)?\n");
+                yWarning (  "Warning: # of joystick axes (%d) differs from # of configured input axes (%d)!\n",numAxes,num_inputs );
+                yWarning (  "This probably means that your .ini file does not containt a correct configuration.\n");
+                yWarning (  "Do you want to continue anyway (y/n)?\n");
                 char input[255];
                 cin >> input;
                 if (input[0]!='y' && input[0]!='Y') 
                 {
-                    fprintf ( stderr, "Quitting...\n");
+                    yInfo ( "Quitting...\n");
                     return false;
                 }
                 else
                 {
-                    fprintf ( stderr, "Overriding the number of axes specified in the configuration file. Using %d axes.\n",numAxes);
+                    yWarning ( "Overriding the number of axes specified in the configuration file. Using %d axes.\n",numAxes);
                 }
             }
             else
             {
-                fprintf ( stderr, "Warning: # of joystick axes (%d) differs from # of configured input axes (%d)!\n",numAxes,num_inputs );
-                fprintf ( stderr, "This probably means that your .ini file does not containt a correct configuration.\n");
-                fprintf ( stderr, "However, --force_configuration option is enabled. This will override the number of axes specified in the configuration file.\n");
-                fprintf ( stderr, "Using %d axes.\n",numAxes);
+                yWarning ( "Warning: # of joystick axes (%d) differs from # of configured input axes (%d)!\n",numAxes,num_inputs );
+                yWarning ( "This probably means that your .ini file does not containt a correct configuration.\n");
+                yWarning ( "However, --force_configuration option is enabled. This will override the number of axes specified in the configuration file.\n");
+                yWarning ( "Using %d axes.\n",numAxes);
             }
         }
 
@@ -473,9 +475,9 @@ public:
     virtual void afterStart(bool s)
     {
         if (s)
-            fprintf ( stderr, "Thread started successfully\n");
+            yInfo ( "Thread started successfully\n");
         else
-            fprintf ( stderr, "Thread did not start\n");
+            yError ( "Thread did not start\n");
 
         t0=Time::now();
     }
@@ -567,7 +569,7 @@ public:
                 else
                 {
                     outAxes[i]=0.0;
-                    fprintf ( stderr, "Unknown parameter for JTYPE_POLAR, joint %d\n",i);
+                    yWarning ( "Unknown parameter for JTYPE_POLAR, joint %d\n",i);
                 }
             }
             else if (jointProperties[i].type == JTYPE_CARTESIAN)
@@ -581,7 +583,7 @@ public:
             else
             {
                 outAxes[i]=0.0;
-                fprintf ( stderr, "Unknown property, joint %d\n",i);
+                yWarning ( "Unknown property, joint %d\n",i);
             }
         }
 
@@ -593,12 +595,12 @@ public:
                 //execute script
                 if (!button_actions[i].empty())
                 {
-                    printf ("executing script %d: %s\n", i, button_actions[i].c_str());
+                    yInfo ("executing script %d: %s\n", i, button_actions[i].c_str());
                     int ret = system(button_actions[i].c_str());
                 }
                 else
                 {
-                    printf ("no scripts associated to button %d\n", i);
+                    yWarning ("no scripts associated to button %d\n", i);
                 }
             }
         }
@@ -666,23 +668,23 @@ public:
     void printStatus()
     {
         double t=Time::now();
-
+        static char buff [1000];
         if (t-t0>=PRINT_STATUS_PER)
         {
             //for (int i=0;i <numButtons; i++)
-            //    printf ( "%+6d", rawButtons[i] );
+            //    sprintf (buff, "%+6d", rawButtons[i] );
 
             for (int i=0;i <numAxes; i++)
             {
-                fprintf ( stderr, "%+9.1f", rawAxes[i] );
+                sprintf ( buff, "%+9.1f", rawAxes[i] );
             }
             fprintf ( stderr, " ---> " );
             for (int i=0;i <num_outputs; i++)
             {
-                fprintf ( stderr, "%+9.1f", outAxes[i] );
+                sprintf ( buff, "%+9.1f", outAxes[i] );
             }
-            //printf ( "\r");
-            printf ( "\n");
+            sprintf (buff, "\n");
+            yDebug() << buff;
             t0=t;
         }
     }
@@ -710,7 +712,7 @@ public:
         }
         else
         {
-            fprintf ( stderr, "rateThread option not found, assuming %d ms\n", rateThread);
+            yWarning ("rateThread option not found, assuming %d ms\n", rateThread);
         }
         thr=new CtrlThread(rateThread,rf);
         if (!thr->start())
@@ -752,9 +754,9 @@ int main(int argc, char *argv[])
 
     if (rf.check("help"))
     {
-        fprintf (stderr, "Options:\n");
-        fprintf (stderr, "--silent: supress text output\n");
-        fprintf (stderr, "--force_configuration: force a joystick configuration for a joystick with differnt # of axes, buttons etc.\n");
+        yInfo ( "Options:\n");
+        yInfo ( "--silent: supress text output\n");
+        yInfo ( "--force_configuration: force a joystick configuration for a joystick with differnt # of axes, buttons etc.\n");
         return 0;
     }
 
@@ -762,7 +764,7 @@ int main(int argc, char *argv[])
 
     if (!yarp.checkNetwork())
     {
-        fprintf(stderr, "Sorry YARP network does not seem to be available, is the yarp server available?\n");
+        yError("Sorry YARP network does not seem to be available, is the yarp server available?\n");
         return -1;
     }
 

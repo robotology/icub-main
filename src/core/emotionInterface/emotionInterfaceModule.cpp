@@ -27,7 +27,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
 
     _lasttime = Time::now();
     if (config.check("help","if present, display usage message")) {
-        printf("Call with --name /module_prefix --file configFile.ini \n");
+        yError("Call with --name /module_prefix --file configFile.ini \n");
         return false;
     }
 
@@ -43,7 +43,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
         _emotion_table = new EM_CODE[_highlevelemotions];
         if(!_emotion_table)
         {
-            printf("Memory allocation problem\n");
+            yError("Memory allocation problem\n");
             return false;
         }
         for(i = 0; i < _highlevelemotions; i++)
@@ -51,7 +51,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
             sprintf(name,"E%d",i+1);
             if(!config.check(name))
             {
-                printf("Missing identifier %s.", name);
+                yError("Missing identifier %s.", name);
                 return false;
             }
             else
@@ -67,7 +67,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 
                 if(n1.length()!=3) //must have length 3
                 {
-                    printf("First field of identifier %s has invalid size (must be 3).", name);
+                    yError("First field of identifier %s has invalid size (must be 3).", name);
                     return false;
                 }
                 else
@@ -81,7 +81,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 const char * sfd = n2.c_str();
                 if(n2.length()!=3) //must have length 3
                 {
-                    printf("Second field of identifier %s has invalid size (must be 3).", name);
+                    yError("Second field of identifier %s has invalid size (must be 3).", name);
                     return false;
                 }
                 else
@@ -93,7 +93,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 ConstString n3 = bot.get(3).toString();
                 if(n3.length()!=3) //must have length 3
                 {
-                    printf("Third field of identifier %s has invalid size (must be 3).", name);
+                    yError("Third field of identifier %s has invalid size (must be 3).", name);
                     return false;
                 }
                 else
@@ -106,7 +106,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 ConstString n4 = bot.get(4).toString();
                 if(n4.length()!=3) //must have length 3
                 {
-                    printf("Fourth field of identifier %s has invalid size (must be 3).", name);
+                    yError("Fourth field of identifier %s has invalid size (must be 3).", name);
                     return false;
                 }
                 else
@@ -119,7 +119,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
                 ConstString n5 = bot.get(5).toString();
                 if(n5.length()!=3) //must have length 3
                 {
-                    printf("Fifth field of identifier %s has invalid size (must be 3).", name);
+                    yError("Fifth field of identifier %s has invalid size (must be 3).", name);
                     return false;
                 }
                 else

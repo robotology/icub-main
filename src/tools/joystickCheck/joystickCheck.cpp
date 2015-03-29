@@ -57,6 +57,7 @@ Windows, Linux
 #include <iostream>
 #include <SDL.h>
 #include <yarp/os/Time.h>
+#include <yarp/os/Log.h>
 #include <math.h>
 
 int main( int argc, char **argv ) 
@@ -65,7 +66,7 @@ int main( int argc, char **argv )
     SDL_JoystickEventState ( SDL_QUERY );
     if ( SDL_InitSubSystem ( SDL_INIT_JOYSTICK) < 0 )
     {
-        fprintf ( stderr, "JoystickCheck: Unable to initialize joystick system: %s\n", SDL_GetError() );
+        yError ("JoystickCheck: Unable to initialize joystick system: %s\n", SDL_GetError() );
         return 0;
     }
 
@@ -76,7 +77,7 @@ int main( int argc, char **argv )
     // if not joysticks are found, quit immediately
     if (joystick_num <= 0)
     {
-        fprintf ( stderr, "JoystickCheck: no joysticks found.\n");
+        yError ( "JoystickCheck: no joysticks found.\n");
         return 0;
     }
 
@@ -86,7 +87,7 @@ int main( int argc, char **argv )
     SDL_Joystick* joy1 = SDL_JoystickOpen ( joy_id );
     if ( joy1 == NULL )
     {
-        printf ( "Could not open default joystick.\n" );
+        yError ( "Could not open default joystick.\n" );
         return 0;
     }
     int numAxes    = SDL_JoystickNumAxes    ( joy1 );
@@ -156,11 +157,11 @@ int main( int argc, char **argv )
         first = false;
         if (active==true)
         {
-            printf ( "joysticks activity detected.\n" ); 
+            yInfo ( "joysticks activity detected.\n" ); 
             return 101;
         }
     }
 
-    printf ( "no joysticks are currently used.\n" );
+    yInfo ( "no joysticks are currently used.\n" );
     return 0;
 }
