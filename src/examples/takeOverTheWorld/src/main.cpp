@@ -70,8 +70,8 @@ int main(int argc, char *argv[]) {
         done = db.plan();
     } while (!done);
 
-    printf("I have a plan.\n");
-    printf("And so... IT BEGINS!\n");
+    yInfo("I have a plan.\n");
+    yInfo("And so... IT BEGINS!\n");
     Sharks sharks;
     sharks.enableLasers();
 

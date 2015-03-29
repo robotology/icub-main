@@ -118,12 +118,12 @@ void stereoCalibThread::run(){
 
     if(stereo)
     {
-        fprintf(stdout, "Running Stereo Calibration Mode... \n");
+        yInfo("Running Stereo Calibration Mode... \n");
         stereoCalibRun();
     }
     else
     {
-        fprintf(stdout, "Running Mono Calibration Mode... Connect only one eye \n");
+        yInfo("Running Mono Calibration Mode... Connect only one eye \n");
         monoCalibRun();
     }
 
@@ -211,15 +211,15 @@ void stereoCalibThread::stereoCalibRun()
                 }
 
                 if(count>numOfPairs) {
-                    fprintf(stdout," Running Left Camera Calibration... \n");
+                    yInfo(" Running Left Camera Calibration... \n");
                     monoCalibration(imageListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL);
 
-                    fprintf(stdout," Running Right Camera Calibration... \n");
+                    yInfo(" Running Right Camera Calibration... \n");
                     monoCalibration(imageListR,this->boardWidth,this->boardHeight,this->Kright,this->DistR);
 
                     stereoCalibration(imageListLR, this->boardWidth,this->boardHeight,this->squareSize);
 
-                    fprintf(stdout," Saving Calibration Results... \n");
+                    yInfo(" Saving Calibration Results... \n");
                     updateIntrinsics(imgL->width,imgL->height,Kright.at<double>(0,0),Kright.at<double>(1,1),Kright.at<double>(0,2),Kright.at<double>(1,2),DistR.at<double>(0,0),DistR.at<double>(0,1),DistR.at<double>(0,2),DistR.at<double>(0,3),"CAMERA_CALIBRATION_RIGHT");
                     updateIntrinsics(imgL->width,imgL->height,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_LEFT");
 
@@ -228,7 +228,7 @@ void stereoCalibThread::stereoCalibRun()
 
                     updateExtrinsics(this->R,this->T,"STEREO_DISPARITY");
 
-                    fprintf(stdout, "Calibration Results Saved in %s \n", camCalibFile.c_str());
+                    yInfo("Calibration Results Saved in %s \n", camCalibFile.c_str());
 
                     startCalibration=0;
                     count=1;
@@ -267,7 +267,7 @@ void stereoCalibThread::stereoCalibRun()
 
     while(imagePortInLeft.getInputCount()==0 && imagePortInRight.getInputCount()==0)
     {
-        fprintf(stdout, "Connect one camera.. \n");
+        yInfo("Connect one camera.. \n");
         Time::delay(1.0);
 
         if(isStopping())
@@ -284,7 +284,7 @@ void stereoCalibThread::stereoCalibRun()
     else
         cameraName="RIGHT";
 
-    fprintf(stdout, "CALIBRATING %s CAMERA \n",cameraName.c_str());
+    yInfo("CALIBRATING %s CAMERA \n",cameraName.c_str());
 
 
     int count=1;
@@ -330,16 +330,16 @@ void stereoCalibThread::stereoCalibRun()
                 }
 
                 if(count>numOfPairs) {
-                    fprintf(stdout," Running %s Camera Calibration... \n", cameraName.c_str());
+                    yInfo(" Running %s Camera Calibration... \n", cameraName.c_str());
                     monoCalibration(imageListL,this->boardWidth,this->boardHeight,this->Kleft,this->DistL);
 
-                    fprintf(stdout," Saving Calibration Results... \n");
+                    yInfo(" Saving Calibration Results... \n");
                     if(left)
                         updateIntrinsics(imgL->width,imgL->height,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_LEFT");
                     else
                         updateIntrinsics(imgL->width,imgL->height,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_RIGHT");
                         
-                    fprintf(stdout, "Calibration Results Saved in %s \n", camCalibFile.c_str());
+                    yInfo("Calibration Results Saved in %s \n", camCalibFile.c_str());
 
                     startCalibration=0;
                     count=1;
@@ -451,7 +451,7 @@ void stereoCalibThread::saveStereoImage(const char * imageDir, IplImage* left, I
     char pathR[256];
     preparePath(imageDir, pathL,pathR,num);
     
-    fprintf(stdout,"Saving images number %d \n",num);
+    yInfo("Saving images number %d \n",num);
 
     cvSaveImage(pathL,left);
     cvSaveImage(pathR,right);
@@ -461,7 +461,7 @@ void stereoCalibThread::saveImage(const char * imageDir, IplImage* left, int num
     char pathL[256];
     preparePath(imageDir, pathL,pathR,num);
     
-    fprintf(stdout,"Saving images number %d \n",num);
+    yInfo("Saving images number %d \n",num);
 
     cvSaveImage(pathL,left);
 
@@ -667,7 +667,7 @@ void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boa
     
     double rms = calibrateCamera(objectPoints, imagePoints, imageSize, K,
                     Dist, rvecs, tvecs,CV_CALIB_FIX_K3);
-    printf("RMS error reported by calibrateCamera: %g\n", rms);
+    yInfo("RMS error reported by calibrateCamera: %g\n", rms);
     cout.flush();
 }
 
@@ -750,11 +750,11 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
             j++;
         }
     }
-    fprintf(stdout,"%i pairs have been successfully detected.\n",j);
+    yInfo("%i pairs have been successfully detected.\n",j);
     nimages = j;
     if( nimages < 2 )
     {
-        fprintf(stdout,"Error: too few pairs detected \n");
+        yError("Error: too few pairs detected \n");
         return;
     }
     
@@ -769,7 +769,7 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
                 objectPoints[i].push_back(Point3f(j*squareSize, k*squareSize, 0));
     }
     
-    fprintf(stdout,"Running stereo calibration ...\n");
+    yInfo("Running stereo calibration ...\n");
     
     Mat cameraMatrix[2], distCoeffs[2];
     Mat E, F;
@@ -785,7 +785,7 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
                         CV_CALIB_ZERO_TANGENT_DIST +
                         CV_CALIB_SAME_FOCAL_LENGTH +
                         CV_CALIB_FIX_K3);
-        fprintf(stdout,"done with RMS error= %f\n",rms);
+        yInfo("done with RMS error= %f\n",rms);
     } else
     {
         double rms = stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
@@ -793,7 +793,7 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
                 this->Kright, this->DistR,
                 imageSize, this->R, this->T, E, F,
                 TermCriteria(CV_TERMCRIT_ITER+CV_TERMCRIT_EPS, 100, 1e-5),CV_CALIB_FIX_ASPECT_RATIO + CV_CALIB_FIX_INTRINSIC + CV_CALIB_FIX_K3);
-        fprintf(stdout,"done with RMS error= %f\n",rms);
+        yInfo("done with RMS error= %f\n",rms);
     }
 // CALIBRATION QUALITY CHECK
     cameraMatrix[0] = this->Kleft;
@@ -826,7 +826,7 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
         }
         npoints += npt;
     }
-    fprintf(stdout,"average reprojection err = %f\n",err/npoints);
+    yInfo("average reprojection err = %f\n",err/npoints);
     cout.flush();
 }
 

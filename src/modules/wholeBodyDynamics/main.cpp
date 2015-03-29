@@ -707,14 +707,14 @@ public:
         period = inv_dyn->getRate();
         inv_dyn->getEstPeriod(avgTime, stdDev);
         if(avgTime > 1.3 * period){
-        //   printf("(real period: %3.3f +/- %3.3f; expected period %3.3f)\n", avgTime, stdDev, period);
+        //   yDebug("(real period: %3.3f +/- %3.3f; expected period %3.3f)\n", avgTime, stdDev, period);
         }
 
         static unsigned long int alive_counter = 0;
         static double curr_time = Time::now();
         if (Time::now() - curr_time > 60)
         {
-            printf ("wholeBodyDynamics is alive! running for %ld mins.\n",++alive_counter);
+            yInfo ("wholeBodyDynamics is alive! running for %ld mins.\n",++alive_counter);
             curr_time = Time::now();
         }
 
@@ -725,7 +725,7 @@ public:
             return true;
         else if (thread_status==STATUS_DISCONNECTED)
         {
-            printf ("wholeBodyDynamics module lost connection with iCubInterface, now closing...\n");
+            yError ("wholeBodyDynamics module lost connection with iCubInterface, now closing...\n");
             return false;
         }
         else

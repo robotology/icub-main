@@ -32,6 +32,8 @@
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/iDyn/iDynBody.h>
 #include <iCub/skinDynLib/common.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -310,10 +312,10 @@ gravityCompensatorThread::gravityCompensatorThread(int _rate, PolyDriver *_ddLA,
     
     switch(gravity_mode)
     {
-        case GRAVITY_COMPENSATION_OFF:        printf("GRAVITY_COMPENSATION_OFF     \n");    break;
-        case GRAVITY_COMPENSATION_ON:         printf("GRAVITY_COMPENSATION_ON      \n");    break;
+        case GRAVITY_COMPENSATION_OFF:        yInfo("GRAVITY_COMPENSATION_OFF     \n");    break;
+        case GRAVITY_COMPENSATION_ON:         yInfo("GRAVITY_COMPENSATION_ON      \n");    break;
         default:
-        case VOCAB_CM_UNKNOWN:                printf("UNKNOWN  \n");    break;
+        case VOCAB_CM_UNKNOWN:                yError("UNKNOWN  \n");    break;
     }
 }
     
@@ -347,7 +349,7 @@ bool gravityCompensatorThread::readAndUpdate(bool waitMeasure)
         sz = offset_input->length();
         if(sz!=ctrlJnt)
         {
-            fprintf(stderr,"warning...controlled joint < of offsets size!!!");
+            yWarning"warning...controlled joint < of offsets size!!!");
         }
         else
         {
@@ -518,13 +520,13 @@ void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, string s_
 {
     //check if interfaces are still up (icubinterface running)  
     if (iCtrlMode == 0) 
-        {fprintf(stderr,"ControlMode interface already closed, unable to reset compensation offset.\n");    return;}
+        {yError("ControlMode interface already closed, unable to reset compensation offset.\n");    return;}
     if (iTqs == 0)
-        {fprintf(stderr,"TorqueControl interface already closed, unable to reset compensation offset.\n");  return;}
+        {yError("TorqueControl interface already closed, unable to reset compensation offset.\n");  return;}
     if (iIntMode == 0)
-        {fprintf(stderr,"InteractionMode interface already closed, unable to reset compensation offset.\n");  return;}
+        {yError("InteractionMode interface already closed, unable to reset compensation offset.\n");  return;}
     if (iImp == 0)
-        {fprintf(stderr,"Impedance interface already closed, unable to reset compensation offset.\n");      return;}
+        {yError("Impedance interface already closed, unable to reset compensation offset.\n");      return;}
 
     //set to zero all the offsets if the module is closing
     if(releasing)
@@ -572,7 +574,7 @@ void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, string s_
                  {
                     if(gravity_mode == GRAVITY_COMPENSATION_ON)
                     {
-                        //fprintf(stderr,"compensating gravity\n");
+                        //yDebug"compensating gravity\n");
                         //double off = ampli[i]*G[i]+torque_offset[i];
                         double off = ampli[i]*G[i];
                         iImp->setImpedanceOffset(i,off);
@@ -591,7 +593,7 @@ void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, string s_
             case VOCAB_CM_IMPEDANCE_VEL:
                 if(gravity_mode == GRAVITY_COMPENSATION_ON)
                 {
-                    //fprintf(stderr,"compensating gravity\n");
+                    //yDebug"compensating gravity\n");
                     //double off = ampli[i]*G[i]+torque_offset[i];
                     double off = ampli[i]*G[i];
                     iImp->setImpedanceOffset(i,off);
@@ -608,7 +610,7 @@ void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, string s_
                 }
                 else
                 {
-                    fprintf(stderr,"Unknown control mode (part: %s jnt:%d).\n",s_part.c_str(), i);
+                    yError("Unknown control mode (part: %s jnt:%d).\n",s_part.c_str(), i);
                 }
                 break;
         }
@@ -624,10 +626,10 @@ void gravityCompensatorThread::run()
         if (readAndUpdate(false) == false)
         {
             delay_check++;
-            printf ("network delays detected (%d/10)\n", delay_check);
+            yWarning ("network delays detected (%d/10)\n", delay_check);
             if (delay_check>=10)
             {
-                printf ("gravityCompensatorThread lost connection with wholeBodyDynamics.\n");
+                yError ("gravityCompensatorThread lost connection with wholeBodyDynamics.\n");
                 thread_status = STATUS_DISCONNECTED;
             }
         }
@@ -664,9 +666,9 @@ void gravityCompensatorThread::run()
         
 //#define DEBUG_TORQUES
 #ifdef  DEBUG_TORQUES
-    fprintf (stderr,"TORQUES:     %s ***  \n\n", torques_TO.toString().c_str());
-    fprintf (stderr,"LL TORQUES:  %s ***  \n\n", torques_LL.toString().c_str());
-    fprintf (stderr,"RL TORQUES:  %s ***  \n\n", torques_RL.toString().c_str());
+    yDebug ("TORQUES:     %s ***  \n\n", torques_TO.toString().c_str());
+    yDebug ("LL TORQUES:  %s ***  \n\n", torques_LL.toString().c_str());
+    yDebug ("RL TORQUES:  %s ***  \n\n", torques_RL.toString().c_str());
 #endif
 
         if (iCtrlMode_arm_left)  
@@ -719,7 +721,7 @@ void gravityCompensatorThread::run()
     {
         if(Network::exists(string("/"+wholeBodyName+"/filtered/inertial:o").c_str()))
         {
-            fprintf(stderr,"connection exists! starting calibration...\n");
+            yInfo("connection exists! starting calibration...\n");
             //the following delay is required because even if the filtered port exists, may be the 
             //low pass filtered values have not reached yet the correct value. 
             Time::delay(1.0); 
@@ -745,16 +747,16 @@ void gravityCompensatorThread::run()
             torques_LL = icub->lowerTorso->getTorques("left_leg");
             torques_RL = icub->lowerTorso->getTorques("right_leg");  
             Vector LATorques = icub->upperTorso->getTorques("left_arm");
-            printf("encoders:  %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf\n", encoders_arm_left(0), encoders_arm_left(1), encoders_arm_left(2), encoders_arm_left(3), encoders_arm_left(4), encoders_arm_left(5), encoders_arm_left(6)); 
-            printf("left  arm: %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf\n", torques_LA(0), torques_LA(1), torques_LA(2), torques_LA(3), torques_LA(4), torques_LA(5), torques_LA(6)); 
-            printf("right arm: %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf\n", torques_RA(0), torques_RA(1), torques_RA(2), torques_RA(3), torques_RA(4), torques_RA(5), torques_RA(6)); 
-            printf("left  leg: %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf\n",        torques_LL(0), torques_LL(1), torques_LL(2), torques_LL(3), torques_LL(4), torques_LL(5)); 
-            printf("right leg: %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf\n",        torques_RL(0), torques_RL(1), torques_RL(2), torques_RL(3), torques_RL(4), torques_RL(5)); 
-            printf("inertial:  %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf\n", d2p0(0), d2p0(1), d2p0(2), w0(0), w0(1), w0(2), dw0(0), dw0(1), dw0(2)); 
+            yDebug("encoders:  %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf\n", encoders_arm_left(0), encoders_arm_left(1), encoders_arm_left(2), encoders_arm_left(3), encoders_arm_left(4), encoders_arm_left(5), encoders_arm_left(6)); 
+            yDebug("left  arm: %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf\n", torques_LA(0), torques_LA(1), torques_LA(2), torques_LA(3), torques_LA(4), torques_LA(5), torques_LA(6)); 
+            yDebug("right arm: %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf\n", torques_RA(0), torques_RA(1), torques_RA(2), torques_RA(3), torques_RA(4), torques_RA(5), torques_RA(6)); 
+            yDebug("left  leg: %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf\n",        torques_LL(0), torques_LL(1), torques_LL(2), torques_LL(3), torques_LL(4), torques_LL(5)); 
+            yDebug("right leg: %.3lf, %.3lf, %.3lf, %.3lf, %.3lf, %.3lf\n",        torques_RL(0), torques_RL(1), torques_RL(2), torques_RL(3), torques_RL(4), torques_RL(5)); 
+            yDebug("inertial:  %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf, %.1lf\n", d2p0(0), d2p0(1), d2p0(2), w0(0), w0(1), w0(2), dw0(0), dw0(1), dw0(2)); 
         }
         else
         {
-            fprintf(stderr,"waiting for connections from wholeBodyDynamics (port: %s)...\n", wholeBodyName.c_str());
+            yInfo("waiting for connections from wholeBodyDynamics (port: %s)...\n", wholeBodyName.c_str());
             Time::delay(1.0);
         }
     }
@@ -766,27 +768,27 @@ void gravityCompensatorThread::threadRelease()
     
     if (iCtrlMode_arm_left)
     {
-        fprintf(stderr,"Setting gravity compensation offset to zero, left arm\n");
+        yInfo("Setting gravity compensation offset to zero, left arm\n");
         feedFwdGravityControl(left_arm_ctrlJnt, "left_arm",iCtrlMode_arm_left,iTqs_arm_left,iImp_arm_left,iIntMode_arm_left,Z,ampli_larm,true);
     }
     if (iCtrlMode_arm_right)    
     {
-        fprintf(stderr,"Setting gravity compensation offset to zero, right arm\n");
+        yInfo("Setting gravity compensation offset to zero, right arm\n");
         feedFwdGravityControl(right_arm_ctrlJnt, "right_arm",iCtrlMode_arm_right,iTqs_arm_right,iImp_arm_right,iIntMode_arm_right,Z,ampli_rarm,true);
     }
     if (iCtrlMode_leg_left)     
     {
-        fprintf(stderr,"Setting gravity compensation offset to zero, left leg\n");
+        yInfo("Setting gravity compensation offset to zero, left leg\n");
         feedFwdGravityControl(left_leg_ctrlJnt, "left_leg", iCtrlMode_leg_left,iTqs_leg_left,iImp_leg_left,iIntMode_leg_left,Z,ampli_lleg,true);
     }
     if (iCtrlMode_leg_right)
     {
-        fprintf(stderr,"Setting gravity compensation offset to zero, right leg\n");
+        yInfo("Setting gravity compensation offset to zero, right leg\n");
         feedFwdGravityControl(right_leg_ctrlJnt, "right_leg",iCtrlMode_leg_right,iTqs_leg_right,iImp_leg_right,iIntMode_leg_right,Z,ampli_rleg,true);
     }
     if (iCtrlMode_torso)
     {
-        fprintf(stderr,"Setting gravity compensation offset to zero, torso\n");
+        yInfo("Setting gravity compensation offset to zero, torso\n");
         feedFwdGravityControl(torso_ctrlJnt, "torso",iCtrlMode_torso,iTqs_torso,iImp_torso,iIntMode_torso,Z,ampli_torso,true);
     }
 

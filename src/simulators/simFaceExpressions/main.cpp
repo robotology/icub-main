@@ -32,7 +32,7 @@ int main(int argc, char *argv[])
     Network yarp;
     if (!yarp.checkNetwork())
     {
-        fprintf(stderr, "Sorry YARP network does not seem to be available, is the yarp server available?\n");
+        yError("Sorry YARP network does not seem to be available, is the yarp server available?\n");
         return -1;
     }
 

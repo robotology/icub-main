@@ -472,7 +472,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
 
 bool inverseDynamics::threadInit()
 {
-    fprintf(stderr,"threadInit: waiting for port connections... \n\n");
+    yInfo("threadInit: waiting for port connections... \n\n");
     if (!dummy_ft)
     {
         Vector *dummy = port_inertial_thread->read(true); //blocking call: waits for ports connection
@@ -485,7 +485,7 @@ bool inverseDynamics::threadInit()
         bool ret = readAndUpdate(true,true);
         if (ret == false)
         {
-            printf("A problem occured during the initial readAndUpdate(), stopping... \n");
+            yError("A problem occured during the initial readAndUpdate(), stopping... \n");
             thread_status = STATUS_DISCONNECTED;
             return false;
         }
@@ -505,17 +505,13 @@ bool iCubStatus::checkIcubNotMoving()
         if (fabs(all_dq_low[i])>0.7)
             {
                 ret = false;
-                //fprintf(stderr,"%d ",i);
             }
-    //fprintf(stderr,"\n");
 
     for (size_t i=0; i<this->all_dq_up.size(); i++)
         if (fabs(all_dq_up[i])>0.7)
             {
                 ret = false;
-                //fprintf(stderr,"%d ",i);
             }
-    //fprintf(stderr,"\n");
 
     return ret;
 }
@@ -547,10 +543,10 @@ void inverseDynamics::run()
     if(readAndUpdate(false) == false)
     {
         delay_check++;
-        printf ("network delays detected (%d/10)\n", delay_check);
+        yWarning ("network delays detected (%d/10)\n", delay_check);
         if (delay_check>=10)
         {
-            printf ("inverseDynamics thread lost connection with iCubInterface.\n");
+            yError ("inverseDynamics thread lost connection with iCubInterface.\n");
             thread_status = STATUS_DISCONNECTED;
         }
     }
@@ -577,14 +573,14 @@ void inverseDynamics::run()
         if (not_moving_status.size()>status_queue_size) 
             {
                 not_moving_status.pop_back();
-                if (auto_drift_comp) fprintf (stderr,"drift_comp: buffer full\n"); //@@@DEBUG
+                if (auto_drift_comp) yDebug ("drift_comp: buffer full\n"); //@@@DEBUG
             }
     }
     else
     {
         //efficient way to clear the queue
         not_moving_status.clear();
-        if (auto_drift_comp) fprintf (stderr,"drift_comp: clearing buffer\n");  //@@@DEBUG
+        if (auto_drift_comp) yDebug ("drift_comp: clearing buffer\n");  //@@@DEBUG
     }
 
     // THIS BLOCK SHOULD BE NOW DEPRECATED
@@ -610,15 +606,15 @@ void inverseDynamics::run()
     icub->upperTorso->solveWrench();
 #ifdef DEBUG_PERFORMANCE
     meanTime += Time::now()-startTime;
-    printf("Mean uppertorso NE time: %.4f\n", meanTime/getIterations());
+    yDebug("Mean uppertorso NE time: %.4f\n", meanTime/getIterations());
 #endif
 
 //#define DEBUG_KINEMATICS
 #ifdef DEBUG_KINEMATICS
     // DEBUG ONLY
-    fprintf (stderr,"\nHEAD: %s \n", d2p0.toString().c_str());
+    yDebug ("\nHEAD: %s \n", d2p0.toString().c_str());
 
-    fprintf (stderr,"UPTORSO: %s \n", icub->upperTorso->getTorsoLinAcc().toString().c_str());
+    yDebug ("UPTORSO: %s \n", icub->upperTorso->getTorsoLinAcc().toString().c_str());
 #endif
 
     icub->attachLowerTorso(F_RLeg,F_LLeg);
@@ -628,20 +624,20 @@ void inverseDynamics::run()
 //#define DEBUG_KINEMATICS
 #ifdef DEBUG_KINEMATICS
     //DEBUG ONLY
-    fprintf (stderr,"LOWTORSO->UP: %s *** %s *** %s\n",
+    yDebug ("LOWTORSO->UP: %s *** %s *** %s\n",
             icub->lowerTorso->up->getLinAcc(0).toString().c_str(),
             icub->lowerTorso->up->getLinAcc(1).toString().c_str(),
             cub->lowerTorso->up->getLinAcc(2).toString().c_str());
 
-    fprintf (stderr,"LOWTORSO: %s \n", icub->lowerTorso->getLinAcc().toString().c_str());
+    yDebug ("LOWTORSO: %s \n", icub->lowerTorso->getLinAcc().toString().c_str());
 
-    fprintf (stderr,"LOWTORSO->RI: %s *** %s *** %s *** %s\n",
+    yDebug ("LOWTORSO->RI: %s *** %s *** %s *** %s\n",
             icub->lowerTorso->right->getLinAcc(0).toString().c_str(),
             icub->lowerTorso->right->getLinAcc(1).toString().c_str(),
             icub->lowerTorso->right->getLinAcc(2).toString().c_str(),
             icub->lowerTorso->right->getLinAcc(3).toString().c_str());
 
-    fprintf (stderr,"LOWTORSO->LE: %s *** %s *** %s *** %s\n",
+    yDebug ("LOWTORSO->LE: %s *** %s *** %s *** %s\n",
             icub->lowerTorso->left->getLinAcc(0).toString().c_str(),
             icub->lowerTorso->left->getLinAcc(1).toString().c_str(),
             icub->lowerTorso->left->getLinAcc(2).toString().c_str(),
@@ -651,11 +647,11 @@ void inverseDynamics::run()
 //#define DEBUG_WRENCH
 #ifdef  DEBUG_WRENCH
 
-    fprintf (stderr,"LOWTORSO->UP: %s *** %s \n",
+    yDebug ("LOWTORSO->UP: %s *** %s \n",
             icub->lowerTorso->up->getForce(0).toString().c_str(),
             icub->lowerTorso->up->getMoment(0).toString().c_str());
 
-    fprintf (stderr,"LOWTORSO->RO: %s *** %s \n",
+    yDebug ("LOWTORSO->RO: %s *** %s \n",
             icub->lowerTorso->up->getForce(2).toString().c_str(),
             icub->lowerTorso->up->getMoment(2).toString().c_str());
 #endif
@@ -681,18 +677,13 @@ void inverseDynamics::run()
 
 //#define DEBUG_TORQUES
 #ifdef  DEBUG_TORQUES
-    fprintf (stderr,"TORQUES:     %s ***  \n\n", TOTorques.toString().c_str());
+    yDebug ("TORQUES:     %s ***  \n\n", TOTorques.toString().c_str());
 #endif
 
     writeTorque(RATorques, 1, port_RATorques); //arm
     writeTorque(LATorques, 1, port_LATorques); //arm
     writeTorque(TOTorques, 4, port_TOTorques); //torso
     writeTorque(HDTorques, 0, port_HDTorques); //head
-//  fprintf (stderr,"TORSO: %s \n",TOTorques.toString().c_str());
-/*  fprintf (stderr,"TORSO: %s %s %s \n",TOTorques.toString().c_str(),
-        LLTorques.toString().c_str(),
-         RLTorques.toString().c_str());
-*/
 
     if (ddLR) writeTorque(RLTorques, 2, port_RLTorques); //leg
     if (ddLL) writeTorque(LLTorques, 2, port_LLTorques); //leg
@@ -917,7 +908,7 @@ void inverseDynamics::run()
     yarp::sig::Matrix foot_root_mat = r1*ilhl;
     
     yarp::sig::Vector foot_tmp = yarp::math::dcm2rpy(foot_root_mat);
-    //printf ("before\n %s\n", foot_root_mat.toString().c_str());
+    //yDebug ("before\n %s\n", foot_root_mat.toString().c_str());
     yarp::sig::Vector foot_root_vec (6,0.0); 
     foot_root_vec[3] = foot_root_mat[0][3]*1000;
     foot_root_vec[4] = foot_root_mat[1][3]*1000;
@@ -926,8 +917,8 @@ void inverseDynamics::run()
     foot_root_vec[1] = foot_tmp[1]*180.0/M_PI;
     foot_root_vec[2] = foot_tmp[2]*180.0/M_PI;
     //yarp::sig::Matrix test = iCub::ctrl::rpy2dcm(foot_tmp);
-    //printf ("afer\n %s\n", test.toString().c_str());
-    //printf ("angles %+.2f %+.2f %+.2f\n", foot_tmp[0]*180.0/M_PI, foot_tmp[1]*180.0/M_PI, foot_tmp[2]*180.0/M_PI);
+    //yDebug ("afer\n %s\n", test.toString().c_str());
+    //yDebug ("angles %+.2f %+.2f %+.2f\n", foot_tmp[0]*180.0/M_PI, foot_tmp[1]*180.0/M_PI, foot_tmp[2]*180.0/M_PI);
 
     //computation for the foot
     Matrix foot_hn(4,4); foot_hn.zero();
@@ -1014,7 +1005,7 @@ void inverseDynamics::run()
 
 void inverseDynamics::threadRelease()
 {
-    fprintf(stderr, "Closing the linear estimator\n");
+    yInfo( "Closing the linear estimator\n");
     if(linEstUp)
     {
         delete linEstUp;
@@ -1025,7 +1016,7 @@ void inverseDynamics::threadRelease()
         delete linEstLow;
         linEstLow = 0;
     }
-    fprintf(stderr, "Closing the quadratic estimator\n");
+    yInfo( "Closing the quadratic estimator\n");
     if(quadEstUp)
     {
         delete quadEstUp;
@@ -1036,32 +1027,32 @@ void inverseDynamics::threadRelease()
         delete quadEstLow;
         quadEstLow = 0;
     }
-    fprintf(stderr, "Closing the inertial estimator\n");
+    yInfo( "Closing the inertial estimator\n");
     if(InertialEst)
     {
         delete InertialEst;
         InertialEst = 0;
     }
 
-    fprintf(stderr, "Closing RATorques port\n");
+    yInfo( "Closing RATorques port\n");
     closePort(port_RATorques);
-    fprintf(stderr, "Closing LATorques port\n");
+    yInfo( "Closing LATorques port\n");
     closePort(port_LATorques);
-    fprintf(stderr, "Closing RLTorques port\n");
+    yInfo( "Closing RLTorques port\n");
     closePort(port_RLTorques);
-    fprintf(stderr, "Closing LLTorques port\n");
+    yInfo( "Closing LLTorques port\n");
     closePort(port_LLTorques);
-    fprintf(stderr, "Closing RWTorques port\n");
+    yInfo( "Closing RWTorques port\n");
     closePort(port_RWTorques);
-    fprintf(stderr, "Closing LWTorques port\n");
+    yInfo( "Closing LWTorques port\n");
     closePort(port_LWTorques);
-    fprintf(stderr, "Closing TOTorques port\n");
+    yInfo( "Closing TOTorques port\n");
     closePort(port_TOTorques);
-    fprintf(stderr, "Closing HDTorques port\n");
+    yInfo( "Closing HDTorques port\n");
     closePort(port_HDTorques);
-    fprintf(stderr, "Closing external_wrench_RA port\n");
+    yInfo( "Closing external_wrench_RA port\n");
     closePort(port_external_wrench_RA);
-    fprintf(stderr, "Closing external_wrench_LA port\n");
+    yInfo( "Closing external_wrench_LA port\n");
     closePort(port_external_wrench_LA);
 #ifdef TEST_LEG_SENSOR
     closePort(port_sensor_wrench_RL);
@@ -1069,29 +1060,29 @@ void inverseDynamics::threadRelease()
     closePort(port_model_wrench_RL);
     closePort(port_model_wrench_LL);
 #endif
-    fprintf(stderr, "Closing cartesian_external_wrench_RA port\n");
+    yInfo( "Closing cartesian_external_wrench_RA port\n");
     closePort(port_external_cartesian_wrench_RA);
-    fprintf(stderr, "Closing cartesian_external_wrench_LA port\n");
+    yInfo( "Closing cartesian_external_wrench_LA port\n");
     closePort(port_external_cartesian_wrench_LA);
-    fprintf(stderr, "Closing external_wrench_RL port\n");
+    yInfo( "Closing external_wrench_RL port\n");
     closePort(port_external_wrench_RL);
-    fprintf(stderr, "Closing external_wrench_LL port\n");	
+    yInfo( "Closing external_wrench_LL port\n");	
     closePort(port_external_wrench_LL);
-    fprintf(stderr, "Closing cartesian_external_wrench_RL port\n");
+    yInfo( "Closing cartesian_external_wrench_RL port\n");
     closePort(port_external_cartesian_wrench_RL);
-    fprintf(stderr, "Closing cartesian_external_wrench_LL port\n");	
+    yInfo( "Closing cartesian_external_wrench_LL port\n");	
     closePort(port_external_cartesian_wrench_LL);
-    fprintf(stderr, "Closing external_wrench_RF port\n");
+    yInfo( "Closing external_wrench_RF port\n");
     closePort(port_external_wrench_RF);
-    fprintf(stderr, "Closing external_wrench_LF port\n");	
+    yInfo( "Closing external_wrench_LF port\n");	
     closePort(port_external_wrench_LF);
-    fprintf(stderr, "Closing cartesian_external_wrench_RF port\n");
+    yInfo( "Closing cartesian_external_wrench_RF port\n");
     closePort(port_external_cartesian_wrench_RF);
-    fprintf(stderr, "Closing cartesian_external_wrench_LF port\n");	
+    yInfo( "Closing cartesian_external_wrench_LF port\n");	
     closePort(port_external_cartesian_wrench_LF);
-    fprintf(stderr, "Closing external_wrench_TO port\n");	
+    yInfo( "Closing external_wrench_TO port\n");	
     closePort(port_external_wrench_TO);
-    fprintf(stderr, "Closing COM ports\n");	
+    yInfo( "Closing COM ports\n");	
     closePort(port_com_all);
     closePort(port_com_lb);
     closePort(port_com_ub);
@@ -1103,45 +1094,45 @@ void inverseDynamics::threadRelease()
     closePort(port_com_to);
     closePort(port_com_all_foot);
 
-    fprintf(stderr, "Closing inertial port\n");
+    yInfo( "Closing inertial port\n");
     closePort(port_inertial_thread);
-    fprintf(stderr, "Closing ft_arm_right port\n");
+    yInfo( "Closing ft_arm_right port\n");
     closePort(port_ft_arm_right);
-    fprintf(stderr, "Closing ft_arm_left port\n");
+    yInfo( "Closing ft_arm_left port\n");
     closePort(port_ft_arm_left);
-    fprintf(stderr, "Closing ft_leg_right port\n");
+    yInfo( "Closing ft_leg_right port\n");
     closePort(port_ft_leg_right);
-    fprintf(stderr, "Closing ft_leg_left port\n");
+    yInfo( "Closing ft_leg_left port\n");
     closePort(port_ft_leg_left);
-    fprintf(stderr, "Closing ft_foot_right port\n");
+    yInfo( "Closing ft_foot_right port\n");
     closePort(port_ft_foot_right);
-    fprintf(stderr, "Closing ft_foot_left port\n");
+    yInfo( "Closing ft_foot_left port\n");
     closePort(port_ft_foot_left);
-    fprintf(stderr, "Closing skin_contacts port\n");
+    yInfo( "Closing skin_contacts port\n");
     closePort(port_skin_contacts);
-    fprintf(stderr, "Closing monitor port\n");
+    yInfo( "Closing monitor port\n");
     closePort(port_monitor);
-    fprintf(stderr, "Closing dump port\n");
+    yInfo( "Closing dump port\n");
     closePort(port_dumpvel);
-    fprintf(stderr, "Closing contacts port\n");
+    yInfo( "Closing contacts port\n");
     closePort(port_contacts);
-    fprintf(stderr, "Closing external_ft_arm_left port\n");
+    yInfo( "Closing external_ft_arm_left port\n");
     closePort(port_external_ft_arm_left);
-    fprintf(stderr, "Closing external_ft_arm_right port\n");
+    yInfo( "Closing external_ft_arm_right port\n");
     closePort(port_external_ft_arm_right);
-    fprintf(stderr, "Closing external_ft_leg_left port\n");
+    yInfo("Closing external_ft_leg_left port\n");
     closePort(port_external_ft_leg_left);
-    fprintf(stderr, "Closing external_ft_leg_right port\n");
+    yInfo("Closing external_ft_leg_right port\n");
     closePort(port_external_ft_leg_right);
-    fprintf(stderr, "Close COM velocity port\n");
+    yInfo("Close COM velocity port\n");
     closePort(port_COM_vel);
-    fprintf(stderr, "Closing COM Jacobian port\n");
+    yInfo("Closing COM Jacobian port\n");
     closePort(port_COM_Jacobian);
-    fprintf(stderr, "Closing All Velocities port\n");
+    yInfo("Closing All Velocities port\n");
     closePort(port_all_velocities);
-    fprintf(stderr, "Closing All Positions port\n");
+    yInfo("Closing All Positions port\n");
     closePort(port_all_positions);
-    fprintf(stderr, "Closing Foot/Root port\n");
+    yInfo("Closing Foot/Root port\n");
     closePort(port_root_position_mat);
     closePort(port_root_position_vec);
 
@@ -1183,7 +1174,7 @@ void inverseDynamics::writeTorque(Vector _values, int _address, BufferedPort<Bot
 
 void inverseDynamics::calibrateOffset(calib_enum calib_code)
 {
-    fprintf(stderr,"calibrateOffset: starting calibration... \n");
+    yInfo("calibrateOffset: starting calibration... \n");
 
     Offset_LArm.zero();
     Offset_RArm.zero();
@@ -1239,24 +1230,24 @@ void inverseDynamics::calibrateOffset(calib_enum calib_code)
     //printVector(Offset_RLeg, "Offset right leg:");
     
     it=previous_status.begin();
-    fprintf(stderr,"\n");
-    fprintf(stderr, "Ntrials: %d\n", (int)Ntrials);
-    fprintf(stderr, "F_LArm:      %s\n", it->ft_arm_left.toString().c_str());
-    fprintf(stderr, "F_idyn_LArm: %s\n", F_iDyn_LArm.toString().c_str());
-    fprintf(stderr, "F_RArm:      %s\n", it->ft_arm_right.toString().c_str());
-    fprintf(stderr, "F_idyn_RArm: %s\n", F_iDyn_RArm.toString().c_str());
-    fprintf(stderr, "F_LLeg:      %s\n", it->ft_leg_left.toString().c_str());
-    fprintf(stderr, "F_idyn_LLeg: %s\n", F_iDyn_LLeg.toString().c_str());
-    fprintf(stderr, "F_RLeg:      %s\n", it->ft_leg_right.toString().c_str());
-    fprintf(stderr, "F_idyn_RLeg: %s\n", F_iDyn_RLeg.toString().c_str());
-    fprintf(stderr, "\n");
-    fprintf(stderr, "Left Arm:    %s\n", Offset_LArm.toString().c_str());
-    fprintf(stderr, "Right Arm:   %s\n", Offset_RArm.toString().c_str());
-    fprintf(stderr, "Left Leg:    %s\n", Offset_LLeg.toString().c_str());
-    fprintf(stderr, "Right Leg:   %s\n", Offset_RLeg.toString().c_str());
-    fprintf(stderr, "Left Foot:   %s\n", Offset_LFoot.toString().c_str());
-    fprintf(stderr, "Right Foot:  %s\n", Offset_RFoot.toString().c_str());
-    fprintf(stderr, "\n");
+    yDebug("\n");
+    yDebug( "Ntrials: %d\n", (int)Ntrials);
+    yDebug( "F_LArm:      %s\n", it->ft_arm_left.toString().c_str());
+    yDebug( "F_idyn_LArm: %s\n", F_iDyn_LArm.toString().c_str());
+    yDebug( "F_RArm:      %s\n", it->ft_arm_right.toString().c_str());
+    yDebug( "F_idyn_RArm: %s\n", F_iDyn_RArm.toString().c_str());
+    yDebug( "F_LLeg:      %s\n", it->ft_leg_left.toString().c_str());
+    yDebug( "F_idyn_LLeg: %s\n", F_iDyn_LLeg.toString().c_str());
+    yDebug( "F_RLeg:      %s\n", it->ft_leg_right.toString().c_str());
+    yDebug( "F_idyn_RLeg: %s\n", F_iDyn_RLeg.toString().c_str());
+    yDebug( "\n");
+    yDebug( "Left Arm:    %s\n", Offset_LArm.toString().c_str());
+    yDebug( "Right Arm:   %s\n", Offset_RArm.toString().c_str());
+    yDebug( "Left Leg:    %s\n", Offset_LLeg.toString().c_str());
+    yDebug( "Right Leg:   %s\n", Offset_RLeg.toString().c_str());
+    yDebug( "Left Foot:   %s\n", Offset_LFoot.toString().c_str());
+    yDebug( "Right Foot:  %s\n", Offset_RFoot.toString().c_str());
+    yDebug( "\n");
 }
 
 bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
@@ -1267,7 +1258,7 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     if (ddAL)
     {
         Vector* tmp= 0;
-        if (waitMeasure) fprintf(stderr,"Trying to connect to left arm sensor...");
+        if (waitMeasure) yInfo("Trying to connect to left arm sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_arm_left->read(waitMeasure);
@@ -1280,13 +1271,13 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
         {
             current_status.ft_arm_left.zero();
         }
-        if (waitMeasure) fprintf(stderr,"done. \n");
+        if (waitMeasure) yDebug("done. \n");
     }
 
     if (ddAR)
     {
         Vector* tmp= 0;
-        if (waitMeasure) fprintf(stderr,"Trying to connect to right arm sensor...");
+        if (waitMeasure) yInfo("Trying to connect to right arm sensor...");
         if (!dummy_ft)   
         {
             tmp = port_ft_arm_right->read(waitMeasure);
@@ -1299,7 +1290,7 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
         {
             current_status.ft_arm_right.zero();
         }
-        if (waitMeasure) fprintf(stderr,"done. \n");
+        if (waitMeasure) yInfo("done. \n");
     }
     b &= getUpperEncodersSpeedAndAcceleration();
     setUpperMeasure(_init);
@@ -1308,7 +1299,7 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
     if (ddLL)
     {
         Vector* tmp= 0;
-        if (waitMeasure) fprintf(stderr,"Trying to connect to left leg sensor...");
+        if (waitMeasure) yInfo("Trying to connect to left leg sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_leg_left->read(waitMeasure);
@@ -1321,12 +1312,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
         {
             current_status.ft_leg_left.zero();
         }
-        if (waitMeasure) fprintf(stderr,"done. \n");
+        if (waitMeasure) yInfo("done. \n");
     }
     if (ddLR)
     {
         Vector* tmp= 0;
-        if (waitMeasure) fprintf(stderr,"Trying to connect to right leg sensor...");
+        if (waitMeasure) yInfo("Trying to connect to right leg sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_leg_right->read(waitMeasure);
@@ -1339,14 +1330,14 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
         {
             current_status.ft_leg_right.zero();
         }
-        if (waitMeasure) fprintf(stderr,"done. \n");
+        if (waitMeasure) yInfo("done. \n");
     }
 
     // feet
     if (ddLL)
     {
         Vector* tmp= 0;
-        if (waitMeasure) fprintf(stderr,"Trying to connect to left foot sensor...");
+        if (waitMeasure) yInfo("Trying to connect to left foot sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_foot_left->read(false); //not all the robot versions have the FT sensors installed in the feet
@@ -1359,12 +1350,12 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
         {
             current_status.ft_foot_left.zero();
         }
-        if (waitMeasure) fprintf(stderr,"done. \n");
+        if (waitMeasure) yInfo("done. \n");
     }
     if (ddLR)
     {
         Vector* tmp= 0;
-        if (waitMeasure) fprintf(stderr,"Trying to connect to right foot sensor...");
+        if (waitMeasure) yInfo("Trying to connect to right foot sensor...");
         if (!dummy_ft)
         {
             tmp = port_ft_foot_right->read(false); //not all the robot versions have the FT sensors installed in the feet
@@ -1377,16 +1368,16 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
         {
             current_status.ft_foot_right.zero();
         }
-        if (waitMeasure) fprintf(stderr,"done. \n");
+        if (waitMeasure) yInfo("done. \n");
     }
 
     b &= getLowerEncodersSpeedAndAcceleration();
     setLowerMeasure(_init);
 
     //inertial sensor
-    if (waitMeasure) fprintf(stderr,"Trying to connect to inertial sensor...");
+    if (waitMeasure) yInfo("Trying to connect to inertial sensor...");
     Vector *inertial = port_inertial_thread->read(waitMeasure);
-    if (waitMeasure) fprintf(stderr,"done. \n");
+    if (waitMeasure) yInfo("done. \n");
 
     int sz = 0;
     if(inertial!=0)
@@ -1407,10 +1398,10 @@ bool inverseDynamics::readAndUpdate(bool waitMeasure, bool _init)
         current_status.inertial_w0 [1] =  (*inertial)[4]*CTRL_DEG2RAD;
         current_status.inertial_w0 [2] =  (*inertial)[5]*CTRL_DEG2RAD;
         current_status.inertial_dw0 = this->eval_domega(current_status.inertial_w0);
-        //printf ("%3.3f, %3.3f, %3.3f \n",current_status.inertial_d2p0[0],current_status.inertial_d2p0[1],current_status.inertial_d2p0[2]);
+        //yDebug ("%3.3f, %3.3f, %3.3f \n",current_status.inertial_d2p0[0],current_status.inertial_d2p0[1],current_status.inertial_d2p0[2]);
 #ifdef DEBUG_PRINT_INERTIAL
-        printf ("meas_w  (rad/s):  %3.3f, %3.3f, %3.3f \n", w0[0],   w0[1],   w0[2]);
-        printf ("meas_dwo(rad/s):  %3.3f, %3.3f, %3.3f \n", dw0[0],  dw0[1],  dw0[2]);
+        yDebug ("meas_w  (rad/s):  %3.3f, %3.3f, %3.3f \n", w0[0],   w0[1],   w0[2]);
+        yDebug ("meas_dwo(rad/s):  %3.3f, %3.3f, %3.3f \n", dw0[0],  dw0[1],  dw0[2]);
 #endif
     }
 

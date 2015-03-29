@@ -398,7 +398,7 @@ public:
         static double curr_time = Time::now();
         if (Time::now() - curr_time > 60)
         {
-            printf ("gravityCompensator is alive! running for %ld mins.\n",++alive_counter);
+            yInfo ("gravityCompensator is alive! running for %ld mins.\n",++alive_counter);
             curr_time = Time::now();
         }
 

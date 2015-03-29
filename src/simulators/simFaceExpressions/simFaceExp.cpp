@@ -18,6 +18,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <yarp/os/Log.h>
 
 #include "simFaceExp.h"
 
@@ -73,10 +74,10 @@ bool simFaceExp::configure(yarp::os::ResourceFinder &rf)
     //Load the mask
 
     if (readMask(maskPath.c_str()))
-        fprintf(stdout,"\n\nMask has been loaded correctly\n\n");
+        yInfo("\n\nMask has been loaded correctly\n\n");
     else
     {
-        fprintf(stdout,"Mask has some issues please control files\n");
+        yError("Mask has some issues please control files\n");
         return false;
     }
     return true ;      // let the RFModule know everything went well
@@ -106,7 +107,7 @@ bool simFaceExp::updateModule()
     bot.clear();
     expressionVals.read(bot);
     ConstString message = bot.toString();
-    fprintf(stdout,"Message received: %s\n",message.c_str());
+    yInfo("Message received: %s\n",message.c_str());
     setSubSystem(message.c_str());
     generateTexture();
 
@@ -118,7 +119,7 @@ bool simFaceExp::updateModule()
         bot.clear();
         bot.add(eyeLidPos);
         eyeLidsPos.write(bot);
-        printf("Eye lids position sent: %s\n",bot.toString().c_str());
+        yInfo("Eye lids position sent: %s\n",bot.toString().c_str());
     }
    return true;
 }
@@ -149,11 +150,11 @@ void simFaceExp::setSubSystem(const char *command)
 
         //print the array
         for (int i = 0; i<8;i++) 
-            fprintf(stdout,"%d", eyeLids[i]);
-        fprintf(stdout,"\n");
+            yDebug("%d", eyeLids[i]);
+        yDebug("\n");
 
         eyeLidPos = linearMap((float)num,36,72,0,30);
-        fprintf(stdout,"eyeLid pos is %lf\n",eyeLidPos);
+        yDebug("eyeLid pos is %lf\n",eyeLidPos);
     }
     else 
     {
@@ -234,7 +235,7 @@ bool simFaceExp::interruptModule()
 
 bool simFaceExp::close()
 {
-    fprintf(stdout,"cleaning up\n");
+    yInfo("cleaning up\n");
     handlerPort.close();
     expressionVals.close();
     eyeLidsPos.close();
@@ -254,13 +255,13 @@ bool simFaceExp::respond(const Bottle& command, Bottle& reply)
     }
     else if (command.get(0).asString()=="help") 
     {
-        fprintf(stdout,"Options:\n\n");
-        fprintf(stdout,"\t--name       name: module name (default: simFaceExpressions)\n");
+        yInfo("Options:\n\n");
+        yInfo("\t--name       name: module name (default: simFaceExpressions)\n");
         reply.addString("ok");
     }
     else
     {
-        fprintf(stdout,"command not known - type help for more info\n");
+        yWarning("command not known - type help for more info\n");
     }
     return true;
 }

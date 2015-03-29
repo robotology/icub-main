@@ -10,6 +10,7 @@
 #define __ICUB_DIABOLICALPLAN__
 
 #include <stdio.h>
+#include <yarp\os\Log.h>
 
 class DiabolicalPlan {
 private:
@@ -20,7 +21,7 @@ public:
     }
 
     bool plan() {
-        printf("Thinking...\n");
+        yInfo("Thinking...\n");
         ct++;
         return (ct>=3);
     }
