@@ -1055,7 +1055,7 @@ public:
                         string obj_name=command.get(1).asString().c_str();
                         if(motorThr->isHolding(command)) // 
                         {
-                            fprintf(stdout,"Deploying %s.\n",obj_name.c_str());
+                            yDebug("Deploying %s.\n",obj_name.c_str());
                             motorThr->deploy(command);
                         }
 
@@ -1068,13 +1068,13 @@ public:
                         }
                         visuoThr->startLearningMIL(obj_name.c_str());
 
-                        fprintf(stdout,"Looking at %s.\n",obj_name.c_str());
+                        yDebug("Looking at %s.\n",obj_name.c_str());
                         motorThr->exploreTorso(command);
 
                         visuoThr->trainMIL();
 
                         reply.addString((obj_name + " learned").c_str());
-                        fprintf(stdout,"'%s' learned.\n",obj_name.c_str());
+                        yDebug("'%s' learned.\n",obj_name.c_str());
 
                         break;
                     }
@@ -1506,7 +1506,7 @@ public:
 
         if(!are->initialize(rf))
         {
-            fprintf(stdout,"[ARE][Error] ARE could not initialize\n");
+            yError("ARE could not initialize\n");
             return false;
         }
 
