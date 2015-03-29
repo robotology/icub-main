@@ -3,7 +3,7 @@
 
 #include <fingersTuner_IDL.h>
 #include <yarp/os/idl/WireTypes.h>
-#include <yarp/os/Log.h>
+
 
 
 class fingersTuner_IDL_sync : public yarp::os::Portable {
@@ -142,7 +142,7 @@ bool fingersTuner_IDL::sync(const std::string& part, const yarp::os::Value& val)
   fingersTuner_IDL_sync helper;
   helper.init(part,val);
   if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?\n","bool fingersTuner_IDL::sync(const std::string& part, const yarp::os::Value& val)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDL::sync(const std::string& part, const yarp::os::Value& val)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -152,7 +152,7 @@ bool fingersTuner_IDL::tune(const std::string& part, const yarp::os::Value& val)
   fingersTuner_IDL_tune helper;
   helper.init(part,val);
   if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?\n","bool fingersTuner_IDL::tune(const std::string& part, const yarp::os::Value& val)");
+    fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDL::tune(const std::string& part, const yarp::os::Value& val)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -162,7 +162,7 @@ bool fingersTuner_IDL::save() {
   fingersTuner_IDL_save helper;
   helper.init();
   if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?\n","bool fingersTuner_IDL::save()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDL::save()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -172,7 +172,7 @@ bool fingersTuner_IDL::quit() {
   fingersTuner_IDL_quit helper;
   helper.init();
   if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?\n","bool fingersTuner_IDL::quit()");
+    fprintf(stderr,"Missing server method '%s'?\n","bool fingersTuner_IDL::quit()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
