@@ -21,7 +21,7 @@
 #include "RobotConfig.h"
 
 #include <yarp/os/Property.h>
-
+#include <yarp/os/LogStream.h>
 #include <iostream>
 #include <cstdlib>
 
@@ -138,29 +138,29 @@ void RobotConfig::setFlags() {
 	//else
 		//flags.valid = false;
 
-        cout << "The iCub simulator will start with the following configuration: " << endl << endl <<
-        "Elevation : " << actElevation << endl <<
-        "startHomePos : " << actStartHomePos << endl <<
-        "Legs : " << actLegs << endl <<
-        "Torso : " << actTorso << endl <<
-        "Left arm : " << actLArm << endl <<
-        "Left hand : " << actLHand << endl <<
-        "Right arm : " << actRArm << endl <<
-        "Right hand : " << actRHand << endl <<
-        "Head : " << actHead << endl <<
-        "Fixed Hip : " << actfixedHip << endl << endl <<
-        "Self-collisions : " << actSelfCol << endl <<
-        "Collisions for covers : " << actCoversCol << endl << endl <<
-        "Pressure sensors: " << actPressure << endl <<
-        "Whole body skin emulation: " << actSkinEmul << endl <<
-        "Cameras :" << actVision << endl  <<
-        "Objects : " << actWorld << endl <<
-        "Head Cover : " << actHeadCover << endl <<
-        "Legs Cover : " << actLegsCovers << endl <<
-        "Left arm Covers : " << actLeftArmCovers << endl <<
-        "Right arm Covers : " << actRightArmCovers << endl <<
-        "Torso Cover : " << actTorsoCovers << endl <<
-        "Screen : " << actScreen << endl << endl;
+        yInfo() << "The iCub simulator will start with the following configuration: \n\n" <<
+        "Elevation : " << actElevation << "\n" <<
+        "startHomePos : " << actStartHomePos << "\n" <<
+        "Legs : " << actLegs << "\n" <<
+        "Torso : " << actTorso << "\n" <<
+        "Left arm : " << actLArm << "\n" <<
+        "Left hand : " << actLHand << "\n" <<
+        "Right arm : " << actRArm << "\n" <<
+        "Right hand : " << actRHand << "\n" <<
+        "Head : " << actHead << "\n" <<
+        "Fixed Hip : " << actfixedHip << "\n" << "\n" <<
+        "Self-collisions : " << actSelfCol << "\n" <<
+        "Collisions for covers : " << actCoversCol << "\n" << "\n" <<
+        "Pressure sensors: " << actPressure << "\n" <<
+        "Whole body skin emulation: " << actSkinEmul << "\n" <<
+        "Cameras :" << actVision << "\n"  <<
+        "Objects : " << actWorld << "\n" <<
+        "Head Cover : " << actHeadCover << "\n" <<
+        "Legs Cover : " << actLegsCovers << "\n" <<
+        "Left arm Covers : " << actLeftArmCovers << "\n" <<
+        "Right arm Covers : " << actRightArmCovers << "\n" <<
+        "Torso Cover : " << actTorsoCovers << "\n" <<
+        "Screen : " << actScreen << "\n" << "\n";
 		
 }
 
@@ -168,10 +168,10 @@ void RobotConfig::setFlags() {
 //bool RobotConfig::stopConfig(ConstString error, bool proceed){
 void RobotConfig::stopConfig( ConstString error ){
 
-	cout << "\n\n\nThere seems to be a conflict with the " << error << " configuration file" << endl;
-	cout << "Check the iCub_parts_activation.ini under $ICUB_ROOT/app/simConfig " << endl;
-	cout << "If it still does not work (update svn) and re-install the app folder\n\n" << endl;
-	cout << "The iCub simulator will not start..\n\n\n" << endl;
+	yError() << "\n\n\nThere seems to be a conflict with the " << error << " configuration file";
+	yError() << "Check the iCub_parts_activation.ini under $ICUB_ROOT/app/simConfig ";
+	yError() << "If it still does not work (update svn) and re-install the app folder\n\n";
+	yError() << "The iCub simulator will not start..\n\n\n";
 	std::exit(1); // we can do this as no port has been created yet
 	//return false;
 }

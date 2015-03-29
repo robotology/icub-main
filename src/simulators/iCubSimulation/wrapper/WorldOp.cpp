@@ -20,100 +20,101 @@
 #include "WorldOp.h"
 
 #include <stdio.h>
+#include <yarp\os\Log.h>
 
 void show(const WorldOpTriplet& x) {
     if (!x.valid) {
-        printf("not set");
+        yDebug("not set");
     } else {
-        printf("%g %g %g", x.x[0], x.x[1], x.x[2]);
+        yDebug("%g %g %g", x.x[0], x.x[1], x.x[2]);
     }
-    printf("\n");
+    yDebug("\n");
 }
 
 void show(const WorldOpScalar& x) {
     if (!x.valid) {
-        printf("not set");
+        yDebug("not set");
     } else {
-        printf("%g", x.val);
+        yDebug("%g", x.val);
     }
-    printf("\n");
+    yDebug("\n");
 }
 
 void show(const WorldOpFlag& x, 
           const char *yes="True", 
           const char *no="False") {
     if (!x.valid) {
-        printf("not set");
+        yDebug("not set");
     } else {
-        printf("%s", x.setting?yes:no);
+        yDebug("%s", x.setting?yes:no);
     }
-    printf("\n");
+    yDebug("\n");
 }
 
 void show(const WorldOpIndex& x) {
     if (!x.valid) {
-        printf("not set");
+        yDebug("not set");
     } else {
-        printf("%d", x.index);
+        yDebug("%d", x.index);
     }
-    printf("\n");
+    yDebug("\n");
 }
 
 void show(const WorldOpName& x) {
     if (!x.valid) {
-        printf("not set");
+        yDebug("not set");
     } else {
-        printf("%s", x.name.c_str());
+        yDebug("%s", x.name.c_str());
     }
-    printf("\n");
+    yDebug("\n");
 }
 
 void WorldOp::show() const {
-    printf("Operation:\n");
-    printf("  cmd?: %s\n", yarp::os::Vocab::decode(cmd).c_str());
-    printf("  kind: ");
+    yDebug("Operation:\n");
+    yDebug("  cmd?: %s\n", yarp::os::Vocab::decode(cmd).c_str());
+    yDebug("  kind: ");
     ::show(kind);
-    printf("  name: ");
+    yDebug("  name: ");
     ::show(name);
-    printf("  dynamic: ");
+    yDebug("  dynamic: ");
     ::show(dynamic);
-    printf("  location: ");
+    yDebug("  location: ");
     ::show(location);
-    printf("  size: ");
+    yDebug("  size: ");
     ::show(size);
-    printf("  color: ");
+    yDebug("  color: ");
     ::show(color);
-    printf("  rotation: ");
+    yDebug("  rotation: ");
     ::show(rotation);
-    printf("  radius: ");
+    yDebug("  radius: ");
     ::show(radius);
-    printf("  length: ");
+    yDebug("  length: ");
     ::show(length);
-    printf("  active: ");
+    yDebug("  active: ");
     ::show(active);
-    printf("  index: ");
+    yDebug("  index: ");
     ::show(index);
-    printf("  collide: ");
+    yDebug("  collide: ");
     ::show(collide);
-    printf("  parameter: ");
+    yDebug("  parameter: ");
     ::show(parameter);
-    printf("  rightHanded?: ");
+    yDebug("  rightHanded?: ");
     ::show(rightHanded,"right","left");
-    printf("  modelName: ");
+    yDebug("  modelName: ");
     ::show(modelName);
-    printf("  modelTexture: ");
+    yDebug("  modelTexture: ");
     ::show(modelTexture);
 }
 
 void WorldResult::show() {
-    printf("Result:\n");
-    printf("  success: %s\n", success?"true":"false");
-    printf("  msg: %s\n", msg.c_str());
-    printf("  location: ");
+    yDebug("Result:\n");
+    yDebug("  success: %s\n", success?"true":"false");
+    yDebug("  msg: %s\n", msg.c_str());
+    yDebug("  location: ");
     ::show(location);
-    printf("  color: ");
+    yDebug("  color: ");
     ::show(color);
-    printf("  path: ");
+    yDebug("  path: ");
     ::show(path);
  }
 

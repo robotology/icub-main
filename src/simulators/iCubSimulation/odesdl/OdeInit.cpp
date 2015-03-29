@@ -19,6 +19,7 @@
 */
 
 #include "OdeInit.h"
+#include <yarp\os\Log.h>
 
 OdeInit *OdeInit::_odeinit = NULL;
 
@@ -54,7 +55,7 @@ OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config)
     
    
 //     // info on spaces created - relevant in actSelfCol mode   
-//     printf("ICubSim::init(): overview of the spaces created: \n");
+//     yDebug("ICubSim::init(): overview of the spaces created: \n");
 //     std::string s("space"); 
 //     printInfoOnSpace(space,s);
 //     s="iCub";
@@ -179,32 +180,32 @@ void OdeInit::printGeomClassAndNr(int geom_class, int geom_nr)
 {
  switch(geom_class){
 	  case 0: 
-		printf("	Geom nr. %d is a sphere.\n",geom_nr);
+		yDebug("	Geom nr. %d is a sphere.\n",geom_nr);
 		break;
 	  case 1: 
-		printf("	Geom nr. %d is a box.\n",geom_nr);
+		yDebug("	Geom nr. %d is a box.\n",geom_nr);
 		break;
 	  case 2: 
-		printf("	Geom nr. %d is a capsule\n.",geom_nr);
+		yDebug("	Geom nr. %d is a capsule\n.",geom_nr);
 		break;
 	  case 3: 
-		printf("	Geom nr. %d is a cylinder\n.",geom_nr);
+		yDebug("	Geom nr. %d is a cylinder\n.",geom_nr);
 		break;
 	  case 4: 
-		printf("	Geom nr. %d is a plane\n.",geom_nr);
+		yDebug("	Geom nr. %d is a plane\n.",geom_nr);
 		break;	
 	  case 8: 
-		printf("	Geom nr. %d is a triangle mesh\n.",geom_nr);
+		yDebug("	Geom nr. %d is a triangle mesh\n.",geom_nr);
 		break;	
 	  case 10:
 	  case 11:  
-		printf("	Geom nr. %d is a simple space\n.",geom_nr);
+		yDebug("	Geom nr. %d is a simple space\n.",geom_nr);
 		break;	
 	  case 12:  
-		printf("	Geom nr. %d is a hash space\n.",geom_nr);
+		yDebug("	Geom nr. %d is a hash space\n.",geom_nr);
 		break;	
 	  default: 
-		printf("	Geom nr. %d has an unknown type (nr. %d).\n",geom_nr,geom_class);
+		yDebug("	Geom nr. %d has an unknown type (nr. %d).\n",geom_nr,geom_class);
 		break;
 	} 
   
@@ -220,25 +221,25 @@ void OdeInit::printInfoOnSpace(dSpaceID my_space,const std::string & my_space_na
    dBodyID body_temp;
    
    num_geoms = dSpaceGetNumGeoms(my_space);
-   printf("\nSpace: %s: ID: %p. sublevel: %d, nr. geoms: %d. \n",my_space_name.c_str(),my_space,dSpaceGetSublevel(my_space),num_geoms);
+   yDebug("\nSpace: %s: ID: %p. sublevel: %d, nr. geoms: %d. \n",my_space_name.c_str(),my_space,dSpaceGetSublevel(my_space),num_geoms);
    for (int i=0;i<=(num_geoms-1);i++){
       geom_temp = dSpaceGetGeom (my_space, i);
       geom_class_temp = dGeomGetClass(geom_temp);
       printGeomClassAndNr(geom_class_temp,i);
       if (!dGeomIsSpace(geom_temp)){
         if (dGeomGetBody(geom_temp)!=NULL){ // i.e. a placeable geom
-            printf("            ID: %p, Coordinates:",geom_temp); 
+            yDebug("            ID: %p, Coordinates:",geom_temp); 
             ICubSim::printPositionOfGeom(geom_temp);
             dGeomGetAABB(geom_temp,aabb);
-            printf("            Bounding box coordinates: %f-%f,%f-%f,%f-%f\n:",aabb[0],aabb[1],aabb[2],aabb[3],aabb[4],aabb[5]); 
+            yDebug("            Bounding box coordinates: %f-%f,%f-%f,%f-%f\n:",aabb[0],aabb[1],aabb[2],aabb[3],aabb[4],aabb[5]); 
             if (geom_class_temp==8){ // trimesh
                body_temp = dGeomGetBody(geom_temp);
-               printf("          Coordinates of associated body are:"); 
+               yDebug("          Coordinates of associated body are:"); 
                ICubSim::printPositionOfBody(body_temp);
             } 
         } else {
             dGeomGetAABB(geom_temp,aabb);
-            printf("            ID: %p; bounding box coordinates: %f-%f,%f-%f,%f-%f\n:",geom_temp,aabb[0],aabb[1],aabb[2],aabb[3],aabb[4],aabb[5]); 
+            yDebug("            ID: %p; bounding box coordinates: %f-%f,%f-%f,%f-%f\n:",geom_temp,aabb[0],aabb[1],aabb[2],aabb[3],aabb[4],aabb[5]); 
         }
       }
    }

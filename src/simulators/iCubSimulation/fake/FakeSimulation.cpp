@@ -19,6 +19,7 @@
 */
 
 #include "FakeSimulation.h"
+#include <yarp\os\Log.h>
 
 #include <stdio.h>
 
@@ -26,7 +27,7 @@ void FakeSimulation::simLoop(int h, int w) {
     int n = 600;
     for (int i=0; i<n; i++) {
         if ((i+1)%10==0) {
-            printf("Fake simulation cycle %d of %d\n", i+1, n);
+            yDebug("Fake simulation cycle %d of %d\n", i+1, n);
         }
         streamer->sendVision();
         yarp::os::Time::delay(0.1);

@@ -28,6 +28,7 @@
 #include "world.h"
 #include <stdio.h>
 #include <yarp/os/ConstString.h>
+#include <yarp/os/Log.h>
 #include <iostream>
 #include "OdeInit.h"
 
@@ -171,7 +172,7 @@ void worldSim::draw(){
 
 void worldSim::loadTexture(ConstString texture, int numTexture){
 
-   // cout << " NUMBER TEXTURE " << numTexture << endl;
+   // yInfo() << " NUMBER TEXTURE " << numTexture;
     ConstString tmptext = (char *) model_DIR.c_str();
     texture = tmptext + "/"+ texture;
     setupTexture( (char* ) texture.c_str(), numTexture );
@@ -403,7 +404,7 @@ bool worldSim::MyObject1::create(const WorldOp& op, WorldResult& result, int idx
 
 // 3D model
 bool worldSim::MyObject2::create(const WorldOp& op, WorldResult& result, int idx) {
-    printf("Making a model\n");
+    yDebug("Making a model\n");
     if (!op.modelName.isValid()) {
         result.setFail("model name not set");
         return false;

@@ -27,6 +27,8 @@
  **/
 
 #include "xloader.h"
+#include <yarp/os/Log.h>
+
 #if _MSC_VER
 #pragma warning(disable:4996 4244 4305)
 #endif
@@ -49,11 +51,11 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
     int intval;
 
     if ((in = fopen(FileName, "r")) == NULL) {
-        printf ("Can't open the file '%s'\n", FileName);
+        yError ("Can't open the file '%s'\n", FileName);
         return 0;
     }
     else {
-        printf("Loading mesh data from '%s' ", FileName);
+        yDebug("Loading mesh data from '%s' ", FileName);
     
         while((symbol = fgets(buff, 256, in)) != (char*) NULL) { // Read till the end of file
             word = buff;
@@ -69,7 +71,7 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
                 ret=fscanf(in, "%d", &(tmpTriMesh->VertexCount));	// Get vertex count
                 tmpTriMesh->Vertices = (float *)malloc(tmpTriMesh->VertexCount * 3 * sizeof(float));
                 ret=fscanf(in, "%s", word);
-                printf("...");
+                yDebug("...");
                 if (fgets(word, 256, in)==0)
                     return 0;
 
@@ -78,20 +80,20 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
                     if (fgets(word, 256, in)==0)
                         return 0;
 
-                //printf("Read(%d): '%s'\n", i, word);
+                //yDebug("Read(%d): '%s'\n", i, word);
                 p = strtok(word, ",;");		
                 while (p != NULL) {
-                    //printf("p = '%s'\n", p);
+                    //yDebug("p = '%s'\n", p);
                     ret = sscanf(p, "%lf", &dblval);
                     if(ret > 0) { // only process if double was read
                         tmpTriMesh->Vertices[j] = dblval * ModelScale;
                         j++;
                     }
                     p = strtok(NULL, ",;");
-                    //printf("j = %d\n", j);
+                    //yDebug("j = %d\n", j);
                     }
                 }
-                printf("...");
+                yDebug("...");
                 ret=fscanf(in, "%d", &indexCount);	// Get index count
                 tmpTriMesh->IndexCount = indexCount * 3;
                 tmpTriMesh->Indices = (int *)malloc(tmpTriMesh->IndexCount * sizeof(int)); 
@@ -106,7 +108,7 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
                     p = strtok(word, ",;");
                     ret = sscanf(p, "%d", &intval);
                     if(intval != 3) {
-                        printf("Only triangular polygons supported! Convert your model!\n");
+                        yError("Only triangular polygons supported! Convert your model!\n");
                         return 0;
                     }
                     for(j = 0; j < 3; j++) {//hardcoded 3
@@ -115,18 +117,18 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
                         tmpTriMesh->Indices[i*3 + j] = intval;
                     }
             }
-                printf("... OK!\n");
+                yDebug("... OK!\n");
             }
         }
     }
     fclose(in);
 
     if ((in = fopen(FileName, "r")) == NULL) {
-        printf ("Can't open the file '%s'\n", FileName);
+        yError ("Can't open the file '%s'\n", FileName);
         return 0;
     }
     else {
-        printf("Loading texture coordinate from '%s' ", FileName);
+        yDebug("Loading texture coordinate from '%s' ", FileName);
         j=0;
         while((symbol = fgets(buff, 256, in)) != (char*) NULL) {
             word = buff;
@@ -138,7 +140,7 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
                     return 0; // consume newline
 
             tmpTriMesh->MeshCoord = (float *)malloc(tmpTriMesh->MeshCoordCount*2 * sizeof(float));
-            printf("...");
+            yDebug("...");
             for (i = 0; i < tmpTriMesh->MeshCoordCount; i++) {	
                 if (fgets(word, 256, in)==0)
                     return 0;
@@ -153,19 +155,19 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
                     p = strtok(NULL, ",;");
                     }
                 }
-                printf("...");
+                yDebug("...");
             }
-        }printf("... OK!\n");
+        }yDebug("... OK!\n");
     }
 
     fclose(in);
     //now load normals
     if ((in = fopen(FileName, "r")) == NULL) {
-        printf ("Can't open the file '%s'\n", FileName);
+        yError ("Can't open the file '%s'\n", FileName);
         return 0;
     }
     else {
-        printf("Loading normals from '%s' ", FileName);
+        yDebug("Loading normals from '%s' ", FileName);
         j=0;
         while((symbol = fgets(buff, 256, in)) != (char*) NULL) {
             word = buff;
@@ -177,7 +179,7 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
                     return 0; // consume newline
 
             tmpTriMesh->NormCoord = (float *)malloc(tmpTriMesh->NormCount*3 * sizeof(float));
-            printf("...");
+            yDebug("...");
             for (i = 0; i < tmpTriMesh->NormCount; i++) {	
                 if (fgets(word, 256, in)==0)
                     return 0;
@@ -192,9 +194,9 @@ dxTriMeshX *dLoadMeshFromX(const char* FileName)
                     p = strtok(NULL, ",;");
                     }
                 }
-                printf("...");
+                yDebug("...");
             }
-        }printf("... OK!\n");
+        }yDebug("... OK!\n");
     }
 
     fclose(in);

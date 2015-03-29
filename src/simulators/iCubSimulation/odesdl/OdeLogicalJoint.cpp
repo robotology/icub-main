@@ -23,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <yarp/os/Log.h>
 
 using namespace std;
 
@@ -71,7 +72,7 @@ void OdeLogicalJoint::init(OdeLogicalJoint& left,
                       OdeLogicalJoint& right,
                       OdeLogicalJoint& peer,
                       int sgn) {
-    printf("Vergence motor remap %d\n", sgn);
+    yDebug("Vergence motor remap %d\n", sgn);
     active = true;
     verge = sgn;
     sign = 1;
@@ -93,7 +94,7 @@ void OdeLogicalJoint::init(const char *unit,
     universal = 0;
     string sunit = unit;
     string stype = type;
-    printf("Motor %s %s %d %d\n", unit, type, index, sign);
+    yDebug("Motor %s %s %d %d\n", unit, type, index, sign);
     if (stype=="hinge") {
         hinged = true;
         universal = 0;
@@ -104,7 +105,7 @@ void OdeLogicalJoint::init(const char *unit,
         hinged = false;
         universal = 2;
     } else {
-        printf("Unknown axis type %s\n", type);
+        yError("Unknown axis type %s\n", type);
         ::exit(1);
     }
     if (sunit=="leftarm") {
@@ -155,7 +156,7 @@ void OdeLogicalJoint::init(const char *unit,
         torque = &(odeinit._iCub->Torso_torques[index]);
     }
     else {
-        printf("Unknown body unit %s\n", unit);
+        yError("Unknown body unit %s\n", unit);
         ::exit(1);
     }
     feedback = new dJointFeedback;
@@ -261,7 +262,7 @@ void OdeLogicalJoint::setVelocityRaw(double target) {
         }
     } else {
         if (fabs(target)>0.1) {
-            //printf("verger %d velocity %g\n", verge, target);
+            //yDebug("verger %d velocity %g\n", verge, target);
         }
         double altSpeed = peer->getSpeedSetpoint();
         if (verge==1) {

@@ -19,13 +19,13 @@
 */
 
 #include "iCubLogicalJoints.h"
-
+#include <yarp\os\Log.h>
 #include <stdlib.h>
 
 iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {
     RobotFlags& flags = config.getFlags();
     if (!flags.valid) {
-        printf("Robot flags are not set when creating iCubLogicalJoints\n");
+        yError("Robot flags are not set when creating iCubLogicalJoints\n");
         ::exit(1);
     }
     

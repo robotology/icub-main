@@ -167,7 +167,7 @@ public:
     }
 
     void debug() {
-        //printf("Command: %s\n", command.toString().c_str());
+        //yDebug("Command: %s\n", command.toString().c_str());
         //op.show();
     }
 };

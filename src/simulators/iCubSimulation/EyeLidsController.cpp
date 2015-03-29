@@ -19,6 +19,7 @@
 */
 
 #include "EyeLidsController.h"
+#include <yarp\os\Log.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -60,7 +61,7 @@ void EyeLids::checkPort()
         Bottle *bot = port.read(false);
         if (bot!=NULL){
         eyeLidsRotation = (float)bot->get(0).asDouble();
-            printf("Message received: %s\n",bot->toString().c_str());
+            yDebug("Message received: %s\n",bot->toString().c_str());
             bot->clear();
         }
     }

@@ -160,6 +160,7 @@
 #include <yarp/os/Property.h>
 #include <yarp/os/Thread.h>
 #include <yarp/dev/Drivers.h>
+#include <yarp/os/Log.h>
 
 #include "SimulationRun.h"
 #ifdef ICUB_SIM_ENABLE_ODESDL
@@ -196,7 +197,7 @@ int main(int argc, char** argv) {
     yarp::os::Network yarp;
     if (!yarp.checkNetwork())
     {
-        fprintf (stderr, "Error: could not initialize YARP network (is the nameserver running?)\n");
+        yError ("could not initialize YARP network (is the nameserver running?)\n");
         return 1;
     }
     
@@ -224,10 +225,10 @@ int main(int argc, char** argv) {
     /*if (options.check("verbose"))
     {
         bundle->verbose = true;
-        fprintf(stdout, "Starting the simulator with verbose flag on\n");
+        yDebug("Starting the simulator with verbose flag on\n");
     }*/
     if (bundle==NULL) {
-        fprintf(stderr,"Failed to allocate simulator\n");
+        yError("Failed to allocate simulator\n");
         return 1;
     }
 

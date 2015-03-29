@@ -22,7 +22,7 @@
 
 #include "OdeInit.h"
 #include "iCub_Sim.h"
-
+#include <yarp/os/Log.h>
 #include <map>
 
 #define DENSITY (1.0)		// density of all objects
@@ -82,19 +82,19 @@ bool OdeLink::checkObject(bool justNeedKind) {
              if (
                 odeinit._iCub->actRHand=="on") { 
                 bid = odeinit._iCub->body[11]; 
-                printf("Full left hand\n");
+                yDebug("Full left hand\n");
             } else {
                 bid = odeinit._iCub->r_hand; 
-                printf("slim left hand\n");
+                yDebug("slim left hand\n");
             }
         } else {
             if (
                 odeinit._iCub->actLHand=="on") { 
                 bid = odeinit._iCub->body[10]; 
-                printf("Full left hand\n");
+                yDebug("Full left hand\n");
             } else {
                 bid = odeinit._iCub->l_hand; 
-                printf("slim left hand\n");
+                yDebug("slim left hand\n");
             }
         }
     }
@@ -422,7 +422,7 @@ void OdeLink::doNumber() {
 }
 
 void OdeLink::apply() {
-    printf("ODE world\n");
+    yDebug("ODE world\n");
     op.show();
     ODE_access.wait();
     switch (op.cmd) {

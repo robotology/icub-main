@@ -24,10 +24,11 @@
 #include "OdeInit.h" 
 #include "iCub_Sim.h"
 #include "OdeWorldManager.h"
+#include <yarp/os/Log.h>
 
 bool OdeSdlSimulationBundle::onBegin() {
     dInitODE2(0); 
-    printf("\nODE configuration: %s\n\n", dGetConfiguration());
+    yDebug("\nODE configuration: %s\n\n", dGetConfiguration());
     return true;
 }
 

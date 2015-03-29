@@ -21,6 +21,7 @@
 #include "SimulationRun.h"
 
 #include <yarp/dev/DriverLinkCreator.h>
+#include <yarp/os/Log.h>
 
 #include "SimulatorModule.h"
 #include "iCubSimulationControl.h"
@@ -31,7 +32,7 @@ using namespace std;
 
 bool SimulationRun::run(SimulationBundle *bundle, int argc, char *argv[]) {
     if (bundle==NULL) {
-        fprintf(stderr,"Failed to allocate simulator\n");
+        yError("Failed to allocate simulator\n");
         return false;
     }
 
@@ -44,14 +45,14 @@ bool SimulationRun::run(SimulationBundle *bundle, int argc, char *argv[]) {
 
     LogicalJoints *icub_joints = bundle->createJoints(config);
     if (icub_joints==NULL) {
-        fprintf(stderr,"Failed to allocate joints\n");
+        yError("Failed to allocate joints\n");
         delete bundle;
         return false;
     }
 
     WorldManager *world = bundle->createWorldManager(config);
     if (world==NULL) {
-        fprintf(stderr,"Failed to allocate world manager\n");
+        yError("Failed to allocate world manager\n");
         delete bundle;
         return false;
     }

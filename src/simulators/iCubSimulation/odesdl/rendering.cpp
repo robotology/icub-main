@@ -34,6 +34,8 @@
 #pragma warning(disable:4244 4305)  //for VC++, no precision loss complaints
 #include "VideoTexture.h"
 #include <string.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 using namespace yarp::os;
 
@@ -112,7 +114,7 @@ bool setup_opengl(ResourceFinder& finder){
     Texture[8] = LoadTextureRAW( face.c_str(), false );
 
     if (!Texture[1]){
-        printf("No texture loaded\n");
+        yError("No texture loaded\n");
         return false;
     }
     return true;
@@ -521,11 +523,11 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
     char temp1;
     long i;	
     SIMBITMAPINFOHEADER infoheader1;
-    //cout << " RENDERING NUMBER TEXTURE " << whichtexture << endl;
-    cout << "Loading texture " <<  " '" << filename << "' ";
+    //yDebug() << " RENDERING NUMBER TEXTURE " << whichtexture;
+    yDebug()  << "Loading texture " <<  " '" << filename << "' ";
     num_texture++; // The counter of the current texture is increased	
-    if( (file1 = fopen(filename, "rb"))==NULL){ cout << "Cannot load/find texture file " << endl; return (0); }// Open the file for reading
-    cout << "......... OK! " << endl;
+    if( (file1 = fopen(filename, "rb"))==NULL){ yError() << "Cannot load/find texture file "; return (0); }// Open the file for reading
+    yDebug() << "......... OK! ";
     fseek(file1, 18, SEEK_CUR);  // start reading width & height 
 
     size_t ret=0;
@@ -543,9 +545,9 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
     if (ret!=1)
         return 0;
 
-    cout << "Texture Size " <<  infoheader1.biHeight << " " << infoheader1.biWidth << endl;
+    yDebug() << "Texture Size " <<  infoheader1.biHeight << " " << infoheader1.biWidth;
     if (infoheader1.biPlanes != 1) {
-        printf("Planes from %s is not 1: %u\n", filename, infoheader1.biPlanes);
+        yDebug("Planes from %s is not 1: %u\n", filename, infoheader1.biPlanes);
         return 0;
     }
     // read the bpp
@@ -555,7 +557,7 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
         return 0;
 
     if (infoheader1.biBitCount != 24) {
-      printf("Bpp from %s is not 24: %d\n", filename, infoheader1.biBitCount);
+      yDebug("Bpp from %s is not 24: %d\n", filename, infoheader1.biBitCount);
       return 0;
     }
     fseek(file1, 24, SEEK_CUR);
@@ -563,12 +565,12 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
     // read the data.
     infoheader1.data = (char *) malloc(infoheader1.biWidth * infoheader1.biHeight * 6);
     if (infoheader1.data == NULL) {
-        printf("Error allocating memory for color-corrected image data\n");
+        yError("Error allocating memory for color-corrected image data\n");
         return 0;
     }
 
     if ((i = fread(infoheader1.data, infoheader1.biWidth * infoheader1.biHeight * 3, 1, file1)) != 1) {
-        printf("Error reading image data from %s.\n", filename);
+        yError("Error reading image data from %s.\n", filename);
         return 0;
     }
 
@@ -582,20 +584,20 @@ int LoadBitmapTERMINAL(char *filename, int whichtexture)
     //glGenTextures(1, &texture);
    glBindTexture(GL_TEXTURE_2D, whichtexture);// Bind the ID texture specified by the 2nd parameter
 
-    cout << "Finished Binding texture "<< endl; 
-    cout << "Finished Setting parameters "<< endl; 
+    yInfo() << "Finished Binding texture "; 
+    yInfo() << "Finished Setting parameters "; 
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE); // We don't combine the color with the original surface color, use only the texture map.
-    cout << "Finished Setting glTexEnvf "<< endl; 
+    yInfo() << "Finished Setting glTexEnvf "; 
     // Finally we define the 2d texture
     glTexImage2D(GL_TEXTURE_2D, 0, 3, infoheader1.biWidth, infoheader1.biHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, infoheader1.data);
-    cout << "Finished Setting glTexImage2D "<< endl;
+    yInfo() << "Finished Setting glTexImage2D ";
 
     gluBuild2DMipmaps(GL_TEXTURE_2D, 3, infoheader1.biWidth, infoheader1.biHeight, GL_RGB, GL_UNSIGNED_BYTE, infoheader1.data);
     
-    cout << "Finished Setting gluBuild2DMipmaps "<< endl; 
+    yInfo() << "Finished Setting gluBuild2DMipmaps "; 
     free(infoheader1.data); // Free the memory we used to load the texture
     
-    cout << "\nFinished creating 3D Model................\n" << endl;
+    yInfo() << "Finished creating 3D Model................\n";
     //glDisable(GL_TEXTURE_2D);
     return ( whichtexture ); // Returns the current texture OpenGL ID
 }

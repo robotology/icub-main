@@ -28,8 +28,8 @@
 
 #include "SimConfig.h"
 #include <stdio.h>
-
-#include <iostream>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 using namespace yarp::os;
 using namespace std;
@@ -38,7 +38,7 @@ using namespace std;
 static ResourceFinder *_the_finder = NULL;
 
 void SimConfig::deleteFinder(){
-    printf("deleting finder\n");
+    yDebug("deleting finder\n");
     delete _the_finder;
 }
 */
@@ -56,37 +56,37 @@ static string configureFinder(int argc, char *argv[],
     if ( finder.check( "name" ) ) {
         moduleName = finder.find( "name" ).asString();
         moduleName = "/" + moduleName;
-        cout << "NEW MODULE NAME " << moduleName << endl;
+        yInfo() << "NEW MODULE NAME " << moduleName;
     }
     else {    
         moduleName ="/icubSim";
-        cout << "default module name: " << moduleName << endl;
+        yInfo()  << "default module name: " << moduleName;
     }
     if ( finder.check( "verbosity" ) ) {
         verbosity = finder.find( "verbosity" ).asInt();
-        cout << "custom verbosity level: " << verbosity << endl;
+        yInfo()  << "custom verbosity level: " << verbosity;
     }
     else {    
         verbosity = 0;
-        cout << "default verbosity level: " << verbosity << endl;
+        yInfo() << "default verbosity level: " << verbosity;
     }
     return moduleName;
 }
 
 /*
 ConstString SimConfig::find(const char *fileName) {
-    printf("SimConfig::find\n");
-    // printf("SimConfig: asked to find %s\n", fileName);
+    yDebug("SimConfig::find\n");
+    // yDebug("SimConfig: asked to find %s\n", fileName);
     ConstString location = findFile(fileName);
     if (location!="") {
-        //printf("Found config: %s\n", location.c_str());
+        //yDebug("Found config: %s\n", location.c_str());
     }
     return location;
 }
 
 ConstString SimConfig::findPath(const char *key) {
-    printf("SimConfig::findPath\n");
-   // printf("SimConfig: asked to find %s\n", fileName);
+    yDebug("SimConfig::findPath\n");
+   // yDebug("SimConfig: asked to find %s\n", fileName);
     return ResourceFinder::findPath(key);//find(key);
   // return getFinder().find(key);
 }
@@ -94,7 +94,7 @@ ConstString SimConfig::findPath(const char *key) {
 
 string SimConfig::configure(int argc, char *argv[], string &moduleName, int &verbosity)
 {
-    printf("SimConfig::configure\n");
+    yDebug("SimConfig::configure\n");
     //string moduleName;
     ::configureFinder( argc, argv, moduleName, verbosity, *this );
     this->moduleName = moduleName;

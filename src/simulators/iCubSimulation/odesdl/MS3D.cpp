@@ -284,7 +284,7 @@ void Model::reloadTextures()
             //m_pMaterials[i].m_pTextureFilename[strlen(m_pMaterials[i].m_pTextureFilename)-2]='a';
             //	m_pMaterials[i].m_pTextureFilename[strlen(m_pMaterials[i].m_pTextureFilename)-1]='w';
 
-            //cout<<m_pMaterials[i].m_pTextureFilename<<endl;
+            //yDebug()<<m_pMaterials[i].m_pTextureFilename;
             //m_pMaterials[i].m_texture = LoadTextureRAW(m_pMaterials[i].m_pTextureFilename,0);
         }
         else

@@ -29,7 +29,7 @@
 #include <yarp/sig/Image.h>
 #include <yarp/dev/Drivers.h>
 #include <yarp/dev/PolyDriver.h>
-
+#include <yarp/os/Log.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -169,7 +169,7 @@ void SimulatorModule::sendVision() {
 }
 
 bool SimulatorModule::closeModule() {
-    printf("Closing module...\n");
+    yInfo("Closing module...\n");
     interruptModule();
     
     if (sim!=NULL)
@@ -216,7 +216,7 @@ bool SimulatorModule::closeModule() {
     trqLeftArmPort.close();
     trqRightArmPort.close();
     
-    fprintf(stderr, "Successfully terminated...bye...\n");
+    yInfo("Successfully terminated...bye...\n");
     return true;
 }
 
@@ -254,7 +254,7 @@ bool SimulatorModule::interruptModule() {
 }
 
 bool SimulatorModule::read(ConnectionReader& connection){
-    //printf("in read...\n");
+    //yDebug("in read...\n");
     Bottle cmd, reply;
     cmd.read(connection);
     respond(cmd,reply);
@@ -269,11 +269,11 @@ bool SimulatorModule::respond(const Bottle &command, Bottle &reply) {
     bool ok = true;
     bool done = false;
     if (cmd=="help") {
-        printf("Commands available:\n");
-        printf("\tleft\n");
-        printf("\tright\n");
-        printf("\twide\n");
-        printf("\tworld\n");
+        yInfo("Commands available:\n");
+        yInfo("\tleft\n");
+        yInfo("\tright\n");
+        yInfo("\twide\n");
+        yInfo("\tworld\n");
         reply.fromString("world etc");
         done = true;
     } else if (cmd=="left") {
@@ -299,7 +299,7 @@ bool SimulatorModule::respond(const Bottle &command, Bottle &reply) {
 }
 
 yarp::dev::PolyDriver *SimulatorModule::createPart(const char *name) {
-    printf("Creating interface for body part %s\n", name);
+    yDebug("Creating interface for body part %s\n", name);
     Property options;
     ConstString part_file = finder.findFile(name);
     options.fromConfigFile(part_file.c_str());
@@ -310,8 +310,8 @@ yarp::dev::PolyDriver *SimulatorModule::createPart(const char *name) {
     yarp::dev::PolyDriver *driver = new yarp::dev::PolyDriver(options);
 
     if (!driver->isValid()){
-        printf("Device not available. Here are the known devices:\n");
-        printf("%s", yarp::dev::Drivers::factory().toString().c_str());
+        yError("Device not available. Here are the known devices:\n");
+        yError("%s", yarp::dev::Drivers::factory().toString().c_str());
         failureToLaunch = true;
         return NULL;
     }
@@ -321,7 +321,7 @@ yarp::dev::PolyDriver *SimulatorModule::createPart(const char *name) {
 void SimulatorModule::init()
 {
     if (!robot_flags.valid) {
-        printf("Robot flags are not set when creating SimulatorModule\n");
+        yDebug("Robot flags are not set when creating SimulatorModule\n");
         failureToLaunch = true;
         return;
     }

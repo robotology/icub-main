@@ -22,9 +22,10 @@
 #include "FakeWorldManager.h"
 
 #include <stdio.h>
+#include <yarp\os\Log.h>
 
 void FakeWorldManager::apply(const WorldOp& op, WorldResult& result) {
-    printf("*** fake world ***\n");
+    yDebug("*** fake world ***\n");
     result.msg = "not implemented";
 }
 

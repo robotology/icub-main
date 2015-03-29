@@ -194,22 +194,22 @@ void ICubSim::setJointControlAction() {
     int cm[25];
     memset(cm, VOCAB_CM_VELOCITY, sizeof(int) * 25);
     /*for(int i=0;i<5;i++){
-        printf("LAJoint %d angle: %.3f\t", i, 180.0/M_PI*dJointGetHingeAngle(LAjoints[i]));
-        printf("vel_d: %.3f\t", 180.0/M_PI*dJointGetHingeParam(LAjoints[i], dParamVel));
-        printf("fmax: %.1f\t", dJointGetHingeParam(LAjoints[i], dParamFMax));
-        printf("torque_d: %.1f\n", la_torques[i]);
+        yDebug("LAJoint %d angle: %.3f\t", i, 180.0/M_PI*dJointGetHingeAngle(LAjoints[i]));
+        yDebug("vel_d: %.3f\t", 180.0/M_PI*dJointGetHingeParam(LAjoints[i], dParamVel));
+        yDebug("fmax: %.1f\t", dJointGetHingeParam(LAjoints[i], dParamFMax));
+        yDebug("torque_d: %.1f\n", la_torques[i]);
     }*/
     /*for(int i=0;i<5;i++){
-        printf("RAJoint %d angle: %.1f\t", i, 180.0/M_PI*dJointGetHingeAngle(RAjoints[i]));
-        printf("vel_d: %.1f\t", 180.0/M_PI*dJointGetHingeParam(RAjoints[i], dParamVel));
-        printf("fmax: %.1f\t", dJointGetHingeParam(RAjoints[i], dParamFMax));
-        printf("torque_d: %.1f\n", ra_torques[i]);
+        yDebug("RAJoint %d angle: %.1f\t", i, 180.0/M_PI*dJointGetHingeAngle(RAjoints[i]));
+        yDebug("vel_d: %.1f\t", 180.0/M_PI*dJointGetHingeParam(RAjoints[i], dParamVel));
+        yDebug("fmax: %.1f\t", dJointGetHingeParam(RAjoints[i], dParamFMax));
+        yDebug("torque_d: %.1f\n", ra_torques[i]);
     }*/
     /*for(int i=0;i<3;i++){
-        printf("TorsoJoint %d angle: %.1f\t", i, 180.0/M_PI*dJointGetHingeAngle(Torsojoints[i]));
-        printf("vel_d: %.1f\t", 180.0/M_PI*dJointGetHingeParam(Torsojoints[i], dParamVel));
-        printf("fmax: %.1f\t", dJointGetHingeParam(Torsojoints[i], dParamFMax));
-        printf("torque_d: %.1f\n", Torso_torques[i]);
+        yDebug("TorsoJoint %d angle: %.1f\t", i, 180.0/M_PI*dJointGetHingeAngle(Torsojoints[i]));
+        yDebug("vel_d: %.1f\t", 180.0/M_PI*dJointGetHingeParam(Torsojoints[i], dParamVel));
+        yDebug("fmax: %.1f\t", dJointGetHingeParam(Torsojoints[i], dParamFMax));
+        yDebug("torque_d: %.1f\n", Torso_torques[i]);
     }*/
 
     // BodyPart: 1 left arm, 2 right arm, 3 head, 4 left leg, 5 right leg, 6 torso
@@ -1335,7 +1335,7 @@ bool ICubSim::loadJointPosition(const char *joints_path){
 
     if(!fin.is_open())
     {
-        fprintf(stdout,"Could not find joint.ini file!\n");
+        yError("Could not find joint.ini file!\n");
         return false;
     }
 
@@ -3165,14 +3165,14 @@ void ICubSim::initCovers(ResourceFinder& finder)
 
     textureName[0] = finder.findFile("lowerArmTexture");//texture used for all covers
 
-    cout << "\nCreating 3D Model of the icub.......\n" << endl;
+    yInfo() << "Creating 3D Model of the icub.......\n";
     for (map<string,ConstString>::iterator itr=model.begin(); itr != model.end(); itr++) //iterating through all the cover names
     {
         model_TriData[(*itr).first] = dGeomTriMeshDataCreate();
         model_trimesh[(*itr).first] = dLoadMeshFromX(model[(*itr).first].c_str());
         if (!model_trimesh[(*itr).first])
         {
-            cout << "Check spelling/location of file" << endl;
+            yInfo() << "Check spelling/location of file";
         }
         else
         {
@@ -4059,7 +4059,7 @@ void ICubSim::initSkinActivationBottles()
         emptySkinActivationForearm.addDouble(forearm_empty[i]);
         fullSkinActivationForearm.addDouble(forearm_full[i]);
     }
-    //printf("fullSkinActivationForearm: %s \n",fullSkinActivationForearm.toString().c_str());
+    //yDebugg("fullSkinActivationForearm: %s \n",fullSkinActivationForearm.toString().c_str());
     
    //for the upper arm and torso, we keep the full all set to 255 for now - I haven't tested which taxels are 0s yet
     //init arm
@@ -4200,13 +4200,13 @@ ICubSim::ICubSim(dWorldID world, dSpaceID space, dReal X, dReal Y, dReal Z,
 void ICubSim::printPositionOfGeom(dGeomID geomID)
 {
     const dReal * pos = dGeomGetPosition(geomID);
-    printf("%f %f %f \n",pos[0],pos[1],pos[2]);
+    yDebug("%f %f %f \n",pos[0],pos[1],pos[2]);
 }
 
 void ICubSim::printPositionOfBody(dBodyID bodyID)
 {
     const dReal * pos = dBodyGetPosition(bodyID);
-    printf("%f %f %f \n",pos[0],pos[1],pos[2]);
+    yDebug("%f %f %f \n",pos[0],pos[1],pos[2]);
 }
 
 
