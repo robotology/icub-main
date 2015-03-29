@@ -33,6 +33,8 @@
 #include "iCubSimulationControl.h"
 #include "OdeInit.h"
 #include <yarp/dev/ControlBoardInterfacesImpl.inl>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -402,6 +404,20 @@ bool iCubSimulationControl::setPidsRaw(const Pid *pids)
 /// cmd is a SingleAxis pointer with 1 double arg
 bool iCubSimulationControl::setReferenceRaw (int axis, double ref)
 {
+    int mode = 0;
+    getControlModeRaw(axis, &mode);
+    if (mode != VOCAB_CM_POSITION_DIRECT &&
+        mode != VOCAB_CM_IDLE)
+    {
+        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+        yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, part " << partSelec << " joint: " << axis;
+        setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
+        #else
+        yError() << "setReferenceRaw: skipping command because part " << partSelec << " joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
+        return false;
+        #endif
+    }
+
     if( (axis>=0) && (axis<njoints) )
         {
             _mutex.wait();
@@ -414,15 +430,14 @@ bool iCubSimulationControl::setReferenceRaw (int axis, double ref)
     return false;
 }
 
-/// cmd is an array of double (LATER: to be optimized).
 bool iCubSimulationControl::setReferencesRaw (const double *refs)
 {
-   _mutex.wait();
-   for(int axis = 0; axis<njoints; axis++){
-        next_pos[axis] = refs[axis];
+   bool ret = true;
+   for(int axis = 0; axis<njoints; axis++)
+   {
+      ret &= setReferenceRaw(axis, refs[axis]);
    }
-    _mutex.post();
-    return true;
+   return ret;
 }
 
 bool iCubSimulationControl::setErrorLimitRaw(int axis, double limit)
@@ -527,6 +542,22 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
 {
     if( (axis >=0) && (axis<njoints) )
     {
+        int mode = 0;
+        getControlModeRaw(axis, &mode);
+        if (mode != VOCAB_CM_POSITION &&
+            mode != VOCAB_CM_MIXED    &&
+            mode != VOCAB_CM_IMPEDANCE_POS &&
+            mode != VOCAB_CM_IDLE)
+        {
+            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+            yWarning() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, part " << partSelec << " joint: " << axis;
+            setControlModeRaw(axis,VOCAB_CM_POSITION);
+            #else
+            yError() << "positionMoveRaw: skipping command because part " << partSelec << " joint " << axis << "is not in VOCAB_CM_POSITION mode";
+            return false;
+            #endif
+        }
+
         _mutex.wait();
         if(ref< limitsMin[axis])
         {
@@ -582,53 +613,12 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
 
 bool iCubSimulationControl::positionMoveRaw(const double *refs)
 {
-    _mutex.wait();
+    bool ret = true;
     for(int axis = 0; axis<njoints; axis++)
-        {
-            controlMode[axis] = MODE_POSITION;
-            double ref = refs[axis];
-            if(ref< limitsMin[axis])
-            {
-                if (njoints == 16)
-                {
-                    if ( axis == 7 )
-                        next_pos[axis] = limitsMax[axis];
-                }
-                else
-                    next_pos[axis] = limitsMin[axis];
-            }
-            else if(ref > limitsMax[axis])
-            {
-                if (njoints == 16)
-                {
-                    if ( axis == 7 )
-                        next_pos[axis] = fabs(limitsMax[axis] - limitsMax[axis]);
-                }
-                else
-                    next_pos[axis] = limitsMax[axis];
-            }
-            else
-            {
-                if (njoints == 16)
-                {
-                    if ( axis == 10 ||  axis == 12 || axis == 14 )
-                        next_pos[axis] = ref/2;
-                    else if ( axis == 15 ) 
-                        next_pos[axis] = ref/3;
-                    else if ( axis == 7 ) 
-                        next_pos[axis] = fabs(limitsMax[axis] - ref);
-                    else 
-                        next_pos[axis] = ref;
-                }else
-                    next_pos[axis] = ref;
-            }
-
-            motor_on[axis]=true;
-            if (verbosity)
-                printf("moving joint %d of part %d to pos %f\n",axis,partSelec,next_pos[axis]);
-        }
-    _mutex.post();
-    return true;
+    {
+        ret &= positionMoveRaw(axis, refs[axis]);
+    }
+    return ret;
 }
 
 bool iCubSimulationControl::relativeMoveRaw(int axis, double delta)
@@ -773,14 +763,26 @@ bool iCubSimulationControl::stopRaw()
 /// for each axis
 bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)
 {
-    if( (axis >=0) && (axis<njoints) ) {
+    if( (axis >=0) && (axis<njoints) )
+    {
+        int mode = 0;
+        getControlModeRaw(axis, &mode);
+        if (mode != VOCAB_CM_VELOCITY &&
+        mode != VOCAB_CM_MIXED    &&
+        mode != VOCAB_CM_IMPEDANCE_VEL && 
+        mode != VOCAB_CM_IDLE)
+        {
+            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+            yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, part " << partSelec << " joint: " << axis;
+            setControlModeRaw(axis,VOCAB_CM_VELOCITY);
+            #else
+            yError() << "velocityMoveRaw: skipping command because part " << partSelec << " joint " << axis << "is not in VOCAB_CM_VELOCITY mode";
+            return false;
+            #endif
+        }
         _mutex.wait();
         next_vel[axis] = sp;
         motor_on[axis] = true;
-        if (controlMode[axis] != MODE_IMPEDANCE_POS && controlMode[axis] != MODE_IMPEDANCE_VEL ) 
-                controlMode[axis] = MODE_VELOCITY; 
-        else 
-            controlMode[axis] = MODE_IMPEDANCE_VEL; 
         _mutex.post();
         return true;
     }
@@ -793,16 +795,12 @@ bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)
 /// for each axis
 bool iCubSimulationControl::velocityMoveRaw (const double *sp)
 {
-    _mutex.wait();
-    for (int axis=0; axis<njoints; axis++) {
-        controlMode[axis] = MODE_VELOCITY; 
-        next_vel[axis] = sp[axis];
-        motor_on[axis] = true;
-        if (verbosity)
-            printf("setting joint %d of part %d to velocity %f\n",axis,partSelec,next_vel[axis]);
+    bool ret = true;
+    for (int axis=0; axis<njoints; axis++)
+    {
+        ret &= velocityMoveRaw(axis,sp[axis]);
     }
-    _mutex.post();
-    return true;
+    return ret;
 }
 
 bool iCubSimulationControl::setEncoderRaw(int axis, double val)
@@ -1628,6 +1626,7 @@ bool iCubSimulationControl::setControlModeRaw(const int j, const int mode)
         {
             _mutex.wait();
             controlMode[j] = ControlModes_yarp2iCubSIM(mode);
+            next_pos[j]=current_pos[j];
             _mutex.post();
         }
        return true;
@@ -1687,6 +1686,7 @@ bool iCubSimulationControl::getInteractionModesRaw(yarp::dev::InteractionModeEnu
 bool iCubSimulationControl::setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode)
 {
     interactionMode[axis] = (int)mode;
+    next_pos[axis]=current_pos[axis];
     return true;
 }
 
@@ -1726,6 +1726,19 @@ bool iCubSimulationControl::setPositionRaw(int axis, double ref)
     // This function has been copy pasted from positionMoveRaw
     if( (axis >=0) && (axis<njoints) )
     {
+        int mode = 0;
+        getControlModeRaw(axis, &mode);
+        if (mode != VOCAB_CM_POSITION_DIRECT &&
+            mode != VOCAB_CM_IDLE)
+        {
+            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
+            yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, part:" << partSelec << " joint: " << axis;
+            setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
+            #else
+            yError() << "setPositionRaw: skipping command because part " << partSelec << " joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
+            return false;
+            #endif
+        }
         _mutex.wait();
         if(ref< limitsMin[axis])
         {
