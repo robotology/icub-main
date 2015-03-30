@@ -19,7 +19,7 @@
 */
 
 #include "iCubLogicalJoints.h"
-#include <yarp\os\Log.h>
+#include <yarp/os/Log.h>
 #include <stdlib.h>
 
 iCubLogicalJoints::iCubLogicalJoints(RobotConfig& config) {

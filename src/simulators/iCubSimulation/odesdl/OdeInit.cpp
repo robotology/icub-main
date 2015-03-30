@@ -19,7 +19,7 @@
 */
 
 #include "OdeInit.h"
-#include <yarp\os\Log.h>
+#include <yarp/os/Log.h>
 
 OdeInit *OdeInit::_odeinit = NULL;
 

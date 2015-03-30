@@ -22,7 +22,7 @@
 #include "FakeWorldManager.h"
 
 #include <stdio.h>
-#include <yarp\os\Log.h>
+#include <yarp/os/Log.h>
 
 void FakeWorldManager::apply(const WorldOp& op, WorldResult& result) {
     yDebug("*** fake world ***\n");
