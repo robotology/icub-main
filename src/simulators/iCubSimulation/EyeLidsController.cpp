@@ -19,7 +19,7 @@
 */
 
 #include "EyeLidsController.h"
-#include <yarp\os\Log.h>
+#include <yarp/os/Log.h>
 
 using namespace yarp::os;
 using namespace yarp::sig;
