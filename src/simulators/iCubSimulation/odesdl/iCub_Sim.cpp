@@ -120,7 +120,9 @@ static int nFeedbackStructs=0;
 
 static bool START_SELF_COLLISION_DETECTION = false; //we want to set this trigger on only after the robot is in in home pos -
  //it's initial configuration is with arms inside the thighs 
-
+static const double EXTRA_MARGIN_FOR_TAXEL_POSITION_M = 0.03; //for skin emulation we get the coordinates of the collision and contact with skin cover from ODE; 
+//after transforming to local reference frame of respective skin part, we emulate which set of taxels would get activated at that position; 
+//however, with errors in the position, we need an extra margin, so the contact falls onto some taxels
 
 void OdeSdlSimulation::draw() {
     OdeInit& odeinit = OdeInit::get();
@@ -2062,31 +2064,34 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
      
 void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const Vector geo_center_link_FoR,std::vector<unsigned int>& list_of_taxels){
  
+   // EXTRA_MARGIN_FOR_TAXEL_POSITION_M = 0.03; //for skin emulation we get the coordinates of the collision and contact with skin cover from ODE; 
+   //after transforming to local reference frame of respective skin part, we emulate which set of taxels would get activated at that position; 
+   //however, with errors in the position, we need an extra margin, so the contact falls onto some taxels
     switch (skin_part){
         case SKIN_LEFT_HAND:
-            if ((geo_center_link_FoR[0]<0.003) && (geo_center_link_FoR[0]>-0.012) && (geo_center_link_FoR[1]>-0.026) && (geo_center_link_FoR[1]<-0.0055)){
+            if ((geo_center_link_FoR[0]<0.003+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.026-EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<-0.0055)){
                 list_of_taxels.push_back(121);list_of_taxels.push_back(122);list_of_taxels.push_back(123);
                 list_of_taxels.push_back(124);list_of_taxels.push_back(125);list_of_taxels.push_back(126);
                 list_of_taxels.push_back(127);list_of_taxels.push_back(128);
                 //list_of_taxels.push_back();list_of_taxels.push_back();list_of_taxels.push_back();
             }
-            else if ((geo_center_link_FoR[0]<0.003) && (geo_center_link_FoR[0]>-0.012) && (geo_center_link_FoR[1]>-0.0055) && (geo_center_link_FoR[1]<0.01)){
+            else if ((geo_center_link_FoR[0]<0.003+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.0055) && (geo_center_link_FoR[1]<0.01)){
                 list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98); 
                 list_of_taxels.push_back(99);list_of_taxels.push_back(102);list_of_taxels.push_back(103);
                 list_of_taxels.push_back(120);list_of_taxels.push_back(129);list_of_taxels.push_back(130);
             }
-            else if ((geo_center_link_FoR[0]<0.003) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>0.01) && (geo_center_link_FoR[1]<0.03) ){
+            else if ((geo_center_link_FoR[0]<0.003+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>0.01) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(104);  
                     list_of_taxels.push_back(105);list_of_taxels.push_back(106);list_of_taxels.push_back(113);  
                     list_of_taxels.push_back(116);list_of_taxels.push_back(117);  
             }
-            else if ((geo_center_link_FoR[0]<-0.014) && (geo_center_link_FoR[0]>-0.024) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<0.03) ){
+            else if ((geo_center_link_FoR[0]<-0.014) && (geo_center_link_FoR[0]>-0.024) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(110);  
                     list_of_taxels.push_back(111);list_of_taxels.push_back(112);list_of_taxels.push_back(114);  
                     list_of_taxels.push_back(115);list_of_taxels.push_back(118); list_of_taxels.push_back(142); 
                     list_of_taxels.push_back(143);
             }   
-            else if ((geo_center_link_FoR[0]<-0.024) && (geo_center_link_FoR[0]>-0.04) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<0.03) ){
+            else if ((geo_center_link_FoR[0]<-0.024) && (geo_center_link_FoR[0]>-0.04-EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);  
                     list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);  
                     list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);                   
@@ -2096,29 +2101,29 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
             }
             break;
          case SKIN_RIGHT_HAND:
-            if ((geo_center_link_FoR[0]<0.003) && (geo_center_link_FoR[0]>-0.012) && (geo_center_link_FoR[1]>-0.026) && (geo_center_link_FoR[1]<-0.0055)){
+            if ((geo_center_link_FoR[0]<0.003+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.026-EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<-0.0055)){
                 list_of_taxels.push_back(120);list_of_taxels.push_back(121);list_of_taxels.push_back(122);
                 list_of_taxels.push_back(123);list_of_taxels.push_back(124);list_of_taxels.push_back(125);
                 list_of_taxels.push_back(126);list_of_taxels.push_back(128);
                 //list_of_taxels.push_back();list_of_taxels.push_back();list_of_taxels.push_back();
             }
-            else if ((geo_center_link_FoR[0]<0.003) && (geo_center_link_FoR[0]>-0.012) && (geo_center_link_FoR[1]>-0.0055) && (geo_center_link_FoR[1]<0.01)){
+            else if ((geo_center_link_FoR[0]<0.003+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.0055) && (geo_center_link_FoR[1]<0.01)){
                 list_of_taxels.push_back(99);list_of_taxels.push_back(102);list_of_taxels.push_back(103); 
                 list_of_taxels.push_back(104);list_of_taxels.push_back(105);list_of_taxels.push_back(106);
                 list_of_taxels.push_back(127);list_of_taxels.push_back(129);list_of_taxels.push_back(130);
             }
-            else if ((geo_center_link_FoR[0]<0.003) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>0.01) && (geo_center_link_FoR[1]<0.03) ){
+            else if ((geo_center_link_FoR[0]<0.003+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>0.01) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98);  
                     list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(110);  
                     list_of_taxels.push_back(111);list_of_taxels.push_back(112);  
             }
-            else if ((geo_center_link_FoR[0]<-0.014) && (geo_center_link_FoR[0]>-0.024) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<0.03) ){
+            else if ((geo_center_link_FoR[0]<-0.014) && (geo_center_link_FoR[0]>-0.024) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(113);  
                     list_of_taxels.push_back(114);list_of_taxels.push_back(115);list_of_taxels.push_back(116);  
                     list_of_taxels.push_back(117);list_of_taxels.push_back(118); list_of_taxels.push_back(142); 
                     list_of_taxels.push_back(143);
             }   
-            else if ((geo_center_link_FoR[0]<-0.024) && (geo_center_link_FoR[0]>-0.040) && (geo_center_link_FoR[1]>0.0) && (geo_center_link_FoR[1]<0.03) ){
+            else if ((geo_center_link_FoR[0]<-0.024) && (geo_center_link_FoR[0]>-0.040-EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);  
                     list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);  
                     list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);                   
