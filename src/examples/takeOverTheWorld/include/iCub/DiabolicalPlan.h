@@ -10,7 +10,7 @@
 #define __ICUB_DIABOLICALPLAN__
 
 #include <stdio.h>
-#include <yarp\os\Log.h>
+#include <yarp/os/Log.h>
 
 class DiabolicalPlan {
 private:
