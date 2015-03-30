@@ -19,7 +19,7 @@
 */
 
 #include "FakeSimulation.h"
-#include <yarp\os\Log.h>
+#include <yarp/os/Log.h>
 
 #include <stdio.h>
 
