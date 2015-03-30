@@ -154,6 +154,7 @@ private:
     
     static void initContactICubSkinEmulMap(void);
     static void resetContactICubSkinEmulMap(void);
+    static void printContactICubSkinEmulMap(void); //for debugging
     
     // in the self_collisions regime, this is to ignore collisions between certain geoms, such as upper arm covers colliding with torso
     static bool selfCollisionOnIgnoreList(string geom1_string, string geom2_string);
