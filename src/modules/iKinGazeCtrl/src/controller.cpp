@@ -458,7 +458,7 @@ void Controller::setJointsCtrlMode(const VectorOf<int> &jointsToSet)
     VectorOf<int> modes;
     for (size_t i=0; i<jointsToSet.size(); i++)
     {
-        if (jointsToSet[i]<3)
+        if (jointsToSet[i]<eyesJoints[0])
         {
             if (neckPosCtrlOn)
                 modes.push_back(VOCAB_CM_POSITION_DIRECT);
