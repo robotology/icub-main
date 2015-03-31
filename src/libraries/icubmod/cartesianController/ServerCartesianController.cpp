@@ -1519,19 +1519,46 @@ void ServerCartesianController::stopLimb(const bool execStopPosition)
 {
     if (!posDirectEnabled || execStopPosition)
     {
+        Bottle info;
+        info.addString(posDirectEnabled?"position":"velocity");
+        info.addString("single");
+
         int j=0; int k=0;
         for (unsigned int i=0; i<chainState->getN(); i++)
         {
             if (!(*chainState)[i].isBlocked())
-                posDirectEnabled?
-                lStp[j]->stop(lRmp[j][k]):
-                lVel[j]->velocityMove(lRmp[j][k],0.0);  // vel==0.0 is always achievable
+            {
+                int joint=lRmp[j][k];
+                ostringstream ss;
+                ss<<lDsc[j].key.c_str()<<"_"<<joint;
+                info.addString(ss.str().c_str());
+
+                if (posDirectEnabled)
+                {
+                    lStp[j]->stop(joint);
+                    info.addString("stop");
+                }
+                else
+                {
+                    // vel==0.0 is always achievable
+                    lVel[j]->velocityMove(joint,0.0);
+                    info.addDouble(0.0); 
+                }
+            }
 
             if (++k>=lJnt[j])
             {
                 j++;
                 k=0;
             }
+        }
+
+        if (debugInfoEnabled && (portDebugInfo.getOutputCount()>0))
+        {
+            portDebugInfo.prepare()=info;
+            debugInfo.update(txInfo.getTime());
+            portDebugInfo.setEnvelope(debugInfo);
+            portDebugInfo.writeStrict();
         }
     }
 
@@ -1565,15 +1592,21 @@ void ServerCartesianController::run()
     {
         mutex.lock();
 
+        // read the feedback
+        double stamp=getFeedback(fb);
+
+        // update the stamp anyway
+        if (stamp>=0.0)
+            txInfo.update(stamp);
+        else
+            txInfo.update();
+
         VectorOf<int> jointsToSet;
         jointsHealthy=areJointsHealthyAndSet(jointsToSet);
         if (!jointsHealthy)
             stopControlHelper();
 
         string event="none";
-
-        // read the feedback
-        double stamp=getFeedback(fb);
 
         // iff in position then update just chainState
         // and make the chainPlan evolve freely without
@@ -1613,12 +1646,6 @@ void ServerCartesianController::run()
             }
         }
 
-        // update the stamp anyway
-        if (stamp>=0.0)
-            txInfo.update(stamp);
-        else
-            txInfo.update();
-
         if (executingTraj)
         {
             // add the contribution of the Smith Predictor block
@@ -1656,7 +1683,7 @@ void ServerCartesianController::run()
                     portDebugInfo.prepare()=(this->*sendCtrlCmd)();
                     debugInfo.update(txInfo.getTime());
                     portDebugInfo.setEnvelope(debugInfo);
-                    portDebugInfo.write();
+                    portDebugInfo.writeStrict();
                 }
                 else
                     (this->*sendCtrlCmd)();
