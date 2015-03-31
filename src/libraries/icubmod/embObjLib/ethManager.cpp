@@ -19,6 +19,7 @@
 #include <stdexcept>      // std::out_of_range
 #include <yarp/os/Network.h>
 #include <yarp/os/NetType.h>
+#include <ace/Time_Value.h>
 
 #ifdef ICUB_USE_REALTIME_LINUX
 #include <pthread.h>
