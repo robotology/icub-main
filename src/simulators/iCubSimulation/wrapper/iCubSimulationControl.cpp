@@ -338,7 +338,7 @@ void iCubSimulationControl::jointStep() {
         
             motor_on[axis] = true; // no reason to turn motors off, for now
 
-            if (controlMode[axis]==MODE_VELOCITY || controlMode[axis]==MODE_IMPEDANCE_VEL) {
+            if (controlMode[axis]==MODE_VELOCITY || controlMode[axis]==VOCAB_CM_MIXED || controlMode[axis]==MODE_IMPEDANCE_VEL) {
                 if(((current_pos[axis]<limitsMin[axis])&&(next_vel[axis]<0)) || ((current_pos[axis]>limitsMax[axis])&&(next_vel[axis]>0)))
                     ctrl.setVelocity(0.0);
                 else{
