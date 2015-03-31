@@ -142,6 +142,7 @@ public:
     ResourceFinder rf_cameras;
     ResourceFinder rf_tweak;
     string         tweakFile;
+    bool           debugInfoEnabled;
 };
 
 

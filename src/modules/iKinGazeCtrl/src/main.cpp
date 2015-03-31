@@ -989,6 +989,7 @@ public:
         commData.head_version=rf.check("headV2")?2.0:1.0;
         commData.verbose=rf.check("verbose");
         commData.tweakOverwrite=(rf.check("tweakOverwrite",Value("on")).asString()=="on");
+        commData.debugInfoEnabled=rf.check("debugInfo",Value("off")).asString()=="on";
 
         // minAbsVel is given in absolute form
         // hence it must be positive
@@ -1066,6 +1067,9 @@ public:
             drvTorso=drvHead=NULL;
             return false;
         }
+
+        if (commData.debugInfoEnabled)
+            yDebug("Commands to robot will be also streamed out on debug port");
 
         // create and start threads
         // creation order does matter (for the minimum allowed vergence computation) !!

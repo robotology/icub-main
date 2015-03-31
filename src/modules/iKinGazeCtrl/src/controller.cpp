@@ -17,6 +17,7 @@
 */
 
 #include <cstdio>
+#include <sstream>
 #include <algorithm>
 
 #include <iCub/solver.h>
@@ -252,7 +253,42 @@ void Controller::stopLimb(const bool execStopPosition)
                               Vector(eyesJoints.size(),0.0).data());
     }
     else
-        velHead->velocityMove(Vector(nJointsHead,0.0).data());        
+        velHead->velocityMove(Vector(nJointsHead,0.0).data());
+
+    if (commData->debugInfoEnabled && (port_debug.getOutputCount()>0))
+    {
+        Bottle info;
+        int j=0;
+
+        if (neckPosCtrlOn)
+        {
+            if (execStopPosition)
+            {
+                for (size_t i=0; i<neckJoints.size(); i++)
+                {
+                    ostringstream ss;
+                    ss<<"pos_"<<neckJoints[i];
+                    info.addString(ss.str().c_str());
+                    info.addString("stop");
+                }
+            }
+
+            j=eyesJoints[0];
+        }
+
+        for (int i=j; i<nJointsHead; i++)
+        {
+            ostringstream ss;
+            ss<<"vel_"<<i;
+            info.addString(ss.str().c_str());
+            info.addDouble(0.0);
+        }
+
+        port_debug.prepare()=info;
+        txInfo_debug.update();
+        port_debug.setEnvelope(txInfo_debug);
+        port_debug.writeStrict();
+    }
 
     commData->get_isCtrlActive()=false;
 }
@@ -310,6 +346,9 @@ bool Controller::threadInit()
     port_q.open((commData->localStemName+"/q:o").c_str());
     port_event.open((commData->localStemName+"/events:o").c_str());
 
+    if (commData->debugInfoEnabled)
+        port_debug.open((commData->localStemName+"/dbg:o").c_str());        
+
     yInfo("Starting Controller at %d ms",period);
     q_stamp=Time::now();
 
@@ -345,6 +384,23 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
     _ang[1]=CTRL_RAD2DEG*std::min(std::max(lim(eyesJoints[1],0),ang[1]),lim(eyesJoints[1],1));
     _ang[2]=CTRL_RAD2DEG*std::min(std::max(lim(eyesJoints[2],0),ang[2]),lim(eyesJoints[2],1));
     posHead->positionMove(eyesJoints.size(),eyesJoints.getFirst(),_ang.data());
+
+    if (commData->debugInfoEnabled && (port_debug.getOutputCount()>0))
+    {
+        Bottle info;
+        for (size_t i=0; i<_ang.length(); i++)
+        {
+            ostringstream ss;
+            ss<<"pos_"<<eyesJoints[i];
+            info.addString(ss.str().c_str());
+            info.addDouble(_ang[i]);
+        }
+
+        port_debug.prepare()=info;
+        txInfo_debug.update();
+        port_debug.setEnvelope(txInfo_debug);
+        port_debug.writeStrict();
+    }
 
     saccadeStartTime=Time::now();
     commData->get_isSaccadeUnderway()=true;
@@ -580,14 +636,47 @@ void Controller::run()
     {
         mutexCtrl.lock();
 
+        Vector posdeg;
         if (neckPosCtrlOn)
         {
-            Vector posdeg=(CTRL_RAD2DEG)*IntPlan->get();
+            posdeg=(CTRL_RAD2DEG)*IntPlan->get();
             posNeck->setPositions(neckJoints.size(),neckJoints.getFirst(),posdeg.data());
             velHead->velocityMove(eyesJoints.size(),eyesJoints.getFirst(),vdeg.subVector(3,5).data());
         }
         else
             velHead->velocityMove(vdeg.data());
+
+        if (commData->debugInfoEnabled && (port_debug.getOutputCount()>0))
+        {
+            Bottle info;
+            int j=0;
+
+            if (neckPosCtrlOn)
+            {
+                for (size_t i=0; i<posdeg.length(); i++)
+                {
+                    ostringstream ss;
+                    ss<<"pos_"<<i;
+                    info.addString(ss.str().c_str());
+                    info.addDouble(posdeg[i]);
+                }
+
+                j=eyesJoints[0];
+            }
+
+            for (size_t i=j; i<vdeg.length(); i++)
+            {
+                ostringstream ss;
+                ss<<"vel_"<<i;
+                info.addString(ss.str().c_str());
+                info.addDouble(vdeg[i]);
+            }
+
+            port_debug.prepare()=info;
+            txInfo_debug.update();
+            port_debug.setEnvelope(txInfo_debug);
+            port_debug.writeStrict();
+        }
 
         mutexCtrl.unlock();
     }
@@ -668,12 +757,19 @@ void Controller::threadRelease()
     notifyEvent("closing");
 
     port_x.interrupt();
-    port_q.interrupt();
-    port_event.interrupt();
-
     port_x.close();
+
+    port_q.interrupt();
     port_q.close();
+
+    port_event.interrupt();
     port_event.close();
+
+    if (commData->debugInfoEnabled)
+    {
+        port_debug.interrupt();
+        port_debug.close();
+    }
 
     delete neck;
     delete eyeL;

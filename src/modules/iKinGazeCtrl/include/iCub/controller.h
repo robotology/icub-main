@@ -68,10 +68,12 @@ protected:
     BufferedPort<Vector> port_x;
     BufferedPort<Vector> port_q;
     BufferedPort<Bottle> port_event;
+    BufferedPort<Bottle> port_debug;
     Stamp txInfo_x;
     Stamp txInfo_q;
     Stamp txInfo_pose;
     Stamp txInfo_event;
+    Stamp txInfo_debug;
 
     Mutex mutexRun;
     Mutex mutexChain;
