@@ -1848,6 +1848,8 @@ bool ServerCartesianController::open(Searchable &config)
                                                   Value(CARTCTRL_DEFAULT_MULJNTCTRL)).asString()=="on";
 
     debugInfoEnabled=optGeneral.check("DebugInfo",Value("off")).asString()=="on";
+    if (debugInfoEnabled)
+        yDebug("Commands to robot will be also streamed out on debug port");
 
     // scan DRIVER groups
     for (int i=0; i<numDrv; i++)
