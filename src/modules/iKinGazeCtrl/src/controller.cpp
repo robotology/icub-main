@@ -373,13 +373,14 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
     if (ctrlInhibited)
         return;
 
-    posHead->setRefSpeeds(eyesJoints.size(),eyesJoints.getFirst(),vel.data());
+    setJointsCtrlMode();
 
     // enforce joints bounds
     Vector _ang(3);
     _ang[0]=CTRL_RAD2DEG*std::min(std::max(lim(eyesJoints[0],0),ang[0]),lim(eyesJoints[0],1));
     _ang[1]=CTRL_RAD2DEG*std::min(std::max(lim(eyesJoints[1],0),ang[1]),lim(eyesJoints[1],1));
     _ang[2]=CTRL_RAD2DEG*std::min(std::max(lim(eyesJoints[2],0),ang[2]),lim(eyesJoints[2],1));
+    posHead->setRefSpeeds(eyesJoints.size(),eyesJoints.getFirst(),vel.data());
     posHead->positionMove(eyesJoints.size(),eyesJoints.getFirst(),_ang.data());
 
     if (commData->debugInfoEnabled && (port_debug.getOutputCount()>0))
@@ -418,10 +419,12 @@ void Controller::resetCtrlEyes()
 
 
 /************************************************************************/
-bool Controller::areJointsHealthyAndSet(VectorOf<int> &jointsToSet)
+bool Controller::areJointsHealthyAndSet()
 {
     VectorOf<int> modes(nJointsHead);
     modHead->getControlModes(modes.getFirst());
+
+    jointsToSet.clear();
     for (size_t i=0; i<modes.size(); i++)
     {
         if ((modes[i]==VOCAB_CM_HW_FAULT) || (modes[i]==VOCAB_CM_IDLE))
@@ -445,7 +448,7 @@ bool Controller::areJointsHealthyAndSet(VectorOf<int> &jointsToSet)
 
 
 /************************************************************************/
-void Controller::setJointsCtrlMode(const VectorOf<int> &jointsToSet)
+void Controller::setJointsCtrlMode()
 {
     if (jointsToSet.size()==0)
         return;
@@ -473,9 +476,11 @@ void Controller::setJointsCtrlMode(const VectorOf<int> &jointsToSet)
 void Controller::run()
 {
     LockGuard guard(mutexRun);
+    
+    mutexCtrl.lock();
+    bool jointsHealthy=areJointsHealthyAndSet();
+    mutexCtrl.unlock();
 
-    VectorOf<int> jointsToSet;
-    bool jointsHealthy=areJointsHealthyAndSet(jointsToSet);
     if (!jointsHealthy)
     {
         stopControlHelper();
@@ -580,11 +585,13 @@ void Controller::run()
         }
     }
 
+    mutexCtrl.lock();
     if (event=="motion-onset")
     {
-        setJointsCtrlMode(jointsToSet);
+        setJointsCtrlMode();
         q0deg=CTRL_RAD2DEG*fbHead;
     }
+    mutexCtrl.unlock();
 
     qd=new_qd;
     qdNeck=qd.subVector(0,2);

@@ -101,12 +101,13 @@ protected:
     Vector qd,qdNeck,qdEyes;
     Vector fbTorso,fbHead,fbNeck,fbEyes;
     VectorOf<int> neckJoints,eyesJoints;
+    VectorOf<int> jointsToSet;
 
     multiset<double> motionOngoingEvents;
     multiset<double> motionOngoingEventsCurrent;
 
-    bool areJointsHealthyAndSet(VectorOf<int> &jointsToSet);
-    void setJointsCtrlMode(const VectorOf<int> &jointsToSet);
+    bool areJointsHealthyAndSet();
+    void setJointsCtrlMode();
     void stopLimb(const bool execStopPosition=true);
     void notifyEvent(const string &event, const double checkPoint=-1.0);
     void motionOngoingEventsHandling();
