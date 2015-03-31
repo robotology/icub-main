@@ -369,12 +369,9 @@ void Controller::afterStart(bool s)
 /************************************************************************/
 void Controller::doSaccade(const Vector &ang, const Vector &vel)
 {
-    mutexCtrl.lock();
+    LockGuard guard(mutexCtrl);
     if (ctrlInhibited)
-    {
-        mutexCtrl.unlock();
         return;
-    }
 
     posHead->setRefSpeeds(eyesJoints.size(),eyesJoints.getFirst(),vel.data());
 
@@ -407,8 +404,6 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
     unplugCtrlEyes=true;
 
     notifyEvent("saccade-onset");
-
-    mutexCtrl.unlock();    
 }
 
 
@@ -431,7 +426,7 @@ bool Controller::areJointsHealthyAndSet(VectorOf<int> &jointsToSet)
     {
         if ((modes[i]==VOCAB_CM_HW_FAULT) || (modes[i]==VOCAB_CM_IDLE))
             return false;
-        else if (i<3)
+        else if (i<(size_t)eyesJoints[0])
         {
             if (neckPosCtrlOn)
             {
