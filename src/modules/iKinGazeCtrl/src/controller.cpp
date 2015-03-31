@@ -285,7 +285,7 @@ void Controller::stopLimb(const bool execStopPosition)
         }
 
         port_debug.prepare()=info;
-        txInfo_debug.update();
+        txInfo_debug.update(q_stamp);
         port_debug.setEnvelope(txInfo_debug);
         port_debug.writeStrict();
     }
@@ -397,7 +397,7 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
         }
 
         port_debug.prepare()=info;
-        txInfo_debug.update();
+        txInfo_debug.update(q_stamp);
         port_debug.setEnvelope(txInfo_debug);
         port_debug.writeStrict();
     }
@@ -673,7 +673,7 @@ void Controller::run()
             }
 
             port_debug.prepare()=info;
-            txInfo_debug.update();
+            txInfo_debug.update(q_stamp);
             port_debug.setEnvelope(txInfo_debug);
             port_debug.writeStrict();
         }
