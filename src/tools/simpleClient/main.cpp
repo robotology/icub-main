@@ -112,7 +112,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    IPositionControl *pos=0;
+    IPositionControl *ipos=0;
+    IPositionControl2 *ipos2=0;
     IPositionDirect  *posDir=0;
     IVelocityControl *vel=0;
     IEncoders *enc=0;
@@ -129,7 +130,8 @@ int main(int argc, char *argv[])
     IMotorEncoders *iMotEnc=0;
 
     bool ok;
-    ok = dd.view(pos);
+    ok = dd.view(ipos);
+    ok &= dd.view(ipos2);
     ok &= dd.view(vel);
     ok &= dd.view(enc);
     ok &= dd.view(pid);
@@ -157,9 +159,12 @@ int main(int argc, char *argv[])
         yWarning("Problems acquiring optional interface iMotor\n");
     }
 
-    pos->getAxes(&jnts);
+    ipos->getAxes(&jnts);
     printf("Working with %d axes\n", jnts);
     double *tmp = new double[jnts];
+    bool   *btmp = new bool[jnts];
+    int    *jtmp = new int[jnts];
+    for (int i=0; i<jnts; i++) jtmp[i]=i;
 
     printf("Device active...\n");
     while (dd.isValid()) {
@@ -269,6 +274,9 @@ int main(int argc, char *argv[])
             printf("    [%s] <int> to read the reference acceleration for a single axis\n", Vocab::decode(VOCAB_REF_ACCELERATION).c_str());
             printf("    [%s] to read the current consumption for all axes\n", Vocab::decode(VOCAB_AMP_CURRENTS).c_str());
             printf("    [%s] <int> to get the current limit of single motor\n", Vocab::decode(VOCAB_AMP_MAXCURRENT).c_str());
+            printf("    [%s] <int> to check motionDone on a single motor\n", Vocab::decode(VOCAB_MOTION_DONE).c_str());
+            printf("    [%s] to check motionDone on all motors \n", Vocab::decode(VOCAB_MOTION_DONES).c_str());
+            printf("    [%s] to check motionDone on all motors using multiple functions\n", Vocab::decode(VOCAB_MOTION_DONE_GROUP).c_str());
             printf("\n");
 
             printf("type [set] and one of the following:\n");
@@ -334,6 +342,44 @@ int main(int argc, char *argv[])
                     int nj = 0;
                     enc->getAxes(&nj);
                     printf ("%s: %d\n", Vocab::decode(VOCAB_AXES).c_str(), nj);
+                }
+                break;
+
+                case VOCAB_MOTION_DONE:
+                {
+                    if (ipos==0) {yError ("unavailable interface iPos\n"); break;}
+                    bool b=false;
+                    int j = p.get(2).asInt();
+                    ipos->checkMotionDone(j,&b);
+                    if (b==true) printf("1");
+                    else printf ("0");
+                }
+                break;
+
+                case VOCAB_MOTION_DONES:
+                {
+                    if (ipos==0) {yError ("unavailable interface iPos\n"); break;}
+                    ipos->checkMotionDone(btmp);
+                    printf ("(");
+                    for(i = 0; i < jnts; i++)
+                    {
+                        if (btmp[i]==true) printf (" 1 ");
+                        else printf (" 0 ");
+                    }
+                    printf (")\n");
+                }
+                break;
+
+                case VOCAB_MOTION_DONE_GROUP:
+                {
+                    if (ipos2==0) {yError ("unavailable interface iPos2\n"); break;}
+                    ipos2->checkMotionDone(jnts, jtmp ,btmp);
+                    for(i = 0; i < jnts; i++)
+                    {
+                        if (btmp[i]==true) printf (" 1 ");
+                        else printf (" 0 ");
+                    }
+                    printf (")\n");
                 }
                 break;
 
@@ -561,7 +607,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_REF_SPEEDS: {
-                    pos->getRefSpeeds(tmp);
+                    ipos->getRefSpeeds(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_REF_SPEEDS).c_str());
                     for(i = 0; i < jnts; i++)
                         printf ("%.2f ", tmp[i]);
@@ -572,7 +618,7 @@ int main(int argc, char *argv[])
                 case VOCAB_REF_SPEED: {
                     double ref_speed;
                     int j = p.get(2).asInt();
-                    pos->getRefSpeed(j,&ref_speed);
+                    ipos->getRefSpeed(j,&ref_speed);
                     printf ("%s: (", Vocab::decode(VOCAB_REF_SPEED).c_str());
                     printf ("%.2f ", ref_speed);
                     printf (")\n");                    
@@ -582,7 +628,7 @@ int main(int argc, char *argv[])
                 case VOCAB_REF_ACCELERATION: {
                     double ref_acc;
                     int j = p.get(2).asInt();
-                    pos->getRefAcceleration(j,&ref_acc);
+                    ipos->getRefAcceleration(j,&ref_acc);
                     printf ("%s: (", Vocab::decode(VOCAB_REF_ACCELERATION).c_str());
                     printf ("%.2f ", ref_acc);
                     printf (")\n");                    
@@ -590,7 +636,7 @@ int main(int argc, char *argv[])
                 break;
 
                 case VOCAB_REF_ACCELERATIONS: {
-                    pos->getRefAccelerations(tmp);
+                    ipos->getRefAccelerations(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_REF_ACCELERATIONS).c_str());
                     for(i = 0; i < jnts; i++)
                         printf ("%.2f ", tmp[i]);
@@ -615,7 +661,7 @@ int main(int argc, char *argv[])
                     int j = p.get(2).asInt();
                     double ref = p.get(3).asDouble();
                     printf("%s: moving %d to %.2f\n", Vocab::decode(VOCAB_POSITION_MOVE).c_str(), j, ref);
-                    pos->positionMove(j, ref);
+                    ipos->positionMove(j, ref);
                 }
                 break;
 
@@ -631,7 +677,7 @@ int main(int argc, char *argv[])
                     int j = p.get(2).asInt();
                     double ref = p.get(3).asDouble();
                     printf("%s: setting speed for %d to %.2f\n", Vocab::decode(VOCAB_REF_SPEED).c_str(), j, ref);
-                    pos->setRefSpeed(j, ref);
+                    ipos->setRefSpeed(j, ref);
                 }
                 break;
 
@@ -639,7 +685,7 @@ int main(int argc, char *argv[])
                     int j = p.get(2).asInt();
                     double ref = p.get(3).asDouble();
                     printf("%s: setting acceleration for %d to %.2f\n", Vocab::decode(VOCAB_REF_ACCELERATION).c_str(), j, ref);
-                    pos->setRefAcceleration(j, ref);
+                    ipos->setRefAcceleration(j, ref);
                 }
                 break;
 
@@ -649,7 +695,7 @@ int main(int argc, char *argv[])
                         tmp[i] = l->get(i).asDouble();
                     }
                     printf("%s: moving all joints\n", Vocab::decode(VOCAB_POSITION_MOVES).c_str());
-                    pos->positionMove(tmp);
+                    ipos->positionMove(tmp);
                 }
                 break;
 
@@ -669,7 +715,7 @@ int main(int argc, char *argv[])
                         tmp[i] = l->get(i).asDouble();
                     }
                     printf("%s: setting speed for all joints\n", Vocab::decode(VOCAB_REF_SPEEDS).c_str());
-                    pos->setRefSpeeds(tmp);
+                    ipos->setRefSpeeds(tmp);
                 }
                 break;
 
@@ -679,20 +725,20 @@ int main(int argc, char *argv[])
                         tmp[i] = l->get(i).asDouble();
                     }
                     printf("%s: setting acceleration for all joints\n", Vocab::decode(VOCAB_REF_ACCELERATIONS).c_str());
-                    pos->setRefAccelerations(tmp);
+                    ipos->setRefAccelerations(tmp);
                 }
                 break;
 
                 case VOCAB_STOP: {
                     int j = p.get(2).asInt();
                     printf("%s: stopping axis %d\n", Vocab::decode(VOCAB_STOP).c_str(), j);
-                    pos->stop(j);
+                    ipos->stop(j);
                 }
                 break;
 
                 case VOCAB_STOPS: {
                     printf("%s: stopping all axes\n", Vocab::decode(VOCAB_STOPS).c_str());
-                    pos->stop();
+                    ipos->stop();
                 }
                 break;
 
@@ -815,6 +861,8 @@ int main(int argc, char *argv[])
 ApplicationCleanQuit:
     dd.close();
     delete[] tmp;
+    delete[] btmp;
+    delete[] jtmp;
 
     Network::fini();
     return 0;
