@@ -194,7 +194,7 @@ int32_t IRpcServer::get_answer() {
   IRpcServer_get_answer helper;
   helper.init();
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","int32_t IRpcServer::get_answer()");
+    yError("Missing server method '%s'?","int32_t IRpcServer::get_answer()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -204,7 +204,7 @@ bool IRpcServer::set_answer(const int32_t rightAnswer) {
   IRpcServer_set_answer helper;
   helper.init(rightAnswer);
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool IRpcServer::set_answer(const int32_t rightAnswer)");
+    yError("Missing server method '%s'?","bool IRpcServer::set_answer(const int32_t rightAnswer)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -214,7 +214,7 @@ int32_t IRpcServer::add_int(const int32_t x) {
   IRpcServer_add_int helper;
   helper.init(x);
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","int32_t IRpcServer::add_int(const int32_t x)");
+    yError("Missing server method '%s'?","int32_t IRpcServer::add_int(const int32_t x)");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -224,7 +224,7 @@ bool IRpcServer::start() {
   IRpcServer_start helper;
   helper.init();
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool IRpcServer::start()");
+    yError("Missing server method '%s'?","bool IRpcServer::start()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -234,7 +234,7 @@ bool IRpcServer::stop() {
   IRpcServer_stop helper;
   helper.init();
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool IRpcServer::stop()");
+    yError("Missing server method '%s'?","bool IRpcServer::stop()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -244,7 +244,7 @@ bool IRpcServer::is_running() {
   IRpcServer_is_running helper;
   helper.init();
   if (!yarp().canWrite()) {
-    fprintf(stderr,"Missing server method '%s'?\n","bool IRpcServer::is_running()");
+    yError("Missing server method '%s'?","bool IRpcServer::is_running()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
