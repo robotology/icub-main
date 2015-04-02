@@ -5430,8 +5430,8 @@ bool CanBusMotionControl::checkMotionDoneRaw(int axis, bool *ret)
     return true;
 }
 
-/// cmd is a pointer to a bool
-bool CanBusMotionControl::checkMotionDoneRaw (bool *ret)
+/// ret is a pointer to a bool
+bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
 {
     CanBusResources& r = RES(system_resources);
     int i;
@@ -5483,7 +5483,7 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *ret)
                 value = *((short *)(m->getData()+1));
                 if (!value)
                 {
-                    *ret=false;
+                    *val=false;
                     return true;
                 }
             }
@@ -5493,7 +5493,7 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *ret)
 
     t->clear();
 
-    *ret=true;
+    *val=true;
     return true;
 }
 
@@ -6460,10 +6460,14 @@ bool CanBusMotionControl::relativeMoveRaw(const int n_joint, const int *joints, 
 bool CanBusMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
 {
     bool ret = true;
+    bool value = true;
+    bool tot_value = true;
     for(int j=0; j<n_joint; j++)
     {
-        ret = ret && checkMotionDoneRaw(joints[j], flag+j);
+        ret = ret && checkMotionDoneRaw(joints[j], &value);
+        tot_value &= value;
     }
+    *flag = tot_value;
     return ret;
 }
 

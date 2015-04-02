@@ -359,27 +359,20 @@ int main(int argc, char *argv[])
                 case VOCAB_MOTION_DONES:
                 {
                     if (ipos==0) {yError ("unavailable interface iPos\n"); break;}
-                    ipos->checkMotionDone(btmp);
-                    printf ("(");
-                    for(i = 0; i < jnts; i++)
-                    {
-                        if (btmp[i]==true) printf (" 1 ");
-                        else printf (" 0 ");
-                    }
-                    printf (")\n");
+                    bool b=false;
+                    ipos->checkMotionDone(&b);
+                    if (b==true) printf("1");
+                    else printf ("0");
                 }
                 break;
 
                 case VOCAB_MOTION_DONE_GROUP:
                 {
                     if (ipos2==0) {yError ("unavailable interface iPos2\n"); break;}
-                    ipos2->checkMotionDone(jnts, jtmp ,btmp);
-                    for(i = 0; i < jnts; i++)
-                    {
-                        if (btmp[i]==true) printf (" 1 ");
-                        else printf (" 0 ");
-                    }
-                    printf (")\n");
+                    bool b=false;
+                    ipos2->checkMotionDone(jnts, jtmp ,&b);
+                    if (b==true) printf("1");
+                    else printf ("0");
                 }
                 break;
 

@@ -2617,10 +2617,15 @@ bool embObjMotionControl::relativeMoveRaw(const int n_joint, const int *joints, 
 bool embObjMotionControl::checkMotionDoneRaw(const int n_joint, const int *joints, bool *flag)
 {
     bool ret = true;
+    bool val = true;
+    bool tot_val = true;
+
     for(int j=0; j<n_joint; j++)
     {
-        ret = ret && checkMotionDoneRaw(joints[j], flag);
+        ret = ret && checkMotionDoneRaw(joints[j], &val);
+        tot_val &= val;
     }
+    *flag = tot_val;
     return ret;
 }
 
