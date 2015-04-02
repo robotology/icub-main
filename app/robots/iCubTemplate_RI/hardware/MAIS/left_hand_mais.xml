@@ -7,6 +7,6 @@
 	<param name="canAddress"> 0x0E </param>
 	<param name="format"> 8 </param>
 	<param name="channels"> 16 </param>
-	<param name="period"> 1 </param>
+	<param name="period"> 100 </param>
 </device>
 </devices>
