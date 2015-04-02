@@ -120,10 +120,10 @@ static int nFeedbackStructs=0;
 
 static bool START_SELF_COLLISION_DETECTION = false; //we want to set this trigger on only after the robot is in in home pos -
  //it's initial configuration is with arms inside the thighs 
-static const double EXTRA_MARGIN_FOR_TAXEL_POSITION_M = 0.03; //for skin emulation we get the coordinates of the collision and contact with skin cover from ODE; 
+static const double EXTRA_MARGIN_FOR_TAXEL_POSITION_M = 0.03; //0.03 //for skin emulation we get the coordinates of the collision and contact with skin cover from ODE; 
 //after transforming to local reference frame of respective skin part, we emulate which set of taxels would get activated at that position; 
 //however, with errors in the position, we need an extra margin, so the contact falls onto some taxels
-static const double MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M = 0.01;
+static const double MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M = 0.01; //0.01;
 
 void OdeSdlSimulation::draw() {
     OdeInit& odeinit = OdeInit::get();
@@ -1065,18 +1065,18 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
     odeinit.mutex.wait();
     nFeedbackStructs=0;
     
-    if (odeinit.verbosity > 3) yDebug("\n ***info code collision detection ***\n"); 
+    if (odeinit.verbosity > 3) yDebug("\n ***info code collision detection ***"); 
     if (odeinit.verbosity > 3) yDebug("OdeSdlSimulation::ODE_process: dSpaceCollide(odeinit.space,0,&nearCallback): will test iCub space against the rest of the world (e.g. ground).\n");
     dSpaceCollide(odeinit.space,0,&nearCallback); //determines which pairs of geoms in a space may potentially intersect, and calls a callback function with each candidate pair
     if (odeinit._iCub->actSelfCol == "on"){
            if (START_SELF_COLLISION_DETECTION){ 
                 if (odeinit.verbosity > 3){
-                    yDebug("OdeSdlSimulation::ODE_process: dSpaceCollide(odeinit._iCub->iCub,0,&nearCallback): will test iCub subspaces against each other.\n");
+                    yDebug("OdeSdlSimulation::ODE_process: dSpaceCollide(odeinit._iCub->iCub,0,&nearCallback): will test iCub subspaces against each other.");
                 }
                 dSpaceCollide(odeinit._iCub->iCub,0,&nearCallback); //determines which pairs of geoms in a space may potentially intersect, and calls a callback function with each candidate pair
         }
     }
-    if (odeinit.verbosity > 3) yDebug("***END OF info code collision detection ***\n"); 
+    if (odeinit.verbosity > 3) yDebug("***END OF info code collision detection\n ***"); 
     
     dWorldStep(odeinit.world, dstep);
     // do 1 TIMESTEP in controllers (ok to run at same rate as ODE: 1 iteration takes about 300 times less computation time than dWorldStep)
@@ -1111,6 +1111,7 @@ Uint32 OdeSdlSimulation::ODE_process(Uint32 interval, void *param) {
             robot_streamer->shouldSendTouchRightArm() || robot_streamer->shouldSendTouchRightForearm() || 
             robot_streamer->shouldSendTouchTorso())){ 
                if (! odeinit.listOfSkinContactInfos.empty()){ //if someone is reading AND there are contacts to process 
+                    if (odeinit.verbosity > 2) yDebug("OdeSdlSimulation::ODE_process():There were %lu iCub collisions to process.", odeinit.listOfSkinContactInfos.size());
                     inspectWholeBodyContactsAndSendTouch(); 
                }
                else{ //someone is reading but no contacts, we send empty lists
@@ -1706,11 +1707,10 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
            odeinit._iCub->iKinInertialSensor.setAng(inertial_for_iKin);
       }
       
-      if (odeinit.verbosity > 0) yDebug("OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch:There were %lu iCub collisions to process.", odeinit.listOfSkinContactInfos.size());
       if (odeinit.verbosity > 4) yDebug("OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch:There were %lu iCub collisions to process.", odeinit.listOfSkinContactInfos.size());
       //main loop through all the contacts
       for (list<OdeInit::contactOnSkin_t>::iterator it = odeinit.listOfSkinContactInfos.begin(); it!=odeinit.listOfSkinContactInfos.end(); it++){
-          skinPart = SKIN_PART_UNKNOWN; bodyPart = BODY_PART_UNKNOWN;  handPart = ALL_HAND_PARTS; fingertipFlag = false;
+          skinPart = SKIN_PART_UNKNOWN; bodyPart = BODY_PART_UNKNOWN;  handPart = ALL_HAND_PARTS; skinCoverFlag = false; fingertipFlag = false;
           taxel_list.clear();
           odeinit._iCub->getSkinAndBodyPartFromSpaceAndGeomID((*it).body_geom_space_id,(*it).body_geom_id,skinPart,bodyPart,handPart,skinCoverFlag,fingertipFlag);
           if(upper_body_transforms_available){
@@ -2083,29 +2083,29 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
    //however, with errors in the position, we need an extra margin, so the contact falls onto some taxels
     switch (skin_part){
         case SKIN_LEFT_HAND:
-            if ((geo_center_link_FoR[0]<0.003+3*EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.026-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-1.5*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<-0.0055)){
+            if ((geo_center_link_FoR[0]<0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.026-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-1.5*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<-0.0055)){
                 list_of_taxels.push_back(121);list_of_taxels.push_back(122);list_of_taxels.push_back(123);
                 list_of_taxels.push_back(124);list_of_taxels.push_back(125);list_of_taxels.push_back(126);
                 list_of_taxels.push_back(127);list_of_taxels.push_back(128);
                 //list_of_taxels.push_back();list_of_taxels.push_back();list_of_taxels.push_back();
             }
-            else if ((geo_center_link_FoR[0]<0.003+3*EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.0055) && (geo_center_link_FoR[1]<0.01)){
+            else if ((geo_center_link_FoR[0]<0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.0055) && (geo_center_link_FoR[1]<0.01)){
                 list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98); 
                 list_of_taxels.push_back(99);list_of_taxels.push_back(102);list_of_taxels.push_back(103);
                 list_of_taxels.push_back(120);list_of_taxels.push_back(129);list_of_taxels.push_back(130);
             }
-            else if ((geo_center_link_FoR[0]<0.003+3*EXTRA_MARGIN_FOR_TAXEL_POSITION_M+2) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>0.01) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
+            else if ((geo_center_link_FoR[0]<0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>0.01) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(104);  
                     list_of_taxels.push_back(105);list_of_taxels.push_back(106);list_of_taxels.push_back(113);  
                     list_of_taxels.push_back(116);list_of_taxels.push_back(117);  
             }
-            else if ((geo_center_link_FoR[0]<-0.014) && (geo_center_link_FoR[0]>-0.024) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
+            else if ((geo_center_link_FoR[0]<-0.014) && (geo_center_link_FoR[0]>-0.024) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(110);  
                     list_of_taxels.push_back(111);list_of_taxels.push_back(112);list_of_taxels.push_back(114);  
                     list_of_taxels.push_back(115);list_of_taxels.push_back(118); list_of_taxels.push_back(142); 
                     list_of_taxels.push_back(143);
             }   
-            else if ((geo_center_link_FoR[0]<-0.024) && (geo_center_link_FoR[0]>-0.04-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2.0*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
+            else if ((geo_center_link_FoR[0]<-0.024) && (geo_center_link_FoR[0]>-0.04-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2.0*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);  
                     list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);  
                     list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);                   
@@ -2115,29 +2115,29 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
             }
             break;
          case SKIN_RIGHT_HAND:
-            if ((geo_center_link_FoR[0]<0.003+3*EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.026-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-1.5*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<-0.0055)){
+            if ((geo_center_link_FoR[0]<0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.026-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-1.5*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<-0.0055)){
                 list_of_taxels.push_back(120);list_of_taxels.push_back(121);list_of_taxels.push_back(122);
                 list_of_taxels.push_back(123);list_of_taxels.push_back(124);list_of_taxels.push_back(125);
                 list_of_taxels.push_back(126);list_of_taxels.push_back(128);
                 //list_of_taxels.push_back();list_of_taxels.push_back();list_of_taxels.push_back();
             }
-            else if ((geo_center_link_FoR[0]<0.003+3*EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.0055) && (geo_center_link_FoR[1]<0.01)){
+            else if ((geo_center_link_FoR[0]<0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.0055) && (geo_center_link_FoR[1]<0.01)){
                 list_of_taxels.push_back(99);list_of_taxels.push_back(102);list_of_taxels.push_back(103); 
                 list_of_taxels.push_back(104);list_of_taxels.push_back(105);list_of_taxels.push_back(106);
                 list_of_taxels.push_back(127);list_of_taxels.push_back(129);list_of_taxels.push_back(130);
             }
-            else if ((geo_center_link_FoR[0]<0.003+3*EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>0.01) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
+            else if ((geo_center_link_FoR[0]<0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>0.01) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98);  
                     list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(110);  
                     list_of_taxels.push_back(111);list_of_taxels.push_back(112);  
             }
-            else if ((geo_center_link_FoR[0]<-0.014) && (geo_center_link_FoR[0]>-0.024) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
+            else if ((geo_center_link_FoR[0]<-0.014) && (geo_center_link_FoR[0]>-0.024) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(113);  
                     list_of_taxels.push_back(114);list_of_taxels.push_back(115);list_of_taxels.push_back(116);  
                     list_of_taxels.push_back(117);list_of_taxels.push_back(118); list_of_taxels.push_back(142); 
                     list_of_taxels.push_back(143);
             }   
-            else if ((geo_center_link_FoR[0]<-0.024) && (geo_center_link_FoR[0]>-0.040-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2.0*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
+            else if ((geo_center_link_FoR[0]<-0.024) && (geo_center_link_FoR[0]>-0.040-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2.0*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);  
                     list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);  
                     list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);                   
