@@ -114,7 +114,8 @@ private:
 #endif
     bool firstpass;
 
-    yarp::os::Stamp                         camerasStamp;
+    yarp::os::Stamp  camerasStamp;
+    yarp::os::Stamp generalStamp;
     yarp::sig::ImageOf<yarp::sig::PixelRgb> buffer;
 
     yarp::dev::PolyDriver *iCubLArm, *iCubRArm, *iCubHead, *iCubLLeg ,*iCubRLeg, *iCubTorso;

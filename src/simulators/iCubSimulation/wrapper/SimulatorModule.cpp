@@ -80,11 +80,15 @@ SimulatorModule::SimulatorModule(WorldManager& world, RobotConfig& config,
 
 void SimulatorModule::sendTouchLeftHand(Bottle& report){
     tactileLeftHandPort.prepare() = report;
+    generalStamp.update(Time::now());
+    tactileLeftHandPort.setEnvelope(generalStamp);
     tactileLeftHandPort.write();
 }
 
 void SimulatorModule::sendTouchRightHand(Bottle& report){
     tactileRightHandPort.prepare() = report;
+    generalStamp.update(Time::now());
+    tactileRightHandPort.setEnvelope(generalStamp);
     tactileRightHandPort.write();
 }
 	
@@ -102,6 +106,8 @@ void SimulatorModule::sendSkinEvents(iCub::skinDynLib::skinContactList& skinCont
     iCub::skinDynLib::skinContactList &skinEvents = skinEventsPort.prepare();
     skinEvents.clear();
     skinEvents.insert(skinEvents.end(), skinContactListReport.begin(), skinContactListReport.end()); 
+    generalStamp.update(Time::now());
+    skinEventsPort.setEnvelope(generalStamp);
     skinEventsPort.write();
 }
     
@@ -111,11 +117,15 @@ bool SimulatorModule::shouldSendSkinEvents(){
 
 void SimulatorModule::sendTouchLeftArm(Bottle& report){
      tactileLeftArmPort.prepare() = report;
+     generalStamp.update(Time::now());
+     tactileLeftArmPort.setEnvelope(generalStamp);
      tactileLeftArmPort.write();
 }
 
 void SimulatorModule::sendTouchRightArm(Bottle& report){
      tactileRightArmPort.prepare() = report;
+     generalStamp.update(Time::now());
+     tactileRightArmPort.setEnvelope(generalStamp);
      tactileRightArmPort.write();
 }
         
@@ -129,11 +139,15 @@ bool SimulatorModule::shouldSendTouchRightArm() {
 
 void SimulatorModule::sendTouchLeftForearm(Bottle& report){
     tactileLeftForearmPort.prepare() = report;
+    generalStamp.update(Time::now());
+    tactileLeftForearmPort.setEnvelope(generalStamp);
     tactileLeftForearmPort.write();
 }
 
 void SimulatorModule::sendTouchRightForearm(Bottle& report){
     tactileRightForearmPort.prepare() = report;
+    generalStamp.update(Time::now());
+    tactileRightForearmPort.setEnvelope(generalStamp);
     tactileRightForearmPort.write();
 }
         
@@ -147,6 +161,8 @@ bool SimulatorModule::shouldSendTouchRightForearm() {
     
 void SimulatorModule::sendTouchTorso(Bottle& report){
     tactileTorsoPort.prepare() = report;
+    generalStamp.update(Time::now());
+    tactileTorsoPort.setEnvelope(generalStamp);
     tactileTorsoPort.write();
 }
 
@@ -157,6 +173,8 @@ bool SimulatorModule::shouldSendTouchTorso() {
 
 void SimulatorModule::sendInertial(Bottle& report){
     inertialPort.prepare() = report;
+    generalStamp.update(Time::now());
+    inertialPort.setEnvelope(generalStamp);
     inertialPort.write();
 }
 
