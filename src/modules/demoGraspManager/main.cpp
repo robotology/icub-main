@@ -857,8 +857,10 @@ protected:
 
         fprintf(stdout,"*** Homing %s\n",type.c_str());
         for (size_t j=0; j<homeVels.length(); j++)
-        {
             imode->setControlMode(j,VOCAB_CM_POSITION);
+
+        for (size_t j=0; j<homeVels.length(); j++)
+        {
             ipos->setRefSpeed(j,homeVels[j]);
             ipos->positionMove(j,homePoss[j]);
         }
@@ -947,11 +949,12 @@ protected:
 
         fprintf(stdout,"*** Stopping %s joints\n",type.c_str());
         for (size_t j=0; j<homeVels.length(); j++)
+            imode->setControlMode(j,VOCAB_CM_POSITION);
+
+        for (size_t j=0; j<homeVels.length(); j++)
         {
             double fb;            
             ienc->getEncoder(j,&fb);
-
-            imode->setControlMode(j,VOCAB_CM_POSITION);
             ipos->positionMove(j,fb);
         }
     }
@@ -997,10 +1000,11 @@ protected:
         fprintf(stdout,"*** %s %s\n",actionStr.c_str(),type.c_str());
 
         for (size_t j=0; j<handVels.length(); j++)
+            imode->setControlMode(homeVels.length()+j,VOCAB_CM_POSITION);
+
+        for (size_t j=0; j<handVels.length(); j++)
         {
             int k=homeVels.length()+j;
-
-            imode->setControlMode(k,VOCAB_CM_POSITION);
             ipos->setRefSpeed(k,handVels[j]);
             ipos->positionMove(k,(*poss)[j]);
         }
