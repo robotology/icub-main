@@ -1837,11 +1837,6 @@ iCubFinger::iCubFinger() : iKinLimb()
 /************************************************************************/
 iCubFinger::iCubFinger(const string &_type) : iKinLimb(_type)
 {
-    type="right_index_na";
-    hand="right";
-    finger="index";
-    version="na";
-
     allocate(_type);
 }
 
@@ -1888,7 +1883,17 @@ void iCubFinger::allocate(const string &_type)
             version=finger.substr(underscore+1,finger.length()-underscore-1);
             finger=finger.substr(0,underscore);
         }
+        else
+            version="na";
     }
+    else
+    {        
+        hand="right";
+        finger="index";
+        version="na";
+    }
+
+    type=hand+"_"+finger+"_"+version;
 
     // reinforce hand info
     if (hand!="left")
