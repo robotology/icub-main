@@ -1192,6 +1192,16 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                        }
                     }
                }
+               else if (s_controlaw==string("not_implemented"))
+               {
+                   yDebug() << "torque control not not_implemented on this robot part. Disabling.";
+                   _torqueControlEnabled = false;
+               }
+               else if (s_controlaw==string("disabled"))
+               {
+                   yDebug() << "torque control disabled on this robot part.";
+                   _torqueControlEnabled = false;
+               }
                else
                {
                   yError() << "Unable to use control law " << s_controlaw << ". Disabling torque control";
