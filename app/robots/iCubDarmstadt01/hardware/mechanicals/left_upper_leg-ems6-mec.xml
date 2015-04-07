@@ -10,12 +10,19 @@
 <param name="Zeros">                              177.50         180.00     180.00       -180.00                           </param>
         <param name="TorqueId">  	0x0B          0x0B          0x0B          0x0B 		</param>
         <param name="TorqueChan">	0             1             2             3		</param>
-        <param name="TorqueMax"> 	12            12            12            12		</param>
-        <param name="Rotor">     	1.000         1.000         1.000         1.000		</param>
+        <param name="TorqueMax"> 	24            24            24            24		</param>
+        <param name="Rotor">     	-1.000         1.000        -1.000        -1.000		</param>
         <param name="Gearbox">   	100.000       100.000       100.000       100.000	</param>
         <param name="Verbose">0</param>
     </group>
 
+    <group name ="JOINTS_COUPLING">
+        <param name="kinematic_mj">   1.00    0.00    0.00    0.00
+                                      0.00    1.00    0.00    0.00
+                                      0.00    0.00    1.00    0.00
+                                      0.00    0.00    0.00    1.00   </param>
+    </group>
+    
     <group name="VELOCITY">
         <param name="MOT_speed_estimation">	1             1             1             1	</param>
         <param name="MOT_accel_estimation">	1             1             1             1	</param>
