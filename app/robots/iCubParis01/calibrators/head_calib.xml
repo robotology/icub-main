@@ -23,7 +23,7 @@
 <param name="velocityHome"> 10            10            10            10            10            10            </param>       
 </group>       
  
-        <param name="CALIB_ORDER"> (0 1 2) (3) (4) (5) </param>
+        <param name="CALIB_ORDER"> (0) (1) (2) (3) (4) (5) </param>
                
         <action phase="startup" level="10" type="calibrate">           
             <param name="target">head_mc_wrapper</param>               
