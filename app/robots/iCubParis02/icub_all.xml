@@ -47,7 +47,13 @@
     <devices file="hardware/FT/right_leg_strain.xml" /> 
     <devices file="hardware/MAIS/left_hand_mais.xml" /> 
     <devices file="hardware/MAIS/right_hand_mais.xml" /> 
+
+    <devices file="wrappers/FT/left_foot_FT_wrapper.xml" />
+    <devices file="wrappers/FT/right_foot_FT_wrapper.xml" />
+    <devices file="hardware/FT/left_foot_strain.xml" /> 
+    <devices file="hardware/FT/right_foot_strain.xml" />
    
+
     <!-- 6SG SENSORS -->
     <devices file="wrappers/6SG/left_arm_SG_wrapper.xml" /> 
     <devices file="wrappers/6SG/left_lower_leg_SG_wrapper.xml" /> 
