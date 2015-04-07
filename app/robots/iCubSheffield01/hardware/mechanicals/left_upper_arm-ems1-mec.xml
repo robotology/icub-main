@@ -6,7 +6,6 @@
         <param name="Joints"> 4 </param> <!-- the number of joints of the robot part -->
         <!--                   		0             1             2             3 -->
         <param name="AxisMap"> 		0             1             2             3	</param>
-
 <param name="Encoder">                            -182.044   -182.044   182.044    -182.044   </param>
 <param name="Zeros">                              -180.00    -326.00    177.00     -182.00    </param>
         <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C	</param>
@@ -17,6 +16,13 @@
         <param name="Verbose">		0	</param>
     </group>
 
+    <group name ="JOINTS_COUPLING">
+        <param name="kinematic_mj">   1.00    0.00    0.00    0.00
+                                      1.00    0.625   0.00    0.00
+                                      0.00    -0.625  0.625   0.00
+                                      0.00    0.00    0.00    1.00   </param>  
+    </group>
+    
     <group name="VELOCITY">
         <param name="MOT_speed_estimation">	1             1             1             1	</param>
         <param name="MOT_accel_estimation">	1             1             1             1	</param>

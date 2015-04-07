@@ -14,7 +14,7 @@
         <param name="TorqueChan">4             0             0             0             0             0             0             0             0             0             0             0 </param>
         <param name="TorqueMax"> 2             2             2             2             2             2             2             2             2             2             2             2 </param>
         <param name="Rotor">     1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00 </param>
-        <param name="Gearbox">   100.00        100.00        100.00        100.00        100.00        100.00        100.00        100.00        100.00        100.00        100.00        100.00 </param>
+        <param name="Gearbox">   1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00 </param>
         <param name="Verbose"> 0 </param>
     </group>
 

@@ -18,6 +18,13 @@
         <param name="Verbose">	0	</param>
     </group>
 
+    <group name ="JOINTS_COUPLING">
+        <param name="kinematic_mj">   1.00    0.00    0.00    0.00
+                                      1.00    0.625   0.00    0.00
+                                      0.00    -0.625  0.625   0.00
+                                      0.00    0.00    0.00    1.00   </param>  
+    </group>
+    
     <group name="VELOCITY">
         <param name="MOT_speed_estimation">	1	1	1	1	</param>
         <param name="MOT_accel_estimation">	1	1	1	1	</param>
