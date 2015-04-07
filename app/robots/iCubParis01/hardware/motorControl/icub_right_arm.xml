@@ -20,7 +20,7 @@
 <param name="broadcast_current">          0             0             0             0             0             0             0             0             </param>       
 <param name="broadcast_overflow">         1             1             1             1             1             1             1             1             </param>       
 <param name="broadcast_canprint">         1             1             1             1             1             1             1             1             </param>       
-<param name="broadcast_vel_acc">          0             0             0             0             0             0             0             0             </param>       
+<param name="broadcast_vel_acc">          1             1             1             1             1             1             1             1             </param>       
 <param name="broadcast_rotor_pos">        0             0             0             0             0             0             0             0             </param>       
 <param name="broadcast_rotor_vel_acc">    0             0             0             0             0             0             0             0             </param>       
 </group>       
@@ -30,7 +30,7 @@
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
 <param name="Encoder">      11.375        11.375        11.375        11.375        706.67        978.46        978.46        -5.83333      </param>       
-<param name="Zeros">        182           32            236.7422      173           90            -20           -52           -351.429      </param>       
+<param name="Zeros">        180.8         33            234.7422      181.2         90            -20           -52           -351.429      </param>       
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          0x0C          0             0             0             </param>       
 <param name="TorqueChan">   0             1             2             3             4             0             0             0             </param>       
 <param name="TorqueMax">    8             8             8             8             2             2             2             2             </param>       

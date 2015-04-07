@@ -20,7 +20,7 @@
 <param name="broadcast_current">          0             0             0             0             0             0             </param>       
 <param name="broadcast_overflow">         1             1             1             1             1             1             </param>       
 <param name="broadcast_canprint">         1             1             1             1             1             1             </param>       
-<param name="broadcast_vel_acc">          0             0             0             0             0             0             </param>       
+<param name="broadcast_vel_acc">          1             1             1             1             1             1             </param>       
 <param name="broadcast_rotor_pos">        0             0             0             0             0             0             </param>       
 <param name="broadcast_rotor_vel_acc">    0             0             0             0             0             0             </param>       
 </group>       
@@ -30,10 +30,10 @@
 <param name="Joints">       6             </param>       
 <param name="AxisMap">      2             3             0             1             4             5             </param>       
 <param name="Encoder">      -11.375       -11.375       -11.375       -11.375       -11.375       -11.375       </param>       
-<param name="Zeros">        -180          -180          -180          -180          -180          -180          </param>       
+<param name="Zeros">        -178.3        -183.4        -180          -182.5        -181.4        -179.4        </param>       
 <param name="TorqueId">     0x0B          0x0B          0x0B          0x0B          0x0B          0x0B          </param>       
 <param name="TorqueChan">   0             1             2             3             4             5             </param>       
-<param name="TorqueMax">    12            12            12            12            12            12            </param>       
+<param name="TorqueMax">    24            24            24            24            24            24            </param>       
 <param name="Verbose">      0             0             0             0             0             0             </param>       
 <param name="Rotor">        21.888        21.888        21.888        21.888        21.888        21.888        </param>       
 <param name="GearBox">      150           100           100           100           100           100           </param>       
@@ -49,8 +49,8 @@
 </group>       
  
 <group name="LIMITS">        
-<param name="Min">          -30           0             -40           -120          -20           -10           </param>       
-<param name="Max">          90            90            65            0             30            15            </param>       
+<param name="Min">          -30           0             -40           -120          -25           -15           </param>       
+<param name="Max">          90            90            65            0             30            25            </param>       
 <param name="Currents">     7000          7000          7000          7000          7000          7000          </param>       
 </group>       
  
