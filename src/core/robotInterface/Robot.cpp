@@ -41,7 +41,9 @@ std::ostringstream& operator<<(std::ostringstream &oss, const RobotInterface::Ro
 class RobotInterface::Robot::Private
 {
 public:
-    Private(Robot * /*parent*/) : currentPhase(ActionPhaseUnknown) {}
+    Private(Robot * /*parent*/) : currentPhase(ActionPhaseUnknown),
+                                  currentLevel(0) {
+    }
 
     // return true if a device with the given name exists
     bool hasDevice(const std::string &name) const;
@@ -89,6 +91,7 @@ public:
     ParamList params;
     DeviceList devices;
     RobotInterface::ActionPhase currentPhase;
+    unsigned int currentLevel;
 }; // class RobotInterface::Robot::Private
 
 bool RobotInterface::Robot::Private::hasDevice(const std::string &name) const
@@ -471,6 +474,7 @@ bool RobotInterface::Robot::enterPhase(RobotInterface::ActionPhase phase)
     yInfo() << ActionPhaseToString(phase) << "phase starting...";
 
     mPriv->currentPhase = phase;
+    mPriv->currentLevel = 0;
 
     // Open all devices
     if (phase == ActionPhaseStartup) {
@@ -481,6 +485,11 @@ bool RobotInterface::Robot::enterPhase(RobotInterface::ActionPhase phase)
             }
             return false;
         }
+    }
+
+    // run phase does not accept actions
+    if (phase == ActionPhaseRun) {
+        return true;
     }
 
     // Before starting any action we ensure that there are no other
@@ -504,6 +513,7 @@ bool RobotInterface::Robot::enterPhase(RobotInterface::ActionPhase phase)
         const unsigned int level = *lit;
 
         yInfo() << "Entering action level" << level << "of phase" << ActionPhaseToString(phase);
+        mPriv->currentLevel = level;
 
         // If current phase was changed by some other thread, we should
         // exit the loop and avoid starting further actions.
@@ -604,6 +614,15 @@ bool RobotInterface::Robot::enterPhase(RobotInterface::ActionPhase phase)
     return ret;
 }
 
+RobotInterface::ActionPhase RobotInterface::Robot::currentPhase() const
+{
+    return mPriv->currentPhase;
+}
+
+int RobotInterface::Robot::currentLevel() const
+{
+    return mPriv->currentLevel;
+}
 
 bool RobotInterface::Robot::hasParam(const std::string& name) const
 {

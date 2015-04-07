@@ -13,8 +13,8 @@
 #include "XMLReader.h"
 
 #include <yarp/os/LogStream.h>
-
 #include <yarp/os/ResourceFinder.h>
+#include <yarp/os/RpcServer.h>
 
 class RobotInterface::Module::Private
 {
@@ -25,6 +25,7 @@ public:
     Module * const parent;
     RobotInterface::Robot robot;
     int interruptReceived;
+    yarp::os::RpcServer rpcPort;
 };
 
 
@@ -32,6 +33,8 @@ RobotInterface::Module::Private::Private(Module *parent) :
     parent(parent),
     interruptReceived(0)
 {
+    rpcPort.open("/robotInterface");
+    parent->attach(rpcPort);
 }
 
 RobotInterface::Module::Private::~Private()
@@ -68,22 +71,15 @@ bool RobotInterface::Module::configure(yarp::os::ResourceFinder &rf)
     setName(mPriv->robot.portprefix().c_str());
 
     // Enter startup phase
-    if (!mPriv->robot.enterPhase(RobotInterface::ActionPhaseStartup)) {
-        yError() << "Error in" << ActionPhaseToString(RobotInterface::ActionPhaseStartup) << "phase... see previous messages for more info";
-        /* If one of the startup action fails, it is safer to call the interrupt/shutdown action because they will correctly undo the initialization
-         * done by the succesfully performed stastup actions.
-         *
-         * For example one startup attach action is succesful, but another one is not, when closing down the process, we must perform the detach action
-         * before closing the involved devices.
-         *
-         * Calling interruptModule() has the same effect as handling a SIGINT, so all close action will be performed in the right order. Furthermore it
-         * signal handler is not yet active here, so we do not have problems from multiple concurrent CTRL+C.
-         */
-        interruptModule();
-        close();
+    if (!mPriv->robot.enterPhase(RobotInterface::ActionPhaseStartup) ||
+        !mPriv->robot.enterPhase(RobotInterface::ActionPhaseRun)) {
+        yError() << "Error in" << ActionPhaseToString(mPriv->robot.currentPhase()) << "phase... see previous messages for more info";
+        // stopModule() calls interruptModule() and then close()
+        // internally. This ensure that interrupt1 phase actions
+        // (i.e. detach) are performed before destroying the devices.
+        stopModule();
         return false;
     }
-
     return true;
 }
 
@@ -138,27 +134,62 @@ bool RobotInterface::Module::interruptModule()
 
 bool RobotInterface::Module::close()
 {
+    bool ret = true;
     // If called from the first interrupt, enter the corresponding
     // interrupt phase.
     switch (mPriv->interruptReceived) {
     case 1:
         if (!mPriv->robot.enterPhase(RobotInterface::ActionPhaseInterrupt1)) {
             yError() << "Error in" << ActionPhaseToString(RobotInterface::ActionPhaseInterrupt1) << "phase... see previous messages for more info";
-            return false;
+            ret = false;
         }
         break;
     case 2:
     case 3:
         break;
     default:
-        return false;
+        ret = false;
     }
 
     // Finally call the shutdown phase.
     if (!mPriv->robot.enterPhase(RobotInterface::ActionPhaseShutdown)) {
         yError() << "Error in" << ActionPhaseToString(RobotInterface::ActionPhaseShutdown) << "phase... see previous messages for more info";
-        return false;
+        ret = false;
     }
 
-    return true;
+    mPriv->rpcPort.interrupt();
+    mPriv->rpcPort.close();
+    return ret;
+}
+
+bool RobotInterface::Module::attach(yarp::os::RpcServer &source)
+{
+    return this->yarp().attachAsServer(source);
+}
+
+
+std::string RobotInterface::Module::get_phase()
+{
+    return ActionPhaseToString(mPriv->robot.currentPhase());
+}
+
+int32_t RobotInterface::Module::get_level()
+{
+    return mPriv->robot.currentLevel();
+}
+
+bool RobotInterface::Module::is_ready()
+{
+    return (mPriv->robot.currentPhase() == RobotInterface::ActionPhaseRun ? true : false);
+}
+
+std::string RobotInterface::Module::get_robot()
+{
+    return mPriv->robot.name();
+}
+
+std::string RobotInterface::Module::quit()
+{
+    stopModule();
+    return "bye";
 }
