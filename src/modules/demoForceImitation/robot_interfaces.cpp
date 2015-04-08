@@ -118,7 +118,7 @@ bool robot_interfaces::init()
         dd[i] = new PolyDriver(options[i]);
         if(!dd[i] || !(dd[i]->isValid()))
         {
-            fprintf(stderr,"Problems instantiating the device driver %s\n", part.c_str());
+            yError("Problems instantiating the device driver %s\n", part.c_str());
         }        
         
         ok = ok & dd[i]->view(ipos[i]);

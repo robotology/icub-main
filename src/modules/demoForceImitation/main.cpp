@@ -48,6 +48,7 @@ class CtrlThread: public yarp::os::RateThread
     double encoders_master [16];
     double encoders_slave  [16];
     bool   autoconnect;
+    bool   stiff;
     Stamp  info;
     
     BufferedPort<iCub::skinDynLib::skinContactList> *port_skin_contacts;
@@ -62,6 +63,7 @@ class CtrlThread: public yarp::os::RateThread
         robot=0;
         left_arm_master=false;
         port_skin_contacts=0;
+        stiff = _rf.check("stiff");
     };
 
     virtual bool threadInit()
@@ -127,18 +129,18 @@ class CtrlThread: public yarp::os::RateThread
 
         if (abs(i_touching_diff)<5)
         {
-            fprintf(stdout,"nothing!\n");
+            yInfo("nothing!\n");
         }
         else
         if (i_touching_left>i_touching_right)
         {
-            fprintf(stdout,"Touching left arm! \n");
+            yInfo("Touching left arm! \n");
             if (!left_arm_master) change_master();
         }
         else
         if (i_touching_right>i_touching_left)
         {
-            fprintf(stdout,"Touching right arm! \n");
+            yInfo("Touching right arm! \n");
             if (left_arm_master) change_master();
         }
 
@@ -187,7 +189,8 @@ class CtrlThread: public yarp::os::RateThread
                 robot->icmd[LEFT_ARM]->setTorqueMode(i);
 
                 robot->icmd[RIGHT_ARM]->setPositionMode(i);
-                robot->iint[RIGHT_ARM]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
+                if (stiff==false) robot->iint[RIGHT_ARM]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
+                else              robot->iint[RIGHT_ARM]->setInteractionMode(i,VOCAB_IM_STIFF);
             }
         }
         else
@@ -195,8 +198,8 @@ class CtrlThread: public yarp::os::RateThread
             for (int i=jjj; i<5; i++)
             {
                 robot->icmd[LEFT_ARM]->setPositionMode(i);
-                robot->iint[LEFT_ARM]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
-
+                if (stiff==false) robot->iint[LEFT_ARM]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
+                else              robot->iint[LEFT_ARM]->setInteractionMode(i,VOCAB_IM_STIFF);
                 robot->icmd[RIGHT_ARM]->setTorqueMode(i);
             }
         }
@@ -239,7 +242,7 @@ class CtrlModule: public RFModule
 
     virtual bool configure(ResourceFinder &rf)
     {
-        int rate = rf.check("rate",Value(20)).asInt();
+        int rate = rf.check("period",Value(20)).asInt();
         control_thr=new CtrlThread(rate,rf);
         if (!control_thr->start())
         {
@@ -262,7 +265,7 @@ class CtrlModule: public RFModule
     }
     bool respond(const Bottle& command, Bottle& reply) 
     {
-        fprintf(stdout,"rpc respond\n");
+        yInfo("rpc respond, still to be implemented\n");
         Bottle cmd;
         reply.clear(); 
         
@@ -285,7 +288,7 @@ int main(int argc, char * argv[])
 
     if (rf.check("help"))
     {
-        //help here
+        yInfo("help not yet implemented\n");
     }
 
     //initialize yarp network
@@ -293,7 +296,7 @@ int main(int argc, char * argv[])
 
     if (!yarp.checkNetwork())
     {
-        fprintf(stderr, "Sorry YARP network does not seem to be available, is the yarp server available?\n");
+        yError("Sorry YARP network does not seem to be available, is the yarp server available?\n");
         return -1;
     }
 
