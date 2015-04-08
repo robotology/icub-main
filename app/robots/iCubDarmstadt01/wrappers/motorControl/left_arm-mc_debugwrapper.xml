@@ -3,7 +3,6 @@
 
 <devices robot="iCubDarmstadt01" build="1">
   <device name="left_arm_mc_wrapper" type="debugInterfaceWrapper">
-    <param name="threadrate">  10  </param>
     <paramlist name="networks">
       <!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
 	<elem name="FirstSetOfJoints">  0  3  0  3 </elem> 

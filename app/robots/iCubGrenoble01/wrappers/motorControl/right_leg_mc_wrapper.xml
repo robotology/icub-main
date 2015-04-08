@@ -3,7 +3,6 @@
 
 <devices robot="iCubGrenoble01" build="1">
   <device name="right_leg_mc_wrapper" type="controlboardwrapper2">
-      <param name="threadrate">  10  </param>
       <paramlist name="networks">
          <elem name="right_joints">  0  5  0  5 </elem>
       </paramlist>

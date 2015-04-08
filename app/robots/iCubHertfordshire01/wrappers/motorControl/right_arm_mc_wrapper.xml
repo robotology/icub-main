@@ -2,7 +2,6 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 <devices robot="iCubHertfordshire01" build="0">
   <device name="right_arm_mc_wrapper" type="controlboardwrapper2">
-      <param name="threadrate">  10  </param>
       <paramlist name="networks">
 	  <elem name="right_arm_joints">  0  7  0  7 </elem>
 	  <elem name="right_hand_joints"> 8 15  0  7 </elem>

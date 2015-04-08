@@ -2,7 +2,6 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 <devices robot="iCubOsaka01" build="1">
   <device name="torso_mc_wrapper" type="controlboardwrapper2">
-      <param name="threadrate">  10  </param>
       <paramlist name="networks">
       <elem name="torso_joints">  0 2 0 2 </elem>
       </paramlist>

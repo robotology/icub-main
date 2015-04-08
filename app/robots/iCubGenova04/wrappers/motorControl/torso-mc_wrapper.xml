@@ -3,7 +3,6 @@
 
 <devices robot="iCubGenova04" build="1">
   <device name="torso_mc_wrapper" type="controlboardwrapper2">
-      <param name="threadrate">   10   </param>
       <paramlist name="networks">
 	<!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
 	  <elem name="FirstSetOfJoints">  0  2  0  2 </elem>

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <devices>
   <device name="left_arm_mc_wrapper" type="controlboardwrapper2">
-      <param name="threadrate">   10  </param>
       <paramlist name="networks">
          <elem name="left_arm_joints">  0  3  0  3 </elem>
       </paramlist>
