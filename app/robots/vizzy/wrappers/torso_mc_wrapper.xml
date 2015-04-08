@@ -6,7 +6,7 @@
 		<paramlist name="networks">
 			<elem name="torso_joints"> 0 0 0 0 </elem>
 		</paramlist>
-		<param name="period"> 10 </param>
+<param name="period"> 10 </param>
 		<param name="name"> vizzy/torso </param>
 		<param name="ports"> torso </param>
 		<param name="joints"> 1 </param>

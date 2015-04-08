@@ -7,7 +7,7 @@
 	  <elem name="right_hand_joints"> 8 15  0  7 </elem>
       </paramlist>
 
-      <param name="period"> 10 			</param>
+<param name="period"> 10 </param>
       <param name="name">   icub/right_arm	</param>
       <param name="ports">  right_arm		</param>
       <param name="joints"> 16			</param>

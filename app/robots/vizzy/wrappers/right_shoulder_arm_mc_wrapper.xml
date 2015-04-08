@@ -7,7 +7,7 @@
 			<elem name="right_shoulder_joints"> 0 2 3 5 </elem>
 			<elem name="right_arm_joints"> 3 10 0 7 </elem>
 		</paramlist>
-		<param name="period"> 10 </param>
+<param name="period"> 10 </param>
 		<param name="name"> vizzy/right_shoulder_arm </param>
 		<param name="ports"> right_shoulder_arm </param>
 		<param name="joints"> 11 </param>

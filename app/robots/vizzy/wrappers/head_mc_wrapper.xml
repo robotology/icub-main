@@ -6,7 +6,7 @@
 		<paramlist name="networks">
 			<elem name="head_joints"> 0 4 1 5 </elem>
 		</paramlist>
-		<param name="period"> 10 </param>
+<param name="period"> 10 </param>
 		<param name="name"> vizzy/head </param>
 		<param name="ports"> head </param>
 		<param name="joints"> 5 </param>

@@ -8,7 +8,7 @@
       <elem name="head_joints">  0 3 0 3 </elem>
       </paramlist>
 
-      <param name="period"> 10          </param>
+<param name="period"> 10 </param>
       <param name="name">   icub/head   </param>
       <param name="ports">  head        </param>
       <param name="joints"> 4           </param>

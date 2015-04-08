@@ -8,7 +8,7 @@
 			<!--<elem name="left_shoulder_joints"> 0 2 0 2 </elem>
 			<elem name="right_shoulder_joints"> 0 2 3 5 </elem> -->
 		</paramlist>
-		<param name="period"> 10 </param>
+<param name="period"> 10 </param>
 		<param name="name"> vizzy/shoulders </param>
 		<param name="ports"> shoulders </param>
 		<param name="joints"> 6 </param>

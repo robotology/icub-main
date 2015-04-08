@@ -9,7 +9,7 @@
 	  <elem name="FirstSetOfJoints">  0  2  0  2 </elem>
       </paramlist>
 
-      <param name="period"> 20                  </param>
+<param name="period"> 10 </param>
       <param name="name">   icub/torso          </param>
       <param name="ports">  torso               </param>
       <param name="joints"> 3                   </param>

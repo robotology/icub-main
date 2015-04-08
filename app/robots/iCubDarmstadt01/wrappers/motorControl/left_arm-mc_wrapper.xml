@@ -10,7 +10,7 @@
 	<elem name="SecondSetOfJoints"> 4 15  0 11 </elem> 	
     </paramlist>
 
-    <param name="period"> 20 			</param>
+<param name="period"> 10 </param>
     <param name="name">   icub/left_arm		</param>
     <param name="ports">  left_arm		</param>
     <param name="joints"> 16			</param>
