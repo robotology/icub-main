@@ -95,17 +95,44 @@ class CtrlThread: public yarp::os::RateThread
         robot->iimp[RIGHT_ARM]->setImpedance(3,0.2,0.02);
         robot->iimp[RIGHT_ARM]->setImpedance(4,0.1,0.00);
 
-        /*
+        yInfo("Going to home position...");
         for (int i=0; i<5; i++)
         {
-            robot->ipos[RIGHT_ARM]->setRefSpeed(i,40);
-            robot->ipos[LEFT_ARM]->setRefSpeed(i,40);
-            robot->ivel[RIGHT_ARM]->setRefAcceleration(i,40);
-            robot->ivel[LEFT_ARM]->setRefAcceleration(i,40);
+            double tmp_pos=0.0;
+            robot->ienc[RIGHT_ARM]->getEncoder(i,&tmp_pos);
+            robot->icmd[LEFT_ARM]->setPositionMode(i);
+            robot->icmd[RIGHT_ARM]->setPositionMode(i);
+            robot->iint[LEFT_ARM]->setInteractionMode(i,VOCAB_IM_STIFF);
+            robot->iint[RIGHT_ARM]->setInteractionMode(i,VOCAB_IM_STIFF);
+            robot->ipos[LEFT_ARM]->setRefSpeed(i,10);
+            robot->ipos[LEFT_ARM]->positionMove(i,tmp_pos);
         }
-        */
+        double timeout = 0;
+        do
+        {
+            int ok=0;
+            for (int i=0; i<5; i++)
+            {
+                double tmp_pos_l=0;
+                double tmp_pos_r=0;
+                robot->ienc[LEFT_ARM]->getEncoder(i,&tmp_pos_l);
+                robot->ienc[RIGHT_ARM]->getEncoder(i,&tmp_pos_r);
+                if (fabs(tmp_pos_l-tmp_pos_r)<1.0) ok++;
+            }
+            if (ok==5) break;
+            yarp::os::Time::delay(1.0);
+            timeout++;
+        }
+        while (timeout < 10); //10 seconds
+        if (timeout >=10)
+        {
+            yError("Unable to reach seafe initial position! Closing module");
+            return false;
+        }
 
         change_master();
+
+        yInfo("Position tracking started");
         return true;
     }
     virtual void run()
