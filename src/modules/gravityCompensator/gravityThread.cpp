@@ -189,10 +189,10 @@ void  gravityCompensatorThread::setUpperMeasure()
     icub->upperTorso->setInertialMeasure(w0,dw0,d2p0);
 }
 
-gravityCompensatorThread::gravityCompensatorThread(int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, version_tag icub_type) : RateThread(_rate), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
+gravityCompensatorThread::gravityCompensatorThread(string _wholeBodyName, int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, version_tag icub_type) : RateThread(_rate), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
 {   
     gravity_mode = GRAVITY_COMPENSATION_ON;
-    wholeBodyName = "wholeBodyDynamics";
+    wholeBodyName = _wholeBodyName;
 
     //--------------INTERFACE INITIALIZATION-------------//
     iencs_arm_left        = 0;

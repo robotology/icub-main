@@ -123,6 +123,8 @@ private:
     bool legs_enabled;
     bool right_arm_enabled;
     bool left_arm_enabled;
+    bool torso_enabled;
+    bool head_enabled;
     string m_side;
     string m_part;
 
@@ -132,6 +134,8 @@ public:
         legs_enabled  = true;
         left_arm_enabled  = true;
         right_arm_enabled  = true;
+        torso_enabled  = true;
+        head_enabled  = true;
         dd_left_arm   = 0;
         dd_right_arm  = 0;
         dd_head       = 0;
@@ -241,20 +245,38 @@ public:
             right_arm_enabled= false;
             yInfo("'no_right_arm' option found. Right arm will be disabled.\n");
         }
-        //---------------------DEVICES--------------------------//
-        
-        OptionsHead.put("device","remote_controlboard");
-        OptionsHead.put("local","/gravityCompensator/head/client");
-        OptionsHead.put("remote",string("/"+robot_name+"/head").c_str());
-
-        if (!createDriver(dd_head, OptionsHead))
+        //------------------CHECK IF TORSO IS ENABLED-----------//
+        if (rf.check("no_torso_legs"))
         {
-            yError("unable to create head device driver...quitting\n");
-            return false;
+            torso_enabled= false;
+            legs_enabled= false;
+            yInfo("no_torso_legs' option found. Torso and legs will be disabled.\n");
         }
-        else
-            yInfo("device driver created\n");
-        
+        if (rf.check("no_torso"))
+        {
+            torso_enabled= false;
+            yInfo("'no_torso' option found. Torso will be disabled.\n");
+        }
+        //------------------CHECK IF HEAD IS ENABLED-----------//
+        if (rf.check("no_head"))
+        {
+            head_enabled= false;
+            yInfo("'no_head' option found. Head will be disabled.\n");
+        }
+        //---------------------DEVICES--------------------------//
+        if (head_enabled)
+        {
+            OptionsHead.put("device","remote_controlboard");
+            OptionsHead.put("local","/gravityCompensator/head/client");
+            OptionsHead.put("remote",string("/"+robot_name+"/head").c_str());
+
+            if (!createDriver(dd_head, OptionsHead))
+            {
+                yError("unable to create head device driver...quitting\n");
+                return false;
+            }
+        }
+
         if (left_arm_enabled)
         {
             OptionsLeftArm.put("device","remote_controlboard");
@@ -300,25 +322,35 @@ public:
             }
         }
         
-        OptionsTorso.put("device","remote_controlboard");
-        OptionsTorso.put("local","/gravityCompensator/torso/client");
-        OptionsTorso.put("remote",string("/"+robot_name+"/torso").c_str());
-
-        if (!createDriver(dd_torso,OptionsTorso))
+        if (torso_enabled)
         {
-            yError("unable to create head device driver...quitting\n");
-            return false;
+            OptionsTorso.put("device","remote_controlboard");
+            OptionsTorso.put("local","/gravityCompensator/torso/client");
+            OptionsTorso.put("remote",string("/"+robot_name+"/torso").c_str());
+
+            if (!createDriver(dd_torso,OptionsTorso))
+            {
+                yError("unable to create torso device driver...quitting\n");
+                return false;
+            }
         }
-        else
-            yInfo("device driver created\n");
+        
+        yInfo("device driver created\n");
 
         rpcPort.open(("/"+name+"/rpc").c_str());
         attach(rpcPort);        
 
+        //------------------CHECK FOR WHOLEBODYNAME -----------//
+        std::string wholeBodyName = "wholeBodyDynamics";
+        if (rf.check("wholeBodyName"))
+        {
+            rf.find("wholeBodyName").asString();
+            yInfo("'wholeBodyName' option found. Using /%s prefix for connections.\n", wholeBodyName);
+        }
 
         //--------------------------THREAD--------------------------
 
-        g_comp = new gravityCompensatorThread(rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, icub_type);
+        g_comp = new gravityCompensatorThread(wholeBodyName, rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, icub_type);
         yInfo("ft thread istantiated...\n");
         g_comp->start();
         yInfo("thread started\n");
@@ -430,14 +462,20 @@ int main(int argc, char * argv[])
 
     if (rf.check("help"))
     {
-        cout << "Options:" << endl << endl;
-        cout << "\t--context context: where to find the called resource (referred to $ICUB_ROOT/app:)"                            << endl;
-        cout << "\t--from       from: the name of the file.ini to be used for calibration"                                        << endl;
-        cout << "\t--rate       rate: the period used by the module. default 100ms (not less than 15ms)"                          << endl;
-        cout << "\t--no_legs    this option disables the gravity compensation for the legs joints"                                << endl;
-        cout << "\t--headV2     use the model of the headV2" << endl;  
-        cout << "\t--no_left_arm    disables the left arm" << endl;
-        cout << "\t--no_right_arm   disabled the right arm" << endl;
+        yInfo() << "Options:";
+        yInfo() << "--context context: where to find the called resource (referred to $ICUB_ROOT/app:)";
+        yInfo() << "--from       from: the name of the file.ini to be used for calibration";
+        yInfo() << "--rate       rate: the period used by the module. default 100ms (not less than 15ms)";
+        yInfo() << "--no_legs    this option disables the gravity compensation for the legs joints" ;
+        yInfo() << "--headV2     use the model of the headV2";
+        yInfo() << "--no_left_arm      disables the left arm";
+        yInfo() << "--no_right_arm     disables the right arm";
+        yInfo() << "--no_legs          disables the legs";
+        yInfo() << "--no_left_arm      disabled the left arm";
+        yInfo() << "--no_torso         disables the torso";
+        yInfo() << "--no_torso_legs    disables the torso and the legs";
+        yInfo() << "--no_head          disabled the head";
+        yInfo() << "--wholebody_name   the wholeBodyDyanmics port prefix (e.g. 'wholeBodyDynamics' / 'wholeBodyDynamicsTree')";
         return 0;
     }
 
