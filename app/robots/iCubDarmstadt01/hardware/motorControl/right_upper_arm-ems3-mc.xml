@@ -16,7 +16,7 @@
 
     <group name="IMPEDANCE">
       <param name="stiffness">	 0.1   0.1   0.1  0.1   </param>
-      <param name="damping">	0.05  0.05  0.05 0.05   </param>
+      <param name="damping">	0.00  0.00  0.00 0.00   </param>
     </group>
 
     <group name="POS_PIDS">
@@ -36,7 +36,7 @@
     <group name="TORQUE_CONTROL">
         <param name="controlLaw">    motor_pid_with_friction_v1 </param> 
         <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">           -300       -300       -300        300     </param>       
+        <param name="kp">            200        600        600        600     </param>       
         <param name="kd">              0          0          0          0     </param>       
         <param name="ki">              0          0          0          0     </param>       
         <param name="maxPwm">       8000       8000       8000       8000     </param>       
@@ -47,8 +47,8 @@
         <param name="stictionDwn">     0          0          0          0     </param>       
         <param name="kff">             1          1          1          1     </param>  
         <param name="kbemf">           0          0          0          0     </param>            
-        <param name="filterType">      0          0          0          0     </param>     
-        <param name="ktau">         -200       -200       -200        200     </param>   
+        <param name="filterType">  0.003     0.0007     0.0007     0.0006     </param>     
+        <param name="ktau">          200        500        500        500     </param>   
     </group>
 	
   </device>
