@@ -345,7 +345,7 @@ public:
         if (rf.check("wholeBodyName"))
         {
             rf.find("wholeBodyName").asString();
-            yInfo("'wholeBodyName' option found. Using /%s prefix for connections.\n", wholeBodyName);
+            yInfo("'wholeBodyName' option found. Using /%s prefix for connections.\n", wholeBodyName.c_str());
         }
 
         //--------------------------THREAD--------------------------
