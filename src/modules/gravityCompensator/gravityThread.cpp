@@ -189,7 +189,7 @@ void  gravityCompensatorThread::setUpperMeasure()
     icub->upperTorso->setInertialMeasure(w0,dw0,d2p0);
 }
 
-gravityCompensatorThread::gravityCompensatorThread(string _wholeBodyName, int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, version_tag icub_type) : RateThread(_rate), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
+gravityCompensatorThread::gravityCompensatorThread(string _wholeBodyName, int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, version_tag icub_type, bool _inertial_enabled) : RateThread(_rate), ddLA(_ddLA), ddRA(_ddRA), ddLL(_ddLL), ddRL(_ddRL), ddH(_ddH), ddT(_ddT)
 {   
     gravity_mode = GRAVITY_COMPENSATION_ON;
     wholeBodyName = _wholeBodyName;
@@ -222,6 +222,7 @@ gravityCompensatorThread::gravityCompensatorThread(string _wholeBodyName, int _r
     iImp_leg_right        = 0;
     iTqs_leg_right        = 0;
     isCalibrated = false;
+    inertial_enabled=_inertial_enabled;
     icub = new iCubWholeBody (icub_type,DYNAMIC, VERBOSE);
 
     //---------------------PORTS-------------------------//
@@ -361,25 +362,40 @@ bool gravityCompensatorThread::readAndUpdate(bool waitMeasure)
     }
     */
 
-    inertial = port_inertial->read(waitMeasure);
-    if(inertial!=0)
+    if (inertial_enabled)
     {
-        sz = inertial->length();
-        inertial_measurements.resize(sz) ;
-        inertial_measurements= *inertial;
-        d2p0[0] = inertial_measurements[0];
-        d2p0[1] = inertial_measurements[1];
-        d2p0[2] = inertial_measurements[2];
+        inertial = port_inertial->read(waitMeasure);
+        if(inertial!=0)
+        {
+            sz = inertial->length();
+            inertial_measurements.resize(sz) ;
+            inertial_measurements= *inertial;
+            d2p0[0] = inertial_measurements[0];
+            d2p0[1] = inertial_measurements[1];
+            d2p0[2] = inertial_measurements[2];
+            w0 [0] = 0;
+            w0 [1] = 0;
+            w0 [2] = 0;
+            dw0 [0] = 0;
+            dw0 [1] = 0;
+            dw0 [2] = 0;
+        }
+        else
+        {
+            b = false;
+        }
+    }
+    else
+    {
+        d2p0[0] = 0;
+        d2p0[1] = 0;
+        d2p0[2] = 9.81;
         w0 [0] = 0;
         w0 [1] = 0;
         w0 [2] = 0;
         dw0 [0] = 0;
         dw0 [1] = 0;
         dw0 [2] = 0;
-    }
-    else
-    {
-        b = false;
     }
     
     b &= getUpperEncodersSpeedAndAcceleration();

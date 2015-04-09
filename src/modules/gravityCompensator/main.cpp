@@ -342,15 +342,23 @@ public:
 
         //------------------CHECK FOR WHOLEBODYNAME -----------//
         std::string wholeBodyName = "wholeBodyDynamics";
-        if (rf.check("wholeBodyName"))
+        if (rf.check("wholebody_name"))
         {
-            rf.find("wholeBodyName").asString();
+            wholeBodyName = rf.find("wholebody_name").asString();
             yInfo("'wholeBodyName' option found. Using /%s prefix for connections.\n", wholeBodyName.c_str());
+        }
+
+        //------------------CHECK FOR INERTIAL -----------//
+        bool inertial_enabled=true;
+        if (rf.check("no_inertial"))
+        {
+            inertial_enabled=false;
+            yInfo("'no_inertial' option found. Disabling inertial measurment.\n");
         }
 
         //--------------------------THREAD--------------------------
 
-        g_comp = new gravityCompensatorThread(wholeBodyName, rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, icub_type);
+        g_comp = new gravityCompensatorThread(wholeBodyName, rate, dd_left_arm, dd_right_arm, dd_head, dd_left_leg, dd_right_leg, dd_torso, icub_type, inertial_enabled);
         yInfo("ft thread istantiated...\n");
         g_comp->start();
         yInfo("thread started\n");
@@ -471,11 +479,12 @@ int main(int argc, char * argv[])
         yInfo() << "--no_left_arm      disables the left arm";
         yInfo() << "--no_right_arm     disables the right arm";
         yInfo() << "--no_legs          disables the legs";
-        yInfo() << "--no_left_arm      disabled the left arm";
+        yInfo() << "--no_left_arm      disables the left arm";
         yInfo() << "--no_torso         disables the torso";
         yInfo() << "--no_torso_legs    disables the torso and the legs";
-        yInfo() << "--no_head          disabled the head";
+        yInfo() << "--no_head          disables the head";
         yInfo() << "--wholebody_name   the wholeBodyDyanmics port prefix (e.g. 'wholeBodyDynamics' / 'wholeBodyDynamicsTree')";
+        yInfo() << "--no_inertial      disables the inertial";
         return 0;
     }
 
