@@ -104,6 +104,7 @@ hostTransceiver::hostTransceiver():delayAfterROPloadingFailure(0.001) // 1ms
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
     memset(&localTransceiverProperties, 0, sizeof(localTransceiverProperties));
     memset(&remoteTransceiverProperties, 0, sizeof(remoteTransceiverProperties));
+    TXratedivider = 1;
 #if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
     htmtx = new Semaphore(1);
     nvmtx = new Semaphore(1);
@@ -1252,6 +1253,11 @@ bool hostTransceiver::fillRemoteProperties(yarp::os::Searchable &cfgtransceiver)
         remoteTransceiverProperties.maxsizeROPframeOccasionals  = cfgtransceiver.find("maxSizeROPframeOccasionals").asInt();
         remoteTransceiverProperties.maxsizeROP                  = cfgtransceiver.find("maxSizeROP").asInt();
         remoteTransceiverProperties.maxnumberRegularROPs        = cfgtransceiver.find("maxNumberRegularROPs").asInt();
+
+        if(true == cfgtransceiver.check("TXratedivider"))
+        {
+            TXratedivider = cfgtransceiver.find("TXratedivider").asInt();
+        }
 
     }
 

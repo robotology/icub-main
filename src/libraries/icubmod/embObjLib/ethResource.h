@@ -206,6 +206,7 @@ private:
     bool                verifiedEPprotocol[eoprot_endpoints_numberof];
     bool                verifiedBoardPresence;
     bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
+    bool                txrateISset;
     bool                cleanedBoardBehaviour;    // the board is in config mode and does not have any regulars
     uint8_t             boardEPsNumber;
     eOmn_comm_status_t  boardCommStatus;
@@ -305,6 +306,7 @@ public:
     bool verifyBoard(yarp::os::Searchable &protconfig);
     bool verifyBoardPresence(yarp::os::Searchable &protconfig);
     bool verifyBoardTransceiver(yarp::os::Searchable &protconfig);   
+    bool setTXrate(yarp::os::Searchable &protconfig);
     bool cleanBoardBehaviour(void);
 
     bool verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);

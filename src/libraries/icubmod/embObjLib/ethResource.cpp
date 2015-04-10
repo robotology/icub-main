@@ -47,6 +47,7 @@ ethResources::ethResources()
     iswaitingNQsem              = new Semaphore(0);
     verifiedBoardPresence       = false;
     verifiedBoardTransceiver    = false;
+    txrateISset                 = false;
     cleanedBoardBehaviour       = false;
     boardEPsNumber              = 0;
     memset(verifiedEPprotocol, 0, sizeof(verifiedEPprotocol));
@@ -807,6 +808,49 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 }
 
 
+bool ethResources::setTXrate(yarp::os::Searchable &protconfig)
+{
+
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+    yWarning() << "ethResources::setTXrate() is in ETHRES_DEBUG_DONTREADBACK mode";
+    txrateISset = true;
+    return true;
+#endif
+
+    if(txrateISset)
+    {
+        return(true);
+    }
+
+    // step 1: we send teh remote board a message of type eoprot_tag_mn_appl_config_txratedivider with the value read from the proper section
+    //         if doen find the section we set it with value 1
+
+    // call a set until verified
+
+    TXratedivider = TXratedivider;
+    if(0 == TXratedivider)
+    {
+        TXratedivider = 1;
+    }
+
+    if(TXratedivider > 20)
+    {
+        TXratedivider = 20;
+    }
+
+
+    if(verbosewhenok)
+    {
+        yDebug() << "ethResources::setTXrate() has succesfully set the TX rate of the transceiver of BOARD " << get_protBRDnumber()+1 << "with a decimation factor of 1Khz = " << TXratedivider;
+    }
+
+    txrateISset = true;
+
+
+    return(true);
+}
+
+
 bool ethResources::cleanBoardBehaviour(void)
 {
     if(cleanedBoardBehaviour)
@@ -1012,7 +1056,7 @@ bool ethResources::isEPmanaged(eOprot_endpoint_t ep)
 
 bool ethResources::verifyBoard(yarp::os::Searchable &protconfig)
 {
-    if((true == verifyBoardPresence(protconfig)) && (true == verifyBoardTransceiver(protconfig)) && (true == cleanBoardBehaviour()))
+    if((true == verifyBoardPresence(protconfig)) && (true == verifyBoardTransceiver(protconfig)) && (true == setTXrate(protconfig)) && (true == cleanBoardBehaviour()))
     {
         return(true);
     }
