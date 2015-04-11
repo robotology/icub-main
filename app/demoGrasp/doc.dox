@@ -18,11 +18,11 @@ Assumes that \ref icub_iCubInterface (with ICartesianControl
 interface implemented) and \ref iKinGazeCtrl are running.
 
 \section int_sec Instantiated Modules
-- \ref pf3dTracker "pf3dTracker"
+- \ref icub_pf3dTracker
 
-- \ref motionCUT "motionCUT"
+- \ref motionCUT
 
-- \ref demoGraspManager "demoGraspManager"
+- \ref demoGraspManager
 
 \section config_sec Configuration Files
 The file ./conf/config.ini contains the initialization parameters for the 
