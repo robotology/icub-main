@@ -838,6 +838,19 @@ bool ethResources::setTXrate(yarp::os::Searchable &protconfig)
         TXratedivider = 20;
     }
 
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_config_txratedivider);
+    uint8_t txratediv = TXratedivider;
+    if(false == setRemoteValueUntilVerified(id32, &txratediv, sizeof(txratediv), 5, 0.010, 0.050, 2))
+    {
+        yWarning() << "ethResources::setTXrate() could not configure txrate divider at" << txratediv << "in BOARD" << get_protBRDnumber()+1;
+        return true;
+    }
+    else
+    {
+        yDebug() << "ethResources::setTXrate() has succesfully set the TX rate of the transceiver of BOARD " << get_protBRDnumber()+1 << "with a decimation factor of 1Khz = " << TXratedivider;
+    }
+
+
 
     if(verbosewhenok)
     {
