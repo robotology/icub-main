@@ -55,7 +55,7 @@ ethResources::ethResources()
     usedSizeOfRegularROPframe   = 0;
     memset(&boardCommStatus, 0, sizeof(boardCommStatus));
 
-    RXpacketSize = 0;
+    //RXpacketSize = 0;
 
     for(int i = 0; i<16; i++)
         c_string_handler[i]     = NULL;
@@ -235,21 +235,24 @@ void ethResources::processRXpacket(uint64_t *data, uint16_t size, bool collectSt
     //                             THUS: yes we can remove the useless ethResources::RXpacket.
     //                             TODO: remove it and change the method whih returns it capacity with a method returning capacity of the
     //                                   EOpacket internal to hostTranceiver.
-    memcpy(ethResources::RXpacket, data, size);
-    ethResources::RXpacketSize = size;
+    //memcpy(ethResources::RXpacket, data, size);
+    //ethResources::RXpacketSize = size;
 
-    double curr_timeBeforeParsing = yarp::os::Time::now();
+    bool collect = collectStatistics && isInRunningMode;
+
+    double curr_timeBeforeParsing = 0;
+
+    if(true == collect)
+    {
+        curr_timeBeforeParsing = yarp::os::Time::now();
+    }
 
     hostTransceiver::onMsgReception(data, size);
 
-    double curr_timeAfterParsing = yarp::os::Time::now();
-
-    if(isInRunningMode)
+    if(true == collect)
     {
-        if(true == collectStatistics)
-        {
-            infoPkts->updateAndCheck(data, size, curr_timeBeforeParsing, (curr_timeAfterParsing-curr_timeBeforeParsing), false);
-        }
+        double curr_timeAfterParsing = yarp::os::Time::now();
+        infoPkts->updateAndCheck(data, size, curr_timeBeforeParsing, (curr_timeAfterParsing-curr_timeBeforeParsing), false);
     }
 }
 

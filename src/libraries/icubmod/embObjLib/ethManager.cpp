@@ -122,7 +122,15 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
 
     // the push_back has to be done only once for EMS
     if(justCreated)
+    {
         EMS_list.push_back(newRes);
+        int index = request.boardNumber-1;
+        if(index < ethresLUTsize)
+        {
+            ethresLUT[index] = newRes;
+            numberOfUsedBoards++;
+        }
+    }
 
     // The registerFeature has to be done always
     newRes->registerFeature(request);
@@ -326,22 +334,9 @@ bool TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32, Ie
     return ret;
 }
 
-#if 0
-#warning -> marco.accame change getFeatInfo() so that it returns an handler an not the whole strcut
-ethFeature_t TheEthManager::getFeatInfo(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep)
-{
-//    yTrace();
-    ethFeature_t ret_val;
-    std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (boardnum, ep);
 
-//     lock();      // marco.accame: found already commented. see why
-    ret_val = boards_map.at(key);
-//     unlock();    // marco.accame: found already commented. see why
-    return ret_val;
-}
-#endif
 
-#if (EO_ERRMAN_VERSION == 2)
+
 // this function is called by the embobj error manager
 void embOBJerror(eOerrmanErrorType_t errtype, const char *info, eOerrmanCaller_t *caller, const eOerrmanDescriptor_t *des)
 {
@@ -357,22 +352,6 @@ void embOBJerror(eOerrmanErrorType_t errtype, const char *info, eOerrmanCaller_t
     }
 
 }
-#else
-// this function is called by the embobj error manager
-void embOBJerror(eOerrmanErrorType_t errtype, eOid08_t taskid, const char *eobjstr, const char *info)
-{
-    static const char* theerrors[] = { "eo_errortype_info", "eo_errortype_warning", "eo_errortype_weak", "eo_errortype_fatal" };
-
-    yError() << "embOBJerror(): errtype = " << theerrors[errtype] << "from EOobject = " << eobjstr << " w/ message = " << info;
-
-    if(errtype == eo_errortype_fatal)
-    {
-        yError() << "embOBJerror(): FATAL ERROR: the calling thread shall now be stopped in a forever loop here inside";
-        for(;;);
-    }
-
-}
-#endif
 
 
 TheEthManager::TheEthManager()
@@ -380,6 +359,9 @@ TheEthManager::TheEthManager()
     yTrace();
     memset(info, 0, sizeof(info));
     snprintf(info, sizeof(info), "TheEthManager");
+
+    memset(ethresLUT, 0, sizeof(ethresLUT));
+    numberOfUsedBoards = 0;
 
     EMS_list.clear();
     UDP_initted = false;
@@ -563,6 +545,9 @@ TheEthManager::~TheEthManager()
     // Destroy all EMS boards
     if(EMS_list.size() != 0)
     {
+        memset(ethresLUT, 0, sizeof(ethresLUT));
+        numberOfUsedBoards = 0;
+
         ethResIt iterator = EMS_list.begin();
 
         while(iterator != EMS_list.end())
@@ -590,6 +575,24 @@ int TheEthManager::send(void *data, size_t len, ACE_INET_Addr remote_addr)
 {
     ssize_t ret = UDP_socket->send(data, len, remote_addr);
     return ret;
+}
+
+ethResources* TheEthManager::IPtoResource(ACE_INET_Addr adr)
+{
+    ACE_UINT32 a32 = adr.get_ip_address();
+    uint32_t index = a32 & 0xff;
+    index --;
+    if(index>=ethresLUTsize)
+    {
+        return(NULL);
+    }
+
+    return(TheEthManager::ethresLUT[index]);
+}
+
+int TheEthManager::GetNumberOfUsedBoards(void)
+{
+    return(numberOfUsedBoards);
 }
 
 ethResources* TheEthManager::GetEthResource(FEAT_boardnumber_t boardnum)
@@ -642,7 +645,7 @@ void TheEthManager::flush()
 }
 
 
-EthSender::EthSender() : RateThread(1)
+EthSender::EthSender() : RateThread(EthSenderRate)
 {
     yTrace();
 }
@@ -763,7 +766,7 @@ void EthSender::run()
 
 
 #ifdef ETHRECEIVER_ISPERIODICTHREAD
-EthReceiver::EthReceiver(): RateThread(1)
+EthReceiver::EthReceiver(): RateThread(EthReceiverRate)
 #else
 EthReceiver::EthReceiver()
 #endif
@@ -961,6 +964,74 @@ void EthReceiver::run()
             continue;  // i go to recv a new pkt and wait someone to stop me
         }
 
+
+#if defined(ETHRECEIVER_TEST_QUICKER_ONEVENT_RX_MODE)
+        // marco.accame: testing a lut approach: from ip address directly to ethres pointer.
+
+        if(incoming_msg_size > 0)
+        {
+            ethRes = ethManager->IPtoResource(sender_addr);
+            if(NULL != ethRes)
+            {
+                if(false == ethRes->canProcessRXpacket(incoming_msg_data, incoming_msg_size))
+                {   // cannot give packet to ethresource
+                    yError() << "EthReceiver::run() cannot give a received packet of size" << incoming_msg_size << "to ethResources because ethResources::canProcessRXpacket() returns false.";
+                }
+                else
+                {
+                    // we collect statistics only if we ever print them, thus statPrintInterval > 0
+                    bool collectStatistics = (statPrintInterval > 0) ? true : false;
+                    ethRes->processRXpacket(incoming_msg_data, incoming_msg_size, collectStatistics);
+                }
+
+            }
+            else
+            {
+                sender_addr.addr_to_string(address, sizeof(address));
+                yError() << "EthReceiver::run() cannot get a ethres associated to address" << address;
+            }
+
+        }
+        else
+        {   // a timeout. do nothing. because we must however execute what is after
+
+        }
+
+        // now i evaluate if we have to print the statistics
+        if(statPrintInterval > 0)
+        {
+            double currTime = yarp::os::Time::now();
+            double delta = currTime - statLastTime;
+
+            if( (delta) > statPrintInterval )
+            {
+                statLastTime = currTime;
+
+                yDebug() << "  (STATS-XX): new report for the past" << delta << "seconds";
+
+                EthSender* ethSender = ethManager->getEthSender();
+                ethSender->printTXstatistics();
+
+                // now for every ethresource i print the stats ... but only if it is running.
+                // by running stats for all boards at a given time, i understand if a board does not tx anymore
+
+                ethManager->getEMSlistRiterators(_rBegin, _rEnd);
+
+                riterator = _rBegin;
+                while(riterator != _rEnd)
+                {
+                    ethRes = (*riterator);
+                    if(ethRes->isRunning())
+                    {
+                        ethRes->printRXstatistics();
+                    }
+                    riterator++;
+                }
+            }
+        }
+
+#else // (ETHRECEIVER_TEST_QUICKER_ONEVENT_RX_MODE)
+
         // at every loop we get pointers of the ethresources list. we do so because it may change in time as a new device is added
         // we use reverse iterators.
 
@@ -1032,6 +1103,7 @@ void EthReceiver::run()
                 }
             }
         }
+#endif // (ETHRECEIVER_TEST_QUICKER_ONEVENT_RX_MODE)
 
     }   // end of while(!isStopping())
 
@@ -1208,6 +1280,78 @@ void EthReceiver::run()
 
 
 #ifdef ETHRECEIVER_ISPERIODICTHREAD
+
+
+void EthReceiver::run()
+{
+
+    //yTrace();
+
+    ACE_TCHAR     address[64];
+    ethResources  *ethRes;
+    ssize_t       incoming_msg_size = 0;
+    ACE_INET_Addr sender_addr;
+    uint64_t      incoming_msg_data[ethResources::maxRXpacketsize/8]; // 8-byte aligned local buffer for incoming packet: it must be able to accomodate max size of packet
+    const int     incoming_msg_capacity = ethResources::maxRXpacketsize;
+
+
+
+
+
+    //ACE_Time_Value recvTimeOut;
+    //recvTimeOut.set(0.010f); // timeout of socket reception is 10 milliseconds
+
+    //double myTestTimeout = recvTimeOut.sec() + (double)recvTimeOut.msec()/1000.0f;
+
+    int flags = MSG_DONTWAIT;
+
+    static int earlyexit = 0;
+
+    int maxUDPpackets = EthReceiver::EthReceiverRate*ethManager->GetNumberOfUsedBoards() + 2 + earlyexit*5; // marco.accame: set it as the number of boards plus a ... margin of 30% plus a +/- offset which depends on activity
+
+    earlyexit = 0;
+
+    for(int i=0; i<maxUDPpackets; i++)
+    {
+        incoming_msg_size = recv_socket->recv((void *) incoming_msg_data, incoming_msg_capacity, sender_addr, flags);
+        if(incoming_msg_size <= 0)
+        {
+            // marco.accame: i prefer using <= 0.
+            earlyexit = 1;
+            return;
+        }
+
+        ethRes = ethManager->IPtoResource(sender_addr);
+        if(NULL != ethRes)
+        {
+            if(false == ethRes->canProcessRXpacket(incoming_msg_data, incoming_msg_size))
+            {   // cannot give packet to ethresource
+                yError() << "EthReceiver::run() cannot give a received packet of size" << incoming_msg_size << "to ethResources because ethResources::canProcessRXpacket() returns false.";
+            }
+            else
+            {
+                // we collect statistics only if we ever print them, thus statPrintInterval > 0
+                bool collectStatistics = (statPrintInterval > 0) ? true : false;
+                ethRes->processRXpacket(incoming_msg_data, incoming_msg_size, collectStatistics);
+            }
+
+        }
+        else
+        {
+            sender_addr.addr_to_string(address, sizeof(address));
+            yError() << "EthReceiver::run() cannot get a ethres associated to address" << address;
+        }
+
+
+    }
+
+}
+
+#endif
+
+
+#if 0
+// marco.accame: it is the old ETHRECEIVER_ISPERIODICTHREAD
 #define MAX_COUNT_STAT  120000
 #define MAX_NUM_PKT     15
 void EthReceiver::run()
@@ -1363,6 +1507,7 @@ void EthReceiver::run()
     return;
 }
 
+// marco.accame: it is the endif of old ETHRECEIVER_ISPERIODICTHREAD
 #endif
 
 

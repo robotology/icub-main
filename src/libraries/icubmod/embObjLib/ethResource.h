@@ -324,8 +324,8 @@ public:
 
 private:
     bool verbosewhenok;
-    uint64_t        RXpacket[maxRXpacketsize/8];    // buffer holding the received messages after EthReceiver::run() has read it from socket
-    uint16_t        RXpacketSize;
+    //uint64_t        RXpacket[maxRXpacketsize/8];    // buffer holding the received messages after EthReceiver::run() has read it from socket
+    //uint16_t        RXpacketSize;
     //    ACE_UINT16      recv_size;                      // size of the received message
 };
 

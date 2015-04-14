@@ -74,6 +74,11 @@
 
 // -- defines
 
+
+#undef  ETHRECEIVER_ISPERIODICTHREAD
+#undef  ETHRECEIVER_TEST_QUICKER_ONEVENT_RX_MODE
+
+
 #define ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
 
 #ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
@@ -132,6 +137,11 @@ private:
     bool                          keepGoingOn;
     bool                          emsAlreadyClosed;
     double                        starttime;
+
+    enum { ethresLUTsize = eoprot_boards_maxnumberof };
+
+    ethResources*                 ethresLUT[ethresLUTsize];
+    int                           numberOfUsedBoards;
 
 
     // Data for EMS handling
@@ -271,6 +281,9 @@ public:
     EthSender* getEthSender(void);
     EthReceiver* getEthReceiver(void);
 
+    ethResources* IPtoResource(ACE_INET_Addr adr);
+    int GetNumberOfUsedBoards(void);
+
 };
 
 
@@ -285,6 +298,8 @@ private:
     TheEthManager                 *ethManager;
     ACE_SOCK_Dgram                *send_socket;
     void run();
+
+    enum { EthSenderRate = 1 };
 
 #ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
     // for statistic debug purpose
@@ -319,6 +334,8 @@ private:
     bool                            recFirstPkt[TheEthManager::maxBoards];
 
     double                          statPrintInterval;
+
+    enum { EthReceiverRate = 1 };
 
 
 #ifdef ETHRECEIVER_STATISTICS_ON
