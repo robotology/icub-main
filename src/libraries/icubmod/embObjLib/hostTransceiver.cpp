@@ -572,7 +572,21 @@ bool hostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numo
     *data = NULL;
     *size = 0;
     *numofrops = 0;
-
+#if defined(TEST_TX_HOSTTRANSCEIVER_OPTIMISATION)
+#if !defined(_ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_)
+    // marco.accame: if it is true that most of the time robotInterface does not have anything to tx, then this is a quick mode
+    // to evaluate that. robotInterface uses only occasionals, thus we dont need to pass arguments for replies and regulars
+    // moreover: if we passed those pointers we would do more computations because we would lock internal mutexes
+    uint16_t numofoccasionals = 0;
+    lock_transceiver();
+    eo_transceiver_NumberofOutROPs(pc104txrx, NULL, &numofoccasionals, NULL);
+    unlock_transceiver();
+    if(0 == numofoccasionals)
+    {
+        return false;
+    }
+#endif
+#endif
 
     uint16_t tmpnumofrops = 0;
 

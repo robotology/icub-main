@@ -266,7 +266,7 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
 #endif
 
     {
-        char str[256] = {0};
+        char str[384] = {0};
         static const char * sourcestrings[] =
         {
             "LOCAL",
@@ -360,6 +360,28 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
         }
         else
         {   // treat it as the normal case
+
+            if(EOERRORCODE(eoerror_category_System, eoerror_value_SYS_transceiver_rxseqnumber_error) == infobasic->properties.code)
+            {
+                // marco.accame on 14apr15:
+                // the ems may issue such an error code at reception of first udp packet from a freshly launched robotInterface.
+                // the reason is that robotinterface send a ropframe with sequencenumber = 1 and the EMS may expect a bigger number
+                // because of a previous launch of robotinterface.
+                // best solution is to change fw of ems so that it sends a info with a different code (eoerror_value_SYS_transceiver_rxseqnumber_restarted).
+                // that will be from fw version 1.73.
+                // in the meantime, i transform the first report of eoerror_value_SYS_transceiver_rxseqnumber_error into a info plus an explanation.
+                // i will remove it later on.
+
+                static uint8_t alreadyreceived[eoprot_boards_maxnumberof] = {0};
+                static const char realigned[] = "BUT QUITE SURELY THAT IS DUE to ROBOTINTERFACE JUST RESTARTED THUS RESETTING ITS SEQNUM";
+                if(0 == alreadyreceived[eo_nv_GetBRD(nv)])
+                {
+                    alreadyreceived[eo_nv_GetBRD(nv)] = 1;
+                    type = eomn_info_type_info;
+                    str_extra = realigned;
+                }
+
+            }
     
             snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + INFO = %s",
                                         eo_nv_GetBRD(nv)+1,
