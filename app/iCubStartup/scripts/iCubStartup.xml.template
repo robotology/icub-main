@@ -3,25 +3,25 @@
 
         <dependencies>
         </dependencies>
-        
+
         <module>
                 <name>yarplogger</name>
                 <parameters>--start --no_stop</parameters>
                 <node>console</node>
         </module>
-        
-      
+
+
         <module>
                 <name>robotInterface</name>
                 <node>pc104</node>
         </module>
-   
+
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--part right_arm</parameters>
                 <node>pwrNode1</node>
                 <dependencies>
-                    <port timeout="40">/icub/right_arm/state:o</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/robotInterface</port>
                 </dependencies>
         </module>
 
@@ -30,7 +30,7 @@
                 <parameters>--part left_arm</parameters>
                 <node>pwrNode2</node>
                 <dependencies>
-                    <port timeout="40">/icub/left_arm/state:o</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/robotInterface</port>
                 </dependencies>
         </module>
 
@@ -39,7 +39,7 @@
                 <parameters>--part right_leg</parameters>
                 <node>pwrNode3</node>
                 <dependencies>
-                    <port timeout="40">/icub/right_leg/state:o</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/robotInterface</port>
                 </dependencies>
         </module>
 
@@ -48,7 +48,7 @@
                 <parameters>--part left_leg</parameters>
                 <node>pwrNode4</node>
                 <dependencies>
-                    <port timeout="40">/icub/left_leg/state:o</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/robotInterface</port>
                 </dependencies>
         </module>
 
@@ -56,8 +56,7 @@
                 <name>iKinGazeCtrl</name>
                 <node>pwrNode5</node>
                 <dependencies>
-                    <port timeout="40">/icub/head/state:o</port>
-                    <port timeout="40">/icub/inertial</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/robotInterface</port>
                 </dependencies>
         </module>
 
@@ -68,11 +67,7 @@
                 <parameters>--autoconnect</parameters>
                 <node>pwrNode6</node>
                 <dependencies>
-                    <port timeout="40">/icub/head/state:o</port>
-                    <port timeout="40">/icub/torso/state:o</port>
-                    <port timeout="40">/icub/right_arm/state:o</port>
-                    <port timeout="40">/icub/left_arm/state:o</port>
-                    <port timeout="40">/icub/inertial</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/robotInterface</port>
                 </dependencies>
         </module>
 
@@ -83,10 +78,10 @@
                 <parameters></parameters>
                 <node>pwrNode6</node>
                 <dependencies>
-                    <port timeout="40">/wholeBodyDynamics/rpc:i</port>
+                    <port timeout="60">/wholeBodyDynamics/rpc:i</port>
                 </dependencies>
         </module>
-           
+
         <module>
                 <name>fingersTuner</name>
                 <node>console</node>
