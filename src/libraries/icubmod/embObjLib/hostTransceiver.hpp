@@ -35,7 +35,7 @@
 
 #undef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ // if this macro is defined then ethManager sends pkts to ems even if they are empty
 
-#define  TEST_TX_HOSTTRANSCEIVER_OPTIMISATION
+#undef  TEST_TX_HOSTTRANSCEIVER_OPTIMISATION
 
 // - external dependencies --------------------------------------------------------------------------------------------
 
