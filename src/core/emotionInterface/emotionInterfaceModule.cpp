@@ -11,7 +11,14 @@
 #include <stdlib.h>
 #include <yarp/os/ResourceFinder.h>
 
-EmotionInterfaceModule::EmotionInterfaceModule(){
+
+void EmotionInitReport::report(const PortInfo &info) {
+    if ((emo!=NULL) && info.created && !info.incoming)
+        emo->setAll("hap");
+}
+
+
+EmotionInterfaceModule::EmotionInterfaceModule() : emotionInitReport(this) {
 }
 
 EmotionInterfaceModule::~EmotionInterfaceModule(){
@@ -135,6 +142,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
       
     _inputPort.open(getName("/in")); 
     _outputPort.open(getName("/out"));
+    _outputPort.setReporter(emotionInitReport);
     
     attach(_inputPort);
 
@@ -393,6 +401,5 @@ bool EmotionInterfaceModule::setRaw(const ConstString cmd)
     writePort(cmd.c_str());
     return true;
 }
-
 
 

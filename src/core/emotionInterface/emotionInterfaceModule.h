@@ -30,6 +30,7 @@ using namespace std;
 
 namespace iCub {
     namespace contrib {
+        class EmotionInitReport;
         class EmotionInterfaceModule;
     }
 }
@@ -46,6 +47,17 @@ typedef struct
 
 } EM_CODE;
 
+
+class iCub::contrib::EmotionInitReport : public PortReport
+{
+private:
+    EmotionInterfaceModule *emo;
+
+public:
+    EmotionInitReport(EmotionInterfaceModule *_emo) : emo(_emo) { }
+    virtual void report(const PortInfo &info);
+};
+
 /**
  *
  * EmotionInterface Module class
@@ -61,8 +73,11 @@ private:
     // input command port
     Port _inputPort;
 
+    // reporter put on the init emotion
+    EmotionInitReport emotionInitReport;
+
     // output command port         
-    BufferedPort<Bottle>                _outputPort;
+    BufferedPort<Bottle> _outputPort;
 
     // number of high level emotions
     int _highlevelemotions;
@@ -80,8 +95,6 @@ private:
 
     int getIndex(const ConstString cmd);
     bool writePort(const char* cmd);
-
-
 
 public:
 
