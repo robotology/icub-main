@@ -14,7 +14,7 @@
 
 void EmotionInitReport::report(const PortInfo &info) {
     if ((emo!=NULL) && info.created && !info.incoming)
-        emo->setAll("hap");
+        emo->initEmotion();
 }
 
 
@@ -143,6 +143,7 @@ bool EmotionInterfaceModule::configure(ResourceFinder& config){
     _inputPort.open(getName("/in")); 
     _outputPort.open(getName("/out"));
     _outputPort.setReporter(emotionInitReport);
+    _initEmotionTrigger=0;
     
     attach(_inputPort);
 
@@ -171,6 +172,10 @@ bool EmotionInterfaceModule::interruptModule(){
     return true;
 }
 
+void EmotionInterfaceModule::initEmotion(){
+    _initEmotionTrigger++;
+}
+
 bool EmotionInterfaceModule::updateModule(){
     double curtime;
     int expr;
@@ -184,6 +189,11 @@ bool EmotionInterfaceModule::updateModule(){
            ConstString cmd(_emotion_table[expr].name);
            setAll(cmd);
         }
+    }
+    else if (_initEmotionTrigger>0)
+    {
+        setAll("hap");
+        _initEmotionTrigger=0;
     }
     return true;
 }

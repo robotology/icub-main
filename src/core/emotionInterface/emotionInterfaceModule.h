@@ -92,6 +92,7 @@ private:
     bool   _auto;
     double _lasttime;
     double _period;
+    int    _initEmotionTrigger;
 
     int getIndex(const ConstString cmd);
     bool writePort(const char* cmd);
@@ -107,6 +108,7 @@ public:
     virtual bool updateModule();
     virtual double getPeriod();
     virtual bool respond(const Bottle &command,Bottle &reply);
+    void initEmotion();
 
     // interface functions
     virtual bool setLeftEyebrow(const ConstString cmd);
