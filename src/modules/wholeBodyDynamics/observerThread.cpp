@@ -405,6 +405,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
     port_root_position_mat->open(string("/"+local_name+"/root_position_mat:o").c_str());
     port_root_position_vec->open(string("/"+local_name+"/root_position_vec:o").c_str());
 
+    yInfo ("Waiting for port connections");
     if (autoconnect)
     {
         //from iCub to wholeBodyDynamics
@@ -428,6 +429,7 @@ inverseDynamics::inverseDynamics(int _rate, PolyDriver *_ddAL, PolyDriver *_ddAR
         if (Network::exists(string("/"+robot_name+"/joint_vsens/right_wrist:i").c_str()))
         Network::connect(string("/"+local_name+"/right_wrist/Torques:o").c_str(),string("/"+robot_name+"/joint_vsens/right_wrist:i").c_str(),"tcp",false);
     }
+    yInfo ("Ports connected");
 
     //---------------------DEVICES--------------------------//
     if (ddAL) {ddAL->view(iencs_arm_left);  ddAL->view(iint_arm_left);  ddAL->view(icmd_arm_left);}

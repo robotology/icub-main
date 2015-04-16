@@ -209,9 +209,15 @@ public:
         name = "gravityCompensator";    
         
         int rate;
-        if (rf.check("rate"))
-            rate = rf.find("rate").asInt();
+        if (rf.check("period"))
+            rate = rf.find("period").asInt();
         else rate = 20;
+
+        if (rf.check("rate"))
+        {
+            yError ("'rate' parameter is deprecated. Use 'period' instead");
+            return false;
+        }
 
         //-----------------GET THE ROBOT NAME-------------------//
         string robot_name;
@@ -362,40 +368,85 @@ public:
         yInfo("ft thread istantiated...\n");
         g_comp->start();
         yInfo("thread started\n");
+
+        //------------------CHECK CONTROL OPTIONS -----------//
+        if (rf.check("gravity_on"))
+        {
+            g_comp->gravity_mode = GRAVITY_COMPENSATION_ON;
+        }
+        if (rf.check("gravity_off"))
+        {
+            g_comp->gravity_mode = GRAVITY_COMPENSATION_OFF;
+        }
+        if (rf.check("external_on"))
+        {
+            g_comp->external_mode = EXTERNAL_TRQ_ON;
+        }
+        if (rf.check("external_on"))
+        {
+            g_comp->external_mode = EXTERNAL_TRQ_OFF;
+        }
+        if (g_comp->gravity_mode== GRAVITY_COMPENSATION_ON)       yInfo("gravity compensation on");
+        else if (g_comp->gravity_mode== GRAVITY_COMPENSATION_OFF) yInfo("gravity compensation off");
+        if (g_comp->external_mode==EXTERNAL_TRQ_ON)               yInfo("external input on");
+        else if (g_comp->external_mode==EXTERNAL_TRQ_OFF)         yInfo("external input off");
+
         return true;
     }
 
     bool respond(const Bottle& command, Bottle& reply) 
     {
+                        reply.addVocab(Vocab::encode("many"));
+                reply.addString("Available commands:");
+                reply.addString("calib all");
+
         Bottle position_bot;
         string helpMessage =  string(getName().c_str()) + 
                             " commands are: \n" +  
-                            "help       to display this message\n" + 
-                            "on         to set the gravity compensation term \n" + 
-                            "off        to set the zero torque reference \n";
+                            "help         to display this message\n" + 
+                            "gravity_on   to enabl e the gravity compensation \n" + 
+                            "gravity_off  to disbale the gravity compensation \n" +
+                            "external_on  to enable the external input torque \n" +
+                            "external_off to disable the external input torque \n";
 
           reply.clear(); 
         if (command.get(0).asString()=="help")
         {
             cout << helpMessage;
+            reply.addVocab(Vocab::encode("many"));
+            reply.addString(" commands are: \n" );
             reply.addString(helpMessage.c_str());
         }
-        else if (command.get(0).asString()=="on" ||
-                 command.get(0).asString()=="ON" )
+        else if (command.get(0).asString()=="gravity_on")
         {
             if (g_comp) 
             {
                 g_comp->gravity_mode = GRAVITY_COMPENSATION_ON;
-                reply.addString("assigned gravity compensation feed-forward term");
+                reply.addString("gravity compensation on");
             }
         }
-        else if (command.get(0).asString()=="off" ||
-                 command.get(0).asString()=="OFF" )
+        else if (command.get(0).asString()=="gravity_off")
         {
             if (g_comp)
             {
                 g_comp->gravity_mode = GRAVITY_COMPENSATION_OFF;
                 reply.addString("gravity compensation off");
+            }
+        }
+        else if (command.get(0).asString()=="external_on")
+        {
+            if (g_comp) 
+            {
+                g_comp->external_mode = EXTERNAL_TRQ_ON;
+                reply.addString("external input on");
+            }
+        }
+        else if (command.get(0).asString()=="external_off")
+        {
+            if (g_comp)
+            {
+                g_comp->external_mode = EXTERNAL_TRQ_OFF;
+                reply.addString("external input off");
             }
         }
         else
@@ -485,6 +536,10 @@ int main(int argc, char * argv[])
         yInfo() << "--no_head          disables the head";
         yInfo() << "--wholebody_name   the wholeBodyDyanmics port prefix (e.g. 'wholeBodyDynamics' / 'wholeBodyDynamicsTree')";
         yInfo() << "--no_inertial      disables the inertial";
+        yInfo() << "--gravity_on       enables gravity compensation (default)";
+        yInfo() << "--gravity_off      disables gravity compensation";
+        yInfo() << "--external_on      enables external torque command (default)";
+        yInfo() << "--external_off     disables external torque command";
         return 0;
     }
 
