@@ -1915,9 +1915,24 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition);
     eOmc_PID_t  outPid;
     Pid hwPid = pid;
-    //hwPid.kp = hwPid.kp / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/deg]
-    //hwPid.ki = hwPid.ki / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/deg]
-    //hwPid.kd = hwPid.kd / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/deg]
+    
+    if (_positionControlUnits==P_METRIC_UNITS)
+    {
+        hwPid.kp = hwPid.kp * _angleToEncoder[j];  //[PWM/deg]
+        hwPid.ki = hwPid.ki * _angleToEncoder[j];  //[PWM/deg]
+        hwPid.kd = hwPid.kd * _angleToEncoder[j];  //[PWM/deg]
+    }
+    else if (_positionControlUnits==P_MACHINE_UNITS)
+    {
+        hwPid.kp = hwPid.kp;  //[PWM/icubdegrees]
+        hwPid.ki = hwPid.ki;  //[PWM/icubdegrees]
+        hwPid.kd = hwPid.kd;  //[PWM/icubdegrees]
+    }
+    else
+    {
+        yError() << "Unknown _positionControlUnits";
+    }
+
     copyPid_iCub2eo(&hwPid, &outPid);
 
     if(!res->addSetMessage(protoId, (uint8_t *) &outPid))
@@ -2055,6 +2070,23 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
     res->readBufferedValue(protid, (uint8_t *)&eoPID, &size);
 
     copyPid_eo2iCub(&eoPID, pid);
+
+    if (_positionControlUnits==P_METRIC_UNITS)
+    {
+        pid->kp = pid->kp / _angleToEncoder[j];  //[PWM/deg]
+        pid->ki = pid->ki / _angleToEncoder[j];  //[PWM/deg]
+        pid->kd = pid->kd / _angleToEncoder[j];  //[PWM/deg]
+    }
+    else if (_positionControlUnits==P_MACHINE_UNITS)
+    {
+        pid->kp = pid->kp;  //[PWM/icubdegrees]
+        pid->ki = pid->ki;  //[PWM/icubdegrees]
+        pid->kd = pid->kd;  //[PWM/icubdegrees]
+    }
+    else
+    {
+        yError() << "Unknown _positionControlUnits";
+    }
 
     return true;
 }
