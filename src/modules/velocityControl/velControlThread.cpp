@@ -8,8 +8,8 @@
 #include <string.h>
 #include <string>
 #include <math.h>
-
-#include <iostream>
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -38,7 +38,7 @@ void velControlThread::run()
 
     if (getIterations()>100)
     {
-        fprintf(stderr, "Thread ran %d times, est period %lf[ms], used %lf[ms]\n",
+        yDebug("Thread ran %d times, est period %lf[ms], used %lf[ms]\n",
                 getIterations(),
                 getEstPeriod(),
                 getEstUsed());
@@ -143,10 +143,10 @@ void velControlThread::run()
             while(!ivel->velocityMove(command.data()))
             {
                 trials++;
-                fprintf(stderr,"velcontrol ERROR>> velocity move sent false\n");
+                yError("velcontrol ERROR>> velocity move sent false\n");
                 if(trials>10)
                 {
-                fprintf(stderr, "velcontrol ERROR>> tried 10 times to velocityMove, halting...\n");
+                yError("velcontrol ERROR>> tried 10 times to velocityMove, halting...\n");
                 this->halt();
                 break;
                 }
@@ -200,7 +200,7 @@ bool velControlThread::init(PolyDriver *d, ConstString partName, ConstString rob
 
     ///opening port for fast transfer of position command
     sprintf(tmp,"/%s/vc/%s/fastCommand", robotName.c_str(), partName.c_str());
-    fprintf(stderr,"opening port for part %s\n",tmp);
+    yInfo("opening port for part %s\n",tmp);
     command_port.open(tmp);
 
     std::string tmp2;
@@ -226,7 +226,7 @@ bool velControlThread::init(PolyDriver *d, ConstString partName, ConstString rob
         return false;
 
     ivel->getAxes(&nJoints);
-    fprintf(stderr,"controlling %d DOFs\n",nJoints);
+    yInfo("controlling %d DOFs\n",nJoints);
 
     Vector accs;
     accs.resize(nJoints);
@@ -272,7 +272,7 @@ void velControlThread::halt()
 {
     suspended=true;
     ivel->stop();
-    fprintf(stderr, "Suspended\n");
+    yInfo("Suspended\n");
     targets=encoders;
     ffVelocities = 0;
 }
@@ -287,17 +287,17 @@ void velControlThread::go()
         if (mode!=VOCAB_CM_MIXED && mode!=VOCAB_CM_VELOCITY)
         {
             yarp::os::ConstString s = yarp::os::Vocab::decode(mode);
-            fprintf(stderr, "WARNING: Joint (%d) is in mode (%s) and does not accepts velocty commands. You have first to set either VOCAB_CM_VELOCITY or VOCAB_CM_MIXED control mode\n", k, s.c_str());
+            yWarning("Joint (%d) is in mode (%s) and does not accepts velocty commands. You have first to set either VOCAB_CM_VELOCITY or VOCAB_CM_MIXED control mode\n", k, s.c_str());
         }
     }
-    fprintf(stderr, "Run\n");
+    yInfo("Run\n");
     targets=encoders;
     ffVelocities = 0;
 }
 
 void velControlThread::setRef(int i, double pos)
 {
-    fprintf(stderr, "Setting new target %d to %lf\n", i, pos);
+    yInfo("Setting new target %d to %lf\n", i, pos);
 
     _mutex.wait();
     targets(i)=pos;
@@ -312,10 +312,10 @@ void velControlThread::setVel(int i, double vel)
     if((vel > 0.0) && (vel < MAX_SPEED) && (i>=0) && (i<nJoints))
     {
         maxVel(i) = vel;
-        fprintf(stderr,"setting max vel of joint %d to %f\n",i,maxVel(i));
+        yInfo("setting max vel of joint %d to %f\n",i,maxVel(i));
     }
     else
-        fprintf(stderr,"impossible to set max vel higher than %f\n",MAX_SPEED);
+        yError("Impossible to set max vel higher than %f\n",MAX_SPEED);
 
     _mutex.post();
 }
@@ -330,10 +330,10 @@ void velControlThread::setGain(int i, double gain)
     if((gain >= 0.0) && (i>=0) && (i<nJoints))
     {
         Kp(i) = gain;
-        fprintf(stderr,"setting gain for joint %d to %lf\n", i, Kp(i));
+        yInfo("Setting gain for joint %d to %lf\n", i, Kp(i));
     }
     else
-        fprintf(stderr,"cannot set gain of joint %d\n",i);
+        yError("Cannot set gain of joint %d\n",i);
 
     _mutex.post();
 }
@@ -346,7 +346,7 @@ void velControlThread::limitSpeed(Vector &v)
         if(command(k)!=command(k))//check not Nan
         {
             command(k)=0.0;
-            fprintf(stderr,"WARNING::Receiving NaN values\n");
+            yWarning("WARNING::Receiving NaN values\n");
         }
         if (fabs(command(k))>maxVel(k))
         {
