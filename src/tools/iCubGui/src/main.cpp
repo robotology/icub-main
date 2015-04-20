@@ -159,8 +159,13 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
-    mw=new qavimator(rf);
+    mw = new qavimator(rf);
     mw->show();
     a.connect(&a,SIGNAL(lastWindowClosed()),&a,SLOT(quit()));
-    return a.exec();
+    int ret =  a.exec();
+
+    if(mw){
+        delete mw;
+    }
+    return ret;
 }

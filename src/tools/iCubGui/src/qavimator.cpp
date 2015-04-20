@@ -104,6 +104,10 @@ qavimator::~qavimator()
     //if (animationView) delete animationView;
     //animationView=0;
     fileExit();
+
+    delete ui;
+
+
 }
 
 void qavimator::setupToolBar()
@@ -200,6 +204,7 @@ void qavimator::fileExit()
     ui->animationView->stopTimer();
 
     close();
+
 }
 
 
