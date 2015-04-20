@@ -42,6 +42,7 @@ using namespace iCub::iDyn;
 #define MAX_FILTER_ORDER 6
 enum thread_status_enum {STATUS_OK=0, STATUS_DISCONNECTED}; 
 enum{GRAVITY_COMPENSATION_OFF = 0, GRAVITY_COMPENSATION_ON = 1};
+enum{EXTERNAL_TRQ_OFF = 0, EXTERNAL_TRQ_ON = 1};
 enum{TORQUE_INTERFACE = 0, IMPEDANCE_POSITION = 1, IMPEDANCE_VELOCITY = 2};
 
 class gravityCompensatorThread: public yarp::os::RateThread
@@ -50,16 +51,23 @@ private:
 
     std::string           wholeBodyName;
     BufferedPort<Vector> *port_inertial;
-    BufferedPort<Vector> *left_arm_additional_offset;
-    BufferedPort<Vector> *right_arm_additional_offset;
-    BufferedPort<Vector> *left_leg_additional_offset;
-    BufferedPort<Vector> *right_leg_additional_offset;
-    BufferedPort<Vector> *torso_additional_offset;
-    BufferedPort<Vector> *left_arm_torques;
-    BufferedPort<Vector> *right_arm_torques;
-    BufferedPort<Vector> *left_leg_torques;
-    BufferedPort<Vector> *right_leg_torques;
-    BufferedPort<Vector> *torso_torques;
+    BufferedPort<Vector> *la_additional_offset;
+    BufferedPort<Vector> *ra_additional_offset;
+    BufferedPort<Vector> *ll_additional_offset;
+    BufferedPort<Vector> *rl_additional_offset;
+    BufferedPort<Vector> *to_additional_offset;
+
+    BufferedPort<Vector> *left_arm_exec_torques;
+    BufferedPort<Vector> *right_arm_exec_torques;
+    BufferedPort<Vector> *left_leg_exec_torques;
+    BufferedPort<Vector> *right_leg_exec_torques;
+    BufferedPort<Vector> *torso_exec_torques;
+
+    BufferedPort<Vector> *left_arm_gravity_torques;
+    BufferedPort<Vector> *right_arm_gravity_torques;
+    BufferedPort<Vector> *left_leg_gravity_torques;
+    BufferedPort<Vector> *right_leg_gravity_torques;
+    BufferedPort<Vector> *torso_gravity_torques;
 
     PolyDriver   *ddLA;
     PolyDriver   *ddRA;
@@ -139,9 +147,10 @@ private:
 	std::string side;
 	std::string part;
 
-	Vector torques_LA,torques_RA,torques_LL,torques_RL, torques_TO;
-	Vector offset_torques_LA,offset_torques_RA,offset_torques_LL,offset_torques_RL, offset_torques_TO;
-	Vector ampli_larm, ampli_rarm, ampli_lleg, ampli_rleg, ampli_torso;
+	Vector exec_torques_LA,exec_torques_RA,exec_torques_LL,exec_torques_RL,exec_torques_TO;
+    Vector gravity_torques_LA,gravity_torques_RA,gravity_torques_LL,gravity_torques_RL,gravity_torques_TO;
+	Vector externalcmd_torques_LA,externalcmd_torques_RA,externalcmd_torques_LL,externalcmd_torques_RL, externalcmd_torques_TO;
+	Vector ampli_LA, ampli_RA, ampli_LL, ampli_RL, ampli_TO;
 	bool isCalibrated;
     bool inertial_enabled;
 	
@@ -158,6 +167,7 @@ private:
 public:
 	
 	int gravity_mode;
+	int external_mode;
 
     gravityCompensatorThread(std::string _wholeBodyName, int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, version_tag icub_type, bool _inertial_enabled);
 
@@ -166,7 +176,7 @@ public:
 	bool getLowerEncodersSpeedAndAcceleration();
 	bool getUpperEncodersSpeedAndAcceleration();
     bool threadInit();
-	void feedFwdGravityControl(int part_ctrlJnt, std::string s_part, IControlMode2 *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &G, const Vector &ampli, bool releasing=false);
+	void feedFwdGravityControl(int part_ctrlJnt, std::string s_part, IControlMode2 *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing=false);
     void run();
     void threadRelease();
 	void closePort(Contactable *_port);

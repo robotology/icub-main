@@ -116,7 +116,9 @@ This file can be edited at src/velocityControl/main.cpp.
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RFModule.h>
 #include "velControlThread.h"
-#include "yarp/os/Module.h"
+#include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
+#include <yarp/os/Module.h>
 #include <string.h>
 
 /*default rate for the control loop*/
@@ -139,7 +141,7 @@ public:
     virtual bool respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply)
     {
         reply.clear(); 
-        fprintf(stderr,"receiving command from port\n");
+        yDebug("receiving command from port\n");
         int index = 0;
         int cmdSize = command.size();
     
@@ -173,7 +175,7 @@ public:
                             {
                                 cmdSize--;
                                 index++;
-                                fprintf(stderr, "Invalid set message, ignoring\n");
+                                yError("Invalid set message, ignoring\n");
                             }
                         reply.addVocab(Vocab::encode("ack"));
                     break;
@@ -192,7 +194,7 @@ public:
                             {
                                 cmdSize--;
                                 index++;
-                                fprintf(stderr,"Invalid set vel message, ignoring\n");
+                                yError("Invalid set vel message, ignoring\n");
                                 reply.addVocab(Vocab::encode("fail"));
                             }
                     break;
@@ -210,7 +212,7 @@ public:
                             {
                                 cmdSize--;
                                 index++;
-                                fprintf(stderr,"Invalid set gain message, ignoring\n");
+                                yError("Invalid set gain message, ignoring\n");
                                 reply.addVocab(Vocab::encode("fail"));
                             }
                     break;
@@ -238,7 +240,7 @@ public:
                         reply.addString("\n typical commands:\n gain 0 10\n svel 0 10\n run\n set 0 x\n\n");
                     break;
                     default:
-                        fprintf(stderr,"Invalid command, ignoring\n");
+                        yError("Invalid command, ignoring\n");
                         reply.addVocab(Vocab::encode("fail"));
                         //cmdSize--;
                         //index++;
@@ -287,14 +289,14 @@ public:
             }
         else
             {
-                fprintf(stderr, "Please specify part (e.g. --part head)\n");
+                yError("Please specify part (e.g. --part head)\n");
                 return false;
             }
         ////end of the modif////////////
     
         if (!driver.open(options))
             {
-                fprintf(stderr, "Error opening device, check parameters\n");
+                yError("Error opening device, check parameters\n");
                 return false;
             }
 
@@ -303,7 +305,7 @@ public:
         if(options.check("period"))
             period = options.find("period").asInt();
         
-        printf("control rate is %d ms",period);
+        yInfo("control rate is %d ms",period);
 
         if (!options.check("part"))
             return false;
@@ -320,16 +322,16 @@ public:
 
     virtual bool close()
     {
-        fprintf(stderr, "Closing module [%s]\n", partName);
+        yInfo("Closing module [%s]\n", partName);
         vc->stop();
         vc->halt();
         delete vc;
-        fprintf(stderr, "Thead [%s] stopped\n", partName);
+        yInfo("Thead [%s] stopped\n", partName);
 
         driver.close();
         input_port.close();
 
-        fprintf(stderr, "Module [%s] closed\n", partName);
+        yInfo("Module [%s] closed\n", partName);
         return true;
     }
 
@@ -350,7 +352,7 @@ int main(int argc, char *argv[])
     rf.setVerbose(true);
     if (mod.configure(rf)==false) return -1;
     mod.runModule();
-    fprintf(stderr, "Main returning\n");
+    yInfo("Main returning\n");
     return 0;
 
 }

@@ -452,17 +452,23 @@ public:
             yInfo("'no_right_arm' option found. Right arm will be disabled.\n");
         }
 
-        //---------------------RATE-----------------------------//
+        //---------------------RATE/PERIOD-----------------------------//
         int rate = 10;
-        if (rf.check("rate"))
+        if (rf.check("period"))
         {
-            rate = rf.find("rate").asInt();
+            rate = rf.find("period").asInt();
             yInfo("rateThread working at %d ms\n", rate);
         }
         else
         {
-            yInfo("Could not find rate in the config file\nusing 10ms as default");
+            yInfo("Could not find period in the config file\nusing 10ms as default");
             rate = 10;
+        }
+
+        if (rf.check("rate"))
+        {
+            yError ("'rate' parameter is deprecated. Use 'period' instead");
+            return false;
         }
 
         //---------------------DUMMY_FT-------------------------//
@@ -751,10 +757,10 @@ int main(int argc, char * argv[])
         cout << "Options:" << endl << endl;
         cout << "\t--context context: where to find the called resource (referred to $ICUB_ROOT/app: default wholeBodyDynamics)" << endl;
         cout << "\t--from       from: the name of the file.ini to be used for calibration"                                       << endl;
-        cout << "\t--rate       rate: the period used by the module. default: 10ms"                                              << endl;
+        cout << "\t--period     period: the period used by the module. default: 10ms"                                           << endl;
         cout << "\t--robot      robot: the robot name. default: iCub"                                                            << endl;
         cout << "\t--local      name: the prefix of the ports opened by the module. defualt: wholeBodyDynamics"                  << endl;
-        cout << "\t--autoconnect     automatically connects the module ports to iCubInterface"                                   << endl;        
+        cout << "\t--autoconnect     automatically connects the module ports to iCubInterface"                                   << endl;
         cout << "\t--no_legs         this option disables the dynamics computation for the legs joints"                          << endl;  
         cout << "\t--headV2          use the model of the headV2"                                                                << endl;
         cout << "\t--legsV2          use the model of legsV2"                                                                    << endl;
