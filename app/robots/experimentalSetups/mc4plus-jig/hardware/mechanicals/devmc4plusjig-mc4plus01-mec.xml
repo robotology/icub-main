@@ -6,7 +6,7 @@
         <param name="Joints"> 1 </param> <!-- the number of joints of the robot part -->
 
                              <!--   0               logical axis number (ControlBoardWrapper) -->
-	<param name="AxisMap">          1                       </param>   <!-- hardware axis number  (EMS) -->
+	<param name="AxisMap">          0                       </param>   <!-- hardware axis number  (EMS) -->
         <param name="Encoder">      182.044                 </param>
         <param name="Zeros">        180.00                  </param>
         <param name="TorqueId">  	0x0C                    </param>
