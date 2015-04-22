@@ -555,7 +555,7 @@ void CalibModule::prepareRobot()
     iarm->getLimits(0,&min,&max);
     iarm->setLimits(0,0.0,0.5*max);
 
-    iarm->setInTargetTol(0.01);
+    iarm->setInTargetTol(exploration_intargettol);
     iarm->setTrajTime(1.0);
     iarm->attachTipFrame(xf,Vector(4,0.0));
 
@@ -702,7 +702,7 @@ void CalibModule::doTouch(const Vector &xd)
     iarm->waitMotionDone();
 
     yInfo("moving to xd=(%s); od=(%s)",xd.toString(3,3).c_str(),od.toString(3,3).c_str());
-    iarm->setInTargetTol(0.001);
+    iarm->setInTargetTol(touch_intargettol);
     iarm->goToPoseSync(xd,od);
     iarm->waitMotionDone(0.1,5.0);
 
@@ -712,7 +712,7 @@ void CalibModule::doTouch(const Vector &xd)
     iarm->goToPoseSync(x,od);
     iarm->waitMotionDone();
 
-    iarm->setInTargetTol(0.01);
+    iarm->setInTargetTol(exploration_intargettol);
 
     x[0]=-0.35;
     x[1]=(arm=="left"?-0.2:0.2);
@@ -882,6 +882,8 @@ bool CalibModule::configure(ResourceFinder &rf)
     roi_side=abs(rf.check("roi_side",Value(100)).asInt());
     block_eyes=fabs(rf.check("block_eyes",Value(5.0)).asDouble());
     exploration_wait=fabs(rf.check("exploration_wait",Value(0.5)).asDouble());
+    exploration_intargettol=fabs(rf.check("exploration_intargettol",Value(0.01)).asDouble());
+    touch_intargettol=fabs(rf.check("touch_intargettol",Value(0.001)).asDouble());
 
     motorExplorationAsyncStop=false;
     motorExplorationState=motorExplorationStateIdle;
@@ -1600,6 +1602,36 @@ bool CalibModule::setExplorationWait(const double wait)
 double CalibModule::getExplorationWait()
 {
     return exploration_wait;
+}
+
+
+/************************************************************************/
+bool CalibModule::setExplorationInTargetTol(const double tol)
+{
+    exploration_intargettol=fabs(tol);
+    return true;
+}
+
+
+/************************************************************************/
+double CalibModule::getExplorationInTargetTol()
+{
+    return exploration_intargettol;
+}
+
+
+/************************************************************************/
+bool CalibModule::setTouchInTargetTol(const double tol)
+{
+    touch_intargettol=fabs(tol);
+    return true;
+}
+
+
+/************************************************************************/
+double CalibModule::getTouchInTargetTol()
+{
+    return touch_intargettol;
 }
 
 
