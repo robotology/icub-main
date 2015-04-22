@@ -225,6 +225,32 @@ public:
    */
   virtual double getExplorationWait();
   /**
+   * Set up the cartesian tolerance used during exploration.
+   * @param tol the overall tolerance employed for the
+   * cartesian movements.
+   * @return true/false on success/failure.
+   */
+  virtual bool setExplorationInTargetTol(const double tol);
+  /**
+   * Return the current cartesian tolerance used
+   * during exploration.
+   * @return the tolerance.
+   */
+  virtual double getExplorationInTargetTol();
+  /**
+   * Set up the cartesian tolerance used during a touch actions.
+   * @param tol the overall tolerance employed for the
+   * cartesian movements.
+   * @return true/false on success/failure.
+   */
+  virtual bool setTouchInTargetTol(const double tol);
+  /**
+   * Return the current cartesian tolerance used
+   * during touch actions.
+   * @return the tolerance.
+   */
+  virtual double getTocuhInTargetTol();
+  /**
    * Set up the internally coded exploration space composed by
    * two co-centered ellipses, one orthogonal to other, and defined
    * by means of the center and the two semi-axes.

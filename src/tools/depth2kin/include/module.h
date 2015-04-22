@@ -85,6 +85,8 @@ protected:
     double max_dist;
     double block_eyes;
     double exploration_wait;
+    double exploration_intargettol;
+    double touch_intargettol;
     int    roi_side;
     int    nEncs;
     int    test;
@@ -173,6 +175,10 @@ public:
     bool resetExtrinsics(const string &eye);
     bool setExplorationWait(const double wait);
     double getExplorationWait();
+    bool setExplorationInTargetTol(const double tol);
+    double getExplorationInTargetTol();
+    bool setTouchInTargetTol(const double tol);
+    double getTouchInTargetTol();
     bool setExplorationSpace(const double cx, const double cy, const double cz,
                              const double a, const double b);
     bool setExplorationSpaceDelta(const double dcx, const double dcy, const double dcz,

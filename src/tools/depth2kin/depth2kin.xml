@@ -32,6 +32,8 @@
     <param default="0.5" desc="timeout in seconds applied soon afterwards the reaching of the point
                                during the exploration and right before the acquisition of the
                                input-output data pair.">exploration_wait</param>
+    <param default="0.01" desc="overall tolerance used for cartesian movements during exploration phase.">exploration_intargettol</param>
+    <param default="0.001" desc="overall tolerance used for cartesian movements during touch actions.">touch_intargettol</param>
   </arguments>
  
   <authors>

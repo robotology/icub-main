@@ -275,6 +275,40 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+class depth2kin_IDL_setExplorationInTargetTol : public yarp::os::Portable {
+public:
+  double tol;
+  bool _return;
+  void init(const double tol);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class depth2kin_IDL_getExplorationInTargetTol : public yarp::os::Portable {
+public:
+  double _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class depth2kin_IDL_setTouchInTargetTol : public yarp::os::Portable {
+public:
+  double tol;
+  bool _return;
+  void init(const double tol);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
+class depth2kin_IDL_getTocuhInTargetTol : public yarp::os::Portable {
+public:
+  double _return;
+  void init();
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
 class depth2kin_IDL_setExplorationSpace : public yarp::os::Portable {
 public:
   double cx;
@@ -1032,6 +1066,94 @@ void depth2kin_IDL_getExplorationWait::init() {
   _return = (double)0;
 }
 
+bool depth2kin_IDL_setExplorationInTargetTol::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("setExplorationInTargetTol",1,1)) return false;
+  if (!writer.writeDouble(tol)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_setExplorationInTargetTol::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_setExplorationInTargetTol::init(const double tol) {
+  _return = false;
+  this->tol = tol;
+}
+
+bool depth2kin_IDL_getExplorationInTargetTol::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("getExplorationInTargetTol",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getExplorationInTargetTol::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readDouble(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getExplorationInTargetTol::init() {
+  _return = (double)0;
+}
+
+bool depth2kin_IDL_setTouchInTargetTol::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(2)) return false;
+  if (!writer.writeTag("setTouchInTargetTol",1,1)) return false;
+  if (!writer.writeDouble(tol)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_setTouchInTargetTol::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readBool(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_setTouchInTargetTol::init(const double tol) {
+  _return = false;
+  this->tol = tol;
+}
+
+bool depth2kin_IDL_getTocuhInTargetTol::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(1)) return false;
+  if (!writer.writeTag("getTocuhInTargetTol",1,1)) return false;
+  return true;
+}
+
+bool depth2kin_IDL_getTocuhInTargetTol::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  if (!reader.readDouble(_return)) {
+    reader.fail();
+    return false;
+  }
+  return true;
+}
+
+void depth2kin_IDL_getTocuhInTargetTol::init() {
+  _return = (double)0;
+}
+
 bool depth2kin_IDL_setExplorationSpace::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(6)) return false;
@@ -1509,6 +1631,46 @@ double depth2kin_IDL::getExplorationWait() {
   helper.init();
   if (!yarp().canWrite()) {
     yError("Missing server method '%s'?","double depth2kin_IDL::getExplorationWait()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool depth2kin_IDL::setExplorationInTargetTol(const double tol) {
+  bool _return = false;
+  depth2kin_IDL_setExplorationInTargetTol helper;
+  helper.init(tol);
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool depth2kin_IDL::setExplorationInTargetTol(const double tol)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+double depth2kin_IDL::getExplorationInTargetTol() {
+  double _return = (double)0;
+  depth2kin_IDL_getExplorationInTargetTol helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","double depth2kin_IDL::getExplorationInTargetTol()");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+bool depth2kin_IDL::setTouchInTargetTol(const double tol) {
+  bool _return = false;
+  depth2kin_IDL_setTouchInTargetTol helper;
+  helper.init(tol);
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","bool depth2kin_IDL::setTouchInTargetTol(const double tol)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
+double depth2kin_IDL::getTocuhInTargetTol() {
+  double _return = (double)0;
+  depth2kin_IDL_getTocuhInTargetTol helper;
+  helper.init();
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","double depth2kin_IDL::getTocuhInTargetTol()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -2037,6 +2199,60 @@ bool depth2kin_IDL::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "setExplorationInTargetTol") {
+      double tol;
+      if (!reader.readDouble(tol)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = setExplorationInTargetTol(tol);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "getExplorationInTargetTol") {
+      double _return;
+      _return = getExplorationInTargetTol();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeDouble(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "setTouchInTargetTol") {
+      double tol;
+      if (!reader.readDouble(tol)) {
+        reader.fail();
+        return false;
+      }
+      bool _return;
+      _return = setTouchInTargetTol(tol);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeBool(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
+    if (tag == "getTocuhInTargetTol") {
+      double _return;
+      _return = getTocuhInTargetTol();
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        if (!writer.writeDouble(_return)) return false;
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "setExplorationSpace") {
       double cx;
       double cy;
@@ -2229,6 +2445,10 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
     helpString.push_back("resetExtrinsics");
     helpString.push_back("setExplorationWait");
     helpString.push_back("getExplorationWait");
+    helpString.push_back("setExplorationInTargetTol");
+    helpString.push_back("getExplorationInTargetTol");
+    helpString.push_back("setTouchInTargetTol");
+    helpString.push_back("getTocuhInTargetTol");
     helpString.push_back("setExplorationSpace");
     helpString.push_back("setExplorationSpaceDelta");
     helpString.push_back("getExplorationData");
@@ -2442,6 +2662,32 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
       helpString.push_back("Return the current wait timeout used during exploration ");
       helpString.push_back("between two consecutive data points. ");
       helpString.push_back("@return the wait timeout in seconds. ");
+    }
+    if (functionName=="setExplorationInTargetTol") {
+      helpString.push_back("bool setExplorationInTargetTol(const double tol) ");
+      helpString.push_back("Set up the cartesian tolerance used during exploration. ");
+      helpString.push_back("@param tol the overall tolerance employed for the ");
+      helpString.push_back("cartesian movements. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="getExplorationInTargetTol") {
+      helpString.push_back("double getExplorationInTargetTol() ");
+      helpString.push_back("Return the current cartesian tolerance used ");
+      helpString.push_back("during exploration. ");
+      helpString.push_back("@return the tolerance. ");
+    }
+    if (functionName=="setTouchInTargetTol") {
+      helpString.push_back("bool setTouchInTargetTol(const double tol) ");
+      helpString.push_back("Set up the cartesian tolerance used during a touch actions. ");
+      helpString.push_back("@param tol the overall tolerance employed for the ");
+      helpString.push_back("cartesian movements. ");
+      helpString.push_back("@return true/false on success/failure. ");
+    }
+    if (functionName=="getTocuhInTargetTol") {
+      helpString.push_back("double getTocuhInTargetTol() ");
+      helpString.push_back("Return the current cartesian tolerance used ");
+      helpString.push_back("during touch actions. ");
+      helpString.push_back("@return the tolerance. ");
     }
     if (functionName=="setExplorationSpace") {
       helpString.push_back("bool setExplorationSpace(const double cx, const double cy, const double cz, const double a, const double b) ");
