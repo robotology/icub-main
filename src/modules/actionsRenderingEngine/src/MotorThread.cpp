@@ -510,12 +510,9 @@ Vector MotorThread::randomDeployOffset()
 }
 
 
-bool MotorThread::loadKinematicOffsets(const string &_kinematics_path)
+bool MotorThread::loadKinematicOffsets()
 {
-    kinematics_path=_kinematics_path;
-
-    ifstream kin_fin(kinematics_path.c_str());
-
+    ifstream kin_fin(rf.findFile(kinematics_file.c_str()).c_str());
     if(!kin_fin.is_open())
     {
         yError("Kinematics file not found!");
@@ -570,16 +567,20 @@ bool MotorThread::loadKinematicOffsets(const string &_kinematics_path)
 
 bool MotorThread::saveKinematicOffsets()
 {
-    ofstream kin_fout(kinematics_path.c_str());
-
-    if(!kin_fout.is_open())
+    string fileName=rf.getHomeContextPath().c_str();
+    fileName+="/"+kinematics_file;
+    ofstream kin_fout(fileName.c_str());
+    if (!kin_fout.is_open())
+    {
+        yError("Unable to open file '%s'!",fileName.c_str());
         return false;
-
-    kin_fout << bKinOffsets.toString() << endl;
-
-    kin_fout.close();
-
-    return true;
+    }
+    else
+    {
+        kin_fout<<bKinOffsets.toString().c_str()<<endl;
+        kin_fout.close();
+        return true;
+    }
 }
 
 
@@ -1244,8 +1245,8 @@ bool MotorThread::threadInit()
     yInfo("Impedance set to %s",(status_impedance_on?"on":"off"));
 
     //init the kinematics offsets and table height
-    string kinematics_file=bMotor.find("kinematics_file").asString().c_str();
-    if(!loadKinematicOffsets(rf.findFile(kinematics_file.c_str()).c_str()))
+    kinematics_file=bMotor.find("kinematics_file").asString().c_str();
+    if(!loadKinematicOffsets())
         return false;
 
     //set the initial stereo2cartesian mode
@@ -2479,7 +2480,7 @@ bool MotorThread::calibFingers(Bottle &options)
             prop.put("finger","all_parallel");
             graspModel[arm]->calibrate(prop);
 
-            std::ofstream fout;
+            ofstream fout;
             fout.open(graspPath[arm].c_str());
             graspModel[arm]->toStream(fout);
             fout.close();

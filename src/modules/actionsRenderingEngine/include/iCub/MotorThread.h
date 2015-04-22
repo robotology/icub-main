@@ -193,7 +193,7 @@ private:
     vector<Vector>                      headPoses;
 
     Bottle                              bKinOffsets;
-    string                              kinematics_path;
+    string                              kinematics_file;
     Vector                              defaultKinematicOffset[2];
     Vector                              currentKinematicOffset[2];
     Vector                              table;
@@ -235,7 +235,7 @@ private:
     bool stereoToCartesianNetwork(const Vector &stereo, Vector &xd);
     Vector randomDeployOffset();
     bool getGeneralOptions(Bottle &b);
-    bool loadKinematicOffsets(const string &_kinematics_path);
+    bool loadKinematicOffsets();
     bool saveKinematicOffsets();
     bool getArmOptions(Bottle &b, const int &arm);
     void goHomeHelper(ActionPrimitives *action, const Vector &xin, const Vector &oin);
