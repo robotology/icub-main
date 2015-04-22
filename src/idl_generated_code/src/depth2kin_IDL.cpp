@@ -301,7 +301,7 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
-class depth2kin_IDL_getTocuhInTargetTol : public yarp::os::Portable {
+class depth2kin_IDL_getTouchInTargetTol : public yarp::os::Portable {
 public:
   double _return;
   void init();
@@ -1133,14 +1133,14 @@ void depth2kin_IDL_setTouchInTargetTol::init(const double tol) {
   this->tol = tol;
 }
 
-bool depth2kin_IDL_getTocuhInTargetTol::write(yarp::os::ConnectionWriter& connection) {
+bool depth2kin_IDL_getTouchInTargetTol::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(1)) return false;
-  if (!writer.writeTag("getTocuhInTargetTol",1,1)) return false;
+  if (!writer.writeTag("getTouchInTargetTol",1,1)) return false;
   return true;
 }
 
-bool depth2kin_IDL_getTocuhInTargetTol::read(yarp::os::ConnectionReader& connection) {
+bool depth2kin_IDL_getTouchInTargetTol::read(yarp::os::ConnectionReader& connection) {
   yarp::os::idl::WireReader reader(connection);
   if (!reader.readListReturn()) return false;
   if (!reader.readDouble(_return)) {
@@ -1150,7 +1150,7 @@ bool depth2kin_IDL_getTocuhInTargetTol::read(yarp::os::ConnectionReader& connect
   return true;
 }
 
-void depth2kin_IDL_getTocuhInTargetTol::init() {
+void depth2kin_IDL_getTouchInTargetTol::init() {
   _return = (double)0;
 }
 
@@ -1665,12 +1665,12 @@ bool depth2kin_IDL::setTouchInTargetTol(const double tol) {
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
-double depth2kin_IDL::getTocuhInTargetTol() {
+double depth2kin_IDL::getTouchInTargetTol() {
   double _return = (double)0;
-  depth2kin_IDL_getTocuhInTargetTol helper;
+  depth2kin_IDL_getTouchInTargetTol helper;
   helper.init();
   if (!yarp().canWrite()) {
-    yError("Missing server method '%s'?","double depth2kin_IDL::getTocuhInTargetTol()");
+    yError("Missing server method '%s'?","double depth2kin_IDL::getTouchInTargetTol()");
   }
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
@@ -2242,9 +2242,9 @@ bool depth2kin_IDL::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
-    if (tag == "getTocuhInTargetTol") {
+    if (tag == "getTouchInTargetTol") {
       double _return;
-      _return = getTocuhInTargetTol();
+      _return = getTouchInTargetTol();
       yarp::os::idl::WireWriter writer(reader);
       if (!writer.isNull()) {
         if (!writer.writeListHeader(1)) return false;
@@ -2448,7 +2448,7 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
     helpString.push_back("setExplorationInTargetTol");
     helpString.push_back("getExplorationInTargetTol");
     helpString.push_back("setTouchInTargetTol");
-    helpString.push_back("getTocuhInTargetTol");
+    helpString.push_back("getTouchInTargetTol");
     helpString.push_back("setExplorationSpace");
     helpString.push_back("setExplorationSpaceDelta");
     helpString.push_back("getExplorationData");
@@ -2683,8 +2683,8 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
       helpString.push_back("cartesian movements. ");
       helpString.push_back("@return true/false on success/failure. ");
     }
-    if (functionName=="getTocuhInTargetTol") {
-      helpString.push_back("double getTocuhInTargetTol() ");
+    if (functionName=="getTouchInTargetTol") {
+      helpString.push_back("double getTouchInTargetTol() ");
       helpString.push_back("Return the current cartesian tolerance used ");
       helpString.push_back("during touch actions. ");
       helpString.push_back("@return the tolerance. ");

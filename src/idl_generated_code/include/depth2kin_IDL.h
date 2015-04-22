@@ -249,7 +249,7 @@ public:
    * during touch actions.
    * @return the tolerance.
    */
-  virtual double getTocuhInTargetTol();
+  virtual double getTouchInTargetTol();
   /**
    * Set up the internally coded exploration space composed by
    * two co-centered ellipses, one orthogonal to other, and defined

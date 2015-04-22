@@ -316,7 +316,7 @@ service depth2kin_IDL
    * during touch actions.
    * @return the tolerance.
    */
-   double getTocuhInTargetTol();
+   double getTouchInTargetTol();
 
    /**
    * Set up the internally coded exploration space composed by
