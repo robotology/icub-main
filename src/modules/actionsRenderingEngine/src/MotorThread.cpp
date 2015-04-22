@@ -2977,7 +2977,7 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
         return false;
     }
 
-    //if the impedance control is available use it otherwise employ adimttance control
+    //if the impedance control is available use it otherwise employ admittance control
     dragger.using_impedance=setTorque(true,dragger.arm);
     if (!dragger.using_impedance)
         yWarning("Impedance control not available. Using admittance control!");
