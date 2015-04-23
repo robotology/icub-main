@@ -505,6 +505,7 @@ embObjMotionControl::embObjMotionControl() :
     _enabledPid       = NULL;
     _enabledAmp       = NULL;
     _calibrated       = NULL;
+    _last_position_move_time = NULL;
     // NV stuff
     NVnumber          = 0;
 
