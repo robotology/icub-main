@@ -66,7 +66,8 @@ parametricCalibrator::parametricCalibrator() :
     isCalibrated(false),
     calibMutex(1),
     skipCalibration(false),
-    clearHwFault(false)
+    clearHwFault(false),
+    n_joints(0)
 {
 }
 
@@ -336,13 +337,14 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
     }
 
     if ( !iEncoders->getAxes(&nj))
+    if ( !iEncoders->getAxes(&n_joints))
     {
         yError() << deviceName << ": error getting number of axes" ;
         return false;
     }
 
     //before starting the calibration, checks for joints in hardware fault, and clears them if the user set the clearHwFaultBeforeCalibration option
-    for (int i=0; i<nj; i++)
+    for (int i=0; i<n_joints; i++)
     {
         checkHwFault(i);
     }
@@ -374,14 +376,14 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
     }
     yDebug() << deviceName << ": Joints calibration order:" << joints_string;
 
-    if (totJointsToCalibrate > nj)
+    if (totJointsToCalibrate > n_joints)
     {
-        yError() << deviceName << ": too much axis to calibrate for this part..." << totJointsToCalibrate << " bigger than "<< nj;
+        yError() << deviceName << ": too much axis to calibrate for this part..." << totJointsToCalibrate << " bigger than "<< n_joints;
         return false;
     }
 
-    original_pid=new Pid[nj];
-    limited_pid =new Pid[nj];
+    original_pid=new Pid[n_joints];
+    limited_pid =new Pid[n_joints];
 
     if(skipCalibration)
         yWarning() << deviceName << ": skipCalibration flag is on! Setting safe pid but skipping calibration.";
@@ -398,9 +400,9 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
         // 1) set safe pid
         for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
-            if ( ((*lit) <0) || ((*lit) >= nj) )   // check the axes actually exists
+            if ( ((*lit) <0) || ((*lit) >= n_joints) )   // check the axes actually exists
             {
-                yError() << deviceName << ": asked to calibrate joint" << (*lit) << ", which is negative OR bigger than the number of axes for this part ("<< nj << ")";
+                yError() << deviceName << ": asked to calibrate joint" << (*lit) << ", which is negative OR bigger than the number of axes for this part ("<< n_joints << ")";
                 abortCalib = true;
                 break;
             }
@@ -571,7 +573,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
     if(abortCalib)
     {
         yError() << deviceName << ": calibration has been aborted!I'm going to disable all joints..." ;
-        for(int i=0; i<nj; i++) //for each joint of set
+        for(int i=0; i<n_joints; i++) //for each joint of set
         {
             iControlMode->setControlMode(i,VOCAB_CM_IDLE);
         }
