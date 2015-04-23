@@ -41,7 +41,7 @@ namespace yarp {
  * 
  * A calibrator interface implementation for the Arm of the robot iCub.
  */
-class yarp::dev::parametricCalibrator : public ICalibrator, public DeviceDriver
+class yarp::dev::parametricCalibrator : public ICalibrator, public DeviceDriver, public IRemoteCalibrator
 {
 public:
     /**
@@ -82,16 +82,34 @@ public:
 
     virtual bool quitCalibrate();
 
+    // IRemoteCalibrator
+
+    yarp::dev::IRemoteCalibrator *getCalibratorDevice();
+
+    bool calibrateSingleJoint(int j);
+
+    bool calibrateWholePart();
+
+    bool homingSingleJoint(int j);
+
+    bool homingWholePart();
+
+    bool parkSingleJoint(int j, bool _wait=true);
+
+    bool parkWholePart();
+
 private:
     yarp::os::Semaphore calibMutex;
 
-    void calibrateJoint(int j);
-    void goToZero(int j);
+    bool calibrate();
+    bool calibrateJoint(int j);
+    bool goToZero(int j);
     bool checkCalibrateJointEnded(std::list<int> set);
     bool checkGoneToZero(int j);
     bool checkGoneToZeroThreshold(int j);
     bool checkHwFault(int j);
 
+    yarp::dev::PolyDriver *dev2calibrate;
     IControlCalibration2 *iCalibrate;
     IPidControl *iPids;
     IEncoders *iEncoders;
