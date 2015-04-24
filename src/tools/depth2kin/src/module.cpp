@@ -327,7 +327,7 @@ bool CalibModule::getDepthAveraged(const Vector &px, Vector &x, Vector &pxr,
 
 
 /************************************************************************/
-void CalibModule::openHand(IPositionControl *ipos)
+void CalibModule::openHand(IControlMode2 *imod, IPositionControl *ipos)
 {
     Vector poss(9,0.0);
     Vector vels(9,0.0);
@@ -345,6 +345,9 @@ void CalibModule::openHand(IPositionControl *ipos)
     yInfo("opening hand");
     int i0=nEncs-poss.length();
     for (int i=i0; i<nEncs; i++)
+        imod->setControlMode(i,VOCAB_CM_POSITION);
+
+    for (int i=i0; i<nEncs; i++)
     {
         ipos->setRefAcceleration(i,1e9);
         ipos->setRefSpeed(i,vels[i-i0]);
@@ -357,6 +360,7 @@ void CalibModule::openHand(IPositionControl *ipos)
 void CalibModule::postureHelper(const Vector &gaze_ang, const Matrix &targetL,
                                 const Matrix &targetR)
 {
+    IControlMode2     *imod;
     IPositionControl  *ipos;
     ICartesianControl *icart;
     int ctxtL,ctxtR;
@@ -367,8 +371,9 @@ void CalibModule::postureHelper(const Vector &gaze_ang, const Matrix &targetL,
 
     if (useArmL)
     {
+        drvArmL.view(imod);
         drvArmL.view(ipos);
-        openHand(ipos);
+        openHand(imod,ipos);
 
         drvCartL.view(icart);
         icart->storeContext(&ctxtL);
@@ -386,8 +391,9 @@ void CalibModule::postureHelper(const Vector &gaze_ang, const Matrix &targetL,
 
     if (useArmR)
     {
+        drvArmR.view(imod);
         drvArmR.view(ipos);
-        openHand(ipos);
+        openHand(imod,ipos);
 
         drvCartR.view(icart);
         icart->storeContext(&ctxtR);
@@ -520,6 +526,9 @@ void CalibModule::prepareRobot()
     yInfo("configuring hand... ");
     int i0=nEncs-poss.length();
     for (int i=i0; i<nEncs; i++)
+        imods->setControlMode(i,VOCAB_CM_POSITION);
+
+    for (int i=i0; i<nEncs; i++)
     {
         iposs->setRefAcceleration(i,1e9);
         iposs->setRefSpeed(i,vels[i-i0]);
@@ -527,12 +536,12 @@ void CalibModule::prepareRobot()
     }
 
     bool done=false;
-    while (!done)
+    double t0=Time::now();
+    while (!done && (Time::now()-t0<3.0))
     {
         Time::delay(1.0);
         iposs->checkMotionDone(i0+4,&done);
     }    
-    yInfo("done");
 
     Vector encs(nEncs);
     iencs->getEncoders(encs.data());
@@ -974,6 +983,7 @@ bool CalibModule::configure(ResourceFinder &rf)
 
     // open devices views
     IControlLimits *ilim;
+    (arm=="left")?drvArmL.view(imods):drvArmR.view(imods);
     (arm=="left")?drvArmL.view(iencs):drvArmR.view(iencs);
     (arm=="left")?drvArmL.view(iposs):drvArmR.view(iposs);
     (arm=="left")?drvArmL.view(ilim):drvArmR.view(ilim);
