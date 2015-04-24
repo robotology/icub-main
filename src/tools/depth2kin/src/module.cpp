@@ -1490,14 +1490,13 @@ bool CalibModule::touch(const int u, const int v)
     {
         yInfo("=> p_depth=(%s);",in.toString(3,3).c_str());
 
-        Vector out;
+        Vector out=in;
         if (touchWithExperts)
         {
             yInfo("=> apply correction;");
-            experts->retrieve(in,out);
+            if (!experts->retrieve(in,out))
+                yWarning("no experts available!");
         }
-        else
-            out=in;
 
         yInfo("=> p_kin=(%s);",out.toString(3,3).c_str());
         doTouch(out);
