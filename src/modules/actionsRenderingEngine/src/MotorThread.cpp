@@ -1064,6 +1064,9 @@ bool MotorThread::threadInit()
         ctrl_gaze->bindNeckRoll(neckRollMin,neckRollMax);
     }
 
+    if (bMotor.check("block_eyes"))
+        ctrl_gaze->blockEyes(bMotor.find("block_eyes").asDouble());
+
     //store the current context and restore the initial one
     ctrl_gaze->storeContext(&default_gaze_context);
     ctrl_gaze->restoreContext(initial_gaze_context);
