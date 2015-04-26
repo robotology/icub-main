@@ -695,8 +695,7 @@ public:
         }
 
         LockGuard lg(mutex);
-        Property *item=new Property(content->toString().c_str());
-        itemsMap[idCnt].prop=item;
+        itemsMap[idCnt].prop=new Property(content->toString().c_str());
         itemsMap[idCnt].lastUpdate=Time::now();
 
         return true;
