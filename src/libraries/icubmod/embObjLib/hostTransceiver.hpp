@@ -162,7 +162,7 @@ private:
 
     bool fillRemoteProperties(yarp::os::Searchable &cfgprotocol);
 
-    const eOnvset_DEVcfg_t * getNVset_DEVcfg(yarp::os::Searchable &cfgprotocol);
+    const eOnvset_BRDcfg_t * getNVset_BRDcfg(yarp::os::Searchable &cfgprotocol);
 
 public:
 

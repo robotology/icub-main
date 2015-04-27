@@ -372,9 +372,10 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
                 // in the meantime, i transform the first report of eoerror_value_SYS_transceiver_rxseqnumber_error into a info plus an explanation.
                 // i will remove it later on.
 
-                static uint8_t alreadyreceived[eoprot_boards_maxnumberof] = {0};
+                static uint8_t alreadyreceived[32] = {0};
                 static const char realigned[] = "BUT QUITE SURELY THAT IS DUE to ROBOTINTERFACE JUST RESTARTED THUS RESETTING ITS SEQNUM";
-                if(0 == alreadyreceived[eo_nv_GetBRD(nv)])
+                uint8_t brd = eo_nv_GetBRD(nv);
+                if((brd < sizeof(alreadyreceived)) && (0 == alreadyreceived[eo_nv_GetBRD(nv)]))
                 {
                     alreadyreceived[eo_nv_GetBRD(nv)] = 1;
                     type = eomn_info_type_info;

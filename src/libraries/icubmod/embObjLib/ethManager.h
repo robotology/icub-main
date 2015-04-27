@@ -120,8 +120,7 @@ class yarp::dev::TheEthManager: public DeviceDriver
 
 public:
     // this is the maximum number of boards that the singleton can manage.
-    // so far, this number depends also on the maximum capabilities of the protocol library.
-    enum { maxBoards = eoprot_boards_maxnumberof };
+    enum { maxBoards = 32 };
 
     // this keeps the size of info buffer
     enum { ETHMAN_SIZE_INFO = 128 };
@@ -138,7 +137,7 @@ private:
     bool                          emsAlreadyClosed;
     double                        starttime;
 
-    enum { ethresLUTsize = eoprot_boards_maxnumberof };
+    enum { ethresLUTsize = TheEthManager::maxBoards };
 
     ethResources*                 ethresLUT[ethresLUTsize];
     int                           numberOfUsedBoards;

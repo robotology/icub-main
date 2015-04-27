@@ -187,13 +187,11 @@ set(PROT_SOURCE
                             ${PROT_FOLDER}/transport/EOtheParser.c
                             ${PROT_FOLDER}/transport/EOtransceiver.c
                             ${PROT_FOLDER}/transport/EOtransmitter.c
-                            ${PROT_FOLDER}/transport/EOdeviceTransceiver.c
                             ${PROT_FOLDER}/transport/EOhostTransceiver.c
                             ${PROT_FOLDER}/transport/EOconfirmationManager.c
                             ${PROT_FOLDER}/transport/EOproxy.c
                             ${PROT_FOLDER}/transport/EOprotocolConfigurator.c
-                            ${PROT_FOLDER}/transport/EOnvsetDEVbuilder.c
-                            ${NVS_MNGMNT_CBK_FOLDER}/protocol_callback.c
+                            ${PROT_FOLDER}/transport/EOnvsetBRDbuilder.c
                             )
 
 set(PROT_HEADER             ${PROT_FOLDER}/transport/EOhostTransceiver_hid.h

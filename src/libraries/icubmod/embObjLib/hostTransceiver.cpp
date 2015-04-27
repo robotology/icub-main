@@ -626,7 +626,7 @@ bool hostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numo
 EOnv* hostTransceiver::getNVhandler(eOprotID32_t protid, EOnv* nv)
 {
     eOresult_t    res;
-    res = eo_nvset_NV_Get(nvset, remoteipaddr, protid, nv);
+    res = eo_nvset_NV_Get(nvset, protid, nv);
     if(eores_OK != res)
     {
         char nvinfo[128];
@@ -685,18 +685,17 @@ bool hostTransceiver::initProtocol(yarp::os::Searchable &cfgprotocol)
         // before using embOBJ we need initialing its system. it is better to init it again in case someone did not do it
         // we use the TheEthManager function ... however that was already called
         TheEthManager::instance()->initEOYsystem();
+    }
 
-        // so far it is the maximum number. howver, it should be initted with the proper value, maybe taken from XML
-        static const uint8_t numOfBoardsinRobot =  eoprot_boards_maxnumberof;
+    // reserve resources for board # protboardnumber
+    if(eores_OK != eoprot_config_board_reserve(protboardnumber))
+    {
+        yError() << "hostTransceiver::initProtocol(): call to eoprot_config_board_reserve() fails.";
+        return(false);
+    }
 
-        // init the protocol to manage all boards of the robot
-        if(eores_OK != eoprot_config_board_numberof(numOfBoardsinRobot))
-        {
-            yError() << "hostTransceiver::initProtocol(): call to eoprot_config_board_numberof() fails.";
-            return(false);
-        }
-
-	
+    if(false == alreadyinitted)
+    {
 	    // configure all the callbacks of all endpoints.
 	
 	    eoprot_override_mn();
@@ -1157,9 +1156,9 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
 
 
     // the nvsetcfg of the board ...
-    hosttxrxcfg.nvsetdevcfg             = getNVset_DEVcfg(cfgprotocol);
+    hosttxrxcfg.nvsetbrdcfg             = getNVset_BRDcfg(cfgprotocol);
 
-    if(NULL == hosttxrxcfg.nvsetdevcfg)
+    if(NULL == hosttxrxcfg.nvsetbrdcfg)
     {
         return(false);
     }
@@ -1279,9 +1278,9 @@ bool hostTransceiver::fillRemoteProperties(yarp::os::Searchable &cfgtransceiver)
 
 }
 
-const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &cfgprotocol)
+const eOnvset_BRDcfg_t * hostTransceiver::getNVset_BRDcfg(yarp::os::Searchable &cfgprotocol)
 {
-    const eOnvset_DEVcfg_t* nvsetdevcfg = NULL;
+    const eOnvset_BRDcfg_t* nvsetbrdcfg = NULL;
 
     eOprotconfig_cfg_t protcfg;
     memcpy(&protcfg, &eo_protconfig_cfg_default, sizeof(eOprotconfig_cfg_t));
@@ -1292,7 +1291,7 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
 
     if(cfgprotocol.isNull())
     {
-        yWarning() << "hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: entire PROTOCOL group ... using max capabilities";
+        yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: entire PROTOCOL group ... using max capabilities";
         //return false;
     }
     else
@@ -1303,12 +1302,12 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
 
         if(false == cfgprotocol.check("endpointManagementIsSupported"))
         {
-            yWarning() << "hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: mandatory cfgprotocol of entire MN endpoint ... enabled w/ max capabilities" <<
+            yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: mandatory cfgprotocol of entire MN endpoint ... enabled w/ max capabilities" <<
                           " (comm, appl, info) = (" << protcfg.en_mn_entity_comm_numberof << ", " << protcfg.en_mn_entity_appl_numberof << ", " << protcfg.en_mn_entity_info_numberof  << ")";
         }
         else if((false == cfgprotocol.check("entityMNcommunicationNumberOf")) || (false == cfgprotocol.check("entityMNapplicationNumberOf")) || (false == cfgprotocol.check("entityMNinformationNumberOf")))
         {
-            yWarning() << "hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: mandatory cfgprotocol of some MN entities ... using max capabilities" <<
+            yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: mandatory cfgprotocol of some MN entities ... using max capabilities" <<
                           " (comm, appl, info) = (" << protcfg.en_mn_entity_comm_numberof << ", " << protcfg.en_mn_entity_appl_numberof << ", " << protcfg.en_mn_entity_info_numberof  << ")";
         }
         else
@@ -1331,7 +1330,7 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
             // sanity check
             if((protcfg.en_mn_entity_comm_numberof != 1) || (protcfg.en_mn_entity_appl_numberof != 1) || (protcfg.en_mn_entity_info_numberof != 1))
             {
-                yWarning() << "hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of MN entities"  <<
+                yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of MN entities"  <<
                               " (comm, appl, info) = (" << protcfg.en_mn_entity_comm_numberof << ", " << protcfg.en_mn_entity_appl_numberof << ", " << protcfg.en_mn_entity_info_numberof << ")";
             }
 
@@ -1345,7 +1344,7 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
             protcfg.en_mc_entity_motor_numberof             = 0;
             protcfg.en_mc_entity_controller_numberof        = 0;
 
-            yWarning() << "hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of entire MC endpoint ... MC is disabled.";
+            yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of entire MC endpoint ... MC is disabled.";
         }
         else if((false == cfgprotocol.check("entityMCjointNumberOf")) || (false == cfgprotocol.check("entityMCmotorNumberOf")) ||
                 (false == cfgprotocol.check("entityMCmotorNumberOf")))
@@ -1354,7 +1353,7 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
             protcfg.en_mc_entity_joint_numberof             = 0;
             protcfg.en_mc_entity_motor_numberof             = 0;
             protcfg.en_mc_entity_controller_numberof        = 0;
-            yWarning() << "hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some MC entities ... MC is disabled";
+            yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some MC entities ... MC is disabled";
 
         }
         else
@@ -1378,7 +1377,7 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
                (protcfg.en_mc_entity_controller_numberof > 1) ||
                (protcfg.en_mc_entity_joint_numberof != protcfg.en_mc_entity_motor_numberof) )
             {
-                yWarning() << "hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of MC entities"  <<
+                yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of MC entities"  <<
                           " (joint, motor, contr) = (" << protcfg.en_mc_entity_joint_numberof << ", " << protcfg.en_mc_entity_motor_numberof <<
                           ", " << protcfg.en_mc_entity_controller_numberof << ")";
             }
@@ -1392,7 +1391,7 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
             protcfg.en_as_entity_strain_numberof        = 0;
             protcfg.en_as_entity_mais_numberof          = 0;
             protcfg.en_as_entity_extorque_numberof      = 0;
-            yWarning() << "hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some AS entities ... AS is disabled.";
+            yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some AS entities ... AS is disabled.";
         }
         else if((false == cfgprotocol.check("entityASstrainNumberOf")) || (false == cfgprotocol.check("entityASmaisNumberOf")) ||
                 (false == cfgprotocol.check("entityASextorqueNumberOf")))
@@ -1401,7 +1400,7 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
             protcfg.en_as_entity_strain_numberof        = 0;
             protcfg.en_as_entity_mais_numberof          = 0;
             protcfg.en_as_entity_extorque_numberof      = 0;
-            yWarning() << "hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some AS entities ... AS is disabled";
+            yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some AS entities ... AS is disabled";
         }
         else
         {
@@ -1423,7 +1422,7 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
             if((protcfg.en_as_entity_strain_numberof > 1) || (protcfg.en_as_entity_mais_numberof > 1) ||
                (protcfg.en_as_entity_extorque_numberof > 16))
             {
-                yWarning() << "hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of AS entities"  <<
+                yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of AS entities"  <<
                           " (strain, mais, extorque) = (" << protcfg.en_as_entity_strain_numberof << ", " << protcfg.en_as_entity_mais_numberof <<
                           ", " << protcfg.en_as_entity_extorque_numberof << ")";
             }
@@ -1434,13 +1433,13 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
         {
             protcfg.ep_skin_is_present              = eobool_false;
             protcfg.en_sk_entity_skin_numberof      = 0;
-            yWarning() << "hostTransceiver::getNVset_DEVcfg() detected thatBOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some SK entities ... SK is disabled.";
+            yWarning() << "hostTransceiver::getNVset_BRDcfg() detected thatBOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some SK entities ... SK is disabled.";
         }
         else if((false == cfgprotocol.check("entitySKskinNumberOf")))
         {
             protcfg.ep_skin_is_present              = eobool_false;
             protcfg.en_sk_entity_skin_numberof      = 0;
-            yWarning() << "hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some SK entities ... SK is disabled";
+            yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some SK entities ... SK is disabled";
         }
         else
         {
@@ -1457,7 +1456,7 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
             // sanity check
             if((protcfg.en_sk_entity_skin_numberof > 2))
             {
-                yWarning() << "hostTransceiver::getNVset_DEVcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of SK entities"   <<
+                yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of SK entities"   <<
                           " (skin) = (" << protcfg.en_sk_entity_skin_numberof << ")";
             }
 
@@ -1478,15 +1477,15 @@ const eOnvset_DEVcfg_t * hostTransceiver::getNVset_DEVcfg(yarp::os::Searchable &
 
     protconfigurator = eo_protconfig_New(&protcfg);
 
-    nvsetdevcfg = eo_protconfig_DEVcfg_Get(protconfigurator);
+    nvsetbrdcfg = eo_protconfig_BRDcfg_Get(protconfigurator);
 
 
-    if(NULL == nvsetdevcfg)
+    if(NULL == nvsetbrdcfg)
     {
-        yError() << "hostTransceiver::getNVset_DEVcfg() -> FAILS as it produces a NULL result";
+        yError() << "hostTransceiver::getNVset_BRDcfg() -> FAILS as it produces a NULL result";
     }
 
-    return(nvsetdevcfg);
+    return(nvsetbrdcfg);
 }
 
 
