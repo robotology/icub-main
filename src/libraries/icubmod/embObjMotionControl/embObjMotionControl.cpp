@@ -795,13 +795,8 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
     //  INIT ALL INTERFACES
-    double *tmpZeros = new double [_njoints];
-    double *tmpOnes  = new double [_njoints];
-    for (int i=0; i< _njoints; i++)
-    {
-        tmpZeros[i]=0.0;
-        tmpOnes[i]=1.0;
-    }
+    yarp::sig::Vector tmpZeros; tmpZeros.resize (_njoints, 0.0);
+    yarp::sig::Vector tmpOnes;  tmpOnes.resize  (_njoints, 1.0);
     
     ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
@@ -818,18 +813,10 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementControlLimits2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
-    
-    if      (_torqueControlUnits==T_MACHINE_UNITS) {_torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes, tmpOnes);}
-    else if (_torqueControlUnits==T_METRIC_UNITS)  {_torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);}
-    else    {yError() << "Invalid _torqueControlUnits value: %d" << _torqueControlUnits; return false;}
-    
     ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementOpenLoopControl::initialize(_njoints, _axisMap);
     ImplementInteractionMode::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementMotor::initialize(_njoints, _axisMap);
-
-    delete [] tmpZeros; tmpZeros=0;
-    delete [] tmpOnes;  tmpOnes=0;
     
     /*
     *  Once I'm sure every input data required is present and correct, instantiate the EMS, transceiver etc...
@@ -942,6 +929,21 @@ bool embObjMotionControl::parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[])
     if (!extractGroup(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
     if (!extractGroup(pidsGroup, xtmp, "kff", "Pid kff parameter", _njoints))         return false; for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
 
+    //conversion from metric to machine units (if applicable)
+    if (_positionControlUnits==P_METRIC_UNITS)
+    {
+        for (j=0; j<_njoints; j++)
+        {
+            myPid[j].kp = myPid[j].kp / _angleToEncoder[j];  //[PWM/deg]
+            myPid[j].ki = myPid[j].ki / _angleToEncoder[j];  //[PWM/deg]
+            myPid[j].kd = myPid[j].kd / _angleToEncoder[j];  //[PWM/deg]
+        }
+    }
+    else
+    {
+        //do nothing
+    }
+
     //optional PWM limit
     if(_pwmIsLimited)
     {   // check for value in the file
@@ -976,6 +978,16 @@ bool embObjMotionControl::parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], d
     if (!extractGroup(pidsGroup, xtmp, "ktau", "ktau parameter", _njoints))           return false; for (j=0; j<_njoints; j++) ktau[j]       = xtmp.get(j+1).asDouble(); 
     if (!extractGroup(pidsGroup, xtmp, "filterType", "filterType param", _njoints))   return false; for (j=0; j<_njoints; j++) filterType[j] = xtmp.get(j+1).asDouble();
  
+    //conversion from metric to machine units (if applicable)
+    for (j=0; j<_njoints; j++)
+    {
+        myPid[j].kp = myPid[j].kp / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+        myPid[j].ki = myPid[j].ki / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+        myPid[j].kd = myPid[j].kd / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+        myPid[j].stiction_up_val   = myPid[j].stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
+        myPid[j].stiction_down_val = myPid[j].stiction_down_val * _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
+    }
+
     //optional PWM limit
     if(_pwmIsLimited)
     {   // check for value in the file
@@ -1008,9 +1020,9 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     double tmp_A2E;
     // Encoder scales
     if (!extractGroup(general, xtmp, "Encoder", "a list of scales for the encoders", _njoints))
-	{
+    {
         return false;
-	}
+    }
     else
         for (i = 1; i < xtmp.size(); i++)
         {
@@ -1181,6 +1193,8 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                 else if (controlUnits.toString()==string("machine_units")) {yDebug("TORQUE_CONTROL: using metric_units"); _torqueControlUnits=T_MACHINE_UNITS;}
                 else    {yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: invalid controlUnits value";
                          return false;}
+                if      (_torqueControlUnits==T_MACHINE_UNITS) {yarp::sig::Vector tmpOnes; tmpOnes.resize(_njoints,1.0); _torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes.data(), tmpOnes.data());}
+                else if (_torqueControlUnits==T_METRIC_UNITS)  {_torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);}
            }
            else
            {
@@ -1521,11 +1535,6 @@ bool embObjMotionControl::init()
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
         copyPid_iCub2eo(&_pids[logico],  &jconfig.pidposition);
         copyPid_iCub2eo(&_pids[logico],  &jconfig.pidvelocity);
-        _tpids[logico].kp = _tpids[logico].kp / _torqueControlHelper->getNewtonsToSensor(logico);  //[PWM/Nm]
-        _tpids[logico].ki = _tpids[logico].ki / _torqueControlHelper->getNewtonsToSensor(logico);  //[PWM/Nm]
-        _tpids[logico].kd = _tpids[logico].kd / _torqueControlHelper->getNewtonsToSensor(logico);  //[PWM/Nm]
-        _tpids[logico].stiction_up_val   = _tpids[logico].stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(logico); //[Nm]
-        _tpids[logico].stiction_down_val = _tpids[logico].stiction_down_val * _torqueControlHelper->getNewtonsToSensor(logico); //[Nm]
         copyPid_iCub2eo(&_tpids[logico], &jconfig.pidtorque);
 
         jconfig.impedance.damping   = (eOmeas_damping_t)   U_32(_impedance_params[logico].damping * 1000);
