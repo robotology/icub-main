@@ -1194,7 +1194,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                string s_controlaw = controlLaw.toString();
                if (s_controlaw==string("motor_pid_with_friction_v1"))
                {
-                   yDebug() << "control law" << s_controlaw << " will be use for torque control";
+                   yDebug("TORQUE_CONTROL: using control law motor_pid_with_friction_v1");
                    if (!parseTorquePidsGroup (trqPidsGroup, _tpids, _kbemf, _ktau, _filterType))
                    {
                        yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: error detected in parameters syntax";
@@ -1204,12 +1204,11 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                    else
                    {
                        _torqueControlEnabled = true;
-                        yDebug("TORQUE_CONTROL: using control law motor_pid_with_friction_v1");
                    }
                }
                else if (s_controlaw==string("joint_pid_v1"))
                {
-                    yDebug() << "control law" << s_controlaw << " will be use for torque control";
+                    yDebug("TORQUE_CONTROL: using control law joint_pid_v1");
                     if (!parseTorquePidsGroup (trqPidsGroup, _tpids, _kbemf, _ktau, _filterType))
                     {
                        yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: error detected in parameters syntax";
@@ -1219,7 +1218,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                     else
                     {
                        _torqueControlEnabled = true;
-                        yDebug("TORQUE_CONTROL: using control law joint_pid_v1");
                     }
                }
                else if (s_controlaw==string("not_implemented"))
@@ -1909,9 +1907,9 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
     
     if (_positionControlUnits==P_METRIC_UNITS)
     {
-        hwPid.kp = hwPid.kp * _angleToEncoder[j];  //[PWM/deg]
-        hwPid.ki = hwPid.ki * _angleToEncoder[j];  //[PWM/deg]
-        hwPid.kd = hwPid.kd * _angleToEncoder[j];  //[PWM/deg]
+        hwPid.kp = hwPid.kp / _angleToEncoder[j];  //[PWM/deg]
+        hwPid.ki = hwPid.ki / _angleToEncoder[j];  //[PWM/deg]
+        hwPid.kd = hwPid.kd / _angleToEncoder[j];  //[PWM/deg]
     }
     else if (_positionControlUnits==P_MACHINE_UNITS)
     {
@@ -2064,9 +2062,9 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 
     if (_positionControlUnits==P_METRIC_UNITS)
     {
-        pid->kp = pid->kp / _angleToEncoder[j];  //[PWM/deg]
-        pid->ki = pid->ki / _angleToEncoder[j];  //[PWM/deg]
-        pid->kd = pid->kd / _angleToEncoder[j];  //[PWM/deg]
+        pid->kp = pid->kp * _angleToEncoder[j];  //[PWM/deg]
+        pid->ki = pid->ki * _angleToEncoder[j];  //[PWM/deg]
+        pid->kd = pid->kd * _angleToEncoder[j];  //[PWM/deg]
     }
     else if (_positionControlUnits==P_MACHINE_UNITS)
     {
