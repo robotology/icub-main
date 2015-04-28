@@ -48,10 +48,12 @@ using namespace yarp::os;
 
 #define VOCAB_HELP VOCAB4('h','e','l','p')
 #define VOCAB_QUIT VOCAB4('q','u','i','t')
+#define VOCAB_ICONTROLMODE_DEBUG VOCAB4('i','c','d','d')
 
 void handleTorqueMsg(ITorqueControl *itq, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
 void handleImpedanceMsg(IImpedanceControl *iimp, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
 void handleControlModeMsg(IControlMode2 *icm, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
+void handleControlModeMsg_DEBUG(IControlMode2 *icm, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
 void handleInteractionModeMsg(IInteractionMode *_iInteract, const yarp::os::Bottle& cmd, yarp::os::Bottle& response, bool *rec, bool *ok);
 
 //
@@ -302,6 +304,22 @@ int main(int argc, char *argv[])
             printf("NOTES: - A list is a sequence of numbers in parenthesis, e.g. (10 2 1 10)\n");
             printf("       - Pids are expressed as a list of 7 numbers, type get pid <int> to see an example\n");
             printf("\n");
+
+            if (options.check("debug"))
+            {
+                //#define VOCAB_CM_HW_FAULT           VOCAB4('h','w','f','a')
+                //#define VOCAB_CM_CALIBRATING        VOCAB3('c','a','l')     // the joint is calibrating
+                //#define VOCAB_CM_CALIB_DONE         VOCAB4('c','a','l','d') // calibration succesfully completed
+                //#define VOCAB_CM_NOT_CONFIGURED     VOCAB4('c','f','g','n') // missing initial configuration (default value at start-up)
+                //#define VOCAB_CM_CONFIGURED         VOCAB4('c','f','g','y') // initial configuration completed, if any
+                printf("DEBUG NOTES: (hidden debug commands wich may break the robot! do not use!\n");
+                printf("- icdd set hwfa 1 : will try to force joint 1 in hw fault\n");
+                printf("- icdd set cal  1 : \n");
+                printf("- icdd set cald 1 : \n");
+                printf("- icdd set cfgy 1 : \n");
+                printf("- icdd set cfgn 1 : \n");
+                printf("- icdd set cmuk 1 : \n");
+            }
             break;
 
         case VOCAB_QUIT:
@@ -311,6 +329,13 @@ int main(int argc, char *argv[])
         case VOCAB_ICONTROLMODE:
             {
                 handleControlModeMsg(iMode2, p, response, &rec, &ok);
+                printf("%s\n", response.toString().c_str());
+                break;
+            }
+
+        case VOCAB_ICONTROLMODE_DEBUG:
+            {
+                handleControlModeMsg_DEBUG(iMode2, p, response, &rec, &ok);
                 printf("%s\n", response.toString().c_str());
                 break;
             }
@@ -1234,6 +1259,58 @@ void handleImpedanceMsg(IImpedanceControl *iimp, const yarp::os::Bottle& cmd,
     //torque->
 }
 
+void handleControlModeMsg_DEBUG(IControlMode2 *iMode, const yarp::os::Bottle& cmd,
+                          yarp::os::Bottle& response, bool *rec, bool *ok)
+{
+    //THE PURPOSE OF THIS FUCTION IS BEING ABLE TO SET ALL POSSIBILE CONTROL MODES, ALSO THE ONES THAT CANNOT BE NORMALLY SET (e.g. HW_FAULT)
+    //THIS IS USEFUL FOR DEBUG PURPOSES e.g. IN THE SIMULATOR
+    fprintf(stderr, "Handling IControlMode message %s, DEBUG MODE\n", cmd.toString().c_str());
+    if (!iMode)
+        {
+            fprintf(stderr, "Error I do not have a valid interface\n");
+            *ok=false;
+            return;
+        }
+
+    int code = cmd.get(1).asVocab();
+    *ok=true;
+
+    switch(code)
+        {
+        case VOCAB_SET:
+            {
+                int axis = cmd.get(3).asInt();
+                yarp::os::Value mode_vocab=cmd.get(2).asVocab();
+                int mode = mode_vocab.asInt();
+                printf ("setting mode: %s (%d)",mode_vocab.toString().c_str(), mode);
+                *ok = iMode->setControlMode(axis, mode);
+            }
+        case VOCAB_GET:
+            {
+                if (cmd.get(2).asVocab()==VOCAB_CM_CONTROL_MODE)
+                {
+                    int p=-1;
+                    int axis = cmd.get(3).asInt();
+                    fprintf(stderr, "Calling getControlMode\n");
+                    *ok = iMode->getControlMode(axis, &p);
+
+                        response.addVocab(VOCAB_IS);
+                        response.addInt(axis);
+                        response.addVocab(VOCAB_CM_CONTROL_MODE);       
+                        response.addVocab(p);
+            
+                        //fprintf(stderr, "Returning %d\n", p);
+                        *rec=true;
+                 }
+            }
+        break;
+        default:
+            {
+                *rec=false;
+            }
+        break;
+    }
+}
 
 void handleControlModeMsg(IControlMode2 *iMode, const yarp::os::Bottle& cmd,
                           yarp::os::Bottle& response, bool *rec, bool *ok)
