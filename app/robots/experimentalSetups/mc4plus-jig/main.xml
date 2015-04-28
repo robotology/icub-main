@@ -9,7 +9,7 @@
     <devices file="./wrappers/motorControl/mc4plusjig_mc_wrapper.xml" /> 
 
     <!-- CALIBRATORS -->
-    <devices file="calibrators/mc4plusjig-calib.xml" />
+    <devices file="./calibrators/mc4plusjig_calib.xml" />
     
 </robot> 
 
