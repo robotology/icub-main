@@ -1116,8 +1116,8 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
            Value &controlUnits=posPidsGroup.find("controlUnits");
            if  (controlUnits.isNull() == false && controlUnits.isString() == true)
            {
-                if      (controlUnits.toString()==string("metric_units"))  {_positionControlUnits=P_METRIC_UNITS;}
-                else if (controlUnits.toString()==string("machine_units")) {_positionControlUnits=P_MACHINE_UNITS;}
+                if      (controlUnits.toString()==string("metric_units"))  {yDebug("POSITION_CONTROL: using metric_units");  _positionControlUnits=P_METRIC_UNITS;}
+                else if (controlUnits.toString()==string("machine_units")) {yDebug("POSITION_CONTROL: using machine_units"); _positionControlUnits=P_MACHINE_UNITS;}
                 else    {yError() << "embObjMotionControl::fromConfig(): POSITION_CONTROL section: invalid controlUnits value";
                          return false;}
            }
@@ -1140,10 +1140,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                    }
                    else
                    {
-                       if(verbosewhenok)
-                       {
-                            yDebug() << "embObjMotionControl::fromConfig(): POSITION_CONTROL new format successfully loaded";
-                       }
+                        yDebug("POSITION_CONTROL: using control law joint_pid_v1");
                    }
                }
                else if (s_controlaw==string("not_implemented"))
@@ -1180,8 +1177,8 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
            Value &controlUnits=trqPidsGroup.find("controlUnits");
            if  (controlUnits.isNull() == false && controlUnits.isString() == true)
            {
-                if      (controlUnits.toString()==string("metric_units"))  {_torqueControlUnits=T_METRIC_UNITS;}
-                else if (controlUnits.toString()==string("machine_units")) {_torqueControlUnits=T_MACHINE_UNITS;}
+                if      (controlUnits.toString()==string("metric_units"))  {yDebug("TORQUE_CONTROL: using metric_units"); _torqueControlUnits=T_METRIC_UNITS;}
+                else if (controlUnits.toString()==string("machine_units")) {yDebug("TORQUE_CONTROL: using metric_units"); _torqueControlUnits=T_MACHINE_UNITS;}
                 else    {yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: invalid controlUnits value";
                          return false;}
            }
@@ -1207,10 +1204,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                    else
                    {
                        _torqueControlEnabled = true;
-                       if(verbosewhenok)
-                       {
-                            yDebug() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL new format successfully loaded";
-                       }
+                        yDebug("TORQUE_CONTROL: using control law motor_pid_with_friction_v1");
                    }
                }
                else if (s_controlaw==string("joint_pid_v1"))
@@ -1225,10 +1219,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                     else
                     {
                        _torqueControlEnabled = true;
-                       if(verbosewhenok)
-                       {
-                            yDebug() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL new format successfully loaded";
-                       }
+                        yDebug("TORQUE_CONTROL: using control law joint_pid_v1");
                     }
                }
                else if (s_controlaw==string("not_implemented"))
