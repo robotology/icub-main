@@ -573,6 +573,14 @@ bool embObjMotionControl::verifyMotionControlProtocol(Bottle groupProtocol )
         }
     }
 
+
+    if(false == res->configureENDPOINT(groupProtocol, eoprot_endpoint_motioncontrol))
+    {
+        yError() << "embObjMotionControl::open() fails in function configureENDPOINT() for BOARD "<< _fId.boardNumber << " and endpoint eoprot_endpoint_motioncontrol: VERIFY XML files";
+        return false;
+    }
+
+
     if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, _njoints))
     {
         yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for BOARD "<< _fId.boardNumber << " and entity eoprot_entity_mc_joint: VERIFY their number in board, and in XML files";

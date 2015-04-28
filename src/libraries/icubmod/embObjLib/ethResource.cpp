@@ -28,6 +28,7 @@ using namespace yarp::os::impl;
 // marco.accame: define it only for debugging robotInterface w/out boards
 // #define ETHRES_DEBUG_DONTREADBACK
 
+#undef TEST_FEATURE_CONFIG_REMOTEBOARD
 
 #define ETHRES_CHECK_MN_APPL_STATUS
 
@@ -46,11 +47,13 @@ ethResources::ethResources()
     isbusyNQsem                 = new Semaphore(1);
     iswaitingNQsem              = new Semaphore(0);
     verifiedBoardPresence       = false;
+    remoteBoardNumberIsSet      = false;
     verifiedBoardTransceiver    = false;
     txrateISset                 = false;
     cleanedBoardBehaviour       = false;
     boardEPsNumber              = 0;
     memset(verifiedEPprotocol, 0, sizeof(verifiedEPprotocol));
+    memset(configuredEP, 0, sizeof(configuredEP));
     usedNumberOfRegularROPs     = 0;
     usedSizeOfRegularROPframe   = 0;
     memset(&boardCommStatus, 0, sizeof(boardCommStatus));
@@ -116,8 +119,8 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
     lock();
 
     // Fill 'info' field with human friendly string
-    snprintf(info, sizeof(info), "ethResources - referred to EMS: %s:%d", request.boardIPaddr.string, request.boardIPaddr.port);
-    yTrace() << "EMS IP address " << info;
+    snprintf(info, sizeof(info), "ethResources - referred to BRD: %s:%d", request.boardIPaddr.string, request.boardIPaddr.port);
+    yTrace() << "BRD IP address " << info;
     if(cfgtotal.findGroup("GENERAL").find("verbose").asBool())
     {
         infoPkts->_verbose = true;
@@ -1072,12 +1075,53 @@ bool ethResources::isEPmanaged(eOprot_endpoint_t ep)
 
 bool ethResources::verifyBoard(yarp::os::Searchable &protconfig)
 {
-    if((true == verifyBoardPresence(protconfig)) && (true == verifyBoardTransceiver(protconfig)) && (true == setTXrate(protconfig)) && (true == cleanBoardBehaviour()))
+    if((true == verifyBoardPresence(protconfig)) &&
+       (true == verifyBoardTransceiver(protconfig)) &&
+       (true == setRemoteBoardNumber()) &&
+       (true == setTXrate(protconfig)) &&
+       (true == cleanBoardBehaviour()) )
     {
         return(true);
     }
 
     return(false);
+}
+
+bool ethResources::setRemoteBoardNumber(void)
+{
+#if !defined(TEST_FEATURE_CONFIG_REMOTEBOARD)
+    remoteBoardNumberIsSet = true;
+    return(remoteBoardNumberIsSet);
+#else
+
+    if(remoteBoardNumberIsSet)
+    {
+        return(true);
+    }
+
+    // send a message of type mn comm config
+    eOprotBRD_t protbrd = get_protBRDnumber();
+    eOprotID32_t id2send = eo_prot_ID32dummy;
+
+    eOmn_command_t command = {0};
+    uint16_t size = 0;
+
+    id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
+    memset(&command, 0, sizeof(command));
+    command.cmd.opc                             = eomn_opc_config_PROT_boardnumber;
+    command.cmd.config.array[0]                 = protbrd;
+
+    if(false == addSetMessage(id2send, (uint8_t*)&command))
+    {
+        yError() << "ethResources::setRemoteBoardNumber() cannot transmit a command which sets its number to BOARD" << get_protBRDnumber()+1;
+        return(false);
+    }
+
+    remoteBoardNumberIsSet = true;
+
+
+    return remoteBoardNumberIsSet;
+#endif
 }
 
 bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
@@ -1174,6 +1218,69 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 
     return(verifiedBoardPresence);
 
+}
+
+
+bool ethResources::configureENDPOINT(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep)
+{
+#if !defined(TEST_FEATURE_CONFIG_REMOTEBOARD)
+    configuredEP[ep] = true;
+    return(true);
+#else
+
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+    yWarning() << "ethResources::configureENDPOINT() is in ETHRES_DEBUG_DONTREADBACK mode";
+    return true;
+#endif
+
+    if(false == verifyEPprotocol(protconfig, ep))
+    {
+        yError() << "ethResources::configureENDPOINT() cannot even verify protocol in BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        return(false);
+    }
+
+    if(eoprot_endpoint_management == ep)
+    {   // already configured in every board
+        configuredEP[ep] = true;
+        return true;
+    }
+
+    if(true == configuredEP[ep])
+    {
+        return true;
+    }
+
+
+
+    // step 1: form a eOprot_EPcfg_t
+    eOprot_EPcfg_t epconfig = {0};
+    epconfig.endpoint = ep;
+    uint8_t maxentities = eoprot_endpoint_get_numberofentities(ep);
+    eOprotBRD_t protbrd = get_protBRDnumber();
+    for(int ent=0; ent<maxentities; ent++)
+    {
+        epconfig.numberofentities[ent] = eoprot_entity_numberof_get(protbrd, ep, ent);
+    }
+
+    // step 2: send the command
+    eOprotID32_t id2send = eo_prot_ID32dummy;
+    eOmn_command_t command = {0};
+
+    id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
+    memset(&command, 0, sizeof(command));
+    command.cmd.opc                             = eomn_opc_config_PROT_endpoint;
+    memcpy(&command.cmd.config.array[0], &epconfig, sizeof(epconfig));
+
+    if(false == addSetMessage(id2send, (uint8_t*)&command))
+    {
+        yError() << "ethResources::configureENDPOINT() cannot transmit a command to configure the endpoint" << eoprot_EP2string(ep) << "to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        return(false);
+    }
+
+    configuredEP[ep] = true;
+
+    return(true);
+#endif
 }
 
 

@@ -53,7 +53,7 @@ bool TheEthManager::unlock()
 
 ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request)
 {
-    yTrace() << " Requested EMS" << request.boardNumber;
+    yTrace() << " Requested BRD" << request.boardNumber;
     // Check if local socket is initted, if not do it.
     ACE_TCHAR       address[64];
     snprintf(address, sizeof(address), "%s:%d", request.pc104IPaddr.string, request.pc104IPaddr.port);
@@ -103,11 +103,11 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
     if(NULL == newRes)
     {
         // device doesn't exist yet: create it
-        yTrace() << "Creating EMS device with IP " << request.boardIPaddr.string;
+        yTrace() << "Creating BRD device with IP " << request.boardIPaddr.string;
         newRes = new ethResources;
         if(!newRes->open(cfgtotal, cfgtransceiver, cfgprotocol, request))
         {
-            yError() << "Error creating new EMS!!";
+            yError() << "Error creating new BRD!!";
             if(NULL != newRes)
                 delete newRes;
 

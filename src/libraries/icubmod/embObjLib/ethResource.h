@@ -204,7 +204,9 @@ private:
     bool unlock();
 
     bool                verifiedEPprotocol[eoprot_endpoints_numberof];
+    bool                configuredEP[eoprot_endpoints_numberof];
     bool                verifiedBoardPresence;
+    bool                remoteBoardNumberIsSet;
     bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
     bool                txrateISset;
     bool                cleanedBoardBehaviour;    // the board is in config mode and does not have any regulars
@@ -308,8 +310,10 @@ public:
     bool verifyBoardTransceiver(yarp::os::Searchable &protconfig);   
     bool setTXrate(yarp::os::Searchable &protconfig);
     bool cleanBoardBehaviour(void);
+    bool setRemoteBoardNumber(void);
 
     bool verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);
+    bool configureENDPOINT(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);
     bool verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber = -1);
 
 
