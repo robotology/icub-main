@@ -450,8 +450,8 @@ void OdeSdlSimulation::nearCallback (void *data, dGeomID o1, dGeomID o2) {
     int i;
     for (i=0; i<MAX_CONTACTS; i++) {
         contact[i].surface.mode = dContactSlip1| dContactSlip2| dContactBounce | dContactSoftCFM;
-        contact[i].surface.mu = dInfinity;
-        contact[i].surface.mu2 = 0;
+        contact[i].surface.mu = odeinit.contactFrictionCoefficient;
+        contact[i].surface.mu2 = odeinit.contactFrictionCoefficient;
         contact[i].surface.bounce = 0.01;
         contact[i].surface.bounce_vel = 0.01;
         contact[i].surface.slip1 = (dReal)0.000001;
@@ -1822,7 +1822,7 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
               }
               skinContact c(bodyPart, skinPart, getLinkNum(skinPart), geoCenter_link_FoR, geoCenter_link_FoR,taxel_list, forceOnBody_magnitude, normal_link_FoR,force_link_FoR,moment_link_FoR);       
               //we have only one source of information - the contact as detected by ODE - therefore, we take the coordinates and set them both to CoP 
-              //(which is supposed to come from the dynamic estimation, and as geoCenter - from skin; Similarly, we derive the pressure directly from the force vector from ODE.
+              //(which is supposed to come from the dynamic estimation) and as geoCenter (from skin); Similarly, we derive the pressure directly from the force vector from ODE.
               if (odeinit.verbosity > 4) yDebug("Creating skin contact as follows: %s.\n",c.toString().c_str());
               mySkinContactList.push_back(c); 
           } //if(upper_body_transforms_available){

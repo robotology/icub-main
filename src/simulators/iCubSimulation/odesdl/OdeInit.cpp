@@ -44,6 +44,12 @@ OdeInit::OdeInit(RobotConfig *config) : mutex(1), robot_config(config)
     // The default value is zero. Increasing this to some small value (e.g. 0.001) can help prevent jittering 
     // problems due to contacts being repeatedly made and broken. 
     dWorldSetContactSurfaceLayer(world, config->getContactSurfaceLayer());
+    
+    //Contact joints can simulate friction at the contact by applying special forces in the two friction directions that are perpendicular to the normal.
+    //This value sets the friction coefficient, mju, for both directions. High means that the colliding surfaces will not slide along one another. 
+    //0.0 means that they will slip with no resistance 
+    contactFrictionCoefficient = config->getContactFrictionCoefficient(); //unlike the other ODE params fron .ini file that are used to intiialize the properties of the simulation (dWorldSet...),
+    //This parameter is employed on the run as contact joints are created (in OdeSdlSimulation::nearCallback() )
 
     ground = dCreatePlane (space,0, 1, 0, 0);
     //feedback = new dJointFeedback;

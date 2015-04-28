@@ -106,6 +106,10 @@ public:
         readOdeParams();
         return p.maxContactCorrectingVel;
     }
+    virtual double getContactFrictionCoefficient(){
+        readOdeParams();
+        return p.contactFrictionCoefficient;
+    }
     virtual double getContactSurfaceLayer(){
         readOdeParams();
         return p.contactSurfaceLayer;
@@ -156,6 +160,7 @@ private:
         p.worldERP        = bParamWorld.check("worldERP", Value(0.2)).asDouble();
         
         p.maxContactCorrectingVel = bParamContacts.check("maxContactCorrectingVel", Value(1e6)).asDouble();
+        p.contactFrictionCoefficient = bParamContacts.check("contactFrictionCoefficient",Value(1.0)).asDouble();
         p.contactSurfaceLayer     = bParamContacts.check("contactSurfaceLayer", Value(0.0)).asDouble();
 
         p.fudgeFactor         = bParamJoints.check("fudgeFactor", Value(0.02)).asDouble();

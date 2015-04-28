@@ -71,7 +71,8 @@ public:
     int verbosity;
     string name;
     iCubSimulationControl **_controls;
-    
+    double contactFrictionCoefficient; //unlike the other ODE params fron .ini file that are used to intiialize the properties of the simulation (dWorldSet...),
+    //This parameter is employed on the run as contact joints are created (in OdeSdlSimulation::nearCallback() )
     //for whole_body_skin_emul
     struct contactOnSkin_t {
         dGeomID body_geom_id;

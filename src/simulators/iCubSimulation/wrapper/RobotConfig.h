@@ -44,6 +44,7 @@ public:
     double stopERP;   
     double worldERP;
     double maxContactCorrectingVel;
+    double contactFrictionCoefficient;
     double contactSurfaceLayer;
     double motorMaxTorque;
     double motorDryFriction;
@@ -71,6 +72,7 @@ public:
     virtual double getStopERP() = 0;
     
     virtual double getMaxContactCorrectingVel() = 0;
+    virtual double getContactFrictionCoefficient() = 0;
     virtual double getContactSurfaceLayer() = 0;
 
     virtual double getMotorMaxTorque() = 0;
