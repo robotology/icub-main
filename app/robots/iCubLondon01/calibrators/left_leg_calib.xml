@@ -1,6 +1,6 @@
  
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices robot="iCubLondon01" build="1">   
+<devices robot="iCubLondon01" build="1">     
     <device name="left_leg_calibrator" type="parametricCalibrator">    
 <params file="general.xml" />              
         <group name="GENERAL">             

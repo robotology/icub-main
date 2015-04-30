@@ -1,7 +1,8 @@
  
  
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices robot="iCubLondon01" build="1">   
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+<devices robot="iCubLondon01" build="1">     
   <device name="left_arm_mc" type="canmotioncontrol">    
 <params file="general.xml" />              
 <group name="CAN">           
@@ -31,7 +32,7 @@
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
 <param name="Encoder">      -11.375       -11.375       -11.375       -11.375       -706.67       -978.46       -978.46       2.916667      </param>       
-<param name="Zeros">        -180          -327          18.25782      -188          90            -20           -52           670.2857      </param>       
+<param name="Zeros">        -212          -327          -7.74218      -188          90            -20           -52           670.2857      </param>       
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          0x0C          0             0             0             </param>       
 <param name="TorqueChan">   0             1             2             3             4             0             0             0             </param>       
 <param name="TorqueMax">    8             8             8             8             2             2             2             2             </param>       
