@@ -167,6 +167,7 @@ public:
     int *_broadcast_mask;
 
     int _networkN;                              /** network number */
+    yarp::os::ConstString _networkName;         /** network name */
     int _njoints;                               /** number of joints/axes/controlled motors */
     unsigned char *_destinations;               /** destination addresses */
     unsigned char _my_address;                  /** my address */
