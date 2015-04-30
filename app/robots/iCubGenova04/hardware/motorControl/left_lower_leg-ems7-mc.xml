@@ -17,14 +17,14 @@
 	
 	<group name="POSITION_CONTROL">
 	    <param name="controlLaw">    joint_pid_v1 </param> 
-        <param name="controlUnits">  machine_units               </param> 
-        <param name="kp">           -1280        -1280         </param>       
-        <param name="kd">               0            0         </param>       
-        <param name="ki">           -6250        -6250         </param>       
+        <param name="controlUnits">  metric_units               </param> 
+        <param name="kp">         -910.22      -910.22         </param>       
+        <param name="kd">            0.00         0.00         </param>       
+        <param name="ki">        -4444.43     -4444.43         </param>       
         <param name="limPwm">        5000         5000         </param>       
         <param name="maxPwm">        5000         8000         </param>       
         <param name="maxInt">         750          750         </param>       
-        <param name="shift">            8            8         </param>       
+        <param name="shift">            0            0         </param>       
         <param name="ko">               0            0         </param>       
         <param name="stictionUp">       0            0         </param>       
         <param name="stictionDwn">      0            0         </param>      

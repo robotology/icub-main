@@ -15,18 +15,18 @@
 	
 	<group name="POSITION_CONTROL">
 	    <param name="controlLaw">    joint_pid_v1         </param> 
-        <param name="controlUnits">  machine_units        </param> 
-        <param name="kp">              1792   2560  2560  </param>       
-        <param name="kd">                 0      0     0  </param>       
-        <param name="ki">              6250   6250  6250  </param>       
-        <param name="limPwm">          4000   4000  8000  </param>       
-        <param name="maxPwm">          8000   8000 16000  </param>  
-        <param name="maxInt">           750    750  1500  </param>       
-        <param name="shift">              8      8     8  </param>       
-        <param name="ko">                 0      0     0  </param>       
-        <param name="stictionUp">         0      0     0  </param>       
-        <param name="stictionDwn">        0      0     0  </param>       
-        <param name="kff">                0      0     0  </param>     
+        <param name="controlUnits">  metric_units        </param> 
+        <param name="kp">           1274.30  1820.44  1820.44  </param>       
+        <param name="kd">              0.00     0.00     0.00  </param>       
+        <param name="ki">           4444.43  4444.43  4444.43  </param>       
+        <param name="limPwm">          4000     4000     8000  </param>       
+        <param name="maxPwm">          8000     8000    16000  </param>  
+        <param name="maxInt">           750      750     1500  </param>       
+        <param name="shift">              0        0        0  </param>       
+        <param name="ko">                 0        0        0  </param>       
+        <param name="stictionUp">         0        0        0  </param>       
+        <param name="stictionDwn">        0        0        0  </param>       
+        <param name="kff">                0        0        0  </param>     
     </group>
 	
 	<group name="TORQUE_CONTROL">
