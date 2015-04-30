@@ -490,7 +490,8 @@ embObjMotionControl::embObjMotionControl() :
     _kbemf            = NULL;
     _ktau             = NULL;
     _filterType       = NULL;
-    _torqueControlUnits = MACHINE_UNITS;
+    _positionControlUnits = P_MACHINE_UNITS;
+    _torqueControlUnits = T_MACHINE_UNITS;
     _torqueControlEnabled = false;
     _torqueControlHelper = NULL;
 
@@ -802,13 +803,8 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
     //  INIT ALL INTERFACES
-    double *tmpZeros = new double [_njoints];
-    double *tmpOnes  = new double [_njoints];
-    for (int i=0; i< _njoints; i++)
-    {
-        tmpZeros[i]=0.0;
-        tmpOnes[i]=1.0;
-    }
+    yarp::sig::Vector tmpZeros; tmpZeros.resize (_njoints, 0.0);
+    yarp::sig::Vector tmpOnes;  tmpOnes.resize  (_njoints, 1.0);
     
     ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
@@ -825,18 +821,10 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementControlLimits2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
     ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
-    
-    if      (_torqueControlUnits==MACHINE_UNITS) {_torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes, tmpOnes);}
-    else if (_torqueControlUnits==METRIC_UNITS)  {_torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);}
-    else    {yError() << "Invalid _torqueControlUnits value: %d" << _torqueControlUnits; return false;}
-    
     ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementOpenLoopControl::initialize(_njoints, _axisMap);
     ImplementInteractionMode::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementMotor::initialize(_njoints, _axisMap);
-
-    delete [] tmpZeros; tmpZeros=0;
-    delete [] tmpOnes;  tmpOnes=0;
     
     /*
     *  Once I'm sure every input data required is present and correct, instantiate the EMS, transceiver etc...
@@ -949,6 +937,21 @@ bool embObjMotionControl::parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[])
     if (!extractGroup(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
     if (!extractGroup(pidsGroup, xtmp, "kff", "Pid kff parameter", _njoints))         return false; for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
 
+    //conversion from metric to machine units (if applicable)
+    if (_positionControlUnits==P_METRIC_UNITS)
+    {
+        for (j=0; j<_njoints; j++)
+        {
+            myPid[j].kp = myPid[j].kp / _angleToEncoder[j];  //[PWM/deg]
+            myPid[j].ki = myPid[j].ki / _angleToEncoder[j];  //[PWM/deg]
+            myPid[j].kd = myPid[j].kd / _angleToEncoder[j];  //[PWM/deg]
+        }
+    }
+    else
+    {
+        //do nothing
+    }
+
     //optional PWM limit
     if(_pwmIsLimited)
     {   // check for value in the file
@@ -983,6 +986,16 @@ bool embObjMotionControl::parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], d
     if (!extractGroup(pidsGroup, xtmp, "ktau", "ktau parameter", _njoints))           return false; for (j=0; j<_njoints; j++) ktau[j]       = xtmp.get(j+1).asDouble(); 
     if (!extractGroup(pidsGroup, xtmp, "filterType", "filterType param", _njoints))   return false; for (j=0; j<_njoints; j++) filterType[j] = xtmp.get(j+1).asDouble();
  
+    //conversion from metric to machine units (if applicable)
+    for (j=0; j<_njoints; j++)
+    {
+        myPid[j].kp = myPid[j].kp / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+        myPid[j].ki = myPid[j].ki / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+        myPid[j].kd = myPid[j].kd / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+        myPid[j].stiction_up_val   = myPid[j].stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
+        myPid[j].stiction_down_val = myPid[j].stiction_down_val * _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
+    }
+
     //optional PWM limit
     if(_pwmIsLimited)
     {   // check for value in the file
@@ -1015,9 +1028,9 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     double tmp_A2E;
     // Encoder scales
     if (!extractGroup(general, xtmp, "Encoder", "a list of scales for the encoders", _njoints))
-	{
+    {
         return false;
-	}
+    }
     else
         for (i = 1; i < xtmp.size(); i++)
         {
@@ -1117,19 +1130,53 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     ////// POSITION PIDS
     {
         Bottle posPidsGroup;
-        posPidsGroup=config.findGroup("POS_PIDS", "Position Pid parameters new format");
+        posPidsGroup=config.findGroup("POSITION_CONTROL", "Position Pid parameters new format");
         if (posPidsGroup.isNull()==false)
         {
-           if (!parsePositionPidsGroup (posPidsGroup, _pids))
+           Value &controlUnits=posPidsGroup.find("controlUnits");
+           if  (controlUnits.isNull() == false && controlUnits.isString() == true)
            {
-               yError() << "embObjMotionControl::fromConfig(): POS_PIDS section: error detected in parameters syntax";
-               return false;
+                if      (controlUnits.toString()==string("metric_units"))  {yDebug("POSITION_CONTROL: using metric_units");  _positionControlUnits=P_METRIC_UNITS;}
+                else if (controlUnits.toString()==string("machine_units")) {yDebug("POSITION_CONTROL: using machine_units"); _positionControlUnits=P_MACHINE_UNITS;}
+                else    {yError() << "embObjMotionControl::fromConfig(): POSITION_CONTROL section: invalid controlUnits value";
+                         return false;}
            }
            else
            {
-               if(verbosewhenok)
+                yError() << "embObjMotionControl::fromConfig(): POSITION_CONTROL section: missing controlUnits parameter. Assuming machine_units. Please fix your configuration file.";
+                _positionControlUnits=P_MACHINE_UNITS;
+           }
+
+           Value &controlLaw=posPidsGroup.find("controlLaw");
+           if (controlLaw.isNull() == false && controlLaw.isString() == true)
+           {
+               string s_controlaw = controlLaw.toString();
+               if (s_controlaw==string("joint_pid_v1"))
                {
-                    yDebug() << "embObjMotionControl::fromConfig(): POS_PIDS new format successfully loaded";
+                   if (!parsePositionPidsGroup (posPidsGroup, _pids))
+                   {
+                       yError() << "embObjMotionControl::fromConfig(): POSITION_CONTROL section: error detected in parameters syntax";
+                       return false;
+                   }
+                   else
+                   {
+                        yDebug("POSITION_CONTROL: using control law joint_pid_v1");
+                   }
+               }
+               else if (s_controlaw==string("not_implemented"))
+               {
+                   yDebug() << "found 'not_impelemented' in position control_law. This will terminate robotInterface execution.";
+                   return false;
+               }
+               else if (s_controlaw==string("disabled"))
+               {
+                   yDebug() << "found 'disabled' in position control_law. This will terminat robotInterface execution.";
+                   return false;
+               }
+               else
+               {
+                   yError() << "Unable to use control law " << s_controlaw << " por position control. Quitting.";
+                   return false;
                }
            }
         }
@@ -1150,15 +1197,17 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
            Value &controlUnits=trqPidsGroup.find("controlUnits");
            if  (controlUnits.isNull() == false && controlUnits.isString() == true)
            {
-                if      (controlUnits.toString()==string("metric_units"))  {_torqueControlUnits=METRIC_UNITS;}
-                else if (controlUnits.toString()==string("machine_units")) {_torqueControlUnits=MACHINE_UNITS;}
+                if      (controlUnits.toString()==string("metric_units"))  {yDebug("TORQUE_CONTROL: using metric_units"); _torqueControlUnits=T_METRIC_UNITS;}
+                else if (controlUnits.toString()==string("machine_units")) {yDebug("TORQUE_CONTROL: using metric_units"); _torqueControlUnits=T_MACHINE_UNITS;}
                 else    {yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: invalid controlUnits value";
                          return false;}
+                if      (_torqueControlUnits==T_MACHINE_UNITS) {yarp::sig::Vector tmpOnes; tmpOnes.resize(_njoints,1.0); _torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes.data(), tmpOnes.data());}
+                else if (_torqueControlUnits==T_METRIC_UNITS)  {_torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);}
            }
            else
            {
                 yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: missing controlUnits parameter. Assuming machine_units. Please fix your configuration file.";
-                _torqueControlUnits=MACHINE_UNITS;
+                _torqueControlUnits=T_MACHINE_UNITS;
            }
            
            Value &controlLaw=trqPidsGroup.find("controlLaw");
@@ -1167,7 +1216,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                string s_controlaw = controlLaw.toString();
                if (s_controlaw==string("motor_pid_with_friction_v1"))
                {
-                   yDebug() << "control law" << s_controlaw << " will be use for torque control";
+                   yDebug("TORQUE_CONTROL: using control law motor_pid_with_friction_v1");
                    if (!parseTorquePidsGroup (trqPidsGroup, _tpids, _kbemf, _ktau, _filterType))
                    {
                        yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: error detected in parameters syntax";
@@ -1177,15 +1226,11 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                    else
                    {
                        _torqueControlEnabled = true;
-                       if(verbosewhenok)
-                       {
-                            yDebug() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL new format successfully loaded";
-                       }
                    }
                }
-               else if (s_controlaw==string("joint_pid"))
+               else if (s_controlaw==string("joint_pid_v1"))
                {
-                    yDebug() << "control law" << s_controlaw << " will be use for torque control";
+                    yDebug("TORQUE_CONTROL: using control law joint_pid_v1");
                     if (!parseTorquePidsGroup (trqPidsGroup, _tpids, _kbemf, _ktau, _filterType))
                     {
                        yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: error detected in parameters syntax";
@@ -1195,10 +1240,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                     else
                     {
                        _torqueControlEnabled = true;
-                       if(verbosewhenok)
-                       {
-                            yDebug() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL new format successfully loaded";
-                       }
                     }
                }
                else if (s_controlaw==string("not_implemented"))
@@ -1502,11 +1543,6 @@ bool embObjMotionControl::init()
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
         copyPid_iCub2eo(&_pids[logico],  &jconfig.pidposition);
         copyPid_iCub2eo(&_pids[logico],  &jconfig.pidvelocity);
-        _tpids[logico].kp = _tpids[logico].kp / _torqueControlHelper->getNewtonsToSensor(logico);  //[PWM/Nm]
-        _tpids[logico].ki = _tpids[logico].ki / _torqueControlHelper->getNewtonsToSensor(logico);  //[PWM/Nm]
-        _tpids[logico].kd = _tpids[logico].kd / _torqueControlHelper->getNewtonsToSensor(logico);  //[PWM/Nm]
-        _tpids[logico].stiction_up_val   = _tpids[logico].stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(logico); //[Nm]
-        _tpids[logico].stiction_down_val = _tpids[logico].stiction_down_val * _torqueControlHelper->getNewtonsToSensor(logico); //[Nm]
         copyPid_iCub2eo(&_tpids[logico], &jconfig.pidtorque);
 
         jconfig.impedance.damping   = (eOmeas_damping_t)   U_32(_impedance_params[logico].damping * 1000);
@@ -1884,7 +1920,26 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
 {
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition);
     eOmc_PID_t  outPid;
-    copyPid_iCub2eo(&pid, &outPid);
+    Pid hwPid = pid;
+    
+    if (_positionControlUnits==P_METRIC_UNITS)
+    {
+        hwPid.kp = hwPid.kp / _angleToEncoder[j];  //[PWM/deg]
+        hwPid.ki = hwPid.ki / _angleToEncoder[j];  //[PWM/deg]
+        hwPid.kd = hwPid.kd / _angleToEncoder[j];  //[PWM/deg]
+    }
+    else if (_positionControlUnits==P_MACHINE_UNITS)
+    {
+        hwPid.kp = hwPid.kp;  //[PWM/icubdegrees]
+        hwPid.ki = hwPid.ki;  //[PWM/icubdegrees]
+        hwPid.kd = hwPid.kd;  //[PWM/icubdegrees]
+    }
+    else
+    {
+        yError() << "Unknown _positionControlUnits";
+    }
+
+    copyPid_iCub2eo(&hwPid, &outPid);
 
     if(!res->addSetMessage(protoId, (uint8_t *) &outPid))
     {
@@ -2021,6 +2076,23 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
     res->readBufferedValue(protid, (uint8_t *)&eoPID, &size);
 
     copyPid_eo2iCub(&eoPID, pid);
+
+    if (_positionControlUnits==P_METRIC_UNITS)
+    {
+        pid->kp = pid->kp * _angleToEncoder[j];  //[PWM/deg]
+        pid->ki = pid->ki * _angleToEncoder[j];  //[PWM/deg]
+        pid->kd = pid->kd * _angleToEncoder[j];  //[PWM/deg]
+    }
+    else if (_positionControlUnits==P_MACHINE_UNITS)
+    {
+        pid->kp = pid->kp;  //[PWM/icubdegrees]
+        pid->ki = pid->ki;  //[PWM/icubdegrees]
+        pid->kd = pid->kd;  //[PWM/icubdegrees]
+    }
+    else
+    {
+        yError() << "Unknown _positionControlUnits";
+    }
 
     return true;
 }
@@ -3627,7 +3699,7 @@ bool embObjMotionControl::setTorquePidRaw(int j, const Pid &pid)
     hwPid.ki = hwPid.ki / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
     hwPid.kd = hwPid.kd / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
     hwPid.stiction_up_val   = hwPid.stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(j);  //[Nm]
-    hwPid.stiction_down_val = hwPid.stiction_down_val * _torqueControlHelper->getNewtonsToSensor(j);  //[Nm]    
+    hwPid.stiction_down_val = hwPid.stiction_down_val * _torqueControlHelper->getNewtonsToSensor(j);  //[Nm]
     //printf("DEBUG setTorquePidRaw: %f %f %f %f %f\n",hwPid.kp ,  hwPid.ki, hwPid.kd , hwPid.stiction_up_val , hwPid.stiction_down_val );
 
     copyPid_iCub2eo(&hwPid, &outPid);

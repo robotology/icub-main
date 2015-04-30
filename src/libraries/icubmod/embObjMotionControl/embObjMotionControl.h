@@ -301,9 +301,12 @@ private:
     bool        _pwmIsLimited;                         /** set to true if pwm is limited */
     bool        _torqueControlEnabled;                 /** set to true if the torque control parameters are successfully loaded. If false, boards cannot switch in torque mode */
     
-    enum       torqueControlUnitsType {MACHINE_UNITS=0, METRIC_UNITS=1};
+    enum       torqueControlUnitsType {T_MACHINE_UNITS=0, T_METRIC_UNITS=1};
     torqueControlUnitsType _torqueControlUnits;
     torqueControlHelper    *_torqueControlHelper;
+
+    enum       positionControlUnitsType {P_MACHINE_UNITS=0, P_METRIC_UNITS=1};
+    positionControlUnitsType _positionControlUnits;
     
 #if !defined(EMBOBJMC_DONT_USE_MAIS)
     int         numberofmaisboards;

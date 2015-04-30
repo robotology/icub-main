@@ -13,7 +13,9 @@
         <param name="Currents">   5000          5000          5000          5000        </param>
     </group>
 
-	<group name="POS_PIDS">
+	<group name="POSITION_CONTROL">
+	    <param name="controlLaw">    joint_pid_v1 </param> 
+        <param name="controlUnits">  machine_units               </param> 
         <param name="kp">             1280          1280  		   1280		   1280  </param>       
         <param name="kd">                0             0  		      0		      0  </param>       
         <param name="ki">             1250          1250  		   1250		   1250  </param>       
