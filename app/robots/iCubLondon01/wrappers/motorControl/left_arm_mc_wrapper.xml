@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<devices>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+<devices robot="iCubLondon01" build="1">
   <device name="left_arm_mc_wrapper" type="controlboardwrapper2">
     <paramlist name="networks">
 	  <elem name="left_arm_joints">  0  7  0  7 </elem>
 	  <elem name="left_hand_joints"> 8 15  0  7 </elem>
     </paramlist>
 
-<param name="period"> 10 </param>
+    <param name="period"> 10 			</param>
     <param name="name">   icub/left_arm		</param>
     <param name="ports">  left_arm		</param>
     <param name="joints"> 16			</param>
