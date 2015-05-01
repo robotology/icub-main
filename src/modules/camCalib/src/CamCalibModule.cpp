@@ -41,7 +41,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
         yarp::sig::ImageOf<PixelRgb> yrpImgOut;
 
         if (verbose)
-            fprintf(stdout,"received input image after %g [s] ... ",t-t0);
+            yDebug("received input image after %g [s] ... ",t-t0);
 
         double t1=Time::now();
 
@@ -73,14 +73,14 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
             }
 
             if (verbose)
-                fprintf(stdout,"calibrated in %g [s]\n",Time::now()-t1);
+                yDebug("calibrated in %g [s]\n",Time::now()-t1);
         }
         else
         {
             yrpImgOut=yrpImgIn;
 
             if (verbose)
-                fprintf(stdout,"just copied in %g [s]\n",Time::now()-t1);
+                yDebug("just copied in %g [s]\n",Time::now()-t1);
         }
 
         //timestamp propagation
@@ -122,13 +122,13 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
             botConfig.fromString(group.toString());
         }
         else{
-            cout << endl << "Group " << strGroup << " not found." << endl;
+            yError() << "Group " << strGroup << " not found.";
             return false;
         }
     }
     else
     {
-        fprintf(stdout, "There seem to be an error loading parameters (group section missing), stopping module\n");
+        yError ("There seem to be an error loading parameters (group section missing), stopping module");
         return false;
     }
 
@@ -148,15 +148,15 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
     if (yarp::os::Network::exists(getName("/in")))
     {
-        cout << "====> warning: port " << getName("/in") << " already in use" << endl;
+        yWarning() << "port " << getName("/in") << " already in use";
     }
     if (yarp::os::Network::exists(getName("/out")))
     {
-        cout << "====> warning: port " << getName("/out") << " already in use" << endl;    
+        yWarning() << "port " << getName("/out") << " already in use";
     }
     if (yarp::os::Network::exists(getName("/conf")))
     {
-        cout << "====> warning: port " << getName("/conf") << " already in use" << endl;    
+        yWarning() << "port " << getName("/conf") << " already in use";
     }
     _prtImgIn.setSaturation(rf.check("saturation",Value(1.0)).asDouble());
     _prtImgIn.open(getName("/in"));
@@ -217,7 +217,7 @@ bool CamCalibModule::respond(const Bottle& command, Bottle& reply)
     }
     else
     {
-        cout << "command not known - type help for more info" << endl;
+        yError() << "command not known - type help for more info";
     }
     return true;
 }
