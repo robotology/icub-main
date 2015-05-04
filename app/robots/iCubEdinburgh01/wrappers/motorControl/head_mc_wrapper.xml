@@ -8,7 +8,7 @@
       </paramlist>
 
 <param name="period"> 10 </param>
-      <param name="name">   icub/head   </param>
+<param name="name">   /icub/head   </param>
       <param name="ports">  head        </param>
       <param name="joints"> 6           </param>
 
