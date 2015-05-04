@@ -387,9 +387,10 @@ protected:
     int *inputs;  /* in fact we need an "input" flag for every joint */
     double *vels; /* in fact we need a velocity for every joint */
 
-    double *limitsMin;                          /** joint limits, min*/
-    double *limitsMax;                         /** joint limits, max*/
-    double *torqueLimits;                     /** torque limits */
+    double *limitsMin;                         // joint limits, min
+    double *limitsMax;                         // joint limits, max
+    double *torqueLimits;                      // torque limits
+    double *maxCurrent;                        // max motor current (simulated)
 
     double *refSpeed;
     double *refAccel;
