@@ -359,14 +359,14 @@ void iCubSimulationControl::jointStep() {
                     ctrl.setVelocity(next_vel[axis]);
                 }
             }
-            else if (controlMode[axis]==MODE_POSITION || controlMode[axis]==VOCAB_CM_POSITION_DIRECT || controlMode[axis]==MODE_IMPEDANCE_POS)
+            else if (controlMode[axis]==MODE_POSITION || controlMode[axis]==MODE_IMPEDANCE_POS)
             {
                 ctrl.setControlParameters(vels[axis],1);
                 ctrl.setPosition(next_pos[axis]);
             }
             else if (controlMode[axis]==VOCAB_CM_POSITION_DIRECT)
             {
-                ctrl.setControlParameters(vels[axis],1);
+                ctrl.setControlParameters(10,1);
                 ctrl.setPosition(next_pos[axis]);
             }
             else if (controlMode[axis]==MODE_TORQUE)
