@@ -66,10 +66,18 @@ inline void PRINT_CAN_MESSAGE(const char *str, CanMessage &m)
 
 inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
-    yWarning("%s not yet implemented for CanBusMotionControl\n", txt);
+    yError("%s not yet implemented for CanBusMotionControl\n", txt);
 
     return false;
 }
+
+inline bool DEPRECATED (const char *txt)
+{
+    yError("%s has been deprecated for CanBusMotionControl\n", txt);
+
+    return false;
+}
+
 
 //generic function that check is key1 is present in input bottle and that the result has size elements
 // return true/false
@@ -3711,38 +3719,32 @@ void CanBusMotionControl:: run()
     // ControlMode
 bool CanBusMotionControl::setPositionModeRaw(int j)
 {
-    yWarning() << " calling DEPRECATED setPositionModeRaw";
-    return this->setControlModeRaw(j,VOCAB_CM_POSITION);
+    return DEPRECATED("setPositionModeRaw");
 }
 
 bool CanBusMotionControl::setOpenLoopModeRaw(int j)
 {
-    yWarning() << " calling DEPRECATED setOpenLoopModeRaw";
-    return this->setControlModeRaw(j,VOCAB_CM_OPENLOOP);
+    return DEPRECATED("setOpenLoopModeRaw");
 }
 
 bool CanBusMotionControl::setVelocityModeRaw(int j)
 {
-    yWarning() << " calling DEPRECATED setVelocityModeRaw";
-    return this->setControlModeRaw(j,VOCAB_CM_VELOCITY);
+    return DEPRECATED("setVelocityModeRaw");
 }
 
 bool CanBusMotionControl::setTorqueModeRaw(int j)
 {
-    yWarning() << " calling DEPRECATED setTorqueModeRaw";
-    return this->setControlModeRaw(j,VOCAB_CM_TORQUE);
+    return DEPRECATED("setTorqueModeRaw");
 }
 
 bool CanBusMotionControl::setImpedancePositionModeRaw(int j)
 {
-    yWarning() << " calling DEPRECATED setImpedancePositionModeRaw";
-    return this->setControlModeRaw(j,VOCAB_CM_IMPEDANCE_POS);
+    return DEPRECATED("setImpedancePositionModeRaw");
 }
 
 bool CanBusMotionControl::setImpedanceVelocityModeRaw(int j)
 {
-    yWarning() << " calling DEPRECATED setImpedanceVelocityModeRaw";
-    return this->setControlModeRaw(j,VOCAB_CM_IMPEDANCE_VEL);
+    return DEPRECATED("setImpedanceVelocityModeRaw");
 }
 
 bool CanBusMotionControl::getControlModesRaw(int *v)
@@ -5181,12 +5183,7 @@ bool CanBusMotionControl::resetTorquePidRaw(int j)
 
 bool CanBusMotionControl::enablePidRaw(int axis)
 {
-    yWarning() << " calling DEPRECATED enablePidRaw";
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    return _writeNone (ICUBCANPROTO_POL_MC_CMD__CONTROLLER_RUN, axis);
-
+    return DEPRECATED("enablePidRaw");
 }
 
 bool CanBusMotionControl::setOffsetRaw(int axis, double v)
@@ -5318,67 +5315,27 @@ bool CanBusMotionControl::setTorqueOffsetRaw(int axis, double v)
 
 bool CanBusMotionControl::disablePidRaw(int axis)
 {
-    yWarning() << " calling DEPRECATED disablePidRaw";
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    return _writeNone (ICUBCANPROTO_POL_MC_CMD__CONTROLLER_IDLE, axis);
+    return DEPRECATED("disablePidRaw");
 }
 
 bool CanBusMotionControl::setPositionModeRaw()
 {
-    CanBusResources& r = RES(system_resources);
-    int i;
-    for (i = 0; i < r.getJoints (); i++)
-    {
-        if (ENABLED(i))
-        {
-            _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,icubCanProto_controlmode_position);
-        }
-    }
-    return true;
+    return DEPRECATED("setPositionModeRaw");
 }
 
 bool CanBusMotionControl::setOpenLoopModeRaw()
 {
-    CanBusResources& r = RES(system_resources);
-    int i;
-    for (i = 0; i < r.getJoints (); i++)
-    {
-        if (ENABLED(i))
-        {
-            _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,icubCanProto_controlmode_openloop);
-        }
-    }
-    return true;
+    return DEPRECATED("setOpenLoopModeRaw");
 }
 
 bool CanBusMotionControl::setTorqueModeRaw()
 {
-    CanBusResources& r = RES(system_resources);
-    int i;
-    for (i = 0; i < r.getJoints (); i++)
-    {
-        if (ENABLED(i))
-        {
-            _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,icubCanProto_controlmode_torque);
-        }
-    }
-    return true;
+    return DEPRECATED("setTorqueModeRaw");
 }
 
 bool CanBusMotionControl::setVelocityModeRaw()
 {
-    CanBusResources& r = RES(system_resources);
-    int i;
-    for (i = 0; i < r.getJoints (); i++)
-    {
-        if (ENABLED(i))
-        {
-            _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,icubCanProto_controlmode_velocity);
-        }
-    }
-    return true;
+    return DEPRECATED("setVelocityModeRaw");
 }
 
 bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
@@ -6252,20 +6209,12 @@ bool CanBusMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
 
 bool CanBusMotionControl::disableAmpRaw(int axis)
 {
-    yWarning() << " calling DEPRECATED disableAmpRaw";
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    return _writeNone (ICUBCANPROTO_POL_MC_CMD__DISABLE_PWM_PAD, axis);
+    return DEPRECATED("disableAmpRaw");
 }
 
 bool CanBusMotionControl::enableAmpRaw(int axis)
 {
-    yWarning() << " calling DEPRECATED enableAmpRaw";
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    return _writeNone (ICUBCANPROTO_POL_MC_CMD__ENABLE_PWM_PAD, axis);
+    return DEPRECATED("enableAmpRaw");
 }
 
 // bcast
@@ -6623,7 +6572,7 @@ bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 // PositionDirect Interface
 bool CanBusMotionControl::setPositionDirectModeRaw()
 {
-    return NOT_YET_IMPLEMENTED("setPositionDirectModeRaw");
+    return DEPRECATED("setPositionDirectModeRaw");
 }
 
 bool CanBusMotionControl::setPositionRaw(int j, double ref)

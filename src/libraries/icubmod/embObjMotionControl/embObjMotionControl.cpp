@@ -2150,39 +2150,12 @@ bool embObjMotionControl::resetPidRaw(int j)
 
 bool embObjMotionControl::disablePidRaw(int j)
 {
-    // Spegni tutto!! Setta anche Amp off
-     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-    _enabledAmp[j ] = false;
-    _enabledPid[j ] = false;
-
-    eOenum08_t val = eomc_controlmode_cmd_idle;
-    if(! res->addSetMessage(protid, (uint8_t *) &val) )
-    {
-        yError() << "while disabling pid";
-        return false;
-    }
-    return true;
+    return DEPRECATED("disablePidRaw");
 }
 
 bool embObjMotionControl::enablePidRaw(int j)
 {
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-
-    // se giunto non è calibrato non fa nulla, se è calibrato manda il control mode position
-    _enabledPid[j ] = true;
-
-
-    if(_calibrated[j ])
-    {
-        eOmc_controlmode_command_t val = eomc_controlmode_cmd_position;
-
-        if(! res->addSetMessage(protid, (uint8_t *) &val))
-        {
-            yError() << "while enabling pid";
-            return false;
-        }
-    }
-    return true;
+    return DEPRECATED("enablePidRaw");
 }
 
 bool embObjMotionControl::setOffsetRaw(int j, double v)
@@ -2419,23 +2392,7 @@ bool embObjMotionControl::getAxes(int *ax)
 
 bool embObjMotionControl::setPositionModeRaw()
 {
-    bool ret = true;
-
-    eOmc_controlmode_command_t val = eomc_controlmode_cmd_position;
-    for(int j=0; j< _njoints; j++)
-    {
-       if(!_calibrated[j])
-       {
-            yWarning() << "called position mode on a non calibrated axes... skipping";
-            return false;
-       }
-
-        eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-
-        ret &= res->addSetMessage(protid, (uint8_t*) &val);
-    }
-
-    return ret;
+    return DEPRECATED("setPositionModeRaw");
 }
 
 bool embObjMotionControl::positionMoveRaw(int j, double ref)
@@ -2775,53 +2732,32 @@ bool embObjMotionControl::stopRaw(const int n_joint, const int *joints)
 // ControlMode
 bool embObjMotionControl::setPositionModeRaw(int j)
 {
-    eOmc_controlmode_command_t  val = eomc_controlmode_cmd_position;
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-
-    return res->addSetMessage(protid, (uint8_t*) &val);
+    return DEPRECATED("setPositionModeRaw");
 }
 
 bool embObjMotionControl::setVelocityModeRaw(int j)
 {
-    yTrace() << "setVelocityMode " << j;
-    eOmc_controlmode_command_t    val = eomc_controlmode_cmd_velocity;
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-
-    return res->addSetMessage(protid, (uint8_t*) &val);
-
+    return DEPRECATED("setVelocityModeRaw");
 }
 
 bool embObjMotionControl::setTorqueModeRaw(int j)
 {
-    if (_torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
-    eOmc_controlmode_command_t    val =  eomc_controlmode_cmd_torque;
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-
-    return res->addSetMessage(protid, (uint8_t*) &val);
+    return DEPRECATED("setTorqueModeRaw");
 }
 
 bool embObjMotionControl::setImpedancePositionModeRaw(int j)
 {
-    if (_torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
-    bool ret = setInteractionModeRaw(j, VOCAB_IM_COMPLIANT);
-    ret = setControlModeRaw(j, VOCAB_CM_POSITION) && ret;
-    return ret;
+    return DEPRECATED("setImpedancePositionModeRaw");
 }
 
 bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
 {
-    if (_torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
-    bool ret = setInteractionModeRaw(j, VOCAB_IM_COMPLIANT);
-    ret = setControlModeRaw(j, VOCAB_CM_VELOCITY) && ret;
-    return ret;
+    return DEPRECATED("setImpedanceVelocityModeRaw");
 }
 
 bool embObjMotionControl::setOpenLoopModeRaw(int j)
 {
-    eOmc_controlmode_command_t    val = eomc_controlmode_cmd_openloop;
-
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-    return res->addSetMessage(protid, (uint8_t*) &val);
+    return DEPRECATED("setOpenLoopModeRaw");
 }
 
 bool embObjMotionControl::getControlModeRaw(int j, int *v)
@@ -3345,21 +3281,12 @@ bool embObjMotionControl::getMotorEncoderTimedRaw(int m, double *encs, double *s
 
 bool embObjMotionControl::enableAmpRaw(int j)
 {
-    // Just take note of this command. Does nothing here... wait for enable pid
-    _enabledAmp[j ] = true;
-    return true;
+    return DEPRECATED("enableAmpRaw");
 }
 
 bool embObjMotionControl::disableAmpRaw(int j)
 {
-    // Spegni tutto!! Setta anche pid off
-    _enabledAmp[j ] = false;      // da proteggere anche questa scrittura interna??
-    _enabledPid[j ] = false;
-
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-    // yDebug() << "disableAmpRaw AMP status " << _enabledAmp[j ];
-    eOenum08_t val = eomc_controlmode_cmd_idle;
-    return res->addSetMessage(protid, (uint8_t*) &val);
+    return DEPRECATED("disableAmpRaw");
 }
 
 bool embObjMotionControl::getCurrentRaw(int j, double *value)
@@ -4077,23 +4004,7 @@ bool embObjMotionControl::getVelPidsRaw(Pid *pids)
 // PositionDirect Interface
 bool embObjMotionControl::setPositionDirectModeRaw()
 {
-    bool ret = true;
-
-    eOmc_controlmode_command_t val = eomc_controlmode_cmd_direct;
-    for(int j=0; j< _njoints; j++)
-    {
-       if(!_calibrated[j])
-       {
-            yWarning() << "called position direct mode on a non calibrated axes... skipping";
-            return false;
-       }
-
-        eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-
-        ret &= res->addSetMessage(protid, (uint8_t*) &val);
-    }
-
-    return ret;
+    return DEPRECATED("setPositionDirectModeRaw");
 }
 
 bool embObjMotionControl::setPositionRaw(int j, double ref)
@@ -4376,11 +4287,7 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 //
 bool embObjMotionControl::setOpenLoopModeRaw()
 {
-    bool ret = true;
-    for(int j=0; j<_njoints; j++)
-        ret = setOpenLoopModeRaw(j) && ret;
-
-    return ret;
+    return DEPRECATED("setOpenLoopModeRaw");
 }
 
 bool embObjMotionControl::setRefOutputRaw(int j, double v)
