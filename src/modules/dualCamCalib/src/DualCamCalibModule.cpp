@@ -14,6 +14,7 @@ CamCalibModule::CamCalibModule()
 {
     calibToolLeft = NULL;
     calibToolRight = NULL;
+    align=ALIGN_WIDTH;
 }
 
 CamCalibModule::~CamCalibModule()
@@ -25,6 +26,9 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
 {
     ConstString str = rf.check("name", Value("/camCalib"), "module name (string)").asString();
     verboseExecTime = rf.check("verboseExecTime");
+
+    if      (rf.check("w_align")) align=ALIGN_WIDTH;
+    else if (rf.check("h_align")) align=ALIGN_HEIGHT;
 
     setName(str.c_str()); // modulePortName
 
@@ -160,8 +164,22 @@ bool CamCalibModule::updateModule()
 
             if (init==false)
             {
-                int outw = calibratedImgLeft.width()*2;
-                int outh = calibratedImgLeft.height();
+                int outw = 0;
+                int outh = 0;
+                if (align == ALIGN_WIDTH)
+                {
+                    outw = calibratedImgLeft.width()*2;
+                    outh = calibratedImgLeft.height();
+                }
+                else if (align==ALIGN_HEIGHT)
+                {
+                    outw = calibratedImgLeft.width();
+                    outh = calibratedImgLeft.height()*2;
+                }
+                else
+                {
+                    yError() << "Invalid alignment";
+                }
                 calibratedImgOut.copy(calibratedImgLeft,outw,outh);
                 yDebug() << "created output buffer from left input, size: " << outw << "x" << outh;
                 yDebug() << calibratedImgOut.width();
@@ -187,8 +205,22 @@ bool CamCalibModule::updateModule()
 
             if (init==false)
             {
-                int outw = calibratedImgRight.width()*2;
-                int outh = calibratedImgRight.height();
+                int outw = 0;
+                int outh = 0;
+                if (align == ALIGN_WIDTH)
+                {
+                    outw = calibratedImgLeft.width()*2;
+                    outh = calibratedImgLeft.height();
+                }
+                else if (align==ALIGN_HEIGHT)
+                {
+                    outw = calibratedImgLeft.width();
+                    outh = calibratedImgLeft.height()*2;
+                }
+                else
+                {
+                    yError() << "Invalid alignment";
+                }
                 calibratedImgOut.copy(calibratedImgRight,outw,outh);
                 yDebug() << "created output buffer from right input, size: " << outw << "x" << outh;
                 yDebug() << calibratedImgOut.width();
@@ -199,8 +231,11 @@ bool CamCalibModule::updateModule()
             for (int r=0; r<calibratedImgLeft.height(); r++)
             for (int c=0; c<calibratedImgLeft.width(); c++)
             {
-                int cp = c+calibratedImgLeft.width();
-                unsigned char *pixel = calibratedImgOut.getPixelAddress(cp,r);
+                int cp = 0;
+                int rp = 0;
+                if      (align == ALIGN_WIDTH)  {cp = c+calibratedImgLeft.width();  rp = r;}
+                else if (align == ALIGN_HEIGHT) {cp = c; rp = r+calibratedImgLeft.height();}
+                unsigned char *pixel = calibratedImgOut.getPixelAddress(cp,rp);
                 pixel[0] = *(calibratedImgRight.getPixelAddress(c,r)+0);
                 pixel[1] = *(calibratedImgRight.getPixelAddress(c,r)+1);
                 pixel[2] = *(calibratedImgRight.getPixelAddress(c,r)+2);

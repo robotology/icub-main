@@ -29,7 +29,12 @@ class CamCalibModule : public yarp::os::RFModule {
 private:
 
     bool verboseExecTime;
-    
+    enum align_type
+    {
+      ALIGN_WIDTH=0,
+      ALIGN_HEIGHT=1
+    } align;
+
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >  imageInLeft;
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >  imageInRight;
     yarp::os::Port  imageOut;
