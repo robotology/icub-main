@@ -1316,7 +1316,6 @@ bool iCubSimulationControl::setRefTorqueRaw(int axis,double ref)
         _mutex.wait();
         next_torques[axis] = ref;
         motor_on[axis] = true;
-        //controlMode[axis] = MODE_TORQUE; 
         _mutex.post();
         return true;
     }
@@ -1326,11 +1325,24 @@ bool iCubSimulationControl::setRefTorqueRaw(int axis,double ref)
 }
 bool iCubSimulationControl::getRefTorquesRaw(double *ref)
 {
-    return NOT_YET_IMPLEMENTED("getRefTorquesRaw");
+    _mutex.wait();
+    for (int axis=0; axis<njoints; axis++) {
+        ref[axis] = next_torques[axis];
+    }
+    _mutex.post();
+    return true;
 }
 bool iCubSimulationControl::getRefTorqueRaw(int axis,double *ref)
 {
-    return NOT_YET_IMPLEMENTED("getRefTorqueRaw");
+    if( (axis >=0) && (axis<njoints) ) {
+        _mutex.wait();
+        *ref = next_torques[axis];
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        yError("getRefTorqueRaw: joint with index %d does not exist, valis joints indices are between 0 and %d \n",axis,njoints);
+    return false;
 }
 bool iCubSimulationControl::getBemfParamRaw(int axis,double *bemf)
 {
