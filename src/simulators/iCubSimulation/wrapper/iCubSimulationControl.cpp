@@ -68,6 +68,7 @@ iCubSimulationControl::iCubSimulationControl() :
     ImplementInteractionMode(this),
     ImplementPositionDirect(this),
     ImplementMotorEncoders(this),
+    ImplementOpenLoopControl(this),
     _done(0),
     _mutex(1)
 {
@@ -129,6 +130,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     current_pos = allocAndCheck<double>(njoints);
     current_vel = allocAndCheck<double>(njoints);
     current_torques = allocAndCheck<double>(njoints);
+    openloop_ref = allocAndCheck<double>(njoints);
     next_pos = allocAndCheck<double>(njoints);
     next_vel = allocAndCheck<double>(njoints);
     next_torques = allocAndCheck<double>(njoints);
@@ -240,6 +242,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementControlMode2::initialize(njoints, axisMap);
     ImplementInteractionMode::initialize(njoints, axisMap);
     ImplementPositionDirect::initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementOpenLoopControl::initialize(njoints, axisMap);
 
     if (!p.check("joint_device")) {
         yError("Need a device to access the joints\n");
@@ -291,10 +294,12 @@ bool iCubSimulationControl::close (void)
         ImplementControlMode2::uninitialize();
         ImplementInteractionMode::uninitialize();
         ImplementPositionDirect::uninitialize();
+        ImplementOpenLoopControl::uninitialize();
     }
 
     checkAndDestroy<double>(current_pos);
     checkAndDestroy<double>(current_torques);
+    checkAndDestroy<double>(openloop_ref);
     checkAndDestroy<double>(current_vel);
     checkAndDestroy<double>(next_pos);
     checkAndDestroy<double>(next_vel);
@@ -489,15 +494,73 @@ bool iCubSimulationControl::getErrorsRaw(double *errs)
     return NOT_YET_IMPLEMENTED("getErrorsRaw");
 }
 
+bool iCubSimulationControl::setOpenLoopModeRaw()
+{
+    return DEPRECATED("setOpenLoopModeRaw");
+}
+
 bool iCubSimulationControl::getOutputRaw(int axis, double *out)
 {
-    *out=0.0;
-    return false;
-}
+    if( (axis>=0) && (axis<njoints) )
+        {
+            _mutex.wait();
+            *out = openloop_ref[axis];
+            _mutex.post();
+            return true;
+        }
+    if (verbosity)
+        yError("getOutputRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    return false;}
 
 bool iCubSimulationControl::getOutputsRaw(double *outs)
 {
-    return NOT_YET_IMPLEMENTED("getOutputsRaw");
+    _mutex.wait();
+    for(int axis = 0; axis<njoints; axis++)
+        outs[axis] = openloop_ref[axis];
+    _mutex.post();
+    return true;}
+
+bool iCubSimulationControl::setRefOutputRaw (int j, double v)
+{
+    if( (j>=0) && (j<njoints) )
+        {
+            _mutex.wait();
+            openloop_ref[j]=v;
+            _mutex.post();
+            return true;
+        }
+    if (verbosity)
+        yError("setRefOutputRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
+    return false;
+}
+bool iCubSimulationControl::setRefOutputsRaw (const double *v)
+{
+    _mutex.wait();
+    for(int axis = 0; axis<njoints; axis++)
+        openloop_ref[axis]=v[axis]; 
+    _mutex.post();
+    return true;
+}
+bool iCubSimulationControl::getRefOutputRaw (int j, double *v)
+{
+    if( (j>=0) && (j<njoints) )
+        {
+            _mutex.wait();
+            *v = openloop_ref[j];
+            _mutex.post();
+            return true;
+        }
+    if (verbosity)
+        yError("getRefOutputRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
+    return false;
+}
+bool iCubSimulationControl::getRefOutputsRaw (double *v)
+{
+    _mutex.wait();
+    for(int axis = 0; axis<njoints; axis++)
+        v[axis] = openloop_ref[axis];
+    _mutex.post();
+    return true;
 }
 
 bool iCubSimulationControl::getReferenceRaw(int axis, double *ref)
