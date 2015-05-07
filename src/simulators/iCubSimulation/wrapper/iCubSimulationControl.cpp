@@ -384,6 +384,12 @@ void iCubSimulationControl::jointStep() {
             {
                 ctrl.setTorque(next_torques[axis]);
             }
+            else if (controlMode[axis]==MODE_OPENLOOP)
+            {
+                //currently identical to position control
+                ctrl.setControlParameters(vels[axis],1);
+                ctrl.setPosition(next_pos[axis]);
+            }
         }
     }
     _mutex.post();
@@ -1693,6 +1699,7 @@ bool iCubSimulationControl::setControlModeRaw(const int j, const int mode)
             _mutex.wait();
             controlMode[j] = ControlModes_yarp2iCubSIM(mode);
             next_pos[j]=current_pos[j];
+            if (controlMode[j] != MODE_OPENLOOP) openloop_ref[j]=0;
             _mutex.post();
         }
        return true;
