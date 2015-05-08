@@ -15,6 +15,8 @@ CamCalibModule::CamCalibModule()
     calibToolLeft = NULL;
     calibToolRight = NULL;
     align=ALIGN_WIDTH;
+    requested_fps=0;
+    time_lastOut=yarp::os::Time::now();
 }
 
 CamCalibModule::~CamCalibModule()
@@ -29,6 +31,16 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
 
     if      (rf.check("w_align")) align=ALIGN_WIDTH;
     else if (rf.check("h_align")) align=ALIGN_HEIGHT;
+
+    if (rf.check("fps"))
+    {
+        requested_fps=rf.find("fps").asDouble();
+        yInfo() << "Module will run at " << requested_fps;
+    }
+    else
+    {
+        yInfo() << "Module will run at max fps";
+    }
 
     setName(str.c_str()); // modulePortName
 
@@ -242,16 +254,31 @@ bool CamCalibModule::updateModule()
             }
         }
 
-        if (lready==true || rready==true)
+        if (requested_fps==0)
         {
-            static double lastOut = yarp::os::Time::now();
-            imageOut.write(calibratedImgOut);
-            double diffOut = yarp::os::Time::now() -lastOut;
-            lastOut = yarp::os::Time::now();
-            if (verboseExecTime) yDebug ("%f", diffOut);
-            lready=false;
-            rready=false;
+            if (lready==true || rready==true)
+            {
+                imageOut.write(calibratedImgOut);
+                double diffOut = yarp::os::Time::now() -time_lastOut;
+                time_lastOut = yarp::os::Time::now();
+                if (verboseExecTime) yDebug ("%f", diffOut);
+                lready=false;
+                rready=false;
+            }
         }
+        else
+        {
+            double diffOut = yarp::os::Time::now() - time_lastOut;
+            if (diffOut>(1/requested_fps))
+            {
+                imageOut.write(calibratedImgOut);
+                time_lastOut = yarp::os::Time::now();
+                if (verboseExecTime) yDebug ("%f", diffOut);
+                lready=false;
+                rready=false;
+            }
+        }
+
         yarp::os::Time::delay(0.001);
     }
     return true;

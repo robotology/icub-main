@@ -42,6 +42,8 @@ private:
 
     ICalibTool *    calibToolLeft;
     ICalibTool *    calibToolRight;
+    double requested_fps;
+    double time_lastOut;
     
     yarp::sig::ImageOf<yarp::sig::PixelRgb> calibratedImgLeft;
     yarp::sig::ImageOf<yarp::sig::PixelRgb> calibratedImgRight;
