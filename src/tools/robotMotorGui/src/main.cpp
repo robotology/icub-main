@@ -166,6 +166,7 @@
 //#include "include/robotMotorGui.h"
 //#include "include/partMover.h"
 
+#include <yarp/os/Os.h>
 #include <yarp/dev/Drivers.h>
 #include "include/allPartsWindow.h"
 #include <string>
@@ -683,7 +684,7 @@ static void check_pressed(GtkWidget *box,   gpointer   user_data)
 
 void quit()
 {
-    exit(0);
+    yarp::os::exit(0);
 }
 
 //*********************************************************************************
@@ -699,7 +700,7 @@ int myMain( int   argc, char *argv[] )
     finder = new ResourceFinder;
     gtk_init (&argc, &argv);
 
-    if (argc>0)
+    if (argc>1)
     {
         if (strcmp(argv[1],"robotmotorguiisdeprecatedbutistillwanttouseit")==0)
         {
@@ -708,7 +709,7 @@ int myMain( int   argc, char *argv[] )
     }
     
     {
-        GtkWidget *message;
+        GtkWidget *message=0;
         message = gtk_dialog_new_with_buttons ("Interactive Dialog",
                 GTK_WINDOW (window),
                 GTK_DIALOG_MODAL,
@@ -737,6 +738,7 @@ int myMain( int   argc, char *argv[] )
 
         gtk_widget_show_now(message);
         g_signal_connect_swapped (message, "response",G_CALLBACK (quit), message);
+
         gtk_main ();
     }
 
