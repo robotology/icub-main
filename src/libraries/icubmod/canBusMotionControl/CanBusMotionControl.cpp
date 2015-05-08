@@ -66,10 +66,18 @@ inline void PRINT_CAN_MESSAGE(const char *str, CanMessage &m)
 
 inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
-    yWarning("%s not yet implemented for CanBusMotionControl\n", txt);
+    yError("%s not yet implemented for CanBusMotionControl\n", txt);
 
     return false;
 }
+
+inline bool DEPRECATED (const char *txt)
+{
+    yError("%s has been deprecated for CanBusMotionControl\n", txt);
+
+    return false;
+}
+
 
 //generic function that check is key1 is present in input bottle and that the result has size elements
 // return true/false
@@ -1227,6 +1235,8 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     ///// CAN PARAMETERS
     Bottle& canGroup = p.findGroup("CAN");
 
+    _networkName=canGroup.find("NetworkId").asString();
+
     if (canGroup.check("CanForcedDeviceNum"))
     {
         _networkN=canGroup.find("CanForcedDeviceNum").asInt();
@@ -1408,38 +1418,91 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     ////// TORQUE PIDS
     {
         Bottle trqPidsGroup;
-        trqPidsGroup=p.findGroup("TRQ_PIDS", "Torque Pid parameters new format");
+        Bottle trqPidsOldGroup;
+        Bottle trqControlGroup;
+        trqPidsGroup    = p.findGroup("TRQ_PIDS",       "Torque Pid parameters new format");
+        trqPidsOldGroup = p.findGroup("TORQUE_PIDS",    "Torque Pid parameters old format");
+        trqControlGroup = p.findGroup("TORQUE_CONTROL", "Torque Control parameters");
+
         if (trqPidsGroup.isNull()==false)
         {
-           yInfo("Torque Pids section found, new format\n");
+           yInfo("TRQ_PIDS: Torque Pids section found, new format\n");
            if (!parsePidsGroup_NewFormat (trqPidsGroup, _tpids))
            {
-               yError () << "Torque Pids section: error detected in parameters syntax";
+               yError () << "TRQ_PIDS: error detected in parameters syntax";
                return false;
            }
            else
            {
-                yInfo("Torque Pids successfully loaded\n");
-
                 xtmp = trqPidsGroup.findGroup("kbemf"); 
+                {for (j=0;j<nj;j++) this->_bemfGain[j] = 0; }
+
+                xtmp = trqPidsGroup.findGroup("ktau"); 
+                {for (j=0;j<nj;j++) this->_ktau[j] = 1; }
+                
+                xtmp = trqPidsGroup.findGroup("filterType"); 
+                {for (j=0;j<nj;j++) this->_filterType[j] = 0; }
+                
+                xtmp = trqPidsGroup.findGroup("controlUnits"); 
+                this->_torqueControlUnits = MACHINE_UNITS;
+                
+                _torqueControlEnabled = true;
+           }
+        }
+        else if (trqPidsOldGroup.isNull()==false)
+        {
+            yWarning ("TORQUE_PIDS: Torque Pids section found, old format\n");
+            if (!parseTrqPidsGroup_OldFormat (trqPidsOldGroup, nj, _tpids))
+            {
+                yError () << "TORQUE_PIDS: error detected in parameters syntax";
+                return false;
+            }
+            else
+            {
+                xtmp = trqPidsGroup.findGroup("kbemf"); 
+                {for (j=0;j<nj;j++) this->_bemfGain[j] = 0; }
+
+                xtmp = trqPidsGroup.findGroup("ktau"); 
+                {for (j=0;j<nj;j++) this->_ktau[j] = 1; }
+            
+                xtmp = trqPidsGroup.findGroup("filterType"); 
+                {for (j=0;j<nj;j++) this->_filterType[j] = 0; }
+            
+                xtmp = trqPidsGroup.findGroup("controlUnits"); 
+                this->_torqueControlUnits = MACHINE_UNITS;
+            
+                _torqueControlEnabled = true;
+            }
+        }
+        else if (trqControlGroup.isNull()==false)
+        {
+           yInfo("TORQUE_CONTROL section found\n");
+           if (!parsePidsGroup_NewFormat (trqControlGroup, _tpids))
+           {
+               yError () << "TORQUE_CONTROL: error detected in parameters syntax";
+               return false;
+           }
+           else
+           {
+                xtmp = trqControlGroup.findGroup("kbemf"); 
                 if (!xtmp.isNull())
                 {for (j=0;j<nj;j++) this->_bemfGain[j] = xtmp.get(j+1).asDouble();}
                 else
                 {for (j=0;j<nj;j++) this->_bemfGain[j] = 0; yWarning ("TORQUE_PIDS: 'kbemf' param missing");}
 
-                xtmp = trqPidsGroup.findGroup("ktau"); 
+                xtmp = trqControlGroup.findGroup("ktau"); 
                 if (!xtmp.isNull())
                 {for (j=0;j<nj;j++) this->_ktau[j] = xtmp.get(j+1).asDouble();}
                 else
                 {for (j=0;j<nj;j++) this->_ktau[j] = 1.0; yWarning ("TORQUE_PIDS: 'ktau' param missing");}
                 
-                xtmp = trqPidsGroup.findGroup("filterType"); 
+                xtmp = trqControlGroup.findGroup("filterType"); 
                 if (!xtmp.isNull())
                 {for (j=0;j<nj;j++) this->_filterType[j] = xtmp.get(j+1).asInt();}
                 else
                 {for (j=0;j<nj;j++) this->_filterType[j] = 0; yWarning ("TORQUE_PIDS: 'filterType' param missing");}
                 
-                xtmp = trqPidsGroup.findGroup("controlUnits"); 
+                xtmp = trqControlGroup.findGroup("controlUnits"); 
                 if (!xtmp.isNull())
                 {    
                      if      (xtmp.toString()==std::string("metric_units"))  {this->_torqueControlUnits=METRIC_UNITS;}
@@ -1448,26 +1511,17 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 }
                 else
                 {
-                     this->_torqueControlUnits = MACHINE_UNITS; yError ("TORQUE_PIDS: 'controlUnits' param missing. Assuming machine_units. Please fix your configuration file.");
+                     yError ("TORQUE_PIDS: 'controlUnits' param missing. Cannot continue");
+                     return false;
                 }
                 
                 _torqueControlEnabled = true;
            }
         }
         else
-        {
-            Bottle trqPidsGroup2=p.findGroup("TORQUE_PIDS", "Torque Pid parameters old format");
-            if (trqPidsGroup2.isNull()==false)
-            {
-                yWarning ("TORQUE_PIDS: Torque Pids section found, old format\n");
-                parseTrqPidsGroup_OldFormat (trqPidsGroup2, nj, _tpids);
-                _torqueControlEnabled=true;
-            }
-            else
-            {   
-                _torqueControlEnabled=false;
-                yWarning("Torque Pids section NOT enabled, skipping...\n");
-            }
+        {   
+            _torqueControlEnabled=false;
+            yWarning("Torque control parameters not found for part %s, skipping...\n", _networkName.c_str());
         }
     }
     
@@ -3665,38 +3719,32 @@ void CanBusMotionControl:: run()
     // ControlMode
 bool CanBusMotionControl::setPositionModeRaw(int j)
 {
-    yWarning() << " calling DEPRECATED setPositionModeRaw";
-    return this->setControlModeRaw(j,VOCAB_CM_POSITION);
+    return DEPRECATED("setPositionModeRaw");
 }
 
 bool CanBusMotionControl::setOpenLoopModeRaw(int j)
 {
-    yWarning() << " calling DEPRECATED setOpenLoopModeRaw";
-    return this->setControlModeRaw(j,VOCAB_CM_OPENLOOP);
+    return DEPRECATED("setOpenLoopModeRaw");
 }
 
 bool CanBusMotionControl::setVelocityModeRaw(int j)
 {
-    yWarning() << " calling DEPRECATED setVelocityModeRaw";
-    return this->setControlModeRaw(j,VOCAB_CM_VELOCITY);
+    return DEPRECATED("setVelocityModeRaw");
 }
 
 bool CanBusMotionControl::setTorqueModeRaw(int j)
 {
-    yWarning() << " calling DEPRECATED setTorqueModeRaw";
-    return this->setControlModeRaw(j,VOCAB_CM_TORQUE);
+    return DEPRECATED("setTorqueModeRaw");
 }
 
 bool CanBusMotionControl::setImpedancePositionModeRaw(int j)
 {
-    yWarning() << " calling DEPRECATED setImpedancePositionModeRaw";
-    return this->setControlModeRaw(j,VOCAB_CM_IMPEDANCE_POS);
+    return DEPRECATED("setImpedancePositionModeRaw");
 }
 
 bool CanBusMotionControl::setImpedanceVelocityModeRaw(int j)
 {
-    yWarning() << " calling DEPRECATED setImpedanceVelocityModeRaw";
-    return this->setControlModeRaw(j,VOCAB_CM_IMPEDANCE_VEL);
+    return DEPRECATED("setImpedanceVelocityModeRaw");
 }
 
 bool CanBusMotionControl::getControlModesRaw(int *v)
@@ -5135,12 +5183,7 @@ bool CanBusMotionControl::resetTorquePidRaw(int j)
 
 bool CanBusMotionControl::enablePidRaw(int axis)
 {
-    yWarning() << " calling DEPRECATED enablePidRaw";
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    return _writeNone (ICUBCANPROTO_POL_MC_CMD__CONTROLLER_RUN, axis);
-
+    return DEPRECATED("enablePidRaw");
 }
 
 bool CanBusMotionControl::setOffsetRaw(int axis, double v)
@@ -5272,67 +5315,27 @@ bool CanBusMotionControl::setTorqueOffsetRaw(int axis, double v)
 
 bool CanBusMotionControl::disablePidRaw(int axis)
 {
-    yWarning() << " calling DEPRECATED disablePidRaw";
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    return _writeNone (ICUBCANPROTO_POL_MC_CMD__CONTROLLER_IDLE, axis);
+    return DEPRECATED("disablePidRaw");
 }
 
 bool CanBusMotionControl::setPositionModeRaw()
 {
-    CanBusResources& r = RES(system_resources);
-    int i;
-    for (i = 0; i < r.getJoints (); i++)
-    {
-        if (ENABLED(i))
-        {
-            _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,icubCanProto_controlmode_position);
-        }
-    }
-    return true;
+    return DEPRECATED("setPositionModeRaw");
 }
 
 bool CanBusMotionControl::setOpenLoopModeRaw()
 {
-    CanBusResources& r = RES(system_resources);
-    int i;
-    for (i = 0; i < r.getJoints (); i++)
-    {
-        if (ENABLED(i))
-        {
-            _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,icubCanProto_controlmode_openloop);
-        }
-    }
-    return true;
+    return DEPRECATED("setOpenLoopModeRaw");
 }
 
 bool CanBusMotionControl::setTorqueModeRaw()
 {
-    CanBusResources& r = RES(system_resources);
-    int i;
-    for (i = 0; i < r.getJoints (); i++)
-    {
-        if (ENABLED(i))
-        {
-            _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,icubCanProto_controlmode_torque);
-        }
-    }
-    return true;
+    return DEPRECATED("setTorqueModeRaw");
 }
 
 bool CanBusMotionControl::setVelocityModeRaw()
 {
-    CanBusResources& r = RES(system_resources);
-    int i;
-    for (i = 0; i < r.getJoints (); i++)
-    {
-        if (ENABLED(i))
-        {
-            _writeByte8(ICUBCANPROTO_POL_MC_CMD__SET_CONTROL_MODE,i,icubCanProto_controlmode_velocity);
-        }
-    }
-    return true;
+    return DEPRECATED("setVelocityModeRaw");
 }
 
 bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
@@ -6206,20 +6209,12 @@ bool CanBusMotionControl::getMotorEncoderAccelerationRaw(int m, double *acc)
 
 bool CanBusMotionControl::disableAmpRaw(int axis)
 {
-    yWarning() << " calling DEPRECATED disableAmpRaw";
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    return _writeNone (ICUBCANPROTO_POL_MC_CMD__DISABLE_PWM_PAD, axis);
+    return DEPRECATED("disableAmpRaw");
 }
 
 bool CanBusMotionControl::enableAmpRaw(int axis)
 {
-    yWarning() << " calling DEPRECATED enableAmpRaw";
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    return _writeNone (ICUBCANPROTO_POL_MC_CMD__ENABLE_PWM_PAD, axis);
+    return DEPRECATED("enableAmpRaw");
 }
 
 // bcast
@@ -6577,7 +6572,7 @@ bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 // PositionDirect Interface
 bool CanBusMotionControl::setPositionDirectModeRaw()
 {
-    return NOT_YET_IMPLEMENTED("setPositionDirectModeRaw");
+    return DEPRECATED("setPositionDirectModeRaw");
 }
 
 bool CanBusMotionControl::setPositionRaw(int j, double ref)

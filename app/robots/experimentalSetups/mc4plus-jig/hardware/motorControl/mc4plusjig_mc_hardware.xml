@@ -18,14 +18,16 @@
         <param name="damping">           0.0	                </param>
     </group>
     
-	<group name="POS_PIDS">
-        <param name="kp">              -800                    </param>       
+	<group name="POSITION_CONTROL">
+        <param name="controlLaw">    joint_pid_v1               </param>    
+        <param name="controlUnits">  metric_units               </param> 
+        <param name="kp">           -568.00                     </param>       
         <param name="kd">                 0                     </param>       
-        <param name="ki">             	  0                    </param>       
+        <param name="ki">             	  0                     </param>       
         <param name="limPwm">          4000                     </param>       
         <param name="maxPwm">          8000                     </param>  
         <param name="maxInt">           750                     </param>       
-        <param name="shift">              8                     </param>       
+        <param name="shift">              0                     </param>       
         <param name="ko">                 0                     </param>       
         <param name="stictionUp">         0                     </param>       
         <param name="stictionDwn">        0                     </param>       

@@ -95,7 +95,9 @@ class yarp::dev::iCubSimulationControl :
     public IMotorEncodersRaw,
     public ImplementMotorEncoders,
     public IPositionDirectRaw,
-    public ImplementPositionDirect
+    public ImplementPositionDirect,
+    public IOpenLoopControlRaw,
+    public ImplementOpenLoopControl
 
 {
  private:
@@ -131,6 +133,17 @@ class yarp::dev::iCubSimulationControl :
   virtual bool getEncoderTimedRaw(int j, double *encs, double *stamp);
 
 
+  ///////////// OPENLOOP INTERFACE
+  //
+  virtual bool setRefOutputRaw (int j, double v);
+  virtual bool setRefOutputsRaw (const double *v);
+  virtual bool getRefOutputRaw (int j, double *v);
+  virtual bool getRefOutputsRaw (double *v);
+  virtual bool getOutputRaw (int j, double *v);
+  virtual bool getOutputsRaw (double *v);
+  virtual bool setOpenLoopModeRaw ();
+  /////////////////////////////// END OPENLOOP INTERFACE
+
   ///////////// PID INTERFACE
   //
   virtual bool setPidRaw(int j, const Pid &pid);
@@ -141,8 +154,8 @@ class yarp::dev::iCubSimulationControl :
   virtual bool setErrorLimitsRaw(const double *limits);
   virtual bool getErrorRaw(int j, double *err);
   virtual bool getErrorsRaw(double *errs);
-  virtual bool getOutputRaw(int j, double *out);
-  virtual bool getOutputsRaw(double *outs);
+  //virtual bool getOutputRaw(int j, double *out);
+  //virtual bool getOutputsRaw(double *outs);
   virtual bool getPidRaw(int j, Pid *pid);
   virtual bool getPidsRaw(Pid *pids);
   virtual bool getReferenceRaw(int j, double *ref);
@@ -344,6 +357,9 @@ protected:
     //torque of the joints
     double *current_torques; // at the moment this is fake
 
+    //openloop/pwm value
+    double *openloop_ref; // at the moment this is fake
+
     //current velocity of the joints
     double *current_vel;
     
@@ -387,9 +403,10 @@ protected:
     int *inputs;  /* in fact we need an "input" flag for every joint */
     double *vels; /* in fact we need a velocity for every joint */
 
-    double *limitsMin;                          /** joint limits, min*/
-    double *limitsMax;                         /** joint limits, max*/
-    double *torqueLimits;                     /** torque limits */
+    double *limitsMin;                         // joint limits, min
+    double *limitsMax;                         // joint limits, max
+    double *torqueLimits;                      // torque limits
+    double *maxCurrent;                        // max motor current (simulated)
 
     double *refSpeed;
     double *refAccel;

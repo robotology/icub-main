@@ -144,7 +144,7 @@ yarp_configure_external_installation(iCub WITH_PLUGINS)
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
 set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus protocol and firmware versions" FORCE)
 set(ICUB_CANMASKS_STRICT_FILTER TRUE CACHE BOOL "Enable strict filtering on can address. Needed with sharedcan.")
-set(ICUB_AUTOMATIC_MODE_SWITCHING TRUE CACHE BOOL "Enable automatic switching between control modes")
+set(ICUB_AUTOMATIC_MODE_SWITCHING FALSE CACHE BOOL "Enable automatic switching between control modes")
 
 ###################### End options and definitions
 

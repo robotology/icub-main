@@ -16,7 +16,9 @@
         <param name="Currents">   500           800           800           485           485           485           485           485           485           485           485           485   	</param>
     </group>
 
-    <group name="POS_PIDS">
+	<group name="POSITION_CONTROL">
+	    <param name="controlLaw">    joint_pid_v1 </param> 
+        <param name="controlUnits">  machine_units               </param> 
         <param name="kp">          -200          1000          -1000         -200    -500          -8000         -8000         -8000         8000          -8000         -8000         1200         </param>       
         <param name="kd">          -1000         10000         -10000        -200    -32000        -32000        -32000        -32000        32000         -32000        -32000        12500        </param>       
         <param name="ki">          -1            1             -1            -1      -1            -5            -5            -5            5             -5            -5            1            </param>       
@@ -31,7 +33,7 @@
     </group>
    
     <group name="TORQUE_CONTROL">
-	    <param name="controlLaw">    joint_pid </param> 
+	    <param name="controlLaw">    joint_pid_v1 </param> 
         <param name="controlUnits">  machine_units               </param> 
         <param name="kp">            -80      0      0      0      0      0      0      0      0      0      0      0    </param>       
         <param name="kd">              0      0      0      0      0      0      0      0      0      0      0      0    </param>       

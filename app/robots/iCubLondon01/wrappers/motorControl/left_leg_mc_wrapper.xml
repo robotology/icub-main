@@ -5,8 +5,8 @@
          <elem name="left_leg_joints">  0  5  0  5 </elem>
       </paramlist>
 
-<param name="period"> 10 </param>
-      <param name="name">   icub/left_leg       </param>
+      <param name="period"> 10                  </param>
+      <param name="name">   /icub/left_leg       </param>
       <param name="ports">  left_leg            </param>
       <param name="joints"> 6                   </param>
 
