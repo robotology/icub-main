@@ -64,7 +64,7 @@ class hostTransceiver
 {
 private:
     enum { maxNumberOfROPloadingAttempts = 5 };
-    const double delayAfterROPloadingFailure;
+    double delayAfterROPloadingFailure;
 
 protected:
 
@@ -83,7 +83,7 @@ protected:
     eOmn_transceiver_properties_t remoteTransceiverProperties;  // contains properties of the transceiver of the remote board as read from xml file
     eOmn_transceiver_properties_t localTransceiverProperties;   // contains properties of the transceiver here instantiated.
                                                                 // properties derive from remoteTransceiverProperties, from hosttxrxcfg and from elsewhere
-    uint8_t TXratedivider;
+    uint8_t TXrate;
 public:
 
     hostTransceiver();

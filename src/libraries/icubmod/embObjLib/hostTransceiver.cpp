@@ -91,6 +91,8 @@ hostTransceiver::hostTransceiver():delayAfterROPloadingFailure(0.001) // 1ms
 {
     yTrace();
 
+//    delayAfterROPloadingFailure = 0.001 * TheEthManager::instance()->getEthSender()->getRate();
+
     ipport              = 0;
     localipaddr         = 0;
     remoteipaddr        = 0;
@@ -104,7 +106,7 @@ hostTransceiver::hostTransceiver():delayAfterROPloadingFailure(0.001) // 1ms
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
     memset(&localTransceiverProperties, 0, sizeof(localTransceiverProperties));
     memset(&remoteTransceiverProperties, 0, sizeof(remoteTransceiverProperties));
-    TXratedivider = 1;
+    TXrate = 1;
 #if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
     htmtx = new Semaphore(1);
     nvmtx = new Semaphore(1);
@@ -1267,9 +1269,9 @@ bool hostTransceiver::fillRemoteProperties(yarp::os::Searchable &cfgtransceiver)
         remoteTransceiverProperties.maxsizeROP                  = cfgtransceiver.find("maxSizeROP").asInt();
         remoteTransceiverProperties.maxnumberRegularROPs        = cfgtransceiver.find("maxNumberRegularROPs").asInt();
 
-        if(true == cfgtransceiver.check("TXratedivider"))
+        if(true == cfgtransceiver.check("TXrate"))
         {
-            TXratedivider = cfgtransceiver.find("TXratedivider").asInt();
+            TXrate = cfgtransceiver.find("TXrate").asInt();
         }
 
     }

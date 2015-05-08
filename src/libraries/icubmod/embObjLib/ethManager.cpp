@@ -75,7 +75,35 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
     myIP.dump();
     char tmp_addr[64];
 
-    if(!createSocket(myIP) )
+    int txrate = -1; // uses default
+    int rxrate = -1; // uses default
+
+    // if i find it in section ... of cfgtotal then i change it
+
+
+    if(cfgtotal.findGroup("ETH").check("PC104TXrate"))
+    {
+        int value = cfgtotal.findGroup("ETH").find("PC104TXrate").asInt();
+        if(value > 0)
+            txrate = value;
+    }
+    else
+    {
+        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104TXrate. thus using default value";
+    }
+
+    if(cfgtotal.findGroup("ETH").check("PC104RXrate"))
+    {
+        int value = cfgtotal.findGroup("ETH").find("PC104RXrate").asInt();
+        if(value > 0)
+            rxrate = value;
+    }
+    else
+    {
+        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104RXrate. thus using default value";
+    }
+
+    if(!createSocket(myIP, txrate, rxrate) )
     {  return NULL;  }
 
 
@@ -412,7 +440,7 @@ void TheEthManager::initEOYsystem(void)
 }
 
 
-bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
+bool TheEthManager::createSocket(ACE_INET_Addr local_addr, int txrate, int rxrate)
 {
     yTrace();
     lock();
@@ -436,8 +464,16 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr)
         {
             UDP_initted = true;
 
-            sender = new EthSender();
-            receiver = new EthReceiver();
+            if((txrate <= 0) || (txrate > EthSender::EthSenderMaxRate))
+            {
+                txrate = EthSender::EthSenderDefaultRate;
+            }
+            if((rxrate <= 0) | (rxrate > EthReceiver::EthReceiverMaxRate))
+            {
+                rxrate = EthReceiver::EthReceiverDefaultRate;
+            }
+            sender = new EthSender(txrate);
+            receiver = new EthReceiver(rxrate);
 
             sender->config(UDP_socket, this);
             receiver->config(UDP_socket, this);
@@ -645,8 +681,11 @@ void TheEthManager::flush()
 }
 
 
-EthSender::EthSender() : RateThread(EthSenderRate)
+EthSender::EthSender(int txrate) : RateThread(txrate)
 {
+
+    rateofthread = txrate;
+    yDebug() << "EthSender is a RateThread with rate =" << rateofthread << "ms";
     yTrace();
 }
 
@@ -766,7 +805,7 @@ void EthSender::run()
 
 
 #ifdef ETHRECEIVER_ISPERIODICTHREAD
-EthReceiver::EthReceiver(): RateThread(EthReceiverRate)
+EthReceiver::EthReceiver(int raterx): RateThread(raterx)
 #else
 EthReceiver::EthReceiver()
 #endif
@@ -781,6 +820,9 @@ EthReceiver::EthReceiver()
 #ifdef ETHRECEIVER_ISPERIODICTHREAD
     count=0;
     isFirst=true;
+    rateofthread = raterx;
+    yDebug() << "EthReceiver is a RateThread with rate =" << rateofthread << "ms";
+    // ok, and now i get it from xml file ... if i find it.
 #endif
 
     ConstString tmp = NetworkBase::getEnvironment("ETHSTAT_PRINT_INTERVAL");
@@ -1294,7 +1336,12 @@ void EthReceiver::run()
     uint64_t      incoming_msg_data[ethResources::maxRXpacketsize/8]; // 8-byte aligned local buffer for incoming packet: it must be able to accomodate max size of packet
     const int     incoming_msg_capacity = ethResources::maxRXpacketsize;
 
-
+//    static bool firstrun = true;
+//    if(firstrun)
+//    {
+//        EthReceiver::setRate(5);
+//        firstrun = false;
+//    }
 
 
 
@@ -1307,7 +1354,7 @@ void EthReceiver::run()
 
     static int earlyexit = 0;
 
-    int maxUDPpackets = EthReceiver::EthReceiverRate*ethManager->GetNumberOfUsedBoards() + 2 + earlyexit*5; // marco.accame: set it as the number of boards plus a ... margin of 30% plus a +/- offset which depends on activity
+    int maxUDPpackets = EthReceiver::rateofthread*ethManager->GetNumberOfUsedBoards() + 2 + earlyexit*5; // marco.accame: set it as the number of boards plus a ... margin of 30% plus a +/- offset which depends on activity
 
     earlyexit = 0;
 

@@ -75,8 +75,8 @@
 // -- defines
 
 
-#undef  ETHRECEIVER_ISPERIODICTHREAD
-#undef  ETHRECEIVER_TEST_QUICKER_ONEVENT_RX_MODE
+#define  ETHRECEIVER_ISPERIODICTHREAD
+#define  ETHRECEIVER_TEST_QUICKER_ONEVENT_RX_MODE
 
 
 #define ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
@@ -259,7 +259,7 @@ private:
      *  @param  local_addr  The IP address and port to be used for the local machine (pc104) in ACE_INET_Addr form
      *  @return True if creation went well, or socket already created, false if errors
      */
-    bool createSocket(ACE_INET_Addr local_addr);
+    bool createSocket(ACE_INET_Addr local_addr, int txrate, int rxrate);
 
     bool lock();
     bool unlock();
@@ -298,7 +298,10 @@ private:
     ACE_SOCK_Dgram                *send_socket;
     void run();
 
-    enum { EthSenderRate = 1 };
+
+
+
+    int rateofthread;
 
 #ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
     // for statistic debug purpose
@@ -307,7 +310,10 @@ private:
 #endif
 
 public:
-    EthSender();
+
+    enum { EthSenderDefaultRate = 1, EthSenderMaxRate = 20 };
+
+    EthSender(int txrate);
     bool config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager);
     bool threadInit();
     void evalPrintTXstatistics(void);
@@ -334,7 +340,6 @@ private:
 
     double                          statPrintInterval;
 
-    enum { EthReceiverRate = 1 };
 
 
 #ifdef ETHRECEIVER_STATISTICS_ON
@@ -344,6 +349,7 @@ private:
 #endif
 
 #ifdef ETHRECEIVER_ISPERIODICTHREAD
+    int rateofthread;
     int count;
     bool isFirst;
 #endif
@@ -357,7 +363,10 @@ private:
     int getBoardNum(ACE_INET_Addr addr); //return board number from address (returns 0 in case of error)
     void checkPktSeqNum(char* pktpayload, ACE_INET_Addr addr);
 public:
-    EthReceiver();
+
+    enum { EthReceiverDefaultRate = 5, EthReceiverMaxRate = 20 };
+
+    EthReceiver(int rxrate);
     ~EthReceiver();
     bool config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager);
     bool threadInit();
