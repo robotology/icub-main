@@ -681,6 +681,11 @@ static void check_pressed(GtkWidget *box,   gpointer   user_data)
 }
 
 
+void quit()
+{
+    exit(0);
+}
+
 //*********************************************************************************
 // Entry point for the GTK application
 int myMain( int   argc, char *argv[] )
@@ -693,6 +698,50 @@ int myMain( int   argc, char *argv[] )
     Property p, q;
     finder = new ResourceFinder;
     gtk_init (&argc, &argv);
+
+    if (argc>0)
+    {
+        if (strcmp(argv[1],"robotmotorguiisdeprecatedbutistillwanttouseit")==0)
+        {
+            goto fallback_label;
+        }
+    }
+    
+    {
+        GtkWidget *message;
+        message = gtk_dialog_new_with_buttons ("Interactive Dialog",
+                GTK_WINDOW (window),
+                GTK_DIALOG_MODAL,
+                GTK_STOCK_YES,
+                GTK_RESPONSE_YES,
+                NULL);
+
+        gtk_window_set_resizable(GTK_WINDOW(message),false);
+        GtkWidget *       message_hbox = gtk_hbox_new (FALSE, 8);
+        gtk_container_set_border_width (GTK_CONTAINER (message_hbox), 8);
+        gtk_box_pack_start (GTK_BOX (GTK_DIALOG (message)->vbox), message_hbox, FALSE, FALSE, 0);
+
+        gtk_window_set_title    (GTK_WINDOW(message),"Error");
+        GtkWidget *     message_icon = gtk_image_new_from_stock (GTK_STOCK_DIALOG_ERROR, GTK_ICON_SIZE_DIALOG);
+        gtk_box_pack_start (GTK_BOX (message_hbox), message_icon, FALSE, FALSE, 0);
+
+        GtkWidget *message_right_vbox = gtk_vbox_new (FALSE, 8);
+        gtk_container_set_border_width (GTK_CONTAINER (message_right_vbox), 8);
+        gtk_box_pack_start (GTK_BOX (message_hbox), message_right_vbox, FALSE, FALSE, 0);
+
+        GtkWidget *message_label1 = gtk_label_new ("robotMotorGui has been deprecated!\nUse yarpmotorgui instead!\nFor additional info please post on https://github.com/robotology/QA");
+
+        gtk_label_set_justify   (GTK_LABEL(message_label1),  GTK_JUSTIFY_LEFT);
+        gtk_box_pack_start (GTK_BOX (message_right_vbox), message_label1, FALSE, FALSE, 0);
+        gtk_widget_show_all (message_hbox);
+
+        gtk_widget_show_now(message);
+        g_signal_connect_swapped (message, "response",G_CALLBACK (quit), message);
+        gtk_main ();
+    }
+
+    fallback_label:
+    
     //////////////////////////////////////////////////////////////////////
     //create the main window, and sets the callback destroy_main() to quit
     //the application when the main window is closed
