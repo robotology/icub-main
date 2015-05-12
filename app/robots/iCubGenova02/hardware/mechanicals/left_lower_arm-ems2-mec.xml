@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubGenova02" build="1">
+    <group name="GENERAL">
+        <param name="Joints"> 12 </param> <!-- the number of joints of the robot part -->
+  
+        <!--                   0             1             2             3             4             5             6             7             8             9             10            11 -->
+        <param name="AxisMap"> 0             1             2             3             4             5             6             7             8             9             10            11    </param>
+<param name="Encoder">                                                                706.670  -11.375  11.375   6.300    20.300   -2.633   -2.712   -2.411   -2.376   -2.444   -2.476   -2.216   </param>
+<param name="Zeros">                                                                  -75.00   -180.00  180.00   239.05   16.40    -91.52   -178.85  -105.76  -214.60  -94.91   -203.52  -340.25  </param>
+
+        <param name="TorqueId">  0x0C          0             0             0             0             0             0             0             0             0             0             0 </param>
+        <param name="TorqueChan">4             0             0             0             0             0             0             0             0             0             0             0 </param>
+        <param name="TorqueMax"> 2             2             2             2             2             2             2             2             2             2             2             2 </param>
+        <param name="Rotor">     1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00 </param>
+        <param name="Gearbox">   1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00          1.00 </param>
+        <param name="Verbose"> 0 </param>
+    </group>
+
+    <group name="VELOCITY">
+        <param name="MOT_speed_estimation">1             1             1             1             1             1             1             1             1             1             1             1</param>
+        <param name="MOT_accel_estimation">1             1             1             1             1             1             1             1             1             1             1             1</param>
+        <param name="JNT_accel_estimation">5             5             5             5             5             5             5             5             5             5             5             5</param>
+        <param name="JNT_speed_estimation">5             5             5             5             5             5             5             5             5             5             5             5</param>
+        <param name="Shifts">              8             8             8             8             8             8             8             8             8             8             8             8</param>
+        <param name="Timeout">             100           100           100           100           100           100           100           100           100           100           100           100</param>
+    </group>
+
+</params>
