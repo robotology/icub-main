@@ -11,21 +11,21 @@
 		</group>
 
 <group name="HOME">
-<param name="positionHome">                       0        0       -20     </param>
-<param name="velocityHome">                       10       10      10      </param>
+<param name="positionHome">                       0                       0                         -20                                 </param>
+<param name="velocityHome">                       10                      10                        10                                  </param>
 </group>
 
 
 
 <group name="CALIBRATION">
-<param name="calibrationType">                    3        3       3       </param>
-<param name="calibration1">                       32767.9  32767.9 32767.9 </param>
-<param name="calibration2">                       10.0     10.0    10.0    </param>
-<param name="calibration3">                       5457679.1################</param>
-<param name="positionZero">                       0.0      0.0     0.0     </param>
-<param name="velocityZero">                       10.0     10.0    10.0    </param>
-<param name="maxPwm">                             1200     1200    1200    </param>
-<param name="posZeroThreshold">                   2        2       2       </param>
+<param name="calibrationType">                    3                       3                         3                                   </param>
+<param name="calibration1">                       32767.9                 32767.9                   32767.9                             </param>
+<param name="calibration2">                       10.0                    10.0                      10.0                                </param>
+<param name="calibration3">                       5457679.1               3571703.3                 9850036.8                           </param>
+<param name="positionZero">                       0.0                     0.0                       0.0                                 </param>
+<param name="velocityZero">                       10.0                    10.0                      10.0                                </param>
+<param name="maxPwm">                             1200                    1200                      1200                                </param>
+<param name="posZeroThreshold">                   2                       2                         2                                   </param>
 </group>
 
  <!-- check old calibrator for the correct sequence, then ask to Randazz -->
