@@ -10,7 +10,6 @@
 		    <param name="deviceName"> Head_Calibrator </param>	<!-- simple string to be used in code to have a human readable description -->
 		</group>
 
-
 <group name="HOME">
 <param name="positionHome">                       -30        0       0       0          0         0            </param>
 <param name="velocityHome">                       10         10      10      10         10        10           </param>
@@ -28,9 +27,6 @@
 <param name="maxPwm">                             130        130     0       0          0         0            </param>
 <param name="posZeroThreshold">                   2          2       2       2          2         2            </param>
 </group>
-
-
-
 
  <!-- check old calibrator for the correct sequence, then ask to Randazz -->
         <param name="CALIB_ORDER"> (0 1 2) (3) (4) (5) </param>

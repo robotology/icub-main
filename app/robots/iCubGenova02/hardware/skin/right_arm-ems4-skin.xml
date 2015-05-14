@@ -8,9 +8,8 @@
       <params file="general.xml" />
       <params file="hardware/electronics/right_lower_arm-ems4-eln.xml" />
 	<group name="patches">
-            <param name="patchesIdList"> 2  </param>
             <param name="skinCanAddrsPatch2"> 14 13 12 11 10 9 8</param> 
       </group>
-      <params file="hardware/skin/right_arm-ems4-skinSpec.xml" />
+            <params file="hardware/skin/right_arm-ems4-skinSpec.xml" /> 
   </device>  
 </devices>
