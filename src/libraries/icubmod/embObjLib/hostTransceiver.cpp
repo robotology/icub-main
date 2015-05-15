@@ -592,7 +592,7 @@ bool hostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numo
 
     // it must be protected vs concurrent use of other threads attempting to put rops inside the transceiver.
     lock_transceiver();
-    res = eo_transceiver_outpacket_Prepare(pc104txrx, &tmpnumofrops);
+    res = eo_transceiver_outpacket_Prepare(pc104txrx, &tmpnumofrops, NULL);
     unlock_transceiver();
 
 #ifdef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_
