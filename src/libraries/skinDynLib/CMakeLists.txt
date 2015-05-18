@@ -11,17 +11,23 @@ if (SKIN_NAO)
     add_definitions(-DSKIN_NAO)
 endif (SKIN_NAO)
 
-set(folder_source       src/skinContact.cpp
-                        src/skinContactList.cpp
-                        src/dynContact.cpp
-                        src/dynContactList.cpp
-                        src/common.cpp )
-set(folder_header       include/iCub/skinDynLib/skinContact.h
-                        include/iCub/skinDynLib/skinContactList.h
-                        include/iCub/skinDynLib/dynContact.h
-                        include/iCub/skinDynLib/dynContactList.h
-                        include/iCub/skinDynLib/common.h
-			include/iCub/skinDynLib/rpcSkinManager.h )
+set(folder_source   src/skinContact.cpp
+                    src/skinContactList.cpp
+                    src/dynContact.cpp
+                    src/dynContactList.cpp
+                    src/common.cpp 
+                    src/skinPart.cpp
+                    src/Taxel.cpp
+                    src/utils.cpp)
+set(folder_header   include/iCub/skinDynLib/skinContact.h
+                    include/iCub/skinDynLib/skinContactList.h
+                    include/iCub/skinDynLib/dynContact.h
+                    include/iCub/skinDynLib/dynContactList.h
+                    include/iCub/skinDynLib/common.h
+	                  include/iCub/skinDynLib/rpcSkinManager.h 
+                    include/iCub/skinDynLib/skinPart.h
+                    include/iCub/skinDynLib/Taxel.h
+                    include/iCub/skinDynLib/utils.h)
 
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
