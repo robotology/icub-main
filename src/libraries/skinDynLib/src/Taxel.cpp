@@ -19,20 +19,20 @@
         init();
     }
 
-    Taxel::Taxel(const Vector &p, const Vector &n)
+    Taxel::Taxel(const Vector &_position, const Vector &_normal)
     {
         init();
-        Position = p;
-        Normal   = n;
+        Position = _position;
+        Normal   = _normal;
         setFoR();
     }
 
-    Taxel::Taxel(const Vector &p, const Vector &n, const int &i)
+    Taxel::Taxel(const Vector &_position, const Vector &_normal, const int &_id)
     {
         init();
-        ID       = i;
-        Position = p;
-        Normal   = n;
+        ID       = _id;
+        Position = _position;
+        Normal   = _normal;
         setFoR();
     }
 

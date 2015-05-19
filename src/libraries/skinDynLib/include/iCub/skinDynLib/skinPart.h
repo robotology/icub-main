@@ -35,6 +35,7 @@
 #include "iCub/skinDynLib/Taxel.h"
 #include "iCub/skinDynLib/utils.h"
 
+#include <fstream>
 #include <vector>
 #include <map>
 #include <list>
@@ -53,37 +54,40 @@ namespace iCub
 namespace skinDynLib
 {
 
-class skinPart
+class skinPartBase
 {
-  public:
+  protected:
     SkinPart name;
     int size;       // theoretical maximum size of the skinPart
                     // it corresponds to the number of values on the respective port 
                     // and number of rows in the .txt files in icub-main/app/skinGui/conf/positions
                     // IMPORTANT: it may differ from txls.size()
-             
-    /**
-    * Indexing variable used in the case of reducing the resolution - e.g. taking only triangle centers
-    * The index into the vector is the taxel ID, the value stored is its representative
-    **/
-    vector<int> Taxel2Repr; 
-
-    /**
-    * Mapping in the opposite direction
-    * Indexed by representative taxel IDs, it stores lists of the taxels being represented - e.g. all taxels of a triangle
-    **/
-    map<unsigned int, list<unsigned int> > Repr2TaxelList;
-
+  public:
     /**
     * Constructor
     **/    
-    skinPart();
-    // skinPart(const string _name);
+    skinPartBase();
+
+    /**
+    * Constructor with the name
+    **/    
+    skinPartBase(const SkinPart &_name);
 
     /**
     * Copy Operator
     **/
-    virtual skinPart &operator=(const skinPart &spw);
+    virtual skinPartBase &operator=(const skinPartBase &spw);
+
+    void setName(const SkinPart &_name);
+    SkinPart getName();
+    int getSize();
+
+    /**
+     * Populates the skinPartBase by reading from a file.
+     * @param  filePath is the full absolute path of the file
+     * @return          true/false in case of success/failure
+     */
+    virtual bool setTaxelPosesFromFile(const string &filePath, const string &modality="full");
 
     /**
     * Print Method
@@ -103,23 +107,72 @@ class skinPart
 * It consists of a std::vector of Taxel(s), and a number of methods for loading and populating these taxels from files.
 * 
 */
-class skinPartTaxel : public skinPart
+class skinPartTaxel : public skinPartBase
 {
   public:
     /**
     * List of taxels that belong to the skinPart.
     **/
-    vector<Taxel*> txls;
+    vector<Taxel*> taxels;
 
     /**
-    * Destructor
+     * Modality used in building up the skinPartTaxel class. 
+     * It can be either "full" or "mapping", the latter of which remaps the taxels onto the center
+     * of their respective triangular patch
+     */
+    string modality;
+
+    /**
+    * Indexing variable used in the case of reducing the resolution - e.g. taking only triangle centers
+    * The index into the vector is the taxel ID, the value stored is its representative
     **/
-    ~skinPartTaxel();
+    vector<int> Taxel2Repr; 
+
+    /**
+    * Mapping in the opposite direction
+    * Indexed by representative taxel IDs, it stores lists of the taxels being represented - e.g. all taxels of a triangle
+    **/
+    map<unsigned int, list<unsigned int> > Repr2TaxelList;
 
     /**
     * Copy Operator
     **/
     skinPartTaxel &operator=(const skinPartTaxel &spw);
+
+    /**
+     * Constructor
+     */
+    skinPartTaxel();
+
+    /**
+     * Constructor that specifies the type of modality
+     * @param _modality the modality to be used
+     */
+    skinPartTaxel(const string &_modality);
+
+    /**
+     * Populates the skinPart by reading from a file.
+     * @param  filePath is the full absolute path of the file
+     * @param  modality is the type of reading to perform.
+     *                  if "default", it keeps the modality already stored in the class
+     *                  if "full", it reads every single taxel in the file
+     *                  if "mapping", it maps the taxels into the center of their triangular patch
+     * @return          true/false in case of success/failure
+     */
+    bool setTaxelPosesFromFile(const string &filePath, const string &_modality="default");
+
+    /**
+     * Initializes the mapping between the taxels and their representatives
+     * (i.e. the centers of the triangles)
+     * @return true/false in case of success/failure
+     */
+    bool initRepresentativeTaxels();
+
+    /**
+     * gets the size of the taxel vector (it differs from skinPartBase::getSize())
+     * @return the size of the taxel vector
+     */
+    int getTaxelSize();
 
     /**
     * Print Method
@@ -131,7 +184,10 @@ class skinPartTaxel : public skinPart
     **/
     string toString(int precision=0);
 
-    int get_taxelSize() { return txls.size(); };
+    /**
+    * Destructor
+    **/
+    ~skinPartTaxel();
 };
 
 }

@@ -71,11 +71,24 @@ class Taxel
     yarp::sig::Matrix FoR;         // taxel's reference Frame (computed from Pos and Norm)
 
     /**
-    * Constructors
-    **/    
+    * Default Constructor
+    **/
     Taxel();
-    Taxel(const Vector &p, const Vector &n);
-    Taxel(const Vector &p, const Vector &n, const int &i);
+
+    /**
+     * Constructor with position and normal vectors
+     * @param _position is the position of the taxel
+     * @param _normal   is the normal vector of the taxel
+     */
+    Taxel(const Vector &_position, const Vector &_normal);
+
+    /**
+     * Constructor with position, normal and ID
+     * @param _position is the position of the taxel
+     * @param _normal   is the normal vector of the taxel
+     * @param _id       is the ID of the taxel
+     */
+    Taxel(const Vector &_position, const Vector &_normal, const int &_id);
 
     /**
     * Copy Operator
@@ -94,11 +107,13 @@ class Taxel
 
     /**
     * Print Method
+    * @param verbosity is the verbosity level
     **/
     virtual void print(int verbosity=0) {};
 
     /**
     * toString Method
+    * @param precision is the precision level
     **/
     virtual string toString(int precision=0) {};
 
