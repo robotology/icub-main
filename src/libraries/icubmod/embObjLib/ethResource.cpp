@@ -362,6 +362,13 @@ bool ethResources::goToConfig(void)
 
 bool ethResources::goToRun(void)
 {
+
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+    yWarning() << "ethResources::clearRegulars() is in ETHRES_DEBUG_DONTREADBACK mode";
+    // execute but force verify to false
+    return true;
+#endif
+
     // start the control loop by sending a proper message to the board
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
 

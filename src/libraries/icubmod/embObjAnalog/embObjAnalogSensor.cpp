@@ -575,6 +575,10 @@ bool embObjAnalogSensor::getFullscaleValues()
     //     eo_nv_Set(nv, &fullscale_values, eobool_true, eo_nv_upd_dontdo);    
     // }
     // moreover, even if properly initted, it is required to set the size to 0 because the size being not 0 is the check of reception of a message.
+
+#ifdef ETHRES_DEBUG_DONTREADBACK   // in test beds in which no EMS are connected, just skip this and go on
+    return true;
+#endif
     
 #if 1
    // Check initial size of array...  it should be zero.
