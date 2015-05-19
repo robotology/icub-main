@@ -25,8 +25,6 @@ using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
-// marco.accame: define it only for debugging robotInterface w/out boards
-// #define ETHRES_DEBUG_DONTREADBACK
 
 #undef TEST_FEATURE_CONFIG_REMOTEBOARD
 
