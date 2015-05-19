@@ -8,6 +8,10 @@ yarp_prepare_device(embObjMotionControl TYPE yarp::dev::embObjMotionControl
 
  IF (NOT SKIP_embObjMotionControl)
 
+    if(ETHRES_DEBUG_DONTREADBACK)
+        add_definitions( -DETHRES_DEBUG_DONTREADBACK)
+    endif(ETHRES_DEBUG_DONTREADBACK)
+
   if (ICUB_AUTOMATIC_MODE_SWITCHING)
 	add_definitions(-DICUB_AUTOMATIC_MODE_SWITCHING)
   endif()

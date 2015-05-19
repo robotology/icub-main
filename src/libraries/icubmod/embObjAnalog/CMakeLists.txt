@@ -8,6 +8,10 @@ yarp_prepare_device(embObjAnalogSensor TYPE yarp::dev::embObjAnalogSensor
 
 IF (NOT SKIP_embObjAnalogSensor)
 
+    if(ETHRES_DEBUG_DONTREADBACK)
+        add_definitions( -DETHRES_DEBUG_DONTREADBACK)
+    endif(ETHRES_DEBUG_DONTREADBACK)
+
   set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
   INCLUDE(../embObjLib/embObjLib.cmake)
 
