@@ -107,48 +107,4 @@
         // }
     }
 
-/****************************************************************/
-/* SKINPART TAXEL PWE WRAPPER
-*****************************************************************/
-    skinPartPWE & skinPartPWE::operator=(const skinPartPWE &spw)
-    {
-        skinPart::operator=(spw);
-        txls     = spw.txls;
-        modality = spw.modality;
-        return *this;
-    }
-
-    void skinPartPWE::print(int verbosity)
-    {
-        skinPart::print(verbosity);
-        for (size_t i = 0; i < txls.size(); i++)
-            txls[i]->print(verbosity);
-        yDebug("**********\n");
-    }
-
-    string skinPartPWE::toString(int precision)
-    {
-        stringstream res(skinPart::toString(precision));
-        for (size_t i = 0; i < txls.size(); i++)
-            res << txls[i]->toString(precision);
-        res << "**********\n";
-        return res.str();
-    }
-
-    skinPartPWE::~skinPartPWE()
-    {
-        // printf("Taxelsize %lu %i\n", txls.size(), get_taxelSize());
-        // int i=0;
-
-        // while(!txls.empty())
-        // {
-        //     printf("i %i\n", i); i++;
-        //     if (txls.back())
-        //     {
-        //         delete txls.back();
-        //     }
-        //     txls.pop_back();
-        // }
-    }
-
 // empty line to make gcc happy

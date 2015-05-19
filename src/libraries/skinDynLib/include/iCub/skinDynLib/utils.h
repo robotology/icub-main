@@ -32,13 +32,15 @@
 #define __UTILS_H__
 
 #include <yarp/os/BufferedPort.h>
+#include <yarp/os/Log.h>
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 
 #include <yarp/math/Math.h>
 
 #include "iCub/skinDynLib/skinContact.h"
-#include "iCub/skinDynLib/parzenWindowEstimator.h"
+
+#include <sstream>
 
 using namespace yarp;
 using namespace yarp::os;

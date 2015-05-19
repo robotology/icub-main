@@ -34,7 +34,6 @@
 #include "iCub/skinDynLib/skinContact.h"
 #include "iCub/skinDynLib/Taxel.h"
 #include "iCub/skinDynLib/utils.h"
-#include "iCub/skinDynLib/parzenWindowEstimator.h"
 
 #include <vector>
 #include <map>
@@ -54,16 +53,14 @@ namespace iCub
 namespace skinDynLib
 {
 
-/**
-* Class that encloses all the information related to a skinpart.
-**/
 class skinPart
 {
   public:
     SkinPart name;
-    int size;   // theoretical maximum size of the skinPart if the patches were full ~ corresponds to number of values on the respective port 
-    //and number of columns in the .txt files in icub-main/app/skinGui/conf/positions
-    //IMPORTANT: it differs from taxel.size(), that is the real size of the skinPart with "active" or valid taxels
+    int size;       // theoretical maximum size of the skinPart
+                    // it corresponds to the number of values on the respective port 
+                    // and number of rows in the .txt files in icub-main/app/skinGui/conf/positions
+                    // IMPORTANT: it may differ from txls.size()
              
     /**
     * Indexing variable used in the case of reducing the resolution - e.g. taking only triangle centers
@@ -99,6 +96,13 @@ class skinPart
     virtual string toString(int precision=0);
 };
 
+/** 
+* @ingroup skinDynLib 
+*
+* Class that encloses everything relate to a skinPart.
+* It consists of a std::vector of Taxel(s), and a number of methods for loading and populating these taxels from files.
+* 
+*/
 class skinPartTaxel : public skinPart
 {
   public:
@@ -116,45 +120,6 @@ class skinPartTaxel : public skinPart
     * Copy Operator
     **/
     skinPartTaxel &operator=(const skinPartTaxel &spw);
-
-    /**
-    * Print Method
-    **/
-    void print(int verbosity=0);
-
-    /**
-    * toString Method
-    **/
-    string toString(int precision=0);
-};
-
-class skinPartPWE : public skinPart
-{
-  public:
-    /**
-    * Modality (either 1D or 2D)
-    */
-    string modality;
-
-    /**
-    * List of taxelsPWE that belong to the skinPart (either 1D or 2D)
-    **/
-    vector<TaxelPWE*> txls;
-
-    /*
-    * Constructor that assigns modality member
-    **/
-    skinPartPWE(const string &_modality) : skinPart(), modality(_modality) { txls.clear(); };
-
-    /**
-    * Destructor
-    **/
-    ~skinPartPWE();
-
-    /**
-    * Copy Operator
-    **/
-    skinPartPWE &operator=(const skinPartPWE &spw);
 
     /**
     * Print Method
