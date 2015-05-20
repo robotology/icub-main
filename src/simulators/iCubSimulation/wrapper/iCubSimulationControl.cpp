@@ -387,7 +387,7 @@ void iCubSimulationControl::jointStep() {
             else if (controlMode[axis]==MODE_OPENLOOP)
             {
                 //currently identical to velocity control, with fixed velocity
-                if(((current_pos[axis]<limitsMin[axis])&&(next_vel[axis]<0)) || ((current_pos[axis]>limitsMax[axis])&&(next_vel[axis]>0)))
+                if(((current_pos[axis]<limitsMin[axis])&&(openloop_ref[axis]<0)) || ((current_pos[axis]>limitsMax[axis])&&(openloop_ref[axis]>0)))
                 {
                     ctrl.setVelocity(0.0);
                 }
