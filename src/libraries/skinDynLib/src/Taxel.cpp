@@ -1,19 +1,8 @@
 #include "iCub/skinDynLib/Taxel.h"
 
-
 /****************************************************************/
 /* TAXEL WRAPPER
 *****************************************************************/
-    void Taxel::init()
-    {
-        ID      = 0;
-        Position.resize(3,0.0);
-        WRFPosition.resize(3,0.0);
-        Normal.resize(3,0.0);
-        px.resize(2,0.0);
-        FoR = eye(4);
-    }
-
     Taxel::Taxel()
     {
         init();
@@ -36,15 +25,35 @@
         setFoR();
     }
 
-    Taxel & Taxel::operator=(const Taxel &t)
+    Taxel::Taxel(const Taxel &_t)
     {
-        ID          = t.ID;
-        Position    = t.Position;
-        WRFPosition = t.WRFPosition;
-        Normal      = t.Normal;
-        px          = t.px;
-        FoR         = t.FoR;
+        *this = _t;
+    }
+
+    Taxel & Taxel::operator=(const Taxel &_t)
+    {
+        if (this == &_t)
+        {
+            return *this;
+        }
+
+        ID          = _t.ID;
+        Position    = _t.Position;
+        WRFPosition = _t.WRFPosition;
+        Normal      = _t.Normal;
+        px          = _t.px;
+        FoR         = _t.FoR;
         return *this;
+    }
+
+    void Taxel::init()
+    {
+        ID = 0;
+        Position.resize(3,0.0);
+        WRFPosition.resize(3,0.0);
+        Normal.resize(3,0.0);
+        px.resize(2,0.0);
+        FoR = eye(4);
     }
 
     void Taxel::setFoR()
@@ -92,9 +101,9 @@
                     Position.toString(3,3).c_str(), Normal.toString(3,3).c_str());
     }
 
-    string Taxel::toString(int verbosity)
+    std::string Taxel::toString(int verbosity)
     {
-        stringstream res;
+        std::stringstream res;
         res << "ID: " << ID << "\tPosition: "<< Position.toString(3,3) <<
             "\tNormal: "<< Normal.toString(3,3);
 
@@ -102,7 +111,7 @@
         {
             res << "\tWRFPosition: " << WRFPosition.toString(3,3) <<
                    "\tPx: " << px.toString(3,3) <<
-                   "Frame of Reference: \n" << FoR.toString(3,3) << endl;
+                   "Frame of Reference: \n" << FoR.toString(3,3) << std::endl;
         }
         return res.str();
     }

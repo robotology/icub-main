@@ -38,15 +38,6 @@
 
 #include <sstream>
 
-using namespace yarp;
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::math;
-
-using namespace iCub::skinDynLib;
-
-using namespace std;
-
 namespace iCub
 {
 namespace skinDynLib
@@ -91,9 +82,16 @@ class Taxel
     Taxel(const Vector &_position, const Vector &_normal, const int &_id);
 
     /**
-    * Copy Operator
+    * Copy Constructor
+    * @param _t is the Taxel to copy from
     **/
-    Taxel &operator=(const Taxel &t);
+    Taxel(const Taxel &_t);
+
+    /**
+    * Copy Operator
+    * @param _t is the Taxel to copy from
+    **/
+    Taxel &operator=(const Taxel &_t);
 
     /**
     * init function
@@ -101,7 +99,8 @@ class Taxel
     void init();
 
     /**
-    * Compute and set the taxel's reference frame (from its position and its normal vector)
+    * Compute and set the taxel's reference frame
+    * (from its position and its normal vector)
     **/
     void setFoR();
 
@@ -113,9 +112,9 @@ class Taxel
 
     /**
     * toString Method
-    * @param precision is the precision level
+    * @param verbosity is the verbosity level
     **/
-    virtual string toString(int verbosity=0);
+    virtual std::string toString(int verbosity=0);
 
 };
 
