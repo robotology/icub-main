@@ -71,7 +71,7 @@ class Taxel
      * @param _position is the position of the taxel
      * @param _normal   is the normal vector of the taxel
      */
-    Taxel(const Vector &_position, const Vector &_normal);
+    Taxel(const yarp::sig::Vector &_position, const yarp::sig::Vector &_normal);
 
     /**
      * Constructor with position, normal and ID
@@ -79,7 +79,7 @@ class Taxel
      * @param _normal   is the normal vector of the taxel
      * @param _id       is the ID of the taxel
      */
-    Taxel(const Vector &_position, const Vector &_normal, const int &_id);
+    Taxel(const yarp::sig::Vector &_position, const yarp::sig::Vector &_normal, const int &_id);
 
     /**
     * Copy Constructor

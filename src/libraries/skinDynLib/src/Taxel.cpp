@@ -1,5 +1,8 @@
 #include "iCub/skinDynLib/Taxel.h"
 
+using namespace yarp::math;
+using namespace iCub::skinDynLib;
+
 /****************************************************************/
 /* TAXEL WRAPPER
 *****************************************************************/
@@ -8,7 +11,7 @@
         init();
     }
 
-    Taxel::Taxel(const Vector &_position, const Vector &_normal)
+    Taxel::Taxel(const yarp::sig::Vector &_position, const yarp::sig::Vector &_normal)
     {
         init();
         Position = _position;
@@ -16,7 +19,7 @@
         setFoR();
     }
 
-    Taxel::Taxel(const Vector &_position, const Vector &_normal, const int &_id)
+    Taxel::Taxel(const yarp::sig::Vector &_position, const yarp::sig::Vector &_normal, const int &_id)
     {
         init();
         ID       = _id;
@@ -65,7 +68,7 @@
         }
         
         // Set the proper orientation for the touching end-effector
-        Vector x(3,0.0), z(3,0.0), y(3,0.0);
+        yarp::sig::Vector x(3,0.0), z(3,0.0), y(3,0.0);
 
         z = Normal;
         if (z[0] == 0.0)

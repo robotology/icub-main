@@ -41,15 +41,7 @@
 #include "iCub/skinDynLib/skinContact.h"
 
 #include <sstream>
-
-using namespace yarp;
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::math;
-
-using namespace iCub::skinDynLib;
-
-using namespace std;
+#include <list>
 
 namespace iCub
 {
@@ -87,7 +79,7 @@ yarp::sig::Matrix matrixFromBottle(const yarp::os::Bottle b,
  * @param in   is the index from which start acquiring values
  * @param size is the size of the vector
 **/
-yarp::sig::Vector vectorFromBottle(const Bottle b, int in, const int size);
+yarp::sig::Vector vectorFromBottle(const yarp::os::Bottle b, int in, const int size);
 
 /**
  * Puts a matrix into a bottle, by cycling through its elements
@@ -96,7 +88,7 @@ yarp::sig::Vector vectorFromBottle(const Bottle b, int in, const int size);
  * @param m is the matrix to be converted
  * @param b is the bottle the matrix has been converted into
 **/
-void      matrixIntoBottle(const yarp::sig::Matrix m, Bottle &b);
+void      matrixIntoBottle(const yarp::sig::Matrix m, yarp::os::Bottle &b);
 
 /**
  * Puts a matrix into a bottle, by cycling through its elements
@@ -105,7 +97,7 @@ void      matrixIntoBottle(const yarp::sig::Matrix m, Bottle &b);
  * @param m is the matrix to be converted
  * @param b is the bottle the matrix has been converted into
 **/
-void matrixOfIntIntoBottle(const yarp::sig::Matrix m, Bottle &b);
+void matrixOfIntIntoBottle(const yarp::sig::Matrix m, yarp::os::Bottle &b);
 
 /**
  * Puts a vector into a bottle, by cycling through its elements
@@ -113,14 +105,14 @@ void matrixOfIntIntoBottle(const yarp::sig::Matrix m, Bottle &b);
  * @param v is the vector to be converted
  * @param b is the bottle the vector has been converted into
 **/
-void vectorIntoBottle(const yarp::sig::Vector v, Bottle &b);
+void vectorIntoBottle(const yarp::sig::Vector v, yarp::os::Bottle &b);
 
 /**
 * Converts an int to a string
 * @param a is the int to be converted
 * @return  the string the int has been converted into
 **/
-string int_to_string( const int a );
+std::string int_to_string( const int a );
 
 /**
 * Computes the factorial using a recursive method
@@ -128,93 +120,22 @@ string int_to_string( const int a );
 unsigned int factorial(unsigned int n);
 
 /**
-* Struct that encloses all the information related to a taxel.
+* Returns a list of indexes corresponding to the values of vec that are equal to val.
+* @param vec  the vector under evaluation
+* @param val  the value to compare the vector to
+* @return     a list of indexes
 **/
-struct IncomingEvent
+inline std::list<unsigned int> vectorofIntEqualto(const std::vector<int> vec, const int val)
 {
-    yarp::sig::Vector Pos;
-    yarp::sig::Vector Vel;
-    double Radius;          // average radius of the object
-    string Src;             // the source of information the event is coming from
-
-    double NRM;
-    double TTC;
-
-    /**
-    * Constructors
-    **/    
-    IncomingEvent();
-    IncomingEvent(const Vector &p, const Vector &v, const double r, const string &s);
-    IncomingEvent(const Bottle &b);
-    IncomingEvent(const IncomingEvent &e);
-
-    /**
-    * 
-    **/    
-    Bottle toBottle();
-
-    /**
-    * 
-    **/
-    bool fromBottle(const Bottle &b);
-
-    /**
-    * Copy Operator
-    **/
-    IncomingEvent &operator=(const IncomingEvent &e);
-
-    /**
-    * Print Method
-    **/
-    void print();
-
-    /**
-    * toString Method
-    **/
-    string toString() const;
-};
-
-/**
-* It has only a couple more stuff
-**/
-struct IncomingEvent4TaxelPWE : public IncomingEvent
-{
-    double NRM;
-    double TTC;
-
-    /**
-    * Constructors
-    **/    
-    IncomingEvent4TaxelPWE();
-    IncomingEvent4TaxelPWE(const Vector &p, const Vector &v, const double r, const string &s);
-    IncomingEvent4TaxelPWE(const IncomingEvent &e);
-    IncomingEvent4TaxelPWE(const IncomingEvent4TaxelPWE &e);
-
-    /**
-    * Copy Operators
-    **/
-    IncomingEvent4TaxelPWE &operator=(const IncomingEvent &e);
-    IncomingEvent4TaxelPWE &operator=(const IncomingEvent4TaxelPWE &e);
-
-    /**
-    * Compute the NRM and TTC from Pos and Vel
-    */
-    void computeNRMTTC();
-
-    /**
-     * Return norm and TTC in a pwe-compliant way
-    */
-    std::vector<double> getNRMTTC();
-
-    /**
-    * Print Method
-    **/
-    void print();
-
-    /**
-    * toString Method
-    **/
-    string toString() const;
+    std::list<unsigned int> res;
+    for (size_t i = 0; i < vec.size(); i++)
+    {
+        if (vec[i]==val)
+        {
+            res.push_back(i);
+        }
+    }
+    return res;
 };
 
 }

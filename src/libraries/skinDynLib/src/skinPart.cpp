@@ -1,5 +1,8 @@
 #include "iCub/skinDynLib/skinPart.h"
 
+using namespace yarp::math;
+using namespace iCub::skinDynLib;
+
 /****************************************************************/
 /* SKINPARTBASE WRAPPER
 *****************************************************************/
@@ -146,7 +149,7 @@
         filename = strrchr(_filePath.c_str(), '/');
         filename = filename.c_str() ? filename.c_str() + 1 : _filePath.c_str();
 
-        ResourceFinder rf;
+        yarp::os::ResourceFinder rf;
         rf.setVerbose(false);
         rf.setDefaultContext("skinGui");           //overridden by --context parameter
         rf.setDefaultConfigFile(_filePath.c_str()); //overridden by --from parameter
@@ -184,7 +187,7 @@
             yWarning("[skinPart::setTaxelPosesFromFile] no spatial_sampling field found.");
         }
 
-        Bottle &calibration = rf.findGroup("calibration");
+        yarp::os::Bottle &calibration = rf.findGroup("calibration");
         if (calibration.isNull())
         {
             yError("[skinPart::setTaxelPosesFromFile] No calibration group found!");
@@ -193,9 +196,9 @@
 
         // First item of the bottle is "calibration", so we should not use it
         setSize(calibration.size()-1);
-        Vector taxelPos(3,0.0);
-        Vector taxelNrm(3,0.0);
-        Vector taxelPosNrm(6,0.0);
+        yarp::sig::Vector taxelPos(3,0.0);
+        yarp::sig::Vector taxelNrm(3,0.0);
+        yarp::sig::Vector taxelPosNrm(6,0.0);
 
         for (size_t i = 1; i < getSize(); i++)
         {
@@ -213,7 +216,7 @@
         {
             if (rf.check("taxel2Patch"))
             {
-                Bottle b = *(rf.find("taxel2Patch").asList());
+                yarp::os::Bottle b = *(rf.find("taxel2Patch").asList());
                 
                 for (size_t i = 0; i < getSize(); i++)
                 {
