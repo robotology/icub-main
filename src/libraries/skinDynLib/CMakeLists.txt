@@ -1,5 +1,5 @@
 # Copyright: (C) 2011 RobotCub Consortium
-# Authors: Andrea Del Prete
+# Authors: Andrea Del Prete & Alessandro Roncone
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 set(PROJECTNAME skinDynLib)
@@ -16,18 +16,18 @@ set(folder_source   src/skinContact.cpp
                     src/dynContact.cpp
                     src/dynContactList.cpp
                     src/common.cpp 
+                    src/utils.cpp
                     src/skinPart.cpp
-                    src/Taxel.cpp
-                    src/utils.cpp)
+                    src/Taxel.cpp)
 set(folder_header   include/iCub/skinDynLib/skinContact.h
                     include/iCub/skinDynLib/skinContactList.h
                     include/iCub/skinDynLib/dynContact.h
                     include/iCub/skinDynLib/dynContactList.h
                     include/iCub/skinDynLib/common.h
 	               include/iCub/skinDynLib/rpcSkinManager.h 
+                    include/iCub/skinDynLib/utils.h
                     include/iCub/skinDynLib/skinPart.h
-                    include/iCub/skinDynLib/Taxel.h
-                    include/iCub/skinDynLib/utils.h)
+                    include/iCub/skinDynLib/Taxel.h )
 
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
