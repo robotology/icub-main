@@ -17,8 +17,9 @@ set(folder_source   src/skinContact.cpp
                     src/dynContactList.cpp
                     src/common.cpp 
                     src/utils.cpp
+                    src/Taxel.cpp
                     src/skinPart.cpp
-                    src/Taxel.cpp)
+                    src/iCubSkin.cpp)
 set(folder_header   include/iCub/skinDynLib/skinContact.h
                     include/iCub/skinDynLib/skinContactList.h
                     include/iCub/skinDynLib/dynContact.h
@@ -26,8 +27,9 @@ set(folder_header   include/iCub/skinDynLib/skinContact.h
                     include/iCub/skinDynLib/common.h
 	               include/iCub/skinDynLib/rpcSkinManager.h 
                     include/iCub/skinDynLib/utils.h
+                    include/iCub/skinDynLib/Taxel.h
                     include/iCub/skinDynLib/skinPart.h
-                    include/iCub/skinDynLib/Taxel.h )
+                    include/iCub/skinDynLib/iCubSkin.h )
 
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
