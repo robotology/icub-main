@@ -109,13 +109,13 @@ class Taxel
     * Print Method
     * @param verbosity is the verbosity level
     **/
-    virtual void print(int verbosity=0) {};
+    virtual void print(int verbosity=0);
 
     /**
     * toString Method
     * @param precision is the precision level
     **/
-    virtual string toString(int precision=0) {};
+    virtual string toString(int verbosity=0);
 
 };
 

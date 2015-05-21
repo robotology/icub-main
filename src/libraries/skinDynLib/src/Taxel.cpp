@@ -78,4 +78,33 @@
         FoR.setSubcol(Position,0,3);
     }
 
+    void Taxel::print(int verbosity)
+    {
+        if (verbosity)
+        {
+            yDebug("ID %i \tPosition %s \tNormal %s \tWRFPosition %s \tpx %s", ID,
+                    Position.toString(3,3).c_str(), Normal.toString(3,3).c_str(),
+                    WRFPosition.toString(3,3).c_str(),px.toString(3,3).c_str());
+            yDebug("Frame of Reference \n%s",FoR.toString(3,3).c_str());
+        }
+        else 
+            yDebug("ID %i \tPosition %s \tNormal %s\n", ID,
+                    Position.toString(3,3).c_str(), Normal.toString(3,3).c_str());
+    }
+
+    string Taxel::toString(int verbosity)
+    {
+        stringstream res;
+        res << "ID: " << ID << "\tPosition: "<< Position.toString(3,3) <<
+            "\tNormal: "<< Normal.toString(3,3);
+
+        if (verbosity)
+        {
+            res << "\tWRFPosition: " << WRFPosition.toString(3,3) <<
+                   "\tPx: " << px.toString(3,3) <<
+                   "Frame of Reference: \n" << FoR.toString(3,3) << endl;
+        }
+        return res.str();
+    }
+
 // empty line to make gcc happy
