@@ -35,19 +35,12 @@
 #include "iCub/skinDynLib/Taxel.h"
 #include "iCub/skinDynLib/utils.h"
 
+#include <yarp/os/RFModule.h>
+
 #include <fstream>
 #include <vector>
 #include <map>
 #include <list>
-
-using namespace yarp;
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::math;
-
-using namespace iCub::skinDynLib;
-
-using namespace std;
 
 namespace iCub
 {
@@ -57,47 +50,71 @@ namespace skinDynLib
 class skinPartBase
 {
   protected:
-    SkinPart name;
-    int size;       // theoretical maximum size of the skinPart
-                    // it corresponds to the number of values on the respective port 
-                    // and number of rows in the .txt files in icub-main/app/skinGui/conf/positions
-                    // IMPORTANT: it may differ from txls.size()
+    std::string name;
+    int         size;   // theoretical maximum size of the skinPart
+                        // it corresponds to the number of values on the respective port 
+                        // and number of rows in the .txt files in icub-main/app/skinGui/conf/positions
+                        // IMPORTANT: it may differ from txls.size()
   public:
     /**
     * Constructor
     **/    
     skinPartBase();
-
+    
     /**
-    * Constructor with the name
-    **/    
-    skinPartBase(const SkinPart &_name);
+     * Copy constructor
+     * @param _spb is the skinPart to copy from
+     */
+    skinPartBase(const skinPartBase &_spb);
 
     /**
     * Copy Operator
+    * @param _spb is the skinPart to copy from
     **/
-    virtual skinPartBase &operator=(const skinPartBase &spw);
+    virtual skinPartBase &operator=(const skinPartBase &_sp);
 
-    void setName(const SkinPart &_name);
-    SkinPart getName();
+    /**
+     * Sets the name of the class
+     * @param _name new name of the class
+     */
+    void setName(const std::string &_name);
+
+    /**
+     * Gets the name of the class
+     * @return string containing the name of the class
+     */
+    std::string getName();
+
+    /**
+     * Sets the size of the class
+     * @param _size new size of the class
+     */
+    void setSize(int _size);
+
+    /**
+     * Gets the size of the class
+     * @return int containing the size of the class
+     */
     int getSize();
 
     /**
      * Populates the skinPartBase by reading from a file.
-     * @param  filePath is the full absolute path of the file
-     * @return          true/false in case of success/failure
+     * @param  _filePath   is the full absolute path of the file
+     * @return true/false in case of success/failure
      */
-    virtual bool setTaxelPosesFromFile(const string &filePath, const string &modality="full");
+    virtual bool setTaxelPosesFromFile(const std::string &_filePath, const std::string &_spatial_sampling="default") {};
 
     /**
     * Print Method
+    * @param verbosity is the verbosity level
     **/
     virtual void print(int verbosity=0);
 
     /**
     * toString Method
+    * @param verbosity is the verbosity level
     **/
-    virtual string toString(int precision=0);
+    virtual std::string toString(int precision=0);
 };
 
 /** 
@@ -107,59 +124,62 @@ class skinPartBase
 * It consists of a std::vector of Taxel(s), and a number of methods for loading and populating these taxels from files.
 * 
 */
-class skinPartTaxel : public skinPartBase
+class skinPart : public skinPartBase
 {
   public:
     /**
     * List of taxels that belong to the skinPart.
     **/
-    vector<Taxel*> taxels;
+    std::vector<Taxel*> taxels;
 
     /**
-     * Modality used in building up the skinPartTaxel class. 
-     * It can be either "full" or "mapping", the latter of which remaps the taxels onto the center
+     * Spatial_sampling used in building up the skinPart class. 
+     * It can be either "full" or "patch", the latter of which remaps the taxels onto the center
      * of their respective triangular patch
      */
-    string modality;
+    std::string spatial_sampling;
 
     /**
     * Indexing variable used in the case of reducing the resolution - e.g. taking only triangle centers
     * The index into the vector is the taxel ID, the value stored is its representative
     **/
-    vector<int> Taxel2Repr; 
+    std::vector<int> Taxel2Repr; 
 
     /**
     * Mapping in the opposite direction
     * Indexed by representative taxel IDs, it stores lists of the taxels being represented - e.g. all taxels of a triangle
     **/
-    map<unsigned int, list<unsigned int> > Repr2TaxelList;
-
-    /**
-    * Copy Operator
-    **/
-    skinPartTaxel &operator=(const skinPartTaxel &spw);
+    std::map<int, std::list<unsigned int> > Repr2TaxelList;
 
     /**
      * Constructor
      */
-    skinPartTaxel();
+    skinPart();
 
     /**
-     * Constructor that specifies the type of modality
-     * @param _modality the modality to be used
+     * Constructor with the configuration file to load from
+     * @param _filePath is the absolute path of the file to read
      */
-    skinPartTaxel(const string &_modality);
+    skinPart(const std::string &_filePath);
+
+    /**
+     * Copy constructor
+     * @param _sp is the skinPart to copy from
+     */
+    skinPart(const skinPart &_sp);
+
+    /**
+    * Copy Operator
+    * @param _sp is the skinPart to copy from
+    **/
+    skinPart &operator=(const skinPart &_sp);
 
     /**
      * Populates the skinPart by reading from a file.
-     * @param  filePath is the full absolute path of the file
-     * @param  modality is the type of reading to perform.
-     *                  if "default", it keeps the modality already stored in the class
-     *                  if "full", it reads every single taxel in the file
-     *                  if "mapping", it maps the taxels into the center of their triangular patch
-     * @return          true/false in case of success/failure
+     * @param  _filePath   is the full absolute path of the file
+     * @return true/false in case of success/failure
      */
-    bool setTaxelPosesFromFile(const string &filePath, const string &_modality="default");
+    bool setTaxelPosesFromFile(const std::string &_filePath, const std::string &_spatial_sampling="default");
 
     /**
      * Initializes the mapping between the taxels and their representatives
@@ -175,19 +195,27 @@ class skinPartTaxel : public skinPartBase
     int getTaxelSize();
 
     /**
+     * Clears the vector of taxels properly and gracefully.
+     * WARNING: it deletes the pointed objects as well!
+     */
+    void clearTaxels();
+
+    /**
     * Print Method
+    * @param verbosity is the verbosity level
     **/
     void print(int verbosity=0);
 
     /**
     * toString Method
+    * @param verbosity is the verbosity level
     **/
-    string toString(int precision=0);
+    std::string toString(int precision=0);
 
     /**
     * Destructor
     **/
-    ~skinPartTaxel();
+    ~skinPart();
 };
 
 }

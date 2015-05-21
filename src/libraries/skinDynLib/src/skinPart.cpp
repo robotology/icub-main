@@ -3,22 +3,38 @@
 /****************************************************************/
 /* SKINPARTBASE WRAPPER
 *****************************************************************/
-    skinPartBase::skinPartBase() : name(SKIN_PART_UNKNOWN), size(0) {}
+    skinPartBase::skinPartBase() : name("unknown_skin_part"), size(0) {}
 
-    skinPartBase::skinPartBase(const SkinPart &_name)
+    skinPartBase::skinPartBase(const skinPartBase &_spb)
     {
-        setName(_name);
-        size =     0;
+        *this = _spb;
     }
 
-    void skinPartBase::setName(const SkinPart &_name)
+    skinPartBase & skinPartBase::operator=(const skinPartBase &_spb)
+    {
+        if (this == &_spb)
+        {
+            return *this;
+        }
+
+        name = _spb.name;
+        size = _spb.size;
+        return *this;
+    }
+
+    void skinPartBase::setName(const std::string &_name)
     {
         name = _name;
     }
 
-    SkinPart skinPartBase::getName()
+    std::string skinPartBase::getName()
     {
         return name;
+    }
+
+    void skinPartBase::setSize(int _size)
+    {
+        size = _size;
     }
 
     int skinPartBase::getSize()
@@ -26,245 +42,222 @@
         return size;
     }
 
-    skinPartBase & skinPartBase::operator=(const skinPartBase &spw)
-    {
-        name           = spw.name;
-        size           = spw.size;
-        return *this;
-    }
-
     void skinPartBase::print(int verbosity)
     {
         yDebug("**********\n");
-        yDebug("name: %s\t", SkinPart_s[name].c_str());
+        yDebug("name: %s\t", name.c_str());
         yDebug("size: %i\n", size);
-        yDebug("**********\n");
     }
 
-    string skinPartBase::toString(int precision)
+    std::string skinPartBase::toString(int precision)
     {
-        stringstream res;
-        res << "**********\n" << "Name: " << SkinPart_s[name] << "\tSize: "<< size << endl;
+        std::stringstream res;
+        res << "**********\n" << "Name: " << name << "\tSize: "<< size << std::endl;
         return res.str();
     }
 
 /****************************************************************/
 /* SKINPART TAXEL WRAPPER
 *****************************************************************/
-    skinPartTaxel::skinPartTaxel()
+    skinPart::skinPart()
     {
-        modality = "full";
+        spatial_sampling = "taxel";
     }
 
-    skinPartTaxel::skinPartTaxel(const string &_modality)
+    skinPart::skinPart(const std::string &_filePath)
     {
-        if (_modality == "full" || _modality == "mapping")
-        {
-            modality = _modality;
-        }
-        else
-        {
-            modality = "full";
-            yWarning("[skinPartTaxel::skinPartTaxel] modality %s is not valid.",_modality.c_str());
-            yWarning("[skinPartTaxel::skinPartTaxel] Using 'full' as default.");
-        }
+        setTaxelPosesFromFile(_filePath);
     }
 
-    skinPartTaxel & skinPartTaxel::operator=(const skinPartTaxel &spw)
+    skinPart::skinPart(const skinPart &_sp)
     {
-        skinPartBase::operator=(spw);
-        Taxel2Repr     = spw.Taxel2Repr;
-        Repr2TaxelList = spw.Repr2TaxelList;
-        taxels         = spw.taxels;
+        *this=_sp;
+    }
+
+    skinPart & skinPart::operator=(const skinPart &_sp)
+    {
+        if (this == &_sp)
+        {
+            return *this;
+        }
+
+        skinPartBase::operator=(_sp);
+        Taxel2Repr     = _sp.Taxel2Repr;
+        Repr2TaxelList = _sp.Repr2TaxelList;
+        clearTaxels();
+        for (std::vector<Taxel*>::const_iterator it = _sp.taxels.begin();
+             it != _sp.taxels.end(); ++it)
+        {
+            taxels.push_back(new Taxel(*(*it)));
+        }
+
         return *this;
     }
 
-    void skinPartTaxel::print(int verbosity)
+    void skinPart::print(int verbosity)
     {
         skinPartBase::print(verbosity);
-        if (verbosity>=4)
+        yDebug("spatial_sampling: %s", spatial_sampling.c_str());
+        yDebug("");
+        if (verbosity>=1 && spatial_sampling == "patch")
         {
-            yDebug("\nTaxel ID -> representative ID:\n");
+            yDebug("Taxel ID -> Representative ID:");
 
             for (size_t i=0; i<size; i++)
             {
-                yDebug("[ %lu -> %d ]\t",i,Taxel2Repr[i]);
-                if (i % 8 == 7)
-                {
-                    yDebug("\n");
-                }
+                printf("[ %lu -> %d ]\t",i,Taxel2Repr[i]);
             }
-            yDebug("\n");
+            printf("\n");
             
             yDebug("Representative ID -> Taxel IDs:\n");
-            for(map<unsigned int, list<unsigned int> >::const_iterator iter_map = Repr2TaxelList.begin(); iter_map != Repr2TaxelList.end(); ++iter_map)
+            for(std::map<int, std::list<unsigned int> >::const_iterator iter_map = Repr2TaxelList.begin(); iter_map != Repr2TaxelList.end(); ++iter_map)
             {
-                list<unsigned int> l = iter_map->second;
-                yDebug("%d -> {",iter_map->first);
-                for(list<unsigned int>::const_iterator iter_list = l.begin(); iter_list != l.end(); iter_list++)
+                std::list<unsigned int> l = iter_map->second;
+                printf("\t%d -> {",iter_map->first);
+                for(std::list<unsigned int>::const_iterator iter_list = l.begin(); iter_list != l.end(); iter_list++)
                 {
-                    yDebug("%u, ",*iter_list);
+                    printf("%u, ",*iter_list);
                 }
-                yDebug("}\n");
+                printf("}\n");
             }    
             yDebug("\n");
         }
-        yDebug("**********\n");
-        for (size_t i = 0; i < taxels.size(); i++)
-            taxels[i]->print(verbosity);
+        if (verbosity>=2)
+        {
+            for (size_t i = 0; i < taxels.size(); i++)
+                taxels[i]->print(verbosity-2);
+        }
         yDebug("**********\n");
     }
 
-    string skinPartTaxel::toString(int precision)
+    std::string skinPart::toString(int precision)
     {
-        stringstream res(skinPartBase::toString(precision));
+        std::stringstream res(skinPartBase::toString(precision));
         for (size_t i = 0; i < taxels.size(); i++)
             res << taxels[i]->toString(precision);
         res << "**********\n";
         return res.str();
     }
 
-    bool skinPartTaxel::setTaxelPosesFromFile(const string &filePath, const string &_modality)
+    bool skinPart::setTaxelPosesFromFile(const std::string &_filePath, const std::string &_spatial_sampling)
     {
-        if (_modality == "full" || _modality=="mapping")
-        {
-            modality = _modality;
-        }
-
-        string line;
-        ifstream posFile;
-        yarp::sig::Vector taxelPos(3,0.0);
-        yarp::sig::Vector taxelNorm(3,0.0);
-
         // Get the filename from the full absolute path
-        string filename = strrchr(filePath.c_str(), '/');
-        filename = filename.c_str() ? filename.c_str() + 1 : filePath.c_str();
+        std::string filename = "";
+        filename = strrchr(_filePath.c_str(), '/');
+        filename = filename.c_str() ? filename.c_str() + 1 : _filePath.c_str();
 
-        // Assign the name of the skinPart according to the filename (hardcoded)
-        if      (filename == "left_forearm_mesh.txt")    { setName(SKIN_LEFT_FOREARM);  }
-        else if (filename == "left_forearm_nomesh.txt")  { setName(SKIN_LEFT_FOREARM);  }
-        else if (filename == "right_forearm_mesh.txt")   { setName(SKIN_RIGHT_FOREARM); }
-        else if (filename == "right_forearm_nomesh.txt") { setName(SKIN_RIGHT_FOREARM); }
-        else if (filename == "left_hand_V2_1.txt")       { setName(SKIN_LEFT_HAND);     }
-        else if (filename == "right_hand_V2_1.txt")      { setName(SKIN_RIGHT_HAND);    }
+        ResourceFinder rf;
+        rf.setVerbose(false);
+        rf.setDefaultContext("skinGui");           //overridden by --context parameter
+        rf.setDefaultConfigFile(_filePath.c_str()); //overridden by --from parameter
+        rf.configure(0,NULL);
+        rf.setVerbose(true);
+        
+        if (rf.check("name"))
+        {
+            setName(rf.find("name").asString());
+        }
         else
         {
-            yError("[skinPart::setTaxelPosesFromFile] Unexpected skin part file name: %s.\n",filename.c_str());
-            return false;
-        }
-           
-        // Open File
-        posFile.open(filePath.c_str());  
-        if (!posFile.is_open())
-        {
-            yError("[skinPart::setTaxelPosesFromFile] File %s has not been opened.",filePath.c_str());
-            return false;
-        }
-
-        // Acquire taxels according to the modality used (either "full" or "mapping")
-        posFile.clear(); 
-        posFile.seekg(0, std::ios::beg);//rewind iterator
-        for(unsigned int i= 0; getline(posFile,line); i++)
-        {
-            // This has been copied from Compensator::setTaxelPosesFromFile()
-            // in icub-main/src/modules/skinManager/src/compensator.cpp
-            line.erase(line.find_last_not_of(" \n\r\t")+1);
-            if(line.empty())
-                    continue;
-            string number;
-            istringstream iss(line, istringstream::in);
-            for(unsigned int j = 0; iss >> number; j++ )
-            {
-                if(j<3)
-                    taxelPos[j]    = strtod(number.c_str(),NULL);
-                else
-                    taxelNorm[j-3] = strtod(number.c_str(),NULL);
-            }
-
-            if (modality=="full")
-            {
-                // the NULL taxels will be automatically discarded (but the size increased)
-                if (norm(taxelNorm) != 0 || norm(taxelPos) != 0)
-                {
-                    size++;
-                    taxels.push_back(new Taxel(taxelPos,taxelNorm,i));
-                }
-                else
-                    size++;
-            }
-            else if (modality=="mapping")
-            {
-                if (getName() == SKIN_LEFT_FOREARM || getName() == SKIN_RIGHT_FOREARM)
-                {
-                    // the taxels at the centers of respective triangles [note that i == taxelID == (line in the .txt file +1)]
-                    // e.g. first triangle of upper arm is at lines 1-12, center at line 4, thus i=2 
-                    if(  (i==3) || (i==15)  ||  (i==27) ||  (i==39) ||  (i==51) ||  (i==63) ||  (i==75) ||  (i==87) ||
-                        (i==99) || (i==111) || (i==123) || (i==135) || (i==147) || (i==159) || (i==171) || (i==183) ||
-                       (i==207) || (i==255) || (i==291) || (i==303) || (i==315) || (i==339) || (i==351) )
-                    {
-                        taxels.push_back(new Taxel(taxelPos,taxelNorm,i));
-                        size++;
-                    }
-                    else
-                    {
-                        size++;
-                    }
-                }
-                else if (getName() == SKIN_LEFT_HAND)
-                { //we want to represent the 48 taxels of the palm (ignoring fingertips) with 5 taxels -
-                 // manually marking 5 regions of the palm and selecting their "centroids" as the representatives
-                    if((i==99) || (i==101) || (i==109) || (i==122) || (i==134)) 
-                    {
-                        taxels.push_back(new Taxel(taxelPos,taxelNorm,i));
-                        size++;
-                    }
-                    else
-                    {
-                        size++;
-                    }
-                }
-                else if (getName() == SKIN_RIGHT_HAND)
-                { //right hand has different taxel nr.s than left hand 
-                    // if((i==101) || (i==103) || (i==118) || (i==137)) // || (i==124)) remove one taxel
-                    if((i==101) || (i==103) || (i==118) || (i==137)) // || (i==124)) remove one taxel
-                    {
-                        taxels.push_back(new Taxel(taxelPos,taxelNorm,i));
-                        size++;
-                    }
-                    else
-                    {
-                        size++;
-                    }
-                }
-            }
+            yWarning("[skinPart:setTaxelPosesFromFile] no name field found. Using filename.");
+            // Assign the name of the skinPart according to the filename (hardcoded)
+            if      (filename == "left_forearm_mesh.txt")    { setName("skin_left_forearm");  }
+            else if (filename == "left_forearm_nomesh.txt")  { setName("skin_left_forearm");  }
+            else if (filename == "right_forearm_mesh.txt")   { setName("skin_right_forearm"); }
+            else if (filename == "right_forearm_nomesh.txt") { setName("skin_right_forearm"); }
+            else if (filename == "left_hand_V2_1.txt")       { setName("skin_left_hand");     }
+            else if (filename == "right_hand_V2_1.txt")      { setName("skin_right_hand");    }
             else
             {
-                yError("[skinPart::setTaxelPosesFromFile] ERROR: modality is neither 'full' nor 'mapping'!");
+                yError("[skinPart::setTaxelPosesFromFile] Unexpected skin part file name: %s.\n",filename.c_str());
                 return false;
             }
         }
+        yTrace("[skinPart] name set to %s",name.c_str());
 
-        if (modality == "full")
+        if (rf.check("spatial_sampling"))
         {
-            return true;
+            spatial_sampling = rf.find("spatial_sampling").asString();
         }
         else
         {
-            return initRepresentativeTaxels();
+            yWarning("[skinPart::setTaxelPosesFromFile] no spatial_sampling field found.");
         }
-    }
 
-    bool skinPartTaxel::initRepresentativeTaxels()
-    {
+        Bottle &calibration = rf.findGroup("calibration");
+        if (calibration.isNull())
+        {
+            yError("[skinPart::setTaxelPosesFromFile] No calibration group found!");
+            return false;
+        }
+
+        // First item of the bottle is "calibration", so we should not use it
+        setSize(calibration.size()-1);
+        Vector taxelPos(3,0.0);
+        Vector taxelNrm(3,0.0);
+        Vector taxelPosNrm(6,0.0);
+
+        for (size_t i = 1; i < getSize(); i++)
+        {
+            taxelPosNrm = vectorFromBottle(*(calibration.get(i).asList()),0,6);
+            taxelPos = taxelPosNrm.subVector(0,2);
+            taxelNrm = taxelPosNrm.subVector(3,5);
+            // the NULL taxels will be automatically discarded 
+            if (norm(taxelNrm) != 0 || norm(taxelPos) != 0)
+            {
+                taxels.push_back(new Taxel(taxelPos,taxelNrm,i-1));
+            }
+        }
+
+        if (spatial_sampling=="patch")
+        {
+            if (rf.check("taxel2Patch"))
+            {
+                Bottle b = *(rf.find("taxel2Patch").asList());
+                
+                for (size_t i = 0; i < getSize(); i++)
+                {
+                    Taxel2Repr.push_back(b.get(i).asInt());
+                }
+                initRepresentativeTaxels();
+            }
+            else
+            {
+                yError("[skinPart::setTaxelPosesFromFile] No taxel2Patch field found");
+                return false;
+            }
+        }
+           
         return true;
     }
 
-    int skinPartTaxel::getTaxelSize()
+    bool skinPart::initRepresentativeTaxels()
+    {
+        if (spatial_sampling != "patch")
+        {
+            yError("[skinPart::initRepresentativeTaxels] spatial_sampling is not 'patch'");
+            return false;
+        }
+
+        std::list<int> mapp(Taxel2Repr.begin(), Taxel2Repr.end());
+        mapp.sort();
+        mapp.unique();
+
+        for (size_t i = 0; i < mapp.size(); i++)
+        {
+            Repr2TaxelList[mapp.front()]=vectorofIntEqualto(Taxel2Repr,mapp.front());
+            mapp.pop_front();
+        }
+        
+        return true;
+    }
+
+    int skinPart::getTaxelSize()
     {
          return taxels.size();
     }
 
-    skinPartTaxel::~skinPartTaxel()
+    void skinPart::clearTaxels()
     {
         while(!taxels.empty())
         {
@@ -274,6 +267,12 @@
             }
             taxels.pop_back();
         }
+        taxels.clear();
     }
 
-// empty line to make gcc happy
+    skinPart::~skinPart()
+    {
+        clearTaxels();
+    }
+
+// empty line to make gcc and Francesco happy
