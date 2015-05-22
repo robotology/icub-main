@@ -25,7 +25,7 @@ set(folder_header   include/iCub/skinDynLib/skinContact.h
                     include/iCub/skinDynLib/dynContact.h
                     include/iCub/skinDynLib/dynContactList.h
                     include/iCub/skinDynLib/common.h
-	               include/iCub/skinDynLib/rpcSkinManager.h 
+                    include/iCub/skinDynLib/rpcSkinManager.h 
                     include/iCub/skinDynLib/utils.h
                     include/iCub/skinDynLib/Taxel.h
                     include/iCub/skinDynLib/skinPart.h
@@ -47,4 +47,4 @@ icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/i
                                    DESTINATION include/iCub/skinDynLib
                                    FILES ${folder_header})
 
-								   
+

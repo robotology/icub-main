@@ -40,6 +40,7 @@
 #include "iCub/skinDynLib/skinContact.h"
 #include "iCub/skinDynLib/skinContactList.h"
 #include "iCub/skinDynLib/rpcSkinManager.h"
+#include "iCub/skinDynLib/utils.h"
 
 using namespace std;
 using namespace yarp::os; 
@@ -153,6 +154,7 @@ public:
     bool setContactCompensationGain(double gain);
     bool setMaxNeighborDistance(double d);
     bool setTaxelPosesFromFile(const char *filePath);
+    bool setTaxelPosesFromFileOld(const char *filePath);
     bool setTaxelPoses(const vector<Vector> &poses);
     bool setTaxelPose(unsigned int taxelId, const Vector &pose);
     bool setTaxelPositions(const Vector &positions);
