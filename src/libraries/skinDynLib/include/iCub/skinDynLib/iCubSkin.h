@@ -51,9 +51,10 @@ namespace skinDynLib
 */    
 class iCubSkin
 {
-public:
+  protected:
     std::vector<skinPart> skin;
 
+  public:
     /**
      * Default constructor
      */

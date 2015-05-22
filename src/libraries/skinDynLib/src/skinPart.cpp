@@ -122,12 +122,15 @@ using namespace iCub::skinDynLib;
         {
             yWarning("[skinPart::setTaxelPosesFromFile] no name field found. Using filename.");
             // Assign the name of the skinPart according to the filename (hardcoded)
-            if      (filename == "left_forearm_mesh.txt")    { setName("skin_left_forearm");  }
-            else if (filename == "left_forearm_nomesh.txt")  { setName("skin_left_forearm");  }
-            else if (filename == "right_forearm_mesh.txt")   { setName("skin_right_forearm"); }
-            else if (filename == "right_forearm_nomesh.txt") { setName("skin_right_forearm"); }
-            else if (filename == "left_hand_V2_1.txt")       { setName("skin_left_hand");     }
-            else if (filename == "right_hand_V2_1.txt")      { setName("skin_right_hand");    }
+            if      (filename == "left_forearm_mesh.txt")    { setName("skin_left_forearm");    }
+            else if (filename == "left_forearm_nomesh.txt")  { setName("skin_left_forearm");    }
+            else if (filename == "right_forearm_mesh.txt")   { setName("skin_right_forearm");   }
+            else if (filename == "right_forearm_nomesh.txt") { setName("skin_right_forearm");   }
+            else if (filename == "left_hand_V2_1.txt")       { setName("skin_left_hand");       }
+            else if (filename == "right_hand_V2_1.txt")      { setName("skin_right_hand");      }
+            else if (filename == "left_arm_mesh.txt")        { setName("skin_left_upper_arm");  }
+            else if (filename == "right_arm_mesh.txt")       { setName("skin_right_upper_arm"); }
+            else if (filename == "torso.txt")                { setName("skin_front_torso");     }
             else
             {
                 yError("[skinPart::setTaxelPosesFromFile] Unexpected skin part file name: %s.\n",filename.c_str());
@@ -188,23 +191,23 @@ using namespace iCub::skinDynLib;
             }
         }
 
-        if (spatial_sampling=="patch")
+        // Let's read the mapping of the taxels onto the center of their patch
+        // even if the spatial_sampling variable is "taxel"
+        // (it might come useful later)
+        if (rf.check("taxel2Patch"))
         {
-            if (rf.check("taxel2Patch"))
+            yarp::os::Bottle b = *(rf.find("taxel2Patch").asList());
+            
+            for (size_t i = 0; i < getSize(); i++)
             {
-                yarp::os::Bottle b = *(rf.find("taxel2Patch").asList());
-                
-                for (size_t i = 0; i < getSize(); i++)
-                {
-                    Taxel2Repr.push_back(b.get(i).asInt());
-                }
-                initRepresentativeTaxels();
+                Taxel2Repr.push_back(b.get(i).asInt());
             }
-            else
-            {
-                yError("[skinPart::setTaxelPosesFromFile] No taxel2Patch field found");
-                return false;
-            }
+            initRepresentativeTaxels();
+        }
+        else
+        {
+            yError("[skinPart::setTaxelPosesFromFile] No taxel2Patch field found");
+            return false;
         }
            
         return true;
@@ -333,7 +336,6 @@ using namespace iCub::skinDynLib;
         skinPartBase::print(verbosity);
         yDebug("number of valid taxels: %i", getTaxelsSize());
         yDebug("spatial_sampling:       %s", spatial_sampling.c_str());
-        yDebug("");
         if ((verbosity>=1 && spatial_sampling == "patch") ||
             (verbosity>=3 && spatial_sampling == "taxel"))
         {
@@ -356,10 +358,10 @@ using namespace iCub::skinDynLib;
                 }
                 printf("}\n");
             }    
-            yDebug("\n");
         }
         if (verbosity>=2)
         {
+            yDebug("Taxels:");
             for (size_t i = 0; i < taxels.size(); i++)
                 taxels[i]->print(verbosity-3>0?verbosity-3:0);
         }
