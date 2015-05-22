@@ -126,7 +126,7 @@ class skinPartBase
 */
 class skinPart : public skinPartBase
 {
-  public:
+  protected:
     /**
     * List of taxels that belong to the skinPart.
     **/
@@ -151,6 +151,24 @@ class skinPart : public skinPartBase
     **/
     std::map<int, std::list<unsigned int> > Repr2TaxelList;
 
+  protected:
+    /**
+     * Populates the skinPart by reading from a file - old convention.
+     * Spatial Sampling will be forced to "taxel"
+     * @param  _filePath   is the full absolute path of the file
+     * @return true/false in case of success/failure
+     */
+    bool setTaxelPosesFromFileOld(const std::string &_filePath);
+
+    /**
+     * Maps the taxels onto themselves, performing a 1:1 mapping. This has been
+     * made in order for the "taxel" spatial_sampling modalitity to be consistent
+     * with the "patch" sampling, thus maintaining integrity into Taxel2Repr and Repr2TaxelList
+     * @return true/false in case of success/failure
+     */
+    bool mapTaxelsOntoThemselves();
+
+  public:
     /**
      * Constructor
      */
@@ -177,9 +195,13 @@ class skinPart : public skinPartBase
     /**
      * Populates the skinPart by reading from a file.
      * @param  _filePath   is the full absolute path of the file
+     * @param  _spatial_sampling is the type of spatial sampling to perform (default "default")
+     *                           if "default", the spatial_sampling will be read from file
+     *                           if "taxel" or "patch", this will be the spatial_sampling performed 
      * @return true/false in case of success/failure
      */
-    bool setTaxelPosesFromFile(const std::string &_filePath, const std::string &_spatial_sampling="default");
+    bool setTaxelPosesFromFile(const std::string &_filePath,
+                               const std::string &_spatial_sampling="default");
 
     /**
      * Initializes the mapping between the taxels and their representatives
@@ -192,7 +214,7 @@ class skinPart : public skinPartBase
      * gets the size of the taxel vector (it differs from skinPartBase::getSize())
      * @return the size of the taxel vector
      */
-    int getTaxelSize();
+    int getTaxelsSize();
 
     /**
      * Clears the vector of taxels properly and gracefully.
