@@ -7,7 +7,6 @@ set(ROBOT_NAME "$ENV{YARP_ROBOT_NAME}" CACHE PATH
 set(ROBOT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/${ROBOT_NAME}")
 
 if(ICUB_INSTALL_ALL_ROBOTS) # Install all robot-specific files
-  add_subdirectory(coman)
   add_subdirectory(vizzy)
   add_subdirectory(iCubAberystwyth01)
   add_subdirectory(iCubAbuDhabi01)

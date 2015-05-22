@@ -339,23 +339,21 @@ bool parametricCalibratorEth::close ()
     return true;
 }
 
-bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
+bool parametricCalibratorEth::calibrate(DeviceDriver *device)
 {
     yInfo() << deviceName << ": starting calibration";
     yTrace();
     abortCalib  = false; //set true in quitCalibrate function  (called on ctrl +c signal )
-    int  setOfJoint_idx = 0;
 
-    int nj=0;
-    int totJointsToCalibrate = 0;
 
-    if (dd==0)
+    if (device==0)
     {
         yError() << deviceName << ": invalid device driver";
         return false;
     }
 
-    yarp::dev::PolyDriver *p = dynamic_cast<yarp::dev::PolyDriver *>(dd);
+    yarp::dev::PolyDriver *p = dynamic_cast<yarp::dev::PolyDriver *>(device);
+    dev2calibrate = p;
     if (p!=0)
     {
         p->view(iCalibrate);
@@ -371,11 +369,11 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
         
         //This is to ensure backward-compatibility with iCubInterface
         yWarning() << deviceName << ": using parametricCalibrator on an old iCubInterface system. Upgrade to robotInterface is recommended."; 
-        dd->view(iCalibrate);
-        dd->view(iEncoders);
-        dd->view(iPosition);
-        dd->view(iPids);
-        dd->view(iControlMode);
+        dev2calibrate->view(iCalibrate);
+        dev2calibrate->view(iEncoders);
+        dev2calibrate->view(iPosition);
+        dev2calibrate->view(iPids);
+        dev2calibrate->view(iControlMode);
     }
 
     if (!(iCalibrate && iEncoders && iPosition && iPids && iControlMode)) {
@@ -383,14 +381,28 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
         return false;
     }
 
-    if ( !iEncoders->getAxes(&nj))
+    return calibrate();
+}
+
+bool parametricCalibratorEth::calibrate()
+{
+    int  setOfJoint_idx = 0;
+    int totJointsToCalibrate = 0;
+
+    if (dev2calibrate==0)
+    {
+        yError() << deviceName << ": not able to find a valid device to calibrate";
+        return false;
+    }
+
+    if ( !iEncoders->getAxes(&n_joints))
     {
         yError() << deviceName << ": error getting number of axes" ;
         return false;
     }
 
     //before starting the calibration, checks for joints in hardware fault, and clears them if the user set the clearHwFaultBeforeCalibration option
-    for (int i=0; i<nj; i++)
+    for (int i=0; i<n_joints; i++)
     {
         checkHwFault(i);
     }
@@ -422,14 +434,14 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
     }
     yDebug() << deviceName << ": Joints calibration order:" << joints_string;
 
-    if (totJointsToCalibrate > nj)
+    if (totJointsToCalibrate > n_joints)
     {
-        yError() << deviceName << ": too much axis to calibrate for this part..." << totJointsToCalibrate << " bigger than "<< nj;
+        yError() << deviceName << ": too much axis to calibrate for this part..." << totJointsToCalibrate << " bigger than " << n_joints;
         return false;
     }
 
-    original_pid=new Pid[nj];
-    limited_pid =new Pid[nj];
+    original_pid=new Pid[n_joints];
+    limited_pid =new Pid[n_joints];
 
     if(skipCalibration)
         yWarning() << deviceName << ": skipCalibration flag is on! Setting safe pid but skipping calibration.";
@@ -446,9 +458,9 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
         // 1) set safe pid
         for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
-            if ( ((*lit) <0) || ((*lit) >= nj) )   // check the axes actually exists
+            if ( ((*lit) <0) || ((*lit) >= n_joints) )   // check the axes actually exists
             {
-                yError() << deviceName << ": asked to calibrate joint" << (*lit) << ", which is negative OR bigger than the number of axes for this part ("<< nj << ")";
+                yError() << deviceName << ": asked to calibrate joint" << (*lit) << ", which is negative OR bigger than the number of axes for this part ("<< n_joints << ")";
                 abortCalib = true;
                 break;
             }
@@ -620,7 +632,7 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
     if(abortCalib)
     {
         yError() << deviceName << ": calibration has been aborted!I'm going to disable all joints..." ;
-        for(int i=0; i<nj; i++) //for each joint of set
+        for(int i=0; i<n_joints; i++) //for each joint of set
         {
             iControlMode->setControlMode(i,VOCAB_CM_IDLE);
         }
@@ -632,10 +644,10 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *dd)
     return isCalibrated;
 }
 
-void parametricCalibratorEth::calibrateJoint(int joint)
+bool parametricCalibratorEth::calibrateJoint(int joint)
 {
     yDebug() <<  deviceName  << ": Calling calibrateJoint on joint "<< joint << " with params: " << type[joint] << param1[joint] << param2[joint] << param3[joint];
-    iCalibrate->calibrate2(joint, type[joint], param1[joint], param2[joint], param3[joint]);
+    return iCalibrate->calibrate2(joint, type[joint], param1[joint], param2[joint], param3[joint]);
 }
 
 bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
@@ -715,12 +727,14 @@ bool parametricCalibratorEth::checkHwFault(int j)
     return true;
 }
 
-void parametricCalibratorEth::goToZero(int j)
+bool parametricCalibratorEth::goToZero(int j)
 {
-    if (abortCalib) return;
+    bool ret = true;
+    if (abortCalib) return true;
     yDebug() <<  deviceName  << ": Sending positionMove to joint" << j << " (desired pos: " << zeroPos[j] << "desired speed: " << zeroVel[j] <<" )";
-    iPosition->setRefSpeed(j, zeroVel[j]);
-    iPosition->positionMove(j, zeroPos[j]);
+    ret = iPosition->setRefSpeed(j, zeroVel[j]);
+    ret &= iPosition->positionMove(j, zeroPos[j]);
+    return ret;
 }
 
 bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
@@ -794,27 +808,21 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     }
     calibMutex.post();
 
-    if ( !iEncoders->getAxes(&nj))
-    {
-        yError() << deviceName << ": error getting number of encoders";
-        return false;
-    }
-
     if(skipCalibration)
     {
         yWarning() << deviceName << ": skipCalibration flag is on!! Faking park!!";
         return true;
     }
 
-    int * currentControlModes = new int[nj];
-    bool* cannotPark          = new bool [nj];
+    int * currentControlModes = new int[n_joints];
+    bool* cannotPark          = new bool [n_joints];
     bool res = iControlMode->getControlModes(currentControlModes);
     if(!res)
     {
         yError() << deviceName << ": error getting control mode during parking";
     }
 
-    for(int i=0; i<nj; i++)
+    for(int i=0; i<n_joints; i++)
     {
         if(currentControlModes[i] != VOCAB_CM_IDLE &&
            currentControlModes[i] != VOCAB_CM_HW_FAULT)
@@ -842,28 +850,28 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     {
        int timeout = 0; //this variable is shared between all joints
        for(int i=0; i < nj; i++)
-    {
-          if (cannotPark[i] ==false)
-    {
-             yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << i;
-        bool done=false;
-             iPosition->checkMotionDone(i, &done);
-        while((!done) && (timeout<PARK_TIMEOUT) && (!abortParking))
         {
-            Time::delay(1);
-            timeout++;
-               iPosition->checkMotionDone(i, &done);
-        }
-        if(!done)
+            if (cannotPark[i] ==false)
+            {
+                yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << i;
+                bool done=false;
+                iPosition->checkMotionDone(i, &done);
+                while((!done) && (timeout<PARK_TIMEOUT) && (!abortParking))
                 {
-                 yError() << deviceName << ": joint " << i << " not in position after a timeout of" << PARK_TIMEOUT <<" seconds";
+                    Time::delay(1);
+                    timeout++;
+                    iPosition->checkMotionDone(i, &done);
+                }
+                if(!done)
+                {
+                    yError() << deviceName << ": joint " << i << " not in position after a timeout of" << PARK_TIMEOUT <<" seconds";
                 }
             }
         }
     }
 
     yDebug() << deviceName.c_str() << ": Park " << (abortParking ? "aborted" : "completed");
-    for(int j=0; j < nj; j++)
+    for(int j=0; j < n_joints; j++)
     {
         iControlMode->setControlMode(j,VOCAB_CM_IDLE);
     }
@@ -883,6 +891,129 @@ bool parametricCalibratorEth::quitPark()
     abortParking=true;
     return true;
 }
+
+yarp::dev::IRemoteCalibrator *parametricCalibratorEth::getCalibratorDevice()
+{
+    return this;
+}
+
+bool parametricCalibratorEth::calibrateSingleJoint(int j)
+{
+    yTrace();
+    return calibrateJoint(j);
+}
+
+bool parametricCalibratorEth::calibrateWholePart()
+{
+    yTrace();
+    return calibrate();
+}
+
+bool parametricCalibratorEth::homingSingleJoint(int j)
+{
+    yTrace();
+    return goToZero(j);
+}
+
+bool parametricCalibratorEth::homingWholePart()
+{
+    yTrace();
+    bool ret = true;
+    for(int j=0; j<n_joints; j++)
+    {
+        ret = homingSingleJoint(j) && ret;
+    }
+    return ret;
+}
+
+bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
+{
+    yTrace();
+    int nj=0;
+    abortParking=false;
+
+    calibMutex.wait();
+    if(!isCalibrated)
+    {
+        yWarning() << deviceName << ": Calling park without calibration... skipping";
+        calibMutex.post();
+        return true;
+    }
+    calibMutex.post();
+
+    if(skipCalibration)
+    {
+        yWarning() << deviceName << ": skipCalibration flag is on!! Faking park!!";
+        return true;
+    }
+
+    int  currentControlMode;
+    bool cannotPark;
+    bool res = iControlMode->getControlMode(j, &currentControlMode);
+    if(!res)
+    {
+        yError() << deviceName << ": error getting control mode during parking";
+    }
+
+    if(currentControlMode != VOCAB_CM_IDLE &&
+       currentControlMode != VOCAB_CM_HW_FAULT)
+    {
+        iControlMode->setControlMode(j, VOCAB_CM_POSITION);
+        cannotPark = false;
+    }
+    else if (currentControlMode == VOCAB_CM_IDLE)
+    {
+        yError() << deviceName << ": joint " << j << " is idle, skipping park";
+        cannotPark = true;
+    }
+    else if (currentControlMode == VOCAB_CM_HW_FAULT)
+    {
+        yError() << deviceName << ": joint " << j << " has an hardware fault, skipping park";
+        cannotPark = true;
+    }
+
+    iPosition->setRefSpeed(j, homeVel[j]);
+    iPosition->positionMove(j, homePos[j]);
+    Time::delay(0.01);
+
+    if (_wait)
+    {
+        int timeout = 0; //this variable is shared between all joints
+        if (cannotPark == false)
+        {
+            yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << j;
+            bool done=false;
+            iPosition->checkMotionDone(j, &done);
+            while((!done) && (timeout<PARK_TIMEOUT) && (!abortParking))
+            {
+                Time::delay(1);
+                timeout++;
+                iPosition->checkMotionDone(j, &done);
+            }
+            if(!done)
+            {
+                yError() << deviceName << ": joint " << j << " not in position after a timeout of" << PARK_TIMEOUT <<" seconds";
+            }
+        }
+    }
+
+    yDebug() << deviceName.c_str() << ": Park " << (abortParking ? "aborted" : "completed");
+    iControlMode->setControlMode(j,VOCAB_CM_IDLE);
+    return true;
+}
+
+bool parametricCalibratorEth::parkWholePart()
+{
+    yTrace();
+    if(!isCalibrated)
+    {
+        yError() << "Device is not calibrated therefore cannot be parked";
+        return false;
+    }
+
+    return park(dev2calibrate);
+}
+
 
 // eof
 

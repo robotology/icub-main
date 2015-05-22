@@ -1,6 +1,6 @@
 set(appname iCubHertfordshire02)
 
-set(scripts icub_all.xml robotMotorGui.ini firmwareUpdate.txt robotInterface.ini)
+set(scripts icub_all.xml firmwareUpdate.txt robotInterface.ini)
 set(dragonFly2  dragonfly2_config_left.ini dragonfly2_config_right.ini)
 
 yarp_install(FILES ${scripts} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})

@@ -386,9 +386,26 @@ void iCubSimulationControl::jointStep() {
             }
             else if (controlMode[axis]==MODE_OPENLOOP)
             {
-                //currently identical to position control
-                ctrl.setControlParameters(vels[axis],1);
-                ctrl.setPosition(next_pos[axis]);
+                //currently identical to velocity control, with fixed velocity
+                if(((current_pos[axis]<limitsMin[axis])&&(openloop_ref[axis]<0)) || ((current_pos[axis]>limitsMax[axis])&&(openloop_ref[axis]>0)))
+                {
+                    ctrl.setVelocity(0.0);
+                }
+                else
+                {
+                    if (openloop_ref[axis]>0.001)
+                    {
+                        ctrl.setVelocity(3);
+                    }
+                    else if (openloop_ref[axis]<-0.001)
+                    {
+                        ctrl.setVelocity(-3);
+                    }
+                    else
+                    {
+                        ctrl.setVelocity(0.0);
+                    }
+                }
             }
         }
     }
