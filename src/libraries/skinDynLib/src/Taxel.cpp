@@ -90,6 +90,36 @@ using namespace iCub::skinDynLib;
         FoR.setSubcol(Position,0,3);
     }
 
+    int Taxel::getID()
+    {
+        return ID;
+    }
+
+    yarp::sig::Vector Taxel::getPosition()
+    {
+        return Position;
+    }
+
+    yarp::sig::Vector Taxel::getNormal()
+    {
+        return Normal;
+    }
+
+    yarp::sig::Vector Taxel::getWRFPosition()
+    {
+        return WRFPosition;
+    }
+
+    yarp::sig::Vector Taxel::getPx()
+    {
+        return px;
+    }
+
+    yarp::sig::Matrix Taxel::getFoR()
+    {
+        return FoR;
+    }
+
     void Taxel::print(int verbosity)
     {
         if (verbosity)

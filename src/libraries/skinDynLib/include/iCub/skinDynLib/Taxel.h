@@ -53,14 +53,27 @@ namespace skinDynLib
 */
 class Taxel
 {
-  public:
+  protected:
     int ID;                        // taxels' ID
-    yarp::sig::Vector px;          // (u,v) projection in the image plane
     yarp::sig::Vector Position;    // taxel's position w.r.t. the limb
-    yarp::sig::Vector WRFPosition; // taxel's position w.r.t. the root FoR
     yarp::sig::Vector Normal;      // taxel's normal   w.r.t. the limb
+    yarp::sig::Vector WRFPosition; // taxel's position w.r.t. the root FoR
+    yarp::sig::Vector px;          // (u,v) projection in the image plane
     yarp::sig::Matrix FoR;         // taxel's reference Frame (computed from Pos and Norm)
 
+  protected:
+    /**
+    * init function
+    **/
+    void init();
+
+    /**
+    * Compute and set the taxel's reference frame
+    * (from its position and its normal vector)
+    **/
+    void setFoR();
+
+  public:
     /**
     * Default Constructor
     **/
@@ -94,15 +107,41 @@ class Taxel
     Taxel &operator=(const Taxel &_t);
 
     /**
-    * init function
-    **/
-    void init();
+     * Gets the ID of the taxel
+     * @return int with the ID of the taxel
+     */
+    int getID();
 
     /**
-    * Compute and set the taxel's reference frame
-    * (from its position and its normal vector)
-    **/
-    void setFoR();
+     * Gets the Position of the taxel in the limb's FoR
+     * @return Vector with the Position of the taxel
+     */
+    yarp::sig::Vector getPosition(); 
+
+    /**
+     * Gets the Normal of the taxel in the limb's FoR
+     * @return Vector with the Normal of the taxel
+     */
+    yarp::sig::Vector getNormal();
+
+    /**
+     * Gets the Position of the taxel in the root FoR
+     * @return Vector with the Position of the taxel
+     */
+    yarp::sig::Vector getWRFPosition();
+
+    /**
+     * Gets the u,v position of the taxel in one of the eyes
+     * @return Vector with the 2D position of the
+     *                taxel in one of the eyes
+     */
+    yarp::sig::Vector getPx();
+
+    /**
+     * Gets the Frame of Reference of the taxel
+     * @return Matrix with the Frame of Reference
+     */
+    yarp::sig::Matrix getFoR();
 
     /**
     * Print Method
