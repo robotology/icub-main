@@ -597,7 +597,7 @@ bool parametricCalibrator::calibrate()
 bool parametricCalibrator::calibrateJoint(int joint)
 {
     yDebug() <<  deviceName  << ": Calling calibrateJoint on joint "<< joint << " with params: " << type[joint] << param1[joint] << param2[joint] << param3[joint];
-    iCalibrate->calibrate2(joint, type[joint], param1[joint], param2[joint], param3[joint]);
+    return iCalibrate->calibrate2(joint, type[joint], param1[joint], param2[joint], param3[joint]);
 }
 
 bool parametricCalibrator::checkCalibrateJointEnded(std::list<int> set)
