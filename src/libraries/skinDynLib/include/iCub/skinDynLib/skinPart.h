@@ -36,6 +36,8 @@
 #include "iCub/skinDynLib/utils.h"
 
 #include <yarp/os/RFModule.h>
+#include <yarp/os/RecursiveMutex.h>
+#include <yarp/os/LockGuard.h>
 
 #include <fstream>
 #include <vector>
@@ -53,8 +55,10 @@ class skinPartBase
     std::string name;
     int         size;   // theoretical maximum size of the skinPart
                         // it corresponds to the number of values on the respective port 
-                        // and number of rows in the .txt files in icub-main/app/skinGui/conf/positions
-                        // IMPORTANT: it may differ from txls.size()
+                        // and number of rows in the .txt files in
+                        // icub-main/app/skinGui/conf/positions
+                        // IMPORTANT: it may differ from taxels.size()
+    yarp::os::RecursiveMutex recursive_mutex;
   public:
     /**
     * Constructor
@@ -143,13 +147,13 @@ class skinPart : public skinPartBase
     * Indexing variable used in the case of reducing the resolution - e.g. taking only triangle centers
     * The index into the vector is the taxel ID, the value stored is its representative
     **/
-    std::vector<int> Taxel2Repr; 
+    std::vector<int> taxel2Repr; 
 
     /**
     * Mapping in the opposite direction
     * Indexed by representative taxel IDs, it stores lists of the taxels being represented - e.g. all taxels of a triangle
     **/
-    std::map<int, std::list<unsigned int> > Repr2TaxelList;
+    std::map<int, std::list<unsigned int> > repr2TaxelList;
 
   protected:
     /**
@@ -162,8 +166,8 @@ class skinPart : public skinPartBase
 
     /**
      * Maps the taxels onto themselves, performing a 1:1 mapping. This has been
-     * made in order for the "taxel" spatial_sampling modalitity to be consistent
-     * with the "patch" sampling, thus maintaining integrity into Taxel2Repr and Repr2TaxelList
+     * made in order for the "taxel" spatial_sampling modality to be consistent
+     * with the "patch" sampling, thus maintaining integrity into taxel2Repr and repr2TaxelList
      * @return true/false in case of success/failure
      */
     bool mapTaxelsOntoThemselves();

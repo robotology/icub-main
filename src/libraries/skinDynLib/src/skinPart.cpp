@@ -15,6 +15,7 @@ using namespace iCub::skinDynLib;
 
     skinPartBase & skinPartBase::operator=(const skinPartBase &_spb)
     {
+        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
         if (this == &_spb)
         {
             return *this;
@@ -79,6 +80,7 @@ using namespace iCub::skinDynLib;
 
     skinPart & skinPart::operator=(const skinPart &_sp)
     {
+        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
         if (this == &_sp)
         {
             return *this;
@@ -87,8 +89,8 @@ using namespace iCub::skinDynLib;
         skinPartBase::operator=(_sp);
 
         spatial_sampling = _sp.spatial_sampling;
-        Taxel2Repr       = _sp.Taxel2Repr;
-        Repr2TaxelList   = _sp.Repr2TaxelList;
+        taxel2Repr       = _sp.taxel2Repr;
+        repr2TaxelList   = _sp.repr2TaxelList;
 
         clearTaxels();
         for (std::vector<Taxel*>::const_iterator it = _sp.taxels.begin();
@@ -102,6 +104,7 @@ using namespace iCub::skinDynLib;
 
     bool skinPart::setTaxelPosesFromFile(const std::string &_filePath, const std::string &_spatial_sampling)
     {
+        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
         // Get the filename from the full absolute path
         std::string filename = "";
         filename = strrchr(_filePath.c_str(), '/');
@@ -194,19 +197,19 @@ using namespace iCub::skinDynLib;
         // Let's read the mapping of the taxels onto the center of their patch
         // even if the spatial_sampling variable is "taxel"
         // (it might come useful later)
-        if (rf.check("taxel2Patch"))
+        if (rf.check("taxel2Repr"))
         {
-            yarp::os::Bottle b = *(rf.find("taxel2Patch").asList());
+            yarp::os::Bottle b = *(rf.find("taxel2Repr").asList());
             
             for (size_t i = 0; i < getSize(); i++)
             {
-                Taxel2Repr.push_back(b.get(i).asInt());
+                taxel2Repr.push_back(b.get(i).asInt());
             }
             initRepresentativeTaxels();
         }
         else
         {
-            yError("[skinPart::setTaxelPosesFromFile] No taxel2Patch field found");
+            yError("[skinPart::setTaxelPosesFromFile] No 'taxel2Repr' field found");
             return false;
         }
            
@@ -217,6 +220,7 @@ using namespace iCub::skinDynLib;
     // in icub-main/src/modules/skinManager/src/compensator.cpp
     bool skinPart::setTaxelPosesFromFileOld(const std::string &_filePath)
     {
+        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
         std::string       line;
         std::ifstream     posFile;
         yarp::sig::Vector taxelPos(3,0.0);
@@ -267,6 +271,7 @@ using namespace iCub::skinDynLib;
 
     bool skinPart::mapTaxelsOntoThemselves()
     {
+        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
         for (size_t i = 0; i < getSize(); ++i)
         {
             bool isIvalidID=false;
@@ -281,11 +286,11 @@ using namespace iCub::skinDynLib;
 
             if (isIvalidID)
             {
-                Taxel2Repr.push_back(int(i));
+                taxel2Repr.push_back(int(i));
             }
             else
             {
-                Taxel2Repr.push_back(-1);
+                taxel2Repr.push_back(-1);
             }
         }
 
@@ -294,19 +299,15 @@ using namespace iCub::skinDynLib;
 
     bool skinPart::initRepresentativeTaxels()
     {
-        if (spatial_sampling != "patch")
-        {
-            yWarning("[skinPart::initRepresentativeTaxels] spatial_sampling is not 'patch'");
-        }
-
-        std::list<int> mapp(Taxel2Repr.begin(), Taxel2Repr.end());
+        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
+        std::list<int> mapp(taxel2Repr.begin(), taxel2Repr.end());
         mapp.sort();
         mapp.unique();
 
         size_t mappsize = mapp.size();
         for (size_t i = 0; i < mappsize; i++)
         {
-            Repr2TaxelList[mapp.front()]=vectorofIntEqualto(Taxel2Repr,mapp.front());
+            repr2TaxelList[mapp.front()]=vectorofIntEqualto(taxel2Repr,mapp.front());
             mapp.pop_front();
         }
         
@@ -320,6 +321,7 @@ using namespace iCub::skinDynLib;
 
     void skinPart::clearTaxels()
     {
+        yarp::os::RecursiveLockGuard rlg(recursive_mutex);
         while(!taxels.empty())
         {
             if (taxels.back())
@@ -343,12 +345,12 @@ using namespace iCub::skinDynLib;
 
             for (size_t i=0; i<size; i++)
             {
-                printf("[ %lu->%d ]\t",i,Taxel2Repr[i]);
+                printf("[ %lu->%d ]\t",i,taxel2Repr[i]);
             }
             printf("\n");
             
             yDebug("Representative ID -> Taxel IDs:\n");
-            for(std::map<int, std::list<unsigned int> >::const_iterator iter_map = Repr2TaxelList.begin(); iter_map != Repr2TaxelList.end(); ++iter_map)
+            for(std::map<int, std::list<unsigned int> >::const_iterator iter_map = repr2TaxelList.begin(); iter_map != repr2TaxelList.end(); ++iter_map)
             {
                 std::list<unsigned int> l = iter_map->second;
                 printf("\t%d -> {",iter_map->first);
