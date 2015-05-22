@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <list>
 
 namespace iCub
 {
@@ -220,6 +221,35 @@ std::vector<SkinPart> getSkinParts(BodyPart b);
 * @return the associated link number, -1 if the link number is not defined
 */
 int getLinkNum(SkinPart s);
+
+/**
+* @ingroup skinDynLib 
+* Retrieves a vector from a bottle:
+* @param b    is the bottle
+* @param in   is the index from which start acquiring values
+* @param size is the size of the vector
+**/
+yarp::sig::Vector vectorFromBottle(const yarp::os::Bottle b, int in, const int size);
+
+/**
+* @ingroup skinDynLib 
+* Returns a list of indexes corresponding to the values of vec that are equal to val.
+* @param vec  the vector under evaluation
+* @param val  the value to compare the vector to
+* @return     a list of indexes
+**/
+inline std::list<unsigned int> vectorofIntEqualto(const std::vector<int> vec, const int val)
+{
+    std::list<unsigned int> res;
+    for (size_t i = 0; i < vec.size(); i++)
+    {
+        if (vec[i]==val)
+        {
+            res.push_back(i);
+        }
+    }
+    return res;
+};
 
 }
 

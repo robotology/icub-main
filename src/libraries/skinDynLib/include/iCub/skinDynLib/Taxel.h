@@ -33,8 +33,10 @@
 #ifndef __TAXEL_H__
 #define __TAXEL_H__
 
+#include <yarp/os/Log.h>
+#include <yarp/math/Math.h>
+
 #include "iCub/skinDynLib/skinContact.h"
-#include "iCub/skinDynLib/utils.h"
 
 #include <sstream>
 

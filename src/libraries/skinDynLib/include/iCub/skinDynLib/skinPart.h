@@ -31,9 +31,8 @@
 #ifndef __SKINPART_H__
 #define __SKINPART_H__
 
-#include "iCub/skinDynLib/skinContact.h"
 #include "iCub/skinDynLib/Taxel.h"
-#include "iCub/skinDynLib/utils.h"
+#include "iCub/skinDynLib/common.h"
 
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RecursiveMutex.h>

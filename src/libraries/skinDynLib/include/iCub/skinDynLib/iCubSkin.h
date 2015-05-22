@@ -31,9 +31,7 @@
 #ifndef __ICUBSKIN_H__
 #define __ICUBSKIN_H__
 
-#include "iCub/skinDynLib/Taxel.h"
 #include "iCub/skinDynLib/skinPart.h"
-#include "iCub/skinDynLib/utils.h"
 
 #include <vector>
 

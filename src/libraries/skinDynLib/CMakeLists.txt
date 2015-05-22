@@ -16,7 +16,6 @@ set(folder_source   src/skinContact.cpp
                     src/dynContact.cpp
                     src/dynContactList.cpp
                     src/common.cpp 
-                    src/utils.cpp
                     src/Taxel.cpp
                     src/skinPart.cpp
                     src/iCubSkin.cpp)
@@ -26,7 +25,6 @@ set(folder_header   include/iCub/skinDynLib/skinContact.h
                     include/iCub/skinDynLib/dynContactList.h
                     include/iCub/skinDynLib/common.h
                     include/iCub/skinDynLib/rpcSkinManager.h 
-                    include/iCub/skinDynLib/utils.h
                     include/iCub/skinDynLib/Taxel.h
                     include/iCub/skinDynLib/skinPart.h
                     include/iCub/skinDynLib/iCubSkin.h )

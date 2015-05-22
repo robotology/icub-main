@@ -74,14 +74,6 @@ yarp::sig::Matrix matrixFromBottle(const yarp::os::Bottle b,
                                    int in, const int r, const int c);
 
 /**
- * Retrieves a vector from a bottle:
- * @param b    is the bottle
- * @param in   is the index from which start acquiring values
- * @param size is the size of the vector
-**/
-yarp::sig::Vector vectorFromBottle(const yarp::os::Bottle b, int in, const int size);
-
-/**
  * Puts a matrix into a bottle, by cycling through its elements
  * and adding them as double into the bottle. It loses the matrix dimensions,
  * so please use with care.
@@ -118,25 +110,6 @@ std::string int_to_string( const int a );
 * Computes the factorial using a recursive method
 **/
 unsigned int factorial(unsigned int n);
-
-/**
-* Returns a list of indexes corresponding to the values of vec that are equal to val.
-* @param vec  the vector under evaluation
-* @param val  the value to compare the vector to
-* @return     a list of indexes
-**/
-inline std::list<unsigned int> vectorofIntEqualto(const std::vector<int> vec, const int val)
-{
-    std::list<unsigned int> res;
-    for (size_t i = 0; i < vec.size(); i++)
-    {
-        if (vec[i]==val)
-        {
-            res.push_back(i);
-        }
-    }
-    return res;
-};
 
 }
 
