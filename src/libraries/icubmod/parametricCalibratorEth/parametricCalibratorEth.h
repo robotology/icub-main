@@ -42,7 +42,7 @@ namespace yarp {
  * 
  * A calibrator interface implementation for the Arm of the robot iCub.
  */
-class yarp::dev::parametricCalibratorEth : public ICalibrator, public DeviceDriver
+class yarp::dev::parametricCalibratorEth : public ICalibrator, public DeviceDriver, public IRemoteCalibrator
 {
 public:
     /**
@@ -61,7 +61,7 @@ public:
      * the position control interfaces of the standard control board devices.
      * @return true if calibration was successful, false otherwise.
      */
-    bool calibrate(DeviceDriver *dd);
+    bool calibrate(DeviceDriver *device);
 
     /**
      * Open the device driver.
@@ -83,16 +83,36 @@ public:
 
     virtual bool quitCalibrate();
 
+    // IRemoteCalibrator
+
+    yarp::dev::IRemoteCalibrator *getCalibratorDevice();
+
+    bool calibrateSingleJoint(int j);
+
+    bool calibrateWholePart();
+
+    bool homingSingleJoint(int j);
+
+    bool homingWholePart();
+
+    bool parkSingleJoint(int j, bool _wait=true);
+
+    bool parkWholePart();
+
 private:
+
+    bool calibrate();
+
     yarp::os::Semaphore calibMutex;
 
-    void calibrateJoint(int j);
-    void goToZero(int j);
+    bool calibrateJoint(int j);
+    bool goToZero(int j);
     bool checkCalibrateJointEnded(std::list<int> set);
     bool checkGoneToZero(int j);
     bool checkGoneToZeroThreshold(int j);
     bool checkHwFault(int j);
 
+    yarp::dev::PolyDriver *dev2calibrate;
     IControlCalibration2 *iCalibrate;
     IPidControl *iPids;
     IEncoders *iEncoders;
@@ -101,6 +121,7 @@ private:
 
     std::list<std::list<int> > joints;
 
+    int n_joints;
     unsigned char *type;
     double *param1;
     double *param2;
