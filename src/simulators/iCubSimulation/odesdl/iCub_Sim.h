@@ -161,6 +161,7 @@ private:
     
     static void inspectWholeBodyContactsAndSendTouch();      //We emulate the skin of the iCub - covers + fingertips;  the rest of the geoms will only be processed by the skinEvents
     static void mapPositionIntoTaxelList(const SkinPart skin_part,const Vector geo_center_link_FoR,std::vector<unsigned int>& list_of_taxels);
+    static void pushTriangleToTaxelList(const int startingTaxelID,std::vector<unsigned int>& list_of_taxels);
     static void mapFingertipIntoTaxelList(const HandPart hand_part,std::vector<unsigned int>& list_of_taxels);
     static std::string getGeomClassName(const int geom_class, std::string & s);
 

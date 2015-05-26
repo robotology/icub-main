@@ -7,7 +7,7 @@
       </paramlist>
 
 <param name="period"> 10 </param>
-      <param name="name">   icub/torso		</param>
+<param name="name">   /icub/torso   </param>
       <param name="ports">  torso		</param>
       <param name="joints"> 3			</param>
 
