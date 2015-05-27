@@ -161,8 +161,6 @@ Windows, Linux
 
 #define AFFACTIONPRIMITIVESLAYER    ActionPrimitivesLayer1
 
-YARP_DECLARE_DEVICES(icubmod)
-
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -469,8 +467,6 @@ int main(int argc, char *argv[])
         cout<<"YARP server not available!"<<endl;
         return -1;
     }
-
-    YARP_REGISTER_DEVICES(icubmod)
 
     ResourceFinder rf;
     rf.setVerbose(true);

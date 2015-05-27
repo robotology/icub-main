@@ -70,8 +70,6 @@ Windows, Linux
 
 #include <iCub/d4c/d4c_client.h>
 
-YARP_DECLARE_DEVICES(icubmod)
-
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::sig;
@@ -270,8 +268,6 @@ int main(int argc, char *argv[])
         fprintf(stdout,"YARP server not available!\n");
         return -1;
     }
-
-    YARP_REGISTER_DEVICES(icubmod)
 
     ResourceFinder rf;
     rf.setVerbose(true);

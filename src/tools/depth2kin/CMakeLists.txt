@@ -43,8 +43,7 @@ target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}
                                      ctrlLib
                                      iKin
                                      optimization
-                                     learningMachine
-                                     icubmod)
+                                     learningMachine)
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
 yarp_install(FILES ${doc_files} DESTINATION ${ICUB_MODULES_INSTALL_DIR})
 

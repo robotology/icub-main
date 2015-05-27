@@ -18,7 +18,6 @@ INCLUDE_DIRECTORIES(${ctrlLib_INCLUDE_DIRS}
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ctrlLib
-                                     icubmod
                                      ${GSL_LIBRARIES}
                                      ${YARP_LIBRARIES})
 

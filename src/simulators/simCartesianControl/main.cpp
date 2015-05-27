@@ -71,8 +71,6 @@ Windows, Linux
 #include <yarp/os/all.h>
 #include <yarp/dev/all.h>
 
-YARP_DECLARE_DEVICES(icubmod)
-
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -245,8 +243,6 @@ int main(int argc, char *argv[])
         yError()<<"YARP server not available!";
         return -1;
     }
-
-    YARP_REGISTER_DEVICES(icubmod)
 
     ResourceFinder rf;
     rf.setVerbose(true);
