@@ -3,12 +3,12 @@
 <dependencies>
 </dependencies> 
 <module>
-  <name>icubmoddev</name>
+  <name>yarpdev</name>
       <parameters> --from camera/dragonfly2_config_left.ini</parameters>
   <node>pc104</node>
 </module>
 <module>
-  <name>icubmoddev</name>
+  <name>yarpdev</name>
       <parameters> --from camera/dragonfly2_config_right.ini</parameters>
   <node>pc104</node>
 </module>

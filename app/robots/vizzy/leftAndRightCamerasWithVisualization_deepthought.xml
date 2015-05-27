@@ -11,13 +11,13 @@
 </dependencies>
 
 <module>
-      <name>icubmoddev</name>
+      <name>yarpdev</name>
       <parameters>--from camera/dragonfly2_config_left.ini </parameters>
       <node>vizzy-desktop</node>
       <tag>camera_left</tag>
 </module>
 <module>
-      <name>icubmoddev</name>
+      <name>yarpdev</name>
       <parameters>--from camera/dragonfly2_config_right.ini </parameters>
       <node>vizzy-desktop</node>
       <tag>camera_right</tag>
