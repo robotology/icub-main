@@ -23,9 +23,9 @@
 	<group name="POSITION_CONTROL">
 	    <param name="controlLaw">    joint_pid_v1 </param> 
         <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">          -711.11   -1066.66    -711.11   -1066.66 </param>       
+        <param name="kp">           711.11    1066.66     711.11    1066.66 </param>       
         <param name="kd">             0.00       0.00       0.00       0.00 </param>       
-        <param name="ki">         -7111.09  -10666.64   -7111.09  -10666.64 </param>       
+        <param name="ki">          7111.09   10666.64    7111.09   10666.64 </param>       
         <param name="limPwm">         3000       3000       3000       3000 </param>       
         <param name="maxPwm">         8000       8000       8000       8000 </param>    
         <param name="maxInt">          200        200        200       1000 </param>       
@@ -39,7 +39,7 @@
     <group name="TORQUE_CONTROL">
         <param name="controlLaw">    motor_pid_with_friction_v1 </param> 
         <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">           -200       -600       -600       -600     </param>       
+        <param name="kp">              0          0          0          0     </param>       
         <param name="kd">              0          0          0          0     </param>       
         <param name="ki">              0          0          0          0     </param>       
         <param name="maxPwm">       8000       8000       8000       8000     </param>       
@@ -49,9 +49,9 @@
         <param name="stictionUp">      0          0          0          0     </param>       
         <param name="stictionDwn">     0          0          0          0     </param>    
         <param name="kff">             1          1          1          1     </param>  
-        <param name="kbemf">       0.002     0.0007     0.0007     0.0007     </param>    
+        <param name="kbemf">      0.0000     0.0000     0.0000     0.0000     </param>    
         <param name="filterType">      0          0          0          0     </param>    
-        <param name="ktau">         -200       -500       -500       -500     </param>             
+        <param name="ktau">            0          0          0          0     </param>             
     </group>
 	
   </device>
