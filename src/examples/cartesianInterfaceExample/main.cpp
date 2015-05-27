@@ -134,8 +134,6 @@ Windows, Linux
 #define EXECTIME_THRESDIST  0.3     // [m]
 #define PRINT_STATUS_PER    1.0     // [s]
 
-YARP_DECLARE_DEVICES(icubmod)
-
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -474,8 +472,6 @@ int main(int argc, char *argv[])
         printf("YARP server not available!\n");
         return -1;
     }
-
-    YARP_REGISTER_DEVICES(icubmod)
 
     CtrlModule mod;
     return mod.runModule(rf);

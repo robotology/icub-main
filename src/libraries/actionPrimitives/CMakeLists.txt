@@ -19,7 +19,7 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
 
 ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} perceptiveModels icubmod
+TARGET_LINK_LIBRARIES(${PROJECT_NAME} perceptiveModels
                                       ${GSL_LIBRARIES}
                                       ${YARP_LIBRARIES})
 

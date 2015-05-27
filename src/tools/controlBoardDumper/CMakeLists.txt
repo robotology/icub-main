@@ -26,6 +26,6 @@ SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 include_directories(${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS})
 ADD_EXECUTABLE(controlBoardDumper ${folder_source} ${folder_header})
-target_link_libraries(controlBoardDumper icubmod ${YARP_LIBRARIES})
+target_link_libraries(controlBoardDumper ${YARP_LIBRARIES})
 INSTALL(TARGETS controlBoardDumper DESTINATION bin)
 

@@ -4,7 +4,7 @@
       <port>/computer1</port>
 </dependencies>
    <module>
-      <name>icubmoddev</name>
+      <name>yarpdev</name>
 	      <parameters>--device logpolargrabber --width 320 --height 240 --framerate 33 --subdevice test_grabber --mode [ball]</parameters>
       <node>computer1</node>
 	  <stdio>computer1</stdio>

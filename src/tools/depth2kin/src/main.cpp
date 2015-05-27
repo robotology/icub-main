@@ -19,8 +19,6 @@
 
 #include "module.h"
 
-YARP_DECLARE_DEVICES(icubmod)
-
 using namespace yarp::os;
 
 
@@ -28,7 +26,6 @@ using namespace yarp::os;
 int main(int argc, char *argv[])
 {
     Network yarp;
-    YARP_REGISTER_DEVICES(icubmod)
 
     ResourceFinder rf;
     rf.setDefaultContext("depth2kin");

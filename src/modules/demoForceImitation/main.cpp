@@ -34,8 +34,6 @@ using namespace std;
 #define POS  0
 #define TRQ  1
 
-YARP_DECLARE_DEVICES(icubmod)
-
 //                robot->icmd[rd->id]->setPositionMode(0);
 
 
@@ -326,8 +324,6 @@ int main(int argc, char * argv[])
         yError("Sorry YARP network does not seem to be available, is the yarp server available?\n");
         return -1;
     }
-
-    YARP_REGISTER_DEVICES(icubmod)
 
     CtrlModule mod;
 

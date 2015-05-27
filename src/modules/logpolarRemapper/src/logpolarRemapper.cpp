@@ -29,7 +29,8 @@ module. It creates also ports for rpc commands (to the module) and rpc commands 
 the remote interfaces).
 
 \section lib_sec Libraries
-The logpolarRemapper depends on the iCubDev, icubmod and logPolar libraries.
+The logpolarRemapper depends on the iCubDev and logPolar  
+libraries.  
 
 \section parameters_sec Parameters
 \code
@@ -109,9 +110,6 @@ using namespace iCub::logpolar;
 // the default app name (to be used in port names, etc.).
 ConstString defaultname("remapper");
 const int defaultSize = 480;
-
-// import the drivers.
-YARP_DECLARE_DEVICES(icubmod)
 
 /*
  * my working thread.
@@ -375,7 +373,6 @@ public:
 int main (int argc, char *argv[]) {
     // initialize yarp network.
     Network yarp;
-    YARP_REGISTER_DEVICES(icubmod)
 
     //fprintf(stdout, "%s\n", dev.status().c_str());
 

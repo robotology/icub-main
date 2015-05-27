@@ -10,13 +10,13 @@
 </dependencies>
 
 <module>
-      <name>icubmoddev</name>
+      <name>yarpdev</name>
       <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.474 0.648 --gain 0.312 --shutter 0.592 --name /icub/cam/left  --brightness 0 --DR2 --stamp --guid 00b09d01009a72fb --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.826 --framerate 30 </parameters>
       <node>pc104</node>
       <tag>camera_left</tag>
 </module>
 <module>
-      <name>icubmoddev</name>
+      <name>yarpdev</name>
       <parameters>--device grabber --subdevice dragonfly2 --width 320 --height 240 --video_type 1 --white_balance 0.474 0.648 --gain 0.312 --shutter 0.592 --name /icub/cam/right  --brightness 0 --DR2 --stamp --guid 00b09d01009a72ef --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.826 --framerate 30 </parameters>
       <node>pc104</node>
       <tag>camera_right</tag>

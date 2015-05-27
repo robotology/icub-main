@@ -35,12 +35,6 @@ endif()
 find_package(YARP ${ICUB_REQYARP_VERSION} REQUIRED)
 message(STATUS "YARP is version: ${YARP_VERSION}")
 
-if(YARP_VERSION VERSION_LESS ICUB_REQYARP_VERSION)
-    message(FATAL_ERROR "YARP version is not compatible, please update YARP (using VERSION_LESS)")
-else()
-    message(STATUS "found compatible YARP version")
-endif()
-
 if (YARP_HAS_MATH_LIB)
      set(ICUB_HAS_YARP TRUE CACHE BOOL "" FORCE)
      message(STATUS "found libYARP_math")
@@ -139,6 +133,7 @@ mark_as_advanced(ICUB_APPLICATIONS_PREFIX)
 # new "data" installation - available with yarp2.4
 include(YarpInstallationHelpers)
 yarp_configure_external_installation(iCub WITH_PLUGINS)
+set(YARP_FORCE_DYNAMIC_PLUGINS TRUE CACHE INTERNAL "iCub is always built with dynamic plugins")
 
 # temporary options for debugging/testing new functionalities
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")

@@ -266,7 +266,7 @@ void TheEthManager::addLUTelement(ethFeature_t &id)
      * the '[]' operator before the insert, because the std::map will create it automatically (hopefully initted
      * with zeros.
      */
-     bool addLUT_result =  boards_map.insert(std::pair< std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, ethFeature_t>(std::make_pair<FEAT_boardnumber_t, eOprotEndpoint_t>(brdnum, id.endpoint), id)).second;
+     bool addLUT_result =  boards_map.insert(std::pair< std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, ethFeature_t>(std::make_pair(brdnum, id.endpoint), id)).second;
 
     // Check result of insertion
     addLUT_result ? yTrace() << "ok add lut element for board " << id.boardNumber << " and ep " << id.endpoint :
@@ -295,7 +295,7 @@ bool TheEthManager::removeLUTelement(ethFeature_t &element)
     yTrace() << element.boardNumber;
     /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
     bool ret = false;
-    int n = (int) boards_map.erase(std::make_pair<FEAT_boardnumber_t, eOprotEndpoint_t>(element.boardNumber, element.endpoint));
+    int n = (int) boards_map.erase(std::make_pair(element.boardNumber, element.endpoint));
 
     switch(n)
     {

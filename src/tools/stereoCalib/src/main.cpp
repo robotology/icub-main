@@ -98,12 +98,9 @@ Windows and Linux.
 #include "stereoCalibModule.h"
 #include <yarp/dev/Drivers.h>
 
-YARP_DECLARE_DEVICES(icubmod)
-
 
 int main(int argc, char * argv[])
 {
-   YARP_REGISTER_DEVICES(icubmod)
    Network yarp;
    stereoCalibModule stereoModule; 
    ResourceFinder rf;

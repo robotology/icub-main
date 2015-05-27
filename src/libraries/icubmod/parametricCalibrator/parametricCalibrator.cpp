@@ -292,19 +292,21 @@ bool parametricCalibrator::close ()
     return true;
 }
 
-bool parametricCalibrator::calibrate(DeviceDriver *dd)
+bool parametricCalibrator::calibrate(DeviceDriver *device)
 {
     yInfo() << deviceName << ": starting calibration";
     yTrace();
     abortCalib  = false; //set true in quitCalibrate function  (called on ctrl +c signal )
 
-    if (dd==0)
+
+    if (device==0)
     {
         yError() << deviceName << ": invalid device driver";
         return false;
     }
 
-    yarp::dev::PolyDriver *p = dynamic_cast<yarp::dev::PolyDriver *>(dd);
+    yarp::dev::PolyDriver *p = dynamic_cast<yarp::dev::PolyDriver *>(device);
+	dev2calibrate = p;
     if (p!=0)
     {
         p->view(iCalibrate);
@@ -320,11 +322,11 @@ bool parametricCalibrator::calibrate(DeviceDriver *dd)
         
         //This is to ensure backward-compatibility with iCubInterface
         yWarning() << deviceName << ": using parametricCalibrator on an old iCubInterface system. Upgrade to robotInterface is recommended."; 
-        dd->view(iCalibrate);
-        dd->view(iEncoders);
-        dd->view(iPosition);
-        dd->view(iPids);
-        dd->view(iControlMode);
+        device->view(iCalibrate);
+        device->view(iEncoders);
+        device->view(iPosition);
+        device->view(iPids);
+        device->view(iControlMode);
     }
 
     if (!(iCalibrate && iEncoders && iPosition && iPids && iControlMode)) {
@@ -422,6 +424,7 @@ bool parametricCalibrator::calibrate()
                 abortCalib = true;
                 break;
             }
+
             limited_pid[(*lit)]=original_pid[(*lit)];
             
             if (maxPWM[(*lit)]==0)
@@ -745,7 +748,6 @@ bool parametricCalibrator::checkGoneToZeroThreshold(int j)
 bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
 {
     yTrace();
-    int nj=0;
     bool ret=false;
     abortParking=false;
 
@@ -758,27 +760,21 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     }
     calibMutex.post();
 
-    if ( !iEncoders->getAxes(&nj))
-    {
-        yError() << deviceName << ": error getting number of encoders";
-        return false;
-    }
-
     if(skipCalibration)
     {
         yWarning() << deviceName << ": skipCalibration flag is on!! Faking park!!";
         return true;
     }
 
-    int*  currentControlModes = new int  [nj];
-    bool* cannotPark          = new bool [nj];
+    int*  currentControlModes = new int  [n_joints];
+    bool* cannotPark          = new bool [n_joints];
     bool res = iControlMode->getControlModes(currentControlModes);
     if(!res)
     {
         yError() << deviceName << ": error getting control mode during parking";
     }
 
-    for(int i=0; i<nj; i++)
+    for(int i=0; i<n_joints; i++)
     {
         if(currentControlModes[i] != VOCAB_CM_IDLE &&
            currentControlModes[i] != VOCAB_CM_HW_FAULT)
@@ -805,7 +801,7 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     if (wait)
     {
        int timeout = 0; //this variable is shared between all joints
-       for(int i=0; i < nj; i++)
+       for(int i=0; i < n_joints; i++)
        {
           if (cannotPark[i] ==false)
           {
@@ -827,7 +823,7 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     }
 
     yDebug() << deviceName.c_str() << ": Park " << (abortParking ? "aborted" : "completed");
-    for(int j=0; j < nj; j++)
+    for(int j=0; j < n_joints; j++)
     {
         iControlMode->setControlMode(j,VOCAB_CM_IDLE);
     }

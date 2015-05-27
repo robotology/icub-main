@@ -66,7 +66,8 @@ parametricCalibratorEth::parametricCalibratorEth() :
     isCalibrated(false),
     calibMutex(1),
     skipCalibration(false),
-    clearHwFault(false)
+    clearHwFault(false),
+    n_joints(0)
 {
 }
 
@@ -353,7 +354,7 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *device)
     }
 
     yarp::dev::PolyDriver *p = dynamic_cast<yarp::dev::PolyDriver *>(device);
-    dev2calibrate = p;
+	dev2calibrate = p;
     if (p!=0)
     {
         p->view(iCalibrate);
@@ -369,11 +370,11 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *device)
         
         //This is to ensure backward-compatibility with iCubInterface
         yWarning() << deviceName << ": using parametricCalibrator on an old iCubInterface system. Upgrade to robotInterface is recommended."; 
-        dev2calibrate->view(iCalibrate);
-        dev2calibrate->view(iEncoders);
-        dev2calibrate->view(iPosition);
-        dev2calibrate->view(iPids);
-        dev2calibrate->view(iControlMode);
+        device->view(iCalibrate);
+        device->view(iEncoders);
+        device->view(iPosition);
+        device->view(iPids);
+        device->view(iControlMode);
     }
 
     if (!(iCalibrate && iEncoders && iPosition && iPids && iControlMode)) {
@@ -795,7 +796,6 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
 bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
 {
     yTrace();
-    int nj=0;
     bool ret=false;
     abortParking=false;
 
@@ -849,7 +849,7 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     if (wait)
     {
        int timeout = 0; //this variable is shared between all joints
-       for(int i=0; i < nj; i++)
+	   for (int i = 0; i < n_joints; i++)
         {
             if (cannotPark[i] ==false)
             {

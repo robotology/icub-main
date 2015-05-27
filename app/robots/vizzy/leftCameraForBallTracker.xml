@@ -11,7 +11,7 @@
 </dependencies>
 
 <module>
-      <name>icubmoddev</name>
+      <name>yarpdev</name>
       <parameters>--from camera/dragonfly2_config_left_ball_tracker.ini </parameters>
       <node>vizzy-desktop</node>
       <tag>camera_left</tag>

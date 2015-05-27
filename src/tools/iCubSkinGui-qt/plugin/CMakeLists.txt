@@ -47,7 +47,6 @@ target_link_libraries(QtICubSkinGuiPlugin YARP::YARP_OS
                                           YARP::YARP_init
                                           YARP::YARP_sig
                                           YARP::YARP_dev
-                                          icubmod
                                           ${GSL_LIBRARIES})
 qt5_use_modules(QtICubSkinGuiPlugin Quick)
 

@@ -431,14 +431,9 @@ Windows, Linux
 #define PORT_TAG_CMD                0
 #define PORT_TAG_GET                1
 
-
-
-
 #ifdef WIN32
     #pragma warning(disable:4996)
 #endif
-
-YARP_DECLARE_DEVICES(icubmod)
 
 using namespace std;
 using namespace yarp::os;
@@ -1571,8 +1566,6 @@ int main(int argc, char *argv[])
 
     if (!yarp.checkNetwork())
         return -1;
-
-    YARP_REGISTER_DEVICES(icubmod)
 
     ResourceFinder rf;
     rf.setVerbose(true);

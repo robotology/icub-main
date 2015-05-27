@@ -4,7 +4,7 @@
       <port>/tamon-ten</port>
 </dependencies>
    <module>
-      <name>icubmoddev</name>
+      <name>yarpdev</name>
 	      <parameters>--device logpolargrabber --width 320 --height 240 --framerate 33 --subdevice test_grabber</parameters>
       <!-- static_grabber filename C:\Users\pasa\Repository\_cvs\iCub\src\modules\staticgrabber\test.ppm -->
       <node>tamon-ten</node>
