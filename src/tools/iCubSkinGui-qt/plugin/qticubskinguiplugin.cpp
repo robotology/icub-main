@@ -103,7 +103,6 @@ This file can be edited at /src/gui/iCubSkinGui/src/main.cpp.
 #include "qticubskinguiplugin.h"
 #include <QDebug>
 
-YARP_DECLARE_DEVICES(icubmod)
 using namespace yarp::os;
 
 
@@ -250,9 +249,6 @@ void QtICubSkinGuiPlugin::paint(QPainter *painter)
 bool QtICubSkinGuiPlugin::parseParameters(QStringList params)
 {
     Network yarp;
-
-    YARP_REGISTER_DEVICES(icubmod)
-
 
     rf.setVerbose();
     rf.setDefaultContext("skinGui/skinGui");

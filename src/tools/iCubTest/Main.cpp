@@ -178,11 +178,8 @@ This file can be edited at src/iCubTest/main.cpp.
 #include "testMotorsStictionIncremental/TestMotorsStictionIncremental.h"
 #include "DriverInterface.h"
 
-YARP_DECLARE_DEVICES(icubmod)
-
 int main(int argc,char* argv[])
 {
-    YARP_REGISTER_DEVICES(icubmod)
     yarp::os::Network yarp;
 
     if (!yarp.checkNetwork())

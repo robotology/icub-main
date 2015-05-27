@@ -175,9 +175,6 @@
 #include "SDL.h" 
 #endif
 
-YARP_DECLARE_DEVICES(icubmod)
-
-
 class MainThread : public yarp::os::Thread {
  public:
    SimulationBundle *bundle;
@@ -201,7 +198,6 @@ int main(int argc, char** argv) {
         return 1;
     }
     
-    YARP_REGISTER_DEVICES(icubmod)
     yarp::os::Property options;
     options.fromCommand(argc,argv);
 

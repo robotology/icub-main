@@ -195,8 +195,6 @@
 #include "dumperThread.h"
 #include <string>
 
-YARP_DECLARE_DEVICES(icubmod)
-
 #define NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP 16
 #define NUMBER_OF_AVAILABLE_DEBUG_DATA_TO_DUMP 3
 
@@ -974,8 +972,6 @@ public:
 
 int main(int argc, char *argv[]) 
 {
-    YARP_REGISTER_DEVICES(icubmod)
-
     Network::init();
     ResourceFinder rf;
 

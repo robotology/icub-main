@@ -19,7 +19,6 @@ INCLUDE_DIRECTORIES(${iCubDev_INCLUDE_DIRS}
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_header} ${folder_source})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ctrlLib
-                      icubmod
                       skinDynLib
                       ${YARP_LIBRARIES})
 

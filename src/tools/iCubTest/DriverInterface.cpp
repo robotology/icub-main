@@ -22,8 +22,6 @@
 
 #include "DriverInterface.h"
 
-YARP_DECLARE_DEVICES(icubmod)
-
 void iCubDriver::open (std::string robotName)
 {
     m_RobotName = robotName;
