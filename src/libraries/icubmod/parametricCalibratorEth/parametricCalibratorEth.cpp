@@ -354,6 +354,7 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *device)
     }
 
     yarp::dev::PolyDriver *p = dynamic_cast<yarp::dev::PolyDriver *>(device);
+	dev2calibrate = p;
     if (p!=0)
     {
         p->view(iCalibrate);
