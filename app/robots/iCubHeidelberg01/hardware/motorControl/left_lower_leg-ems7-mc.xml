@@ -8,8 +8,8 @@
       <params file="hardware/mechanicals/left_lower_leg-ems7-mec.xml" />
 
     <group name="LIMITS">
-        <param name="Max">        30.00         20.00		</param>
-        <param name="Min">       -20.00        -20.00		</param>
+        <param name="Max">        30.00         25.00		</param>
+        <param name="Min">       -30.00        -20.00		</param>
         <param name="Currents">   5000          5000		</param>
     </group>
 
@@ -37,7 +37,7 @@
     <group name="TORQUE_CONTROL">
         <param name="controlLaw">    motor_pid_with_friction_v1 </param> 
         <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">        1000         1000              </param>       
+        <param name="kp">         100          150              </param>       
         <param name="kd">           0            0              </param>       
         <param name="ki">           0            0              </param>       
         <param name="maxPwm">    8000         8000              </param>       
