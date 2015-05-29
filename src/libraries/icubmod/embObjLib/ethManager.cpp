@@ -1029,8 +1029,8 @@ void EthReceiver::run()
             }
             else
             {
-                sender_addr.addr_to_string(address, sizeof(address));
-                yError() << "EthReceiver::run() cannot get a ethres associated to address" << address;
+            //    sender_addr.addr_to_string(address, sizeof(address));
+            //    yError() << "EthReceiver::run() cannot get a ethres associated to address" << address;
             }
 
         }
@@ -1385,8 +1385,8 @@ void EthReceiver::run()
         }
         else
         {
-            sender_addr.addr_to_string(address, sizeof(address));
-            yError() << "EthReceiver::run() cannot get a ethres associated to address" << address;
+        //    sender_addr.addr_to_string(address, sizeof(address));
+        //    yError() << "EthReceiver::run() cannot get a ethres associated to address" << address;
         }
 
 
