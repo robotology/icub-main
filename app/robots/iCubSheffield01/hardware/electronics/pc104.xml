@@ -4,6 +4,8 @@
 <params robot="iCubSheffield01" build="1">
   <group name="ETH">
      <param name="PC104IpAddress"> 10.0.1.104 </param> 
+     <param name="PC104TXrate">	            1	</param> 
+     <param name="PC104RXrate">	            1	</param> 
   </group>
 </params>
 
