@@ -13,5 +13,3 @@ add_subdirectory(boostMILExample)
 add_subdirectory(logpolarConvertExample)
 add_subdirectory(cartesianInterfaceExample)
 add_subdirectory(perceptiveModelsExample)
-add_subdirectory(d4cExample)
-

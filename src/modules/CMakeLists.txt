@@ -16,7 +16,6 @@ add_subdirectory(wholeBodyDynamics)
 add_subdirectory(gravityCompensator)
 add_subdirectory(skinManager)
 add_subdirectory(objectsPropertiesCollector)
-add_subdirectory(d4cServer)
 
 if(ICUB_USE_OpenCV)
     add_subdirectory(camCalib)
@@ -62,4 +61,3 @@ if(ICUB_USE_GTK2)
 else(ICUB_USE_GTK2)
     message(STATUS "GTK2 not found/selected, skipping demoForceControl")
 endif(ICUB_USE_GTK2)
-
