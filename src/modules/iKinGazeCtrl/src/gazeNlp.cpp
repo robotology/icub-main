@@ -168,7 +168,7 @@ public:
 
         g_l[0]=g_u[0]=-1.0;
 
-        g_l[1]=g_l[2]=lowerBoundInf;        
+        g_l[1]=g_l[2]=lowerBoundInf;
         g_u[1]=g_u[2]=0.0;
 
         return true;

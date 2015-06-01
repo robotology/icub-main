@@ -44,8 +44,8 @@
  * the forward kinematic maps for the position and orientation part, respectively;
  * \f$ \mathbf{q}_r \f$ is used to keep the solution as close as possible to a given rest
  * position in the joint space (weighting with a positive factor \f$ \mathit{w} < 1 \f$ and also
- * through the diagonal matrix \f$ \mathit{W}_r \f$ which allows 
- * to select a specific weight for each joint). 
+ * through the diagonal matrix \f$ \mathit{W}_r \f$ which allows
+ * selecting a specific weight for each joint).
  *  
  * \section protocol_sec Solver protocol
  *  
