@@ -84,7 +84,6 @@ mode           shot
 verbosity      off
 maxIter        200
 tol            0.001
-xyzTol         0.000001
 interPoints    off 
 ping_robot_tmo 20.0 
 \endcode 
@@ -105,7 +104,6 @@ mode            shot
 verbosity       off
 maxIter         200
 tol             0.001
-xyzTol          0.000001
 interPoints     off 
 ping_robot_tmo  20.0 
  

@@ -33,7 +33,7 @@
  * The task to be solved is:
  *
  * \f[
- * \mathbf{q}=\arg\min_{\mathbf{q}\in \mathbb{R}^{n} }\left(\left\|\mathbf{\alpha}_d-\mathit{K_{\alpha}}\left(\mathbf{q}\right)\right\|^2+\mathit{w}\cdot\left(\mathbf{q}_r-\mathbf{q}\right)^{\top}\mathit{W}_r\left(\mathbf{q}_r-\mathbf{q}\right)\right) \quad s.t.\,\left\{\begin{array}{l}\left\|\mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2<\epsilon\\\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{array}\right.
+ * \mathbf{q}=\arg\min_{\mathbf{q}\in \mathbb{R}^{n} }\left(\left\|\mathbf{\alpha}_d-\mathit{K_{\alpha}}\left(\mathbf{q}\right)\right\|^2+\mathit{w}\cdot\left(\mathbf{q}_r-\mathbf{q}\right)^{\top}\mathit{W}_r\left(\mathbf{q}_r-\mathbf{q}\right)\right) \quad s.t.\,\left\{\begin{array}{l}\left\|\mathbf{x}_d-\mathit{K_x}\left(\mathbf{q}\right)\right\|^2=0\\\mathbf{q}_L<\mathbf{q}<\mathbf{q}_U\end{array}\right.
  * \f]
  *
  * Where the solution \f$ \mathbf{q} \f$ is the joints vector with n components (depending
@@ -44,8 +44,8 @@
  * the forward kinematic maps for the position and orientation part, respectively;
  * \f$ \mathbf{q}_r \f$ is used to keep the solution as close as possible to a given rest
  * position in the joint space (weighting with a positive factor \f$ \mathit{w} < 1 \f$ and also
- * through the diagonal matrix \f$ \mathit{W}_r \f$ which allows to select a specific weight for each joint)
- * and \f$ \epsilon \f$ is a small number in the range of \f$ \left[10^{-5},10^{-4}\right] \f$.
+ * through the diagonal matrix \f$ \mathit{W}_r \f$ which allows 
+ * to select a specific weight for each joint). 
  *  
  * \section protocol_sec Solver protocol
  *  
@@ -169,8 +169,8 @@
  *    corresponding three weights.
  *  
  * \b conv request: example [set] [conv] ((max_iter 200) (tol 
- *    0.001) (translationalTol 0.000001)), [get] [conv]. Set/get
- *    the options for specifying solver's convergence.
+ *    0.001)), [get] [conv]. Set/get the options for specifying
+ *    solver's convergence.
  *  
  * Commands issued through the [ask] vocab: 
  *  
@@ -501,10 +501,6 @@ public:
     *  
     * \b tol <double>: example (tol 1e-3), specifies the desired 
     *    tolerance on the task function to be minimized.
-    *  
-    * \b xyzTol <double>: example (xyzTol 1e-6), specifies the 
-    *    desired tolerance on the positional part of the task
-    *    function to be minimized.
     *  
     * \b interPoints <vocab>: example (interPoints on), selects 
     *    whether to force or not the solver to output on the port

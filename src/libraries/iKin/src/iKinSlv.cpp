@@ -697,10 +697,6 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             tol.addString("tol");
                             tol.addDouble(slv->getTol());
 
-                            Bottle &ttol=payLoad.addList();
-                            ttol.addString("translationalTol");
-                            ttol.addDouble(slv->getTranslationalTol());
-
                             break;
                         }
 
@@ -945,12 +941,6 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                 if (payLoad->check("tol"))
                                 {
                                     slv->setTol(payLoad->find("tol").asDouble());
-                                    cnt++;
-                                }
-
-                                if (payLoad->check("translationalTol"))
-                                {
-                                    slv->setTranslationalTol(payLoad->find("translationalTol").asDouble());
                                     cnt++;
                                 }
 
@@ -1439,9 +1429,6 @@ bool CartesianSolver::open(Searchable &options)
 
     // instantiate the optimizer
     slv=new iKinIpOptMin(*prt->chn,ctrlPose,tol,maxIter);
-
-    if (options.check("xyzTol"))
-        slv->setTranslationalTol(options.find("xyzTol").asDouble());
 
     // instantiate solver callback object if required    
     if (options.check("interPoints"))

@@ -60,7 +60,6 @@ protected:
     double __g_scaling;
     double lowerBoundInf;
     double upperBoundInf;
-    double translationalTol;
     bool   firstGo;
 
     /************************************************************************/
@@ -122,7 +121,6 @@ public:
 
         lowerBoundInf=IKINIPOPT_DEFAULT_LWBOUNDINF;
         upperBoundInf=IKINIPOPT_DEFAULT_UPBOUNDINF;
-        translationalTol=IKINIPOPT_DEFAULT_TRANSTOL;
 
         qRest.resize(dim,0.0);
     }
@@ -144,9 +142,6 @@ public:
         lowerBoundInf=lower;
         upperBoundInf=upper;
     }
-
-    /************************************************************************/
-    void set_translational_tol(double tol) { translationalTol=tol; }
 
     /************************************************************************/
     bool get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
@@ -171,8 +166,9 @@ public:
             x_u[i]=chain(i).getMax();
         }
 
-        g_l[0]=g_l[1]=g_l[2]=lowerBoundInf;
-        g_u[0]=-1.0+translationalTol;
+        g_l[0]=g_u[0]=-1.0;
+
+        g_l[1]=g_l[2]=lowerBoundInf;        
         g_u[1]=g_u[2]=0.0;
 
         return true;
@@ -340,7 +336,6 @@ Vector GazeIpOptMin::solve(const Vector &q0, Vector &xd, const Vector &gDir)
 
     nlp->set_scaling(obj_scaling,x_scaling,g_scaling);
     nlp->set_bound_inf(lowerBoundInf,upperBoundInf);
-    nlp->set_translational_tol(translationalTol);
     nlp->setGravityDirection(gDir);
     
     static_cast<Ipopt::IpoptApplication*>(App)->OptimizeTNLP(GetRawPtr(nlp));

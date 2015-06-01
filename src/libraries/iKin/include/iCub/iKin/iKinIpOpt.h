@@ -36,7 +36,6 @@
 
 #include <iCub/iKin/iKinInv.h>
 
-#define IKINIPOPT_DEFAULT_TRANSTOL      (1e-6)
 #define IKINIPOPT_DEFAULT_LWBOUNDINF    (-1e9)
 #define IKINIPOPT_DEFAULT_UPBOUNDINF    (+1e9)
 
@@ -236,7 +235,6 @@ protected:
     double g_scaling;
     double lowerBoundInf;
     double upperBoundInf;
-    double translationalTol;
     std::string posePriority;
 
 public:
@@ -347,24 +345,6 @@ public:
     * @return tolerance.
     */
     double getTol() const;
-
-    /**
-    * Sets the tolerance used by the algorithm for translational 
-    * part (1e-6 by default). 
-    * @param tol is the new translational tolerance. 
-    *  
-    * @note tolerance is applied to the squared norm.  
-    */
-    void setTranslationalTol(const double tol) { translationalTol=tol; }
-
-    /**
-    * Retrieves the current tolerance used by the algorithm for 
-    * translational part. 
-    * @return the current translational tolerance. 
-    *  
-    * @note tolerance is applied to the squared norm.  
-    */
-    double getTranslationalTol() const { return translationalTol; }
 
     /**
     * Sets Verbosity.

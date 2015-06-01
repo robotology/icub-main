@@ -274,7 +274,6 @@ protected:
     double __g_scaling;
     double lowerBoundInf;
     double upperBoundInf;
-    double translationalTol;
 
     iKinIterateCallback *callback;
 
@@ -421,7 +420,6 @@ public:
 
         lowerBoundInf=IKINIPOPT_DEFAULT_LWBOUNDINF;
         upperBoundInf=IKINIPOPT_DEFAULT_UPBOUNDINF;
-        translationalTol=IKINIPOPT_DEFAULT_TRANSTOL;
 
         callback=NULL;
     }
@@ -446,9 +444,6 @@ public:
         lowerBoundInf=lower;
         upperBoundInf=upper;
     }
-
-    /************************************************************************/
-    void set_translational_tol(double tol) { translationalTol=tol; }
 
     /************************************************************************/
     bool set_posePriority(const string &priority)
@@ -519,8 +514,7 @@ public:
         {
             if (i==0)
             {
-                g_l[0]=lowerBoundInf;
-                g_u[0]=translationalTol;
+                g_l[0]=g_u[0]=0.0;
                 offs=1;
             }
             else
@@ -802,8 +796,6 @@ iKinIpOptMin::iKinIpOptMin(iKinChain &c, const unsigned int _ctrlPose, const dou
 
     getBoundsInf(lowerBoundInf,upperBoundInf);
 
-    translationalTol=IKINIPOPT_DEFAULT_TRANSTOL;
-
     if (max_iter>0)
         CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",max_iter);
     else
@@ -995,7 +987,6 @@ yarp::sig::Vector iKinIpOptMin::solve(const yarp::sig::Vector &q0, yarp::sig::Ve
     
     nlp->set_scaling(obj_scaling,x_scaling,g_scaling);
     nlp->set_bound_inf(lowerBoundInf,upperBoundInf);
-    nlp->set_translational_tol(translationalTol);
     nlp->set_posePriority(posePriority);
     nlp->set_callback(iterate);
 
