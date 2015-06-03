@@ -1947,13 +1947,6 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
         return false;
     }
 
-    // Now set the velocity pid too...
-    protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidvelocity);
-    if(!res->addSetMessage(protoId, (uint8_t *) &outPid))
-    {
-        yError() << "while setting velocity PIDs for board " << _fId.boardNumber << " joint " << j;
-        return false;
-    }
     return true;
 }
 
@@ -2050,7 +2043,7 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition);
     // Sign up for waiting the reply
 
-    eoThreadEntry *tt = appendWaitRequest(j, protid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    eoThreadEntry *tt = appendWaitRequest(j, protid);
     tt->setPending(1);
 
     if(!res->addGetMessage(protid) )
@@ -3979,26 +3972,111 @@ bool embObjMotionControl::velocityMoveRaw(const int n_joint, const int *joints, 
 
 bool embObjMotionControl::setVelPidRaw(int j, const Pid &pid)
 {
-    // Our boards do not have a Velocity Pid
+    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidvelocity);
+    eOmc_PID_t  outPid;
+    Pid hwPid = pid;
+
+    if (_positionControlUnits == P_METRIC_UNITS)
+    {
+        hwPid.kp = hwPid.kp / _angleToEncoder[j];  //[PWM/deg]
+        hwPid.ki = hwPid.ki / _angleToEncoder[j];  //[PWM/deg]
+        hwPid.kd = hwPid.kd / _angleToEncoder[j];  //[PWM/deg]
+    }
+    else if (_positionControlUnits == P_MACHINE_UNITS)
+    {
+        hwPid.kp = hwPid.kp;  //[PWM/icubdegrees]
+        hwPid.ki = hwPid.ki;  //[PWM/icubdegrees]
+        hwPid.kd = hwPid.kd;  //[PWM/icubdegrees]
+    }
+    else
+    {
+        yError() << "Unknown _positionControlUnits, needed by setVelPidRaw()";
+    }
+
+    copyPid_iCub2eo(&hwPid, &outPid);
+
+    if (!res->addSetMessage(protoId, (uint8_t *)&outPid))
+    {
+        yError() << "while setting velocity PIDs for board " << _fId.boardNumber << " joint " << j;
+        return false;
+    }
+
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 
 bool embObjMotionControl::setVelPidsRaw(const Pid *pids)
 {
-    // Our boards do not have a VelocityPid
-    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+    bool ret = true;
+    for (int j = 0; j< _njoints; j++)
+    {
+        ret &= setVelPidRaw(j, pids[j]);
+    }
+    return ret;
 }
 
 bool embObjMotionControl::getVelPidRaw(int j, Pid *pid)
 {
-    // Our boards do not have a VelocityPid
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidvelocity);
+    // Sign up for waiting the reply
+
+    eoThreadEntry *tt = appendWaitRequest(j, protid);
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protid))
+    {
+        yError() << "Can't send getVelPidRaw() request for board " << _fId.boardNumber << " joint " << j;
+        return false;
+    }
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getVelPidRaw() timed out the wait of reply from board " << _fId.boardNumber << " joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_PID_t eoPID;
+    res->readBufferedValue(protid, (uint8_t *)&eoPID, &size);
+
+    copyPid_eo2iCub(&eoPID, pid);
+
+    if (_positionControlUnits == P_METRIC_UNITS)
+    {
+        pid->kp = pid->kp * _angleToEncoder[j];  //[PWM/deg]
+        pid->ki = pid->ki * _angleToEncoder[j];  //[PWM/deg]
+        pid->kd = pid->kd * _angleToEncoder[j];  //[PWM/deg]
+    }
+    else if (_positionControlUnits == P_MACHINE_UNITS)
+    {
+        pid->kp = pid->kp;  //[PWM/icubdegrees]
+        pid->ki = pid->ki;  //[PWM/icubdegrees]
+        pid->kd = pid->kd;  //[PWM/icubdegrees]
+    }
+    else
+    {
+        yError() << "Unknown _positionControlUnits needed by getVelPid()";
+    }
+
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 
 bool embObjMotionControl::getVelPidsRaw(Pid *pids)
 {
-    // Our boards do not have a VelocityPid
-    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+    bool ret = true;
+
+    // just one joint at time, wait answer before getting to the next.
+    // This is because otherwise too many msg will be placed into can queue
+    for (int j = 0, index = 0; j<_njoints; j++, index++)
+    {
+        ret &= getVelPidRaw(j, &pids[j]);
+    }
+    return ret;
 }
 
 // PositionDirect Interface
