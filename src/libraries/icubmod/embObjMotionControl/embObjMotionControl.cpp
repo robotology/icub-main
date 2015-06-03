@@ -1626,6 +1626,34 @@ bool embObjMotionControl::init()
     {
         int fisico = _axisMap[logico];
 
+        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config);
+        eOmc_motor_config_t    motor_cfg;
+        motor_cfg.maxcurrentofmotor = _currentLimits[logico];
+        motor_cfg.gearboxratio = _gearbox[logico];
+        motor_cfg.rotorencoder = _rotToEncoder[logico];
+        motor_cfg.hasHallSensor = true;
+        motor_cfg.hasRotorEncoder = true;
+        motor_cfg.hasTempSensor = false;
+        motor_cfg.motorPoles = 4;
+        motor_cfg.rotorIndexOffset = 0;
+        motor_cfg.filler01 = 0;
+        motor_cfg.pidcurrent.kp = 8;
+        motor_cfg.pidcurrent.ki = 2;
+        motor_cfg.pidcurrent.scale = 10;
+        if (false == res->setRemoteValueUntilVerified(protid, &motor_cfg, sizeof(motor_cfg), 10, 0.010, 0.050, 2))
+        {
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber() + 1;
+            return false;
+        }
+        else
+        {
+            if (verbosewhenok)
+            {
+                yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber() + 1;
+            }
+        }
+
+        /*
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_maxcurrentofmotor);
         eOmeas_current_t    current = (eOmeas_current_t) S_16(_currentLimits[logico]);
         if(false == res->setRemoteValueUntilVerified(protid, &current, sizeof(current), 10, 0.010, 0.050, 2))
@@ -1654,7 +1682,7 @@ bool embObjMotionControl::init()
             {
                 yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
             }
-        }    
+        }
 
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_rotorencoder);
         int32_t rotor = (int32_t) (_rotToEncoder[logico]);
@@ -1670,6 +1698,7 @@ bool embObjMotionControl::init()
                 yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
             }
         }
+        */
     }
 
     /////////////////////////////////////////////
