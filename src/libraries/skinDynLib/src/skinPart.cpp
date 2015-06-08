@@ -345,7 +345,7 @@ using namespace iCub::skinDynLib;
 
             for (int i=0; i<size; i++)
             {
-                printf("[ %lu->%d ]\t",i,taxel2Repr[i]);
+                printf("[ %i->%d ]\t",i,taxel2Repr[i]);
             }
             printf("\n");
             
