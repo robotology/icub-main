@@ -182,7 +182,7 @@ using namespace iCub::skinDynLib;
         yarp::sig::Vector taxelNrm(3,0.0);
         yarp::sig::Vector taxelPosNrm(6,0.0);
 
-        for (size_t i = 1; i < getSize(); i++)
+        for (int i = 1; i < getSize(); i++)
         {
             taxelPosNrm = vectorFromBottle(*(calibration.get(i).asList()),0,6);
             taxelPos = taxelPosNrm.subVector(0,2);
@@ -201,7 +201,7 @@ using namespace iCub::skinDynLib;
         {
             yarp::os::Bottle b = *(rf.find("taxel2Repr").asList());
             
-            for (size_t i = 0; i < getSize(); i++)
+            for (int i = 0; i < getSize(); i++)
             {
                 taxel2Repr.push_back(b.get(i).asInt());
             }
@@ -272,10 +272,10 @@ using namespace iCub::skinDynLib;
     bool skinPart::mapTaxelsOntoThemselves()
     {
         yarp::os::RecursiveLockGuard rlg(recursive_mutex);
-        for (size_t i = 0; i < getSize(); ++i)
+        for (int i = 0; i < getSize(); ++i)
         {
             bool isIvalidID=false;
-            for (size_t j = 0; j < getTaxelsSize(); ++j)
+            for (int j = 0; j < getTaxelsSize(); ++j)
             {
                 if (taxels[j]->getID()==i)
                 {
@@ -343,7 +343,7 @@ using namespace iCub::skinDynLib;
         {
             yDebug("Taxel ID -> Representative ID:");
 
-            for (size_t i=0; i<size; i++)
+            for (int i=0; i<size; i++)
             {
                 printf("[ %lu->%d ]\t",i,taxel2Repr[i]);
             }

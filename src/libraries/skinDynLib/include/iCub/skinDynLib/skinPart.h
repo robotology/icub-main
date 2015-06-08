@@ -105,7 +105,7 @@ class skinPartBase
      * @param  _filePath   is the full absolute path of the file
      * @return true/false in case of success/failure
      */
-    virtual bool setTaxelPosesFromFile(const std::string &_filePath, const std::string &_spatial_sampling="default") {};
+    virtual bool setTaxelPosesFromFile(const std::string &_filePath, const std::string &_spatial_sampling="default") { return true; }
 
     /**
     * Print Method

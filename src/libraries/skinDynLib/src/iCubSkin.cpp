@@ -59,7 +59,7 @@ using namespace iCub::skinDynLib;
                 return false;
             }
 
-            for (size_t i = 0; i < skinPartList->size(); ++i)
+            for (int i = 0; i < skinPartList->size(); ++i)
             {
                 std::string taxelPosFile = taxelPosFiles->get(i).asString().c_str();
                 std::string filePath     = skinRF.findFile(taxelPosFile.c_str());
