@@ -419,8 +419,8 @@ void Compensator::updateBaseline(){
 		baselines[j]    += change;
         mean_change     += change;
 
-//        if(j<5)
-//            printf("%d touch detected %s, change %.6f, gain: %.3f\n", j, touchDetected[j]?"yes":"no", change, touchDetected[j]?contactCompensationGain:compensationGain);
+    //        if(j<5)
+    //        printf("%d touch detected %s, change %.6f, gain: %.3f\n", j, touchDetected[j]?"yes":"no", change, touchDetected[j]?contactCompensationGain:compensationGain);
 
         if(baselines[j]<0){
             char* temp = new char[300];
@@ -707,6 +707,46 @@ bool Compensator::setMaxNeighborDistance(double d){
 }
 
 bool Compensator::setTaxelPosesFromFile(const char *filePath){
+    yarp::os::ResourceFinder rf;
+    rf.setVerbose(false);
+    rf.setDefaultContext("skinGui");   //overridden by --context parameter
+    rf.setDefaultConfigFile(filePath); //overridden by --from parameter
+    rf.configure(0,NULL);
+    rf.setVerbose(true);
+
+    yarp::os::Bottle &calibration = rf.findGroup("calibration");
+    if (calibration.isNull())
+    {
+        return setTaxelPosesFromFileOld(filePath);
+    }
+    else
+    {
+        poseSem.wait();
+        int size=calibration.size()-1;
+        skinDim=size;
+        taxelPos.resize(skinDim, zeros(3));
+        taxelOri.resize(skinDim, zeros(3));
+        taxelPoseConfidence.resize(skinDim, 0.0);
+        for (unsigned int i = 0; i < size; ++i)
+        {
+            if (i<taxelPos.size())
+            {
+                Vector taxelPosNrm(6,0.0);
+                taxelPosNrm = vectorFromBottle(*(calibration.get(i+1).asList()),0,6);
+                taxelPos[i] = taxelPosNrm.subVector(0,2);
+                taxelOri[i] = taxelPosNrm.subVector(3,5);
+            }
+            if(norm(taxelPos[i])>0.0)
+                taxelPoseConfidence[i] = 1.0;
+        }
+        computeNeighbors();
+        poseSem.post();
+    }
+
+    return true;
+}
+
+bool Compensator::setTaxelPosesFromFileOld(const char *filePath){
 	ifstream posFile;
 	posFile.open(filePath);	
 	if (!posFile.is_open())

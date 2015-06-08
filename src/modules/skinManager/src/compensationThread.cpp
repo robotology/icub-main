@@ -137,7 +137,7 @@ bool CompensationThread::threadInit()
     skinEventsOn = false;
 	Bottle &skinEventsConf = rf->findGroup("SKIN_EVENTS");
 	if(!skinEventsConf.isNull()){
-        cout<< "SKIN_EVENTS section found\n";
+        yDebug("SKIN_EVENTS section found");
         string eventPortName = "/" + moduleName + "/skin_events:o";  // output skin events
 	    if(!skinEventsPort.open(eventPortName.c_str()))
             sendErrorMsg("Unable to open port "+eventPortName);
@@ -154,7 +154,7 @@ bool CompensationThread::threadInit()
             }else{
                 FOR_ALL_PORTS(i){
                     // cout<< "Skin part "<< SkinPart_s[skinPartList->get(i).asInt()]<< endl;
-                    yInfo("Skin part %s",SkinPart_s[skinPartList->get(i).asInt()].c_str());
+                    yDebug("Skin part %s",SkinPart_s[skinPartList->get(i).asInt()].c_str());
                     compensators[i]->setSkinPart((SkinPart)skinPartList->get(i).asInt());
                 }
             }
@@ -173,7 +173,7 @@ bool CompensationThread::threadInit()
             else{
                 maxNeighDist = skinEventsConf.check("maxNeighborDist", Value(MAX_NEIGHBOR_DISTANCE)).asDouble();
 
-                printf("Max neighbor distance: %f m\n", maxNeighDist);
+                yInfo("Max neighbor distance: %f m\n", maxNeighDist);
                 FOR_ALL_PORTS(i){
                     if(compWorking[i]){
 	                    string taxelPosFile = taxelPosFiles->get(i).asString().c_str();

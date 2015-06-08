@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <list>
 
 namespace iCub
 {
@@ -61,11 +62,12 @@ enum SkinPart {
     SKIN_PART_ALL, SKIN_PART_SIZE
 };
 const std::string SkinPart_s[] = {
-    "unknown_skin_part", 
-    "skin_left_hand", "skin_left_forearm", "skin_left_upper_arm", 
-    "skin_right_hand", "skin_right_forearm", "skin_right_upper_arm", 
-    "skin_front_torso", "skin_left_leg_upper",  "skin_left_leg_lower", "skin_left_foot",
-    "skin_right_leg_upper",  "skin_right_leg_lower", "skin_right_foot",
+    "unknown", 
+    "l_hand", "l_forearm", "l_upper_arm", 
+    "r_hand", "r_forearm", "r_upper_arm", 
+    "chest",
+    "l_upper_leg", "l_lower_leg", "l_foot",
+    "r_upper_leg", "r_lower_leg", "r_foot",
     "all_skin_parts", "skin_part_size"
 };
 
@@ -219,6 +221,35 @@ std::vector<SkinPart> getSkinParts(BodyPart b);
 * @return the associated link number, -1 if the link number is not defined
 */
 int getLinkNum(SkinPart s);
+
+/**
+* @ingroup skinDynLib 
+* Retrieves a vector from a bottle:
+* @param b    is the bottle
+* @param in   is the index from which start acquiring values
+* @param size is the size of the vector
+**/
+yarp::sig::Vector vectorFromBottle(const yarp::os::Bottle b, int in, const int size);
+
+/**
+* @ingroup skinDynLib 
+* Returns a list of indexes corresponding to the values of vec that are equal to val.
+* @param vec  the vector under evaluation
+* @param val  the value to compare the vector to
+* @return     a list of indexes
+**/
+inline std::list<unsigned int> vectorofIntEqualto(const std::vector<int> vec, const int val)
+{
+    std::list<unsigned int> res;
+    for (size_t i = 0; i < vec.size(); i++)
+    {
+        if (vec[i]==val)
+        {
+            res.push_back(i);
+        }
+    }
+    return res;
+};
 
 }
 

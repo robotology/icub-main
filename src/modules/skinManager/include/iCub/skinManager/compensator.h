@@ -153,6 +153,7 @@ public:
     bool setContactCompensationGain(double gain);
     bool setMaxNeighborDistance(double d);
     bool setTaxelPosesFromFile(const char *filePath);
+    bool setTaxelPosesFromFileOld(const char *filePath);
     bool setTaxelPoses(const vector<Vector> &poses);
     bool setTaxelPose(unsigned int taxelId, const Vector &pose);
     bool setTaxelPositions(const Vector &positions);
