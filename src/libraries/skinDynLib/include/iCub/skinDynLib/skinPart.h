@@ -50,7 +50,7 @@ namespace skinDynLib
 
 class skinPartBase
 {
-  protected:
+  public:
     std::string name;
     int         size;   // theoretical maximum size of the skinPart
                         // it corresponds to the number of values on the respective port 
@@ -129,7 +129,7 @@ class skinPartBase
 */
 class skinPart : public skinPartBase
 {
-  protected:
+  public:
     /**
     * List of taxels that belong to the skinPart.
     **/

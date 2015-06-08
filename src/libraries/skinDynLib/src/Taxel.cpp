@@ -120,6 +120,56 @@ using namespace iCub::skinDynLib;
         return FoR;
     }
 
+    bool Taxel::setID(int _ID)
+    {
+        ID = _ID;
+        return true;
+    }
+
+    bool Taxel::setPosition(const yarp::sig::Vector &_Position)
+    {
+        if (_Position.size()!=3)
+        {
+            return false;
+        }
+
+        Position=_Position;
+        return true;        
+    } 
+
+    bool Taxel::setNormal(const yarp::sig::Vector &_Normal)
+    {
+        if (_Normal.size()!=3)
+        {
+            return false;
+        }
+
+        Normal=_Normal;
+        return true;
+    }
+
+    bool Taxel::setWRFPosition(const yarp::sig::Vector &_WRFPosition)
+    {
+        if (_WRFPosition.size()!=3)
+        {
+            return false;
+        }
+
+        WRFPosition=_WRFPosition;
+        return true;
+    }
+
+    bool Taxel::setPx(const yarp::sig::Vector &_px)
+    {
+        if (_px.size()!=2)
+        {
+            return false;
+        }
+
+        px=_px;
+        return true;
+    }
+
     void Taxel::print(int verbosity)
     {
         if (verbosity)

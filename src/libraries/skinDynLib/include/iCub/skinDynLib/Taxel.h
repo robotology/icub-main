@@ -146,6 +146,36 @@ class Taxel
     yarp::sig::Matrix getFoR();
 
     /**
+     * Sets the ID of the taxel
+     * @return true/false in case of success/failure
+     */
+    bool setID(int _ID);
+
+    /**
+     * Sets the Position of the taxel in the limb's FoR
+     * @return true/false in case of success/failure
+     */
+    bool setPosition(const yarp::sig::Vector &_Position); 
+
+    /**
+     * Sets the Normal of the taxel in the limb's FoR
+     * @return true/false in case of success/failure
+     */
+    bool setNormal(const yarp::sig::Vector &_Normal);
+
+    /**
+     * Sets the Position of the taxel in the root FoR
+     * @return true/false in case of success/failure
+     */
+    bool setWRFPosition(const yarp::sig::Vector &_WRFPosition);
+
+    /**
+     * Sets the u,v position of the taxel in one of the eyes
+     * @return true/false in case of success/failure
+     */
+    bool setPx(const yarp::sig::Vector &_px);
+
+    /**
     * Print Method
     * @param verbosity is the verbosity level
     **/
