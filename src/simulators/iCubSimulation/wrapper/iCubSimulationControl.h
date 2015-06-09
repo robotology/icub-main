@@ -352,8 +352,8 @@ public ImplementRemoteVariables
   int verbosity;
 
 private:
-    void iCubSimulationControl::compute_mot_pos(double *mot, double *jnt);
-    void iCubSimulationControl::compute_mot_vel(double *mot, double *jnt);
+    void compute_mot_pos(double *mot, double *jnt);
+    void compute_mot_vel(double *mot, double *jnt);
 
 protected:
     yarp::dev::PolyDriver joints;
