@@ -346,9 +346,15 @@ bool embObjMotionControl::alloc(int nj)
     _torqueSensorChan= allocAndCheck<int>(nj);
     _maxTorque=allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
+    _hasHallSensor = allocAndCheck<bool>(nj);
+    _hasTempSensor = allocAndCheck<bool>(nj);
+    _hasRotorEncoder = allocAndCheck<bool>(nj);
+    _rotorIndexOffset = allocAndCheck<int>(nj);
+    _motorPoles = allocAndCheck<int>(nj);
 
     _pids=allocAndCheck<Pid>(nj);
     _tpids=allocAndCheck<Pid>(nj);
+    _cpids = allocAndCheck<Pid>(nj);
 
     _impedance_params=allocAndCheck<ImpedanceParameters>(nj);
     _impedance_limits=allocAndCheck<ImpedanceLimits>(nj);
@@ -402,6 +408,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_newtonsToSensor);
     checkAndDestroy(_pids);
     checkAndDestroy(_tpids);
+    checkAndDestroy(_cpids);
     checkAndDestroy(_impedance_params);
     checkAndDestroy(_impedance_limits);
     checkAndDestroy(_estim_params);
@@ -423,7 +430,12 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_enabledAmp);
     checkAndDestroy(_enabledPid);
     checkAndDestroy(_calibrated);
-    checkAndDestroy(_last_position_move_time);
+    checkAndDestroy(_hasHallSensor);
+    checkAndDestroy(_hasTempSensor);
+    checkAndDestroy(_hasRotorEncoder);
+    checkAndDestroy(_rotorIndexOffset);
+    checkAndDestroy(_motorPoles);
+
     if(requestQueue)
         delete requestQueue;
     return true;
@@ -449,6 +461,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementOpenLoopControl(this),
     ImplementInteractionMode(this),
     ImplementMotor(this),
+    ImplementRemoteVariables(this),
     _mutex(1),
     SAFETY_THRESHOLD(2.0)
 {
@@ -456,6 +469,7 @@ embObjMotionControl::embObjMotionControl() :
     opened        = 0;
     _pids         = NULL;
     _tpids        = NULL;
+    _cpids        = NULL;
     res           = NULL;
     requestQueue  = NULL;
     _njoints      = 0;
@@ -465,7 +479,11 @@ embObjMotionControl::embObjMotionControl() :
     _encoderconversionfactor = NULL;
     _encoderconversionoffset = NULL;
     _angleToEncoder = NULL;
-
+    _hasHallSensor = NULL;
+    _hasTempSensor = NULL;
+    _hasRotorEncoder = NULL;
+    _rotorIndexOffset = NULL;
+    _motorPoles       = NULL;
     _cacheImpedance   = NULL;
     _impedance_params = NULL;
     _impedance_limits = NULL;
@@ -825,6 +843,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementOpenLoopControl::initialize(_njoints, _axisMap);
     ImplementInteractionMode::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementMotor::initialize(_njoints, _axisMap);
+    ImplementRemoteVariables::initialize(_njoints, _axisMap);
     
     /*
     *  Once I'm sure every input data required is present and correct, instantiate the EMS, transceiver etc...
@@ -1825,6 +1844,7 @@ bool embObjMotionControl::close()
     ImplementPositionDirect::uninitialize();
     ImplementOpenLoopControl::uninitialize();
     ImplementInteractionMode::uninitialize();
+    ImplementRemoteVariables::uninitialize();
     
     if (_torqueControlHelper)  {delete _torqueControlHelper; _torqueControlHelper=0;}
     
@@ -3447,6 +3467,112 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     *min = (double)limits.min + SAFETY_THRESHOLD;
     *max = (double)limits.max - SAFETY_THRESHOLD;
     return ret;
+}
+
+// IRemoteVariables
+bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val)
+{
+    val.clear();
+    if (key == "kinematic_mj")
+    {
+        val.addString("1 2 3"); return true;
+    }
+    else if (key == "rotor")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_rotToEncoder[i]); return true;
+    }
+    else if (key == "gearbox")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_gearbox[i]); return true;
+    }
+    else if (key == "zeros")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_zeros[i]); return true;
+    }
+    else if (key == "hasHallSensor")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) r.addInt(_hasHallSensor[i]); return true;
+    }
+    else if (key == "hasTempSensor")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addInt(_hasTempSensor[i]); return true;
+    }
+    else if (key == "hasRotorEncoder")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addInt(_hasRotorEncoder[i]); return true;
+    }
+    else if (key == "rotorIndexOffset")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addInt(_rotorIndexOffset[i]); return true;
+    }
+    else if (key == "motorPoles")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addInt(_motorPoles[i]); return true;
+    }
+    else if (key == "pidCurrentKp")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_cpids[i].kp); return true;
+    }
+    else if (key == "pidCurrentKi")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_cpids[i].ki); return true;
+    }
+    else if (key == "pidCurrentShift")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_cpids[i].scale); return true;
+    }
+    yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
+    return false;
+}
+
+bool embObjMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val)
+{
+    string s1 = val.toString();
+    Bottle* bval = val.get(0).asList();
+    if (bval == 0)
+    {
+        yWarning("setRemoteVariable(): Protocol error %s", s1.c_str());
+        return false;
+    }
+
+    string s2 = bval->toString();
+    if (key == "kinematic_mj")
+    {
+        return true;
+    }
+    else if (key == "rotor")
+    {
+        for (int i = 0; i < _njoints; i++)
+            _rotToEncoder[i] = bval->get(i).asDouble();
+        return true;
+    }
+    else if (key == "gearbox")
+    {
+        for (int i = 0; i < _njoints; i++) _gearbox[i] = bval->get(i).asDouble(); return true;
+    }
+    else if (key == "zeros")
+    {
+        for (int i = 0; i < _njoints; i++) _zeros[i] = bval->get(i).asDouble(); return true;
+    }
+    yWarning("setRemoteVariable(): Unknown variable %s", key.c_str());
+    return false;
+}
+
+bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys)
+{
+    listOfKeys->clear();
+    listOfKeys->addString("kinematic_mj");
+    listOfKeys->addString("rotor");
+    listOfKeys->addString("gearbox");
+    listOfKeys->addString("hasHallSensor");
+    listOfKeys->addString("hasTempSensor");
+    listOfKeys->addString("hasRotorEncoder");
+    listOfKeys->addString("rotorIndexOffset");
+    listOfKeys->addString("motorPoles");
+    listOfKeys->addString("pidCurrentKp");
+    listOfKeys->addString("pidCurrentKi");
+    listOfKeys->addString("pidCurrentShift");
+    return true;
 }
 
 // IControlLimits2

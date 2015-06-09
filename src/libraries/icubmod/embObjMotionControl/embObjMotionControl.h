@@ -246,6 +246,8 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementOpenLoopControl,
     public IDebugInterfaceRaw,
     public ImplementDebugInterface,
+    public IRemoteVariablesRaw,
+    public ImplementRemoteVariables,
     public IethResource
 {
 
@@ -270,8 +272,14 @@ private:
     double *_rotToEncoder;                      /** angle to rotor conversion factors */
     double *_gearbox;                           /** the gearbox ratio */
     double *_zeros;                             /** encoder zeros */
+    bool   *_hasHallSensor;                     /** */
+    bool   *_hasTempSensor;                     /** */
+    bool   *_hasRotorEncoder;                   /** */
+    int    *_rotorIndexOffset;                  /** */
+    int    *_motorPoles;                        /** */
     Pid *_pids;                                 /** initial gains */
     Pid *_tpids;                                /** initial torque gains */
+    Pid *_cpids;                                /** initial current gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
 
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
@@ -575,6 +583,12 @@ public:
     virtual bool getMotorEncoderCountsPerRevolutionRaw(int m, double *v);
     virtual bool setMotorEncoderCountsPerRevolutionRaw(int m, const double cpr);
     ///////////////////////// END MotorEncoder Interface
+
+    //////////////////////// BEGIN RemoteVariables Interface
+    virtual bool getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val);
+    virtual bool setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val);
+    virtual bool getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys);
+    ///////////////////////// END RemoteVariables Interface
 
     ////// Amplifier interface
     virtual bool enableAmpRaw(int j);

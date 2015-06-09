@@ -32,6 +32,7 @@
 #include <yarp/os/Semaphore.h>
 //#include <yarp/os/RateThread.h>
 #include <yarp/sig/Image.h>
+#include <yarp/sig/Matrix.h>
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/dev/ControlBoardInterfaces.h>
@@ -70,34 +71,36 @@ namespace yarp{
     }
 }
 class yarp::dev::iCubSimulationControl :
-    public DeviceDriver,
-    //public yarp::os::RateThread, 
-    public IPositionControlRaw,
-    public ImplementPositionControl<iCubSimulationControl, IPositionControl>,
-    public IVelocityControl2Raw,
-    public ImplementVelocityControl2,
-    public ITorqueControlRaw,
-    public ImplementTorqueControl,
-    public IAmplifierControlRaw,
-    public ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>,
-    public IControlCalibrationRaw,
-    public ImplementControlCalibration<iCubSimulationControl, IControlCalibration>,
-    public IControlLimits2Raw,
-    public ImplementControlLimits2,
-    public IControlMode2Raw,
-    public ImplementControlMode2,
-    public IInteractionModeRaw,
-    public ImplementInteractionMode,
-    public IPidControlRaw,
-    public ImplementPidControl<iCubSimulationControl, IPidControl>,
-    public IEncodersTimedRaw,
-    public ImplementEncodersTimed,
-    public IMotorEncodersRaw,
-    public ImplementMotorEncoders,
-    public IPositionDirectRaw,
-    public ImplementPositionDirect,
-    public IOpenLoopControlRaw,
-    public ImplementOpenLoopControl
+public DeviceDriver,
+//public yarp::os::RateThread, 
+public IPositionControlRaw,
+public ImplementPositionControl<iCubSimulationControl, IPositionControl>,
+public IVelocityControl2Raw,
+public ImplementVelocityControl2,
+public ITorqueControlRaw,
+public ImplementTorqueControl,
+public IAmplifierControlRaw,
+public ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>,
+public IControlCalibrationRaw,
+public ImplementControlCalibration<iCubSimulationControl, IControlCalibration>,
+public IControlLimits2Raw,
+public ImplementControlLimits2,
+public IControlMode2Raw,
+public ImplementControlMode2,
+public IInteractionModeRaw,
+public ImplementInteractionMode,
+public IPidControlRaw,
+public ImplementPidControl<iCubSimulationControl, IPidControl>,
+public IEncodersTimedRaw,
+public ImplementEncodersTimed,
+public IMotorEncodersRaw,
+public ImplementMotorEncoders,
+public IPositionDirectRaw,
+public ImplementPositionDirect,
+public IOpenLoopControlRaw,
+public ImplementOpenLoopControl,
+public IRemoteVariablesRaw,
+public ImplementRemoteVariables
 
 {
  private:
@@ -228,6 +231,14 @@ class yarp::dev::iCubSimulationControl :
 
   ///////////////////////// END Encoder Interface
 
+  //////////////////////// BEGIN RemoteVariables Interface
+  //
+  virtual bool getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val);
+  virtual bool setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val);
+  virtual bool getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys);
+
+  ///////////////////////// END RemoteVariables Interface
+
   //////////////////////// BEGIN MotorEncoderInterface
   //
   virtual bool getNumberOfMotorEncodersRaw(int* num);
@@ -340,6 +351,10 @@ class yarp::dev::iCubSimulationControl :
 
   int verbosity;
 
+private:
+    void iCubSimulationControl::compute_mot_pos(double *mot, double *jnt);
+    void iCubSimulationControl::compute_mot_vel(double *mot, double *jnt);
+
 protected:
     yarp::dev::PolyDriver joints;
     LogicalJoints *manager;
@@ -352,16 +367,19 @@ protected:
     bool _opened;
 
     //current position of the joints
-    double *current_pos;
+    double *current_jnt_pos;
+    double *current_mot_pos;
 
     //torque of the joints
-    double *current_torques; // at the moment this is fake
+    double *current_jnt_torques; // at the moment this is fake
+    double *current_mot_torques; // at the moment this is fake
 
     //openloop/pwm value
     double *openloop_ref; // at the moment this is fake
 
     //current velocity of the joints
-    double *current_vel;
+    double *current_jnt_vel;
+    double *current_mot_vel;
     
     //next position of the joints
     double *next_pos;
@@ -407,16 +425,25 @@ protected:
     double *limitsMax;                         // joint limits, max
     double *torqueLimits;                      // torque limits
     double *maxCurrent;                        // max motor current (simulated)
-
+    double *rotToEncoder;                      // angle to rotor conversion factors
+    double *gearbox;                           // the gearbox ratio
     double *refSpeed;
     double *refAccel;
     double *controlP;
+    bool   *hasHallSensor;
+    bool   *hasTempSensor;
+    bool   *hasRotorEncoder;
+    int    *rotorIndexOffset;
+    int    *motorPoles;
+
     int    *controlMode;
     int    *interactionMode;
 
     Pid    *position_pid;
     Pid    *torque_pid;
+    Pid    *current_pid;
     MotorTorqueParameters *motor_torque_params;
+    yarp::sig::Matrix kinematic_mj;
 
     //bool velocityMode;
 };

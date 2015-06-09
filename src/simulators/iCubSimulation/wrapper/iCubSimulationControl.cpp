@@ -69,6 +69,7 @@ iCubSimulationControl::iCubSimulationControl() :
     ImplementPositionDirect(this),
     ImplementMotorEncoders(this),
     ImplementOpenLoopControl(this),
+    ImplementRemoteVariables(this),
     _done(0),
     _mutex(1)
 {
@@ -127,9 +128,12 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     axisMap = allocAndCheck<int>(njoints);
 //  jointNames = new ConstString[njoints];
 
-    current_pos = allocAndCheck<double>(njoints);
-    current_vel = allocAndCheck<double>(njoints);
-    current_torques = allocAndCheck<double>(njoints);
+    current_jnt_pos = allocAndCheck<double>(njoints);
+    current_jnt_vel = allocAndCheck<double>(njoints);
+    current_jnt_torques = allocAndCheck<double>(njoints);
+    current_mot_pos = allocAndCheck<double>(njoints);
+    current_mot_vel = allocAndCheck<double>(njoints);
+    current_mot_torques = allocAndCheck<double>(njoints);
     openloop_ref = allocAndCheck<double>(njoints);
     next_pos = allocAndCheck<double>(njoints);
     next_vel = allocAndCheck<double>(njoints);
@@ -140,8 +144,16 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     error_tol = allocAndCheck<double>(njoints);
     position_pid = allocAndCheck <Pid>(njoints);
     torque_pid = allocAndCheck  <Pid>(njoints);
+    current_pid = allocAndCheck  <Pid>(njoints);
     motor_torque_params = allocAndCheck <MotorTorqueParameters>(njoints);
-    
+    rotToEncoder = allocAndCheck<double>(njoints);
+    gearbox = allocAndCheck<double>(njoints);
+    hasHallSensor = allocAndCheck<bool>(njoints);
+    hasTempSensor = allocAndCheck<bool>(njoints);
+    hasRotorEncoder = allocAndCheck<bool>(njoints);
+    rotorIndexOffset = allocAndCheck<int>(njoints);
+    motorPoles = allocAndCheck<int>(njoints);
+
 //  joint_dev = new DeviceTag[njoints];
 
     motor_on = allocAndCheck<bool>(njoints);
@@ -172,6 +184,24 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         return false;
     }
     for (int i = 1; i < xtmp.size(); i++) zeros[i-1] = xtmp.get(i).asDouble();
+
+
+    int mj_size = p.findGroup("GENERAL").check("Kinematic_mj_size",Value(0),"Default velocity").asInt();
+    if (mj_size>0)
+    {
+         xtmp = p.findGroup("GENERAL").findGroup("Kinematic_mj");
+         if (xtmp.size() != mj_size*mj_size) {
+             yError("Invalid Kinematic_mj size\n");
+         }
+         kinematic_mj.resize(mj_size,mj_size);
+         for (int c = 0; c < mj_size; c++)
+            for (int r = 0; r < mj_size; r++)
+            {
+                int e=r+c*mj_size+1;
+                kinematic_mj[r][c] = xtmp.get(e).asDouble();
+            }
+    }
+
 
     //torque sensor
     for (int i = 1; i < njoints+1; i++) newtonsToSensor[i-1] = 1.0;
@@ -209,7 +239,8 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     for(int axis =0;axis<njoints;axis++)
     {
-        current_pos[axis] = 0.0;
+        current_jnt_pos[axis] = 0.0;
+        current_mot_pos[axis] = 0.0;
         ErrorPos[axis] = 0.0;
         double v = 0.0;     
         if (v<limitsMin[axis]) v = limitsMin[axis];
@@ -243,6 +274,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementInteractionMode::initialize(njoints, axisMap);
     ImplementPositionDirect::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementOpenLoopControl::initialize(njoints, axisMap);
+    ImplementRemoteVariables::initialize(njoints, axisMap);
 
     if (!p.check("joint_device")) {
         yError("Need a device to access the joints\n");
@@ -295,12 +327,16 @@ bool iCubSimulationControl::close (void)
         ImplementInteractionMode::uninitialize();
         ImplementPositionDirect::uninitialize();
         ImplementOpenLoopControl::uninitialize();
+        ImplementRemoteVariables::uninitialize();
     }
 
-    checkAndDestroy<double>(current_pos);
-    checkAndDestroy<double>(current_torques);
+    checkAndDestroy<double>(current_jnt_pos);
+    checkAndDestroy<double>(current_jnt_torques);
+    checkAndDestroy<double>(current_mot_pos);
+    checkAndDestroy<double>(current_mot_torques);
     checkAndDestroy<double>(openloop_ref);
-    checkAndDestroy<double>(current_vel);
+    checkAndDestroy<double>(current_jnt_vel);
+    checkAndDestroy<double>(current_mot_vel);
     checkAndDestroy<double>(next_pos);
     checkAndDestroy<double>(next_vel);
     checkAndDestroy<double>(next_torques);
@@ -328,11 +364,26 @@ bool iCubSimulationControl::close (void)
     checkAndDestroy<Pid>(position_pid);
     checkAndDestroy<Pid>(torque_pid);
     checkAndDestroy<MotorTorqueParameters>(motor_torque_params);
-
-  //  delete[] jointNames;
+    checkAndDestroy<double>(rotToEncoder);
+    checkAndDestroy<double>(gearbox);
+    checkAndDestroy<bool>(hasHallSensor);
+    checkAndDestroy<bool>(hasTempSensor);
+    checkAndDestroy<bool>(hasRotorEncoder);
+    checkAndDestroy<int>(rotorIndexOffset);
+    checkAndDestroy<int>(motorPoles);
+    //  delete[] jointNames;
 
     _opened = false;
     return true;
+}
+
+void iCubSimulationControl::compute_mot_vel(double *mot, double *jnt)
+{
+    compute_mot_pos(mot,jnt);
+}
+void iCubSimulationControl::compute_mot_pos(double *mot, double *jnt)
+{
+
 }
 
 void iCubSimulationControl::jointStep() {
@@ -343,14 +394,15 @@ void iCubSimulationControl::jointStep() {
     }
     if (partSelec<=6)
     {   
-        for (int axis=0; axis<njoints; axis++) {
+        for (int axis=0; axis<njoints; axis++)
+        {
             LogicalJoint& ctrl = manager->control(partSelec,axis); 
             if (!ctrl.isValid()) continue;
-            current_pos[axis] = ctrl.getAngle();
+            current_jnt_pos[axis] = ctrl.getAngle();
+            current_jnt_vel[axis] = ctrl.getVelocity();
+            current_jnt_torques[axis] = (controlMode[axis]==MODE_TORQUE) ? ctrl.getTorque() : 0.0;  // if not torque ctrl, set torque feedback to 0
+            current_mot_torques[axis]=0;
 
-            current_vel[axis] = ctrl.getVelocity();
-            current_torques[axis] = (controlMode[axis]==MODE_TORQUE) ? ctrl.getTorque() : 0.0;  // if not torque ctrl, set torque feedback to 0
-        
             if (maxCurrent[axis]<=0) 
             {
                 controlMode[axis]= VOCAB_CM_HW_FAULT;
@@ -361,7 +413,7 @@ void iCubSimulationControl::jointStep() {
 
             if (controlMode[axis]==MODE_VELOCITY || controlMode[axis]==VOCAB_CM_MIXED || controlMode[axis]==MODE_IMPEDANCE_VEL)
             {
-                if(((current_pos[axis]<limitsMin[axis])&&(next_vel[axis]<0)) || ((current_pos[axis]>limitsMax[axis])&&(next_vel[axis]>0)))
+                if(((current_jnt_pos[axis]<limitsMin[axis])&&(next_vel[axis]<0)) || ((current_jnt_pos[axis]>limitsMax[axis])&&(next_vel[axis]>0)))
                 {
                     ctrl.setVelocity(0.0);
                 }
@@ -387,7 +439,7 @@ void iCubSimulationControl::jointStep() {
             else if (controlMode[axis]==MODE_OPENLOOP)
             {
                 //currently identical to velocity control, with fixed velocity
-                if(((current_pos[axis]<limitsMin[axis])&&(openloop_ref[axis]<0)) || ((current_pos[axis]>limitsMax[axis])&&(openloop_ref[axis]>0)))
+                if(((current_jnt_pos[axis]<limitsMin[axis])&&(openloop_ref[axis]<0)) || ((current_jnt_pos[axis]>limitsMax[axis])&&(openloop_ref[axis]>0)))
                 {
                     ctrl.setVelocity(0.0);
                 }
@@ -408,6 +460,8 @@ void iCubSimulationControl::jointStep() {
                 }
             }
         }
+        compute_mot_pos     (current_mot_pos,current_jnt_pos);
+        compute_mot_vel     (current_mot_vel,current_jnt_vel);
     }
     _mutex.post();
 }
@@ -751,7 +805,7 @@ bool iCubSimulationControl::checkMotionDoneRaw (bool *ret)
     bool fin = true;
     for(int axis = 0;axis<njoints;axis++)
         {
-            if(! (fabs( current_pos[axis]-next_pos[axis])<error_tol[axis]))
+            if(! (fabs( current_jnt_pos[axis]-next_pos[axis])<error_tol[axis]))
                 {
                     fin = false;
                     // yDebug("axes %d unfinished\n");
@@ -759,7 +813,7 @@ bool iCubSimulationControl::checkMotionDoneRaw (bool *ret)
         }
     //if(fin)
     if (verbosity)
-        yDebug("motion finished error tol %f %f %f\n",error_tol[0],current_pos[0],next_pos[0]);
+        yDebug("motion finished error tol %f %f %f\n",error_tol[0],current_jnt_pos[0],next_pos[0]);
     *ret = fin;
     _mutex.post();
     return true;
@@ -770,7 +824,7 @@ bool iCubSimulationControl::checkMotionDoneRaw(int axis, bool *ret)
     if( (axis >=0) && (axis<njoints) )
         {
             _mutex.wait();
-            if(fabs(current_pos[axis]-next_pos[axis])<error_tol[axis])
+            if(fabs(current_jnt_pos[axis]-next_pos[axis])<error_tol[axis])
                 *ret = true;
             else
                 *ret = false;
@@ -850,7 +904,7 @@ bool iCubSimulationControl::stopRaw(int axis)
     if( (axis>=0) && (axis<njoints) )
     {
         _mutex.wait();
-        next_pos[axis] = current_pos[axis];
+        next_pos[axis] = current_jnt_pos[axis];
         next_vel[axis] = 0.0;
         _mutex.post();
         return true;
@@ -864,7 +918,7 @@ bool iCubSimulationControl::stopRaw()
     _mutex.wait();
     for(int axis=0;axis<njoints;axis++)
     {
-        next_pos[axis] = current_pos[axis];
+        next_pos[axis] = current_jnt_pos[axis];
         next_vel[axis] = 0.0;
     }
     _mutex.post();
@@ -940,13 +994,13 @@ bool iCubSimulationControl::getEncodersRaw(double *v)
     for(int axis = 0;axis<njoints;axis++)
     {
         if ( axis == 10 ||  axis == 12 || axis == 14 ) 
-            v[axis] = current_pos[axis]*2;
+            v[axis] = current_jnt_pos[axis]*2;
         else if ( axis == 15 ) 
-            v[axis] = current_pos[axis]*3;
+            v[axis] = current_jnt_pos[axis]*3;
         else if ( axis == 7 ) 
-            v[axis] = limitsMax[axis] - current_pos[axis]; 
+            v[axis] = limitsMax[axis] - current_jnt_pos[axis]; 
         else 
-            v[axis] = current_pos[axis];
+            v[axis] = current_jnt_pos[axis];
     }
     _mutex.post();
     return true;
@@ -958,13 +1012,13 @@ bool iCubSimulationControl::getEncoderRaw(int axis, double *v)
         _mutex.wait();
         
         if ( axis == 10 ||  axis == 12 || axis == 14 ) 
-            *v = current_pos[axis]*2;
+            *v = current_jnt_pos[axis]*2;
         else if ( axis == 15 ) 
-            *v = current_pos[axis]*3;
+            *v = current_jnt_pos[axis]*3;
         else if ( axis == 7 ) 
-            *v = limitsMax[axis] - current_pos[axis];
+            *v = limitsMax[axis] - current_jnt_pos[axis];
         else 
-            *v = current_pos[axis];
+            *v = current_jnt_pos[axis];
 
         _mutex.post();
         return true;
@@ -995,7 +1049,7 @@ bool iCubSimulationControl::getEncoderSpeedsRaw(double *v)
 {
    _mutex.wait();
     for(int axis = 0; axis<njoints; axis++)
-        v[axis] = current_vel[axis];//* 10;
+        v[axis] = current_jnt_vel[axis];//* 10;
     _mutex.post();
     return true;
 }
@@ -1004,7 +1058,7 @@ bool iCubSimulationControl::getEncoderSpeedRaw(int axis, double *v)
 {
     if( (axis>=0) && (axis<njoints) ) {
         _mutex.wait();
-        *v = current_vel[axis];// * 10;
+        *v = current_jnt_vel[axis];// * 10;
         _mutex.post();
         return true;
     }
@@ -1049,14 +1103,7 @@ bool iCubSimulationControl::getMotorEncodersRaw(double *v)
    _mutex.wait();
     for(int axis = 0;axis<njoints;axis++)
     {
-        if ( axis == 10 ||  axis == 12 || axis == 14 ) 
-            v[axis] = current_pos[axis]*2;
-        else if ( axis == 15 ) 
-            v[axis] = current_pos[axis]*3;
-        else if ( axis == 7 ) 
-            v[axis] = limitsMax[axis] - current_pos[axis]; 
-        else 
-            v[axis] = current_pos[axis];
+        getMotorEncoderRaw(axis,&v[axis]);
     }
     _mutex.post();
     return true;
@@ -1064,18 +1111,10 @@ bool iCubSimulationControl::getMotorEncodersRaw(double *v)
 
 bool iCubSimulationControl::getMotorEncoderRaw(int axis, double *v)
 {
-    if((axis>=0) && (axis<njoints)) {
+    if((axis>=0) && (axis<njoints))
+    {
         _mutex.wait();
-        
-        if ( axis == 10 ||  axis == 12 || axis == 14 ) 
-            *v = current_pos[axis]*2;
-        else if ( axis == 15 ) 
-            *v = current_pos[axis]*3;
-        else if ( axis == 7 ) 
-            *v = limitsMax[axis] - current_pos[axis];
-        else 
-            *v = current_pos[axis];
-
+        *v = current_mot_pos[axis];
         _mutex.post();
         return true;
     }
@@ -1122,7 +1161,9 @@ bool iCubSimulationControl::getMotorEncoderSpeedsRaw(double *v)
 {
    _mutex.wait();
     for(int axis = 0; axis<njoints; axis++)
-        v[axis] = current_vel[axis];//* 10;
+    {
+        getMotorEncoderSpeedRaw(axis,&v[axis]);
+    }
     _mutex.post();
     return true;
 }
@@ -1131,7 +1172,7 @@ bool iCubSimulationControl::getMotorEncoderSpeedRaw(int axis, double *v)
 {
     if( (axis>=0) && (axis<njoints) ) {
         _mutex.wait();
-        *v = current_vel[axis];// * 10;
+        *v = current_mot_vel[axis];
         _mutex.post();
         return true;
     }
@@ -1281,6 +1322,111 @@ bool iCubSimulationControl::getLimitsRaw(int axis, double *min, double *max)
      return false;
 }
 
+// IRemoteVariables
+bool iCubSimulationControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val)
+{
+    val.clear();
+    if (key == "kinematic_mj")
+    {
+        val.addString("1 2 3"); return true;
+    }
+    else if (key == "rotor")
+    {
+        Bottle& r = val.addList(); for (int i=0; i<njoints; i++) r.addDouble(rotToEncoder[i]); return true;
+    }
+    else if (key == "gearbox")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addDouble(gearbox[i]); return true;
+    }
+    else if (key == "zeros")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addDouble(zeros[i]); return true;
+    }
+    else if (key == "hasHallSensor")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt(hasHallSensor[i]); return true;
+    }
+    else if (key == "hasTempSensor")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt(hasTempSensor[i]); return true;
+    }
+    else if (key == "hasRotorEncoder")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt(hasRotorEncoder[i]); return true;
+    }
+    else if (key == "rotorIndexOffset")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt(rotorIndexOffset[i]); return true;
+    }
+    else if (key == "motorPoles")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addInt(motorPoles[i]); return true;
+    }
+    else if (key == "pidCurrentKp")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addDouble(current_pid[i].kp); return true;
+    }
+    else if (key == "pidCurrentKi")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addDouble(current_pid[i].ki); return true;
+    }
+    else if (key == "pidCurrentShift")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<njoints; i++) r.addDouble(current_pid[i].scale); return true;
+    }
+    yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
+    return false;
+}
+
+bool iCubSimulationControl::setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val)
+{
+    string s1 = val.toString();
+    Bottle* bval = val.get(0).asList();
+    if (bval == 0)
+    {
+        yWarning("setRemoteVariable(): Protocol error %s", s1.c_str());
+        return false;
+    }
+
+    string s2 = bval->toString();
+    if (key == "kinematic_mj")
+    {
+        return true;
+    }
+    else if (key == "rotor")
+    {
+        for (int i = 0; i < njoints; i++)
+            rotToEncoder[i] = bval->get(i).asDouble();
+        return true;
+    }
+    else if (key == "gearbox")
+    {
+        for (int i = 0; i < njoints; i++) gearbox[i] = bval->get(i).asDouble(); return true;
+    }
+    else if (key == "zeros")
+    {
+        for (int i = 0; i < njoints; i++) zeros[i] = bval->get(i).asDouble(); return true;
+    }
+    yWarning("setRemoteVariable(): Unknown variable %s", key.c_str());
+    return false;
+}
+
+bool iCubSimulationControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys)
+{
+    listOfKeys->clear();
+    listOfKeys->addString("kinematic_mj");
+    listOfKeys->addString("rotor");
+    listOfKeys->addString("gearbox");
+    listOfKeys->addString("hasHallSensor");
+    listOfKeys->addString("hasTempSensor");
+    listOfKeys->addString("hasRotorEncoder");
+    listOfKeys->addString("rotorIndexOffset");
+    listOfKeys->addString("motorPoles");
+    listOfKeys->addString("pidCurrentKp");
+    listOfKeys->addString("pidCurrentKi");
+    listOfKeys->addString("pidCurrentShift");
+    return true;
+}
 
 // IControlLimits2
 bool iCubSimulationControl::setVelLimitsRaw(int axis, double min, double max)
@@ -1362,7 +1508,7 @@ bool iCubSimulationControl::getTorqueRaw(int axis, double *sp)
 {
     if( (axis >=0) && (axis < njoints)) {
         _mutex.wait();
-         *sp = current_torques[axis];
+         *sp = current_jnt_torques[axis];
          _mutex.post();
          return true;
     }
@@ -1372,7 +1518,7 @@ bool iCubSimulationControl::getTorquesRaw(double *sp)
 {
    _mutex.wait();
     for(int axis = 0;axis<njoints;axis++)
-        sp[axis] = current_torques[axis];
+        sp[axis] = current_jnt_torques[axis];
     _mutex.post();
     return true;
 }
@@ -1715,7 +1861,7 @@ bool iCubSimulationControl::setControlModeRaw(const int j, const int mode)
         {
             _mutex.wait();
             controlMode[j] = ControlModes_yarp2iCubSIM(mode);
-            next_pos[j]=current_pos[j];
+            next_pos[j]=current_jnt_pos[j];
             if (controlMode[j] != MODE_OPENLOOP) openloop_ref[j]=0;
             _mutex.post();
         }
@@ -1776,7 +1922,7 @@ bool iCubSimulationControl::getInteractionModesRaw(yarp::dev::InteractionModeEnu
 bool iCubSimulationControl::setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode)
 {
     interactionMode[axis] = (int)mode;
-    next_pos[axis]=current_pos[axis];
+    next_pos[axis]=current_jnt_pos[axis];
     return true;
 }
 
