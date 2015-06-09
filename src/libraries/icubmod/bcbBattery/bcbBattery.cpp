@@ -226,7 +226,13 @@ bool BcbBattery::getBatteryCharge(double &charge)
 
 bool BcbBattery::getBatteryStatus(int &status)
 {
-    yError("Not yet implemented");
+    //yError("Not yet implemented");
+    return false;
+}
+
+bool BcbBattery::getBatteryTemperature(double &temperature)
+{
+    //yError("Not yet implemented");
     return false;
 }
 
