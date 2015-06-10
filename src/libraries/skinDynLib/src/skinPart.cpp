@@ -112,7 +112,7 @@ using namespace iCub::skinDynLib;
 
         yarp::os::ResourceFinder rf;
         rf.setVerbose(false);
-        rf.setDefaultContext("skinGui");           //overridden by --context parameter
+        rf.setDefaultContext("skinGui");            //overridden by --context parameter
         rf.setDefaultConfigFile(_filePath.c_str()); //overridden by --from parameter
         rf.configure(0,NULL);
         rf.setVerbose(true);
@@ -125,15 +125,15 @@ using namespace iCub::skinDynLib;
         {
             yWarning("[skinPart::setTaxelPosesFromFile] no name field found. Using filename.");
             // Assign the name of the skinPart according to the filename (hardcoded)
-            if      (filename == "left_forearm_mesh.txt")    { setName("skin_left_forearm");    }
-            else if (filename == "left_forearm_nomesh.txt")  { setName("skin_left_forearm");    }
-            else if (filename == "right_forearm_mesh.txt")   { setName("skin_right_forearm");   }
-            else if (filename == "right_forearm_nomesh.txt") { setName("skin_right_forearm");   }
-            else if (filename == "left_hand_V2_1.txt")       { setName("skin_left_hand");       }
-            else if (filename == "right_hand_V2_1.txt")      { setName("skin_right_hand");      }
-            else if (filename == "left_arm_mesh.txt")        { setName("skin_left_upper_arm");  }
-            else if (filename == "right_arm_mesh.txt")       { setName("skin_right_upper_arm"); }
-            else if (filename == "torso.txt")                { setName("skin_front_torso");     }
+            if      (filename == "left_forearm_mesh.txt")    { setName(SkinPart_s[SKIN_LEFT_FOREARM]);    }
+            else if (filename == "left_forearm_nomesh.txt")  { setName(SkinPart_s[SKIN_LEFT_FOREARM]);    }
+            else if (filename == "right_forearm_mesh.txt")   { setName(SkinPart_s[SKIN_RIGHT_FOREARM]);   }
+            else if (filename == "right_forearm_nomesh.txt") { setName(SkinPart_s[SKIN_RIGHT_FOREARM]);   }
+            else if (filename == "left_hand_V2_1.txt")       { setName(SkinPart_s[SKIN_LEFT_HAND]);       }
+            else if (filename == "right_hand_V2_1.txt")      { setName(SkinPart_s[SKIN_RIGHT_HAND]);      }
+            else if (filename == "left_arm_mesh.txt")        { setName(SkinPart_s[SKIN_LEFT_UPPER_ARM]);  }
+            else if (filename == "right_arm_mesh.txt")       { setName(SkinPart_s[SKIN_RIGHT_UPPER_ARM]); }
+            else if (filename == "torso.txt")                { setName(SkinPart_s[SKIN_FRONT_TORSO]);     }
             else
             {
                 yError("[skinPart::setTaxelPosesFromFile] Unexpected skin part file name: %s.\n",filename.c_str());

@@ -177,7 +177,7 @@ using namespace iCub::skinDynLib;
             yDebug("ID %i \tPosition %s \tNormal %s \tWRFPosition %s \tpx %s", ID,
                     Position.toString(3,3).c_str(), Normal.toString(3,3).c_str(),
                     WRFPosition.toString(3,3).c_str(),px.toString(3,3).c_str());
-            yDebug("Frame of Reference \n%s",FoR.toString(3,3).c_str());
+            yDebug("\tFrame of Reference \n%s",FoR.toString(3,3).c_str());
         }
         else 
             yDebug("ID %i \tPosition %s \tNormal %s\n", ID,
@@ -194,7 +194,7 @@ using namespace iCub::skinDynLib;
         {
             res << "\tWRFPosition: " << WRFPosition.toString(3,3) <<
                    "\tPx: " << px.toString(3,3) <<
-                   "Frame of Reference: \n" << FoR.toString(3,3) << std::endl;
+                   "\tFrame of Reference: \n" << FoR.toString(3,3) << std::endl;
         }
         return res.str();
     }
