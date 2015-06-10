@@ -4,7 +4,12 @@
 <devices robot="iCubGenova01" build="1">
     <device name="head_calibrator" type="parametricCalibrator">
         <params file="general.xml" />
-        
+
+         <group name="GENERAL">
+             <param name="joints"> 6 </param> 
+             <param name="deviceName"> HeadV2_Calibrator </param>
+         </group>
+
    <group name="HOME">
 <param name="positionHome">                       -30        0       0       0          0         0            </param>
 <param name="velocityHome">                       10         10      10      10         10        10           </param>
