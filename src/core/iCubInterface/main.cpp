@@ -140,8 +140,6 @@ This file can be edited at main/src/core/iCubInterface/main.cpp.
 
 #include <yarp/dev/Drivers.h>
 
-YARP_DECLARE_DEVICES(icubmod)
-
 using namespace yarp::os;
 using namespace yarp::dev;  
 
@@ -182,8 +180,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "Sorry YARP network does not seem to be available, is the yarp server available?\n");
         return -1;
     }
-
-    YARP_REGISTER_DEVICES(icubmod)
 
     yarp::os::signal(yarp::os::YARP_SIGINT, sighandler);
     yarp::os::signal(yarp::os::YARP_SIGTERM, sighandler);

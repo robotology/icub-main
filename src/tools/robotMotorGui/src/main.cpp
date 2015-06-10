@@ -172,8 +172,6 @@
 #include <string>
 #include <string.h>
 
-YARP_DECLARE_DEVICES(icubmod)
-
 ///////Initializations////
 GtkWidget *robotNameBox   = NULL;
 
@@ -895,6 +893,5 @@ int myMain( int   argc, char *argv[] )
 
 int main(int argc, char* argv[])
 {
-    YARP_REGISTER_DEVICES(icubmod)
     return myMain(argc, argv);
 }

@@ -113,8 +113,6 @@ This file can be edited at /src/gui/iCubSkinGui/src/main.cpp.
 #include <gdk/gdk.h>
 #include <glib.h>
 
-YARP_DECLARE_DEVICES(icubmod)
-
 using namespace yarp::os;
 
 static GtkWidget *gpDrawingArea=NULL;
@@ -253,8 +251,6 @@ int main(int argc, char *argv[])
 {
     Network yarp;
  
-    YARP_REGISTER_DEVICES(icubmod)
-
     yarp::os::ResourceFinder rf;
     rf.setVerbose();
     rf.setDefaultContext("skinGui/skinGui");

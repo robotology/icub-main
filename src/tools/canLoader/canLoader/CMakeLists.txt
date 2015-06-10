@@ -20,8 +20,7 @@ include_directories(${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
 
 add_executable(${PROJECTNAME} ${folder_source} ${folder_header})
 
-target_link_libraries(${PROJECTNAME} icubmod
-                                     canLoaderLib
+target_link_libraries(${PROJECTNAME} canLoaderLib
                                      ${GTK2_LIBRARIES}
                                      ${YARP_LIBRARIES}
                                      ${ACE_LIBRARIES})

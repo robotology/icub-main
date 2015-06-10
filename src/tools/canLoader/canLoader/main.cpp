@@ -149,8 +149,6 @@ This file can be edited at src/myModule/main.cpp.
 #include <canProtocolLib/iCubCanProtocol.h>
 #include <canProtocolLib/iCubCanProto_types.h>
 
-YARP_DECLARE_DEVICES(icubmod)
-
 GtkWidget *window     = NULL;
 
 GtkWidget *vbox_main         = NULL;
@@ -1947,8 +1945,6 @@ int myMain( int   argc, char *argv[] )
 
 int main(int argc, char* argv[])
 {
-    YARP_REGISTER_DEVICES(icubmod)
-
     return myMain(argc, argv);
 }
 

@@ -51,7 +51,6 @@ INCLUDE_DIRECTORIES(
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_header} ${folder_source})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} 
-                      icubmod
                       ${GTK2_LIBRARIES}
                       ${YARP_LIBRARIES})
 

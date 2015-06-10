@@ -22,7 +22,6 @@ include_directories(${PROJECT_SOURCE_DIR}/src
 add_executable(${PROJECTNAME} ${folder_header} ${folder_source})
 
 target_link_libraries(${PROJECTNAME} ctrlLib
-                                     icubmod
                                      ${GTK2_LIBRARIES}
                                      ${GSL_LIBRARIES}
                                      ${YARP_LIBRARIES})

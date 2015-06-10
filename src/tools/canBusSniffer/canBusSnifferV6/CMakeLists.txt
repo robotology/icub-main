@@ -24,4 +24,4 @@ INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${ctrlLib_INCLUDE
 # Create everything needed to build our executable.
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} ctrlLib icubmod)
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ctrlLib)
