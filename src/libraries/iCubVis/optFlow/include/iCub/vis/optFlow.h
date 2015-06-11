@@ -34,7 +34,7 @@
 #if !defined(__QNX__) && !defined(__LINUX__)
 #include <windows.h>
 #endif	/// __WIN32__
-#include "RC_DIST_FB_logpolar_mapper.h"
+//#include "RC_DIST_FB_logpolar_mapper.h"
 
 class oFlow
 {
