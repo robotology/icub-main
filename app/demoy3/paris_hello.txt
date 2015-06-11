@@ -1,7 +1,0 @@
-time 1.5
-[include RIGHTARM "paris_science_festival/hello/armRight"]
-[include LEFTARM "paris_science_festival/hello/armLeft"]
-[include RIGHTLEG "paris_science_festival/hello/legRight"]
-[include LEFTLEG "paris_science_festival/hello/legLeft"]
-[include TORSO "paris_science_festival/hello/torso"]
-[include HEAD "paris_science_festival/hello/head"]

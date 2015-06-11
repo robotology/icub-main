@@ -1,7 +1,0 @@
-time 1.5
-[include RIGHTARM "paris_harlem_shake/armRight"]
-[include LEFTARM "paris_harlem_shake/armLeft"]
-[include RIGHTLEG "paris_harlem_shake/legRight"]
-[include LEFTLEG "paris_harlem_shake/legLeft"]
-[include TORSO "paris_harlem_shake/torso"]
-[include HEAD "paris_harlem_shake/head"]

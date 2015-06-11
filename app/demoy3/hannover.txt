@@ -1,7 +1,0 @@
-time 1.5
-[include RIGHTARM "hannover/armRightHannover"]
-[include LEFTARM "hannover/armLeftHannover"]
-[include RIGHTLEG "hannover/legRightHannover"]
-[include LEFTLEG "hannover/legLeftHannover"]
-[include TORSO "hannover/torsoHannover"]
-[include HEAD "hannover/headHannover"]

@@ -3,10 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 add_subdirectory(ctpService)
-add_subdirectory(demoGraspManager)
 add_subdirectory(learningMachine)
-add_subdirectory(iCubDemoY3)
-add_subdirectory(demoForceImitation)
 add_subdirectory(logpolarRemapper)
 add_subdirectory(logpolarTransform)
 add_subdirectory(positionDirectControl)
@@ -55,9 +52,3 @@ else(ICUB_USE_IPOPT)
     message(STATUS "IPOPT not found/selected, skipping iKinGazeCtrl")
     message(STATUS "IPOPT not found/selected, skipping iKinCartesianSolver")
 endif(ICUB_USE_IPOPT)
-
-if(ICUB_USE_GTK2)
-    add_subdirectory(demoForceControl)
-else(ICUB_USE_GTK2)
-    message(STATUS "GTK2 not found/selected, skipping demoForceControl")
-endif(ICUB_USE_GTK2)
