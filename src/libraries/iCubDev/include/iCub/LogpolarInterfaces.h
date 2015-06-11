@@ -23,18 +23,6 @@
  * @brief A collection of interfaces that provide logpolar image sampling to iCub devices.
  */
 
-/**
- * \defgroup icub_icubDev iCubDev
- * \ingroup icub_libraries
- *
- * A library that collects device interfaces. This is similar to the 
- * libYARP_dev in YARP. To be populated.
- *
- * Author: Giorgio Metta
- * Copyright (C) 2009 RobotCub Consortium
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
-*/
-
 #ifndef __LOGPOLARINTERFACES__
 #define __LOGPOLARINTERFACES__
 
