@@ -116,10 +116,13 @@ These are the parameters of this section:
     list of the link number corresponding to the specified inputPorts.
     For each input port there has to be a link number (2: upperArm link, 4: forearm link, 6: hand link).
  - \c taxelPositionFiles [emptyList] \n
-    list of the files containing the 3d position and orientation of the tactile sensors for each input port.
-    The files contain a line for each tactile sensor. In each line there are 6 values, the first three are
-    the position, the last three are the orientation.
-    For each input port there has to be a taxel position file (which may not exist though).
+    list of the files containing the 3D positions and orientations of the tactile sensors for each input port.
+    The files contains a set of parameters used for configuring the correspondent skinPart (iCub::skinDynLib::skinPart ,
+    see skinDynLib for a definition of this class).
+    Further, there is a group called [calibration] containing one line for each tactile sensor.
+    In each line there are 6 values, the first three are the position, the last three are the orientation.
+    For each input port there has to be a taxel position file (which may not exist because of
+    missing calibration procedure for that skin part).
  - \c maxNeighborDist \c 0.015 \n
     maximum distance between two neighbor tactile sensors (in meters).
  
