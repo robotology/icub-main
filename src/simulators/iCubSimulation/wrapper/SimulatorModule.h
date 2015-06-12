@@ -37,7 +37,7 @@
 
 #ifndef OMIT_LOGPOLAR
 // wouldn't be better to have this in conditional compilation?
-#include <iCub/RC_DIST_FB_logpolar_mapper.h>
+#include <iCub/logpolar/RC_DIST_FB_logpolar_mapper.h>
 #endif
 #include "iCub/skinDynLib/skinContactList.h"
 

@@ -19,7 +19,6 @@ else(ICUB_USE_OpenCV)
     message(STATUS "OpenCV not found/selected, skipping iCubVis")
 endif(ICUB_USE_OpenCV)
 
-add_subdirectory(logpolar)
 add_subdirectory(boostMIL)
 add_subdirectory(ctrlLib)
 add_subdirectory(skinDynLib)
