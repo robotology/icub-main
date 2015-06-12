@@ -17,12 +17,12 @@
 <param name="CanTxTimeout"> 500           </param>       
 <param name="CanRxTimeout"> 500           </param>       
 <param name="broadcast_pos">              1             1             1             1             1             1             1             1             </param>       
-<param name="broadcast_pid">              1             1             1             1             0             0             0             0             </param>       
+<param name="broadcast_pid">              1             1             1             1             1             0             0             0             </param>       
 <param name="broadcast_fault">            1             1             1             1             1             1             1             1             </param>       
 <param name="broadcast_current">          0             0             0             0             0             0             0             0             </param>       
 <param name="broadcast_overflow">         1             1             1             1             1             1             1             1             </param>       
 <param name="broadcast_canprint">         1             1             1             1             1             1             1             1             </param>       
-<param name="broadcast_vel_acc">          0             0             0             0             0             0             0             0             </param>       
+<param name="broadcast_vel_acc">          1             1             1             1             1             0             0             0             </param>       
 </group>       
   
 <group name="GENERAL">       
@@ -30,7 +30,7 @@
 <param name="MaxDAC">                     100           100           100           100           100           100           100           100           </param>       
 <param name="AxisMap">                    0             1             2             3             4             5             6             7             </param>       
 <param name="Encoder">                    11.375        11.375        11.375        11.375        706.67        978.46        978.46        6.85          </param>       
-<param name="Zeros">                      180           39.8    233.2422      174.9         90            -12           -36           267.0073      </param>       
+<param name="Zeros">                      177.8         37.8          235.7         175.1         90            -12           -36           267.0073      </param>       
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          0x0C          0             0             0             </param>       
 <param name="TorqueChan">   0             1             2             3             4             0             0             0             </param>       
 <param name="TorqueMax">                  8             8             8             8             2             2             2             2             </param>       
