@@ -92,7 +92,7 @@ yarp::sig::Vector iCub::skinDynLib::vectorFromBottle(const yarp::os::Bottle b, i
 {
     yarp::sig::Vector v(size,0.0);
 
-    for (size_t i = 0; i < size; i++)
+    for (int i = 0; i < size; i++)
     {
         v[i] = b.get(in).asDouble();
         in++;

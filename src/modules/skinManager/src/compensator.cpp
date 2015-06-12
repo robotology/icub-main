@@ -727,9 +727,9 @@ bool Compensator::setTaxelPosesFromFile(const char *filePath){
         taxelPos.resize(skinDim, zeros(3));
         taxelOri.resize(skinDim, zeros(3));
         taxelPoseConfidence.resize(skinDim, 0.0);
-        for (unsigned int i = 0; i < size; ++i)
+        for (int i = 0; i < size; ++i)
         {
-            if (i<taxelPos.size())
+            if (i<(int)taxelPos.size())
             {
                 Vector taxelPosNrm(6,0.0);
                 taxelPosNrm = vectorFromBottle(*(calibration.get(i+1).asList()),0,6);
