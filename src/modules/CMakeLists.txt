@@ -4,8 +4,6 @@
 
 add_subdirectory(ctpService)
 add_subdirectory(learningMachine)
-add_subdirectory(logpolarRemapper)
-add_subdirectory(logpolarTransform)
 add_subdirectory(positionDirectControl)
 add_subdirectory(velocityControl)
 add_subdirectory(velocityObserver)
