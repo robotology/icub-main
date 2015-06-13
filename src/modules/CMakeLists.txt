@@ -4,6 +4,7 @@
 
 add_subdirectory(ctpService)
 add_subdirectory(learningMachine)
+add_subdirectory(cartesianInterfaceControl)
 add_subdirectory(positionDirectControl)
 add_subdirectory(velocityControl)
 add_subdirectory(velocityObserver)

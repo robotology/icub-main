@@ -17,7 +17,7 @@
 */
 
 /** 
-\defgroup cartesianInterfaceExample cartesianInterfaceExample
+\defgroup cartesianInterfaceControl cartesianInterfaceControl
  
 @ingroup icub_module  
  
@@ -40,10 +40,10 @@ iCub's arm in the operational space.
 - YARP libraries. 
 
 \section parameters_sec Parameters
---ctrlName \e name 
+--name \e name 
 - The parameter \e name identifies the controller's name; all 
   the open ports will be tagged with the prefix
-  /<ctrlName>/<part>/. If not specified \e armCtrl is assumed.
+  /<name>/<part>/. If not specified \e armCtrl is assumed.
  
 --robot \e name 
 - The parameter \e name selects the robot name to connect to; if
@@ -89,11 +89,11 @@ the ICartesianControl interface must be available.
 The module creates the ports required for the communication with
 the robot (through interfaces) and the following ports: 
  
-- \e /<ctrlName>/<part>/xd:i receives the target end-effector 
+- \e /<name>/<part>/xd:i receives the target end-effector 
   pose. It accepts 7 double (also as a Bottle object): 3 for xyz
   and 4 for orientation in axis/angle mode.
 
-- \e /<ctrlName>/<part>/rpc remote procedure call. \n
+- \e /<name>/<part>/rpc remote procedure call. \n
     Recognized remote commands: \n
     -'quit' quit the module
 
@@ -152,8 +152,8 @@ protected:
 
     bool ctrlCompletePose;
     bool reinstateContext;
-    string remoteName;
-    string localName;
+    string remote;
+    string local;
 
     int startup_context_id;
     int task_context_id;
@@ -167,9 +167,9 @@ protected:
 public:
     /************************************************************************/
     CtrlThread(unsigned int _period, ResourceFinder &_rf,
-               string _remoteName, string _localName) :
-               RateThread(_period),     rf(_rf),
-               remoteName(_remoteName), localName(_localName) { }
+               string _remote, string _local) :
+               RateThread(_period), rf(_rf),
+               remote(_remote), local(_local) { }
 
     /************************************************************************/
     bool threadInit()
@@ -180,8 +180,8 @@ public:
 
         // open the client
         Property option("(device cartesiancontrollerclient)");
-        option.put("remote",remoteName.c_str());
-        option.put("local",localName.c_str());
+        option.put("remote",remote.c_str());
+        option.put("local",local.c_str());
         if (!driver.open(option))
             return false;
 
@@ -254,7 +254,7 @@ public:
         }
 
         // open ports
-        port_xd.open((localName+"/xd:i").c_str());
+        port_xd.open((local+"/xd:i").c_str());
 
         return true;
     }
@@ -385,30 +385,30 @@ public:
     bool configure(ResourceFinder &rf)
     {
         string slash="/";
-        string ctrlName;
-        string robotName;
-        string partName;
-        string remoteName;
-        string localName;
+        string name;
+        string robot;
+        string part;
+        string remote;
+        string local;
 
         Time::turboBoost();
 
         // get params from the RF
-        ctrlName=rf.check("ctrlName",Value("armCtrl")).asString().c_str();
-        robotName=rf.check("robot",Value("icub")).asString().c_str();
-        partName=rf.check("part",Value("right_arm")).asString().c_str();
+        name=rf.check("name",Value("armCtrl")).asString().c_str();
+        robot=rf.check("robot",Value("icub")).asString().c_str();
+        part=rf.check("part",Value("right_arm")).asString().c_str();
 
-        remoteName=slash+robotName+"/cartesianController/"+partName;
-        localName=slash+ctrlName+slash+partName;
+        remote=slash+robot+"/cartesianController/"+part;
+        local=slash+name+slash+part;
 
-        thr=new CtrlThread(20,rf,remoteName,localName);
+        thr=new CtrlThread(20,rf,remote,local);
         if (!thr->start())
         {
             delete thr;
             return false;
         }
 
-        rpcPort.open((localName+"/rpc").c_str());
+        rpcPort.open((local+"/rpc").c_str());
         attach(rpcPort);
 
         return true;
@@ -452,7 +452,7 @@ int main(int argc, char *argv[])
     if (rf.check("help"))
     {
         printf("Options:\n");
-        printf("\t--ctrlName name     : controller name (default armCtrl)\n");
+        printf("\t--name name     : controller name (default armCtrl)\n");
         printf("\t--robot    name     : robot name to connect to (default: icub)\n");
         printf("\t--part     type     : robot arm type, left_arm or right_arm (default: right_arm)\n");
         printf("\t--T        time     : specify the task execution time in seconds (default: 2.0)\n");
