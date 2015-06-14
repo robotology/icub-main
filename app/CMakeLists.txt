@@ -13,7 +13,6 @@ PROJECT (iCub)
 
 add_subdirectory(default)
 add_subdirectory(actionsRenderingEngine)
-add_subdirectory(armCartesianController)
 add_subdirectory(cameraCalibration)
 add_subdirectory(cartesianSolver)
 add_subdirectory(ctpService)
