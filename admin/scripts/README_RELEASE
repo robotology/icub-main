@@ -1,5 +1,8 @@
 == Instructions for release == 
 
+0) tag YARP and icub-firmware-shared
+
+
 1) Checkout latest master and make sure that there are no local modifications
 
   git checkout -f master
@@ -32,6 +35,9 @@
     
     (twk should be zero since we do not release YARP versions with twk != 0)
 
+7) Make sure that the ICUB-FIRMWARE-SHARED min required version in conf/iCubFindDependencies.cmake matches the 
+  the latest release of icub-firmware-shared
+
 7) Commit :
   git commit -a -m "iCub x.y.x"
 
@@ -46,9 +52,7 @@
   git push origin master
   git push origin v2.3.21
 
-11) repeat steps 8 to 10  on icub-firmware-shared tagging it with the same version as icub-main
-
-12) Build source packages:
+11) Build source packages:
   ./admin/scripts/icub-package.sh x.y.z
 
-13) Upload the package to sourceforge
+12) Upload the package to sourceforge
