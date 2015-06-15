@@ -19,7 +19,7 @@
 #include <yarp/os/Module.h>
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
-#include <iCub/vis/ScaleSpace.h>
+#include <iCub/ScaleSpace.h>
 
 #ifdef _CH_
 #pragma package <opencv>
