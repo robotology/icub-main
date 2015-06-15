@@ -6,22 +6,27 @@ SET(PROJECTNAME pf3dBottomup)
 
 PROJECT(${PROJECTNAME})
 
-FILE(GLOB folder_source src/*.cpp)
-FILE(GLOB folder_header include/iCub/*.hpp)
+SET(folder_source src/main.cpp
+                  src/cvfloodfill2.cpp
+                  src/pf3dBottomup.cpp
+                  src/ScaleSpace.cpp
+                  src/FastGauss.cpp
+                  src/IIRFilt.cpp
+                  src/IIRGausDeriv.cpp)
+SET(folder_header include/iCub/FastGauss.h
+                  include/iCub/ScaleSpace.h
+                  include/iCub/IIRFilt.h
+                  include/iCub/IIRGausDeriv.h
+                  include/iCub/pf3dBottomup.hpp)
 
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
 INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
-                    ${iCubVis_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
-
-TARGET_LINK_LIBRARIES(${PROJECTNAME} iCubVis
-                                     ${OpenCV_LIBRARIES}
-                                     ${YARP_LIBRARIES})
-
+TARGET_LINK_LIBRARIES(${PROJECTNAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
 
