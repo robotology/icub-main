@@ -82,7 +82,7 @@ public:
             sprintf(tmp, "/%s/%s", robotName, partName);
             options.put("remote", tmp);
         
-            sprintf(tmp,"/directPositionControl/rpc", partName);
+            sprintf(tmp,"/directPositionControl/%s/rpc", partName);
             rpc_port.open(tmp);
             
             options.put("carrier", "tcp");
