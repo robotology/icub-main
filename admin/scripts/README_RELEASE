@@ -46,7 +46,7 @@
   git push origin master
   git push origin v2.3.21
 
-11) reapet steps 8 to 10  on icub-firmware-shared tagging it with the same version as icub-main
+11) repeat steps 8 to 10  on icub-firmware-shared tagging it with the same version as icub-main
 
 12) Build source packages:
   ./admin/scripts/icub-package.sh x.y.z
