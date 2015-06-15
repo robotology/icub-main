@@ -4,8 +4,8 @@
 // Authors: Marco Randazzo <marco.randazzo@iit.it>
 // CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-#ifndef __BCBBATTERY_H__
-#define __BCBBATTERY_H__
+#ifndef __BMSBATTERY_H__
+#define __BMSBATTERY_H__
 
 #include <yarp/os/RateThread.h>
 #include <yarp/os/Semaphore.h>
@@ -18,7 +18,7 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-class BcbBattery : public RateThread, public yarp::dev::IBattery, public DeviceDriver
+class BmsBattery : public RateThread, public yarp::dev::IBattery, public DeviceDriver
 {
 protected:
     yarp::os::Semaphore mutex;
@@ -51,11 +51,11 @@ protected:
     std::string         localName;
 
 public:
-    BcbBattery(int period = 20) : RateThread(period), mutex(1)
+    BmsBattery(int period = 20) : RateThread(period), mutex(1)
     {}
 
 
-    ~BcbBattery()
+    ~BmsBattery()
     {
     }
 

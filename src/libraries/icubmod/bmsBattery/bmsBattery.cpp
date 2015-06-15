@@ -4,7 +4,7 @@
 // Authors: Marco Randazzo <marco.randazzo@iit.it>
 // CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-#include <bcbBattery.h>
+#include <bmsBattery.h>
 
 #include <yarp/os/Time.h>
 #include <yarp/os/LogStream.h>
@@ -17,7 +17,7 @@
 using namespace std;
 #define DEBUG_TEST 1
 
-bool BcbBattery::open(yarp::os::Searchable& config)
+bool BmsBattery::open(yarp::os::Searchable& config)
 {
     bool correct=true;
 
@@ -29,13 +29,13 @@ bool BcbBattery::open(yarp::os::Searchable& config)
 
     if (group_general.isNull())
     {
-        yError() << "Insufficient parameters to BcbBattery, section GENERAL missing";
+        yError() << "Insufficient parameters to BmsBattery, section GENERAL missing";
         return false;
     }
 
     if (group_serial.isNull())
     {
-        yError() << "Insufficient parameters to BcbBattery, section SERIAL_PORT missing";
+        yError() << "Insufficient parameters to BmsBattery, section SERIAL_PORT missing";
         return false;
     }
 
@@ -79,7 +79,7 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     return true;
 }
 
-bool BcbBattery::close()
+bool BmsBattery::close()
 {
     //stop the thread
     RateThread::stop();
@@ -90,7 +90,7 @@ bool BcbBattery::close()
     return true;
 }
 
-bool BcbBattery::threadInit()
+bool BmsBattery::threadInit()
 {
     battery_info = "icub battery system v1.0";
     battery_voltage     = 0.0;
@@ -108,7 +108,7 @@ bool BcbBattery::threadInit()
     return true;
 }
 
-void BcbBattery::run()
+void BmsBattery::run()
 {
     double timeNow=yarp::os::Time::now();
     mutex.wait();
@@ -131,8 +131,8 @@ void BcbBattery::run()
         do
         {
             rec = pSerial->receiveLine(serial_buff, 250);
-            if (verboseEnable) yDebug("BcbBattery::run() received %d chars", rec);
-            if (debugEnable)   yDebug("BcbBattery::run() buffer is: <%s> ", serial_buff);
+            if (verboseEnable) yDebug("BmsBattery::run() received %d chars", rec);
+            if (debugEnable)   yDebug("BmsBattery::run() buffer is: <%s> ", serial_buff);
         } while
             (rec > 0);
     }
@@ -151,7 +151,7 @@ void BcbBattery::run()
     int len = strlen(serial_buff);
     if (len>0)
     {
-        if (verboseEnable) yDebug("BcbBattery::run() serial_buffer is: %s", serial_buff);
+        if (verboseEnable) yDebug("BmsBattery::run() serial_buffer is: %s", serial_buff);
         int pars = 0;
         char dummy1 = serial_buff[0];
         battery_voltage = serial_buff[1] * 256 + serial_buff[2];
@@ -177,7 +177,7 @@ void BcbBattery::run()
     // print data to screen
     if (screenEnable)
     {
-        yDebug("BcbBattery::run() log_buffer is: %s", log_buffer);
+        yDebug("BmsBattery::run() log_buffer is: %s", log_buffer);
     }
 
     // save data to file
@@ -189,7 +189,7 @@ void BcbBattery::run()
     mutex.post();
 }
 
-bool BcbBattery::getBatteryVoltage(double &voltage)
+bool BmsBattery::getBatteryVoltage(double &voltage)
 {
     this->mutex.wait();
     voltage = battery_voltage;
@@ -197,7 +197,7 @@ bool BcbBattery::getBatteryVoltage(double &voltage)
     return true;
 }
 
-bool BcbBattery::getBatteryCurrent(double &current)
+bool BmsBattery::getBatteryCurrent(double &current)
 {
     this->mutex.wait();
     current = battery_current;
@@ -205,7 +205,7 @@ bool BcbBattery::getBatteryCurrent(double &current)
     return true;
 }
 
-bool BcbBattery::getBatteryCharge(double &charge)
+bool BmsBattery::getBatteryCharge(double &charge)
 {
     this->mutex.wait();
     charge = battery_charge;
@@ -213,19 +213,19 @@ bool BcbBattery::getBatteryCharge(double &charge)
     return true;
 }
 
-bool BcbBattery::getBatteryStatus(int &status)
+bool BmsBattery::getBatteryStatus(int &status)
 {
     //yError("Not yet implemented");
     return false;
 }
 
-bool BcbBattery::getBatteryTemperature(double &temperature)
+bool BmsBattery::getBatteryTemperature(double &temperature)
 {
     //yError("Not yet implemented");
     return false;
 }
 
-bool BcbBattery::getBatteryInfo(yarp::os::ConstString &info)
+bool BmsBattery::getBatteryInfo(yarp::os::ConstString &info)
 {
     this->mutex.wait();
     info = battery_info;
@@ -233,12 +233,12 @@ bool BcbBattery::getBatteryInfo(yarp::os::ConstString &info)
     return true;
 }
 
-void BcbBattery::threadRelease()
+void BmsBattery::threadRelease()
 {
-    yTrace("BcbBattery Thread released\n");
+    yTrace("BmsBattery Thread released\n");
 }
 
-void BcbBattery::notify_message(string msg)
+void BmsBattery::notify_message(string msg)
 {
 #ifdef WIN32
     yWarning("%s", msg.c_str());
@@ -270,7 +270,7 @@ void emergency_shutdown(string msg)
 #endif
 }
 
-void BcbBattery::check_battery_status()
+void BmsBattery::check_battery_status()
 {
     static bool notify_15 = true;
     static bool notify_12 = true;
@@ -317,7 +317,7 @@ void BcbBattery::check_battery_status()
     }
 }
 
-void BcbBattery::stop_robot(string quit_port)
+void BmsBattery::stop_robot(string quit_port)
 {
     //typical quit_port:
     // "/icub/quit"

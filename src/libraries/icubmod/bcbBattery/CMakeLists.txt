@@ -1,4 +1,4 @@
-# Copyright: (C) 2013 iCub Facility
+# Copyright: (C) 2015 iCub Facility
 # Authors: Marco Randazzo <marco.randazzo@iit.it>
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
