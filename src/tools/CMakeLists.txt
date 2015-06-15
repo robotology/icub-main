@@ -5,7 +5,6 @@
 add_subdirectory(controlBoardDumper)
 add_subdirectory(simpleClient)
 add_subdirectory(testStereoMatch)
-add_subdirectory(iCubTest)
 add_subdirectory(fingersTuner)
 add_subdirectory(imuFilter)
 add_subdirectory(embObjProtoTools/boardTransceiver)
