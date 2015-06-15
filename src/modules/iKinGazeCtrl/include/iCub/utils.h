@@ -26,6 +26,7 @@
 #include <yarp/dev/all.h>
 #include <yarp/sig/all.h>
 #include <yarp/math/Math.h>
+#include <yarp/math/SVD.h>
 
 #include <iCub/gazeNlp.h>
 
@@ -203,6 +204,23 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck);
 bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
                  PolyDriver *drvHead, exchangeData *commData, double *timeStamp=NULL);
 
+// Computes the velocity of the fixation point given the gyro measurements
+// Returns true if the task was successful
+bool computedxFPFromIMU(iKinChain *chainIMU, const Vector &gyro,
+                        const Vector &x_FP, Vector &dx_FP);
+
+// Computes the velocity of the fixation point given the gyro measurements
+// Returns true if the task was successful
+bool computedxFPFromNeckBase(iKinChain *chainNeck, const Vector &neckVelocities,
+                             const Vector &x_FP, Vector &dx_FP);
+
+bool computeNeckVelocitiesFromdxFP(iKinChain *chainNeck, const Vector &x_FP,
+                                   const Vector &dx_FP, Vector &dq_neck);
+
+bool computeEyesVelocitiesFromdxFP(iKinChain *chainEyeL, iKinChain *chainEyeR,
+                                   const Vector &x_FP, const Vector &dx_FP, Vector &dq_eyes);
+
+bool root2Eyes(iKinChain *chainNeck, const Vector &x_FP_root, Vector &x_FP_eyes);
 
 #endif
 

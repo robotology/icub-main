@@ -1,19 +1,19 @@
 /* 
- * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini, Alessandro Roncone
- * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
- * website: www.robotcub.org
- * Permission is granted to copy, distribute, and/or modify this program
- * under the terms of the GNU General Public License, version 2 or any
- * later version published by the Free Software Foundation.
+*Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+*Author: Ugo Pattacini, Alessandro Roncone
+*email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
+*website: www.robotcub.org
+*Permission is granted to copy, distribute, and/or modify this program
+*under the terms of the GNU General Public License, version 2 or any
+*later version published by the Free Software Foundation.
  *
- * A copy of the license can be found at
- * http://www.robotcub.org/icub/license/gpl.txt
+*A copy of the license can be found at
+*http://www.robotcub.org/icub/license/gpl.txt
  *
- * This program is distributed in the hope that it will be useful, but
- * WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
- * Public License for more details
+*This program is distributed in the hope that it will be useful, but
+*WITHOUT ANY WARRANTY; without even the implied warranty of
+*MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+*Public License for more details
 */
 
 #include <algorithm>
@@ -427,10 +427,10 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
                 if (verbose)
                 {
                     yInfo("%s found:",message.c_str());
-                    yInfo("fx = %g",fx);
-                    yInfo("fy = %g",fy);
-                    yInfo("cx = %g",cx);
-                    yInfo("cy = %g",cy);
+                    yInfo("fx=%g",fx);
+                    yInfo("fy=%g",fy);
+                    yInfo("cx=%g",cx);
+                    yInfo("cy=%g",cy);
                 }
 
                 *Prj=new Matrix(eye(3,4));
@@ -658,4 +658,168 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
     return ret;
 }
 
+/************************************************************************/
+bool computedxFPFromIMU(iKinChain *chainIMU, const Vector &gyro,
+                        const Vector &x_FP, Vector &dx_FP)
+{
+    if (gyro.size()!=3)
+    {
+        return false;
+    }
 
+    Vector dx_FP_pos(3,0.0);
+    Vector dx_FP_rot(3,0.0);
+    dx_FP.resize(6,0.0);
+    Vector gyr=gyro;
+    
+    // 1. Compute the positional component of the speed of the fixation point
+    // thanks to the rotational component measure obtained from the IMU
+    Matrix H=chainIMU->getH();
+    H(0,3)=x_FP[0]-H(0,3);
+    H(1,3)=x_FP[1]-H(1,3);
+    H(2,3)=x_FP[2]-H(2,3);
+
+    dx_FP_pos=CTRL_DEG2RAD*(gyr[0]*cross(H,0,H,3)+
+                            gyr[1]*cross(H,1,H,3)+
+                            gyr[2]*cross(H,2,H,3));
+    dx_FP.setSubvector(0, dx_FP_pos);
+
+    // 2. Project the IMU measure on the the rotational component
+    // of the speed of the fixation point
+    H(0,3)=0;
+    H(1,3)=0;
+    H(2,3)=0;
+
+    gyr.push_back(1.0);
+    dx_FP_rot=CTRL_DEG2RAD*H*gyr;
+    dx_FP_rot.pop_back();
+
+    dx_FP.setSubvector(3, dx_FP_rot);
+    return true;
+}
+
+/************************************************************************/
+bool computedxFPFromNeckBase(iKinChain *chainNeck, const Vector &neckVelocities,
+                             const Vector &x_FP, Vector &dx_FP)
+{
+    if (neckVelocities.size()!=6)
+    {
+        return false;
+    }
+
+    // Vector x_FP_E(3,0.0);
+    // dx_FP.resize(6,0.0);
+
+    // // Compute the lever arm between the neck base and the fixation point
+    // root2Eyes(chainNeck, x_FP, x_FP_E);
+    // Matrix HN = eye(4,4);
+    // HN(0,3)   = xFP_E(0);
+    // HN(1,3)   = xFP_E(1);
+    // HN(2,3)   = xFP_E(2);
+
+    // // chainNeck -> setHN(HN);
+    // // Matrix Htot  = neck -> getH();
+    // // Matrix Hneck = neck -> getH(2);     // get the H from ROOT to Neck Base
+    // // Matrix H = SE3inv(Hneck) * Htot;
+    // // chainNeck -> setHN(eye(4,4));
+
+    // Matrix H = eye(4,4);
+    // H(0,3)   = xFP_R[0];
+    // H(1,3)   = xFP_R[1];
+    // H(2,3)   = xFP_R[2];
+
+    // // 6 - Do the magic dx_FP = v+w^r
+    // Vector dx_FP_pos(3,0.0);
+    // dx_FP_pos = v+(w[0]*cross(H,0,H,3)+w[1]*cross(H,1,H,3)+w[2]*cross(H,2,H,3));
+
+    // _dx_FP.setSubvector(0, dx_FP_pos);
+    // _dx_FP.setSubvector(3, w);
+
+    return true;
+}
+
+/************************************************************************/
+bool computeNeckVelocitiesFromdxFP(iKinChain *chainNeck, const Vector &x_FP,
+                                   const Vector &dx_FP, Vector &dq_neck)
+{
+    if (dx_FP.size()!=6)
+    {
+        return false;
+    }
+
+    dq_neck.resize(3,0.0);
+    Vector x_FP_E(3,0.0);
+    
+    // Take only the rotational part of the velocity of the fixation point
+    Vector dx_FP_rot=dx_FP.subVector(3,5);
+    
+    // Convert x_FP from root to the eyes reference frame
+    root2Eyes(chainNeck, x_FP, x_FP_E);
+
+    // Compute the jacobian of the head joints alone
+    Matrix HN=eye(4);
+    HN(0,3)=x_FP_E(0);
+    HN(1,3)=x_FP_E(1);
+    HN(2,3)=x_FP_E(2);
+    chainNeck->setHN(HN);
+
+    Matrix J_N=chainNeck->GeoJacobian();
+
+    // Take only the last three rows of the jacobian
+    // belonging to the head joints
+    Matrix J_Np=J_N.submatrix(3,5,3,5);
+
+    // Remove the fixation point from the neck chain
+    chainNeck->setHN(eye(4,4));
+
+    // Compute dq_neck= J_N#*dx_FP_rot
+    dq_neck=CTRL_RAD2DEG*(pinv(J_Np)*dx_FP_rot);
+
+    return true;
+}
+
+/************************************************************************/
+bool computeEyesVelocitiesFromdxFP(iKinChain *chainEyeL, iKinChain *chainEyeR,
+                                   const Vector &x_FP, const Vector &dx_FP, Vector &dq_eyes)
+{
+    if (dx_FP.size()!=6)
+    {
+        return false;
+    }
+
+    dq_eyes.resize(3,0.0);
+    Matrix J_E(3,3);
+    J_E.zero();
+
+    Vector x_FP_R=x_FP;
+
+    // Take only the translational part of the velocity of the fixation point
+    Vector dx_FP_pos=dx_FP.subVector(0,2);    
+
+    // Compute the Jacobian of the eyes
+    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,x_FP_R,J_E);
+
+    // Compute dq_eyes =J_E#*dx_FP;
+    dq_eyes=CTRL_RAD2DEG*(pinv(J_E)*dx_FP);
+
+    return true;
+}
+
+/************************************************************************/
+bool root2Eyes(iKinChain *chainNeck,
+               const Vector &x_FP_root, Vector &x_FP_eyes)
+{
+    if (x_FP_root.size()!=3)
+    {
+        return false;
+    }
+
+    x_FP_eyes.resize(3,0.0);
+
+    Vector x_FP_R=x_FP_root;
+    Matrix H_RE=chainNeck->getH();    // matrix from root to RF_E
+    x_FP_R.push_back(1);
+    x_FP_eyes=SE3inv(H_RE)*x_FP_R;
+
+    return true;
+}
