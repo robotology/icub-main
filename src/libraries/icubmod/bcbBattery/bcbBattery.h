@@ -71,6 +71,7 @@ protected:
     double             battery_charge;
     double             battery_voltage;
     double             battery_current;
+    double             battery_temperature;
     std::string        battery_info;
     unsigned char      backpack_status;
 

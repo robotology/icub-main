@@ -2,7 +2,7 @@
 # Authors: Marco Randazzo <marco.randazzo@iit.it>
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(bcbBattery TYPE BcbBattery INCLUDE bcbBattery.h WRAPPER AnalogServer)
+yarp_prepare_device(bcbBattery TYPE BcbBattery INCLUDE bcbBattery.h WRAPPER BatteryWrapper)
 
 if(NOT SKIP_bcbBattery)
 

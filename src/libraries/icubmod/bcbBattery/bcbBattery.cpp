@@ -15,6 +15,7 @@
 #include <stdlib.h>
 
 using namespace std;
+#define DEBUG_TEST 1
 
 bool BcbBattery::open(yarp::os::Searchable& config)
 {
@@ -23,53 +24,56 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     //debug
     yDebug("%s\n", config.toString().c_str());
 
-    correct &= config.check("canbusDevice");
-    correct &= config.check("canDeviceNum");
-    correct &= config.check("canAddress");
-    correct &= config.check("format");
-    correct &= config.check("period");
-    correct &= config.check("channels");
-    correct &= config.check("physDevice");
+    Bottle& group_general = config.findGroup("GENERAL");
+    Bottle& group_serial  = config.findGroup("SERIAL_PORT");
 
-    if (!correct)
+    if (group_general.isNull())
     {
-        yError() << "Insufficient parameters to CanBusAnalogSensor\n";
+        yError() << "Insufficient parameters to BcbBattery, section GENERAL missing";
         return false;
     }
 
-    int period=config.find("period").asInt();
+    if (group_serial.isNull())
+    {
+        yError() << "Insufficient parameters to BcbBattery, section SERIAL_PORT missing";
+        return false;
+    }
+
+    int period=config.find("thread_period").asInt();
     setRate(period);
 
     Property prop;
+    std::string ps = group_serial.toString();
+    prop.fromString(ps);
+    prop.put("device", "serialport");
 
-    prop.put("device", config.find("canbusDevice").asString().c_str());
-    prop.put("physDevice", config.find("physDevice").asString().c_str());
-
-    //open the can driver
+    //open the driver
     driver.open(prop);
     if (!driver.isValid())
     {
         yError() << "Error opening PolyDriver check parameters";
+#ifndef DEBUG_TEST 
         return false;
+#endif
     }
-/*    driver.view(pCanBus);
-    if (!pCanBus)
-    {
-        yError() << "Error opening can device not available";
-        return false;
-    }
-    driver.view(pCanBufferFactory);
-    */
 
-    // Parse diagnostic information
-    if( config.check("diagnostic") && config.find("diagnostic").asInt() == 1)
+    //open the serial interface
+    driver.view(pSerial);
+    if (!pSerial)
     {
-        this->diagnostic = true;
+        yError("Error opening serial driver. Device not available");
+#ifndef DEBUG_TEST 
+        return false;
+#endif
     }
-    else
-    {
-        this->diagnostic = false;
-    }
+
+    // Other options
+    this->diagnostic = group_general.check("diagnostic");
+    this->logEnable = group_general.check("logToFile");
+    this->verboseEnable = group_general.check("verbose");
+    this->screenEnable = group_general.check("screen");
+    this->debugEnable = group_general.check("debug");
+    this->shutdownEnable = group_general.check("shutdown");
 
     RateThread::start();
     return true;
@@ -89,25 +93,11 @@ bool BcbBattery::close()
 bool BcbBattery::threadInit()
 {
     battery_info = "icub battery system v1.0";
-    battery_voltage = 0.0;
-    battery_current = 0.0;
-    battery_charge  = 0.0;
-
-    //user options
-    logEnable = rf.check("logToFile");
-    verboseEnable = rf.check("verbose");
-    screenEnable = rf.check("screen");
-    debugEnable = rf.check("debug");
-    shutdownEnable = (!rf.check("noShutdown"));
-
-    //serial port configuration parameters
-    rf.setDefaultContext("ikart");
-    rf.setDefaultConfigFile("batterySerialPort.ini");
-    ConstString configFile = rf.findFile("from");
-    Property prop;
-    prop.fromConfigFile(configFile.c_str());
-    prop.put("device", "serialport");
-    yDebug("Serial port configuration:\n%s", prop.toString().c_str());
+    battery_voltage     = 0.0;
+    battery_current     = 0.0;
+    battery_charge      = 0.0;
+    battery_temperature = 0.0;
+    timeStamp = yarp::os::Time::now();
 
     if (logEnable)
     {
@@ -115,26 +105,12 @@ bool BcbBattery::threadInit()
         logFile = fopen("batteryLog.txt", "w");
     }
 
-    //open serial port driver
-    driver.open(prop);
-    if (!driver.isValid())
-    {
-        yError("Error opening PolyDriver check parameters");
-        return false;
-    }
-    driver.view(pSerial);
-
-    if (!pSerial)
-    {
-        yError("Error opening serial driver. Device not available");
-        return false;
-    }
     return true;
 }
 
 void BcbBattery::run()
 {
-    double timeNow;
+    double timeNow=yarp::os::Time::now();
     mutex.wait();
 
     //if 100ms have passed since the last received message
@@ -147,22 +123,35 @@ void BcbBattery::run()
     //if nothing is received, rec=0, the while exits immediately. The string will be not valid, so the parser will skip it and it will leave unchanged the battery status (voltage/current/charge)
     //if a text line is received, then try to receive more text to empty the buffer. If nothing else is received, serial_buff will be left unchanged from the previous value. The loop will exit and the sting will be parsed.
     serial_buff[0] = 0;
+    log_buffer[0] = 0;
     int rec = 0;
-    do
+    
+    if (pSerial)
     {
-        rec = pSerial->receiveLine(serial_buff, 250);
-        if (verboseEnable) fprintf(stderr, "%d ", rec);
-        if (debugEnable) fprintf(stderr, "<%s> ", serial_buff);
-    } while
-        (rec>0);
-    if (verboseEnable) fprintf(stderr, "\n");
+        do
+        {
+            rec = pSerial->receiveLine(serial_buff, 250);
+            if (verboseEnable) yDebug("BcbBattery::run() received %d chars", rec);
+            if (debugEnable)   yDebug("BcbBattery::run() buffer is: <%s> ", serial_buff);
+        } while
+            (rec > 0);
+    }
+    else
+    {
+        yError("pSerial == NULL");
+    }
+
+#if DEBUG_TEST
+    battery_voltage     = 40.0;
+    battery_current = 5.0;
+    battery_charge = 72.0;
+    battery_temperature = 35.0;
+#endif
 
     int len = strlen(serial_buff);
     if (len>0)
     {
-        if (verboseEnable)
-            fprintf(stderr, "%s", serial_buff);
-
+        if (verboseEnable) yDebug("BcbBattery::run() serial_buffer is: %s", serial_buff);
         int pars = 0;
         char dummy1 = serial_buff[0];
         battery_voltage = serial_buff[1] * 256 + serial_buff[2];
@@ -188,7 +177,7 @@ void BcbBattery::run()
     // print data to screen
     if (screenEnable)
     {
-        fprintf(stderr, "%s", log_buffer);
+        yDebug("BcbBattery::run() log_buffer is: %s", log_buffer);
     }
 
     // save data to file

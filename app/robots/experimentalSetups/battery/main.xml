@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<robot name="icub">
+
+    <!-- battery -->
+    <devices file="./wrappers/battery/battery.xml" /> 
+    <devices file="./hardware/battery/battery.xml" /> 
+    
+</robot> 
+

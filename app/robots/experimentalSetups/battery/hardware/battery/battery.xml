@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<devices>      
+	<device name="icub_battery" type="bcbBattery">  
+
+	<group name="GENERAL">    
+		<param name="name">      icub_battery       </param>     
+		<param name="diagnostic">         1         </param>   
+		<param name="thread_period">     10         </param>
+		<param name="logToFile">          0         </param>
+		<param name="screen">             0         </param>
+		<param name="shutdown">           0         </param>
+	</group>             
+		
+	<group name="SERIAL_PORT">           
+		<param name="verbose"> 0                    </param>       
+		<param name="comport">   COM2               </param>         <!--  //windows     -->
+<!--		<param name="comport">   /dev/ttyUSB0     </param> -->   <!--    //linux     -->
+		<param name="baudrate">        57600        </param>       
+		<param name="xonlim">              0        </param>       
+		<param name="xofflim">             0        </param>       
+		<param name="readmincharacters">   0        </param>       
+		<param name="readtimeoutmsec">     2        </param>       
+		<param name="parityenb">           1        </param>       
+		<param name="paritymode">          even     </param>       
+		<param name="ctsenb">              0        </param>       
+		<param name="rtsenb">              0        </param>       
+		<param name="xinenb">              0        </param>       
+		<param name="xoutenb">             0        </param>       
+		<param name="modem">               0        </param>       
+		<param name="rcvenb">              0        </param>       
+		<param name="dsrenb">              0        </param>       
+		<param name="dtrdisable">          0        </param>       
+		<param name="databits">            8        </param>  
+		<param name="stopbits">            1        </param>  
+	</group>                
+
+	</device>    
+</devices>     
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
