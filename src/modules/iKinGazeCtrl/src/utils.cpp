@@ -1,19 +1,19 @@
 /* 
-*Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
-*Author: Ugo Pattacini, Alessandro Roncone
-*email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
-*website: www.robotcub.org
-*Permission is granted to copy, distribute, and/or modify this program
-*under the terms of the GNU General Public License, version 2 or any
-*later version published by the Free Software Foundation.
+ * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
+ * Author: Ugo Pattacini, Alessandro Roncone
+ * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
  *
-*A copy of the license can be found at
-*http://www.robotcub.org/icub/license/gpl.txt
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
  *
-*This program is distributed in the hope that it will be useful, but
-*WITHOUT ANY WARRANTY; without even the implied warranty of
-*MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
-*Public License for more details
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
 */
 
 #include <algorithm>
@@ -427,10 +427,10 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
                 if (verbose)
                 {
                     yInfo("%s found:",message.c_str());
-                    yInfo("fx=%g",fx);
-                    yInfo("fy=%g",fy);
-                    yInfo("cx=%g",cx);
-                    yInfo("cy=%g",cy);
+                    yInfo("fx = %g",fx);
+                    yInfo("fy = %g",fy);
+                    yInfo("cx = %g",cx);
+                    yInfo("cy = %g",cy);
                 }
 
                 *Prj=new Matrix(eye(3,4));
@@ -662,10 +662,8 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
 bool computedxFPFromIMU(iKinChain *chainIMU, const Vector &gyro,
                         const Vector &x_FP, Vector &dx_FP)
 {
-    if (gyro.size()!=3)
-    {
+    if (gyro.length()!=3)
         return false;
-    }
 
     Vector dx_FP_pos(3,0.0);
     Vector dx_FP_rot(3,0.0);
@@ -686,9 +684,9 @@ bool computedxFPFromIMU(iKinChain *chainIMU, const Vector &gyro,
 
     // 2. Project the IMU measure on the the rotational component
     // of the speed of the fixation point
-    H(0,3)=0;
-    H(1,3)=0;
-    H(2,3)=0;
+    H(0,3)=0.0;
+    H(1,3)=0.0;
+    H(2,3)=0.0;
 
     gyr.push_back(1.0);
     dx_FP_rot=CTRL_DEG2RAD*H*gyr;
@@ -702,10 +700,8 @@ bool computedxFPFromIMU(iKinChain *chainIMU, const Vector &gyro,
 bool computedxFPFromNeckBase(iKinChain *chainNeck, const Vector &neckVelocities,
                              const Vector &x_FP, Vector &dx_FP)
 {
-    if (neckVelocities.size()!=6)
-    {
+    if (neckVelocities.length()!=6)
         return false;
-    }
 
     // Vector x_FP_E(3,0.0);
     // dx_FP.resize(6,0.0);
@@ -742,10 +738,8 @@ bool computedxFPFromNeckBase(iKinChain *chainNeck, const Vector &neckVelocities,
 bool computeNeckVelocitiesFromdxFP(iKinChain *chainNeck, const Vector &x_FP,
                                    const Vector &dx_FP, Vector &dq_neck)
 {
-    if (dx_FP.size()!=6)
-    {
+    if (dx_FP.length()!=6)
         return false;
-    }
 
     dq_neck.resize(3,0.0);
     Vector x_FP_E(3,0.0);
@@ -758,9 +752,9 @@ bool computeNeckVelocitiesFromdxFP(iKinChain *chainNeck, const Vector &x_FP,
 
     // Compute the jacobian of the head joints alone
     Matrix HN=eye(4);
-    HN(0,3)=x_FP_E(0);
-    HN(1,3)=x_FP_E(1);
-    HN(2,3)=x_FP_E(2);
+    HN(0,3)=x_FP_E[0];
+    HN(1,3)=x_FP_E[1];
+    HN(2,3)=x_FP_E[2];
     chainNeck->setHN(HN);
 
     Matrix J_N=chainNeck->GeoJacobian();
@@ -782,10 +776,8 @@ bool computeNeckVelocitiesFromdxFP(iKinChain *chainNeck, const Vector &x_FP,
 bool computeEyesVelocitiesFromdxFP(iKinChain *chainEyeL, iKinChain *chainEyeR,
                                    const Vector &x_FP, const Vector &dx_FP, Vector &dq_eyes)
 {
-    if (dx_FP.size()!=6)
-    {
+    if (dx_FP.length()!=6)
         return false;
-    }
 
     dq_eyes.resize(3,0.0);
     Matrix J_E(3,3);
@@ -809,16 +801,14 @@ bool computeEyesVelocitiesFromdxFP(iKinChain *chainEyeL, iKinChain *chainEyeR,
 bool root2Eyes(iKinChain *chainNeck,
                const Vector &x_FP_root, Vector &x_FP_eyes)
 {
-    if (x_FP_root.size()!=3)
-    {
+    if (x_FP_root.length()!=3)
         return false;
-    }
 
     x_FP_eyes.resize(3,0.0);
 
     Vector x_FP_R=x_FP_root;
     Matrix H_RE=chainNeck->getH();    // matrix from root to RF_E
-    x_FP_R.push_back(1);
+    x_FP_R.push_back(1.0);
     x_FP_eyes=SE3inv(H_RE)*x_FP_R;
 
     return true;
