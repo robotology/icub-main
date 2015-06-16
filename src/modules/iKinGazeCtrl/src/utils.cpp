@@ -703,34 +703,35 @@ bool computedxFPFromNeckBase(iKinChain *chainNeck, const Vector &neckVelocities,
     if (neckVelocities.length()!=6)
         return false;
 
-    // Vector x_FP_E(3,0.0);
-    // dx_FP.resize(6,0.0);
+    dx_FP.resize(6,0.0);
+    Vector nvels=neckVelocities;
+    Vector dx_FP_pos(3,0.0);
+    Vector dx_FP_rot(3,0.0);
+    Vector x_FP_E(3,0.0);
 
-    // // Compute the lever arm between the neck base and the fixation point
-    // root2Eyes(chainNeck, x_FP, x_FP_E);
-    // Matrix HN = eye(4,4);
-    // HN(0,3)   = xFP_E(0);
-    // HN(1,3)   = xFP_E(1);
-    // HN(2,3)   = xFP_E(2);
+    Vector v=nvels.subVector(0,2);
+    Vector w=nvels.subVector(3,5);
 
-    // // chainNeck -> setHN(HN);
-    // // Matrix Htot  = neck -> getH();
-    // // Matrix Hneck = neck -> getH(2);     // get the H from ROOT to Neck Base
-    // // Matrix H = SE3inv(Hneck) * Htot;
-    // // chainNeck -> setHN(eye(4,4));
+    // Compute the lever arm between the neck base and the fixation point
+    Matrix H=chainNeck->getH(2);     // get the H from ROOT to Neck Base
+    H(0,3)=x_FP[0]-H(0,3);
+    H(1,3)=x_FP[1]-H(1,3);
+    H(2,3)=x_FP[2]-H(2,3);
 
-    // Matrix H = eye(4,4);
-    // H(0,3)   = xFP_R[0];
-    // H(1,3)   = xFP_R[1];
-    // H(2,3)   = xFP_R[2];
+    dx_FP_pos=v+(w[0]*cross(H,0,H,3)+
+                 w[1]*cross(H,1,H,3)+
+                 w[2]*cross(H,2,H,3));
+    dx_FP.setSubvector(0, dx_FP_pos);
 
-    // // 6 - Do the magic dx_FP = v+w^r
-    // Vector dx_FP_pos(3,0.0);
-    // dx_FP_pos = v+(w[0]*cross(H,0,H,3)+w[1]*cross(H,1,H,3)+w[2]*cross(H,2,H,3));
+    H(0,3)=0.0;
+    H(1,3)=0.0;
+    H(2,3)=0.0;
 
-    // _dx_FP.setSubvector(0, dx_FP_pos);
-    // _dx_FP.setSubvector(3, w);
+    w.push_back(1.0);
+    dx_FP_rot=CTRL_DEG2RAD*H*w;
+    dx_FP_rot.pop_back();
 
+    dx_FP.setSubvector(3, dx_FP_rot);
     return true;
 }
 
@@ -750,7 +751,8 @@ bool computeNeckVelocitiesFromdxFP(iKinChain *chainNeck, const Vector &x_FP,
     // Convert x_FP from root to the eyes reference frame
     root2Eyes(chainNeck, x_FP, x_FP_E);
 
-    // Compute the jacobian of the head joints alone
+    // Compute the jacobian of the head joints alone 
+    // (by adding the new fixation point beforehand)
     Matrix HN=eye(4);
     HN(0,3)=x_FP_E[0];
     HN(1,3)=x_FP_E[1];
