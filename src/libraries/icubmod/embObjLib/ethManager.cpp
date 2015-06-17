@@ -1350,7 +1350,10 @@ void EthReceiver::run()
 
     //double myTestTimeout = recvTimeOut.sec() + (double)recvTimeOut.msec()/1000.0f;
 
-    int flags = MSG_DONTWAIT;
+    int flags = 0;
+#ifndef WIN32
+    flags |= MSG_DONTWAIT;
+#endif
 
     static int earlyexit = 0;
 
