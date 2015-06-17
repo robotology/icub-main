@@ -10,23 +10,24 @@
 		    <param name="deviceName"> Left_Leg_Calibrator </param>
 		</group>
 
-		<group name="HOME">
-		    <!-- Joint                          0               1               2               3               4               5-->
-		    <param name="positionHome">         0               0               0               0               0               0       </param>
-		    <param name="velocityHome">         6               6               6               6               6               6       </param>
-		</group>
 
-		<group name="CALIBRATION">
-		    <!-- Joint                          0               1               2               3               4               5       -->
-		    <param name="calibrationType">      3               3               3               3               3               3       </param>
-		    <param name="calibration1">         0               0               0               0               0               0       </param>
-		    <param name="calibration2">         0               0               0               0               0               0       </param>
-		    <param name="calibration3">         48078           22519           6317            25887           32167           64407   </param>
-		    <param name="positionZero">         10               10             10             -10              10              10      </param>
-		    <param name="velocityZero">         6               6               6               6               6               6       </param>
-		    <param name="maxPwm">               1200            1200            1200            1200            1200            1200    </param>
-            <param name="posZeroThreshold">2            2               2               2               2               2        </param>       
-		</group>
+<group name="HOME">
+<param name="positionHome">                       0.00           0.00       0.00         0.00        0.00      0.00        </param>
+<param name="velocityHome">                       10.00          10.00      10.00        10.00       10.00     10.00       </param>
+</group>
+
+
+
+<group name="CALIBRATION">
+<param name="calibrationType">                    3              3          3            3           3         3           </param>
+<param name="calibration1">                       32767.9        32767.9    32767.9      32767.9     32767.9   32767.9     </param>
+<param name="calibration2">                       10.0           10.0       10.0         10.0        10.0      10.0        </param>
+<param name="calibration3">                       48187.9        22816.1    6288.1       26492.1     32127.1   64415.9     </param>
+<param name="positionZero">                       0.0            0.0        0.0          0.0         0.0       0.0         </param>
+<param name="velocityZero">                       10.0           10.0       10.0         10.0        10.0      10.0        </param>
+<param name="maxPwm">                             1200           1200       1200         1200        1200      1200        </param>
+<param name="posZeroThreshold">                   2              2          2            2           2         2           </param>
+</group>
 
 		<param name="CALIB_ORDER"> (0 1 2 3 4 5) </param>
 

@@ -6,8 +6,8 @@
         <param name="Joints">  2  </param> <!-- the number of joints of the robot part -->
 
 	<param name="AxisMap">              0               1       </param>
-        <param name="Encoder">          182.044         182.044 </param>
-        <param name="Zeros">            180             180     </param>
+<param name="Encoder">                                                                               182.044   182.044     </param>
+<param name="Zeros">                                                                                 180.00    180.00      </param>
         <param name="TorqueId">  	    0x0C            0x0C    </param>
         <param name="TorqueChan">	    4               5       </param>
         <param name="TorqueMax"> 	    24             24       </param>

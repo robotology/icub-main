@@ -5,8 +5,8 @@
     <group name="GENERAL">
         <param name="Joints"> 12 </param> <!-- the number of joints of the robot part -->
         <param name="AxisMap"> 	     0             1             2             3               4             5             6             7             8             9             10            11       </param>
-        <param name="Encoder">     706.67         978.46        978.46        5.083333      -7.99       -2.83          -2.58333      -2.77778      -2.52778      -2.61111      -2.69444      -2.03704    </param>  
- 	    <param name="Zeros">        90            -14           -52          244.918        -325.27     -90.00         -187.742      -91.8         -187.912      -91.9149      -183.711      -363.273    </param> 
+<param name="Encoder">                                                                -706.670 -978.460 -978.460 5.083    -14.111  -2.389   -2.735   -2.778   -2.676   -2.611   -2.853   -2.200   </param>
+<param name="Zeros">                                                                  90.00    -20.00   -56.00   244.92   -205.51  -94.19   -177.31  -91.80   -177.47  -91.91   -173.51  -336.36  </param>
         <param name="TorqueId">  0x0C     	0             0             0     		0             0              0             0            0             0            0             0              </param>
         <param name="TorqueChan">   4     	0             0             0     		0             0              0             0            0             0            0             0          	</param>
         <param name="TorqueMax">    2     	2             2             2     		0             0              0             0            0             0            0             0       	</param>
