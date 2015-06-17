@@ -10,7 +10,8 @@
 		    <param name="deviceName"> Head_Calibrator </param>	<!-- simple string to be used in code to have a human readable description -->
 		</group>
 
-	<group name="HOME">
+
+<group name="HOME">
 <param name="positionHome">                       -30        0       0       0          0         0            </param>
 <param name="velocityHome">                       10         10      10      10         10        10           </param>
 </group>
@@ -21,7 +22,7 @@
 <param name="calibrationType">                    3          3       3       3          0         0            </param>
 <param name="calibration1">                       2047.5     2047.5  2047.5  2047.5     900.0     900.0        </param>
 <param name="calibration2">                       10.0       10.0    10.0    10.0       20.0      20.0         </param>
-<param name="calibration3">                       1832.5     3260.5  432.5   52.5       0.0       0.0          </param>
+<param name="calibration3">                       1832.5     3260.5  432.5   640.5      0.0       0.0          </param>
 <param name="positionZero">                       0.0        0.0     0.0     0.0        0.0       0.0          </param>
 <param name="velocityZero">                       10.0       10.0    10.0    10.0       10.0      10.0         </param>
 <param name="maxPwm">                             130        130     0       0          0         0            </param>
