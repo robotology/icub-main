@@ -10,7 +10,6 @@
 		    <param name="deviceName"> Right_Arm_Calibrator </param>
 		</group>
 
-
 <group name="HOME">
 <param name="positionHome">                       -30       30        0         45        0         0         40        15        30        0         0         0         0         0         0         0         </param>
 <param name="velocityHome">                       10        10        10        10        30        30        30        100       10        10        10        10        10        10        10        10        </param>
