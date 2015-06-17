@@ -68,12 +68,11 @@ bool BmsBattery::open(yarp::os::Searchable& config)
     }
 
     // Other options
-    this->diagnostic = group_general.check("diagnostic");
-    this->logEnable = group_general.check("logToFile");
-    this->verboseEnable = group_general.check("verbose");
-    this->screenEnable = group_general.check("screen");
-    this->debugEnable = group_general.check("debug");
-    this->shutdownEnable = group_general.check("shutdown");
+    this->logEnable = group_general.check("logToFile", Value(0), "enable / disable the log to file").asBool();
+    this->verboseEnable = group_general.check("verbose", Value(0), "enable/disable the verbose mode").asBool();
+    this->screenEnable = group_general.check("screen", Value(0), "enable/disable the screen output").asBool();
+    this->debugEnable = group_general.check("debug", Value(0), "enable/disable the debug mode").asBool();
+    this->shutdownEnable = group_general.check("shutdown", Value(0), "enable/disable the automatic shutdown").asBool();
 
     RateThread::start();
     return true;

@@ -15,7 +15,7 @@
 #include <stdlib.h>
 
 using namespace std;
-#define DEBUG_TEST 1
+//#define DEBUG_TEST 1
 
 bool BcbBattery::open(yarp::os::Searchable& config)
 {
@@ -68,12 +68,11 @@ bool BcbBattery::open(yarp::os::Searchable& config)
     }
 
     // Other options
-    this->diagnostic = group_general.check("diagnostic");
-    this->logEnable = group_general.check("logToFile");
-    this->verboseEnable = group_general.check("verbose");
-    this->screenEnable = group_general.check("screen");
-    this->debugEnable = group_general.check("debug");
-    this->shutdownEnable = group_general.check("shutdown");
+    this->logEnable = group_general.check("logToFile", Value(0), "enable / disable the log to file").asBool();
+    this->verboseEnable = group_general.check("verbose", Value(0), "enable/disable the verbose mode").asBool();
+    this->screenEnable = group_general.check("screen", Value(0), "enable/disable the screen output").asBool();
+    this->debugEnable = group_general.check("debug", Value(0), "enable/disable the debug mode").asBool();
+    this->shutdownEnable = group_general.check("shutdown", Value(0), "enable/disable the automatic shutdown").asBool();
 
     RateThread::start();
     return true;
@@ -105,6 +104,20 @@ bool BcbBattery::threadInit()
         logFile = fopen("batteryLog.txt", "w");
     }
 
+    //start the transmission
+    char c = 0x01;
+    if (pSerial)
+    {
+        bool ret = pSerial->send(&c, 1);
+        if (ret == false) { yError("BcbBattery problems starting the transmission"); return false; }
+    }
+    else
+    {
+        yError("BcbBattery pSerial == NULL");
+        return false;
+    }
+
+
     return true;
 }
 
@@ -124,21 +137,34 @@ void BcbBattery::run()
     //if a text line is received, then try to receive more text to empty the buffer. If nothing else is received, serial_buff will be left unchanged from the previous value. The loop will exit and the sting will be parsed.
     serial_buff[0] = 0;
     log_buffer[0] = 0;
-    int rec = 0;
-    
+
     if (pSerial)
     {
+        //empty the buffer
+        char c = 0;
+        int r = 0;
         do
         {
-            rec = pSerial->receiveLine(serial_buff, 250);
-            if (verboseEnable) yDebug("BcbBattery::run() received %d chars", rec);
-            if (debugEnable)   yDebug("BcbBattery::run() buffer is: <%s> ", serial_buff);
-        } while
-            (rec > 0);
+           r = pSerial->receiveChar(c);
+        } while (r != 0);
+
+    search_0:
+        pSerial->receiveChar(serial_buff[8]); if (serial_buff[8] != '\r') { yWarning("BcbBattery sync error r"); goto search_0; }
+        pSerial->receiveChar(serial_buff[9]); if (serial_buff[9] != '\n') { yWarning("BcbBattery sync error n"); goto search_0; }
+        pSerial->receiveChar(serial_buff[0]); if (serial_buff[0] != '\0') {goto search_0; }
+        pSerial->receiveChar(serial_buff[1]); //voltage
+        pSerial->receiveChar(serial_buff[2]); //voltage
+        pSerial->receiveChar(serial_buff[3]); //current
+        pSerial->receiveChar(serial_buff[4]); //current
+        pSerial->receiveChar(serial_buff[5]); //charge
+        pSerial->receiveChar(serial_buff[6]); //charge
+        pSerial->receiveChar(serial_buff[7]); //status
+
+        serial_buff[10] = NULL;
     }
     else
     {
-        yError("pSerial == NULL");
+        yError("BcbBattery pSerial == NULL");
     }
 
 #if DEBUG_TEST
@@ -148,28 +174,21 @@ void BcbBattery::run()
     battery_temperature = 35.0;
 #endif
 
-    int len = strlen(serial_buff);
-    if (len>0)
-    {
-        if (verboseEnable) yDebug("BcbBattery::run() serial_buffer is: %s", serial_buff);
-        int pars = 0;
-        char dummy1 = serial_buff[0];
-        battery_voltage = serial_buff[1] * 256 + serial_buff[2];
-        battery_current = serial_buff[3] * 256 + serial_buff[4];
-        battery_charge  = serial_buff[5] * 256 + serial_buff[6];
-        backpack_status = serial_buff[7];
-        char dummy2 = serial_buff[8];
+    if (verboseEnable) yDebug("BcbBattery::run() serial_buffer is: %s", serial_buff);
+    battery_voltage = (unsigned char) serial_buff[1] * 256 + (unsigned char) serial_buff[2];
+    battery_current = (unsigned char) serial_buff[3] * 256 + (unsigned char) serial_buff[4];
+    battery_charge =  (unsigned char) serial_buff[5] * 256 + (unsigned char) serial_buff[6];
+    backpack_status = (unsigned char) serial_buff[7];
 
-        //add checksum verification
-        //...
+    //add checksum verification
+    //...
 
-        time_t rawtime;
-        struct tm * timeinfo;
-        time(&rawtime);
-        timeinfo = localtime(&rawtime);
-        char* battery_timestamp = asctime(timeinfo);
-        sprintf(log_buffer, "battery status: %+6.1fA   % 6.1fV   charge:% 6.1f%%    time: %s", battery_current, battery_voltage, battery_charge, battery_timestamp);
-    }
+    time_t rawtime;
+    struct tm * timeinfo;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    char* battery_timestamp = asctime(timeinfo);
+    sprintf(log_buffer, "battery status: %+6.1fA   % 6.1fV   charge:% 6.1f%%    time: %s", battery_current, battery_voltage, battery_charge, battery_timestamp);
 
     // if the battery is not charging, checks its status of charge
     if (battery_current>0.4) check_battery_status();

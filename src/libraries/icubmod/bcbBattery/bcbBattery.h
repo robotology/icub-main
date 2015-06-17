@@ -27,7 +27,6 @@ protected:
     short              status;
     double             timeStamp;
     yarp::sig::Vector  data;
-    bool               diagnostic;
     double             battery_charge;
     double             battery_voltage;
     double             battery_current;

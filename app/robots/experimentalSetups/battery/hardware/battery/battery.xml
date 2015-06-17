@@ -14,15 +14,15 @@
 		
 	<group name="SERIAL_PORT">           
 		<param name="verbose"> 0                    </param>       
-		<param name="comport">   COM2               </param>         <!--  //windows     -->
+		<param name="comport">   COM5               </param>         <!--  //windows     -->
 <!--		<param name="comport">   /dev/ttyUSB0     </param> -->   <!--    //linux     -->
-		<param name="baudrate">        57600        </param>       
+		<param name="baudrate">       115200        </param>       
 		<param name="xonlim">              0        </param>       
 		<param name="xofflim">             0        </param>       
 		<param name="readmincharacters">   0        </param>       
-		<param name="readtimeoutmsec">     2        </param>       
-		<param name="parityenb">           1        </param>       
-		<param name="paritymode">          even     </param>       
+		<param name="readtimeoutmsec">     5        </param>       
+		<param name="parityenb">           0        </param>       
+		<param name="paritymode">          none     </param>       
 		<param name="ctsenb">              0        </param>       
 		<param name="rtsenb">              0        </param>       
 		<param name="xinenb">              0        </param>       
@@ -33,6 +33,8 @@
 		<param name="dtrdisable">          0        </param>       
 		<param name="databits">            8        </param>  
 		<param name="stopbits">            1        </param>  
+		<param name="line_terminator_char1">        10      </param>  
+		<param name="line_terminator_char2">        10      </param>  
 	</group>                
 
 	</device>    
