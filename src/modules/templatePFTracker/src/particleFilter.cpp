@@ -61,10 +61,10 @@ PARTICLEThread::~PARTICLEThread()
 PARTICLEThread::PARTICLEThread() 
 {
     firstFrame = true;
-	num_objects = 0;
+    num_objects = 0;
     regions = (CvRect **) malloc(sizeof(CvRect*));
-	num_particles = PARTICLES;    /* number of particles */
-	rng = gsl_rng_alloc( gsl_rng_mt19937 );
+    num_particles = PARTICLES;    /* number of particles */
+    rng = gsl_rng_alloc( gsl_rng_mt19937 );
     gsl_rng_set( rng, (unsigned long)time(NULL) );
     i = 0;
     getTemplate = false;
@@ -175,16 +175,16 @@ void PARTICLEThread::run()
             if (imageOut.getOutputCount()>0)
             {
                 ImageOf<PixelBgr> &img = imageOut.prepare();
-	            img.resize(width,height);
-                cvCopyImage( frame, (IplImage *) img.getIplImage());
-	            imageOut.write();
+                img.resize(width,height);
+                cvCopy( frame, (IplImage *) img.getIplImage());
+                imageOut.write();
             }
             if (imageOutBlob.getOutputCount()>0)
             {
                 ImageOf<PixelMono> &imgBlob = imageOutBlob.prepare();
-	            imgBlob.resize(width,height);
-                cvCopyImage( frame_blob, (IplImage *) imgBlob.getIplImage());
-	            imageOutBlob.write();
+                imgBlob.resize(width,height);
+                cvCopy( frame_blob, (IplImage *) imgBlob.getIplImage());
+                imageOutBlob.write();
             }
             cvReleaseImage(&frame);
             cvReleaseImage(&frame_blob);
@@ -239,7 +239,7 @@ void PARTICLEThread::runAll(IplImage *img)
             num_objects = get_regionsImage( img, regions );
             if( num_objects == 0 )
                 fprintf( stderr, "Problem! seg has issues\n" );
-        }	
+        }   
         if (ref_histos!=NULL)
             free_histos ( ref_histos, num_objects);        
 
@@ -388,7 +388,7 @@ PARTICLEThread::histogram* PARTICLEThread::calc_histogram( IplImage** imgs, int 
         h = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 1 );
         s = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 1 );
         v = cvCreateImage( cvGetSize(img), IPL_DEPTH_32F, 1 );
-        cvCvtPixToPlane( img, h, s, v, NULL );
+        cvSplit( img, h, s, v, NULL );
 
         // increment appropriate histogram bin for each pixel 
         for( r = 0; r < img->height; r++ )
@@ -524,7 +524,7 @@ PARTICLEThread::particle PARTICLEThread::transition( const PARTICLEThread::parti
     pn.y0 = p.y0;
     pn.width = p.width;
     pn.height = p.height;
-    pn.histo = p.histo;	
+    pn.histo = p.histo; 
     pn.w = 0;
 
     return pn;
@@ -648,8 +648,8 @@ void PARTICLEThread::display_particleBlob( IplImage* img, const PARTICLEThread::
     
     for (int i=0; i<img->height; i++)
     {
-		for (int j=0; j<img->width; j++)
-		{	
+        for (int j=0; j<img->width; j++)
+        {   
             data[i*step+j] = 0;
         }
     }
@@ -959,8 +959,8 @@ bool PARTICLEModule::respond(const Bottle& command, Bottle& reply)
     }
     else
     {
-		cout << "command not known - type help for more info" << endl;
-	}
+        cout << "command not known - type help for more info" << endl;
+    }
     return true;
 }
 /**********************************************************/

@@ -153,7 +153,7 @@ void VisuoThread::startTracker(const Vector &stereo, const int &side)
 
         ipl_tpl=cvCreateImage(cvSize(side,side),ipl_img->depth,ipl_img->nChannels);
         cvSetImageROI(ipl_img,cvRect(x,y,width,height));
-        cvCopyImage(ipl_img,ipl_tpl);
+        cvCopy(ipl_img,ipl_tpl);
         cvCvtColor(ipl_tpl,ipl_tpl,CV_BGR2RGB);
         //ImageOf<PixelBgr> tpl;
         if(tpl.width()>0)
