@@ -1418,7 +1418,7 @@ int cDownloader::startscheda(int board_pid, bool board_eeprom, int board_type)
         }
 
     //pause
-     drv_sleep(500);
+     drv_sleep(1500);
 
     // riceve la risposta
     int read_messages = m_candriver->receive_message(rxBuffer);
