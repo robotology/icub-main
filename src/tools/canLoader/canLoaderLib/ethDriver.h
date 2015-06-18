@@ -218,7 +218,7 @@ public:
         return 0;
     }
 
-    int receive_message(yarp::dev::CanBuffer &messages, int howMany = MAX_READ_MSG, double TIMEOUT = 1.0)
+    int receive_message(yarp::dev::CanBuffer &messages, int howMany = MAX_READ_MSG, double TIMEOUT = 10.0)
     {
         CanPkt_t canPkt;
         ACE_UINT16 port;
@@ -230,7 +230,7 @@ public:
 
         while (true)
         {
-            int nrec=mSocket.receiveFrom(&canPkt,sizeof(CanPkt_t),address,port,1);
+            int nrec=mSocket.receiveFrom(&canPkt,sizeof(CanPkt_t),address,port,5);
 
             if (nrec==sizeof(CanPkt_t))
             {

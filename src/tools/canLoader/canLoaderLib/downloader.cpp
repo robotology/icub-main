@@ -1067,7 +1067,7 @@ int cDownloader::get_board_info       (int target_id, char* board_info)
     //drv_sleep(10);
 
     //riceve la risposta
-    read_messages = m_candriver->receive_message(rxBuffer, 64, 1);
+    read_messages = m_candriver->receive_message(rxBuffer, 64, 10);
 
     //One (or more) answers received
     int endString=0;
