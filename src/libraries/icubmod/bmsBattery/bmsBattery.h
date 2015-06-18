@@ -75,6 +75,9 @@ public:
     void check_battery_status();
     void notify_message(std::string msg);
     void stop_robot(std::string quit_port);
+
+private:
+    virtual bool verify_checksum(int& raw_battery_current, int&  raw_battery_voltage, int&  raw_battery_charge, int&  raw_battery_checksum);
 };
 
 
