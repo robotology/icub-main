@@ -1067,7 +1067,7 @@ int cDownloader::get_board_info       (int target_id, char* board_info)
     //drv_sleep(10);
 
     //riceve la risposta
-    read_messages = m_candriver->receive_message(rxBuffer, 64, 10);
+    read_messages = m_candriver->receive_message(rxBuffer, 64, 1);
 
     //One (or more) answers received
     int endString=0;
@@ -1418,7 +1418,7 @@ int cDownloader::startscheda(int board_pid, bool board_eeprom, int board_type)
         }
 
     //pause
-     drv_sleep(1500);
+     drv_sleep(500);
 
     // riceve la risposta
     int read_messages = m_candriver->receive_message(rxBuffer);

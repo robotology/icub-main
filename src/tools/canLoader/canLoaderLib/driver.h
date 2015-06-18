@@ -22,7 +22,7 @@ public:
     virtual ~iDriver(){}
     virtual int init(yarp::os::Searchable &config)=0;
     virtual int uninit()=0;
-    virtual int receive_message(yarp::dev::CanBuffer &messages, int howMany = MAX_READ_MSG, double TIMEOUT = 10.0)=0;
+    virtual int receive_message(yarp::dev::CanBuffer &messages, int howMany = MAX_READ_MSG, double TIMEOUT = 1)=0;
     virtual int send_message(yarp::dev::CanBuffer &message, int n)=0;
 
     virtual yarp::dev::CanBuffer createBuffer(int m)=0;
