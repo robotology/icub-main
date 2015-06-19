@@ -62,7 +62,7 @@ public:
         options.fromString(rf.toString());
         char robotName[255];
         Bottle *jointsList=0;
-
+        std::string moduleName = "directPositionControl";
         Time::turboBoost();
 
         options.put("device", "remote_controlboard");
@@ -71,18 +71,23 @@ public:
         else
             strncpy(robotName, "icub", sizeof(robotName));
 
+        if (options.check("name"))
+        {
+            moduleName = options.find("name").asString();
+        }
+
         if(options.check("part"))
         {
             sprintf(partName, "%s", options.find("part").asString().c_str());
 
             char tmp[255];
-            sprintf(tmp, "/directPositionControl/%s/%s/client", robotName, partName);
+            sprintf(tmp, "/%s/%s/%s/client", moduleName.c_str(), robotName, partName);
             options.put("local",tmp);
         
             sprintf(tmp, "/%s/%s", robotName, partName);
             options.put("remote", tmp);
         
-            sprintf(tmp,"/directPositionControl/%s/rpc", partName);
+            sprintf(tmp, "/%s/%s/rpc", moduleName.c_str(), partName);
             rpc_port.open(tmp);
             
             options.put("carrier", "tcp");
@@ -103,6 +108,7 @@ public:
         else
         {
             yError("Please specify the joints to control (e.g. --joints ""(0 1 2)"" ");
+            return false;
         }
 
         //opening the device driver
@@ -120,7 +126,7 @@ public:
         yInfo("control rate is %d ms",period);
 
         pThread=new positionDirectControlThread(period);
-        pThread->init(&driver, partName, robotName, jointsList);
+        pThread->init(&driver, moduleName, partName, robotName, jointsList);
         pThread->start();
 
         return true;

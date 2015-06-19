@@ -51,7 +51,7 @@ public:
     positionDirectControlThread(int rate);
     ~positionDirectControlThread();
 
-    bool init(yarp::dev::PolyDriver *d, yarp::os::ConstString partName, yarp::os::ConstString robotName, yarp::os::Bottle* jointsList);
+    bool init(yarp::dev::PolyDriver *d, yarp::os::ConstString moduleName, yarp::os::ConstString partName, yarp::os::ConstString robotName, yarp::os::Bottle* jointsList);
 
     void halt();
     void go();
