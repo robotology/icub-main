@@ -185,12 +185,16 @@ MACRO(icub_export_library target)
     endif()
    
 
-    # strip off the trailing slash
-    string(REGEX REPLACE "/+$" "" path_to_exclude ${path_to_exclude})
+    if(path_to_exclude)
+        # strip off the trailing slash
+        string(REGEX REPLACE "/+$" "" path_to_exclude ${path_to_exclude})
+    endif()
 
     foreach(cur_file  ${files_with_path})
         get_filename_component(file_rel_dir ${cur_file} PATH)
-        string(REPLACE "${path_to_exclude}" "" file_rel_dir ${file_rel_dir})
+        if(path_to_exclude)
+            string(REPLACE "${path_to_exclude}" "" file_rel_dir ${file_rel_dir})
+        endif()
         install(FILES ${cur_file} DESTINATION ${destination}/${file_rel_dir} COMPONENT Development)
     endforeach()
     set_target_properties(${target} PROPERTIES 
