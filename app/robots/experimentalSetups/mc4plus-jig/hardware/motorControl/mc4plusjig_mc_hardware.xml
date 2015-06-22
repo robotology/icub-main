@@ -2,14 +2,14 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
 <devices robot="iCubExpSetupMC4PLUSjig" build="1">
-  <device name="devmc4plusjig_mc" type="embObjMotionControl">
+  <device name="xxxdevmc4plusjig_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/devmc4plusjig-mc4plus01-eln.xml" />
       <params file="hardware/mechanicals/devmc4plusjig-mc4plus01-mec.xml" />
 
     <group name="LIMITS">
-        <param name="Max">              100                     </param>
-        <param name="Min">             -100                     </param>
+        <param name="Max">              200                     </param>
+        <param name="Min">             -200                     </param>
         <param name="Currents">         5000                    </param>
     </group>
     
