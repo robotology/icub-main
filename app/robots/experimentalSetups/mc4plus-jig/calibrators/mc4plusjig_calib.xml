@@ -11,19 +11,19 @@
 		</group>
 
 		<group name="CALIBRATION">
-		<param name="calibrationType">                    3                 </param>
-		<param name="calibration1">                       32767.9           </param>
-		<param name="calibration2">                       10.0              </param>
-		<param name="calibration3">                       38271.9           </param>
-		<param name="positionZero">                       0.0               </param>
-		<param name="velocityZero">                       10.0              </param>
-		<param name="maxPwm">                             2500              </param>
-		<param name="posZeroThreshold">                   2                 </param>
+		<param name="calibrationType">                    4                </param>
+		<param name="calibration1">                       250.0            </param>
+		<param name="calibration2">                       3640.88          </param>
+		<param name="calibration3">                       19114.62         </param> <!-- working only below:18204.4 -->
+		<param name="positionZero">                       0.0              </param>
+		<param name="velocityZero">                       20.0             </param>
+		<param name="maxPwm">                             500              </param>
+		<param name="posZeroThreshold">                   2                </param>
 		</group>
 
 		<group name="HOME">
 		<param name="positionHome">                       0             </param>
-		<param name="velocityHome">                       10            </param>
+		<param name="velocityHome">                       20            </param>
 		</group>
 
  <!-- check old calibrator for the correct sequence, then ask to Randazz -->

@@ -8,8 +8,8 @@
       <params file="hardware/mechanicals/devmc4plusjig-mc4plus01-mec.xml" />
 
     <group name="LIMITS">
-        <param name="Max">              1000                    </param>
-        <param name="Min">             -1000                    </param>
+        <param name="Max">              100                     </param>
+        <param name="Min">             -100                     </param>
         <param name="Currents">         5000                    </param>
     </group>
     
@@ -21,11 +21,11 @@
 	<group name="POSITION_CONTROL">
         <param name="controlLaw">    joint_pid_v1               </param>    
         <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">           -568.00                     </param>       
+        <param name="kp">            568.00                     </param>  <!-- 568.00 -->  
         <param name="kd">                 0                     </param>       
         <param name="ki">             	  0                     </param>       
-        <param name="limPwm">          4000                     </param>       
-        <param name="maxPwm">          8000                     </param>  
+        <param name="limPwm">          	500                     </param>       
+        <param name="maxPwm">          	700                     </param>  
         <param name="maxInt">           750                     </param>       
         <param name="shift">              0                     </param>       
         <param name="ko">                 0                     </param>       
