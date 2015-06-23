@@ -1155,7 +1155,20 @@ bool ClientCartesianController::attachTipFrame(const Vector &x, const Vector &o)
         return false;
     }
 
-    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
+    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
+    {
+        // mandatory refresh of the local pose (blocking)
+        if (Vector *v=portState.read(true))
+        {
+            pose=*v;
+            portState.getEnvelope(poseStamp);
+            lastPoseMsgArrivalTime=Time::now();
+        }
+
+        return true;
+    }
+    else
+        return false;
 }
 
 
