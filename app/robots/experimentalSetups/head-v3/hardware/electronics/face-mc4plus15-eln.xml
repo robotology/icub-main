@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<params robot="iCubExpSetupMC4PLUSjig" build="1">
+<params robot="iCubExpHeadV3" build="1">
     <params file="hardware/electronics/pc104.xml" />
     
     <group name="ETH">
@@ -32,8 +32,8 @@
             <param name="entityMNinformationNumberOf">              1	</param>
 
         <param name="endpointMotionControlIsSupported">         1   </param> 
-            <param name="entityMCjointNumberOf">                    2	</param> 
-            <param name="entityMCmotorNumberOf">                    2	</param>
+            <param name="entityMCjointNumberOf">                    4	</param> 
+            <param name="entityMCmotorNumberOf">                    4	</param>
             <param name="entityMCcontrollerNumberOf">               1	</param> 
             
         <param name="endpointAnalogSensorsIsSupported">         0   </param> 
