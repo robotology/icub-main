@@ -12,9 +12,9 @@
 
 		<group name="CALIBRATION">
 		<param name="calibrationType">                 	4			4		    4			4    	</param>
-		<param name="calibration1">                   	250.0		250.0       250.0		250.0	</param>		<!-- used pwm  -->
+		<param name="calibration1">                   	250.0		250.0       250.0		500.0	</param>		<!-- used pwm  -->
 		<param name="calibration2">                   	3640.88		3640.88  	3640.88		3640.88	</param>		<!-- vel of come back in icubdeg/sec (20 deg/sec) -->
-		<param name="calibration3">           			6371.54		5097.23		5097.23 	5097.23	</param>		<!-- pos of reached hw limit in icubdeg (35 deg) (28 deg) (1 ideg = 182.044) -->
+		<param name="calibration3">           			24211.85    5461.32		24211.85    9284.24 </param>		<!-- pos of reached hw limit in icubdeg (133 deg) (30 deg) (133 deg) (51 deeg) (1 ideg = 182.044) -->
 		<param name="positionZero">               		0.0			0.0			0.0			0.0		</param>		<!-- target position in deg after high level calib is terminated --> 
 		<param name="velocityZero">                		20.0		20.0		20.0		20.0	</param>		<!-- and its velocity in deg/sec -->
 		<param name="maxPwm">                       	500			500         500			500		</param>		<!-- max pwm used in calib (it is a pid param)-->

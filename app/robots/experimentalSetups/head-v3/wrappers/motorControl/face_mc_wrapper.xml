@@ -5,13 +5,13 @@
   <device name="devicename_face_mc_wrapper" type="controlboardwrapper2">
       <paramlist name="networks">
 	<!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
-	  <elem name="FirstSetOfJoints"> 0  1  0  1 </elem>
+	  <elem name="FirstSetOfJoints"> 0  3  0  3 </elem>
       </paramlist>
 
 <param name="period"> 10 </param>
       <param name="name">   /icub/facev3         </param>
       <param name="ports">  facev3               </param>
-      <param name="joints"> 2                        </param>
+      <param name="joints"> 4                        </param>
 
       <action phase="startup" level="5" type="attach">
 	  <paramlist name="networks">
