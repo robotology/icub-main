@@ -25,7 +25,7 @@
 
 
 /************************************************************************/
-Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
+Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
                        const bool _neckPosCtrlOn, const double _neckTime, const double _eyesTime,
                        const double _minAbsVel, const unsigned int _period) :
                        RateThread(_period), drvTorso(_drvTorso),           drvHead(_drvHead),

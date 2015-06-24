@@ -61,7 +61,7 @@ protected:
     iCubInertialSensor   *imu;
     iKinChain            *chainNeck, *chainEyeL, *chainEyeR;    
     PolyDriver           *drvTorso, *drvHead;
-    exchangeData         *commData;
+    ExchangeData         *commData;
     Controller           *ctrl;
     xdPort               *port_xd;
     Integrator           *I;
@@ -70,10 +70,7 @@ protected:
     double                orig_eye_tilt_max;
     double                orig_eye_pan_min;
     double                orig_eye_pan_max;
-
-    BufferedPort<Vector> port_inertial;
-    Mutex mutex;
-
+    
     unsigned int period;
     bool saccadesOn;
     bool saccadeUnderWayOld;
@@ -93,13 +90,12 @@ protected:
     Vector fbHead;
     Vector qd,fp;
     Matrix eyesJ;
-    Vector gyro;
     Vector counterRotGain;
 
     Vector getEyesCounterVelocity(const Matrix &eyesJ, const Vector &fp);
 
 public:
-    EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
+    EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
                   Controller *_ctrl, const bool _saccadesOn, const Vector &_counterRotGain,
                   const unsigned int _period);
 
@@ -116,7 +112,6 @@ public:
     double getEyesBoundVer() const                          { return eyesBoundVer;             }
     void   setCounterRotGain(const Vector &gain);
     void   minAllowedVergenceChanged();
-    bool   getGyro(Vector &data);
     bool   bindEyes(const double ver);
     bool   clearEyes();
     void   manageBindEyes(const double ver);
@@ -140,7 +135,7 @@ protected:
     iKinChain          *chainNeck, *chainEyeL, *chainEyeR;    
     GazeIpOptMin       *invNeck;
     PolyDriver         *drvTorso, *drvHead;
-    exchangeData       *commData;
+    ExchangeData       *commData;
     EyePinvRefGen      *eyesRefGen;
     Localizer          *loc;
     Controller         *ctrl;
@@ -158,7 +153,6 @@ protected:
     Vector fbHead;
     Vector neckPos;
     Vector gazePos;
-    Vector gDefaultDir;
     Vector fbTorsoOld;
     Vector fbHeadOld;
 
@@ -174,7 +168,7 @@ protected:
     Vector computeTargetUserTolerance(const Vector &xd);
 
 public:
-    Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
+    Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
            EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
            const unsigned int _period);
 

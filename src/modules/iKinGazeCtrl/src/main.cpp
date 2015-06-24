@@ -538,11 +538,13 @@ protected:
     Solver         *slv;
     Controller     *ctrl;
     PolyDriver     *drvTorso, *drvHead;
-    exchangeData    commData;
-    RpcServer       rpcPort;
+    ExchangeData    commData;    
     bool            interrupting;
     bool            doSaveTweakFile;
     Mutex           savingTweakFile;
+    
+    IMUPort   imuPort;    
+    RpcServer rpcPort;
 
     struct Context
     {
@@ -948,7 +950,18 @@ protected:
 
 public:
     /************************************************************************/
-    CtrlModule() : interrupting(false), doSaveTweakFile(false) { }
+    CtrlModule()
+    {
+        loc=NULL;
+        eyesRefGen=NULL;
+        slv=NULL;
+        ctrl=NULL;
+        drvTorso=NULL;
+        drvHead=NULL;
+
+        interrupting=false;
+        doSaveTweakFile=false;
+    }
 
     /************************************************************************/
     bool configure(ResourceFinder &rf)
@@ -1018,7 +1031,8 @@ public:
         string remoteHeadName="/"+commData.robotName+"/"+headName;
         string localHeadName=commData.localStemName+"/"+headName;
         string remoteTorsoName="/"+commData.robotName+"/"+torsoName;
-        string localTorsoName=commData.localStemName+"/"+torsoName;        
+        string localTorsoName=commData.localStemName+"/"+torsoName;
+        string remoteInertialName=commData.robotName+"/inertial";
 
         Property optTorso("(device remote_controlboard)");
         optTorso.put("remote",remoteTorsoName.c_str());
@@ -1061,10 +1075,16 @@ public:
         if (!drvHead->isValid())
         {
             yError("Head device driver not available!");
+            dispose();
+            return false;
+        }
 
-            delete drvHead;
-            delete drvTorso;
-            drvTorso=drvHead=NULL;
+        imuPort.setExchangeData(&commData);
+        imuPort.open((commData.localStemName+"/inertial:i").c_str());        
+        if (!Network::connect(remoteInertialName.c_str(),imuPort.getName().c_str()))
+        {
+            yError("Unable to connect to %s!",remoteInertialName.c_str());
+            dispose();
             return false;
         }
 
@@ -1779,19 +1799,25 @@ public:
     }
 
     /************************************************************************/
-    bool interruptModule()
+    void dispose()
     {
-        interrupting=true;
-        return true;
-    }
+        if (loc!=NULL)
+            loc->stop();
+        
+        if (eyesRefGen!=NULL)  
+            eyesRefGen->stop();
 
-    /************************************************************************/
-    bool close()
-    {
-        loc->stop();
-        eyesRefGen->stop();
-        slv->stop();
-        ctrl->stop();
+        if (slv!=NULL)
+            slv->stop();
+
+        if (ctrl!=NULL)
+            ctrl->stop();
+
+        if (drvTorso!=NULL)
+            drvTorso->close();
+
+        if (drvHead!=NULL)
+            drvHead->close();
 
         delete loc;
         delete eyesRefGen;
@@ -1800,11 +1826,29 @@ public:
         delete drvTorso;
         delete drvHead;
 
-        rpcPort.interrupt();
-        rpcPort.close();
+        if (!imuPort.isClosed())
+            imuPort.close(); 
+
+        if (rpcPort.asPort().isOpen())
+            rpcPort.close();
 
         contextMap.clear();
+    }
 
+    /************************************************************************/
+    bool interruptModule()
+    {
+        interrupting=true;
+        imuPort.interrupt();
+        rpcPort.interrupt();
+
+        return true;
+    }
+
+    /************************************************************************/
+    bool close()
+    {
+        dispose();
         return true;
     }
 

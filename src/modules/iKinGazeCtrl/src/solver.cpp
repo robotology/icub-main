@@ -26,7 +26,7 @@
 
 /************************************************************************/
 EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
-                             exchangeData *_commData, Controller *_ctrl,
+                             ExchangeData *_commData, Controller *_ctrl,
                              const bool _saccadesOn, const Vector &_counterRotGain,
                              const unsigned int _period) :
                              RateThread(_period),     drvTorso(_drvTorso), drvHead(_drvHead),
@@ -115,7 +115,6 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     qd[2]=fbHead[5];
     I=new Integrator(Ts,qd,lim);
 
-    gyro.resize(12,0.0);
     fp.resize(3,0.0);
     eyesJ.resize(3,3);
     eyesJ.zero();
@@ -134,21 +133,6 @@ void EyePinvRefGen::minAllowedVergenceChanged()
     lim(2,0)=commData->get_minAllowedVergence();    
     I->setLim(lim);
     orig_lim=lim;
-}
-
-
-/************************************************************************/
-bool EyePinvRefGen::getGyro(Vector &data)
-{
-    if (port_inertial.getInputCount()>0)
-    {
-        mutex.lock();
-        data=gyro;
-        mutex.unlock();
-        return true;
-    }
-    else
-        return false;
 }
 
 
@@ -242,19 +226,17 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
     H(2,3)=fp[2]-H(2,3);
 
     // gyro rate [deg/s]
-    mutex.lock();
-    double gyrX=gyro[6];
-    double gyrY=gyro[7];
-    double gyrZ=gyro[8];
-    mutex.unlock();
+    Vector gyro=commData->get_imu().subVector(6,8);
 
     // filter out the noise on the gyro readouts
     Vector vor_fprelv;
-    if ((fabs(gyrX)<GYRO_BIAS_STABILITY) && (fabs(gyrY)<GYRO_BIAS_STABILITY) &&
-        (fabs(gyrZ)<GYRO_BIAS_STABILITY))
+    if ((fabs(gyro[0])<GYRO_BIAS_STABILITY) && (fabs(gyro[1])<GYRO_BIAS_STABILITY) &&
+        (fabs(gyro[2])<GYRO_BIAS_STABILITY))
         vor_fprelv.resize(eyesJ.rows(),0.0);    // pinv(eyesJ) => use rows
     else
-        vor_fprelv=CTRL_DEG2RAD*(gyrX*cross(H,0,H,3)+gyrY*cross(H,1,H,3)+gyrZ*cross(H,2,H,3));
+        vor_fprelv=CTRL_DEG2RAD*(gyro[0]*cross(H,0,H,3)+
+                                 gyro[1]*cross(H,1,H,3)+
+                                 gyro[2]*cross(H,2,H,3));
 
     // ********** implement OCR
     H=chainNeck->getH();
@@ -276,15 +258,6 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
 /************************************************************************/
 bool EyePinvRefGen::threadInit()
 {
-    string robotPortInertial=("/"+commData->robotName+"/inertial");
-    port_inertial.open((commData->localStemName+"/inertial:i").c_str());
-    if (!Network::connect(robotPortInertial.c_str(),port_inertial.getName().c_str()))
-    {
-        counterRotGain[0]=0.0; counterRotGain[1]=1.0;
-        yWarning("Unable to connect to %s => (vor,ocr) gains = (%s)",
-                 robotPortInertial.c_str(),counterRotGain.toString(3,3).c_str());
-    }
-
     yInfo("Starting Pseudoinverse Reference Generator at %d ms",period);
 
     saccadesRxTargets=0;
@@ -316,14 +289,6 @@ void EyePinvRefGen::run()
         updateTorsoBlockedJoints(chainNeck,fbTorso);
         updateTorsoBlockedJoints(chainEyeL,fbTorso);
         updateTorsoBlockedJoints(chainEyeR,fbTorso);
-
-        // read gyro data
-        if (Vector *_gyro=port_inertial.read(false))
-        {
-            mutex.lock();
-            gyro=*_gyro;
-            mutex.unlock();
-        }
 
         // get current target
         Vector xd=port_xd->get_xd();
@@ -457,9 +422,6 @@ void EyePinvRefGen::run()
 /************************************************************************/
 void EyePinvRefGen::threadRelease()
 {
-    port_inertial.interrupt();
-    port_inertial.close();
-
     delete neck;
     delete eyeL;
     delete eyeR;
@@ -485,7 +447,7 @@ void EyePinvRefGen::resume()
 
 
 /************************************************************************/
-Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
+Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
                EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
                const unsigned int _period) :
                RateThread(_period), drvTorso(_drvTorso),     drvHead(_drvHead),
@@ -573,9 +535,6 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     chainEyeL->setAng(eyePos);
     eyePos[1]=gazePos[1]-gazePos[2]/2.0;
     chainEyeR->setAng(eyePos);
-
-    gDefaultDir.resize(4,0.0);
-    gDefaultDir[2]=gDefaultDir[3]=1.0;
 
     fbTorsoOld=fbTorso;
     fbHeadOld=fbHead;
@@ -907,20 +866,11 @@ void Solver::run()
     // call the solver for neck
     if (doSolve)
     {
-        Vector  gyro;
-        Vector  gDir;
-        Vector *pgDir;
-
-        if (eyesRefGen->getGyro(gyro))
-        {
-            gDir=getGravityDirection(gyro);
-            pgDir=&gDir;
-        }
-        else
-            pgDir=&gDefaultDir;
+        Vector gyro=commData->get_imu().subVector(6,8);
+        Vector gDir=getGravityDirection(gyro);
 
         Vector xdUserTol=computeTargetUserTolerance(xd);
-        neckPos=invNeck->solve(neckPos,xdUserTol,*pgDir);
+        neckPos=invNeck->solve(neckPos,xdUserTol,gDir);
 
         // update neck pitch,roll,yaw
         commData->set_qd(0,neckPos[0]);

@@ -57,7 +57,7 @@ protected:
     IPositionControl2 *posHead;
     IVelocityControl2 *velHead;
     IPositionDirect   *posNeck;    
-    exchangeData      *commData;
+    ExchangeData      *commData;
     xdPort            *port_xd;
 
     minJerkVelCtrl    *mjCtrlNeck;
@@ -115,7 +115,7 @@ protected:
     void stopControlHelper();
 
 public:
-    Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
+    Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
                const bool _neckPosCtrlOn, const double _neckTime, const double _eyesTime,
                const double _minAbsVel, const unsigned int _period);
 

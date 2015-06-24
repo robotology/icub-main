@@ -29,6 +29,7 @@
 #define MUTEX_V             5
 #define MUTEX_COUNTERV      6
 #define MUTEX_FPFRAME       7
+#define MUTEX_IMU           8
 
 
 /************************************************************************/
@@ -137,8 +138,10 @@ void xdPort::run()
 
 
 /************************************************************************/
-exchangeData::exchangeData()
+ExchangeData::ExchangeData()
 {
+    imu.resize(12,0.0);
+
     isCtrlActive=false;
     canCtrlBeDisabled=true;
     saccadeUnderway=false;
@@ -155,7 +158,7 @@ exchangeData::exchangeData()
 
 
 /************************************************************************/
-void exchangeData::resize_v(const int sz, const double val)
+void ExchangeData::resize_v(const int sz, const double val)
 {
     mutex[MUTEX_V].lock();
     v.resize(sz,val);
@@ -164,7 +167,7 @@ void exchangeData::resize_v(const int sz, const double val)
 
 
 /************************************************************************/
-void exchangeData::resize_counterv(const int sz, const double val)
+void ExchangeData::resize_counterv(const int sz, const double val)
 {
     mutex[MUTEX_COUNTERV].lock();
     counterv.resize(sz,val);
@@ -173,7 +176,7 @@ void exchangeData::resize_counterv(const int sz, const double val)
 
 
 /************************************************************************/
-void exchangeData::set_xd(const Vector &_xd)
+void ExchangeData::set_xd(const Vector &_xd)
 {
     mutex[MUTEX_XD].lock();
     xd=_xd;
@@ -182,7 +185,7 @@ void exchangeData::set_xd(const Vector &_xd)
 
 
 /************************************************************************/
-void exchangeData::set_qd(const Vector &_qd)
+void ExchangeData::set_qd(const Vector &_qd)
 {
     mutex[MUTEX_QD].lock();
     qd=_qd;
@@ -191,7 +194,7 @@ void exchangeData::set_qd(const Vector &_qd)
 
 
 /************************************************************************/
-void exchangeData::set_qd(const int i, const double val)
+void ExchangeData::set_qd(const int i, const double val)
 {
     mutex[MUTEX_QD].lock();
     qd[i]=val;
@@ -200,7 +203,7 @@ void exchangeData::set_qd(const int i, const double val)
 
 
 /************************************************************************/
-void exchangeData::set_x(const Vector &_x)
+void ExchangeData::set_x(const Vector &_x)
 {
     mutex[MUTEX_X].lock();
     x=_x;
@@ -209,7 +212,7 @@ void exchangeData::set_x(const Vector &_x)
 
 
 /************************************************************************/
-void exchangeData::set_x(const Vector &_x, const double stamp)
+void ExchangeData::set_x(const Vector &_x, const double stamp)
 {
     mutex[MUTEX_X].lock();
     x=_x;
@@ -219,7 +222,7 @@ void exchangeData::set_x(const Vector &_x, const double stamp)
 
 
 /************************************************************************/
-void exchangeData::set_q(const Vector &_q)
+void ExchangeData::set_q(const Vector &_q)
 {
     mutex[MUTEX_Q].lock();
     q=_q;
@@ -228,7 +231,7 @@ void exchangeData::set_q(const Vector &_q)
 
 
 /************************************************************************/
-void exchangeData::set_torso(const Vector &_torso)
+void ExchangeData::set_torso(const Vector &_torso)
 {
     mutex[MUTEX_TORSO].lock();
     torso=_torso;
@@ -237,7 +240,7 @@ void exchangeData::set_torso(const Vector &_torso)
 
 
 /************************************************************************/
-void exchangeData::set_v(const Vector &_v)
+void ExchangeData::set_v(const Vector &_v)
 {
     mutex[MUTEX_V].lock();
     v=_v;
@@ -246,7 +249,7 @@ void exchangeData::set_v(const Vector &_v)
 
 
 /************************************************************************/
-void exchangeData::set_counterv(const Vector &_counterv)
+void ExchangeData::set_counterv(const Vector &_counterv)
 {
     mutex[MUTEX_COUNTERV].lock();
     counterv=_counterv;
@@ -255,7 +258,7 @@ void exchangeData::set_counterv(const Vector &_counterv)
 
 
 /************************************************************************/
-void exchangeData::set_fpFrame(const Matrix &_S)
+void ExchangeData::set_fpFrame(const Matrix &_S)
 {
     mutex[MUTEX_FPFRAME].lock();
     S=_S;
@@ -264,7 +267,16 @@ void exchangeData::set_fpFrame(const Matrix &_S)
 
 
 /************************************************************************/
-Vector exchangeData::get_xd()
+void ExchangeData::set_imu(const Vector &_imu)
+{
+    mutex[MUTEX_IMU].lock();
+    imu=_imu;
+    mutex[MUTEX_IMU].unlock();
+}
+
+
+/************************************************************************/
+Vector ExchangeData::get_xd()
 {
     mutex[MUTEX_XD].lock();
     Vector _xd=xd;
@@ -275,7 +287,7 @@ Vector exchangeData::get_xd()
 
 
 /************************************************************************/
-Vector exchangeData::get_qd()
+Vector ExchangeData::get_qd()
 {
     mutex[MUTEX_QD].lock();
     Vector _qd=qd;
@@ -286,7 +298,7 @@ Vector exchangeData::get_qd()
 
 
 /************************************************************************/
-Vector exchangeData::get_x()
+Vector ExchangeData::get_x()
 {
     mutex[MUTEX_X].lock();
     Vector _x=x;
@@ -297,7 +309,7 @@ Vector exchangeData::get_x()
 
 
 /************************************************************************/
-Vector exchangeData::get_x(double &stamp)
+Vector ExchangeData::get_x(double &stamp)
 {
     mutex[MUTEX_X].lock();
     Vector _x=x;
@@ -309,7 +321,7 @@ Vector exchangeData::get_x(double &stamp)
 
 
 /************************************************************************/
-Vector exchangeData::get_q()
+Vector ExchangeData::get_q()
 {
     mutex[MUTEX_Q].lock();
     Vector _q=q;
@@ -320,7 +332,7 @@ Vector exchangeData::get_q()
 
 
 /************************************************************************/
-Vector exchangeData::get_torso()
+Vector ExchangeData::get_torso()
 {
     mutex[MUTEX_TORSO].lock();
     Vector _torso=torso;
@@ -331,7 +343,7 @@ Vector exchangeData::get_torso()
 
 
 /************************************************************************/
-Vector exchangeData::get_v()
+Vector ExchangeData::get_v()
 {
     mutex[MUTEX_V].lock();
     Vector _v=v;
@@ -342,7 +354,7 @@ Vector exchangeData::get_v()
 
 
 /************************************************************************/
-Vector exchangeData::get_counterv()
+Vector ExchangeData::get_counterv()
 {
     mutex[MUTEX_COUNTERV].lock();
     Vector _counterv=counterv;
@@ -353,13 +365,46 @@ Vector exchangeData::get_counterv()
 
 
 /************************************************************************/
-Matrix exchangeData::get_fpFrame()
+Matrix ExchangeData::get_fpFrame()
 {
     mutex[MUTEX_FPFRAME].lock();
     Matrix _S=S;
     mutex[MUTEX_FPFRAME].unlock();
 
     return _S;
+}
+
+
+/************************************************************************/
+Vector ExchangeData::get_imu()
+{
+    mutex[MUTEX_IMU].lock();
+    Vector _imu=imu;
+    mutex[MUTEX_IMU].unlock();
+
+    return _imu;
+}
+
+
+/************************************************************************/
+IMUPort::IMUPort() : commData(NULL)
+{
+    useCallback();
+}
+
+
+/************************************************************************/
+void IMUPort::setExchangeData(ExchangeData *commData)
+{
+    this->commData=commData;
+}
+
+
+/************************************************************************/
+void IMUPort::onRead(Vector &imu)
+{
+    if (commData!=NULL)
+        commData->set_imu(imu);
 }
 
 
@@ -612,7 +657,7 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck)
 
 /************************************************************************/
 bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
-                 PolyDriver *drvHead, exchangeData *commData, double *timeStamp)
+                 PolyDriver *drvHead, ExchangeData *commData, double *timeStamp)
 {
     IEncodersTimed *encs;
 

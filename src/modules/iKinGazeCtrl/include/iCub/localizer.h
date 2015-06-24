@@ -44,7 +44,7 @@ class Localizer : public GazeComponent, public RateThread
 {
 protected:
     Mutex                 mutex;
-    exchangeData         *commData;
+    ExchangeData         *commData;
     xdPort               *port_xd;
     BufferedPort<Bottle>  port_mono;
     BufferedPort<Bottle>  port_stereo;
@@ -72,7 +72,7 @@ protected:
     void handleAnglesOutput();
 
 public:
-    Localizer(exchangeData *_commData, const unsigned int _period);
+    Localizer(ExchangeData *_commData, const unsigned int _period);
 
     void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void   getPidOptions(Bottle &options);

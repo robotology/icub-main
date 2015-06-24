@@ -24,7 +24,7 @@
 
 
 /************************************************************************/
-Localizer::Localizer(exchangeData *_commData, const unsigned int _period) :
+Localizer::Localizer(ExchangeData *_commData, const unsigned int _period) :
                      RateThread(_period), commData(_commData), period(_period)
 {
     iCubHeadCenter eyeC(commData->head_version>1.0?"right_v2":"right");

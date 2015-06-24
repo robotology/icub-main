@@ -39,8 +39,8 @@ using namespace iCub::ctrl;
 using namespace iCub::iKin;
 
 
-// This inherited class handles the incoming
-// fixation point xyz coordinates.
+// This class handles the incoming fixation point
+// xyz coordinates.
 // 
 // Since it accepts a bottle, it is possible to 
 // issue the command "yarp read /sender /ctrlName/xd:i"
@@ -85,15 +85,16 @@ public:
 
 
 // This class handles the data exchange among components.
-class exchangeData
+class ExchangeData
 {
 protected:
-    Mutex  mutex[8];
-
+    Mutex  mutex[9];
+    
     Vector xd,qd;
     Vector x,q,torso;
     Vector v,counterv;
     Matrix S;
+    Vector imu;
     bool   isCtrlActive;
     bool   canCtrlBeDisabled;
     bool   saccadeUnderway;
@@ -101,7 +102,7 @@ protected:
     double x_stamp;
 
 public:
-    exchangeData();
+    ExchangeData();
 
     void    resize_v(const int sz, const double val);
     void    resize_counterv(const int sz, const double val);
@@ -116,6 +117,7 @@ public:
     void    set_v(const Vector &_v);
     void    set_counterv(const Vector &_counterv);
     void    set_fpFrame(const Matrix &_S);
+    void    set_imu(const Vector &_imu);
 
     Vector  get_xd();
     Vector  get_qd();
@@ -126,6 +128,7 @@ public:
     Vector  get_v();
     Vector  get_counterv();
     Matrix  get_fpFrame();
+    Vector  get_imu();
 
     bool   &get_isCtrlActive()       { return isCtrlActive;       }
     bool   &get_canCtrlBeDisabled()  { return canCtrlBeDisabled;  }
@@ -144,6 +147,19 @@ public:
     ResourceFinder rf_tweak;
     string         tweakFile;
     bool           debugInfoEnabled;
+};
+
+
+// This class handles the incoming IMU data
+class IMUPort : public BufferedPort<Vector>
+{
+protected:
+    ExchangeData *commData;
+    void onRead(Vector &imu);
+
+public:
+    IMUPort();
+    void setExchangeData(ExchangeData *commData);
 };
 
 
@@ -202,7 +218,7 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck);
 // Reads encoders values.
 // Returns true if communication with robot is stable, false otherwise.
 bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
-                 PolyDriver *drvHead, exchangeData *commData, double *timeStamp=NULL);
+                 PolyDriver *drvHead, ExchangeData *commData, double *timeStamp=NULL);
 
 // Computes the velocity of the fixation point given:
 // 
