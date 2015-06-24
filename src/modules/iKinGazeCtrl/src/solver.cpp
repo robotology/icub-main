@@ -212,14 +212,7 @@ void EyePinvRefGen::setCounterRotGain(const Vector &gain)
 Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &fp)
 {
     // ********** implement VOR
-    Vector q(imu->getDOF());
-    q[0]=fbTorso[0];
-    q[1]=fbTorso[1];
-    q[2]=fbTorso[2];
-    q[3]=fbHead[0];
-    q[4]=fbHead[1];
-    q[5]=fbHead[2];
-    Matrix H=imu->getH(q);
+    Matrix H=imu->getH(cat(fbTorso,fbHead.subVector(0,2)));
 
     H(0,3)=fp[0]-H(0,3);
     H(1,3)=fp[1]-H(1,3);
@@ -380,7 +373,7 @@ void EyePinvRefGen::run()
 
             // compensate neck rotation at eyes level
             if ((eyesBoundVer>=0.0) || !CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
-                commData->set_counterv(zeros(3));
+                commData->set_counterv(zeros(qd.length()));
             else
                 commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));
             
@@ -399,7 +392,7 @@ void EyePinvRefGen::run()
             qd=I->integrate(v+commData->get_counterv());
         }
         else
-            commData->set_counterv(zeros(3));
+            commData->set_counterv(zeros(qd.length()));
 
         // set a new target position
         commData->set_xd(xd);
@@ -706,15 +699,7 @@ Vector Solver::getGravityDirection(const Vector &gyro)
     x[2]=0.0;    y[2]=0.0;
     x[3]=roll;   y[3]=pitch;   
     Matrix R=axis2dcm(y)*axis2dcm(x);
-
-    Vector q(imu->getDOF());
-    q[0]=fbTorso[0];
-    q[1]=fbTorso[1];
-    q[2]=fbTorso[2];
-    q[3]=fbHead[0];
-    q[4]=fbHead[1];
-    q[5]=fbHead[2];
-    Matrix H=imu->getH(q)*R.transposed();
+    Matrix H=imu->getH(cat(fbTorso,fbHead.subVector(0,2)))*R.transposed();
 
     // gravity is aligned along the z-axis
     Vector gDir=H.getCol(2);

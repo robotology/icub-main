@@ -50,20 +50,22 @@ using namespace iCub::iKin;
 class Controller : public GazeComponent, public RateThread
 {
 protected:
-    iCubHeadCenter    *neck;
-    iKinChain         *chainNeck, *chainEyeL, *chainEyeR;
-    PolyDriver        *drvTorso,  *drvHead;
-    IControlMode2     *modHead;
-    IPositionControl2 *posHead;
-    IVelocityControl2 *velHead;
-    IPositionDirect   *posNeck;    
-    ExchangeData      *commData;
-    xdPort            *port_xd;
+    iCubHeadCenter     *neck;
+    iCubInertialSensor *imu;
+    iKinChain          *chainNeck, *chainEyeL, *chainEyeR;
+    PolyDriver         *drvTorso,  *drvHead;
+    IControlMode2      *modHead;
+    IPositionControl2  *posHead;
+    IVelocityControl2  *velHead;
+    IPositionDirect    *posNeck;    
+    ExchangeData       *commData;
+    xdPort             *port_xd;
 
-    minJerkVelCtrl    *mjCtrlNeck;
-    minJerkVelCtrl    *mjCtrlEyes;
-    Integrator        *IntState;
-    Integrator        *IntPlan;
+    minJerkVelCtrl     *mjCtrlNeck;
+    minJerkVelCtrl     *mjCtrlEyes;
+    Integrator         *IntState;
+    Integrator         *IntPlan;
+    Integrator         *IntStabilizer;
 
     BufferedPort<Vector> port_x;
     BufferedPort<Vector> port_q;
