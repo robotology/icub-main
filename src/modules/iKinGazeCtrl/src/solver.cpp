@@ -686,30 +686,6 @@ void Solver::updateAngles()
 
 
 /************************************************************************/
-Vector Solver::getGravityDirection(const Vector &acc)
-{
-    double roll =CTRL_DEG2RAD*acc[0];
-    double pitch=CTRL_DEG2RAD*acc[1];
-
-    // compute rotational matrix to
-    // account for roll and pitch
-    Vector x(4), y(4);
-    x[0]=1.0;    y[0]=0.0;
-    x[1]=0.0;    y[1]=1.0;
-    x[2]=0.0;    y[2]=0.0;
-    x[3]=roll;   y[3]=pitch;   
-    Matrix R=axis2dcm(y)*axis2dcm(x);
-    Matrix H=imu->getH(cat(fbTorso,fbHead.subVector(0,2)))*R.transposed();
-
-    // gravity is aligned along the z-axis
-    Vector gDir=H.getCol(2);
-    gDir[3]=1.0;    // impose homogeneous coordinates
-
-    return gDir;
-}
-
-
-/************************************************************************/
 double Solver::neckTargetRotAngle(const Vector &xd)
 {
     Matrix H=commData->get_fpFrame();
@@ -849,8 +825,11 @@ void Solver::run()
     // call the solver for neck
     if (doSolve)
     {
-        Vector acc=commData->get_imu().subVector(0,1);
-        Vector gDir=getGravityDirection(acc);
+        Vector acc=commData->get_imu().subVector(3,5);
+        acc.push_back(1.0); // impose homogeneous coordinates
+
+        Matrix H=imu->getH(cat(fbTorso,fbHead.subVector(0,2)));
+        Vector gDir=H*acc;
 
         Vector xdUserTol=computeTargetUserTolerance(xd);
         neckPos=invNeck->solve(neckPos,xdUserTol,gDir);

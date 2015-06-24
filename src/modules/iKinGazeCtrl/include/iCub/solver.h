@@ -164,7 +164,6 @@ protected:
     double neckYawMax;
 
     void   updateAngles();
-    Vector getGravityDirection(const Vector &gyro);
     Vector computeTargetUserTolerance(const Vector &xd);
 
 public:

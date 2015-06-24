@@ -315,12 +315,12 @@ public:
         // rest pitch
         Vector gDirHp=SE3inv(chain.getH(2,true))*gDir;
         qRest[0]=-atan2(gDirHp[0],gDirHp[1]);
-        qRest[0]=std::min(std::max(chain(0).getMin(),qRest[0]),chain(0).getMax());
+        qRest[0]=sat(qRest[0],chain(0).getMin(),chain(0).getMax());
 
         // rest roll
         Vector gDirHr=SE3inv(chain.getH(3,true))*gDir;
         qRest[1]=atan2(gDirHr[1],gDirHr[0]);
-        qRest[1]=std::min(std::max(chain(1).getMin(),qRest[1]),chain(1).getMax());
+        qRest[1]=sat(qRest[1],chain(1).getMin(),chain(1).getMax());
     }
 
     /************************************************************************/
