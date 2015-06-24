@@ -698,7 +698,7 @@ void Controller::run()
 
             if (!neckPosCtrlOn)
             {
-                Vector stab=IntStabilizer->integrate(cat(vNeck-imuNeck,vEyes-imuEyes));
+                Vector stab=GAZECTRL_STABILIZATION_GAIN*IntStabilizer->integrate(cat(vNeck-imuNeck,vEyes-imuEyes));
                 vNeck=stab.subVector(0,2);
                 vEyes=stab.subVector(3,5);
             }
