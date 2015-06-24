@@ -367,6 +367,74 @@ void Controller::afterStart(bool s)
 
 
 /************************************************************************/
+Vector Controller::computedxFP(const Matrix &H, const Vector &v,
+                               const Vector &w, const Vector &x_FP)
+{
+    Matrix H_=H;
+    Vector w_=w;
+    w_.push_back(1.0);
+    
+    H_(0,3)=x_FP[0]-H_(0,3);
+    H_(1,3)=x_FP[1]-H_(1,3);
+    H_(2,3)=x_FP[2]-H_(2,3);
+    Vector dx_FP_pos=v+(w_[0]*cross(H_,0,H_,3)+
+                        w_[1]*cross(H_,1,H_,3)+
+                        w_[2]*cross(H_,2,H_,3));    
+
+    H_(0,3)=0.0;
+    H_(1,3)=0.0;
+    H_(2,3)=0.0;
+    Vector dx_FP_rot=H_*w_;
+    dx_FP_rot.pop_back();
+
+    return cat(dx_FP_pos,dx_FP_rot);
+}
+
+
+/************************************************************************/
+Vector Controller::computeNeckVelFromdxFP(const Vector &x_FP, const Vector &dx_FP)
+{
+    // convert x_FP from root to the neck reference frame
+    Vector x_FP_R=x_FP;
+    x_FP_R.push_back(1.0);
+    Vector x_FP_E=SE3inv(chainNeck->getH())*x_FP_R;
+
+    // compute the Jacobian of the head joints alone 
+    // (by adding the new fixation point beforehand)
+    Matrix HN=eye(4);
+    HN(0,3)=x_FP_E[0];
+    HN(1,3)=x_FP_E[1];
+    HN(2,3)=x_FP_E[2];
+
+    mutexChain.lock();
+    chainNeck->setHN(HN);
+    Matrix J_N=chainNeck->GeoJacobian();
+    chainNeck->setHN(eye(4,4));
+    mutexChain.unlock();
+
+    // take only the last three rows of the Jacobian
+    // belonging to the head joints
+    Matrix J_Np=J_N.submatrix(3,5,3,5);  
+
+    // compute dq_neck=J_N#*dx_FP_rot
+    return CTRL_RAD2DEG*(pinv(J_Np)*dx_FP.subVector(3,5));
+}
+
+
+/************************************************************************/
+Vector Controller::computeEyesVelFromdxFP(const Vector &x_FP, const Vector &dx_FP)
+{
+    // compute the Jacobian of the eyes
+    Vector x_FP_=x_FP;
+    Matrix J_E(3,3);
+    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,x_FP_,J_E);
+
+    // compute dq_eyes=J_E#*dx_FP;
+    return CTRL_RAD2DEG*(pinv(J_E)*dx_FP.subVector(0,2));
+}
+
+
+/************************************************************************/
 void Controller::doSaccade(const Vector &ang, const Vector &vel)
 {
     LockGuard guard(mutexCtrl);

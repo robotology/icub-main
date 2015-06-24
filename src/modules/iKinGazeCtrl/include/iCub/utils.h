@@ -220,30 +220,6 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck);
 bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
                  PolyDriver *drvHead, ExchangeData *commData, double *timeStamp=NULL);
 
-// Computes the velocity of the fixation point given:
-// 
-// H: the frame in which the measurements v and w are provided
-// v: the 3x1 translational velocity of the frame [m/s]
-// w: the 3x1 rotational velocity of the frame [rad/s]
-// x_FP: the current 3x1 fixation point [m]
-// 
-// dx_FP: the output 6x1 velocity of the fixation point 
-// 
-// Returns true if the task was successful.
-bool computedxFP(const Matrix &H, const Vector &v, const Vector &w,
-                 const Vector &x_FP, Vector &dx_FP);
-
-// Computes the neck velocity given the fixation point velocity.
-// Returns true if the task was successful.
-bool computeNeckVelFromdxFP(iKinChain *chainNeck, const Vector &x_FP,
-                            const Vector &dx_FP, Vector &dq_neck);
-
-// Computes the eyes velocity given the fixation point velocity.
-// Returns true if the task was successful.
-bool computeEyesVelFromdxFP(iKinChain *chainEyeL, iKinChain *chainEyeR,
-                            const Vector &x_FP, const Vector &dx_FP,
-                            Vector &dq_eyes);
-
 #endif
 
 
