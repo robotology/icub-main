@@ -210,6 +210,9 @@ bool CartesianHelper::computeFixationPointData(iKinChain &eyeL,
     double tL=qty2L/qty3;
     double tR=qty2R/qty3;
 
+    if (fp.length()!=3)
+        fp.resize(3);
+
     for (int i=0; i<3; i++)
         fp[i]=0.5*(HL(i,3)+tL*HL(i,2)+HR(i,3)+tR*HR(i,2));
 
@@ -315,6 +318,12 @@ bool CartesianHelper::computeFixationPointData(iKinChain &eyeL,
         dqty2R=dot(H3,2,H1,3)+dot(H2R,2,-1.0*GeoJacobP_R,j);
         dfpR2=M.getCol(j)+Hz*((dqty2R-2.0*qty1*qty2R*dqty1R/qty3)/qty3);
     }
+
+    if (fp.length()!=3)
+        fp.resize(3);
+
+    if ((J.rows()!=3) || (J.cols()!=3))
+        J.resize(3,3);
 
     for (int i=0; i<3; i++)
     {
