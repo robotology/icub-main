@@ -41,6 +41,8 @@ xdPort::xdPort(const Vector &xd0, void *_slv)
     closing=false;
     rx=0;
 
+    useCallback();
+
     slv=_slv;
     if (slv!=NULL)
         start();

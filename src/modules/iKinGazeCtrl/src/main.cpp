@@ -147,6 +147,11 @@ Factors</a>.
   parameter \e switch can be therefore ["on"|"off"], being "on"
   by default.
  
+--stabilization \e switch
+- Enable/disable stabilization using IMU data; the parameter
+  \e switch can be therefore ["on"|"off"], being "on"
+  by default.
+ 
 --vor \e gain
 - Specify the contribution of the vestibulo-ocular reflex (VOR)
   in compute the final counter-rotation of the eyes due to
@@ -974,6 +979,7 @@ public:
         double minAbsVel;
         bool   saccadesOn;
         bool   neckPosCtrlOn;
+        bool   stabilizationOn;
         double ping_robot_tmo;
         Vector counterRotGain(2);        
 
@@ -993,6 +999,7 @@ public:
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(0.0)).asDouble();
         saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
         neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
+        stabilizationOn=(rf.check("stabilization",Value("on")).asString()=="on");
         counterRotGain[0]=rf.check("vor",Value(1.0)).asDouble();
         counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();
 
@@ -1032,7 +1039,7 @@ public:
         string localHeadName=commData.localStemName+"/"+headName;
         string remoteTorsoName="/"+commData.robotName+"/"+torsoName;
         string localTorsoName=commData.localStemName+"/"+torsoName;
-        string remoteInertialName=commData.robotName+"/inertial";
+        string remoteInertialName="/"+commData.robotName+"/inertial";
 
         Property optTorso("(device remote_controlboard)");
         optTorso.put("remote",remoteTorsoName.c_str());
@@ -1093,7 +1100,8 @@ public:
 
         // create and start threads
         // creation order does matter (for the minimum allowed vergence computation) !!
-        ctrl=new Controller(drvTorso,drvHead,&commData,neckPosCtrlOn,neckTime,eyesTime,minAbsVel,10);
+        ctrl=new Controller(drvTorso,drvHead,&commData,neckPosCtrlOn,stabilizationOn,
+                            neckTime,eyesTime,minAbsVel,10);
         loc=new Localizer(&commData,10);
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,ctrl,saccadesOn,counterRotGain,20);
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,20);

@@ -26,12 +26,13 @@
 
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
-                       const bool _neckPosCtrlOn, const double _neckTime, const double _eyesTime,
-                       const double _minAbsVel, const unsigned int _period) :
+                       const bool _neckPosCtrlOn, const bool _stabilizationOn,
+                       const double _neckTime, const double _eyesTime, const double _minAbsVel,
+                       const unsigned int _period) :
                        RateThread(_period), drvTorso(_drvTorso),           drvHead(_drvHead),
-                       commData(_commData), neckPosCtrlOn(_neckPosCtrlOn), neckTime(_neckTime),
-                       eyesTime(_eyesTime), minAbsVel(_minAbsVel),         period(_period),
-                       Ts(_period/1000.0),  printAccTime(0.0)
+                       commData(_commData), neckPosCtrlOn(_neckPosCtrlOn), stabilizationOn(_stabilizationOn),
+                       neckTime(_neckTime), eyesTime(_eyesTime),           minAbsVel(_minAbsVel),
+                       period(_period),     Ts(_period/1000.0),            printAccTime(0.0)
 {
     // Instantiate objects
     neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
@@ -126,11 +127,11 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     mjCtrlEyes=new minJerkVelCtrlForIdealPlant(Ts,fbEyes.length());
     IntState=new Integrator(Ts,fbHead,lim);
     IntPlan=new Integrator(Ts,fbNeck,lim.submatrix(0,2,0,1));
-
+    
     if (neckPosCtrlOn)
         IntStabilizer=NULL;
     else
-        IntStabilizer=new Integrator(Ts,Vector(v.length(),0.0));
+        IntStabilizer=new Integrator(Ts,zeros(v.length()));
 
     neckJoints.resize(3);
     eyesJoints.resize(3);
@@ -168,10 +169,12 @@ void Controller::findMinimumAllowedVergence()
         cl(cl.getDOF()-1).setAng(ver/2.0);
         cr(cr.getDOF()-1).setAng(-ver/2.0);
 
-        Vector fp(4);
-        fp[3]=1.0;  // impose homogeneous coordinates
+        Vector fp;        
         if (CartesianHelper::computeFixationPointData(cl,cr,fp))
         {
+            // impose homogeneous coordinates
+            fp.push_back(1.0);
+
             // if the component along eye's z-axis is positive
             // then this means that the fixation point is ok,
             // being in front of the robot
@@ -428,11 +431,11 @@ Vector Controller::computeNeckVelFromdxFP(const Vector &x_FP, const Vector &dx_F
 
 
 /************************************************************************/
-Vector Controller::computeEyesVelFromdxFP(const Vector &x_FP, const Vector &dx_FP)
+Vector Controller::computeEyesVelFromdxFP(const Vector &dx_FP)
 {
     // compute the Jacobian of the eyes
-    Vector x_FP_=x_FP; Matrix J_E;
-    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,x_FP_,J_E);
+    Matrix J_E; Vector tmp;
+    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,tmp,J_E);
 
     // compute dq_eyes=J_E#*dx_FP;
     return pinv(J_E)*dx_FP.subVector(0,2);
@@ -685,17 +688,20 @@ void Controller::run()
             vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)+commData->get_counterv();
 
         // stabilization
-        Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
-        Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
-
-        Vector imuNeck=computeNeckVelFromdxFP(x,dx);
-        Vector imuEyes=computeEyesVelFromdxFP(x,dx);
-
-        if (!neckPosCtrlOn)
+        if (stabilizationOn)
         {
-            Vector stab=IntStabilizer->integrate(cat(vNeck-imuNeck,vEyes-imuEyes));
-            vNeck=stab.subVector(0,2);
-            vEyes=stab.subVector(3,5);
+            Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8); 
+            Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
+
+            Vector imuNeck=computeNeckVelFromdxFP(x,dx);
+            Vector imuEyes=computeEyesVelFromdxFP(dx);
+
+            if (!neckPosCtrlOn)
+            {
+                Vector stab=IntStabilizer->integrate(cat(vNeck-imuNeck,vEyes-imuEyes));
+                vNeck=stab.subVector(0,2);
+                vEyes=stab.subVector(3,5);
+            }
         }
     }
     else

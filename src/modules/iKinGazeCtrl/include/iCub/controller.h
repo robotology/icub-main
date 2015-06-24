@@ -84,6 +84,7 @@ protected:
     unsigned int period;
     bool unplugCtrlEyes;
     bool neckPosCtrlOn;
+    bool stabilizationOn;
     bool ctrlInhibited;
     int nJointsTorso;
     int nJointsHead;
@@ -110,7 +111,7 @@ protected:
 
     Vector computedxFP(const Matrix &H, const Vector &v, const Vector &w, const Vector &x_FP);
     Vector computeNeckVelFromdxFP(const Vector &x_FP, const Vector &dx_FP);
-    Vector computeEyesVelFromdxFP(const Vector &x_FP, const Vector &dx_FP);
+    Vector computeEyesVelFromdxFP(const Vector &dx_FP);
     bool   areJointsHealthyAndSet();
     void   setJointsCtrlMode();
     void   stopLimb(const bool execStopPosition=true);
@@ -121,7 +122,8 @@ protected:
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
-               const bool _neckPosCtrlOn, const double _neckTime, const double _eyesTime,
+               const bool _neckPosCtrlOn, const bool _stabilizationOn,
+               const double _neckTime, const double _eyesTime,
                const double _minAbsVel, const unsigned int _period);
 
     void   findMinimumAllowedVergence();

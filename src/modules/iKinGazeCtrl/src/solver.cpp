@@ -686,10 +686,10 @@ void Solver::updateAngles()
 
 
 /************************************************************************/
-Vector Solver::getGravityDirection(const Vector &gyro)
+Vector Solver::getGravityDirection(const Vector &acc)
 {
-    double roll =CTRL_DEG2RAD*gyro[0];
-    double pitch=CTRL_DEG2RAD*gyro[1];
+    double roll =CTRL_DEG2RAD*acc[0];
+    double pitch=CTRL_DEG2RAD*acc[1];
 
     // compute rotational matrix to
     // account for roll and pitch
@@ -750,9 +750,8 @@ bool Solver::threadInit()
     invNeck=new GazeIpOptMin(*chainNeck,1e-3,20);
 
     // Initialization
-    Vector fp(3);
-    Matrix J(3,3);
-    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
+    Vector fp;
+    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp);
 
     // init commData structure
     commData->set_xd(fp);
@@ -765,7 +764,6 @@ bool Solver::threadInit()
     commData->set_fpFrame(chainNeck->getH());
 
     port_xd=new xdPort(fp,this);
-    port_xd->useCallback();
     port_xd->open((commData->localStemName+"/xd:i").c_str());
 
     loc->set_xdport(port_xd);
@@ -851,8 +849,8 @@ void Solver::run()
     // call the solver for neck
     if (doSolve)
     {
-        Vector gyro=commData->get_imu().subVector(6,8);
-        Vector gDir=getGravityDirection(gyro);
+        Vector acc=commData->get_imu().subVector(0,1);
+        Vector gDir=getGravityDirection(acc);
 
         Vector xdUserTol=computeTargetUserTolerance(xd);
         neckPos=invNeck->solve(neckPos,xdUserTol,gDir);
@@ -915,11 +913,6 @@ void Solver::resume()
     chainNeck->setAng(neckPos);
     chainEyeL->setAng(nJointsTorso+3,gazePos[0]);                chainEyeR->setAng(nJointsTorso+3,gazePos[0]);
     chainEyeL->setAng(nJointsTorso+4,gazePos[1]+gazePos[2]/2.0); chainEyeR->setAng(nJointsTorso+4,gazePos[1]-gazePos[2]/2.0);
-
-    // compute fixation point
-    Vector fp(3);
-    Matrix J(3,3);
-    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
 
     // update latched quantities
     fbTorsoOld=fbTorso;
