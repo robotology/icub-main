@@ -658,160 +658,86 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
     return ret;
 }
 
+
 /************************************************************************/
-bool computedxFPFromIMU(iKinChain *chainIMU, const Vector &gyro,
-                        const Vector &x_FP, Vector &dx_FP)
+bool computedxFP(const Matrix &H, const Vector &v, const Vector &w,
+                 const Vector &x_FP, Vector &dx_FP)
 {
-    if (gyro.length()!=3)
+    if ((v.length()!=3) || (w.length()!=3))
         return false;
 
-    Vector dx_FP_pos(3,0.0);
-    Vector dx_FP_rot(3,0.0);
-    dx_FP.resize(6,0.0);
-    Vector gyr=gyro;
+    Matrix H_=H;
+    Vector w_=w;
+    w_.push_back(1.0);
     
-    // 1. Compute the positional component of the speed of the fixation point
-    // thanks to the rotational component measure obtained from the IMU
-    Matrix H=chainIMU->getH();
-    H(0,3)=x_FP[0]-H(0,3);
-    H(1,3)=x_FP[1]-H(1,3);
-    H(2,3)=x_FP[2]-H(2,3);
+    H_(0,3)=x_FP[0]-H_(0,3);
+    H_(1,3)=x_FP[1]-H_(1,3);
+    H_(2,3)=x_FP[2]-H_(2,3);
+    Vector dx_FP_pos=v+(w_[0]*cross(H_,0,H_,3)+
+                        w_[1]*cross(H_,1,H_,3)+
+                        w_[2]*cross(H_,2,H_,3));    
 
-    dx_FP_pos=CTRL_DEG2RAD*(gyr[0]*cross(H,0,H,3)+
-                            gyr[1]*cross(H,1,H,3)+
-                            gyr[2]*cross(H,2,H,3));
-    dx_FP.setSubvector(0, dx_FP_pos);
-
-    // 2. Project the IMU measure on the the rotational component
-    // of the speed of the fixation point
-    H(0,3)=0.0;
-    H(1,3)=0.0;
-    H(2,3)=0.0;
-
-    gyr.push_back(1.0);
-    dx_FP_rot=CTRL_DEG2RAD*H*gyr;
+    H_(0,3)=0.0;
+    H_(1,3)=0.0;
+    H_(2,3)=0.0;
+    Vector dx_FP_rot=H_*w_;
     dx_FP_rot.pop_back();
 
-    dx_FP.setSubvector(3, dx_FP_rot);
+    dx_FP=cat(dx_FP_pos,dx_FP_rot);
     return true;
 }
 
-/************************************************************************/
-bool computedxFPFromNeckBase(iKinChain *chainNeck, const Vector &neckVelocities,
-                             const Vector &x_FP, Vector &dx_FP)
-{
-    if (neckVelocities.length()!=6)
-        return false;
-
-    dx_FP.resize(6,0.0);
-    Vector nvels=neckVelocities;
-    Vector dx_FP_pos(3,0.0);
-    Vector dx_FP_rot(3,0.0);
-    Vector x_FP_E(3,0.0);
-
-    Vector v=nvels.subVector(0,2);
-    Vector w=nvels.subVector(3,5);
-
-    // Compute the lever arm between the neck base and the fixation point
-    Matrix H=chainNeck->getH(2);     // get the H from ROOT to Neck Base
-    H(0,3)=x_FP[0]-H(0,3);
-    H(1,3)=x_FP[1]-H(1,3);
-    H(2,3)=x_FP[2]-H(2,3);
-
-    dx_FP_pos=v+(w[0]*cross(H,0,H,3)+
-                 w[1]*cross(H,1,H,3)+
-                 w[2]*cross(H,2,H,3));
-    dx_FP.setSubvector(0, dx_FP_pos);
-
-    H(0,3)=0.0;
-    H(1,3)=0.0;
-    H(2,3)=0.0;
-
-    w.push_back(1.0);
-    dx_FP_rot=CTRL_DEG2RAD*H*w;
-    dx_FP_rot.pop_back();
-
-    dx_FP.setSubvector(3, dx_FP_rot);
-    return true;
-}
 
 /************************************************************************/
-bool computeNeckVelocitiesFromdxFP(iKinChain *chainNeck, const Vector &x_FP,
-                                   const Vector &dx_FP, Vector &dq_neck)
+bool computeNeckVelFromdxFP(iKinChain *chainNeck, const Vector &x_FP,
+                            const Vector &dx_FP, Vector &dq_neck)
 {
-    if (dx_FP.length()!=6)
+    if ((chainNeck==NULL) || (dx_FP.length()!=6))
         return false;
 
-    dq_neck.resize(3,0.0);
-    Vector x_FP_E(3,0.0);
-    
-    // Take only the rotational part of the velocity of the fixation point
-    Vector dx_FP_rot=dx_FP.subVector(3,5);
-    
-    // Convert x_FP from root to the eyes reference frame
-    root2Eyes(chainNeck, x_FP, x_FP_E);
+    // convert x_FP from root to the neck reference frame
+    Vector x_FP_R=x_FP;
+    x_FP_R.push_back(1.0);
+    Vector x_FP_E=SE3inv(chainNeck->getH())*x_FP_R;
 
-    // Compute the jacobian of the head joints alone 
+    // compute the Jacobian of the head joints alone 
     // (by adding the new fixation point beforehand)
     Matrix HN=eye(4);
     HN(0,3)=x_FP_E[0];
     HN(1,3)=x_FP_E[1];
     HN(2,3)=x_FP_E[2];
     chainNeck->setHN(HN);
-
     Matrix J_N=chainNeck->GeoJacobian();
-
-    // Take only the last three rows of the jacobian
-    // belonging to the head joints
-    Matrix J_Np=J_N.submatrix(3,5,3,5);
-
-    // Remove the fixation point from the neck chain
     chainNeck->setHN(eye(4,4));
 
-    // Compute dq_neck= J_N#*dx_FP_rot
-    dq_neck=CTRL_RAD2DEG*(pinv(J_Np)*dx_FP_rot);
+    // take only the last three rows of the Jacobian
+    // belonging to the head joints
+    Matrix J_Np=J_N.submatrix(3,5,3,5);  
+
+    // compute dq_neck=J_N#*dx_FP_rot
+    dq_neck=CTRL_RAD2DEG*(pinv(J_Np)*dx_FP.subVector(3,5));
 
     return true;
 }
 
+
 /************************************************************************/
-bool computeEyesVelocitiesFromdxFP(iKinChain *chainEyeL, iKinChain *chainEyeR,
-                                   const Vector &x_FP, const Vector &dx_FP, Vector &dq_eyes)
+bool computeEyesVelFromdxFP(iKinChain *chainEyeL, iKinChain *chainEyeR,
+                            const Vector &x_FP, const Vector &dx_FP,
+                            Vector &dq_eyes)
 {
-    if (dx_FP.length()!=6)
+    if ((chainEyeL==NULL) || (chainEyeR==NULL) || (dx_FP.length()!=6))
         return false;
 
-    dq_eyes.resize(3,0.0);
+    // compute the Jacobian of the eyes
+    Vector x_FP_=x_FP;
     Matrix J_E(3,3);
-    J_E.zero();
+    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,x_FP_,J_E);
 
-    Vector x_FP_R=x_FP;
-
-    // Take only the translational part of the velocity of the fixation point
-    Vector dx_FP_pos=dx_FP.subVector(0,2);    
-
-    // Compute the Jacobian of the eyes
-    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,x_FP_R,J_E);
-
-    // Compute dq_eyes =J_E#*dx_FP;
-    dq_eyes=CTRL_RAD2DEG*(pinv(J_E)*dx_FP);
+    // compute dq_eyes=J_E#*dx_FP;
+    dq_eyes=CTRL_RAD2DEG*(pinv(J_E)*dx_FP.subVector(0,2));
 
     return true;
 }
 
-/************************************************************************/
-bool root2Eyes(iKinChain *chainNeck,
-               const Vector &x_FP_root, Vector &x_FP_eyes)
-{
-    if (x_FP_root.length()!=3)
-        return false;
 
-    x_FP_eyes.resize(3,0.0);
-
-    Vector x_FP_R=x_FP_root;
-    Matrix H_RE=chainNeck->getH();    // matrix from root to RF_E
-    x_FP_R.push_back(1.0);
-    x_FP_eyes=SE3inv(H_RE)*x_FP_R;
-
-    return true;
-}

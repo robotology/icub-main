@@ -84,7 +84,7 @@ public:
 };
 
 
-// This class handles the data exchange among components
+// This class handles the data exchange among components.
 class exchangeData
 {
 protected:
@@ -147,7 +147,7 @@ public:
 };
 
 
-// this class defines gaze components such as
+// This class defines gaze components such as
 // controller, localizer, solver ...
 class GazeComponent
 {
@@ -162,40 +162,40 @@ public:
 };
 
 
-// saturate value val between min and max
+// Saturate value val between min and max.
 inline double sat(const double val, const double min, const double max)
 {
     return std::min(std::max(val,min),max);
 }
 
 
-// Allocates Projection Matrix Prj for the camera read from camerasFile
-// type is in {"CAMERA_CALIBRATION_LEFT","CAMERA_CALIBRATION_RIGHT"}
-// Returns true if correctly configured
+// Allocates Projection Matrix Prj for the camera read from camerasFile;
+// type is in {"CAMERA_CALIBRATION_LEFT","CAMERA_CALIBRATION_RIGHT"}.
+// Returns true if correctly configured.
 bool getCamPrj(const ResourceFinder &rf, const string &type, Matrix **Prj, const bool verbose=false);
 
 
-// Allocates the two aligning matrices read from camerasFile
-// type is in {"ALIGN_KIN_LEFT","ALIGN_KIN_RIGHT"}
-// Returns true if correctly configured
+// Allocates the two aligning matrices read from camerasFile;
+// type is in {"ALIGN_KIN_LEFT","ALIGN_KIN_RIGHT"}.
+// Returns true if correctly configured.
 bool getAlignHN(const ResourceFinder &rf, const string &type, iKinChain *chain, const bool verbose=false);
 
 
 // Aligns head joints bounds with current onboard bounds.
-// Returns a matrix containing the actual limits
+// Returns a matrix containing the actual limits.
 Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drvHead,
                          const double eyeTiltMin, const double eyeTiltMax);
 
 
-// Copies joints bounds from first chain to second chain
+// Copies joints bounds from first chain to second chain.
 void copyJointsBounds(iKinChain *ch1, iKinChain *ch2);
 
 
-// Updates torso blocked joints values within the chain
+// Updates torso blocked joints values within the chain.
 void updateTorsoBlockedJoints(iKinChain *chain, const Vector &fbTorso);
 
 
-// Updates neck blocked joints values within the chain
+// Updates neck blocked joints values within the chain.
 void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck);
 
 
@@ -204,23 +204,29 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck);
 bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
                  PolyDriver *drvHead, exchangeData *commData, double *timeStamp=NULL);
 
-// Computes the velocity of the fixation point given the gyro measurements
-// Returns true if the task was successful
-bool computedxFPFromIMU(iKinChain *chainIMU, const Vector &gyro,
-                        const Vector &x_FP, Vector &dx_FP);
+// Computes the velocity of the fixation point given:
+// 
+// H: the frame in which the measurements v and w are provided
+// v: the 3x1 translational velocity of the frame [m/s]
+// w: the 3x1 rotational velocity of the frame [rad/s]
+// x_FP: the current 3x1 fixation point [m]
+// 
+// dx_FP: the output 6x1 velocity of the fixation point 
+// 
+// Returns true if the task was successful.
+bool computedxFP(const Matrix &H, const Vector &v, const Vector &w,
+                 const Vector &x_FP, Vector &dx_FP);
 
-// Computes the velocity of the fixation point given the gyro measurements
-// Returns true if the task was successful
-bool computedxFPFromNeckBase(iKinChain *chainNeck, const Vector &neckVelocities,
-                             const Vector &x_FP, Vector &dx_FP);
+// Computes the neck velocity given the fixation point velocity.
+// Returns true if the task was successful.
+bool computeNeckVelFromdxFP(iKinChain *chainNeck, const Vector &x_FP,
+                            const Vector &dx_FP, Vector &dq_neck);
 
-bool computeNeckVelocitiesFromdxFP(iKinChain *chainNeck, const Vector &x_FP,
-                                   const Vector &dx_FP, Vector &dq_neck);
-
-bool computeEyesVelocitiesFromdxFP(iKinChain *chainEyeL, iKinChain *chainEyeR,
-                                   const Vector &x_FP, const Vector &dx_FP, Vector &dq_eyes);
-
-bool root2Eyes(iKinChain *chainNeck, const Vector &x_FP_root, Vector &x_FP_eyes);
+// Computes the eyes velocity given the fixation point velocity.
+// Returns true if the task was successful.
+bool computeEyesVelFromdxFP(iKinChain *chainEyeL, iKinChain *chainEyeR,
+                            const Vector &x_FP, const Vector &dx_FP,
+                            Vector &dq_eyes);
 
 #endif
 
