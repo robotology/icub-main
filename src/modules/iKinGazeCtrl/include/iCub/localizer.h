@@ -45,7 +45,6 @@ class Localizer : public GazeComponent, public RateThread
 protected:
     Mutex                 mutex;
     ExchangeData         *commData;
-    xdPort               *port_xd;
     BufferedPort<Bottle>  port_mono;
     BufferedPort<Bottle>  port_stereo;
     BufferedPort<Bottle>  port_anglesIn;
@@ -74,7 +73,6 @@ protected:
 public:
     Localizer(ExchangeData *_commData, const unsigned int _period);
 
-    void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void   getPidOptions(Bottle &options);
     void   setPidOptions(const Bottle &options);
     bool   projectPoint(const string &type, const Vector &x, Vector &px);

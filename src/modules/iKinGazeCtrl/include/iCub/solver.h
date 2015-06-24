@@ -63,7 +63,6 @@ protected:
     PolyDriver           *drvTorso, *drvHead;
     ExchangeData         *commData;
     Controller           *ctrl;
-    xdPort               *port_xd;
     Integrator           *I;
 
     double                orig_eye_tilt_min;
@@ -99,7 +98,6 @@ public:
                   Controller *_ctrl, const bool _saccadesOn, const Vector &_counterRotGain,
                   const unsigned int _period);
 
-    void   set_xdport(xdPort *_port_xd)                     { port_xd=_port_xd;                }
     void   enable()                                         { genOn=true;                      }
     void   disable()                                        { genOn=false;                     }
     Vector getCounterRotGain() const                        { return counterRotGain;           }
@@ -138,8 +136,7 @@ protected:
     ExchangeData       *commData;
     EyePinvRefGen      *eyesRefGen;
     Localizer          *loc;
-    Controller         *ctrl;
-    xdPort             *port_xd;
+    Controller         *ctrl;    
     Mutex               mutex;
 
     unsigned int period;

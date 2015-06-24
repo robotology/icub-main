@@ -33,9 +33,8 @@
 
 
 /************************************************************************/
-xdPort::xdPort(const Vector &xd0, void *_slv)
+xdPort::xdPort(void *_slv)
 {   
-    xdDelayed=xd=xd0;
     isNewDelayed=isNew=false;
     locked=false;
     closing=false;
@@ -46,6 +45,13 @@ xdPort::xdPort(const Vector &xd0, void *_slv)
     slv=_slv;
     if (slv!=NULL)
         start();
+}
+
+
+/************************************************************************/
+void xdPort::init(const Vector &xd0)
+{
+    xdDelayed=xd=xd0;
 }
 
 
@@ -143,6 +149,7 @@ void xdPort::run()
 ExchangeData::ExchangeData()
 {
     imu.resize(12,0.0);
+    port_xd=NULL;
 
     isCtrlActive=false;
     canCtrlBeDisabled=true;

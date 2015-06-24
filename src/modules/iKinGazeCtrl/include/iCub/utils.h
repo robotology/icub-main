@@ -69,9 +69,10 @@ protected:
     void run();
 
 public:
-    xdPort(const Vector &xd0, void *_slv);
+    xdPort(void *_slv);
     ~xdPort();
 
+    void    init(const Vector &xd0);
     void    lock()           { locked=true;         }
     void    unlock()         { locked=false;        }
     bool    islocked() const { return locked;       }
@@ -136,17 +137,18 @@ public:
     double &get_minAllowedVergence() { return minAllowedVergence; }
 
     // data members that do not need protection
-    string         robotName;
-    string         localStemName;
-    double         eyeTiltMin;
-    double         eyeTiltMax;
-    double         head_version;
-    bool           verbose;
-    bool           tweakOverwrite;
-    ResourceFinder rf_cameras;
-    ResourceFinder rf_tweak;
-    string         tweakFile;
-    bool           debugInfoEnabled;
+    xdPort         *port_xd;
+    string          robotName;
+    string          localStemName;
+    double          eyeTiltMin;
+    double          eyeTiltMax;
+    double          head_version;
+    bool            verbose;
+    bool            tweakOverwrite;
+    ResourceFinder  rf_cameras;
+    ResourceFinder  rf_tweak;
+    string          tweakFile;
+    bool            debugInfoEnabled;
 };
 
 

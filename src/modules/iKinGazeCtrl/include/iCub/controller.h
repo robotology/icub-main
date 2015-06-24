@@ -47,7 +47,7 @@ using namespace iCub::iKin;
 
 
 // The thread launched by the application which is
-// in charge of computing the velocities profile.
+// in charge of computing the control commands.
 class Controller : public GazeComponent, public RateThread
 {
 protected:
@@ -60,7 +60,6 @@ protected:
     IVelocityControl2  *velHead;
     IPositionDirect    *posNeck;    
     ExchangeData       *commData;
-    xdPort             *port_xd;
 
     minJerkVelCtrl     *mjCtrlNeck;
     minJerkVelCtrl     *mjCtrlEyes;
@@ -132,7 +131,6 @@ public:
     void   resetCtrlEyes();
     void   doSaccade(const Vector &ang, const Vector &vel);
     void   stopControl();
-    void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);
     bool   threadInit();
     void   afterStart(bool s);

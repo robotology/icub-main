@@ -147,7 +147,6 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     qddeg=q0deg;
     vdeg =CTRL_RAD2DEG*v;
 
-    port_xd=NULL;
     ctrlActiveRisingEdgeTime=0.0;
     saccadeStartTime=0.0;
     unplugCtrlEyes=false;
@@ -560,7 +559,7 @@ void Controller::run()
     if (!jointsHealthy)
     {
         stopControlHelper();
-        port_xd->get_new()=false;
+        commData->port_xd->get_new()=false;
     }
 
     string event="none";
@@ -619,7 +618,7 @@ void Controller::run()
             mutexCtrl.unlock();
         }
         // manage new target while controller is active
-        else if (port_xd->get_new())
+        else if (commData->port_xd->get_new())
         {
             event="motion-onset";
 
@@ -628,25 +627,26 @@ void Controller::run()
             mutexData.unlock();
         }
 
-        port_xd->get_new()=false;
+        commData->port_xd->get_new()=false;
     }
     else if (jointsHealthy)
     {
         // inhibition is cleared upon new target arrival
         if (ctrlInhibited)
-            ctrlInhibited=!port_xd->get_new();
+            ctrlInhibited=!commData->port_xd->get_new();
 
         // switch-on condition
-        commData->get_isCtrlActive()=port_xd->get_new() ||
+        commData->get_isCtrlActive()=commData->port_xd->get_new() ||
                                      (!ctrlInhibited &&
                                      (new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2]) ||
-                                     (!commData->get_canCtrlBeDisabled() && (norm(port_xd->get_xd()-x)>GAZECTRL_MOTIONSTART_XTHRES)));
+                                     (!commData->get_canCtrlBeDisabled() &&
+                                      (norm(commData->port_xd->get_xd()-x)>GAZECTRL_MOTIONSTART_XTHRES)));
 
         // reset controllers
         if (commData->get_isCtrlActive())
         {
             ctrlActiveRisingEdgeTime=Time::now();
-            port_xd->get_new()=false;
+            commData->port_xd->get_new()=false;
 
             mjCtrlNeck->reset(zeros(fbNeck.length()));
             mjCtrlEyes->reset(zeros(fbEyes.length()));
@@ -959,8 +959,8 @@ bool Controller::isMotionDone() const
 void Controller::setTrackingMode(const bool f)
 {
     commData->get_canCtrlBeDisabled()=!f;
-    if ((port_xd!=NULL) && f)
-        port_xd->set_xd(commData->get_x());
+    if (f)
+        commData->port_xd->set_xd(commData->get_x());
 }
 
 

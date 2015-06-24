@@ -123,7 +123,6 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     saccadeUnderWayOld=false;
     saccadesInhibitionPeriod=SACCADES_INHIBITION_PERIOD;
     saccadesActivationAngle=SACCADES_ACTIVATION_ANGLE;
-    port_xd=NULL;
 }
 
 
@@ -158,7 +157,7 @@ bool EyePinvRefGen::bindEyes(const double ver)
         lim(2,0)=lim(2,1)=ver_rad;
         I->setLim(lim);
 
-        port_xd->set_xd(fp);
+        commData->port_xd->set_xd(fp);
         return true;
     }
     else
@@ -284,7 +283,7 @@ void EyePinvRefGen::run()
         updateTorsoBlockedJoints(chainEyeR,fbTorso);
 
         // get current target
-        Vector xd=port_xd->get_xd();
+        Vector xd=commData->port_xd->get_xd();
 
         // update neck chain
         chainNeck->setAng(nJointsTorso+0,fbHead[0]);
@@ -292,7 +291,8 @@ void EyePinvRefGen::run()
         chainNeck->setAng(nJointsTorso+2,fbHead[2]);
 
         // ask for saccades (if possible)
-        if (saccadesOn && (saccadesRxTargets!=port_xd->get_rx()) && !commData->get_isSaccadeUnderway() &&
+        if (saccadesOn && (saccadesRxTargets!=commData->port_xd->get_rx()) &&
+            !commData->get_isSaccadeUnderway() &&
             (Time::now()-saccadesClock>saccadesInhibitionPeriod))
         {
             Vector fph=xd; fph.push_back(1.0);
@@ -407,7 +407,7 @@ void EyePinvRefGen::run()
 
         // latch the saccades status
         saccadeUnderWayOld=commData->get_isSaccadeUnderway();
-        saccadesRxTargets=port_xd->get_rx();
+        saccadesRxTargets=commData->port_xd->get_rx();
     }
 }
 
@@ -727,9 +727,10 @@ bool Solver::threadInit()
 
     // Initialization
     Vector fp;
-    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp);
+    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp);    
 
     // init commData structure
+    commData->port_xd->init(fp);
     commData->set_xd(fp);
     commData->set_qd(fbHead);
     commData->set_x(fp);
@@ -737,14 +738,7 @@ bool Solver::threadInit()
     commData->set_torso(fbTorso);
     commData->resize_v(fbHead.length(),0.0);
     commData->resize_counterv(3,0.0);
-    commData->set_fpFrame(chainNeck->getH());
-
-    port_xd=new xdPort(fp,this);
-    port_xd->open((commData->localStemName+"/xd:i").c_str());
-
-    loc->set_xdport(port_xd);
-    eyesRefGen->set_xdport(port_xd);
-    ctrl->set_xdport(port_xd);
+    commData->set_fpFrame(chainNeck->getH());    
 
     // use eyes pseudoinverse reference generator
     eyesRefGen->enable();
@@ -770,7 +764,7 @@ void Solver::run()
     mutex.lock();
 
     // get the current target
-    Vector xd=port_xd->get_xdDelayed();
+    Vector xd=commData->port_xd->get_xdDelayed();
 
     // update the target straightaway 
     commData->set_xd(xd);
@@ -813,13 +807,13 @@ void Solver::run()
     doSolve|=!commData->get_canCtrlBeDisabled() && solveRequest;
 
     // 6) solve straightaway if the target has changed
-    doSolve|=port_xd->get_newDelayed();
+    doSolve|=commData->port_xd->get_newDelayed();
 
     // 7) skip if the angle to target is lower than the user tolerance
     doSolve&=theta>neckAngleUserTolerance;
 
     // clear triggers
-    port_xd->get_newDelayed()=false;
+    commData->port_xd->get_newDelayed()=false;
     solveRequest=false;
 
     // call the solver for neck
@@ -853,10 +847,6 @@ void Solver::threadRelease()
 {
     eyesRefGen->disable();
 
-    port_xd->interrupt();
-    port_xd->close();
-
-    delete port_xd;
     delete invNeck;
     delete neck;
     delete eyeL;
@@ -868,7 +858,7 @@ void Solver::threadRelease()
 /************************************************************************/
 void Solver::suspend()
 {
-    port_xd->lock();    
+    commData->port_xd->lock();    
     RateThread::suspend();
     yInfo("Solver has been suspended!");
 }
@@ -899,7 +889,7 @@ void Solver::resume()
     
     mutex.unlock();
 
-    port_xd->unlock();
+    commData->port_xd->unlock();
     RateThread::resume();
     yInfo("Solver has been resumed!");
 }

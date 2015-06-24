@@ -1106,6 +1106,9 @@ public:
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,ctrl,saccadesOn,counterRotGain,20);
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,20);
 
+        commData.port_xd=new xdPort(slv);
+        commData.port_xd->open((commData.localStemName+"/xd:i").c_str());
+
         // this switch-on order does matter !!
         eyesRefGen->start();
         slv->start();
@@ -1827,18 +1830,23 @@ public:
         if (drvHead!=NULL)
             drvHead->close();
 
-        delete loc;
-        delete eyesRefGen;
-        delete slv;
-        delete ctrl;
-        delete drvTorso;
-        delete drvHead;
+        if (commData.port_xd!=NULL)
+            if (!commData.port_xd->isClosed())
+                commData.port_xd->close(); 
 
         if (!imuPort.isClosed())
             imuPort.close(); 
 
         if (rpcPort.asPort().isOpen())
             rpcPort.close();
+        
+        delete loc;
+        delete eyesRefGen;
+        delete slv;
+        delete ctrl;
+        delete drvTorso;
+        delete drvHead;
+        delete commData.port_xd;
 
         contextMap.clear();
     }
@@ -1847,6 +1855,8 @@ public:
     bool interruptModule()
     {
         interrupting=true;
+
+        commData.port_xd->interrupt();
         imuPort.interrupt();
         rpcPort.interrupt();
 

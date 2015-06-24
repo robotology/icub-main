@@ -118,8 +118,6 @@ Localizer::Localizer(ExchangeData *_commData, const unsigned int _period) :
     Vector z0(1,0.5);
     pid->reset(z0);
     dominantEye="left";
-
-    port_xd=NULL;
 }
 
 
@@ -236,7 +234,7 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
     // compute new fp due to changed vergence
     Vector fp;
     CartesianHelper::computeFixationPointData(*(eyeL->asChain()),*(eyeR->asChain()),fp);
-    fp[3]=1.0;  // impose homogeneous coordinates
+    fp.push_back(1.0);  // impose homogeneous coordinates    
 
     mutex.unlock();
 
@@ -522,12 +520,7 @@ void Localizer::handleMonocularInput()
 
             Vector fp;
             if (projectPoint(type,u,v,z,fp))
-            {
-                if (port_xd!=NULL)
-                    port_xd->set_xd(fp);
-                else
-                    yError("Internal error occured!");
-            }
+                commData->port_xd->set_xd(fp);
         }
         else
             yError("Got wrong monocular information!");
@@ -573,12 +566,7 @@ void Localizer::handleStereoInput()
                 mutex.unlock();
 
                 if (projectPoint(dominantEye,u,v,z[0],fp))
-                {
-                    if (port_xd!=NULL)
-                        port_xd->set_xd(fp);
-                    else
-                        yError("Internal error occured!");
-                }
+                    commData->port_xd->set_xd(fp);
             }
             else
                 yError("Got wrong stereo information!");
@@ -604,10 +592,7 @@ void Localizer::handleAnglesInput()
             ang[2]=CTRL_DEG2RAD*angles->get(3).asDouble();
 
             Vector xd=get3DPoint(type,ang);
-            if (port_xd!=NULL)
-                port_xd->set_xd(xd);
-            else
-                yError("Internal error occured!");
+            commData->port_xd->set_xd(xd);
         }
         else
             yError("Got wrong angles information!");
