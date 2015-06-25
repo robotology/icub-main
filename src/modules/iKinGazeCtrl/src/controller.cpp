@@ -126,17 +126,8 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     mjCtrlEyes=new minJerkVelCtrlForIdealPlant(Ts,fbEyes.length());
     IntState=new Integrator(Ts,fbHead,lim);
     IntPlan=new Integrator(Ts,fbNeck,lim.submatrix(0,2,0,1));
-    
-    if (commData->neckPosCtrlOn)
-    {
-        IntStabilizerNeck=NULL;
-        IntStabilizerEyes=NULL;
-    }
-    else
-    {
-        IntStabilizerNeck=new Integrator(Ts,zeros(vNeck.length()));
-        IntStabilizerEyes=new Integrator(Ts,zeros(vEyes.length()));
-    }
+    IntStabilizerNeck=new Integrator(Ts,zeros(vNeck.length()));
+    IntStabilizerEyes=new Integrator(Ts,zeros(vEyes.length()));
 
     neckJoints.resize(3);
     eyesJoints.resize(3);
