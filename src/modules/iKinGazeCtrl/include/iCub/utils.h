@@ -145,6 +145,7 @@ public:
     double          head_version;
     bool            verbose;
     bool            tweakOverwrite;
+    bool            saccadesOn;
     bool            neckPosCtrlOn;
     bool            stabilizationOn;
     ResourceFinder  rf_cameras;

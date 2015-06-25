@@ -589,6 +589,31 @@ void Controller::run()
         return;
     }
 
+    // update pose information
+    {
+        mutexChain.lock();
+        for (int i=0; i<nJointsTorso; i++)
+        {
+            chainNeck->setAng(i,fbTorso[i]);
+            chainEyeL->setAng(i,fbTorso[i]);
+            chainEyeR->setAng(i,fbTorso[i]);
+        }
+        for (int i=0; i<3; i++)
+        {
+            chainNeck->setAng(nJointsTorso+i,fbHead[i]);
+            chainEyeL->setAng(nJointsTorso+i,fbHead[i]);
+            chainEyeR->setAng(nJointsTorso+i,fbHead[i]);
+        }
+
+        chainEyeL->setAng(nJointsTorso+3,fbHead[3]);               
+        chainEyeL->setAng(nJointsTorso+4,fbHead[4]+fbHead[5]/2.0);
+        chainEyeR->setAng(nJointsTorso+3,fbHead[3]);
+        chainEyeR->setAng(nJointsTorso+4,fbHead[4]-fbHead[5]/2.0);
+
+        txInfo_pose.update(q_stamp);
+        mutexChain.unlock();
+    }
+
     IntState->reset(fbHead);
 
     fbNeck=fbHead.subVector(0,2);
@@ -696,7 +721,9 @@ void Controller::run()
             if (!commData->neckPosCtrlOn)
             {
                 vNeck=GAZECTRL_STABILIZATION_GAIN*IntStabilizerNeck->integrate(vNeck-imuNeck);
-                vEyes=GAZECTRL_STABILIZATION_GAIN*IntStabilizerEyes->integrate(vEyes-imuEyes);
+
+                if (!commData->saccadesOn)
+                    vEyes=GAZECTRL_STABILIZATION_GAIN*IntStabilizerEyes->integrate(vEyes-imuEyes); 
             }
         }
     }
@@ -799,28 +826,6 @@ void Controller::run()
         port_q.setEnvelope(txInfo_q);
         port_q.write();
     }
-
-    // update pose information
-    mutexChain.lock();
-
-    for (int i=0; i<nJointsTorso; i++)
-    {
-        chainNeck->setAng(i,fbTorso[i]);
-        chainEyeL->setAng(i,fbTorso[i]);
-        chainEyeR->setAng(i,fbTorso[i]);
-    }
-    for (int i=0; i<3; i++)
-    {
-        chainNeck->setAng(nJointsTorso+i,fbHead[i]);
-        chainEyeL->setAng(nJointsTorso+i,fbHead[i]);
-        chainEyeR->setAng(nJointsTorso+i,fbHead[i]);
-    }
-    chainEyeL->setAng(nJointsTorso+3,fbHead[3]);               chainEyeR->setAng(nJointsTorso+3,fbHead[3]);
-    chainEyeL->setAng(nJointsTorso+4,fbHead[4]+fbHead[5]/2.0); chainEyeR->setAng(nJointsTorso+4,fbHead[4]-fbHead[5]/2.0);
-
-    txInfo_pose.update(q_stamp);
-
-    mutexChain.unlock();
 
     if (event=="motion-onset")
         notifyEvent(event);

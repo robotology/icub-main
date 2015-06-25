@@ -71,7 +71,6 @@ protected:
     double                orig_eye_pan_max;
     
     unsigned int period;
-    bool saccadesOn;
     bool saccadeUnderWayOld;
     bool genOn;
     int nJointsTorso;
@@ -95,14 +94,11 @@ protected:
 
 public:
     EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
-                  Controller *_ctrl, const bool _saccadesOn, const Vector &_counterRotGain,
-                  const unsigned int _period);
+                  Controller *_ctrl, const Vector &_counterRotGain, const unsigned int _period);
 
     void   enable()                                         { genOn=true;                      }
     void   disable()                                        { genOn=false;                     }
-    Vector getCounterRotGain() const                        { return counterRotGain;           }
-    void   setSaccades(const bool sw)                       { saccadesOn=sw;                   }
-    bool   isSaccadesOn() const                             { return saccadesOn;               }
+    Vector getCounterRotGain() const                        { return counterRotGain;           }    
     void   setSaccadesInhibitionPeriod(const double period) { saccadesInhibitionPeriod=period; }    
     void   setSaccadesActivationAngle(const double angle)   { saccadesActivationAngle=angle;   }
     double getSaccadesInhibitionPeriod() const              { return saccadesInhibitionPeriod; }

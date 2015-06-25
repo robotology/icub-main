@@ -634,7 +634,7 @@ protected:
         context.neckAngleUserTolerance=slv->getNeckAngleUserTolerance();
         context.eyesBoundVer=eyesRefGen->getEyesBoundVer();
         context.counterRotGain=eyesRefGen->getCounterRotGain();
-        context.saccadesOn=eyesRefGen->isSaccadesOn();
+        context.saccadesOn=commData.saccadesOn;
         context.saccadesInhibitionPeriod=eyesRefGen->getSaccadesInhibitionPeriod();
         context.saccadesActivationAngle=eyesRefGen->getSaccadesActivationAngle();
 
@@ -665,7 +665,7 @@ protected:
             slv->setNeckAngleUserTolerance(context.neckAngleUserTolerance);
             eyesRefGen->manageBindEyes(context.eyesBoundVer);
             eyesRefGen->setCounterRotGain(context.counterRotGain);
-            eyesRefGen->setSaccades(context.saccadesOn);
+            commData.saccadesOn=context.saccadesOn;
             eyesRefGen->setSaccadesInhibitionPeriod(context.saccadesInhibitionPeriod);
             eyesRefGen->setSaccadesActivationAngle(context.saccadesActivationAngle);
 
@@ -977,7 +977,6 @@ public:
         double neckTime;
         double eyesTime;
         double minAbsVel;
-        bool   saccadesOn;
         double ping_robot_tmo;
         Vector counterRotGain(2);        
 
@@ -994,8 +993,7 @@ public:
         neckTime=rf.check("Tneck",Value(0.75)).asDouble();
         eyesTime=rf.check("Teyes",Value(0.25)).asDouble();
         minAbsVel=CTRL_DEG2RAD*rf.check("minAbsVel",Value(0.0)).asDouble();
-        ping_robot_tmo=rf.check("ping_robot_tmo",Value(0.0)).asDouble();
-        saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
+        ping_robot_tmo=rf.check("ping_robot_tmo",Value(0.0)).asDouble();        
         counterRotGain[0]=rf.check("vor",Value(1.0)).asDouble();
         counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();
 
@@ -1005,6 +1003,7 @@ public:
         commData.head_version=rf.check("headV2")?2.0:1.0;
         commData.verbose=rf.check("verbose");
         commData.tweakOverwrite=(rf.check("tweakOverwrite",Value("on")).asString()=="on");
+        commData.saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
         commData.neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
         commData.stabilizationOn=(rf.check("stabilization",Value("off")).asString()=="on");
         commData.debugInfoEnabled=rf.check("debugInfo",Value("off")).asString()=="on";
@@ -1100,7 +1099,7 @@ public:
         // creation order does matter (for the minimum allowed vergence computation) !!
         ctrl=new Controller(drvTorso,drvHead,&commData,neckTime,eyesTime,minAbsVel,10);
         loc=new Localizer(&commData,10);
-        eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,ctrl,saccadesOn,counterRotGain,20);
+        eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,ctrl,counterRotGain,20);
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,20);
 
         commData.port_xd=new xdPort(slv);
@@ -1170,7 +1169,7 @@ public:
                         else if (type==VOCAB4('s','a','c','c'))
                         {
                             reply.addVocab(ack);
-                            reply.addInt((int)eyesRefGen->isSaccadesOn());
+                            reply.addInt((int)commData.saccadesOn);
                             return true;
                         }
                         else if (type==VOCAB4('s','i','n','h'))
@@ -1516,8 +1515,7 @@ public:
                         }
                         else if (type==VOCAB4('s','a','c','c'))
                         {
-                            bool mode=(command.get(2).asInt()>0);
-                            eyesRefGen->setSaccades(mode);
+                            commData.saccadesOn=(command.get(2).asInt()>0);
                             reply.addVocab(ack);
                             return true;
                         }

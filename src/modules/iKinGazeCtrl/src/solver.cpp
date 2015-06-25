@@ -27,12 +27,10 @@
 /************************************************************************/
 EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              ExchangeData *_commData, Controller *_ctrl,
-                             const bool _saccadesOn, const Vector &_counterRotGain,
-                             const unsigned int _period) :
-                             RateThread(_period),     drvTorso(_drvTorso), drvHead(_drvHead),
-                             commData(_commData),     ctrl(_ctrl),         eyesBoundVer(-1.0),
-                             saccadesOn(_saccadesOn), period(_period),     Ts(_period/1000.0),
-                             counterRotGain(_counterRotGain)
+                             const Vector &_counterRotGain, const unsigned int _period) :
+                             RateThread(_period), drvTorso(_drvTorso), drvHead(_drvHead),
+                             commData(_commData), ctrl(_ctrl),         eyesBoundVer(-1.0),
+                             period(_period),     Ts(_period/1000.0),  counterRotGain(_counterRotGain)
 {
     // Instantiate objects
     neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
@@ -291,7 +289,7 @@ void EyePinvRefGen::run()
         chainNeck->setAng(nJointsTorso+2,fbHead[2]);
 
         // ask for saccades (if possible)
-        if (saccadesOn && (saccadesRxTargets!=commData->port_xd->get_rx()) &&
+        if (commData->saccadesOn && (saccadesRxTargets!=commData->port_xd->get_rx()) &&
             !commData->get_isSaccadeUnderway() &&
             (Time::now()-saccadesClock>saccadesInhibitionPeriod))
         {
