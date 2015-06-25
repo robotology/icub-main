@@ -18,6 +18,8 @@
 
 #include <algorithm>
 
+#include <gsl/gsl_math.h>
+
 #include <iCub/utils.h>
 #include <iCub/solver.h>
 
@@ -413,7 +415,15 @@ void IMUPort::setExchangeData(ExchangeData *commData)
 void IMUPort::onRead(Vector &imu)
 {
     if (commData!=NULL)
+    {
+        // filter out the noise on the gyro readouts
+        if ((fabs(imu[6])<GYRO_BIAS_STABILITY) &&
+            (fabs(imu[7])<GYRO_BIAS_STABILITY) &&
+            (fabs(imu[8])<GYRO_BIAS_STABILITY))
+            imu.setSubvector(6,zeros(3));
+
         commData->set_imu(imu);
+    }
 }
 
 

@@ -722,8 +722,8 @@ void Controller::run()
             {
                 vNeck=GAZECTRL_STABILIZATION_GAIN*IntStabilizerNeck->integrate(vNeck-imuNeck);
 
-                if (!commData->saccadesOn)
-                    vEyes=GAZECTRL_STABILIZATION_GAIN*IntStabilizerEyes->integrate(vEyes-imuEyes); 
+                //if (!commData->saccadesOn)
+                //    vEyes=GAZECTRL_STABILIZATION_GAIN*IntStabilizerEyes->integrate(vEyes-imuEyes); 
             }
         }
     }

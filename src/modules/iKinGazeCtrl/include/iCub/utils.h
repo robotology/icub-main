@@ -30,6 +30,8 @@
 
 #include <iCub/gazeNlp.h>
 
+#define GYRO_BIAS_STABILITY     5.0     // [deg/s]
+
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::dev;
