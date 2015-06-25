@@ -40,6 +40,7 @@
 #include "iCub/skinDynLib/skinContact.h"
 #include "iCub/skinDynLib/skinContactList.h"
 #include "iCub/skinDynLib/rpcSkinManager.h"
+#include "iCub/skinDynLib/common.h"
 
 using namespace std;
 using namespace yarp::os; 

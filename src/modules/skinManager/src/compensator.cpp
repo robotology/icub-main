@@ -732,7 +732,7 @@ bool Compensator::setTaxelPosesFromFile(const char *filePath){
             if (i<(int)taxelPos.size())
             {
                 Vector taxelPosNrm(6,0.0);
-                taxelPosNrm = vectorFromBottle(*(calibration.get(i+1).asList()),0,6);
+                taxelPosNrm = iCub::skinDynLib::vectorFromBottle(*(calibration.get(i+1).asList()),0,6);
                 taxelPos[i] = taxelPosNrm.subVector(0,2);
                 taxelOri[i] = taxelPosNrm.subVector(3,5);
             }
