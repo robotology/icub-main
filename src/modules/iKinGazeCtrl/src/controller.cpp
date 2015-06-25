@@ -18,7 +18,6 @@
 
 #include <cstdio>
 #include <sstream>
-#include <algorithm>
 
 #include <iCub/solver.h>
 #include <iCub/controller.h>
@@ -223,7 +222,7 @@ void Controller::motionOngoingEventsHandling()
         double curCheckPoint=*motionOngoingEventsCurrent.begin();
         double dist=norm(qddeg-q0deg);
         double checkPoint=(dist>IKIN_ALMOST_ZERO)?norm(qdeg-q0deg)/dist:1.0;
-        checkPoint=std::min(std::max(checkPoint,0.0),1.0);
+        checkPoint=sat(checkPoint,0.0,1.0);
 
         if (checkPoint>=curCheckPoint)
         {            
@@ -447,22 +446,23 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
     setJointsCtrlMode();
 
     // enforce joints bounds
-    Vector _ang(3);
-    _ang[0]=CTRL_RAD2DEG*std::min(std::max(lim(eyesJoints[0],0),ang[0]),lim(eyesJoints[0],1));
-    _ang[1]=CTRL_RAD2DEG*std::min(std::max(lim(eyesJoints[1],0),ang[1]),lim(eyesJoints[1],1));
-    _ang[2]=CTRL_RAD2DEG*std::min(std::max(lim(eyesJoints[2],0),ang[2]),lim(eyesJoints[2],1));
+    Vector ang_(3);
+    ang_[0]=CTRL_RAD2DEG*sat(ang[0],lim(eyesJoints[0],0),lim(eyesJoints[0],1));
+    ang_[1]=CTRL_RAD2DEG*sat(ang[1],lim(eyesJoints[1],0),lim(eyesJoints[1],1));
+    ang_[2]=CTRL_RAD2DEG*sat(ang[2],lim(eyesJoints[2],0),lim(eyesJoints[2],1));
+
     posHead->setRefSpeeds(eyesJoints.size(),eyesJoints.getFirst(),vel.data());
-    posHead->positionMove(eyesJoints.size(),eyesJoints.getFirst(),_ang.data());
+    posHead->positionMove(eyesJoints.size(),eyesJoints.getFirst(),ang_.data());
 
     if (commData->debugInfoEnabled && (port_debug.getOutputCount()>0))
     {
         Bottle info;
-        for (size_t i=0; i<_ang.length(); i++)
+        for (size_t i=0; i<ang_.length(); i++)
         {
             ostringstream ss;
             ss<<"pos_"<<eyesJoints[i];
             info.addString(ss.str().c_str());
-            info.addDouble(_ang[i]);
+            info.addDouble(ang_[i]);
         }
 
         port_debug.prepare()=info;

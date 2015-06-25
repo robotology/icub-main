@@ -185,7 +185,7 @@ public:
 };
 
 
-// Saturate value val between min and max.
+// Saturate val between min and max.
 inline double sat(const double val, const double min, const double max)
 {
     return std::min(std::max(val,min),max);

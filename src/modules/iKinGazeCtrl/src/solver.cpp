@@ -296,8 +296,8 @@ void EyePinvRefGen::run()
             ang[1]=atan2(fph[0],fph[2]);
 
             // enforce joints bounds
-            ang[0]=std::min(std::max(lim(0,0),ang[0]),lim(0,1));
-            ang[1]=std::min(std::max(lim(1,0),ang[1]),lim(1,1));
+            ang[0]=sat(ang[0],lim(0,0),lim(0,1));
+            ang[1]=sat(ang[1],lim(1,0),lim(1,1));
 
             // favor the smooth-pursuit in case saccades are small
             if (rot>saccadesActivationAngle)
@@ -336,7 +336,7 @@ void EyePinvRefGen::run()
                 }
 
                 // enforce joints bounds
-                ang[2]=std::min(std::max(lim(2,0),ang[2]),lim(2,1));
+                ang[2]=sat(ang[2],lim(2,0),lim(2,1));
 
                 commData->set_qd(3,ang[0]);
                 commData->set_qd(4,ang[1]);
