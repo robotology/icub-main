@@ -152,6 +152,9 @@ Factors</a>.
   \e switch can be therefore ["on"|"off"], being "on"
   by default.
  
+--imu_port_name \e name
+- Allow specifying a differente source port for the IMU data;
+ 
 --vor \e gain
 - Specify the contribution of the vestibulo-ocular reflex (VOR)
   in compute the final counter-rotation of the eyes due to
@@ -1038,6 +1041,10 @@ public:
         string localTorsoName=commData.localStemName+"/"+torsoName;
         string remoteInertialName="/"+commData.robotName+"/inertial";
 
+        // check if we have to retrieve IMU data from a different port
+        if (rf.check("imu_port_name"))
+            remoteInertialName=rf.find("imu_port_name").asString().c_str();
+
         Property optTorso("(device remote_controlboard)");
         optTorso.put("remote",remoteTorsoName.c_str());
         optTorso.put("local",localTorsoName.c_str());
@@ -1085,7 +1092,9 @@ public:
 
         imuPort.setExchangeData(&commData);
         imuPort.open((commData.localStemName+"/inertial:i").c_str());        
-        if (!Network::connect(remoteInertialName.c_str(),imuPort.getName().c_str()))
+        if (Network::connect(remoteInertialName.c_str(),imuPort.getName().c_str()))
+            yInfo("Receiving IMU data from %s",remoteInertialName.c_str());
+        else
         {
             yError("Unable to connect to %s!",remoteInertialName.c_str());
             dispose();
