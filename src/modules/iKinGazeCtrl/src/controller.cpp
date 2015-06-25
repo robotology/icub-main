@@ -716,15 +716,8 @@ void Controller::run()
             Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
 
             Vector imuNeck=computeNeckVelFromdxFP(x,dx);
-            Vector imuEyes=computeEyesVelFromdxFP(dx);
-
             if (!commData->neckPosCtrlOn)
-            {
                 vNeck=GAZECTRL_STABILIZATION_GAIN*IntStabilizerNeck->integrate(vNeck-imuNeck);
-
-                //if (!commData->saccadesOn)
-                //    vEyes=GAZECTRL_STABILIZATION_GAIN*IntStabilizerEyes->integrate(vEyes-imuEyes); 
-            }
         }
     }
     else
