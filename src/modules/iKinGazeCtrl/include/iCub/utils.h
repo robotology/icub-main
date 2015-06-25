@@ -145,6 +145,8 @@ public:
     double          head_version;
     bool            verbose;
     bool            tweakOverwrite;
+    bool            neckPosCtrlOn;
+    bool            stabilizationOn;
     ResourceFinder  rf_cameras;
     ResourceFinder  rf_tweak;
     string          tweakFile;

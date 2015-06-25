@@ -65,7 +65,8 @@ protected:
     minJerkVelCtrl     *mjCtrlEyes;
     Integrator         *IntState;
     Integrator         *IntPlan;
-    Integrator         *IntStabilizer;
+    Integrator         *IntStabilizerNeck;
+    Integrator         *IntStabilizerEyes;
 
     BufferedPort<Vector> port_x;
     BufferedPort<Vector> port_q;
@@ -83,8 +84,6 @@ protected:
     Mutex mutexData;
     unsigned int period;
     bool unplugCtrlEyes;
-    bool neckPosCtrlOn;
-    bool stabilizationOn;
     bool ctrlInhibited;
     int nJointsTorso;
     int nJointsHead;
@@ -122,7 +121,6 @@ protected:
 
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
-               const bool _neckPosCtrlOn, const bool _stabilizationOn,
                const double _neckTime, const double _eyesTime,
                const double _minAbsVel, const unsigned int _period);
 

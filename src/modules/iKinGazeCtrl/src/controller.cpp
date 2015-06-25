@@ -26,13 +26,12 @@
 
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
-                       const bool _neckPosCtrlOn, const bool _stabilizationOn,
                        const double _neckTime, const double _eyesTime, const double _minAbsVel,
                        const unsigned int _period) :
-                       RateThread(_period), drvTorso(_drvTorso),           drvHead(_drvHead),
-                       commData(_commData), neckPosCtrlOn(_neckPosCtrlOn), stabilizationOn(_stabilizationOn),
-                       neckTime(_neckTime), eyesTime(_eyesTime),           minAbsVel(_minAbsVel),
-                       period(_period),     Ts(_period/1000.0),            printAccTime(0.0)
+                       RateThread(_period),   drvTorso(_drvTorso), drvHead(_drvHead),
+                       commData(_commData),   neckTime(_neckTime), eyesTime(_eyesTime),
+                       minAbsVel(_minAbsVel), period(_period),     Ts(_period/1000.0),
+                       printAccTime(0.0)
 {
     // Instantiate objects
     neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
@@ -81,11 +80,11 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     drvHead->view(velHead);
 
     // if requested check if position control is available
-    if (neckPosCtrlOn)
+    if (commData->neckPosCtrlOn)
     {
-        neckPosCtrlOn=drvHead->view(posNeck);
+        commData->neckPosCtrlOn=drvHead->view(posNeck);
         yInfo("### neck control - requested POSITION mode: IPositionDirect [%s] => %s mode selected",
-              neckPosCtrlOn?"available":"not available",neckPosCtrlOn?"POSITION":"VELOCITY");
+              commData->neckPosCtrlOn?"available":"not available",commData->neckPosCtrlOn?"POSITION":"VELOCITY");
     }
     else
         yInfo("### neck control - requested VELOCITY mode => VELOCITY mode selected");
@@ -128,10 +127,16 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     IntState=new Integrator(Ts,fbHead,lim);
     IntPlan=new Integrator(Ts,fbNeck,lim.submatrix(0,2,0,1));
     
-    if (neckPosCtrlOn)
-        IntStabilizer=NULL;
+    if (commData->neckPosCtrlOn)
+    {
+        IntStabilizerNeck=NULL;
+        IntStabilizerEyes=NULL;
+    }
     else
-        IntStabilizer=new Integrator(Ts,zeros(v.length()));
+    {
+        IntStabilizerNeck=new Integrator(Ts,zeros(vNeck.length()));
+        IntStabilizerEyes=new Integrator(Ts,zeros(vEyes.length()));
+    }
 
     neckJoints.resize(3);
     eyesJoints.resize(3);
@@ -253,7 +258,7 @@ void Controller::motionOngoingEventsFlush()
 /************************************************************************/
 void Controller::stopLimb(const bool execStopPosition)
 {
-    if (neckPosCtrlOn)
+    if (commData->neckPosCtrlOn)
     {
         if (execStopPosition)
             posHead->stop(neckJoints.size(),neckJoints.getFirst());
@@ -270,7 +275,7 @@ void Controller::stopLimb(const bool execStopPosition)
         Bottle info;
         int j=0;
 
-        if (neckPosCtrlOn)
+        if (commData->neckPosCtrlOn)
         {
             if (execStopPosition)
             {
@@ -506,7 +511,7 @@ bool Controller::areJointsHealthyAndSet()
             return false;
         else if (i<(size_t)eyesJoints[0])
         {
-            if (neckPosCtrlOn)
+            if (commData->neckPosCtrlOn)
             {
                 if (modes[i]!=VOCAB_CM_POSITION_DIRECT)
                     jointsToSet.push_back(i);
@@ -533,7 +538,7 @@ void Controller::setJointsCtrlMode()
     {
         if (jointsToSet[i]<eyesJoints[0])
         {
-            if (neckPosCtrlOn)
+            if (commData->neckPosCtrlOn)
                 modes.push_back(VOCAB_CM_POSITION_DIRECT);
             else
                 modes.push_back(VOCAB_CM_VELOCITY);
@@ -651,7 +656,8 @@ void Controller::run()
             mjCtrlNeck->reset(zeros(fbNeck.length()));
             mjCtrlEyes->reset(zeros(fbEyes.length()));
             IntPlan->reset(fbNeck);
-            IntStabilizer->reset(zeros(v.length()));
+            IntStabilizerNeck->reset(zeros(vNeck.length()));
+            IntStabilizerEyes->reset(zeros(vEyes.length()));
 
             event="motion-onset";
 
@@ -688,7 +694,7 @@ void Controller::run()
             vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)+commData->get_counterv();
 
         // stabilization
-        if (stabilizationOn)
+        if (commData->stabilizationOn)
         {
             Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8); 
             Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
@@ -696,11 +702,10 @@ void Controller::run()
             Vector imuNeck=computeNeckVelFromdxFP(x,dx);
             Vector imuEyes=computeEyesVelFromdxFP(dx);
 
-            if (!neckPosCtrlOn)
+            if (!commData->neckPosCtrlOn)
             {
-                Vector stab=GAZECTRL_STABILIZATION_GAIN*IntStabilizer->integrate(cat(vNeck-imuNeck,vEyes-imuEyes));
-                vNeck=stab.subVector(0,2);
-                vEyes=stab.subVector(3,5);
+                vNeck=GAZECTRL_STABILIZATION_GAIN*IntStabilizerNeck->integrate(vNeck-imuNeck);
+                vEyes=GAZECTRL_STABILIZATION_GAIN*IntStabilizerEyes->integrate(vEyes-imuEyes);
             }
         }
     }
@@ -732,7 +737,7 @@ void Controller::run()
         mutexCtrl.lock();
 
         Vector posdeg;
-        if (neckPosCtrlOn)
+        if (commData->neckPosCtrlOn)
         {
             posdeg=(CTRL_RAD2DEG)*IntPlan->get();
             posNeck->setPositions(neckJoints.size(),neckJoints.getFirst(),posdeg.data());
@@ -746,7 +751,7 @@ void Controller::run()
             Bottle info;
             int j=0;
 
-            if (neckPosCtrlOn)
+            if (commData->neckPosCtrlOn)
             {
                 for (size_t i=0; i<posdeg.length(); i++)
                 {
@@ -874,7 +879,8 @@ void Controller::threadRelease()
     delete mjCtrlEyes;
     delete IntState;
     delete IntPlan;
-    delete IntStabilizer;
+    delete IntStabilizerNeck;
+    delete IntStabilizerEyes;
 }
 
 
