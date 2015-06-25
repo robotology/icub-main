@@ -65,8 +65,7 @@ protected:
     minJerkVelCtrl     *mjCtrlEyes;
     Integrator         *IntState;
     Integrator         *IntPlan;
-    Integrator         *IntStabilizerNeck;
-    Integrator         *IntStabilizerEyes;
+    Integrator         *IntStabilizer;
 
     BufferedPort<Vector> port_x;
     BufferedPort<Vector> port_q;

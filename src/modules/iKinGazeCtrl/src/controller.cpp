@@ -125,8 +125,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     mjCtrlEyes=new minJerkVelCtrlForIdealPlant(Ts,fbEyes.length());
     IntState=new Integrator(Ts,fbHead,lim);
     IntPlan=new Integrator(Ts,fbNeck,lim.submatrix(0,2,0,1));
-    IntStabilizerNeck=new Integrator(Ts,zeros(vNeck.length()));
-    IntStabilizerEyes=new Integrator(Ts,zeros(vEyes.length()));
+    IntStabilizer=new Integrator(Ts,zeros(vNeck.length()));
 
     neckJoints.resize(3);
     eyesJoints.resize(3);
@@ -672,8 +671,7 @@ void Controller::run()
             mjCtrlNeck->reset(zeros(fbNeck.length()));
             mjCtrlEyes->reset(zeros(fbEyes.length()));
             IntPlan->reset(fbNeck);
-            IntStabilizerNeck->reset(zeros(vNeck.length()));
-            IntStabilizerEyes->reset(zeros(vEyes.length()));
+            IntStabilizer->reset(zeros(vNeck.length()));
 
             event="motion-onset";
 
@@ -714,10 +712,10 @@ void Controller::run()
         {
             Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8); 
             Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
-
             Vector imuNeck=computeNeckVelFromdxFP(x,dx);
+
             if (!commData->neckPosCtrlOn)
-                vNeck=GAZECTRL_STABILIZATION_GAIN*IntStabilizerNeck->integrate(vNeck-imuNeck);
+                vNeck=GAZECTRL_STABILIZATION_GAIN*IntStabilizer->integrate(vNeck-imuNeck);
         }
     }
     else
@@ -868,8 +866,7 @@ void Controller::threadRelease()
     delete mjCtrlEyes;
     delete IntState;
     delete IntPlan;
-    delete IntStabilizerNeck;
-    delete IntStabilizerEyes;
+    delete IntStabilizer;
 }
 
 
