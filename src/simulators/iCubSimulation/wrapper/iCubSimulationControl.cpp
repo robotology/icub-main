@@ -1555,6 +1555,28 @@ bool iCubSimulationControl::setRefTorqueRaw(int axis,double ref)
         yError("setRefTorqueRaw: joint with index %d does not exist, valis joints indices are between 0 and %d \n",axis,njoints);
     return false;
 }
+
+bool iCubSimulationControl::setRefTorquesRaw(const int n_joint, const int *joints, const double *t)
+{
+    bool ret = true;
+    _mutex.wait();
+    for(int j=0; j< n_joint; j++)
+    {
+        if( (joints[j] >=0) && (joints[j]<njoints) )
+        {
+            next_torques[joints[j]] = t[j];
+            motor_on[joints[j]] = true;
+        }
+        else
+        {
+            ret = false;
+            break;
+        }
+    }
+    _mutex.post();
+    return ret;
+}
+
 bool iCubSimulationControl::getRefTorquesRaw(double *ref)
 {
     _mutex.wait();

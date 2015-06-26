@@ -875,6 +875,7 @@ public:
     virtual bool getRefTorquesRaw(double *ref_trqs);
     virtual bool setRefTorqueRaw(int j, double ref_trq);
     virtual bool setRefTorquesRaw(const double *ref_trqs);
+    virtual bool setRefTorquesRaw(const int n_joint, const int *joints, const double *t);
     virtual bool getTorqueRaw(int j, double *trq);
     virtual bool getTorquesRaw(double *trqs);
     virtual bool getTorqueRangeRaw(int j, double *min, double *max);
