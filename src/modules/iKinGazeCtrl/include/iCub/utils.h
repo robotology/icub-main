@@ -30,8 +30,6 @@
 
 #include <iCub/gazeNlp.h>
 
-#define GYRO_BIAS_STABILITY     5.0     // [deg/s]
-
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -144,7 +142,8 @@ public:
     string          localStemName;
     double          eyeTiltMin;
     double          eyeTiltMax;
-    double          head_version;
+    double          gyro_noise_threshold;
+    double          head_version;    
     bool            verbose;
     bool            tweakOverwrite;
     bool            saccadesOn;

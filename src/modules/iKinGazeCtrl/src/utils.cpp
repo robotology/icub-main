@@ -417,9 +417,9 @@ void IMUPort::onRead(Vector &imu)
     if (commData!=NULL)
     {
         // filter out the noise on the gyro readouts
-        if ((fabs(imu[6])<GYRO_BIAS_STABILITY) &&
-            (fabs(imu[7])<GYRO_BIAS_STABILITY) &&
-            (fabs(imu[8])<GYRO_BIAS_STABILITY))
+        if ((fabs(imu[6])<commData->gyro_noise_threshold) &&
+            (fabs(imu[7])<commData->gyro_noise_threshold) &&
+            (fabs(imu[8])<commData->gyro_noise_threshold))
             imu.setSubvector(6,zeros(3));
 
         commData->set_imu(imu);
