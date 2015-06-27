@@ -143,6 +143,7 @@ public:
     double          eyeTiltMin;
     double          eyeTiltMax;
     double          gyro_noise_threshold;
+    double          stabilization_gain;
     double          head_version;    
     bool            verbose;
     bool            tweakOverwrite;

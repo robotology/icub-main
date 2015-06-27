@@ -697,8 +697,7 @@ void Controller::run()
     {
         // control
         vNeck=mjCtrlNeck->computeCmd(neckTime,qdNeck-fbNeck);
-        IntPlan->integrate(vNeck);
-
+        
         if (unplugCtrlEyes)
         {
             if (Time::now()-saccadeStartTime>=Ts)
@@ -714,9 +713,10 @@ void Controller::run()
             Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
             Vector imuNeck=computeNeckVelFromdxFP(x,dx);
 
-            if (!commData->neckPosCtrlOn)
-                vNeck=GAZECTRL_STABILIZATION_GAIN*IntStabilizer->integrate(vNeck-imuNeck);
+            vNeck=commData->stabilization_gain*IntStabilizer->integrate(vNeck-imuNeck);
         }
+
+        IntPlan->integrate(vNeck);
     }
     else
     {

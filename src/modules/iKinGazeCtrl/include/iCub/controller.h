@@ -31,7 +31,6 @@
 #include <iCub/ctrl/pids.h>
 #include <iCub/utils.h>
 
-#define GAZECTRL_STABILIZATION_GAIN         11.0    // [1/s]
 #define GAZECTRL_SWOFFCOND_DISABLETIME      0.100   // [s]
 #define GAZECTRL_MOTIONDONE_NECK_QTHRES     0.500   // [deg]
 #define GAZECTRL_MOTIONDONE_EYES_QTHRES     0.100   // [deg]

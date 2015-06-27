@@ -152,6 +152,10 @@ Factors</a>.
   \e switch can be therefore ["on"|"off"], being "on"
   by default.
  
+--stabilization_gain \e gain
+- Specify the integral gain (in [1/s]) used for gaze  
+  stabilization; the \e gain is 11.0 [1/s] by default.
+ 
 --imu_port_name \e name
 - Allow specifying a differente source port for the IMU data;
  
@@ -1008,6 +1012,7 @@ public:
         commData.eyeTiltMin=rf.check("eyeTiltMin",Value(-1e9)).asDouble();
         commData.eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
         commData.gyro_noise_threshold=rf.check("gyro_noise_threshold",Value(5.0)).asDouble();
+        commData.stabilization_gain=rf.check("stabilization_gain",Value(11.0)).asDouble();
         commData.head_version=rf.check("headV2")?2.0:1.0;
         commData.verbose=rf.check("verbose");
         commData.tweakOverwrite=(rf.check("tweakOverwrite",Value("on")).asString()=="on");
