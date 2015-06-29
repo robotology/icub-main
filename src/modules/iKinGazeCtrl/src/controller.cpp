@@ -722,7 +722,7 @@ void Controller::run()
 
                 vNeck=commData->stabilization_gain*IntStabilizer->integrate(vNeck-imuNeck);
 
-                // only if the speeed is low and we are close to the target
+                // only if the speed is low and we are close to the target
                 if ((fabs(vNeck[0])<CTRL_DEG2RAD*commData->gyro_noise_threshold) &&
                     (fabs(vNeck[1])<CTRL_DEG2RAD*commData->gyro_noise_threshold) &&
                     (fabs(vNeck[2])<CTRL_DEG2RAD*commData->gyro_noise_threshold) && 
