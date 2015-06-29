@@ -1870,7 +1870,9 @@ public:
     {
         interrupting=true;
 
-        commData.port_xd->interrupt();
+        if (commData.port_xd!=NULL)
+            commData.port_xd->interrupt();
+
         imuPort.interrupt();
         rpcPort.interrupt();
 
