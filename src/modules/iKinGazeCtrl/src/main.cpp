@@ -723,7 +723,7 @@ protected:
 
         Bottle &minVer=info.addList();
         minVer.addString("min_allowed_vergence");
-        minVer.addDouble(CTRL_RAD2DEG*commData.get_minAllowedVergence());
+        minVer.addDouble(CTRL_RAD2DEG*commData.minAllowedVergence);
 
         Bottle &intrinsicsLeft=info.addList();
         intrinsicsLeft.addString("camera_intrinsics_left");
@@ -1218,7 +1218,7 @@ public:
                         else if (type==VOCAB4('s','d','o','n'))
                         {
                             reply.addVocab(ack);
-                            reply.addInt((int)!commData.get_isSaccadeUnderway());
+                            reply.addInt((int)!commData.saccadeUnderway);
                             return true;
                         }
                         else if (type==VOCAB4('p','i','t','c'))

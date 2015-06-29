@@ -96,10 +96,6 @@ protected:
     Vector v,counterv;
     Matrix S;
     Vector imu;
-    bool   isCtrlActive;
-    bool   canCtrlBeDisabled;
-    bool   saccadeUnderway;
-    double minAllowedVergence;
     double x_stamp;
 
 public:
@@ -131,20 +127,19 @@ public:
     Matrix  get_fpFrame();
     Vector  get_imu();
 
-    bool   &get_isCtrlActive()       { return isCtrlActive;       }
-    bool   &get_canCtrlBeDisabled()  { return canCtrlBeDisabled;  }
-    bool   &get_isSaccadeUnderway()  { return saccadeUnderway;    }
-    double &get_minAllowedVergence() { return minAllowedVergence; }
-
     // data members that do not need protection
     xdPort         *port_xd;
     string          robotName;
     string          localStemName;
     double          eyeTiltMin;
     double          eyeTiltMax;
+    double          minAllowedVergence;
     double          gyro_noise_threshold;
     double          stabilization_gain;
-    double          head_version;    
+    double          head_version;
+    bool            ctrlActive;
+    bool            canCtrlBeDisabled;
+    bool            saccadeUnderway;
     bool            verbose;
     bool            tweakOverwrite;
     bool            saccadesOn;
@@ -153,7 +148,7 @@ public:
     ResourceFinder  rf_cameras;
     ResourceFinder  rf_tweak;
     string          tweakFile;
-    bool            debugInfoEnabled;
+    bool            debugInfoEnabled;    
 };
 
 

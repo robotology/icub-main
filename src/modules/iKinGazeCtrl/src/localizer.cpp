@@ -16,6 +16,8 @@
  * Public License for more details
 */
 
+#include <algorithm>
+
 #include <gsl/gsl_math.h>
 
 #include <yarp/math/SVD.h>
@@ -220,8 +222,7 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
     }
     
     // impose vergence != 0.0
-    if (ver<commData->get_minAllowedVergence())
-        ver=commData->get_minAllowedVergence();
+    ver=std::max(ver,commData->minAllowedVergence);
 
     mutex.lock();
 

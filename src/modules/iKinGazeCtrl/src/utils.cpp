@@ -153,7 +153,7 @@ ExchangeData::ExchangeData()
     imu.resize(12,0.0);
     port_xd=NULL;
 
-    isCtrlActive=false;
+    ctrlActive=false;
     canCtrlBeDisabled=true;
     saccadeUnderway=false;
     minAllowedVergence=0.0;
@@ -704,8 +704,7 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
     
     // impose vergence != 0.0
     if (commData!=NULL)
-        if (fbHead[nJointsHead-1]<commData->get_minAllowedVergence())
-            fbHead[nJointsHead-1]=commData->get_minAllowedVergence();
+        fbHead[nJointsHead-1]=std::max(fbHead[nJointsHead-1],commData->minAllowedVergence);
     
     // retrieve the highest encoders time stamp
     if (timeStamp!=NULL)

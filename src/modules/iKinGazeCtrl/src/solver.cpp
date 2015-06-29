@@ -92,7 +92,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     lim=lim.submatrix(3,5,0,1);
 
     // reinforce vergence min bound
-    lim(2,0)=commData->get_minAllowedVergence();
+    lim(2,0)=commData->minAllowedVergence;
 
     // read starting position
     fbTorso.resize(nJointsTorso,0.0);
@@ -127,7 +127,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
 /************************************************************************/
 void EyePinvRefGen::minAllowedVergenceChanged()
 {
-    lim(2,0)=commData->get_minAllowedVergence();    
+    lim(2,0)=commData->minAllowedVergence;
     I->setLim(lim);
     orig_lim=lim;
 }
@@ -138,7 +138,7 @@ bool EyePinvRefGen::bindEyes(const double ver)
 {
     if (ver>=0.0)
     {
-        double ver_rad=std::max(CTRL_DEG2RAD*ver,commData->get_minAllowedVergence());
+        double ver_rad=std::max(CTRL_DEG2RAD*ver,commData->minAllowedVergence);
         eyesBoundVer=CTRL_RAD2DEG*ver_rad;
 
         // block tilt and pan of the left eye
@@ -290,8 +290,7 @@ void EyePinvRefGen::run()
 
         // ask for saccades (if possible)
         if (commData->saccadesOn && (saccadesRxTargets!=commData->port_xd->get_rx()) &&
-            !commData->get_isSaccadeUnderway() &&
-            (Time::now()-saccadesClock>saccadesInhibitionPeriod))
+            !commData->saccadeUnderway && (Time::now()-saccadesClock>saccadesInhibitionPeriod))
         {
             Vector fph=xd; fph.push_back(1.0);
             fph=SE3inv(chainNeck->getH())*fph; fph[3]=0.0;
@@ -376,7 +375,7 @@ void EyePinvRefGen::run()
                 commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));
             
             // reset eyes controller and integral upon saccades transition on=>off
-            if (saccadeUnderWayOld && !commData->get_isSaccadeUnderway())
+            if (saccadeUnderWayOld && !commData->saccadeUnderway)
             {
                 ctrl->resetCtrlEyes();
 
@@ -396,7 +395,7 @@ void EyePinvRefGen::run()
         commData->set_xd(xd);
         commData->set_x(fp,timeStamp);
         commData->set_fpFrame(chainNeck->getH());
-        if (!commData->get_isSaccadeUnderway())
+        if (!commData->saccadeUnderway)
         {
             commData->set_qd(3,qd[0]);
             commData->set_qd(4,qd[1]);
@@ -404,7 +403,7 @@ void EyePinvRefGen::run()
         }
 
         // latch the saccades status
-        saccadeUnderWayOld=commData->get_isSaccadeUnderway();
+        saccadeUnderWayOld=commData->saccadeUnderway;
         saccadesRxTargets=commData->port_xd->get_rx();
     }
 }
@@ -791,18 +790,17 @@ void Solver::run()
     bool doSolve=(theta>NECKSOLVER_ACTIVATIONANGLE);
 
     // 2) skip if controller is active and no torso motion is detected
-    doSolve&=!(commData->get_isCtrlActive() && !torsoChanged);
+    doSolve&=!(commData->ctrlActive && !torsoChanged);
 
     // 3) skip if controller is inactive and we are not in tracking mode
-    doSolve&=!(!commData->get_isCtrlActive() && commData->get_canCtrlBeDisabled());
+    doSolve&=!(!commData->ctrlActive && commData->canCtrlBeDisabled);
 
     // 4) skip if controller is inactive, we are in tracking mode and nothing has changed
     // note that the De Morgan's law has been applied hereafter
-    doSolve&=commData->get_isCtrlActive() || commData->get_canCtrlBeDisabled() ||
-             torsoChanged || headChanged;
+    doSolve&=commData->ctrlActive || commData->canCtrlBeDisabled || torsoChanged || headChanged;
 
     // 5) solve straightaway if we are in tracking mode and a solve request is raised
-    doSolve|=!commData->get_canCtrlBeDisabled() && solveRequest;
+    doSolve|=!commData->canCtrlBeDisabled && solveRequest;
 
     // 6) solve straightaway if the target has changed
     doSolve|=commData->port_xd->get_newDelayed();

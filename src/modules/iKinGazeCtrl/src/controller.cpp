@@ -108,7 +108,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     findMinimumAllowedVergence();
 
     // reinforce vergence min bound
-    lim(nJointsHead-1,0)=commData->get_minAllowedVergence();
+    lim(nJointsHead-1,0)=commData->minAllowedVergence;
     getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
 
     fbNeck=fbHead.subVector(0,2);
@@ -184,14 +184,14 @@ void Controller::findMinimumAllowedVergence()
     }
 
     yInfo("### computed minimum allowed vergence = %g [deg]",minVer*CTRL_RAD2DEG);
-    commData->get_minAllowedVergence()=minVer;
+    commData->minAllowedVergence=minVer;
 }
 
 
 /************************************************************************/
 void Controller::minAllowedVergenceChanged()
 {
-    lim(nJointsHead-1,0)=commData->get_minAllowedVergence();
+    lim(nJointsHead-1,0)=commData->minAllowedVergence;
     IntState->setLim(lim);
 }
 
@@ -293,7 +293,7 @@ void Controller::stopLimb(const bool execStopPosition)
         port_debug.writeStrict();
     }
 
-    commData->get_isCtrlActive()=false;
+    commData->ctrlActive=false;
 }
 
 
@@ -311,7 +311,7 @@ void Controller::stopControlHelper()
 {
     mutexCtrl.lock();
 
-    if (commData->get_isCtrlActive())
+    if (commData->ctrlActive)
     {
         q_stamp=Time::now();
         ctrlInhibited=true;
@@ -470,7 +470,7 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
     }
 
     saccadeStartTime=Time::now();
-    commData->get_isSaccadeUnderway()=true;
+    commData->saccadeUnderway=true;
     unplugCtrlEyes=true;
 
     notifyEvent("saccade-onset");
@@ -560,13 +560,13 @@ void Controller::run()
 
     // verify if any saccade is still underway
     mutexCtrl.lock();
-    if (commData->get_isSaccadeUnderway() && (Time::now()-saccadeStartTime>=Ts))
+    if (commData->saccadeUnderway && (Time::now()-saccadeStartTime>=Ts))
     {
         bool done;
         posHead->checkMotionDone(eyesJoints.size(),eyesJoints.getFirst(),&done);
-        commData->get_isSaccadeUnderway()=!done;
+        commData->saccadeUnderway=!done;
 
-        if (!commData->get_isSaccadeUnderway())
+        if (!commData->saccadeUnderway)
             notifyEvent("saccade-done");
     }
     mutexCtrl.unlock();
@@ -620,12 +620,12 @@ void Controller::run()
     double errNeck=norm(new_qd.subVector(0,2)-fbNeck);
     double errEyes=norm(new_qd.subVector(3,new_qd.length()-1)-fbEyes);
     bool swOffCond=(Time::now()-ctrlActiveRisingEdgeTime<GAZECTRL_SWOFFCOND_DISABLETIME) ? false :
-                   (!commData->get_isSaccadeUnderway() &&
+                   (!commData->saccadeUnderway &&
                    (errNeck<GAZECTRL_MOTIONDONE_NECK_QTHRES*CTRL_DEG2RAD) &&
                    (errEyes<GAZECTRL_MOTIONDONE_EYES_QTHRES*CTRL_DEG2RAD));
 
     // verify control switching conditions
-    if (commData->get_isCtrlActive())
+    if (commData->ctrlActive)
     {
         // switch-off condition
         if (swOffCond)
@@ -655,14 +655,13 @@ void Controller::run()
             ctrlInhibited=!commData->port_xd->get_new();
 
         // switch-on condition
-        commData->get_isCtrlActive()=commData->port_xd->get_new() ||
-                                     (!ctrlInhibited &&
-                                     (new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2]) ||
-                                     (!commData->get_canCtrlBeDisabled() &&
-                                      (norm(commData->port_xd->get_xd()-x)>GAZECTRL_MOTIONSTART_XTHRES)));
+        commData->ctrlActive=commData->port_xd->get_new() ||
+                             (!ctrlInhibited &&
+                             (new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2]) ||
+                             (!commData->canCtrlBeDisabled && (norm(commData->port_xd->get_xd()-x)>GAZECTRL_MOTIONSTART_XTHRES)));
 
         // reset controllers
-        if (commData->get_isCtrlActive())
+        if (commData->ctrlActive)
         {
             ctrlActiveRisingEdgeTime=Time::now();
             commData->port_xd->get_new()=false;
@@ -698,7 +697,7 @@ void Controller::run()
     pathPerc=(dist>IKIN_ALMOST_ZERO)?norm(fbHead-q0)/dist:1.0;
     pathPerc=sat(pathPerc,0.0,1.0);
     
-    if (commData->get_isCtrlActive())
+    if (commData->ctrlActive)
     {
         // control
         vNeck=mjCtrlNeck->computeCmd(neckTime,qdNeck-fbNeck);
@@ -764,7 +763,7 @@ void Controller::run()
     mutexData.unlock();
 
     // send commands to the robot
-    if (commData->get_isCtrlActive())
+    if (commData->ctrlActive)
     {
         mutexCtrl.lock();
 
@@ -899,7 +898,7 @@ void Controller::suspend()
     mutexCtrl.lock();
     RateThread::suspend();    
     stopLimb();
-    commData->get_isSaccadeUnderway()=false;
+    commData->saccadeUnderway=false;
     yInfo("Controller has been suspended!");
     notifyEvent("suspended");
     mutexCtrl.unlock();
@@ -966,14 +965,14 @@ void Controller::setTeyes(const double execTime)
 /************************************************************************/
 bool Controller::isMotionDone() const
 {
-    return !commData->get_isCtrlActive();
+    return !commData->ctrlActive;
 }
 
 
 /************************************************************************/
 void Controller::setTrackingMode(const bool f)
 {
-    commData->get_canCtrlBeDisabled()=!f;
+    commData->canCtrlBeDisabled=!f;
     if (f)
         commData->port_xd->set_xd(commData->get_x());
 }
@@ -982,7 +981,7 @@ void Controller::setTrackingMode(const bool f)
 /************************************************************************/
 bool Controller::getTrackingMode() const 
 {
-    return !commData->get_canCtrlBeDisabled();
+    return !commData->canCtrlBeDisabled;
 }
 
 
