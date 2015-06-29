@@ -715,23 +715,23 @@ void Controller::run()
         {
             if (reliableGyro)
             {
-                Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8); 
+                Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
                 Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
                 Vector imuNeck=computeNeckVelFromdxFP(x,dx);
 
                 vNeck=commData->stabilization_gain*IntStabilizer->integrate(vNeck-imuNeck);
 
                 // only if the speed is low and we are close to the target
-                if ((fabs(vNeck[0])<CTRL_DEG2RAD*commData->gyro_noise_threshold) &&
-                    (fabs(vNeck[1])<CTRL_DEG2RAD*commData->gyro_noise_threshold) &&
-                    (fabs(vNeck[2])<CTRL_DEG2RAD*commData->gyro_noise_threshold) && 
+                if ((fabs(vNeck[0])<commData->gyro_noise_threshold) &&
+                    (fabs(vNeck[1])<commData->gyro_noise_threshold) &&
+                    (fabs(vNeck[2])<commData->gyro_noise_threshold) &&
                     pathPerc>0.9)
                     reliableGyro=false;
             }
             // hysteresis @ 20%
-            else if ((fabs(vNeck[0])>1.2*CTRL_DEG2RAD*commData->gyro_noise_threshold) ||
-                     (fabs(vNeck[1])>1.2*CTRL_DEG2RAD*commData->gyro_noise_threshold) ||
-                     (fabs(vNeck[2])>1.2*CTRL_DEG2RAD*commData->gyro_noise_threshold))
+            else if ((fabs(vNeck[0])>1.2*commData->gyro_noise_threshold) ||
+                     (fabs(vNeck[1])>1.2*commData->gyro_noise_threshold) ||
+                     (fabs(vNeck[2])>1.2*commData->gyro_noise_threshold))
             {
                 IntStabilizer->reset(zeros(vNeck.length()));
                 reliableGyro=true;

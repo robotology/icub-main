@@ -1011,7 +1011,7 @@ public:
         commData.robotName=rf.check("robot",Value("icub")).asString().c_str();
         commData.eyeTiltMin=rf.check("eyeTiltMin",Value(-1e9)).asDouble();
         commData.eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
-        commData.gyro_noise_threshold=rf.check("gyro_noise_threshold",Value(5.0)).asDouble();
+        commData.gyro_noise_threshold=CTRL_DEG2RAD*rf.check("gyro_noise_threshold",Value(5.0)).asDouble();
         commData.stabilization_gain=rf.check("stabilization_gain",Value(11.0)).asDouble();
         commData.head_version=rf.check("headV2")?2.0:1.0;
         commData.verbose=rf.check("verbose");

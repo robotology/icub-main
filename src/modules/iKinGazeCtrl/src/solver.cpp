@@ -215,8 +215,8 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
     H(1,3)=fp[1]-H(1,3);
     H(2,3)=fp[2]-H(2,3);
 
-    // gyro rate [deg/s]
-    Vector gyro=commData->get_imu().subVector(6,8);
+    // gyro rate [rad/s]
+    Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
 
     // filter out the noise on the gyro readouts
     if ((fabs(gyro[0])<commData->gyro_noise_threshold) &&
@@ -224,9 +224,9 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
         (fabs(gyro[2])<commData->gyro_noise_threshold))
         gyro=0.0;
 
-    Vector vor_fprelv=CTRL_DEG2RAD*(gyro[0]*cross(H,0,H,3)+
-                                    gyro[1]*cross(H,1,H,3)+
-                                    gyro[2]*cross(H,2,H,3));
+    Vector vor_fprelv=(gyro[0]*cross(H,0,H,3)+
+                       gyro[1]*cross(H,1,H,3)+
+                       gyro[2]*cross(H,2,H,3));
 
     // ********** implement OCR
     H=chainNeck->getH();
