@@ -734,7 +734,7 @@ void Controller::run()
                      (fabs(vNeck[1])>1.2*CTRL_DEG2RAD*commData->gyro_noise_threshold) ||
                      (fabs(vNeck[2])>1.2*CTRL_DEG2RAD*commData->gyro_noise_threshold))
             {
-                IntStabilizer->reset(vNeck);
+                IntStabilizer->reset(zeros(vNeck.length()));
                 reliableGyro=true;
             }
         }
