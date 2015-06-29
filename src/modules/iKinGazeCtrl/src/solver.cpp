@@ -217,6 +217,13 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
 
     // gyro rate [deg/s]
     Vector gyro=commData->get_imu().subVector(6,8);
+
+    // filter out the noise on the gyro readouts
+    if ((fabs(gyro[0])<commData->gyro_noise_threshold) &&
+        (fabs(gyro[1])<commData->gyro_noise_threshold) &&
+        (fabs(gyro[2])<commData->gyro_noise_threshold))
+        gyro=0.0;
+
     Vector vor_fprelv=CTRL_DEG2RAD*(gyro[0]*cross(H,0,H,3)+
                                     gyro[1]*cross(H,1,H,3)+
                                     gyro[2]*cross(H,2,H,3));

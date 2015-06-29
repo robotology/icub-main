@@ -145,6 +145,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     saccadeStartTime=0.0;
     unplugCtrlEyes=false;
     ctrlInhibited=false;
+    reliableIMU=false;
 }
 
 
@@ -672,6 +673,7 @@ void Controller::run()
             mjCtrlEyes->reset(zeros(fbEyes.length()));
             IntPlan->reset(fbNeck);
             IntStabilizer->reset(zeros(vNeck.length()));
+            reliableIMU=false;
 
             event="motion-onset";
 
@@ -709,11 +711,27 @@ void Controller::run()
         // stabilization
         if (commData->stabilizationOn)
         {
-            Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8); 
-            Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
-            Vector imuNeck=computeNeckVelFromdxFP(x,dx);
+            if (reliableIMU)
+            {
+                Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8); 
+                Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
+                Vector imuNeck=computeNeckVelFromdxFP(x,dx);
 
-            vNeck=commData->stabilization_gain*IntStabilizer->integrate(vNeck-imuNeck);
+                vNeck=commData->stabilization_gain*IntStabilizer->integrate(vNeck-imuNeck);
+
+                if ((fabs(vNeck[0])<CTRL_DEG2RAD*commData->gyro_noise_threshold) &&
+                    (fabs(vNeck[1])<CTRL_DEG2RAD*commData->gyro_noise_threshold) &&
+                    (fabs(vNeck[2])<CTRL_DEG2RAD*commData->gyro_noise_threshold))
+                    reliableIMU=false;
+            }
+            // hysteresis @ 20%
+            else if ((fabs(vNeck[0])>1.2*CTRL_DEG2RAD*commData->gyro_noise_threshold) ||
+                     (fabs(vNeck[1])>1.2*CTRL_DEG2RAD*commData->gyro_noise_threshold) ||
+                     (fabs(vNeck[2])>1.2*CTRL_DEG2RAD*commData->gyro_noise_threshold))
+            {
+                IntStabilizer->reset(vNeck);
+                reliableIMU=true;
+            }
         }
 
         IntPlan->integrate(vNeck);

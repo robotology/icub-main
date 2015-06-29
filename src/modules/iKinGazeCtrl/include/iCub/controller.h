@@ -83,6 +83,7 @@ protected:
     unsigned int period;
     bool unplugCtrlEyes;
     bool ctrlInhibited;
+    bool reliableIMU;
     int nJointsTorso;
     int nJointsHead;
     double ctrlActiveRisingEdgeTime;
