@@ -83,23 +83,24 @@ protected:
     unsigned int period;
     bool unplugCtrlEyes;
     bool ctrlInhibited;
-    bool reliableIMU;
+    bool reliableGyro;
     int nJointsTorso;
     int nJointsHead;
     double ctrlActiveRisingEdgeTime;
-    double saccadeStartTime;
+    double saccadeStartTime;    
     double printAccTime;
     double neckTime;
     double eyesTime;
+    double pathPerc;
     double minAbsVel;
     double startupMinVer;
     double q_stamp;
     double Ts;
 
     Matrix lim;
-    Vector q0deg,qddeg,qdeg,vdeg;
+    Vector qddeg,qdeg,vdeg;
     Vector v,vNeck,vEyes;
-    Vector qd,qdNeck,qdEyes;
+    Vector q0,qd,qdNeck,qdEyes;
     Vector fbTorso,fbHead,fbNeck,fbEyes;
     VectorOf<int> neckJoints,eyesJoints;
     VectorOf<int> jointsToSet;

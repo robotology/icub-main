@@ -137,15 +137,17 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     eyesJoints[2]=5;
 
     qd=fbHead;
-    q0deg=CTRL_RAD2DEG*qd;
-    qddeg=q0deg;
+    q0=qd;
+    qddeg=CTRL_RAD2DEG*qd;
     vdeg =CTRL_RAD2DEG*v;
 
     ctrlActiveRisingEdgeTime=0.0;
     saccadeStartTime=0.0;
+    pathPerc=0.0;
+
     unplugCtrlEyes=false;
     ctrlInhibited=false;
-    reliableIMU=false;
+    reliableGyro=true;
 }
 
 
@@ -220,11 +222,7 @@ void Controller::motionOngoingEventsHandling()
     if (motionOngoingEventsCurrent.size()!=0)
     {
         double curCheckPoint=*motionOngoingEventsCurrent.begin();
-        double dist=norm(qddeg-q0deg);
-        double checkPoint=(dist>IKIN_ALMOST_ZERO)?norm(qdeg-q0deg)/dist:1.0;
-        checkPoint=sat(checkPoint,0.0,1.0);
-
-        if (checkPoint>=curCheckPoint)
+        if (pathPerc>=curCheckPoint)
         {            
             notifyEvent("motion-ongoing",curCheckPoint);
             motionOngoingEventsCurrent.erase(curCheckPoint);
@@ -673,7 +671,7 @@ void Controller::run()
             mjCtrlEyes->reset(zeros(fbEyes.length()));
             IntPlan->reset(fbNeck);
             IntStabilizer->reset(zeros(vNeck.length()));
-            reliableIMU=false;
+            reliableGyro=true;
 
             event="motion-onset";
 
@@ -687,13 +685,18 @@ void Controller::run()
     if (event=="motion-onset")
     {
         setJointsCtrlMode();
-        q0deg=CTRL_RAD2DEG*fbHead;
+        q0=fbHead;
     }
     mutexCtrl.unlock();
 
     qd=new_qd;
     qdNeck=qd.subVector(0,2);
     qdEyes=qd.subVector(3,5);
+
+    // compute current point [%] in the path
+    double dist=norm(qd-q0);
+    pathPerc=(dist>IKIN_ALMOST_ZERO)?norm(fbHead-q0)/dist:1.0;
+    pathPerc=sat(pathPerc,0.0,1.0);
     
     if (commData->get_isCtrlActive())
     {
@@ -711,7 +714,7 @@ void Controller::run()
         // stabilization
         if (commData->stabilizationOn)
         {
-            if (reliableIMU)
+            if (reliableGyro)
             {
                 Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8); 
                 Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
@@ -719,10 +722,12 @@ void Controller::run()
 
                 vNeck=commData->stabilization_gain*IntStabilizer->integrate(vNeck-imuNeck);
 
+                // only if the speeed is low and we are close to the target
                 if ((fabs(vNeck[0])<CTRL_DEG2RAD*commData->gyro_noise_threshold) &&
                     (fabs(vNeck[1])<CTRL_DEG2RAD*commData->gyro_noise_threshold) &&
-                    (fabs(vNeck[2])<CTRL_DEG2RAD*commData->gyro_noise_threshold))
-                    reliableIMU=false;
+                    (fabs(vNeck[2])<CTRL_DEG2RAD*commData->gyro_noise_threshold) && 
+                    pathPerc>0.9)
+                    reliableGyro=false;
             }
             // hysteresis @ 20%
             else if ((fabs(vNeck[0])>1.2*CTRL_DEG2RAD*commData->gyro_noise_threshold) ||
@@ -730,7 +735,7 @@ void Controller::run()
                      (fabs(vNeck[2])>1.2*CTRL_DEG2RAD*commData->gyro_noise_threshold))
             {
                 IntStabilizer->reset(vNeck);
-                reliableIMU=true;
+                reliableGyro=true;
             }
         }
 
