@@ -174,6 +174,7 @@ void ServerCartesianController::init()
     maxPartJoints=0;
     targetTol=CARTCTRL_DEFAULT_TOL;
     trajTime=CARTCTRL_DEFAULT_TRAJTIME;
+    pathPerc=0.0;
 
     txToken=0.0;
     rxToken=0.0;
@@ -1645,6 +1646,11 @@ void ServerCartesianController::run()
                 q0=fb;
             }
         }
+
+        // compute current point [%] in the path
+        double dist=norm(qdes-q0);
+        pathPerc=(dist>1e-6)?norm(fb-q0)/dist:1.0;
+        pathPerc=std::min(std::max(pathPerc,0.0),1.0);
 
         if (executingTraj)
         {
@@ -3652,11 +3658,7 @@ void ServerCartesianController::motionOngoingEventsHandling()
     if (motionOngoingEventsCurrent.size()!=0)
     {
         double curCheckPoint=*motionOngoingEventsCurrent.begin();
-        double dist=norm(qdes-q0);
-        double checkPoint=(dist>1e-6)?norm(fb-q0)/dist:1.0;
-        checkPoint=std::min(std::max(checkPoint,0.0),1.0);
-
-        if (checkPoint>=curCheckPoint)
+        if (pathPerc>=curCheckPoint)
         {            
             notifyEvent("motion-ongoing",curCheckPoint);
             motionOngoingEventsCurrent.erase(curCheckPoint);
