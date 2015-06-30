@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE robot PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<robot name="iCubExpHeadV3" build="1" portprefix="icub">
+
+    <!-- head_face v3 -->
+    <!-- face motor controllers wrappers -->
+     <devices file="./hardware/motorControl/face0_mc_hardware.xml" /> 
+     <devices file="./hardware/motorControl/face1_mc_hardware.xml" /> 
+     <devices file="./wrappers/motorControl/face_mc_wrapper.xml" /> 
+
+    <!-- head motor controllers wrappers -->
+     <devices file="./hardware/motorControl/head0_mc_hardware.xml" />  <!-- tbadded  -->
+     <devices file="./hardware/motorControl/head1_mc_hardware.xml" /> 
+     <devices file="./wrappers/motorControl/head_mc_wrapper.xml" /> 
+
+    <!-- CALIBRATORS -->
+    <!-- it is teh gloabl face -->
+    <devices file="./calibrators/face_calib.xml" />
+    <devices file="./calibrators/head_calib.xml" />
+    
+</robot> 
+
