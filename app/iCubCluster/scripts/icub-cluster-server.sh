@@ -14,17 +14,15 @@ fi
 
 case "$1" in
 	start)
-		case "$2" in 
-			yarpserver) 
+		case "$2" in
+			yarpserver)
 				echo "Starting up yarp server"
-				cp -f $YARP_DIR/bin/yarpserver /tmp/yarpserver
-				/tmp/yarpserver >/dev/null 2>&1 &
+				yarpserver >/dev/null 2>&1 &
 				echo "done!"
 				;;
 			*) #yarpserver3 is the default
 				echo "Starting up yarp server"
-				cp -f $YARP_DIR/bin/yarpserver3 /tmp/yarpserver3
-				/tmp/yarpserver3 --portdb /tmp/ports.db --subdb /tmp/subs.db >/dev/null 2>&1 &
+				yarpserver3 --portdb /tmp/ports.db --subdb /tmp/subs.db >/dev/null 2>&1 &
 				echo "done!"
 				;;
 		esac
