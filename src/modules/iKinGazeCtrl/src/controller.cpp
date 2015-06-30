@@ -722,16 +722,11 @@ void Controller::run()
                 vNeck=commData->stabilization_gain*IntStabilizer->integrate(vNeck-imuNeck);
 
                 // only if the speed is low and we are close to the target
-                if ((fabs(vNeck[0])<commData->gyro_noise_threshold) &&
-                    (fabs(vNeck[1])<commData->gyro_noise_threshold) &&
-                    (fabs(vNeck[2])<commData->gyro_noise_threshold) &&
-                    pathPerc>0.9)
+                if ((norm(vNeck)<commData->gyro_noise_threshold) && pathPerc>0.9)
                     reliableGyro=false;
             }
-            // hysteresis @ 20%
-            else if ((fabs(vNeck[0])>1.2*commData->gyro_noise_threshold) ||
-                     (fabs(vNeck[1])>1.2*commData->gyro_noise_threshold) ||
-                     (fabs(vNeck[2])>1.2*commData->gyro_noise_threshold))
+            // hysteresis
+            else if (norm(vNeck)>1.5*commData->gyro_noise_threshold)
             {
                 IntStabilizer->reset(zeros(vNeck.length()));
                 reliableGyro=true;

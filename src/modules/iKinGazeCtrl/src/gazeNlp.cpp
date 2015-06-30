@@ -16,9 +16,8 @@
  * Public License for more details
 */
 
+#include <cmath>
 #include <algorithm>
-
-#include <gsl/gsl_math.h>
 
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>

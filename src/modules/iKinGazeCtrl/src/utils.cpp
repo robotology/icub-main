@@ -16,9 +16,8 @@
  * Public License for more details
 */
 
+#include <cmath>
 #include <algorithm>
-
-#include <gsl/gsl_math.h>
 
 #include <iCub/utils.h>
 #include <iCub/solver.h>

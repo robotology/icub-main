@@ -16,9 +16,8 @@
  * Public License for more details
 */
 
+#include <cmath>
 #include <algorithm>
-
-#include <gsl/gsl_math.h>
 
 #include <yarp/math/SVD.h>
 #include <iCub/solver.h>
@@ -219,9 +218,7 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
     Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
 
     // filter out the noise on the gyro readouts
-    if ((fabs(gyro[0])<commData->gyro_noise_threshold) &&
-        (fabs(gyro[1])<commData->gyro_noise_threshold) &&
-        (fabs(gyro[2])<commData->gyro_noise_threshold))
+    if (norm(gyro)<commData->gyro_noise_threshold)
         gyro=0.0;
 
     Vector vor_fprelv=(gyro[0]*cross(H,0,H,3)+

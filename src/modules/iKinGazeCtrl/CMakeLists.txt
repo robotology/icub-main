@@ -3,40 +3,33 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
-SET(PROJECTNAME iKinGazeCtrl)
+set(PROJECTNAME iKinGazeCtrl)
+project(${PROJECTNAME})
 
-PROJECT(${PROJECTNAME})
-
-SET(folder_header include/iCub/gazeNlp.h
+set(folder_header include/iCub/gazeNlp.h
                   include/iCub/utils.h
                   include/iCub/solver.h
                   include/iCub/controller.h
                   include/iCub/localizer.h)
 
-SET(folder_source src/gazeNlp.cpp
+set(folder_source src/gazeNlp.cpp
                   src/utils.cpp
                   src/solver.cpp
                   src/controller.cpp
                   src/localizer.cpp
                   src/main.cpp)
 
-SOURCE_GROUP("Header Files" FILES ${folder_header})
-SOURCE_GROUP("Source Files" FILES ${folder_source})
+source_group("Header Files" FILES ${folder_header})
+source_group("Source Files" FILES ${folder_source})
 
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
+include_directories(${PROJECT_SOURCE_DIR}/include
+                    ${ctrlLib_INCLUDE_DIRS}
                     ${iKin_INCLUDE_DIRS}
                     ${IPOPT_INCLUDE_DIRS}
-                    ${GSL_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
-ADD_EXECUTABLE(${PROJECTNAME} ${folder_header} ${folder_source})
-
-TARGET_LINK_LIBRARIES(${PROJECTNAME} iKin
-                                     ${GSL_LIBRARIES}
-                                     ${YARP_LIBRARIES})
-
-INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
-
-
+add_executable(${PROJECTNAME} ${folder_header} ${folder_source})
+target_link_libraries(${PROJECTNAME} ctrlLib iKin ${YARP_LIBRARIES})
+install(TARGETS ${PROJECTNAME} DESTINATION bin)
 
 
