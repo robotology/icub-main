@@ -683,6 +683,8 @@ void Controller::run()
         // manage new target while controller is active
         else if (commData->port_xd->get_new())
         {
+            reliableGyro=true;
+
             event="motion-onset";
 
             mutexData.lock();
