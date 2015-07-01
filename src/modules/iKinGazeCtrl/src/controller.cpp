@@ -16,6 +16,7 @@
  * Public License for more details
 */
 
+#include <limits>
 #include <cstdio>
 #include <sstream>
 
@@ -97,7 +98,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
 
     // exclude acceleration constraints by fixing
     // thresholds at high values
-    Vector a_robHead(nJointsHead,1e9);
+    Vector a_robHead(nJointsHead,std::numeric_limits<double>::max());
     velHead->setRefAccelerations(a_robHead.data());
 
     copyJointsBounds(chainNeck,chainEyeL);
@@ -426,12 +427,12 @@ Vector Controller::computeNeckVelFromdxFP(const Vector &x_FP, const Vector &dx_F
 /************************************************************************/
 Vector Controller::computeEyesVelFromdxFP(const Vector &dx_FP)
 {
-    // compute the Jacobian of the eyes
     Matrix J_E; Vector tmp;
-    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,tmp,J_E);
-
-    // compute dq_eyes=J_E#*dx_FP;
-    return pinv(J_E)*dx_FP.subVector(0,2);
+    if ((commData->eyesBoundVer>=0.0) ||
+        !CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,tmp,J_E))
+        return pinv(J_E)*dx_FP.subVector(0,2);
+    else
+        return zeros(vEyes.length());
 }
 
 
@@ -776,7 +777,7 @@ void Controller::run()
         Vector imuNeck=computeNeckVelFromdxFP(x,dx);
 
         vNeck=commData->stabilizationGain*IntStabilizer->integrate(-1.0*imuNeck);
-        vEyes=-1.0*computeEyesVelFromdxFP(x);
+        vEyes=-1.0*computeEyesVelFromdxFP(dx);
 
         IntPlan->integrate(vNeck);
     }

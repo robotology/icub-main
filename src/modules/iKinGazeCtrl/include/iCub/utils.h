@@ -134,6 +134,7 @@ public:
     double          eyeTiltMin;
     double          eyeTiltMax;
     double          minAllowedVergence;
+    double          eyesBoundVer;
     double          gyro_noise_threshold;
     double          stabilizationGain;
     double          head_version;

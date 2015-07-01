@@ -28,8 +28,8 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
                              ExchangeData *_commData, Controller *_ctrl,
                              const Vector &_counterRotGain, const unsigned int _period) :
                              RateThread(_period), drvTorso(_drvTorso), drvHead(_drvHead),
-                             commData(_commData), ctrl(_ctrl),         eyesBoundVer(-1.0),
-                             period(_period),     Ts(_period/1000.0),  counterRotGain(_counterRotGain)
+                             commData(_commData), ctrl(_ctrl),         period(_period),
+                             Ts(_period/1000.0),  counterRotGain(_counterRotGain)
 {
     // Instantiate objects
     neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
@@ -138,7 +138,7 @@ bool EyePinvRefGen::bindEyes(const double ver)
     if (ver>=0.0)
     {
         double ver_rad=std::max(CTRL_DEG2RAD*ver,commData->minAllowedVergence);
-        eyesBoundVer=CTRL_RAD2DEG*ver_rad;
+        commData->eyesBoundVer=CTRL_RAD2DEG*ver_rad;
 
         // block tilt and pan of the left eye
         (*chainEyeL)[nJointsTorso+3].setMin(0.0);          (*chainEyeL)[nJointsTorso+3].setMax(0.0);
@@ -165,9 +165,9 @@ bool EyePinvRefGen::bindEyes(const double ver)
 /************************************************************************/
 bool EyePinvRefGen::clearEyes()
 {
-    if (eyesBoundVer>=0.0)
+    if (commData->eyesBoundVer>=0.0)
     {
-        eyesBoundVer=-1.0;
+        commData->eyesBoundVer=-1.0;
 
         // reinstate tilt and pan bound of the left eye
         (*chainEyeL)[nJointsTorso+3].setMin(orig_eye_tilt_min); (*chainEyeL)[nJointsTorso+3].setMax(orig_eye_tilt_max);
@@ -366,7 +366,7 @@ void EyePinvRefGen::run()
             chainEyeL->setAng(nJointsTorso+4,fbHead[4]+fbHead[5]/2.0); chainEyeR->setAng(nJointsTorso+4,fbHead[4]-fbHead[5]/2.0);
 
             // compensate neck rotation at eyes level
-            if ((eyesBoundVer>=0.0) || !CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
+            if ((commData->eyesBoundVer>=0.0) || !CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
                 commData->set_counterv(zeros(qd.length()));
             else
                 commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));

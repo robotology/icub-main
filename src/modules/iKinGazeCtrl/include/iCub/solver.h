@@ -70,11 +70,10 @@ protected:
     double                orig_eye_pan_max;
     
     unsigned int period;
-    bool saccadeUnderWayOld;
-    bool genOn;
-    int nJointsTorso;
-    int nJointsHead;
-    double eyesBoundVer;
+    bool   saccadeUnderWayOld;
+    bool   genOn;
+    int    nJointsTorso;
+    int    nJointsHead;
     int    saccadesRxTargets;
     double saccadesClock;
     double saccadesInhibitionPeriod;
@@ -102,7 +101,6 @@ public:
     void   setSaccadesActivationAngle(const double angle)   { saccadesActivationAngle=angle;   }
     double getSaccadesInhibitionPeriod() const              { return saccadesInhibitionPeriod; }
     double getSaccadesActivationAngle() const               { return saccadesActivationAngle;  }
-    double getEyesBoundVer() const                          { return eyesBoundVer;             }
     void   setCounterRotGain(const Vector &gain);
     void   minAllowedVergenceChanged();
     bool   bindEyes(const double ver);

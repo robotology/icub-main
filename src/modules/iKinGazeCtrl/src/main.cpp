@@ -157,7 +157,8 @@ Factors</a>.
   stabilization; the \e gain is 11.0 [1/s] by default.
  
 --imu::port_name \e name
-- Allow specifying a different source port for the IMU data.
+- Allow specifying a different source port for the IMU data
+  (see IMU filtering tools such as e.g. \ref imuFilter). 
  
 --imu::gyro_noise_threshold \e thres
 - Specify a different threshold \e thres given in [deg/s] to  
@@ -652,7 +653,7 @@ protected:
         slv->getCurNeckRollRange(context.neckRollMin,context.neckRollMax);
         slv->getCurNeckYawRange(context.neckYawMin,context.neckYawMax);
         context.neckAngleUserTolerance=slv->getNeckAngleUserTolerance();
-        context.eyesBoundVer=eyesRefGen->getEyesBoundVer();
+        context.eyesBoundVer=commData.eyesBoundVer;
         context.counterRotGain=eyesRefGen->getCounterRotGain();
         context.saccadesOn=commData.saccadesOn;
         context.saccadesInhibitionPeriod=eyesRefGen->getSaccadesInhibitionPeriod();
@@ -1281,10 +1282,8 @@ public:
                         }
                         else if (type==VOCAB4('e','y','e','s'))
                         {
-                            double ver=eyesRefGen->getEyesBoundVer();
-
                             reply.addVocab(ack);
-                            reply.addDouble(ver);
+                            reply.addDouble(commData.eyesBoundVer);
                             return true;
                         }
                         else if (type==VOCAB4('n','t','o','l'))

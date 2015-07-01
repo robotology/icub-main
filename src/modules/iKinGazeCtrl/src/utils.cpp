@@ -17,6 +17,7 @@
 */
 
 #include <cmath>
+#include <limits>
 #include <algorithm>
 
 #include <iCub/utils.h>
@@ -156,11 +157,12 @@ ExchangeData::ExchangeData()
     canCtrlBeDisabled=true;
     saccadeUnderway=false;
     minAllowedVergence=0.0;
+    eyesBoundVer=-1.0;
 
     robotName="";
     localStemName="";
-    eyeTiltMin=-1e9;
-    eyeTiltMax=1e9;
+    eyeTiltMin=-std::numeric_limits<double>::max();
+    eyeTiltMax=std::numeric_limits<double>::max();
     head_version=1.0;
     tweakOverwrite=true;
     tweakFile="";
