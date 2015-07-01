@@ -20,9 +20,9 @@
 #include <sstream>
 #include <fstream>
 #include <iomanip>
+#include <cmath>
+#include <limits>
 #include <algorithm>
-
-#include <gsl/gsl_math.h>
 
 #include <yarp/math/Math.h>
 #include <yarp/math/Rand.h>
@@ -349,7 +349,7 @@ void CalibModule::openHand(IControlMode2 *imod, IPositionControl *ipos)
 
     for (int i=i0; i<nEncs; i++)
     {
-        ipos->setRefAcceleration(i,1e9);
+        ipos->setRefAcceleration(i,std::numeric_limits<double>::max());
         ipos->setRefSpeed(i,vels[i-i0]);
         ipos->positionMove(i,poss[i-i0]);
     }
@@ -530,7 +530,7 @@ void CalibModule::prepareRobot()
 
     for (int i=i0; i<nEncs; i++)
     {
-        iposs->setRefAcceleration(i,1e9);
+        iposs->setRefAcceleration(i,std::numeric_limits<double>::max());
         iposs->setRefSpeed(i,vels[i-i0]);
         iposs->positionMove(i,poss[i-i0]);
     }

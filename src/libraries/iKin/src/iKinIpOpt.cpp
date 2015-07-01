@@ -16,6 +16,8 @@
  * Public License for more details
 */
 
+#include <limits>
+
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
 
@@ -35,8 +37,8 @@ using namespace Ipopt;
 /************************************************************************/
 iKinLinIneqConstr::iKinLinIneqConstr()
 {
-    lowerBoundInf=IKINIPOPT_DEFAULT_LWBOUNDINF;
-    upperBoundInf=IKINIPOPT_DEFAULT_UPBOUNDINF;
+    lowerBoundInf=-std::numeric_limits<double>::max();
+    upperBoundInf=std::numeric_limits<double>::max();
     active=false;
 }
 
@@ -418,8 +420,8 @@ public:
         __x_scaling  =1.0;
         __g_scaling  =1.0;
 
-        lowerBoundInf=IKINIPOPT_DEFAULT_LWBOUNDINF;
-        upperBoundInf=IKINIPOPT_DEFAULT_UPBOUNDINF;
+        lowerBoundInf=-std::numeric_limits<double>::max();
+        upperBoundInf=std::numeric_limits<double>::max();
 
         callback=NULL;
     }
@@ -861,7 +863,7 @@ void iKinIpOptMin::setMaxIter(const int max_iter)
     if (max_iter>0)
         CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",max_iter);
     else
-        CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",(Index)2e9);
+        CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",std::numeric_limits<int>::max());
 
     CAST_IPOPTAPP(App)->Initialize();
 }

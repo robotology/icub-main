@@ -15,6 +15,7 @@
  * Public License for more details
 */
 
+#include <limits>
 #include <algorithm>
 #include <string>
 #include <sstream>
@@ -600,7 +601,7 @@ bool OnlineCompensatorDesign::threadInit()
                 ipid->setReference(joint,x_tg);
             else
             {
-                ipos->setRefAcceleration(joint,1e9);
+                ipos->setRefAcceleration(joint,std::numeric_limits<double>::max());
                 ipos->setRefSpeed(joint,(x_max-x_min)/controller_validation_ref_period);
                 ipos->positionMove(joint,x_tg);
             }

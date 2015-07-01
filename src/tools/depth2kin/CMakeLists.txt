@@ -27,7 +27,6 @@ source_group("DOC Files"    FILES ${doc_files})
 include_directories(${PROJECT_SOURCE_DIR}/include
                     ${IDL_GENERATED_CODE_DIR}/include
                     ${YARP_INCLUDE_DIRS}
-                    ${GSL_INCLUDE_DIRS}
                     ${IPOPT_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS}
                     ${ctrlLib_INCLUDE_DIRS}
@@ -37,7 +36,6 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     
 add_executable(${PROJECTNAME} ${header_files} ${source_files} ${idl_files} ${doc_files})
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}
-                                     ${GSL_LIBRARIES}
                                      ${IPOPT_LIBRARIES}
                                      ${OpenCV_LIBRARIES}
                                      ctrlLib

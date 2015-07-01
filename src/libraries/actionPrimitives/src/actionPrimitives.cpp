@@ -19,9 +19,9 @@
 #include <cstdio>
 #include <cstdarg>
 #include <sstream>
+#include <cmath>
+#include <limits>
 #include <algorithm>
-
-#include <gsl/gsl_math.h>
 
 #include <yarp/math/Math.h>
 #include <yarp/math/Rand.h>
@@ -37,7 +37,6 @@
 #define ACTIONPRIM_DEFAULT_EXECTIME                 2.0     // [s]
 #define ACTIONPRIM_DEFAULT_REACHTOL                 0.005   // [m]
 #define ACTIONPRIM_DUMP_PERIOD                      1.0     // [s]
-#define ACTIONPRIM_DEFAULT_EXT_FORCE_THRES          1e9     // [N, Nm]
 #define ACTIONPRIM_DEFAULT_PART                     "right_arm"
 #define ACTIONPRIM_DEFAULT_TRACKINGMODE             "off"
 #define ACTIONPRIM_DEFAULT_VERBOSITY                "off"
@@ -2234,7 +2233,7 @@ bool ActionPrimitivesLayer2::open(Property &opt)
 
     if (configured)
     {
-        ext_force_thres=opt.check("ext_force_thres",Value(ACTIONPRIM_DEFAULT_EXT_FORCE_THRES)).asDouble();
+        ext_force_thres=opt.check("ext_force_thres",Value(std::numeric_limits<double>::max())).asDouble();
         string wbdynStemName=opt.check("wbdyn_stem_name",Value(ACTIONPRIM_DEFAULT_WBDYN_STEMNAME)).asString().c_str();
         string wbdynPortName=opt.check("wbdyn_port_name",Value(ACTIONPRIM_DEFAULT_WBDYN_PORTNAME)).asString().c_str();
 

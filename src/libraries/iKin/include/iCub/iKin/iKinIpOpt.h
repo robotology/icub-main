@@ -36,9 +36,6 @@
 
 #include <iCub/iKin/iKinInv.h>
 
-#define IKINIPOPT_DEFAULT_LWBOUNDINF    (-1e9)
-#define IKINIPOPT_DEFAULT_UPBOUNDINF    (+1e9)
-
 
 namespace iCub
 {
@@ -143,16 +140,12 @@ public:
     /**
     * Returns a reference to the internal representation of -inf. 
     * @return -inf. 
-    *  
-    * @note default is -1e9. 
     */
     double &getLowerBoundInf() { return lowerBoundInf; }
 
     /**
     * Returns a reference to the internal representation of +inf. 
     * @return +inf. 
-    *  
-    * @note default is +1e9.  
     */
     double &getUpperBoundInf() { return upperBoundInf; }
 

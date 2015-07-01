@@ -17,6 +17,7 @@
 */
 
 #include <cmath>
+#include <limits>
 #include <algorithm>
 
 #include <IpTNLP.hpp>
@@ -118,8 +119,8 @@ public:
         __x_scaling  =1.0;
         __g_scaling  =1.0;
 
-        lowerBoundInf=IKINIPOPT_DEFAULT_LWBOUNDINF;
-        upperBoundInf=IKINIPOPT_DEFAULT_UPBOUNDINF;
+        lowerBoundInf=-std::numeric_limits<double>::max();
+        upperBoundInf=std::numeric_limits<double>::max();
 
         qRest.resize(dim,0.0);
     }
