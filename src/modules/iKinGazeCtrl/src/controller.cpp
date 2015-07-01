@@ -556,7 +556,6 @@ bool Controller::setGazeStabilization(const bool f)
                 {
                     IntPlan->reset(fbNeck); 
                     IntStabilizer->reset(zeros(vNeck.length()));
-                    reliableGyro=true;
                 }
                 notifyEvent("stabilization-on");                
             }
@@ -782,24 +781,11 @@ void Controller::run()
     else if (stabilizeGaze)
     {
         Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
-        if (reliableGyro)
-        {
-            Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x); 
-            Vector imuNeck=computeNeckVelFromdxFP(x,dx);            
+        Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x); 
+        Vector imuNeck=computeNeckVelFromdxFP(x,dx);            
 
-            vNeck=commData->stabilizationGain*IntStabilizer->integrate(-1.0*imuNeck);
-            vEyes=-1.0*computeEyesVelFromdxFP(x);
-
-            // only if the speed is low and we are close to the target
-            if ((norm(vNeck)<commData->gyro_noise_threshold) && (pathPerc>0.9))
-                reliableGyro=false;
-        }
-        // hysteresis
-        else if (norm(gyro)>1.5*commData->gyro_noise_threshold)
-        {
-            IntStabilizer->reset(zeros(vNeck.length()));
-            reliableGyro=true;
-        }
+        vNeck=commData->stabilizationGain*IntStabilizer->integrate(-1.0*imuNeck);
+        vEyes=-1.0*computeEyesVelFromdxFP(x);
 
         IntPlan->integrate(vNeck);
     }
