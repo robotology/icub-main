@@ -148,6 +148,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
     unplugCtrlEyes=false;
     ctrlInhibited=false;
     reliableGyro=true;
+    stabilizeGaze=false;
 }
 
 
@@ -542,6 +543,48 @@ void Controller::setJointsCtrlMode()
 
 
 /************************************************************************/
+bool Controller::setGazeStabilization(const bool f)
+{
+    if (commData->stabilizationOn)
+    {
+        if (stabilizeGaze!=f)
+        {
+            LockGuard guard(mutexRun);
+            if (f)
+            {
+                if (!commData->ctrlActive)
+                {
+                    IntPlan->reset(fbNeck); 
+                    IntStabilizer->reset(zeros(vNeck.length()));
+                }
+                notifyEvent("stabilization-on");
+            }
+            else
+            {
+                LockGuard guardCtrl(mutexCtrl);
+                q_stamp=Time::now();
+                stopLimb();
+                notifyEvent("stabilization-off");
+            }
+
+            stabilizeGaze=f;
+        }
+
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool Controller::getGazeStabilization() const
+{
+    return stabilizeGaze;
+}
+
+
+/************************************************************************/
 void Controller::run()
 {
     LockGuard guard(mutexRun);
@@ -735,7 +778,18 @@ void Controller::run()
 
         IntPlan->integrate(vNeck);
     }
-    else
+    else if (stabilizeGaze)
+    {
+        Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
+        Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
+        Vector imuNeck=computeNeckVelFromdxFP(x,dx);            
+
+        vNeck=commData->stabilizationGain*IntStabilizer->integrate(-1.0*imuNeck);
+        vEyes=-1.0*computeEyesVelFromdxFP(x);
+
+        IntPlan->integrate(vNeck);
+    }
+    else 
     {
         vNeck=0.0;
         vEyes=0.0;

@@ -84,6 +84,7 @@ protected:
     bool unplugCtrlEyes;
     bool ctrlInhibited;
     bool reliableGyro;
+    bool stabilizeGaze;
     int nJointsTorso;
     int nJointsHead;
     double ctrlActiveRisingEdgeTime;
@@ -128,7 +129,7 @@ public:
     void   minAllowedVergenceChanged();
     void   resetCtrlEyes();
     void   doSaccade(const Vector &ang, const Vector &vel);
-    void   stopControl();
+    void   stopControl();    
     void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);
     bool   threadInit();
     void   afterStart(bool s);
@@ -143,6 +144,8 @@ public:
     bool   isMotionDone() const;
     void   setTrackingMode(const bool f);
     bool   getTrackingMode() const;
+    bool   setGazeStabilization(const bool f);
+    bool   getGazeStabilization() const;
     bool   getDesired(Vector &des);
     bool   getVelocity(Vector &vel);
     bool   getPose(const string &poseSel, Vector &x, Stamp &stamp);

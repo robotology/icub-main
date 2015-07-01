@@ -319,6 +319,12 @@ following ports:
    - "saccade-done" <time>: sent out at the end of the saccade;
      comprise the time instant of the source when the event took
      place.
+   - "stabilization-on" <time>: notify that gaze stabilization
+     has been turned on; comprise the time instant of the source
+     when the event took place.
+   - "stabilization-off" <time>: notify that gaze stabilization 
+     has been turned off; comprise the time instant of the
+     source when the event took place.
    - "closing" <time>: sent out when the controller is being
      shut down; comprise the time instant of the source when the
      event took place.
@@ -358,6 +364,8 @@ following ports:
     - [get] [sact]: returns the saccades activation angle [deg].
     - [get] [track]: returns the current controller's tracking
       mode [0/1].
+    - [get] [stab]: returns 1 iff gaze stabilization is active,
+      0 otherwise.
     - [get] [done]: returns 1 iff motion is done, 0 otherwise.
     - [get] [sdon]: returns 1 iff saccade is done, 0 if still
       underway.
@@ -438,6 +446,8 @@ following ports:
       for gazing with the neck.
     - [set] [track] <val>: sets the controller's tracking mode;
       val can be [0/1].
+    - [set] [stab] <val>: turns on/off the gaze stabilization
+      (if enabled at start-up); val can be [0/1].
     - [set] [pid] ((prop0 (<val> <val> ...)) (prop1) (<val>
       <val> ...)): sets the pid values used to converge to the
       target with stereo input. The pid is implemented in
@@ -567,11 +577,6 @@ protected:
 
     struct Context
     {
-        // controller part
-        double eyesTime;
-        double neckTime;
-        bool   mode;
-
         // solver part
         double neckPitchMin;
         double neckPitchMax;
@@ -582,9 +587,15 @@ protected:
         double neckAngleUserTolerance;
         double eyesBoundVer;
         Vector counterRotGain;
-        bool   saccadesOn;
+        bool   saccadesOn;        
         double saccadesInhibitionPeriod;
         double saccadesActivationAngle;
+
+        // controller part
+        double eyesTime;
+        double neckTime;
+        bool   trackingOn;
+        bool   gazeStabilizationOn;
 
         // localizer part
         Bottle pidOptions;
@@ -635,11 +646,6 @@ protected:
     void storeContext(int *id)
     {
         Context &context=contextMap[contextIdCnt];
-
-        // controller part
-        context.eyesTime=ctrl->getTeyes();
-        context.neckTime=ctrl->getTneck();
-        context.mode=ctrl->getTrackingMode();
         
         // solver part
         slv->getCurNeckPitchRange(context.neckPitchMin,context.neckPitchMax);
@@ -651,6 +657,12 @@ protected:
         context.saccadesOn=commData.saccadesOn;
         context.saccadesInhibitionPeriod=eyesRefGen->getSaccadesInhibitionPeriod();
         context.saccadesActivationAngle=eyesRefGen->getSaccadesActivationAngle();
+
+        // controller part
+        context.eyesTime=ctrl->getTeyes();
+        context.neckTime=ctrl->getTneck();
+        context.trackingOn=ctrl->getTrackingMode();
+        context.gazeStabilizationOn=ctrl->getGazeStabilization();
 
         // localizer part
         loc->getPidOptions(context.pidOptions);
@@ -667,11 +679,6 @@ protected:
         {
             Context &context=itr->second;
 
-            // controller part
-            ctrl->setTeyes(context.eyesTime);   // always remind to set eyes before the neck
-            ctrl->setTneck(context.neckTime);   // due to internal saturation
-            ctrl->setTrackingMode(context.mode);
-
             // solver part
             slv->bindNeckPitch(context.neckPitchMin,context.neckPitchMax);
             slv->bindNeckRoll(context.neckRollMin,context.neckRollMax);
@@ -682,6 +689,12 @@ protected:
             commData.saccadesOn=context.saccadesOn;
             eyesRefGen->setSaccadesInhibitionPeriod(context.saccadesInhibitionPeriod);
             eyesRefGen->setSaccadesActivationAngle(context.saccadesActivationAngle);
+
+            // controller part
+            ctrl->setTeyes(context.eyesTime);   // always remind to set eyes before the neck
+            ctrl->setTneck(context.neckTime);   // due to internal saturation
+            ctrl->setTrackingMode(context.trackingOn);
+            ctrl->setGazeStabilization(context.gazeStabilizationOn);
 
             // localizer part
             loc->setPidOptions(context.pidOptions);
@@ -772,6 +785,8 @@ protected:
         eventsList.addString("motion-ongoing");
         eventsList.addString("saccade-onset");
         eventsList.addString("saccade-done");
+        eventsList.addString("stabilization-on");
+        eventsList.addString("stabilization-off");
         eventsList.addString("closing");
         eventsList.addString("suspended");
         eventsList.addString("resumed");
@@ -1216,6 +1231,12 @@ public:
                             reply.addInt((int)ctrl->getTrackingMode());
                             return true;
                         }
+                        else if (type==VOCAB4('s','t','a','b'))
+                        {
+                            reply.addVocab(ack);
+                            reply.addInt((int)ctrl->getGazeStabilization());
+                            return true;
+                        }
                         else if (type==VOCAB4('d','o','n','e'))
                         {
                             reply.addVocab(ack);
@@ -1573,6 +1594,12 @@ public:
                             reply.addVocab(ack);
                             return true;
                         }
+                        else if (type==VOCAB4('s','t','a','b'))
+                        {
+                            bool mode=(command.get(2).asInt()>0);
+                            reply.addVocab(ctrl->setGazeStabilization(mode)?ack:nack);
+                            return true;
+                        }
                         else if (type==VOCAB3('p','i','d'))
                         {
                             if (Bottle *bOpt=command.get(2).asList())
@@ -1586,11 +1613,7 @@ public:
                         {
                             if (Bottle *bOpt=command.get(2).asList())
                             {
-                                if (tweakSet(*bOpt))
-                                    reply.addVocab(ack);
-                                else
-                                    reply.addVocab(nack);
-
+                                reply.addVocab(tweakSet(*bOpt)?ack:nack);
                                 return true;
                             }
                         }
