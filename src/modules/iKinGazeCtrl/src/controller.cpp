@@ -428,8 +428,7 @@ Vector Controller::computeNeckVelFromdxFP(const Vector &x_FP, const Vector &dx_F
 Vector Controller::computeEyesVelFromdxFP(const Vector &dx_FP)
 {
     Matrix J_E; Vector tmp;
-    if ((commData->eyesBoundVer>=0.0) ||
-        !CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,tmp,J_E))
+    if (CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,tmp,J_E))
         return pinv(J_E)*dx_FP.subVector(0,2);
     else
         return zeros(vEyes.length());
