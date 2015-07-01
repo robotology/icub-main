@@ -135,7 +135,7 @@ public:
     double          eyeTiltMax;
     double          minAllowedVergence;
     double          gyro_noise_threshold;
-    double          stabilization_gain;
+    double          stabilizationGain;
     double          head_version;
     bool            ctrlActive;
     bool            canCtrlBeDisabled;
