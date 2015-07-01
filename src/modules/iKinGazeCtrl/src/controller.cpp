@@ -719,7 +719,7 @@ void Controller::run()
                 Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
                 Vector imuNeck=computeNeckVelFromdxFP(x,dx);
 
-                vNeck=commData->stabilization_gain*IntStabilizer->integrate(vNeck-imuNeck);
+                vNeck=commData->stabilizationGain*IntStabilizer->integrate(vNeck-imuNeck);
 
                 // only if the speed is low and we are close to the target
                 if ((norm(vNeck)<commData->gyro_noise_threshold) && (pathPerc>0.9))

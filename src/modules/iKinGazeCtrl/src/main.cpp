@@ -93,6 +93,14 @@ Factors</a>.
   href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>).
 
 \section parameters_sec Parameters
+--context \e dir
+- Resource finder default searching directory for configuration 
+  files; if not specified, \e iKinGazeCtrl is assumed.
+ 
+--from \e file
+- Resource finder default configuration file; if not specified, 
+  \e config.ini is assumed.
+ 
 --name \e ctrlName 
 - The parameter \e ctrlName identifies the controller's name; 
   all the open ports will be tagged with the prefix
@@ -130,14 +138,6 @@ Factors</a>.
 - The parameter \e file specifies the file name used to read  
   cameras parameters.
  
---context \e dir
-- Resource finder default searching directory for configuration 
-  files; if not specified, \e iKinGazeCtrl is assumed.
- 
---from \e file
-- Resource finder default configuration file; if not specified, 
-  \e config.ini is assumed.
- 
 --saccades \e switch 
 - Enable/disable saccadic movements; the parameter \e switch can
   be therefore ["on"|"off"], being "on" by default.
@@ -147,29 +147,29 @@ Factors</a>.
   parameter \e switch can be therefore ["on"|"off"], being "on"
   by default.
  
---stabilization \e switch
+--stabilization::mode \e switch
 - Enable/disable stabilization using IMU data; the parameter
-  \e switch can be therefore ["on"|"off"], being "on"
+  \e switch can be therefore ["on"|"off"], being "off"
   by default.
  
---stabilization_gain \e gain
+--stabilization::gain \e gain
 - Specify the integral gain (in [1/s]) used for gaze  
   stabilization; the \e gain is 11.0 [1/s] by default.
  
---imu_port_name \e name
-- Allow specifying a differente source port for the IMU data;
+--imu::port_name \e name
+- Allow specifying a different source port for the IMU data.
  
---gyro_noise_threshold \e thres
+--imu::gyro_noise_threshold \e thres
 - Specify a different threshold \e thres given in [deg/s] to  
   filter out the residual bias in gyro readouts.
  
 --vor \e gain
 - Specify the contribution of the vestibulo-ocular reflex (VOR)
-  in compute the final counter-rotation of the eyes due to
+  in computing the final counter-rotation of the eyes due to
   neck rotation. To turn off the VOR just set the \e gain equal
-  to 0.0. By default \e gain is 1.0, that means "full
-  contribution". Values of the gain greater than 1.0 mean
-  "contribution amplified".
+  to 0.0. By default \e gain is 1.0, that means <i>"full
+  contribution"</i>. Values of the gain greater than 1.0 mean
+  <i>"contribution amplified"</i>.
  
 --ocr \e gain
 - Specify the contribution of the oculo-collic reflex (OCR) in 
@@ -178,18 +178,21 @@ Factors</a>.
   0.0 (as per default).
  
 --ping_robot_tmo \e tmo 
-- The parameter \e tmo is the timeout (in seconds) to allow to
-  start-up the robot before connecting to it.
+- The parameter \e tmo is the timeout (in seconds) that allows
+  starting up the robot before connecting to it; by default we  
+  have a timeout of 40.0 [s].
  
 --eyeTiltMin \e min
 - The parameter \e min specifies the minimum eye tilt angle 
   [deg] in order to prevent the eye from being covered by the
-  eyelid (when they're wide open) while moving.
+  eyelid (when they're wide open) while moving; default value is
+  -12 [deg].  
  
 --eyeTiltMax \e max
 - The parameter \e max specifies the maximum eye tilt angle 
   [deg] in order to prevent the eye from being covered by the
-  eyelid (when they're wide open) while moving.
+  eyelid (when they're wide open) while moving; default value is
+  15 [deg].  
  
 --minAbsVel \e min
 - The parameter \e min specifies the minimum absolute velocity 
@@ -997,6 +1000,10 @@ public:
         // save pointer to rf
         this->rf=&rf;
 
+        // retrieve groups
+        Bottle &imuGroup=rf.findGroup("imu");
+        Bottle &stabilizationGroup=rf.findGroup("stabilization");
+
         // get params from the command-line
         ctrlName=rf.check("name",Value("iKinGazeCtrl")).asString().c_str();        
         headName=rf.check("head",Value("head")).asString().c_str();
@@ -1004,21 +1011,21 @@ public:
         neckTime=rf.check("Tneck",Value(0.75)).asDouble();
         eyesTime=rf.check("Teyes",Value(0.25)).asDouble();
         minAbsVel=CTRL_DEG2RAD*rf.check("minAbsVel",Value(0.0)).asDouble();
-        ping_robot_tmo=rf.check("ping_robot_tmo",Value(0.0)).asDouble();        
+        ping_robot_tmo=rf.check("ping_robot_tmo",Value(40.0)).asDouble();        
         counterRotGain[0]=rf.check("vor",Value(1.0)).asDouble();
         counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();
 
         commData.robotName=rf.check("robot",Value("icub")).asString().c_str();
-        commData.eyeTiltMin=rf.check("eyeTiltMin",Value(-1e9)).asDouble();
-        commData.eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
-        commData.gyro_noise_threshold=CTRL_DEG2RAD*rf.check("gyro_noise_threshold",Value(5.0)).asDouble();
-        commData.stabilization_gain=rf.check("stabilization_gain",Value(11.0)).asDouble();
+        commData.eyeTiltMin=rf.check("eyeTiltMin",Value(-12.0)).asDouble();
+        commData.eyeTiltMax=rf.check("eyeTiltMax",Value(15.0)).asDouble();
+        commData.gyro_noise_threshold=CTRL_DEG2RAD*imuGroup.check("gyro_noise_threshold",Value(5.0)).asDouble();
         commData.head_version=rf.check("headV2")?2.0:1.0;
         commData.verbose=rf.check("verbose");
         commData.tweakOverwrite=(rf.check("tweakOverwrite",Value("on")).asString()=="on");
         commData.saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
         commData.neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
-        commData.stabilizationOn=(rf.check("stabilization",Value("off")).asString()=="on");
+        commData.stabilizationOn=(stabilizationGroup.check("mode",Value("off")).asString()=="on");
+        commData.stabilizationGain=stabilizationGroup.check("gain",Value(11.0)).asDouble();
         commData.debugInfoEnabled=rf.check("debugInfo",Value("off")).asString()=="on";
 
         // minAbsVel is given in absolute form
@@ -1052,8 +1059,8 @@ public:
         string remoteInertialName="/"+commData.robotName+"/inertial";
 
         // check if we have to retrieve IMU data from a different port
-        if (rf.check("imu_port_name"))
-            remoteInertialName=rf.find("imu_port_name").asString().c_str();
+        if (imuGroup.check("port_name"))
+            remoteInertialName=imuGroup.find("port_name").asString().c_str();
 
         Property optTorso("(device remote_controlboard)");
         optTorso.put("remote",remoteTorsoName.c_str());
