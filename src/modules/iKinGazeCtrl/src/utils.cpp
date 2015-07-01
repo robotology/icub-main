@@ -469,33 +469,30 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
     {
         message+=": intrinsic parameters for "+type;
         Bottle &parType=_rf.findGroup(type.c_str());
-        if (!parType.isNull())
+        if (parType.check("fx") && parType.check("fy") &&
+            parType.check("cx") && parType.check("cy"))
         {
-            if (parType.check("fx") && parType.check("fy") &&
-                parType.check("cx") && parType.check("cy"))
+            double fx=parType.find("fx").asDouble();
+            double fy=parType.find("fy").asDouble();
+            double cx=parType.find("cx").asDouble();
+            double cy=parType.find("cy").asDouble();
+
+            if (verbose)
             {
-                double fx=parType.find("fx").asDouble();
-                double fy=parType.find("fy").asDouble();
-                double cx=parType.find("cx").asDouble();
-                double cy=parType.find("cy").asDouble();
-
-                if (verbose)
-                {
-                    yInfo("%s found:",message.c_str());
-                    yInfo("fx = %g",fx);
-                    yInfo("fy = %g",fy);
-                    yInfo("cx = %g",cx);
-                    yInfo("cy = %g",cy);
-                }
-
-                *Prj=new Matrix(eye(3,4));
-
-                Matrix &K=**Prj;
-                K(0,0)=fx; K(1,1)=fy;
-                K(0,2)=cx; K(1,2)=cy;
-
-                return true;
+                yInfo("%s found:",message.c_str());
+                yInfo("fx = %g",fx);
+                yInfo("fy = %g",fy);
+                yInfo("cx = %g",cx);
+                yInfo("cy = %g",cy);
             }
+
+            *Prj=new Matrix(eye(3,4));
+
+            Matrix &K=**Prj;
+            K(0,0)=fx; K(1,1)=fy;
+            K(0,2)=cx; K(1,2)=cy;
+
+            return true;
         }
     }
     else
@@ -523,38 +520,35 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
         {
             message+=": aligning matrix for "+type;
             Bottle &parType=_rf.findGroup(type.c_str());
-            if (!parType.isNull())
+            if (Bottle *bH=parType.find("HN").asList())
             {
-                if (Bottle *bH=parType.find("HN").asList())
+                int i=0;
+                int j=0;
+
+                Matrix HN(4,4); HN=0.0;
+                for (int cnt=0; (cnt<bH->size()) && (cnt<HN.rows()*HN.cols()); cnt++)
                 {
-                    int i=0;
-                    int j=0;
-
-                    Matrix HN(4,4); HN=0.0;
-                    for (int cnt=0; (cnt<bH->size()) && (cnt<HN.rows()*HN.cols()); cnt++)
+                    HN(i,j)=bH->get(cnt).asDouble();
+                    if (++j>=HN.cols())
                     {
-                        HN(i,j)=bH->get(cnt).asDouble();
-                        if (++j>=HN.cols())
-                        {
-                            i++;
-                            j=0;
-                        }
+                        i++;
+                        j=0;
                     }
-
-                    // enforce the homogeneous property
-                    HN(3,0)=HN(3,1)=HN(3,2)=0.0;
-                    HN(3,3)=1.0;
-
-                    chain->setHN(HN);
-
-                    if (verbose)
-                    {
-                        yInfo("%s found:",message.c_str());
-                        yInfo("%s",HN.toString(3,3).c_str());
-                    }
-
-                    return true;
                 }
+
+                // enforce the homogeneous property
+                HN(3,0)=HN(3,1)=HN(3,2)=0.0;
+                HN(3,3)=1.0;
+
+                chain->setHN(HN);
+
+                if (verbose)
+                {
+                    yInfo("%s found:",message.c_str());
+                    yInfo("%s",HN.toString(3,3).c_str());
+                }
+
+                return true;
             }
         }
         else

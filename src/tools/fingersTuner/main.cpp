@@ -191,17 +191,15 @@ protected:
         ostringstream joint;
         joint<<"joint_"<<i;
         Bottle &bJoint=bGroup.findGroup(joint.str().c_str());
-        if (!bJoint.isNull())
-        {
-            pid.Kp=bJoint.check("Kp",Value(0.0)).asDouble();
-            pid.Ki=bJoint.check("Ki",Value(0.0)).asDouble();
-            pid.Kd=bJoint.check("Kd",Value(0.0)).asDouble();
-            pid.scale=bJoint.check("scale",Value(0.0)).asDouble();
-            pid.st_up=bJoint.check("st_up",Value(0.0)).asDouble();
-            pid.st_down=bJoint.check("st_down",Value(0.0)).asDouble();
-            pid.encs_ratio=bJoint.check("encs_ratio",Value(1.0)).asDouble();
-            pid.status=bJoint.check("status",Value("download")).asString()=="download"?download:upload;
-        }
+
+        pid.Kp=bJoint.check("Kp",Value(0.0)).asDouble();
+        pid.Ki=bJoint.check("Ki",Value(0.0)).asDouble();
+        pid.Kd=bJoint.check("Kd",Value(0.0)).asDouble();
+        pid.scale=bJoint.check("scale",Value(0.0)).asDouble();
+        pid.st_up=bJoint.check("st_up",Value(0.0)).asDouble();
+        pid.st_down=bJoint.check("st_down",Value(0.0)).asDouble();
+        pid.encs_ratio=bJoint.check("encs_ratio",Value(1.0)).asDouble();
+        pid.status=bJoint.check("status",Value("download")).asString()=="download"?download:upload;
 
         return pid;
     }
@@ -385,9 +383,8 @@ public:
             ostringstream item;
             item<<"alias_"<<i;
             Bottle &bAlias=bGeneral.findGroup(item.str().c_str());
-            if (!bAlias.isNull())
-                if (Bottle *joints=bAlias.find("joints").asList())
-                    alias[bAlias.find("tag").asString().c_str()]=*joints;
+            if (Bottle *joints=bAlias.find("joints").asList())
+                alias[bAlias.find("tag").asString().c_str()]=*joints;
         }
 
         // special wildcard to point to all the joints
