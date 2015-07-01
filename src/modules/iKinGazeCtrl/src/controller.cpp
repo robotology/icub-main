@@ -778,7 +778,7 @@ void Controller::run()
         Vector imuNeck=computeNeckVelFromdxFP(x,dx);
 
         vNeck=commData->stabilizationGain*IntStabilizer->integrate(-1.0*imuNeck);
-        vEyes=-1.0*computeEyesVelFromdxFP(dx);
+        vEyes=computeEyesVelFromdxFP(dx);
 
         IntPlan->integrate(vNeck);
     }
