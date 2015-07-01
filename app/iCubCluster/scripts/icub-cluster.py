@@ -161,6 +161,7 @@ class App:
         self.clusterNs = Entry(tmpFrame)
         self.clusterNs.insert(END, cluster.namespace)
         self.clusterNs.grid(row=1, column=1, sticky=E)
+        self.clusterNs.config(state='readonly')
 
         nsFrame=Frame(self.master, relief="ridge", bd=1)
         nsFrame.pack(fill=X)
@@ -216,6 +217,7 @@ class App:
             tmp.insert(END, node.name)
             r=r+1
             tmp.grid(row=r, column=1)
+            tmp.config(state='readonly')
             self.clusterNodes.append(tmp)
 
             #v=IntVar()
@@ -234,7 +236,7 @@ class App:
             check.grid(row=r, column=2)
 
             u=StringVar()
-            if node.user != cluster.user:
+            if node.user != self.clusterUser.get():
                 u.set(node.user)
                 self.dispFlag.append(1)
             else:
@@ -287,7 +289,7 @@ class App:
         buttonExec.grid(row=0, column=0, columnspan=4)
 
     def executeWnd(self):
-        a=RemoteExecWindow(self.master, self.cluster.user, self.cluster.nodes)
+        a=RemoteExecWindow(self.master, self.clusterUser.get(), self.cluster.nodes)
 
     def checkNodes(self):
         print 'Checking nodes'
@@ -395,8 +397,7 @@ class App:
         print 'Running nameserver'
         self.checkNs()
         if self.nsFlag.get()==0:
-            #cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.sh' ' start']
-            cmd = Util.getSshCmd(self.cluster.user, self.cluster.nsNode) + ['icub-cluster-server.sh', ' start']
+            cmd = Util.getSshCmd(self.clusterUser.get(), self.clusterNsNode.get()) + ['icub-cluster-server.sh', ' start']
             if (self.cluster.nsType=='yarpserver3'):
                 cmd.append('yarpserver3')
             elif(self.cluster.nsType=='yarpserver'):
@@ -414,8 +415,7 @@ class App:
         print 'Stopping nameserver'
         self.checkNs()
         if self.nsFlag.get()==1:
-            #cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.sh' ' stop']
-            cmd = Util.getSshCmd(self.cluster.user, self.cluster.nsNode) + ['icub-cluster-server.sh', ' stop']
+            cmd = Util.getSshCmd(self.clusterUser, self.clusterNsNode.get()) + ['icub-cluster-server.sh', ' stop']
             print 'Running',
             print " ".join(cmd)
             ret=subprocess.Popen(cmd).wait()
