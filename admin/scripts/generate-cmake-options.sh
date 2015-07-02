@@ -24,6 +24,11 @@ CMAKE_OPTIONS="\
    -DICUB_DASHBOARD_SUBMIT:BOOL=TRUE"
 
 case $3 in
-    experimental)
-        CMAKE_OPTIONS="$CMAKE_OPTIONS -DICUB_ICUBINTERFACE_EXPERIMENTAL:BOOL=TRUE"
+   "Experimental" )
+     CMAKE_OPTIONS="$CMAKE_OPTIONS -DICUB_ICUBINTERFACE_EXPERIMENTAL:BOOL=TRUE"
+     ;;
+   "Continuous" )
+     ;;
+   "Nightly" )
+     ;;
 esac
