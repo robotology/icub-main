@@ -397,7 +397,7 @@ Vector Controller::computedxFP(const Matrix &H, const Vector &v,
 /************************************************************************/
 Vector Controller::computeNeckVelFromdxFP(const Vector &fp, const Vector &dfp)
 {
-    // convert x_FP from root to the neck reference frame
+    // convert fp from root to the neck reference frame
     Vector fpR=fp;
     fpR.push_back(1.0);
     Vector fpE=SE3inv(chainNeck->getH())*fpR;
@@ -417,9 +417,8 @@ Vector Controller::computeNeckVelFromdxFP(const Vector &fp, const Vector &dfp)
 
     // take only the last three rows of the Jacobian
     // belonging to the head joints
-    Matrix JNp=JN.submatrix(3,5,3,5);  
+    Matrix JNp=JN.submatrix(3,5,3,5);
 
-    // compute dq_neck=J_N#*dx_FP_rot
     return pinv(JNp)*dfp.subVector(3,5);
 }
 
