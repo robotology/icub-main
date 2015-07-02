@@ -395,41 +395,41 @@ Vector Controller::computedxFP(const Matrix &H, const Vector &v,
 
 
 /************************************************************************/
-Vector Controller::computeNeckVelFromdxFP(const Vector &x_FP, const Vector &dx_FP)
+Vector Controller::computeNeckVelFromdxFP(const Vector &fp, const Vector &dfp)
 {
     // convert x_FP from root to the neck reference frame
-    Vector x_FP_R=x_FP;
-    x_FP_R.push_back(1.0);
-    Vector x_FP_E=SE3inv(chainNeck->getH())*x_FP_R;
+    Vector fpR=fp;
+    fpR.push_back(1.0);
+    Vector fpE=SE3inv(chainNeck->getH())*fpR;
 
     // compute the Jacobian of the head joints alone 
     // (by adding the new fixation point beforehand)
     Matrix HN=eye(4);
-    HN(0,3)=x_FP_E[0];
-    HN(1,3)=x_FP_E[1];
-    HN(2,3)=x_FP_E[2];
+    HN(0,3)=fpE[0];
+    HN(1,3)=fpE[1];
+    HN(2,3)=fpE[2];
 
     mutexChain.lock();
     chainNeck->setHN(HN);
-    Matrix J_N=chainNeck->GeoJacobian();
+    Matrix JN=chainNeck->GeoJacobian();
     chainNeck->setHN(eye(4,4));
     mutexChain.unlock();
 
     // take only the last three rows of the Jacobian
     // belonging to the head joints
-    Matrix J_Np=J_N.submatrix(3,5,3,5);  
+    Matrix JNp=JN.submatrix(3,5,3,5);  
 
     // compute dq_neck=J_N#*dx_FP_rot
-    return pinv(J_Np)*dx_FP.subVector(3,5);
+    return pinv(JNp)*dfp.subVector(3,5);
 }
 
 
 /************************************************************************/
-Vector Controller::computeEyesVelFromdxFP(const Vector &dx_FP)
+Vector Controller::computeEyesVelFromdxFP(const Vector &dfp)
 {
-    Matrix J_E; Vector tmp;
-    if (CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,tmp,J_E))
-        return pinv(J_E)*dx_FP.subVector(0,2);
+    Matrix eyesJ; Vector tmp;
+    if (CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,tmp,eyesJ))
+        return pinv(eyesJ)*dfp.subVector(0,2);
     else
         return zeros(vEyes.length());
 }
