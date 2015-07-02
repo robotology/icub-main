@@ -770,7 +770,7 @@ void Controller::run()
 
         IntPlan->integrate(vNeck);
     }
-    else if (stabilizeGaze)
+    else if (stabilizeGaze || (commData->stabilizationOn && !commData->canCtrlBeDisabled))
     {
         Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
         Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
