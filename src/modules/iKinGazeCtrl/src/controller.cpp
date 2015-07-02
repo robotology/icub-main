@@ -713,9 +713,10 @@ void Controller::run()
             mjCtrlNeck->reset(zeros(fbNeck.length()));
             mjCtrlEyes->reset(zeros(fbEyes.length()));
             IntPlan->reset(fbNeck);
-            IntStabilizer->reset(zeros(vNeck.length()));
-            reliableGyro=true;
+            if (!commData->stabilizationOn || commData->canCtrlBeDisabled)
+                IntStabilizer->reset(zeros(vNeck.length()));
 
+            reliableGyro=true;
             event="motion-onset";
 
             mutexData.lock();
