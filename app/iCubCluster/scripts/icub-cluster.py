@@ -18,7 +18,7 @@
 
 # No longer looking for $ICUB_ROBOTNAME env variable
 # Modified to accept DISPLAY value in xlm
-	
+
 import xml.dom.minidom
 import subprocess
 import os
@@ -202,7 +202,7 @@ class App:
         Label(tmpFrame, text="On/Off").grid(row=0, column=4)
         Label(tmpFrame, text="Log").grid(row=0, column=5)
         Label(tmpFrame, text="Select").grid(row=0, column=6)
-        
+
 
         tmpFrame.grid(row=1, column=0)
         self.clusterNodes=[]
@@ -415,7 +415,7 @@ class App:
         print 'Stopping nameserver'
         self.checkNs()
         if self.nsFlag.get()==1:
-            cmd = Util.getSshCmd(self.clusterUser, self.clusterNsNode.get()) + ['icub-cluster-server.sh', ' stop']
+            cmd = Util.getSshCmd(self.clusterUser.get(), self.clusterNsNode.get()) + ['icub-cluster-server.sh', ' stop']
             print 'Running',
             print " ".join(cmd)
             ret=subprocess.Popen(cmd).wait()
@@ -440,7 +440,7 @@ def check_output(*popenargs, **kwargs):
 def printUsage(scriptName):
     print scriptName, ": python gui for managing yarprun servers (Linux only)"
     print "Usage:"
-    print scriptName, 
+    print scriptName,
     print "[xml_configuration_file] [context]\n"
     print "  xml_configuration_file: cluster configuration file (default: cluster-config.xml)."
     print "  context: context where xml configuration file is sought through yarp's ResourceFinder (default: iCubCluster)."
@@ -454,11 +454,11 @@ if __name__ == '__main__':
 
     if (argc>2):
          contextName=sys.argv[2]
-    else:    
+    else:
          contextName="iCubCluster"
     if (argc>1):
          configFileName=sys.argv[1]
-    else:    
+    else:
          configFileName="cluster-config.xml"
 
     if (configFileName == "help"):
@@ -498,7 +498,7 @@ if __name__ == '__main__':
                     nodeuser=user;
                 a=node.getAttribute("display")
                 # handle default values for variable (for backward compatibility)
-                if ( a=="true" or a=="True" or a=="TRUE" or a=="yes" or a=="YES"): 
+                if ( a=="true" or a=="True" or a=="TRUE" or a=="yes" or a=="YES"):
                     newNode=Node(node.firstChild.data, True, ":0.0", nodeuser)
                 else:
                     newNode=Node(node.firstChild.data, True, a, nodeuser)
