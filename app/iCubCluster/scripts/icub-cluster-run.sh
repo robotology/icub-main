@@ -71,7 +71,7 @@ case "$1" in
 
 	stop)
 		echo "Stopping yarp run for $ID"
-		cd /tmp;./yarprun --exit --on $ID
+		yarprun --exit --on $ID
 		echo \"`date` stopped yarprun\" >> /tmp/yarprun.log
 		echo "done!"
 		;;
