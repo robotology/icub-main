@@ -25,10 +25,19 @@ CMAKE_OPTIONS="\
 
 case $3 in
    "Experimental" )
-     CMAKE_OPTIONS="$CMAKE_OPTIONS -DICUB_ICUBINTERFACE_EXPERIMENTAL:BOOL=TRUE"
+      CMAKE_OPTIONS=" \
+        -DICUB_ICUBINTERFACE_EXPERIMENTAL:BOOL=TRUE \
+        $CMAKE_OPTIONS \
+      " 
      ;;
    "Continuous" )
+      CMAKE_OPTIONS=" \
+        $CMAKE_OPTIONS \
+      " 
      ;;
    "Nightly" )
+      CMAKE_OPTIONS=" \
+        $CMAKE_OPTIONS \
+      " 
      ;;
 esac
