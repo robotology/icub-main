@@ -166,11 +166,11 @@ bool CalibModule::factory(Value &v)
 cv::Rect CalibModule::extractFingerTip(ImageOf<PixelMono> &imgIn, ImageOf<PixelBgr> &imgOut,
                                        const Vector &c, Vector &px)
 {
-    cv::Mat imgInMat((IplImage*)imgIn.getIplImage());
+    cv::Mat imgInMat=cv::cvarrToMat((IplImage*)imgIn.getIplImage());
 
     // produce a colored image
     imgOut.resize(imgIn);
-    cv::Mat imgOutMat((IplImage*)imgOut.getIplImage());
+    cv::Mat imgOutMat=cv::cvarrToMat((IplImage*)imgOut.getIplImage());
     
     // proceed iff the center is within the image plane
     if ((c[0]<10.0) || (c[0]>imgIn.width()-10) ||
@@ -1099,7 +1099,7 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
                 yInfo("unavailable depth; discarding...");
         }
 
-        cv::Mat img((IplImage*)imgOut.getIplImage());
+        cv::Mat img=cv::cvarrToMat((IplImage*)imgOut.getIplImage());
         cv::putText(img,tag.c_str(),cv::Point(rect.x+5,rect.y+15),CV_FONT_HERSHEY_SIMPLEX,0.5,color);
 
         motorExplorationState=motorExplorationStateTrigger;
