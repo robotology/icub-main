@@ -710,13 +710,21 @@ void Controller::run()
             ctrlActiveRisingEdgeTime=Time::now();
             commData->port_xd->get_new()=false;
 
-            mjCtrlNeck->reset(zeros(fbNeck.length()));
-            mjCtrlEyes->reset(zeros(fbEyes.length()));
-            IntPlan->reset(fbNeck);
             if (!commData->stabilizationOn || commData->canCtrlBeDisabled)
+            {
+                mjCtrlNeck->reset(zeros(fbNeck.length()));
+                mjCtrlEyes->reset(zeros(fbEyes.length()));
                 IntStabilizer->reset(zeros(vNeck.length()));
+            }
+            else
+            {
+                mjCtrlNeck->reset(vNeck);
+                mjCtrlEyes->reset(vEyes);
+            }
 
+            IntPlan->reset(fbNeck);
             reliableGyro=true;
+
             event="motion-onset";
 
             mutexData.lock();
@@ -805,7 +813,7 @@ void Controller::run()
     mutexData.unlock();
 
     // send commands to the robot
-    if (commData->ctrlActive || stabilizeGaze)
+    if (commData->ctrlActive || stabilizeGaze || (commData->stabilizationOn && !commData->canCtrlBeDisabled))
     {
         mutexCtrl.lock();
 
