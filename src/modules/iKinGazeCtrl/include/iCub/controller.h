@@ -93,7 +93,7 @@ protected:
     double neckTime;
     double eyesTime;
     double pathPerc;
-    double minAbsVel;
+    double min_abs_vel;
     double startupMinVer;
     double q_stamp;
     double Ts;
@@ -123,7 +123,7 @@ protected:
 public:
     Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
                const double _neckTime, const double _eyesTime,
-               const double _minAbsVel, const unsigned int _period);
+               const double _min_abs_vel, const unsigned int _period);
 
     void   findMinimumAllowedVergence();
     void   minAllowedVergenceChanged();

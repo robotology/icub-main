@@ -26,11 +26,11 @@
 
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
-                       const double _neckTime, const double _eyesTime, const double _minAbsVel,
+                       const double _neckTime, const double _eyesTime, const double _min_abs_vel,
                        const unsigned int _period) :
-                       RateThread(_period),   drvTorso(_drvTorso), drvHead(_drvHead),
-                       commData(_commData),   neckTime(_neckTime), eyesTime(_eyesTime),
-                       minAbsVel(_minAbsVel), period(_period),     Ts(_period/1000.0),
+                       RateThread(_period),       drvTorso(_drvTorso), drvHead(_drvHead),
+                       commData(_commData),       neckTime(_neckTime), eyesTime(_eyesTime),
+                       min_abs_vel(_min_abs_vel), period(_period),     Ts(_period/1000.0),
                        printAccTime(0.0)
 {
     // Instantiate objects
@@ -811,8 +811,8 @@ void Controller::run()
     // apply bang-bang just in case to compensate
     // for unachievable low velocities
     for (size_t i=0; i<v.length(); i++)
-        if ((v[i]!=0.0) && (v[i]>-minAbsVel) && (v[i]<minAbsVel))
-            v[i]=yarp::math::sign(qd[i]-fbHead[i])*minAbsVel;
+        if ((v[i]!=0.0) && (v[i]>-min_abs_vel) && (v[i]<min_abs_vel))
+            v[i]=yarp::math::sign(qd[i]-fbHead[i])*min_abs_vel;
 
     // convert to degrees
     mutexData.lock();

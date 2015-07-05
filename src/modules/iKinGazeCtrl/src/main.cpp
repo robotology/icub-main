@@ -197,7 +197,7 @@ Factors</a>.
   eyelid (when they're wide open) while moving; default value is
   15 [deg].  
  
---minAbsVel \e vel
+--min_abs_vel \e vel
 - The parameter \e vel specifies the minimum absolute velocity 
   that can be achieved by the robot [deg/s] due to the
   approximation performed while delivering data over the
@@ -1008,7 +1008,7 @@ public:
         string torsoName;
         double neckTime;
         double eyesTime;
-        double minAbsVel;
+        double min_abs_vel;
         double ping_robot_tmo;
         Vector counterRotGain(2);        
 
@@ -1031,7 +1031,7 @@ public:
         torsoName=rf.check("torso",Value("torso")).asString().c_str();
         neckTime=trajTimeGroup.check("neck",Value(0.75)).asDouble();
         eyesTime=trajTimeGroup.check("eyes",Value(0.25)).asDouble();
-        minAbsVel=CTRL_DEG2RAD*rf.check("minAbsVel",Value(0.0)).asDouble();
+        min_abs_vel=CTRL_DEG2RAD*rf.check("min_abs_vel",Value(0.0)).asDouble();
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(40.0)).asDouble();        
 
         commData.robotName=rf.check("robot",Value("icub")).asString().c_str();
@@ -1057,10 +1057,10 @@ public:
             counterRotGain[1]=rf.check("ocr",Value(1.0)).asDouble();
         }
 
-        // minAbsVel is given in absolute form
+        // min_abs_vel is given in absolute form
         // hence it must be positive
-        if (minAbsVel<0.0)
-            minAbsVel=-minAbsVel;
+        if (min_abs_vel<0.0)
+            min_abs_vel=-min_abs_vel;
 
         if (camerasGroup.check("file"))
         {
@@ -1158,7 +1158,7 @@ public:
 
         // create and start threads
         // creation order does matter (for the minimum allowed vergence computation) !!
-        ctrl=new Controller(drvTorso,drvHead,&commData,neckTime,eyesTime,minAbsVel,10);
+        ctrl=new Controller(drvTorso,drvHead,&commData,neckTime,eyesTime,min_abs_vel,10);
         loc=new Localizer(&commData,10);
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,ctrl,counterRotGain,20);
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,20);
