@@ -144,7 +144,6 @@ protected:
     Vector neckPos;
     Vector gazePos;
     Vector fbTorsoOld;
-    Vector fbHeadOld;
 
     double neckPitchMin;
     double neckPitchMax;

@@ -34,7 +34,6 @@
 #define GAZECTRL_SWOFFCOND_DISABLETIME      0.100   // [s]
 #define GAZECTRL_MOTIONDONE_NECK_QTHRES     0.500   // [deg]
 #define GAZECTRL_MOTIONDONE_EYES_QTHRES     0.100   // [deg]
-#define GAZECTRL_MOTIONSTART_XTHRES         0.001   // [m]
 
 using namespace std;
 using namespace yarp::os;
@@ -83,6 +82,7 @@ protected:
     unsigned int period;
     bool unplugCtrlEyes;
     bool ctrlInhibited;
+    bool motionDone;
     bool reliableGyro;
     bool stabilizeGaze;
     int nJointsTorso;
@@ -141,7 +141,7 @@ public:
     double getTeyes() const;
     void   setTneck(const double execTime);
     void   setTeyes(const double execTime);
-    bool   isMotionDone() const;
+    bool   isMotionDone();
     void   setTrackingMode(const bool f);
     bool   getTrackingMode() const;
     bool   setGazeStabilization(const bool f);
