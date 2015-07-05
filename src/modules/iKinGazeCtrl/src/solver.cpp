@@ -524,8 +524,6 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commD
     chainEyeR->setAng(eyePos);
 
     fbTorsoOld=fbTorso;
-
-    solveRequest=false;
     neckAngleUserTolerance=0.0;
 }
 
@@ -536,8 +534,6 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckPitchMin,neckPitchMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckPitchMin,neckPitchMax);
     double cur_rad=(*chainNeck)(0).getAng();
-
-    solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     mutex.lock();
     (*chainNeck)(0).setMin(min_rad);
@@ -555,8 +551,6 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckRollMin,neckRollMax);
     double cur_rad=(*chainNeck)(1).getAng();
 
-    solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
-
     mutex.lock();
     (*chainNeck)(1).setMin(min_rad);
     (*chainNeck)(1).setMax(max_rad);
@@ -572,8 +566,6 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckYawMin,neckYawMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckYawMin,neckYawMax);
     double cur_rad=(*chainNeck)(2).getAng();
-
-    solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     mutex.lock();
     (*chainNeck)(2).setMin(min_rad);
@@ -660,9 +652,7 @@ double Solver::getNeckAngleUserTolerance()
 /************************************************************************/
 void Solver::setNeckAngleUserTolerance(const double angle)
 {
-    double fangle=fabs(angle);
-    solveRequest=(fangle<neckAngleUserTolerance);
-    neckAngleUserTolerance=fangle;
+    neckAngleUserTolerance=fabs(angle);
 }
 
 
@@ -788,8 +778,8 @@ void Solver::run()
     // 3) skip if controller is inactive and we are not in tracking mode
     doSolve&=commData->ctrlActive || commData->trackingModeOn;
 
-    // 4) solve straightaway if we are in tracking mode and a solve request is raised
-    doSolve|=commData->trackingModeOn && solveRequest;
+    // 4) solve straightaway if we are in tracking mode
+    doSolve|=commData->trackingModeOn;
 
     // 5) solve straightaway if the target has changed
     doSolve|=commData->port_xd->get_newDelayed();
@@ -799,7 +789,6 @@ void Solver::run()
 
     // clear triggers
     commData->port_xd->get_newDelayed()=false;
-    solveRequest=false;
 
     // call the solver for neck
     if (doSolve)

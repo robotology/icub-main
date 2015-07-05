@@ -133,7 +133,6 @@ protected:
     Mutex               mutex;
 
     unsigned int period;
-    bool solveRequest;
     int nJointsTorso;
     int nJointsHead;
     double neckAngleUserTolerance;
