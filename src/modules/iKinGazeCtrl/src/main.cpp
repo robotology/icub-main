@@ -120,12 +120,12 @@ Factors</a>.
   string \e disabled can be used to skip opening the torso
   device.
  
---Tneck \e time
+--trajectory_time::neck \e time
 - Specify the neck trajectory execution time in point-to-point 
   movements [expressed in seconds]; by default \e time is 0.75
   seconds. (Tneck cannot be set equal or lower than Teyes).
  
---Teyes \e time
+--trajectory_time::eyes \e time
 - Specify the eyes trajectory execution time in point-to-point 
   movements [expressed in seconds]; by default \e time is 0.25
   seconds.
@@ -1021,6 +1021,7 @@ public:
         // retrieve groups
         Bottle &imuGroup=rf.findGroup("imu");
         Bottle &eyeTiltGroup=rf.findGroup("eye_tilt");
+        Bottle &trajTimeGroup=rf.findGroup("trajectory_time");
         Bottle &camerasGroup=rf.findGroup("cameras");
         Bottle &tweakGroup=rf.findGroup("tweak");
 
@@ -1028,8 +1029,8 @@ public:
         ctrlName=rf.check("name",Value("iKinGazeCtrl")).asString().c_str();        
         headName=rf.check("head",Value("head")).asString().c_str();
         torsoName=rf.check("torso",Value("torso")).asString().c_str();
-        neckTime=rf.check("Tneck",Value(0.75)).asDouble();
-        eyesTime=rf.check("Teyes",Value(0.25)).asDouble();
+        neckTime=trajTimeGroup.check("neck",Value(0.75)).asDouble();
+        eyesTime=trajTimeGroup.check("eyes",Value(0.25)).asDouble();
         minAbsVel=CTRL_DEG2RAD*rf.check("minAbsVel",Value(0.0)).asDouble();
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(40.0)).asDouble();        
 
