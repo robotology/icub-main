@@ -118,6 +118,8 @@ public:
 
     bool setTrackingMode(const bool f);
     bool getTrackingMode(bool *f);
+    bool setStabilizationMode(const bool f);
+    bool getStabilizationMode(bool *f);
     bool getFixationPoint(yarp::sig::Vector &fp, yarp::os::Stamp *stamp=NULL);
     bool getAngles(yarp::sig::Vector &ang, yarp::os::Stamp *stamp=NULL);
     bool lookAtFixationPoint(const yarp::sig::Vector &fp);
