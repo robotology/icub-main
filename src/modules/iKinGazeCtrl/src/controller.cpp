@@ -26,11 +26,11 @@
 
 /************************************************************************/
 Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
-                       const double _neckTime, const double _eyesTime, const double _minAbsVel,
+                       const double _neckTime, const double _eyesTime, const double _min_abs_vel,
                        const unsigned int _period) :
-                       RateThread(_period),   drvTorso(_drvTorso), drvHead(_drvHead),
-                       commData(_commData),   neckTime(_neckTime), eyesTime(_eyesTime),
-                       minAbsVel(_minAbsVel), period(_period),     Ts(_period/1000.0),
+                       RateThread(_period),       drvTorso(_drvTorso), drvHead(_drvHead),
+                       commData(_commData),       neckTime(_neckTime), eyesTime(_eyesTime),
+                       min_abs_vel(_min_abs_vel), period(_period),     Ts(_period/1000.0),
                        printAccTime(0.0)
 {
     // Instantiate objects
@@ -90,7 +90,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
         yInfo("### neck control - requested VELOCITY mode => VELOCITY mode selected");
 
     // joints bounds alignment
-    lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
+    lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltLim);
 
     // read starting position
     fbTorso.resize(nJointsTorso,0.0);
@@ -148,6 +148,7 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
 
     unplugCtrlEyes=false;
     ctrlInhibited=false;
+    motionDone=true;
     reliableGyro=true;
     stabilizeGaze=false;
 }
@@ -296,6 +297,7 @@ void Controller::stopLimb(const bool execStopPosition)
     }
 
     commData->ctrlActive=false;
+    motionDone=true;
 }
 
 
@@ -669,17 +671,8 @@ void Controller::run()
     // verify control switching conditions
     if (commData->ctrlActive)
     {
-        // switch-off condition
-        if (swOffCond)
-        {
-            event="motion-done";
-
-            mutexCtrl.lock();
-            stopLimb(false);
-            mutexCtrl.unlock();
-        }
         // manage new target while controller is active
-        else if (commData->port_xd->get_new())
+        if (commData->port_xd->get_new())
         {
             reliableGyro=true;
 
@@ -688,9 +681,26 @@ void Controller::run()
             mutexData.lock();
             motionOngoingEventsCurrent=motionOngoingEvents;
             mutexData.unlock();
-        }
 
-        commData->port_xd->get_new()=false;
+            commData->port_xd->get_new()=false;
+        }
+        // switch-off condition
+        else if (swOffCond)
+        {
+            if (commData->trackingModeOn)
+            {
+                if (!motionDone)
+                    event="motion-done"; 
+                motionDone=true;
+            }
+            else
+            {
+                event="motion-done";
+                mutexCtrl.lock(); 
+                stopLimb(false);
+                mutexCtrl.unlock();
+            }
+        }        
     }
     else if (jointsHealthy)
     {
@@ -700,9 +710,7 @@ void Controller::run()
 
         // switch-on condition
         commData->ctrlActive=commData->port_xd->get_new() ||
-                             (!ctrlInhibited &&
-                             (new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2]) ||
-                             (!commData->canCtrlBeDisabled && (norm(commData->port_xd->get_xd()-x)>GAZECTRL_MOTIONSTART_XTHRES)));
+                             (!ctrlInhibited && ((new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2])));
 
         // reset controllers
         if (commData->ctrlActive)
@@ -710,19 +718,10 @@ void Controller::run()
             ctrlActiveRisingEdgeTime=Time::now();
             commData->port_xd->get_new()=false;
 
-            if (!commData->stabilizationOn || commData->canCtrlBeDisabled)
-            {
-                mjCtrlNeck->reset(zeros(fbNeck.length()));
-                mjCtrlEyes->reset(zeros(fbEyes.length()));
-                IntStabilizer->reset(zeros(vNeck.length()));
-            }
-            else
-            {
-                mjCtrlNeck->reset(vNeck);
-                mjCtrlEyes->reset(vEyes);
-            }
-
-            IntPlan->reset(fbNeck);
+            mjCtrlNeck->reset(zeros(fbNeck.length()));
+            mjCtrlEyes->reset(zeros(fbEyes.length()));
+            IntStabilizer->reset(zeros(vNeck.length()));
+            IntPlan->reset(fbNeck);            
             reliableGyro=true;
 
             event="motion-onset";
@@ -736,6 +735,7 @@ void Controller::run()
     mutexCtrl.lock();
     if (event=="motion-onset")
     {
+        motionDone=false;
         setJointsCtrlMode();
         q0=fbHead;
     }
@@ -764,22 +764,31 @@ void Controller::run()
             vEyes=mjCtrlEyes->computeCmd(eyesTime,qdEyes-fbEyes)+commData->get_counterv();
 
         // stabilization
-        if (commData->stabilizationOn && reliableGyro)
+        if (commData->stabilizationOn)
         {
             Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
             Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
             Vector imuNeck=computeNeckVelFromdxFP(x,dx);
 
-            vNeck=commData->stabilizationGain*IntStabilizer->integrate(vNeck-imuNeck);
+            if (reliableGyro)
+            {
+                vNeck=commData->stabilizationGain*IntStabilizer->integrate(vNeck-imuNeck);
 
-            // only if the speed is low and we are close to the target
-            if ((norm(vNeck)<commData->gyro_noise_threshold) && (pathPerc>0.9))
-                reliableGyro=false;
+                // only if the speed is low and we are close to the target
+                if ((norm(vNeck)<commData->gyro_noise_threshold) && (pathPerc>0.9))
+                    reliableGyro=false;
+            }
+            // hysteresis
+            else if ((norm(imuNeck)>1.5*commData->gyro_noise_threshold) || (pathPerc<0.9))
+            {
+                IntStabilizer->reset(zeros(vNeck.length()));
+                reliableGyro=true;
+            }
         }
 
         IntPlan->integrate(vNeck);
     }
-    else if (stabilizeGaze || (commData->stabilizationOn && !commData->canCtrlBeDisabled))
+    else if (stabilizeGaze)
     {
         Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
         Vector dx=computedxFP(imu->getH(cat(fbTorso,fbNeck)),zeros(fbNeck.length()),gyro,x);
@@ -802,8 +811,8 @@ void Controller::run()
     // apply bang-bang just in case to compensate
     // for unachievable low velocities
     for (size_t i=0; i<v.length(); i++)
-        if ((v[i]!=0.0) && (v[i]>-minAbsVel) && (v[i]<minAbsVel))
-            v[i]=yarp::math::sign(qd[i]-fbHead[i])*minAbsVel;
+        if ((v[i]!=0.0) && (v[i]>-min_abs_vel) && (v[i]<min_abs_vel))
+            v[i]=yarp::math::sign(qd[i]-fbHead[i])*min_abs_vel;
 
     // convert to degrees
     mutexData.lock();
@@ -813,7 +822,7 @@ void Controller::run()
     mutexData.unlock();
 
     // send commands to the robot
-    if (commData->ctrlActive || stabilizeGaze || (commData->stabilizationOn && !commData->canCtrlBeDisabled))
+    if (commData->ctrlActive || stabilizeGaze)
     {
         mutexCtrl.lock();
 
@@ -1013,17 +1022,18 @@ void Controller::setTeyes(const double execTime)
 
 
 /************************************************************************/
-bool Controller::isMotionDone() const
+bool Controller::isMotionDone()
 {
-    return !commData->ctrlActive;
+    LockGuard guard(mutexRun);
+    return motionDone;
 }
 
 
 /************************************************************************/
 void Controller::setTrackingMode(const bool f)
 {
-    commData->canCtrlBeDisabled=!f;
-    if (f)
+    commData->trackingModeOn=f;
+    if (commData->trackingModeOn)
         commData->port_xd->set_xd(commData->get_x());
 }
 
@@ -1031,7 +1041,7 @@ void Controller::setTrackingMode(const bool f)
 /************************************************************************/
 bool Controller::getTrackingMode() const 
 {
-    return !commData->canCtrlBeDisabled;
+    return commData->trackingModeOn;
 }
 
 

@@ -131,15 +131,14 @@ public:
     xdPort         *port_xd;
     string          robotName;
     string          localStemName;
-    double          eyeTiltMin;
-    double          eyeTiltMax;
+    Vector          eyeTiltLim;
     double          minAllowedVergence;
     double          eyesBoundVer;
     double          gyro_noise_threshold;
     double          stabilizationGain;
     double          head_version;
     bool            ctrlActive;
-    bool            canCtrlBeDisabled;
+    bool            trackingModeOn;
     bool            saccadeUnderway;
     bool            verbose;
     bool            tweakOverwrite;
@@ -188,13 +187,13 @@ inline double sat(const double val, const double min, const double max)
 }
 
 
-// Allocates Projection Matrix Prj for the camera read from camerasFile;
+// Allocates Projection Matrix Prj for the camera read from cameras::file;
 // type is in {"CAMERA_CALIBRATION_LEFT","CAMERA_CALIBRATION_RIGHT"}.
 // Returns true if correctly configured.
 bool getCamPrj(const ResourceFinder &rf, const string &type, Matrix **Prj, const bool verbose=false);
 
 
-// Allocates the two aligning matrices read from camerasFile;
+// Allocates the two aligning matrices read from cameras::file;
 // type is in {"ALIGN_KIN_LEFT","ALIGN_KIN_RIGHT"}.
 // Returns true if correctly configured.
 bool getAlignHN(const ResourceFinder &rf, const string &type, iKinChain *chain, const bool verbose=false);
@@ -203,7 +202,7 @@ bool getAlignHN(const ResourceFinder &rf, const string &type, iKinChain *chain, 
 // Aligns head joints bounds with current onboard bounds.
 // Returns a matrix containing the actual limits.
 Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drvHead,
-                         const double eyeTiltMin, const double eyeTiltMax);
+                         const Vector &eyeTiltLim);
 
 
 // Copies joints bounds from first chain to second chain.

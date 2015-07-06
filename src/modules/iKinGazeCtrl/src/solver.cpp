@@ -83,7 +83,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     encHead->getAxes(&nJointsHead);
 
     // joints bounds alignment
-    lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
+    lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltLim);
     copyJointsBounds(chainNeck,chainEyeL);
     copyJointsBounds(chainEyeL,chainEyeR);
 
@@ -484,7 +484,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commD
     encHead->getAxes(&nJointsHead);
 
     // joints bounds alignment
-    alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
+    alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltLim);
 
     // read starting position
     fbTorso.resize(nJointsTorso,0.0);
@@ -524,9 +524,6 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commD
     chainEyeR->setAng(eyePos);
 
     fbTorsoOld=fbTorso;
-    fbHeadOld=fbHead;
-
-    solveRequest=false;
     neckAngleUserTolerance=0.0;
 }
 
@@ -537,8 +534,6 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckPitchMin,neckPitchMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckPitchMin,neckPitchMax);
     double cur_rad=(*chainNeck)(0).getAng();
-
-    solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     mutex.lock();
     (*chainNeck)(0).setMin(min_rad);
@@ -556,8 +551,6 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckRollMin,neckRollMax);
     double cur_rad=(*chainNeck)(1).getAng();
 
-    solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
-
     mutex.lock();
     (*chainNeck)(1).setMin(min_rad);
     (*chainNeck)(1).setMax(max_rad);
@@ -573,8 +566,6 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckYawMin,neckYawMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckYawMin,neckYawMax);
     double cur_rad=(*chainNeck)(2).getAng();
-
-    solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     mutex.lock();
     (*chainNeck)(2).setMin(min_rad);
@@ -661,9 +652,7 @@ double Solver::getNeckAngleUserTolerance()
 /************************************************************************/
 void Solver::setNeckAngleUserTolerance(const double angle)
 {
-    double fangle=fabs(angle);
-    solveRequest=fangle<neckAngleUserTolerance;
-    neckAngleUserTolerance=fangle;
+    neckAngleUserTolerance=fabs(angle);
 }
 
 
@@ -763,16 +752,13 @@ void Solver::run()
     // update the target straightaway 
     commData->set_xd(xd);
 
-    bool torsoChanged=false;
-
     // read encoders
     getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
     updateTorsoBlockedJoints(chainNeck,fbTorso);
     updateTorsoBlockedJoints(chainEyeL,fbTorso);
     updateTorsoBlockedJoints(chainEyeR,fbTorso);
 
-    torsoChanged=norm(fbTorso-fbTorsoOld)>NECKSOLVER_ACTIVATIONANGLE_JOINTS*CTRL_DEG2RAD;
-    bool headChanged=norm(fbHead-fbHeadOld)>NECKSOLVER_ACTIVATIONANGLE_JOINTS*CTRL_DEG2RAD;
+    bool torsoChanged=(norm(fbTorso-fbTorsoOld)>NECKSOLVER_ACTIVATIONANGLE_JOINTS*CTRL_DEG2RAD);
 
     // update kinematics
     updateAngles();
@@ -790,33 +776,33 @@ void Solver::run()
     doSolve&=!(commData->ctrlActive && !torsoChanged);
 
     // 3) skip if controller is inactive and we are not in tracking mode
-    doSolve&=!(!commData->ctrlActive && commData->canCtrlBeDisabled);
+    doSolve&=commData->ctrlActive || commData->trackingModeOn;
 
-    // 4) skip if controller is inactive, we are in tracking mode and nothing has changed
-    // note that the De Morgan's law has been applied hereafter
-    doSolve&=commData->ctrlActive || commData->canCtrlBeDisabled || torsoChanged || headChanged;
+    // 4) solve straightaway if we are in tracking mode
+    doSolve|=commData->trackingModeOn;
 
-    // 5) solve straightaway if we are in tracking mode and a solve request is raised
-    doSolve|=!commData->canCtrlBeDisabled && solveRequest;
-
-    // 6) solve straightaway if the target has changed
+    // 5) solve straightaway if the target has changed
     doSolve|=commData->port_xd->get_newDelayed();
 
-    // 7) skip if the angle to target is lower than the user tolerance
-    doSolve&=theta>neckAngleUserTolerance;
+    // 6) skip if the angle to target is lower than the user tolerance
+    doSolve&=(theta>neckAngleUserTolerance);
 
     // clear triggers
     commData->port_xd->get_newDelayed()=false;
-    solveRequest=false;
 
     // call the solver for neck
     if (doSolve)
     {
-        Vector acc=commData->get_imu().subVector(3,5);
-        acc.push_back(1.0); // impose homogeneous coordinates
+        Vector gDir(4,0.0);
+        gDir[2]=gDir[3]=1.0;
+        if (commData->stabilizationOn)
+        {
+            Vector acc=commData->get_imu().subVector(3,5); 
+            acc.push_back(1.0); // impose homogeneous coordinates
 
-        Matrix H=imu->getH(cat(fbTorso,fbHead.subVector(0,2)));
-        Vector gDir=H*acc;
+            Matrix H=imu->getH(cat(fbTorso,fbHead.subVector(0,2)));
+            gDir=H*acc;            
+        }
 
         Vector xdUserTol=computeTargetUserTolerance(xd);
         neckPos=invNeck->solve(neckPos,xdUserTol,gDir);
@@ -829,7 +815,6 @@ void Solver::run()
 
     // latch quantities
     fbTorsoOld=fbTorso;
-    fbHeadOld=fbHead;
 
     mutex.unlock();
 }
@@ -878,7 +863,6 @@ void Solver::resume()
 
     // update latched quantities
     fbTorsoOld=fbTorso;
-    fbHeadOld=fbHead;    
     
     mutex.unlock();
 

@@ -133,7 +133,6 @@ protected:
     Mutex               mutex;
 
     unsigned int period;
-    bool solveRequest;
     int nJointsTorso;
     int nJointsHead;
     double neckAngleUserTolerance;
@@ -144,7 +143,6 @@ protected:
     Vector neckPos;
     Vector gazePos;
     Vector fbTorsoOld;
-    Vector fbHeadOld;
 
     double neckPitchMin;
     double neckPitchMax;

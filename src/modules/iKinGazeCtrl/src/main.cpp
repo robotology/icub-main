@@ -120,21 +120,21 @@ Factors</a>.
   string \e disabled can be used to skip opening the torso
   device.
  
---Tneck \e time
+--trajectory_time::neck \e time
 - Specify the neck trajectory execution time in point-to-point 
   movements [expressed in seconds]; by default \e time is 0.75
   seconds. (Tneck cannot be set equal or lower than Teyes).
  
---Teyes \e time
+--trajectory_time::eyes \e time
 - Specify the eyes trajectory execution time in point-to-point 
   movements [expressed in seconds]; by default \e time is 0.25
   seconds.
  
---camerasContext \e dir 
+--cameras::context \e dir 
 - The parameter \e dir specifies the context used to locate the 
   cameras parameters file (see below).
  
---camerasFile \e file 
+--cameras::file \e file 
 - The parameter \e file specifies the file name used to read  
   cameras parameters.
  
@@ -147,56 +147,58 @@ Factors</a>.
   parameter \e switch can be therefore ["on"|"off"], being "on"
   by default.
  
---stabilization::mode \e switch
+--imu::mode \e switch
 - Enable/disable stabilization using IMU data; the parameter
-  \e switch can be therefore ["on"|"off"], being "off"
+  \e switch can be therefore ["on"|"off"], being "on"
   by default.
- 
---stabilization::gain \e gain
-- Specify the integral gain (in [1/s]) used for gaze  
-  stabilization; the \e gain is 11.0 [1/s] by default.
  
 --imu::port_name \e name
 - Allow specifying a different source port for the IMU data
   (see IMU filtering tools such as e.g. \ref imuFilter). 
  
+--imu::stabilization_gain \e gain
+- Specify the integral gain (in [1/s]) used for gaze  
+  stabilization; the \e gain is 11.0 [1/s] by default.
+ 
 --imu::gyro_noise_threshold \e thres
 - Specify a different threshold \e thres given in [deg/s] to  
   filter out the residual bias in gyro readouts.
  
---vor \e gain
+--imu::vor \e gain
 - Specify the contribution of the vestibulo-ocular reflex (VOR)
   in computing the final counter-rotation of the eyes due to
   neck rotation. To turn off the VOR just set the \e gain equal
   to 0.0. By default \e gain is 1.0, that means <i>"full
-  contribution"</i>. Values of the gain greater than 1.0 mean
+  contribution"</i>. If <i>imu::mode</i> is "off", then the gain
+  is 0.0 by default. Values of the gain greater than 1.0 mean  
   <i>"contribution amplified"</i>.
  
 --ocr \e gain
 - Specify the contribution of the oculo-collic reflex (OCR) in 
   computing the counter-rotation of the eyes due to neck
   rotation. To turn off the OCR just set the \e gain equal to
-  0.0 (as per default).
+  0.0. Default values are 0.0 if <i>imu::mode</i> is "off", 1.0 
+  otherwise.  
  
 --ping_robot_tmo \e tmo 
 - The parameter \e tmo is the timeout (in seconds) that allows
   starting up the robot before connecting to it; by default we  
   have a timeout of 40.0 [s].
  
---eyeTiltMin \e min
+--eye_tilt::min \e min
 - The parameter \e min specifies the minimum eye tilt angle 
   [deg] in order to prevent the eye from being covered by the
   eyelid (when they're wide open) while moving; default value is
   -12 [deg].  
  
---eyeTiltMax \e max
+--eye_tilt::max \e max
 - The parameter \e max specifies the maximum eye tilt angle 
   [deg] in order to prevent the eye from being covered by the
   eyelid (when they're wide open) while moving; default value is
   15 [deg].  
  
---minAbsVel \e min
-- The parameter \e min specifies the minimum absolute velocity 
+--min_abs_vel \e vel
+- The parameter \e vel specifies the minimum absolute velocity 
   that can be achieved by the robot [deg/s] due to the
   approximation performed while delivering data over the
   network. By default this value is 0.0 having no result on the
@@ -211,12 +213,12 @@ Factors</a>.
 --verbose
 - Enable some output print-out.
  
---tweakFile \e file 
+--tweak::file \e file 
 - The parameter \e file specifies the file name (located in 
   module context) used to read/write options that are tweakable
   by the user; if not provided, \e tweak.ini is assumed.
  
---tweakOverwrite \e switch 
+--tweak::overwrite \e switch 
 - If "on", at startup default values and cameras values 
   retrieved from file will be overwritten by those values
   contained in the tweak file. The \e switch is "on" by default.
@@ -498,7 +500,7 @@ None.
 None. 
  
 \section conf_file_sec Camera Configuration File
-A configuration file passed through \e --camerasFile contains 
+A configuration file passed through \e --cameras::file contains
 the fields required to specify the cameras intrinsic parameters 
 along with a roto-translation matrix appended to the eye 
 kinematic (see the iKinChain::setHN method) in order to achieve
@@ -1006,7 +1008,7 @@ public:
         string torsoName;
         double neckTime;
         double eyesTime;
-        double minAbsVel;
+        double min_abs_vel;
         double ping_robot_tmo;
         Vector counterRotGain(2);        
 
@@ -1018,50 +1020,62 @@ public:
 
         // retrieve groups
         Bottle &imuGroup=rf.findGroup("imu");
-        Bottle &stabilizationGroup=rf.findGroup("stabilization");
+        Bottle &eyeTiltGroup=rf.findGroup("eye_tilt");
+        Bottle &trajTimeGroup=rf.findGroup("trajectory_time");
+        Bottle &camerasGroup=rf.findGroup("cameras");
+        Bottle &tweakGroup=rf.findGroup("tweak");
 
         // get params from the command-line
         ctrlName=rf.check("name",Value("iKinGazeCtrl")).asString().c_str();        
         headName=rf.check("head",Value("head")).asString().c_str();
         torsoName=rf.check("torso",Value("torso")).asString().c_str();
-        neckTime=rf.check("Tneck",Value(0.75)).asDouble();
-        eyesTime=rf.check("Teyes",Value(0.25)).asDouble();
-        minAbsVel=CTRL_DEG2RAD*rf.check("minAbsVel",Value(0.0)).asDouble();
+        neckTime=trajTimeGroup.check("neck",Value(0.75)).asDouble();
+        eyesTime=trajTimeGroup.check("eyes",Value(0.25)).asDouble();
+        min_abs_vel=CTRL_DEG2RAD*rf.check("min_abs_vel",Value(0.0)).asDouble();
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(40.0)).asDouble();        
-        counterRotGain[0]=rf.check("vor",Value(1.0)).asDouble();
-        counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();
 
         commData.robotName=rf.check("robot",Value("icub")).asString().c_str();
-        commData.eyeTiltMin=rf.check("eyeTiltMin",Value(-12.0)).asDouble();
-        commData.eyeTiltMax=rf.check("eyeTiltMax",Value(15.0)).asDouble();
-        commData.gyro_noise_threshold=CTRL_DEG2RAD*imuGroup.check("gyro_noise_threshold",Value(5.0)).asDouble();
+        commData.eyeTiltLim[0]=eyeTiltGroup.check("min",Value(-12.0)).asDouble();
+        commData.eyeTiltLim[1]=eyeTiltGroup.check("max",Value(15.0)).asDouble();        
         commData.head_version=rf.check("headV2")?2.0:1.0;
-        commData.verbose=rf.check("verbose");
-        commData.tweakOverwrite=(rf.check("tweakOverwrite",Value("on")).asString()=="on");
+        commData.verbose=rf.check("verbose");        
         commData.saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
         commData.neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
-        commData.stabilizationOn=(stabilizationGroup.check("mode",Value("off")).asString()=="on");
-        commData.stabilizationGain=stabilizationGroup.check("gain",Value(11.0)).asDouble();
+        commData.stabilizationOn=(imuGroup.check("mode",Value("on")).asString()=="on");
+        commData.stabilizationGain=imuGroup.check("stabilization_gain",Value(11.0)).asDouble();
+        commData.gyro_noise_threshold=CTRL_DEG2RAD*imuGroup.check("gyro_noise_threshold",Value(5.0)).asDouble();
         commData.debugInfoEnabled=rf.check("debugInfo",Value("off")).asString()=="on";
 
-        // minAbsVel is given in absolute form
-        // hence it must be positive
-        if (minAbsVel<0.0)
-            minAbsVel=-minAbsVel;
+        if (commData.stabilizationOn)
+        {
+            counterRotGain[0]=imuGroup.check("vor",Value(1.0)).asDouble(); 
+            counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();
+        }
+        else
+        {
+            counterRotGain[0]=imuGroup.check("vor",Value(0.0)).asDouble(); 
+            counterRotGain[1]=rf.check("ocr",Value(1.0)).asDouble();
+        }
 
-        if (rf.check("camerasFile"))
+        // min_abs_vel is given in absolute form
+        // hence it must be positive
+        if (min_abs_vel<0.0)
+            min_abs_vel=-min_abs_vel;
+
+        if (camerasGroup.check("file"))
         {
             commData.rf_cameras.setQuiet();
-            rf.check("camerasContext")?
-            commData.rf_cameras.setDefaultContext(rf.find("camerasContext").asString().c_str()):
+            camerasGroup.check("context")?
+            commData.rf_cameras.setDefaultContext(camerasGroup.find("context").asString().c_str()):
             commData.rf_cameras.setDefaultContext(rf.getContext().c_str());
-            commData.rf_cameras.setDefaultConfigFile(rf.find("camerasFile").asString().c_str());            
+            commData.rf_cameras.setDefaultConfigFile(camerasGroup.find("file").asString().c_str());            
             commData.rf_cameras.configure(0,NULL);
         }
 
         commData.rf_tweak.setQuiet();
         commData.rf_tweak.setDefaultContext(rf.getContext().c_str());
-        commData.tweakFile=rf.check("tweakFile",Value("tweak.ini")).asString().c_str();
+        commData.tweakFile=tweakGroup.check("file",Value("tweak.ini")).asString().c_str();
+        commData.tweakOverwrite=(tweakGroup.check("overwrite",Value("on")).asString()=="on");
         commData.rf_tweak.setDefaultConfigFile(commData.tweakFile.c_str());
         commData.rf_tweak.configure(0,NULL);
 
@@ -1124,22 +1138,27 @@ public:
         }
 
         imuPort.setExchangeData(&commData);
-        imuPort.open((commData.localStemName+"/inertial:i").c_str());        
-        if (Network::connect(remoteInertialName.c_str(),imuPort.getName().c_str()))
-            yInfo("Receiving IMU data from %s",remoteInertialName.c_str());
-        else
+        if (commData.stabilizationOn)
         {
-            yError("Unable to connect to %s!",remoteInertialName.c_str());
-            dispose();
-            return false;
+            imuPort.open((commData.localStemName+"/inertial:i").c_str());        
+            if (Network::connect(remoteInertialName.c_str(),imuPort.getName().c_str()))
+                yInfo("Receiving IMU data from %s",remoteInertialName.c_str());
+            else
+            {
+                yError("Unable to connect to %s!",remoteInertialName.c_str());
+                dispose();
+                return false;
+            }
         }
+        else
+            yWarning("IMU data will be not received/used");
 
         if (commData.debugInfoEnabled)
             yDebug("Commands to robot will be also streamed out on debug port");
 
         // create and start threads
         // creation order does matter (for the minimum allowed vergence computation) !!
-        ctrl=new Controller(drvTorso,drvHead,&commData,neckTime,eyesTime,minAbsVel,10);
+        ctrl=new Controller(drvTorso,drvHead,&commData,neckTime,eyesTime,min_abs_vel,10);
         loc=new Localizer(&commData,10);
         eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,ctrl,counterRotGain,20);
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,20);

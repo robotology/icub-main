@@ -154,15 +154,17 @@ ExchangeData::ExchangeData()
     port_xd=NULL;
 
     ctrlActive=false;
-    canCtrlBeDisabled=true;
+    trackingModeOn=false;
     saccadeUnderway=false;
     minAllowedVergence=0.0;
     eyesBoundVer=-1.0;
 
+    eyeTiltLim.resize(2);
+    eyeTiltLim[0]=-std::numeric_limits<double>::max();
+    eyeTiltLim[1]=std::numeric_limits<double>::max();
+
     robotName="";
     localStemName="";
-    eyeTiltMin=-std::numeric_limits<double>::max();
-    eyeTiltMax=std::numeric_limits<double>::max();
     head_version=1.0;
     tweakOverwrite=true;
     tweakFile="";
@@ -568,8 +570,8 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
 
 
 /************************************************************************/
-Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drvHead,
-                         const double eyeTiltMin, const double eyeTiltMax)
+Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso,
+                         PolyDriver *drvHead, const Vector &eyeTiltLim)
 {
     IEncoders      *encs;
     IControlLimits *lims;
@@ -608,8 +610,8 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drv
             // limit eye's tilt due to eyelids
             if (i==3)
             {
-                min=std::max(min,eyeTiltMin);
-                max=std::min(max,eyeTiltMax);
+                min=std::max(min,eyeTiltLim[0]);
+                max=std::min(max,eyeTiltLim[1]);
             }
 
             lim(i,0)=CTRL_DEG2RAD*min;
