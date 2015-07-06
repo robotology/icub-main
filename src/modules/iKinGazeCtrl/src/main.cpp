@@ -152,7 +152,7 @@ Factors</a>.
   \e switch can be therefore ["on"|"off"], being "on"
   by default.
  
---imu::port_name \e name
+--imu::source_port_name \e name
 - Allow specifying a different source port for the IMU data
   (see IMU filtering tools such as e.g. \ref imuFilter). 
  
@@ -1089,8 +1089,8 @@ public:
         string remoteInertialName="/"+commData.robotName+"/inertial";
 
         // check if we have to retrieve IMU data from a different port
-        if (imuGroup.check("port_name"))
-            remoteInertialName=imuGroup.find("port_name").asString().c_str();
+        if (imuGroup.check("source_port_name"))
+            remoteInertialName=imuGroup.find("source_port_name").asString().c_str();
 
         Property optTorso("(device remote_controlboard)");
         optTorso.put("remote",remoteTorsoName.c_str());
