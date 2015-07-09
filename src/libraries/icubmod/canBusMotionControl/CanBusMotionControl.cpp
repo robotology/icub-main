@@ -4694,6 +4694,16 @@ bool CanBusMotionControl::setRefTorqueRaw (int j, double ref_trq)
     return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_DESIRED_TORQUE, axis, S_16(ref_trq));
 }
 
+bool CanBusMotionControl::setRefTorquesRaw(const int n_joint, const int *joints, const double *t)
+{
+    bool ret = true;
+    for(int j=0; j< n_joint; j++)
+    {
+        ret &= setRefTorqueRaw(joints[j], t[j]);
+    }
+    return ret;
+}
+
 /// cmd is a SingleAxis pointer with 1 double arg
 bool CanBusMotionControl::getTorqueRaw (int j, double *trq)
 {

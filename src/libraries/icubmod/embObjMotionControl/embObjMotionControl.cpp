@@ -3717,6 +3717,16 @@ bool embObjMotionControl::setRefTorqueRaw(int j, double t)
     return res->addSetMessage(protid, (uint8_t*) &setpoint);
 }
 
+bool embObjMotionControl::setRefTorquesRaw(const int n_joint, const int *joints, const double *t)
+{
+    bool ret = true;
+    for(int j=0; j< n_joint; j++)
+    {
+        ret &= setRefTorqueRaw(joints[j], t[j]);
+    }
+    return ret;
+}
+
 bool embObjMotionControl::getRefTorquesRaw(double *t)
 {
     bool ret = true;
