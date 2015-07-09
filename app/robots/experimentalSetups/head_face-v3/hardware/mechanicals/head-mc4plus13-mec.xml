@@ -7,7 +7,7 @@
 
 	<param name="AxisMap">          0		1		2		3		</param>	<!-- hardware axis number  (EMS) -->
         <param name="Encoder">      182.044	182.044	182.044	182.044	</param>	<!-- m.a.: encoderconversionfactor -->
-        <param name="Zeros">      	0		0 		0		0		</param>
+        <param name="Zeros">      	0       0 		0		0		</param>
         <param name="TorqueId">  	0x0C	0x0C 	0x0C	0x0C	</param>	<!-- m.a.: maybe not needed in eth-robots -->
         <param name="TorqueChan">	0		0		0		0 		</param>
         <param name="TorqueMax"> 	24		24 		24		24		</param>

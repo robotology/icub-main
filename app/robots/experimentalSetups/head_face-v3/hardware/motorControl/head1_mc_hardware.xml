@@ -8,9 +8,9 @@
       <params file="hardware/mechanicals/head-mc4plus13-mec.xml" />
     <!-- random values, to be tuned -->
     <group name="LIMITS">
-        <param name="Min">              -50     -50     -30     -30		</param> 
-		<param name="Max">              +50     +50     +30     +30     </param>
-        <param name="Currents">         600     600     600     600  	</param>
+        <param name="Min">              +130    +95     -200    -150    </param> 
+		<param name="Max">              +210    +145    +100    +150    </param>
+        <param name="Currents">         600     600     600     600     </param>
     </group>
     
     <group name="IMPEDANCE">
@@ -23,7 +23,7 @@
 	<group name="POSITION_CONTROL">
         <param name="controlLaw">    joint_pid_v1           			</param>    
         <param name="controlUnits">  metric_units               		</param> 
-        <param name="kp">               568.00	568.00  568.00  568.00	</param>       
+        <param name="kp">               568.00	-500.00  568.00  568.00	</param>       
         <param name="kd">               0.0		0.0 	0.0     0.0	    </param>     
         <param name="ki">               0.0		0.0 	0.0     0.0		</param>      
         <param name="limPwm">         	500		500		500	    500	    </param>       

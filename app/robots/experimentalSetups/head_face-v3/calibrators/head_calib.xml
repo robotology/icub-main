@@ -15,9 +15,9 @@
         <!-- random values a part form calib type...to be tuned -->
 		<group name="CALIBRATION">
 		<param name="calibrationType">  3           3           3			3		    4			4    	</param>
-		<param name="calibration1">     666         666         666		    666         2000		2000	</param>		
+		<param name="calibration1">     666         666         666		    666         8000		8000	</param>		
 		<param name="calibration2">     999         999		    999         999         3640.88		3640.88	</param>		
-		<param name="calibration3">     0           0           0           0		    5825.40     5825.40 </param>		
+		<param name="calibration3">     0           0           32767.92	0		    19114.62    28216.82 </param>		<!-- m.a.: in here we need an offset of 180deg (=180*182.044 if expressed in icubdegrees because we have the zero of encoder in range of movement --> 
 		<param name="positionZero">     0.0         0.0         0.0			0.0			0.0			0.0		</param>		
 		<param name="velocityZero">     10          10          20.0		20.0		20.0		20.0	</param>		
 		<param name="maxPwm">           500         500         500			500         0		    0	    </param>		

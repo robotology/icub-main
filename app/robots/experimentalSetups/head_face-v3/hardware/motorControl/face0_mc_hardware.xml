@@ -10,8 +10,8 @@
 
 	<!-- TBD: marco.accame: i joints che stiamo usando sono i lib-rigth e lip-left che sono indici 4 e 4 nel face di grenoble ... --> 
     <group name="LIMITS">
-        <param name="Min">             -100     +65   		</param> 
-		<param name="Max">             +100     +220         </param>
+        <param name="Min">             -100     +180   		</param> 
+		<param name="Max">             +100     +310         </param>
         <param name="Currents">        500       501      	</param>
     </group>
     
