@@ -54,11 +54,9 @@
 
         <module>
                 <name>iKinGazeCtrl</name>
-                <parameters>--from config_imu_filter.ini</parameters>
                 <node>pwrNode5</node>
                 <dependencies>
                     <port timeout="60.0" request="is_ready" reply="[ok]">/robotInterface</port>
-                    <port timeout="60">/imuFilter/inertial:o</port>
                 </dependencies>
         </module>
 
