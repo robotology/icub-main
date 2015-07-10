@@ -9,8 +9,7 @@
   <version>1.0</version>
   
   <description-long>
-    This module applies median filtering to the gyro and magnetometer data
-    to smooth out magnetic disturbances and remove gyro bias. \n
+    This module applies filtering to remove gyro bias. \n
     At startup an attempt is made to connect to the IMU port of the specified robot.
   </description-long>
  

@@ -103,12 +103,17 @@ public:
         iPort.getEnvelope(stamp);
 
         double t0=Time::now();
-        Vector gyro=gyroFilt.filt(imuData->subVector(6,8))-gyroBias;
-        Vector mag=magFilt.filt(imuData->subVector(9,11));
-        double magVel=norm(velEst.estimate(AWPolyElement(mag,stamp.getTime())));
+        Vector gyro=imuData->subVector(6,8);
+        Vector gyro_filt=gyroFilt.filt(gyro);
+
+        gyro-=gyroBias;
+        gyro_filt-=gyroBias;
+
+        Vector mag_filt=magFilt.filt(imuData->subVector(9,11));
+        double magVel=norm(velEst.estimate(AWPolyElement(mag_filt,stamp.getTime())));
 
         adaptGyroBias=adaptGyroBias?(magVel<mag_vel_thres_up):(magVel<mag_vel_thres_down);
-        gyroBias=biasInt.integrate(adaptGyroBias?gyro:Vector(3,0.0));
+        gyroBias=biasInt.integrate(adaptGyroBias?gyro_filt:Vector(3,0.0));
         double dt=Time::now()-t0;
 
         if (oPort.getOutputCount()>0)
@@ -116,7 +121,6 @@ public:
             Vector &outData=oPort.prepare();
             outData=*imuData;
             outData.setSubvector(6,gyro);
-            outData.setSubvector(9,mag);
             oPort.setEnvelope(stamp);
             oPort.write();
         }
@@ -130,7 +134,6 @@ public:
 
         if (verbose)
         {
-            yInfo("mag      = %s",mag.toString(3,3).c_str());
             yInfo("magVel   = %g => [%s]",magVel,adaptGyroBias?"adapt-gyroBias":"no-adaption");
             yInfo("gyro     = %s",gyro.toString(3,3).c_str());
             yInfo("gyroBias = %s",gyroBias.toString(3,3).c_str());
