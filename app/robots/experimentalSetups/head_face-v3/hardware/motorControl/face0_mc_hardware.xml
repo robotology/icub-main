@@ -10,8 +10,8 @@
 
 	<!-- TBD: marco.accame: i joints che stiamo usando sono i lib-rigth e lip-left che sono indici 4 e 4 nel face di grenoble ... --> 
     <group name="LIMITS">
-        <param name="Min">             -100     +180   		</param> 
-		<param name="Max">             +100     +310         </param>
+        <param name="Min">             -100     +110   		</param> 
+		<param name="Max">             +100     +270         </param>
         <param name="Currents">        500       501      	</param>
     </group>
     
@@ -23,19 +23,19 @@
     
 	<!-- TBD: marco.accame: vedere come tradurre i valori in iCubGrenoble01 in metrics units ... --> 
 	<group name="POSITION_CONTROL">
-        <param name="controlLaw">    joint_pid_v1           			</param>    
-        <param name="controlUnits">  metric_units               		</param> 
-        <param name="kp">           800.00      -400.00  	</param>       
-        <param name="kd">           0.0         0.0     	</param>     
-        <param name="ki">           4.0         -4.0     		</param>      
-        <param name="limPwm">       500         500   			</param>       
-        <param name="maxPwm">       1333        900   			</param>  
-        <param name="maxInt">       1333        900     		</param> 
-		<param name="shift">        0           0       	</param>       
+        <param name="controlLaw">    joint_pid_v1         		</param>    
+        <param name="controlUnits">  metric_units 				</param> 
+        <param name="kp">           800.00      -400.00			</param>       
+        <param name="kd">           0.0         0.0				</param>     
+        <param name="ki">           4.0         0.0				</param>      
+        <param name="limPwm">       500         500				</param>       
+        <param name="maxPwm">       1333        3000			</param>  
+        <param name="maxInt">       1333        0				</param> 
+		<param name="shift">        0           0       		</param>       
         <param name="ko">           0           0       		</param>  
         <param name="stictionUp">   0           0       		</param> 
-        <param name="stictionDwn">  0           0      		</param> 
-        <param name="kff">          0           0      		</param> 
+        <param name="stictionDwn">  0           0				</param> 
+        <param name="kff">          0           0				</param> 
     </group>
 	
 	<group name="TORQUE_CONTROL">
