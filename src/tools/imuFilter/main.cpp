@@ -64,7 +64,7 @@ public:
         size_t gyro_order=(size_t)rf.check("gyro-order",Value(5)).asInt();
         size_t mag_order=(size_t)rf.check("mag-order",Value(51)).asInt();
         mag_vel_thres_up=rf.check("mag-vel-thres-up",Value(0.04)).asDouble();
-        mag_vel_thres_down=rf.check("mag-vel-thres-down",Value(0.01)).asDouble();
+        mag_vel_thres_down=rf.check("mag-vel-thres-down",Value(0.02)).asDouble();
         bias_gain=rf.check("bias-gain",Value(0.001)).asDouble();
         verbose=rf.check("verbose");
         
@@ -89,7 +89,7 @@ public:
     /**********************************************************/
     double getPeriod()
     {
-        return 0.0;
+        return 0.0; // sync on incoming data
     }
 
     /**********************************************************/

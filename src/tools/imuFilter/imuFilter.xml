@@ -19,7 +19,7 @@
     <param default="5" desc="Order of the median filter for the gyro data.">gyro-order</param>
     <param default="51" desc="Order of the median filter for the magnetometer data.">mag-order</param>
     <param default="0.04" desc="Magnetic field up-threshold for stopping bias adaption.">mag-vel-thres-up</param>
-    <param default="0.01" desc="Magnetic field down-threshold for starting bias adaption.">mag-vel-thres-down</param>
+    <param default="0.02" desc="Magnetic field down-threshold for starting bias adaption.">mag-vel-thres-down</param>
     <param default="0.001" desc="Gain to integrate gyro bias.">bias-gain</param>
     <param desc="If specified enable verbosity.">verbose</param>
   </arguments>
