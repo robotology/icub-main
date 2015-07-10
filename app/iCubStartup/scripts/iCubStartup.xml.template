@@ -54,13 +54,15 @@
 
         <module>
                 <name>iKinGazeCtrl</name>
+                <parameters>--from config_imu_filter.ini</parameters>
                 <node>pwrNode5</node>
                 <dependencies>
                     <port timeout="60.0" request="is_ready" reply="[ok]">/robotInterface</port>
+                    <port timeout="60">/imuFilter/inertial:o</port>
                 </dependencies>
         </module>
 
-        <!-- Enable/disable wholeBodyDynamics if you have/don't have torque sensors -->
+        <!-- Enable/disable wholeBodyDynamics if you do/don't have torque sensors -->
         <module>
                 <name>wholeBodyDynamics</name>
                 <!-- Remember to add the "--headV2" parameter for robots equipped with head v. 2.0 -->
@@ -71,7 +73,7 @@
                 </dependencies>
         </module>
 
-        <!-- Enable/disable gravityCompensator if you have/don't have torque sensors -->
+        <!-- Enable/disable gravityCompensator if you do/don't have torque sensors -->
         <module>
                 <name>gravityCompensator</name>
                 <!-- Remember to add the "--headV2" parameter for robots equipped with head v. 2.0 -->
@@ -86,8 +88,7 @@
                 <name>fingersTuner</name>
                 <node>console</node>
                 <dependencies>
-                    <port timeout="40">/icub/right_arm/state:o</port>
-                    <port timeout="40">/icub/left_arm/state:o</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/robotInterface</port>
                 </dependencies>
         </module>
 
@@ -95,7 +96,7 @@
                 <name>imuFilter</name>
                 <node>pc104</node>
                 <dependencies>
-                    <port timeout="40">/icub/inertial</port>
+                    <port timeout="60">/icub/inertial</port>
                 </dependencies>
         </module>
 
