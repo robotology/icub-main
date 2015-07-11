@@ -553,7 +553,7 @@ bool ClientGazeController::getOCRGain(double *gain)
 
 
 /************************************************************************/
-bool ClientGazeController::getSaccadesStatus(bool *f)
+bool ClientGazeController::getSaccadesMode(bool *f)
 {
     if (!connected || (f==NULL))
         return false;
@@ -1115,7 +1115,7 @@ bool ClientGazeController::setOCRGain(const double gain)
 
 
 /************************************************************************/
-bool ClientGazeController::setSaccadesStatus(const bool f)
+bool ClientGazeController::setSaccadesMode(const bool f)
 {
     if (!connected)
         return false;

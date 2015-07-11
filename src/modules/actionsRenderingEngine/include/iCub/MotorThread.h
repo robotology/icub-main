@@ -284,7 +284,7 @@ public:
             ctrl_gaze->restoreContext(default_gaze_context);
 
             if(checkOptions(options,"no_sacc"))
-                ctrl_gaze->setSaccadesStatus(false);
+                ctrl_gaze->setSaccadesMode(false);
 
             head_mode=HEAD_MODE_TRACK_TEMP;
 
@@ -296,7 +296,7 @@ public:
     void lookAtHand(Bottle &options)
     {
         if(checkOptions(options,"no_sacc"))
-            ctrl_gaze->setSaccadesStatus(false);
+            ctrl_gaze->setSaccadesMode(false);
         head_mode=HEAD_MODE_TRACK_HAND;
     }
 
@@ -305,7 +305,7 @@ public:
         gazeUnderControl=true;
         ctrl_gaze->setTrackingMode(true);
         if(checkOptions(options,"no_sacc"))
-            ctrl_gaze->setSaccadesStatus(false);
+            ctrl_gaze->setSaccadesMode(false);
         head_mode=HEAD_MODE_TRACK_FIX;
     }
 

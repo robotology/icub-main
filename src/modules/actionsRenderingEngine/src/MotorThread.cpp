@@ -2014,7 +2014,7 @@ bool MotorThread::clearIt(Bottle &options)
 {
     setGazeIdle();
     ctrl_gaze->blockEyes(5.0);
-    ctrl_gaze->setSaccadesStatus(0);
+    ctrl_gaze->setSaccadesMode(false);
 
     return true;
 }

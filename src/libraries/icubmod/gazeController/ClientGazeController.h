@@ -132,7 +132,7 @@ public:
     bool getEyesTrajTime(double *t);
     bool getVORGain(double *gain);
     bool getOCRGain(double *gain);
-    bool getSaccadesStatus(bool *f);
+    bool getSaccadesMode(bool *f);
     bool getSaccadesInhibitionPeriod(double *period);
     bool getSaccadesActivationAngle(double *angle);
     bool getLeftEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
@@ -151,7 +151,7 @@ public:
     bool setEyesTrajTime(const double t);
     bool setVORGain(const double gain);
     bool setOCRGain(const double gain);
-    bool setSaccadesStatus(const bool f);
+    bool setSaccadesMode(const bool f);
     bool setSaccadesInhibitionPeriod(const double period);
     bool setSaccadesActivationAngle(const double angle);
     bool setStereoOptions(const yarp::os::Bottle &options);
