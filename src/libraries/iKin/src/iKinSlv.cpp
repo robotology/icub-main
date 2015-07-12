@@ -29,6 +29,7 @@
 
 #define CARTSLV_DEFAULT_PER                 20      // [ms]
 #define CARTSLV_DEFAULT_TOL                 1e-3
+#define CARTSLV_DEFAULT_MAXITER             200
 #define CARTSLV_WEIGHT_2ND_TASK             0.01
 #define CARTSLV_WEIGHT_3RD_TASK             0.01
 #define CARTSLV_UNCTRLEDJNTS_THRES          1.0     // [deg]
@@ -1425,7 +1426,7 @@ bool CartesianSolver::open(Searchable &options)
             verbosity=true;
 
     double tol=options.check("tol",Value(CARTSLV_DEFAULT_TOL)).asDouble();
-    int maxIter=options.check("maxIter",Value(200)).asInt();
+    int maxIter=options.check("maxIter",Value(CARTSLV_DEFAULT_MAXITER)).asInt();
 
     // instantiate the optimizer
     slv=new iKinIpOptMin(*prt->chn,ctrlPose,tol,maxIter);
