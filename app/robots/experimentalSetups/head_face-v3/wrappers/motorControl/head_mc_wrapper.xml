@@ -2,23 +2,24 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
 <devices robot="iCubExpHeadV3" build="1">
-  <device name="devicename_head_mc_wrapper" type="controlboardwrapper2">
-      <paramlist name="networks">
-	<!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
-	<elem name="FirstSetOfJoints">   0  1  0  1 </elem> <!-- tbadded -->
-    <elem name="SecondSetOfJoints">  2  5  0  3 </elem> <!-- change it accordingly -->
-      </paramlist>
+	<device name="devicename_head_mc_wrapper" type="controlboardwrapper2">
+		<!-- the string devicename_head_mc_wrapper is used elsewhere, for instance in the calibrator file -->
+		<paramlist name="networks">
+		<!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
+		<elem name="FirstSetOfJoints">   0  1  0  1 </elem> <!-- tbadded -->
+		<elem name="SecondSetOfJoints">  2  5  0  3 </elem> <!-- change it accordingly -->
+	</paramlist>
 
 <param name="period"> 10 </param>
       <param name="name">   /icub/headv3         </param>
       <param name="joints"> 6                    </param> <!-- 6 -->
  
       <action phase="startup" level="5" type="attach">
-	  <paramlist name="networks">
-	  <!-- The param value must match the device name in the corresponding emsX file -->
-	        <elem name="FirstSetOfJoints">      devicename_head0_mc </elem> <!-- tbadded -->
+      <paramlist name="networks">
+      <!-- The param value must match the device name in the corresponding emsX file -->
+            <elem name="FirstSetOfJoints">      devicename_head0_mc </elem> <!-- tbadded -->
             <elem name="SecondSetOfJoints">     devicename_head1_mc </elem> <!-- change it accordingly -->
-	  </paramlist>
+      </paramlist>
       </action>
 
       <action phase="shutdown" level="5" type="detach" />
