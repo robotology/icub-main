@@ -18,11 +18,10 @@
             <param name="shift">           2  </param>
             <param name="cdcOffset">       0x2200  </param>
         </group>
-<!-- 
+ 
 		<group name="specialCfgTriangles">
-        <param name="numOfSets">         20  </param> <!-- id starts from 1 for triangleSetCfg->
-        <!--                                 patch       boardAddr    idStart       idEnd        enabled          shift       cdcOffset      ->
-           <param name="triangleSetCfg1">      2            14        0             6             1              0            0x2000      </param>
+        	<param name="numOfSets">         20  </param>
+           	<param name="triangleSetCfg1">      2            14        0             6             1              0            0x2000      </param>
 		   <param name="triangleSetCfg2">      2            14        8             11             1              2           0x2200       </param>
 		   
 		   <param name="triangleSetCfg3">      2            13        0             15             1              2           0x2200       </param>
@@ -48,7 +47,7 @@
 		   <param name="triangleSetCfg18">     2            8        10             11            1              2           0x2200       </param>
 		   <param name="triangleSetCfg19">     2            8        13             13            1             2           0x2200       </param>
 		   <param name="triangleSetCfg20">     2            8        15             15            1             2           0x2200       </param>
-        </group> -->
+        </group>
 
         
 </params>
