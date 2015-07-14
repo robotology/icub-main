@@ -1348,7 +1348,13 @@ int cDownloader::initschede()
             drv_sleep(10);
         }
 
-    printf ("CONNECTED: %d Boards found on bus %d\n", board_list_size, this->canbus_id);
+    yInfo("CONNECTED: %d Boards found on bus %d",board_list_size, this->canbus_id);
+    yDebug("    id   type     version");
+    for (int i = 0; i < board_list_size; i++)
+    {
+        yDebug("%5d   %5d     %d.%d.%d", board_list[i].pid, board_list[i].type , board_list[i].version , board_list[i].release , board_list[i].build);
+    }
+
     return 0;
 }
 
