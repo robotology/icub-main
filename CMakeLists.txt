@@ -130,10 +130,15 @@ file(TO_CMAKE_PATH "$ENV{ICUB_ROOT}" env_icub_root)
 set(ICUB_APPLICATIONS_PREFIX ${env_icub_root} CACHE PATH "Prefix directory for installing applications. Read only, set ICUB_ROOT environment variable to affect this setting." FORCE)
 mark_as_advanced(ICUB_APPLICATIONS_PREFIX)
 
-# new "data" installation - available with yarp2.4
+# Force dynamic plugins. Must be set before
+# yarp_configure_external_installation to ensure that iCub.ini is
+# generated correctly
+set(YARP_FORCE_DYNAMIC_PLUGINS TRUE CACHE INTERNAL "iCub is always built with dynamic plugins")
 include(YarpInstallationHelpers)
 yarp_configure_external_installation(iCub WITH_PLUGINS)
-set(YARP_FORCE_DYNAMIC_PLUGINS TRUE CACHE INTERNAL "iCub is always built with dynamic plugins")
+# Hide YARP_FORCE_DYNAMIC_PLUGINS from gui
+# (yarp_configure_external_installation changes TYPE to BOOL)
+set_property(CACHE YARP_FORCE_DYNAMIC_PLUGINS PROPERTY TYPE INTERNAL)
 
 # temporary options for debugging/testing new functionalities
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
