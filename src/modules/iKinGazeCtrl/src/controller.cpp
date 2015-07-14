@@ -429,7 +429,8 @@ Vector Controller::computeNeckVelFromdxFP(const Vector &fp, const Vector &dfp)
 Vector Controller::computeEyesVelFromdxFP(const Vector &dfp)
 {
     Matrix eyesJ; Vector tmp;
-    if (CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,tmp,eyesJ))
+    if ((fbEyes[2]>CTRL_DEG2RAD*GAZECTRL_CRITICVER_STABILIZATION) &&
+        CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,tmp,eyesJ))
         return pinv(eyesJ)*dfp.subVector(0,2);
     else
         return zeros(vEyes.length());
