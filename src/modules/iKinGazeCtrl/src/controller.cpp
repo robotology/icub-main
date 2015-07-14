@@ -718,10 +718,19 @@ void Controller::run()
             ctrlActiveRisingEdgeTime=Time::now();
             commData->port_xd->get_new()=false;
 
-            mjCtrlNeck->reset(zeros(fbNeck.length()));
-            mjCtrlEyes->reset(zeros(fbEyes.length()));
-            IntStabilizer->reset(zeros(vNeck.length()));
-            IntPlan->reset(fbNeck);            
+            if (stabilizeGaze)
+            {
+                mjCtrlNeck->reset(vNeck);
+                mjCtrlEyes->reset(vEyes);
+            }
+            else
+            {
+                mjCtrlNeck->reset(zeros(fbNeck.length())); 
+                mjCtrlEyes->reset(zeros(fbEyes.length()));
+                IntStabilizer->reset(zeros(vNeck.length()));
+                IntPlan->reset(fbNeck);
+            }
+            
             reliableGyro=true;
 
             event="motion-onset";
