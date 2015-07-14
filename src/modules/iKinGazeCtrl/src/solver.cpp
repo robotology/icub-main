@@ -744,8 +744,8 @@ void Solver::afterStart(bool s)
 /************************************************************************/
 void Solver::run()
 {
-    typedef enum { off, wait, on } cstate;
-    static cstate cstate_=cstate::off;
+    enum cstate { off, wait, on };
+    static int state_=cstate::off;
 
     mutex.lock();
 
@@ -815,10 +815,10 @@ void Solver::run()
         commData->set_qd(1,neckPos[1]);
         commData->set_qd(2,neckPos[2]);
 
-        cstate_=cstate::wait;
+        state_=cstate::wait;
     }
 
-    if (cstate_==cstate::off)
+    if (state_==cstate::off)
     {
         // keep neck targets equal to current angles
         // to avoid glitches in the control (especially
@@ -827,15 +827,15 @@ void Solver::run()
         commData->set_qd(1,neckPos[1]);
         commData->set_qd(2,neckPos[2]);
     }
-    else if (cstate_==cstate::wait)
+    else if (state_==cstate::wait)
     {
         if (commData->ctrlActive)
-            cstate_=cstate::on;
+            state_=cstate::on;
     }
-    else if (cstate_==cstate::on)
+    else if (state_==cstate::on)
     {
         if (!commData->ctrlActive)
-            cstate_=cstate::off;
+            state_=cstate::off;
     }
     
     // latch quantities
