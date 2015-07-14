@@ -744,8 +744,8 @@ void Solver::afterStart(bool s)
 /************************************************************************/
 void Solver::run()
 {
-    enum cstate { off, wait, on };
-    static int state_=cstate::off;
+    enum class cstate { off, wait, on };
+    static cstate state_=cstate::off;
 
     mutex.lock();
 
