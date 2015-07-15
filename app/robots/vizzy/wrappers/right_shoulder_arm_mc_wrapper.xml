@@ -2,6 +2,7 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 <devices robot="vizzy" build="1">
 	<device name="right_arm_mc_wrapper" type="controlboardwrapper2">
+		<param name="threadrate"> 10 </param>
 		<paramlist name="networks">
 			<elem name="right_shoulder_joints"> 0 2 3 5 </elem>
 			<elem name="right_arm_joints"> 3 10 0 7 </elem>
