@@ -339,7 +339,7 @@ bool embObjMotionControl::alloc(int nj)
     _encoderconversionoffset = allocAndCheck<float>(nj);
     _encoderconversionfactor = allocAndCheck<float>(nj);
 
-    _rotToEncoder = allocAndCheck<double>(nj);
+    _rotorEncoderRes = allocAndCheck<double>(nj);
     _gearbox = allocAndCheck<double>(nj);
     _zeros = allocAndCheck<double>(nj);
     _torqueSensorId= allocAndCheck<int>(nj);
@@ -349,6 +349,7 @@ bool embObjMotionControl::alloc(int nj)
     _hasHallSensor = allocAndCheck<bool>(nj);
     _hasTempSensor = allocAndCheck<bool>(nj);
     _hasRotorEncoder = allocAndCheck<bool>(nj);
+    _hasRotorEncoderIndex = allocAndCheck<bool>(nj);
     _rotorIndexOffset = allocAndCheck<int>(nj);
     _motorPoles = allocAndCheck<int>(nj);
 
@@ -399,7 +400,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_encodersStamp);
     checkAndDestroy(_encoderconversionoffset);
     checkAndDestroy(_encoderconversionfactor);
-    checkAndDestroy(_rotToEncoder);
+    checkAndDestroy(_rotorEncoderRes);
     checkAndDestroy(_gearbox);
     checkAndDestroy(_zeros);
     checkAndDestroy(_torqueSensorId);
@@ -433,6 +434,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_hasHallSensor);
     checkAndDestroy(_hasTempSensor);
     checkAndDestroy(_hasRotorEncoder);
+    checkAndDestroy(_hasRotorEncoderIndex);
     checkAndDestroy(_rotorIndexOffset);
     checkAndDestroy(_motorPoles);
 
@@ -482,6 +484,7 @@ embObjMotionControl::embObjMotionControl() :
     _hasHallSensor = NULL;
     _hasTempSensor = NULL;
     _hasRotorEncoder = NULL;
+    _hasRotorEncoderIndex = NULL;
     _rotorIndexOffset = NULL;
     _motorPoles       = NULL;
     _cacheImpedance   = NULL;
@@ -498,7 +501,7 @@ embObjMotionControl::embObjMotionControl() :
     _torqueSensorChan = NULL;
     _maxTorque        = NULL;
     _newtonsToSensor  = NULL;
-    _rotToEncoder     = NULL;
+    _rotorEncoderRes  = NULL;
     _ref_accs         = NULL;
     _command_speeds   = NULL;
     _ref_positions    = NULL;
@@ -834,7 +837,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementVelocityControl2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 #ifdef IMPLEMENT_DEBUG_INTERFACE
-    ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _rotToEncoder);
+    ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _rotorEncoderRes);
 #endif
     ImplementControlLimits2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
@@ -1069,9 +1072,8 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             _encoderconversionoffset[i-1] = 0;
         }
 
-
-    // Rotor scales
-    if (!extractGroup(general, xtmp, "Rotor", "a list of scales for the rotor encoders", _njoints))
+    // Motor capabilities
+    if (!extractGroup(general, xtmp, "HasHallSensor", "HasHallSensor 0/1 ", _njoints))
     {
         return false;
     }
@@ -1079,7 +1081,73 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     {
         int test = xtmp.size();
         for (i = 1; i < xtmp.size(); i++)
-            _rotToEncoder[i-1] = xtmp.get(i).asDouble();
+            _hasHallSensor[i - 1] = xtmp.get(i).asInt();
+    }
+    if (!extractGroup(general, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+            _hasTempSensor[i - 1] = xtmp.get(i).asInt();
+    }
+    if (!extractGroup(general, xtmp, "HasRotorEncoder", "HasRotorEncoder 0/1 ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+            _hasRotorEncoder[i - 1] = xtmp.get(i).asInt();
+    }
+    if (!extractGroup(general, xtmp, "HasRotorEncoderIndex", "HasRotorEncoderIndex 0/1 ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+            _hasRotorEncoderIndex[i - 1] = xtmp.get(i).asInt();
+    }
+
+    // Rotor scales
+    if (!extractGroup(general, xtmp, "RotorEncoderRes", "a list of scales for the rotor encoders", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+            _rotorEncoderRes[i - 1] = xtmp.get(i).asDouble();
+    }
+
+    // Number of motor poles
+    if (!extractGroup(general, xtmp, "MotorPoles", "MotorPoles", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+            _motorPoles[i - 1] = xtmp.get(i).asInt();
+    }
+
+    // Rotor encoder index
+    if (!extractGroup(general, xtmp, "RotorIndexOffset", "RotorIndexOffset", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+            _rotorIndexOffset[i - 1] = xtmp.get(i).asInt();
     }
 
     // Gearbox
@@ -1630,12 +1698,13 @@ bool embObjMotionControl::init()
         eOmc_motor_config_t    motor_cfg;
         motor_cfg.maxcurrentofmotor = _currentLimits[logico];
         motor_cfg.gearboxratio = _gearbox[logico];
-        motor_cfg.rotorencoder = _rotToEncoder[logico];
-        motor_cfg.hasHallSensor = true;
-        motor_cfg.hasRotorEncoder = true;
-        motor_cfg.hasTempSensor = false;
-        motor_cfg.motorPoles = 4;
-        motor_cfg.rotorIndexOffset = 0;
+        motor_cfg.rotorEncoderResolution = _rotorEncoderRes[logico];
+        motor_cfg.hasHallSensor = _hasHallSensor[logico];
+        motor_cfg.hasRotorEncoder = _hasRotorEncoder[logico];
+        motor_cfg.hasTempSensor = _hasTempSensor[logico];
+        motor_cfg.hasRotorEncoderIndex = _hasRotorEncoderIndex[logico];
+        motor_cfg.motorPoles = _motorPoles[logico];
+        motor_cfg.rotorIndexOffset = _rotorIndexOffset[logico];
         motor_cfg.filler01 = 0;
         motor_cfg.pidcurrent.kp = 8;
         motor_cfg.pidcurrent.ki = 2;
@@ -1685,7 +1754,7 @@ bool embObjMotionControl::init()
         }
 
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config_rotorencoder);
-        int32_t rotor = (int32_t) (_rotToEncoder[logico]);
+        int32_t rotor = (int32_t) (_rotorEncoderRes[logico]);
         if(false == res->setRemoteValueUntilVerified(protid, &rotor, sizeof(rotor), 10, 0.010, 0.050, 2))
         {
             yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
@@ -3515,7 +3584,7 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     }
     else if (key == "rotor")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_rotToEncoder[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_rotorEncoderRes[i]); return true;
     }
     else if (key == "gearbox")
     {
@@ -3536,6 +3605,10 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     else if (key == "hasRotorEncoder")
     {
         Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addInt(_hasRotorEncoder[i]); return true;
+    }
+    else if (key == "hasRotorEncoderIndex")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addInt(_hasRotorEncoderIndex[i]); return true;
     }
     else if (key == "rotorIndexOffset")
     {
@@ -3579,7 +3652,7 @@ bool embObjMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const 
     else if (key == "rotor")
     {
         for (int i = 0; i < _njoints; i++)
-            _rotToEncoder[i] = bval->get(i).asDouble();
+            _rotorEncoderRes[i] = bval->get(i).asDouble();
         return true;
     }
     else if (key == "gearbox")
@@ -3603,6 +3676,7 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     listOfKeys->addString("hasHallSensor");
     listOfKeys->addString("hasTempSensor");
     listOfKeys->addString("hasRotorEncoder");
+    listOfKeys->addString("hasRotorEncoderIndex");
     listOfKeys->addString("rotorIndexOffset");
     listOfKeys->addString("motorPoles");
     listOfKeys->addString("pidCurrentKp");

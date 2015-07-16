@@ -5,15 +5,20 @@
     <group name="GENERAL">
         <param name="Joints"> 6  </param> <!-- the number of joints of the robot part -->
 
- <!--                   		    0             1             2             3             4             5     -->
-        <param name="AxisMap"> 		0             1             2             3             4             5             </param>
+        <param name="AxisMap">               0             1             2             3             4             5    </param>
+        <param name="HasHallSensor">         0             0             0             0             0             0    </param>
+        <param name="HasTempSensor">         0             0             0             0             0             0    </param>
+        <param name="HasRotorEncoder">       1             1             1             1             1             1    </param>
+        <param name="HasRotorEncoderIndex">  0             0             0             0             0             0    </param>
 <param name="Encoder">                            11.375     -11.375 11.375  11.375     568.880   284.440      </param>
 <param name="Zeros">                              174.70     -180.40 180.00  180.00     -45.00    0.00         </param>
         <param name="TorqueId">  	0             0             0             0             0             0             </param>
         <param name="TorqueChan">	0             0             0             0             0             0             </param>
         <param name="TorqueMax"> 	0             0             0             0             0             0             </param>
-        <param name="Rotor">     	1             1             1             1             1             1             </param>
-        <param name="Gearbox">   	1             1             1             1             1             1             </param>
+        <param name="RotorEncoderRes">   1             1             1             1        </param>
+        <param name="RotorIndexOffset">  0             0             0             0        </param>
+        <param name="Gearbox">           100.00        100.00        100.00        100.00   </param>
+        <param name="MotorPoles">        0             0             0             0        </param>
         <param name="Verbose">		0	</param>
     </group>
 

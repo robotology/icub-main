@@ -5,7 +5,11 @@
     <group name="GENERAL">
         <param name="Joints"> 4 </param> <!-- the number of joints of the robot part -->
 
-        <param name="AxisMap">      0             1             2             3         	</param>
+        <param name="AxisMap">               0             1             2             3   </param>
+        <param name="HasHallSensor">         1             1             1             1   </param>
+        <param name="HasTempSensor">         0             0             0             0   </param>
+        <param name="HasRotorEncoder">       1             1             1             1   </param>
+        <param name="HasRotorEncoderIndex">  0             0             0             0   </param>
 <param name="Encoder">                            182.044        182.044    182.044      -182.044                          </param>
 <param name="Zeros">                              180.00         185.00     180.00       -180.00                           </param>
         <param name="TorqueId">  	0x0B          0x0B          0x0B          0x0B 		</param>
