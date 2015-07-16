@@ -35,6 +35,18 @@
       <node>vizzy-desktop</node>
       <tag>camCalibRight</tag>
 </module>
+<module>
+      <name>yarp</name>
+      <parameters>sample --input /vizzy/camcalib/left/out --output /vizzy/camcalib/left/outSubSampled --period 1.0 --carrier udp </parameters>
+      <node>vizzy-desktop</node>
+      <tag>leftCameraSubSample</tag>
+</module>
+<module>
+      <name>yarp</name>
+      <parameters>sample --input /vizzy/camcalib/right/out --output /vizzy/camcalib/right/outSubSampled --period 1.0 --carrier udp </parameters>
+      <node>vizzy-desktop</node>
+      <tag>rightCameraSubSample</tag>
+</module>
 
 <module>
       <name>yarpview</name>
@@ -73,12 +85,12 @@
       <protocol>udp</protocol>
 </connection>
 <connection>
-      <from>/vizzy/camcalib/left/out</from>
+      <from>/vizzy/camcalib/left/outSubSampled</from>
       <to>/vizzy/view/left</to>
       <protocol>udp</protocol>
 </connection>
 <connection>
-      <from>/vizzy/camcalib/right/out</from>
+      <from>/vizzy/camcalib/right/outSubSampled</from>
       <to>/vizzy/view/right</to>
       <protocol>udp</protocol>
 </connection>
