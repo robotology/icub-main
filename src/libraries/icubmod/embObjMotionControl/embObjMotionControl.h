@@ -269,12 +269,13 @@ private:
     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
     float *_encoderconversionfactor;            /** iCubDegrees to encoder conversion factors */
     float *_encoderconversionoffset;            /** iCubDegrees offset */
-    double *_rotToEncoder;                      /** angle to rotor conversion factors */
+    double *_rotorEncoderRes;                   /** rotor encoder resolution */
     double *_gearbox;                           /** the gearbox ratio */
     double *_zeros;                             /** encoder zeros */
     bool   *_hasHallSensor;                     /** */
     bool   *_hasTempSensor;                     /** */
     bool   *_hasRotorEncoder;                   /** */
+    bool   *_hasRotorEncoderIndex;              /** */
     int    *_rotorIndexOffset;                  /** */
     int    *_motorPoles;                        /** */
     Pid *_pids;                                 /** initial gains */

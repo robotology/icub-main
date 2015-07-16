@@ -5,9 +5,11 @@
     <group name="GENERAL">
         <param name="Joints"> 4 </param> <!-- the number of joints of the robot part -->
 
-        <!--                        0               1               2               3    -->
-	<param name="AxisMap">          0               1               2               3           </param>
-
+        <param name="AxisMap">               0             1             2             3   </param>
+        <param name="HasHallSensor">         1             1             1             1   </param>
+        <param name="HasTempSensor">         0             0             0             0   </param>
+        <param name="HasRotorEncoder">       1             1             1             1   </param>
+        <param name="HasRotorEncoderIndex">  0             0             0             0   </param>
 <param name="Encoder">                            -182.044        -182.044    -182.044  182.044                                    </param>
 <param name="Zeros">                              -180.00         -180.00     -180.00   180.00                                     </param>
 
@@ -15,7 +17,11 @@
         <param name="TorqueChan">	0             	1             	2             	3           </param>
         <param name="TorqueMax"> 	24            	24            	24            	24          </param>
         <param name="Rotor">     	1.000         	-1.000         	1.000         	1.000       </param>
-        <param name="Gearbox">   	100.000         100.000         100.000         100.000       </param>
+        <param name="Gearbox">   	100.000         100.000         100.000         100.000     </param>
+        <param name="RotorEncoderRes">   14400         -14400        14400         14400         </param>
+        <param name="RotorIndexOffset">  0             0            0             0             </param>
+        <param name="Gearbox">           100.00        100.00       100.00        100.00        </param>
+        <param name="MotorPoles">        8             8            8             8             </param>
         <param name="Verbose">		0    	</param>
     </group>
 
