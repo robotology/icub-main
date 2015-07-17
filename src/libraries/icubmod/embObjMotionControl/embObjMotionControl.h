@@ -269,7 +269,10 @@ private:
     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
     float *_encoderconversionfactor;            /** iCubDegrees to encoder conversion factors */
     float *_encoderconversionoffset;            /** iCubDegrees offset */
+    string *_jointEncoderType;                  /** joint encoder type*/
+    double *_jointEncoderRes;                   /** joint encoder resolution */
     double *_rotorEncoderRes;                   /** rotor encoder resolution */
+    string *_rotorEncoderType;                  /** rotor encoder type*/
     double *_gearbox;                           /** the gearbox ratio */
     double *_zeros;                             /** encoder zeros */
     bool   *_hasHallSensor;                     /** */
