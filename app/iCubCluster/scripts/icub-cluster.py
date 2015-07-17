@@ -180,7 +180,7 @@ class App:
 	self.ROSoption=IntVar()
 	self.ROSoption.set(0)
 	self.bROSoption=Checkbutton(tmpFrame, variable=self.ROSoption)
-        self.bROSoption.grid(row=1, column=2)
+	self.bROSoption.grid(row=1, column=2)
 	Label(tmpFrame, text="--ros").grid(row=0, column=2)
         tmpFrame=Frame(nsFrame)
         tmpFrame.pack()
@@ -403,11 +403,11 @@ class App:
         print 'Running nameserver'
         self.checkNs()
         if self.nsFlag.get()==0:
-            cmd = Util.getSshCmd(self.clusterUser.get(), self.clusterNsNode.get()) + ['icub-cluster-server.sh', ' start']
-            if (self.cluster.nsType=='yarpserver3'):
-                cmd.append('yarpserver3')
-            elif(self.cluster.nsType=='yarpserver'):
-                 cmd.append('yarpserver')
+            cmd = Util.getSshCmd(self.clusterUser.get(), self.clusterNsNode.get()) + ['icub-cluster-server_test.sh', ' start']
+#            if (self.cluster.nsType=='yarpserver3'):
+#                cmd.append('yarpserver3')
+#            elif(self.cluster.nsType=='yarpserver'):
+#                 cmd.append('yarpserver')
 
 	    if self.ROSoption.get()==1:
 		cmd.append('ros')
