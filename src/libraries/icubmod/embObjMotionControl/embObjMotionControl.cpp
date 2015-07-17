@@ -338,7 +338,9 @@ bool embObjMotionControl::alloc(int nj)
     _encodersStamp = allocAndCheck<double>(nj);
     _encoderconversionoffset = allocAndCheck<float>(nj);
     _encoderconversionfactor = allocAndCheck<float>(nj);
-
+    _jointEncoderType = allocAndCheck<string>(nj);
+    _rotorEncoderType = allocAndCheck<string>(nj);
+    _jointEncoderRes = allocAndCheck<double>(nj);
     _rotorEncoderRes = allocAndCheck<double>(nj);
     _gearbox = allocAndCheck<double>(nj);
     _zeros = allocAndCheck<double>(nj);
@@ -400,7 +402,10 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_encodersStamp);
     checkAndDestroy(_encoderconversionoffset);
     checkAndDestroy(_encoderconversionfactor);
+    checkAndDestroy(_jointEncoderRes);
     checkAndDestroy(_rotorEncoderRes);
+    checkAndDestroy(_jointEncoderType);
+    checkAndDestroy(_rotorEncoderType);
     checkAndDestroy(_gearbox);
     checkAndDestroy(_zeros);
     checkAndDestroy(_torqueSensorId);
@@ -501,7 +506,10 @@ embObjMotionControl::embObjMotionControl() :
     _torqueSensorChan = NULL;
     _maxTorque        = NULL;
     _newtonsToSensor  = NULL;
+    _jointEncoderRes  = NULL;
+    _jointEncoderType = NULL;
     _rotorEncoderRes  = NULL;
+    _rotorEncoderType = NULL;
     _ref_accs         = NULL;
     _command_speeds   = NULL;
     _ref_positions    = NULL;
@@ -1072,6 +1080,18 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             _encoderconversionoffset[i-1] = 0;
         }
 
+    // Joint encoder type
+    if (!extractGroup(general, xtmp, "JointEncoderType", "JointEncoderType", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+            _jointEncoderType[i - 1] = xtmp.get(i).asString();
+    }
+
     // Motor capabilities
     if (!extractGroup(general, xtmp, "HasHallSensor", "HasHallSensor 0/1 ", _njoints))
     {
@@ -1114,7 +1134,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             _hasRotorEncoderIndex[i - 1] = xtmp.get(i).asInt();
     }
 
-    // Rotor scales
+    // Rotor encoder res
     if (!extractGroup(general, xtmp, "RotorEncoderRes", "a list of scales for the rotor encoders", _njoints))
     {
         return false;
@@ -1124,6 +1144,18 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         int test = xtmp.size();
         for (i = 1; i < xtmp.size(); i++)
             _rotorEncoderRes[i - 1] = xtmp.get(i).asDouble();
+    }
+
+    // joint encoder res
+    if (!extractGroup(general, xtmp, "JointEncoderRes", "a list of scales for the joint encoders", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+            _jointEncoderRes[i - 1] = xtmp.get(i).asDouble();
     }
 
     // Number of motor poles
@@ -1148,6 +1180,18 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         int test = xtmp.size();
         for (i = 1; i < xtmp.size(); i++)
             _rotorIndexOffset[i - 1] = xtmp.get(i).asInt();
+    }
+
+    // Rotor encoder type
+    if (!extractGroup(general, xtmp, "RotorEncoderType", "RotorEncoderType", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+            _rotorEncoderType[i - 1] = xtmp.get(i).asString();
     }
 
     // Gearbox
