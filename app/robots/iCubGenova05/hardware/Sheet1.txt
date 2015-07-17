@@ -146,7 +146,7 @@ Velocity ZHOME PosiHOME VeloDelta
 
 Velocity ZHOME PosiHOME VeloDelta
      10.00     0.00    10.00   0.00
-     10.00     0.00    10.00   5.00
+     10.00     0.00    10.00   0.00
      10.00     0.00    10.00   0.00
      10.00     0.00    10.00   0.00
      10.00     0.00    10.00   0.00
@@ -155,7 +155,7 @@ Velocity ZHOME PosiHOME VeloDelta
 
 Velocity ZHOME PosiHOME VeloDelta
      10.00     0.00    10.00   0.00
-     10.00     0.00    10.00   7.00
+     10.00     0.00    10.00   0.00
      10.00     0.00    10.00   0.00
      10.00     0.00    10.00   0.00
      10.00     0.00    10.00   0.00

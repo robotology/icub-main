@@ -1,7 +1,7 @@
 
 
 <param name="Encoder">                            182.044        182.044    182.044      -182.044                          </param>
-<param name="Zeros">                              180.00         185.00     180.00       -180.00                           </param>
+<param name="Zeros">                              180.00         180.00     180.00       -180.00                           </param>
 
 
 
