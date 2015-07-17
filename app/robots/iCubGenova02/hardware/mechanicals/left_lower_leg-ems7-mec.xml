@@ -16,6 +16,9 @@
         <param name="TorqueChan">	    4               5       </param>
         <param name="TorqueMax"> 	    24             24       </param>
         <param name="RotorEncoderRes">   14400         14400    </param>
+        <param name="JointEncoderRes">   -4096         4096     </param>
+        <param name="JointEncoderType">  AEA           AEA      </param>
+        <param name="RotorEncoderType">  ROIE          ROIE     </param>
         <param name="RotorIndexOffset">  0             0        </param>
         <param name="Gearbox">           100.00        100.00   </param>
         <param name="MotorPoles">        8             8        </param>
