@@ -96,6 +96,7 @@ bool Compensator::init(string name, string robotName, string outputPortName, str
         sendInfoMsg(msg.str());
 	    return false;
     }
+    
     if( !Network::connect(inputPortName.c_str(), localPortName.str().c_str()))
     {
         stringstream msg;
@@ -919,6 +920,7 @@ void Compensator::updateNeighbors(unsigned int taxelId){
         }
     }
 }
+
 void Compensator::sendInfoMsg(string msg){
     yInfo("[%s]: %s", getInputPortName().c_str(), msg.c_str());
     Bottle& b = infoPort->prepare();
