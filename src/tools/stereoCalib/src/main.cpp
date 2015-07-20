@@ -110,5 +110,5 @@ int main(int argc, char * argv[])
    rf.configure(argc, argv);
 
    stereoModule.runModule(rf);
-    return 1;
+   return 0;
 }

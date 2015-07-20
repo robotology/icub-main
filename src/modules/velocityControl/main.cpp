@@ -350,9 +350,9 @@ int main(int argc, char *argv[])
     
     rf.configure(argc, argv);
     rf.setVerbose(true);
-    if (mod.configure(rf)==false) return -1;
+    if (mod.configure(rf)==false) return 1;
     mod.runModule();
     yInfo("Main returning\n");
     return 0;
-
 }
+

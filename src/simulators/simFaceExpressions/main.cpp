@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     if (!yarp.checkNetwork())
     {
         yError("Sorry YARP network does not seem to be available, is the yarp server available?\n");
-        return -1;
+        return 1;
     }
 
         /* create the module */

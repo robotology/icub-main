@@ -131,12 +131,12 @@ int main(int argc, char *argv[])
                     c++;
                 }
         printFrame(outImg.height(), outImg.width(), c);
-	}
-	return 0;
+    }
+    return 0;
 }
 
 void printFrame(int h, int w, int c)
-{	
-	if (c%500 == 0)
-		printf("Frame #%d %dx%d \n", c, h, w);
+{   
+    if (c%500 == 0)
+        printf("Frame #%d %dx%d \n", c, h, w);
 }
