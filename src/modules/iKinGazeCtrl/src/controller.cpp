@@ -620,7 +620,7 @@ void Controller::run()
     double x_stamp;
     Vector xd=commData->get_xd();
     Vector x=commData->get_x(x_stamp);
-    Vector new_qd=commData->get_qd();
+    qd=commData->get_qd();
 
     // read feedbacks
     q_stamp=Time::now();
@@ -662,8 +662,8 @@ void Controller::run()
     fbNeck=fbHead.subVector(0,2);
     fbEyes=fbHead.subVector(3,5);
 
-    double errNeck=norm(new_qd.subVector(0,2)-fbNeck);
-    double errEyes=norm(new_qd.subVector(3,new_qd.length()-1)-fbEyes);
+    double errNeck=norm(qd.subVector(0,2)-fbNeck);
+    double errEyes=norm(qd.subVector(3,qd.length()-1)-fbEyes);
     bool swOffCond=(Time::now()-ctrlActiveRisingEdgeTime<GAZECTRL_SWOFFCOND_DISABLETIME) ? false :
                    (!commData->saccadeUnderway &&
                    (errNeck<GAZECTRL_MOTIONDONE_NECK_QTHRES*CTRL_DEG2RAD) &&
@@ -710,14 +710,14 @@ void Controller::run()
             ctrlInhibited=!commData->port_xd->get_new();
 
         // switch-on condition
-        commData->ctrlActive=commData->port_xd->get_new() ||
-                             (!ctrlInhibited && ((new_qd[0]!=qd[0]) || (new_qd[1]!=qd[1]) || (new_qd[2]!=qd[2])));
+        commData->ctrlActive=commData->port_xd->get_new() || (!ctrlInhibited && (commData->neckSolveCnt>0));
 
         // reset controllers
         if (commData->ctrlActive)
         {
             ctrlActiveRisingEdgeTime=Time::now();
             commData->port_xd->get_new()=false;
+            commData->neckSolveCnt=0;
 
             if (stabilizeGaze)
             {
@@ -750,8 +750,7 @@ void Controller::run()
         q0=fbHead;
     }
     mutexCtrl.unlock();
-
-    qd=new_qd;
+    
     qdNeck=qd.subVector(0,2);
     qdEyes=qd.subVector(3,5);
 
