@@ -4,8 +4,8 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 # Options:
-# USE_ODE_DOUBLE  -use double precision ode libraries
-# ODE_STATIC      -link against static libraries
+# ODE_DOUBLE_PRECISION  -use double precision ode libraries
+# ODE_STATIC            -link against static libraries
 #
 # On exit create the following variables:
 # ODE_INCLUDE_DIRS  - Directories to include to use ODE
@@ -33,7 +33,8 @@ set(ODE_SYSTEM_LIBS_FOUND FALSE)
 set(ODE_FOUND FALSE)
 
 if(MSVC)
-  set(ODE_STATIC TRUE CACHE BOOL "Link ODE as static library? Warning in windows, to coexist with YARP you need to set this to FALSE")
+  option(ODE_STATIC "Link ODE as static library? Warning in windows, to coexist with YARP you need to set this to FALSE" TRUE)
+  option(ODE_DOUBLE_PRECISION "Use double precision version of the ODE library" TRUE)
 
   #search static and dynamic libs, single and double precision
   find_library(ODE_MAIN_STATIC_DOUBLE_DB
@@ -86,28 +87,28 @@ if(MSVC)
 #    mark_as_advanced(ODE_STATIC)
 #  endif()
 
-  if(ODE_STATIC AND NOT USE_ODE_DOUBLE)
+  if(ODE_STATIC AND NOT ODE_DOUBLE_PRECISION)
     if(ODE_MAIN_STATIC_SINGLE_RE AND ODE_MAIN_STATIC_SINGLE_DB AND ODE_SYSTEM_LIBS_FOUND AND ODE_INCLUDE_DIRS)
       set(ODE_FOUND TRUE)
       set(ODE_LIBRARIES "${ODE_SYSTEM_LIBS};optimized;${ODE_MAIN_STATIC_SINGLE_RE};debug;${ODE_MAIN_STATIC_SINGLE_DB};")
     endif()
   endif()
 
-  if(ODE_STATIC AND USE_ODE_DOUBLE)
+  if(ODE_STATIC AND ODE_DOUBLE_PRECISION)
     if(ODE_MAIN_STATIC_DOUBLE_RE AND ODE_MAIN_STATIC_DOUBLE_DB AND ODE_SYSTEM_LIBS_FOUND AND ODE_INCLUDE_DIRS)
       set(ODE_FOUND TRUE)
       set(ODE_LIBRARIES "${ODE_SYSTEM_LIBS};optimized;${ODE_MAIN_STATIC_DOUBLE_RE};debug;${ODE_MAIN_STATIC_DOUBLE_DB};")
     endif()
   endif()
 
-  if(NOT ODE_STATIC AND NOT USE_ODE_DOUBLE)
+  if(NOT ODE_STATIC AND NOT ODE_DOUBLE_PRECISION)
     if(ODE_MAIN_DLL_SINGLE_RE AND ODE_MAIN_DLL_SINGLE_DB AND ODE_SYSTEM_LIBS_FOUND AND ODE_INCLUDE_DIRS)
       set(ODE_FOUND TRUE)
       set(ODE_LIBRARIES "${ODE_SYSTEM_LIBS};optimized;${ODE_MAIN_DLL_SINGLE_RE};debug;${ODE_MAIN_DLL_SINGLE_DB};")
     endif()
   endif()
 
-  if(NOT ODE_STATIC AND USE_ODE_DOUBLE)
+  if(NOT ODE_STATIC AND ODE_DOUBLE_PRECISION)
     if(ODE_MAIN_DLL_DOUBLE_RE AND ODE_MAIN_DLL_DOUBLE_DB AND ODE_SYSTEM_LIBS_FOUND AND ODE_INCLUDE_DIRS)
       set(ODE_FOUND TRUE)
       set(ODE_LIBRARIES "${ODE_SYSTEM_LIBS};optimized;${ODE_MAIN_DLL_DOUBLE_RE};debug;${ODE_MAIN_DLL_DOUBLE_DB};")
@@ -131,7 +132,22 @@ else()
     set(ODE_LIBRARIES ${ODE_MAIN_LIBRARY} ${ODE_SYSTEM_LIBS})
     #message(STATUS "ODE libraries: ${ODE_LIBRARIES}")
   endif()
-
+  
+  if(NOT CMAKE_CROSS_COMPILING)
+    include(CheckCXXSourceRuns)
+    set(CMAKE_REQUIRED_INCLUDES ${ODE_INCLUDE_DIRS})
+    set(CMAKE_REQUIRED_LIBRARIES ${ODE_LIBRARIES})
+    check_cxx_source_runs("extern \"C\" int dCheckConfiguration(const char*str); \n int main() { return dCheckConfiguration(\"ODE_double_precision\")?0:1; }\n" ODE_IS_DOUBLE)
+  else()
+    set(ODE_IS_DOUBLE FALSE)
+  endif()
+  
+  if(ODE_IS_DOUBLE)
+    set(ODE_DOUBLE_PRECISION CACHE INTERNAL "true if ODE has double precision capabilities" TRUE)
+  else()
+    set(ODE_DOUBLE_PRECISION CACHE INTERNAL "true if ODE has double precision capabilities" FALSE)
+  endif()
+  
 endif()
 
 if(ODE_FOUND)
