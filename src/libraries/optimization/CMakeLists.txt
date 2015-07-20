@@ -23,6 +23,9 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${IPOPT_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
+add_definitions(${IPOPT_DEFINITIONS})
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${IPOPT_LINKER_FLAGS}")
+
 add_library(${PROJECTNAME} ${folder_source} ${folder_header})
 
 target_link_libraries(${PROJECTNAME} ctrlLib

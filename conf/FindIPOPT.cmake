@@ -6,11 +6,9 @@
 # Create the following variables:
 # IPOPT_INCLUDE_DIRS - Directories to include to use IPOPT
 # IPOPT_LIBRARIES    - Default library to link against to use IPOPT
-# IPOPT_DEFINITIONS  - Flags to be added to linker's options
+# IPOPT_DEFINITIONS  - Flags to be added to compiler's options
+# IPOPT_LINKER_FLAGS - Flags to be added to linker's options
 # IPOPT_FOUND        - If false, don't try to use IPOPT
-#
-# Deprecated variables:
-# IPOPT_LINK_FLAGS   - = IPOPT_DEFINITIONS, for compatibility
 
 # Copyright (C) 2008-2010  RobotCub Consortium
 # Authors: Ugo Pattacini
@@ -27,12 +25,12 @@ if(APPLE)
         if(IPOPT_FIND_VERSION)
             if(IPOPT_FIND_VERSION_EXACT)
                 pkg_check_modules(_PC_IPOPT QUIET ipopt=${IPOPT_FIND_VERSION})
-            else(IPOPT_FIND_VERSION_EXACT)
+            else()
                 pkg_check_modules(_PC_IPOPT QUIET ipopt>=${IPOPT_FIND_VERSION})
-            endif(IPOPT_FIND_VERSION_EXACT)
-        else(IPOPT_FIND_VERSION)
+            endif()
+        else()
             pkg_check_modules(_PC_IPOPT QUIET ipopt)
-        endif(IPOPT_FIND_VERSION)
+        endif()
 
 
         if(_PC_IPOPT_FOUND)
@@ -45,13 +43,13 @@ if(APPLE)
                             PATHS ${_PC_IPOPT_LIBRARY_DIRS})
                     list(APPEND IPOPT_LIBRARIES ${${_LIBRARY}_PATH})
             endforeach(_LIBRARY)
-        endif(_PC_IPOPT_FOUND)
+        else()
+            set(IPOPT_DEFINITIONS "")
+        endif()
 
-        mark_as_advanced(IPOPT_INCLUDE_DIRS
-                         IPOPT_LIBRARIES
-                         IPOPT_DEFINITIONS)
+    endif()
 
-    endif(PKG_CONFIG_FOUND)
+    set(IPOPT_LINKER_FLAGS "")
 
 elseif(UNIX)
 
@@ -93,16 +91,17 @@ elseif(UNIX)
                 if(IPOPT_SEARCH_FOR_${LIB})
                     # handle non-system libraries (e.g. coinblas)
                     set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${IPOPT_SEARCH_FOR_${LIB}})
-                else(IPOPT_SEARCH_FOR_${LIB})
+                else()
                     # handle system libraries (e.g. gfortran)
                     set(IPOPT_LIBRARIES ${IPOPT_LIBRARIES} ${LIB})
-                endif(IPOPT_SEARCH_FOR_${LIB})
+                endif()
                 mark_as_advanced(IPOPT_SEARCH_FOR_${LIB})
             endforeach(LIB)
         endif()
     endif()
 
     set(IPOPT_DEFINITIONS "")
+    set(IPOPT_LINKER_FLAGS "")
 
 # Windows platforms
 else()
@@ -128,16 +127,21 @@ else()
     set(IPOPT_LIBRARIES_RELEASE "")
     set(IPOPT_LIBRARIES_DEBUG "")
 
+    set(IPOPT_DEFINITIONS "")
     if(MSVC)
-        set(IPOPT_DEFINITIONS "/NODEFAULTLIB:libcmt.lib;libcmtd.lib")
+        set(IPOPT_LINKER_FLAGS "/NODEFAULTLIB:libcmt.lib;libcmtd.lib")
     else()
-        set(IPOPT_DEFINITIONS "")
+        set(IPOPT_LINKER_FLAGS "")
     endif()
 
 endif()
 
+mark_as_advanced(IPOPT_INCLUDE_DIRS
+                 IPOPT_LIBRARIES
+                 IPOPT_DEFINITIONS
+                 IPOPT_LINKER_FLAGS)
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(IPOPT DEFAULT_MSG IPOPT_LIBRARIES)
 
-# Compatibility with previous versions
-set(IPOPT_LINK_FLAGS ${IPOPT_DEFINITIONS})
+
