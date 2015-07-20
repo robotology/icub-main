@@ -593,8 +593,6 @@ void Controller::run()
     
     mutexCtrl.lock();
     bool jointsHealthy=areJointsHealthyAndSet();
-    if (jointsHealthy)
-        setJointsCtrlMode(); 
     mutexCtrl.unlock();
 
     if (!jointsHealthy)
@@ -747,11 +745,20 @@ void Controller::run()
     mutexCtrl.lock();
     if (event=="motion-onset")
     {
-        motionDone=false;        
+        setJointsCtrlMode();
+        jointsToSet.clear();
+        motionDone=false;
         q0=fbHead;
     }
     mutexCtrl.unlock();
-    
+
+    if (commData->trackingModeOn || stabilizeGaze)
+    {
+        mutexCtrl.lock();
+        setJointsCtrlMode();
+        mutexCtrl.unlock();
+    }
+
     qdNeck=qd.subVector(0,2);
     qdEyes=qd.subVector(3,5);
 
