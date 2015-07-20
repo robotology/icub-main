@@ -593,6 +593,8 @@ void Controller::run()
     
     mutexCtrl.lock();
     bool jointsHealthy=areJointsHealthyAndSet();
+    if (jointsHealthy)
+        setJointsCtrlMode(); 
     mutexCtrl.unlock();
 
     if (!jointsHealthy)
@@ -745,8 +747,7 @@ void Controller::run()
     mutexCtrl.lock();
     if (event=="motion-onset")
     {
-        motionDone=false;
-        setJointsCtrlMode();
+        motionDone=false;        
         q0=fbHead;
     }
     mutexCtrl.unlock();

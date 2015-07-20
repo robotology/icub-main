@@ -1604,7 +1604,9 @@ void ServerCartesianController::run()
 
         VectorOf<int> jointsToSet;
         jointsHealthy=areJointsHealthyAndSet(jointsToSet);
-        if (!jointsHealthy)
+        if (jointsHealthy)
+            setJointsCtrlMode(jointsToSet);
+        else
             stopControlHelper();
 
         string event="none";
@@ -1630,8 +1632,7 @@ void ServerCartesianController::run()
         if (getNewTarget())
         {
             if (jointsHealthy)
-            {
-                setJointsCtrlMode(jointsToSet); 
+            {                
                 if (!executingTraj)
                 {
                     ctrl->restart(fb);
