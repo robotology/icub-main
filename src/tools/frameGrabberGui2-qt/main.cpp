@@ -72,12 +72,8 @@ int main(int argc, char *argv[])
         window->show();
     }
 
-
-
      int ret = a.exec();
-
-
      delete window;
 
-     return ret;
+     return (ret!=0?1:0);
 }

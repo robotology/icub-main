@@ -137,6 +137,7 @@ public:
     double          gyro_noise_threshold;
     double          stabilizationGain;
     double          head_version;
+    int             neckSolveCnt;
     bool            ctrlActive;
     bool            trackingModeOn;
     bool            saccadeUnderway;

@@ -96,14 +96,14 @@ bool skinManager::configure(yarp::os::ResourceFinder &rf) {
 	    zeroUpRawData, period, binarization, smoothFilter, smoothFactor);
     /* now start the thread to do the work */
     if(!myThread->start()) { // this calls threadInit() and it if returns true, it then calls run()
-        yError() << "SkinManager: Could not start the compensator thread. \n";
+        yError() << "[SkinManager] Could not start the compensator thread.";
         return false;
     }
 
     // Skin diagnostics thread
     thSkinDiagnostics = new SkinDiagnosticsReadThread(20, rf);
     if (!thSkinDiagnostics->start()) {
-        yError() << "SkinManager: Could not start the skin diagnostics thread. \n";
+        yError() << "[SkinManager] Could not start the skin diagnostics thread.";
         return false;
     }
     return true;
@@ -599,7 +599,7 @@ bool skinManager::updateModule() {
     myThread->getEstUsed(avgTimeUsed, stdDevUsed);     // real duration of run()
     if(avgTime > 1.3 * period){
         yWarning("Thread too slow. Real period: %3.3f+/-%3.3f. Expected period: %3.3f.\n", avgTime, stdDev, period);
-        printf("Duration of 'run' method: %3.3f+/-%3.3f.\n", avgTimeUsed, stdDevUsed);
+        yWarning("Duration of 'run' method: %3.3f+/-%3.3f.\n", avgTimeUsed, stdDevUsed);
     }
     return true;
 }

@@ -167,5 +167,5 @@ int main(int argc, char *argv[])
     if(mw){
         delete mw;
     }
-    return ret;
+    return (ret!=0?1:0);
 }

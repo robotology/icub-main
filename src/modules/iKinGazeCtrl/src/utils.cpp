@@ -156,8 +156,9 @@ ExchangeData::ExchangeData()
     ctrlActive=false;
     trackingModeOn=false;
     saccadeUnderway=false;
-    minAllowedVergence=0.0;
+    minAllowedVergence=0.0;    
     eyesBoundVer=-1.0;
+    neckSolveCnt=0;
 
     eyeTiltLim.resize(2);
     eyeTiltLim[0]=-std::numeric_limits<double>::max();

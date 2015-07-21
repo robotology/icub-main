@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
         if (!yarp.checkNetwork())
         {
             yError("YARP server not available!");
-            return -1;
+            return 1;
         }
     }
     

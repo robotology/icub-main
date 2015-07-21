@@ -810,10 +810,11 @@ void Solver::run()
         Vector xdUserTol=computeTargetUserTolerance(xd);
         neckPos=invNeck->solve(neckPos,xdUserTol,gDir);
 
-        // update neck pitch,roll,yaw
+        // update neck pitch,roll,yaw        
         commData->set_qd(0,neckPos[0]);
         commData->set_qd(1,neckPos[1]);
         commData->set_qd(2,neckPos[2]);
+        commData->neckSolveCnt++;
 
         state_=ctrl_wait;
     }

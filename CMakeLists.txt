@@ -83,9 +83,6 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubOptions.cmake)
 # find dependencies and set variables
 include(${PROJECT_SOURCE_DIR}/conf/iCubFindDependencies.cmake)
 
-#### options that are iCub specific
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
-
 # check for libraries that are strictly required
 if (NOT ICUB_HAS_GSL)
   message(FATAL_ERROR "Cannot find GSL")

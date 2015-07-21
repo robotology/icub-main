@@ -930,12 +930,10 @@ int main(int argc, char *argv[])
     }
 
     Network yarp;
-
     if (!yarp.checkNetwork())
-        return -1;
+        return 1;
 
     scriptModule mod;
- 
     return mod.runModule(rf);
 }
 

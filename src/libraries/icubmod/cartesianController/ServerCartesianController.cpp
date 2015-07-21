@@ -1631,7 +1631,7 @@ void ServerCartesianController::run()
         {
             if (jointsHealthy)
             {
-                setJointsCtrlMode(jointsToSet); 
+                setJointsCtrlMode(jointsToSet);
                 if (!executingTraj)
                 {
                     ctrl->restart(fb);

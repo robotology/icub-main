@@ -34,7 +34,9 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${optimization_INCLUDE_DIRS}
                     ${learningMachine_INCLUDE_DIRS})
                     
+add_definitions(${IPOPT_DEFINITIONS})
 add_executable(${PROJECTNAME} ${header_files} ${source_files} ${idl_files} ${doc_files})
+set_property(TARGET ${PROJECTNAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}
                                      ${IPOPT_LIBRARIES}
                                      ${OpenCV_LIBRARIES}

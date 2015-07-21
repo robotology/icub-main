@@ -26,12 +26,10 @@ int main(int argc, char *argv[])
 //    string driftCompInfoPortName    = rf.check("skinManInfoPort", Value("/skinManager/info:o")).asString().c_str();
 
 
-
-
     MainWindow w(&rf);
     w.show();
 
-    return a.exec();
+    return (a.exec()!=0?1:0);
 }
 
 

@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     options.fromCommand(argc, argv);
     if (!options.check("robot") || !options.check("part")) {
         printf("Missing either --robot or --part options\n");
-        return 0;
+        return 1;
     }
 
     Network::init();

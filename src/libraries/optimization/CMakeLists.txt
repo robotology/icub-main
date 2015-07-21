@@ -13,7 +13,7 @@ set(folder_header include/iCub/optimization/algorithms.h
                   include/iCub/optimization/matrixTransformation.h
                   include/iCub/optimization/calibReference.h
                   include/iCub/optimization/affinity.h
-				  include/iCub/optimization/neuralNetworks.h)
+                  include/iCub/optimization/neuralNetworks.h)
 
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
@@ -23,8 +23,10 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${IPOPT_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
+add_definitions(${IPOPT_DEFINITIONS})
 add_library(${PROJECTNAME} ${folder_source} ${folder_header})
 
+set_property(TARGET ${PROJECTNAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
 target_link_libraries(${PROJECTNAME} ctrlLib
                                      ${IPOPT_LIBRARIES}
                                      ${YARP_LIBRARIES})

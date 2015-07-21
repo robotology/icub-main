@@ -1044,7 +1044,7 @@ int main(int argc, char *argv[])
     if (mod.open(p))
         return mod.runModule();
     else 
-        return 0;
+        return 1;
 
     Network::fini();
 }
