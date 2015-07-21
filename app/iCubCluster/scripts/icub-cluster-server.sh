@@ -15,18 +15,18 @@ fi
 case "$1" in
 	start)
 		case "$2" in
-			yarpserver)
-				echo "Starting up yarp server"
-				yarpserver >/dev/null 2>&1 &
+			ros) # ros option
+				echo "Starting up yarp server with ros option"
+				yarpserver --portdb /tmp/ports.db --subdb /tmp/subs.db --ros >/dev/null 2>&1 &
 				echo "done!"
 				;;
-			*) #yarpserver3 is the default
+			*) #yarpserver without ros is the default
 				echo "Starting up yarp server"
-				yarpserver3 --portdb /tmp/ports.db --subdb /tmp/subs.db >/dev/null 2>&1 &
+				yarpserver --portdb /tmp/ports.db --subdb /tmp/subs.db >/dev/null 2>&1 &
 				echo "done!"
 				;;
 		esac
-		;;
+	        ;;
 	stop)
 		echo "Stopping yarp server"
 		killall yarpserver3
