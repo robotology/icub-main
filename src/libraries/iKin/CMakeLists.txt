@@ -35,13 +35,13 @@ include_directories(${PROJECT_SOURCE_DIR}/include
 if(ICUB_USE_IPOPT)
    include_directories(${IPOPT_INCLUDE_DIRS})
    add_definitions(${IPOPT_DEFINITIONS})
-   set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${IPOPT_LINKER_FLAGS}")
 endif()
 
 add_library(${PROJECTNAME} ${folder_source} ${folder_header})
 target_link_libraries(${PROJECTNAME} ctrlLib ${GSL_LIBRARIES} ${YARP_LIBRARIES})
 
 if(ICUB_USE_IPOPT)
+   set_property(TARGET ${PROJECTNAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
    target_link_libraries(${PROJECTNAME} ${IPOPT_LIBRARIES})
 endif()
 

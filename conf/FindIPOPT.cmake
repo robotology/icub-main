@@ -7,7 +7,7 @@
 # IPOPT_INCLUDE_DIRS - Directories to include to use IPOPT
 # IPOPT_LIBRARIES    - Default library to link against to use IPOPT
 # IPOPT_DEFINITIONS  - Flags to be added to compiler's options
-# IPOPT_LINKER_FLAGS - Flags to be added to linker's options
+# IPOPT_LINK_FLAGS   - Flags to be added to linker's options
 # IPOPT_FOUND        - If false, don't try to use IPOPT
 
 # Copyright (C) 2008-2010  RobotCub Consortium
@@ -49,7 +49,7 @@ if(APPLE)
 
     endif()
 
-    set(IPOPT_LINKER_FLAGS "")
+    set(IPOPT_LINK_FLAGS "")
 
 elseif(UNIX)
 
@@ -101,7 +101,7 @@ elseif(UNIX)
     endif()
 
     set(IPOPT_DEFINITIONS "")
-    set(IPOPT_LINKER_FLAGS "")
+    set(IPOPT_LINK_FLAGS "")
 
 # Windows platforms
 else()
@@ -129,9 +129,9 @@ else()
 
     set(IPOPT_DEFINITIONS "")
     if(MSVC)
-        set(IPOPT_LINKER_FLAGS "/NODEFAULTLIB:libcmt.lib;libcmtd.lib")
+        set(IPOPT_LINK_FLAGS "/NODEFAULTLIB:libcmt.lib;libcmtd.lib")
     else()
-        set(IPOPT_LINKER_FLAGS "")
+        set(IPOPT_LINK_FLAGS "")
     endif()
 
 endif()
@@ -139,7 +139,7 @@ endif()
 mark_as_advanced(IPOPT_INCLUDE_DIRS
                  IPOPT_LIBRARIES
                  IPOPT_DEFINITIONS
-                 IPOPT_LINKER_FLAGS)
+                 IPOPT_LINK_FLAGS)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(IPOPT DEFAULT_MSG IPOPT_LIBRARIES)
