@@ -107,6 +107,13 @@ bool BmsBattery::threadInit()
     return true;
 }
 
+bool BmsBattery::verify_checksum(int& raw_battery_current, int&  raw_battery_voltage, int&  raw_battery_charge, int&  raw_battery_checksum)
+{
+    if (raw_battery_checksum == raw_battery_current + raw_battery_voltage + raw_battery_charge)
+        return true;
+    return false;
+}
+
 void BmsBattery::run()
 {
     double timeNow=yarp::os::Time::now();
@@ -122,56 +129,54 @@ void BmsBattery::run()
     //if nothing is received, rec=0, the while exits immediately. The string will be not valid, so the parser will skip it and it will leave unchanged the battery status (voltage/current/charge)
     //if a text line is received, then try to receive more text to empty the buffer. If nothing else is received, serial_buff will be left unchanged from the previous value. The loop will exit and the sting will be parsed.
     serial_buff[0] = 0;
-    log_buffer[0] = 0;
     int rec = 0;
-    
-    if (pSerial)
+    do
     {
-        do
-        {
-            rec = pSerial->receiveLine(serial_buff, 250);
-            if (verboseEnable) yDebug("BmsBattery::run() received %d chars", rec);
-            if (debugEnable)   yDebug("BmsBattery::run() buffer is: <%s> ", serial_buff);
-        } while
-            (rec > 0);
-    }
-    else
-    {
-        yError("pSerial == NULL");
-    }
-
-#if DEBUG_TEST
-    battery_voltage     = 40.0;
-    battery_current = 5.0;
-    battery_charge = 72.0;
-    battery_temperature = 35.0;
-#endif
+        rec = pSerial->receiveLine(serial_buff, 250);
+        if (debugEnable) yDebug("%d <%s> ", rec, serial_buff);
+    } while
+        (rec>0);
 
     int len = strlen(serial_buff);
+    bool reading_ok = false;
     if (len>0)
     {
-        if (verboseEnable) yDebug("BmsBattery::run() serial_buffer is: %s", serial_buff);
         int pars = 0;
-        char dummy1 = serial_buff[0];
-        battery_voltage = serial_buff[1] * 256 + serial_buff[2];
-        battery_current = serial_buff[3] * 256 + serial_buff[4];
-        battery_charge  = serial_buff[5] * 256 + serial_buff[6];
-        backpack_status = serial_buff[7];
-        char dummy2 = serial_buff[8];
+        int raw_battery_current = 0;
+        int raw_battery_voltage = 0;
+        int raw_battery_charge = 0;
+        int raw_battery_checksum = 0;
+        pars = sscanf(serial_buff, "%*s %d %*s %d %*s %d %*s %d", &raw_battery_current, &raw_battery_voltage, &raw_battery_charge, &raw_battery_checksum);
 
-        //add checksum verification
-        //...
-
-        time_t rawtime;
-        struct tm * timeinfo;
-        time(&rawtime);
-        timeinfo = localtime(&rawtime);
-        char* battery_timestamp = asctime(timeinfo);
-        sprintf(log_buffer, "battery status: %+6.1fA   % 6.1fV   charge:% 6.1f%%    time: %s", battery_current, battery_voltage, battery_charge, battery_timestamp);
+        if (pars == 4)
+        {
+            if (verify_checksum(raw_battery_current, raw_battery_voltage, raw_battery_charge, raw_battery_checksum))
+            {
+                time_t rawtime;
+                struct tm * timeinfo;
+                time(&rawtime);
+                timeinfo = localtime(&rawtime);
+                //battery_data.timestamp = asctime(timeinfo);
+                battery_voltage = double(battery_voltage) / 1024 * 66;
+                battery_current = (double(battery_current) - 512) / 128 * 20; //+- 60 is the maximum current that the sensor can read. 128+512 is the value of the AD 
+                //when the current is 20A.
+                battery_charge = double(battery_charge) / 100; // the value coming from the BCS board goes from 0 to 100%
+                sprintf(log_buffer, "battery status: %+6.1fA   % 6.1fV   charge:% 6.1f%%", battery_current, battery_voltage, battery_charge);
+                reading_ok = true;
+            }
+            else
+            {
+                yError("checksum error while reading battery data\n");
+            }
+        }
+        else
+        {
+            yError("error reading battery data: %d\n", pars);
+        }
     }
 
     // if the battery is not charging, checks its status of charge
-    if (battery_current>0.4) check_battery_status();
+    if (reading_ok && battery_current>0.4) check_battery_status();
 
     // print data to screen
     if (screenEnable)

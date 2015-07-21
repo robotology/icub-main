@@ -1,7 +1,7 @@
 /* 
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
+ * Author: Ugo Pattacini, Alessandro Roncone
+ * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -36,7 +36,6 @@
 #define SACCADES_VEL                        1000.0  // [deg/s]
 #define SACCADES_INHIBITION_PERIOD          0.2     // [s]
 #define SACCADES_ACTIVATION_ANGLE           10.0    // [deg]
-#define GYRO_BIAS_STABILITY                 5.0     // [deg/s]
 #define NECKSOLVER_ACTIVATIONDELAY          0.25    // [s]
 #define NECKSOLVER_ACTIVATIONANGLE_JOINTS   0.1     // [deg]
 #define NECKSOLVER_ACTIVATIONANGLE          2.5     // [deg]
@@ -61,26 +60,20 @@ protected:
     iCubInertialSensor   *imu;
     iKinChain            *chainNeck, *chainEyeL, *chainEyeR;    
     PolyDriver           *drvTorso, *drvHead;
-    exchangeData         *commData;
+    ExchangeData         *commData;
     Controller           *ctrl;
-    xdPort               *port_xd;
     Integrator           *I;
 
     double                orig_eye_tilt_min;
     double                orig_eye_tilt_max;
     double                orig_eye_pan_min;
     double                orig_eye_pan_max;
-
-    BufferedPort<Vector> port_inertial;
-    Mutex mutex;
-
+    
     unsigned int period;
-    bool saccadesOn;
-    bool saccadeUnderWayOld;
-    bool genOn;
-    int nJointsTorso;
-    int nJointsHead;
-    double eyesBoundVer;
+    bool   saccadeUnderWayOld;
+    bool   genOn;
+    int    nJointsTorso;
+    int    nJointsHead;
     int    saccadesRxTargets;
     double saccadesClock;
     double saccadesInhibitionPeriod;
@@ -93,30 +86,23 @@ protected:
     Vector fbHead;
     Vector qd,fp;
     Matrix eyesJ;
-    Vector gyro;
     Vector counterRotGain;
 
     Vector getEyesCounterVelocity(const Matrix &eyesJ, const Vector &fp);
 
 public:
-    EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
-                  Controller *_ctrl, const bool _saccadesOn, const Vector &_counterRotGain,
-                  const unsigned int _period);
+    EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
+                  Controller *_ctrl, const Vector &_counterRotGain, const unsigned int _period);
 
-    void   set_xdport(xdPort *_port_xd)                     { port_xd=_port_xd;                }
     void   enable()                                         { genOn=true;                      }
     void   disable()                                        { genOn=false;                     }
-    Vector getCounterRotGain() const                        { return counterRotGain;           }
-    void   setSaccades(const bool sw)                       { saccadesOn=sw;                   }
-    bool   isSaccadesOn() const                             { return saccadesOn;               }
+    Vector getCounterRotGain() const                        { return counterRotGain;           }    
     void   setSaccadesInhibitionPeriod(const double period) { saccadesInhibitionPeriod=period; }    
     void   setSaccadesActivationAngle(const double angle)   { saccadesActivationAngle=angle;   }
     double getSaccadesInhibitionPeriod() const              { return saccadesInhibitionPeriod; }
     double getSaccadesActivationAngle() const               { return saccadesActivationAngle;  }
-    double getEyesBoundVer() const                          { return eyesBoundVer;             }
     void   setCounterRotGain(const Vector &gain);
     void   minAllowedVergenceChanged();
-    bool   getGyro(Vector &data);
     bool   bindEyes(const double ver);
     bool   clearEyes();
     void   manageBindEyes(const double ver);
@@ -140,15 +126,13 @@ protected:
     iKinChain          *chainNeck, *chainEyeL, *chainEyeR;    
     GazeIpOptMin       *invNeck;
     PolyDriver         *drvTorso, *drvHead;
-    exchangeData       *commData;
+    ExchangeData       *commData;
     EyePinvRefGen      *eyesRefGen;
     Localizer          *loc;
-    Controller         *ctrl;
-    xdPort             *port_xd;
+    Controller         *ctrl;    
     Mutex               mutex;
 
     unsigned int period;
-    bool solveRequest;
     int nJointsTorso;
     int nJointsHead;
     double neckAngleUserTolerance;
@@ -158,9 +142,7 @@ protected:
     Vector fbHead;
     Vector neckPos;
     Vector gazePos;
-    Vector gDefaultDir;
     Vector fbTorsoOld;
-    Vector fbHeadOld;
 
     double neckPitchMin;
     double neckPitchMax;
@@ -170,11 +152,10 @@ protected:
     double neckYawMax;
 
     void   updateAngles();
-    Vector getGravityDirection(const Vector &gyro);
     Vector computeTargetUserTolerance(const Vector &xd);
 
 public:
-    Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
+    Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
            EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
            const unsigned int _period);
 

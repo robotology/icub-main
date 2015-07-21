@@ -48,7 +48,7 @@ CompensationThread::CompensationThread(string name, ResourceFinder* rf, string r
 
 bool CompensationThread::threadInit() 
 {
-    yTrace("threadInit()\n");
+    yTrace("[CompensationThread] threadInit()\n");
 
    /* initialize variables and create data-structures if needed */
 	readErrorCounter = 0;
@@ -116,7 +116,7 @@ bool CompensationThread::threadInit()
         compWorking[i] = compensators[i]->isWorking();
         if(!compWorking[i]){
             stringstream msg;
-            msg<< "[ERROR] Compensator "<< compensators[i]->getInputPortName().c_str()
+            msg<< " Compensator "<< compensators[i]->getInputPortName().c_str()
                 << " did not open correctly. Removing the port.";
             sendErrorMsg(msg.str());
             if(compensatorCounter==1){

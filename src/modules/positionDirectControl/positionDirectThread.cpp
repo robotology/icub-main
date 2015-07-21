@@ -126,13 +126,13 @@ void positionDirectControlThread::threadRelease()
     command_port.close();
 }
 
-bool positionDirectControlThread::init(PolyDriver *d, ConstString partName, ConstString robotName, Bottle* jointsList)
+bool positionDirectControlThread::init(PolyDriver *d, ConstString moduleName, ConstString partName, ConstString robotName, Bottle* jointsList)
 {
     yarp::os::Time::turboBoost();
 
     ///opening port command input
     char tmp[255];
-    sprintf(tmp,"/directPositionControl/%s/%s/command:i", robotName.c_str(), partName.c_str());
+    sprintf(tmp, "/%s/%s/%s/command:i", moduleName.c_str(), robotName.c_str(), partName.c_str());
     yInfo("opening port for part %s\n",tmp);
     command_port.open(tmp);
 

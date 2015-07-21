@@ -18,7 +18,7 @@
 
 # No longer looking for $ICUB_ROBOTNAME env variable
 # Modified to accept DISPLAY value in xlm
-	
+
 import xml.dom.minidom
 import subprocess
 import os
@@ -161,6 +161,7 @@ class App:
         self.clusterNs = Entry(tmpFrame)
         self.clusterNs.insert(END, cluster.namespace)
         self.clusterNs.grid(row=1, column=1, sticky=E)
+        self.clusterNs.config(state='readonly')
 
         nsFrame=Frame(self.master, relief="ridge", bd=1)
         nsFrame.pack(fill=X)
@@ -175,6 +176,12 @@ class App:
         self.bCheckNs.config(state=DISABLED,disabledforeground="#00A000")
         self.bCheckNs.grid(row=1, column=1, sticky=W)
 
+	self.bROSoption = Entry(tmpFrame)
+	self.ROSoption=IntVar()
+	self.ROSoption.set(0)
+	self.bROSoption=Checkbutton(tmpFrame, variable=self.ROSoption)
+	self.bROSoption.grid(row=1, column=2)
+	Label(tmpFrame, text="--ros").grid(row=0, column=2)
         tmpFrame=Frame(nsFrame)
         tmpFrame.pack()
         buttonCheckNs=Button(tmpFrame, text="Check", width=8, command=self.checkNs)
@@ -201,7 +208,7 @@ class App:
         Label(tmpFrame, text="On/Off").grid(row=0, column=4)
         Label(tmpFrame, text="Log").grid(row=0, column=5)
         Label(tmpFrame, text="Select").grid(row=0, column=6)
-        
+
 
         tmpFrame.grid(row=1, column=0)
         self.clusterNodes=[]
@@ -216,6 +223,7 @@ class App:
             tmp.insert(END, node.name)
             r=r+1
             tmp.grid(row=r, column=1)
+            tmp.config(state='readonly')
             self.clusterNodes.append(tmp)
 
             #v=IntVar()
@@ -234,7 +242,7 @@ class App:
             check.grid(row=r, column=2)
 
             u=StringVar()
-            if node.user != cluster.user:
+            if node.user != self.clusterUser.get():
                 u.set(node.user)
                 self.dispFlag.append(1)
             else:
@@ -287,7 +295,7 @@ class App:
         buttonExec.grid(row=0, column=0, columnspan=4)
 
     def executeWnd(self):
-        a=RemoteExecWindow(self.master, self.cluster.user, self.cluster.nodes)
+        a=RemoteExecWindow(self.master, self.clusterUser.get(), self.cluster.nodes)
 
     def checkNodes(self):
         print 'Checking nodes'
@@ -395,13 +403,14 @@ class App:
         print 'Running nameserver'
         self.checkNs()
         if self.nsFlag.get()==0:
-            #cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.sh' ' start']
-            cmd = Util.getSshCmd(self.cluster.user, self.cluster.nsNode) + ['icub-cluster-server.sh', ' start']
-            if (self.cluster.nsType=='yarpserver3'):
-                cmd.append('yarpserver3')
-            elif(self.cluster.nsType=='yarpserver'):
-                 cmd.append('yarpserver')
+            cmd = Util.getSshCmd(self.clusterUser.get(), self.clusterNsNode.get()) + ['icub-cluster-server.sh', ' start']
+#            if (self.cluster.nsType=='yarpserver3'):
+#                cmd.append('yarpserver3')
+#            elif(self.cluster.nsType=='yarpserver'):
+#                 cmd.append('yarpserver')
 
+	    if self.ROSoption.get()==1:
+		cmd.append('ros')
             print 'Running',
             print " ".join(cmd)
             ret=subprocess.Popen(cmd).wait()
@@ -414,8 +423,7 @@ class App:
         print 'Stopping nameserver'
         self.checkNs()
         if self.nsFlag.get()==1:
-            #cmd=['ssh', '-f', self.cluster.user+'@'+self.cluster.nsNode, 'icub-cluster-server.sh' ' stop']
-            cmd = Util.getSshCmd(self.cluster.user, self.cluster.nsNode) + ['icub-cluster-server.sh', ' stop']
+            cmd = Util.getSshCmd(self.clusterUser.get(), self.clusterNsNode.get()) + ['icub-cluster-server.sh', ' stop']
             print 'Running',
             print " ".join(cmd)
             ret=subprocess.Popen(cmd).wait()
@@ -440,7 +448,7 @@ def check_output(*popenargs, **kwargs):
 def printUsage(scriptName):
     print scriptName, ": python gui for managing yarprun servers (Linux only)"
     print "Usage:"
-    print scriptName, 
+    print scriptName,
     print "[xml_configuration_file] [context]\n"
     print "  xml_configuration_file: cluster configuration file (default: cluster-config.xml)."
     print "  context: context where xml configuration file is sought through yarp's ResourceFinder (default: iCubCluster)."
@@ -454,11 +462,11 @@ if __name__ == '__main__':
 
     if (argc>2):
          contextName=sys.argv[2]
-    else:    
+    else:
          contextName="iCubCluster"
     if (argc>1):
          configFileName=sys.argv[1]
-    else:    
+    else:
          configFileName="cluster-config.xml"
 
     if (configFileName == "help"):
@@ -498,7 +506,7 @@ if __name__ == '__main__':
                     nodeuser=user;
                 a=node.getAttribute("display")
                 # handle default values for variable (for backward compatibility)
-                if ( a=="true" or a=="True" or a=="TRUE" or a=="yes" or a=="YES"): 
+                if ( a=="true" or a=="True" or a=="TRUE" or a=="yes" or a=="YES"):
                     newNode=Node(node.firstChild.data, True, ":0.0", nodeuser)
                 else:
                     newNode=Node(node.firstChild.data, True, a, nodeuser)

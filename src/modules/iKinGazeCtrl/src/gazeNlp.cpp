@@ -1,7 +1,7 @@
 /* 
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
+ * Author: Ugo Pattacini, Alessandro Roncone
+ * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -16,9 +16,9 @@
  * Public License for more details
 */
 
+#include <cmath>
+#include <limits>
 #include <algorithm>
-
-#include <gsl/gsl_math.h>
 
 #include <IpTNLP.hpp>
 #include <IpIpoptApplication.hpp>
@@ -119,8 +119,8 @@ public:
         __x_scaling  =1.0;
         __g_scaling  =1.0;
 
-        lowerBoundInf=IKINIPOPT_DEFAULT_LWBOUNDINF;
-        upperBoundInf=IKINIPOPT_DEFAULT_UPBOUNDINF;
+        lowerBoundInf=-std::numeric_limits<double>::max();
+        upperBoundInf=std::numeric_limits<double>::max();
 
         qRest.resize(dim,0.0);
     }
@@ -315,12 +315,12 @@ public:
         // rest pitch
         Vector gDirHp=SE3inv(chain.getH(2,true))*gDir;
         qRest[0]=-atan2(gDirHp[0],gDirHp[1]);
-        qRest[0]=std::min(std::max(chain(0).getMin(),qRest[0]),chain(0).getMax());
+        qRest[0]=sat(qRest[0],chain(0).getMin(),chain(0).getMax());
 
         // rest roll
         Vector gDirHr=SE3inv(chain.getH(3,true))*gDir;
         qRest[1]=atan2(gDirHr[1],gDirHr[0]);
-        qRest[1]=std::min(std::max(chain(1).getMin(),qRest[1]),chain(1).getMax());
+        qRest[1]=sat(qRest[1],chain(1).getMin(),chain(1).getMax());
     }
 
     /************************************************************************/

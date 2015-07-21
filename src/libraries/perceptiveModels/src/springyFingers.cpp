@@ -17,8 +17,8 @@
 
 #include <sstream>
 #include <iomanip>
-
-#include <gsl/gsl_math.h>
+#include <cmath>
+#include <limits>
 
 #include <yarp/math/Math.h>
 
@@ -514,7 +514,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
             ipos->getRefAcceleration(j,&acc[j]);
             ipos->getRefSpeed(j,&vel[j]);
             
-            ipos->setRefAcceleration(j,1e9);
+            ipos->setRefAcceleration(j,std::numeric_limits<double>::max());
             ipos->setRefSpeed(j,60.0);
             ipos->positionMove(j,(j==8)?qmax[j]:qmin[j]);   // thumb in opposition
         }
@@ -669,7 +669,7 @@ void SpringyFingersModel::calibrateFinger(SpringyFinger &finger, const int joint
         mutex.unlock();
 
         bool done=false;
-        double fbOld=1e9;
+        double fbOld=std::numeric_limits<double>::max();
         double t0=Time::now();
         while (!done)
         {

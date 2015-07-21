@@ -133,6 +133,10 @@ void OdeInit::setSimulationControl(iCubSimulationControl *control, int part)
 void OdeInit::sendHomePos()
 {
     double refs[16] = {0,0,0,0,0,0,0,0,0,0,0,10*M_PI/180,10*M_PI/180,10*M_PI/180,10*M_PI/180,10*M_PI/180};
+    int position_vocabs[16] = {VOCAB_CM_POSITION,VOCAB_CM_POSITION,VOCAB_CM_POSITION,VOCAB_CM_POSITION,
+                                VOCAB_CM_POSITION,VOCAB_CM_POSITION,VOCAB_CM_POSITION,VOCAB_CM_POSITION,
+                                VOCAB_CM_POSITION,VOCAB_CM_POSITION,VOCAB_CM_POSITION,VOCAB_CM_POSITION,
+                                VOCAB_CM_POSITION,VOCAB_CM_POSITION,VOCAB_CM_POSITION,VOCAB_CM_POSITION};
     if (_wrld->actWorld == "on")
     {
         refs[0] = -0*M_PI/180;
@@ -154,10 +158,14 @@ void OdeInit::sendHomePos()
         refs[10] = 20*M_PI/180;
     }
 
-    if (_iCub->actLArm == "on" || _iCub->actLHand == "on")
+    if (_iCub->actLArm == "on" || _iCub->actLHand == "on"){
+        _controls[1]->setControlModesRaw(position_vocabs); 
         _controls[1]->positionMoveRaw(refs);
-    if (_iCub->actRArm == "on" || _iCub->actRHand == "on")
+    }
+    if (_iCub->actRArm == "on" || _iCub->actRHand == "on"){
+        _controls[2]->setControlModesRaw(position_vocabs); 
         _controls[2]->positionMoveRaw(refs);
+    }
 }
 
 void OdeInit::removeSimulationControl(int part){

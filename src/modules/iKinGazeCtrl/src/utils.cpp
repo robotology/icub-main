@@ -1,7 +1,7 @@
 /* 
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
+ * Author: Ugo Pattacini, Alessandro Roncone
+ * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -16,6 +16,8 @@
  * Public License for more details
 */
 
+#include <cmath>
+#include <limits>
 #include <algorithm>
 
 #include <iCub/utils.h>
@@ -29,20 +31,29 @@
 #define MUTEX_V             5
 #define MUTEX_COUNTERV      6
 #define MUTEX_FPFRAME       7
+#define MUTEX_IMU           8
 
 
 /************************************************************************/
-xdPort::xdPort(const Vector &xd0, void *_slv)
+xdPort::xdPort(void *_slv)
 {   
-    xdDelayed=xd=xd0;
     isNewDelayed=isNew=false;
     locked=false;
     closing=false;
     rx=0;
 
+    useCallback();
+
     slv=_slv;
     if (slv!=NULL)
         start();
+}
+
+
+/************************************************************************/
+void xdPort::init(const Vector &xd0)
+{
+    xdDelayed=xd=xd0;
 }
 
 
@@ -137,17 +148,24 @@ void xdPort::run()
 
 
 /************************************************************************/
-exchangeData::exchangeData()
+ExchangeData::ExchangeData()
 {
-    isCtrlActive=false;
-    canCtrlBeDisabled=true;
+    imu.resize(12,0.0);
+    port_xd=NULL;
+
+    ctrlActive=false;
+    trackingModeOn=false;
     saccadeUnderway=false;
-    minAllowedVergence=0.0;
+    minAllowedVergence=0.0;    
+    eyesBoundVer=-1.0;
+    neckSolveCnt=0;
+
+    eyeTiltLim.resize(2);
+    eyeTiltLim[0]=-std::numeric_limits<double>::max();
+    eyeTiltLim[1]=std::numeric_limits<double>::max();
 
     robotName="";
     localStemName="";
-    eyeTiltMin=-1e9;
-    eyeTiltMax=1e9;
     head_version=1.0;
     tweakOverwrite=true;
     tweakFile="";
@@ -155,7 +173,7 @@ exchangeData::exchangeData()
 
 
 /************************************************************************/
-void exchangeData::resize_v(const int sz, const double val)
+void ExchangeData::resize_v(const int sz, const double val)
 {
     mutex[MUTEX_V].lock();
     v.resize(sz,val);
@@ -164,7 +182,7 @@ void exchangeData::resize_v(const int sz, const double val)
 
 
 /************************************************************************/
-void exchangeData::resize_counterv(const int sz, const double val)
+void ExchangeData::resize_counterv(const int sz, const double val)
 {
     mutex[MUTEX_COUNTERV].lock();
     counterv.resize(sz,val);
@@ -173,7 +191,7 @@ void exchangeData::resize_counterv(const int sz, const double val)
 
 
 /************************************************************************/
-void exchangeData::set_xd(const Vector &_xd)
+void ExchangeData::set_xd(const Vector &_xd)
 {
     mutex[MUTEX_XD].lock();
     xd=_xd;
@@ -182,7 +200,7 @@ void exchangeData::set_xd(const Vector &_xd)
 
 
 /************************************************************************/
-void exchangeData::set_qd(const Vector &_qd)
+void ExchangeData::set_qd(const Vector &_qd)
 {
     mutex[MUTEX_QD].lock();
     qd=_qd;
@@ -191,7 +209,7 @@ void exchangeData::set_qd(const Vector &_qd)
 
 
 /************************************************************************/
-void exchangeData::set_qd(const int i, const double val)
+void ExchangeData::set_qd(const int i, const double val)
 {
     mutex[MUTEX_QD].lock();
     qd[i]=val;
@@ -200,7 +218,7 @@ void exchangeData::set_qd(const int i, const double val)
 
 
 /************************************************************************/
-void exchangeData::set_x(const Vector &_x)
+void ExchangeData::set_x(const Vector &_x)
 {
     mutex[MUTEX_X].lock();
     x=_x;
@@ -209,7 +227,7 @@ void exchangeData::set_x(const Vector &_x)
 
 
 /************************************************************************/
-void exchangeData::set_x(const Vector &_x, const double stamp)
+void ExchangeData::set_x(const Vector &_x, const double stamp)
 {
     mutex[MUTEX_X].lock();
     x=_x;
@@ -219,7 +237,7 @@ void exchangeData::set_x(const Vector &_x, const double stamp)
 
 
 /************************************************************************/
-void exchangeData::set_q(const Vector &_q)
+void ExchangeData::set_q(const Vector &_q)
 {
     mutex[MUTEX_Q].lock();
     q=_q;
@@ -228,7 +246,7 @@ void exchangeData::set_q(const Vector &_q)
 
 
 /************************************************************************/
-void exchangeData::set_torso(const Vector &_torso)
+void ExchangeData::set_torso(const Vector &_torso)
 {
     mutex[MUTEX_TORSO].lock();
     torso=_torso;
@@ -237,7 +255,7 @@ void exchangeData::set_torso(const Vector &_torso)
 
 
 /************************************************************************/
-void exchangeData::set_v(const Vector &_v)
+void ExchangeData::set_v(const Vector &_v)
 {
     mutex[MUTEX_V].lock();
     v=_v;
@@ -246,7 +264,7 @@ void exchangeData::set_v(const Vector &_v)
 
 
 /************************************************************************/
-void exchangeData::set_counterv(const Vector &_counterv)
+void ExchangeData::set_counterv(const Vector &_counterv)
 {
     mutex[MUTEX_COUNTERV].lock();
     counterv=_counterv;
@@ -255,7 +273,7 @@ void exchangeData::set_counterv(const Vector &_counterv)
 
 
 /************************************************************************/
-void exchangeData::set_fpFrame(const Matrix &_S)
+void ExchangeData::set_fpFrame(const Matrix &_S)
 {
     mutex[MUTEX_FPFRAME].lock();
     S=_S;
@@ -264,7 +282,16 @@ void exchangeData::set_fpFrame(const Matrix &_S)
 
 
 /************************************************************************/
-Vector exchangeData::get_xd()
+void ExchangeData::set_imu(const Vector &_imu)
+{
+    mutex[MUTEX_IMU].lock();
+    imu=_imu;
+    mutex[MUTEX_IMU].unlock();
+}
+
+
+/************************************************************************/
+Vector ExchangeData::get_xd()
 {
     mutex[MUTEX_XD].lock();
     Vector _xd=xd;
@@ -275,7 +302,7 @@ Vector exchangeData::get_xd()
 
 
 /************************************************************************/
-Vector exchangeData::get_qd()
+Vector ExchangeData::get_qd()
 {
     mutex[MUTEX_QD].lock();
     Vector _qd=qd;
@@ -286,7 +313,7 @@ Vector exchangeData::get_qd()
 
 
 /************************************************************************/
-Vector exchangeData::get_x()
+Vector ExchangeData::get_x()
 {
     mutex[MUTEX_X].lock();
     Vector _x=x;
@@ -297,7 +324,7 @@ Vector exchangeData::get_x()
 
 
 /************************************************************************/
-Vector exchangeData::get_x(double &stamp)
+Vector ExchangeData::get_x(double &stamp)
 {
     mutex[MUTEX_X].lock();
     Vector _x=x;
@@ -309,7 +336,7 @@ Vector exchangeData::get_x(double &stamp)
 
 
 /************************************************************************/
-Vector exchangeData::get_q()
+Vector ExchangeData::get_q()
 {
     mutex[MUTEX_Q].lock();
     Vector _q=q;
@@ -320,7 +347,7 @@ Vector exchangeData::get_q()
 
 
 /************************************************************************/
-Vector exchangeData::get_torso()
+Vector ExchangeData::get_torso()
 {
     mutex[MUTEX_TORSO].lock();
     Vector _torso=torso;
@@ -331,7 +358,7 @@ Vector exchangeData::get_torso()
 
 
 /************************************************************************/
-Vector exchangeData::get_v()
+Vector ExchangeData::get_v()
 {
     mutex[MUTEX_V].lock();
     Vector _v=v;
@@ -342,7 +369,7 @@ Vector exchangeData::get_v()
 
 
 /************************************************************************/
-Vector exchangeData::get_counterv()
+Vector ExchangeData::get_counterv()
 {
     mutex[MUTEX_COUNTERV].lock();
     Vector _counterv=counterv;
@@ -353,13 +380,46 @@ Vector exchangeData::get_counterv()
 
 
 /************************************************************************/
-Matrix exchangeData::get_fpFrame()
+Matrix ExchangeData::get_fpFrame()
 {
     mutex[MUTEX_FPFRAME].lock();
     Matrix _S=S;
     mutex[MUTEX_FPFRAME].unlock();
 
     return _S;
+}
+
+
+/************************************************************************/
+Vector ExchangeData::get_imu()
+{
+    mutex[MUTEX_IMU].lock();
+    Vector _imu=imu;
+    mutex[MUTEX_IMU].unlock();
+
+    return _imu;
+}
+
+
+/************************************************************************/
+IMUPort::IMUPort() : commData(NULL)
+{
+    useCallback();
+}
+
+
+/************************************************************************/
+void IMUPort::setExchangeData(ExchangeData *commData)
+{
+    this->commData=commData;
+}
+
+
+/************************************************************************/
+void IMUPort::onRead(Vector &imu)
+{
+    if (commData!=NULL)
+        commData->set_imu(imu);
 }
 
 
@@ -414,33 +474,30 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
     {
         message+=": intrinsic parameters for "+type;
         Bottle &parType=_rf.findGroup(type.c_str());
-        if (!parType.isNull())
+        if (parType.check("fx") && parType.check("fy") &&
+            parType.check("cx") && parType.check("cy"))
         {
-            if (parType.check("fx") && parType.check("fy") &&
-                parType.check("cx") && parType.check("cy"))
+            double fx=parType.find("fx").asDouble();
+            double fy=parType.find("fy").asDouble();
+            double cx=parType.find("cx").asDouble();
+            double cy=parType.find("cy").asDouble();
+
+            if (verbose)
             {
-                double fx=parType.find("fx").asDouble();
-                double fy=parType.find("fy").asDouble();
-                double cx=parType.find("cx").asDouble();
-                double cy=parType.find("cy").asDouble();
-
-                if (verbose)
-                {
-                    yInfo("%s found:",message.c_str());
-                    yInfo("fx = %g",fx);
-                    yInfo("fy = %g",fy);
-                    yInfo("cx = %g",cx);
-                    yInfo("cy = %g",cy);
-                }
-
-                *Prj=new Matrix(eye(3,4));
-
-                Matrix &K=**Prj;
-                K(0,0)=fx; K(1,1)=fy;
-                K(0,2)=cx; K(1,2)=cy;
-
-                return true;
+                yInfo("%s found:",message.c_str());
+                yInfo("fx = %g",fx);
+                yInfo("fy = %g",fy);
+                yInfo("cx = %g",cx);
+                yInfo("cy = %g",cy);
             }
+
+            *Prj=new Matrix(eye(3,4));
+
+            Matrix &K=**Prj;
+            K(0,0)=fx; K(1,1)=fy;
+            K(0,2)=cx; K(1,2)=cy;
+
+            return true;
         }
     }
     else
@@ -468,38 +525,35 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
         {
             message+=": aligning matrix for "+type;
             Bottle &parType=_rf.findGroup(type.c_str());
-            if (!parType.isNull())
+            if (Bottle *bH=parType.find("HN").asList())
             {
-                if (Bottle *bH=parType.find("HN").asList())
+                int i=0;
+                int j=0;
+
+                Matrix HN(4,4); HN=0.0;
+                for (int cnt=0; (cnt<bH->size()) && (cnt<HN.rows()*HN.cols()); cnt++)
                 {
-                    int i=0;
-                    int j=0;
-
-                    Matrix HN(4,4); HN=0.0;
-                    for (int cnt=0; (cnt<bH->size()) && (cnt<HN.rows()*HN.cols()); cnt++)
+                    HN(i,j)=bH->get(cnt).asDouble();
+                    if (++j>=HN.cols())
                     {
-                        HN(i,j)=bH->get(cnt).asDouble();
-                        if (++j>=HN.cols())
-                        {
-                            i++;
-                            j=0;
-                        }
+                        i++;
+                        j=0;
                     }
-
-                    // enforce the homogeneous property
-                    HN(3,0)=HN(3,1)=HN(3,2)=0.0;
-                    HN(3,3)=1.0;
-
-                    chain->setHN(HN);
-
-                    if (verbose)
-                    {
-                        yInfo("%s found:",message.c_str());
-                        yInfo("%s",HN.toString(3,3).c_str());
-                    }
-
-                    return true;
                 }
+
+                // enforce the homogeneous property
+                HN(3,0)=HN(3,1)=HN(3,2)=0.0;
+                HN(3,3)=1.0;
+
+                chain->setHN(HN);
+
+                if (verbose)
+                {
+                    yInfo("%s found:",message.c_str());
+                    yInfo("%s",HN.toString(3,3).c_str());
+                }
+
+                return true;
             }
         }
         else
@@ -517,8 +571,8 @@ bool getAlignHN(const ResourceFinder &rf, const string &type,
 
 
 /************************************************************************/
-Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drvHead,
-                         const double eyeTiltMin, const double eyeTiltMax)
+Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso,
+                         PolyDriver *drvHead, const Vector &eyeTiltLim)
 {
     IEncoders      *encs;
     IControlLimits *lims;
@@ -557,8 +611,8 @@ Matrix alignJointsBounds(iKinChain *chain, PolyDriver *drvTorso, PolyDriver *drv
             // limit eye's tilt due to eyelids
             if (i==3)
             {
-                min=std::max(min,eyeTiltMin);
-                max=std::min(max,eyeTiltMax);
+                min=std::max(min,eyeTiltLim[0]);
+                max=std::min(max,eyeTiltLim[1]);
             }
 
             lim(i,0)=CTRL_DEG2RAD*min;
@@ -612,7 +666,7 @@ void updateNeckBlockedJoints(iKinChain *chain, const Vector &fbNeck)
 
 /************************************************************************/
 bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
-                 PolyDriver *drvHead, exchangeData *commData, double *timeStamp)
+                 PolyDriver *drvHead, ExchangeData *commData, double *timeStamp)
 {
     IEncodersTimed *encs;
 
@@ -648,8 +702,7 @@ bool getFeedback(Vector &fbTorso, Vector &fbHead, PolyDriver *drvTorso,
     
     // impose vergence != 0.0
     if (commData!=NULL)
-        if (fbHead[nJointsHead-1]<commData->get_minAllowedVergence())
-            fbHead[nJointsHead-1]=commData->get_minAllowedVergence();
+        fbHead[nJointsHead-1]=std::max(fbHead[nJointsHead-1],commData->minAllowedVergence);
     
     // retrieve the highest encoders time stamp
     if (timeStamp!=NULL)

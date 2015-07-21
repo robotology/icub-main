@@ -40,12 +40,12 @@ int main(int argc, char *argv[])
                               Q_RETURN_ARG(QVariant, retVal),
                               Q_ARG(QVariant,params));
     if(!retVal.toBool()){
-        return 0;
+        return 1;
     }
 
     if(window){
         window->show();
     }
 
-    return app.exec();
+    return (app.exec()!=0?1:0);
 }

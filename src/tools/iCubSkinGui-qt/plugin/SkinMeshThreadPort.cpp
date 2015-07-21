@@ -329,5 +329,7 @@ void SkinMeshThreadPort::run()
 void SkinMeshThreadPort::threadRelease()
 {
     yDebug("SkinMeshThreadPort releasing...");
+    skin_port.close();
+    skin_port_virtual.close();
     yDebug("... done.");
 }

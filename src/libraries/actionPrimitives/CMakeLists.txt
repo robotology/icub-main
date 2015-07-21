@@ -2,26 +2,21 @@
 # Authors: Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-SET(PROJECTNAME actionPrimitives)
+set(PROJECTNAME actionPrimitives)
+project(${PROJECTNAME})
 
-PROJECT(${PROJECTNAME})
+set(folder_source src/actionPrimitives.cpp)
+set(folder_header include/iCub/action/actionPrimitives.h)
 
-SET(folder_source src/actionPrimitives.cpp)
-SET(folder_header include/iCub/action/actionPrimitives.h)
+source_group("Source Files" FILES ${folder_source})
+source_group("Header Files" FILES ${folder_header})
 
-SOURCE_GROUP("Source Files" FILES ${folder_source})
-SOURCE_GROUP("Header Files" FILES ${folder_header})
-
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
+include_directories(${PROJECT_SOURCE_DIR}/include
                     ${perceptiveModels_INCLUDE_DIRS}
-                    ${GSL_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
-ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
-
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} perceptiveModels
-                                      ${GSL_LIBRARIES}
-                                      ${YARP_LIBRARIES})
+add_library(${PROJECTNAME} ${folder_source} ${folder_header})
+target_link_libraries(${PROJECT_NAME} perceptiveModels ${YARP_LIBRARIES})
 
 icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
                                    DEPENDS perceptiveModels

@@ -241,6 +241,53 @@ bool ClientGazeController::getTrackingMode(bool *f)
 
 
 /************************************************************************/
+bool ClientGazeController::setStabilizationMode(const bool f)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addString("set");
+    command.addString("stab");
+    command.addInt((int)f);
+
+    if (!portRpc.write(command,reply))
+    {
+        yError("unable to get reply from server!");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::getStabilizationMode(bool *f)
+{
+    if (!connected || (f==NULL))
+        return false;
+
+    Bottle command, reply;
+    command.addString("get");
+    command.addString("stab");
+
+    if (!portRpc.write(command,reply))
+    {
+        yError("unable to get reply from server!");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    {
+        *f=(reply.get(1).asInt()>0);
+        return true;
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::getFixationPoint(Vector &fp, Stamp *stamp)
 {
     if (!connected)
@@ -506,7 +553,7 @@ bool ClientGazeController::getOCRGain(double *gain)
 
 
 /************************************************************************/
-bool ClientGazeController::getSaccadesStatus(bool *f)
+bool ClientGazeController::getSaccadesMode(bool *f)
 {
     if (!connected || (f==NULL))
         return false;
@@ -1068,7 +1115,7 @@ bool ClientGazeController::setOCRGain(const double gain)
 
 
 /************************************************************************/
-bool ClientGazeController::setSaccadesStatus(const bool f)
+bool ClientGazeController::setSaccadesMode(const bool f)
 {
     if (!connected)
         return false;

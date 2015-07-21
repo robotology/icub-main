@@ -289,6 +289,7 @@ public ImplementRemoteVariables
     virtual bool getTorqueRangesRaw(double *,double *);
     virtual bool setRefTorquesRaw(const double *);
     virtual bool setRefTorqueRaw(int,double);
+    virtual bool setRefTorquesRaw(const int n_joint, const int *joints, const double *t);
     virtual bool getRefTorquesRaw(double *);
     virtual bool getRefTorqueRaw(int,double *);
     virtual bool getBemfParamRaw(int,double *);

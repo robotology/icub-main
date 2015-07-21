@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<robot name="icub">
+
+    <!-- motor controllers wrappers -->
+    <devices file="./wrappers/motorControl/left_arm_mc_wrapper.xml" /> 
+    <devices file="./hardware/motorControl/icub_left_arm.xml" /> 
+
+    <!-- CALIBRATORS -->
+   <!--  <devices file="./calibrators/left_arm_calib.xml" /> -->
+    
+</robot> 
+

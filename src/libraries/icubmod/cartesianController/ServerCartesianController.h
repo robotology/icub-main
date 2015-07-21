@@ -150,13 +150,14 @@ protected:
     int          maxPartJoints;
     double       targetTol;
     double       trajTime;
+    double       pathPerc;
     int          taskRefVelPeriodFactor;
     int          taskRefVelPeriodCnt;
 
     double       txToken;
     double       rxToken;
     double       txTokenLatchedStopControl;
-    double       txTokenLatchedGoToRpc;
+    double       txTokenLatchedGoToRpc;    
     bool         skipSlvRes;
     bool         syncEventEnabled;
 

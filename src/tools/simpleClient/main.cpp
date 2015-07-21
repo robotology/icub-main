@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
     options.fromCommand(argc, argv);
     if (!options.check("robot") || !options.check("part")) {
         printf("Missing either --robot or --part options\n");
-        return 0;
+        return 1;
     }
 
     Network::init();
@@ -221,6 +221,7 @@ int main(int argc, char *argv[])
             printf("    [get] [%s]  to read the measured torque for all axes\n",                      Vocab::decode(VOCAB_TRQS).c_str());
             printf("    [set] [%s] <int> <float> to set the reference torque for a single axis\n",          Vocab::decode(VOCAB_REF).c_str());
             printf("    [set] [%s] <float list> to set the reference torque for all axes\n",        Vocab::decode(VOCAB_REFS).c_str());
+            printf("    [set] [%s] int '('<int list>')' '('<float list>')' to set the reference torque for a subset of axes axes\n",   Vocab::decode(VOCAB_REFG).c_str());
             printf("    [get] [%s] <int> to read the reference torque for a single axis\n",                  Vocab::decode(VOCAB_REF).c_str());
             printf("    [get] [%s] to read the reference torque for all axes\n",                      Vocab::decode(VOCAB_REFS).c_str());
             printf("\n");
@@ -929,6 +930,45 @@ void handleTorqueMsg(ITorqueControl *torque, const yarp::os::Bottle& cmd,
                                     *ok = torque->setRefTorques (p);
                                     delete[] p;
                                 }
+                        }
+                        break;
+
+
+                    case VOCAB_REFG:
+                        {
+                            int n_joint = cmd.get(3).asInt();
+
+                            Bottle& jointList = *(cmd.get(4).asList());
+                            Bottle& refList   = *(cmd.get(5).asList());
+                            int i;
+                            const int joint_size = jointList.size();
+                            const int refs_size  = refList.size();
+
+                            if( (joint_size != n_joint) || (refs_size != n_joint) )
+                            {
+                                yError() << "command malformed, size of joint list and reference list must match the number of joints (" << n_joint << ")";
+                                *rec = false;
+                                break;
+                            }
+
+                            if (n_joint > controlledJoints)
+                            {
+                                yError() << "command malformed, number of joints inserted is bigger than number of available joints (" << controlledJoints << ")";
+                                *rec = false;
+                                break;
+                            }
+
+                                int    *joints = new int[n_joint];       // LATER: optimize to avoid allocation.
+                                double *refs   = new double[n_joint];    // LATER: optimize to avoid allocation.
+
+                                for (i = 0; i < n_joint; i++)
+                                {
+                                    joints[i] = jointList.get(i).asInt();
+                                    refs[i]   = refList.get(i).asDouble();
+                                }
+                                *ok = torque->setRefTorques(n_joint, joints, refs);
+                                delete[] joints;
+                                delete[] refs;
                         }
                         break;
 

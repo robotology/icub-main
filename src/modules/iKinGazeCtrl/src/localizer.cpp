@@ -1,7 +1,7 @@
 /* 
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
+ * Author: Ugo Pattacini, Alessandro Roncone
+ * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -16,7 +16,8 @@
  * Public License for more details
 */
 
-#include <gsl/gsl_math.h>
+#include <cmath>
+#include <algorithm>
 
 #include <yarp/math/SVD.h>
 #include <iCub/localizer.h>
@@ -24,7 +25,7 @@
 
 
 /************************************************************************/
-Localizer::Localizer(exchangeData *_commData, const unsigned int _period) :
+Localizer::Localizer(ExchangeData *_commData, const unsigned int _period) :
                      RateThread(_period), commData(_commData), period(_period)
 {
     iCubHeadCenter eyeC(commData->head_version>1.0?"right_v2":"right");
@@ -118,8 +119,6 @@ Localizer::Localizer(exchangeData *_commData, const unsigned int _period) :
     Vector z0(1,0.5);
     pid->reset(z0);
     dominantEye="left";
-
-    port_xd=NULL;
 }
 
 
@@ -222,8 +221,7 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
     }
     
     // impose vergence != 0.0
-    if (ver<commData->get_minAllowedVergence())
-        ver=commData->get_minAllowedVergence();
+    ver=std::max(ver,commData->minAllowedVergence);
 
     mutex.lock();
 
@@ -233,11 +231,10 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
     q[7]-=ver;
     eyeR->setAng(q);
 
-    Vector fp(4);
-    fp[3]=1.0;  // impose homogeneous coordinates
-
     // compute new fp due to changed vergence
+    Vector fp;
     CartesianHelper::computeFixationPointData(*(eyeL->asChain()),*(eyeR->asChain()),fp);
+    fp.push_back(1.0);  // impose homogeneous coordinates    
 
     mutex.unlock();
 
@@ -523,12 +520,7 @@ void Localizer::handleMonocularInput()
 
             Vector fp;
             if (projectPoint(type,u,v,z,fp))
-            {
-                if (port_xd!=NULL)
-                    port_xd->set_xd(fp);
-                else
-                    yError("Internal error occured!");
-            }
+                commData->port_xd->set_xd(fp);
         }
         else
             yError("Got wrong monocular information!");
@@ -574,12 +566,7 @@ void Localizer::handleStereoInput()
                 mutex.unlock();
 
                 if (projectPoint(dominantEye,u,v,z[0],fp))
-                {
-                    if (port_xd!=NULL)
-                        port_xd->set_xd(fp);
-                    else
-                        yError("Internal error occured!");
-                }
+                    commData->port_xd->set_xd(fp);
             }
             else
                 yError("Got wrong stereo information!");
@@ -605,10 +592,7 @@ void Localizer::handleAnglesInput()
             ang[2]=CTRL_DEG2RAD*angles->get(3).asDouble();
 
             Vector xd=get3DPoint(type,ang);
-            if (port_xd!=NULL)
-                port_xd->set_xd(xd);
-            else
-                yError("Internal error occured!");
+            commData->port_xd->set_xd(xd);
         }
         else
             yError("Got wrong angles information!");

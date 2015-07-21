@@ -9,7 +9,7 @@
 		    <param name="joints">  6  </param> <!-- the number of joints of the robot part -->
 		    <param name="deviceName"> Left_Leg_Calibrator </param>
 		</group>
-
+		
 <group name="HOME">
 <param name="positionHome">                       0.00           0.00       0.00         0.00        0.00      0.00        </param>
 <param name="velocityHome">                       10.00          10.00      10.00        10.00       10.00     10.00       </param>

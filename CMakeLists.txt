@@ -24,7 +24,7 @@ project(iCub)
 set(ICUB_REQYARP_VERSION_MAJOR "2")
 set(ICUB_REQYARP_VERSION_MINOR "3")
 set(ICUB_REQYARP_VERSION_PATCH "64")
-set(ICUB_REQYARP_VERSION_TWEAK "1")
+set(ICUB_REQYARP_VERSION_TWEAK "4")
 
 if(ICUB_REQYARP_VERSION_TWEAK)
     set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH}.${ICUB_REQYARP_VERSION_TWEAK})
@@ -83,9 +83,6 @@ include(${PROJECT_SOURCE_DIR}/conf/iCubOptions.cmake)
 # find dependencies and set variables
 include(${PROJECT_SOURCE_DIR}/conf/iCubFindDependencies.cmake)
 
-#### options that are iCub specific
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${IPOPT_LINK_FLAGS}")
-
 # check for libraries that are strictly required
 if (NOT ICUB_HAS_GSL)
   message(FATAL_ERROR "Cannot find GSL")
@@ -130,10 +127,15 @@ file(TO_CMAKE_PATH "$ENV{ICUB_ROOT}" env_icub_root)
 set(ICUB_APPLICATIONS_PREFIX ${env_icub_root} CACHE PATH "Prefix directory for installing applications. Read only, set ICUB_ROOT environment variable to affect this setting." FORCE)
 mark_as_advanced(ICUB_APPLICATIONS_PREFIX)
 
-# new "data" installation - available with yarp2.4
+# Force dynamic plugins. Must be set before
+# yarp_configure_external_installation to ensure that iCub.ini is
+# generated correctly
+set(YARP_FORCE_DYNAMIC_PLUGINS TRUE CACHE INTERNAL "iCub is always built with dynamic plugins")
 include(YarpInstallationHelpers)
 yarp_configure_external_installation(iCub WITH_PLUGINS)
-set(YARP_FORCE_DYNAMIC_PLUGINS TRUE CACHE INTERNAL "iCub is always built with dynamic plugins")
+# Hide YARP_FORCE_DYNAMIC_PLUGINS from gui
+# (yarp_configure_external_installation changes TYPE to BOOL)
+set_property(CACHE YARP_FORCE_DYNAMIC_PLUGINS PROPERTY TYPE INTERNAL)
 
 # temporary options for debugging/testing new functionalities
 set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")

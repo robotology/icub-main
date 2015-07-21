@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+  <device name="left_arm_mc_wrapper" type="controlboardwrapper2">
+      <paramlist name="networks">
+         <elem name="left_arm_joints">  0  3  0  3 </elem>
+      </paramlist>
+
+<param name="period"> 10 </param>
+      <param name="name">   icub/left_arm       </param>
+      <param name="ports">  left_arm            </param>
+      <param name="joints"> 4                   </param>
+
+      <action phase="startup" level="5" type="attach">
+         <paramlist name="networks">
+            <elem name="left_arm_joints">  left_arm_mc </elem>
+         </paramlist>
+      </action>
+
+      <action phase="shutdown" level="5" type="detach" />
+  </device>
+</devices>

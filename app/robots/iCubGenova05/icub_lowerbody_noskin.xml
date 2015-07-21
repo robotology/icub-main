@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE robot PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<robot name="iCubiCubGenova05" build="1" portprefix="icub">
+    <params file="hardware/electronics/pc104.xml" />
+
+  
+    <!-- TORSO -->
+    <devices file="hardware/motorControl/torso-ems5-mc.xml" />
+    <devices file="wrappers/motorControl/torso-mc_wrapper.xml" />
+
+  
+    <!-- ANALOG SENSOR FT -->
+   
+    <devices file="wrappers/FT/right_leg-FT_wrapper.xml" /> 
+    <devices file="wrappers/FT/left_leg-FT_wrapper.xml" />
+    <devices file="wrappers/FT/right_foot-FT_wrapper.xml" /> 
+    <devices file="wrappers/FT/left_foot-FT_wrapper.xml" />
+    
+    <devices file="hardware/FT/left_upper_leg-ems6-strain.xml" /> 
+    <devices file="hardware/FT/right_upper_leg-ems8-strain.xml" />
+    <devices file="hardware/FT/left_lower_leg-ems7-strain.xml" /> 
+    <devices file="hardware/FT/right_lower_leg-ems9-strain.xml" />
+	
+    <!-- VIRTUAL ANALOG SENSORS (WRAPPER ONLY-->
+    <devices file="wrappers/VFT/right_leg-VFT_wrapper.xml" /> 
+    <devices file="wrappers/VFT/left_leg-VFT_wrapper.xml" /> 
+    <devices file="wrappers/VFT/torso-VFT_wrapper.xml" /> 
+
+   
+	<!-- LEFT LEG -->
+    <devices file="hardware/motorControl/left_upper_leg-ems6-mc.xml" />
+    <devices file="hardware/motorControl/left_lower_leg-ems7-mc.xml" />
+    <devices file="wrappers/motorControl/left_leg-mc_wrapper.xml" /> 
+
+    <!-- RIGHT LEG -->
+    <devices file="hardware/motorControl/right_upper_leg-ems8-mc.xml" />
+    <devices file="hardware/motorControl/right_lower_leg-ems9-mc.xml" />
+    <devices file="wrappers/motorControl/right_leg-mc_wrapper.xml" />	
+ 
+
+    <!--  CALIBRATORS -->
+    <devices file="calibrators/left_leg-calib.xml" />
+    <devices file="calibrators/right_leg-calib.xml" />
+    <devices file="calibrators/torso-calib.xml" /> 
+    </robot> 
+
+
+
+
+
+

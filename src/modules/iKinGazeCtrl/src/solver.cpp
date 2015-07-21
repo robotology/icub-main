@@ -1,7 +1,7 @@
 /* 
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
+ * Author: Ugo Pattacini, Alessandro Roncone
+ * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -16,9 +16,8 @@
  * Public License for more details
 */
 
+#include <cmath>
 #include <algorithm>
-
-#include <gsl/gsl_math.h>
 
 #include <yarp/math/SVD.h>
 #include <iCub/solver.h>
@@ -26,13 +25,11 @@
 
 /************************************************************************/
 EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
-                             exchangeData *_commData, Controller *_ctrl,
-                             const bool _saccadesOn, const Vector &_counterRotGain,
-                             const unsigned int _period) :
-                             RateThread(_period),     drvTorso(_drvTorso), drvHead(_drvHead),
-                             commData(_commData),     ctrl(_ctrl),         eyesBoundVer(-1.0),
-                             saccadesOn(_saccadesOn), period(_period),     Ts(_period/1000.0),
-                             counterRotGain(_counterRotGain)
+                             ExchangeData *_commData, Controller *_ctrl,
+                             const Vector &_counterRotGain, const unsigned int _period) :
+                             RateThread(_period), drvTorso(_drvTorso), drvHead(_drvHead),
+                             commData(_commData), ctrl(_ctrl),         period(_period),
+                             Ts(_period/1000.0),  counterRotGain(_counterRotGain)
 {
     // Instantiate objects
     neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
@@ -86,7 +83,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     encHead->getAxes(&nJointsHead);
 
     // joints bounds alignment
-    lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
+    lim=alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltLim);
     copyJointsBounds(chainNeck,chainEyeL);
     copyJointsBounds(chainEyeL,chainEyeR);
 
@@ -94,7 +91,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     lim=lim.submatrix(3,5,0,1);
 
     // reinforce vergence min bound
-    lim(2,0)=commData->get_minAllowedVergence();
+    lim(2,0)=commData->minAllowedVergence;
 
     // read starting position
     fbTorso.resize(nJointsTorso,0.0);
@@ -115,7 +112,6 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     qd[2]=fbHead[5];
     I=new Integrator(Ts,qd,lim);
 
-    gyro.resize(12,0.0);
     fp.resize(3,0.0);
     eyesJ.resize(3,3);
     eyesJ.zero();
@@ -124,31 +120,15 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
     saccadeUnderWayOld=false;
     saccadesInhibitionPeriod=SACCADES_INHIBITION_PERIOD;
     saccadesActivationAngle=SACCADES_ACTIVATION_ANGLE;
-    port_xd=NULL;
 }
 
 
 /************************************************************************/
 void EyePinvRefGen::minAllowedVergenceChanged()
 {
-    lim(2,0)=commData->get_minAllowedVergence();    
+    lim(2,0)=commData->minAllowedVergence;
     I->setLim(lim);
     orig_lim=lim;
-}
-
-
-/************************************************************************/
-bool EyePinvRefGen::getGyro(Vector &data)
-{
-    if (port_inertial.getInputCount()>0)
-    {
-        mutex.lock();
-        data=gyro;
-        mutex.unlock();
-        return true;
-    }
-    else
-        return false;
 }
 
 
@@ -157,8 +137,8 @@ bool EyePinvRefGen::bindEyes(const double ver)
 {
     if (ver>=0.0)
     {
-        double ver_rad=std::max(CTRL_DEG2RAD*ver,commData->get_minAllowedVergence());
-        eyesBoundVer=CTRL_RAD2DEG*ver_rad;
+        double ver_rad=std::max(CTRL_DEG2RAD*ver,commData->minAllowedVergence);
+        commData->eyesBoundVer=CTRL_RAD2DEG*ver_rad;
 
         // block tilt and pan of the left eye
         (*chainEyeL)[nJointsTorso+3].setMin(0.0);          (*chainEyeL)[nJointsTorso+3].setMax(0.0);
@@ -174,7 +154,7 @@ bool EyePinvRefGen::bindEyes(const double ver)
         lim(2,0)=lim(2,1)=ver_rad;
         I->setLim(lim);
 
-        port_xd->set_xd(fp);
+        commData->port_xd->set_xd(fp);
         return true;
     }
     else
@@ -185,9 +165,9 @@ bool EyePinvRefGen::bindEyes(const double ver)
 /************************************************************************/
 bool EyePinvRefGen::clearEyes()
 {
-    if (eyesBoundVer>=0.0)
+    if (commData->eyesBoundVer>=0.0)
     {
-        eyesBoundVer=-1.0;
+        commData->eyesBoundVer=-1.0;
 
         // reinstate tilt and pan bound of the left eye
         (*chainEyeL)[nJointsTorso+3].setMin(orig_eye_tilt_min); (*chainEyeL)[nJointsTorso+3].setMax(orig_eye_tilt_max);
@@ -228,33 +208,22 @@ void EyePinvRefGen::setCounterRotGain(const Vector &gain)
 Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &fp)
 {
     // ********** implement VOR
-    Vector q(imu->getDOF());
-    q[0]=fbTorso[0];
-    q[1]=fbTorso[1];
-    q[2]=fbTorso[2];
-    q[3]=fbHead[0];
-    q[4]=fbHead[1];
-    q[5]=fbHead[2];
-    Matrix H=imu->getH(q);
+    Matrix H=imu->getH(cat(fbTorso,fbHead.subVector(0,2)));
 
     H(0,3)=fp[0]-H(0,3);
     H(1,3)=fp[1]-H(1,3);
     H(2,3)=fp[2]-H(2,3);
 
-    // gyro rate [deg/s]
-    mutex.lock();
-    double gyrX=gyro[6];
-    double gyrY=gyro[7];
-    double gyrZ=gyro[8];
-    mutex.unlock();
+    // gyro rate [rad/s]
+    Vector gyro=CTRL_DEG2RAD*commData->get_imu().subVector(6,8);
 
     // filter out the noise on the gyro readouts
-    Vector vor_fprelv;
-    if ((fabs(gyrX)<GYRO_BIAS_STABILITY) && (fabs(gyrY)<GYRO_BIAS_STABILITY) &&
-        (fabs(gyrZ)<GYRO_BIAS_STABILITY))
-        vor_fprelv.resize(eyesJ.rows(),0.0);    // pinv(eyesJ) => use rows
-    else
-        vor_fprelv=CTRL_DEG2RAD*(gyrX*cross(H,0,H,3)+gyrY*cross(H,1,H,3)+gyrZ*cross(H,2,H,3));
+    if (norm(gyro)<commData->gyro_noise_threshold)
+        gyro=0.0;
+
+    Vector vor_fprelv=(gyro[0]*cross(H,0,H,3)+
+                       gyro[1]*cross(H,1,H,3)+
+                       gyro[2]*cross(H,2,H,3));
 
     // ********** implement OCR
     H=chainNeck->getH();
@@ -276,15 +245,6 @@ Vector EyePinvRefGen::getEyesCounterVelocity(const Matrix &eyesJ, const Vector &
 /************************************************************************/
 bool EyePinvRefGen::threadInit()
 {
-    string robotPortInertial=("/"+commData->robotName+"/inertial");
-    port_inertial.open((commData->localStemName+"/inertial:i").c_str());
-    if (!Network::connect(robotPortInertial.c_str(),port_inertial.getName().c_str()))
-    {
-        counterRotGain[0]=0.0; counterRotGain[1]=1.0;
-        yWarning("Unable to connect to %s => (vor,ocr) gains = (%s)",
-                 robotPortInertial.c_str(),counterRotGain.toString(3,3).c_str());
-    }
-
     yInfo("Starting Pseudoinverse Reference Generator at %d ms",period);
 
     saccadesRxTargets=0;
@@ -317,16 +277,8 @@ void EyePinvRefGen::run()
         updateTorsoBlockedJoints(chainEyeL,fbTorso);
         updateTorsoBlockedJoints(chainEyeR,fbTorso);
 
-        // read gyro data
-        if (Vector *_gyro=port_inertial.read(false))
-        {
-            mutex.lock();
-            gyro=*_gyro;
-            mutex.unlock();
-        }
-
         // get current target
-        Vector xd=port_xd->get_xd();
+        Vector xd=commData->port_xd->get_xd();
 
         // update neck chain
         chainNeck->setAng(nJointsTorso+0,fbHead[0]);
@@ -334,8 +286,8 @@ void EyePinvRefGen::run()
         chainNeck->setAng(nJointsTorso+2,fbHead[2]);
 
         // ask for saccades (if possible)
-        if (saccadesOn && (saccadesRxTargets!=port_xd->get_rx()) && !commData->get_isSaccadeUnderway() &&
-            (Time::now()-saccadesClock>saccadesInhibitionPeriod))
+        if (commData->saccadesOn && (saccadesRxTargets!=commData->port_xd->get_rx()) &&
+            !commData->saccadeUnderway && (Time::now()-saccadesClock>saccadesInhibitionPeriod))
         {
             Vector fph=xd; fph.push_back(1.0);
             fph=SE3inv(chainNeck->getH())*fph; fph[3]=0.0;
@@ -347,8 +299,8 @@ void EyePinvRefGen::run()
             ang[1]=atan2(fph[0],fph[2]);
 
             // enforce joints bounds
-            ang[0]=std::min(std::max(lim(0,0),ang[0]),lim(0,1));
-            ang[1]=std::min(std::max(lim(1,0),ang[1]),lim(1,1));
+            ang[0]=sat(ang[0],lim(0,0),lim(0,1));
+            ang[1]=sat(ang[1],lim(1,0),lim(1,1));
 
             // favor the smooth-pursuit in case saccades are small
             if (rot>saccadesActivationAngle)
@@ -387,7 +339,7 @@ void EyePinvRefGen::run()
                 }
 
                 // enforce joints bounds
-                ang[2]=std::min(std::max(lim(2,0),ang[2]),lim(2,1));
+                ang[2]=sat(ang[2],lim(2,0),lim(2,1));
 
                 commData->set_qd(3,ang[0]);
                 commData->set_qd(4,ang[1]);
@@ -414,13 +366,13 @@ void EyePinvRefGen::run()
             chainEyeL->setAng(nJointsTorso+4,fbHead[4]+fbHead[5]/2.0); chainEyeR->setAng(nJointsTorso+4,fbHead[4]-fbHead[5]/2.0);
 
             // compensate neck rotation at eyes level
-            if ((eyesBoundVer>=0.0) || !CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
-                commData->set_counterv(zeros(3));
+            if ((commData->eyesBoundVer>=0.0) || !CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,eyesJ))
+                commData->set_counterv(zeros(qd.length()));
             else
                 commData->set_counterv(getEyesCounterVelocity(eyesJ,fp));
             
             // reset eyes controller and integral upon saccades transition on=>off
-            if (saccadeUnderWayOld && !commData->get_isSaccadeUnderway())
+            if (saccadeUnderWayOld && !commData->saccadeUnderway)
             {
                 ctrl->resetCtrlEyes();
 
@@ -434,13 +386,13 @@ void EyePinvRefGen::run()
             qd=I->integrate(v+commData->get_counterv());
         }
         else
-            commData->set_counterv(zeros(3));
+            commData->set_counterv(zeros(qd.length()));
 
         // set a new target position
         commData->set_xd(xd);
         commData->set_x(fp,timeStamp);
         commData->set_fpFrame(chainNeck->getH());
-        if (!commData->get_isSaccadeUnderway())
+        if (!commData->saccadeUnderway)
         {
             commData->set_qd(3,qd[0]);
             commData->set_qd(4,qd[1]);
@@ -448,8 +400,8 @@ void EyePinvRefGen::run()
         }
 
         // latch the saccades status
-        saccadeUnderWayOld=commData->get_isSaccadeUnderway();
-        saccadesRxTargets=port_xd->get_rx();
+        saccadeUnderWayOld=commData->saccadeUnderway;
+        saccadesRxTargets=commData->port_xd->get_rx();
     }
 }
 
@@ -457,9 +409,6 @@ void EyePinvRefGen::run()
 /************************************************************************/
 void EyePinvRefGen::threadRelease()
 {
-    port_inertial.interrupt();
-    port_inertial.close();
-
     delete neck;
     delete eyeL;
     delete eyeR;
@@ -485,7 +434,7 @@ void EyePinvRefGen::resume()
 
 
 /************************************************************************/
-Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commData,
+Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
                EyePinvRefGen *_eyesRefGen, Localizer *_loc, Controller *_ctrl,
                const unsigned int _period) :
                RateThread(_period), drvTorso(_drvTorso),     drvHead(_drvHead),
@@ -535,7 +484,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     encHead->getAxes(&nJointsHead);
 
     // joints bounds alignment
-    alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltMin,commData->eyeTiltMax);
+    alignJointsBounds(chainNeck,drvTorso,drvHead,commData->eyeTiltLim);
 
     // read starting position
     fbTorso.resize(nJointsTorso,0.0);
@@ -574,13 +523,7 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, exchangeData *_commD
     eyePos[1]=gazePos[1]-gazePos[2]/2.0;
     chainEyeR->setAng(eyePos);
 
-    gDefaultDir.resize(4,0.0);
-    gDefaultDir[2]=gDefaultDir[3]=1.0;
-
     fbTorsoOld=fbTorso;
-    fbHeadOld=fbHead;
-
-    solveRequest=false;
     neckAngleUserTolerance=0.0;
 }
 
@@ -591,8 +534,6 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckPitchMin,neckPitchMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckPitchMin,neckPitchMax);
     double cur_rad=(*chainNeck)(0).getAng();
-
-    solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     mutex.lock();
     (*chainNeck)(0).setMin(min_rad);
@@ -610,8 +551,6 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckRollMin,neckRollMax);
     double cur_rad=(*chainNeck)(1).getAng();
 
-    solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
-
     mutex.lock();
     (*chainNeck)(1).setMin(min_rad);
     (*chainNeck)(1).setMax(max_rad);
@@ -627,8 +566,6 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckYawMin,neckYawMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckYawMin,neckYawMax);
     double cur_rad=(*chainNeck)(2).getAng();
-
-    solveRequest=(cur_rad<min_rad) || (cur_rad>max_rad);
 
     mutex.lock();
     (*chainNeck)(2).setMin(min_rad);
@@ -715,9 +652,7 @@ double Solver::getNeckAngleUserTolerance()
 /************************************************************************/
 void Solver::setNeckAngleUserTolerance(const double angle)
 {
-    double fangle=fabs(angle);
-    solveRequest=fangle<neckAngleUserTolerance;
-    neckAngleUserTolerance=fangle;
+    neckAngleUserTolerance=fabs(angle);
 }
 
 
@@ -730,38 +665,6 @@ void Solver::updateAngles()
     gazePos[0]=fbHead[3];
     gazePos[1]=fbHead[4];
     gazePos[2]=fbHead[5];
-}
-
-
-/************************************************************************/
-Vector Solver::getGravityDirection(const Vector &gyro)
-{
-    double roll =CTRL_DEG2RAD*gyro[0];
-    double pitch=CTRL_DEG2RAD*gyro[1];
-
-    // compute rotational matrix to
-    // account for roll and pitch
-    Vector x(4), y(4);
-    x[0]=1.0;    y[0]=0.0;
-    x[1]=0.0;    y[1]=1.0;
-    x[2]=0.0;    y[2]=0.0;
-    x[3]=roll;   y[3]=pitch;   
-    Matrix R=axis2dcm(y)*axis2dcm(x);
-
-    Vector q(imu->getDOF());
-    q[0]=fbTorso[0];
-    q[1]=fbTorso[1];
-    q[2]=fbTorso[2];
-    q[3]=fbHead[0];
-    q[4]=fbHead[1];
-    q[5]=fbHead[2];
-    Matrix H=imu->getH(q)*R.transposed();
-
-    // gravity is aligned along the z-axis
-    Vector gDir=H.getCol(2);
-    gDir[3]=1.0;    // impose homogeneous coordinates
-
-    return gDir;
 }
 
 
@@ -806,11 +709,11 @@ bool Solver::threadInit()
     invNeck=new GazeIpOptMin(*chainNeck,1e-3,20);
 
     // Initialization
-    Vector fp(3);
-    Matrix J(3,3);
-    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
+    Vector fp;
+    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp);    
 
     // init commData structure
+    commData->port_xd->init(fp);
     commData->set_xd(fp);
     commData->set_qd(fbHead);
     commData->set_x(fp);
@@ -818,15 +721,7 @@ bool Solver::threadInit()
     commData->set_torso(fbTorso);
     commData->resize_v(fbHead.length(),0.0);
     commData->resize_counterv(3,0.0);
-    commData->set_fpFrame(chainNeck->getH());
-
-    port_xd=new xdPort(fp,this);
-    port_xd->useCallback();
-    port_xd->open((commData->localStemName+"/xd:i").c_str());
-
-    loc->set_xdport(port_xd);
-    eyesRefGen->set_xdport(port_xd);
-    ctrl->set_xdport(port_xd);
+    commData->set_fpFrame(chainNeck->getH());    
 
     // use eyes pseudoinverse reference generator
     eyesRefGen->enable();
@@ -849,15 +744,16 @@ void Solver::afterStart(bool s)
 /************************************************************************/
 void Solver::run()
 {
+    typedef enum { ctrl_off, ctrl_wait, ctrl_on } cstate;
+    static cstate state_=ctrl_off;
+
     mutex.lock();
 
     // get the current target
-    Vector xd=port_xd->get_xdDelayed();
+    Vector xd=commData->port_xd->get_xdDelayed();
 
     // update the target straightaway 
     commData->set_xd(xd);
-
-    bool torsoChanged=false;
 
     // read encoders
     getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
@@ -865,8 +761,7 @@ void Solver::run()
     updateTorsoBlockedJoints(chainEyeL,fbTorso);
     updateTorsoBlockedJoints(chainEyeR,fbTorso);
 
-    torsoChanged=norm(fbTorso-fbTorsoOld)>NECKSOLVER_ACTIVATIONANGLE_JOINTS*CTRL_DEG2RAD;
-    bool headChanged=norm(fbHead-fbHeadOld)>NECKSOLVER_ACTIVATIONANGLE_JOINTS*CTRL_DEG2RAD;
+    bool torsoChanged=(norm(fbTorso-fbTorsoOld)>NECKSOLVER_ACTIVATIONANGLE_JOINTS*CTRL_DEG2RAD);
 
     // update kinematics
     updateAngles();
@@ -881,56 +776,71 @@ void Solver::run()
     bool doSolve=(theta>NECKSOLVER_ACTIVATIONANGLE);
 
     // 2) skip if controller is active and no torso motion is detected
-    doSolve&=!(commData->get_isCtrlActive() && !torsoChanged);
+    doSolve&=!(commData->ctrlActive && !torsoChanged);
 
     // 3) skip if controller is inactive and we are not in tracking mode
-    doSolve&=!(!commData->get_isCtrlActive() && commData->get_canCtrlBeDisabled());
+    doSolve&=commData->ctrlActive || commData->trackingModeOn;
 
-    // 4) skip if controller is inactive, we are in tracking mode and nothing has changed
-    // note that the De Morgan's law has been applied hereafter
-    doSolve&=commData->get_isCtrlActive() || commData->get_canCtrlBeDisabled() ||
-             torsoChanged || headChanged;
+    // 4) solve straightaway if we are in tracking mode
+    doSolve|=commData->trackingModeOn;
 
-    // 5) solve straightaway if we are in tracking mode and a solve request is raised
-    doSolve|=!commData->get_canCtrlBeDisabled() && solveRequest;
+    // 5) solve straightaway if the target has changed
+    doSolve|=commData->port_xd->get_newDelayed();
 
-    // 6) solve straightaway if the target has changed
-    doSolve|=port_xd->get_newDelayed();
-
-    // 7) skip if the angle to target is lower than the user tolerance
-    doSolve&=theta>neckAngleUserTolerance;
+    // 6) skip if the angle to target is lower than the user tolerance
+    doSolve&=(theta>neckAngleUserTolerance);
 
     // clear triggers
-    port_xd->get_newDelayed()=false;
-    solveRequest=false;
+    commData->port_xd->get_newDelayed()=false;
 
     // call the solver for neck
     if (doSolve)
     {
-        Vector  gyro;
-        Vector  gDir;
-        Vector *pgDir;
-
-        if (eyesRefGen->getGyro(gyro))
+        Vector gDir(4,0.0);
+        gDir[2]=gDir[3]=1.0;
+        if (commData->stabilizationOn)
         {
-            gDir=getGravityDirection(gyro);
-            pgDir=&gDir;
+            Vector acc=commData->get_imu().subVector(3,5); 
+            acc.push_back(1.0); // impose homogeneous coordinates
+
+            Matrix H=imu->getH(cat(fbTorso,fbHead.subVector(0,2)));
+            gDir=H*acc;            
         }
-        else
-            pgDir=&gDefaultDir;
 
         Vector xdUserTol=computeTargetUserTolerance(xd);
-        neckPos=invNeck->solve(neckPos,xdUserTol,*pgDir);
+        neckPos=invNeck->solve(neckPos,xdUserTol,gDir);
 
-        // update neck pitch,roll,yaw
+        // update neck pitch,roll,yaw        
+        commData->set_qd(0,neckPos[0]);
+        commData->set_qd(1,neckPos[1]);
+        commData->set_qd(2,neckPos[2]);
+        commData->neckSolveCnt++;
+
+        state_=ctrl_wait;
+    }
+
+    if (state_==ctrl_off)
+    {
+        // keep neck targets equal to current angles
+        // to avoid glitches in the control (especially
+        // during stabilization)
         commData->set_qd(0,neckPos[0]);
         commData->set_qd(1,neckPos[1]);
         commData->set_qd(2,neckPos[2]);
     }
-
+    else if (state_==ctrl_wait)
+    {
+        if (commData->ctrlActive)
+            state_=ctrl_on;
+    }
+    else if (state_==ctrl_on)
+    {
+        if (!commData->ctrlActive)
+            state_=ctrl_off;
+    }
+    
     // latch quantities
     fbTorsoOld=fbTorso;
-    fbHeadOld=fbHead;
 
     mutex.unlock();
 }
@@ -941,10 +851,6 @@ void Solver::threadRelease()
 {
     eyesRefGen->disable();
 
-    port_xd->interrupt();
-    port_xd->close();
-
-    delete port_xd;
     delete invNeck;
     delete neck;
     delete eyeL;
@@ -956,7 +862,7 @@ void Solver::threadRelease()
 /************************************************************************/
 void Solver::suspend()
 {
-    port_xd->lock();    
+    commData->port_xd->lock();    
     RateThread::suspend();
     yInfo("Solver has been suspended!");
 }
@@ -981,18 +887,12 @@ void Solver::resume()
     chainEyeL->setAng(nJointsTorso+3,gazePos[0]);                chainEyeR->setAng(nJointsTorso+3,gazePos[0]);
     chainEyeL->setAng(nJointsTorso+4,gazePos[1]+gazePos[2]/2.0); chainEyeR->setAng(nJointsTorso+4,gazePos[1]-gazePos[2]/2.0);
 
-    // compute fixation point
-    Vector fp(3);
-    Matrix J(3,3);
-    CartesianHelper::computeFixationPointData(*chainEyeL,*chainEyeR,fp,J);
-
     // update latched quantities
     fbTorsoOld=fbTorso;
-    fbHeadOld=fbHead;    
     
     mutex.unlock();
 
-    port_xd->unlock();
+    commData->port_xd->unlock();
     RateThread::resume();
     yInfo("Solver has been resumed!");
 }

@@ -9,6 +9,7 @@ if(${icub_firmware_shared_FOUND})
     message(STATUS " +++ tool compiling canLoaderLib")
 
 ADD_SUBDIRECTORY(canLoaderLib)
+ADD_SUBDIRECTORY(canLoader-console)
 
 if(ICUB_USE_GTK2)
     ADD_SUBDIRECTORY(canLoader)

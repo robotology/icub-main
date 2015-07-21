@@ -43,7 +43,7 @@
 
 MACRO(icub_export_library target)
   PARSE_ARGUMENTS(${target}
-    "INTERNAL_INCLUDE_DIRS;EXTERNAL_INCLUDE_DIRS;DEPENDS;DESTINATION;FILES;FILES_WITH_PATH"
+    "INTERNAL_INCLUDE_DIRS;EXTERNAL_INCLUDE_DIRS;DEPENDS;DESTINATION;FILES;FILES_WITH_PATH;PATH_TO_EXCLUDE"
     "VERBOSE"
     ${ARGN}
     )
@@ -57,6 +57,7 @@ MACRO(icub_export_library target)
     MESSAGE(STATUS "Destination: ${${target}_DESTINATION}")
     MESSAGE(STATUS "Header files: ${${target}_FILES}")
     MESSAGE(STATUS "Header files for which we keep the relative path: ${${target}_FILES_WITH_PATH}")
+    MESSAGE(STATUS "Part of the relative path to strip off: ${${target}_PATH_TO_EXCLUDE}")
     MESSAGE(STATUS "Option verbosity: ${${target}_VERBOSE}")
   endif()
 
@@ -65,6 +66,7 @@ MACRO(icub_export_library target)
   set(dependencies ${${target}_DEPENDS})
   set(files ${${target}_FILES})
   set(files_with_path ${${target}_FILES_WITH_PATH})
+  set(path_to_exclude ${${target}_PATH_TO_EXCLUDE})
   set(destination ${${target}_DESTINATION})
 
   set(ICUB_EXPORTBUILD_FILE icub-export-build.cmake)
@@ -183,8 +185,16 @@ MACRO(icub_export_library target)
     endif()
    
 
+    if(path_to_exclude)
+        # strip off the trailing slash
+        string(REGEX REPLACE "/+$" "" path_to_exclude ${path_to_exclude})
+    endif()
+
     foreach(cur_file  ${files_with_path})
         get_filename_component(file_rel_dir ${cur_file} PATH)
+        if(path_to_exclude)
+            string(REPLACE "${path_to_exclude}" "" file_rel_dir ${file_rel_dir})
+        endif()
         install(FILES ${cur_file} DESTINATION ${destination}/${file_rel_dir} COMPONENT Development)
     endforeach()
     set_target_properties(${target} PROPERTIES 

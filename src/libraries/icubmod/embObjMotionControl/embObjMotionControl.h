@@ -674,6 +674,7 @@ public:
     bool getTorqueRangesRaw(double *min, double *max);
     bool setRefTorquesRaw(const double *t);
     bool setRefTorqueRaw(int j, double t);
+    bool setRefTorquesRaw(const int n_joint, const int *joints, const double *t);
     bool getRefTorquesRaw(double *t);
     bool getRefTorqueRaw(int j, double *t);
     bool setTorquePidRaw(int j, const Pid &pid);

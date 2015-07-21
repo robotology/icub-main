@@ -20,6 +20,7 @@
 // Developed by Ugo Pattacini
 
 #include <sstream>
+#include <limits>
 #include <algorithm>
 
 #include "CommonCartesianController.h"
@@ -36,7 +37,6 @@
 #define CARTCTRL_DEFAULT_TRAJTIME           2.0     // [s]
 #define CARTCTRL_DEFAULT_POSCTRL            "on"
 #define CARTCTRL_DEFAULT_MULJNTCTRL         "on"
-#define CARTCTRL_MAX_ACCEL                  1e9     // [deg/s^2]
 #define CARTCTRL_CONNECT_TMO                5e3     // [ms]
 
 using namespace std;
@@ -174,6 +174,7 @@ void ServerCartesianController::init()
     maxPartJoints=0;
     targetTol=CARTCTRL_DEFAULT_TOL;
     trajTime=CARTCTRL_DEFAULT_TRAJTIME;
+    pathPerc=0.0;
 
     txToken=0.0;
     rxToken=0.0;
@@ -1630,7 +1631,7 @@ void ServerCartesianController::run()
         {
             if (jointsHealthy)
             {
-                setJointsCtrlMode(jointsToSet); 
+                setJointsCtrlMode(jointsToSet);
                 if (!executingTraj)
                 {
                     ctrl->restart(fb);
@@ -1645,6 +1646,11 @@ void ServerCartesianController::run()
                 q0=fb;
             }
         }
+
+        // compute current point [%] in the path
+        double dist=norm(qdes-q0);
+        pathPerc=(dist>1e-6)?norm(fb-q0)/dist:1.0;
+        pathPerc=std::min(std::max(pathPerc,0.0),1.0);
 
         if (executingTraj)
         {
@@ -2187,7 +2193,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
     // thresholds at high values
     for (int i=0; i<numDrv; i++)
         for (int j=0; j<lJnt[i]; j++)
-            lVel[i]->setRefAcceleration(j,CARTCTRL_MAX_ACCEL);
+            lVel[i]->setRefAcceleration(j,std::numeric_limits<double>::max());
 
     // init task-space reference velocity
     xdot_set.resize(7,0.0);
@@ -3652,11 +3658,7 @@ void ServerCartesianController::motionOngoingEventsHandling()
     if (motionOngoingEventsCurrent.size()!=0)
     {
         double curCheckPoint=*motionOngoingEventsCurrent.begin();
-        double dist=norm(qdes-q0);
-        double checkPoint=(dist>1e-6)?norm(fb-q0)/dist:1.0;
-        checkPoint=std::min(std::max(checkPoint,0.0),1.0);
-
-        if (checkPoint>=curCheckPoint)
+        if (pathPerc>=curCheckPoint)
         {            
             notifyEvent("motion-ongoing",curCheckPoint);
             motionOngoingEventsCurrent.erase(curCheckPoint);

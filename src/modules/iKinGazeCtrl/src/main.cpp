@@ -1,7 +1,7 @@
 /* 
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
+ * Author: Ugo Pattacini, Alessandro Roncone
+ * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -25,7 +25,7 @@ Gaze controller based on iKin.
 
 Copyright (C) 2010 RobotCub Consortium
  
-Author: Ugo Pattacini 
+Authors: Ugo Pattacini, Alessandro Roncone
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
@@ -93,6 +93,14 @@ Factors</a>.
   href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>).
 
 \section parameters_sec Parameters
+--context \e dir
+- Resource finder default searching directory for configuration 
+  files; if not specified, \e iKinGazeCtrl is assumed.
+ 
+--from \e file
+- Resource finder default configuration file; if not specified, 
+  \e config.ini is assumed.
+ 
 --name \e ctrlName 
 - The parameter \e ctrlName identifies the controller's name; 
   all the open ports will be tagged with the prefix
@@ -112,31 +120,23 @@ Factors</a>.
   string \e disabled can be used to skip opening the torso
   device.
  
---Tneck \e time
+--trajectory_time::neck \e time
 - Specify the neck trajectory execution time in point-to-point 
   movements [expressed in seconds]; by default \e time is 0.75
   seconds. (Tneck cannot be set equal or lower than Teyes).
  
---Teyes \e time
+--trajectory_time::eyes \e time
 - Specify the eyes trajectory execution time in point-to-point 
   movements [expressed in seconds]; by default \e time is 0.25
   seconds.
  
---camerasContext \e dir 
+--cameras::context \e dir 
 - The parameter \e dir specifies the context used to locate the 
   cameras parameters file (see below).
  
---camerasFile \e file 
+--cameras::file \e file 
 - The parameter \e file specifies the file name used to read  
   cameras parameters.
- 
---context \e dir
-- Resource finder default searching directory for configuration 
-  files; if not specified, \e iKinGazeCtrl is assumed.
- 
---from \e file
-- Resource finder default configuration file; if not specified, 
-  \e config.ini is assumed.
  
 --saccades \e switch 
 - Enable/disable saccadic movements; the parameter \e switch can
@@ -147,36 +147,58 @@ Factors</a>.
   parameter \e switch can be therefore ["on"|"off"], being "on"
   by default.
  
---vor \e gain
+--imu::mode \e switch
+- Enable/disable stabilization using IMU data; the parameter
+  \e switch can be therefore ["on"|"off"], being "on"
+  by default.
+ 
+--imu::source_port_name \e name
+- Allow specifying a different source port for the IMU data
+  (see IMU filtering tools such as e.g. \ref imuFilter). 
+ 
+--imu::stabilization_gain \e gain
+- Specify the integral gain (in [1/s]) used for gaze  
+  stabilization; the \e gain is 11.0 [1/s] by default.
+ 
+--imu::gyro_noise_threshold \e thres
+- Specify a different threshold \e thres given in [deg/s] to  
+  filter out the residual bias in gyro readouts.
+ 
+--imu::vor \e gain
 - Specify the contribution of the vestibulo-ocular reflex (VOR)
-  in compute the final counter-rotation of the eyes due to
+  in computing the final counter-rotation of the eyes due to
   neck rotation. To turn off the VOR just set the \e gain equal
-  to 0.0. By default \e gain is 1.0, that means "full
-  contribution". Values of the gain greater than 1.0 mean
-  "contribution amplified".
+  to 0.0. By default \e gain is 1.0, that means <i>"full
+  contribution"</i>. If <i>imu::mode</i> is "off", then the gain
+  is 0.0 by default. Values of the gain greater than 1.0 mean  
+  <i>"contribution amplified"</i>.
  
 --ocr \e gain
 - Specify the contribution of the oculo-collic reflex (OCR) in 
   computing the counter-rotation of the eyes due to neck
   rotation. To turn off the OCR just set the \e gain equal to
-  0.0 (as per default).
+  0.0. Default values are 0.0 if <i>imu::mode</i> is "off", 1.0 
+  otherwise.  
  
 --ping_robot_tmo \e tmo 
-- The parameter \e tmo is the timeout (in seconds) to allow to
-  start-up the robot before connecting to it.
+- The parameter \e tmo is the timeout (in seconds) that allows
+  starting up the robot before connecting to it; by default we  
+  have a timeout of 40.0 [s].
  
---eyeTiltMin \e min
+--eye_tilt::min \e min
 - The parameter \e min specifies the minimum eye tilt angle 
   [deg] in order to prevent the eye from being covered by the
-  eyelid (when they're wide open) while moving.
+  eyelid (when they're wide open) while moving; default value is
+  -12 [deg].  
  
---eyeTiltMax \e max
+--eye_tilt::max \e max
 - The parameter \e max specifies the maximum eye tilt angle 
   [deg] in order to prevent the eye from being covered by the
-  eyelid (when they're wide open) while moving.
+  eyelid (when they're wide open) while moving; default value is
+  15 [deg].  
  
---minAbsVel \e min
-- The parameter \e min specifies the minimum absolute velocity 
+--min_abs_vel \e vel
+- The parameter \e vel specifies the minimum absolute velocity 
   that can be achieved by the robot [deg/s] due to the
   approximation performed while delivering data over the
   network. By default this value is 0.0 having no result on the
@@ -191,12 +213,12 @@ Factors</a>.
 --verbose
 - Enable some output print-out.
  
---tweakFile \e file 
+--tweak::file \e file 
 - The parameter \e file specifies the file name (located in 
   module context) used to read/write options that are tweakable
   by the user; if not provided, \e tweak.ini is assumed.
  
---tweakOverwrite \e switch 
+--tweak::overwrite \e switch 
 - If "on", at startup default values and cameras values 
   retrieved from file will be overwritten by those values
   contained in the tweak file. The \e switch is "on" by default.
@@ -300,6 +322,12 @@ following ports:
    - "saccade-done" <time>: sent out at the end of the saccade;
      comprise the time instant of the source when the event took
      place.
+   - "stabilization-on" <time>: notify that gaze stabilization
+     has been turned on; comprise the time instant of the source
+     when the event took place.
+   - "stabilization-off" <time>: notify that gaze stabilization 
+     has been turned off; comprise the time instant of the
+     source when the event took place.
    - "closing" <time>: sent out when the controller is being
      shut down; comprise the time instant of the source when the
      event took place.
@@ -339,6 +367,8 @@ following ports:
     - [get] [sact]: returns the saccades activation angle [deg].
     - [get] [track]: returns the current controller's tracking
       mode [0/1].
+    - [get] [stab]: returns 1 iff gaze stabilization is active,
+      0 otherwise.
     - [get] [done]: returns 1 iff motion is done, 0 otherwise.
     - [get] [sdon]: returns 1 iff saccade is done, 0 if still
       underway.
@@ -419,6 +449,8 @@ following ports:
       for gazing with the neck.
     - [set] [track] <val>: sets the controller's tracking mode;
       val can be [0/1].
+    - [set] [stab] <val>: turns on/off the gaze stabilization
+      (if enabled at start-up); val can be [0/1].
     - [set] [pid] ((prop0 (<val> <val> ...)) (prop1) (<val>
       <val> ...)): sets the pid values used to converge to the
       target with stereo input. The pid is implemented in
@@ -468,7 +500,7 @@ None.
 None. 
  
 \section conf_file_sec Camera Configuration File
-A configuration file passed through \e --camerasFile contains 
+A configuration file passed through \e --cameras::file contains
 the fields required to specify the cameras intrinsic parameters 
 along with a roto-translation matrix appended to the eye 
 kinematic (see the iKinChain::setHN method) in order to achieve
@@ -505,7 +537,7 @@ HN (0.0 1.0 2.0 ... 15.0)  // list of 4x4 doubles (per rows)
 \section tested_os_sec Tested OS
 Windows, Linux
 
-\author Ugo Pattacini
+\author Ugo Pattacini, Alessandro Roncone
 */ 
 
 #include <fstream>
@@ -538,19 +570,16 @@ protected:
     Solver         *slv;
     Controller     *ctrl;
     PolyDriver     *drvTorso, *drvHead;
-    exchangeData    commData;
-    RpcServer       rpcPort;
+    ExchangeData    commData;    
     bool            interrupting;
     bool            doSaveTweakFile;
     Mutex           savingTweakFile;
+    
+    IMUPort   imuPort;    
+    RpcServer rpcPort;
 
     struct Context
     {
-        // controller part
-        double eyesTime;
-        double neckTime;
-        bool   mode;
-
         // solver part
         double neckPitchMin;
         double neckPitchMax;
@@ -561,9 +590,15 @@ protected:
         double neckAngleUserTolerance;
         double eyesBoundVer;
         Vector counterRotGain;
-        bool   saccadesOn;
+        bool   saccadesOn;        
         double saccadesInhibitionPeriod;
         double saccadesActivationAngle;
+
+        // controller part
+        double eyesTime;
+        double neckTime;
+        bool   trackingOn;
+        bool   gazeStabilizationOn;
 
         // localizer part
         Bottle pidOptions;
@@ -614,22 +649,23 @@ protected:
     void storeContext(int *id)
     {
         Context &context=contextMap[contextIdCnt];
-
-        // controller part
-        context.eyesTime=ctrl->getTeyes();
-        context.neckTime=ctrl->getTneck();
-        context.mode=ctrl->getTrackingMode();
         
         // solver part
         slv->getCurNeckPitchRange(context.neckPitchMin,context.neckPitchMax);
         slv->getCurNeckRollRange(context.neckRollMin,context.neckRollMax);
         slv->getCurNeckYawRange(context.neckYawMin,context.neckYawMax);
         context.neckAngleUserTolerance=slv->getNeckAngleUserTolerance();
-        context.eyesBoundVer=eyesRefGen->getEyesBoundVer();
+        context.eyesBoundVer=commData.eyesBoundVer;
         context.counterRotGain=eyesRefGen->getCounterRotGain();
-        context.saccadesOn=eyesRefGen->isSaccadesOn();
+        context.saccadesOn=commData.saccadesOn;
         context.saccadesInhibitionPeriod=eyesRefGen->getSaccadesInhibitionPeriod();
         context.saccadesActivationAngle=eyesRefGen->getSaccadesActivationAngle();
+
+        // controller part
+        context.eyesTime=ctrl->getTeyes();
+        context.neckTime=ctrl->getTneck();
+        context.trackingOn=ctrl->getTrackingMode();
+        context.gazeStabilizationOn=ctrl->getGazeStabilization();
 
         // localizer part
         loc->getPidOptions(context.pidOptions);
@@ -646,11 +682,6 @@ protected:
         {
             Context &context=itr->second;
 
-            // controller part
-            ctrl->setTeyes(context.eyesTime);   // always remind to set eyes before the neck
-            ctrl->setTneck(context.neckTime);   // due to internal saturation
-            ctrl->setTrackingMode(context.mode);
-
             // solver part
             slv->bindNeckPitch(context.neckPitchMin,context.neckPitchMax);
             slv->bindNeckRoll(context.neckRollMin,context.neckRollMax);
@@ -658,9 +689,15 @@ protected:
             slv->setNeckAngleUserTolerance(context.neckAngleUserTolerance);
             eyesRefGen->manageBindEyes(context.eyesBoundVer);
             eyesRefGen->setCounterRotGain(context.counterRotGain);
-            eyesRefGen->setSaccades(context.saccadesOn);
+            commData.saccadesOn=context.saccadesOn;
             eyesRefGen->setSaccadesInhibitionPeriod(context.saccadesInhibitionPeriod);
             eyesRefGen->setSaccadesActivationAngle(context.saccadesActivationAngle);
+
+            // controller part
+            ctrl->setTeyes(context.eyesTime);   // always remind to set eyes before the neck
+            ctrl->setTneck(context.neckTime);   // due to internal saturation
+            ctrl->setTrackingMode(context.trackingOn);
+            ctrl->setGazeStabilization(context.gazeStabilizationOn);
 
             // localizer part
             loc->setPidOptions(context.pidOptions);
@@ -705,7 +742,7 @@ protected:
 
         Bottle &minVer=info.addList();
         minVer.addString("min_allowed_vergence");
-        minVer.addDouble(CTRL_RAD2DEG*commData.get_minAllowedVergence());
+        minVer.addDouble(CTRL_RAD2DEG*commData.minAllowedVergence);
 
         Bottle &intrinsicsLeft=info.addList();
         intrinsicsLeft.addString("camera_intrinsics_left");
@@ -751,6 +788,8 @@ protected:
         eventsList.addString("motion-ongoing");
         eventsList.addString("saccade-onset");
         eventsList.addString("saccade-done");
+        eventsList.addString("stabilization-on");
+        eventsList.addString("stabilization-off");
         eventsList.addString("closing");
         eventsList.addString("suspended");
         eventsList.addString("resumed");
@@ -948,7 +987,18 @@ protected:
 
 public:
     /************************************************************************/
-    CtrlModule() : interrupting(false), doSaveTweakFile(false) { }
+    CtrlModule()
+    {
+        loc=NULL;
+        eyesRefGen=NULL;
+        slv=NULL;
+        ctrl=NULL;
+        drvTorso=NULL;
+        drvHead=NULL;
+
+        interrupting=false;
+        doSaveTweakFile=false;
+    }
 
     /************************************************************************/
     bool configure(ResourceFinder &rf)
@@ -958,9 +1008,7 @@ public:
         string torsoName;
         double neckTime;
         double eyesTime;
-        double minAbsVel;
-        bool   saccadesOn;
-        bool   neckPosCtrlOn;
+        double min_abs_vel;
         double ping_robot_tmo;
         Vector counterRotGain(2);        
 
@@ -970,45 +1018,64 @@ public:
         // save pointer to rf
         this->rf=&rf;
 
+        // retrieve groups
+        Bottle &imuGroup=rf.findGroup("imu");
+        Bottle &eyeTiltGroup=rf.findGroup("eye_tilt");
+        Bottle &trajTimeGroup=rf.findGroup("trajectory_time");
+        Bottle &camerasGroup=rf.findGroup("cameras");
+        Bottle &tweakGroup=rf.findGroup("tweak");
+
         // get params from the command-line
         ctrlName=rf.check("name",Value("iKinGazeCtrl")).asString().c_str();        
         headName=rf.check("head",Value("head")).asString().c_str();
         torsoName=rf.check("torso",Value("torso")).asString().c_str();
-        neckTime=rf.check("Tneck",Value(0.75)).asDouble();
-        eyesTime=rf.check("Teyes",Value(0.25)).asDouble();
-        minAbsVel=CTRL_DEG2RAD*rf.check("minAbsVel",Value(0.0)).asDouble();
-        ping_robot_tmo=rf.check("ping_robot_tmo",Value(0.0)).asDouble();
-        saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
-        neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
-        counterRotGain[0]=rf.check("vor",Value(1.0)).asDouble();
-        counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();
+        neckTime=trajTimeGroup.check("neck",Value(0.75)).asDouble();
+        eyesTime=trajTimeGroup.check("eyes",Value(0.25)).asDouble();
+        min_abs_vel=CTRL_DEG2RAD*rf.check("min_abs_vel",Value(0.0)).asDouble();
+        ping_robot_tmo=rf.check("ping_robot_tmo",Value(40.0)).asDouble();        
 
         commData.robotName=rf.check("robot",Value("icub")).asString().c_str();
-        commData.eyeTiltMin=rf.check("eyeTiltMin",Value(-1e9)).asDouble();
-        commData.eyeTiltMax=rf.check("eyeTiltMax",Value(1e9)).asDouble();
+        commData.eyeTiltLim[0]=eyeTiltGroup.check("min",Value(-12.0)).asDouble();
+        commData.eyeTiltLim[1]=eyeTiltGroup.check("max",Value(15.0)).asDouble();        
         commData.head_version=rf.check("headV2")?2.0:1.0;
-        commData.verbose=rf.check("verbose");
-        commData.tweakOverwrite=(rf.check("tweakOverwrite",Value("on")).asString()=="on");
+        commData.verbose=rf.check("verbose");        
+        commData.saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
+        commData.neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
+        commData.stabilizationOn=(imuGroup.check("mode",Value("on")).asString()=="on");
+        commData.stabilizationGain=imuGroup.check("stabilization_gain",Value(11.0)).asDouble();
+        commData.gyro_noise_threshold=CTRL_DEG2RAD*imuGroup.check("gyro_noise_threshold",Value(5.0)).asDouble();
         commData.debugInfoEnabled=rf.check("debugInfo",Value("off")).asString()=="on";
 
-        // minAbsVel is given in absolute form
-        // hence it must be positive
-        if (minAbsVel<0.0)
-            minAbsVel=-minAbsVel;
+        if (commData.stabilizationOn)
+        {
+            counterRotGain[0]=imuGroup.check("vor",Value(1.0)).asDouble(); 
+            counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();
+        }
+        else
+        {
+            counterRotGain[0]=imuGroup.check("vor",Value(0.0)).asDouble(); 
+            counterRotGain[1]=rf.check("ocr",Value(1.0)).asDouble();
+        }
 
-        if (rf.check("camerasFile"))
+        // min_abs_vel is given in absolute form
+        // hence it must be positive
+        if (min_abs_vel<0.0)
+            min_abs_vel=-min_abs_vel;
+
+        if (camerasGroup.check("file"))
         {
             commData.rf_cameras.setQuiet();
-            rf.check("camerasContext")?
-            commData.rf_cameras.setDefaultContext(rf.find("camerasContext").asString().c_str()):
+            camerasGroup.check("context")?
+            commData.rf_cameras.setDefaultContext(camerasGroup.find("context").asString().c_str()):
             commData.rf_cameras.setDefaultContext(rf.getContext().c_str());
-            commData.rf_cameras.setDefaultConfigFile(rf.find("camerasFile").asString().c_str());            
+            commData.rf_cameras.setDefaultConfigFile(camerasGroup.find("file").asString().c_str());            
             commData.rf_cameras.configure(0,NULL);
         }
 
         commData.rf_tweak.setQuiet();
         commData.rf_tweak.setDefaultContext(rf.getContext().c_str());
-        commData.tweakFile=rf.check("tweakFile",Value("tweak.ini")).asString().c_str();
+        commData.tweakFile=tweakGroup.check("file",Value("tweak.ini")).asString().c_str();
+        commData.tweakOverwrite=(tweakGroup.check("overwrite",Value("on")).asString()=="on");
         commData.rf_tweak.setDefaultConfigFile(commData.tweakFile.c_str());
         commData.rf_tweak.configure(0,NULL);
 
@@ -1018,7 +1085,12 @@ public:
         string remoteHeadName="/"+commData.robotName+"/"+headName;
         string localHeadName=commData.localStemName+"/"+headName;
         string remoteTorsoName="/"+commData.robotName+"/"+torsoName;
-        string localTorsoName=commData.localStemName+"/"+torsoName;        
+        string localTorsoName=commData.localStemName+"/"+torsoName;
+        string remoteInertialName="/"+commData.robotName+"/inertial";
+
+        // check if we have to retrieve IMU data from a different port
+        if (imuGroup.check("source_port_name"))
+            remoteInertialName=imuGroup.find("source_port_name").asString().c_str();
 
         Property optTorso("(device remote_controlboard)");
         optTorso.put("remote",remoteTorsoName.c_str());
@@ -1061,22 +1133,38 @@ public:
         if (!drvHead->isValid())
         {
             yError("Head device driver not available!");
-
-            delete drvHead;
-            delete drvTorso;
-            drvTorso=drvHead=NULL;
+            dispose();
             return false;
         }
+
+        imuPort.setExchangeData(&commData);
+        if (commData.stabilizationOn)
+        {
+            imuPort.open((commData.localStemName+"/inertial:i").c_str());        
+            if (Network::connect(remoteInertialName.c_str(),imuPort.getName().c_str()))
+                yInfo("Receiving IMU data from %s",remoteInertialName.c_str());
+            else
+            {
+                yError("Unable to connect to %s!",remoteInertialName.c_str());
+                dispose();
+                return false;
+            }
+        }
+        else
+            yWarning("IMU data will be not received/used");
 
         if (commData.debugInfoEnabled)
             yDebug("Commands to robot will be also streamed out on debug port");
 
         // create and start threads
         // creation order does matter (for the minimum allowed vergence computation) !!
-        ctrl=new Controller(drvTorso,drvHead,&commData,neckPosCtrlOn,neckTime,eyesTime,minAbsVel,10);
+        ctrl=new Controller(drvTorso,drvHead,&commData,neckTime,eyesTime,min_abs_vel,10);
         loc=new Localizer(&commData,10);
-        eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,ctrl,saccadesOn,counterRotGain,20);
+        eyesRefGen=new EyePinvRefGen(drvTorso,drvHead,&commData,ctrl,counterRotGain,20);
         slv=new Solver(drvTorso,drvHead,&commData,eyesRefGen,loc,ctrl,20);
+
+        commData.port_xd=new xdPort(slv);
+        commData.port_xd->open((commData.localStemName+"/xd:i").c_str());
 
         // this switch-on order does matter !!
         eyesRefGen->start();
@@ -1142,7 +1230,7 @@ public:
                         else if (type==VOCAB4('s','a','c','c'))
                         {
                             reply.addVocab(ack);
-                            reply.addInt((int)eyesRefGen->isSaccadesOn());
+                            reply.addInt((int)commData.saccadesOn);
                             return true;
                         }
                         else if (type==VOCAB4('s','i','n','h'))
@@ -1163,6 +1251,12 @@ public:
                             reply.addInt((int)ctrl->getTrackingMode());
                             return true;
                         }
+                        else if (type==VOCAB4('s','t','a','b'))
+                        {
+                            reply.addVocab(ack);
+                            reply.addInt((int)ctrl->getGazeStabilization());
+                            return true;
+                        }
                         else if (type==VOCAB4('d','o','n','e'))
                         {
                             reply.addVocab(ack);
@@ -1172,7 +1266,7 @@ public:
                         else if (type==VOCAB4('s','d','o','n'))
                         {
                             reply.addVocab(ack);
-                            reply.addInt((int)!commData.get_isSaccadeUnderway());
+                            reply.addInt((int)!commData.saccadeUnderway);
                             return true;
                         }
                         else if (type==VOCAB4('p','i','t','c'))
@@ -1207,10 +1301,8 @@ public:
                         }
                         else if (type==VOCAB4('e','y','e','s'))
                         {
-                            double ver=eyesRefGen->getEyesBoundVer();
-
                             reply.addVocab(ack);
-                            reply.addDouble(ver);
+                            reply.addDouble(commData.eyesBoundVer);
                             return true;
                         }
                         else if (type==VOCAB4('n','t','o','l'))
@@ -1488,8 +1580,7 @@ public:
                         }
                         else if (type==VOCAB4('s','a','c','c'))
                         {
-                            bool mode=(command.get(2).asInt()>0);
-                            eyesRefGen->setSaccades(mode);
+                            commData.saccadesOn=(command.get(2).asInt()>0);
                             reply.addVocab(ack);
                             return true;
                         }
@@ -1521,6 +1612,12 @@ public:
                             reply.addVocab(ack);
                             return true;
                         }
+                        else if (type==VOCAB4('s','t','a','b'))
+                        {
+                            bool mode=(command.get(2).asInt()>0);
+                            reply.addVocab(ctrl->setGazeStabilization(mode)?ack:nack);
+                            return true;
+                        }
                         else if (type==VOCAB3('p','i','d'))
                         {
                             if (Bottle *bOpt=command.get(2).asList())
@@ -1534,11 +1631,7 @@ public:
                         {
                             if (Bottle *bOpt=command.get(2).asList())
                             {
-                                if (tweakSet(*bOpt))
-                                    reply.addVocab(ack);
-                                else
-                                    reply.addVocab(nack);
-
+                                reply.addVocab(tweakSet(*bOpt)?ack:nack);
                                 return true;
                             }
                         }
@@ -1779,32 +1872,65 @@ public:
     }
 
     /************************************************************************/
-    bool interruptModule()
+    void dispose()
     {
-        interrupting=true;
-        return true;
-    }
+        if (loc!=NULL)
+            loc->stop();
+        
+        if (eyesRefGen!=NULL)  
+            eyesRefGen->stop();
 
-    /************************************************************************/
-    bool close()
-    {
-        loc->stop();
-        eyesRefGen->stop();
-        slv->stop();
-        ctrl->stop();
+        if (slv!=NULL)
+            slv->stop();
 
+        if (ctrl!=NULL)
+            ctrl->stop();
+
+        if (drvTorso!=NULL)
+            drvTorso->close();
+
+        if (drvHead!=NULL)
+            drvHead->close();
+
+        if (commData.port_xd!=NULL)
+            if (!commData.port_xd->isClosed())
+                commData.port_xd->close(); 
+
+        if (!imuPort.isClosed())
+            imuPort.close(); 
+
+        if (rpcPort.asPort().isOpen())
+            rpcPort.close();
+        
         delete loc;
         delete eyesRefGen;
         delete slv;
         delete ctrl;
         delete drvTorso;
         delete drvHead;
-
-        rpcPort.interrupt();
-        rpcPort.close();
+        delete commData.port_xd;
 
         contextMap.clear();
+    }
 
+    /************************************************************************/
+    bool interruptModule()
+    {
+        interrupting=true;
+
+        if (commData.port_xd!=NULL)
+            commData.port_xd->interrupt();
+
+        imuPort.interrupt();
+        rpcPort.interrupt();
+
+        return true;
+    }
+
+    /************************************************************************/
+    bool close()
+    {
+        dispose();
         return true;
     }
 
@@ -1843,7 +1969,7 @@ int main(int argc, char *argv[])
     if (!yarp.checkNetwork())
     {
         yError("YARP server not available!");
-        return -1;
+        return 1;
     }
 
     CtrlModule mod;

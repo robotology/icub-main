@@ -1,7 +1,7 @@
 /* 
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
- * Author: Ugo Pattacini
- * email:  ugo.pattacini@iit.it
+ * Author: Ugo Pattacini, Alessandro Roncone
+ * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -44,8 +44,7 @@ class Localizer : public GazeComponent, public RateThread
 {
 protected:
     Mutex                 mutex;
-    exchangeData         *commData;
-    xdPort               *port_xd;
+    ExchangeData         *commData;
     BufferedPort<Bottle>  port_mono;
     BufferedPort<Bottle>  port_stereo;
     BufferedPort<Bottle>  port_anglesIn;
@@ -72,9 +71,8 @@ protected:
     void handleAnglesOutput();
 
 public:
-    Localizer(exchangeData *_commData, const unsigned int _period);
+    Localizer(ExchangeData *_commData, const unsigned int _period);
 
-    void   set_xdport(xdPort *_port_xd) { port_xd=_port_xd; }
     void   getPidOptions(Bottle &options);
     void   setPidOptions(const Bottle &options);
     bool   projectPoint(const string &type, const Vector &x, Vector &px);
