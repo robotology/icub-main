@@ -403,7 +403,7 @@ class App:
         print 'Running nameserver'
         self.checkNs()
         if self.nsFlag.get()==0:
-            cmd = Util.getSshCmd(self.clusterUser.get(), self.clusterNsNode.get()) + ['icub-cluster-server_test.sh', ' start']
+            cmd = Util.getSshCmd(self.clusterUser.get(), self.clusterNsNode.get()) + ['icub-cluster-server.sh', ' start']
 #            if (self.cluster.nsType=='yarpserver3'):
 #                cmd.append('yarpserver3')
 #            elif(self.cluster.nsType=='yarpserver'):
