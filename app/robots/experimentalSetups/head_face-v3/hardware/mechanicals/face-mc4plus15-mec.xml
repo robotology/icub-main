@@ -1,37 +1,52 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<params robot="iCubExpHeadV3" build="1">
-    <group name="GENERAL">
-        <param name="Joints"> 4 </param> <!-- the number of joints of the robot part -->
+<!--
+    NOTE: (m.a.) 
+    on 23jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_face.xml). 
+    - in Encoder i used 293.333 because ... we have an INC-ENC with 4x400x66 = 105600, where 4 is given by hal which samples 4 time 
+      each line of the encoder, 400 are the lines per revolution, and 66 is an internal reduction. then we have 105600/360 = 293.333.
+      then i kept the same sign (+, +, -, -) as in grenoble. 
+    - i must review ... maybe nothing
+    
+ -->
 
-                             <!--   0        1          logical axis number (ControlBoardWrapper) -->
-    <param name="AxisMap">          0        1        2        3        </param>    <!-- hardware axis number  (EMS) -->
-        <param name="Encoder">      182.044    182.044    182.044    182.044    </param>    <!-- m.a.: encoderconversionfactor -->
-        <param name="Zeros">          0        0         0        0        </param>
-        <param name="TorqueId">      0x0C    0x0C     0x0C    0x0C    </param>    <!-- m.a.: maybe not needed in eth-robots -->
-        <param name="TorqueChan">    0        0        0        0         </param>
-        <param name="TorqueMax">     24        24         24        24        </param>
-        <param name="Rotor">         1        1       1       1       </param>
-        <param name="Gearbox">       100        100     100     100    </param>
-        <param name="Verbose">        0        0       0        0        </param>
+<params robot="iCubExpHeadV3" build="1">
+
+    <group name="GENERAL">
+        <param name="Joints"> 4 </param> <!-- the number of joints of the robot sub-part -->
+
+        <!-- joint number in sub-part           0           1           2           3            -->
+        <!-- joint name                         lip-left    lip-high    lip-right   lip-bottom   -->   
+        <param name="AxisMap">                  0           1           2           3           </param>    <!-- joint as effectively mapped onto the hw of the board -->  
+        <!-- memo: Encoder = x [ticks/deg], joint->config.encoderconversionfactor = x / 182.044 [ticks/icubdeg] -->
+        <param name="Encoder">                  293.333     293.333     -293.333   -293.333     </param>    <!-- if motor has 4x400x66=105600 then we have 293.333 ticks/deg -->
+        <param name="Zeros">                    35          -28         35          0           </param>
+        <param name="TorqueId">                 0           0           0           0           </param>    
+        <param name="TorqueChan">               0           0           0           0           </param>
+        <param name="TorqueMax">                0           0           0           0           </param>
+        <param name="Verbose">                  0           0           0           0           </param>
+        <param name="Rotor">                    1           1           1           1           </param>
+        <param name="Gearbox">                  1           1           1           1           </param>
+        <param name="Verbose">                  0           0           0           0           </param>
     </group>
 
     <group name ="JOINTS_COUPLING">
-        <param name="kinematic_mj">   0.55    0.275   0.275   0.00
-                                      0.00    0.50    0.50    0.00
-                                      0.00    -0.5    0.50    0.00
-                                      0.00    0.00    0.00    1.00   
+        <param name="kinematic_mj">   
+            0.55    0.275   0.275   0.00
+            0.00    0.50    0.50    0.00
+            0.00    -0.5    0.50    0.00
+            0.00    0.00    0.00    1.00   
         </param>
     </group>
-    
+
     <group name="VELOCITY">
-        <param name="MOT_speed_estimation">    1        1        1         1    </param>
-        <param name="MOT_accel_estimation">    1        1        1         1    </param>
-        <param name="JNT_accel_estimation">    5        5        5         5    </param>
-        <param name="JNT_speed_estimation">    5        5        5         5    </param>
-        <param name="Shifts">                  8        8       8       8   </param>
-        <param name="Timeout">                 100        100     100     100    </param>
+        <param name="MOT_speed_estimation">     1           1           1           1           </param>
+        <param name="MOT_accel_estimation">     1           1           1           1           </param>
+        <param name="JNT_accel_estimation">     5           5           5           5           </param>
+        <param name="JNT_speed_estimation">     5           5           5           5           </param>
+        <param name="Shifts">                   8           8           8           8           </param>
+        <param name="Timeout">                  100         100         100         100         </param>
     </group>
 
 </params>

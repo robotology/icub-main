@@ -1,28 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<devices robot="iCubExpHeadV3" build="1">
-	<device name="devicename_head_mc_wrapper" type="controlboardwrapper2">
-		<!-- the string devicename_head_mc_wrapper is used elsewhere, for instance in the calibrator file -->
-		<paramlist name="networks">
-		<!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
-		<elem name="FirstSetOfJoints">   0  1  0  1 </elem> <!-- tbadded -->
-		<elem name="SecondSetOfJoints">  2  5  0  3 </elem> <!-- change it accordingly -->
-	</paramlist>
-
-<param name="period"> 10 </param>
-      <param name="name">   /icub/headv3         </param>
-      <param name="joints"> 6                    </param> <!-- 6 -->
+<!--
+    NOTE: (m.a.) 
+    on 23jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file head_mc_wrapper.xml). 
+    i believe that nothing else is to be done in here
+    
+ -->
  
-      <action phase="startup" level="5" type="attach">
-      <paramlist name="networks">
-      <!-- The param value must match the device name in the corresponding emsX file -->
-            <elem name="FirstSetOfJoints">      devicename_head0_mc </elem> <!-- tbadded -->
-            <elem name="SecondSetOfJoints">     devicename_head1_mc </elem> <!-- change it accordingly -->
-      </paramlist>
-      </action>
+<devices robot="iCubExpHeadV3" build="1">
 
-      <action phase="shutdown" level="5" type="detach" />
+    <device name="devicename_head_mc_wrapper" type="controlboardwrapper2">
+        <!-- the string devicename_head_mc_wrapper is used elsewhere, for instance in the calibrator file head_calib.xml-->
+        <paramlist name="networks">
+            <!-- memo: strings in elem name hereafter (head0_joints and head1_joints) are custom names that live only in this file and they are used later on in the attach phase -->
+            <elem name="head0_joints"> 0  1  0  1 </elem> 
+            <elem name="head1_joints"> 2  5  0  3 </elem> 
+        </paramlist>
 
-  </device>
+        <param name="period"> 10                        </param>
+        <param name="name">   /icub/headv3              </param>
+        <param name="joints"> 6                         </param> 
+ 
+        <action phase="startup" level="5" type="attach">
+            <paramlist name="networks">
+                <!-- The param value must match the device name in the corresponding emsX file -->
+                <elem name="head0_joints">  devicename_head0_mc </elem>     <!-- devicename_head0_mc is found in file head0_mc_hardware.xml -->
+                <elem name="head1_joints">  devicename_head1_mc </elem>     <!-- devicename_head1_mc is found in file head1_mc_hardware.xml -->
+            </paramlist>
+        </action>
+
+        <action phase="shutdown" level="5" type="detach" />
+
+    </device>
+  
 </devices>

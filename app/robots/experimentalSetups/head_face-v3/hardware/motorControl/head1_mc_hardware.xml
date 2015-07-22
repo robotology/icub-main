@@ -1,59 +1,70 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
+<!--
+    NOTE: (m.a.) 
+    on 23jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_head.xml). 
+    - in LIMITS i use the same as in grenoble which do not consider the position at joint but at the encoder. 
+    - i must review ... PID values, then what is "Currents"?
+    
+ -->
+ 
 <devices robot="iCubExpHeadV3" build="1">
-  <device name="devicename_head1_mc" type="embObjMotionControl">
-      <params file="general.xml" />
-      <params file="hardware/electronics/head-mc4plus13-eln.xml" />
-      <params file="hardware/mechanicals/head-mc4plus13-mec.xml" />
-    <!-- random values, to be tuned -->
-    <group name="LIMITS">
-        <param name="Min">              +130    +95     -200    -150    </param> 
-        <param name="Max">              +210    +145    +100    +150    </param>
-        <param name="Currents">         600     600     600     600     </param>
-    </group>
     
-    <group name="IMPEDANCE">
-        <param name="stiffness">          0.0    0.0     0.0     0.0        </param>
-        <param name="damping">            0.0    0.0     0.0     0.0        </param>
-    </group>
+    <device name="devicename_head1_mc" type="embObjMotionControl">
     
-    <!-- TBD: marco.accame: vedere come tradurre i valori in iCubGrenoble01 in metrics units ... -->
-    <!-- random values, to be tuned --> 
-    <group name="POSITION_CONTROL">
-        <param name="controlLaw">    joint_pid_v1                       </param>    
-        <param name="controlUnits">  metric_units                       </param> 
-        <param name="kp">               568.00    -500.00  568.00  568.00    </param>       
-        <param name="kd">               0.0        0.0     0.0     0.0        </param>     
-        <param name="ki">               0.0        0.0     0.0     0.0        </param>      
-        <param name="limPwm">			500        500        500        500        </param>       
-        <param name="maxPwm">			700        700     2000    2000    </param>  
-        <param name="maxInt">           750        750        2000    2000    </param> 
-        <param name="shift">            0        0        0        0        </param>       
-        <param name="ko">               0        0        0        0        </param>  
-        <param name="stictionUp">       0        0        0        0        </param> 
-        <param name="stictionDwn">      0        0        0        0        </param> 
-        <param name="kff">              0        0        0        0        </param> 
-    </group>
+        <params file="general.xml" />
+        <params file="hardware/electronics/head-mc4plus13-eln.xml" />
+        <params file="hardware/mechanicals/head-mc4plus13-mec.xml" />
+        
+        <!-- joint logical number               0           1           2           3           -->
+        <!-- joint name                         neck-yaw    eyes-tilt   eyes-vers   eyes-verg   -->         <!-- j2 is right-eye, j3 is left-eye -->
+        <group name="LIMITS">
+            <param name="Min">                  -45         -30         -30         0           </param> 
+            <param name="Max">                  +45         +30         +30         +50         </param>
+            <param name="Currents">             600         600         600         600         </param>
+        </group>
     
-    <group name="TORQUE_CONTROL">
-        <param name="controlLaw">    motor_pid_with_friction_v1 </param>    
-        <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">           0        0        0        0        </param>    
-        <param name="kd">           0        0        0        0        </param>        
-        <param name="ki">           0        0        0        0        </param>        
-        <param name="maxPwm">       8000    8000    8000    8000    </param>       
-        <param name="maxInt">          500        500        500        500        </param>       
-        <param name="shift">        0        0        0        0        </param>        
-        <param name="ko">           0        0        0        0        </param>        
-        <param name="stictionUp">   0        0        0        0        </param>        
-        <param name="stictionDwn">  0        0        0        0        </param>        
-        <param name="kff">          0        0        0        0        </param>    
-        <param name="kbemf">        0        0        0        0        </param>     
-        <param name="filterType">   0        0        0        0        </param>            
-        <param name="ktau">         0        0        0        0        </param>   
-    </group>
+        <group name="IMPEDANCE">
+            <param name="stiffness">            0.0         0.0         0.0         0.0         </param>
+            <param name="damping">              0.0         0.0         0.0         0.0         </param>
+        </group>
+    
+        <!-- TBD: marco.accame: vedere come tradurre i valori in iCubGrenoble01 in metrics units ... -->
+        <group name="POSITION_CONTROL">
+            <param name="controlLaw">       joint_pid_v1                                        </param>    
+            <param name="controlUnits">     metric_units                                        </param> 
+            <param name="kp">                   568.00      -500.00     568.00      568.00      </param>       
+            <param name="kd">                   0.0         0.0         0.0         0.0         </param>     
+            <param name="ki">                   0.0         0.0         0.0         0.0         </param>      
+            <param name="limPwm">               500         500         500         500         </param>       
+            <param name="maxPwm">               700         700         2000        2000        </param>  
+            <param name="maxInt">               750         750         2000        2000        </param> 
+            <param name="shift">                0           0           0           0           </param>       
+            <param name="ko">                   0           0           0           0           </param>  
+            <param name="stictionUp">           0           0           0           0           </param> 
+            <param name="stictionDwn">          0           0           0           0           </param> 
+            <param name="kff">                  0           0           0           0           </param> 
+        </group>
+    
+        <group name="TORQUE_CONTROL">
+            <param name="controlLaw">       motor_pid_with_friction_v1                          </param>    
+            <param name="controlUnits">     metric_units                                        </param> 
+            <param name="kp">                   0           0           0           0           </param>    
+            <param name="kd">                   0           0           0           0           </param>        
+            <param name="ki">                   0           0           0           0           </param>        
+            <param name="maxPwm">               0           0           0           0           </param>       
+            <param name="maxInt">               0           0           0           0           </param>       
+            <param name="shift">                0           0           0           0           </param>        
+            <param name="ko">                   0           0           0           0           </param>        
+            <param name="stictionUp">           0           0           0           0           </param>        
+            <param name="stictionDwn">          0           0           0           0           </param>        
+            <param name="kff">                  0           0           0           0           </param>    
+            <param name="kbemf">                0           0           0           0           </param>     
+            <param name="filterType">           0           0           0           0           </param>            
+            <param name="ktau">                 0           0           0           0           </param>   
+        </group>
     
     
-  </device>
+    </device>
 </devices>
