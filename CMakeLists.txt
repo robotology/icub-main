@@ -195,6 +195,7 @@ set(ICUB_CMAKE_SCRIPTS FindPLXCANAPI.cmake
                         FindGLUT.cmake
                         FindOpenGL.cmake
                         iCubHelpers.cmake
+                        FindV4L2.cmake
                         iCubOptions.cmake)
                         #iCubFindDependencies.cmake)
 

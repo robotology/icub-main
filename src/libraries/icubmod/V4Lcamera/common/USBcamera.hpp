@@ -52,12 +52,16 @@ class yarp::dev::USBCameraDriver :
     public IFrameGrabberRgb
 //     public IFrameGrabberControlsDC1394
 {
-private:
+protected:
     USBCameraDriver(const USBCameraDriver&);
     void operator=(const USBCameraDriver&);
     IFrameGrabberRgb *deviceRgb;
     IFrameGrabber    *deviceRaw;
+    DeviceDriver     *os_device;
 
+    int _width;
+    int _height;
+    
 public:
     /**
     * Constructor.
