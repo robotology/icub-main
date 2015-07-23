@@ -198,12 +198,12 @@ void PinholeCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & o
     cvRemap( in.getIplImage(), out.getIplImage(),
            _mapUndistortX, _mapUndistortY);
 
-	// painting crosshair at calibration center
+    // painting crosshair at calibration center
     if (_drawCenterCross){
-	    yarp::sig::PixelRgb pix = yarp::sig::PixelRgb(255,255,255);
+        yarp::sig::PixelRgb pix = yarp::sig::PixelRgb(255,255,255);
         yarp::sig::draw::addCrossHair(out, pix, (int)CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 0, 2),
-		                                    (int)CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 2),
-											10);
+                                            (int)CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 1, 2),
+                                            10);
     }
 
     // buffering old image size

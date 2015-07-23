@@ -96,7 +96,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
 
 CamCalibModule::CamCalibModule(){
 
-    _calibTool = NULL;	
+    _calibTool = NULL;  
 }
 
 CamCalibModule::~CamCalibModule(){
@@ -110,7 +110,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
     // pass configuration over to bottle
     Bottle botConfig(rf.toString().c_str());
-    botConfig.setMonitor(rf.getMonitor());		
+    botConfig.setMonitor(rf.getMonitor());      
     // Load from configuration group ([<group_name>]), if group option present
     Value *valGroup; // check assigns pointer to reference
     if(botConfig.check("group", valGroup, "Configuration group to load module options from (string)."))
@@ -134,7 +134,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
     string calibToolName = botConfig.check("projection",
                                          Value("pinhole"),
-                                         "Projection/mapping applied to calibrated image [projection|spherical] (string).").asString().c_str();
+                                         "Projection/mapping applied to calibrated image [pinhole|spherical] (string).").asString().c_str();
 
     _calibTool = CalibToolFactories::getPool().get(calibToolName.c_str());
     if (_calibTool!=NULL) {
@@ -174,7 +174,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
 bool CamCalibModule::close(){
     _prtImgIn.close();
-	_prtImgOut.close();
+    _prtImgOut.close();
     _configPort.close();
     if (_calibTool != NULL){
         _calibTool->close();
