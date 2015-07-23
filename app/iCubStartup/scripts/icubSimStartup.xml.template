@@ -7,18 +7,21 @@
         <module>
                 <name>yarplogger</name>
                 <parameters>--start --no_stop</parameters>
-                <node>console</node>
+                <node>localhost</node>
+                <display>--minimized</display>
         </module>
 
         <module>
                 <name>iCub_SIM</name>
-                <node>console</node>
+                <node>localhost</node>
+                <display>--minimized</display>
         </module>
 
         <module>
                 <name>simCartesianControl</name>
                 <parameters>--no_legs</parameters>
-                <node>console</node>
+                <node>localhost</node>
+                <display>--minimized</display>
                 <dependencies>
                     <port timeout="40">/icubSim/left_arm/state:o</port>
                     <port timeout="40">/icubSim/right_arm/state:o</port>
@@ -28,7 +31,8 @@
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--context simCartesianControl --part right_arm</parameters>
-                <node>console</node>
+                <node>localhost</node>
+                <display>--minimized</display>
                 <dependencies>
                     <port timeout="40">/icubSim/right_arm/state:o</port>
                 </dependencies>
@@ -37,7 +41,8 @@
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--context simCartesianControl --part left_arm</parameters>
-                <node>console</node>
+                <node>localhost</node>
+                <display>--minimized</display>
                 <dependencies>
                     <port timeout="40">/icubSim/left_arm/state:o</port>
                 </dependencies>
@@ -46,7 +51,8 @@
         <module>
                 <name>iKinGazeCtrl</name>
                 <parameters>--from configSim.ini</parameters>
-                <node>console</node>
+                <node>localhost</node>
+                <display>--minimized</display>
                 <dependencies>
                     <port timeout="40">/icubSim/head/state:o</port>
                     <port timeout="40">/icubSim/inertial</port>
@@ -56,7 +62,8 @@
         <module>
                 <name>wholeBodyDynamics</name>
                 <parameters>--robot icubSim --autoconnect --dummy_ft --no_legs</parameters>
-                <node>console</node>
+                <node>localhost</node>
+                <display>--minimized</display>
                 <dependencies>
                     <port timeout="40">/icubSim/head/state:o</port>
                     <port timeout="40">/icubSim/torso/state:o</port>
@@ -69,7 +76,8 @@
         <module>
                 <name>gravityCompensator</name>
                 <parameters>--robot icubSim --no_legs</parameters>
-                <node>console</node>
+                <node>localhost</node>
+                <display>--minimized</display>
                 <dependencies>
                     <port timeout="40">/wholeBodyDynamics/rpc:i</port>
                 </dependencies>
