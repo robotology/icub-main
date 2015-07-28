@@ -593,7 +593,7 @@ public:
     virtual bool setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val);
     virtual bool getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys);
     ///////////////////////// END RemoteVariables Interface
-    virtual bool getGearboxRatioRaw(int j, double gearbox);
+    virtual bool getGearboxRatioRaw(int j, double &gearbox);
 
     ////// Amplifier interface
     virtual bool enableAmpRaw(int j);
