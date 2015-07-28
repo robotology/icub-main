@@ -3611,6 +3611,39 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     return ret;
 }
 
+bool embObjMotionControl::getGearboxRatioRaw(int j, double gearbox)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_motor_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getGearbox() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_config_t    motor_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    gearbox = (double)motor_cfg.gearboxratio;
+
+    return true;
+}
+
 // IRemoteVariables
 bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val)
 {
@@ -3621,15 +3654,18 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     }
     else if (key == "rotor")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_rotorEncoderRes[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_rotorEncoderRes[i]);
+        return true;
     }
     else if (key == "gearbox")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_gearbox[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp=0; getGearboxRatioRaw(i, tmp);  r.addDouble(tmp); }
+        return true;
     }
     else if (key == "zeros")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_zeros[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_zeros[i]);
+        return true;
     }
     else if (key == "hasHallSensor")
     {
@@ -3694,11 +3730,13 @@ bool embObjMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const 
     }
     else if (key == "gearbox")
     {
-        for (int i = 0; i < _njoints; i++) _gearbox[i] = bval->get(i).asDouble(); return true;
+        for (int i = 0; i < _njoints; i++) _gearbox[i] = bval->get(i).asDouble(); 
+        return true;
     }
     else if (key == "zeros")
     {
-        for (int i = 0; i < _njoints; i++) _zeros[i] = bval->get(i).asDouble(); return true;
+        for (int i = 0; i < _njoints; i++) _zeros[i] = bval->get(i).asDouble(); 
+        return true;
     }
     yWarning("setRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
