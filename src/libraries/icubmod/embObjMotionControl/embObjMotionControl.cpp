@@ -1081,7 +1081,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         }
 
     // Joint encoder type
-   /* if (!extractGroup(general, xtmp, "JointEncoderType", "JointEncoderType", _njoints))
+    if (!extractGroup(general, xtmp, "JointEncoderType", "JointEncoderType", _njoints))
     {
         return false;
     }
@@ -1090,7 +1090,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         int test = xtmp.size();
         for (i = 1; i < xtmp.size(); i++)
             _jointEncoderType[i - 1] = xtmp.get(i).asString();
-    }*/
+    }
 
     // Motor capabilities
     if (!extractGroup(general, xtmp, "HasHallSensor", "HasHallSensor 0/1 ", _njoints))
@@ -1183,7 +1183,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
 
     // Rotor encoder type
-    /*if (!extractGroup(general, xtmp, "RotorEncoderType", "RotorEncoderType", _njoints))
+    if (!extractGroup(general, xtmp, "RotorEncoderType", "RotorEncoderType", _njoints))
     {
         return false;
     }
@@ -1192,7 +1192,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         int test = xtmp.size();
         for (i = 1; i < xtmp.size(); i++)
             _rotorEncoderType[i - 1] = xtmp.get(i).asString();
-    }*/
+    }
 
     // Gearbox
     if (!extractGroup(general, xtmp, "Gearbox", "The gearbox reduction ratio", _njoints))
@@ -2454,13 +2454,6 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
         calib.params.type4.position   = (int16_t) S_16(p1);
         calib.params.type4.velocity   = (eOmeas_velocity_t)  S_32(p2);
         calib.params.type4.maxencoder = (int32_t) S_32(p3);
-        break;
-
-        // muove
-    case eomc_calibration_type5_hard_stops_mc4plus:
-        calib.params.type5.pwmlimit   = (int32_t) S_32(p1);
-        calib.params.type5.velocity   = (eOmeas_velocity_t)  S_32(p2);
-        calib.params.type5.final_pos  = (int32_t) S_32(p3);
         break;
 
     default:

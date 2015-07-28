@@ -17,12 +17,12 @@
         <param name="TorqueMax">             2             2             2             2             2             2             2             2             2             2             2             2     </param>
         <param name="RotorEncoderRes">       1             1             1             1             1             1             1             1             1             1             1             1     </param>
         <param name="RotorIndexOffset">      0             0             0             0             1             1             1             1             1             1             1             1     </param>
-        <param name="Gearbox">               1             1            1              1             1             1             1             1             1             1             1             1     </param>
-        <param name="JointEncoderType">  OPTICAL_QUAD  AEA          AEA           HALL_ADC      HALL_ADC      MAIS         MAIS          MAIS      MAIS          MAIS         MAIS          MAIS             </param>
-        <param name="RotorEncoderType">  NONE          NONE         NONE          NONE          NONE          NONE         NONE          NONE      NONE          NONE         NONE          NONE             </param>
-        <param name="JointEncoderRes">   1             -4096        4096          1             1             256          256           256       256           256          256           256              </param>
-        <param name="MotorPoles">        1             1            1             1             1             1            1             1         1             1            1             1                </param>
-        <param name="Verbose"> 0 </param>
+        <param name="Gearbox">               1             1             1             1             1             1             1             1             1             1             1             1     </param>
+        <param name="JointEncoderType">  "OPTICAL_QUAD"  "AEA"          "AEA"       "HALL_ADC"     "HALL_ADC"     "MAIS"        "MAIS"        "MAIS"      "MAIS"         "MAIS"        "MAIS"         "MAIS" </param>
+        <param name="RotorEncoderType">  "NONE"          "NONE"         "NONE"      "NONE"         "NONE"         "NONE"        "NONE"        "NONE"      "NONE"         "NONE"        "NONE"         "NONE" </param>
+        <param name="JointEncoderRes">       1             -4096        4096          1             1             256          256           256           256           256           256           256     </param>
+        <param name="MotorPoles">            1             1            1             1             1             1            1             1               1             1             1             1     </param>
+        <param name="Verbose"> 0 </param> 
     </group>
 
     <group name="VELOCITY">
