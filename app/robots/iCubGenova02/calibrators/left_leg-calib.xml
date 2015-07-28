@@ -11,7 +11,7 @@
 		</group>
 		
 <group name="HOME">
-<param name="positionHome">                       0.00           0.00       0.00         0.00        0.00      0.00        </param>
+<param name="positionHome">                       0.00           10.00       0.00         0.00        0.00      0.00        </param>
 <param name="velocityHome">                       10.00          10.00      10.00        10.00       10.00     10.00       </param>
 </group>
 
