@@ -1081,7 +1081,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         }
 
     // Joint encoder type
-   /* if (!extractGroup(general, xtmp, "JointEncoderType", "JointEncoderType", _njoints))
+    if (!extractGroup(general, xtmp, "JointEncoderType", "JointEncoderType", _njoints))
     {
         return false;
     }
@@ -1090,7 +1090,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         int test = xtmp.size();
         for (i = 1; i < xtmp.size(); i++)
             _jointEncoderType[i - 1] = xtmp.get(i).asString();
-    }*/
+    }
 
     // Motor capabilities
     if (!extractGroup(general, xtmp, "HasHallSensor", "HasHallSensor 0/1 ", _njoints))
@@ -1183,7 +1183,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
 
     // Rotor encoder type
-    /*if (!extractGroup(general, xtmp, "RotorEncoderType", "RotorEncoderType", _njoints))
+    if (!extractGroup(general, xtmp, "RotorEncoderType", "RotorEncoderType", _njoints))
     {
         return false;
     }
@@ -1192,19 +1192,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         int test = xtmp.size();
         for (i = 1; i < xtmp.size(); i++)
             _rotorEncoderType[i - 1] = xtmp.get(i).asString();
-    }*/
-
-    // Rotor encoder type
-    /*if (!extractGroup(general, xtmp, "RotorEncoderType", "RotorEncoderType", _njoints))
-    {
-        return false;
     }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-            _rotorEncoderType[i - 1] = xtmp.get(i).asString();
-    }*/
 
     // Gearbox
     if (!extractGroup(general, xtmp, "Gearbox", "The gearbox reduction ratio", _njoints))
