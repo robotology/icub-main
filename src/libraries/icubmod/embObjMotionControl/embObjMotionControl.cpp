@@ -338,8 +338,8 @@ bool embObjMotionControl::alloc(int nj)
     _encodersStamp = allocAndCheck<double>(nj);
     _encoderconversionoffset = allocAndCheck<float>(nj);
     _encoderconversionfactor = allocAndCheck<float>(nj);
-    _jointEncoderType = allocAndCheck<string>(nj);
-    _rotorEncoderType = allocAndCheck<string>(nj);
+    _jointEncoderType = new string[nj];
+    _rotorEncoderType = new string[nj]; 
     _jointEncoderRes = allocAndCheck<double>(nj);
     _rotorEncoderRes = allocAndCheck<double>(nj);
     _gearbox = allocAndCheck<double>(nj);
@@ -404,8 +404,8 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_encoderconversionfactor);
     checkAndDestroy(_jointEncoderRes);
     checkAndDestroy(_rotorEncoderRes);
-    checkAndDestroy(_jointEncoderType);
-    checkAndDestroy(_rotorEncoderType);
+    if (_jointEncoderType != 0) { delete[] _jointEncoderType; _jointEncoderType = 0; }
+    if (_rotorEncoderType != 0) { delete[] _rotorEncoderType; _rotorEncoderType = 0; }
     checkAndDestroy(_gearbox);
     checkAndDestroy(_zeros);
     checkAndDestroy(_torqueSensorId);
