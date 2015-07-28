@@ -3611,9 +3611,9 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     return ret;
 }
 
-bool embObjMotionControl::getGearboxRatioRaw(int j, double gearbox)
+bool embObjMotionControl::getGearboxRatioRaw(int j, double &gearbox)
 {
-    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_motor_config);
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
 
     // Sign up for waiting the reply
     eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
