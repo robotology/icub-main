@@ -365,6 +365,7 @@ following ports:
     - [get] [sacc]: returns the saccades control status [0/1].
     - [get] [sinh]: returns the saccades inhibition period [s].
     - [get] [sact]: returns the saccades activation angle [deg].
+    - [get] [nact]: returns the neck activation angle [deg].
     - [get] [track]: returns the current controller's tracking
       mode [0/1].
     - [get] [stab]: returns 1 iff gaze stabilization is active,
@@ -445,6 +446,7 @@ following ports:
       [s].
     - [set] [sact] <val>: sets the saccades activation angle
       [deg].
+    - [set] [nact] <val>: sets the neck activation angle [deg].
     - [set] [ntol] <val>: sets in degrees the new user tolerance
       for gazing with the neck.
     - [set] [track] <val>: sets the controller's tracking mode;
@@ -593,6 +595,7 @@ protected:
         bool   saccadesOn;        
         double saccadesInhibitionPeriod;
         double saccadesActivationAngle;
+        double neckActivationAngle;
 
         // controller part
         double eyesTime;
@@ -658,8 +661,9 @@ protected:
         context.eyesBoundVer=commData.eyesBoundVer;
         context.counterRotGain=eyesRefGen->getCounterRotGain();
         context.saccadesOn=commData.saccadesOn;
-        context.saccadesInhibitionPeriod=eyesRefGen->getSaccadesInhibitionPeriod();
-        context.saccadesActivationAngle=eyesRefGen->getSaccadesActivationAngle();
+        context.saccadesInhibitionPeriod=commData.saccadesInhibitionPeriod;
+        context.saccadesActivationAngle=commData.saccadesActivationAngle;
+        context.neckActivationAngle=commData.neckActivationAngle;
 
         // controller part
         context.eyesTime=ctrl->getTeyes();
@@ -690,8 +694,9 @@ protected:
             eyesRefGen->manageBindEyes(context.eyesBoundVer);
             eyesRefGen->setCounterRotGain(context.counterRotGain);
             commData.saccadesOn=context.saccadesOn;
-            eyesRefGen->setSaccadesInhibitionPeriod(context.saccadesInhibitionPeriod);
-            eyesRefGen->setSaccadesActivationAngle(context.saccadesActivationAngle);
+            commData.saccadesInhibitionPeriod=context.saccadesInhibitionPeriod;
+            commData.saccadesActivationAngle=context.saccadesActivationAngle;
+            commData.neckActivationAngle=context.neckActivationAngle;
 
             // controller part
             ctrl->setTeyes(context.eyesTime);   // always remind to set eyes before the neck
@@ -1236,13 +1241,19 @@ public:
                         else if (type==VOCAB4('s','i','n','h'))
                         {
                             reply.addVocab(ack);
-                            reply.addDouble(eyesRefGen->getSaccadesInhibitionPeriod());
+                            reply.addDouble(commData.saccadesInhibitionPeriod);
                             return true;
                         }
                         else if (type==VOCAB4('s','a','c','t'))
                         {
                             reply.addVocab(ack);
-                            reply.addDouble(eyesRefGen->getSaccadesActivationAngle());
+                            reply.addDouble(commData.saccadesActivationAngle);
+                            return true;
+                        }
+                        else if (type==VOCAB4('n','a','c','t'))
+                        {
+                            reply.addVocab(ack);
+                            reply.addDouble(commData.neckActivationAngle);
                             return true;
                         }
                         else if (type==VOCAB4('t','r','a','c'))
@@ -1587,14 +1598,21 @@ public:
                         else if (type==VOCAB4('s','i','n','h'))
                         {
                             double period=command.get(2).asDouble();
-                            eyesRefGen->setSaccadesInhibitionPeriod(period);
+                            commData.saccadesInhibitionPeriod=period;
                             reply.addVocab(ack);
                             return true;
                         }
                         else if (type==VOCAB4('s','a','c','t'))
                         {
                             double angle=command.get(2).asDouble();
-                            eyesRefGen->setSaccadesActivationAngle(angle);
+                            commData.saccadesActivationAngle=angle;
+                            reply.addVocab(ack);
+                            return true;
+                        }
+                        else if (type==VOCAB4('n','a','c','t'))
+                        {
+                            double angle=command.get(2).asDouble();
+                            commData.neckActivationAngle=angle;
                             reply.addVocab(ack);
                             return true;
                         }

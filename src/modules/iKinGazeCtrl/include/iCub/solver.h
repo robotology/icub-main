@@ -76,8 +76,6 @@ protected:
     int    nJointsHead;
     int    saccadesRxTargets;
     double saccadesClock;
-    double saccadesInhibitionPeriod;
-    double saccadesActivationAngle;
     double eyesHalfBaseline;
     double Ts;
     
@@ -94,13 +92,9 @@ public:
     EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
                   Controller *_ctrl, const Vector &_counterRotGain, const unsigned int _period);
 
-    void   enable()                                         { genOn=true;                      }
-    void   disable()                                        { genOn=false;                     }
-    Vector getCounterRotGain() const                        { return counterRotGain;           }    
-    void   setSaccadesInhibitionPeriod(const double period) { saccadesInhibitionPeriod=period; }    
-    void   setSaccadesActivationAngle(const double angle)   { saccadesActivationAngle=angle;   }
-    double getSaccadesInhibitionPeriod() const              { return saccadesInhibitionPeriod; }
-    double getSaccadesActivationAngle() const               { return saccadesActivationAngle;  }
+    void   enable()                               { genOn=true;            }
+    void   disable()                              { genOn=false;           }
+    Vector getCounterRotGain() const              { return counterRotGain; }    
     void   setCounterRotGain(const Vector &gain);
     void   minAllowedVergenceChanged();
     bool   bindEyes(const double ver);

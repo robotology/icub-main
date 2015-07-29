@@ -118,8 +118,6 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
 
     genOn=false;
     saccadeUnderWayOld=false;
-    saccadesInhibitionPeriod=SACCADES_INHIBITION_PERIOD;
-    saccadesActivationAngle=SACCADES_ACTIVATION_ANGLE;
 }
 
 
@@ -287,7 +285,7 @@ void EyePinvRefGen::run()
 
         // ask for saccades (if possible)
         if (commData->saccadesOn && (saccadesRxTargets!=commData->port_xd->get_rx()) &&
-            !commData->saccadeUnderway && (Time::now()-saccadesClock>saccadesInhibitionPeriod))
+            !commData->saccadeUnderway && (Time::now()-saccadesClock>commData->saccadesInhibitionPeriod))
         {
             Vector fph=xd; fph.push_back(1.0);
             fph=SE3inv(chainNeck->getH())*fph; fph[3]=0.0;
@@ -303,7 +301,7 @@ void EyePinvRefGen::run()
             ang[1]=sat(ang[1],lim(1,0),lim(1,1));
 
             // favor the smooth-pursuit in case saccades are small
-            if (rot>saccadesActivationAngle)
+            if (rot>commData->saccadesActivationAngle)
             {
                 // init vergence
                 ang[2]=fbHead[5];
@@ -773,7 +771,7 @@ void Solver::run()
 
     // 1) compute the angular distance
     double theta=neckTargetRotAngle(xd);
-    bool doSolve=(theta>NECKSOLVER_ACTIVATIONANGLE);
+    bool doSolve=(theta>commData->neckActivationAngle);
 
     // 2) skip if controller is active and no torso motion is detected
     doSolve&=!(commData->ctrlActive && !torsoChanged);

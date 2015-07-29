@@ -160,6 +160,10 @@ ExchangeData::ExchangeData()
     eyesBoundVer=-1.0;
     neckSolveCnt=0;
 
+    saccadesInhibitionPeriod=SACCADES_INHIBITION_PERIOD;
+    saccadesActivationAngle=SACCADES_ACTIVATION_ANGLE;
+    neckActivationAngle=NECKSOLVER_ACTIVATIONANGLE;
+
     eyeTiltLim.resize(2);
     eyeTiltLim[0]=-std::numeric_limits<double>::max();
     eyeTiltLim[1]=std::numeric_limits<double>::max();
