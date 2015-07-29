@@ -135,7 +135,6 @@ public:
     bool getSaccadesMode(bool *f);
     bool getSaccadesInhibitionPeriod(double *period);
     bool getSaccadesActivationAngle(double *angle);
-    bool getNeckActivationAngle(double *angle);
     bool getLeftEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool getRightEyePose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
     bool getHeadPose(yarp::sig::Vector &x, yarp::sig::Vector &o, yarp::os::Stamp *stamp=NULL);
@@ -155,7 +154,6 @@ public:
     bool setSaccadesMode(const bool f);
     bool setSaccadesInhibitionPeriod(const double period);
     bool setSaccadesActivationAngle(const double angle);
-    bool setNeckActivationAngle(const double angle);
     bool setStereoOptions(const yarp::os::Bottle &options);
     bool bindNeckPitch(const double min, const double max);
     bool blockNeckPitch(const double val);
