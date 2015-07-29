@@ -3644,17 +3644,289 @@ bool embObjMotionControl::getGearboxRatioRaw(int j, double &gearbox)
     return true;
 }
 
+bool embObjMotionControl::getRotorEncoderResolutionRaw(int j, double &rotres)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getGearbox() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_config_t    motor_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    rotres = (double)motor_cfg.rotorEncoderResolution;
+
+    return true;
+}
+
+bool embObjMotionControl::getKinematicMJRaw(int j, double &rotres)
+{
+    yError("getKinematicMJRaw not yet  implemented");
+    return false;
+}
+
+bool embObjMotionControl::getHasTempSensorsRaw(int j, int& ret)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getHasTempSensorsRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_config_t    motor_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    ret = (int)motor_cfg.hasTempSensor;
+
+    return true;
+}
+
+bool embObjMotionControl::getHasHallSensorRaw(int j, int& ret)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getHasHallSensorsRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_config_t    motor_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    ret = (int)motor_cfg.hasHallSensor;
+
+    return true;
+}
+
+bool embObjMotionControl::getHasRotorEncoderRaw(int j, int& ret)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getHasRotorEncoderRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_config_t    motor_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    ret = (int)motor_cfg.hasRotorEncoder;
+
+    return true;
+}
+
+bool embObjMotionControl::getHasRotorEncoderIndexRaw(int j, int& ret)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getHasRotorEncoderIndexRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_config_t    motor_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    ret = (int)motor_cfg.hasRotorEncoderIndex;
+
+    return true;
+}
+
+bool embObjMotionControl::getMotorPolesRaw(int j, int& poles)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getMotorPolesRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_config_t    motor_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    poles = (double)motor_cfg.motorPoles;
+
+    return true;
+}
+
+bool embObjMotionControl::getRotorIndexOffsetRaw(int j, double& rotorOffset)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getRotorIndexOffsetRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_config_t    motor_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    rotorOffset = (double)motor_cfg.rotorEncoderResolution;
+
+    return true;
+}
+
+bool embObjMotionControl::getCurrentPidRaw(int j, Pid *pid)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getRotorIndexOffsetRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_config_t    motor_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg.pidcurrent;
+    copyPid_eo2iCub(&tmp, pid);
+
+    return true;
+}
+
 // IRemoteVariables
 bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val)
 {
     val.clear();
     if (key == "kinematic_mj")
     {
-        val.addString("1 2 3"); return true;
+        val.addString("not implemented yet");
+        return true;
     }
     else if (key == "rotor")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_rotorEncoderRes[i]);
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorEncoderResolutionRaw(i, tmp);  r.addDouble(tmp); }
         return true;
     }
     else if (key == "gearbox")
@@ -3664,44 +3936,58 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     }
     else if (key == "zeros")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_zeros[i]);
+        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { r.addDouble(_zeros[i]); }
         return true;
     }
     else if (key == "hasHallSensor")
     {
-        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) r.addInt(_hasHallSensor[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { int tmp = 0; getHasHallSensorRaw(i, tmp); r.addInt(tmp); }
+        return true;
     }
     else if (key == "hasTempSensor")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addInt(_hasTempSensor[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getHasTempSensorsRaw(i, tmp); r.addInt(tmp); }
+        return true;
     }
     else if (key == "hasRotorEncoder")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addInt(_hasRotorEncoder[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getHasRotorEncoderRaw(i, tmp); r.addInt(tmp); }
+        return true;
     }
     else if (key == "hasRotorEncoderIndex")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addInt(_hasRotorEncoderIndex[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getHasRotorEncoderIndexRaw(i, tmp); r.addInt(tmp); }
+        return true;
     }
     else if (key == "rotorIndexOffset")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addInt(_rotorIndexOffset[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorIndexOffsetRaw(i, tmp);  r.addDouble(tmp); }
+        return true;
     }
     else if (key == "motorPoles")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addInt(_motorPoles[i]); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { int tmp = 0; getMotorPolesRaw(i, tmp); r.addInt(tmp); }
+        return true;
     }
     else if (key == "pidCurrentKp")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_cpids[i].kp); return true;
+        Bottle& r = val.addList(); for (int i = 0; i < _njoints; i++) { Pid p; getCurrentPidRaw(i, &p); r.addDouble(p.kp); }
+        return true;
     }
     else if (key == "pidCurrentKi")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_cpids[i].ki); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { Pid p; getCurrentPidRaw(i, &p); r.addDouble(p.ki); }
+        return true;
     }
     else if (key == "pidCurrentShift")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) r.addDouble(_cpids[i].scale); return true;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; getCurrentPidRaw(i, &p); r.addDouble(p.scale); }
+        return true;
+    }
+    else if (key == "coulombThreshold")
+    {
+        val.addString("not implemented yet");
+        return true;
     }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
@@ -3757,6 +4043,7 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     listOfKeys->addString("pidCurrentKp");
     listOfKeys->addString("pidCurrentKi");
     listOfKeys->addString("pidCurrentShift");
+    listOfKeys->addString("coulombThreshold");
     return true;
 }
 
