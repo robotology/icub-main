@@ -3,8 +3,8 @@
 
 <params robot="iCubGenova02" build="1">
     <group name="GENERAL">
-        <param name="Joints"> 4 </param> <!-- the number of joints of the robot part -->
-
+        <param name="MotioncontrolVersion">  2 </param>
+        <param name="Joints"> 4 </param> 
         <param name="AxisMap">               0             1             2             3       </param>
         <param name="HasHallSensor">         1             1             1             1       </param>
         <param name="HasTempSensor">         0             0             0             0       </param>
