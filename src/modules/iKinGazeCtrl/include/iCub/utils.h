@@ -139,7 +139,6 @@ public:
     double          head_version;
     double          saccadesInhibitionPeriod;
     double          saccadesActivationAngle;
-    double          neckActivationAngle;
     int             neckSolveCnt;
     bool            ctrlActive;
     bool            trackingModeOn;

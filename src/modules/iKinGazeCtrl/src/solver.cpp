@@ -771,7 +771,7 @@ void Solver::run()
 
     // 1) compute the angular distance
     double theta=neckTargetRotAngle(xd);
-    bool doSolve=(theta>commData->neckActivationAngle);
+    bool doSolve=(theta>NECKSOLVER_ACTIVATIONANGLE);
 
     // 2) skip if controller is active and no torso motion is detected
     doSolve&=!(commData->ctrlActive && !torsoChanged);
