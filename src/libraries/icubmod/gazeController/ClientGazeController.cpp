@@ -631,6 +631,32 @@ bool ClientGazeController::getSaccadesActivationAngle(double *angle)
 
 
 /************************************************************************/
+bool ClientGazeController::getNeckActivationAngle(double *angle)
+{
+    if (!connected || (angle==NULL))
+        return false;
+
+    Bottle command, reply;
+    command.addString("get");
+    command.addString("nact");
+
+    if (!portRpc.write(command,reply))
+    {
+        yError("unable to get reply from server!");
+        return false;
+    }
+
+    if ((reply.get(0).asVocab()==GAZECTRL_ACK) && (reply.size()>1))
+    {
+        *angle=reply.get(1).asDouble();
+        return true;
+    }
+
+    return false;
+}
+
+
+/************************************************************************/
 bool ClientGazeController::getPose(const string &poseSel, Vector &x, Vector &o,
                                    Stamp *stamp)
 {
@@ -1165,6 +1191,27 @@ bool ClientGazeController::setSaccadesActivationAngle(const double angle)
     Bottle command, reply;
     command.addString("set");
     command.addString("sact");
+    command.addDouble(angle);
+
+    if (!portRpc.write(command,reply))
+    {
+        yError("unable to get reply from server!");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::setNeckActivationAngle(const double angle)
+{
+    if (!connected)
+        return false;
+
+    Bottle command, reply;
+    command.addString("set");
+    command.addString("nact");
     command.addDouble(angle);
 
     if (!portRpc.write(command,reply))
