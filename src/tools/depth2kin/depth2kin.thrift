@@ -243,6 +243,15 @@ service depth2kin_IDL
    PointReq getPoint(1:string arm, 2:double x, 3:double y, 4:double z);
 
    /**
+   * Retrieve the compensated kinematic points corresponding to the input
+   * depth points.
+   * @param arm accounts for "left" or "right" list of experts.
+   * @param coordinates the 3D coordinates of the depth points.
+   * @return the requested points in \ref PointReq format.
+   */
+   list<PointReq> getPoints(1:string arm, 2:list<double> coordinates);
+
+   /**
    * Set on/off an experiment.
    * @param exp the experiment ("depth2kin" or "aligneyes") to switch on/off.
    * @param v is "on" or "off".
@@ -260,7 +269,7 @@ service depth2kin_IDL
    /**
    * Retrieve the current extrinsics camera parameters.
    * @param eye is "left" or "right" camera eye.
-   * @return a 6x1 vector containing the translational and the
+   * @return a 6x1 Vector containing the translational and the
    * rotational (in roll-pith-yaw convention) parts of the
    * extrinsics matrix.
    */
@@ -333,7 +342,7 @@ service depth2kin_IDL
 
    /**
    * Set up the exploration space in terms of differences with respect
-   * to the internally coded couple of ellipses. 
+   * to the internally coded couple of ellipses.
    * @param dcx the center delta x-coordinate.
    * @param dcy the center delta y-coordinate.
    * @param dcz the center delta z-coordiante.
@@ -377,6 +386,5 @@ service depth2kin_IDL
    * Quit the module.
    * @return true/false on success/failure.
    */
-   bool quit();  
+   bool quit();
 }
-

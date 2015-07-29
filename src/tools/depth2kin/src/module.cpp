@@ -1547,6 +1547,37 @@ PointReq CalibModule::getPoint(const string &arm, const double x, const double y
 
 
 /************************************************************************/
+vector<PointReq> CalibModule::getPoints(const string &arm, 
+                                        const vector<double> &coordinates)
+{
+    LocallyWeightedExperts *experts=&(arm=="left"?expertsL:expertsR);
+    vector<PointReq> reply;
+
+    for (size_t i=0; (i<coordinates.size()) && (i+2<coordinates.size()); i+=3)
+    {
+        Vector in(3);
+        in[0]=coordinates[i];
+        in[1]=coordinates[i+1];
+        in[2]=coordinates[i+2];
+
+        Vector out;
+        PointReq point("fail",in[0],in[1],in[2]);
+        if (experts->retrieve(in,out))
+        {
+            point.result="ok";
+            point.x=out[0];
+            point.y=out[1];
+            point.z=out[2];            
+        }
+
+        reply.push_back(point);
+    }
+
+    return reply;
+}
+
+
+/************************************************************************/
 bool CalibModule::setExperiment(const string &exp, const string &v)
 {
     if ((v!="on") && (v!="off"))

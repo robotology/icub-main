@@ -221,6 +221,16 @@ public:
   virtual bool read(yarp::os::ConnectionReader& connection);
 };
 
+class depth2kin_IDL_getPoints : public yarp::os::Portable {
+public:
+  std::string arm;
+  std::vector<double>  coordinates;
+  std::vector<PointReq>  _return;
+  void init(const std::string& arm, const std::vector<double> & coordinates);
+  virtual bool write(yarp::os::ConnectionWriter& connection);
+  virtual bool read(yarp::os::ConnectionReader& connection);
+};
+
 class depth2kin_IDL_setExperiment : public yarp::os::Portable {
 public:
   std::string exp;
@@ -929,6 +939,50 @@ void depth2kin_IDL_getPoint::init(const std::string& arm, const double x, const 
   this->z = z;
 }
 
+bool depth2kin_IDL_getPoints::write(yarp::os::ConnectionWriter& connection) {
+  yarp::os::idl::WireWriter writer(connection);
+  if (!writer.writeListHeader(3)) return false;
+  if (!writer.writeTag("getPoints",1,1)) return false;
+  if (!writer.writeString(arm)) return false;
+  {
+    if (!writer.writeListBegin(BOTTLE_TAG_DOUBLE, static_cast<uint32_t>(coordinates.size()))) return false;
+    std::vector<double> ::iterator _iter0;
+    for (_iter0 = coordinates.begin(); _iter0 != coordinates.end(); ++_iter0)
+    {
+      if (!writer.writeDouble((*_iter0))) return false;
+    }
+    if (!writer.writeListEnd()) return false;
+  }
+  return true;
+}
+
+bool depth2kin_IDL_getPoints::read(yarp::os::ConnectionReader& connection) {
+  yarp::os::idl::WireReader reader(connection);
+  if (!reader.readListReturn()) return false;
+  {
+    _return.clear();
+    uint32_t _size1;
+    yarp::os::idl::WireState _etype4;
+    reader.readListBegin(_etype4, _size1);
+    _return.resize(_size1);
+    uint32_t _i5;
+    for (_i5 = 0; _i5 < _size1; ++_i5)
+    {
+      if (!reader.readNested(_return[_i5])) {
+        reader.fail();
+        return false;
+      }
+    }
+    reader.readListEnd();
+  }
+  return true;
+}
+
+void depth2kin_IDL_getPoints::init(const std::string& arm, const std::vector<double> & coordinates) {
+  this->arm = arm;
+  this->coordinates = coordinates;
+}
+
 bool depth2kin_IDL_setExperiment::write(yarp::os::ConnectionWriter& connection) {
   yarp::os::idl::WireWriter writer(connection);
   if (!writer.writeListHeader(3)) return false;
@@ -1575,6 +1629,16 @@ PointReq depth2kin_IDL::getPoint(const std::string& arm, const double x, const d
   bool ok = yarp().write(helper,helper);
   return ok?helper._return:_return;
 }
+std::vector<PointReq>  depth2kin_IDL::getPoints(const std::string& arm, const std::vector<double> & coordinates) {
+  std::vector<PointReq>  _return;
+  depth2kin_IDL_getPoints helper;
+  helper.init(arm,coordinates);
+  if (!yarp().canWrite()) {
+    yError("Missing server method '%s'?","std::vector<PointReq>  depth2kin_IDL::getPoints(const std::string& arm, const std::vector<double> & coordinates)");
+  }
+  bool ok = yarp().write(helper,helper);
+  return ok?helper._return:_return;
+}
 bool depth2kin_IDL::setExperiment(const std::string& exp, const std::string& v) {
   bool _return = false;
   depth2kin_IDL_setExperiment helper;
@@ -2103,6 +2167,47 @@ bool depth2kin_IDL::read(yarp::os::ConnectionReader& connection) {
       reader.accept();
       return true;
     }
+    if (tag == "getPoints") {
+      std::string arm;
+      std::vector<double>  coordinates;
+      if (!reader.readString(arm)) {
+        reader.fail();
+        return false;
+      }
+      {
+        coordinates.clear();
+        uint32_t _size6;
+        yarp::os::idl::WireState _etype9;
+        reader.readListBegin(_etype9, _size6);
+        coordinates.resize(_size6);
+        uint32_t _i10;
+        for (_i10 = 0; _i10 < _size6; ++_i10)
+        {
+          if (!reader.readDouble(coordinates[_i10])) {
+            reader.fail();
+            return false;
+          }
+        }
+        reader.readListEnd();
+      }
+      std::vector<PointReq>  _return;
+      _return = getPoints(arm,coordinates);
+      yarp::os::idl::WireWriter writer(reader);
+      if (!writer.isNull()) {
+        if (!writer.writeListHeader(1)) return false;
+        {
+          if (!writer.writeListBegin(BOTTLE_TAG_LIST, static_cast<uint32_t>(_return.size()))) return false;
+          std::vector<PointReq> ::iterator _iter11;
+          for (_iter11 = _return.begin(); _iter11 != _return.end(); ++_iter11)
+          {
+            if (!writer.writeNested((*_iter11))) return false;
+          }
+          if (!writer.writeListEnd()) return false;
+        }
+      }
+      reader.accept();
+      return true;
+    }
     if (tag == "setExperiment") {
       std::string exp;
       std::string v;
@@ -2439,6 +2544,7 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
     helpString.push_back("getTouchWithExperts");
     helpString.push_back("touch");
     helpString.push_back("getPoint");
+    helpString.push_back("getPoints");
     helpString.push_back("setExperiment");
     helpString.push_back("getExperiment");
     helpString.push_back("getExtrinsics");
@@ -2623,6 +2729,14 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
       helpString.push_back("@param z the z-coordinate of the depth point. ");
       helpString.push_back("@return the requested point in \ref PointReq format. ");
     }
+    if (functionName=="getPoints") {
+      helpString.push_back("std::vector<PointReq>  getPoints(const std::string& arm, const std::vector<double> & coordinates) ");
+      helpString.push_back("Retrieve the compensated kinematic points corresponding to the input ");
+      helpString.push_back("depth points. ");
+      helpString.push_back("@param arm accounts for \"left\" or \"right\" list of experts. ");
+      helpString.push_back("@param coordinates the 3D coordinates of the depth points. ");
+      helpString.push_back("@return the requested points in \ref PointReq format. ");
+    }
     if (functionName=="setExperiment") {
       helpString.push_back("bool setExperiment(const std::string& exp, const std::string& v) ");
       helpString.push_back("Set on/off an experiment. ");
@@ -2640,7 +2754,7 @@ std::vector<std::string> depth2kin_IDL::help(const std::string& functionName) {
       helpString.push_back("yarp::sig::Vector getExtrinsics(const std::string& eye) ");
       helpString.push_back("Retrieve the current extrinsics camera parameters. ");
       helpString.push_back("@param eye is \"left\" or \"right\" camera eye. ");
-      helpString.push_back("@return a 6x1 vector containing the translational and the ");
+      helpString.push_back("@return a 6x1 Vector containing the translational and the ");
       helpString.push_back("rotational (in roll-pith-yaw convention) parts of the ");
       helpString.push_back("extrinsics matrix. ");
     }

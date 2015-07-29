@@ -185,6 +185,14 @@ public:
    */
   virtual PointReq getPoint(const std::string& arm, const double x, const double y, const double z);
   /**
+   * Retrieve the compensated kinematic points corresponding to the input
+   * depth points.
+   * @param arm accounts for "left" or "right" list of experts.
+   * @param coordinates the 3D coordinates of the depth points.
+   * @return the requested points in \ref PointReq format.
+   */
+  virtual std::vector<PointReq>  getPoints(const std::string& arm, const std::vector<double> & coordinates);
+  /**
    * Set on/off an experiment.
    * @param exp the experiment ("depth2kin" or "aligneyes") to switch on/off.
    * @param v is "on" or "off".
@@ -200,7 +208,7 @@ public:
   /**
    * Retrieve the current extrinsics camera parameters.
    * @param eye is "left" or "right" camera eye.
-   * @return a 6x1 vector containing the translational and the
+   * @return a 6x1 Vector containing the translational and the
    * rotational (in roll-pith-yaw convention) parts of the
    * extrinsics matrix.
    */

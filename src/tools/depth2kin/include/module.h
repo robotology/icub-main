@@ -170,6 +170,7 @@ public:
     string getTouchWithExperts();
     bool touch(const int u, const int v);
     PointReq getPoint(const string &arm, const double x, const double y, const double z);
+    vector<PointReq> getPoints(const string &arm, const vector<double> &coordinates);
     bool setExperiment(const string &exp, const string &v);
     string getExperiment(const string &exp);
     Vector getExtrinsics(const string &eye);
