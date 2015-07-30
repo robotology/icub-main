@@ -3,9 +3,12 @@
 
 <!--
     NOTE: (m.a.) 
-    on 23jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_face.xml). 
+    on 22jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_face.xml). 
     - in LIMITS i use the same as in grenoble which do not consider the position at joint but at the encoder. 
     - i must review ... PID values, then what is "Currents"?
+    
+    on 22jul15 i also tested the lips.
+    i had to inverst the signs of joints 0 (lip-left), 2 (lip-right), and 3 (lip-bottom).
     
  -->
 
@@ -34,7 +37,7 @@
         <group name="POSITION_CONTROL">
             <param name="controlLaw">       joint_pid_v1                                        </param>    
             <param name="controlUnits">     metric_units                                        </param> 
-            <param name="kp">                   568.00      568.00      568.00      568.00      </param>       
+            <param name="kp">                   -568.00     568.00      -568.00     -568.00     </param>       
             <param name="kd">                   0.0         0.0         0.0         0.0         </param>     
             <param name="ki">                   0.0         0.0         0.0         0.0         </param>      
             <param name="limPwm">               500         500         500         500         </param>       

@@ -20,9 +20,17 @@
         <!-- joint logical number               0           1           2           3           -->
         <!-- joint name                         neck-yaw    eyes-tilt   eyes-vers   eyes-verg   -->         <!-- j2 is right-eye, j3 is left-eye -->
         <group name="LIMITS">
+<!-- use these limits for version-vergence -->        
             <param name="Min">                  -45         -30         -30         0           </param> 
             <param name="Max">                  +45         +30         +30         +50         </param>
             <param name="Currents">             600         600         600         600         </param>
+<!-- -->  
+
+<!-- use these limits for independent movement of eyes        
+            <param name="Min">                  -45         -30         -45         -45         </param> 
+            <param name="Max">                  +45         +30         +45         +45         </param>
+            <param name="Currents">             600         600         600         600         </param>
+ -->            
         </group>
     
         <group name="IMPEDANCE">
@@ -34,11 +42,11 @@
         <group name="POSITION_CONTROL">
             <param name="controlLaw">       joint_pid_v1                                        </param>    
             <param name="controlUnits">     metric_units                                        </param> 
-            <param name="kp">                   568.00      -500.00     568.00      568.00      </param>       
+            <param name="kp">                   568.00      -500.00     2000        2000       </param>       
             <param name="kd">                   0.0         0.0         0.0         0.0         </param>     
             <param name="ki">                   0.0         0.0         0.0         0.0         </param>      
-            <param name="limPwm">               500         500         500         500         </param>       
-            <param name="maxPwm">               700         700         2000        2000        </param>  
+            <param name="limPwm">               501         502         503         504         </param>       
+            <param name="maxPwm">               701         702         6000        6000        </param>  
             <param name="maxInt">               750         750         2000        2000        </param> 
             <param name="shift">                0           0           0           0           </param>       
             <param name="ko">                   0           0           0           0           </param>  

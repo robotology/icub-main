@@ -4,7 +4,7 @@
 
 <!--
     NOTE: (m.a.) 
-    on 23jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_head.xml). 
+    on 22jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_head.xml). 
     - i must review ... maybe the Zeros
     - in Encoder i used 182.044 because ... we have an AEA. i have kept the same sign (+, -) as in grenoble. 
     
@@ -26,7 +26,7 @@
         <param name="TorqueMax">                0           0           </param>
         <param name="Verbose">                  0           0           </param>
         <param name="Rotor">                    1           1           </param>
-        <param name="Gearbox">                  0           0           </param>
+        <param name="Gearbox">                  1           1           </param>
 
     </group>
 

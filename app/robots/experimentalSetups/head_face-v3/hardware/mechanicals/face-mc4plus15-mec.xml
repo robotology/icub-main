@@ -3,11 +3,13 @@
 
 <!--
     NOTE: (m.a.) 
-    on 23jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_face.xml). 
+    on 22jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_face.xml). 
     - in Encoder i used 293.333 because ... we have an INC-ENC with 4x400x66 = 105600, where 4 is given by hal which samples 4 time 
       each line of the encoder, 400 are the lines per revolution, and 66 is an internal reduction. then we have 105600/360 = 293.333.
       then i kept the same sign (+, +, -, -) as in grenoble. 
     - i must review ... maybe nothing
+    
+    on 22jul15 i tested calib of lips with degrees. i had to invert the sign of Encoder in lip-left
     
  -->
 
@@ -20,7 +22,7 @@
         <!-- joint name                         lip-left    lip-high    lip-right   lip-bottom   -->   
         <param name="AxisMap">                  0           1           2           3           </param>    <!-- joint as effectively mapped onto the hw of the board -->  
         <!-- memo: Encoder = x [ticks/deg], joint->config.encoderconversionfactor = x / 182.044 [ticks/icubdeg] -->
-        <param name="Encoder">                  293.333     293.333     -293.333   -293.333     </param>    <!-- if motor has 4x400x66=105600 then we have 293.333 ticks/deg -->
+        <param name="Encoder">                  -293.333    293.333     -293.333   -293.333     </param>    <!-- if motor has 4x400x66=105600 then we have 293.333 ticks/deg -->
         <param name="Zeros">                    35          -28         35          0           </param>
         <param name="TorqueId">                 0           0           0           0           </param>    
         <param name="TorqueChan">               0           0           0           0           </param>

@@ -8,6 +8,8 @@
     - in Encoder i used 182.044 because we have an AEA and 284.444 because .... we have an INC-ENC with 4x512x50 = 102400, where 4 is given by hal which samples 4 time 
       each line of the encoder, 512 are the lines per revolution, and 50 is a motor reduction. then we have 102400/360 = 284.444. then i kept the same sign (+, +) as in grenoble.
     
+    on 22jul15 i worked on calib of eyes-tilt with degrees. i have changed the Zeros from 0 to 180 because ... grenoble file had it and i forgot
+    and ... also joint 0 neck-yaw must have it.
  -->
  
 <params robot="iCubExpHeadV3" build="1">
@@ -19,7 +21,7 @@
         <param name="AxisMap">                  0           1           2           3           </param>    <!-- joint as effectively mapped onto the hw of the board -->
         <param name="Encoder">                  182.044     182.044     284.444     284.444     </param>    
         <!-- memo: Encoder = x [ticks/deg], joint->config.encoderconversionfactor = x / 182.044 [ticks/icubdeg] -->
-        <param name="Zeros">                    0           0           0           0           </param>
+        <param name="Zeros">                    180         180         0           0           </param>
         <param name="TorqueId">                 0           0           0           0           </param>    
         <param name="TorqueChan">               0           0           0           0           </param>
         <param name="TorqueMax">                0           0           0           0           </param>

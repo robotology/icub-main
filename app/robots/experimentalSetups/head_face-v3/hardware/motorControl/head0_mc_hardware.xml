@@ -3,10 +3,11 @@
 
 <!--
     NOTE: (m.a.) 
-    on 23jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_head.xml). 
+    on 22jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_head.xml). 
     - in LIMITS i use the same as in grenoble which do not consider the position at joint but at the encoder. 
     - i must review ... PID values, then what is "Currents"?
     
+    on 30jul2015: increased the kp and maxlim so that the neck can move better.
  -->
  
 <devices robot="iCubExpHeadV3" build="1">
@@ -34,11 +35,11 @@
         <group name="POSITION_CONTROL">
             <param name="controlLaw">       joint_pid_v1                </param>    
             <param name="controlUnits">     metric_units                </param> 
-            <param name="kp">                   +568.00     -568.00     </param>       
+            <param name="kp">                   +800        -800        </param>       
             <param name="kd">                   0.0         0.0         </param>     
             <param name="ki">                   0.0         0.0         </param>      
-            <param name="limPwm">               500         500         </param>       
-            <param name="maxPwm">               900         900         </param>  
+            <param name="limPwm">               1001        1002        </param>       
+            <param name="maxPwm">               1011        1012        </param>  
             <param name="maxInt">               750         750         </param> 
             <param name="shift">                0           0           </param>       
             <param name="ko">                   0           0           </param>  

@@ -9,6 +9,16 @@
     - values 666 and 999 mean that the value is not used.
     - i must review the calib parameters
     
+    
+    the value 54431 is obtained from the xml file with some changes ...
+    when i did it again by positioning the joint roughly at zero pos, i have obtained 53011 ... which is about the same value.
+    
+    on 22jul15 i also tested the calib parameters for calib type3. i worked on joint 3 eyes-tilt. i used the xml file but some changes are required in 
+    its formulas. for instance the conversion factor is to be changed into 182.044 etc...    
+
+    on 30jul15: the value 8191 (45 deg in icubdegrees) for eyes is used to tell the calibrator that the hw limit is at 45 deg.
+    it is a value given by the mechanics.
+
  -->
 
 <devices robot="iCubExpHeadV3" build="1">
@@ -30,7 +40,7 @@
             <param name="calibrationType">      3           3           3           3           4           4           </param>
             <param name="calibration1">         666         666         666         666         8000        8000        </param>        
             <param name="calibration2">         999         999         999         999         3640.88     3640.88     </param>        
-            <param name="calibration3">         0           0           32767.92    0           19114.62    28216.82    </param>        
+            <param name="calibration3">         52792       20206       32767.92    54431       8191        8191        </param>        
             <param name="positionZero">         0.0         0.0         0.0         0.0         0.0         0.0         </param>        
             <param name="velocityZero">         10          10          20.0        20.0        20.0        20.0        </param>        
             <param name="maxPwm">               500         500         500         500         0           0           </param>        
