@@ -1,0 +1,7 @@
+<devices>
+  <device name="inertial" type="inertial">
+      <param name="name">  /icub/inertial  </param>
+      <param name="subdevice">  xsensmtx  </param>
+      <param name="serial">  /dev/ttyS0   </param>
+</device>
+</devices>
