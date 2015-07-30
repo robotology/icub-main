@@ -16,14 +16,12 @@
                 <node>pc104</node>
         </module>
 
-        <!-- Change <robot> with the name of your robot (e.g. iCubGenova01) -->
-
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--part right_arm</parameters>
                 <node>pwrNode1</node>
                 <dependencies>
-                    <port timeout="60.0" request="is_ready" reply="[ok]">/<robot>/robotInterface</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/icub/robotInterface</port>
                 </dependencies>
         </module>
 
@@ -32,7 +30,7 @@
                 <parameters>--part left_arm</parameters>
                 <node>pwrNode2</node>
                 <dependencies>
-                    <port timeout="60.0" request="is_ready" reply="[ok]">/<robot>/robotInterface</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/icub/robotInterface</port>
                 </dependencies>
         </module>
 
@@ -41,7 +39,7 @@
                 <parameters>--part right_leg</parameters>
                 <node>pwrNode3</node>
                 <dependencies>
-                    <port timeout="60.0" request="is_ready" reply="[ok]">/<robot>/robotInterface</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/icub/robotInterface</port>
                 </dependencies>
         </module>
 
@@ -50,7 +48,7 @@
                 <parameters>--part left_leg</parameters>
                 <node>pwrNode4</node>
                 <dependencies>
-                    <port timeout="60.0" request="is_ready" reply="[ok]">/<robot>/robotInterface</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/icub/robotInterface</port>
                 </dependencies>
         </module>
 
@@ -59,7 +57,7 @@
                 <parameters>--from config_imu_filter.ini</parameters>
                 <node>pwrNode5</node>
                 <dependencies>
-                    <port timeout="60.0" request="is_ready" reply="[ok]">/<robot>/robotInterface</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/icub/robotInterface</port>
                     <port timeout="60">/imuFilter/inertial:o</port>
                 </dependencies>
         </module>
@@ -71,7 +69,7 @@
                 <parameters>--autoconnect</parameters>
                 <node>pwrNode6</node>
                 <dependencies>
-                    <port timeout="60.0" request="is_ready" reply="[ok]">/<robot>/robotInterface</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/icub/robotInterface</port>
                 </dependencies>
         </module>
 
@@ -90,7 +88,7 @@
                 <name>fingersTuner</name>
                 <node>console</node>
                 <dependencies>
-                    <port timeout="60.0" request="is_ready" reply="[ok]">/<robot>/robotInterface</port>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/icub/robotInterface</port>
                 </dependencies>
         </module>
 
