@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices robot="iCubBarcelona01" build="1">              
+<devices robot="iCubAberystwyth01" build="1">              
     <device name="right_hand_calibrator" type="parametricCalibrator">  
 <params file="general.xml" />              
         <group name="GENERAL">             
