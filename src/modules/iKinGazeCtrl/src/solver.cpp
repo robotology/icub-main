@@ -779,8 +779,8 @@ void Solver::run()
     // 3) skip if controller is inactive and we are not in tracking mode
     doSolve&=commData->ctrlActive || commData->trackingModeOn;
 
-    // 4) solve straightaway if we are in tracking mode
-    doSolve|=commData->trackingModeOn;
+    // 4) solve straightaway if we are in tracking mode and torso motion is detected
+    doSolve|=commData->trackingModeOn && torsoChanged;
 
     // 5) solve straightaway if the target has changed
     doSolve|=commData->port_xd->get_newDelayed();
