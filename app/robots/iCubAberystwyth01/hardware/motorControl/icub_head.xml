@@ -1,7 +1,7 @@
  
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices robot="iCubAberystwyth01" build="1">            
-  <device name="left_leg_mc" type="canmotioncontrol">    
+  <device name="head_mc" type="canmotioncontrol">        
 <params file="general.xml" />              
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
@@ -66,7 +66,9 @@
 <param name="stictionDwn">  0             0             0             0             0             0             </param>       
 </group>       
  
-<group name="TRQ_PIDS">      
+<group name="TORQUE_CONTROL">              
+<param name="controlLaw">    joint_pid                  </param>       
+<param name="controlUnits">  machine_units              </param>       
 <param name="kp">           0             0             0             0             0             0             </param>       
 <param name="kd">           0             0             0             0             0             0             </param>       
 <param name="ki">           0             0             0             0             0             0             </param>       
@@ -76,6 +78,10 @@
 <param name="ko">           0             0             0             0             0             0             </param>       
 <param name="stictionUp">   0             0             0             0             0             0             </param>       
 <param name="stictionDwn">  0             0             0             0             0             0             </param>       
+<param name="kff">          1             1             1             1             1             1             </param>       
+<param name="kbemf">        0             0             0             0             0             0             </param>       
+<param name="filterType">   0             0             0             0             0             0             </param>       
+<param name="ktau">         1             1             1             1             1             1             </param>       
 </group>       
  
   </device>    
