@@ -3611,7 +3611,7 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     return ret;
 }
 
-bool embObjMotionControl::getGearboxRatioRaw(int j, double &gearbox)
+bool embObjMotionControl::getGearboxRatioRaw(int j, double *gearbox)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
 
@@ -3639,7 +3639,7 @@ bool embObjMotionControl::getGearboxRatioRaw(int j, double &gearbox)
     res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
 
     // refresh cached value when reading data from the EMS
-    gearbox = (double)motor_cfg.gearboxratio;
+    *gearbox = (double)motor_cfg.gearboxratio;
 
     return true;
 }
@@ -3931,7 +3931,7 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     }
     else if (key == "gearbox")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp=0; getGearboxRatioRaw(i, tmp);  r.addDouble(tmp); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp=0; getGearboxRatioRaw(i, &tmp);  r.addDouble(tmp); }
         return true;
     }
     else if (key == "zeros")
