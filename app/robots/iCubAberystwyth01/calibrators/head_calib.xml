@@ -1,26 +1,19 @@
-<?xml version="1.0" encoding="UTF-8" ?>    
-<devices robot="iCubAberystwyth01" build="1">              
-    <device name="head_calibrator" type="parametricCalibrator">        
-<params file="general.xml" />              
-        <group name="GENERAL">             
-            <param name="joints"> 6 </param>             
-            <param name="deviceName"> Head_Calibrator </param>         
         </group>             
  
 <group name="CALIBRATION">   
  
-<param name="calibrationType">            3             3             3             3             0             0             </param>       
-<param name="calibration1">               2047.5        2047.5        2047.5        2047.5        900           900           </param>       
-<param name="calibration2">               10            10            10            10            20            20            </param>       
-<param name="calibration3">               540.5         1264.5        1513.5        444.5         0             0             </param>       
-<param name="positionZero">               0             0             0             0             0             0             </param>       
+<param name="calibrationType">            0             0             0             0             0             0             </param>       
+<param name="calibration1">               500           1333          1333          600           500           500           </param>       
+<param name="calibration2">               20            20            20            -20           20            20            </param>       
+<param name="calibration3">               0             0             0             0             0             0             </param>       
+<param name="positionZero">               20            0             0             0             0             0             </param>       
 <param name="velocityZero">               10            10            10            10            10            10            </param>       
-<param name="maxPwm">                     140           140           600           0             0             0             </param>       
+<param name="maxPwm">                     0             0             0             0             0             0             </param>       
 <param name="posZeroThreshold">           2             2             2             2             2             2             </param>       
 </group>       
  
 <group name="HOME">          
-<param name="positionHome"> -30           0             0             0             0             0             </param>       
+<param name="positionHome"> -40           0             0             0             0             0             </param>       
 <param name="velocityHome"> 10            10            10            10            10            10            </param>       
 </group>       
  
@@ -38,6 +31,13 @@
  
     </device>  
 </devices>     
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
  
  

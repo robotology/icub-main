@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices robot="iCubAberystwyth01" build="1">              
+<devices robot="iCubBarcelona01" build="1">              
     <device name="left_hand_calibrator" type="parametricCalibrator">   
 <params file="general.xml" />              
         <group name="GENERAL">             
@@ -10,7 +10,7 @@
 <group name="CALIBRATION">   
  
 <param name="calibrationType">            3             4             4             4             4             4             4             4             </param>       
-<param name="calibration1">               476.67        235           0             255           30            245           25            730           </param>       
+<param name="calibration1">               536.67        255           3             240           50            240           40            735           </param>       
 <param name="calibration2">               10            10            30            10            10            10            10            10            </param>       
 <param name="calibration3">               0             6000          6600          6000          7400          6000          -7400         21000         </param>       
 <param name="positionZero">               30            3             0             0             0             0             0             0             </param>       

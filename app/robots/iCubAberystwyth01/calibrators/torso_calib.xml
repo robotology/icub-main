@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices robot="iCubAberystwyth01" build="1">              
+<devices robot="iCubBarcelona01" build="1">              
     <device name="torso_calibrator" type="parametricCalibrator">       
 <params file="general.xml" />              
         <group name="GENERAL">             
@@ -12,7 +12,7 @@
 <param name="calibrationType">            3             3             3             0             </param>       
 <param name="calibration1">               2047.5        2047.5        2047.5        0             </param>       
 <param name="calibration2">               10            10            10            0             </param>       
-<param name="calibration3">               1793.5        3212.5        2762.5        0             </param>       
+<param name="calibration3">               648.5         3098.5        1920.5        0             </param>       
 <param name="positionZero">               0             0             0             0             </param>       
 <param name="velocityZero">               10            10            10            0             </param>       
 <param name="maxPwm">                     120           120           120           0             </param>       
