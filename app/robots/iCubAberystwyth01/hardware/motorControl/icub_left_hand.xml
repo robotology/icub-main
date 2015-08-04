@@ -1,7 +1,7 @@
  
  
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices robot="iCubAberystwyth01" build="1">            
+<devices>      
   <device name="left_hand_mc" type="canmotioncontrol">   
 <params file="general.xml" />              
 <group name="CAN">           
@@ -56,9 +56,9 @@
 </group>       
  
 <group name="POS_PIDS">      
-<param name="kp">           -8000         -8000         8000          -8000         8000          -8000         -8000         -120          </param>       
-<param name="kd">           -32000        -32000        32000         -32000        32000         -32000        -32000        -1250         </param>       
-<param name="ki">           -5            -5            5             -5            5             -5            -5            0             </param>       
+<param name="kp">           8000          -8000         8000          -8000         8000          -8000         -8000         -120          </param>       
+<param name="kd">           32000         -32000        32000         -32000        32000         -32000        -32000        -1250         </param>       
+<param name="ki">           5             -5            5             -5            5             -5            -5            0             </param>       
 <param name="maxPwm">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
 <param name="maxInt">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
 <param name="shift">        10            10            10            8             10            10            10            4             </param>       
@@ -67,9 +67,7 @@
 <param name="stictionDwn">  0             0             0             0             0             0             0             0             </param>       
 </group>       
  
-<group name="TORQUE_CONTROL">              
-<param name="controlLaw">    joint_pid                  </param>       
-<param name="controlUnits">  machine_units              </param>       
+<group name="TRQ_PIDS">      
 <param name="kp">           0             0             0             0             0             0             0             0             </param>       
 <param name="kd">           0             0             0             0             0             0             0             0             </param>       
 <param name="ki">           0             0             0             0             0             0             0             0             </param>       
@@ -79,12 +77,7 @@
 <param name="ko">           0             0             0             0             0             0             0             0             </param>       
 <param name="stictionUp">   0             0             0             0             0             0             0             0             </param>       
 <param name="stictionDwn">  0             0             0             0             0             0             0             0             </param>       
-<param name="kff">          1             1             1             1             1             1             1             1             </param>       
-<param name="kbemf">        0             0             0             0             0             0             0             0             </param>       
-<param name="filterType">   0             0             0             0             0             0             0             0             </param>       
-<param name="ktau">         1             1             1             1             1             1             1             1             </param>       
 </group>       
  
   </device>    
 </devices>     
- 

@@ -1,9 +1,11 @@
-<devices robot="iCubAberystwyth01" build="1">            
+ 
+<?xml version="1.0" encoding="UTF-8" ?>    
+<devices>      
     <device name="head_calibrator" type="parametricCalibrator">        
 <params file="general.xml" />              
         <group name="GENERAL">             
-            <param name="joints">  6  </param>           
-            <param name="deviceName">Head_Calibrator </param>          
+            <param name="joints"> 6 </param>             
+            <param name="deviceName"> Head_Calibrator </param>         
         </group>             
  
 <group name="CALIBRATION">   
@@ -14,7 +16,7 @@
 <param name="calibration3">               0             0             0             0             0             0             </param>       
 <param name="positionZero">               20            0             0             0             0             0             </param>       
 <param name="velocityZero">               10            10            10            10            10            10            </param>       
-<param name="maxPwm">                     0             0             0             0             0             0             </param>       
+<param name="maxPwm">                     120           120           120           0             0             0             </param>       
 <param name="posZeroThreshold">           2             2             2             2             2             2             </param>       
 </group>       
  
@@ -37,4 +39,29 @@
  
     </device>  
 </devices>     
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
  
