@@ -73,6 +73,78 @@ torqueControlHelper::torqueControlHelper(int njoints, float* p_angleToEncoders, 
        for (int i=0; i<jointsNum; i++) {newtonsToSensor[i]=1.0;}
 }
 
+bool embObjMotionControl::EncoderType_iCub2eo(const string* in, uint8_t *out)
+{
+    if (*in == "NONE")
+    {
+        *out = 0;
+        return true;
+    }
+    else if (*in == "AEA")
+    {
+        *out = 1;
+        return true;
+    }
+    else if (*in == "ROIE")
+    {
+        *out = 2;
+        return true;
+    }
+    else if (*in == "HALL_ADC")
+    {
+        *out = 3;
+        return true;
+    }
+    else if (*in == "MAIS")
+    {
+        *out = 4;
+        return true;
+    }
+    else if (*in == "OPTICAL_QUAD")
+    {
+        *out = 5;
+        return true;
+    }
+    *out = 0;
+    return false;
+}
+
+bool embObjMotionControl::EncoderType_eo2iCub(const uint8_t *in, string* out)
+{
+    if (*in == 0)
+    {
+        *out = "NONE";
+        return true;
+    }
+    else if (*in == 1)
+    {
+        *out = "AEA";
+        return true;
+    }
+    else if (*in == 2)
+    {
+        *out = "ROIE";
+        return true;
+    }
+    else if (*in == 3)
+    {
+        *out = "HALL_ADC";
+        return true;
+    }
+    else if (*in == 4)
+    {
+        *out = "MAIS";
+        return true;
+    }
+    else if (*in == 5)
+    {
+        *out = "OPTICAL_QUAD";
+        return true;
+    }
+    *out = "ERROR";
+    return false;
+}
+
 void embObjMotionControl::copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out)
 {
     memset(out, 0, sizeof(eOmc_PID_t));     // marco.accame: it is good thing to clear the out struct before copying. this prevent future members of struct not yet managed to be dirty.
@@ -336,12 +408,12 @@ bool embObjMotionControl::alloc(int nj)
     _axisMap = allocAndCheck<int>(nj);
     _angleToEncoder = allocAndCheck<double>(nj);
     _encodersStamp = allocAndCheck<double>(nj);
-    _encoderconversionoffset = allocAndCheck<float>(nj);
-    _encoderconversionfactor = allocAndCheck<float>(nj);
-    _jointEncoderType = new string[nj];
-    _rotorEncoderType = new string[nj]; 
-    _jointEncoderRes = allocAndCheck<double>(nj);
-    _rotorEncoderRes = allocAndCheck<double>(nj);
+    _DEPRECATED_encoderconversionoffset = allocAndCheck<float>(nj);
+    _DEPRECATED_encoderconversionfactor = allocAndCheck<float>(nj);
+    _jointEncoderType = allocAndCheck<uint8_t>(nj);
+    _rotorEncoderType = allocAndCheck<uint8_t>(nj);
+    _jointEncoderRes = allocAndCheck<int>(nj);
+    _rotorEncoderRes = allocAndCheck<int>(nj);
     _gearbox = allocAndCheck<double>(nj);
     _zeros = allocAndCheck<double>(nj);
     _torqueSensorId= allocAndCheck<int>(nj);
@@ -400,12 +472,12 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_axisMap);
     checkAndDestroy(_angleToEncoder);
     checkAndDestroy(_encodersStamp);
-    checkAndDestroy(_encoderconversionoffset);
-    checkAndDestroy(_encoderconversionfactor);
+    checkAndDestroy(_DEPRECATED_encoderconversionoffset);
+    checkAndDestroy(_DEPRECATED_encoderconversionfactor);
     checkAndDestroy(_jointEncoderRes);
     checkAndDestroy(_rotorEncoderRes);
-    if (_jointEncoderType != 0) { delete[] _jointEncoderType; _jointEncoderType = 0; }
-    if (_rotorEncoderType != 0) { delete[] _rotorEncoderType; _rotorEncoderType = 0; }
+    checkAndDestroy(_jointEncoderType);
+    checkAndDestroy(_rotorEncoderType);
     checkAndDestroy(_gearbox);
     checkAndDestroy(_zeros);
     checkAndDestroy(_torqueSensorId);
@@ -483,8 +555,8 @@ embObjMotionControl::embObjMotionControl() :
     _axisMap      = NULL;
     _zeros        = NULL;
     _encodersStamp = NULL;
-    _encoderconversionfactor = NULL;
-    _encoderconversionoffset = NULL;
+    _DEPRECATED_encoderconversionfactor = NULL;
+    _DEPRECATED_encoderconversionoffset = NULL;
     _angleToEncoder = NULL;
     _hasHallSensor = NULL;
     _hasTempSensor = NULL;
@@ -845,7 +917,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementVelocityControl2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
 #ifdef IMPLEMENT_DEBUG_INTERFACE
-    ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _rotorEncoderRes);
+    ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, NULL); //to deprecate!
 #endif
     ImplementControlLimits2::initialize(_njoints, _axisMap, _angleToEncoder, _zeros);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, _zeros, _newtonsToSensor);
@@ -1062,23 +1134,48 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         return false;
     }
     else
+    {
         for (i = 1; i < xtmp.size(); i++)
         {
             tmp_A2E = xtmp.get(i).asDouble();
-
-            if(useRawEncoderData)   // do not use any configuration, this is intended for doing the very first calibration
+            if (tmp_A2E<0)
             {
-                tmp_A2E > 0 ? _encoderconversionfactor[i-1] = 1 : _encoderconversionfactor[i-1] = -1;
-                _angleToEncoder[i-1] = 1;
+                yError("Encoder parameter should be positive!");
+            }
+            /*if (useRawEncoderData)   // do not use any configuration, this is intended for doing the very first calibration
+            {
+                tmp_A2E > 0 ? _DEPRECATED_encoderconversionfactor[i - 1] = 1 : _DEPRECATED_encoderconversionfactor[i - 1] = -1;
+                _angleToEncoder[i - 1] = 1;
             }
             else
             {
-                _angleToEncoder[i-1] =  (1<<16) / 360.0;        // conversion factor from degrees to iCubDegrees
-                _encoderconversionfactor[i-1] = float((tmp_A2E  ) / _angleToEncoder[i-1]);
+                _angleToEncoder[i - 1] = (1 << 16) / 360.0;        // conversion factor from degrees to iCubDegrees
+                _DEPRECATED_encoderconversionfactor[i - 1] = float((tmp_A2E) / _angleToEncoder[i - 1]);
             }
 
-            _encoderconversionoffset[i-1] = 0;
+            _DEPRECATED_encoderconversionoffset[i - 1] = 0;*/
+            if (useRawEncoderData)
+            {
+                _angleToEncoder[i - 1] = 1;
+            }
+            else
+            {
+                _angleToEncoder[i - 1] = tmp_A2E;
+            }
         }
+    }
+
+    // Joint encoder resolution
+    if (!extractGroup(general, xtmp, "JointEncoderRes", "the resolution of the joint encoder", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+            _jointEncoderRes[i - 1] = xtmp.get(i).asDouble();
+    }
 
     // Joint encoder type
     if (!extractGroup(general, xtmp, "JointEncoderType", "JointEncoderType", _njoints))
@@ -1089,7 +1186,15 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     {
         int test = xtmp.size();
         for (i = 1; i < xtmp.size(); i++)
-            _jointEncoderType[i - 1] = xtmp.get(i).asString();
+        {
+            uint8_t val;
+            bool b = EncoderType_iCub2eo(&string(xtmp.get(i).asString().c_str()), &val);
+            if (b == false)
+            {
+                yError("Invalid JointEncoderType!"); return false;
+            }
+            _jointEncoderType[i - 1] = val;
+        }
     }
 
     // Motor capabilities
@@ -1191,7 +1296,15 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     {
         int test = xtmp.size();
         for (i = 1; i < xtmp.size(); i++)
-            _rotorEncoderType[i - 1] = xtmp.get(i).asString();
+        {
+            uint8_t val;
+            bool b = EncoderType_iCub2eo(&string(xtmp.get(i).asString().c_str()), &val);
+            if (b == false)
+            {
+                yError("Invalid RotorEncoderType!"); return false;
+            }
+            _rotorEncoderType[i - 1] = val;
+        }
     }
 
     // Gearbox
@@ -1689,9 +1802,10 @@ bool embObjMotionControl::init()
         jconfig.velocitysetpointtimeout = (eOmeas_time_t) U_16(_velocityTimeout[logico]);
         jconfig.motionmonitormode = eomc_motionmonitormode_dontmonitor;
 
-        jconfig.encoderconversionfactor = eo_common_float_to_Q17_14(_encoderconversionfactor[logico]);
-        jconfig.encoderconversionoffset = eo_common_float_to_Q17_14(_encoderconversionoffset[logico]);
-
+        jconfig.jntEncoderResolution = _jointEncoderRes[logico];
+        jconfig.DEPRECATED_encoderconversionfactor = 0;// eo_common_float_to_Q17_14(_encoderconversionfactor[logico]);
+        jconfig.DEPRECATED_encoderconversionoffset = 0;// eo_common_float_to_Q17_14(_encoderconversionoffset[logico]);
+        jconfig.jntEncoderType = _jointEncoderType[logico];
         jconfig.motor_params.bemf_value = 0;
         jconfig.motor_params.bemf_scale = 0;
         jconfig.motor_params.ktau_value = 0;
@@ -1749,6 +1863,7 @@ bool embObjMotionControl::init()
         motor_cfg.hasRotorEncoderIndex = _hasRotorEncoderIndex[logico];
         motor_cfg.motorPoles = _motorPoles[logico];
         motor_cfg.rotorIndexOffset = _rotorIndexOffset[logico];
+        motor_cfg.rotorEncoderType = _rotorEncoderType[logico];
         motor_cfg.filler01 = 0;
         motor_cfg.pidcurrent.kp = 8;
         motor_cfg.pidcurrent.ki = 2;
@@ -3644,6 +3759,38 @@ bool embObjMotionControl::getGearboxRatioRaw(int j, double *gearbox)
     return true;
 }
 
+bool embObjMotionControl::getTorqueControlFilterType(int j, int& type)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getRotorIndexOffsetRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_joint_config_t    joint_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&joint_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    type = (int)joint_cfg.tcfiltertype;
+    return true;
+}
+
 bool embObjMotionControl::getRotorEncoderResolutionRaw(int j, double &rotres)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
@@ -3659,7 +3806,7 @@ bool embObjMotionControl::getRotorEncoderResolutionRaw(int j, double &rotres)
     if (-1 == tt->synch())
     {
         int threadId;
-        yError() << "embObjMotionControl::getGearbox() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+        yError() << "embObjMotionControl::getRotorEncoderResolutionRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
 
         if (requestQueue->threadPool->getId(&threadId))
             requestQueue->cleanTimeouts(threadId);
@@ -3673,6 +3820,105 @@ bool embObjMotionControl::getRotorEncoderResolutionRaw(int j, double &rotres)
 
     // refresh cached value when reading data from the EMS
     rotres = (double)motor_cfg.rotorEncoderResolution;
+
+    return true;
+}
+
+bool embObjMotionControl::getJointEncoderResolutionRaw(int j, double &jntres)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getJointEncoderResolutionRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_joint_config_t    joint_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&joint_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    jntres = (double)joint_cfg.jntEncoderResolution;
+
+    return true;
+}
+
+bool embObjMotionControl::getJointEncoderTypeRaw(int j, int &type)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getJointEncoderResolutionRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_joint_config_t    joint_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&joint_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    type = (int)joint_cfg.jntEncoderType;
+
+    return true;
+}
+
+bool embObjMotionControl::getRotorEncoderTypeRaw(int j, int &type)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getJointEncoderResolutionRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_config_t    motor_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    type = (int)motor_cfg.rotorEncoderType;
 
     return true;
 }
@@ -3924,9 +4170,14 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         val.addString("not implemented yet");
         return true;
     }
-    else if (key == "rotor")
+    else if (key == "rotorEncoderResolution")
     {
         Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorEncoderResolutionRaw(i, tmp);  r.addDouble(tmp); }
+        return true;
+    }
+    else if (key == "jointEncoderResolution")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getJointEncoderResolutionRaw(i, tmp);  r.addDouble(tmp); }
         return true;
     }
     else if (key == "gearbox")
@@ -3984,9 +4235,42 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; getCurrentPidRaw(i, &p); r.addDouble(p.scale); }
         return true;
     }
+    else if (key == "jointEncoderType")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)
+        {
+            int t; string s;
+            getJointEncoderTypeRaw(i, t); uint8_t tt = t; bool b = EncoderType_eo2iCub(&tt, &s);
+            if (b == false)
+            {
+                yError("Invalid jointEncoderType");
+            }
+            r.addString(s);
+        }
+        return true;
+    }
+    else if (key == "motorEncoderType")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)
+        {
+            int t; string s;
+            getRotorEncoderTypeRaw(i, t); uint8_t tt = t; bool b = EncoderType_eo2iCub(&tt, &s);
+            if (b == false)
+            {
+                yError("Invalid motorEncoderType");
+            }
+            r.addString(s);
+        }
+        return true;
+    }
     else if (key == "coulombThreshold")
     {
         val.addString("not implemented yet");
+        return true;
+    }
+    else if (key == "torqueControlFilterType")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { int t; getTorqueControlFilterType(i, t); r.addDouble(t); }
         return true;
     }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
@@ -4032,18 +4316,22 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
 {
     listOfKeys->clear();
     listOfKeys->addString("kinematic_mj");
-    listOfKeys->addString("rotor");
     listOfKeys->addString("gearbox");
     listOfKeys->addString("hasHallSensor");
     listOfKeys->addString("hasTempSensor");
     listOfKeys->addString("hasRotorEncoder");
     listOfKeys->addString("hasRotorEncoderIndex");
     listOfKeys->addString("rotorIndexOffset");
+    listOfKeys->addString("rotorEncoderResolution");
+    listOfKeys->addString("jointEncoderResolution");
     listOfKeys->addString("motorPoles");
     listOfKeys->addString("pidCurrentKp");
     listOfKeys->addString("pidCurrentKi");
     listOfKeys->addString("pidCurrentShift");
     listOfKeys->addString("coulombThreshold");
+    listOfKeys->addString("torqueControlFilterType");
+    listOfKeys->addString("jointEncoderType");
+    listOfKeys->addString("rotorEncoderType");
     return true;
 }
 
