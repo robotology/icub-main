@@ -31,7 +31,7 @@
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
 <param name="Encoder">      11.375        11.375        11.375        11.375        -706.67       978.46        978.46        6.083333      </param>       
-<param name="Zeros">        180           45            245.7422      180           -74           -20           -52           354.2466      </param>       
+<param name="Zeros">        180           45            245.7422      180           -74           -20           -42           354.2466      </param>       
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          0x0C          0             0             0             </param>       
 <param name="TorqueChan">   0             1             2             3             4             0             0             0             </param>       
 <param name="TorqueMax">    8             8             8             8             2             2             2             2             </param>       
