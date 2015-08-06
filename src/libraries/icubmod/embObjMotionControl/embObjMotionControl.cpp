@@ -4140,7 +4140,7 @@ bool embObjMotionControl::getRotorIndexOffsetRaw(int j, double& rotorOffset)
     res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
 
     // refresh cached value when reading data from the EMS
-    rotorOffset = (double)motor_cfg.rotorEncoderResolution;
+    rotorOffset = (double)motor_cfg.rotorIndexOffset;
 
     return true;
 }
@@ -4186,6 +4186,11 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     if (key == "kinematic_mj")
     {
         val.addString("not implemented yet");
+        return true;
+    }
+    else if (key == "encoders")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { r.addDouble(_angleToEncoder[i]); }
         return true;
     }
     else if (key == "rotorEncoderResolution")
@@ -4267,7 +4272,7 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         }
         return true;
     }
-    else if (key == "motorEncoderType")
+    else if (key == "rotorEncoderType")
     {
         Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)
         {
@@ -4334,6 +4339,7 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
 {
     listOfKeys->clear();
     listOfKeys->addString("kinematic_mj");
+    listOfKeys->addString("encoders");
     listOfKeys->addString("gearbox");
     listOfKeys->addString("hasHallSensor");
     listOfKeys->addString("hasTempSensor");
