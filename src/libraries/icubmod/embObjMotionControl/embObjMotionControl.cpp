@@ -769,7 +769,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
     else
     {
-        int mcv = config.findGroup("GENERAL").find("verbose").asInt();
+        int mcv = config.findGroup("GENERAL").find("MotioncontrolVersion").asInt();
         if (mcv != 2)
         {
             yError() << "Wrong MotioncontrolVersion parameter. RobotInterface cannot start. Please contact icub-support@iit.it";
