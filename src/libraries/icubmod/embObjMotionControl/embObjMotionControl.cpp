@@ -761,6 +761,22 @@ bool embObjMotionControl::verifyMaisProtocol(Bottle groupProtocol)
 bool embObjMotionControl::open(yarp::os::Searchable &config)
 {
     std::string str;
+    
+    if (!config.findGroup("GENERAL").find("MotioncontrolVersion").isInt())
+    {
+        yError() << "Missing MotioncontrolVersion parameter. RobotInterface cannot start. Please contact icub-support@iit.it";
+        return false;
+    }
+    else
+    {
+        int mcv = config.findGroup("GENERAL").find("verbose").asInt();
+        if (mcv != 2)
+        {
+            yError() << "Wrong MotioncontrolVersion parameter. RobotInterface cannot start. Please contact icub-support@iit.it";
+            return false;
+        }
+    }
+
     if(!config.findGroup("GENERAL").find("verbose").isBool())
     {
         yError() << "embObjMotionControl::open() detects that general->verbose bool param is different from accepted values (true / false). Assuming false";
