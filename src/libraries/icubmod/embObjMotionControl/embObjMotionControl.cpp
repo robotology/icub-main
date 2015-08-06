@@ -1188,10 +1188,11 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         for (i = 1; i < xtmp.size(); i++)
         {
             uint8_t val;
-            bool b = EncoderType_iCub2eo(&string(xtmp.get(i).asString().c_str()), &val);
+            string s = xtmp.get(i).asString();
+            bool b = EncoderType_iCub2eo(&s, &val);
             if (b == false)
             {
-                yError("Invalid JointEncoderType!"); return false;
+                yError("Invalid JointEncoderType: %s!", s.c_str()); return false;
             }
             _jointEncoderType[i - 1] = val;
         }
@@ -1298,10 +1299,11 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         for (i = 1; i < xtmp.size(); i++)
         {
             uint8_t val;
-            bool b = EncoderType_iCub2eo(&string(xtmp.get(i).asString().c_str()), &val);
+            string s = xtmp.get(i).asString();
+            bool b = EncoderType_iCub2eo(&s, &val);
             if (b == false)
             {
-                yError("Invalid RotorEncoderType!"); return false;
+                yError("Invalid RotorEncoderType: %s", s.c_str()); return false;
             }
             _rotorEncoderType[i - 1] = val;
         }
