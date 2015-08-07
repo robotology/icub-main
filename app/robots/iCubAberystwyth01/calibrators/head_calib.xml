@@ -11,13 +11,13 @@
 <group name="CALIBRATION">   
  
 <param name="calibrationType">            0             0             0             0             0             0             </param>       
-<param name="calibration1">               500           1333          1333          600           500           500           </param>       
-<param name="calibration2">               20            20            20            -20           20            20            </param>       
+<param name="calibration1">               1333          1333          1333          600           500           500           </param>       
+<param name="calibration2">               40            40            10            -20           20            20            </param>       
 <param name="calibration3">               0             0             0             0             0             0             </param>       
-<param name="positionZero">               20            0             0             0             0             0             </param>       
+<param name="positionZero">               0             0             0             0             0             0             </param>       
 <param name="velocityZero">               10            10            10            10            10            10            </param>       
-<param name="maxPwm">                     120           120           0             0             0             0             </param>       
-<param name="posZeroThreshold">           2             2             2             2             2             2             </param>       
+<param name="maxPwm">                     1300          1300          1330          1300          1300          1300          </param>       
+<param name="posZeroThreshold">           2             2             180           2             180           180           </param>       
 </group>       
  
 <group name="HOME">          
@@ -25,7 +25,7 @@
 <param name="velocityHome"> 10            10            10            10            10            10            </param>       
 </group>       
  
-        <param name="CALIB_ORDER"> (0 1 2 3) (4) (5) </param>          
+        <param name="CALIB_ORDER"> (0) (1) (2 3) (5) (4) </param>      
                
         <action phase="startup" level="10" type="calibrate">           
             <param name="target">head_mc_wrapper</param>               
