@@ -504,12 +504,15 @@ if __name__ == '__main__':
                     nodeuser=node.getAttribute("user");
                 else:
                     nodeuser=user;
-                a=node.getAttribute("display")
-                # handle default values for variable (for backward compatibility)
-                if ( a=="true" or a=="True" or a=="TRUE" or a=="yes" or a=="YES"):
-                    newNode=Node(node.firstChild.data, True, ":0.0", nodeuser)
+                if node.hasAttribute("display"):
+                    a=node.getAttribute("display")
+                    # handle default values for variable (for backward compatibility)
+                    if ( a=="true" or a=="True" or a=="TRUE" or a=="yes" or a=="YES"):
+                        newNode=Node(node.firstChild.data, True, ":0.0", nodeuser)
+                    else:
+                        newNode=Node(node.firstChild.data, True, a, nodeuser)
                 else:
-                    newNode=Node(node.firstChild.data, True, a, nodeuser)
+                    newNode=Node(node.firstChild.data, False, "", nodeuser)
             else:
                 newNode=Node(node.firstChild.data, False, "", user)
 
