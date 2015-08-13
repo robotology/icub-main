@@ -122,10 +122,7 @@ private:
     std::list<std::list<int> > joints;
 
     int n_joints;
-    unsigned char *type;
-    double *param1;
-    double *param2;
-    double *param3;
+    CalibrationParameters* calibParams;
     int    *maxPWM;
     double *currPos;
     double *currVel;
