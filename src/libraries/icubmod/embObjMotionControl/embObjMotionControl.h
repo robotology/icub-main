@@ -274,7 +274,6 @@ private:
     int    *_rotorEncoderRes;                   /** rotor encoder resolution */
     uint8_t *_rotorEncoderType;                  /** rotor encoder type*/
     double *_gearbox;                           /** the gearbox ratio */
-    double *_zeros;                             /** encoder zeros */
     bool   *_hasHallSensor;                     /** */
     bool   *_hasTempSensor;                     /** */
     bool   *_hasRotorEncoder;                   /** */
@@ -534,6 +533,7 @@ public:
 
 
     // calibration2raw
+    virtual bool setCalibrationParametersRaw(int axis, const CalibrationParameters& params);
     virtual bool calibrate2Raw(int axis, unsigned int type, double p1, double p2, double p3);
     virtual bool doneRaw(int j);
 

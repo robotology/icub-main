@@ -48,10 +48,7 @@ static bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, co
 }
 
 parametricCalibratorEth::parametricCalibratorEth() :
-    type(NULL),
-    param1(NULL),
-    param2(NULL),
-    param3(NULL),
+    calibParams(NULL),
     original_pid(NULL),
     limited_pid(NULL),
     maxPWM(NULL),
@@ -200,10 +197,7 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
         return false;
     }
 
-    type = new unsigned char[nj];
-    param1 = new double[nj];
-    param2 = new double[nj];
-    param3 = new double[nj];
+    calibParams = new CalibrationParameters[nj];
     maxPWM = new int[nj];
 
     zeroPos = new double[nj];
@@ -218,19 +212,27 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
 
     Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("calibration1");
     if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration1 params " << xtmp.size()<< " " << nj; return false;}
-    for (i = 1; i < xtmp.size(); i++) param1[i-1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) calibParams[i-1].param1 = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibration2");
     if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration2 params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) param2[i-1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param2 = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibration3");
     if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration3 params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) param3[i-1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param3 = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibrationType");
     if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of Calibration3 params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) type[i-1] = (unsigned char) xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].type = (unsigned char)xtmp.get(i).asDouble();
+
+    xtmp = p.findGroup("CALIBRATION").findGroup("calibrationZero");
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of calibrationZero params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param4 = xtmp.get(i).asDouble();
+
+    xtmp = p.findGroup("CALIBRATION").findGroup("calibrationDelta");
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of calibrationDelta params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param4 = calibParams[i - 1].param4 + xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("positionZero");
     if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of PositionZero params"; return false;}
@@ -280,21 +282,9 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
 bool parametricCalibratorEth::close ()
 {
     yTrace();
-    if (type != NULL) {
-        delete[] type;
-        type = NULL;
-    }
-    if (param1 != NULL) {
-        delete[] param1;
-        param1 = NULL;
-    }
-    if (param2 != NULL) {
-        delete[] param2;
-        param2 = NULL;
-    }
-    if (param3 != NULL) {
-        delete[] param3;
-        param3 = NULL;
+    if (calibParams != NULL) {
+        delete[] calibParams;
+        calibParams = NULL;
     }
 
     if (maxPWM != NULL) {
@@ -647,8 +637,9 @@ bool parametricCalibratorEth::calibrate()
 
 bool parametricCalibratorEth::calibrateJoint(int joint)
 {
-    yDebug() <<  deviceName  << ": Calling calibrateJoint on joint "<< joint << " with params: " << type[joint] << param1[joint] << param2[joint] << param3[joint];
-    return iCalibrate->calibrate2(joint, type[joint], param1[joint], param2[joint], param3[joint]);
+    yDebug() << deviceName << ": Calling calibrateJoint on joint " << joint << " with params: " << calibParams[joint].type << calibParams[joint].param1 << calibParams[joint].param2 << calibParams[joint].param3 << calibParams[joint].param4;
+    bool b = iCalibrate->setCalibrationParameters(joint, calibParams[joint]);
+    return b;
 }
 
 bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
