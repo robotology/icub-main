@@ -2531,21 +2531,21 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
     case eomc_calibration_type0_hard_stops:
         calib.params.type0.pwmlimit = (int16_t)S_16(params.param1);
         calib.params.type0.velocity = (eOmeas_velocity_t)S_32(params.param2);
-        calib.params.type0.calibrationZero = (int32_t)S_32(params.param4 / _angleToEncoder[j]);
+        calib.params.type0.calibrationZero = (int32_t)S_32(params.param4 * _angleToEncoder[j]);
         break;
 
         // fermo
     case eomc_calibration_type1_abs_sens_analog:
         calib.params.type1.position = (int16_t)S_16(params.param1);
         calib.params.type1.velocity = (eOmeas_velocity_t)S_32(params.param2);
-        calib.params.type1.calibrationZero = (int32_t)S_32(params.param4 / _angleToEncoder[j]);
+        calib.params.type1.calibrationZero = (int32_t)S_32(params.param4 * _angleToEncoder[j]);
         break;
 
         // muove
     case eomc_calibration_type2_hard_stops_diff:
         calib.params.type2.pwmlimit = (int16_t)S_16(params.param1);
         calib.params.type2.velocity = (eOmeas_velocity_t)S_32(params.param2);
-        calib.params.type2.calibrationZero = (int32_t)S_32(params.param4 / _angleToEncoder[j]);
+        calib.params.type2.calibrationZero = (int32_t)S_32(params.param4 * _angleToEncoder[j]);
         break;
 
         // muove
@@ -2553,7 +2553,7 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         calib.params.type3.position = (int16_t)S_16(params.param1);
         calib.params.type3.velocity = (eOmeas_velocity_t)S_32(params.param2);
         calib.params.type3.offset = (int32_t)S_32(params.param3);
-        calib.params.type3.calibrationZero = (int32_t)S_32(params.param4 / _angleToEncoder[j]);
+        calib.params.type3.calibrationZero = (int32_t)S_32(params.param4 * _angleToEncoder[j]);
         break;
 
         // muove
@@ -2561,7 +2561,7 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         calib.params.type4.position = (int16_t)S_16(params.param1);
         calib.params.type4.velocity = (eOmeas_velocity_t)S_32(params.param2);
         calib.params.type4.maxencoder = (int32_t)S_32(params.param3);
-        calib.params.type4.calibrationZero = (int32_t)S_32(params.param4 / _angleToEncoder[j]);
+        calib.params.type4.calibrationZero = (int32_t)S_32(params.param4 * _angleToEncoder[j]);
         break;
 
     default:
