@@ -24,6 +24,25 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#define counter_base    3
+#define accel_base      5
+#define gyro_base       11
+#define magneto_base    17
+#define temperat_base   23
+#define quaternion_base 37
+
+typedef struct  {
+    //     uint16_t    counter;
+    int16_t     accel[3];
+    int16_t     gyro[3];
+    int16_t     magn[3];
+    int16_t     temp;
+    uint32_t    euler_raw[3];
+    uint32_t    quat[4];
+} __attribute__ ((__packed__)) Pippo;
+
+
+
 
 typedef struct {
     uint8_t frameControl;

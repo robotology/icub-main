@@ -31,12 +31,19 @@
 
 #include <ST_M1_dataType.h>
 
+#include <arpa/inet.h>
 
 namespace yarp{
     namespace dev{
         class imuST_M1;
     }
 }
+
+
+// union IMUData {
+//     char packet[53];
+//     Pippo pippo;
+// };
 
 /**
  *
@@ -62,6 +69,17 @@ private:
     // data specific for this imu
 //     typedef std::map<int, imu_cmd_t*> cmd_map_t;
 //     cmd_map_t cmd_ptr_map;
+    int expected_packet_size;
+    int expected_payload_size;
+    char *buffer;
+//     IMUData             data;
+
+    int progressiv_num;
+    double *temp_euler;
+    double *temp_acc;
+    double *temp_gyro;
+    double *temp_mag;
+    double  temp_data[12];
 
     yarp::os::Semaphore data_mutex;
     yarp::os::Semaphore sync_mutex;
@@ -88,8 +106,11 @@ private:
     bool threadInit();
     void run();
     void threadRelease();
+    Pippo *pippo;
+    Pippo  outVals;
 
 private:      // Device specific
+    float       *euler_float;
 
 //     void stop_continuous(void);
 //     // command 0xC2
