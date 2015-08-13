@@ -1807,7 +1807,7 @@ bool embObjMotionControl::init()
         jconfig.motionmonitormode = eomc_motionmonitormode_dontmonitor;
 
         jconfig.jntEncoderResolution = _jointEncoderRes[logico];
-        jconfig.DEPRECATED_encoderconversionfactor = 0;// eo_common_float_to_Q17_14(_encoderconversionfactor[logico]);
+        jconfig.DEPRECATED_encoderconversionfactor = 1;// eo_common_float_to_Q17_14(_encoderconversionfactor[logico]);
         jconfig.DEPRECATED_encoderconversionoffset = 0;// eo_common_float_to_Q17_14(_encoderconversionoffset[logico]);
         jconfig.jntEncoderType = _jointEncoderType[logico];
         jconfig.motor_params.bemf_value = 0;

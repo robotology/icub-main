@@ -11,17 +11,17 @@
         <param name="HasTempSensor">         0             0             0             0             0             0             0             0            0             0            0             0      </param>
         <param name="HasRotorEncoder">       1             1             1             1             1             1             1             1            1             1            1             1      </param>
         <param name="HasRotorEncoderIndex">  0             0             0             0             0             0             0             0            0             0            0             0      </param>
-        <param name="Encoder">        -706.670        11.375       -11.375         2.333        14.667        -2.333        -2.735        -2.556        -2.735        -2.611        -3.000        -2.384    </param>
+        <param name="Encoder">         182.044        182.044      182.044         2.333        14.667        -2.333        -2.735        -2.556        -2.735        -2.611        -3.000        -2.384    </param>
         <param name="TorqueId">           0x0C             0             0             0             0             0             0             0            0             0            0             0      </param>
         <param name="TorqueChan">            4             0             0             0             0             0             0             0            0             0            0             0      </param>
         <param name="TorqueMax">             2             2             2             2             0             0             0             0            0             0            0             0      </param>
         <param name="JointEncoderType"> "OPTICAL_QUAD"  "AEA"         "AEA"          "HALL_ADC"    "HALL_ADC"    "MAIS"       "MAIS"        "MAIS"      "MAIS"        "MAIS"       "MAIS"        "MAIS"     </param>
         <param name="RotorEncoderType"> "NONE"          "NONE"        "NONE"         "NONE"        "NONE"        "NONE"       "NONE"        "NONE"      "NONE"        "NONE"       "NONE"        "NONE"     </param>
-        <param name="JointEncoderRes">      1             4096         -4096           1             1             1             1             1            1             1            1             1      </param>
-        <param name="RotorEncoderRes">      1             1            1               1             1             1             1             1            1             1            1             1      </param>
-        <param name="RotorIndexOffset">     0             0            0               0             1             1             1             1            1             1            1             1      </param>
-        <param name="Gearbox">              1             1            1               1             1             1             1             1            1             1            1             1      </param>
-        <param name="MotorPoles">           1             1            1               1             1             1             1             1            1             1            1             1      </param>
+        <param name="JointEncoderRes"> -254440             4096         -4096           1             1             1             1             1            1             1            1             1      </param>
+        <param name="RotorEncoderRes">       1             1            1               1             1             1             1             1            1             1            1             1      </param>
+        <param name="RotorIndexOffset">      0             0            0               0             1             1             1             1            1             1            1             1      </param>
+        <param name="Gearbox">               1             1            1               1             1             1             1             1            1             1            1             1      </param>
+        <param name="MotorPoles">            1             1            1               1             1             1             1             1            1             1            1             1      </param>
         <param name="Verbose">      0    </param>
     </group>
 
