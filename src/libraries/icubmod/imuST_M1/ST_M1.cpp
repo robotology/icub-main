@@ -177,6 +177,35 @@ bool imuST_M1::open(yarp::os::Searchable &config)
     printf("Line %d: Received response 0x%0X, 0x%0X, 0x%0X\n,  0x%0X\n", __LINE__, buff[0], buff[1], buff[2], buff[3]);
 
     sleep(2);
+
+    buff[0] = 0x20;
+    buff[1] = 0x03;
+    buff[2] = 0x21;
+    buff[3] = 0x02;
+    buff[4] = 0x01;
+
+    nbytes_w = ::write(fd_ser, (void*)buff, 5);
+
+    memset(buff, 0x00, 20);
+    nbytes_r = ::read(fd_ser,  (void*)buff, 6);
+
+    printf("Line %d: gyro parameter fullscale 0x%0X.%0X.%0X.%0X.%0X.%0X\n", __LINE__, buff[0], buff[1], buff[2], buff[3], buff[4], buff[5]);  //  0x01 --> 500 dps
+
+
+    buff[0] = 0x20;
+    buff[1] = 0x03;
+    buff[2] = 0x21;
+    buff[3] = 0x02;
+    buff[4] = 0x06;
+
+    nbytes_w = ::write(fd_ser, (void*)buff, 5);
+
+    memset(buff, 0x00, 20);
+    nbytes_r = ::read(fd_ser,  (void*)buff, 7);
+
+    printf("Line %d: gyro parameter scale factor 0x%0X.%0X.%0X.%0X.%0X.%0X.%0X\n", __LINE__, buff[0], buff[1], buff[2], buff[3], buff[4], buff[5], buff[6]);
+
+
     this->start();
 
     return true;
@@ -302,10 +331,10 @@ bool imuST_M1::read(yarp::sig::Vector &out)
         out[out_idx] = (double) euler_float[i];
 
     for(int i=0; i<3; i++, out_idx++)
-        out[out_idx] = (double) outVals.accel[i];
+        out[out_idx] = (double) outVals.accel[i] * 9.81 / 1000.0f;
 
     for(int i=0; i<3; i++, out_idx++)
-        out[out_idx] = (double) outVals.gyro[i];
+        out[out_idx] = (double) outVals.gyro[i] * 500.0f /  (2<<15);
 
     for(int i=0; i<3; i++, out_idx++)
         out[out_idx] = (double) outVals.magn[i];
