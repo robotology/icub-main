@@ -21,6 +21,7 @@ using namespace yarp::os;
 
 imuST_M1::imuST_M1() : RateThread(6)
 {
+    verbose = false;
     nchannels = 12;
     opened = false;
     progressiv_num = -1;
@@ -48,6 +49,11 @@ bool imuST_M1::open(yarp::os::Searchable &config)
     {
         std::cout << "Can't find 'serial' name in config file";
         return false;
+    }
+
+    if(config.check("verbose"))
+    {
+        verbose = true;
     }
 
     comPortName = serial->toString();
@@ -100,34 +106,6 @@ bool imuST_M1::open(yarp::os::Searchable &config)
         printf("Configuring comport failed\n");
         return false;
     }
-
-
-    uint32_t  dummy;
-    float *pf = reinterpret_cast<float*>(&dummy);
-
-    dummy = 4225604;
-
-    char *dummy_p = (char*)&dummy;
-    printf("\ntest number %d = 0x%02X.%02X.%02X.%02X\n", dummy, dummy_p[0], dummy_p[1], dummy_p[2], dummy_p[3]);
-
-//     uint32_t converted;
-    double start = yarp::os::Time::now();
-
-//     for (int i=0; i<1000000; i++)
-
-        dummy = htonl(dummy);
-    char *dummy_p2 = (char*)&dummy;
-    printf("\ntime %f --> converted number %d = 0x%02X.%02X.%02X.%02X\n", yarp::os::Time::now() - start, dummy, dummy_p2[0], dummy_p2[1], dummy_p2[2], dummy_p2[3]);
-
-    float val = *pf;
-    char *dummy_p3 = (char*)&val;
-    printf("\nfloat number %f <--> %f = 0x%02X.%02X.%02X.%02X\n", *pf, val, dummy_p3[0], dummy_p3[1], dummy_p3[2], dummy_p3[3]);
-    printf("\n\n");
-
-//     return false;
-
-
-
 
     opened = true;
     char buff[20];
@@ -460,12 +438,14 @@ void imuST_M1::run()
     mempcpy(&outVals, pippo, sizeof(Pippo));
     data_mutex.post();
 
-    printf("euler  %f <--> %f <--> %f\n\n", euler_float[0], euler_float[1], euler_float[2]);
-    printf("accel: %4d  <--> %4d <--> %4d\n", pippo->accel[0], pippo->accel[1], pippo->accel[2]);
-    printf("gyro:  %4d  <--> %4d <--> %4d\n", pippo->gyro[0], pippo->gyro[1], pippo->gyro[2]);
-    printf("magn:  %4d  <--> %4d <--> %4d\n", pippo->magn[0], pippo->magn[1], pippo->magn[2]);
-    printf("temp:  %4d \n", pippo->temp);
-
+    if(verbose)
+    {
+        printf("euler  %f <--> %f <--> %f\n\n", euler_float[0], euler_float[1], euler_float[2]);
+        printf("accel: %4d  <--> %4d <--> %4d\n", pippo->accel[0], pippo->accel[1], pippo->accel[2]);
+        printf("gyro:  %4d  <--> %4d <--> %4d\n", pippo->gyro[0], pippo->gyro[1], pippo->gyro[2]);
+        printf("magn:  %4d  <--> %4d <--> %4d\n", pippo->magn[0], pippo->magn[1], pippo->magn[2]);
+        printf("temp:  %4d \n", pippo->temp);
+    }
 }
 
 void imuST_M1::threadRelease()

@@ -108,7 +108,8 @@ private:
     void threadRelease();
     Pippo *pippo;
     Pippo  outVals;
-
+    bool verbose;
+    
 private:      // Device specific
     float       *euler_float;
 
