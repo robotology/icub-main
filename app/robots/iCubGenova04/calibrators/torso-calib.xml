@@ -9,6 +9,7 @@
 		    <param name="joints"> 3 </param> <!-- the number of joints of the robot part -->
 		    <param name="deviceName"> Torso_Calibrator </param>
 		</group>
+
 <group name="HOME">
 <param name="positionHome">                       0                       0                         -20                                 </param>
 <param name="velocityHome">                       10                      10                        10                                  </param>
@@ -21,10 +22,13 @@
 <param name="calibration1">                       32767.9                 32767.9                   32767.9                             </param>
 <param name="calibration2">                       10.0                    10.0                      10.0                                </param>
 <param name="calibration3">                       30128.1                 44847.9                   7968.1                              </param>
-<param name="positionZero">                       0.0                     0.0                       0.0                                 </param>
-<param name="velocityZero">                       10.0                    10.0                      10.0                                </param>
-<param name="maxPwm">                             2000                    2000                      2000                                </param>
-<param name="posZeroThreshold">                   2                       2                         2                                   </param>
+<param name="calibrationZero">                    180.00                  180.00                    180.00                              </param>
+<param name="calibrationDelta">                   0.0                     0.0                       0.0                                 </param>
+
+<param name="startupPosition">                    0.0                     0.0                       0.0                                 </param>
+<param name="startupVelocity">                    10.0                    10.0                      10.0                                </param>
+<param name="startupMaxPwm">                      2000                    2000                      2000                                </param>
+<param name="startupPosThreshold">                2                       2                         2                                   </param>
 </group>
 
  <!-- check old calibrator for the correct sequence, then ask to Randazz -->

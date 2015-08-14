@@ -10,7 +10,6 @@
 		    <param name="deviceName"> Left_Arm_Calibrator </param>
 		</group>
 
-
 <group name="HOME">
 <param name="positionHome">                       -30        30         0          45         0          0          40         15         30         0          0          0          0          0          0          0          </param>
 <param name="velocityHome">                       10         10         10         10         30         30         30         100        10         10         10         10         10         10         10         10         </param>
@@ -21,12 +20,16 @@
 <param name="calibrationType">                    3          3          3          3          0          2          2          3          3          4          4          4          4          4          4          4          </param>
 <param name="calibration1">                       38229.2    51882.5    -4411.6    24575.9    500.0      750.0      750.0      2250.0     2877.8     240.0      10.0       240.0      20.0       215.0      10.0       700.0      </param>
 <param name="calibration2">                       10.0       10.0       10.0       10.0       20.0       -10.0      -10.0      100.0      10.0       10.0       30.0       10.0       10.0       10.0       10.0       10.0       </param>
-<param name="calibration3">                       30224.1    9328.1     62999.4    34752.1    0.0        0.0        0.0        0.0        0.0        6000.0     6600.0     6000.0     7000.0     6000.0     -7000.0    -14000.0   </param>
-<param name="positionZero">                       -30.0      30.0       0.0        45.0       0.0        0.0        0.0        15.0       30.0       0.0        0.0        0.0        0.0        0.0        0.0        0.0        </param>
-<param name="velocityZero">                       10.0       10.0       10.0       10.0       30.0       30.0       30.0       100.0      100.0      100.0      100.0      100.0      100.0      100.0      100.0      100.0      </param>
-<param name="maxPwm">                             2000       2000       2000       2000       0          0          0          0          0          0          0          0          0          0          0          0          </param>
-<param name="posZeroThreshold">                   2          2          2          2          2          2          90         90         1000       1000       1000       1000       1000       1000       1000       1000       </param>
+<param name="calibration3">                       30224.1    9328.1     62999.4    34752.1    0.0        0.0        0.0        0.0        0.0        6000.0     6600.0     6000.0     7000.0     6000.0     -7000.0    14000.0   </param>
+<param name="calibrationZero">                    -180.00    -315.00    0.00      -180.00     90.00     -20.00    -52.00      540.00     -151.88    -98.18     -171.13    -93.91     -177.56    -94.39     -173.79    -318.18     </param>
+<param name="calibrationDelta">                   0.0        0.0        24.0       0.0        0.0        0.0       3.0        0.0        0.0        0.0        0.0        0.0        0.0        0.0        0.0        0.0         </param>
+
+<param name="startupPosition">                    -30.0      30.0       0.0        45.0       0.0        0.0        0.0        15.0       30.0       0.0        0.0        0.0        0.0        0.0        0.0        0.0        </param>
+<param name="startupVelocity">                    10.0       10.0       10.0       10.0       30.0       30.0       30.0       100.0      100.0      100.0      100.0      100.0      100.0      100.0      100.0      100.0      </param>
+<param name="startupMaxPwm">                      2000       2000       2000       2000       0          0          0          0          0          0          0          0          0          0          0          0          </param>
+<param name="startupPosThreshold">                2          2          2          2          2          2          90         90         1000       1000       1000       1000       1000       1000       1000       1000       </param>
 </group>
+
 		<param name="CALIB_ORDER">(0 1 2 3) (4 6 7) (5) (8 9 11 13) (10 12 14 15) </param>
 
 		<action phase="startup" level="10" type="calibrate">

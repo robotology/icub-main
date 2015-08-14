@@ -1153,20 +1153,9 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             tmp_A2E = xtmp.get(i).asDouble();
             if (tmp_A2E<0)
             {
-                yError("Encoder parameter should be positive!");
-            }
-            /*if (useRawEncoderData)   // do not use any configuration, this is intended for doing the very first calibration
-            {
-                tmp_A2E > 0 ? _DEPRECATED_encoderconversionfactor[i - 1] = 1 : _DEPRECATED_encoderconversionfactor[i - 1] = -1;
-                _angleToEncoder[i - 1] = 1;
-            }
-            else
-            {
-                _angleToEncoder[i - 1] = (1 << 16) / 360.0;        // conversion factor from degrees to iCubDegrees
-                _DEPRECATED_encoderconversionfactor[i - 1] = float((tmp_A2E) / _angleToEncoder[i - 1]);
+                yWarning("Encoder parameter should be positive!");
             }
 
-            _DEPRECATED_encoderconversionoffset[i - 1] = 0;*/
             if (useRawEncoderData)
             {
                 _angleToEncoder[i - 1] = 1;
