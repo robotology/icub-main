@@ -25,10 +25,10 @@
 <param name="calibrationZero">                    180.00                  180.00                    180.00                              </param>
 <param name="calibrationDelta">                   0.0                     -1.0                      -1.0                                </param>
 
-<param name="positionZero">                       0.0                     0.0                      -10.0                                </param>
-<param name="velocityZero">                       10.0                    10.0                      10.0                                </param>
-<param name="maxPwm">                             2500                    2500                      2500                                </param>
-<param name="posZeroThreshold">                   2                       2                         2                                   </param>
+<param name="startupPosition">                    0.0                     0.0                      -10.0                                </param>
+<param name="startupVelocity">                    10.0                    10.0                      10.0                                </param>
+<param name="startupMaxPwm">                      2500                    2500                      2500                                </param>
+<param name="startupPosThreshold">                2                       2                         2                                   </param>
 </group>
 
  <!-- check old calibrator for the correct sequence, then ask to Randazz -->

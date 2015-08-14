@@ -123,16 +123,16 @@ private:
 
     int n_joints;
     CalibrationParameters* calibParams;
-    int    *maxPWM;
+    int    *startupMaxPWM;
     double *currPos;
     double *currVel;
     Pid    *original_pid;
     Pid    *limited_pid;
-    double *zeroVel;
-    double *zeroPos;
+    double *startupVel;
+    double *startupPos;
     double *homeVel;
     double *homePos;
-    double *zeroPosThreshold;
+    double *startupPosThreshold;
     bool    abortCalib;
     bool    abortParking;
     bool    isCalibrated;
