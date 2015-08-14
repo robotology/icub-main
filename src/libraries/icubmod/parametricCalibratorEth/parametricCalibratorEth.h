@@ -122,20 +122,17 @@ private:
     std::list<std::list<int> > joints;
 
     int n_joints;
-    unsigned char *type;
-    double *param1;
-    double *param2;
-    double *param3;
-    int    *maxPWM;
+    CalibrationParameters* calibParams;
+    int    *startupMaxPWM;
     double *currPos;
     double *currVel;
     Pid    *original_pid;
     Pid    *limited_pid;
-    double *zeroVel;
-    double *zeroPos;
+    double *startupVel;
+    double *startupPos;
     double *homeVel;
     double *homePos;
-    double *zeroPosThreshold;
+    double *startupPosThreshold;
     bool    abortCalib;
     bool    abortParking;
     bool    isCalibrated;

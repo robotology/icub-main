@@ -48,20 +48,17 @@ static bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, co
 }
 
 parametricCalibratorEth::parametricCalibratorEth() :
-    type(NULL),
-    param1(NULL),
-    param2(NULL),
-    param3(NULL),
+    calibParams(NULL),
     original_pid(NULL),
     limited_pid(NULL),
-    maxPWM(NULL),
+    startupMaxPWM(NULL),
     currPos(NULL),
     currVel(NULL),
-    zeroPos(NULL),
-    zeroVel(NULL),
+    startupPos(NULL),
+    startupVel(NULL),
     homeVel(0),
     homePos(0),
-    zeroPosThreshold(0),
+    startupPosThreshold(0),
     abortCalib(false),
     isCalibrated(false),
     calibMutex(1),
@@ -200,45 +197,50 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
         return false;
     }
 
-    type = new unsigned char[nj];
-    param1 = new double[nj];
-    param2 = new double[nj];
-    param3 = new double[nj];
-    maxPWM = new int[nj];
+    calibParams = new CalibrationParameters[nj];
+    startupMaxPWM = new int[nj];
 
-    zeroPos = new double[nj];
-    zeroVel = new double[nj];
+    startupPos = new double[nj];
+    startupVel = new double[nj];
     currPos = new double[nj];
     currVel = new double[nj];
     homePos = new double[nj];
     homeVel = new double[nj];
-    zeroPosThreshold = new double[nj];
+    startupPosThreshold = new double[nj];
 
     int i=0;
 
     Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("calibration1");
     if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration1 params " << xtmp.size()<< " " << nj; return false;}
-    for (i = 1; i < xtmp.size(); i++) param1[i-1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) calibParams[i-1].param1 = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibration2");
     if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration2 params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) param2[i-1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param2 = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibration3");
     if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration3 params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) param3[i-1] = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param3 = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibrationType");
     if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of Calibration3 params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) type[i-1] = (unsigned char) xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].type = (unsigned char)xtmp.get(i).asDouble();
 
-    xtmp = p.findGroup("CALIBRATION").findGroup("positionZero");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of PositionZero params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) zeroPos[i-1] = xtmp.get(i).asDouble();
+    xtmp = p.findGroup("CALIBRATION").findGroup("calibrationZero");
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of calibrationZero params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param4 = xtmp.get(i).asDouble();
 
-    xtmp = p.findGroup("CALIBRATION").findGroup("velocityZero");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of VelocityZero params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) zeroVel[i-1] = xtmp.get(i).asDouble();
+    xtmp = p.findGroup("CALIBRATION").findGroup("calibrationDelta");
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of calibrationDelta params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param4 = calibParams[i - 1].param4 + xtmp.get(i).asDouble();
+
+    xtmp = p.findGroup("CALIBRATION").findGroup("startupPosition");
+    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupPosition params"; return false;}
+    for (i = 1; i < xtmp.size(); i++) startupPos[i-1] = xtmp.get(i).asDouble();
+
+    xtmp = p.findGroup("CALIBRATION").findGroup("startupVelocity");
+    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupVelocity params"; return false;}
+    for (i = 1; i < xtmp.size(); i++) startupVel[i - 1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("HOME").findGroup("positionHome");
     if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of PositionHome params"; return false;}
@@ -248,13 +250,13 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of VelocityHome params"; return false;}
     for (i = 1; i < xtmp.size(); i++) homeVel[i-1] = xtmp.get(i).asDouble();
 
-    xtmp = p.findGroup("CALIBRATION").findGroup("maxPwm");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of MaxPwm params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) maxPWM[i-1] =  xtmp.get(i).asInt();
+    xtmp = p.findGroup("CALIBRATION").findGroup("startupMaxPwm");
+    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupMaxPwm params"; return false;}
+    for (i = 1; i < xtmp.size(); i++) startupMaxPWM[i-1] =  xtmp.get(i).asInt();
 
-    xtmp = p.findGroup("CALIBRATION").findGroup("posZeroThreshold");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of PosZeroThreshold params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) zeroPosThreshold[i-1] =  xtmp.get(i).asDouble();
+    xtmp = p.findGroup("CALIBRATION").findGroup("startupPosThreshold");
+    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupPosThreshold params"; return false;}
+    for (i = 1; i < xtmp.size(); i++) startupPosThreshold[i-1] =  xtmp.get(i).asDouble();
  
     xtmp = p.findGroup("CALIB_ORDER");
     int calib_order_size = xtmp.size();
@@ -280,26 +282,14 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
 bool parametricCalibratorEth::close ()
 {
     yTrace();
-    if (type != NULL) {
-        delete[] type;
-        type = NULL;
-    }
-    if (param1 != NULL) {
-        delete[] param1;
-        param1 = NULL;
-    }
-    if (param2 != NULL) {
-        delete[] param2;
-        param2 = NULL;
-    }
-    if (param3 != NULL) {
-        delete[] param3;
-        param3 = NULL;
+    if (calibParams != NULL) {
+        delete[] calibParams;
+        calibParams = NULL;
     }
 
-    if (maxPWM != NULL) {
-        delete[] maxPWM;
-        maxPWM = NULL;
+    if (startupMaxPWM != NULL) {
+        delete[] startupMaxPWM;
+        startupMaxPWM = NULL;
     }
     if (original_pid != NULL) {
         delete[] original_pid;
@@ -319,13 +309,13 @@ bool parametricCalibratorEth::close ()
         currVel = NULL;
     }
 
-    if (zeroPos != NULL) {
-        delete[] zeroPos;
-        zeroPos = NULL;
+    if (startupPos != NULL) {
+        delete[] startupPos;
+        startupPos = NULL;
     }
-    if (zeroVel != NULL) {
-        delete[] zeroVel;
-        zeroVel = NULL;
+    if (startupVel != NULL) {
+        delete[] startupVel;
+        startupVel = NULL;
     }
 
     if (homePos != NULL) {
@@ -475,17 +465,17 @@ bool parametricCalibratorEth::calibrate()
 
             limited_pid[(*lit)]=original_pid[(*lit)];
 
-            if (maxPWM[(*lit)]==0)
+            if (startupMaxPWM[(*lit)]==0)
             {
-                yDebug() << deviceName << ": skipping maxPwm=0 of joint " << (*lit);
+                yDebug() << deviceName << ": skipping startupMaxPWM=0 of joint " << (*lit);
                 iPids->setPid((*lit),original_pid[(*lit)]);
             }
             else
             {
-                if (maxPWM[(*lit)]<limited_pid[(*lit)].max_output)
+                if (startupMaxPWM[(*lit)]<limited_pid[(*lit)].max_output)
                 {
-                    limited_pid[(*lit)].max_int=maxPWM[(*lit)];
-                    limited_pid[(*lit)].max_output=maxPWM[(*lit)];
+                    limited_pid[(*lit)].max_int=startupMaxPWM[(*lit)];
+                    limited_pid[(*lit)].max_output=startupMaxPWM[(*lit)];
                     iPids->setPid((*lit),limited_pid[(*lit)]);
                 }
                 else
@@ -647,8 +637,9 @@ bool parametricCalibratorEth::calibrate()
 
 bool parametricCalibratorEth::calibrateJoint(int joint)
 {
-    yDebug() <<  deviceName  << ": Calling calibrateJoint on joint "<< joint << " with params: " << type[joint] << param1[joint] << param2[joint] << param3[joint];
-    return iCalibrate->calibrate2(joint, type[joint], param1[joint], param2[joint], param3[joint]);
+    yDebug() << deviceName << ": Calling calibrateJoint on joint " << joint << " with params: " << calibParams[joint].type << calibParams[joint].param1 << calibParams[joint].param2 << calibParams[joint].param3 << calibParams[joint].param4;
+    bool b = iCalibrate->setCalibrationParameters(joint, calibParams[joint]);
+    return b;
 }
 
 bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
@@ -732,9 +723,9 @@ bool parametricCalibratorEth::goToZero(int j)
 {
     bool ret = true;
     if (abortCalib) return true;
-    yDebug() <<  deviceName  << ": Sending positionMove to joint" << j << " (desired pos: " << zeroPos[j] << "desired speed: " << zeroVel[j] <<" )";
-    ret = iPosition->setRefSpeed(j, zeroVel[j]);
-    ret &= iPosition->positionMove(j, zeroPos[j]);
+    yDebug() <<  deviceName  << ": Sending positionMove to joint" << j << " (desired pos: " << startupPos[j] << "desired speed: " << startupVel[j] <<" )";
+    ret = iPosition->setRefSpeed(j, startupVel[j]);
+    ret &= iPosition->positionMove(j, startupPos[j]);
     return ret;
 }
 
@@ -759,12 +750,12 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
         iControlMode->getControlMode(j, &mode);
         iPids->getOutput(j, &output);
         
-        delta = fabs(angj-zeroPos[j]);
-        yDebug("%s: checkGoneToZeroThreshold: joint: %d curr: %.3f des: %.3f -> delta: %.3f threshold: %.3f output: %.3f mode: %s" ,deviceName.c_str(),j,angj, zeroPos[j],delta, zeroPosThreshold[j], output, yarp::os::Vocab::decode(mode).c_str());
+        delta = fabs(angj-startupPos[j]);
+        yDebug("%s: checkGoneToZeroThreshold: joint: %d curr: %.3f des: %.3f -> delta: %.3f threshold: %.3f output: %.3f mode: %s" ,deviceName.c_str(),j,angj, startupPos[j],delta, startupPosThreshold[j], output, yarp::os::Vocab::decode(mode).c_str());
 
-        if (delta < zeroPosThreshold[j] && done)
+        if (delta < startupPosThreshold[j] && done)
         {
-            yDebug("%s: checkGoneToZeroThreshold: joint: %d completed with delta: %.3f over: %.3f" ,deviceName.c_str(),j,delta, zeroPosThreshold[j]);
+            yDebug("%s: checkGoneToZeroThreshold: joint: %d completed with delta: %.3f over: %.3f" ,deviceName.c_str(),j,delta, startupPosThreshold[j]);
             finished=true;
             break;
         }
