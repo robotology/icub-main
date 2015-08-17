@@ -61,10 +61,19 @@ void feat_Initialise(void *ethman)
     }
 }
 
+void feat_DeInitialise()
+{
+    _interface2ethManager = NULL;
+}
+
 fakestdbool_t feat_addEncoderTimeStamp(FEAT_boardnumber_t boardnum, eOprotID32_t id32)
 {
     IethResource* mc = NULL;
     ethFeatType_t type;
+
+    if (_interface2ethManager == NULL)
+        return fakestdbool_false;
+
     bool ret = _interface2ethManager->getHandle(boardnum, id32, &mc, &type);
 
     if(!ret)
@@ -94,6 +103,10 @@ fakestdbool_t feat_manage_motioncontrol_data(FEAT_boardnumber_t boardnum, eOprot
 {
     IethResource* mc = NULL;
     ethFeatType_t type;
+
+    if (_interface2ethManager == NULL)
+        return fakestdbool_false;
+
     bool ret = _interface2ethManager->getHandle(boardnum, id32, &mc, &type);
 
     if(!ret)
@@ -123,6 +136,10 @@ fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id
     static int error = 0;
     IethResource* skin;
     ethFeatType_t type;
+
+    if (_interface2ethManager == NULL)
+        return fakestdbool_false;
+
     bool ret = _interface2ethManager->getHandle(boardnum, id32, &skin, &type);
 
     if(!ret)
@@ -158,6 +175,10 @@ fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprot
 {
     IethResource* sensor;
     ethFeatType_t type;
+
+    if (_interface2ethManager == NULL)
+        return fakestdbool_false;
+
     bool ret = _interface2ethManager->getHandle(boardnum, id32, &sensor, &type);
 
     if(!ret)
@@ -188,6 +209,10 @@ void* feat_MC_handler_get(FEAT_boardnumber_t boardnum, eOprotID32_t id32)
 {
     IethResource* h = NULL;
     ethFeatType_t type;
+
+    if (_interface2ethManager == NULL)
+        return NULL;
+
     _interface2ethManager->getHandle(boardnum, id32, &h, &type);
     return (void*) h;
 }
@@ -256,6 +281,9 @@ double feat_yarp_time_now(void)
 
 fakestdbool_t feat_signal_network_reply(eOprotBRD_t brd, eOprotID32_t id32, uint32_t signature)
 {
+    if (_interface2ethManager == NULL)
+        return(fakestdbool_false);
+
     ethResources* ethres = _interface2ethManager->GetEthResource(nvBoardNum2FeatIdBoardNum(brd));
 
     if(NULL == ethres)
@@ -268,6 +296,9 @@ fakestdbool_t feat_signal_network_reply(eOprotBRD_t brd, eOprotID32_t id32, uint
 
 fakestdbool_t feat_embObjCANPrintHandler(eOprotBRD_t brd, eOmn_info_basic_t* infobasic)
 {
+    if (_interface2ethManager == NULL)
+        return(fakestdbool_false);
+
     ethResources* ethres = _interface2ethManager->GetEthResource(nvBoardNum2FeatIdBoardNum(brd));
 
     //Call the ethres manager

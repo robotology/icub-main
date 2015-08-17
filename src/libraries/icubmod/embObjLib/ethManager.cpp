@@ -566,6 +566,9 @@ TheEthManager::~TheEthManager()
 {
     yTrace();
 
+    //Deinitialize interface
+    feat_DeInitialise();
+
     // Close UDP socket
     if(isInitted())
     {
