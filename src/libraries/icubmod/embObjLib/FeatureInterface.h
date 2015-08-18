@@ -52,7 +52,7 @@ fakestdbool_t feat_manage_motioncontrol_data(FEAT_boardnumber_t boardnum, eOprot
 
 fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *arrayofcandata);
 
-fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *as_array);
+fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *data);
 
 // requires boardnum in range [1, max] as used by cpp objects
 void * feat_MC_handler_get(FEAT_boardnumber_t boardnum, eOprotID32_t id32);

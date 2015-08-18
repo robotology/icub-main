@@ -55,6 +55,7 @@
 
 static void handle_data(const EOnv* nv, const eOropdescriptor_t* rd);
 
+static void handle_data_inertial(const EOnv* nv, const eOropdescriptor_t* rd);
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
@@ -130,12 +131,12 @@ extern void eoprot_fun_UPDT_as_strain_status_fullscale(const EOnv* nv, const eOr
 
 extern void eoprot_fun_UPDT_as_strain_status_calibratedvalues(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    handle_data( nv, rd);
+    handle_data(nv, rd);
 }
 
 extern void eoprot_fun_UPDT_as_strain_status_uncalibratedvalues(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    handle_data( nv, rd);
+    handle_data(nv, rd);
 }
 
 
@@ -157,6 +158,31 @@ extern void eoprot_fun_UPDT_as_mais_config_mode(const EOnv* nv, const eOropdescr
 }
 
 
+
+// - inertial
+
+extern void eoprot_fun_UPDT_as_inertial_config(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+}
+
+extern void eoprot_fun_UPDT_as_inertial_status(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    handle_data_inertial(nv, rd);
+}
+
+//extern void eoprot_fun_UPDT_as_inertial_status_accelerometer(const EOnv* nv, const eOropdescriptor_t* rd)
+//{
+//    handle_data_inertial_acc(nv, rd);
+//}
+
+//extern void eoprot_fun_UPDT_as_inertial_status_gyroscope(const EOnv* nv, const eOropdescriptor_t* rd)
+//{
+//    handle_data_inertial_gyr(nv, rd);
+//}
+
+
+
+
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of static functions 
 // --------------------------------------------------------------------------------------------------------------------
@@ -170,6 +196,13 @@ static void handle_data(const EOnv* nv, const eOropdescriptor_t* rd)
         feat_manage_analogsensors_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)arrayof);
     }
 }
+
+static void handle_data_inertial(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    eOas_inertial_status_t *inertialstatus  = (eOas_inertial_status_t*)rd->data;
+    feat_manage_analogsensors_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)inertialstatus);
+}
+
 
 
 // --------------------------------------------------------------------------------------------------------------------
