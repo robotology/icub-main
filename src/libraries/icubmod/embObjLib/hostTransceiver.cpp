@@ -1027,7 +1027,38 @@ void hostTransceiver::eoprot_override_as(void)
             EO_INIT(.tag)           eoprot_tag_as_mais_status_the15values,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_as_mais_status_the15values
-        }           
+        },
+        // inertial
+        {   // eoprot_tag_as_inertial_config
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_inertial,
+            EO_INIT(.tag)           eoprot_tag_as_inertial_config,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_inertial_config
+        },
+        {   // eoprot_tag_as_inertial_status
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_inertial,
+            EO_INIT(.tag)           eoprot_tag_as_inertial_status,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_inertial_status
+        }
+#if 0   // marco.accame: i keep the code just for the debug phase.       
+        ,{   // eoprot_tag_as_inertial_status_accelerometer
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_inertial,
+            EO_INIT(.tag)           eoprot_tag_as_inertial_status_accelerometer,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_inertial_status_accelerometer
+        },
+        {   // eoprot_tag_as_inertial_status_gyroscope
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_inertial,
+            EO_INIT(.tag)           eoprot_tag_as_inertial_status_gyroscope,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_inertial_status_gyroscope
+        }
+#endif        
     };
 
 
@@ -1045,7 +1076,7 @@ void hostTransceiver::eoprot_override_as(void)
 
 
     // ------------------------------------------------------------------------------------------------------------------------------------
-    // -- override of the callbacks of variables of mc. common to every board. we use the id, even if the eoprot_config_variable_callback()
+    // -- override of the callbacks of variables of as. common to every board. we use the id, even if the eoprot_config_variable_callback()
     //    operates on any index.
     
     uint32_t number = sizeof(as_callbacks_descriptors_vars)/sizeof(as_callbacks_descriptors_vars[0]);

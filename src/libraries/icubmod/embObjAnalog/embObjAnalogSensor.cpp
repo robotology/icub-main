@@ -889,7 +889,7 @@ bool embObjAnalogSensor::update(eOprotID32_t id32, double timestamp, void* rxdat
 {
     bool ret;
 
-//#warning --> marco.accame: retrieve the entity from id32 and see is it is mais or strain.
+//#warning --> marco.accame: retrieve the entity from id32 and see is it is mais or strain or inertial.
     switch(_as_type)
     {
         case AS_MAIS:
@@ -900,6 +900,11 @@ bool embObjAnalogSensor::update(eOprotID32_t id32, double timestamp, void* rxdat
         case AS_STRAIN:
         {
             ret = fillDatOfStrain(rxdata);
+        } break;
+        
+        case AS_INERTIAL:
+        {
+            ret = fillDatOfInertial(rxdata);
         } break;
         
         default:
@@ -1010,6 +1015,32 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
     return true;
 }
 
+
+bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
+{
+    eOas_inertial_status_t *status = (eOas_inertial_status_t*) inertialdata;
+   
+
+    // lock data
+    mutex.wait();
+
+    double *_buffer = this->data->getBuffer();
+
+    if(NULL == _buffer)
+    {
+        // unlock data
+        mutex.post();
+        return false;
+    }
+
+    #warning marco.accame.TODO: do code in here to manage inertial data
+    // now use status->accelerometer and/or status->gyroscope and put it inside the _buffer
+     
+    // unlock data
+    mutex.post();
+
+    return true;
+}
 
 bool embObjAnalogSensor::close()
 {

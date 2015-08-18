@@ -154,7 +154,7 @@ fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id
 }
 
 
-fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *as_array)
+fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *data)
 {
     IethResource* sensor;
     ethFeatType_t type;
@@ -166,7 +166,7 @@ fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprot
         return fakestdbool_false;
     }
 
-    if(! ((type == ethFeatType_AnalogMais) || (type == ethFeatType_AnalogStrain)) )
+    if(! ((type == ethFeatType_AnalogMais) || (type == ethFeatType_AnalogStrain) || (type == ethFeatType_AnalogInertial)) )
     {
         yError("EMS analog sensor callback - the ethmanager does not know this object YET or a wrong pointer has been returned because it is not an embObjAnalogSensor");
         return fakestdbool_false;
@@ -176,8 +176,9 @@ fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprot
         return fakestdbool_false;
     }
     else
-    {   // the object exists and is completed: it can be used
-        sensor->update(id32, yarp::os::Time::now(), as_array);
+    {   // the object exists and is completed: it can be used.
+        // data is a EOarray* in case of mais or strain but it is a eOas_inertial_status_t* in case of inertial sensor
+        sensor->update(id32, yarp::os::Time::now(), data);
     }
 
     return fakestdbool_true;

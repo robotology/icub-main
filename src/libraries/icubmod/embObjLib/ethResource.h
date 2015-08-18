@@ -79,7 +79,8 @@ typedef enum
     ethFeatType_AnalogStrain    = 0x02,
     ethFeatType_MotionControl   = 0x03,
     ethFeatType_Skin            = 0x04,
-    ethFeatType_AnalogVirtual   = 0x05
+    ethFeatType_AnalogVirtual   = 0x05,
+    ethFeatType_AnalogInertial  = 0x06
 } ethFeatType_t;
 
 

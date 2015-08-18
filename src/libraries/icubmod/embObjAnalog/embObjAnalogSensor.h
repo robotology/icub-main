@@ -99,6 +99,7 @@ public:
         AS_NONE = 0,
         AS_MAIS = 1,
         AS_STRAIN = 2,
+        AS_INERTIAL = 3
     };
 
 
@@ -142,6 +143,7 @@ private:
     bool sendConfig2Mais(void);
     bool fillDatOfStrain(void *as_array_raw);
     bool fillDatOfMais(void *as_array_raw);
+    bool fillDatOfInertial(void *inertialdata);
     bool isEpManagedByBoard();
 
 public:
