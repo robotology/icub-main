@@ -1396,6 +1396,7 @@ const eOnvset_BRDcfg_t * hostTransceiver::getNVset_BRDcfg(yarp::os::Searchable &
             protcfg.en_as_entity_strain_numberof        = 0;
             protcfg.en_as_entity_mais_numberof          = 0;
             protcfg.en_as_entity_extorque_numberof      = 0;
+            protcfg.en_as_entity_inertial_numberof      = 0;
             yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some AS entities ... AS is disabled.";
         }
         else if((false == cfgprotocol.check("entityASstrainNumberOf")) || (false == cfgprotocol.check("entityASmaisNumberOf")) ||
@@ -1405,6 +1406,7 @@ const eOnvset_BRDcfg_t * hostTransceiver::getNVset_BRDcfg(yarp::os::Searchable &
             protcfg.en_as_entity_strain_numberof        = 0;
             protcfg.en_as_entity_mais_numberof          = 0;
             protcfg.en_as_entity_extorque_numberof      = 0;
+            protcfg.en_as_entity_inertial_numberof      = 0;
             yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some AS entities ... AS is disabled";
         }
         else
@@ -1416,20 +1418,29 @@ const eOnvset_BRDcfg_t * hostTransceiver::getNVset_BRDcfg(yarp::os::Searchable &
                 protcfg.en_as_entity_strain_numberof        = cfgprotocol.find("entityASstrainNumberOf").asInt();
                 protcfg.en_as_entity_mais_numberof          = cfgprotocol.find("entityASmaisNumberOf").asInt();
                 protcfg.en_as_entity_extorque_numberof      = cfgprotocol.find("entityASextorqueNumberOf").asInt();
+                if(true == cfgprotocol.check("entityASinertialNumberOf"))
+                {
+                    protcfg.en_as_entity_inertial_numberof      = cfgprotocol.find("entityASinertialNumberOf").asInt();                    
+                }
+                else
+                {
+                    protcfg.en_as_entity_inertial_numberof      = 0;
+                }
             }
             else
             {
                 protcfg.en_as_entity_strain_numberof        = 0;
                 protcfg.en_as_entity_mais_numberof          = 0;
                 protcfg.en_as_entity_extorque_numberof      = 0;
+                protcfg.en_as_entity_inertial_numberof      = 0;
             }
             // sanity check
             if((protcfg.en_as_entity_strain_numberof > 1) || (protcfg.en_as_entity_mais_numberof > 1) ||
-               (protcfg.en_as_entity_extorque_numberof > 16))
+               (protcfg.en_as_entity_extorque_numberof > 16) || (protcfg.en_as_entity_inertial_numberof > 8))
             {
                 yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of AS entities"  <<
-                          " (strain, mais, extorque) = (" << protcfg.en_as_entity_strain_numberof << ", " << protcfg.en_as_entity_mais_numberof <<
-                          ", " << protcfg.en_as_entity_extorque_numberof << ")";
+                          " (strain, mais, extorque, inertial) = (" << protcfg.en_as_entity_strain_numberof << ", " << protcfg.en_as_entity_mais_numberof <<
+                          ", " << protcfg.en_as_entity_extorque_numberof << ", " << protcfg.en_as_entity_inertial_numberof << ")";
             }
         }
 
