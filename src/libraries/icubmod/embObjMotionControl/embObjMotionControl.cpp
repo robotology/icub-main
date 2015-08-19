@@ -2314,6 +2314,13 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
         calib.params.type4.maxencoder = (int32_t) S_32(p3);
         break;
 
+        // muove
+    case eomc_calibration_type5_hard_stops_mc4plus:
+        calib.params.type5.pwmlimit   = (int32_t) S_32(p1);
+        calib.params.type5.velocity   = (eOmeas_velocity_t)  S_32(p2);
+        calib.params.type5.final_pos  = (int32_t) S_32(p3);
+        break;
+
     default:
         yError () << "Calibration type unknown!! (embObjMotionControl)\n";
         return false;
