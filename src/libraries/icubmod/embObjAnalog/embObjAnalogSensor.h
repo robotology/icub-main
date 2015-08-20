@@ -99,7 +99,7 @@ public:
         AS_NONE = 0,
         AS_MAIS = 1,
         AS_STRAIN = 2,
-        AS_INERTIAL = 3
+        AS_INERTIAL_MTB = 3
     };
 
 
@@ -140,6 +140,7 @@ private:
     bool fromConfig(yarp::os::Searchable &config);
     bool getFullscaleValues();
     bool sendConfig2Strain(void);
+    bool sendConfig2SkinInertial(yarp::os::Searchable &config);
     bool sendConfig2Mais(void);
     bool fillDatOfStrain(void *as_array_raw);
     bool fillDatOfMais(void *as_array_raw);
