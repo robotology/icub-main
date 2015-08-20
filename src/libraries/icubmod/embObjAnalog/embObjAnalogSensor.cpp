@@ -196,9 +196,9 @@ embObjAnalogSensor::embObjAnalogSensor(): data(0)
 
 embObjAnalogSensor::~embObjAnalogSensor()
 {
-    if (!data)
+    if (data != NULL)
         delete data;
-    if (!scaleFactor)
+    if (scaleFactor != NULL)
         delete scaleFactor;
 }
 
