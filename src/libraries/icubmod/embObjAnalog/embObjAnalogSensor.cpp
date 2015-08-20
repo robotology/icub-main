@@ -119,34 +119,62 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
         _channels = xtmp.get(1).asInt();
     }
 
-
-    if (!extractGroup(config, xtmp, "Format","data format of the Analog Sensor", 1))
+    // Type is a new parameter describing the sensor Type using human readable string
+    if(config.check("Type") )
     {
-        yWarning("embObjAnalogSensor: Using default value = 0 (disabled)");
-        _channels = 0;
-        _period   = 0;
-        _as_type=AS_NONE;
+        yDebug() << "Using new syntax";
+        yarp::os::ConstString type = config.find("Type").asString();
+        if(type == "inertial")
+        {
+            _as_type=AS_INERTIAL_MTB;
+        }
+        else if(type == "strain")
+        {
+            _as_type=AS_STRAIN;
+        }
+        else if(type == "mais")
+        {
+            _as_type=AS_MAIS;
+        }
+        else
+        {
+            _as_type=AS_NONE;
+            yError() << "embObjAnalogSensor: unknown device " << type << ". Supported devices are 'mais', 'strain' and 'inertial'";
+            return false;
+        }
     }
     else
     {
-        format = xtmp.get(1).asInt();
-    }
+        // Infer the sensor type by combining other parameters
+        yDebug() << "Using old syntax";
 
+        if (!extractGroup(config, xtmp, "Format","data format of the Analog Sensor", 1))
+        {
+            yWarning("embObjAnalogSensor: Using default value = 0 (disabled)");
+            _channels = 0;
+            _period   = 0;
+            _as_type=AS_NONE;
+        }
+        else
+        {
+            format = xtmp.get(1).asInt();
+        }
 
-
-    if((_channels==NUMCHANNEL_STRAIN) && (format==FORMATDATA_STRAIN))
-    {
-        _as_type=AS_STRAIN;
-    }
-    else if((_channels==NUMCHANNEL_MAIS) && (format==FORMATDATA_MAIS))
-    {
-        _as_type=AS_MAIS;
-    }
-    else
-    {
-        _as_type=AS_NONE;
-        yError() << "embObjAnalogSensor incorrect config!channels="<< _channels <<" format="<< format;
-        return false;
+        if((_channels==NUMCHANNEL_STRAIN) && (format==FORMATDATA_STRAIN))
+        {
+            _as_type=AS_STRAIN;
+        }
+        else if((_channels==NUMCHANNEL_MAIS) && (format==FORMATDATA_MAIS))
+        {
+            _as_type=AS_MAIS;
+        }
+        else
+        {
+            _as_type=AS_NONE;
+            yError() << "embObjAnalogSensor incorrect config!channels="<< _channels <<" format="<< format;
+            cleanup();
+            return false;
+        }
     }
 
     if(AS_STRAIN == _as_type)
@@ -293,6 +321,8 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         _fId.type = ethFeatType_AnalogStrain;
     else if(AS_MAIS == _as_type)
         _fId.type = ethFeatType_AnalogMais;
+    else if(AS_INERTIAL_MTB == _as_type)
+        _fId.type = ethFeatType_AnalogInertial;
 
     /* Once I'm ok, ask for resources, through the _fId struct I'll give the ip addr, port and
     *  and boardNum to the ethManager in order to create the ethResource requested.
@@ -381,6 +411,11 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
             ret = sendConfig2Strain();
         } break;
         
+        case AS_INERTIAL_MTB:
+        {
+            ret = sendConfig2SkinInertial(config);
+        } break;
+
         default:
         {
             //i should not be here. if AS_NONE then i should get error in fromConfig function
@@ -559,6 +594,87 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 #endif
 }
 
+bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& config)
+{
+    eOprotID32_t id32 = eo_prot_ID32dummy;
+
+    // configuration specific for skin-inertial device
+
+    yarp::os::ConstString tmp;
+    if(!config.check("Location"))
+    {
+        yError() << "embObjAnalogSensor: Missing 'Location' parameter. Supported values are 'hand' or 'foot'";
+        return false;
+    }
+
+    if(!config.check("Sensors"))
+    {
+        yError() << "embObjAnalogSensor: Missing 'Sensors' parameter. Supported values are 'acc' or 'extAccAndGyro'";
+        return false;
+    }
+
+    tmp = config.find("Location").asString();
+
+    eOas_inertial_config_t inertialConfig;
+    inertialConfig.datarate = _period;
+
+    if(tmp == "hand")
+        inertialConfig.id       = eoas_inertial_id_hand_palm;
+    else if(tmp == "foot")
+        inertialConfig.id       = eoas_inertial_id_foot_palm;
+    else
+    {
+        yError() << "embObjAnalogSensor: 'Location'' parameter not valid.  Supported values are 'hand' or 'foot'";
+        return false;
+    }
+
+    eOmc_inertial_commands_t startCommand;
+    tmp = config.find("Sensors").asString();
+    if(tmp == "acc")
+        startCommand.enable       = eoas_inertial_enable_accelerometer;
+    else if(tmp == "extAccAndGyro")
+        startCommand.enable       = eoas_inertial_enable_accelgyro;
+    else if(tmp == "extGyro")
+        startCommand.enable       = eoas_inertial_enable_gyroscope;
+    else
+    {
+        yError() << "embObjAnalogSensor: 'Sensors'' parameter not valid.  Supported values are 'acc', 'extGyro' or 'extAccAndGyro'";
+        return false;
+    }
+
+
+    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config);
+    if(false == res->setRemoteValueUntilVerified(id32, &inertialConfig, sizeof(inertialConfig), 10, 0.010, 0.050, 2))
+    {
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais datarate in BOARD" << res->get_protBRDnumber()+1;
+        return false;
+    }
+    else
+    {
+        if(verbosewhenok)
+        {
+            yDebug() << "embObjAnalogSensor::sendConfig2SkinInertial() correctly configured id and datarate" << _period << "in BOARD" << res->get_protBRDnumber()+1;
+        }
+    }
+
+
+    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_cmmnds_enable);
+    if(false == res->setRemoteValueUntilVerified(id32, &startCommand, sizeof(startCommand), 10, 0.010, 0.050, 2))
+    {
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais datarate in BOARD" << res->get_protBRDnumber()+1;
+        return false;
+    }
+    else
+    {
+        if(verbosewhenok)
+        {
+            yDebug() << "embObjAnalogSensor::sendConfig2SkinInertial() correctly configured enable flag at value" << startCommand.enable << "in BOARD" << res->get_protBRDnumber()+1;
+        }
+    }
+    return true;
+}
+
+
 //#warning --> marco.accame: review function embObjAnalogSensor::getFullscaleValues() as in comment below
 // it is better to change the behaviour of the function so that: 1. we send the request, 2. we wait for the sig<> and unblock a mutex
 // current implementation relies on a wait of 1 sec and check of non-zero length of an array: smart but not the rigth way to do it.
@@ -724,7 +840,6 @@ bool embObjAnalogSensor::getFullscaleValues()
     return true;  
 }
 
-
 bool embObjAnalogSensor::init()
 {
     yTrace();
@@ -752,9 +867,16 @@ bool embObjAnalogSensor::init()
                 protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_uncalibratedvalues);
         } break;
         
+        case AS_INERTIAL_MTB:
+        {
+            protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_status);
+        } break;
+
         default:
         {
+            yError() << "embObjAnalogSensor: unknown device, cannot set regular ROPs";
             protoid = eo_prot_ID32dummy;
+            return false;
         }
     }
 
@@ -902,7 +1024,7 @@ bool embObjAnalogSensor::update(eOprotID32_t id32, double timestamp, void* rxdat
             ret = fillDatOfStrain(rxdata);
         } break;
         
-        case AS_INERTIAL:
+        case AS_INERTIAL_MTB:
         {
             ret = fillDatOfInertial(rxdata);
         } break;
@@ -973,9 +1095,6 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
 }
 
 
-
-
-
 bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
 {
     // called by  embObjAnalogSensor::fillData() which is called by handle_AS_data() which is called by handle_data() which is called by:
@@ -1020,8 +1139,6 @@ bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
 {
     eOas_inertial_status_t *status = (eOas_inertial_status_t*) inertialdata;
    
-
-    // lock data
     mutex.wait();
 
     double *_buffer = this->data->getBuffer();
@@ -1033,10 +1150,17 @@ bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
         return false;
     }
 
-    #warning marco.accame.TODO: do code in here to manage inertial data
-    // now use status->accelerometer and/or status->gyroscope and put it inside the _buffer
-     
-    // unlock data
+//  in case of multiple devices, expand this
+//     for(int k=0; k<_channels; k++)
+    {
+        _buffer[0] = (double) status->accelerometer.x;
+        _buffer[1] = (double) status->accelerometer.y;
+        _buffer[2] = (double) status->accelerometer.z;
+
+        _buffer[3] = (double) status->gyroscope.x;
+        _buffer[4] = (double) status->gyroscope.y;
+        _buffer[5] = (double) status->gyroscope.z;
+    }
     mutex.post();
 
     return true;
