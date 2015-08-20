@@ -39,7 +39,7 @@ such as positions, colors, shapes, grasping points and so on
 about objects that are of interest for your specific 
 application, i.e. normally real objects that the robot can play 
 with but ideally any kind of objects you can think of. 
-The user can set, get, add, remove items and even make queries 
+The user can set, get, add, remove items and make queries 
 to the database. \n 
 Importantly, the module is capable of running in real-time.
 

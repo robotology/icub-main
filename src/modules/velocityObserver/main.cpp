@@ -38,7 +38,7 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 This module computes the first derivative (velocity) and the 
 second derivative (acceleration) of vector acquired through an 
 input YARP port and provides them to output YARP ports. The 
-estimation is perfomed relying on a least-squares algorithm 
+estimation is performed relying on a least-squares algorithm 
 (<a 
 href="http://ieeexplore.ieee.org/iel5/87/19047/00880606.pdf">PDF</a>) 
 which finds the best linear or quadratic regressor upon a 
