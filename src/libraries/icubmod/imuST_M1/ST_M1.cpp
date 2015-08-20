@@ -401,10 +401,10 @@ void imuST_M1::run()
     int16_t tmp = *(int16_t*) &(buffer[3]); // << 8 + buffer[4];
 //    int16_t tmp2 = *tmp;
    tmp = ntohs(tmp);
-   printf("progressiv num = %d\n", tmp);
+//    printf("progressiv num = %d\n", tmp);
    if( tmp != progressiv_num+1 )
    {
-       yError("Progressive number check doen't match\n");
+       yError("Progressive number check doesn't match\n");
        progressiv_num = tmp;
        // cleanup(?)
        return;
