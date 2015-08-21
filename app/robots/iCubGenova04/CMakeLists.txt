@@ -1,6 +1,6 @@
 set(appname iCubGenova04)
 
-set(scripts icub_testupper.xml icub_all.xml icub_ikart.xml icub_testwhole.xml robotInterface.ini general.xml)
+set(scripts icub_testupper.xml icub_all.xml icub_ikart.xml icub_skinInertialMTB.xml icub_testwhole.xml robotInterface.ini general.xml)
 
 yarp_install(FILES ${scripts} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})
 yarp_install(FILES ${dragonFly} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})
