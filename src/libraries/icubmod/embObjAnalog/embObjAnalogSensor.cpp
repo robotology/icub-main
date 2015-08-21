@@ -660,18 +660,12 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
 
 
     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_cmmnds_enable);
-    if(false == res->setRemoteValueUntilVerified(id32, &startCommand, sizeof(startCommand), 10, 0.010, 0.050, 2))
+    if(!res->addSetMessage(id32, (uint8_t*) &startCommand))
     {
-        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais datarate in BOARD" << res->get_protBRDnumber()+1;
+        yError() << "ethResources::goToRun() fails to add a command go2state running to transceiver";
         return false;
     }
-    else
-    {
-        if(verbosewhenok)
-        {
-            yDebug() << "embObjAnalogSensor::sendConfig2SkinInertial() correctly configured enable flag at value" << startCommand.enable << "in BOARD" << res->get_protBRDnumber()+1;
-        }
-    }
+
     return true;
 }
 
