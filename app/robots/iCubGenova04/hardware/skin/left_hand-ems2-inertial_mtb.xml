@@ -11,7 +11,7 @@
             <param name="Type">         "inertial"  </param>
             <param name="Channels">             6   </param>
             <param name="Sensors"> "extAccAndGyro"  </param>
-            <param name="Location">    "left_hand"  </param>
+            <param name="Location">         hand  </param>
             <param name="Period">		       10	</param>
          </group>
     </device>
