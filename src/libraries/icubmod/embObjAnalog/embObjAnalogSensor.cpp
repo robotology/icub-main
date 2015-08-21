@@ -594,12 +594,13 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 #endif
 }
 
-bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& config)
+bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
 {
     eOprotID32_t id32 = eo_prot_ID32dummy;
 
     // configuration specific for skin-inertial device
 
+    Bottle config = globalConfig.findGroup("GENERAL");
     yarp::os::ConstString tmp;
     if(!config.check("Location"))
     {
