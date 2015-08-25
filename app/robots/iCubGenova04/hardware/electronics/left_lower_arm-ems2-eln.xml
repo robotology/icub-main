@@ -20,26 +20,26 @@
         <param name="maxSizeROPframeReplies">  	    256     </param>
         <param name="maxSizeROPframeOccasionals">   128	    </param>
         <param name="maxSizeROP">  		            256     </param>
-        <param name="maxNumberRegularROPs">  		32      </param>
-        <param name="TXrate">  		                1       </param>
+        <param name="maxNumberRegularROPs">  		32      </param>           
+        <param name="TXrate">                       1       </param>
     </group>
     
     <group name="PROTOCOL">
-    <param name="endpointManagementIsSupported">	        1   </param>
-        <param name="entityMNcommunicationNumberOf">            1	</param>
-        <param name="entityMNapplicationNumberOf">              1	</param>
-        <param name="entityMNinformationNumberOf">              1	</param>
+        <param name="endpointManagementIsSupported">	        1   </param>
+            <param name="entityMNcommunicationNumberOf">            1	</param>
+            <param name="entityMNapplicationNumberOf">              1	</param>
+            <param name="entityMNinformationNumberOf">              1	</param>
             
-        <param name="endpointMotionControlIsSupported">         0   </param> 
-            <param name="entityMCjointNumberOf">                    0	</param> 
-            <param name="entityMCmotorNumberOf">                    0	</param>
-            <param name="entityMCcontrollerNumberOf">               0	</param> 
+        <param name="endpointMotionControlIsSupported">         1   </param> 
+            <param name="entityMCjointNumberOf">                    12	</param> 
+            <param name="entityMCmotorNumberOf">                    12	</param>
+            <param name="entityMCcontrollerNumberOf">               1	</param> 
             
         <param name="endpointAnalogSensorsIsSupported">         1   </param> 
             <param name="entityASstrainNumberOf">                   0	</param> 
-            <param name="entityASmaisNumberOf">                     0	</param>
-            <param name="entityASextorqueNumberOf">                 0	</param>   
-            <param name="entityASinertialNumberOf">                 1	</param>   
+            <param name="entityASmaisNumberOf">                     1	</param>
+            <param name="entityASextorqueNumberOf">                 1	</param>   
+            <param name="entityASinertialNumberOf">                 1	</param>
             
         <param name="endpointSkinIsSupported">                  1   </param> 
             <param name="entitySKskinNumberOf">                     1	</param>        
