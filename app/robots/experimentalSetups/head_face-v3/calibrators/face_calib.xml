@@ -34,28 +34,32 @@
             <param name="deviceName"> FaceV3_Calibrator </param>  <!-- this name is used for high-level debug -->
         </group>
 
+        <group name="HOME">
+            <param name="positionHome">          15         0             -6            0           -6           11      </param>
+            <param name="velocityHome">          10         10            10            10          10            10        </param>
+        </group>
+        
         <!-- README: the calibration to be used for joints [2, 5] is not type4, but a new type5. we temporarily use 4 in here because it has three params as type 5  -->
         <!-- joint logical number               0           1           2           3           4           5           -->
         <!-- joint name                         jaw         eyelids     lip-left    lip-high    lip-right   lip-bottom  -->        
         <group name="CALIBRATION">
-            <!-- memo: parameters of calib type 4 (5 actually): c1 = used pwm (int32_t); c2 = velocity of come back expressed in icubdeg/sec (int32_t); c3 = position in icubdeg of the reached hw limit (int32_t). -->
-            <!-- memo: parameters of calib type 4: c1 = NOT USED pos; c2 = NOT USED vel; c3 = offset in icubdeg with which to correct the encoder reading (int32_t) -->
-            <param name="calibrationType">      3           3           4           4           4           4           </param>
+         <!-- memo: parameters of calib type 4 (5 actually): c1 = used pwm (int32_t); c2 = velocity of come back expressed in icubdeg/sec (int32_t); c3 = position in icubdeg of the reached hw limit (int32_t). -->
+         <!-- memo: parameters of calib type 4: c1 = NOT USED pos; c2 = NOT USED vel; c3 = offset in icubdeg with which to correct the encoder reading (int32_t) -->
+            <param name="calibrationType">       3          3              4            4            4            4         </param>
             <param name="calibration1">         666         666         500.0       500.0       500.0       900.0       </param> <!-- calib3: none; calib4: pwm  -->
             <param name="calibration2">         999         999         3640.888    3640.888    3640.888    3640.888    </param> <!-- calib3: none; calib4: vel (3640.888 = 20 deg/sec) -->
             <param name="calibration3">         0           19100       0.0         5461.32     0.0         0.0         </param> <!-- calib3: offset (j0->, j1->) ; calib4: pos (j2->133deg, j3->30deg, j4->133deg, j5->51deg) -->
-            <param name="positionZero">         15          0           0.0         0.0         0.0         0.0         </param> <!-- target position in deg after high level calib is terminated --> 
-            <param name="velocityZero">         10          10          20.0        20.0        20.0        20.0        </param> <!-- and its velocity in deg/sec -->
-            <param name="maxPwm">               0           0           0           0           0           0           </param> <!-- max pwm used in calib (it is a pid param ???)-->
-            <param name="posZeroThreshold">     90          90          2           2           2           2           </param> <!-- tolerance of position in deg relative to positionZero param -->
-        </group>
-    
-        <group name="HOME">
-            <param name="positionHome">         15         0            -6          0           -6          11          </param>
-            <param name="velocityHome">         10         10           10          10          10          10          </param>
+
+            <param name="calibrationZero">          180.0      180.0       35.0          -28.0       35.0         0.0       </param>
+            <param name="calibrationDelta">         0.0        0.0         0.0           0.0         0.0          0.0        </param>
+
+            <param name="startupPosition">          15         0            0.0          0.0         0.0          0.0      </param> <!-- target position in deg after high level calib is terminated --> 
+            <param name="startupVelocity">          10         10           20.0         20.0        20.0         20.0     </param> <!-- and its velocity in deg/sec -->
+            <param name="startupMaxPwm">            0          0            0            0           0            0        </param> <!-- max pwm used in calib (it is a pid param)-->
+            <param name="startupPosThreshold">      90         90           2            2           2            2        </param> <!-- tolerance of position in deg relative to positionZero param -->
         </group>
 
-        
+
         <param name="CALIB_ORDER"> (1 2 3 4 5) </param>       <!-- we can calibrate all joints in parallel (for now not the jaw yet)-->
 
         <action phase="startup" level="10" type="calibrate">
