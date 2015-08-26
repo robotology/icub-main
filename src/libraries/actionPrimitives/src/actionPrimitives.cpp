@@ -1750,7 +1750,7 @@ bool ActionPrimitives::areFingersMoving(bool &f) const
 {
     if (configured)
     {
-        f=latchHandMoveDone;
+        f=!latchHandMoveDone;
         return true;
     }
     else
