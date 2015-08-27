@@ -22,6 +22,7 @@
 #include <yarp/math/SVD.h>
 #include <iCub/ctrl/kalman.h>
 
+using namespace std;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
