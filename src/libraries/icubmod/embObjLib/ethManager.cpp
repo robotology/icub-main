@@ -235,10 +235,10 @@ int TheEthManager::releaseResource(ethFeature_t &resource)
         it++;
     }
 
-    if(     (EMS_list.size() == 0 ) && (boards_map.size() != 0 )
-        ||  (EMS_list.size() != 0 ) && (boards_map.size() == 0 ) )
+    if(     (EMS_list.size() == 0 ) && (boards_map_ext.size() != 0 )
+        ||  (EMS_list.size() != 0 ) && (boards_map_ext.size() == 0 ) )
     {
-        yError() << "Something strange happened... EMS_list.size is" << EMS_list.size() << "while boards_map.size is "<< boards_map.size();
+        yError() << "Something strange happened... EMS_list.size is" << EMS_list.size() << "while boards_map_ext.size is "<< boards_map_ext.size();
     }
 
     if(!ret)
@@ -246,7 +246,7 @@ int TheEthManager::releaseResource(ethFeature_t &resource)
         yError() << "EthManager: Trying to release a non existing resource for boardId " << resource.boardNumber << "maybe already deleted?";
 
     // ret = -1 means that the singleton is not needed anymore
-    if( (EMS_list.size() == 0 ) || (boards_map.size() == 0 ) )
+    if( (EMS_list.size() == 0 ) || (boards_map_ext.size() == 0 ) )
         ret = -1;
 
     unlock();
@@ -260,20 +260,26 @@ void TheEthManager::addLUTelement(ethFeature_t &id)
     yTrace() << id.boardNumber;
     //in maps use board num starts from 0 so
     FEAT_boardnumber_t brdnum = id.boardNumber;
+    uint8_t entity = (eoprot_endpoint_motioncontrol == id.endpoint) ? (eoprot_entity_mc_joint) : id.entity;
+    //uint8_t entity = id.entity;
+    uint32_t item2 = (id.endpoint<<24)|(entity<<16);
+
     /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
     /* Defined the var addLUT_result to have the true/false result of the insert operation...It helped catching a bug.
      * It fails if the element is already present. This can happen if someone tries to read an element with
      * the '[]' operator before the insert, because the std::map will create it automatically (hopefully initted
      * with zeros.
      */
-     bool addLUT_result =  boards_map.insert(std::pair< std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, ethFeature_t>(std::make_pair(brdnum, id.endpoint), id)).second;
+
+
+    bool addLUT_result =  boards_map_ext.insert(std::pair< std::pair<FEAT_boardnumber_t, uint32_t>, ethFeature_t>(std::make_pair(brdnum, item2), id)).second;
 
     // Check result of insertion
-    addLUT_result ? yTrace() << "ok add lut element for board " << id.boardNumber << " and ep " << id.endpoint :
-                    yError() << "NON ok add lut element for board " << id.boardNumber << " and ep " << id.endpoint;
+    addLUT_result ? (yTrace() << "ok add lut element for board " << id.boardNumber << " and ep " << id.endpoint << " and entity " << id.entity) :
+                    (yError() << "NON ok add lut element for board " << id.boardNumber << " and ep " << id.endpoint << " and entity " << id.entity);
 
 
-    std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (brdnum, id.endpoint);
+    std::pair<FEAT_boardnumber_t, uint32_t > key (brdnum, item2);
     try
     {
         // USE .at AND NOT the '[ ]' alternative!!! It will create a bug!!!
@@ -282,7 +288,7 @@ void TheEthManager::addLUTelement(ethFeature_t &id)
             * Furthermore the insert method used to correctly initialze the element will fail because a (wrong)
             * element is already present preventing the map to be corrected.
             */
-        IethResource * ret = boards_map.at(key).interface;
+        IethResource * ret = boards_map_ext.at(key).interface;
     }
     catch (const std::out_of_range& errMsg)
     {
@@ -295,7 +301,10 @@ bool TheEthManager::removeLUTelement(ethFeature_t &element)
     yTrace() << element.boardNumber;
     /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
     bool ret = false;
-    int n = (int) boards_map.erase(std::make_pair(element.boardNumber, element.endpoint));
+    uint8_t entity = (eoprot_endpoint_motioncontrol == element.endpoint) ? (eoprot_entity_mc_joint) : element.entity;
+    //uint8_t entity = element.entity;
+    uint32_t item2 = (element.endpoint<<24)|(entity<<16);
+    int n = (int) boards_map_ext.erase(std::make_pair(element.boardNumber, item2));
 
     switch(n)
     {
@@ -326,11 +335,19 @@ bool TheEthManager::removeLUTelement(ethFeature_t &element)
 bool TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32, IethResource **interfacePointer, ethFeatType_t *type)
 {
     eOprotEndpoint_t ep = eoprot_ID2endpoint(id32);
+    eOprotEntity_t entity = eoprot_ID2entity(id32);
+
+    if(eoprot_endpoint_motioncontrol == ep)
+    {   // motion control is registered in board_maps-ext as (brd,ep-joint), thus if the id32 is about a motor entity we must be able to cope ...
+        entity = eoprot_entity_mc_joint;
+    }
+
 
 //     lock(); // marco.accame: found already commented. see why
     bool ret = false;
     static int _error = 0;
-    std::pair<FEAT_boardnumber_t, eOprotEndpoint_t > key (boardnum, ep);
+    uint32_t item2 = (ep<<24)|(entity<<16);
+    std::pair<FEAT_boardnumber_t, uint32_t > key (boardnum, item2);
 
     try
     {
@@ -340,8 +357,8 @@ bool TheEthManager::getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32, Ie
          * Furthermore the insert method used to correctly initialze the element will fail because a (wrong)
          * element is already present preventing the map to be corrected.
          */
-        *interfacePointer = boards_map.at(key).interface;
-        *type = boards_map.at(key).type;
+        *interfacePointer = boards_map_ext.at(key).interface;
+        *type = boards_map_ext.at(key).type;
         ret = true;
     }
     catch (const std::out_of_range& errMsg)
@@ -593,10 +610,10 @@ TheEthManager::~TheEthManager()
         }
     }
 
-    if(boards_map.size() != 0)
+    if(boards_map_ext.size() != 0)
     {
-        std::map<std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, ethFeature_t>::iterator mIt;
-        for(mIt = boards_map.begin(); mIt!=boards_map.end(); mIt++)
+        std::map<std::pair<FEAT_boardnumber_t, uint32_t>, ethFeature_t>::iterator mIt;
+        for(mIt = boards_map_ext.begin(); mIt!=boards_map_ext.end(); mIt++)
         {
             yError() << "Feature " << mIt->second.name << "was not correctly removed from map.., removing it now in the EthManager destructor.";
             removeLUTelement(mIt->second);

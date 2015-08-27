@@ -90,6 +90,7 @@ typedef struct
     ethFeatIPaddress_t  boardIPaddr;
     FEAT_boardnumber_t  boardNumber;
     eOprotEndpoint_t    endpoint;
+    eOprotEntity_t      entity;
     ethFeatType_t       type;
     IethResource*       interface;
     char                name[16];

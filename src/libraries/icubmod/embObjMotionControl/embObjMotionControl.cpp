@@ -900,6 +900,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
     _fId.endpoint = eoprot_endpoint_motioncontrol;
+    _fId.entity = eoprot_entity_mc_joint; // actually, embobjmotioncontrol manages joints, motors, and controller. however in case of this endpoint we use entity joint
     //
     //  Read Configuration params from file
     //
