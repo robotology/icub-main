@@ -318,11 +318,20 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
     _fId.endpoint = eoprot_endpoint_analogsensors;
     if(AS_STRAIN == _as_type)
+    {
+        _fId.entity = eoprot_entity_as_strain;
         _fId.type = ethFeatType_AnalogStrain;
+    }
     else if(AS_MAIS == _as_type)
+    {
+        _fId.entity = eoprot_entity_as_mais;
         _fId.type = ethFeatType_AnalogMais;
+    }
     else if(AS_INERTIAL_MTB == _as_type)
+    {
+        _fId.entity = eoprot_entity_as_inertial;
         _fId.type = ethFeatType_AnalogInertial;
+    }
 
     /* Once I'm ok, ask for resources, through the _fId struct I'll give the ip addr, port and
     *  and boardNum to the ethManager in order to create the ethResource requested.
