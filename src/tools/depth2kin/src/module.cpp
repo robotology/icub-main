@@ -1096,7 +1096,10 @@ void CalibModule::onRead(ImageOf<PixelMono> &imgIn)
                           depthPoint.toString(3,3).c_str(),kinPoint.toString(3,3).c_str(),dist,max_dist);
             }
             else
+            {
                 yInfo("unavailable depth; discarding...");
+                tag="no-depth";
+            }
         }
 
         cv::Mat img=cv::cvarrToMat((IplImage*)imgOut.getIplImage());
