@@ -17,8 +17,7 @@
 */
 
 #include <sstream>
-
-#include <gsl/gsl_math.h>
+#include <cmath>
 
 #include <yarp/os/Time.h>
 #include <yarp/math/Math.h>

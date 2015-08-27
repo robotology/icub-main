@@ -15,8 +15,7 @@
  * Public License for more details
 */
 
-#include <gsl/gsl_math.h>
-
+#include <cmath>
 #include <iCub/ctrl/outliersDetection.h>
 
 using namespace std;

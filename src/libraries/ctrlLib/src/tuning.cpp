@@ -16,11 +16,10 @@
 */
 
 #include <limits>
+#include <cmath>
 #include <algorithm>
 #include <string>
 #include <sstream>
-
-#include <gsl/gsl_math.h>
 
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>

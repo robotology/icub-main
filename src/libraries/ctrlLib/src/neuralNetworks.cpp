@@ -18,8 +18,7 @@
 
 #include <sstream>
 #include <iomanip>
-
-#include <gsl/gsl_math.h>
+#include <cmath>
 
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/neuralNetworks.h>

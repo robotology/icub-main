@@ -16,7 +16,7 @@
  * Public License for more details
 */
 
-#include <gsl/gsl_math.h>
+#include <cmath>
 
 #include <yarp/os/Log.h>
 #include <yarp/math/Math.h>
