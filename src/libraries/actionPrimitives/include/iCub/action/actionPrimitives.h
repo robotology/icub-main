@@ -210,6 +210,7 @@ protected:
     bool latchHandMoveDone;
     bool handSeqTerminator;
     bool fingersInPosition;
+    std::deque<bool> fingerInPosition;
 
     bool configured;
     bool closed;
@@ -694,10 +695,10 @@ public:
     * @param f the result of the check.
     * @return true/false on success/fail. 
     */
-    virtual bool areFingersMoving(bool &f) const;
+    virtual bool areFingersMoving(bool &f);
 
     /**
-    * Query if fingers are in position. 
+    * Query if fingers are in position (cumulative response). 
     * @param f the result of the check. 
     * @return true/false on success/fail. 
     *  
@@ -707,7 +708,20 @@ public:
     *       among fingers or with objects causes the method to
     *       return false.
     */
-    virtual bool areFingersInPosition(bool &f) const;
+    virtual bool areFingersInPosition(bool &f);
+
+    /**
+    * Query if fingers are in position (finger-wise response). 
+    * @param f a list containing the result of the single checks. 
+    * @return true/false on success/fail. 
+    *  
+    * @note Fingers are intended to be in position if they have 
+    *       attained the desired position or while moving they
+    *       follow the desired trajectory. Any possible contact
+    *       among fingers or with objects causes the method to
+    *       return false.
+    */
+    virtual bool areFingersInPosition(std::deque<bool> &f);
 
     /**
     * Return the model used internally to detect external contacts.

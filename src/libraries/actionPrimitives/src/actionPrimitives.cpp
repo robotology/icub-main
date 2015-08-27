@@ -345,8 +345,9 @@ void ActionPrimitives::init()
     torsoActive=true;
     handSeqTerminator=false;
     fingersInPosition=true;
+    fingerInPosition.insert(fingerInPosition.begin(),5,true);
     reachTmoEnabled=false;
-    locked=false;
+    locked=false;    
 
     latchTimerWait=waitTmo=0.0;
     latchTimerReach=reachTmo=0.0;
@@ -759,6 +760,7 @@ bool ActionPrimitives::isHandSeqEnded()
             if (val>thres)
             {
                 fingersInPosition=false;
+                fingerInPosition[fng]=false;
 
                 // take joints belonging to the finger
                 pair<multimap<int,int>::iterator,multimap<int,int>::iterator> i=fingers2JntsMap.equal_range(fng);
@@ -1513,6 +1515,8 @@ bool ActionPrimitives::cmdHand(const Action &action)
         latchHandMoveDone=handMoveDone=false;
         handSeqTerminator=action.handSeqTerminator;
         fingersInPosition=true;
+        fingerInPosition.clear();
+        fingerInPosition.insert(fingerInPosition.begin(),5,true);
         printMessage(log::no_info,"\"%s\" WP: [%s] (thres = [%s]) (tmo = %g)",
                      tag.c_str(),poss.toString(3,3).c_str(),
                      thres.toString(3,3).c_str(),tmo);
@@ -1746,11 +1750,13 @@ bool ActionPrimitives::getHandSequence(const string &handSeqKey, Bottle &sequenc
 
 
 /************************************************************************/
-bool ActionPrimitives::areFingersMoving(bool &f) const
+bool ActionPrimitives::areFingersMoving(bool &f)
 {
     if (configured)
     {
+        mutex.lock();
         f=!latchHandMoveDone;
+        mutex.unlock();
         return true;
     }
     else
@@ -1759,11 +1765,28 @@ bool ActionPrimitives::areFingersMoving(bool &f) const
 
 
 /************************************************************************/
-bool ActionPrimitives::areFingersInPosition(bool &f) const
+bool ActionPrimitives::areFingersInPosition(bool &f)
 {
     if (configured)
     {
+        mutex.lock();
         f=fingersInPosition;
+        mutex.unlock();
+        return true;
+    }
+    else
+        return false;
+}
+
+
+/************************************************************************/
+bool ActionPrimitives::areFingersInPosition(deque<bool> &f)
+{
+    if (configured)
+    {
+        mutex.lock();
+        f=fingerInPosition;
+        mutex.unlock();
         return true;
     }
     else
