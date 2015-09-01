@@ -625,20 +625,100 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
 
     tmp = config.find("Location").asString();
 
-    eOas_inertial_config_t inertialConfig;
+    eOas_inertial_config_t inertialConfig = {0};
+
     inertialConfig.datarate = _period;
 
-    if(tmp == "hand")
-        inertialConfig.id       = eoas_inertial_id_hand_palm;
-    else if(tmp == "foot")
-        inertialConfig.id       = eoas_inertial_id_foot_palm;
+    if(tmp == "l_hand")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_hand);
+    }
+    else if(tmp == "l_forearm_1")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_forearm_1);
+    }
+    else if(tmp == "l_forearm_2")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_forearm_2);
+    }
+    else if(tmp == "l_upperarm_1")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_upperarm_1);
+    }
+    else if(tmp == "l_upperarm_2")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_upperarm_2);
+    }
+    else if(tmp == "l_upperarm_3")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_upperarm_3);
+    }
+    else if(tmp == "l_upperarm_4")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_upperarm_4);
+    }
+    else if(tmp == "l_foot_1")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_foot_1);
+    }
+    else if(tmp == "l_foot_2")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_foot_2);
+    }
+    else if(tmp == "l_lowerleg_1")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_lowerleg_1);
+    }
+    else if(tmp == "l_lowerleg_2")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_lowerleg_2);
+    }
+    else if(tmp == "l_lowerleg_3")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_lowerleg_3);
+    }
+    else if(tmp == "l_lowerleg_4")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_lowerleg_4);
+    }
+    else if(tmp == "l_upperleg_front_1")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_upperleg_front_1);
+    }
+    else if(tmp == "l_upperleg_front_2")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_upperleg_front_2);
+    }
+    else if(tmp == "l_upperleg_front_3")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_upperleg_front_3);
+    }
+    else if(tmp == "l_upperleg_front_4")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_upperleg_front_4);
+    }
+    else if(tmp == "l_upperleg_front_5")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_upperleg_front_5);
+    }
+    else if(tmp == "l_upperleg_back_1")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_upperleg_back_1);
+    }
+    else if(tmp == "l_upperleg_back_2")
+    {
+        inertialConfig.enabled   |= EOAS_ENABLEPOS(eoas_inertial_pos_l_upperleg_back_2);
+    }
     else
     {
-        yError() << "embObjAnalogSensor: 'Location'' parameter not valid.  Supported values are 'hand' or 'foot'";
+        yError() << "embObjAnalogSensor: 'Location'' parameter not valid.  Supported values are '...' or '...'";
         return false;
     }
 
-    eOmc_inertial_commands_t startCommand;
+    eOmc_inertial_commands_t startCommand = {0};
+    startCommand.enable = 1;
+
+#if 0
     tmp = config.find("Sensors").asString();
     if(tmp == "acc")
         startCommand.enable       = eoas_inertial_enable_accelerometer;
@@ -651,19 +731,19 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
         yError() << "embObjAnalogSensor: 'Sensors'' parameter not valid.  Supported values are 'acc', 'extGyro' or 'extAccAndGyro'";
         return false;
     }
-
+#endif
 
     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config);
     if(false == res->setRemoteValueUntilVerified(id32, &inertialConfig, sizeof(inertialConfig), 10, 0.010, 0.050, 2))
     {
-        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais datarate in BOARD" << res->get_protBRDnumber()+1;
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2SkinInertial() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->get_protBRDnumber()+1;
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::sendConfig2SkinInertial() correctly configured id and datarate" << _period << "in BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjAnalogSensor::sendConfig2SkinInertial() correctly configured enabled sensors with period" << _period << "in BOARD" << res->get_protBRDnumber()+1;
         }
     }
 
@@ -1156,14 +1236,15 @@ bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
 
 //  in case of multiple devices, expand this
 //     for(int k=0; k<_channels; k++)
+    if(eoas_inertial_type_accelerometer == status->data.type)
     {
-        _buffer[0] = (double) status->accelerometer.x;
-        _buffer[1] = (double) status->accelerometer.y;
-        _buffer[2] = (double) status->accelerometer.z;
+        _buffer[0] = (double) status->data.type;
+        _buffer[1] = (double) status->data.position;
+        _buffer[2] = (double) status->data.timestamp;
 
-        _buffer[3] = (double) status->gyroscope.x;
-        _buffer[4] = (double) status->gyroscope.y;
-        _buffer[5] = (double) status->gyroscope.z;
+        _buffer[3] = (double) status->data.x;
+        _buffer[4] = (double) status->data.y;
+        _buffer[5] = (double) status->data.z;
     }
     mutex.post();
 
