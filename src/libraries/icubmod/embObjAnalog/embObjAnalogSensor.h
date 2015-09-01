@@ -124,9 +124,12 @@ private:
     // parameters
     int                 _period;
     int                 _channels;
+    int                 _numofsensors;
     short               _useCalibration;
     //AnalogDataFormat    _format;
     AnalogSensorType    _as_type;
+
+    uint8_t _fromInertialPos2DataIndex[eoas_inertial_pos_max_numberof];
 
     AnalogData *data;
     short status;
@@ -146,6 +149,8 @@ private:
     bool fillDatOfMais(void *as_array_raw);
     bool fillDatOfInertial(void *inertialdata);
     bool isEpManagedByBoard();
+
+    eOas_inertial_position_t getLocationOfInertialSensor(yarp::os::ConstString &strpos);
 
 public:
 
