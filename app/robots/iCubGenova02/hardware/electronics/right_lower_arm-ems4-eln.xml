@@ -39,6 +39,7 @@
             <param name="entityASstrainNumberOf">                   0	</param> 
             <param name="entityASmaisNumberOf">                     1	</param>
             <param name="entityASextorqueNumberOf">                 1	</param>   
+            <param name="entityASinertialNumberOf">                 1	</param>
             
         <param name="endpointSkinIsSupported">                  1   </param> 
             <param name="entitySKskinNumberOf">                     1	</param>        
