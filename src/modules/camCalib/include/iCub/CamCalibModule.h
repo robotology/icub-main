@@ -33,7 +33,7 @@
 class CamCalibPort : public yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >
 {
 private:
-    yarp::os::Port *portImgOut;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > *portImgOut;
     ICalibTool     *calibTool;
 
     bool verbose;
@@ -46,7 +46,7 @@ public:
     CamCalibPort();
     
     void setSaturation(double satVal);
-    void setPointers(yarp::os::Port *_portImgOut, ICalibTool *_calibTool);
+    void setPointers(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > *_portImgOut, ICalibTool *_calibTool);
     void setVerbose(const bool sw) { verbose=sw; }
 };
 
@@ -63,7 +63,7 @@ class CamCalibModule : public yarp::os::RFModule {
 private:
 
     CamCalibPort    _prtImgIn;
-    yarp::os::Port  _prtImgOut;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >  _prtImgOut;
     yarp::os::Port  _configPort;
 
     ICalibTool *    _calibTool;

@@ -168,6 +168,7 @@ bool CamCalibModule::updateModule()
     {
         yarp::sig::ImageOf<yarp::sig::PixelRgb>* left  = imageInLeft.read(false);
         yarp::sig::ImageOf<yarp::sig::PixelRgb>* right = imageInRight.read(false);
+        yarp::sig::ImageOf<yarp::sig::PixelRgb> &calibratedImgOut=imageOut.prepare();
 
         if (calibToolLeft!=NULL && left!=NULL)
         {
@@ -258,7 +259,7 @@ bool CamCalibModule::updateModule()
         {
             if (lready==true || rready==true)
             {
-                imageOut.write(calibratedImgOut);
+                imageOut.writeStrict();
                 double diffOut = yarp::os::Time::now() -time_lastOut;
                 time_lastOut = yarp::os::Time::now();
                 if (verboseExecTime) yDebug ("%f", diffOut);
@@ -271,7 +272,7 @@ bool CamCalibModule::updateModule()
             double diffOut = yarp::os::Time::now() - time_lastOut;
             if (diffOut>(1/requested_fps))
             {
-                imageOut.write(calibratedImgOut);
+                imageOut.writeStrict();
                 time_lastOut = yarp::os::Time::now();
                 if (verboseExecTime) yDebug ("%f", diffOut);
                 lready=false;

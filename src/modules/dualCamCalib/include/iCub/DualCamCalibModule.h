@@ -35,9 +35,9 @@ private:
       ALIGN_HEIGHT=1
     } align;
 
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >  imageInLeft;
-    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >  imageInRight;
-    yarp::os::Port  imageOut;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageInLeft;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageInRight;
+    yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageOut;
     yarp::os::Port  configPort;
 
     ICalibTool *    calibToolLeft;
@@ -47,7 +47,6 @@ private:
     
     yarp::sig::ImageOf<yarp::sig::PixelRgb> calibratedImgLeft;
     yarp::sig::ImageOf<yarp::sig::PixelRgb> calibratedImgRight;
-    yarp::sig::ImageOf<yarp::sig::PixelRgb> calibratedImgOut;
 
 
 public:
