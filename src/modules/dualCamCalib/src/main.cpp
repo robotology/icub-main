@@ -8,7 +8,6 @@
 
 // yarp
 #include <yarp/os/Network.h>
-#include <yarp/os/Module.h>
 
 // iCub
 #include <iCub/CalibToolFactory.h>

@@ -118,7 +118,6 @@ This file can be edited at src/velocityControl/main.cpp.
 #include "velControlThread.h"
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
-#include <yarp/os/Module.h>
 #include <string.h>
 
 /*default rate for the control loop*/

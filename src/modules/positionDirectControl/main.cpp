@@ -15,7 +15,6 @@
 #include <yarp/os/BufferedPort.h>
 #include <yarp/os/RFModule.h>
 #include "positionDirectThread.h"
-#include <yarp/os/Module.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <string.h>

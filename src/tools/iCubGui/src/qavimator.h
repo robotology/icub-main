@@ -28,7 +28,6 @@
 #include <yarp/os/Value.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/RpcClient.h>
-#include <yarp/os/Module.h>
 #include <yarp/os/RpcServer.h>
 #include "playstate.h"
 
