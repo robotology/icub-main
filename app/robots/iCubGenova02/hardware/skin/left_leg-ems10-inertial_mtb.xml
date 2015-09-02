@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubGenova02" build="1">
+    <device name="left_leg_inertialMTB" type="embObjAnalogSensor">
+        <params file="general.xml" />
+        <params file="hardware/electronics/pc104.xml" />
+        <params file="hardware/electronics/left_lower_leg-ems10-eln.xml" />
+
+        <!-- 
+            PositionsOfInertials is a list of strings which have either prefix l_ (left) or r_ (right). the left ones are:
+                l_hand, l_forearm_1, l_forearm_2, l_upperarm_1, l_upperarm_2, l_upperarm_3, l_upperarm_4,  
+                l_foot_1, l_foot_2, l_lowerleg_1, l_lowerleg_2, l_lowerleg_3, l_lowerleg_4, 
+                l_upperleg_front_1, l_upperleg_front_2, l_upperleg_front_3, l_upperleg_front_4, l_upperleg_front_5,
+                l_upperleg_back_1, l_upperleg_back_2
+            a given EMS may support only some. for instance, ems2 supports only sensors on the left arm, 
+            ems4 only the right arm, ems10 only on left leg, and ems11 only on right leg.
+        -->
+        <group name="GENERAL">
+            <param name="Type">                     "inertial"      </param>
+            <param name="Channels">                 6               </param>
+            <param name="PositionsOfInertials">     l_foot_1  l_foot_2  l_lowerleg_1 l_lowerleg_2 l_lowerleg_4 l_upperleg_front_1 l_upperleg_front_2 l_upperleg_front_3 l_upperleg_front_4 l_upperleg_front_5 l_upperleg_back_1 l_upperleg_back_2 </param>
+            <param name="Period">                   50              </param>
+        </group>
+    </device>
+</devices>

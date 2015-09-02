@@ -35,10 +35,11 @@
             <param name="entityMCmotorNumberOf">                    0	</param>
             <param name="entityMCcontrollerNumberOf">               0	</param> 
             
-        <param name="endpointAnalogSensorsIsSupported">         0   </param> 
+        <param name="endpointAnalogSensorsIsSupported">         1   </param> 
             <param name="entityASstrainNumberOf">                   0	</param> 
             <param name="entityASmaisNumberOf">                     0	</param>
             <param name="entityASextorqueNumberOf">                 0	</param> 
+            <param name="entityASinertialNumberOf">                 1	</param>
         
         <param name="endpointSkinIsSupported">                  1   </param> 
             <param name="entitySKskinNumberOf">                     2	</param>        
