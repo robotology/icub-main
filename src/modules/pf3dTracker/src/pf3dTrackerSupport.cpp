@@ -11,46 +11,11 @@
 *
 */
 
-#include <iCub/pf3dTrackerSupport.hpp>
 #include <iostream>
+
+#include <iCub/pf3dTrackerSupport.hpp>
+
 using namespace std;
-
-std::string itos(int i)  // convert int to string
-{
-    std::stringstream s;
-    s << i;
-    return s.str();
-}
-
-int max3(int v1, int v2, int v3)
-{
-    int max;
-    max = (v1 > v2) ? v1 : v2;
-    max = (max > v3) ? max : v3;
-    return(max);
-}
-
-int min3(int v1, int v2, int v3)
-{
-    int min;
-    min = (v1 < v2) ? v1 : v2;
-    min = (min < v3) ? min : v3;
-    return(min);
-}
-
-int printMatrix(float *matrix, int matrixColumns, int matrixRows)
-{
-    int i,j;
-    
-    for(j=0;j<matrixRows;j++)
-    {
-        for(i=0;i<matrixColumns;i++)
-            std::cout<<matrix[i+j*matrixColumns]<<" ";
-        std::cout<<std::endl;    
-    }    
-    
-    return 0;
-}
 
 void rgbToYuvBin(int &R, int &G, int &B, int &YBin, int &UBin, int &VBin)
 {
@@ -67,13 +32,12 @@ void rgbToYuvBin(int &R, int &G, int &B, int &YBin, int &UBin, int &VBin)
     VBin=(int)V/ 32; //I want V to vary between 0 and 7.
     
     if(YBin<0||YBin>3)
-        std::cout<<"something's wrong with Y: "<<YBin<<" "<<Y;
+        yWarning()<<"something's wrong with Y: "<<YBin<<" "<<Y;
     if(UBin<0||UBin>7)
-        std::cout<<"something's wrong with U: "<<UBin<<" "<<U;
+        yWarning()<<"something's wrong with U: "<<UBin<<" "<<U;
     if(VBin<0||VBin>7)
-        std::cout<<"something's wrong with V: "<<VBin<<" "<<V<<" R= "<<R<<" G= "<<G<<" B= "<<B<<"\n";
+        yWarning()<<"something's wrong with V: "<<VBin<<" "<<V<<" R= "<<R<<" G= "<<G<<" B= "<<B;
 }
-
 
 void rgbToYuvBinImage(IplImage *image,IplImage* transformedImage)
 {
@@ -154,10 +118,9 @@ void rgbToYuvBinLut(int &R, int &G, int &B, int &YBin, int &UBin, int &VBin, Lut
     VBin=(int)V/ 32; //I want V to vary between 0 and 7.
 
     if(YBin<0||YBin>3)
-        std::cout<<"something's wrong with Y: "<<YBin<<" "<<Y;
+        yWarning()<<"something's wrong with Y: "<<YBin<<" "<<Y;
     if(UBin<0||UBin>7)
-        std::cout<<"something's wrong with U: "<<UBin<<" "<<U;
+        yWarning()<<"something's wrong with U: "<<UBin<<" "<<U;
     if(VBin<0||VBin>7)
-        std::cout<<"something's wrong with V: "<<VBin<<" "<<V<<" R= "<<R<<" G= "<<G<<" B= "<<B<<"\n";
+        yWarning()<<"something's wrong with V: "<<VBin<<" "<<V<<" R= "<<R<<" G= "<<G<<" B= "<<B;
 }
-

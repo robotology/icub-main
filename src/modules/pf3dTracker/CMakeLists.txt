@@ -2,14 +2,17 @@
 # Authors: Lorenzo Natale, Matteo Taiana, Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-PROJECT(pf3dTracker)
+cmake_minimum_required(VERSION 2.6)
+project(pf3dTracker)
 
-INCLUDE_DIRECTORIES(${GSL_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(${OpenCV_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
-INCLUDE_DIRECTORIES(./include)
+file(GLOB folder_source src/*.cpp)
+file(GLOB folder_header include/iCub/*.hpp)
 
-SUBDIRS(src)
+source_group("Source Files" FILES ${folder_source})
+source_group("Header Files" FILES ${folder_header})
 
+include_directories(${PROJECT_SOURCE_DIR}/include ${OpenCV_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
 
-
+add_executable(${PROJECT_NAME} ${folder_header} ${folder_source})
+target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES} )
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
