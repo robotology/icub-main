@@ -1398,13 +1398,17 @@ bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
         // so far we dont manage gyro data type
         if(eoas_inertial_type_accelerometer == status->data.type)
         {
+            int16_t* xx = (int16_t*)&status->data.x;
+            int16_t* yy = (int16_t*)&status->data.y;
+            int16_t* zz = (int16_t*)&status->data.z;
+
             _buffer[firstpos+0] = (double) status->data.position;
             _buffer[firstpos+1] = (double) status->data.type;
             _buffer[firstpos+2] = (double) status->data.timestamp;
 
-            _buffer[firstpos+3] = (double) status->data.x;
-            _buffer[firstpos+4] = (double) status->data.y;
-            _buffer[firstpos+5] = (double) status->data.z;
+            _buffer[firstpos+3] = (double) *xx;
+            _buffer[firstpos+4] = (double) *yy;
+            _buffer[firstpos+5] = (double) *zz;
         }
     }
 
