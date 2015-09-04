@@ -465,7 +465,40 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     }
 
 
-//#warning --> marco.accame on 04sept14: both embObjAnalogSensors and embObjMotionControl initialises the mais board. but potentially w/ different params (mc uses: datarate = 10 and mode = eoas_maismode_txdatacontinuously).
+
+    // configure the service: aka, send to the remote board information about the whereabouts of the can boards mais, strain, mtb which offers the service.
+    
+    switch(_as_type)
+    {
+        case AS_MAIS:
+        {
+            ret = true;     // not yet implemented
+        } break;
+
+        case AS_STRAIN:
+        {
+            ret = true;     // not yet implemented
+        } break;
+
+        case AS_INERTIAL_MTB:
+        {
+            ret = configServiceInertials(config);
+        } break;
+
+        default:
+        {
+            //i should not be here. if AS_NONE then i should get error in fromConfig function
+            ret = false;
+        }
+
+    }
+    if(!ret)
+    {
+        cleanup();
+        return false;
+    }
+
+    // configure the sensor(s)
 
     switch(_as_type)
     {
@@ -662,6 +695,74 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 #endif
 }
 
+
+bool embObjAnalogSensor::configServiceInertials(Searchable& globalConfig)
+{
+    // find SERVICES-INERTIALS. if not found, exit mildly from function. in a first stage the remote eth board will already be configured.
+
+    Bottle tmp = globalConfig.findGroup("SERVICES");
+    Bottle config = tmp.findGroup("INERTIALS");
+
+
+    // prepare the config of the inertial sensors: datarate and the mask of the enabled ones.
+
+    eOas_inertial_serviceconfig_t inertialServiceConfig = {0}; // by this initialisation, there is no sensor at all in the two can buses
+
+
+
+    // meglio sarebbe mettere un controllo sul fatto che ho trovato PositionsOfInertials e che ha size coerente
+
+    Bottle canmap;
+    int numofentries = 0;
+
+    // CAN1
+    canmap = config.findGroup("InertialsCAN1mapping");
+    numofentries = canmap.size()-1;
+
+    for(int i=0; i<numofentries; i++)
+    {
+        eOas_inertial_position_t pos = eoas_inertial_pos_none;
+
+        yarp::os::ConstString strpos = canmap.get(i+1).asString();
+
+        pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
+        inertialServiceConfig.canmapofsupportedsensors[0][i] = pos;
+    }
+
+    // CAN2
+    canmap = config.findGroup("InertialsCAN2mapping");
+    numofentries = canmap.size()-1;
+
+    for(int i=0; i<numofentries; i++)
+    {
+        eOas_inertial_position_t pos = eoas_inertial_pos_none;
+
+        yarp::os::ConstString strpos = canmap.get(i+1).asString();
+
+        pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
+        inertialServiceConfig.canmapofsupportedsensors[1][i] = pos;
+    }
+
+    // configure the service
+
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config_service);
+    if(false == res->setRemoteValueUntilVerified(id32, &inertialServiceConfig, sizeof(inertialServiceConfig), 10, 0.010, 0.050, 2))
+    {
+        yError() << "FATAL: embObjAnalogSensor::configServiceInertials() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->get_protBRDnumber()+1;
+        return false;
+    }
+    else
+    {
+        if(verbosewhenok)
+        {
+            yDebug() << "embObjAnalogSensor::configServiceInertials() correctly configured the service in BOARD" << res->get_protBRDnumber()+1;
+        }
+    }
+
+    return true;
+}
+
+
 bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
 {
     eOprotID32_t id32 = eo_prot_ID32dummy;
@@ -673,10 +774,10 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
 
     // prepare the config of the inertial sensors: datarate and the mask of the enabled ones.
 
-    eOas_inertial_config_t inertialConfig = {0};
+    eOas_inertial_sensorsconfig_t inertialSensorsConfig = {0};
 
-    inertialConfig.enabled = 0;
-    inertialConfig.datarate = _period;
+    inertialSensorsConfig.enabled = 0;
+    inertialSensorsConfig.datarate = _period;
 
 
     // meglio sarebbe mettere un controllo sul fatto che ho trovato PositionsOfInertials e che ha size coerente
@@ -696,7 +797,7 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
         if(eoas_inertial_pos_none != pos)
         {
             _fromInertialPos2DataIndex[pos] = i;
-            inertialConfig.enabled   |= EOAS_ENABLEPOS(pos);
+            inertialSensorsConfig.enabled   |= EOAS_ENABLEPOS(pos);
         }
     }
 
@@ -704,8 +805,8 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
 
     // configure the sensors (datarate and position)
 
-    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config);
-    if(false == res->setRemoteValueUntilVerified(id32, &inertialConfig, sizeof(inertialConfig), 10, 0.010, 0.050, 2))
+    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config_sensors);
+    if(false == res->setRemoteValueUntilVerified(id32, &inertialSensorsConfig, sizeof(inertialSensorsConfig), 10, 0.010, 0.050, 2))
     {
         yError() << "FATAL: embObjAnalogSensor::sendConfig2SkinInertial() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->get_protBRDnumber()+1;
         return false;
@@ -740,7 +841,12 @@ eOas_inertial_position_t embObjAnalogSensor::getLocationOfInertialSensor(yarp::o
 {
     eOas_inertial_position_t ret = eoas_inertial_pos_none;
 
-    if(strpos == "l_hand")
+    if(strpos == "none")
+    {
+        ret = eoas_inertial_pos_none;
+    }
+
+    else if(strpos == "l_hand")
     {
         ret = eoas_inertial_pos_l_hand;
     }
@@ -752,21 +858,21 @@ eOas_inertial_position_t embObjAnalogSensor::getLocationOfInertialSensor(yarp::o
     {
         ret = eoas_inertial_pos_l_forearm_2;
     }
-    else if(strpos == "l_upperarm_1")
+    else if(strpos == "l_upper_arm_1")
     {
-        ret = eoas_inertial_pos_l_upperarm_1;
+        ret = eoas_inertial_pos_l_upper_arm_1;
     }
-    else if(strpos == "l_upperarm_2")
+    else if(strpos == "l_upper_arm_2")
     {
-        ret = eoas_inertial_pos_l_upperarm_2;
+        ret = eoas_inertial_pos_l_upper_arm_2;
     }
-    else if(strpos == "l_upperarm_3")
+    else if(strpos == "l_upper_arm_3")
     {
-        ret = eoas_inertial_pos_l_upperarm_3;
+        ret = eoas_inertial_pos_l_upper_arm_3;
     }
-    else if(strpos == "l_upperarm_4")
+    else if(strpos == "l_upper_arm_4")
     {
-        ret = eoas_inertial_pos_l_upperarm_4;
+        ret = eoas_inertial_pos_l_upper_arm_4;
     }
     else if(strpos == "l_foot_1")
     {
@@ -776,49 +882,49 @@ eOas_inertial_position_t embObjAnalogSensor::getLocationOfInertialSensor(yarp::o
     {
         ret = eoas_inertial_pos_l_foot_2;
     }
-    else if(strpos == "l_lowerleg_1")
+    else if(strpos == "l_lower_leg_1")
     {
-        ret = eoas_inertial_pos_l_lowerleg_1;
+        ret = eoas_inertial_pos_l_lower_leg_1;
     }
-    else if(strpos == "l_lowerleg_2")
+    else if(strpos == "l_lower_leg_2")
     {
-        ret = eoas_inertial_pos_l_lowerleg_2;
+        ret = eoas_inertial_pos_l_lower_leg_2;
     }
-    else if(strpos == "l_lowerleg_3")
+    else if(strpos == "l_lower_leg_3")
     {
-        ret = eoas_inertial_pos_l_lowerleg_3;
+        ret = eoas_inertial_pos_l_lower_leg_3;
     }
-    else if(strpos == "l_lowerleg_4")
+    else if(strpos == "l_lower_leg_4")
     {
-        ret = eoas_inertial_pos_l_lowerleg_4;
+        ret = eoas_inertial_pos_l_lower_leg_4;
     }
-    else if(strpos == "l_upperleg_front_1")
+    else if(strpos == "l_upper_leg_1")
     {
-        ret = eoas_inertial_pos_l_upperleg_front_1;
+        ret = eoas_inertial_pos_l_upper_leg_1;
     }
-    else if(strpos == "l_upperleg_front_2")
+    else if(strpos == "l_upper_leg_2")
     {
-        ret = eoas_inertial_pos_l_upperleg_front_2;
+        ret = eoas_inertial_pos_l_upper_leg_2;
     }
-    else if(strpos == "l_upperleg_front_3")
+    else if(strpos == "l_upper_leg_3")
     {
-        ret = eoas_inertial_pos_l_upperleg_front_3;
+        ret = eoas_inertial_pos_l_upper_leg_3;
     }
-    else if(strpos == "l_upperleg_front_4")
+    else if(strpos == "l_upper_leg_4")
     {
-        ret = eoas_inertial_pos_l_upperleg_front_4;
+        ret = eoas_inertial_pos_l_upper_leg_4;
     }
-    else if(strpos == "l_upperleg_front_5")
+    else if(strpos == "l_upper_leg_5")
     {
-        ret = eoas_inertial_pos_l_upperleg_front_5;
+        ret = eoas_inertial_pos_l_upper_leg_5;
     }
-    else if(strpos == "l_upperleg_back_1")
+    else if(strpos == "l_upper_leg_6")
     {
-        ret = eoas_inertial_pos_l_upperleg_back_1;
+        ret = eoas_inertial_pos_l_upper_leg_6;
     }
-    else if(strpos == "l_upperleg_back_2")
+    else if(strpos == "l_upper_leg_7")
     {
-        ret = eoas_inertial_pos_l_upperleg_back_2;
+        ret = eoas_inertial_pos_l_upper_leg_7;
     }
 
     else if(strpos == "r_hand")
@@ -833,21 +939,21 @@ eOas_inertial_position_t embObjAnalogSensor::getLocationOfInertialSensor(yarp::o
     {
         ret = eoas_inertial_pos_r_forearm_2;
     }
-    else if(strpos == "r_upperarm_1")
+    else if(strpos == "r_upper_arm_1")
     {
-        ret = eoas_inertial_pos_r_upperarm_1;
+        ret = eoas_inertial_pos_r_upper_arm_1;
     }
-    else if(strpos == "r_upperarm_2")
+    else if(strpos == "r_upper_arm_2")
     {
-        ret = eoas_inertial_pos_r_upperarm_2;
+        ret = eoas_inertial_pos_r_upper_arm_2;
     }
-    else if(strpos == "r_upperarm_3")
+    else if(strpos == "r_upper_arm_3")
     {
-        ret = eoas_inertial_pos_r_upperarm_3;
+        ret = eoas_inertial_pos_r_upper_arm_3;
     }
-    else if(strpos == "r_upperarm_4")
+    else if(strpos == "r_upper_arm_4")
     {
-        ret = eoas_inertial_pos_r_upperarm_4;
+        ret = eoas_inertial_pos_r_upper_arm_4;
     }
     else if(strpos == "r_foot_1")
     {
@@ -857,49 +963,49 @@ eOas_inertial_position_t embObjAnalogSensor::getLocationOfInertialSensor(yarp::o
     {
         ret = eoas_inertial_pos_r_foot_2;
     }
-    else if(strpos == "r_lowerleg_1")
+    else if(strpos == "r_lower_leg_1")
     {
-        ret = eoas_inertial_pos_r_lowerleg_1;
+        ret = eoas_inertial_pos_r_lower_leg_1;
     }
-    else if(strpos == "r_lowerleg_2")
+    else if(strpos == "r_lower_leg_2")
     {
-        ret = eoas_inertial_pos_r_lowerleg_2;
+        ret = eoas_inertial_pos_r_lower_leg_2;
     }
-    else if(strpos == "r_lowerleg_3")
+    else if(strpos == "r_lower_leg_3")
     {
-        ret = eoas_inertial_pos_r_lowerleg_3;
+        ret = eoas_inertial_pos_r_lower_leg_3;
     }
-    else if(strpos == "r_lowerleg_4")
+    else if(strpos == "r_lower_leg_4")
     {
-        ret = eoas_inertial_pos_r_lowerleg_4;
+        ret = eoas_inertial_pos_r_lower_leg_4;
     }
-    else if(strpos == "r_upperleg_front_1")
+    else if(strpos == "r_upper_leg_1")
     {
-        ret = eoas_inertial_pos_r_upperleg_front_1;
+        ret = eoas_inertial_pos_r_upper_leg_1;
     }
-    else if(strpos == "r_upperleg_front_2")
+    else if(strpos == "r_upper_leg_2")
     {
-        ret = eoas_inertial_pos_r_upperleg_front_2;
+        ret = eoas_inertial_pos_r_upper_leg_2;
     }
-    else if(strpos == "r_upperleg_front_3")
+    else if(strpos == "r_upper_leg_3")
     {
-        ret = eoas_inertial_pos_r_upperleg_front_3;
+        ret = eoas_inertial_pos_r_upper_leg_3;
     }
-    else if(strpos == "r_upperleg_front_4")
+    else if(strpos == "r_upper_leg_4")
     {
-        ret = eoas_inertial_pos_r_upperleg_front_4;
+        ret = eoas_inertial_pos_r_upper_leg_4;
     }
-    else if(strpos == "r_upperleg_front_5")
+    else if(strpos == "r_upper_leg_5")
     {
-        ret = eoas_inertial_pos_r_upperleg_front_5;
+        ret = eoas_inertial_pos_r_upper_leg_5;
     }
-    else if(strpos == "r_upperleg_back_1")
+    else if(strpos == "r_upper_leg_6")
     {
-        ret = eoas_inertial_pos_r_upperleg_back_1;
+        ret = eoas_inertial_pos_r_upper_leg_6;
     }
-    else if(strpos == "r_upperleg_back_2")
+    else if(strpos == "r_upper_leg_7")
     {
-        ret = eoas_inertial_pos_r_upperleg_back_2;
+        ret = eoas_inertial_pos_r_upper_leg_7;
     }
 
 
@@ -1398,17 +1504,13 @@ bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
         // so far we dont manage gyro data type
         if(eoas_inertial_type_accelerometer == status->data.type)
         {
-            int16_t* xx = (int16_t*)&status->data.x;
-            int16_t* yy = (int16_t*)&status->data.y;
-            int16_t* zz = (int16_t*)&status->data.z;
-
             _buffer[firstpos+0] = (double) status->data.position;
             _buffer[firstpos+1] = (double) status->data.type;
             _buffer[firstpos+2] = (double) status->data.timestamp;
 
-            _buffer[firstpos+3] = (double) *xx;
-            _buffer[firstpos+4] = (double) *yy;
-            _buffer[firstpos+5] = (double) *zz;
+            _buffer[firstpos+3] = (double) status->data.x;
+            _buffer[firstpos+4] = (double) status->data.y;
+            _buffer[firstpos+5] = (double) status->data.z;
         }
     }
 
