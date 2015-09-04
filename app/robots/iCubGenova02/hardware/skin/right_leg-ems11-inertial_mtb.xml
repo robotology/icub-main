@@ -19,7 +19,7 @@
         <group name="GENERAL">
             <param name="Type">                     "inertial"      </param>
             <param name="Channels">                 6               </param>
-            <param name="PositionsOfInertials">     r_foot_1  r_foot_2  r_lowerleg_1 r_lowerleg_2 r_lowerleg_3 r_lowerleg_4 r_upperleg_front_1 r_upperleg_front_2 r_upperleg_front_3 r_upperleg_front_4 r_upperleg_front_5 r_upperleg_back_1 r_upperleg_back_2 </param>
+            <param name="PositionsOfInertials">     r_upper_leg_1 r_upper_leg_2 r_upper_leg_3 r_upper_leg_4 r_upper_leg_5 r_upper_leg_6 r_upper_leg_7 r_lower_leg_1 r_lower_leg_2 r_lower_leg_3 r_lower_leg_4 r_foot_2 r_foot_1 </param>
             <param name="Period">                   50              </param>
         </group>
     </device>
