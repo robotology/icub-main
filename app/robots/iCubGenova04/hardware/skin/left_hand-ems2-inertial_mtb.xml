@@ -19,7 +19,8 @@
         <group name="GENERAL">
             <param name="Type">                     "inertial"      </param>
             <param name="Channels">                 6               </param>
-            <param name="PositionsOfInertials">     l_hand  l_forearm_1  l_forearm_2 </param>
+            <param name="enabledAccelerometers">    l_hand  l_forearm_1  l_forearm_2 </param>
+            <param name="enabledGyroscopes">        l_hand </param>
             <param name="Period">                   50              </param>
         </group>
     </device>
