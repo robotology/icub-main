@@ -15,7 +15,7 @@
             <param name="Type">                     "inertial"      </param>
             <param name="Channels">                 6               </param>
             <param name="enabledAccelerometers">    l_upper_leg_1 l_upper_leg_2 l_upper_leg_3 l_upper_leg_4 l_upper_leg_5 l_upper_leg_6 l_upper_leg_7 l_lower_leg_1 l_lower_leg_2 l_lower_leg_3 l_lower_leg_4 l_foot_2 l_foot_1 </param>
-            <param name="enabledGyroscopes">        </param>
+            <param name="enabledGyroscopes">        none </param>
             <param name="Period">                   50              </param>
         </group>
     </device>
