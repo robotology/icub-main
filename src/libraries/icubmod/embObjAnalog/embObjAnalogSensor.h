@@ -129,7 +129,8 @@ private:
     //AnalogDataFormat    _format;
     AnalogSensorType    _as_type;
 
-    uint8_t _fromInertialPos2DataIndex[eoas_inertial_pos_max_numberof];
+    uint8_t _fromInertialPos2DataIndexAccelerometers[eoas_inertial_pos_max_numberof];
+    uint8_t _fromInertialPos2DataIndexGyroscopes[eoas_inertial_pos_max_numberof];
 
     AnalogData *data;
     short status;

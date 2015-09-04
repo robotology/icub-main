@@ -196,13 +196,19 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
 
     if(AS_INERTIAL_MTB == _as_type)
     {
-        Bottle sensors = config.findGroup("PositionsOfInertials");
-        _numofsensors = sensors.size()-1; // sensors holds strings "PositionsOfInertials" and then all the others, thus i need a -1
+        Bottle tmp;
+        _numofsensors = 0;
+
+        tmp = config.findGroup("enabledAccelerometers");
+        _numofsensors += (tmp.size()-1); // sensors holds strings "enabledAccelerometers" and then all the others, thus i need a -1
+
+        tmp = config.findGroup("enabledGyroscopes");
+        _numofsensors += (tmp.size()-1); // sensors holds strings "enabledGyroscopes" and then all the others, thus i need a -1
 
 #if 0
-        if (!extractGroup(config, xtmp, "PositionsOfInertials", "Position of managed sensors axpressed as strings", 1))
+        if (!extractGroup(config, xtmp, "enabledAccelerometers", "Position of managed sensors axpressed as strings", 1))
         {
-            yWarning("embObjAnalogSensor: cannot find PositionsOfInertials\n");
+            yWarning("embObjAnalogSensor: cannot find enabledAccelerometers\n");
             _numofsensors = 1;
         }
         else
@@ -241,7 +247,8 @@ embObjAnalogSensor::embObjAnalogSensor(): data(0)
     //_format=ANALOG_FORMAT_NONE;
 
 
-    memset(_fromInertialPos2DataIndex, 255, sizeof(_fromInertialPos2DataIndex));
+    memset(_fromInertialPos2DataIndexAccelerometers, 255, sizeof(_fromInertialPos2DataIndexAccelerometers));
+    memset(_fromInertialPos2DataIndexGyroscopes, 255, sizeof(_fromInertialPos2DataIndexGyroscopes));
 
     scaleFactor=0;
 
@@ -710,7 +717,7 @@ bool embObjAnalogSensor::configServiceInertials(Searchable& globalConfig)
 
 
 
-    // meglio sarebbe mettere un controllo sul fatto che ho trovato PositionsOfInertials e che ha size coerente
+    // meglio sarebbe mettere un controllo sul fatto che ho trovato InertialsCAN1mapping e che ha size coerente
 
     Bottle canmap;
     int numofentries = 0;
@@ -776,17 +783,20 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
 
     eOas_inertial_sensorsconfig_t inertialSensorsConfig = {0};
 
-    inertialSensorsConfig.enabled = 0;
+    inertialSensorsConfig.accelerometers = 0;
+    inertialSensorsConfig.gyroscopes = 0;
     inertialSensorsConfig.datarate = _period;
 
 
-    // meglio sarebbe mettere un controllo sul fatto che ho trovato PositionsOfInertials e che ha size coerente
+    // meglio sarebbe mettere un controllo sul fatto che ho trovato enabledAccelerometers e che ha size coerente
 
-    Bottle sensors = config.findGroup("PositionsOfInertials");
+    Bottle sensors;
 
-    int numofsensors = sensors.size()-1;    // sensors holds strings "PositionsOfInertials" and then all the others, thus i need a -1
+    sensors = config.findGroup("enabledAccelerometers");
 
-    for(int i=0; i<numofsensors; i++)
+    int numofaccelerometers = sensors.size()-1;    // sensors holds strings "enabledAccelerometers" and then all the others, thus i need a -1
+
+    for(int i=0; i<numofaccelerometers; i++)
     {
         eOas_inertial_position_t pos = eoas_inertial_pos_none;
 
@@ -796,12 +806,29 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
 
         if(eoas_inertial_pos_none != pos)
         {
-            _fromInertialPos2DataIndex[pos] = i;
-            inertialSensorsConfig.enabled   |= EOAS_ENABLEPOS(pos);
+            _fromInertialPos2DataIndexAccelerometers[pos] = i;
+            inertialSensorsConfig.accelerometers   |= EOAS_ENABLEPOS(pos);
         }
     }
 
+    sensors = config.findGroup("enabledGyroscopes");
 
+    int numofgyroscopess = sensors.size()-1;    // sensors holds strings "enabledGyroscopes" and then all the others, thus i need a -1
+
+    for(int i=0; i<numofgyroscopess; i++)
+    {
+        eOas_inertial_position_t pos = eoas_inertial_pos_none;
+
+        yarp::os::ConstString strpos = sensors.get(i+1).asString();
+
+        pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
+
+        if(eoas_inertial_pos_none != pos)
+        {
+            _fromInertialPos2DataIndexGyroscopes[pos] = numofaccelerometers+i;
+            inertialSensorsConfig.gyroscopes   |= EOAS_ENABLEPOS(pos);
+        }
+    }
 
     // configure the sensors (datarate and position)
 
@@ -1494,24 +1521,31 @@ bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
     }
 
 
-    uint8_t dataindex = _fromInertialPos2DataIndex[status->data.position];
+    uint8_t dataindex = 255;
+
+    if(eoas_inertial_type_accelerometer == status->data.type)
+    {
+        dataindex = _fromInertialPos2DataIndexAccelerometers[status->data.position];
+    }
+    else if(eoas_inertial_type_gyroscope == status->data.type)
+    {
+        dataindex = _fromInertialPos2DataIndexGyroscopes[status->data.position];
+    }
+
+
 
 	if(255 != dataindex)
     {
         // we now use dataindex to offset the array.
         uint8_t firstpos = 2 + dataindex*6;
 
-        // so far we dont manage gyro data type
-        if(eoas_inertial_type_accelerometer == status->data.type)
-        {
-            _buffer[firstpos+0] = (double) status->data.position;
-            _buffer[firstpos+1] = (double) status->data.type;
-            _buffer[firstpos+2] = (double) status->data.timestamp;
+        _buffer[firstpos+0] = (double) status->data.position;
+        _buffer[firstpos+1] = (double) status->data.type;
+        _buffer[firstpos+2] = (double) status->data.timestamp;
 
-            _buffer[firstpos+3] = (double) status->data.x;
-            _buffer[firstpos+4] = (double) status->data.y;
-            _buffer[firstpos+5] = (double) status->data.z;
-        }
+        _buffer[firstpos+3] = (double) status->data.x;
+        _buffer[firstpos+4] = (double) status->data.y;
+        _buffer[firstpos+5] = (double) status->data.z;
     }
 
     mutex.post();
