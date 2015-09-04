@@ -168,6 +168,7 @@ using namespace yarp::os;
 
 int main(int argc, char *argv[])
 {
+    Network yarp;
     if (!yarp::os::Network::checkNetwork())
     {
         yError("YARP server not available!");
