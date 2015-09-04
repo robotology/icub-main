@@ -150,6 +150,8 @@ private:
     bool fillDatOfInertial(void *inertialdata);
     bool isEpManagedByBoard();
 
+    bool configServiceInertials(Searchable& globalConfig);
+
     eOas_inertial_position_t getLocationOfInertialSensor(yarp::os::ConstString &strpos);
 
 public:
