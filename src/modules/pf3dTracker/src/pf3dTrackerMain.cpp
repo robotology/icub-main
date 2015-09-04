@@ -158,7 +158,9 @@ Ubuntu Linux, Windows
 */ 
 
 #include <yarp/os/Network.h>
-#include <yarp/os/Module.h>
+#include <yarp/os/Log.h>
+#include <yarp/os/RFModule.h>
+
 #include <iCub/pf3dTracker.hpp>
 
 using namespace std;
@@ -166,10 +168,18 @@ using namespace yarp::os;
 
 int main(int argc, char *argv[])
 {
-    Network yarp;  //set up yarp.
-    PF3DTracker tracker; //instanciate the tracker.
-    tracker.setName("/pf3dTracker"); // set default name for the tracker.
-    return tracker.runModule(argc,argv); //execute the tracker.
+    if (!yarp::os::Network::checkNetwork())
+    {
+        yError("YARP server not available!");
+        return 1;
+    }
+
+    ResourceFinder rf;
+    rf.setVerbose(true);
+    rf.setDefaultContext("pf3dTracker");        // overridden by --context
+    rf.setDefaultConfigFile("pf3dTracker.ini"); // overridden by --from
+    rf.configure(argc, argv);
+
+    PF3DTracker tracker; //instantiate the tracker.
+    return tracker.runModule(rf); //execute the tracker.
 }
-
-

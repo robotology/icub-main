@@ -10,24 +10,30 @@
 //with 800 particles and 30fps the 100% of the processor of CORTEX1 is used.
 //could try to halve the number of pixels used for the circles.
 
-#include <iostream>
-#include <string>
-#include <sstream>
-#include <yarp/os/Network.h>
-#include <yarp/os/Module.h>
-#include <yarp/os/all.h>
-#include <yarp/os/Stamp.h>
+#ifndef _PF3DTRACKER_
+#define _PF3DTRACKER_
 
-#include <yarp/sig/all.h>
-#include <yarp/dev/FrameGrabberInterfaces.h>
-#include <yarp/dev/PolyDriver.h>
-#include <yarp/dev/Drivers.h>
+#include <iostream>
+#include <sstream>
+#include <string>
+
+#include <yarp/os/BufferedPort.h>
+#include <yarp/os/LogStream.h>
+#include <yarp/os/Network.h>
+#include <yarp/os/RFModule.h>
+#include <yarp/os/Stamp.h>
+#include <yarp/os/Time.h>
+#include <yarp/sig/Image.h>
+#include <yarp/sig/ImageDraw.h>
+#include <yarp/sig/ImageFile.h>
+#include <yarp/sig/Vector.h>
+
 #ifdef _CH_
 #pragma package <opencv>
 #endif
 #ifndef _EiC
-#include "cv.h"
-#include "highgui.h"
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
 #endif
 
 #include <iCub/pf3dTrackerSupport.hpp>
@@ -37,7 +43,6 @@
 //#define stDev 100 80
 //150 for the demo.
 //#define stDev 150 
-
 
 //#define NEWPOLICY 0
 //1: only transform the color of the pixels that you need
@@ -56,19 +61,7 @@
 //are still quite likely. the opposite is not true: when the ball goes away from the
 // camera, the tracker follows it quite readily.
 
-using namespace std;
-using namespace yarp::os;
-using namespace yarp::sig;
-using namespace yarp::dev;
-using namespace yarp::sig;
-using namespace yarp::sig::draw;
-using namespace yarp::sig::file;
-
-
-
-
-
-class PF3DTracker : public Module
+class PF3DTracker : public yarp::os::RFModule
 {
 
 private:
@@ -76,23 +69,23 @@ private:
 int _numParticlesReceived;
 
 //parameters set during initialization.
-ConstString _inputVideoPortName;
-BufferedPort<ImageOf<PixelRgb> > _inputVideoPort;
-ConstString _outputVideoPortName;
-BufferedPort<ImageOf<PixelRgb> > _outputVideoPort;
-ConstString _outputDataPortName;
-BufferedPort<Bottle> _outputDataPort;
-ConstString _inputParticlePortName;
-BufferedPort<Bottle> _inputParticlePort;
-ConstString _outputParticlePortName;
-BufferedPort<Bottle> _outputParticlePort;
-ConstString _outputAttentionPortName;
-BufferedPort<VectorOf<double> > _outputAttentionPort;
-ConstString _outputUVDataPortName;
-BufferedPort<Bottle> _outputUVDataPort;
+yarp::os::ConstString _inputVideoPortName;
+yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > _inputVideoPort;
+yarp::os::ConstString _outputVideoPortName;
+yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > _outputVideoPort;
+yarp::os::ConstString _outputDataPortName;
+yarp::os::BufferedPort<yarp::os::Bottle> _outputDataPort;
+yarp::os::ConstString _inputParticlePortName;
+yarp::os::BufferedPort<yarp::os::Bottle> _inputParticlePort;
+yarp::os::ConstString _outputParticlePortName;
+yarp::os::BufferedPort<yarp::os::Bottle> _outputParticlePort;
+yarp::os::ConstString _outputAttentionPortName;
+yarp::os::BufferedPort<yarp::sig::VectorOf<double> > _outputAttentionPort;
+yarp::os::ConstString _outputUVDataPortName;
+yarp::os::BufferedPort<yarp::os::Bottle> _outputUVDataPort;
 bool supplyUVdata;
 
-string _projectionModel;
+std::string _projectionModel;
 float _perspectiveFx;
 float _perspectiveFy;
 float _perspectiveCx;
@@ -103,10 +96,10 @@ float _likelihoodThreshold;
 
 int _seeingObject; //0 means false, 1 means true.
 int _circleVisualizationMode;
-string _initializationMethod;
-string _trackedObjectType;
+std::string _initializationMethod;
+std::string _trackedObjectType;
 bool _saveImagesWithOpencv;
-string _saveImagesWithOpencvDir;
+std::string _saveImagesWithOpencvDir;
 double _initialX;
 double _initialY;
 double _initialZ;
@@ -130,7 +123,6 @@ CvMatND* _outerHistogramMat;//[YBins][UBins][VBins];
 
 CvMat* _model3dPointsMat; //shape model
 CvMat* _visualization3dPointsMat; //visualization model for the sphere (when _circleVisualizationMode==1). should have less points, but it was easier to make it like this.
-
 
 //not sure which of these are really used.
 CvMat* _rzMat;      //this is used during some operations... it is defined here to avoid repeated instantiations
@@ -174,9 +166,8 @@ CvMat* _noise;
 CvMat* _noise1; //lines from 0 to 2
 CvMat* _noise2; //lines from 3 to 5
 
-
-Stamp _yarpTimestamp;
-ImageOf<PixelRgb> *_yarpImage;
+yarp::os::Stamp _yarpTimestamp;
+yarp::sig::ImageOf<yarp::sig::PixelRgb> *_yarpImage;
 IplImage *_rawImage;
 IplImage* _transformedImage;//_yuvBinsImage[image_width][image_height][3];
 double _initialTime;
@@ -189,26 +180,22 @@ float _lastU;
 float _lastV;
 bool _firstFrame; //when processing the first frame do not write the fps values, as it's wrong.
 
-
-
 ///////////////////////
 //MEMBERS THAT "WORK":/
 ///////////////////////
 bool testOpenCv();
 bool readModelHistogram(CvMatND* histogram,const char fileName[]);
-bool readInitialmodel3dPoints(CvMat* points,string fileName);
-bool readMotionModelMatrix(CvMat* points, string fileName);
-bool computeTemplateHistogram(string imageFileName,string dataFileName); //I checked the output, it seems to work, but it seems as if in the old version the normalization didn't take effect.
+bool readInitialmodel3dPoints(CvMat* points,std::string fileName);
+bool readMotionModelMatrix(CvMat* points, std::string fileName);
+bool computeTemplateHistogram(std::string imageFileName,std::string dataFileName); //I checked the output, it seems to work, but it seems as if in the old version the normalization didn't take effect.
 bool computeHistogram(CvMat* uv, IplImage* transformedImage,  CvMatND* innerHistogramMat, float &usedInnerPoints, CvMatND* outerHistogramMat, float &usedOuterPoints);
 bool computeHistogramFromRgbImage(CvMat* uv, IplImage *image,  CvMatND* innerHistogramMat, float &usedInnerPoints, CvMatND* outerHistogramMat, float &usedOuterPoints);
 bool calculateLikelihood(CvMatND* templateHistogramMat, CvMatND* innerHistogramMat, CvMatND* outerHistogramMat, float inside_outside, float &likelihood);
 bool place3dPointsPerspective(CvMat* points, float x, float y, float z);
 int perspective_projection(CvMat* xyz, float fx, float fy, float cx, float cy, CvMat* uv);
-void drawContourPerspectiveYARP(CvMat* model3dPointsMat,float x, float y, float z, ImageOf<PixelRgb> *image,float _perspectiveFx,float  _perspectiveFy ,float _perspectiveCx,float  _perspectiveCy ,int R, int G, int B, float &meanU, float &meanV);
-void drawSampledLinesPerspectiveYARP(CvMat* model3dPointsMat,float x, float y, float z, ImageOf<PixelRgb> *image,float _perspectiveFx,float  _perspectiveFy ,float _perspectiveCx,float  _perspectiveCy ,int R, int G, int B, float &meanU, float &meanV);
+void drawContourPerspectiveYARP(CvMat* model3dPointsMat,float x, float y, float z, yarp::sig::ImageOf<yarp::sig::PixelRgb> *image,float _perspectiveFx,float  _perspectiveFy ,float _perspectiveCx,float  _perspectiveCy ,int R, int G, int B, float &meanU, float &meanV);
+void drawSampledLinesPerspectiveYARP(CvMat* model3dPointsMat,float x, float y, float z, yarp::sig::ImageOf<yarp::sig::PixelRgb> *image,float _perspectiveFx,float  _perspectiveFy ,float _perspectiveCx,float  _perspectiveCy ,int R, int G, int B, float &meanU, float &meanV);
 bool evaluateHypothesisPerspective(CvMat* model3dPointsMat, float x, float y, float z, CvMatND* modelHistogramMat, IplImage* transformedImage, float fx, float fy, float u0, float v0, float, float &likelihood);
-
-
 
 //////////////////////////////////////////////
 //MEMBERS THAT SHOULD BE CHANGED AND CHECKED:/
@@ -223,11 +210,12 @@ public:
 PF3DTracker(); //constructor
 ~PF3DTracker(); //destructor
 
-virtual bool open(Searchable& config); //member to set the object up.
+virtual bool configure(yarp::os::ResourceFinder &rf); //member to set the object up.
 virtual bool close();                  //member to close the object.
 virtual bool interruptModule();        //member to close the object.
 virtual bool updateModule();           //member that is repeatedly called by YARP, to give this object a chance to do something.
+virtual double getPeriod();
 
 };
 
-
+#endif /* _PF3DTRACKER_ */
