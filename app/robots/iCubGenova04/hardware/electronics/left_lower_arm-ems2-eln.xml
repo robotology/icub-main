@@ -45,6 +45,7 @@
             <param name="entitySKskinNumberOf">                     1	</param>        
     </group>
     
+
     <group name="SERVICES">
 
         <group name="INERTIALS">
@@ -63,6 +64,6 @@
 
     </group>
 
-</params>
 
+</params>
 
