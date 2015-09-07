@@ -65,6 +65,8 @@
     <!-- INERTIAL SENSORS ON MTB -->
     <devices file="wrappers/skin/left_hand-skin_inertial_wrapper.xml" />
     <devices file="hardware/skin/left_hand-ems2-inertial_mtb.xml" />
+    <devices file="wrappers/skin/right_hand-skin_inertial_wrapper.xml" />
+    <devices file="hardware/skin/right_hand-ems4-inertial_mtb.xml" />
 
     <!--  SKINS -->
     <devices file="wrappers/skin/left_arm-skin_wrapper.xml" />
