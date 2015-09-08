@@ -5,8 +5,8 @@
     <params file="hardware/electronics/pc104.xml" />
     
     <group name="ETH">
-        <param name="IpAddress">	10.0.1.15	</param>
-        <param name="Ems">		    15		    </param>
+        <param name="IpAddress">	10.0.1.16	</param>
+        <param name="Ems">		    16		    </param>
         <param name="CmdPort">		12345		</param>
         <param name="SrvPort">		4444		</param>
     </group>
@@ -21,7 +21,7 @@
         <param name="maxSizeROPframeOccasionals">   128	    </param>
         <param name="maxSizeROP">  		            256     </param>
         <param name="maxNumberRegularROPs">  		32      </param>
-	<param name="TXrate">  		        	5       </param>
+	    <param name="TXrate">  		        	    5       </param>
         
     </group>
     

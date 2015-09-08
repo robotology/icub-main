@@ -2,7 +2,7 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
 <devices robot="iCubExpSetupMC4PLUSjig" build="1">
-	<device name="zzzmc4plusjig_calibrator" type="parametricCalibratorEth">
+	<device name="mc4plusjig_calibrator" type="parametricCalibratorEth">
                 <params file="general.xml" />
                 
 		<group name="GENERAL">
@@ -10,31 +10,37 @@
 		    <param name="deviceName"> MC4plusjig_Calibrator </param> <!-- forse non e' funzionale ma serve solo per debug -->
 		</group>
 
-		<group name="CALIBRATION">
-		<param name="calibrationType">                    4                </param>
-		<param name="calibration1">                       250.0            </param> <!-- used pwm  -->
-		<param name="calibration2">                       3640.88          </param> <!-- vel of come back in icubdeg/sec (20 deg/sec) -->
-		<param name="calibration3">                       19114.62         </param> <!-- pos of reached hw limit in icubdeg (105 deg) -->
-		<param name="positionZero">                       0.0              </param> <!-- target position in deg after high level calib is terminated --> 
-		<param name="velocityZero">                       20.0             </param> <!-- and its velocity in deg/sec -->
-		<param name="maxPwm">                             500              </param> <!-- max pwm used in calib (it is a pid param)-->
-		<param name="posZeroThreshold">                   2                </param> <!-- tolerance of position in deg relative to positionZero param -->
+        <group name="HOME">
+		    <param name="positionHome">                       0             </param>
+		    <param name="velocityHome">                       20            </param>
 		</group>
 
-		<group name="HOME">
-		<param name="positionHome">                       0             </param>
-		<param name="velocityHome">                       20            </param>
+		<group name="CALIBRATION">
+		    <param name="calibrationType">                    5               </param>
+		    <param name="calibration1">                       300             </param> <!-- used pwm  -->
+		    <param name="calibration2">                       65535           </param> <!-- pos of reached hw limit in icubdeg (500 deg) -->
+		    <param name="calibration3">                       0.0             </param> 
+
+            <param name="calibrationZero">                    0.0             </param>
+            <param name="calibrationDelta">                   0.0             </param>
+
+		    <param name="startupPosition">                    0.0             </param> <!-- target position in deg after high level calib is terminated --> 
+		    <param name="startupVelocity">                    20.0            </param> <!-- and its velocity in deg/sec -->
+		    <param name="startupMaxPwm">                      1500            </param> <!-- max pwm used in calib (it is a pid param)-->
+		    <param name="startupPosThreshold">                1               </param> <!-- tolerance of position in deg relative to positionZero param -->  
 		</group>
+
+		
 
  <!-- check old calibrator for the correct sequence, then ask to Randazz -->
 		<param name="CALIB_ORDER"> (0) </param>	<!-- order of calibration-goto-zero in parallel. within () they can go in parallel -->
 
 		<action phase="startup" level="10" type="calibrate">
-		    <param name="target">yyydevmc4plusjig_mc_wrapper</param>
+		    <param name="target">devmc4plusjig_mc_wrapper</param>
 		</action>
 
 		<action phase="interrupt1" level="1" type="park">
-		    <param name="target">yyydevmc4plusjig_mc_wrapper</param>
+		    <param name="target">devmc4plusjig_mc_wrapper</param>
 		</action>
 
 		<action phase="interrupt3" level="1" type="abort" />

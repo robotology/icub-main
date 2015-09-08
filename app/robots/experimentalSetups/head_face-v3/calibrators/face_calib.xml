@@ -45,10 +45,10 @@
         <group name="CALIBRATION">
          <!-- memo: parameters of calib type 4 (5 actually): c1 = used pwm (int32_t); c2 = velocity of come back expressed in icubdeg/sec (int32_t); c3 = position in icubdeg of the reached hw limit (int32_t). -->
          <!-- memo: parameters of calib type 4: c1 = NOT USED pos; c2 = NOT USED vel; c3 = offset in icubdeg with which to correct the encoder reading (int32_t) -->
-            <param name="calibrationType">       3          3              4            4            4            4         </param>
-            <param name="calibration1">         666         666         500.0       500.0       500.0       900.0       </param> <!-- calib3: none; calib4: pwm  -->
-            <param name="calibration2">         999         999         3640.888    3640.888    3640.888    3640.888    </param> <!-- calib3: none; calib4: vel (3640.888 = 20 deg/sec) -->
-            <param name="calibration3">         0           19100       0.0         5461.32     0.0         0.0         </param> <!-- calib3: offset (j0->, j1->) ; calib4: pos (j2->133deg, j3->30deg, j4->133deg, j5->51deg) -->
+            <param name="calibrationType">       3          3              5            5            5          5         </param>
+            <param name="calibration1">         666         666         500.0           500.0        500.0      900.0       </param> <!-- calib3: none; calib5: pwm  -->
+            <param name="calibration2">         999         999         0.0             5461.32      0.0        0.0   </param> <!-- calib3: none; calib5: pos (j2->133deg, j3->30deg, j4->133deg, j5->51deg) -->
+            <param name="calibration3">         0           19100       0.0             0.0          0.0        0.0         </param> <!-- calib3: offset (j0->, j1->) -->
 
             <param name="calibrationZero">          180.0      180.0       35.0          -28.0       35.0         0.0       </param>
             <param name="calibrationDelta">         0.0        0.0         0.0           0.0         0.0          0.0        </param>
