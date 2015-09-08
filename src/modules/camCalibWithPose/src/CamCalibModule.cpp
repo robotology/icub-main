@@ -39,7 +39,7 @@ CamCalibPort::CamCalibPort()
     t0=Time::now();
 }
 
-void CamCalibPort::setPointers(yarp::os::Port *_portImgOut, ICalibTool *_calibTool)
+void CamCalibPort::setPointers(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > *_portImgOut, ICalibTool *_calibTool)
 {
     portImgOut=_portImgOut;
     calibTool=_calibTool;
@@ -169,8 +169,8 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
 
     // execute calibration
     if (portImgOut!=NULL)
-    {        
-        yarp::sig::ImageOf<PixelRgb> yrpImgOut;
+    {
+        yarp::sig::ImageOf<PixelRgb> &yrpImgOut=portImgOut->prepare();
 
         if (verbose)
             yDebug("received input image after %g [s] ... ",t-t0);
@@ -216,7 +216,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
         }
 
         m.lock();
-        
+
         //timestamp propagation
         //yarp::os::Stamp stamp;
         //BufferedPort<ImageOf<PixelRgb> >::getEnvelope(stamp);
@@ -229,7 +229,7 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
         pose.addDouble(yaw);
         portImgOut->setEnvelope(pose);
 
-        portImgOut->write(yrpImgOut);
+        portImgOut->writeStrict();
         m.unlock();
     }
 
