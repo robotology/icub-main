@@ -21,7 +21,7 @@
 <param name="calibrationType">                    3         3         3         3         0         3         3         3         </param>
 <param name="calibration1">                       1706.3    853.1     2795.3    2559.4    500.0     2047.5    2047.5    1768.0    </param>
 <param name="calibration2">                       10.0      10.0      10.0      10.0      -20.0     10.0      10.0      100.0     </param>
-<param name="calibration3">                       3964.5    3209.1    4064.1    751.5     0.0       2517.5    16952.5   0.0       </param>
+<param name="calibration3">                       3964.5    3209.1    4064.1    751.5     0.0       2613.5    1332.5    0.0       </param>
 <param name="positionZero">                       -30.0     30.0      0.0       45.0      0.0       0.0       0.0       15.0      </param>
 <param name="velocityZero">                       10.0      10.0      10.0      10.0      30.0      30.0      30.0      100.0     </param>
 <param name="maxPwm">                             120       120       120       120       0         0         0         0         </param>
