@@ -99,6 +99,7 @@ public:
         AS_NONE = 0,
         AS_MAIS = 1,
         AS_STRAIN = 2,
+        AS_INERTIAL_MTB = 3
     };
 
 
@@ -123,9 +124,13 @@ private:
     // parameters
     int                 _period;
     int                 _channels;
+    int                 _numofsensors;
     short               _useCalibration;
     //AnalogDataFormat    _format;
     AnalogSensorType    _as_type;
+
+    uint8_t _fromInertialPos2DataIndexAccelerometers[eoas_inertial_pos_max_numberof];
+    uint8_t _fromInertialPos2DataIndexGyroscopes[eoas_inertial_pos_max_numberof];
 
     AnalogData *data;
     short status;
@@ -139,10 +144,16 @@ private:
     bool fromConfig(yarp::os::Searchable &config);
     bool getFullscaleValues();
     bool sendConfig2Strain(void);
+    bool sendConfig2SkinInertial(yarp::os::Searchable &config);
     bool sendConfig2Mais(void);
     bool fillDatOfStrain(void *as_array_raw);
     bool fillDatOfMais(void *as_array_raw);
+    bool fillDatOfInertial(void *inertialdata);
     bool isEpManagedByBoard();
+
+    bool configServiceInertials(Searchable& globalConfig);
+
+    eOas_inertial_position_t getLocationOfInertialSensor(yarp::os::ConstString &strpos);
 
 public:
 

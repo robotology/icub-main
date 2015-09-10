@@ -145,7 +145,7 @@ private:
 
     // Data for EMS handling
 public:
-    map<std::pair<FEAT_boardnumber_t, eOprotEndpoint_t>, ethFeature_t>  boards_map;         //!< Map of high level classes (referred to as Feature) using EMS, es eoMotionControl, eoSkin, eoAnalogSensor etc... Can be more the one for each EMS
+    map<std::pair<FEAT_boardnumber_t, uint32_t>, ethFeature_t>  boards_map_ext; // the second element of the pair is id32 & 0xffff0000 or: (endpoint<<24)|(entity<<16)
     std::list<ethResources *>     EMS_list;           //!< List of pointer to classes that represent EMS boards
     ACE_INET_Addr                 local_addr;         
 

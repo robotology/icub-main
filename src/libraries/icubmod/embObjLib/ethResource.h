@@ -79,7 +79,8 @@ typedef enum
     ethFeatType_AnalogStrain    = 0x02,
     ethFeatType_MotionControl   = 0x03,
     ethFeatType_Skin            = 0x04,
-    ethFeatType_AnalogVirtual   = 0x05
+    ethFeatType_AnalogVirtual   = 0x05,
+    ethFeatType_AnalogInertial  = 0x06
 } ethFeatType_t;
 
 
@@ -89,6 +90,7 @@ typedef struct
     ethFeatIPaddress_t  boardIPaddr;
     FEAT_boardnumber_t  boardNumber;
     eOprotEndpoint_t    endpoint;
+    eOprotEntity_t      entity;
     ethFeatType_t       type;
     IethResource*       interface;
     char                name[16];

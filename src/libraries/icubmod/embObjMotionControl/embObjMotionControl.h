@@ -267,14 +267,17 @@ private:
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
-    float *_encoderconversionfactor;            /** iCubDegrees to encoder conversion factors */
-    float *_encoderconversionoffset;            /** iCubDegrees offset */
-    double *_rotToEncoder;                      /** angle to rotor conversion factors */
+    float *_DEPRECATED_encoderconversionfactor;            /** iCubDegrees to encoder conversion factors */
+    float *_DEPRECATED_encoderconversionoffset;            /** iCubDegrees offset */
+    uint8_t *_jointEncoderType;                 /** joint encoder type*/
+    int    *_jointEncoderRes;                   /** joint encoder resolution */
+    int    *_rotorEncoderRes;                   /** rotor encoder resolution */
+    uint8_t *_rotorEncoderType;                  /** rotor encoder type*/
     double *_gearbox;                           /** the gearbox ratio */
-    double *_zeros;                             /** encoder zeros */
     bool   *_hasHallSensor;                     /** */
     bool   *_hasTempSensor;                     /** */
     bool   *_hasRotorEncoder;                   /** */
+    bool   *_hasRotorEncoderIndex;              /** */
     int    *_rotorIndexOffset;                  /** */
     int    *_motorPoles;                        /** */
     Pid *_pids;                                 /** initial gains */
@@ -378,6 +381,8 @@ private:
     void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
     void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
 
+    bool EncoderType_iCub2eo(const string* in, uint8_t *out);
+    bool EncoderType_eo2iCub(const uint8_t *in, string* out);
 
     // saturation check and rounding for 16 bit unsigned integer
     int U_16(double x) const
@@ -528,6 +533,7 @@ public:
 
 
     // calibration2raw
+    virtual bool setCalibrationParametersRaw(int axis, const CalibrationParameters& params);
     virtual bool calibrate2Raw(int axis, unsigned int type, double p1, double p2, double p3);
     virtual bool doneRaw(int j);
 
@@ -589,6 +595,22 @@ public:
     virtual bool setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val);
     virtual bool getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys);
     ///////////////////////// END RemoteVariables Interface
+
+    //Internal use, not exposed by Yarp (yet)
+    virtual bool getGearboxRatioRaw(int m, double *gearbox);
+    virtual bool getRotorEncoderResolutionRaw(int m, double &rotres);
+    virtual bool getJointEncoderResolutionRaw(int m, double &jntres);
+    virtual bool getJointEncoderTypeRaw(int j, int &type);
+    virtual bool getRotorEncoderTypeRaw(int j, int &type);
+    virtual bool getKinematicMJRaw(int j, double &rotres);
+    virtual bool getHasTempSensorsRaw(int j, int& ret);
+    virtual bool getHasHallSensorRaw(int j, int& ret);
+    virtual bool getHasRotorEncoderRaw(int j, int& ret);
+    virtual bool getHasRotorEncoderIndexRaw(int j, int& ret);
+    virtual bool getMotorPolesRaw(int j, int& poles);
+    virtual bool getRotorIndexOffsetRaw(int j, double& rotorOffset);
+    virtual bool getCurrentPidRaw(int j, Pid *pid);
+    virtual bool getTorqueControlFilterType(int j, int& type);
 
     ////// Amplifier interface
     virtual bool enableAmpRaw(int j);
