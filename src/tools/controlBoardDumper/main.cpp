@@ -188,7 +188,7 @@
 
 
 #include <yarp/os/ResourceFinder.h>
-#include <yarp/os/Module.h>
+#include <yarp/os/RFModule.h>
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
@@ -200,25 +200,25 @@
 
 
 //
-void getRate(Property p, int &r)
+void getRate(ResourceFinder &rf, int &r)
 {
-    if (!p.check("rate"))
+    if (!rf.check("rate"))
         r = 500;
     else
     {
-        Value& rate = p.find("rate");
+        Value& rate = rf.find("rate");
         r = rate.asInt();
     }
 }
 
-int getNumberUsedJoints(Property p, int &n)
+int getNumberUsedJoints(ResourceFinder &rf, int &n)
 {
-    if (!p.check("joints"))
+    if (!rf.check("joints"))
     {
         yError("Missing option 'joints' in given config file\n");
         return 0;
     }
-    Value& joints =  p.find("joints");
+    Value& joints =  rf.find("joints");
     Bottle *pJoints = joints.asList();
     if (pJoints == 0)
     {
@@ -230,14 +230,15 @@ int getNumberUsedJoints(Property p, int &n)
     return 1;
 }
 
-int getUsedJointsMap(Property p, int n, int* thetaMap)
+int getUsedJointsMap(ResourceFinder &rf, int n, int* thetaMap)
 {
-    if (!p.check("joints"))
-        {
-            yError("Missing option 'joints' in given config file\n");
-            return 0;
-        }
-    Value& joints =  p.find("joints");
+    if (!rf.check("joints"))
+    {
+        yError("Missing option 'joints' in given config file\n");
+        return 0;
+    }
+
+    Value& joints =  rf.find("joints");
     Bottle *pJoints = joints.asList();
     if (pJoints == 0)
     {
@@ -257,39 +258,45 @@ int getUsedJointsMap(Property p, int n, int* thetaMap)
     return 1;
 }
 
-int getNumberConstraints(Property p, int &n)
+int getNumberConstraints(ResourceFinder &rf, int &n)
 {
-    if (!p.check("nConstr"))
+    if (!rf.check("nConstr"))
     {
         yError("Missing option 'nConstr' in given config file\n");
         return 0;
     }
-    Value& nJoints = p.find("nConstr");
+    Value& nJoints = rf.find("nConstr");
     n = nJoints.asInt();
     return 1;
 }
 
-int getNumberDataToDump(Property p, int &n)
+int getNumberDataToDump(ResourceFinder &rf, int &n)
 {
-    if (!p.check("dataToDump"))
+    if (rf.check("dataToDumpAll"))
+    {
+        n=NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP;
+        return 1;
+    }
+
+    if (!rf.check("dataToDump"))
     {
         yError("Missing option 'dataToDump' in given config file\n");
         return 0;
     }
-    Value& list = p.find("dataToDump");
+
+    Value& list = rf.find("dataToDump");
     Bottle *pList = list.asList();
     if (pList == 0)
     {
-            yError("Error in option 'dataToDump'\n");
-            return 0;
+        yError("Error in option 'dataToDump'\n");
+        return 0;
     }
     n = pList->size();
     return 1;
 }
 
-int getDataToDump(Property p, std::string *listOfData, int n, bool *needDebug)
+int getDataToDump(ResourceFinder &rf, std::string *listOfData, int n, bool *needDebug)
 {
-
     std::string availableDataToDump[NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP];
     std::string availableDebugDataToDump[NUMBER_OF_AVAILABLE_DEBUG_DATA_TO_DUMP];
 
@@ -311,55 +318,64 @@ int getDataToDump(Property p, std::string *listOfData, int n, bool *needDebug)
     availableDataToDump[12] = ConstString("getMotorEncoders");
     availableDataToDump[13] = ConstString("getMotorSpeeds");
     availableDataToDump[14] = ConstString("getMotorAccelerations");
-    availableDataToDump[15] = ConstString("getTemperature");
+    availableDataToDump[15] = ConstString("getTemperatures");
 
     // debug
     availableDebugDataToDump[0] = ConstString("getRotorPositions");
     availableDebugDataToDump[1] = ConstString("getRotorSpeeds");
     availableDebugDataToDump[2] = ConstString("getRotorAccelerations");
 
-    if (!p.check("dataToDump"))
+    rf.setDefault("dataToDumpAll","(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors getPosPidReferences getTrqPidReferences getMotorEncoders getMotorEncoderSpeeds getMotorEncoderAccelerations getControlModes getInteractionModes getTemperatures)");
+    if (rf.check("dataToDumpAll"))
+    {
+        for (int i = 0; i < n; i++)
+            listOfData[i] = availableDataToDump[i];
+
+        return 1;
+    }
+
+    if (!rf.check("dataToDump"))
     {
         yError("Missing option 'dataToDump' in given config file\n");
         return 0;
     }
 
-    Value& list = p.find("dataToDump");
+    Value& list = rf.find("dataToDump");
     Bottle *pList = list.asList();
 
     for (int i = 0; i < n; i++)
     {
         listOfData[i] = pList->get(i).toString();
         // check if the requested data is a standard one
-        for(j = 0; j< NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP; j++)
+        for (j = 0; j< NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP; j++)
         {
-            if(listOfData[i] == (availableDataToDump[j]))
+            if (listOfData[i] == (availableDataToDump[j]))
                 break;
         }
         // check if the requested data is a debug one
-        for(j = 0; j< NUMBER_OF_AVAILABLE_DEBUG_DATA_TO_DUMP; j++)
+        for (j = 0; j< NUMBER_OF_AVAILABLE_DEBUG_DATA_TO_DUMP; j++)
         {
-            if(listOfData[i] == (availableDebugDataToDump[j]))
+            if (listOfData[i] == (availableDebugDataToDump[j]))
             {
                 *needDebug = true;
                 break;
             }
         }
         // if not found
-        if(j == (NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP + NUMBER_OF_AVAILABLE_DEBUG_DATA_TO_DUMP))
+        if (j == (NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP + NUMBER_OF_AVAILABLE_DEBUG_DATA_TO_DUMP))
         {
             yError("Illegal values for 'dataToDump': %s does not exist!\n",listOfData[i].c_str());
             return 0;
         }
     }
-   return 1;
+
+    return 1;
 }
 
 
-class DumpModule: public Module
+class DumpModule: public RFModule
 {
 private:
-    Property options;
     Property fileOptions;
     Property ddBoardOptions;
     Property ddDebugOptions;
@@ -433,14 +449,12 @@ public:
         iimod=0;
     }
 
-    virtual bool open(Searchable &s)
+    virtual bool configure(ResourceFinder &rf)
     {
-
         Time::turboBoost();
 
         // get command line options
-        options.fromString(s.toString());
-        if (!options.check("robot") || !options.check("part")) 
+        if (!rf.check("robot") || !rf.check("part")) 
         {
             printf("Missing either --robot or --part options. Quitting!\n");
             return false;
@@ -448,9 +462,9 @@ public:
 
         std::string dumpername; 
         // get dumepr name
-        if (options.check("name"))
+        if (rf.check("name"))
         {
-            dumpername = options.find("name").asString();
+            dumpername = rf.find("name").asString();
             dumpername += "/";
         }
         else
@@ -458,8 +472,8 @@ public:
             dumpername = "/controlBoardDumper/";
         }
 
-        Value& robot = options.find("robot");
-        Value& part = options.find("part");
+        Value& robot = rf.find("robot");
+        Value& part = rf.find("part");
         configFileRobotPart = "config_";
         configFileRobotPart = configFileRobotPart + robot.asString();
         configFileRobotPart = configFileRobotPart + "_";
@@ -467,23 +481,22 @@ public:
         configFileRobotPart = configFileRobotPart + ".ini";
 
         //get the joints to be dumped
-        getRate(options, rate);
+        getRate(rf, rate);
 
-        if (getNumberUsedJoints(options, nJoints) == 0)
+        if (getNumberUsedJoints(rf, nJoints) == 0)
             return false;
 
         thetaMap = new int[nJoints];
-        if (getUsedJointsMap(options, nJoints, thetaMap) == 0)
+        if (getUsedJointsMap(rf, nJoints, thetaMap) == 0)
             return false;
 
         //get the type of data to be dumped
-        if (getNumberDataToDump(options, nData) == 0)
+        if (getNumberDataToDump(rf, nData) == 0)
             return false;
 
         dataToDump = new std::string[nData];
-        if (getDataToDump(options, dataToDump, nData, &useDebugClient) == 0)
-            return false;        
-
+        if (getDataToDump(rf, dataToDump, nData, &useDebugClient) == 0)
+            return false;
 
         // Printing configuration to the user
         yInfo("Running with the following configuration:\n");
@@ -520,7 +533,6 @@ public:
         ddBoard.open(ddBoardOptions);
         if (!ddBoard.isValid()) {
             printf("Device not available.\n");
-            Network::fini();
             return false;
         }
 
@@ -548,13 +560,12 @@ public:
                 yError("\t/robotName/part_name/debug/rpc:i\n If not, fix the robot configuration files to instantiate the 'debugInterfaceWrapper' device.\n");
                 yError("\nQuickFix: If you set the --dataToDumpAll and do not need the advanced debug feature (getRotorxxx) just remove this option. See help for more information.\n");
                 yError("------------- END ERROR MESSAGE ---------------\n\n");
-                Network::fini();
                 return false;
             }
         }
 
         bool logToFile = false;
-        if (options.check("logToFile")) logToFile = true;
+        if (rf.check("logToFile")) logToFile = true;
 
         portPrefix= dumpername.c_str() + part.asString() + "/";
         //boardDumperThread *myDumper = new boardDumperThread(&dd, rate, portPrefix, dataToDump[0]);
@@ -806,7 +817,6 @@ public:
                         else
                         {
                             yError("Debug Interface not available, cannot dump %s.\n", dataToDump[i].c_str());
-                            Network::fini();
                             return false;
                         }
                     }
@@ -833,7 +843,6 @@ public:
                         else
                         {
                             printf("Debug Interface not available, cannot dump %s.\n", dataToDump[i].c_str());
-                            Network::fini();
                             return false;
                         }
                     }
@@ -859,7 +868,6 @@ public:
                         else
                         {
                             printf("Debug Interface not available, cannot dump %s.\n", dataToDump[i].c_str());
-                            Network::fini();
                             return false;
                         }
                     }
@@ -943,9 +951,13 @@ public:
         return true;
     }
 
+    virtual bool updateModule()
+    {
+        return true;
+    }
+
     virtual bool close()
     {
-
         yInfo("Stopping dumper class\n");
         for(int i = 0; i < nData; i++)
             myDumper[i].stop();
@@ -972,46 +984,21 @@ public:
 
 int main(int argc, char *argv[]) 
 {
-    Network::init();
-    ResourceFinder rf;
+    Network yarp;
 
+    ResourceFinder rf;
     rf.setVerbose(false);
     rf.setDefaultContext("controlBoardDumper");
     rf.setDefaultConfigFile("controlBoardDumper.ini");
 
-    rf.setDefault("part", "head");
-    rf.setDefault("robot", "icub");
-    rf.configure(argc, argv);
+    rf.setDefault("part","head");
+    rf.setDefault("robot","icub");
+    rf.setDefault("rate","500");
+    rf.setDefault("joints","(0)");
+    rf.setDefault("dataToDump","(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors)");    
+    rf.configure(argc,argv);
 
-    Property p;
-    DumpModule mod;
-    p.fromString(rf.toString());
-
-    if (!p.check("rate"))
-    {
-        p.put("rate", 500);
-    }
-    if (!p.check("joints"))
-    {
-        Value v;
-        v.fromString("(0)");
-        p.put("joints", v);
-    }
-    if (!p.check("dataToDump"))
-    {
-        Value v;
-        v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors)");
-        p.put("dataToDump", v);
-    }
-    if (p.check("dataToDumpAll"))
-    {
-        Value v;
-      v.fromString("(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors getPosPidReferences getTrqPidReferences getMotorEncoders getMotorEncoderSpeeds getMotorEncoderAccelerations getControlModes getInteractionModes getTemperatures)");
-    //    v.fromString("(getControlModes getInteractionModes)");
-        
-        p.put("dataToDump", v);
-    }
-    if (p.check("help"))
+    if (rf.check("help"))
     {
         printf ("\ncontrolBoardDumper usage:\n");
         printf ("1) controlBoardDumper --robot icub --part left_arm --rate 10  --joints \"(0 1 2)\" \n");
@@ -1041,10 +1028,14 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    if (mod.open(p))
-        return mod.runModule();
-    else 
+    if (!yarp.checkNetwork())
+    {
+        yError()<<"YARP server not available!";
         return 1;
+    }
 
-    Network::fini();
+    DumpModule mod;
+    return mod.runModule(rf);
 }
+
+
