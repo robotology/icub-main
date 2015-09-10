@@ -15,8 +15,6 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <yarp/os/Network.h>
-#include <yarp/os/Module.h>
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 #include <iCub/ScaleSpace.h>
@@ -38,7 +36,7 @@ using namespace yarp::os;
 using namespace yarp::sig;
 
 // module
-class pf3dBottomup : public Module
+class pf3dBottomup : public RFModule
 {
 
 private:
@@ -125,10 +123,10 @@ public:
 pf3dBottomup(); //constructor
 ~pf3dBottomup(); //destructor
 
-virtual bool open(Searchable& config); //member to set the object up.
-virtual bool close();                  //member to close the object.
-virtual bool interruptModule();        //member to close the object.
-virtual bool updateModule();           //member that is repeatedly called by YARP
+virtual bool configure(ResourceFinder &rf); //member to set the object up.
+virtual bool close();                       //member to close the object.
+virtual bool interruptModule();             //member to close the object.
+virtual bool updateModule();                //member that is repeatedly called by YARP
 
 };
 

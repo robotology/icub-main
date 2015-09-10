@@ -21,7 +21,6 @@ CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 // yarp
 #include <yarp/os/Network.h>
-#include <yarp/os/Module.h>
 
 // iCub
 #include <iCub/pf3dBottomup.hpp>
@@ -32,8 +31,20 @@ using namespace yarp::os;
 int main(int argc, char *argv[])
 {
     Network yarp;
+    if (!yarp::os::Network::checkNetwork())
+    {
+        yError("YARP server not available!");
+        return 1;
+    }
+
+    ResourceFinder rf;
+    rf.setVerbose(true);
+    rf.setDefaultContext("pf3dBottomup");
+    rf.setDefaultConfigFile("pf3dBottomup.ini");
+    rf.configure(argc, argv);
+
     pf3dBottomup bottomup;
     bottomup.setName("/pf3dBottomup");
-    return bottomup.runModule(argc,argv);
+    return bottomup.runModule(rf);
 }
 

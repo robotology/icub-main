@@ -21,16 +21,11 @@
 #include <sstream>
 #include <time.h>
 
-#include <yarp/os/all.h>
-#include <yarp/sig/all.h>
-
-
 //member that is repeatedly called by YARP, to give this object the chance to do something.
 //should this function return "false", the object would be terminated.
 //I already have one image, when I get here (I either acquire it in the initialization method or in the end of this same method).
 bool pf3dBottomup::updateModule()
 {
-
     if(_doneInitializing)
     {
         CvMemStorage* storage = cvCreateMemStorage(0);
@@ -101,9 +96,8 @@ bool pf3dBottomup::updateModule()
 
 
 //member function that set the object up.
-bool pf3dBottomup::open(Searchable& config)
+bool pf3dBottomup::configure(ResourceFinder &rf)
 {
-
     _doneInitializing=false;
 
     string trackedObjectColorTemplate;
@@ -111,72 +105,53 @@ bool pf3dBottomup::open(Searchable& config)
     //***********************************
     //Read options from the command line.
     //***********************************
-    Bottle initialBottle(config.toString().c_str());
-
-    ConstString context = initialBottle.check("context",
-                    Value("pf3dBottomup"),
-                    "Context (string)").asString();
-    ConstString initializationFile = initialBottle.check("from",
-                    Value("pf3dBottomup.ini"),
-                    "Initialization file (string)").asString();
-
-    //create and initialize the resource finder
-    ResourceFinder rf;
-    rf.setDefaultContext(context.c_str());
-    rf.setDefaultConfigFile(initializationFile.c_str());
-    rf.configure(0, NULL);
-
-    // pass configuration over to bottle
-    Bottle botConfig(rf.toString().c_str());
-    //botConfig.setMonitor(config.getMonitor()); //is this needed?
-
-    _inputVideoPortName = botConfig.check("inputVideoPort",
+    _inputVideoPortName = rf.check("inputVideoPort",
                 Value("/pf3dBottomup/video:i"),
                 "Input video port (string)").asString();
-    _outputParticlePortName = botConfig.check("outputParticlePort",
+    _outputParticlePortName = rf.check("outputParticlePort",
                 Value("/pf3dBottomup/particles:o"),
                 "Output particle port (string)").asString();
 
     _inputVideoPort.open(_inputVideoPortName);
     _outputParticlePort.open(_outputParticlePortName);
 
-    _nParticles = botConfig.check("nParticles",
+    _nParticles = rf.check("nParticles",
                 Value("100"),
                 "Number of particles used in the tracker (int)").asInt();
-    _calibrationImageWidth = botConfig.check("w",
+    _calibrationImageWidth = rf.check("w",
                 Value(640),
                 "Image width  (int)").asInt();
-    _calibrationImageHeight = botConfig.check("h",
+    _calibrationImageHeight = rf.check("h",
                 Value(480),
                 "Image height (int)").asInt();
-    _camera.fx = botConfig.check("perspectiveFx",
+    _camera.fx = rf.check("perspectiveFx",
                 Value(1),
                 "Focal distance * kx  (double)").asDouble();
-    _camera.fy = botConfig.check("perspectiveFy",
+    _camera.fy = rf.check("perspectiveFy",
                 Value(1),
                 "Focal distance * ky  (double)").asDouble();
-    _camera.cx = botConfig.check("perspectiveCx",
+    _camera.cx = rf.check("perspectiveCx",
                 Value(1),
                 "X position of the projection center, in pixels (double)").asDouble();
-    _camera.cy = botConfig.check("perspectiveCy",
+    _camera.cy = rf.check("perspectiveCy",
                 Value(1),
                 "Y position of the projection center, in pixels (double)").asDouble();
-    _scaleSpaceLevels = botConfig.check("scaleSpaceLevels",
+    _scaleSpaceLevels = rf.check("scaleSpaceLevels",
                 Value(3),
                 "Number of levels on the scale space (int)").asInt();
-    _maskVmin = botConfig.check("maskVmin",
+    _maskVmin = rf.check("maskVmin",
                 Value(15),
                 "Minimum acceptable image value (int)").asInt();
-    _maskVmax = botConfig.check("maskVmax",
+    _maskVmax = rf.check("maskVmax",
                 Value(255),
                 "Maximum acceptable image value (int)").asInt();
-    _maskSmin = botConfig.check("maskSmin",
+    _maskSmin = rf.check("maskSmin",
                 Value(70),
                 "Minimum acceptable image saturation (int)").asInt();
-    _blur = botConfig.check("Blur",
+    _blur = rf.check("Blur",
                 Value(0),
                 "Blur variance applied to the input image (int)").asInt();
-    _object_model.raio_esfera = botConfig.check("sphereRadius",
+    _object_model.raio_esfera = rf.check("sphereRadius",
                 Value(0.03),
                 "Radius of the sphere in case that is our object (double)").asDouble();
 
