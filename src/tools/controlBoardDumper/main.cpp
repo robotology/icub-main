@@ -325,7 +325,6 @@ int getDataToDump(ResourceFinder &rf, std::string *listOfData, int n, bool *need
     availableDebugDataToDump[1] = ConstString("getRotorSpeeds");
     availableDebugDataToDump[2] = ConstString("getRotorAccelerations");
 
-    rf.setDefault("dataToDumpAll","(getEncoders getEncoderSpeeds getEncoderAccelerations getPositionErrors getOutputs getCurrents getTorques getTorqueErrors getPosPidReferences getTrqPidReferences getMotorEncoders getMotorEncoderSpeeds getMotorEncoderAccelerations getControlModes getInteractionModes getTemperatures)");
     if (rf.check("dataToDumpAll"))
     {
         for (int i = 0; i < n; i++)
