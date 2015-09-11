@@ -913,7 +913,8 @@ bool ClientCartesianController::getLimits(const int axis, double *min, double *m
 
 
 /************************************************************************/
-bool ClientCartesianController::setLimits(const int axis, const double min, const double max)
+bool ClientCartesianController::setLimits(const int axis, const double min,
+                                          const double max)
 {
     if (!connected)
         return false;
@@ -931,10 +932,7 @@ bool ClientCartesianController::setLimits(const int axis, const double min, cons
         return false;
     }
 
-    if (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK)
-        return true;
-    else
-        return false;
+    return (reply.get(0).asVocab()==IKINCARTCTRL_VOCAB_REP_ACK);
 }
 
 
