@@ -18,6 +18,7 @@
 
 #include <typeinfo>
 #include <cstdio>
+#include <cmath>
 #include <algorithm>
 
 #include <yarp/os/Log.h>
