@@ -354,9 +354,10 @@ PolyDriver *CartesianSolver::waitPart(const Property &partOpt)
 /************************************************************************/
 bool CartesianSolver::alignJointsBounds()
 {
+    hwLimits.resize(prt->chn->getN(),2);
     double min, max;
-    int cnt=0;
-
+    int cnt=0;    
+    
     yInfo("%s: aligning joints bounds ...",slvName.c_str());
     for (int i=0; i<prt->num; i++)
     {
@@ -380,6 +381,7 @@ bool CartesianSolver::alignJointsBounds()
         }
     }
 
+    swLimits=hwLimits;
     return true;
 }
 
@@ -1375,10 +1377,6 @@ bool CartesianSolver::open(Searchable &options)
         jnt.push_back(joints);
         rmp.push_back(rmpTmp);
     }
-
-    // set up storage for hw and sw limits
-    hwLimits.resize(prt->chn->getN(),2);
-    swLimits=hwLimits;
 
     // handle joints rest position and weights
     restJntPos.resize(prt->chn->getN(),0.0);
