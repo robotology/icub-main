@@ -18,9 +18,8 @@
 
 #include <cstdlib>
 #include <sstream>
+#include <cmath>
 #include <algorithm>
-
-#include <gsl/gsl_math.h>
 
 #include <yarp/os/Log.h>
 

@@ -20,8 +20,6 @@
 #include <cstdio>
 #include <algorithm>
 
-#include <gsl/gsl_math.h>
-
 #include <yarp/os/Log.h>
 #include <yarp/os/Time.h>
 #include <yarp/math/SVD.h>

@@ -16,9 +16,8 @@
  * Public License for more details
 */
 
+#include <cmath>
 #include <algorithm>
-
-#include <gsl/gsl_math.h>
 
 #include <yarp/os/LogStream.h>
 #include <yarp/os/Network.h>
@@ -366,13 +365,16 @@ bool CartesianSolver::alignJointsBounds()
         {               
             if (!lim[i]->getLimits(rmp[i][j],&min,&max))
             {
-                yError("joint #%d: failed getting limits!");
+                yError("joint #%d: failed getting limits!",cnt);
                 return false;
             }
 
             yInfo("joint #%d: [%g, %g] deg",cnt,min,max);
             (*prt->chn)[cnt].setMin(CTRL_DEG2RAD*min);
             (*prt->chn)[cnt].setMax(CTRL_DEG2RAD*max);
+
+            hwLimits(cnt,0)=min;
+            hwLimits(cnt,1)=max;
         
             cnt++;
         }
@@ -385,32 +387,27 @@ bool CartesianSolver::alignJointsBounds()
 /************************************************************************/
 bool CartesianSolver::setLimits(int axis, double min, double max)
 {
-    int cnt=0;
-
-    for (int i=0; i<prt->num; i++)
+    if (axis>=(int)prt->chn->getN())
     {
-        for (int j=0; j<jnt[i]; j++)
-        {
-            if (cnt++==axis)
-            {
-                double curMin, curMax;
-            
-                lim[i]->getLimits(rmp[i][j],&curMin,&curMax);
-            
-                if ((min>=curMin) && (max<=curMax))
-                {
-                    (*prt->chn)[axis].setMin(CTRL_DEG2RAD*min);
-                    (*prt->chn)[axis].setMax(CTRL_DEG2RAD*max);
-            
-                    return true;
-                }
-                else
-                    return false;
-            }
-        }
+        yError("#%d>#%d: requested out of range axis!",
+               axis,prt->chn->getN());
+        return false;
     }
+    else if ((min>=hwLimits(axis,0)) && (max<=hwLimits(axis,1)))
+    {
+        (*prt->chn)[axis].setMin(CTRL_DEG2RAD*min);
+        (*prt->chn)[axis].setMax(CTRL_DEG2RAD*max);
 
-    return false;
+        swLimits(axis,0)=min;
+        swLimits(axis,1)=max;
+
+        return true;
+    }
+    else
+    {
+        yWarning("joint #%d: requested out of range limit!",axis);
+        return false;
+    }
 }
 
 
@@ -616,8 +613,8 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                 if (axis<(int)prt->chn->getN())
                                 {
                                     reply.addVocab(IKINSLV_VOCAB_REP_ACK);
-                                    reply.addDouble(CTRL_RAD2DEG*(*prt->chn)[axis].getMin());
-                                    reply.addDouble(CTRL_RAD2DEG*(*prt->chn)[axis].getMax());
+                                    reply.addDouble(swLimits(axis,0));
+                                    reply.addDouble(swLimits(axis,1));
                                 }
                                 else
                                     reply.addVocab(IKINSLV_VOCAB_REP_NACK);
@@ -1378,6 +1375,10 @@ bool CartesianSolver::open(Searchable &options)
         jnt.push_back(joints);
         rmp.push_back(rmpTmp);
     }
+
+    // set up storage for hw and sw limits
+    hwLimits.resize(prt->chn->getN(),2);
+    swLimits=hwLimits;
 
     // handle joints rest position and weights
     restJntPos.resize(prt->chn->getN(),0.0);
