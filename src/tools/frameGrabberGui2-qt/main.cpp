@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
     }else if (argc<3) {
         printf("usage:\n");
         printf("%s --local <localportname> --remote <grabberport> [--width <gui width>] [--height <gui height>] [--x <gui x pos>] [--y <gui y pos>]\n",argv[0]);
+        return 1;
     }else if (argc>3){
 
         yarp::os::Property options;

@@ -42,7 +42,7 @@ void DC1394Slider::resizeEvent(QResizeEvent* event)
 
 }
 
-bool DC1394Slider::init(dc1394feature_id_t feature, char* label, DC1394Thread *controlThread)
+bool DC1394Slider::init(cameraFeature_id_t feature, char* label, DC1394Thread *controlThread)
 {
     m_Feature=feature;
     this->controlThread = controlThread;

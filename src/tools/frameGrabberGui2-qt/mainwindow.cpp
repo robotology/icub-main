@@ -19,6 +19,8 @@ MainWindow::MainWindow(char *loc, char *rem, QWidget *parent) :
 {
     ui->setupUi(this);
 
+//    ui->tabWidget->setTabEnabled(ui->tabWidget->indexOf(ui->tabCamera), false);
+
     initMainWindow();
     initFeatureTab();
     initFeatureAdvTab();
@@ -199,20 +201,20 @@ void MainWindow::disconnectWidgets()
 
 void MainWindow::initFeatureAdvTab()
 {
-    ui->sliderSharpness->init(DC1394_FEATURE_SHARPNESS,(char*)"Sharpness",&dc1394Thread);
-    ui->sliderHue->init(DC1394_FEATURE_HUE,(char*)"Hue",&dc1394Thread);
-    ui->sliderSaturation->init(DC1394_FEATURE_SATURATION,(char*)"Saturation",&dc1394Thread);
-    ui->sliderGamma->init(DC1394_FEATURE_GAMMA,(char*)"Gamma",&dc1394Thread);
-    ui->sliderIris->init(DC1394_FEATURE_IRIS,(char*)"Iris",&dc1394Thread);
-    ui->sliderFocus->init(DC1394_FEATURE_FOCUS,(char*)"Focus",&dc1394Thread);
+    ui->sliderSharpness->init(YARP_FEATURE_SHARPNESS,(char*)"Sharpness",&dc1394Thread);
+    ui->sliderHue->init(YARP_FEATURE_HUE,(char*)"Hue",&dc1394Thread);
+    ui->sliderSaturation->init(YARP_FEATURE_SATURATION,(char*)"Saturation",&dc1394Thread);
+    ui->sliderGamma->init(YARP_FEATURE_GAMMA,(char*)"Gamma",&dc1394Thread);
+    ui->sliderIris->init(YARP_FEATURE_IRIS,(char*)"Iris",&dc1394Thread);
+    ui->sliderFocus->init(YARP_FEATURE_FOCUS,(char*)"Focus",&dc1394Thread);
 }
 
 void MainWindow::initFeatureTab()
 {
-    ui->sliderShutter->init(DC1394_FEATURE_SHUTTER,(char*)"Shutter",&dc1394Thread);
-    ui->sliderBrightness->init(DC1394_FEATURE_BRIGHTNESS,(char*)"Brightness",&dc1394Thread);
-    ui->sliderGain->init(DC1394_FEATURE_GAIN,(char*)"Gain",&dc1394Thread);
-    ui->sliderExposure->init(DC1394_FEATURE_EXPOSURE,(char*)"Exposure",&dc1394Thread);
+    ui->sliderShutter->init(YARP_FEATURE_SHUTTER,(char*)"Shutter",&dc1394Thread);
+    ui->sliderBrightness->init(YARP_FEATURE_BRIGHTNESS,(char*)"Brightness",&dc1394Thread);
+    ui->sliderGain->init(YARP_FEATURE_GAIN,(char*)"Gain",&dc1394Thread);
+    ui->sliderExposure->init(YARP_FEATURE_EXPOSURE,(char*)"Exposure",&dc1394Thread);
     ui->sliderWB->init(&dc1394Thread);
 }
 

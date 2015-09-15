@@ -16,7 +16,7 @@ public:
 
     explicit DC1394Slider(/*dc1394feature_id_t feature,char* label,MainWindow *fg,*/QWidget *parent = 0);
     ~DC1394Slider();
-    bool init(dc1394feature_id_t feature, char* label, DC1394Thread *controlThread);
+    bool init(cameraFeature_id_t feature, char* label, DC1394Thread *controlThread);
     void Refresh();
     void Propagate();
     void updateSliders();
@@ -32,7 +32,7 @@ private:
 protected:
     QString m_Name;
     double m_old_value,m_new_value;
-    dc1394feature_id_t m_Feature;
+    cameraFeature_id_t m_Feature;
     yarp::dev::RemoteFrameGrabberControlsDC1394 *pFG;
 
 private:

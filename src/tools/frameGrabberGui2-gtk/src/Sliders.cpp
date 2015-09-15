@@ -20,7 +20,7 @@ int DC1394SliderBase::m_Height=0;
         delete pRBm;
     }
 
-    DC1394Slider::DC1394Slider(dc1394feature_id_t feature,char* label,Gtk::VBox &vbox,FrameGrabberGUIControl2 *fg)
+    DC1394Slider::DC1394Slider(cameraFeature_id_t feature,char* label,Gtk::VBox &vbox,FrameGrabberGUIControl2 *fg)
         : m_Slider(0.0,1.005,0.005),m_OnePush("One Push")
     {
         if (!((pFG=fg)->hasFeatureDC1394(m_Feature=feature)))
@@ -171,7 +171,7 @@ int DC1394SliderBase::m_Height=0;
     DC1394SliderWB::DC1394SliderWB(Gtk::VBox &vbox,yarp::dev::RemoteFrameGrabberControlsDC1394 *fg)
         : m_Red(0.0,1.005,0.005),m_Blue(0.0,1.005,0.005),m_OnePush("One Push")
     {
-        if (!(pFG=fg)->hasFeatureDC1394(DC1394_FEATURE_WHITE_BALANCE))
+        if (!(pFG=fg)->hasFeatureDC1394(YARP_FEATURE_WHITE_BALANCE))
         {
             m_bInactive=true;
             return;
@@ -227,8 +227,8 @@ int DC1394SliderBase::m_Height=0;
     {
         if (m_bInactive) return;
 
-        bool bON=pFG->getActiveDC1394(DC1394_FEATURE_WHITE_BALANCE);
-        bool bAuto=pFG->getModeDC1394(DC1394_FEATURE_WHITE_BALANCE);
+        bool bON=pFG->getActiveDC1394(YARP_FEATURE_WHITE_BALANCE);
+        bool bAuto=pFG->getModeDC1394(YARP_FEATURE_WHITE_BALANCE);
 
         if (bAuto)
             pRBa->set_active(true);
@@ -237,12 +237,12 @@ int DC1394SliderBase::m_Height=0;
 
         pPwr->set_active(bON);
 
-        pPwr->set_sensitive(pFG->hasOnOffDC1394(DC1394_FEATURE_WHITE_BALANCE));
-        pRBa->set_sensitive(bON && pFG->hasAutoDC1394(DC1394_FEATURE_WHITE_BALANCE));
-        pRBm->set_sensitive(bON && pFG->hasManualDC1394(DC1394_FEATURE_WHITE_BALANCE));
+        pPwr->set_sensitive(pFG->hasOnOffDC1394(YARP_FEATURE_WHITE_BALANCE));
+        pRBa->set_sensitive(bON && pFG->hasAutoDC1394(YARP_FEATURE_WHITE_BALANCE));
+        pRBm->set_sensitive(bON && pFG->hasManualDC1394(YARP_FEATURE_WHITE_BALANCE));
         m_Blue.set_sensitive(bON && !bAuto);
         m_Red.set_sensitive(bON && !bAuto);
-        m_OnePush.set_sensitive(bON && pFG->hasOnePushDC1394(DC1394_FEATURE_WHITE_BALANCE));
+        m_OnePush.set_sensitive(bON && pFG->hasOnePushDC1394(YARP_FEATURE_WHITE_BALANCE));
 
         pFG->getWhiteBalanceDC1394(m_new_blu,m_new_red);
         if (m_new_blu!=m_old_blu)
@@ -263,8 +263,8 @@ int DC1394SliderBase::m_Height=0;
         if (m_bInactive) return;
 
         pFG->setWhiteBalanceDC1394(m_Blue.get_value(),m_Red.get_value());
-        pFG->setModeDC1394(DC1394_FEATURE_WHITE_BALANCE,pRBa->get_active());
-        pFG->setActiveDC1394(DC1394_FEATURE_WHITE_BALANCE,pPwr->get_active());
+        pFG->setModeDC1394(YARP_FEATURE_WHITE_BALANCE,pRBa->get_active());
+        pFG->setActiveDC1394(YARP_FEATURE_WHITE_BALANCE,pPwr->get_active());
     }
 
     void DC1394SliderWB::slider_handler()
@@ -283,7 +283,7 @@ int DC1394SliderBase::m_Height=0;
     void DC1394SliderWB::onepush_handler()
     {
         //pFG->getWhiteBalanceDC1394(m_old_blu,m_old_red);
-        pFG->setOnePushDC1394(DC1394_FEATURE_WHITE_BALANCE);
+        pFG->setOnePushDC1394(YARP_FEATURE_WHITE_BALANCE);
         pFG->getWhiteBalanceDC1394(m_new_blu,m_new_red);
         printf("one push\n");
 
@@ -303,7 +303,7 @@ int DC1394SliderBase::m_Height=0;
     void DC1394SliderWB::automan_handler()
     {
         bool bAuto=pRBa->get_active();
-        pFG->setModeDC1394(DC1394_FEATURE_WHITE_BALANCE,bAuto);
+        pFG->setModeDC1394(YARP_FEATURE_WHITE_BALANCE,bAuto);
         m_Red.set_sensitive(!bAuto);
         m_Blue.set_sensitive(!bAuto);
         printf("%s\n",pRBa->get_active()?"auto":"man");
@@ -312,12 +312,12 @@ int DC1394SliderBase::m_Height=0;
     void DC1394SliderWB::pwr_handler()
     {
         bool bON=pPwr->get_active();
-        pFG->setActiveDC1394(DC1394_FEATURE_WHITE_BALANCE,bON);
-        pRBa->set_sensitive(bON && pFG->hasAutoDC1394(DC1394_FEATURE_WHITE_BALANCE));
-        pRBm->set_sensitive(bON && pFG->hasManualDC1394(DC1394_FEATURE_WHITE_BALANCE));
+        pFG->setActiveDC1394(YARP_FEATURE_WHITE_BALANCE,bON);
+        pRBa->set_sensitive(bON && pFG->hasAutoDC1394(YARP_FEATURE_WHITE_BALANCE));
+        pRBm->set_sensitive(bON && pFG->hasManualDC1394(YARP_FEATURE_WHITE_BALANCE));
         m_Red.set_sensitive(bON && pRBm->get_active());
         m_Blue.set_sensitive(bON && pRBm->get_active());
-        m_OnePush.set_sensitive(bON && pFG->hasOnePushDC1394(DC1394_FEATURE_WHITE_BALANCE));
+        m_OnePush.set_sensitive(bON && pFG->hasOnePushDC1394(YARP_FEATURE_WHITE_BALANCE));
         printf("power %s\n",pPwr->get_active()?"on":"off");
     }
 

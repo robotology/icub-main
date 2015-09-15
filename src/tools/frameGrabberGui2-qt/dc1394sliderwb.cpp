@@ -48,7 +48,7 @@ void DC1394SliderWB::resizeEvent(QResizeEvent* event)
 
 bool DC1394SliderWB::init(DC1394Thread *controlThread)
 {
-//    if (!((pFG=fg)->hasFeatureDC1394(DC1394_FEATURE_WHITE_BALANCE))){
+//    if (!((pFG=fg)->hasFeatureDC1394(YARP_FEATURE_WHITE_BALANCE))){
 
 //        m_bInactive=true;
 //        setVisible(false);
@@ -82,7 +82,7 @@ bool DC1394SliderWB::init(DC1394Thread *controlThread)
 
     QVariantList list;
     list.append(qVariantFromValue((void*)this));
-    list.append(QVariant((int)DC1394_FEATURE_WHITE_BALANCE));
+    list.append(QVariant((int)YARP_FEATURE_WHITE_BALANCE));
     controlThread->doTask(_sliderHasFeature,list);
 
     return true;
@@ -142,7 +142,7 @@ void DC1394SliderWB::Refresh()
         return;
     }
 
-    int f = (int)DC1394_FEATURE_WHITE_BALANCE;
+    int f = (int)YARP_FEATURE_WHITE_BALANCE;
     QVariantList list;
     list.append(qVariantFromValue((void*)this));
     list.append(QVariant(f));
@@ -202,7 +202,7 @@ void DC1394SliderWB::Propagate()
     }
 
     QVariantList list;
-    list.append(QVariant((int)DC1394_FEATURE_WHITE_BALANCE));
+    list.append(QVariant((int)YARP_FEATURE_WHITE_BALANCE));
     list.append(QVariant((double)ui->m_SliderRed->value()/1000));
     list.append(QVariant((double)ui->m_SliderBlue->value()/1000));
     list.append(QVariant(ui->pRBa->isChecked()));
@@ -212,8 +212,8 @@ void DC1394SliderWB::Propagate()
 
 
 //    pFG->setWhiteBalanceDC1394(ui->m_SliderBlue->value()/1000,ui->m_SliderRed->value()/1000);
-//    pFG->setModeDC1394(DC1394_FEATURE_WHITE_BALANCE,ui->pRBa->isChecked());
-//    pFG->setActiveDC1394(DC1394_FEATURE_WHITE_BALANCE,ui->pPwr->isChecked());
+//    pFG->setModeDC1394(YARP_FEATURE_WHITE_BALANCE,ui->pRBa->isChecked());
+//    pFG->setActiveDC1394(YARP_FEATURE_WHITE_BALANCE,ui->pPwr->isChecked());
 }
 
 void DC1394SliderWB::onSliderRedReleased()
@@ -221,7 +221,7 @@ void DC1394SliderWB::onSliderRedReleased()
     double val = (double)ui->m_SliderRed->value()/1000;
     QVariantList list;
     list.append(qVariantFromValue((void*)this));
-    list.append(QVariant((int)DC1394_FEATURE_WHITE_BALANCE));
+    list.append(QVariant((int)YARP_FEATURE_WHITE_BALANCE));
     list.append(QVariant(val));
     list.append(QVariant((double)ui->m_SliderBlue->value()/1000));
     controlThread->doTask(_sliderWBSetFeature,list);
@@ -248,7 +248,7 @@ void DC1394SliderWB::onSliderBlueReleased()
     double val = (double)ui->m_SliderBlue->value()/1000;
     QVariantList list;
     list.append(qVariantFromValue((void*)this));
-    list.append(QVariant((int)DC1394_FEATURE_WHITE_BALANCE));
+    list.append(QVariant((int)YARP_FEATURE_WHITE_BALANCE));
     list.append(QVariant((double)ui->m_SliderRed->value()/1000));
     list.append(QVariant(val));
     controlThread->doTask(_sliderWBSetFeature,list);
@@ -285,12 +285,12 @@ void DC1394SliderWB::onOnePushClicked()
 
     QVariantList list;
     list.append(qVariantFromValue((void*)this));
-    list.append(QVariant((int)DC1394_FEATURE_WHITE_BALANCE));
+    list.append(QVariant((int)YARP_FEATURE_WHITE_BALANCE));
     controlThread->doTask(_sliderWBOnePush,list);
 
 
 //    //pFG->getWhiteBalanceDC1394(m_old_blu,m_old_red);
-//    pFG->setOnePushDC1394(DC1394_FEATURE_WHITE_BALANCE);
+//    pFG->setOnePushDC1394(YARP_FEATURE_WHITE_BALANCE);
 //    pFG->getWhiteBalanceDC1394(m_new_blu,m_new_red);
 //    LOG("one push\n");
 
@@ -349,11 +349,11 @@ void DC1394SliderWB::onRadioAuto(bool toggled)
 
     QVariantList list;
     list.append(qVariantFromValue((void*)this));
-    list.append(QVariant((int)DC1394_FEATURE_WHITE_BALANCE));
+    list.append(QVariant((int)YARP_FEATURE_WHITE_BALANCE));
     list.append(QVariant(bAuto));
     controlThread->doTask(_sliderRadioAuto,list);
 
-//    pFG->setModeDC1394(DC1394_FEATURE_WHITE_BALANCE,bAuto);
+//    pFG->setModeDC1394(YARP_FEATURE_WHITE_BALANCE,bAuto);
 //    ui->m_SliderRed->setEnabled(!bAuto);
 //    ui->m_SliderBlue->setEnabled(!bAuto);
 //    LOG("%s\n",ui->pRBa->isEnabled() ? "auto":"man");
@@ -366,7 +366,7 @@ void DC1394SliderWB::onRadioAutoDone(QObject *slider,bool bON, bool bAuto)
         return;
     }
 
-    //pFG->setModeDC1394(DC1394_FEATURE_WHITE_BALANCE,bAuto);
+    //pFG->setModeDC1394(YARP_FEATURE_WHITE_BALANCE,bAuto);
     ui->m_SliderRed->setEnabled(!bAuto);
     ui->m_SliderBlue->setEnabled(!bAuto);
     LOG("%s\n",ui->pRBa->isEnabled() ? "auto":"man");
@@ -379,16 +379,16 @@ void DC1394SliderWB::onPower(bool checked)
 
     QVariantList list;
     list.append(qVariantFromValue((void*)this));
-    list.append(QVariant((int)DC1394_FEATURE_WHITE_BALANCE));
+    list.append(QVariant((int)YARP_FEATURE_WHITE_BALANCE));
     list.append(QVariant(bON));
     controlThread->doTask(_sliderPower,list);
 
-//    pFG->setActiveDC1394(DC1394_FEATURE_WHITE_BALANCE,bON);
-//    ui->pRBa->setEnabled(bON && pFG->hasAutoDC1394(DC1394_FEATURE_WHITE_BALANCE));
-//    ui->pRBm->setEnabled(bON && pFG->hasManualDC1394(DC1394_FEATURE_WHITE_BALANCE));
+//    pFG->setActiveDC1394(YARP_FEATURE_WHITE_BALANCE,bON);
+//    ui->pRBa->setEnabled(bON && pFG->hasAutoDC1394(YARP_FEATURE_WHITE_BALANCE));
+//    ui->pRBm->setEnabled(bON && pFG->hasManualDC1394(YARP_FEATURE_WHITE_BALANCE));
 //    ui->m_SliderRed->setEnabled(bON && ui->pRBm->isChecked());
 //    ui->m_SliderBlue->setEnabled(bON && ui->pRBm->isChecked());
-//    ui->m_OnePush->setEnabled(bON && pFG->hasOnePushDC1394(DC1394_FEATURE_WHITE_BALANCE));
+//    ui->m_OnePush->setEnabled(bON && pFG->hasOnePushDC1394(YARP_FEATURE_WHITE_BALANCE));
 //    LOG("power %s\n",ui->pPwr->isEnabled() ? "on":"off");
 //    reload();
 }
