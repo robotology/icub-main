@@ -1,7 +1,7 @@
  
  
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices robot="iCubPlymouth01" build="1">              
+<devices robot="iCubBarcelona01" build="1">              
   <device name="left_leg_mc" type="canmotioncontrol">    
 <params file="general.xml" />              
 <group name="CAN">           
@@ -68,8 +68,6 @@
 </group>       
  
 <group name="TORQUE_CONTROL">              
-<param name="controlLaw">    joint_pid                  </param>       
-<param name="controlUnits">  machine_units              </param>       
 <param name="kp">           76            -76           76            -76           0             0             </param>       
 <param name="kd">           0             0             0             0             0             0             </param>       
 <param name="ki">           0             0             0             0             0             0             </param>       
@@ -88,3 +86,5 @@
   </device>    
 </devices>     
  
+<?xml version="1.0" encoding="UTF-8" ?>    
+<devices robot="iCubBarcelona01" build="1">              
