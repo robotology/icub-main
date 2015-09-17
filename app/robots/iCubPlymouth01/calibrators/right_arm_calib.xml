@@ -1,3 +1,6 @@
+ 
+<?xml version="1.0" encoding="UTF-8" ?>    
+<devices>      
     <device name="right_arm_calibrator" type="parametricCalibrator">   
 <params file="general.xml" />              
         <group name="GENERAL">             
@@ -8,7 +11,7 @@
 <group name="CALIBRATION">   
  
 <param name="calibrationType">            3             3             3             3             0             2             2             3             </param>       
-<param name="calibration1">               1706.25       853.13        2795.32       2559.38       800.00        750.00        750.00        1780.00       </param>       
+<param name="calibration1">               1706.25       853.13        2795.32       2559.38       500.00        750.00        750.00        2520.00       </param>       
 <param name="calibration2">               10.00         10.00         10.00         10.00         -20.00        10.00         10.00         100.00        </param>       
 <param name="calibration3">               3538.50       2778.13       927.88        2639.50       0.00          0.00          0.00          0.00          </param>       
 <param name="positionZero">               -30           30            0             45            0             0             0             15            </param>       
@@ -36,6 +39,10 @@
  
     </device>  
 </devices>     
+ 
+ 
+ 
+ 
  
  
  
