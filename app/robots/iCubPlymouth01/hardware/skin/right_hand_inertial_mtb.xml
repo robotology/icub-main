@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+<device type="canBusInertialMTB" name="right_hand_inertial_mtb">
+    <param name="canbusDevice"> "sharedcan" </param>
+    <param name="physDevice"> "cfw2can" </param>
+    <param name="canDeviceNum"> 8 </param>
+    <param name="canAddress"> 0x0E </param>
+    <param name="period"> 10 </param>
+</device>
+</devices>
