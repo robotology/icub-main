@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE robot PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<robot name="iCubExpArmV3" build="1" portprefix="icub">
+
+    <!-- ARM-V3 -->
+    
+    <!-- MOTOR CONTROLLERS -->  
+    <devices file="./hardware/motorControl/left_lower_arm-mc4plus16-mc.xml" />
+<!-- 
+    <devices file="./hardware/motorControl/left_lower_arm-mc4plus17-mc.xml" /> HANDLED LATER ON
+    <devices file="./hardware/motorControl/left_lower_arm-mc4plus18-mc.xml" /> HANDLED LATER ON
+-->    
+    <devices file="./wrappers/motorControl/left_arm-mc_wrapper.xml" /> 
+
+    <!-- ANALOG SENSOR MAIS -->
+    <devices file="wrappers/MAIS/left_hand-mais_wrapper.xml" />  
+    <devices file="hardware/MAIS/left_hand-mc4plus16-mais.xml" /> 
+    
+    <!-- CALIBRATORS --> 
+    <!-- left-arm calibrator -->
+    <devices file="./calibrators/left_arm-calib.xml" />
+    
+</robot> 
+
