@@ -19,7 +19,8 @@
         </paramlist>
 
         <param name="period"> 10                        </param>
-        <param name="name">   /icub/facev3              </param>
+        <param name="name">   /icub/face                </param>
+        <param name="ports">  face                      </param>
         <param name="joints"> 6                         </param>
 
         <action phase="startup" level="5" type="attach">

@@ -20,7 +20,7 @@
         <param name="Joints"> 4 </param> <!-- the number of joints of the robot part -->
 
         <!-- joint number in sub-part           0           1           2           3            -->
-        <!-- joint name                         lip-left    lip-high    lip-right   lip-bottom   -->   
+        <!-- joint name                        lip-right    lip-high    lip-left   lip-bottom   -->   
         <param name="AxisMap">                  0        1          2        3              </param>    <!-- joint as effectively mapped onto the hw of the board --> 
         <param name="HasHallSensor">            0        0          0        0              </param>
         <param name="HasTempSensor">            0        0          0        0              </param>
@@ -33,7 +33,7 @@
         <param name="RotorEncoderRes">          -14400   -14400     -14400   -14400         </param>
         <param name="JointEncoderType">         "OPTICAL_QUAD"      "OPTICAL_QUAD"  "OPTICAL_QUAD"  "OPTICAL_QUAD"    </param>
         <param name="RotorEncoderType">         "ROIE"      "ROIE"        "ROIE"        "ROIE"         </param>
-        <param name="JointEncoderRes">          -105600      105600       -105600       -105600      </param>
+        <param name="JointEncoderRes">          -105600      105600       105600       -105600      </param>
         <param name="RotorIndexOffset">         0           0             0             0        </param>
         <param name="Gearbox">                  1           1             1             1        </param>
         <param name="MotorPoles">               8           8             8             8        </param>   <!-- ??? -->

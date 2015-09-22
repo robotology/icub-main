@@ -21,7 +21,7 @@
         <params file="hardware/mechanicals/face-mc4plus15-mec.xml" />
 
         <!-- joint number in sub-part           0           1           2           3            -->
-        <!-- joint name                         lip-left    lip-high    lip-right   lip-bottom   -->   
+        <!-- joint name                         lip-right   lip-high    lip-left   lip-bottom   -->   
         <group name="LIMITS">
             <param name="Min">                  -35         -28         -35         0           </param> 
             <param name="Max">                  +35         +28         +35         +28         </param>
@@ -37,12 +37,12 @@
         <group name="POSITION_CONTROL">
             <param name="controlLaw">       joint_pid_v1                                        </param>    
             <param name="controlUnits">     metric_units                                        </param> 
-            <param name="kp">                   -568.00     568.00      -568.00     -568.00     </param>       
+            <param name="kp">                   -3500.00    2000.00     3500.00     -4500.00    </param>       
             <param name="kd">                   0.0         0.0         0.0         0.0         </param>     
-            <param name="ki">                   0.0         0.0         0.0         0.0         </param>      
+            <param name="ki">                   0.0         300.0       0.0         0.0         </param>      
             <param name="limPwm">               500         500         500         500         </param>       
-            <param name="maxPwm">               700         700         700         700         </param>  
-            <param name="maxInt">               750         750         750         750         </param> 
+            <param name="maxPwm">               3360        3360        3360        3360        </param>  
+            <param name="maxInt">               3360        3360        3360        3360        </param> 
             <param name="shift">                0           0           0           0           </param>       
             <param name="ko">                   0           0           0           0           </param>  
             <param name="stictionUp">           0           0           0           0           </param> 
