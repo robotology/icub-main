@@ -5,8 +5,8 @@
     <group name="GENERAL">
         <param name="MotioncontrolVersion">  2 </param>
         <param name="Joints"> 3 </param> 
-
         <param name="AxisMap">               2             0             1           </param>   
+        <param name="AxisName">      "torso_yaw" "torso_roll" "torso_pitch"          </param>
         <param name="HasHallSensor">         1             1             1           </param>
         <param name="HasTempSensor">         0             0             0           </param>
         <param name="HasRotorEncoder">       1             1             1           </param>

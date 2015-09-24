@@ -6,6 +6,7 @@
         <param name="MotioncontrolVersion">  1 </param>
         <param name="Joints"> 6  </param> <!-- the number of joints of the robot part -->
         <param name="AxisMap"> 		         0             1             2             3             4             5    </param>
+        <param name="AxisName">       "neck_pitch" "neck_roll"    "neck_yaw"    "eyes_tilt"  "eyes_vergence"  "eyes_version" </param>
         <param name="HasHallSensor">         0             0             0             0             0             0    </param>
         <param name="HasTempSensor">         0             0             0             0             0             0    </param>
         <param name="HasRotorEncoder">       1             1             1             1             1             1    </param>

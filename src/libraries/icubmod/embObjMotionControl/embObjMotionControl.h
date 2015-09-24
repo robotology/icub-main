@@ -248,6 +248,9 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementDebugInterface,
     public IRemoteVariablesRaw,
     public ImplementRemoteVariables,
+    public IAxisInfoRaw,
+    public ImplementAxisInfo,
+
     public IethResource
 {
 
@@ -285,6 +288,7 @@ private:
     Pid *_cpids;                                /** initial current gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
 
+    string *_axisName;                          /** axis name */
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
@@ -595,6 +599,10 @@ public:
     virtual bool setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val);
     virtual bool getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys);
     ///////////////////////// END RemoteVariables Interface
+
+    //////////////////////// BEGIN IAxisInfo Interface
+    virtual bool getAxisNameRaw(int axis, yarp::os::ConstString& name);
+    ///////////////////////// END IAxisInfo Interface
 
     //Internal use, not exposed by Yarp (yet)
     virtual bool getGearboxRatioRaw(int m, double *gearbox);
