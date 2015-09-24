@@ -1298,8 +1298,10 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     for (i = 1; i < xtmp.size(); i++)
         _axisMap[i-1] = xtmp.get(i).asInt();
     
-    if (!validate(general, xtmp, "AxisName", "a list of strings representing the axes names", _njoints))
+    if (!validate(general, xtmp, "AxisName", "a list of strings representing the axes names", nj + 1))
+    { 
         //return false; //this parameter is not yet mandatory
+    }
 
     for (i = 1; i < xtmp.size(); i++)
         _axisName[i - 1] = xtmp.get(i).asString();
