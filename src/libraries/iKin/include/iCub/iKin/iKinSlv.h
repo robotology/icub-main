@@ -239,6 +239,7 @@
 #include <yarp/os/Mutex.h>
 #include <yarp/os/Event.h>
 #include <yarp/sig/Vector.h>
+#include <yarp/sig/Matrix.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
 #include <yarp/dev/PolyDriver.h>
@@ -371,6 +372,9 @@ protected:
     double        ping_robot_tmo;
     double        token;
     double       *pToken;
+
+    yarp::sig::Matrix hwLimits;
+    yarp::sig::Matrix swLimits;
 
     yarp::sig::Vector unctrlJointsOld;
     yarp::sig::Vector dof;

@@ -39,19 +39,20 @@
     <group name="TORQUE_CONTROL">
         <param name="controlLaw">    motor_pid_with_friction_v1 </param> 
         <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">              0          0          0          0     </param>       
+        <param name="kp">            200        200        250        300     </param>       
         <param name="kd">              0          0          0          0     </param>       
-        <param name="ki">              0          0          0          0     </param>       
+        <param name="ki">              0          0          0          0     </param>
+        <param name="limPwm">       3000       3000       3000       3000     </param>        
         <param name="maxPwm">       8000       8000       8000       8000     </param>       
         <param name="maxInt">        500        500        500        500     </param>       
         <param name="shift">           0          0          0          0     </param>       
         <param name="ko">              0          0          0          0     </param>       
-        <param name="stictionUp">      0          0          0          0     </param>       
-        <param name="stictionDwn">     0          0          0          0     </param>    
+        <param name="stictionUp">      0.5        0.5        1          1.7   </param>       
+        <param name="stictionDwn">    -0.7       -0.7       -0.8       -1.2   </param>    
         <param name="kff">             1          1          1          1     </param>  
-        <param name="kbemf">      0.0000     0.0000     0.0000     0.0000     </param>    
+        <param name="kbemf">      0.0030     0.0006     0.0007     0.0007     </param>    
         <param name="filterType">      0          0          0          0     </param>    
-        <param name="ktau">            0          0          0          0     </param>             
+        <param name="ktau">          180        464        463        449     </param>             
     </group>
 	
   </device>

@@ -3017,10 +3017,10 @@ bool ServerCartesianController::setLimits(const int axis, const double min,
         command.addDouble(max);
 
         // send command to solver and wait for reply        
-        if (!portSlvRpc.write(command,reply))
-            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
-        else
+        if (portSlvRpc.write(command,reply))
             ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
+        else
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());
 
         mutex.unlock();
     }

@@ -18,9 +18,8 @@
 
 #include <typeinfo>
 #include <cstdio>
+#include <cmath>
 #include <algorithm>
-
-#include <gsl/gsl_math.h>
 
 #include <yarp/os/Log.h>
 #include <yarp/os/Time.h>

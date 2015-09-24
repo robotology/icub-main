@@ -443,6 +443,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     }
 
     _fId.endpoint = eoprot_endpoint_skin;
+    _fId.entity = eoprot_entity_sk_skin;
     _fId.type = ethFeatType_Skin;
 
     // N.B.: use a dynamic_cast to extract correct interface when using this pointer

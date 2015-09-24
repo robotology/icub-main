@@ -5512,7 +5512,13 @@ bool CanBusMotionControl::checkMotionDoneRaw (bool *val)
 
 bool CanBusMotionControl::calibrate2Raw(int axis, unsigned int type, double p1, double p2, double p3)
 {
-    return _writeByteWords16 (ICUBCANPROTO_POL_MC_CMD__CALIBRATE_ENCODER, axis, type, S_16(p1), S_16(p2), S_16(p3));
+    bool b = _writeByteWords16(ICUBCANPROTO_POL_MC_CMD__CALIBRATE_ENCODER, axis, type, S_16(p1), S_16(p2), S_16(p3));
+    return b;
+}
+
+bool CanBusMotionControl::setCalibrationParametersRaw(int j, const CalibrationParameters& params)
+{
+    return calibrate2Raw(j, params.type, params.param1, params.param2, params.param3);
 }
 
 bool CanBusMotionControl::setRefSpeedRaw(int axis, double sp)

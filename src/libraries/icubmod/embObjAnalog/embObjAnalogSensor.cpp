@@ -95,7 +95,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
 
     // Analog Sensor stuff
     Bottle config = _config.findGroup("GENERAL");
-    if (!extractGroup(config, xtmp, "Period","transmetting period of the sensor", 1))
+    if (!extractGroup(config, xtmp, "Period","transmitting period of the sensors", 1))
     {
         yError() << "embObjAnalogSensor Using default value = 0 (disabled)";
         _period = 0;
@@ -107,10 +107,11 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
         yDebug() << "embObjAnalogSensor::fromConfig() detects embObjAnalogSensor Using value of" << _period;
     }
 
-    if (!extractGroup(config, xtmp, "Channels","Number of channels of the Analog Sensor", 1))
+    if (!extractGroup(config, xtmp, "Channels","Number of channels of the sensor", 1))
     {
         yWarning("embObjAnalogSensor: Using default value = 0 (disabled)\n");
         _channels = 0;
+        _numofsensors = 0;
         _period   = 0;
         _as_type=AS_NONE;
     }
@@ -119,35 +120,106 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
         _channels = xtmp.get(1).asInt();
     }
 
-
-    if (!extractGroup(config, xtmp, "Format","data format of the Analog Sensor", 1))
+#if 0
+    if (!extractGroup(config, xtmp, "NumberOfSensors","Number of sensors managed", 1))
     {
-        yWarning("embObjAnalogSensor: Using default value = 0 (disabled)");
-        _channels = 0;
-        _period   = 0;
-        _as_type=AS_NONE;
+        yWarning("embObjAnalogSensor: Using default value = 1 for _numofsensors\n");
+        _numofsensors = 1;
     }
     else
     {
-        format = xtmp.get(1).asInt();
+        _numofsensors = xtmp.get(1).asInt();
     }
+#endif
 
-
-
-    if((_channels==NUMCHANNEL_STRAIN) && (format==FORMATDATA_STRAIN))
+    // Type is a new parameter describing the sensor Type using human readable string
+    if(config.check("Type") )
     {
-        _as_type=AS_STRAIN;
-    }
-    else if((_channels==NUMCHANNEL_MAIS) && (format==FORMATDATA_MAIS))
-    {
-        _as_type=AS_MAIS;
+        yDebug() << "Using new syntax";
+        yarp::os::ConstString type = config.find("Type").asString();
+        if(type == "inertial")
+        {
+            _as_type=AS_INERTIAL_MTB;
+        }
+        else if(type == "strain")
+        {
+            _as_type=AS_STRAIN;
+        }
+        else if(type == "mais")
+        {
+            _as_type=AS_MAIS;
+        }
+        else
+        {
+            _as_type=AS_NONE;
+            yError() << "embObjAnalogSensor: unknown device " << type << ". Supported devices are 'mais', 'strain' and 'inertial'";
+            return false;
+        }
     }
     else
     {
-        _as_type=AS_NONE;
-        yError() << "embObjAnalogSensor incorrect config!channels="<< _channels <<" format="<< format;
-        return false;
+        // Infer the sensor type by combining other parameters
+        yDebug() << "Using old syntax";
+
+        if (!extractGroup(config, xtmp, "Format","data format of the Analog Sensor", 1))
+        {
+            yWarning("embObjAnalogSensor: Using default value = 0 (disabled)");
+            _channels = 0;
+            _period   = 0;
+            _as_type=AS_NONE;
+        }
+        else
+        {
+            format = xtmp.get(1).asInt();
+        }
+
+        if((_channels==NUMCHANNEL_STRAIN) && (format==FORMATDATA_STRAIN))
+        {
+            _as_type=AS_STRAIN;
+        }
+        else if((_channels==NUMCHANNEL_MAIS) && (format==FORMATDATA_MAIS))
+        {
+            _as_type=AS_MAIS;
+        }
+        else
+        {
+            _as_type=AS_NONE;
+            yError() << "embObjAnalogSensor incorrect config!channels="<< _channels <<" format="<< format;
+            cleanup();
+            return false;
+        }
     }
+
+    _numofsensors = 1;
+
+    // however, if we have a AS_INERTIAL_MTB, then we may have more than one. for sure not zero.
+
+    if(AS_INERTIAL_MTB == _as_type)
+    {
+        Bottle tmp;
+        _numofsensors = 0;
+
+        tmp = config.findGroup("enabledAccelerometers");
+        _numofsensors += (tmp.size()-1); // sensors holds strings "enabledAccelerometers" and then all the others, thus i need a -1
+
+        tmp = config.findGroup("enabledGyroscopes");
+        _numofsensors += (tmp.size()-1); // sensors holds strings "enabledGyroscopes" and then all the others, thus i need a -1
+
+#if 0
+        if (!extractGroup(config, xtmp, "enabledAccelerometers", "Position of managed sensors axpressed as strings", 1))
+        {
+            yWarning("embObjAnalogSensor: cannot find enabledAccelerometers\n");
+            _numofsensors = 1;
+        }
+        else
+        {
+            _numofsensors = xtmp.size();
+        }
+#endif
+
+    }
+
+
 
     if(AS_STRAIN == _as_type)
     {
@@ -160,6 +232,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
             _useCalibration = xtmp.get(1).asInt();
         }
     }
+
     return true;
 }
 
@@ -168,9 +241,14 @@ embObjAnalogSensor::embObjAnalogSensor(): data(0)
 {
     _useCalibration=0;
     _channels=0;
+    _numofsensors = 1;
     _period=0;
     _as_type=AS_NONE;
     //_format=ANALOG_FORMAT_NONE;
+
+
+    memset(_fromInertialPos2DataIndexAccelerometers, 255, sizeof(_fromInertialPos2DataIndexAccelerometers));
+    memset(_fromInertialPos2DataIndexGyroscopes, 255, sizeof(_fromInertialPos2DataIndexGyroscopes));
 
     scaleFactor=0;
 
@@ -196,9 +274,9 @@ embObjAnalogSensor::embObjAnalogSensor(): data(0)
 
 embObjAnalogSensor::~embObjAnalogSensor()
 {
-    if (!data)
+    if (data != NULL)
         delete data;
-    if (!scaleFactor)
+    if (scaleFactor != NULL)
         delete scaleFactor;
 }
 
@@ -290,9 +368,20 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
     _fId.endpoint = eoprot_endpoint_analogsensors;
     if(AS_STRAIN == _as_type)
+    {
+        _fId.entity = eoprot_entity_as_strain;
         _fId.type = ethFeatType_AnalogStrain;
+    }
     else if(AS_MAIS == _as_type)
+    {
+        _fId.entity = eoprot_entity_as_mais;
         _fId.type = ethFeatType_AnalogMais;
+    }
+    else if(AS_INERTIAL_MTB == _as_type)
+    {
+        _fId.entity = eoprot_entity_as_inertial;
+        _fId.type = ethFeatType_AnalogInertial;
+    }
 
     /* Once I'm ok, ask for resources, through the _fId struct I'll give the ip addr, port and
     *  and boardNum to the ethManager in order to create the ethResource requested.
@@ -355,19 +444,68 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 //    }
 
 
-    data = new AnalogData(_channels, _channels+1);
-    scaleFactor = new double[_channels];
-    int i=0;
-    for (i=0; i<_channels; i++) scaleFactor[i]=1;
-
-    // Real values will be read from the sensor itself during its initalization hereafter
-    for(int i=0; i<_channels; i++)
+    if(_as_type == AS_INERTIAL_MTB)
     {
-        scaleFactor[i]=1;
+        // must create data to be of capacity: _channels*_numofsensors+2.
+        // scaleFactor is not used
+        // however we do that inside
+        data = new AnalogData(2+_channels*_numofsensors, 2+_channels*_numofsensors+2+1);  // i keep the +1 in second argument but i dont know why
+
+        // the first two are: number of sensors and of channels
+        double *buffer = this->data->getBuffer();
+        buffer[0] = _numofsensors;
+        buffer[1] = _channels;
+        // all the others
+    }
+    else
+    {
+        data = new AnalogData(_channels, _channels+1);
+        scaleFactor = new double[_channels];
+        int i=0;
+        for (i=0; i<_channels; i++) scaleFactor[i]=1;
+
+        // Real values will be read from the sensor itself during its initalization hereafter
+        for(int i=0; i<_channels; i++)
+        {
+            scaleFactor[i]=1;
+        }
     }
 
 
-//#warning --> marco.accame on 04sept14: both embObjAnalogSensors and embObjMotionControl initialises the mais board. but potentially w/ different params (mc uses: datarate = 10 and mode = eoas_maismode_txdatacontinuously).
+
+    // configure the service: aka, send to the remote board information about the whereabouts of the can boards mais, strain, mtb which offers the service.
+    
+    switch(_as_type)
+    {
+        case AS_MAIS:
+        {
+            ret = true;     // not yet implemented
+        } break;
+
+        case AS_STRAIN:
+        {
+            ret = true;     // not yet implemented
+        } break;
+
+        case AS_INERTIAL_MTB:
+        {
+            ret = configServiceInertials(config);
+        } break;
+
+        default:
+        {
+            //i should not be here. if AS_NONE then i should get error in fromConfig function
+            ret = false;
+        }
+
+    }
+    if(!ret)
+    {
+        cleanup();
+        return false;
+    }
+
+    // configure the sensor(s)
 
     switch(_as_type)
     {
@@ -381,6 +519,11 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
             ret = sendConfig2Strain();
         } break;
         
+        case AS_INERTIAL_MTB:
+        {
+            ret = sendConfig2SkinInertial(config);
+        } break;
+
         default:
         {
             //i should not be here. if AS_NONE then i should get error in fromConfig function
@@ -559,6 +702,344 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 #endif
 }
 
+
+bool embObjAnalogSensor::configServiceInertials(Searchable& globalConfig)
+{
+    // find SERVICES-INERTIALS. if not found, exit mildly from function. in a first stage the remote eth board will already be configured.
+
+    Bottle tmp = globalConfig.findGroup("SERVICES");
+    Bottle config = tmp.findGroup("INERTIALS");
+
+
+    // prepare the config of the inertial sensors: datarate and the mask of the enabled ones.
+
+    eOas_inertial_serviceconfig_t inertialServiceConfig = {0}; // by this initialisation, there is no sensor at all in the two can buses
+
+
+
+    // meglio sarebbe mettere un controllo sul fatto che ho trovato InertialsCAN1mapping e che ha size coerente
+
+    Bottle canmap;
+    int numofentries = 0;
+
+    // CAN1
+    canmap = config.findGroup("InertialsCAN1mapping");
+    numofentries = canmap.size()-1;
+
+    for(int i=0; i<numofentries; i++)
+    {
+        eOas_inertial_position_t pos = eoas_inertial_pos_none;
+
+        yarp::os::ConstString strpos = canmap.get(i+1).asString();
+
+        pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
+        inertialServiceConfig.canmapofsupportedsensors[0][i] = pos;
+    }
+
+    // CAN2
+    canmap = config.findGroup("InertialsCAN2mapping");
+    numofentries = canmap.size()-1;
+
+    for(int i=0; i<numofentries; i++)
+    {
+        eOas_inertial_position_t pos = eoas_inertial_pos_none;
+
+        yarp::os::ConstString strpos = canmap.get(i+1).asString();
+
+        pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
+        inertialServiceConfig.canmapofsupportedsensors[1][i] = pos;
+    }
+
+    // configure the service
+
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config_service);
+    if(false == res->setRemoteValueUntilVerified(id32, &inertialServiceConfig, sizeof(inertialServiceConfig), 10, 0.010, 0.050, 2))
+    {
+        yError() << "FATAL: embObjAnalogSensor::configServiceInertials() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->get_protBRDnumber()+1;
+        return false;
+    }
+    else
+    {
+        if(verbosewhenok)
+        {
+            yDebug() << "embObjAnalogSensor::configServiceInertials() correctly configured the service in BOARD" << res->get_protBRDnumber()+1;
+        }
+    }
+
+    return true;
+}
+
+
+bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
+{
+    eOprotID32_t id32 = eo_prot_ID32dummy;
+
+    // configuration specific for skin-inertial device
+
+    Bottle config = globalConfig.findGroup("GENERAL");
+
+
+    // prepare the config of the inertial sensors: datarate and the mask of the enabled ones.
+
+    eOas_inertial_sensorsconfig_t inertialSensorsConfig = {0};
+
+    inertialSensorsConfig.accelerometers = 0;
+    inertialSensorsConfig.gyroscopes = 0;
+    inertialSensorsConfig.datarate = _period;
+
+
+    // meglio sarebbe mettere un controllo sul fatto che ho trovato enabledAccelerometers e che ha size coerente
+
+    Bottle sensors;
+
+    sensors = config.findGroup("enabledAccelerometers");
+
+    int numofaccelerometers = sensors.size()-1;    // sensors holds strings "enabledAccelerometers" and then all the others, thus i need a -1
+
+    for(int i=0; i<numofaccelerometers; i++)
+    {
+        eOas_inertial_position_t pos = eoas_inertial_pos_none;
+
+        yarp::os::ConstString strpos = sensors.get(i+1).asString();
+
+        pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
+
+        if(eoas_inertial_pos_none != pos)
+        {
+            _fromInertialPos2DataIndexAccelerometers[pos] = i;
+            inertialSensorsConfig.accelerometers   |= EOAS_ENABLEPOS(pos);
+        }
+    }
+
+    sensors = config.findGroup("enabledGyroscopes");
+
+    int numofgyroscopess = sensors.size()-1;    // sensors holds strings "enabledGyroscopes" and then all the others, thus i need a -1
+
+    for(int i=0; i<numofgyroscopess; i++)
+    {
+        eOas_inertial_position_t pos = eoas_inertial_pos_none;
+
+        yarp::os::ConstString strpos = sensors.get(i+1).asString();
+
+        pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
+
+        if(eoas_inertial_pos_none != pos)
+        {
+            _fromInertialPos2DataIndexGyroscopes[pos] = numofaccelerometers+i;
+            inertialSensorsConfig.gyroscopes   |= EOAS_ENABLEPOS(pos);
+        }
+    }
+
+    // configure the sensors (datarate and position)
+
+    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config_sensors);
+    if(false == res->setRemoteValueUntilVerified(id32, &inertialSensorsConfig, sizeof(inertialSensorsConfig), 10, 0.010, 0.050, 2))
+    {
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2SkinInertial() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->get_protBRDnumber()+1;
+        return false;
+    }
+    else
+    {
+        if(verbosewhenok)
+        {
+            yDebug() << "embObjAnalogSensor::sendConfig2SkinInertial() correctly configured enabled sensors with period" << _period << "in BOARD" << res->get_protBRDnumber()+1;
+        }
+    }
+
+
+    // start the configured sensors
+
+    eOmc_inertial_commands_t startCommand = {0};
+    startCommand.enable = 1;
+
+    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_cmmnds_enable);
+    if(!res->addSetMessage(id32, (uint8_t*) &startCommand))
+    {
+        yError() << "ethResources::sendConfig2SkinInertial() fails to command the start transmission of the inertials";
+        return false;
+    }
+
+    return true;
+}
+
+
+
+eOas_inertial_position_t embObjAnalogSensor::getLocationOfInertialSensor(yarp::os::ConstString &strpos)
+{
+    eOas_inertial_position_t ret = eoas_inertial_pos_none;
+
+    if(strpos == "none")
+    {
+        ret = eoas_inertial_pos_none;
+    }
+
+    else if(strpos == "l_hand")
+    {
+        ret = eoas_inertial_pos_l_hand;
+    }
+    else if(strpos == "l_forearm_1")
+    {
+        ret = eoas_inertial_pos_l_forearm_1;
+    }
+    else if(strpos == "l_forearm_2")
+    {
+        ret = eoas_inertial_pos_l_forearm_2;
+    }
+    else if(strpos == "l_upper_arm_1")
+    {
+        ret = eoas_inertial_pos_l_upper_arm_1;
+    }
+    else if(strpos == "l_upper_arm_2")
+    {
+        ret = eoas_inertial_pos_l_upper_arm_2;
+    }
+    else if(strpos == "l_upper_arm_3")
+    {
+        ret = eoas_inertial_pos_l_upper_arm_3;
+    }
+    else if(strpos == "l_upper_arm_4")
+    {
+        ret = eoas_inertial_pos_l_upper_arm_4;
+    }
+    else if(strpos == "l_foot_1")
+    {
+        ret = eoas_inertial_pos_l_foot_1;
+    }
+    else if(strpos == "l_foot_2")
+    {
+        ret = eoas_inertial_pos_l_foot_2;
+    }
+    else if(strpos == "l_lower_leg_1")
+    {
+        ret = eoas_inertial_pos_l_lower_leg_1;
+    }
+    else if(strpos == "l_lower_leg_2")
+    {
+        ret = eoas_inertial_pos_l_lower_leg_2;
+    }
+    else if(strpos == "l_lower_leg_3")
+    {
+        ret = eoas_inertial_pos_l_lower_leg_3;
+    }
+    else if(strpos == "l_lower_leg_4")
+    {
+        ret = eoas_inertial_pos_l_lower_leg_4;
+    }
+    else if(strpos == "l_upper_leg_1")
+    {
+        ret = eoas_inertial_pos_l_upper_leg_1;
+    }
+    else if(strpos == "l_upper_leg_2")
+    {
+        ret = eoas_inertial_pos_l_upper_leg_2;
+    }
+    else if(strpos == "l_upper_leg_3")
+    {
+        ret = eoas_inertial_pos_l_upper_leg_3;
+    }
+    else if(strpos == "l_upper_leg_4")
+    {
+        ret = eoas_inertial_pos_l_upper_leg_4;
+    }
+    else if(strpos == "l_upper_leg_5")
+    {
+        ret = eoas_inertial_pos_l_upper_leg_5;
+    }
+    else if(strpos == "l_upper_leg_6")
+    {
+        ret = eoas_inertial_pos_l_upper_leg_6;
+    }
+    else if(strpos == "l_upper_leg_7")
+    {
+        ret = eoas_inertial_pos_l_upper_leg_7;
+    }
+
+    else if(strpos == "r_hand")
+    {
+        ret = eoas_inertial_pos_r_hand;
+    }
+    else if(strpos == "r_forearm_1")
+    {
+        ret = eoas_inertial_pos_r_forearm_1;
+    }
+    else if(strpos == "r_forearm_2")
+    {
+        ret = eoas_inertial_pos_r_forearm_2;
+    }
+    else if(strpos == "r_upper_arm_1")
+    {
+        ret = eoas_inertial_pos_r_upper_arm_1;
+    }
+    else if(strpos == "r_upper_arm_2")
+    {
+        ret = eoas_inertial_pos_r_upper_arm_2;
+    }
+    else if(strpos == "r_upper_arm_3")
+    {
+        ret = eoas_inertial_pos_r_upper_arm_3;
+    }
+    else if(strpos == "r_upper_arm_4")
+    {
+        ret = eoas_inertial_pos_r_upper_arm_4;
+    }
+    else if(strpos == "r_foot_1")
+    {
+        ret = eoas_inertial_pos_r_foot_1;
+    }
+    else if(strpos == "r_foot_2")
+    {
+        ret = eoas_inertial_pos_r_foot_2;
+    }
+    else if(strpos == "r_lower_leg_1")
+    {
+        ret = eoas_inertial_pos_r_lower_leg_1;
+    }
+    else if(strpos == "r_lower_leg_2")
+    {
+        ret = eoas_inertial_pos_r_lower_leg_2;
+    }
+    else if(strpos == "r_lower_leg_3")
+    {
+        ret = eoas_inertial_pos_r_lower_leg_3;
+    }
+    else if(strpos == "r_lower_leg_4")
+    {
+        ret = eoas_inertial_pos_r_lower_leg_4;
+    }
+    else if(strpos == "r_upper_leg_1")
+    {
+        ret = eoas_inertial_pos_r_upper_leg_1;
+    }
+    else if(strpos == "r_upper_leg_2")
+    {
+        ret = eoas_inertial_pos_r_upper_leg_2;
+    }
+    else if(strpos == "r_upper_leg_3")
+    {
+        ret = eoas_inertial_pos_r_upper_leg_3;
+    }
+    else if(strpos == "r_upper_leg_4")
+    {
+        ret = eoas_inertial_pos_r_upper_leg_4;
+    }
+    else if(strpos == "r_upper_leg_5")
+    {
+        ret = eoas_inertial_pos_r_upper_leg_5;
+    }
+    else if(strpos == "r_upper_leg_6")
+    {
+        ret = eoas_inertial_pos_r_upper_leg_6;
+    }
+    else if(strpos == "r_upper_leg_7")
+    {
+        ret = eoas_inertial_pos_r_upper_leg_7;
+    }
+
+
+    return(ret);
+
+}
+
 //#warning --> marco.accame: review function embObjAnalogSensor::getFullscaleValues() as in comment below
 // it is better to change the behaviour of the function so that: 1. we send the request, 2. we wait for the sig<> and unblock a mutex
 // current implementation relies on a wait of 1 sec and check of non-zero length of an array: smart but not the rigth way to do it.
@@ -724,7 +1205,6 @@ bool embObjAnalogSensor::getFullscaleValues()
     return true;  
 }
 
-
 bool embObjAnalogSensor::init()
 {
     yTrace();
@@ -752,9 +1232,16 @@ bool embObjAnalogSensor::init()
                 protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_uncalibratedvalues);
         } break;
         
+        case AS_INERTIAL_MTB:
+        {
+            protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_status);
+        } break;
+
         default:
         {
+            yError() << "embObjAnalogSensor: unknown device, cannot set regular ROPs";
             protoid = eo_prot_ID32dummy;
+            return false;
         }
     }
 
@@ -889,7 +1376,7 @@ bool embObjAnalogSensor::update(eOprotID32_t id32, double timestamp, void* rxdat
 {
     bool ret;
 
-//#warning --> marco.accame: retrieve the entity from id32 and see is it is mais or strain.
+//#warning --> marco.accame: retrieve the entity from id32 and see is it is mais or strain or inertial.
     switch(_as_type)
     {
         case AS_MAIS:
@@ -900,6 +1387,11 @@ bool embObjAnalogSensor::update(eOprotID32_t id32, double timestamp, void* rxdat
         case AS_STRAIN:
         {
             ret = fillDatOfStrain(rxdata);
+        } break;
+        
+        case AS_INERTIAL_MTB:
+        {
+            ret = fillDatOfInertial(rxdata);
         } break;
         
         default:
@@ -968,9 +1460,6 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
 }
 
 
-
-
-
 bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
 {
     // called by  embObjAnalogSensor::fillData() which is called by handle_AS_data() which is called by handle_data() which is called by:
@@ -1010,6 +1499,59 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
     return true;
 }
 
+
+bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
+{
+    eOas_inertial_status_t *status = (eOas_inertial_status_t*) inertialdata;
+
+    if((eoas_inertial_pos_none == status->data.position) || (status->data.position >= eoas_inertial_pos_max_numberof))
+    {   // we dont have any info to manage or the received position is WRONG
+        return(true);
+    }
+   
+    mutex.wait();
+
+    double *_buffer = this->data->getBuffer();
+
+    if(NULL == _buffer)
+    {
+        // unlock data
+        mutex.post();
+        return false;
+    }
+
+
+    uint8_t dataindex = 255;
+
+    if(eoas_inertial_type_accelerometer == status->data.type)
+    {
+        dataindex = _fromInertialPos2DataIndexAccelerometers[status->data.position];
+    }
+    else if(eoas_inertial_type_gyroscope == status->data.type)
+    {
+        dataindex = _fromInertialPos2DataIndexGyroscopes[status->data.position];
+    }
+
+
+
+	if(255 != dataindex)
+    {
+        // we now use dataindex to offset the array.
+        uint8_t firstpos = 2 + dataindex*6;
+
+        _buffer[firstpos+0] = (double) status->data.position;
+        _buffer[firstpos+1] = (double) status->data.type;
+        _buffer[firstpos+2] = (double) status->data.timestamp;
+
+        _buffer[firstpos+3] = (double) status->data.x;
+        _buffer[firstpos+4] = (double) status->data.y;
+        _buffer[firstpos+5] = (double) status->data.z;
+    }
+
+    mutex.post();
+
+    return true;
+}
 
 bool embObjAnalogSensor::close()
 {

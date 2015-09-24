@@ -1028,6 +1028,7 @@ public:
     virtual bool calibrateRaw(int j, double p);
     virtual bool doneRaw(int j);
     virtual bool calibrate2Raw(int axis, unsigned int type, double p1, double p2, double p3);
+    virtual bool setCalibrationParametersRaw(int j, const CalibrationParameters& params);
 
     /// IControlDebug Interface
     virtual bool setPrintFunction(int (*f) (const char *fmt, ...));

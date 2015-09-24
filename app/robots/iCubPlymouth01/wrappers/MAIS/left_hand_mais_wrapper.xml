@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+	<device name="left_hand_as_wrapper" type="analogServer">
+		<param name="period">       10  				</param>
+		<param name="deviceId">     left_hand				</param>
+		
+		<action phase="startup" level="5" type="attach">
+		    <paramlist name="networks">
+		        <elem name="sensor">  left_hand_mais </elem>
+		    </paramlist>
+		</action>
+
+		<action phase="shutdown" level="5" type="detach" />
+	</device>
+</devices>

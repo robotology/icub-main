@@ -531,7 +531,6 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
 {
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckPitchMin,neckPitchMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckPitchMin,neckPitchMax);
-    double cur_rad=(*chainNeck)(0).getAng();
 
     mutex.lock();
     (*chainNeck)(0).setMin(min_rad);
@@ -547,7 +546,6 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
 {
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckRollMin,neckRollMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckRollMin,neckRollMax);
-    double cur_rad=(*chainNeck)(1).getAng();
 
     mutex.lock();
     (*chainNeck)(1).setMin(min_rad);
@@ -563,7 +561,6 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
 {
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckYawMin,neckYawMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckYawMin,neckYawMax);
-    double cur_rad=(*chainNeck)(2).getAng();
 
     mutex.lock();
     (*chainNeck)(2).setMin(min_rad);

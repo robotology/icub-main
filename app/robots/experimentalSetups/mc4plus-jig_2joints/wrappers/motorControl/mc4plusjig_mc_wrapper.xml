@@ -8,9 +8,8 @@
 	  <elem name="FirstSetOfJoints"> 0  1  0  1 </elem>
       </paramlist>
 
-<param name="period"> 10 </param>
-      <param name="name">   icub/mc4plusjig         </param>
-      <param name="ports">  mc4plusjig               </param>
+      <param name="period"> 10 </param>
+      <param name="name">   /icub/mc4plusjig-2joints  </param>
       <param name="joints"> 2                        </param>
 
       <action phase="startup" level="5" type="attach">

@@ -29,7 +29,6 @@ source_group("Header Files" FILES ${folder_header})
 
 include_directories(${PROJECT_SOURCE_DIR}/include
                     ${ctrlLib_INCLUDE_DIRS}
-                    ${GSL_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
 if(ICUB_USE_IPOPT)
@@ -38,7 +37,7 @@ if(ICUB_USE_IPOPT)
 endif()
 
 add_library(${PROJECTNAME} ${folder_source} ${folder_header})
-target_link_libraries(${PROJECTNAME} ctrlLib ${GSL_LIBRARIES} ${YARP_LIBRARIES})
+target_link_libraries(${PROJECTNAME} ctrlLib ${YARP_LIBRARIES})
 
 if(ICUB_USE_IPOPT)
    set_property(TARGET ${PROJECTNAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")

@@ -1027,7 +1027,38 @@ void hostTransceiver::eoprot_override_as(void)
             EO_INIT(.tag)           eoprot_tag_as_mais_status_the15values,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_as_mais_status_the15values
-        }           
+        },
+        // inertial
+        {   // eoprot_tag_as_inertial_config
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_inertial,
+            EO_INIT(.tag)           eoprot_tag_as_inertial_config,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_inertial_config
+        },
+        {   // eoprot_tag_as_inertial_status
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_inertial,
+            EO_INIT(.tag)           eoprot_tag_as_inertial_status,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_inertial_status
+        }
+#if 0   // marco.accame: i keep the code just for the debug phase.       
+        ,{   // eoprot_tag_as_inertial_status_accelerometer
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_inertial,
+            EO_INIT(.tag)           eoprot_tag_as_inertial_status_accelerometer,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_inertial_status_accelerometer
+        },
+        {   // eoprot_tag_as_inertial_status_gyroscope
+            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
+            EO_INIT(.entity)        eoprot_entity_as_inertial,
+            EO_INIT(.tag)           eoprot_tag_as_inertial_status_gyroscope,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_as_inertial_status_gyroscope
+        }
+#endif        
     };
 
 
@@ -1045,7 +1076,7 @@ void hostTransceiver::eoprot_override_as(void)
 
 
     // ------------------------------------------------------------------------------------------------------------------------------------
-    // -- override of the callbacks of variables of mc. common to every board. we use the id, even if the eoprot_config_variable_callback()
+    // -- override of the callbacks of variables of as. common to every board. we use the id, even if the eoprot_config_variable_callback()
     //    operates on any index.
     
     uint32_t number = sizeof(as_callbacks_descriptors_vars)/sizeof(as_callbacks_descriptors_vars[0]);
@@ -1396,6 +1427,7 @@ const eOnvset_BRDcfg_t * hostTransceiver::getNVset_BRDcfg(yarp::os::Searchable &
             protcfg.en_as_entity_strain_numberof        = 0;
             protcfg.en_as_entity_mais_numberof          = 0;
             protcfg.en_as_entity_extorque_numberof      = 0;
+            protcfg.en_as_entity_inertial_numberof      = 0;
             yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some AS entities ... AS is disabled.";
         }
         else if((false == cfgprotocol.check("entityASstrainNumberOf")) || (false == cfgprotocol.check("entityASmaisNumberOf")) ||
@@ -1405,6 +1437,7 @@ const eOnvset_BRDcfg_t * hostTransceiver::getNVset_BRDcfg(yarp::os::Searchable &
             protcfg.en_as_entity_strain_numberof        = 0;
             protcfg.en_as_entity_mais_numberof          = 0;
             protcfg.en_as_entity_extorque_numberof      = 0;
+            protcfg.en_as_entity_inertial_numberof      = 0;
             yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " misses: cfgprotocol of some AS entities ... AS is disabled";
         }
         else
@@ -1416,20 +1449,29 @@ const eOnvset_BRDcfg_t * hostTransceiver::getNVset_BRDcfg(yarp::os::Searchable &
                 protcfg.en_as_entity_strain_numberof        = cfgprotocol.find("entityASstrainNumberOf").asInt();
                 protcfg.en_as_entity_mais_numberof          = cfgprotocol.find("entityASmaisNumberOf").asInt();
                 protcfg.en_as_entity_extorque_numberof      = cfgprotocol.find("entityASextorqueNumberOf").asInt();
+                if(true == cfgprotocol.check("entityASinertialNumberOf"))
+                {
+                    protcfg.en_as_entity_inertial_numberof      = cfgprotocol.find("entityASinertialNumberOf").asInt();                    
+                }
+                else
+                {
+                    protcfg.en_as_entity_inertial_numberof      = 0;
+                }
             }
             else
             {
                 protcfg.en_as_entity_strain_numberof        = 0;
                 protcfg.en_as_entity_mais_numberof          = 0;
                 protcfg.en_as_entity_extorque_numberof      = 0;
+                protcfg.en_as_entity_inertial_numberof      = 0;
             }
             // sanity check
             if((protcfg.en_as_entity_strain_numberof > 1) || (protcfg.en_as_entity_mais_numberof > 1) ||
-               (protcfg.en_as_entity_extorque_numberof > 16))
+               (protcfg.en_as_entity_extorque_numberof > 16) || (protcfg.en_as_entity_inertial_numberof > 8))
             {
                 yWarning() << "hostTransceiver::getNVset_BRDcfg() detected that BOARD " << get_protBRDnumber()+1 << " has: a strange number of AS entities"  <<
-                          " (strain, mais, extorque) = (" << protcfg.en_as_entity_strain_numberof << ", " << protcfg.en_as_entity_mais_numberof <<
-                          ", " << protcfg.en_as_entity_extorque_numberof << ")";
+                          " (strain, mais, extorque, inertial) = (" << protcfg.en_as_entity_strain_numberof << ", " << protcfg.en_as_entity_mais_numberof <<
+                          ", " << protcfg.en_as_entity_extorque_numberof << ", " << protcfg.en_as_entity_inertial_numberof << ")";
             }
         }
 
