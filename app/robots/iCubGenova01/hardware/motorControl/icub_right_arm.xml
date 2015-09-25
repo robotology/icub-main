@@ -28,7 +28,8 @@
 <group name="GENERAL">       
 <param name="Joints">       8             </param>       
 <param name="MaxDAC">                     100           100           100           100           100           100           100           100           </param>       
-<param name="AxisMap">                    0             1             2             3             4             5             6             7             </param>       
+<param name="AxisMap">                    0             1             2             3             4             5             6             7             </param>     
+<param name="AxisName"> "r_shoulder_pitch" "r_shoulder_roll" "r_shoulder_yaw" "r_elbow" "r_wrist_prosup" "r_wrist_pitch" "r_wrist_yaw"  "r_hand_finger"   </param>  
 <param name="Encoder">                    11.375        11.375        11.375        11.375        706.67        978.46        978.46        6.85          </param>       
 <param name="Zeros">                      177.8         37.8          235.7         175.1         90            -12           -36           267.0073      </param>       
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          0x0C          0             0             0             </param>       

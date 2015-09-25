@@ -6,6 +6,7 @@
         <param name="MotioncontrolVersion">  2 </param>
         <param name="Joints"> 4 	</param> 
         <param name="AxisMap"> 		0             1             2             3	</param>
+        <param name="AxisName"> "l_shoulder_pitch" "l_shoulder_roll" "l_shoulder_yaw" "l_elbow" </param>
         <param name="HasHallSensor">         1           1             1             1        </param>
         <param name="HasTempSensor">         0           0             0             0        </param>
         <param name="HasRotorEncoder">       0           0             0             0        </param>
