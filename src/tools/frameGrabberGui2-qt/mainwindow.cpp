@@ -25,7 +25,7 @@ MainWindow::MainWindow(char *loc, char *rem, QWidget *parent) :
     initFeatureTab();
     initFeatureAdvTab();
     dc1394Thread.doTask(_initFormatTab);
-    initCameraTab();
+
     dc1394Thread.doTask(_init);
     dc1394Thread.doTask(_reload);
 
@@ -289,7 +289,7 @@ void MainWindow::Init(uint videoModeDC1394, uint fPSDC1394, uint iSOSpeedDC1394,
                       uint colorCodingDC1394, QSize max, QSize step, QSize offset, QSize dim, QSize pos,
                       uint bytesPerPacketDC1394, bool transmissionDC1394)
 {
-    //LOG("Init\n");
+    LOG("Init\n");
 
     //for (int n=0; n<m_nFeatures; ++n) m_pSli[n]->Refresh();
     disconnectWidgets();
@@ -362,6 +362,21 @@ void MainWindow::Init(uint videoModeDC1394, uint fPSDC1394, uint iSOSpeedDC1394,
     ui->m_bpp->setValue(bytesPerPacketDC1394);
     ui->m_bpp->setEnabled(bFormat7);
     ui->m_transmission->setChecked(transmissionDC1394);
+
+
+    CameraDescriptor camera;
+    if(dc1394Thread.getCameraDescription(&camera))
+    {
+        std::cout << "BUS type is " << camera.busType << "; description is " << camera.deviceDescription << std::endl;
+
+        if(camera.busType != BUS_FIREWIRE)
+            ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->tabCamera));
+        else
+            initCameraTab();
+    }
+    else
+        LOG("Remote camera device has no IFrameGrabberControl2 interface\n");
+
     connectWidgets();
 }
 
@@ -371,6 +386,7 @@ void MainWindow::Reload(uint videoModeDC1394, uint colorCodingMaskDC1394,
                         uint fPSDC1394,uint iSOSpeedDC1394)
 {
     disconnectWidgets();
+
     unsigned int video_mode=videoModeDC1394;
     ui->m_MenuMode->setCurrentText(video_mode_labels.at(video_mode));
     LOG("video mode %s %d\n",video_mode_labels[video_mode].toLatin1().data(),video_mode);

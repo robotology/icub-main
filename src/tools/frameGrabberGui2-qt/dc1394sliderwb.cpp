@@ -171,12 +171,21 @@ void DC1394SliderWB::onRefreshDone(QObject *slider,bool bON,bool bAuto,bool bHas
     ui->pPwr->setEnabled(bHasOnOff);
     ui->pRBa->setEnabled(bON && bHasAuto);
     ui->pRBm->setEnabled(bON && bHasManual);
-    ui->m_SliderBlue->setEnabled(bON && !bAuto);
     ui->m_SliderRed->setEnabled(bON && !bAuto);
+    ui->m_SliderRed->setDisabled(!bON || bAuto || !bHasManual);
+    ui->m_SliderBlue->setEnabled(bON && !bAuto);
+    ui->m_SliderBlue->setDisabled(!bON || bAuto || !bHasManual);
     ui->m_OnePush->setEnabled(bON && bHasOnePush);
+    ui->m_OnePush->setDisabled(!bON || !bHasOnePush);
 
     m_new_blu = blueVal;
     m_new_red = redVal;
+
+    if (bAuto) {
+        ui->pRBa->setChecked(true);
+    } else {
+        ui->pRBm->setChecked(true);
+    }
 
     if (m_new_blu!=m_old_blu){
         m_old_blu=m_new_blu;
@@ -230,7 +239,7 @@ void DC1394SliderWB::onSliderRedReleased()
 
 void DC1394SliderWB::onSliderRedValueChanged(int value)
 {
-    LOG("************\n");
+//    LOG("************\n");
     double val = (double)value/1000;
     int w = ui->m_SliderRed->width() - 30;
     double newX = ((double)w/(double)1000) * (double)value;
@@ -256,7 +265,7 @@ void DC1394SliderWB::onSliderBlueReleased()
 
 void DC1394SliderWB::onSliderBlueValueChanged(int value)
 {
-    LOG("************\n");
+//    LOG("************\n");
 
     double val = (double)value/1000;
     int w = ui->m_SliderBlue->width() - 30;
@@ -368,7 +377,9 @@ void DC1394SliderWB::onRadioAutoDone(QObject *slider,bool bON, bool bAuto)
 
     //pFG->setModeDC1394(YARP_FEATURE_WHITE_BALANCE,bAuto);
     ui->m_SliderRed->setEnabled(!bAuto);
+    ui->m_SliderRed->setDisabled(!bON || bAuto);
     ui->m_SliderBlue->setEnabled(!bAuto);
+    ui->m_SliderBlue->setDisabled(!bON || bAuto);
     LOG("%s\n",ui->pRBa->isEnabled() ? "auto":"man");
     controlThread->doTask(_reload);
 }

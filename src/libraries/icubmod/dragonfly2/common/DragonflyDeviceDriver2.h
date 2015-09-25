@@ -24,7 +24,7 @@
 
 namespace yarp {
     namespace dev {
-        class Dragonfly2OpenParameters;
+//         class Dragonfly2OpenParameters;
         class DragonflyDeviceDriver2;
         class DragonflyDeviceDriver2Rgb;
         class DragonflyDeviceDriver2Raw;
@@ -286,6 +286,7 @@ class yarp::dev::DragonflyDeviceDriver2 :
     public IPreciselyTimed,
     public IFrameGrabber,
     public IFrameGrabberRgb,
+    public IFrameGrabberControls2,
     public IFrameGrabberControlsDC1394
 {
 private:
@@ -508,7 +509,7 @@ public:
     * @param value normalized feature value [0.0 : 1.0].
     * @return true/false upon success/failure.
     */
-    virtual bool setFeatureDC1394(int feature,double value);
+    virtual bool setFeatureDC1394(int feature, double value);
     /**
     * Get feature value.
     * @param feature feature ID
@@ -792,6 +793,25 @@ public:
     * @return true/false upon success/failure
     */
     virtual bool setBytesPerPacketDC1394(unsigned int bpp);
+
+    // Control2
+
+    /* Implementation of IFrameGrabberControls2 interface */
+    virtual bool getCameraDescription(CameraDescriptor *camera);
+    virtual bool hasFeature(int feature, bool *hasFeature);
+    virtual bool setFeature(int feature, double values);
+    virtual bool getFeature(int feature, double *values);
+    virtual bool setFeature(int feature, double  value1, double  value2);
+    virtual bool getFeature(int feature, double *value1, double *value2);
+    virtual bool hasOnOff(int feature, bool *HasOnOff);
+    virtual bool setActive(int feature, bool onoff);
+    virtual bool getActive(int feature, bool *isActive);
+    virtual bool hasAuto(int feature, bool *hasAuto);
+    virtual bool hasManual(int feature, bool *hasManual);
+    virtual bool hasOnePush(int feature, bool *hasOnePush);
+    virtual bool setMode(int feature, FeatureMode mode);
+    virtual bool getMode(int feature, FeatureMode *mode);
+    virtual bool setOnePush(int feature);
 
 protected:
     void* system_resources;

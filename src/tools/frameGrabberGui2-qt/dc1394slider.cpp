@@ -146,8 +146,23 @@ void DC1394Slider::onRefreshDone(QObject *slider,bool bON,bool bAuto,bool bHasOn
     ui->pRBa->setEnabled(bON && bHasAuto);
     ui->pRBm->setEnabled(bON && bHasManual);
     ui->m_Slider->setEnabled(bON && !bAuto);
+    ui->m_Slider->setDisabled(!bON || bAuto || !bHasManual);
     ui->lblValue->setEnabled(bON && !bAuto);
-    ui->m_OnePush->setEnabled(bON && bHasOnePush);
+    ui->lblValue->setDisabled(!bON || bAuto || !bHasManual);
+    ui->m_OnePush->setEnabled(bON && bHasOnePush);    // why setEnabled(false) is different from setDisable(true)?
+    ui->m_OnePush->setDisabled(!bON || !bHasOnePush);
+
+
+    std::cout << "Feature is " << m_Feature << std::endl;
+    std::cout << "bON is " << (bON) << std::endl;
+    std::cout << "bHasAuto is " << (bHasAuto) << std::endl;
+    std::cout << "bAuto is " << (bAuto) << std::endl;
+    std::cout << "bHasManual is " << (bHasManual) << std::endl;
+    std::cout << "bON && bHasOnePush is " << (bON && bHasOnePush) << std::endl;
+    std::cout << "!bON || !bHasOnePush is " << (!bON || !bHasOnePush) << std::endl;
+    std::cout << "bON && !bAuto is " << (bON && !bAuto) << std::endl;
+    std::cout << "!bON || bAuto is " << (!bON || bAuto) << std::endl;
+    std::cout << "slider enable is " << ui->m_Slider->isEnabled() << std::endl << std::endl;
 
     if (bAuto) {
         ui->pRBa->setChecked(true);
@@ -262,9 +277,13 @@ void DC1394Slider::onRadioAutoDone(QObject *slider,bool bON, bool bAuto)
     if(slider != this){
         return;
     }
+    std::cout << "slider enable is " << ui->m_Slider->isEnabled() << std::endl;
 
     ui->m_Slider->setEnabled(bON && !bAuto);
+    ui->m_Slider->setDisabled(!bON || bAuto);
     ui->lblValue->setEnabled(bON && !bAuto);
+    ui->lblValue->setDisabled(!bON || bAuto);
+
     LOG("%s\n",ui->pRBa->isChecked() ? "auto":"man");
 
     controlThread->doTask(_reload);
@@ -287,11 +306,14 @@ void DC1394Slider::onPowerDone(QObject *slider, bool bON,bool hasAuto, bool hasM
         return;
     }
 
+    std::cout << "slider enable is " << ui->m_Slider->isEnabled() << std::endl;
+
     ui->pRBa->setEnabled(bON && hasAuto);
     ui->pRBm->setEnabled(bON && hasManual);
     ui->m_Slider->setEnabled(bON && ui->pRBm->isChecked());
     ui->lblValue->setEnabled(bON && ui->pRBm->isChecked());
-    ui->m_OnePush->setEnabled(bON && hasOnePush);
+    ui->m_OnePush->setEnabled(bON && hasOnePush);    // why setEnabled(false) is different from setDisable(true)?
+    ui->m_OnePush->setDisabled(!bON || !hasOnePush);
     LOG("power %s\n",ui->pPwr->isChecked()?"on":"off");
 
 
