@@ -19,6 +19,10 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 
+#include <sched.h>
+#include <unistd.h>
+
+
 #define POINTGREY_REGISTER_TIMESTAMP 0x12F8
 
 static dc1394error_t set_embedded_timestamp(dc1394camera_t *camera, 
@@ -168,6 +172,26 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
     //bool bDR2=true;
 
+    // check for CPU affinity 
+    if(config.check("cpu_affinity")) {
+        cpu_set_t set;
+        CPU_ZERO(&set);
+        int affinity = 	config.find("cpu_affinity").asInt();
+        CPU_SET(affinity, &set);
+        if (sched_setaffinity(getpid(), sizeof(set), &set) == -1) {
+            yWarning("failed to set the CPU affinity\n");
+        }
+	}
+
+    // check for real-time priority
+    if(config.check("rt_priority")) {
+        struct sched_param sch_param;
+        sch_param.__sched_priority = config.find("rt_priority").asInt();
+        if( sched_setscheduler(0, SCHED_FIFO, &sch_param) != 0 ) {
+            yWarning("failed to set the real-time priority\n");
+        }
+    }
+   
     int size_x=checkInt(config,"width");   
     int size_y=checkInt(config,"height");
     int off_x=checkInt(config,"xoff");
