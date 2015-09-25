@@ -10,10 +10,10 @@
             <elem name="FirstSetOfJoints"> 0  3  0  3 </elem> 
         </paramlist>
 
-        <param name="period"> 10                </param>
-        <param name="name">   /icub/left_arm    </param>
-        <param name="ports">  left_arm		    </param>
-        <param name="joints"> 4                 </param> 
+        <param name="period"> 10                        </param>
+        <param name="name">   /iCubExpArmV3/left_arm    </param>
+        <param name="ports">  left_arm		            </param>
+        <param name="joints"> 4                         </param> 
  
         <action phase="startup" level="5" type="attach">
             <paramlist name="networks">
