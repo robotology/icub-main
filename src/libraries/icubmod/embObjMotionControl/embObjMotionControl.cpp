@@ -425,6 +425,8 @@ bool embObjMotionControl::alloc(int nj)
     _hasRotorEncoderIndex = allocAndCheck<bool>(nj);
     _rotorIndexOffset = allocAndCheck<int>(nj);
     _motorPoles = allocAndCheck<int>(nj);
+    _rotorlimits_max = allocAndCheck<double>(nj);
+    _rotorlimits_min = allocAndCheck<double>(nj);
 
     _pids=allocAndCheck<Pid>(nj);
     _tpids=allocAndCheck<Pid>(nj);
@@ -514,6 +516,8 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_rotorIndexOffset);
     checkAndDestroy(_motorPoles);
     checkAndDestroy(_axisName);
+	checkAndDestroy(_rotorlimits_max);
+    checkAndDestroy(_rotorlimits_min);
 
     if(requestQueue)
         delete requestQueue;
@@ -568,6 +572,8 @@ embObjMotionControl::embObjMotionControl() :
     _impedance_params = NULL;
     _impedance_limits = NULL;
     _estim_params     = NULL;
+    _rotorlimits_max  = NULL;
+    _rotorlimits_min  = NULL;
 
     _axisName         = NULL;
     _limitsMin        = NULL;
@@ -1605,6 +1611,18 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     else
         for(i=1; i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asDouble();
 
+    // Rotor max limit
+    if (!extractGroup(limits, xtmp, "RotorMax","a list of maximum rotor angles (in degrees)", _njoints))
+        return false;
+    else
+        for(i=1; i<xtmp.size(); i++) _rotorlimits_max[i-1]=xtmp.get(i).asDouble();
+
+    // Rotor min limit
+    if (!extractGroup(limits, xtmp, "RotorMin","a list of minimum roto angles (in degrees)", _njoints))
+        return false;
+    else
+        for(i=1; i<xtmp.size(); i++) _rotorlimits_min[i-1]=xtmp.get(i).asDouble();
+
     /////// [VELOCITY]
     Bottle &velocityGroup=config.findGroup("VELOCITY");
     if (!velocityGroup.isNull())
@@ -1869,7 +1887,8 @@ bool embObjMotionControl::init()
         motor_cfg.motorPoles = _motorPoles[logico];
         motor_cfg.rotorIndexOffset = _rotorIndexOffset[logico];
         motor_cfg.rotorEncoderType = _rotorEncoderType[logico];
-
+        motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_max[logico], 0.0, _angleToEncoder[logico]));
+        motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_min[logico], 0.0, _angleToEncoder[logico]));
         motor_cfg.filler01 = 0;
         motor_cfg.pidcurrent.kp = 8;
         motor_cfg.pidcurrent.ki = 2;

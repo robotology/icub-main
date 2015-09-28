@@ -283,6 +283,8 @@ private:
     bool   *_hasRotorEncoderIndex;              /** */
     int    *_rotorIndexOffset;                  /** */
     int    *_motorPoles;                        /** */
+    double *_rotorlimits_max;                   /** */
+    double *_rotorlimits_min;                   /** */
     Pid *_pids;                                 /** initial gains */
     Pid *_tpids;                                /** initial torque gains */
     Pid *_cpids;                                /** initial current gains */

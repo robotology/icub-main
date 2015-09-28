@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubExpArmV3" build="1">
+    <device name="left_arm_calibrator" type="parametricCalibratorEth">
+        <params file="general.xml" />
+        
+        <group name="GENERAL">
+            <param name="joints"> 4 </param> <!-- the number of joints of the robot part -->
+            <param name="deviceName"> Left_Arm_Calibrator </param> <!-- this name is used for high-level debug -->
+        </group>
+
+        <group name="HOME">
+            <param name="positionHome">     0         0         0         0          </param>
+            <param name="velocityHome">     10        10        10        10         </param>
+        </group>
+       
+        <!-- joint logical number               0           1               2               3               -->
+        <!-- joint name                         indx-distal middle-proximal middle-distal   little-fingers  -->
+        <group name="CALIBRATION">
+    
+        <param name="calibrationType">          6           6               6               6          </param>
+        <param name="calibration1">             666         666             666             666        </param>        
+        <param name="calibration2">             999         999             999             999        </param>        
+        <param name="calibration3">             666         666             666             666        </param>
+        <param name="calibrationZero">          180.0       -180.0          180.0           180.0      </param>
+        <param name="calibrationDelta">         0.0         0.0             0.0             0.0        </param>
+       
+        <param name="startupPosition">          0.0         0.0             0.0             0.0        </param>        
+        <param name="startupVelocity">          10          10              20.0            20.0       </param>        
+        <param name="startupMaxPwm">            1000        1000            1000            500        </param>        
+        <param name="startupPosThreshold">      90          90              2               2          </param>        
+        </group> 
+
+        <param name="CALIB_ORDER"> (0 1 2 3)  </param> 
+
+        <action phase="startup" level="10" type="calibrate">
+            <param name="target">left_arm_mc_wrapper</param>
+        </action>
+
+        <action phase="interrupt1" level="1" type="park">
+            <param name="target">left_arm_mc_wrapper</param>
+        </action>
+
+        <action phase="interrupt3" level="1" type="abort" />
+
+    </device>
+</devices>
