@@ -16,9 +16,9 @@
         <param name="TorqueId">  	         0              </param> <!-- m.a.: maybe not needed in eth-robots -->
         <param name="TorqueChan">	         0              </param>
         <param name="TorqueMax"> 	         0              </param>
-        <param name="RotorEncoderRes">       0              </param>
+        <param name="RotorEncoderRes">       28720          </param>
         <param name="JointEncoderType">      "OPTICAL_QUAD" </param>
-        <param name="RotorEncoderType">      "NONE"         </param>
+        <param name="RotorEncoderType">      "OPTICAL_QUAD" </param>
         <param name="JointEncoderRes">       65535          </param> <!-- random number for test -->
         <param name="RotorIndexOffset">      0              </param>
         <param name="Gearbox">               1              </param>
