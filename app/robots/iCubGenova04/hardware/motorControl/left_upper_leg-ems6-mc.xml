@@ -12,6 +12,8 @@
     <group name="LIMITS">
         <param name="Max">                      90            90            78            0     </param>
         <param name="Min">                      -30           0             -80           -120  </param>
+        <param name="RotorMin">                 0             0             0             0     </param> 
+        <param name="RotorMax">                 0             0             0             0     </param>
         <param name="Currents">                 5000          5000          5000          5000  </param>
     </group>
       

@@ -13,6 +13,8 @@
         <!--                      0             1      -->
         <param name="Max">        30.00         20.00		</param>
         <param name="Min">       -20.00        -20.00		</param>
+        <param name="RotorMin">   0             0           </param> 
+        <param name="RotorMax">   0             0           </param>
         <param name="Currents">   5000          5000		</param>
     </group>
 
