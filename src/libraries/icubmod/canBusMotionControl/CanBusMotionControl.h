@@ -174,6 +174,7 @@ public:
     int _polling_interval;                      /** thread polling interval [ms] */
     int _timeout;                               /** number of cycles before timing out */
 
+    std::string *_axisName;                     /** axis name */
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to encoder conversion factors */
     double *_rotToEncoder;                      /** angle to rotor conversion factors */
@@ -683,6 +684,8 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementDebugInterface,
             public IInteractionModeRaw,
             public ImplementInteractionMode,
+            public IAxisInfoRaw,
+            public ImplementAxisInfo,
             public IFactoryInterface,
             public IClientLogger
 {
@@ -1023,6 +1026,9 @@ public:
     virtual bool setTemperatureLimitRaw(int m, const double temp);
     virtual bool getMotorOutputLimitRaw(int m, double *limit);
     virtual bool setMotorOutputLimitRaw(int m, const double limit);
+
+    /// IAxisInfo
+    virtual bool getAxisNameRaw(int axis, yarp::os::ConstString& name);
 
     ////// calibration
     virtual bool calibrateRaw(int j, double p);

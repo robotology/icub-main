@@ -30,7 +30,8 @@
 <param name="physDevice">   cfw2can       </param>       
 <param name="Joints">       8             </param>       
 <param name="MaxDAC">                     100           100           100           100           100           100           100           100           </param>       
-<param name="AxisMap">                    0             1             2             3             4             5             6             7             </param>       
+<param name="AxisMap">                    0             1             2             3             4             5             6             7             </param>    
+<param name="AxisName">    "l_shoulder_pitch" "l_shoulder_roll" "l_shoulder_yaw" "l_elbow"   "l_wrist_prosup" "l_wrist_pitch" "l_wrist_yaw"  "l_hand_finger" </param>   
 <param name="Encoder">                    -11.375       -11.375       -11.375       -11.375       -706.67       -978.46       -978.46       -7.5          </param>       
 <param name="Zeros">                      -199          -325.5          4.9           -186          90            -7.1          -41           -284          </param>       
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          0x0C          0             0             0             </param>       

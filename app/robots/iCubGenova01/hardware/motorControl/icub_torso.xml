@@ -29,6 +29,7 @@
     <param name="Joints">       4                                                       </param>       
     <param name="MaxDAC">       100           100           100           100           </param>       
     <param name="AxisMap">      0             2             3             1             </param>       
+    <param name="AxisName">     "torso_pitch" "torso_yaw" "torso_roll"   "none"         </param>
     <param name="Encoder">      11.375        11.375        11.375        0             </param>       
     <param name="Zeros">        180           180           180           0             </param>       
     <param name="TorqueId">     0x0C          0x0C          0x0C          0             </param>       

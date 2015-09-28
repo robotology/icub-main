@@ -415,6 +415,8 @@ public:
     unsigned char _destinations[CAN_MAX_CARDS];/// list of connected cards (and their addresses).
     int _velShifts[CAN_MAX_CARDS];/// list of velocity shift
     unsigned char *_destInv;
+    std::string* _jointNames;
+
     int _njoints;/// number of joints (ncards * 2).
 
     bool _error_status;/// error status of the last packet.
@@ -1296,6 +1298,14 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     for (i = 1; i < xtmp.size(); i++)
         _axisMap[i-1] = xtmp.get(i).asInt();
     
+    if (!validate(general, xtmp, "AxisName", "a list of strings representing the axes names", nj + 1))
+    { 
+        //return false; //this parameter is not yet mandatory
+    }
+
+    for (i = 1; i < xtmp.size(); i++)
+        _axisName[i - 1] = xtmp.get(i).asString();
+
     if (!validate(general, xtmp, "Encoder", "a list of scales for the joint encoders", nj+1))
         return false;
 
@@ -1830,6 +1840,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _estim_params=0;
     _bemfGain=0;
     _ktau=0;
+    _axisName = 0;
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1860,6 +1871,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _ktau=allocAndCheck<double>(nj);
     _maxStep=allocAndCheck<double>(nj);
     _filterType=allocAndCheck<int>(nj);
+    _axisName = new std::string[nj];
 
     _pids=allocAndCheck<Pid>(nj);
     _tpids=allocAndCheck<Pid>(nj);
@@ -1919,6 +1931,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<double>(_ktau);
     checkAndDestroy<double>(_maxStep);
     checkAndDestroy<int>(_filterType);
+    checkAndDestroy<std::string>(_axisName);
 
     checkAndDestroy<Pid>(_pids);
     checkAndDestroy<Pid>(_tpids);
@@ -1950,6 +1963,7 @@ CanBusResources::CanBusResources ()
     _speed = 0;/// default 1Mbit/s
     _networkN = 0;
     _destInv=0;
+    _jointNames = 0;
     _initialized=false;
 
     memset (_destinations, 0, sizeof(unsigned char) * CAN_MAX_CARDS);
@@ -1964,7 +1978,6 @@ CanBusResources::CanBusResources ()
     _bcastRecvBuffer = NULL;
 
     _error_status = true;
-    _destInv=0;
     requestsQueue=0;
 }
 
@@ -2028,6 +2041,10 @@ bool CanBusResources::initialize (const CanBusMotionControlParameters& parms)
     _polling_interval = parms._polling_interval;
     _timeout = parms._timeout;
     _njoints = parms._njoints;
+
+    _jointNames = new std::string[_njoints];
+    for (int i = 0; i < _njoints; i++) _jointNames[i] = parms._axisName[i];
+
     _txQueueSize=parms._txQueueSize;
     _rxQueueSize=parms._rxQueueSize;
     _filter = -1;
@@ -2146,6 +2163,12 @@ bool CanBusResources::uninitialize ()
     {
         delete [] _destInv;
         _destInv=0;
+    }
+
+    if (_jointNames != 0)
+    {
+        delete[] _jointNames;
+        _jointNames = 0;
     }
 
     _initialized=false;
@@ -2290,7 +2313,7 @@ bool CanBusResources::dumpBuffers (void)
 }
 
 
-CanBusMotionControl::CanBusMotionControl() : 
+CanBusMotionControl::CanBusMotionControl() :
 RateThread(10),
 //ImplementPositionControl<CanBusMotionControl, IPositionControl>(this),
 ImplementPositionControl2(this),
@@ -2311,6 +2334,7 @@ ImplementPositionDirect(this),
 ImplementInteractionMode(this),
 ImplementMotorEncoders(this),
 ImplementMotor(this),
+ImplementAxisInfo(this),
 _mutex(1),
 _done(0)
 {
@@ -2450,6 +2474,7 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementPositionDirect::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
     ImplementInteractionMode::initialize(p._njoints, p._axisMap);
     _axisPositionDirectHelper = new axisPositionDirectHelper(p._njoints, p._axisMap, p._angleToEncoder, p._maxStep);
+    ImplementAxisInfo::initialize(p._njoints, p._axisMap);
 
     delete [] tmpZeros; tmpZeros=0;
     delete [] tmpOnes;  tmpOnes=0;
@@ -2906,6 +2931,7 @@ bool CanBusMotionControl::close (void)
         ImplementOpenLoopControl::uninitialize();
         ImplementPositionDirect::uninitialize();
         ImplementInteractionMode::uninitialize();
+        ImplementAxisInfo::uninitialize();
 
         //stop analog sensors
         std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
@@ -4051,6 +4077,21 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
     }
 
     return ret;
+}
+
+bool CanBusMotionControl::getAxisNameRaw(int axis, yarp::os::ConstString& name)
+{
+    CanBusResources& r = RES(system_resources);
+    if (axis >= 0 && axis < r.getJoints())
+    {
+        name = r._jointNames[axis];
+        return true;
+    }
+    else
+    {
+        name = "ERROR";
+        return false;
+    }
 }
 
 bool CanBusMotionControl::setControlModesRaw(int *modes)

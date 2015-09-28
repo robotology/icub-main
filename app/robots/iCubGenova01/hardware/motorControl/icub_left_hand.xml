@@ -27,10 +27,11 @@
  
 <group name="GENERAL">       
 <param name="Joints">       8             </param>       
-<param name="MaxDAC">                     100           100           100           100           100           100           100           100           </param>       
-<param name="AxisMap">                    0             1             2             3             4             5             6             7             </param>       
-<param name="Encoder">                    19.9777778    -2.21111      -2.42778      -2.6          -2.47778      -2.3          -2.31667      -2.26296      </param>       
-<param name="Zeros">                      29.5328142    -97.2362      -193.593      -91.9231      -184.036      -110.435      -195.108      -314.19       </param>       
+<param name="MaxDAC">       100           100           100           100           100           100           100           100           </param>       
+<param name="AxisMap">      0             1             2             3             4             5             6             7             </param>     
+<param name="AxisName">     "l_thumb_oppose"     "l_thumb_proximal"     "l_thumb_distal"   "l_index_proximal"    "l_index_distal"    "l_middle_proximal"   "l_middle_distal"    "l_pinky"  </param>
+<param name="Encoder">      19.9777778    -2.21111      -2.42778      -2.6          -2.47778      -2.3          -2.31667      -2.26296      </param>       
+<param name="Zeros">        29.5328142    -97.2362      -193.593      -91.9231      -184.036      -110.435      -195.108      -314.19       </param>       
 <param name="TorqueId">     0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueMax">    0             0             0             0             0             0             0             0             </param>       

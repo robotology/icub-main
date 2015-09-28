@@ -433,6 +433,7 @@ bool embObjMotionControl::alloc(int nj)
     _impedance_params=allocAndCheck<ImpedanceParameters>(nj);
     _impedance_limits=allocAndCheck<ImpedanceLimits>(nj);
     _estim_params=allocAndCheck<SpeedEstimationParameters>(nj);
+    _axisName = new string[nj];
 
     _limitsMax=allocAndCheck<double>(nj);
     _limitsMin=allocAndCheck<double>(nj);
@@ -512,6 +513,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_hasRotorEncoderIndex);
     checkAndDestroy(_rotorIndexOffset);
     checkAndDestroy(_motorPoles);
+    checkAndDestroy(_axisName);
 
     if(requestQueue)
         delete requestQueue;
@@ -539,6 +541,7 @@ embObjMotionControl::embObjMotionControl() :
     ImplementInteractionMode(this),
     ImplementMotor(this),
     ImplementRemoteVariables(this),
+    ImplementAxisInfo(this),
     _mutex(1),
     SAFETY_THRESHOLD(2.0)
 {
@@ -566,6 +569,7 @@ embObjMotionControl::embObjMotionControl() :
     _impedance_limits = NULL;
     _estim_params     = NULL;
 
+    _axisName         = NULL;
     _limitsMin        = NULL;
     _limitsMax        = NULL;
     _currentLimits    = NULL;
@@ -941,6 +945,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementInteractionMode::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
     ImplementMotor::initialize(_njoints, _axisMap);
     ImplementRemoteVariables::initialize(_njoints, _axisMap);
+    ImplementAxisInfo::initialize(_njoints, _axisMap);
     
     /*
     *  Once I'm sure every input data required is present and correct, instantiate the EMS, transceiver etc...
@@ -1140,6 +1145,12 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     for (i = 1; i < xtmp.size(); i++)
         _axisMap[i-1] = xtmp.get(i).asInt();
+
+    if (!extractGroup(general, xtmp, "AxisName", "a list of strings representing the axes names", _njoints))
+        return false;
+
+    for (i = 1; i < xtmp.size(); i++)
+        _axisName[i - 1] = xtmp.get(i).asString();
 
     double tmp_A2E;
     // Encoder scales
@@ -1858,6 +1869,7 @@ bool embObjMotionControl::init()
         motor_cfg.motorPoles = _motorPoles[logico];
         motor_cfg.rotorIndexOffset = _rotorIndexOffset[logico];
         motor_cfg.rotorEncoderType = _rotorEncoderType[logico];
+
         motor_cfg.filler01 = 0;
         motor_cfg.pidcurrent.kp = 8;
         motor_cfg.pidcurrent.ki = 2;
@@ -2096,6 +2108,7 @@ bool embObjMotionControl::close()
     ImplementOpenLoopControl::uninitialize();
     ImplementInteractionMode::uninitialize();
     ImplementRemoteVariables::uninitialize();
+    ImplementAxisInfo::uninitialize();
     
     if (_torqueControlHelper)  {delete _torqueControlHelper; _torqueControlHelper=0;}
     
@@ -4225,6 +4238,20 @@ bool embObjMotionControl::getCurrentPidRaw(int j, Pid *pid)
     copyPid_eo2iCub(&tmp, pid);
 
     return true;
+}
+
+bool embObjMotionControl::getAxisNameRaw(int axis, yarp::os::ConstString& name)
+{
+    if (axis >= 0 && axis < _njoints)
+    {
+        name = _axisName[axis];
+        return true;
+    }
+    else
+    {
+        name = "ERROR";
+        return false;
+    }
 }
 
 // IRemoteVariables
