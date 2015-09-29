@@ -21,6 +21,7 @@
 
         <param name="AxisMap">                  0        1            </param>    <!-- joint as effectively mapped onto the hw of the board -->
         <!-- memo: Encoder = x [ticks/deg], joint->config.encoderconversionfactor = x / 182.044 [ticks/icubdeg] -->
+        <param name="AxisName">              "neck-pitch"  "neck-roll"  </param>
         <param name="HasHallSensor">            0        0            </param>
         <param name="HasTempSensor">            0        0            </param>
         <param name="HasRotorEncoder">          1        1            </param>

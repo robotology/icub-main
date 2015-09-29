@@ -20,6 +20,7 @@
         <!-- joint number in sub-part           0           1           2               3           -->
         <!-- joint name                         neck-yaw    eyes-tilt   eyes-vers       eyes-verg   -->     <!-- j2 is right-eye, j3 is left-eye -->
         <param name="AxisMap">                  0           1           2               3                   </param>   <!-- joint as effectively mapped onto the hw of the board -->
+        <param name="AxisName">                "neck-yaw"   "eyes-tilt" "eyes-vers"   "eyes-verg"           </param>
         <param name="HasHallSensor">            0           0           0               0                   </param>
         <param name="HasTempSensor">            0           0           0               0                   </param>
         <param name="HasRotorEncoder">          1           1           1               1                   </param>

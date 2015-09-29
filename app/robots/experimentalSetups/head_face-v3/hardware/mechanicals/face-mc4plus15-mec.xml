@@ -22,6 +22,7 @@
         <!-- joint number in sub-part           0           1           2           3            -->
         <!-- joint name                        lip-right    lip-high    lip-left   lip-bottom   -->   
         <param name="AxisMap">                  0        1          2        3              </param>    <!-- joint as effectively mapped onto the hw of the board --> 
+        <param name="AxisName">                "lip-right"    "lip-high"    "lip-left"   "lip-bottom"  </param>
         <param name="HasHallSensor">            0        0          0        0              </param>
         <param name="HasTempSensor">            0        0          0        0              </param>
         <param name="HasRotorEncoder">          1        1          1        1              </param>

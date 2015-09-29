@@ -20,8 +20,10 @@
         <!-- joint number in sub-part           0           1               -->
         <!-- joint name                         jaw         eyelids         -->     
         <group name="LIMITS">
-            <param name="Min">                  +1          -175            </param> 
-            <param name="Max">                  +26         +10             </param>
+            <param name="Min">                  +0          -175            </param> 
+            <param name="Max">                  +22         +10             </param>
+            <param name="RotorMin">             0           0               </param> 
+            <param name="RotorMax">             0           0               </param>
             <param name="Currents">             600         600             </param>
         </group>
     
@@ -35,7 +37,7 @@
         <group name="POSITION_CONTROL">
             <param name="controlLaw">       joint_pid_v1                    </param>    
             <param name="controlUnits">     metric_units                    </param> 
-            <param name="kp">                   -800.00      -400.00         </param>       
+            <param name="kp">                   -400.00      -400.00         </param>       
             <param name="kd">                   0.0         0.0             </param>     
             <param name="ki">                   0.0         0.0             </param>      
             <param name="limPwm">               500         500             </param>       

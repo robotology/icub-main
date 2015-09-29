@@ -18,6 +18,7 @@
         <param name="Joints"> 2 </param> <!-- the number of joints of the robot part -->
                                       <!--   0           1               logical axis number (ControlBoardWrapper) -->
         <param name="AxisMap">               0           1          </param>    <!-- hardware axis number  (EMS) -->
+        <param name="AxisName">              "jaw"       "eyelids"  </param>
         <param name="HasHallSensor">         0           0          </param>
         <param name="HasTempSensor">         0           0          </param>
         <param name="HasRotorEncoder">       1           1          </param>
