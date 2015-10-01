@@ -684,6 +684,8 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementDebugInterface,
             public IInteractionModeRaw,
             public ImplementInteractionMode,
+            public IRemoteVariablesRaw,
+            public ImplementRemoteVariables,
             public IAxisInfoRaw,
             public ImplementAxisInfo,
             public IFactoryInterface,
@@ -887,6 +889,7 @@ public:
     virtual bool setBemfParamRaw(int j, double trq);
     virtual bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params);
     virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
+    virtual bool getFilterTypeRaw(int j, int *type);
     virtual bool setFilterTypeRaw(int j, int type);
 
     virtual bool setTorquePidRaw(int j, const Pid &pid);
@@ -949,6 +952,12 @@ public:
     virtual bool getOutputRaw(int j, double *out);
     virtual bool getOutputsRaw(double *outs);
     /////////////////////////////// END OpenLoop Control INTERFACE
+
+    //////////////////////// BEGIN RemoteVariables Interface
+    virtual bool getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val);
+    virtual bool setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val);
+    virtual bool getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys);
+    ///////////////////////// END RemoteVariables Interface
 
     ///////////// Velocity control interface raw
     ///

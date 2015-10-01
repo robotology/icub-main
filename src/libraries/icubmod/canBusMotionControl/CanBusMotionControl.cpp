@@ -2334,6 +2334,7 @@ ImplementPositionDirect(this),
 ImplementInteractionMode(this),
 ImplementMotorEncoders(this),
 ImplementMotor(this),
+ImplementRemoteVariables(this),
 ImplementAxisInfo(this),
 _mutex(1),
 _done(0)
@@ -2475,6 +2476,7 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementInteractionMode::initialize(p._njoints, p._axisMap);
     _axisPositionDirectHelper = new axisPositionDirectHelper(p._njoints, p._axisMap, p._angleToEncoder, p._maxStep);
     ImplementAxisInfo::initialize(p._njoints, p._axisMap);
+    ImplementRemoteVariables::initialize(p._njoints, p._axisMap);
 
     delete [] tmpZeros; tmpZeros=0;
     delete [] tmpOnes;  tmpOnes=0;
@@ -2931,6 +2933,7 @@ bool CanBusMotionControl::close (void)
         ImplementOpenLoopControl::uninitialize();
         ImplementPositionDirect::uninitialize();
         ImplementInteractionMode::uninitialize();
+        ImplementRemoteVariables::uninitialize();
         ImplementAxisInfo::uninitialize();
 
         //stop analog sensors
@@ -4077,6 +4080,52 @@ bool CanBusMotionControl::setControlModesRaw(const int n_joints, const int *join
     }
 
     return ret;
+}
+
+bool CanBusMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys)
+{
+    listOfKeys->clear();
+    listOfKeys->addString("filterType");
+    return true;
+}
+
+bool CanBusMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val)
+{
+    val.clear();
+    CanBusResources& res = RES(system_resources);
+    if (key == "filterType")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i< res.getJoints(); i++) { int tmp = 0; getFilterTypeRaw(i, &tmp);  r.addInt(tmp); }
+        return true;
+    }
+    yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
+    return false;
+}
+
+bool CanBusMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val)
+{
+    std::string s1 = val.toString();
+    Bottle* bval = val.get(0).asList();
+    if (bval == 0)
+    {
+        yWarning("setRemoteVariable(): Protocol error %s", s1.c_str());
+        return false;
+    }
+
+    CanBusResources& r = RES(system_resources);
+    std::string s2 = bval->toString();
+
+    if (key == "filterType")
+    {
+        for (int i = 0; i < r.getJoints(); i++)
+        {
+            int filter_type = bval->get(i).asInt();
+            this->setFilterTypeRaw(i, filter_type);
+        }
+        return true;
+    }
+    yWarning("setRemoteVariable(): Unknown variable %s", key.c_str());
+    return false;
 }
 
 bool CanBusMotionControl::getAxisNameRaw(int axis, yarp::os::ConstString& name)
@@ -5793,6 +5842,11 @@ bool CanBusMotionControl::getMotorTorqueParamsRaw (int axis, MotorTorqueParamete
     param->ktau_scale = 0;
     //7 dummy
     return true;
+}
+
+bool CanBusMotionControl::getFilterTypeRaw(int j, int* type)
+{
+    return NOT_YET_IMPLEMENTED("getFilterTypeRaw");
 }
 
 bool CanBusMotionControl::setFilterTypeRaw (int j, int type)
