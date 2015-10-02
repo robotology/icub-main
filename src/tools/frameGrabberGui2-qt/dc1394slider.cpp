@@ -154,17 +154,6 @@ void DC1394Slider::onRefreshDone(QObject *slider,bool bON,bool bAuto,bool bHasOn
     ui->lblValue->setEnabled(bON && !bAuto);
     ui->m_OnePush->setEnabled(bON && bHasOnePush);    // why setEnabled(false) is different from setDisable(true)?
 
-    std::cout << "Feature is " << m_Feature << std::endl;
-    std::cout << "bON is " << (bON) << std::endl;
-    std::cout << "bHasAuto is " << (bHasAuto) << std::endl;
-    std::cout << "bAuto is " << (bAuto) << std::endl;
-    std::cout << "bHasManual is " << (bHasManual) << std::endl;
-    std::cout << "bON && bHasOnePush is " << (bON && bHasOnePush) << std::endl;
-    std::cout << "!bON || !bHasOnePush is " << (!bON || !bHasOnePush) << std::endl;
-    std::cout << "bON && !bAuto is " << (bON && !bAuto) << std::endl;
-    std::cout << "!bON || bAuto is " << (!bON || bAuto) << std::endl;
-    std::cout << "slider enable is " << ui->m_Slider->isEnabled() << std::endl << std::endl;
-
     if (bAuto) {
         ui->pRBa->setChecked(true);
     } else {
