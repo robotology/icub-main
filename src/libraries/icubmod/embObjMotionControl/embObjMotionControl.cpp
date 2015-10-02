@@ -4279,7 +4279,7 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     val.clear();
     if (key == "kinematic_mj")
     {
-        val.addString("not implemented yet");
+        Bottle& r = val.addList(); for (int i = 0; i<16; i++) { r.addDouble(_kinematic_mj[i]); }
         return true;
     }
     else if (key == "encoders")
