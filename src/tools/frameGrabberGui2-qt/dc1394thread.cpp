@@ -530,7 +530,7 @@ void DC1394Thread::sliderRefresh(QVariantList arg)
 //    bool bHasOnePush=true; //DC1394Control->hasOnePushDC1394(feature);
 //    double val=0.5; //DC1394Control->getFeatureDC1394(feature);
 
-    fgControl2->setActive(feature,bON);
+//     fgControl2->setActive(feature,bON); refresh should not send commands right?
 
     sliderRefreshDone(ptr,bON,bAuto,bHasOnOff,bHasAuto,bHasManual,bHasOnePush,val);
 
