@@ -3,7 +3,7 @@
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  */
- 
+
 #include <iCub/PinholeCalibTool.h>
 
 using namespace std;
@@ -22,7 +22,7 @@ PinholeCalibTool::PinholeCalibTool(){
 }
 
 PinholeCalibTool::~PinholeCalibTool(){
-    
+
 }
 
 bool PinholeCalibTool::close(){
@@ -171,7 +171,7 @@ bool PinholeCalibTool::init(CvSize currImgSize, CvSize calibImgSize){
         CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 2, 1) = CV_MAT_ELEM( *_intrinsic_matrix , float, 2, 1);
         CV_MAT_ELEM( *_intrinsic_matrix_scaled , float, 2, 2) = CV_MAT_ELEM( *_intrinsic_matrix , float, 2, 2);
     }
-    
+
     _mapUndistortX = cvCreateImage(currImgSize, IPL_DEPTH_32F, 1);
     _mapUndistortY = cvCreateImage(currImgSize, IPL_DEPTH_32F, 1);
 
@@ -188,8 +188,8 @@ void PinholeCalibTool::apply(const ImageOf<PixelRgb> & in, ImageOf<PixelRgb> & o
     CvSize inSize = cvSize(in.width(),in.height());
 
     // check if reallocation required
-    if ( inSize.width  != _oldImgSize.width || 
-         inSize.height != _oldImgSize.height || 
+    if ( inSize.width  != _oldImgSize.width ||
+         inSize.height != _oldImgSize.height ||
         _needInit)
         init(inSize,_calibImgSize);
 

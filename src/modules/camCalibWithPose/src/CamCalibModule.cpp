@@ -327,12 +327,8 @@ bool CamCalibPort::selectBottleFromMap(double time,
     }
 
     if (0) {
-        yDebug() << "RIGHT EYE! UNA MERDA";
         *bottle = (diff_prev >= diff_next) ? it_next->second : it_prev->second;
     } else {
-        yDebug() << "LEFT EYE! TROPPO FIGO";
-
-
         // Select previous
 //        *bottle = it_prev->second;
 
@@ -614,9 +610,9 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
     Value *valGroup; // check assigns pointer to reference
     if(botConfig.check("group", valGroup, "Configuration group to load module options from (string)."))
     {
-        strGroup = valGroup->asString().c_str();        
+        strGroup = valGroup->asString().c_str();
         // is group a valid bottle?
-        if (botConfig.check(strGroup.c_str())){            
+        if (botConfig.check(strGroup.c_str())){
             Bottle &group=botConfig.findGroup(strGroup.c_str(),string("Loading configuration from group " + strGroup).c_str());
             botConfig.fromString(group.toString());
         }
@@ -746,20 +742,20 @@ double CamCalibModule::getPeriod() {
   return 0.001;
 }
 
-bool CamCalibModule::respond(const Bottle& command, Bottle& reply) 
+bool CamCalibModule::respond(const Bottle& command, Bottle& reply)
 {
-    reply.clear(); 
+    reply.clear();
 
-    if (command.get(0).asString()=="quit") 
+    if (command.get(0).asString()=="quit")
     {
         reply.addString("quitting");
-        return false;     
+        return false;
     }
     else if (command.get(0).asString()=="sat" || command.get(0).asString()=="saturation")
     {
         double satVal = command.get(1).asDouble();
         _prtImgIn.setSaturation(satVal);
-        
+
         reply.addString("ok");
     }
     else if (command.get(0).asString()=="filt")

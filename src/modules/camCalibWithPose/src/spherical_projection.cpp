@@ -18,7 +18,7 @@
 
 #include <iCub/spherical_projection.h>
 
-/* 
+/*
 Computes spherical projection parameters, from pinhole projection parameters.
 Considers possible radial distortion in the pinhole model.
 WARNING: The function do not validate input parameters. These should be checked previously (see check_sp_params).
@@ -28,7 +28,7 @@ void compute_sp_params(int input_lines, int input_cols,
                        double fx, double fy,
                        double cx, double cy,
                        double k1, double k2,
-                       double p1, double p2, 
+                       double p1, double p2,
                        double *fa, double *fe,
                        double *ca, double *ce)
 {
@@ -52,7 +52,7 @@ bool check_sp_params(int input_lines, int input_cols,
                      double k1, double k2,
                      double p1, double p2,
                      float *mapx, float *mapy)
-{ 
+{
    if(input_lines <= 1) return false;
    if(input_cols <= 1) return false;
    if(output_lines <= 1) return false;
@@ -60,7 +60,7 @@ bool check_sp_params(int input_lines, int input_cols,
    if(fx <= 0) return false;
    if(fy <= 0) return false;
    if(mapx == 0) return false;
-   if(mapy == 0) return false;    
+   if(mapy == 0) return false;
    return true;
 }
 
@@ -77,13 +77,13 @@ bool compute_sp_map(int input_lines, int input_cols,
                     float *mapx, float *mapy)
 {
    double fa, fe, ca, ce, a, e, x, y, r2, xd, yd;
-   
-   if(!check_sp_params(input_lines, input_cols, output_lines, output_cols, 
+
+   if(!check_sp_params(input_lines, input_cols, output_lines, output_cols,
                         fx, fy, cx, cy, k1, k2, p1, p2, mapx, mapy))
         return false;
 
    compute_sp_params(input_lines, input_cols, output_lines, output_cols,
-                     fx, fy, cx, cy, k1, k2, p1, p2, 
+                     fx, fy, cx, cy, k1, k2, p1, p2,
                      &fa, &fe, &ca, &ce);
    int i, j;
    for(i=0;i<output_lines;i++)
@@ -112,11 +112,11 @@ bool compute_sp_map(int input_lines, int input_cols,
    - World Reference:    X axis vertical pointing up
                          Y axis horizontal pointing backward
                          Z axis horizontal pointing right
-  
+
    - Camera Reference:   X axis aligned with optical axis, pointing forward
                          Y axis aligned with image plane pointing right(increasing column index)
                          Z axis aligned with image plane pointing down (increasing line index)
-                         
+
 */
 bool compute_icub_egosp_map( int input_lines, int input_cols,
                         int output_lines, int output_cols,
@@ -126,12 +126,12 @@ bool compute_icub_egosp_map( int input_lines, int input_cols,
                         float *mapx, float *mapy)
 {
    // converts to intuitive reference frames:
-   /* 
+   /*
 
    - World Reference:    X axis horizontal pointing front
                          Y axis horizontal pointing left
                          Z axis vertical pointing up
-  
+
    - Camera Reference:   X axis aligned with image plane pointing right(increasing column index)
                          Y axis aligned with image plane pointing down (increasing line index)
                          Z axis aligned with optical axis, pointing forward
@@ -150,7 +150,7 @@ bool compute_icub_egosp_map( int input_lines, int input_cols,
    compute_egosp_map(input_lines, input_cols, output_lines, output_cols, fx, fy, cx, cy, Rt, mapx, mapy);
    return true;
 }
-    
+
 
 /* Computes the warping map for egosphere projection.
    To actually perform the image projection, the computed map
@@ -161,11 +161,11 @@ bool compute_icub_egosp_map( int input_lines, int input_cols,
    - World Reference:    X axis horizontal pointing front
                          Y axis horizontal pointing left
                          Z axis vertical pointing up
-  
+
    - Camera Reference:   X axis aligned with image plane pointing right(increasing column index)
                          Y axis aligned with image plane pointing down (increasing line index)
                          Z axis aligned with optical axis, pointing forward
-                         
+
 */
 bool compute_egosp_map( int input_lines, int input_cols,
                         int output_lines, int output_cols,
@@ -176,7 +176,7 @@ bool compute_egosp_map( int input_lines, int input_cols,
 {
    double flongitude, flatitude, clongitude, clatitude, longitude, latitude, x, y;
    double Xworld,Yworld,Zworld,Xcamera,Ycamera,Zcamera;
-  
+
    clongitude = output_cols/2;
    clatitude = output_lines/2;
    flongitude = output_cols/2/3.141529;

@@ -32,40 +32,40 @@
  *
  * \section lib_sec Libraries
  *
- * YARP 
- * OpenCV (version >= 2.0) 
+ * YARP
+ * OpenCV (version >= 2.0)
  * spmap (icub library)
- * 
- * We have enabled changes of the image saturation directly from the rpc port (see port description). 
+ *
+ * We have enabled changes of the image saturation directly from the rpc port (see port description).
  * This has been done (temporary) in order to change the saturation for the bayer images.
  * The command are sent via rpc can be:
- * 
- * - sat 1.0  -  no changes in saturation 
+ *
+ * - sat 1.0  -  no changes in saturation
  * - sat x where x is < 1.0  -  will decrease saturation until a gray image is obtained
- * - sat x where x is > 1.0  -  will increase saturation 
- * 
+ * - sat x where x is > 1.0  -  will increase saturation
+ *
  * \section parameters_sec Parameters
- * 
+ *
  * Command-line Parameters
- * 
- * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key 
- * (e.g. \c --from file.ini. The value part can be changed to suit your needs; the default values are shown below. 
- * 
- * - \c --from \c camcalib.ini \n 
+ *
+ * The following key-value pairs can be specified as command-line parameters by prefixing \c -- to the key
+ * (e.g. \c --from file.ini. The value part can be changed to suit your needs; the default values are shown below.
+ *
+ * - \c --from \c camcalib.ini \n
  *   specifies the configuration file
  *
  * - \c --context \c cameraCalibration \n
  *   specifies the sub-path from \c $ICUB_ROOT/icub/app to the configuration file
  *
- * - \c --name \c camcalib \n 
- *   specifies the name of the module (used to form the stem of module port names)  
+ * - \c --name \c camcalib \n
+ *   specifies the name of the module (used to form the stem of module port names)
  * For calibration configuration options see: PinholeCalibTool::configure
- * 
+ *
  *
  * Configuration File Parameters
  *
- * The following key-value pairs can be specified as parameters in the configuration file 
- * The value part can be changed to suit your needs; the default values are shown below. 
+ * The following key-value pairs can be specified as parameters in the configuration file
+ * The value part can be changed to suit your needs; the default values are shown below.
  *
  * <pre>
  * projection pinhole
@@ -84,7 +84,7 @@
  * </pre>
  * \section portsc_sec Ports Created
  *
- * Input port 
+ * Input port
  *
  * - \c /camCalib/in \n
  *   Input image to calibrate (from camera grabber) (rgb)
@@ -103,10 +103,10 @@
  * \section conf_file_sec Configuration Files
  *
  * \c camcalib.ini  in \c $ICUB_ROOT/app/cameraCalibration \n
- * 
+ *
  * \section tested_os_sec Tested OS
  *
- * Linux: Ubuntu 9.10, Debian Stable, squeeze and windows 
+ * Linux: Ubuntu 9.10, Debian Stable, squeeze and windows
  *
  * \section example_sec Example Instantiation of the Module
  *
@@ -115,7 +115,7 @@
  * More information on camera calibration:\n
  * OpenCV: http://opencvlibrary.sourceforge.net/CvReference#cv_3d\n
  * Matlab Toolbox: http://www.vision.caltech.edu/bouguetj/calib_doc/\n
- * 
+ *
  * \see CamCalibModule
  * \see CalibTool
  *
@@ -142,7 +142,7 @@ using namespace yarp::sig;
 
 
 int main(int argc, char *argv[]) {
-     
+
     CalibToolFactories& pool = CalibToolFactories::getPool();
     pool.add(new CalibToolFactoryOf<PinholeCalibTool>("pinhole"));
     pool.add(new CalibToolFactoryOf<SphericalCalibTool>("spherical"));
@@ -153,6 +153,6 @@ int main(int argc, char *argv[]) {
     rf.setDefaultConfigFile("camCalib.ini");    //overridden by --from parameter
     rf.setDefaultContext("cameraCalibration");  //overridden by --context parameter
     rf.configure(argc, argv);
-    CamCalibModule module;      
+    CamCalibModule module;
     return module.runModule(rf);
 }
