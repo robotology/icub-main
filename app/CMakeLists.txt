@@ -37,4 +37,4 @@ add_subdirectory(fingersTuner)
 add_subdirectory(depth2kin)
 add_subdirectory(fingertipsPortScope)
 add_subdirectory(comanStartup)
-
+add_subdirectory(oculus)

@@ -15,6 +15,7 @@ add_subdirectory(objectsPropertiesCollector)
 
 if(ICUB_USE_OpenCV)
     add_subdirectory(camCalib)
+    add_subdirectory(camCalibWithPose)
     add_subdirectory(dualCamCalib)
     add_subdirectory(actionsRenderingEngine)
     add_subdirectory(motionCUT)

@@ -1,0 +1,105 @@
+<application>
+<name>Oculus Gazebo</name>
+<dependencies>
+</dependencies> 
+<module>
+  <name>camCalibWithPose</name>
+  <parameters>--context cameraCalibration --from icubSimEyes.ini --group CAMERA_CALIBRATION_LEFT --name /icubGazeboSim/camcalibPose/left</parameters>
+  <node>/ciao</node>
+</module>
+<module>
+  <name>camCalibWithPose</name>
+  <parameters>--context cameraCalibration --from icubSimEyes.ini --group CAMERA_CALIBRATION_RIGHT --name /icubGazeboSim/camcalibPose/right</parameters>
+  <node>/ciao</node>
+</module>
+<!--
+<module>
+  <name>yarpview</name>
+  <parameters>--name /icubGazeboSim/view/left --x 0 --y 0 --synch</parameters>
+  <node>localhost</node>
+</module>
+<module>
+  <name>yarpview</name>
+  <parameters>--name /icubGazeboSim/view/right --x 320 --y 0 --synch</parameters>
+  <node>localhost</node>
+</module>
+-->
+<module>
+  <name>positionDirectControl</name>
+  <parameters>--robot icubGazeboSim --part head --joints "(0 1 2)"</parameters> 
+  <node>/iitrbcsws120</node>
+</module>
+<module>
+  <name>yarpdev</name>
+  <parameters>--device ovrheadset --hfov 90 --w 480 --h 360 --imagepose</parameters> 
+  <node>/iitrbcsws120</node>
+</module>
+<connection>
+  <from>/icubGazeboSim/cam/left</from>
+  <to>/icubGazeboSim/camcalibPose/left/in</to>
+  <protocol>udp</protocol>
+</connection>
+<connection>
+  <from>/icubGazeboSim/cam/right</from>
+  <to>/icubGazeboSim/camcalibPose/right/in</to>
+  <protocol>udp</protocol>
+</connection>
+<connection>
+  <from>/icubGazeboSim/inertial</from>
+  <to>/icubGazeboSim/camcalibPose/left/imu/in</to>
+  <protocol>udp</protocol>
+</connection>
+<connection>
+  <from>/icubGazeboSim/inertial</from>
+  <to>/icubGazeboSim/camcalibPose/right/imu/in</to>
+  <protocol>udp</protocol>
+</connection>
+<connection>
+  <from>/icubGazeboSim/head/state:o</from>
+  <to>/icubGazeboSim/camcalibPose/right/head_encs/in</to>
+  <protocol>udp</protocol>
+</connection>
+<connection>
+  <from>/icubGazeboSim/head/state:o</from>
+  <to>/icubGazeboSim/camcalibPose/left/head_encs/in</to>
+  <protocol>udp</protocol>
+</connection>
+<connection>
+  <from>/icubGazeboSim/torso/state:o</from>
+  <to>/icubGazeboSim/camcalibPose/right/torso_encs/in</to>
+  <protocol>udp</protocol>
+</connection>
+<connection>
+  <from>/icubGazeboSim/torso/state:o</from>
+  <to>/icubGazeboSim/camcalibPose/left/torso_encs/in</to>
+  <protocol>udp</protocol>
+</connection>
+<connection>
+  <from>/oculus/headpose/orientation:o</from>
+  <to>/directPositionControl/icubGazeboSim/head/command:i</to>
+  <protocol>udp</protocol>
+</connection>
+<connection>
+  <from>/icubGazeboSim/camcalibPose/left/out</from>
+  <to>/oculus/display/left:i</to>
+  <protocol>udp</protocol>
+</connection>
+<connection>
+  <from>/icubGazeboSim/camcalibPose/right/out</from>
+  <to>/oculus/display/right:i</to>
+  <protocol>udp</protocol>
+</connection>
+<!--
+<connection>
+  <from>/icubGazeboSim/camcalibPose/left/out</from>
+  <to>/icubGazeboSim/view/left</to>
+  <protocol>udp</protocol>
+</connection>
+<connection>
+  <from>/icubGazeboSim/camcalibPose/right/out</from>
+  <to>/icubGazeboSim/view/right</to>
+  <protocol>udp</protocol>
+</connection>
+-->
+</application>
+
