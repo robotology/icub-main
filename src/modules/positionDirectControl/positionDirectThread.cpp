@@ -49,6 +49,7 @@ void positionDirectControlThread::run()
         unsigned int botsize = bot->size();
         if (botsize == control_joints)
         {
+            prev_targets=targets;
             for (unsigned int i=0; i< control_joints; i++)
             {
                 targets[i] = bot->get(i).asDouble();
@@ -61,6 +62,8 @@ void positionDirectControlThread::run()
     }
     else
     {
+        _mutex.post();
+        return;
     }
 
     //apply the joints limits
@@ -101,9 +104,6 @@ void positionDirectControlThread::run()
     {
         idir->setPosition(control_joints_list[i],targets[i]);
     }
-
-    //update prev target
-    prev_targets=targets;
 
     _mutex.post();
 
