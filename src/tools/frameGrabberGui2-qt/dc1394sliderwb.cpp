@@ -172,11 +172,8 @@ void DC1394SliderWB::onRefreshDone(QObject *slider,bool bON,bool bAuto,bool bHas
     ui->pRBa->setEnabled(bON && bHasAuto);
     ui->pRBm->setEnabled(bON && bHasManual);
     ui->m_SliderRed->setEnabled(bON && !bAuto);
-    ui->m_SliderRed->setDisabled(!bON || bAuto || !bHasManual);
     ui->m_SliderBlue->setEnabled(bON && !bAuto);
-    ui->m_SliderBlue->setDisabled(!bON || bAuto || !bHasManual);
     ui->m_OnePush->setEnabled(bON && bHasOnePush);
-    ui->m_OnePush->setDisabled(!bON || !bHasOnePush);
 
     m_new_blu = blueVal;
     m_new_red = redVal;
@@ -375,11 +372,8 @@ void DC1394SliderWB::onRadioAutoDone(QObject *slider,bool bON, bool bAuto)
         return;
     }
 
-    //pFG->setModeDC1394(YARP_FEATURE_WHITE_BALANCE,bAuto);
     ui->m_SliderRed->setEnabled(!bAuto);
-    ui->m_SliderRed->setDisabled(!bON || bAuto);
     ui->m_SliderBlue->setEnabled(!bAuto);
-    ui->m_SliderBlue->setDisabled(!bON || bAuto);
     LOG("%s\n",ui->pRBa->isEnabled() ? "auto":"man");
     controlThread->doTask(_reload);
 }

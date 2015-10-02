@@ -146,12 +146,8 @@ void DC1394Slider::onRefreshDone(QObject *slider,bool bON,bool bAuto,bool bHasOn
     ui->pRBa->setEnabled(bON && bHasAuto);
     ui->pRBm->setEnabled(bON && bHasManual);
     ui->m_Slider->setEnabled(bON && !bAuto);
-    ui->m_Slider->setDisabled(!bON || bAuto || !bHasManual);
     ui->lblValue->setEnabled(bON && !bAuto);
-    ui->lblValue->setDisabled(!bON || bAuto || !bHasManual);
     ui->m_OnePush->setEnabled(bON && bHasOnePush);    // why setEnabled(false) is different from setDisable(true)?
-    ui->m_OnePush->setDisabled(!bON || !bHasOnePush);
-
 
     std::cout << "Feature is " << m_Feature << std::endl;
     std::cout << "bON is " << (bON) << std::endl;
@@ -280,9 +276,7 @@ void DC1394Slider::onRadioAutoDone(QObject *slider,bool bON, bool bAuto)
     std::cout << "slider enable is " << ui->m_Slider->isEnabled() << std::endl;
 
     ui->m_Slider->setEnabled(bON && !bAuto);
-    ui->m_Slider->setDisabled(!bON || bAuto);
     ui->lblValue->setEnabled(bON && !bAuto);
-    ui->lblValue->setDisabled(!bON || bAuto);
 
     LOG("%s\n",ui->pRBa->isChecked() ? "auto":"man");
 
@@ -313,7 +307,6 @@ void DC1394Slider::onPowerDone(QObject *slider, bool bON,bool hasAuto, bool hasM
     ui->m_Slider->setEnabled(bON && ui->pRBm->isChecked());
     ui->lblValue->setEnabled(bON && ui->pRBm->isChecked());
     ui->m_OnePush->setEnabled(bON && hasOnePush);    // why setEnabled(false) is different from setDisable(true)?
-    ui->m_OnePush->setDisabled(!bON || !hasOnePush);
     LOG("power %s\n",ui->pPwr->isChecked()?"on":"off");
 
 
