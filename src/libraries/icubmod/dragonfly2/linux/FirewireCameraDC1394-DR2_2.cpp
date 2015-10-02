@@ -2170,7 +2170,6 @@ bool CFWCamera_DR2_2::setBytesPerPacketDC1394(unsigned int newBandPercent)
 
 // base class implementation
 
-// #define TRANSL(feature) ((int)feature-(int)DC1394_FEATURE_MIN)
 #define NOT_PRESENT -1
 int CFWCamera_DR2_2::TRANSL(int feature)
 {
@@ -2202,7 +2201,7 @@ int CFWCamera_DR2_2::TRANSL(int feature)
 bool CFWCamera_DR2_2::setBrightness(double v)
 {
 	if (v<0.0 || v>1.0) return false;
-	int feature=TRANSL(YARP_FEATURE_BRIGHTNESS);
+	int feature=YARP_FEATURE_BRIGHTNESS;
 	setActiveDC1394(feature,true);
 	setModeDC1394(feature,false);  
 	return setFeatureDC1394(feature,v); 
@@ -2210,7 +2209,7 @@ bool CFWCamera_DR2_2::setBrightness(double v)
 bool CFWCamera_DR2_2::setExposure(double v)
 {
 	if (v<0.0 || v>1.0) return false;
-	int feature=TRANSL(YARP_FEATURE_EXPOSURE);
+	int feature=YARP_FEATURE_EXPOSURE;
 	setActiveDC1394(feature,true);
 	setModeDC1394(feature,false);  
 	return setFeatureDC1394(feature,v); 
@@ -2218,7 +2217,7 @@ bool CFWCamera_DR2_2::setExposure(double v)
 bool CFWCamera_DR2_2::setSharpness(double v)
 { 
 	if (v<0.0 || v>1.0) return false;
-	int feature=TRANSL(YARP_FEATURE_SHARPNESS);
+	int feature=YARP_FEATURE_SHARPNESS;
 	setActiveDC1394(feature,true);
 	setModeDC1394(feature,false);  
 	return setFeatureDC1394(feature,v); 
@@ -2226,7 +2225,7 @@ bool CFWCamera_DR2_2::setSharpness(double v)
 bool CFWCamera_DR2_2::setWhiteBalance(double blue, double red)
 {
 	if (blue<0.0 || blue>1.0 || red<0.0 || red>1.0) return false;
-	int feature=TRANSL(YARP_FEATURE_WHITE_BALANCE);
+	int feature=YARP_FEATURE_WHITE_BALANCE;
 	setActiveDC1394(feature,true);
 	setModeDC1394(feature,false);
 	return setWhiteBalanceDC1394(blue,red); 
@@ -2234,7 +2233,7 @@ bool CFWCamera_DR2_2::setWhiteBalance(double blue, double red)
 bool CFWCamera_DR2_2::setHue(double v)
 {
 	if (v<0.0 || v>1.0) return false;
-	int feature=TRANSL(YARP_FEATURE_HUE);
+	int feature=YARP_FEATURE_HUE;
 	setActiveDC1394(feature,true);
 	setModeDC1394(feature,false);  
 	return setFeatureDC1394(feature,v);  
@@ -2242,7 +2241,7 @@ bool CFWCamera_DR2_2::setHue(double v)
 bool CFWCamera_DR2_2::setSaturation(double v)
 {
 	if (v<0.0 || v>1.0) return false;
-	int feature=TRANSL(YARP_FEATURE_SATURATION);
+	int feature=YARP_FEATURE_SATURATION;
 	setActiveDC1394(feature,true);
 	setModeDC1394(feature,false);  
 	return setFeatureDC1394(feature,v);  
@@ -2250,7 +2249,7 @@ bool CFWCamera_DR2_2::setSaturation(double v)
 bool CFWCamera_DR2_2::setGamma(double v)
 {
 	if (v<0.0 || v>1.0) return false;
-	int feature=TRANSL(YARP_FEATURE_GAMMA);
+	int feature=YARP_FEATURE_GAMMA;
 	setActiveDC1394(feature,true);
 	setModeDC1394(feature,false);  
 	return setFeatureDC1394(feature,v);  
@@ -2258,7 +2257,7 @@ bool CFWCamera_DR2_2::setGamma(double v)
 bool CFWCamera_DR2_2::setShutter(double v)
 {
 	if (v<0.0 || v>1.0) return false;
-	int feature=TRANSL(YARP_FEATURE_SHUTTER);
+	int feature=YARP_FEATURE_SHUTTER;
 	setActiveDC1394(feature,true);
 	setModeDC1394(feature,false);  
 	return setFeatureDC1394(feature,v);  
@@ -2266,7 +2265,7 @@ bool CFWCamera_DR2_2::setShutter(double v)
 bool CFWCamera_DR2_2::setGain(double v)
 {
 	if (v<0.0 || v>1.0) return false;
-	int feature=TRANSL(YARP_FEATURE_GAIN);
+	int feature=YARP_FEATURE_GAIN;
 	setActiveDC1394(feature,true);
 	setModeDC1394(feature,false);  
 	return setFeatureDC1394(feature,v);  
@@ -2274,7 +2273,7 @@ bool CFWCamera_DR2_2::setGain(double v)
 bool CFWCamera_DR2_2::setIris(double v)
 {
 	if (v<0.0 || v>1.0) return false;
-	int feature=TRANSL(YARP_FEATURE_IRIS);
+	int feature=YARP_FEATURE_IRIS;
 	setActiveDC1394(feature,true);
 	setModeDC1394(feature,false);  
 	return setFeatureDC1394(feature,v);  

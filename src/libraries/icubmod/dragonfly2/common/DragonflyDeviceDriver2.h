@@ -815,6 +815,8 @@ public:
 
 protected:
     void* system_resources;
+    FeatureMode TRANSL_MODE(bool mode) { return (mode ? MODE_AUTO : MODE_MANUAL); }
+    bool TRANSL_MODE(FeatureMode mode) { return (mode == MODE_AUTO? 1 : 0); }
 };
 
 class yarp::dev::DragonflyDeviceDriver2Rgb : 
