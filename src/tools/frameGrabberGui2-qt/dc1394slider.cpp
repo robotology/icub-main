@@ -47,18 +47,23 @@ bool DC1394Slider::init(cameraFeature_id_t feature, char* label, DC1394Thread *c
     m_Feature=feature;
     this->controlThread = controlThread;
 
+    connect(controlThread,SIGNAL(sliderHasFeatureDone(QObject*,bool)),
+           this,SLOT(onHasFeatureDone(QObject*,bool)),Qt::QueuedConnection);
+
     connect(controlThread,SIGNAL(sliderRefreshDone(QObject*,bool,bool,bool,bool,bool,bool,double)),
             this,SLOT(onRefreshDone(QObject*,bool,bool,bool,bool,bool,bool,double)),Qt::QueuedConnection);
 
     connect(controlThread,SIGNAL(sliderSetFeatureDC1394Done(QObject*,double)),
             this,SLOT(onSliderSetFeatureDone(QObject*,double)),Qt::QueuedConnection);
 
+    connect(controlThread,SIGNAL(sliderRadioAutoDone(QObject*,bool,bool)),
+            this,SLOT(onRadioAutoDone(QObject*,bool,bool)),Qt::QueuedConnection);
+
     connect(controlThread,SIGNAL(sliderPowerDone(QObject*,bool,bool,bool,bool)),
             this,SLOT(onPowerDone(QObject*,bool,bool,bool,bool)),Qt::QueuedConnection);
 
-    connect(controlThread,SIGNAL(sliderHasFeatureDone(QObject*,bool)),
-           this,SLOT(onHasFeatureDone(QObject*,bool)),Qt::QueuedConnection);
-
+    connect(controlThread,SIGNAL(sliderOnePushDone(QObject*,double)),
+            this,SLOT(onOnePushDone(QObject*,double)),Qt::QueuedConnection);
 
     type = SLIDER;
     m_Name=label;
