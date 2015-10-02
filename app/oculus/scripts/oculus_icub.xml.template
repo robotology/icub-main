@@ -1,0 +1,148 @@
+<application>
+  <name>Oculus iCub</name>
+  <dependencies></dependencies>
+
+  <module>
+    <name>icubmoddev</name>
+    <parameters>--device grabber --subdevice dragonfly2 --video_type 11 --width 640 --height 480 --white_balance 0.525 0.672 --gain 0.0 --shutter 0.870 --name /icub/cam/left  --brightness 0.662 --DR2 --stamp --guid 00b09d01009a9854--sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.260 --framerate 40</parameters>
+	<node>/pc104</node>
+	<tag>camera_left</tag>
+  </module>
+
+  <module>
+    <name>icubmoddev</name>
+    <parameters>--device grabber --subdevice dragonfly2 --video_type 11 --width 640 --height 480 --white_balance 0.525 0.672 --gain 0.0 --shutter 0.870 --name /icub/cam/right  --brightness 0.662 --DR2 --stamp --guid 00b09d01009a9853 --sharpness 0.5 --hue 0.48 --gamma 0.4 --saturation 0.260 --framerate 40</parameters>
+    <node>/pc104</node>
+	<tag>camera_right</tag>
+  </module>
+
+  <module>
+    <name>camCalibWithPose</name>
+    <parameters>--context cameraCalibration --from icubSimEyes_640x480.ini --group CAMERA_CALIBRATION_LEFT --name /icub/camcalib/left</parameters>
+    <node>/icub14</node>
+  </module>
+
+  <module>
+    <name>camCalibWithPose</name>
+    <parameters>--context cameraCalibration --from icubSimEyes_640x480.ini --group CAMERA_CALIBRATION_RIGHT --name /icub/camcalib/right</parameters>
+    <node>/icub14</node>
+  </module>
+
+  <module>
+    <name>yarpdev</name>
+    <parameters>--device ovrheadset --hfov 67 --w 960 --h 720 --imagepose --left-yaw-offset 0.2275 --left-pitch-offset -0.03 --right-roll-offset -0.0575</parameters>
+    <node>/iitrbcsws120</node>
+  </module>
+
+  <module>
+    <name>positionDirectControl</name>
+    <parameters>--robot icub --part head --joints "(0 1 2)"</parameters>
+    <node>/icub14</node>
+  </module>
+
+  <module>
+    <name>yarpview</name>
+    <parameters>--name /icub/view/left --x 0 --y 0 --synch</parameters>
+    <node>/icub14</node>
+  </module>
+
+  <module>
+    <name>yarpview</name>
+    <parameters>--name /icub/view/right --x 320 --y 0 --synch</parameters>
+    <node>/icub14</node>
+  </module>
+
+  <module>
+    <name>frameGrabberGui2</name>
+    <parameters>--local /icub/fggui/left --remote /icub/cam/left --x 0 --y 350 --width 350 --height 500</parameters>
+    <tag>fggui_left</tag>
+    <node>/icub14</node>
+  </module>
+
+  <module>
+    <name>frameGrabberGui2</name>
+    <parameters>--local /icub/fggui/right --remote /icub/cam/right --x 320 --y 350 --width 350 --height 500</parameters>
+    <tag>fggui_right</tag>
+    <node>/icub14</node>
+  </module>
+
+  <connection>
+    <from>/icub/cam/left</from>
+    <to>/icub/camcalib/left/in</to>
+    <protocol>mjpeg</protocol>
+  </connection>
+
+  <connection>
+    <from>/icub/cam/right</from>
+    <to>/icub/camcalib/right/in</to>
+    <protocol>mjpeg</protocol>
+  </connection>
+
+  <connection>
+    <from>/icub/inertial</from>
+    <to>/icub/camcalib/left/imu/in</to>
+    <protocol>udp</protocol>
+  </connection>
+
+  <connection>
+    <from>/icub/inertial</from>
+    <to>/icub/camcalib/right/imu/in</to>
+    <protocol>udp</protocol>
+  </connection>
+
+  <connection>
+    <from>/icub/head/state:o</from>
+    <to>/icub/camcalib/right/head_encs/in</to>
+    <protocol>udp</protocol>
+  </connection>
+
+  <connection>
+    <from>/icub/head/state:o</from>
+    <to>/icub/camcalib/left/head_encs/in</to>
+    <protocol>udp</protocol>
+  </connection>
+
+  <connection>
+    <from>/icub/torso/state:o</from>
+    <to>/icub/camcalib/right/torso_encs/in</to>
+    <protocol>udp</protocol>
+  </connection>
+
+  <connection>
+    <from>/icub/torso/state:o</from>
+    <to>/icub/camcalib/left/torso_encs/in</to>
+    <protocol>udp</protocol>
+  </connection>
+
+  <connection>
+    <from>/icub/camcalib/left/out</from>
+    <to>/oculus/display/left:i</to>
+    <protocol>mjpeg</protocol>
+  </connection>
+
+  <connection>
+    <from>/icub/camcalib/right/out</from>
+    <to>/oculus/display/right:i</to>
+    <protocol>mjpeg</protocol>
+  </connection>
+
+  <connection>
+    <from>/oculus/headpose/orientation:o</from>
+    <to>/directPositionControl/icub/head/command:i</to>
+    <protocol>udp</protocol>
+  </connection>
+
+  <connection>
+    <from>/icub/camcalib/left/out</from>
+    <to>/icub/view/left</to>
+    <protocol>mjpeg</protocol>
+  </connection>
+
+  <connection>
+    <from>/icub/camcalib/right/out</from>
+    <to>/icub/view/right</to>
+    <protocol>mjpeg</protocol>
+  </connection>
+
+</application>
+
