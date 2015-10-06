@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<devices>
+    <device name="right_arm_VFTserver" type="virtualAnalogServer">
+        <param name="period">       10                  </param>
+        <param name="deviceId">     right_arm                </param>
+        
+        <paramlist name="networks">
+            <elem name="net_VFT_RA">  0  5  0  5 </elem> 
+        </paramlist>
+
+        <param name="name">           /right_arm                </param>
+
+        <action phase="startup" level="5" type="attach">
+            <paramlist name="networks">
+            <elem name="net_VFT_RA">  right_arm_virtual_strain </elem>    
+            </paramlist>
+        </action>
+
+        <action phase="shutdown" level="5" type="detach" />
+    </device>
+</devices>
+
+
