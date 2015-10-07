@@ -8,7 +8,11 @@
 		<node>vizzy-desktop</node>
 		<tag>robotInterface</tag>
 	</module>
-
+	<module>
+		<name>cfwFailUtility</name>
+		<node>vizzy-desktop</node>
+		<tag>cfw_fail_utility</tag>
+	</module>
 	<module>
                 <name>cartesianControllerServer</name>
                 <parameters>--from server_left_arm.ini</parameters>
