@@ -1,7 +1,7 @@
  
  
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices robot="iCubLausanne01" build="1">              
+<devices>      
   <device name="right_leg_mc" type="canmotioncontrol">   
 <params file="general.xml" />              
 <group name="CAN">           
@@ -31,7 +31,7 @@
 <param name="Joints">       6             </param>       
 <param name="AxisMap">      2             3             0             1             4             5             </param>       
 <param name="Encoder">      -11.375       -11.375       -11.375       -11.375       -11.375       -11.375       </param>       
-<param name="Zeros">        -180          -180          -180          -180          -180          -180          </param>       
+<param name="Zeros">        -180          -180          -180          -180          -180          -175          </param>       
 <param name="TorqueId">     0x0B          0x0B          0x0B          0x0B          0x0B          0x0B          </param>       
 <param name="TorqueChan">   0             1             2             3             4             5             </param>       
 <param name="TorqueMax">    12            12            12            12            12            12            </param>       
@@ -67,9 +67,7 @@
 <param name="stictionDwn">  0             0             0             0             0             0             </param>       
 </group>       
  
-<group name="TORQUE_CONTROL">              
-<param name="controlLaw">    joint_pid                  </param>       
-<param name="controlUnits">  machine_units              </param>       
+<group name="TRQ_PIDS">      
 <param name="kp">           -76           76            -76           76            0             0             </param>       
 <param name="kd">           0             0             0             0             0             0             </param>       
 <param name="ki">           0             0             0             0             0             0             </param>       
@@ -79,12 +77,7 @@
 <param name="ko">           0             0             0             0             0             0             </param>       
 <param name="stictionUp">   0             0             0             0             0             0             </param>       
 <param name="stictionDwn">  0             0             0             0             0             0             </param>       
-<param name="kff">          1             1             1             1             1             1             </param>       
-<param name="kbemf">        0             0             0             0             0             0             </param>       
-<param name="filterType">   0             0             0             0             0             0             </param>       
-<param name="ktau">         1             1             1             1             1             1             </param>       
-</group>                     
+</group>       
  
   </device>    
 </devices>     
- 
