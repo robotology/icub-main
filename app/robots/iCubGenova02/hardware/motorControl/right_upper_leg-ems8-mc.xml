@@ -16,6 +16,7 @@
         <param name="RotorMin">         0             0             0           0       </param> 
         <param name="RotorMax">         0             0             0           0       </param>
         <param name="Currents">         5000          5000          5000        5000    </param>
+        <param name="JntVelocityMax">      1000          1000          1000        1000    </param>   
     </group>
 
 	<group name="POSITION_CONTROL">

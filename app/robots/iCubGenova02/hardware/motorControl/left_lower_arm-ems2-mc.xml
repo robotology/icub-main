@@ -16,7 +16,8 @@
         <param name="Currents">   500           800           800           485           485           485           485           485           485           485           485           485   	</param>
         <param name="RotorMin">     0             0             0           0             0             0             0             0             0             0             0             0   </param> 
         <param name="RotorMax">     0             0             0           0             0             0             0             0             0             0             0             0   </param>
-    </group>
+        <param name="JntVelocityMax"> 1000        1000          1000        1000          1000          1000          1000          1000          1000          1000          1000          1000   </param>   
+   </group>
 
     <group name="POSITION_CONTROL">
         <param name="controlLaw">    joint_pid_v1 </param> 

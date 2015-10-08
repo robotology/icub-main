@@ -418,6 +418,8 @@ bool embObjMotionControl::alloc(int nj)
     _torqueSensorId= allocAndCheck<int>(nj);
     _torqueSensorChan= allocAndCheck<int>(nj);
     _maxTorque=allocAndCheck<double>(nj);
+    _maxJntCmdVelocity = allocAndCheck<double>(nj);
+    _maxMotorVelocity = allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
     _hasHallSensor = allocAndCheck<bool>(nj);
     _hasTempSensor = allocAndCheck<bool>(nj);
@@ -484,6 +486,8 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_torqueSensorId);
     checkAndDestroy(_torqueSensorChan);
     checkAndDestroy(_maxTorque);
+    checkAndDestroy(_maxJntCmdVelocity);
+    checkAndDestroy(_maxMotorVelocity);
     checkAndDestroy(_newtonsToSensor);
     checkAndDestroy(_pids);
     checkAndDestroy(_tpids);
@@ -584,6 +588,8 @@ embObjMotionControl::embObjMotionControl() :
     _torqueSensorId   = NULL;
     _torqueSensorChan = NULL;
     _maxTorque        = NULL;
+    _maxJntCmdVelocity= NULL;
+    _maxMotorVelocity = NULL;
     _newtonsToSensor  = NULL;
     _jointEncoderRes  = NULL;
     _jointEncoderType = NULL;
@@ -1617,6 +1623,12 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     else
         for(i=1; i<xtmp.size(); i++) _rotorlimits_max[i-1]=xtmp.get(i).asDouble();
 
+    // joint Velocity command max limit
+    if (!extractGroup(limits, xtmp, "JntVelocityMax", "a list of maximum velocities for the joints (in degrees/s)", _njoints))
+        return false;
+    else
+        for (i = 1; i<xtmp.size(); i++) _maxJntCmdVelocity[i - 1] = xtmp.get(i).asDouble();
+
     // Rotor min limit
     if (!extractGroup(limits, xtmp, "RotorMin","a list of minimum roto angles (in degrees)", _njoints))
         return false;
@@ -1822,12 +1834,11 @@ bool embObjMotionControl::init()
 
         jconfig.limitsofjoint.max = (eOmeas_position_t) S_32(convertA2I(_limitsMax[logico], 0.0, _angleToEncoder[logico]));
         jconfig.limitsofjoint.min = (eOmeas_position_t) S_32(convertA2I(_limitsMin[logico], 0.0, _angleToEncoder[logico]));
+        jconfig.maxvelocityofjoint = S_32(_maxJntCmdVelocity[logico] * _angleToEncoder[logico]); //icubdeg/s
         jconfig.velocitysetpointtimeout = (eOmeas_time_t) U_16(_velocityTimeout[logico]);
         jconfig.motionmonitormode = eomc_motionmonitormode_dontmonitor;
 
         jconfig.jntEncoderResolution = _jointEncoderRes[logico];
-        jconfig.DEPRECATED_encoderconversionfactor = 1;// eo_common_float_to_Q17_14(_encoderconversionfactor[logico]);
-        jconfig.DEPRECATED_encoderconversionoffset = 0;// eo_common_float_to_Q17_14(_encoderconversionoffset[logico]);
         jconfig.jntEncoderType = _jointEncoderType[logico];
         jconfig.motor_params.bemf_value = 0;
         jconfig.motor_params.bemf_scale = 0;
@@ -1877,6 +1888,7 @@ bool embObjMotionControl::init()
 
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config);
         eOmc_motor_config_t    motor_cfg;
+        motor_cfg.maxvelocityofmotor = 0;//_maxMotorVelocity[logico]; //unused yet!
         motor_cfg.maxcurrentofmotor = _currentLimits[logico];
         motor_cfg.gearboxratio = _gearbox[logico];
         motor_cfg.rotorEncoderResolution = _rotorEncoderRes[logico];
