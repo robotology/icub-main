@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+ <!-- Initialization file for EMS 6 - Left Upper Leg, 4 dof -->
+
+<devices robot="iCubGenova02" build="1">
+  <device name="left_upper_leg_mc" type="embObjMotionControl">
+      <xi:include href="general.xml" itype="params"/>
+      <xi:include href="hardware/electronics/left_upper_leg-ems6-eln.xml" itype="params"/>
+      <xi:include href="hardware/mechanicals/left_upper_leg-ems6-mec.xml" itype="params"/>
+
+    <group name="LIMITS">
+        <param name="Max">                      85            90            70            0     </param>
+        <param name="Min">                      -30           0             -70           -100  </param>
+        <param name="RotorMin">                 0             0             0             0     </param> 
+        <param name="RotorMax">                 0             0             0             0     </param>
+        <param name="JntVelocityMax">              1000          1000          1000          1000  </param>   
+        <param name="Currents">                 5000          5000          5000          5000  </param>
+    </group>
+
+	<group name="POSITION_CONTROL">
+	    <param name="controlLaw">    joint_pid_v1 </param> 
+        <param name="controlUnits">  metric_units               </param> 
+        <param name="kp">           -1066.66     2066.66    -711.11    1066.66 </param>       
+        <param name="kd">               0.00        0.00       0.00       0.00 </param>       
+        <param name="ki">          -10666.64    14222.18   -7111.09   10666.64 </param>       
+        <param name="limPwm">           2500        2500       2500       2500 </param>       
+        <param name="maxPwm">           8000        8000       8000       8000 </param>       
+        <param name="maxInt">           1500        1500        750       1000 </param>       
+        <param name="shift">               0           0          0          0 </param>       
+        <param name="ko">                  0           0          0          0 </param>       
+        <param name="stictionUp">          0           0          0          0 </param>       
+        <param name="stictionDwn">         0           0          0          0 </param>       
+        <param name="kff">                 0           0          0          0 </param>  
+    </group>
+    
+     <group name="IMPEDANCE">
+        <param name="stiffness">       0      0      0      0     </param>    
+        <param name="damping">         0      0      0      0     </param>    
+    </group>
+    
+    <group name="TORQUE_CONTROL">
+        <param name="controlLaw">    motor_pid_with_friction_v1               </param>
+        <param name="controlUnits">  metric_units                             </param>         
+        <param name="kp">           -200        200       -200        200     </param>       
+        <param name="kd">              0          0          0          0     </param>       
+        <param name="ki">              0          0          0          0     </param>
+        <param name="limPwm">       2500       2500       2500       2500     </param>        
+        <param name="maxPwm">       8000       8000       8000       8000     </param>       
+        <param name="maxInt">        500        500        500        500     </param>       
+        <param name="shift">           0          0          0          0     </param>       
+        <param name="ko">              0          0          0          0     </param>       
+        <param name="stictionUp">     -2.0        2.0       -1.0       -1.0   </param>       
+        <param name="stictionDwn">     1.4       -2.0        1.3        0.2   </param>       
+        <param name="kff">             1          1          1          1     </param>      
+        <param name="kbemf">          -0.004      0.002     -0.003     -0.0035</param>     
+        <param name="filterType">      0          0          0          0     </param>              
+        <param name="ktau">         -162        178       -197        167     </param>      
+    </group>
+	
+  </device>
+</devices>
+
+
+

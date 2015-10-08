@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubGenova02" build="1">
+    <group name="GENERAL">
+        <param name="MotioncontrolVersion">  2 </param>
+        <param name="Joints"> 12 </param> <!-- the number of joints of the robot part -->
+        <param name="AxisMap">               0             1             2             3             4             5             6             7             8             9             10            11    </param>
+        <param name="HasHallSensor">         0             0             0             0             0             0             0             0             0             0             0             0     </param>
+        <param name="HasTempSensor">         0             0             0             0             0             0             0             0             0             0             0             0     </param>
+        <param name="HasRotorEncoder">       1             1             1             1             1             1             1             1             1             1             1             1     </param>
+        <param name="HasRotorEncoderIndex">  0             0             0             0             0             0             0             0             0             0             0             0     </param>
+        <param name="Encoder">         706.670       -11.375        11.375         5.167        17.556        -2.422        -2.706        -2.556        -2.765        -2.778        -3.000        -2.312     </param>
+        <param name="Zeros">            -75.00       -180.00        183.00        392.90         28.20        -98.26       -170.00        -90.00       -177.23        -90.00       -170.00       -291.09     </param>
+        <param name="TorqueId">           0x0C             0             0             0             0             0             0             0             0             0             0             0     </param>
+        <param name="TorqueChan">            4             0             0             0             0             0             0             0             0             0             0             0     </param>
+        <param name="TorqueMax">             2             2             2             2             2             2             2             2             2             2             2             2     </param>
+        <param name="RotorEncoderRes">       1             1             1             1             1             1             1             1             1             1             1             1     </param>
+        <param name="RotorIndexOffset">      0             0             0             0             1             1             1             1             1             1             1             1     </param>
+        <param name="Gearbox">               1             1             1             1             1             1             1             1             1             1             1             1     </param>
+        <param name="JointEncoderType">  "OPTICAL_QUAD"  "AEA"          "AEA"       "HALL_ADC"     "HALL_ADC"     "MAIS"        "MAIS"        "MAIS"      "MAIS"         "MAIS"        "MAIS"         "MAIS" </param>
+        <param name="RotorEncoderType">  "NONE"          "NONE"         "NONE"      "NONE"         "NONE"         "NONE"        "NONE"        "NONE"      "NONE"         "NONE"        "NONE"         "NONE" </param>
+        <param name="JointEncoderRes">       1             -4096        4096          1             1             256          256           256           256           256           256           256     </param>
+        <param name="MotorPoles">            1             1            1             1             1             1            1             1               1             1             1             1     </param>
+        <param name="Verbose"> 0 </param> 
+    </group>
+
+    <group name="VELOCITY">
+        <param name="MOT_speed_estimation">1             1             1             1             1             1             1             1             1             1             1             1</param>
+        <param name="MOT_accel_estimation">1             1             1             1             1             1             1             1             1             1             1             1</param>
+        <param name="JNT_accel_estimation">5             5             5             5             5             5             5             5             5             5             5             5</param>
+        <param name="JNT_speed_estimation">5             5             5             5             5             5             5             5             5             5             5             5</param>
+        <param name="Shifts">              8             8             8             8             8             8             8             8             8             8             8             8</param>
+        <param name="Timeout">             100           100           100           100           100           100           100           100           100           100           100           100</param>
+    </group>
+
+</params>
