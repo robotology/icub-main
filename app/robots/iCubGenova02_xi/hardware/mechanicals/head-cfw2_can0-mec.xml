@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubGenova02" build="1">
+    <group name="GENERAL">
+        <param name="MotioncontrolVersion">  1 </param>
+        <param name="Joints"> 6  </param> <!-- the number of joints of the robot part -->
+        <param name="AxisMap"> 		         0             1             2             3             4             5    </param>
+        <param name="AxisName">       "neck_pitch" "neck_roll"    "neck_yaw"    "eyes_tilt"  "eyes_vergence"  "eyes_version" </param>
+        <param name="HasHallSensor">         0             0             0             0             0             0    </param>
+        <param name="HasTempSensor">         0             0             0             0             0             0    </param>
+        <param name="HasRotorEncoder">       1             1             1             1             1             1    </param>
+        <param name="HasRotorEncoderIndex">  0             0             0             0             0             0    </param>
+        <param name="Encoder">          11.375       -11.375        11.375        11.375       568.880       284.440    </param>
+        <param name="Zeros">            179.10       -179.30        180.00        180.00        -45.00          0.00    </param>
+        <param name="TorqueId">  	         0             0             0             0             0             0    </param>
+        <param name="TorqueChan">	         0             0             0             0             0             0    </param>
+        <param name="TorqueMax"> 	         0             0             0             0             0             0    </param>
+        <param name="RotorEncoderRes">       1             1             1             1             1             1    </param>
+        <param name="RotorIndexOffset">      0             0             0             0             0             0    </param>
+        <param name="Gearbox">          100.00        100.00        100.00        100.00        100.00        100.00    </param>
+        <param name="MotorPoles">            0             0             0             0             0             0    </param>
+        <param name="Verbose">		0	</param>
+    </group>
+
+    <group name="VELOCITY">
+        <param name="MOT_speed_estimation">	1             1             1             1             1             1	    </param>
+        <param name="MOT_accel_estimation">	1             1             1             1             1             1	    </param>
+        <param name="JNT_accel_estimation">	5             5             5             5             5             5	    </param>
+        <param name="JNT_speed_estimation">	5             5             5             5             5             5	    </param>
+        <param name="Shifts">              	8             8             8             8             8             8	    </param>
+        <param name="Timeout">             	100           100           100           100           100           100 	</param>
+    </group>
+
+    <group name="LIMITS">
+        <!--                      		0             1             2             3             4             5          -->
+        <param name="Max">        		17            20            45            30            30            50 	</param>
+        <param name="Min">             -30           -20           -45           -30           -30            0 	</param>
+        <param name="RotorMin">         0             0             0             0             0             0     </param> 
+        <param name="RotorMax">         0             0             0             0             0             0     </param>
+        <param name="Currents">  		2000          2000          1200          620           600           600	</param>
+    </group>
+
+    <group name="POS_PIDS">      
+        <param name="kp">           6000          -6000         3200          -400          100           100           </param>       
+        <param name="kd">           500           -500          3200          -400          1000          1000          </param>       
+        <param name="ki">           5             -5            10            -4            10            10            </param>     
+        <param name="limPwm">       800           800           800           1333          1333          1333          </param>               
+        <param name="maxPwm">       800           800           800           1333          1333          1333          </param>       
+        <param name="maxInt">       800           800           800           1333          1333          1333          </param>       
+        <param name="shift">        9             9             6             4             5             5             </param>       
+        <param name="ko">           0             0             0             0             0             0             </param>       
+        <param name="stictionUp">   0             0             0             0             0             0             </param>       
+        <param name="stictionDwn">  0             0             0             0             0             0             </param>       
+    </group>
+
+</params>

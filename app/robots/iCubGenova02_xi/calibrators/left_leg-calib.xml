@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubGenova02" build="1">
+	<device name="left_leg_calibrator" type="parametricCalibratorEth">
+                <xi:include href="general.xml" itype="params"/>
+
+		<group name="GENERAL">
+		    <param name="joints">  6  </param> <!-- the number of joints of the robot part -->
+		    <param name="deviceName"> Left_Leg_Calibrator </param>
+		</group>
+		
+<group name="HOME">
+<param name="positionHome">                       0.00           10.00       0.00         0.00        0.00      0.00        </param>
+<param name="velocityHome">                       10.00          10.00      10.00        10.00       10.00     10.00       </param>
+</group>
+
+
+
+<group name="CALIBRATION">
+<param name="calibrationType">                    3              3          3            3           3         3           </param>
+<param name="calibration1">                       32767.9        32767.9    32767.9      32767.9     32767.9   32767.9     </param>
+<param name="calibration2">                       10.0           10.0       10.0         10.0        10.0      10.0        </param>
+<param name="calibration3">                       59487.9        28320.1    29008.1      42511.9     34335.9   19472.1     </param>
+<param name="calibrationZero">                    180.00         180.00     180.00       -180.00     -180.00   180.00      </param>
+<param name="calibrationDelta">                   1.40           -2.0       0.0          -3.0        -1.0      2.7         </param>
+
+<param name="startupPosition">                    12             5          0           -10         -4        -5           </param>
+<param name="startupVelocity">                    10.0           10.0       10.0         10.0        10.0      10.0        </param>
+<param name="startupMaxPwm">                      1200           1200       1200         1200        1200      1200        </param>
+<param name="startupPosThreshold">                2              2          2            2           2         2           </param>
+</group>
+
+		<param name="CALIB_ORDER"> (0 1 2 3 4 5) </param>
+
+		<action phase="startup" level="10" type="calibrate">
+		    <param name="target">left_leg_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt1" level="1" type="park">
+		    <param name="target">left_leg_mc_wrapper</param>
+		</action>
+
+		<action phase="interrupt3" level="1" type="abort" />
+
+	</device>
+</devices>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE robot PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<robot name="iCubGenova02" build="1" portprefix="icub" xmlns:xi="http://www.w3.org/2001/XInclude">
+    <xi:include href="hardware/electronics/pc104.xml" itype ="devices"/>
+
+    <!-- CARTESIANS --> 
+    <xi:include href="cartesian/left_arm-cartesian.xml" itype ="devices"/>
+    <xi:include href="cartesian/right_arm-cartesian.xml" itype ="devices" />
+    
+    <!-- HEAD -->	
+    <xi:include href="hardware/motorControl/head-cfw2_can0-mc.xml" itype ="devices"/>
+    <xi:include href="wrappers/motorControl/head-mc_wrapper.xml" itype ="devices"/>
+
+    <!-- TORSO -->
+    <xi:include href="hardware/motorControl/torso-ems5-mc.xml" itype ="devices"/>
+    <xi:include href="wrappers/motorControl/torso-mc_wrapper.xml" itype ="devices"/>
+
+    <!-- LEFT ARM -->
+    <xi:include href="hardware/motorControl/left_upper_arm-ems1-mc.xml" itype ="devices"/>
+    <xi:include href="hardware/motorControl/left_lower_arm-ems2-mc.xml" itype ="devices"/>
+    <xi:include href="wrappers/motorControl/left_arm-mc_wrapper.xml" itype ="devices"/> 
+
+    <!-- RIGHT ARM -->
+    <xi:include href="hardware/motorControl/right_upper_arm-ems3-mc.xml" itype ="devices"/>
+    <xi:include href="hardware/motorControl/right_lower_arm-ems4-mc.xml" itype ="devices"/>
+    <xi:include href="wrappers/motorControl/right_arm-mc_wrapper.xml" itype ="devices"/>
+
+    <!-- ANALOG SENSOR FT -->
+    <xi:include href="wrappers/FT/left_arm-FT_wrapper.xml" itype ="devices"/> 
+    <xi:include href="wrappers/FT/right_arm-FT_wrapper.xml" itype ="devices"/>
+    <xi:include href="wrappers/FT/right_leg-FT_wrapper.xml" itype ="devices"/> 
+    <xi:include href="wrappers/FT/left_leg-FT_wrapper.xml" itype ="devices"/>
+    <xi:include href="wrappers/FT/right_foot-FT_wrapper.xml" itype ="devices"/> 
+    <xi:include href="wrappers/FT/left_foot-FT_wrapper.xml" itype ="devices"/>
+    <xi:include href="hardware/FT/left_upper_arm-ems1-strain.xml" itype ="devices"/> 
+    <xi:include href="hardware/FT/right_upper_arm-ems3-strain.xml" itype ="devices"/>
+    <xi:include href="hardware/FT/left_upper_leg-ems6-strain.xml" itype ="devices"/> 
+    <xi:include href="hardware/FT/right_upper_leg-ems8-strain.xml" itype ="devices"/>
+    <xi:include href="hardware/FT/left_lower_leg-ems7-strain.xml" itype ="devices"/> 
+    <xi:include href="hardware/FT/right_lower_leg-ems9-strain.xml" itype ="devices"/>
+
+    <!-- VIRTUAL ANALOG SENSORS (WRAPPER ONLY-->
+    <xi:include href="wrappers/VFT/left_arm-VFT_wrapper.xml" itype ="devices"/> 
+    <xi:include href="wrappers/VFT/right_leg-VFT_wrapper.xml" itype ="devices"/> 
+    <xi:include href="wrappers/VFT/left_leg-VFT_wrapper.xml" itype ="devices"/>     
+    <xi:include href="wrappers/VFT/right_arm-VFT_wrapper.xml" itype ="devices"/> 
+    <xi:include href="wrappers/VFT/torso-VFT_wrapper.xml" itype ="devices"/> 
+
+    <!-- ANALOG SENSOR MAIS -->
+    <xi:include href="wrappers/MAIS/left_hand-mais_wrapper.xml" itype ="devices"/> 
+    <xi:include href="wrappers/MAIS/right_hand-mais_wrapper.xml" itype ="devices"/> 
+    <xi:include href="hardware/MAIS/left_hand-ems2-mais.xml" itype ="devices"/> 
+    <xi:include href="hardware/MAIS/right_hand-ems4-mais.xml" itype ="devices"/>  
+    
+    <!-- LEFT LEG -->
+    <xi:include href="hardware/motorControl/left_upper_leg-ems6-mc.xml" itype ="devices"/>
+    <xi:include href="hardware/motorControl/left_lower_leg-ems7-mc.xml" itype ="devices"/>
+    <xi:include href="wrappers/motorControl/left_leg-mc_wrapper.xml" itype ="devices"/> 
+
+    <!-- RIGHT LEG -->
+    <xi:include href="hardware/motorControl/right_upper_leg-ems8-mc.xml" itype ="devices"/>
+    <xi:include href="hardware/motorControl/right_lower_leg-ems9-mc.xml" itype ="devices"/>
+    <xi:include href="wrappers/motorControl/right_leg-mc_wrapper.xml" itype ="devices"/>
+ 
+    <!-- INERTIAL SENSOR -->
+    <xi:include href="hardware/inertial.xml" itype ="devices"/>
+
+    <!--  SKINS -->
+    <xi:include href="wrappers/skin/left_arm-skin_wrapper.xml" itype ="devices"/>
+    <xi:include href="wrappers/skin/right_arm-skin_wrapper.xml" itype ="devices"/>  
+    <xi:include href="wrappers/skin/torso-skin_wrapper.xml" itype ="devices"/> 
+    <xi:include href="hardware/skin/torso-cfw2_can9-skin.xml" itype ="devices"/>
+    <xi:include href="hardware/skin/left_arm-ems2-skin.xml" itype ="devices"/>
+    <xi:include href="hardware/skin/right_arm-ems4-skin.xml" itype ="devices"/>
+
+    <!--  CALIBRATORS -->
+    <xi:include href="calibrators/left_arm-calib.xml" itype ="devices"/>
+    <xi:include href="calibrators/right_arm-calib.xml" itype ="devices"/> 
+    <xi:include href="calibrators/left_leg-calib.xml" itype ="devices"/>
+    <xi:include href="calibrators/right_leg-calib.xml" itype ="devices"/>
+    <xi:include href="calibrators/torso-calib.xml" itype ="devices"/> 
+    <xi:include href="calibrators/head-calib.xml" itype ="devices"/> 
+    </robot> 
+
+   <!--  <xi:include href="wrappers/skin/left_leg-skin_wrapper.xml" itype ="devices"/>-->
+   <!--   <xi:include href="wrappers/skin/right_leg-skin_wrapper.xml" itype ="devices"/>-->
+
+
+   <!--   <xi:include href="hardware/skin/left_leg-ems10-skin.xml" itype ="devices"/>-->
+   <!--   <xi:include href="hardware/skin/right_leg-ems11-skin.xml" itype ="devices"/>-->

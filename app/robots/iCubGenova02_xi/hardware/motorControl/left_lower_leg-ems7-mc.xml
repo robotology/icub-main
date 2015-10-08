@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+ <!-- Initialization file for EMS 7 - Left Lower Leg, 2 dof -->
+
+<devices robot="iCubGenova02" build="1">
+  <device name="left_lower_leg_mc" type="embObjMotionControl">
+      <xi:include href="general.xml" itype="params"/>
+      <xi:include href="hardware/electronics/left_lower_leg-ems7-eln.xml" itype="params"/>
+      <xi:include href="hardware/mechanicals/left_lower_leg-ems7-mec.xml" itype="params"/>
+
+    <group name="LIMITS">
+        <!--                      0             1      -->
+        <param name="Max">        30.00         20.00		</param>
+        <param name="Min">       -20.00        -20.00		</param>
+        <param name="RotorMin">   0             0           </param> 
+        <param name="RotorMax">   0             0           </param>
+        <param name="Currents">   5000          5000		</param>
+        <param name="JntVelocityMax"> 1000        1000         </param>
+    </group>
+
+	<group name="POSITION_CONTROL">
+	    <param name="controlLaw">    joint_pid_v1 </param> 
+        <param name="controlUnits">  metric_units              </param> 
+        <param name="kp">          711.11       711.11         </param>       
+        <param name="kd">            0.00         0.00         </param>       
+        <param name="ki">         7111.09      7111.09         </param>       
+        <param name="limPwm">        2500         2500         </param>       
+        <param name="maxPwm">        8000         8000         </param>       
+        <param name="maxInt">         750          750         </param>       
+        <param name="shift">            0            0         </param>       
+        <param name="ko">               0            0         </param>       
+        <param name="stictionUp">       0            0         </param>       
+        <param name="stictionDwn">      0            0         </param>      
+        <param name="kff">              0            0         </param>          
+        </group>
+
+    <group name="IMPEDANCE">
+      <param name="stiffness">	0.0	0.0	</param>
+      <param name="damping">	0.0	0.0	</param>
+    </group>
+
+    <group name="TORQUE_CONTROL">
+        <param name="controlLaw">    motor_pid_with_friction_v1 </param> 
+        <param name="controlUnits">  metric_units               </param> 
+        <param name="kp">         200          200              </param>       
+        <param name="kd">           0            0              </param>       
+        <param name="ki">           0            0              </param>
+        <param name="limPwm">    2500         2500              </param>         
+        <param name="maxPwm">    8000         8000              </param>       
+        <param name="maxInt">     500          500              </param>       
+        <param name="shift">        0            0              </param>       
+        <param name="ko">           0            0              </param>       
+        <param name="stictionUp">   1.7	         0.8            </param>       
+        <param name="stictionDwn"> -1.7         -1.8            </param>   
+        <param name="kff">          1            1              </param>         
+        <param name="kbemf">        0.0025       0.0035         </param>      
+        <param name="filterType">   0            0              </param>                 
+        <param name="ktau">       209          160              </param>          
+    </group>
+
+  </device>
+</devices>
