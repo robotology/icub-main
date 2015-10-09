@@ -1,8 +1,10 @@
- 
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices>      
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubPlymouth01" build="1">
     <device name="torso_calibrator" type="parametricCalibrator">       
-<params file="general.xml" />              
+                <params file="general.xml" />
+                             
         <group name="GENERAL">             
             <param name="joints"> 4 </param>             
             <param name="deviceName"> Torso_Calibrator </param>        
@@ -10,19 +12,19 @@
  
 <group name="CALIBRATION">   
  
-<param name="calibrationType">            3             3             3             0             </param>       
-<param name="calibration1">               2047.5        2047.5        2047.5        0             </param>       
-<param name="calibration2">               10            10            10            0             </param>       
-<param name="calibration3">               1449.5        1177.5        2250.5        0             </param>       
-<param name="positionZero">               0             0             0             0             </param>       
-<param name="velocityZero">               10            10            10            0             </param>       
-<param name="maxPwm">                     120           120           120           0             </param>       
-<param name="posZeroThreshold">           2             2             2             2             </param>       
+<param name="calibrationType">            3        3       3         0             </param>       
+<param name="calibration1">               2047.5   2047.5  2047.5    0             </param>       
+<param name="calibration2">               10.0     10.0    10.0      0             </param>       
+<param name="calibration3">               1197.5   4054.5  1574.5    0             </param>       
+<param name="positionZero">               0.0      0.0     0.0       0             </param>       
+<param name="velocityZero">               10.0     10.0    10.0      0             </param>       
+<param name="maxPwm">                     120      120     120       0             </param>       
+<param name="posZeroThreshold">           2        2       2         2             </param>       
 </group>       
  
 <group name="HOME">          
-<param name="positionHome"> 0             0             -20           0             </param>       
-<param name="velocityHome"> 10            10            10            0             </param>       
+<param name="positionHome"> 0        0       -20        0             </param>       
+<param name="velocityHome"> 10       10      10         0             </param>       
 </group>       
  
        <param name="CALIB_ORDER"> (0 1 2) </param>       
@@ -39,6 +41,7 @@
  
     </device>  
 </devices>     
+ 
  
  
  

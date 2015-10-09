@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<params robot="iCubAberystwyth01" build="1">
+<params robot="iCubPlymouth01" build="1">
 
         <group name="defaultCfgBoard">
             <param name="period">        50  </param> 
@@ -14,16 +14,40 @@
         
         
        <group name="defaultCfgTriangle">
-            <param name="enabled">         true  </param> 
+            <param name="enabled">         false  </param> 
             <param name="shift">           2  </param>
             <param name="cdcOffset">       0x2200  </param>
         </group>
 
 	<group name="specialCfgTriangles">
-        <param name="numOfSets">         0x01  </param> <!-- id starts from 1 for triangleSetCfg-->
+        <param name="numOfSets">         19  </param> <!-- id starts from 1 for triangleSetCfg-->
         <!--                                 patch       boardAddr    idStart       idEnd        enabled          shift       cdcOffset      -->
-           <param name="triangleSetCfg1">      7            0xE        0             6             1              0           0x2000      </param>
-        </group> 
+           <param name="triangleSetCfg1">      7            14        0             4              1              0           0x2000       </param> <!-- fingertips -->                        
+           <param name="triangleSetCfg2">      7            14        8             11             1              2           0x2200       </param>
+		   
+		   <param name="triangleSetCfg3">      7            13        0             15             1              2           0x2200       </param>
+		   
+		   <param name="triangleSetCfg4">      7            12        2             2              1              2           0x2200       </param>
+		   <param name="triangleSetCfg5">      7            12        5             5              1              2           0x2200       </param>
+		   <param name="triangleSetCfg6">      7             12        8             10             1              2           0x2200       </param>
+		   <param name="triangleSetCfg7">      7             12        12             12            1              2           0x2200       </param>
+		   
+		   <param name="triangleSetCfg8">      7             11        3             8              1              2           0x2200       </param>
+		   <param name="triangleSetCfg9">      7             11        9             10             1              2           0x2200       </param>
+		   <param name="triangleSetCfg10">     7             11       14             14             1              2           0x2200       </param>
+		   
+		   <param name="triangleSetCfg11">     7             10        6              6             1              2           0x2200       </param>
+		   <param name="triangleSetCfg12">     7             10        8             15             1              2           0x2200       </param>
+		   
+		   <param name="triangleSetCfg13">     7             9        0              8             1              2           0x2200       </param>
+		   <param name="triangleSetCfg14">     7             9        12             13            1              2           0x2200       </param>
+		   
+		   <param name="triangleSetCfg15">     7             8        0              0             1              2           0x2200       </param>
+		   <param name="triangleSetCfg16">     7             8        8              9             1              2           0x2200       </param>
+		   <param name="triangleSetCfg17">     7             8        10             11            1              2           0x2200       </param>
+		   <param name="triangleSetCfg18">     7              8        13             13            1             2           0x2200       </param>
+		   <param name="triangleSetCfg19">     7              8        15             15            1             2           0x2200       </param>
+    </group> 
 
         
 </params>

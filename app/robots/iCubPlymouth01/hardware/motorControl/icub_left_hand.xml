@@ -3,7 +3,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
   <device name="left_hand_mc" type="canmotioncontrol">   
-<params file="general.xml" />              
+  <params file="general.xml" />
+  
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
 <param name="physDevice">   cfw2can       </param>       
@@ -30,8 +31,9 @@
 <group name="GENERAL">       
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
-<param name="Encoder">      16.67         -2.78         -2.58         -2.67         -2.34         -2.63         -2.33         -2.34         </param>       
-<param name="Zeros">        22.20         -91.80        -183.87       -90.00        -203.46       -91.14        -197.14       -314.10       </param>       
+<param name="AxisName">     "l_thumb_oppose"     "l_thumb_proximal"     "l_thumb_distal"   "l_index_proximal"    "l_index_distal"    "l_middle_proximal"   "l_middle_distal"    "l_pinky"  </param>
+<param name="Encoder">                                                                                                    20.000   -2.556   -2.341   -2.278   -2.347   -2.700   -2.447   -2.204   </param>
+<param name="Zeros">                                                                                                      11.50    -99.78   -215.70  -111.95  -217.29  -90.00   -201.47  -339.38  </param>
 <param name="TorqueId">     0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueMax">    0             0             0             0             0             0             0             0             </param>       
@@ -56,9 +58,9 @@
 </group>       
  
 <group name="POS_PIDS">      
-<param name="kp">           -8000         -8000         -8000         -8000         8000          -8000         -8000         120           </param>       
-<param name="kd">           -32000        -32000        -32000        -32000        32000         -32000        -32000        1250          </param>       
-<param name="ki">           -5            -5            -5            -5            5             -5            -5            0             </param>       
+<param name="kp">           -8000         -8000         -8000          -8000         8000          -8000         -8000         120           </param>       
+<param name="kd">           -32000        -32000        -32000         -32000        32000         -32000        -32000        1250          </param>       
+<param name="ki">           -5            -5            -5             -5            5             -5            -5            0             </param>       
 <param name="maxPwm">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
 <param name="maxInt">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
 <param name="shift">        10            10            10            8             10            10            10            4             </param>       
@@ -81,3 +83,4 @@
  
   </device>    
 </devices>     
+ 

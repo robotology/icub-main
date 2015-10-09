@@ -6,5 +6,6 @@
     <param name="canDeviceNum"> 8 </param>
     <param name="canAddress"> 0x0E </param>
     <param name="period"> 10 </param>
+    <param name="sensorType"> "extAccAndGyro" </param>
 </device>
 </devices>

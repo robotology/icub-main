@@ -3,7 +3,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
   <device name="right_hand_mc" type="canmotioncontrol">  
-<params file="general.xml" />              
+  <params file="general.xml" />
+  
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
 <param name="physDevice">   cfw2can       </param>       
@@ -30,8 +31,10 @@
 <group name="GENERAL">       
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
-<param name="Encoder">      18.00         -2.40         -2.83         -2.83         -2.83         -2.67         -2.78         -2.28         </param>       
-<param name="Zeros">        12.78         -101.25       -180.00       -90.00        -180.00       -93.38        -180.00       -324.43       </param>       
+<param name="AxisName">    "r_thumb_oppose"     "r_thumb_proximal"     "r_thumb_distal"   "r_index_proximal"    "r_index_distal"    "r_middle_proximal"   "r_middle_distal"    "r_pinky"  </param>
+<param name="Encoder">                                                                                                    24.633   -2.333   -2.765   -2.689   -2.600   -2.778   -2.471   -1.740   </param>
+<param name="Zeros">                                                                                                      45.79    -109.29  -182.66  -90.00   -193.85  -90.00   -206.43  -370.69  </param>
+
 <param name="TorqueId">     0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueMax">    0             0             0             0             0             0             0             0             </param>       
@@ -81,3 +84,4 @@
  
   </device>    
 </devices>     
+ 

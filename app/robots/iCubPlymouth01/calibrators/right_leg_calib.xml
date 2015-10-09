@@ -1,29 +1,34 @@
- 
 <?xml version="1.0" encoding="UTF-8" ?>    
-<devices>      
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubPlymouth01" build="1">
     <device name="right_leg_calibrator" type="parametricCalibrator">   
-<params file="general.xml" />              
+                <params file="general.xml" />
+                             
         <group name="GENERAL">             
             <param name="joints">  6  </param>           
             <param name="deviceName"> Right_Leg_Calibrator </param>    
         </group>             
  
-<group name="CALIBRATION">   
- 
-<param name="calibrationType">            3             3             3             3             3             3             </param>       
-<param name="calibration1">               2047.5        2047.5        2047.5        2047.5        2047.5        2047.5        </param>       
-<param name="calibration2">               10            10            10            10            10            10            </param>       
-<param name="calibration3">               3701.5        395.5         1779.5        414.5         2519.5        544.5         </param>       
-<param name="positionZero">               0             0             0             0             0             0             </param>       
-<param name="velocityZero">               10            10            10            10            10            10            </param>       
-<param name="maxPwm">                     120           120           120           120           120           120           </param>       
-<param name="posZeroThreshold">           2             2             2             2             2             2             </param>       
-</group>       
- 
-<group name="HOME">          
-<param name="positionHome"> 0             0             0             0             0             0             </param>       
-<param name="velocityHome"> 10            10            10            10            10            10            </param>       
-</group>       
+
+<!--USE THIS FOR CAN ROBOT CALIBRATION-->
+<group name="HOME">
+<param name="positionHome">                       0.00            0.00        0.00      0.00           0.00          0.00          </param>
+<param name="velocityHome">                       10.00           10.00       10.00     10.00          10.00         10.00         </param>
+</group>
+
+
+<!--USE THIS FOR CAN ROBOT CALIBRATION-->
+<group name="CALIBRATION">
+<param name="calibrationType">                    3               3           3         3              3             3             </param>
+<param name="calibration1">                       2047.5          2047.5      2047.5    2047.5         2047.5        2047.5        </param>
+<param name="calibration2">                       10.0            10.0        10.0      10.0           10.0          10.0          </param>
+<param name="calibration3">                       836.5           1957.5      271.5     3972.5         2622.5        3115.5        </param>
+<param name="positionZero">                       0.0             0.0         0.0       0.0            0.0           0.0           </param>
+<param name="velocityZero">                       10.0            10.0        10.0      10.0           10.0          10.0          </param>
+<param name="maxPwm">                             120             120         120       120            120           120           </param>
+<param name="posZeroThreshold">                   2               2           2         2              2             2             </param>
+</group> 
  
         <param name="CALIB_ORDER">(0 1 2 3 4 5) </param>               
                
@@ -39,6 +44,7 @@
  
     </device>  
 </devices>     
+ 
  
  
  

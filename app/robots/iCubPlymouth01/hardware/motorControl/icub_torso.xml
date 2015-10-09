@@ -3,7 +3,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>    
 <devices>      
   <device name="torso_mc" type="canmotioncontrol">       
-<params file="general.xml" />              
+  <params file="general.xml" />
+  
 <group name="CAN">           
 <param name="canbusdevice"> sharedcan     </param>       
 <param name="physDevice">   cfw2can       </param>       
@@ -30,8 +31,9 @@
 <group name="GENERAL">       
 <param name="Joints">       4             </param>       
 <param name="AxisMap">      0             2             3             1             </param>       
-<param name="Encoder">      11.375        11.375        11.375        0             </param>       
-<param name="Zeros">        181           179           180           0             </param>       
+<param name="AxisName">     "torso_pitch" "torso_yaw" "torso_roll"   "none"         </param>
+<param name="Encoder">                               11.375  11.375  11.375   0</param>
+<param name="Zeros">                                 171.00  180.00  180.00   0</param>     
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          </param>       
 <param name="TorqueChan">   0             1             2             0             </param>       
 <param name="TorqueMax">    12            12            12            12            </param>       
@@ -81,3 +83,4 @@
  
   </device>    
 </devices>     
+ 
