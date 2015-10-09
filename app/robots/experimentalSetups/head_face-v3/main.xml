@@ -17,6 +17,8 @@
     <devices file="./hardware/motorControl/head1_mc_hardware.xml" /> 
     <devices file="./wrappers/motorControl/head_mc_wrapper.xml" /> 
 
+   <devices file="hardware/inertial.xml" />
+
     <!-- CALIBRATORS -->
     
     <!-- face calibrator -->
