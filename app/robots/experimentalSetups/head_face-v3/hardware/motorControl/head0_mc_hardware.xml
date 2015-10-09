@@ -23,9 +23,10 @@
         <group name="LIMITS">
             <param name="Min">                  -30         -20         </param> 
             <param name="Max">                  +22         +20         </param>
-            <param name="RotorMin">             0           0               </param> 
-            <param name="RotorMax">             0           0               </param>
+            <param name="RotorMin">             0           0           </param> 
+            <param name="RotorMax">             0           0           </param>
             <param name="Currents">             600         600         </param>
+            <param name="JntVelocityMax">       1000        1000        </param>
         </group>
     
         <group name="IMPEDANCE">
