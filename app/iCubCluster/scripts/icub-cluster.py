@@ -326,7 +326,7 @@ class App:
 
             if running==0 and selected==1:
                 #cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
-                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' start ']
+                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' start ' , node.name]
 
                 if node.display:
                     if (node.displayValue == ""):

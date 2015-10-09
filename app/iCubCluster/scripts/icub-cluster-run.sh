@@ -24,14 +24,15 @@ fi
 
 case "$1" in
 	start)
-		if [ "k$3" != "k" ];
+	        ID="/$2"
+        	if [ "k$4" != "k" ];
 		then
-			disp=$3
+			disp=$4
 		else
 			disp=":0.0"
 		fi
 
-		if [ "k$2" == "kdisplay" ];
+		if [ "k$3" == "kdisplay" ];
 		then
 			echo "enabling display on $ID"
 			export DISPLAY=$disp
@@ -39,13 +40,13 @@ case "$1" in
 			echo "Display set to: $DISPLAY"
 		fi
 
-        if [ "k$2" == "klog" ];
+        if [ "k$3" == "klog" ];
         then
             echo "enabling logger on $ID"
             log=1
         fi
 
-	if [ "k$4" == "klog" ];
+	if [ "k$5" == "klog" ];
         then
             echo "enabling logger on $ID"
             log=1
