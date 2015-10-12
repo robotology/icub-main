@@ -32,8 +32,10 @@
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
 <param name="AxisName">     "l_thumb_oppose"     "l_thumb_proximal"     "l_thumb_distal"   "l_index_proximal"    "l_index_distal"    "l_middle_proximal"   "l_middle_distal"    "l_pinky"  </param>
-<param name="Encoder">                                                                                                    20.000   -2.556   -2.341   -2.278   -2.347   -2.700   -2.447   -2.204   </param>
-<param name="Zeros">                                                                                                      11.50    -99.78   -215.70  -111.95  -217.29  -90.00   -201.47  -339.38  </param>
+<!--USE THIS FOR CAN ROBOT MOTOR CONTROL-->
+<param name="Encoder">                                                                                                    21.778   -2.056   -2.824   -2.611   -2.853   -2.500   -2.765   -2.308   </param>
+<param name="Zeros">                                                                                                      27.55    -124.05  -180.63  -97.66   -178.76  -102.00  -184.47  -327.99  </param>
+
 <param name="TorqueId">     0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueMax">    0             0             0             0             0             0             0             0             </param>       

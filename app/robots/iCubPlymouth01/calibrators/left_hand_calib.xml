@@ -10,7 +10,6 @@
             <param name="deviceName"> Left_Hand_Calibrator </param>    
         </group>             
  
-
 <!--USE THIS FOR CAN ROBOT CALIBRATION-->
 <group name="HOME">
 <param name="positionHome">                                                                                               45       0        0        0        0        0        0        0        </param>
@@ -20,7 +19,7 @@
 <!--USE THIS FOR CAN ROBOT CALIBRATION-->
 <group name="CALIBRATION">
 <param name="calibrationType">                                                                                            3        4        4        4        4        4        4        4        </param>
-<param name="calibration1">                                                                                               730.0    255.0    107.0    255.0    111.0    243.0    77.0     748.0    </param>
+<param name="calibration1">                                                                                               817.8    255.0    30.0     255.0    25.0     255.0    40.0     757.0    </param>
 <param name="calibration2">                                                                                               10.0     10.0     30.0     10.0     10.0     10.0     10.0     10.0     </param>
 <param name="calibration3">                                                                                               0.0      6000.0   -6600.0  6000.0   7000.0   6000.0   -7000.0  -14000.0 </param>
 <param name="positionZero">                                                                                               45.0     0.0      0.0      0.0      0.0      0.0      0.0      0.0      </param>
