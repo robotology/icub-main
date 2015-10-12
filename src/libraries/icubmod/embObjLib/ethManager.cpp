@@ -81,9 +81,9 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
     // if i find it in section ... of cfgtotal then i change it
 
 
-    if(cfgtotal.findGroup("ETH").check("PC104TXrate"))
+    if(cfgtotal.findGroup("PC104").check("PC104TXrate"))
     {
-        int value = cfgtotal.findGroup("ETH").find("PC104TXrate").asInt();
+        int value = cfgtotal.findGroup("PC104").find("PC104TXrate").asInt();
         if(value > 0)
             txrate = value;
     }
@@ -92,9 +92,9 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
         yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104TXrate. thus using default value";
     }
 
-    if(cfgtotal.findGroup("ETH").check("PC104RXrate"))
+    if(cfgtotal.findGroup("PC104").check("PC104RXrate"))
     {
-        int value = cfgtotal.findGroup("ETH").find("PC104RXrate").asInt();
+        int value = cfgtotal.findGroup("PC104").find("PC104RXrate").asInt();
         if(value > 0)
             rxrate = value;
     }

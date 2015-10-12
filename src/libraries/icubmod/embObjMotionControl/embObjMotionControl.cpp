@@ -804,8 +804,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
     yTrace() << str;
 
-
-    Bottle          groupEth;
     ACE_UINT16      port;
 
     Bottle groupTransceiver = Bottle(config.findGroup("TRANSCEIVER"));
@@ -822,21 +820,29 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-    // Get both PC104 and EMS ip addresses and port from config file
-    groupEth  = Bottle(config.findGroup("ETH"));
-    if(groupEth.isNull())
+    // Get PC104 address from config file
+    Bottle groupPC104  = Bottle(config.findGroup("PC104"));
+    if (groupPC104.isNull())
     {
-        yError() << "embObjMotionControl::open() cannot find ETH group in config files";
+        yError() << "embObjMotionControl::open() cannot find PC104 group in config files";
         return false;
     }
     Value *PC104IpAddress_p;
-    if(!groupEth.check("PC104IpAddress", PC104IpAddress_p))
+    if (!groupPC104.check("PC104IpAddress", PC104IpAddress_p))
     {
         yError() << "missing PC104IpAddress";
         return false;
     }
-    Bottle parameter1( groupEth.find("PC104IpAddress").asString() );
-    port      = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
+    Bottle parameter1(groupPC104.find("PC104IpAddress").asString());
+
+    // Get EMS ip addresses and port from config file
+    Bottle groupEth  = Bottle(config.findGroup("ETH"));
+    if(groupEth.isNull())
+    {
+    yError() << "embObjMotionControl::open() cannot find ETH group in config files";
+    return false;
+    }
+    port = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
     strcpy(_fId.pc104IPaddr.string, parameter1.toString().c_str());
     _fId.pc104IPaddr.port = port;
 

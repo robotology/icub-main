@@ -2,7 +2,7 @@
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
 <params robot="iCubDarmstadt01" build="1">
-  <group name="ETH">
+  <group name="PC104">
      <param name="PC104IpAddress"> 10.0.1.104 </param> 
      <param name="PC104TXrate">	            1	</param> 
      <param name="PC104RXrate">	            1	</param> 
