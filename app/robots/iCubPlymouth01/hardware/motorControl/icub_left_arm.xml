@@ -35,8 +35,6 @@
 <!--USE THIS FOR CAN ROBOT-->
 <param name="Encoder">                            -11.375    -11.375    -11.375    -11.375    706.67     -11.375    11.375     2.8        </param>
 <param name="Zeros">                              -180.00    -315.00    24.26      -180.00    -75.00     -180.00    180.00     769.64     </param>
-
-
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          0x0C          0             0             0             </param>       
 <param name="TorqueChan">   0             1             2             3             4             0             0             0             </param>       
 <param name="TorqueMax">    8             8             8             8             2             2             2             2             </param>       
