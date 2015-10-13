@@ -83,38 +83,38 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     Property p;
     p.fromString(config.toString());
 
-    if (p.check("GENERAL")==false)
+    if (p.check("GENERAL") == false)
     {
-      yError() << "Parametric calibrator: missing [GENERAL] section"; 
-      return false;
-    } 
+        yError() << "Parametric calibrator: missing [GENERAL] section";
+        return false;
+    }
 
-    if(p.findGroup("GENERAL").check("deviceName"))
+    if (p.findGroup("GENERAL").check("deviceName"))
     {
-      deviceName = p.findGroup("GENERAL").find("deviceName").asString();
-    } 
+        deviceName = p.findGroup("GENERAL").find("deviceName").asString();
+    }
     else
     {
-      yError() << "Parametric calibrator: missing deviceName parameter"; 
-      return false;
-    } 
+        yError() << "Parametric calibrator: missing deviceName parameter";
+        return false;
+    }
 
     std::string str;
-    if(config.findGroup("GENERAL").find("verbose").asInt())
+    if (config.findGroup("GENERAL").find("verbose").asInt())
     {
-        str=config.toString().c_str();
+        str = config.toString().c_str();
         yTrace() << deviceName.c_str() << str;
-    }  
+    }
 
     // Check clearHwFaultBeforeCalibration
     Value val_clearHwFault = config.findGroup("GENERAL").find("clearHwFaultBeforeCalibration");
-    if(val_clearHwFault.isNull())
+    if (val_clearHwFault.isNull())
     {
         clearHwFault = false;
     }
     else
     {
-        if(!val_clearHwFault.isBool())
+        if (!val_clearHwFault.isBool())
         {
             yError() << deviceName.c_str() << ": clearHwFaultBeforeCalibration bool param is different from accepted values (true / false). Assuming false";
             clearHwFault = false;
@@ -122,33 +122,33 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
         else
         {
             clearHwFault = val_clearHwFault.asBool();
-            if(clearHwFault)
+            if (clearHwFault)
                 yInfo() << deviceName.c_str() << ":  clearHwFaultBeforeCalibration option enabled\n";
         }
     }
 
     // Check Vanilla = do not use calibration!
-    skipCalibration =config.findGroup("GENERAL").find("skipCalibration").asBool() ;// .check("Vanilla",Value(1), "Vanilla config");
+    skipCalibration = config.findGroup("GENERAL").find("skipCalibration").asBool();// .check("Vanilla",Value(1), "Vanilla config");
     skipCalibration = !!skipCalibration;
-    if(skipCalibration )
+    if (skipCalibration)
     {
         yWarning() << deviceName << ": skipping calibration!! This option was set in general.xml file.";
         yWarning() << deviceName << ": BE CAREFUL USING THE ROBOT IN THIS CONFIGURATION! See 'skipCalibration' param in config file";
-    } 
+    }
 
     int nj = 0;
-    if(p.findGroup("GENERAL").check("joints"))
+    if (p.findGroup("GENERAL").check("joints"))
     {
         nj = p.findGroup("GENERAL").find("joints").asInt();
     }
-    else if(p.findGroup("GENERAL").check("Joints"))
+    else if (p.findGroup("GENERAL").check("Joints"))
     {
         // This is needed to be backward compatibile with old iCubInterface
         nj = p.findGroup("GENERAL").find("Joints").asInt();
     }
     else
     {
-        yError() << deviceName.c_str() <<  ": missing joints parameter" ;
+        yError() << deviceName.c_str() << ": missing joints parameter";
         return false;
     }
 
@@ -166,46 +166,50 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     homeVel = new double[nj];
     zeroPosThreshold = new double[nj];
 
-    int i=0;
+    int i = 0;
 
     Bottle& xtmp = p.findGroup("CALIBRATION").findGroup("calibration1");
-    if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration1 params " << xtmp.size()<< " " << nj; return false;}
-    for (i = 1; i < xtmp.size(); i++) param1[i-1] = xtmp.get(i).asDouble();
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of Calibration1 params " << xtmp.size() << " " << nj; return false; }
+    for (i = 1; i < xtmp.size(); i++) param1[i - 1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibration2");
-    if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration2 params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) param2[i-1] = xtmp.get(i).asDouble();
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of Calibration2 params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) param2[i - 1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibration3");
-    if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration3 params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) param3[i-1] = xtmp.get(i).asDouble();
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of Calibration3 params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) param3[i - 1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibrationType");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of Calibration3 params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) type[i-1] = (unsigned char) xtmp.get(i).asDouble();
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of Calibration3 params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) type[i - 1] = (unsigned char)xtmp.get(i).asDouble();
 
-    xtmp = p.findGroup("CALIBRATION").findGroup("positionZero");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of PositionZero params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) zeroPos[i-1] = xtmp.get(i).asDouble();
+    xtmp = p.findGroup("CALIBRATION").findGroup("startupPosition");
+    if (xtmp.isNull())  { xtmp = p.findGroup("CALIBRATION").findGroup("positionZero"); yWarning() << deviceName << ": unable to find 'startupPosition' paramter, using old 'positionZero'"; }
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of PositionZero/startupPosition params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) zeroPos[i - 1] = xtmp.get(i).asDouble();
 
-    xtmp = p.findGroup("CALIBRATION").findGroup("velocityZero");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of VelocityZero params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) zeroVel[i-1] = xtmp.get(i).asDouble();
+    xtmp = p.findGroup("CALIBRATION").findGroup("startupVelocity");
+    if (xtmp.isNull()) { xtmp = p.findGroup("CALIBRATION").findGroup("velocityZero"); yWarning() << deviceName << ": unable to find 'startupVelocity' paramter, using old 'velocityZero'";}
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of VelocityZero/startupVelocity params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) zeroVel[i - 1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("HOME").findGroup("positionHome");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of PositionHome params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) homePos[i-1] = xtmp.get(i).asDouble();
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of PositionHome params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) homePos[i - 1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("HOME").findGroup("velocityHome");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of VelocityHome params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) homeVel[i-1] = xtmp.get(i).asDouble();
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of VelocityHome params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) homeVel[i - 1] = xtmp.get(i).asDouble();
 
-    xtmp = p.findGroup("CALIBRATION").findGroup("maxPwm");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of MaxPwm params"; return false;}
-    for (i = 1; i < xtmp.size(); i++) maxPWM[i-1] =  xtmp.get(i).asInt();
+    xtmp = p.findGroup("CALIBRATION").findGroup("startupMaxPwm");
+    if (xtmp.isNull()) { xtmp = p.findGroup("CALIBRATION").findGroup("maxPwm"); yWarning() << deviceName << ": unable to find 'startupMaxPwm' paramter, using old 'maxPwm'"; }
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of MaxPwm/startupMaxPwm params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) maxPWM[i - 1] = xtmp.get(i).asInt();
 
-    xtmp = p.findGroup("CALIBRATION").findGroup("posZeroThreshold");
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of PosZeroThreshold params"; return false;}
+    xtmp = p.findGroup("CALIBRATION").findGroup("startupPosThreshold");
+    if (xtmp.isNull()) { xtmp = p.findGroup("CALIBRATION").findGroup("posZeroThreshold"); yWarning() << deviceName << ": unable to find 'startupPosThreshold' paramter, using old 'posZeroThreshold'"; }
+    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of PosZeroThreshold/startupPosThreshold params"; return false;}
     for (i = 1; i < xtmp.size(); i++) zeroPosThreshold[i-1] =  xtmp.get(i).asDouble();
  
     xtmp = p.findGroup("CALIB_ORDER");
