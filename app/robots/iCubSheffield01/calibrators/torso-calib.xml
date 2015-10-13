@@ -22,12 +22,14 @@
 <param name="calibration1">                       32767.9  32767.9 32767.9 </param>
 <param name="calibration2">                       10.0     10.0    10.0    </param>
 <param name="calibration3">                       20528.1  29864.1 5968.1  </param>
-<param name="positionZero">                       0.0      0.0     0.0     </param>
-<param name="velocityZero">                       10.0     10.0    10.0    </param>
-<param name="maxPwm">                             2000     2000    2000    </param>
-<param name="posZeroThreshold">                   2        2       2       </param>
-</group>
+<param name="calibrationZero">                    180.00   180.00  180.00  </param>
+<param name="calibrationDelta">                   -5.0     -1.0    0.0    </param>
 
+<param name="startupPosition">                    0.0      0.0     -5.0    </param>
+<param name="startupVelocity">                    10.0     10.0    10.0    </param>
+<param name="startupMaxPwm">                      2000     2000    2000    </param>
+<param name="startupPosThreshold">                2        2       2       </param>
+</group>
 
  <!-- check old calibrator for the correct sequence, then ask to Randazz -->
 		<param name="CALIB_ORDER"> (0 1 2) </param>
