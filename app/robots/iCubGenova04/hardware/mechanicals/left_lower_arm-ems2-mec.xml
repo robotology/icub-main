@@ -21,6 +21,7 @@
         <param name="JointEncoderType">  "OPTICAL_QUAD"  "AEA"          "AEA"       "HALL_ADC"     "HALL_ADC"     "MAIS"        "MAIS"        "MAIS"      "MAIS"         "MAIS"        "MAIS"         "MAIS" </param>
         <param name="RotorEncoderType">  "NONE"          "NONE"         "NONE"      "NONE"         "NONE"         "NONE"        "NONE"        "NONE"      "NONE"         "NONE"        "NONE"         "NONE" </param>
         <param name="JointEncoderRes">   -254400     -352245     -352245          1500             -6400         -880         -955          -920          -952          -820          -950          -792    </param>
+        <param name="MotorType">         "DC_FH"         "DC_FH"        "DC_FH"      "DC_FH"       "DC_FH"        "DC_FH"       "DC_FH"       "DC_FH"     "DC_FH"        "DC_FH"       "DC_FH"       "DC_FH" </param>
         <param name="MotorPoles">            1             1            1             1             1             1            1             1               1             1             1             1     </param>
         <param name="Verbose"> 0 </param>
     </group>

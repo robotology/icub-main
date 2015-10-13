@@ -19,6 +19,7 @@
         <param name="RotorEncoderRes">       1             1             1             1             1             1    </param>
         <param name="RotorIndexOffset">      0             0             0             0             0             0    </param>
         <param name="Gearbox">          100.00        100.00        100.00        100.00        100.00        100.00    </param>
+        <param name="MotorType">        "DC_FH"         "DC_FH"        "DC_FH"      "DC_FH"       "DC_FH"        "DC_FH"</param>
         <param name="MotorPoles">            0             0             0             0             0             0    </param>
         <param name="Verbose">		0	</param>
     </group>
