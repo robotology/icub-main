@@ -3,16 +3,26 @@
 
 <params robot="iCubDarmstadt01" build="1">
     <group name="GENERAL">
-        <param name="Joints"> 4 </param> <!-- the number of joints of the robot part -->
-        <!--                   		0             1             2             3 -->
+        <param name="MotioncontrolVersion">  2 </param>
+        <param name="Joints"> 4 </param> 
         <param name="AxisMap"> 		0             1             2             3	</param>
-<param name="Encoder">                            -182.044   -182.044   182.044    -182.044   </param>
-<param name="Zeros">                              -180.00    -315.00    180.00     -180.00    </param>
-        <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C	</param>
-        <param name="TorqueChan">	0             1             2             3	</param>
-        <param name="TorqueMax"> 	24            24            24            24	</param>
-        <param name="Rotor">        1.00          1.00          1.00          1.00	</param>
+        <param name="AxisName"> "l_shoulder_pitch" "l_shoulder_roll" "l_shoulder_yaw" "l_elbow" </param>
+        <param name="HasHallSensor">         1           1             1             1      </param>
+        <param name="HasTempSensor">         0           0             0             0      </param>
+        <param name="HasRotorEncoder">       1           1             1             1      </param>
+        <param name="HasRotorEncoderIndex">  0           0             0             0      </param>
+        <param name="Encoder">         182.044     182.044       182.044       182.044      </param>
+        <param name="TorqueId">           0x0C          0x0C          0x0C          0x0C	</param>
+        <param name="TorqueChan">         0             1             2             3	</param>
+        <param name="TorqueMax">          24            24            24            24	</param>
+        <param name="RotorEncoderRes">   -16000        -16000        -16000        -16000   </param>
+        <param name="JointEncoderType">  "AEA"         "AEA"         "AEA"         "AEA"    </param>
+        <param name="RotorEncoderType">  "ROIE"        "ROIE"        "ROIE"        "ROIE"   </param>
+        <param name="JointEncoderRes">   -4096         -4096         4096          -4096    </param>
+        <param name="RotorIndexOffset">      0             0             0             0    </param>
         <param name="Gearbox">      100.00        100.00        100.00        100.00	</param>
+        <param name="MotorType">     "BLL_KOLLM"   "BLL_KOLLM"       "BLL_KOLLM"   "BLL_KOLLM"  </param>
+        <param name="MotorPoles">        8             8             8             8        </param>
         <param name="Verbose">		0	</param>
     </group>
 
