@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+<devices robot="iCubLugano01" build="1">
+    <device name="torso_VFTserver" type="virtualAnalogServer">
+        <param name="period">       10                  </param>
+        <param name="deviceId">     torso                </param>
+        
+        <paramlist name="networks">
+            <elem name="net_VFT_TO">  0  5  0  5 </elem> 
+        </paramlist>
+
+        <param name="name">           /torso                </param>
+
+        <action phase="startup" level="5" type="attach">
+            <paramlist name="networks">
+            <elem name="net_VFT_TO">  torso_virtual_strain </elem>    
+            </paramlist>
+        </action>
+
+        <action phase="shutdown" level="5" type="detach" />
+    </device>
+</devices>
+
+
