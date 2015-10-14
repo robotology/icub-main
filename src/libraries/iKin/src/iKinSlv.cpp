@@ -1524,17 +1524,19 @@ void CartesianSolver::prepareJointsRestTask()
     int offs=0;
     
     qd_3rdTask.resize(nDOF);
-    w_3rdTask.resize(nDOF);
-    idx_3rdTask.resize(nDOF);
+    w_3rdTask.resize(nDOF,1.0);
+    idx_3rdTask.resize(nDOF,1.0);
 
     for (unsigned int i=0; i<prt->chn->getN(); i++)
     {
         if (!(*prt->chn)[i].isBlocked())
         {            
             qd_3rdTask[offs]=restJntPos[i];
-            w_3rdTask[offs]=(restWeights[i]!=0.0)?restWeights[i]:1.0;
-            idx_3rdTask[offs]=(restWeights[i]!=0.0)?0.0:1.0;
-
+            if (restWeights[i]!=0.0)
+            {
+                w_3rdTask[offs]=restWeights[i];
+                idx_3rdTask[offs]=0.0;
+            }
             offs++;
         }
     }
