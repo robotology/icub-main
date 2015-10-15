@@ -32,7 +32,7 @@
     <param name="AxisName">       "neck_pitch" "neck_roll"    "neck_yaw"    "eyes_tilt"  "eyes_vergence"  "eyes_version" </param>
 
 <param name="Encoder">                            11.375     -11.375 11.375  11.375     568.880   284.440      </param>
-<param name="Zeros">                              188.00     -177.00 180.00  180.00     -45.00    0.00         </param>     
+<param name="Zeros">             176.30     -191.70        180.00         169.00       -45.00         0.0           </param>
     <param name="TorqueId">     0             0             0             0             0             0             </param>       
     <param name="TorqueChan">   0             0             0             0             0             0             </param>       
     <param name="TorqueMax">    0             0             0             0             0             0             </param>       

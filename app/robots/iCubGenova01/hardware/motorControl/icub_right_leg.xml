@@ -31,7 +31,7 @@
 <param name="AxisMap">      2             3             0             1             4             5             </param>       
 <param name="AxisName">     "r_hip_pitch"   "r_hip_roll"    "r_hip_yaw"   "r_knee"   "r_ankle_pitch"  "r_ankle_roll"     </param>
 <param name="Encoder">      -11.375       -11.375       -11.375       11.375        11.375        -11.375       </param>       
-<param name="Zeros">        -172.9        -182.9        -180.9        178.9         182         -177.6         </param>       
+<param name="Zeros">        -172.9        -181.4        -124.5        178.8         183.5         -176.4        </param>       
 <param name="TorqueId">     0x0B          0x0B          0x0B          0x0B          0x0B          0x0B          </param>       
 <param name="TorqueChan">   0             1             2             3             4             5             </param>       
 <param name="TorqueMax">    24            24            24            24            24            24            </param>       
