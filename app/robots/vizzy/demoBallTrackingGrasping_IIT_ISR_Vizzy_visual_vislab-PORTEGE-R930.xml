@@ -3,10 +3,10 @@
      for Vizzy -->
 
 <application>
-<name>Ball Tracking and Grasping for Vizzy visual @ deepthought both arms</name>
+<name>Ball Tracking and Grasping for Vizzy visual @ vislab-PORTEGE-R930 both arms</name>
 
         <dependencies>
-	        <port>/vizzy_ns</port>
+		      <port>/vizzy_ns</port>
                 <port>/vizzy/camcalib/left/out</port>
                 <port>/iKinGazeCtrl/rpc</port>
                 <port>/vizzy/cartesianController/left_arm/state:o</port>
@@ -27,7 +27,7 @@
         <module>
                 <name>yarpview</name>
                 <parameters>--name /PF3DTracker_viewer --x 640 --y 0 --p 50</parameters>
-                <node>deepthought</node>
+                <node>vislab-PORTEGE-R930</node>
         </module>
 	<module>
       		<name>yarp</name>

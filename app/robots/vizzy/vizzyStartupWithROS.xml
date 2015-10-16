@@ -1,6 +1,7 @@
 <application>
 <name>Vizzy Startup with ROS</name>
     <dependencies>
+      <port>/vizzy_ns</port>
     </dependencies>
 
     <module>
@@ -20,28 +21,67 @@
          <tag>yarpidl_rosmsg</tag>
     </module>
     <module>
-                <name>vizzy_head</name>
-                <parameters></parameters>
-                <node>vizzy-desktop</node>
-        <tag>head_joint_state_ros_bridge</tag>
-        </module>
-        <module>
-                <name>vizzy_waist</name>
-                <parameters></parameters>
-                <node>vizzy-desktop</node>
-        <tag>waist_joint_state_ros_bridge</tag>
-        </module>
-        <module>
-                <name>vizzy_left_arm</name>
-                <parameters></parameters>
-                <node>vizzy-desktop</node>
-        <tag>left_arm_joint_state_ros_bridge</tag>
-        </module>
-        <module>
-                <name>vizzy_right_arm</name>
-                <parameters></parameters>
-                <node>vizzy-desktop</node>
-        <tag>right_arm_joint_state_ros_bridge</tag>
-        </module>
-
+		<name>vizzy_head</name>
+		<parameters></parameters>
+		<node>vizzy-desktop</node>
+	<tag>head_joint_state_ros_bridge</tag>
+	</module>
+	<module>
+		<name>vizzy_waist</name>
+		<parameters></parameters>
+		<node>vizzy-desktop</node>
+	<tag>waist_joint_state_ros_bridge</tag>
+	</module>
+	<module>
+		<name>vizzy_left_arm</name>
+		<parameters></parameters>
+		<node>vizzy-desktop</node>
+	<tag>left_arm_joint_state_ros_bridge</tag>
+	</module>
+	<module>
+		<name>vizzy_right_arm</name>
+		<parameters></parameters>
+		<node>vizzy-desktop</node>
+	<tag>right_arm_joint_state_ros_bridge</tag>
+	</module>
+	<module>
+		<name>cartesianControllerServer</name>
+		<parameters>--from server_left_arm.ini</parameters>
+		<node>vizzy-desktop</node>
+		<tag>cart_serv_left</tag>
+	</module>
+	<module>
+		<name>cartesianControllerServer</name>
+		<parameters>--from server_right_arm.ini</parameters>
+		<node>vizzy-desktop</node>
+		<tag>cart_serv_right</tag>
+	</module>
+	<module>
+		<name>cartesianSolver</name>
+		<parameters>--from solver_left_arm.ini</parameters>
+		<node>vizzy-desktop</node>
+		<dependencies>
+		    <port timeout="40">/vizzy/torso/state:o</port>
+		    <port timeout="40">/vizzy/left_shoulder_arm/stateExt:o</port>
+		</dependencies>
+		<tag>cart_solv_left</tag>
+	</module>
+	<module>
+		<name>cartesianSolver</name>
+		<parameters>--from solver_right_arm.ini</parameters>
+		<node>vizzy-desktop</node>
+		<dependencies>
+		    <port timeout="40">/vizzy/torso/state:o</port>
+		    <port timeout="40">/vizzy/right_shoulder_arm/stateExt:o</port>
+		</dependencies>
+		<tag>cart_solv_right</tag>
+	</module>
+	<module>
+		<name>vizzy_iKinGazeCtrl</name>
+		<node>vizzy-desktop</node>
+		<dependencies>
+		    <port timeout="40">/vizzy/head/state:o</port>
+		</dependencies>
+		<tag>cart_gaze_ctrl</tag>
+	</module>
 </application>
