@@ -1,18 +1,33 @@
+#.rst:
+# FindIPOPT
+# ---------
+#
 # Try to locate the IPOPT library
 #
 # If the IPOPT_DIR is set, try to locate the package in the given
 # directory, otherwise use pkg-config to locate it
 #
-# Create the following variables:
-# IPOPT_INCLUDE_DIRS - Directories to include to use IPOPT
-# IPOPT_LIBRARIES    - Default library to link against to use IPOPT
-# IPOPT_DEFINITIONS  - Flags to be added to compiler's options
-# IPOPT_LINK_FLAGS   - Flags to be added to linker's options
-# IPOPT_FOUND        - If false, don't try to use IPOPT
+# Create the following variables::
+#
+#  IPOPT_INCLUDE_DIRS - Directories to include to use IPOPT
+#  IPOPT_LIBRARIES    - Default library to link against to use IPOPT
+#  IPOPT_DEFINITIONS  - Flags to be added to linker's options
+#  IPOPT_LINK_FLAGS   - Flags to be added to linker's options
+#  IPOPT_FOUND        - If false, don't try to use IPOPT
 
-# Copyright (C) 2008-2010  RobotCub Consortium
-# Authors: Ugo Pattacini
-# CopyPolicy: Released under the terms of the GNU GPL v2.0.
+#=============================================================================
+# Copyright 2008-2010 RobotCub Consortium
+#   Authors: Ugo Pattacini <ugo.pattacini@iit.it>
+#
+# Distributed under the OSI-approved BSD License (the "License");
+# see accompanying file Copyright.txt for details.
+#
+# This software is distributed WITHOUT ANY WARRANTY; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# See the License for more information.
+#=============================================================================
+# (To distribute this file outside of YCM, substitute the full
+#  License text for the above reference.)
 
 
 if(APPLE)
@@ -143,5 +158,3 @@ mark_as_advanced(IPOPT_INCLUDE_DIRS
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(IPOPT DEFAULT_MSG IPOPT_LIBRARIES)
-
-
