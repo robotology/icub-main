@@ -1468,14 +1468,27 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
                 else if (controlUnits.toString()==string("machine_units")) {yDebug("TORQUE_CONTROL: using metric_units"); _torqueControlUnits=T_MACHINE_UNITS;}
                 else    {yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: invalid controlUnits value";
                          return false;}
-                if      (_torqueControlUnits==T_MACHINE_UNITS) {yarp::sig::Vector tmpOnes; tmpOnes.resize(_njoints,1.0); _torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes.data(), tmpOnes.data());}
-                else if (_torqueControlUnits==T_METRIC_UNITS)  {_torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);}
            }
            else
            {
                 yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: missing controlUnits parameter. Assuming machine_units. Please fix your configuration file.";
                 _torqueControlUnits=T_MACHINE_UNITS;
            }
+
+            if(_torqueControlUnits==T_MACHINE_UNITS)
+            {
+                yarp::sig::Vector tmpOnes; tmpOnes.resize(_njoints,1.0);
+                _torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes.data(), tmpOnes.data());
+            }
+            else if (_torqueControlUnits==T_METRIC_UNITS)
+            {
+                _torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);
+            }
+            else 
+            {
+                yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: invalid controlUnits value (_torqueControlUnits=" << _torqueControlUnits << ")";
+                return false;
+            }
            
            Value &controlLaw=trqPidsGroup.find("controlLaw");
            if (controlLaw.isNull() == false && controlLaw.isString() == true)
@@ -1535,6 +1548,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         {
             yError() <<"embObjMotionControl::fromConfig(): Error: no TORQUE_CONTROL group found in config file";
             _torqueControlEnabled = false;
+            return false; //torque control group is mandatory
         }
     }
 
@@ -4401,6 +4415,16 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     else if (key == "torqueControlFilterType")
     {
         Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { int t; getTorqueControlFilterType(i, t); r.addDouble(t); }
+        return true;
+    }
+    else if (key == "torqueControlEnabled")
+    {
+        
+        Bottle& r = val.addList();
+        for(int i = 0; i<_njoints; i++)
+        {
+            r.addInt((int)_torqueControlEnabled);
+        }
         return true;
     }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
