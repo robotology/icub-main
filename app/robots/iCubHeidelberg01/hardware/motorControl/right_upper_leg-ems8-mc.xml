@@ -10,7 +10,10 @@
     <group name="LIMITS">
         <param name="Max">              85            70            70          0       </param>
         <param name="Min">             -30           -15           -70         -100     </param>
+        <param name="RotorMin">         0             0             0           0       </param> 
+        <param name="RotorMax">         0             0             0           0       </param>
         <param name="Currents">         5000          5000          5000        5000    </param>
+        <param name="JntVelocityMax">      1000          1000          1000        1000    </param>  
     </group>
 
     <group name="IMPEDANCE">
@@ -40,7 +43,8 @@
         <param name="kp">                 50        -100        100       -100     </param>       
         <param name="kd">                  0           0          0          0     </param>       
         <param name="ki">                  0           0          0          0     </param>       
-        <param name="maxPwm">           8000        8000       8000       8000     </param>       
+        <param name="maxPwm">           8000        8000       8000       8000     </param>   
+        <param name="limPwm">       3000       3000       3000       3000     </param>     
         <param name="maxInt">            500         500        500        500     </param>       
         <param name="shift">               0           0          0          0     </param>       
         <param name="ko">                  0           0          0          0     </param>       
