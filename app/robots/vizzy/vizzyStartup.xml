@@ -1,6 +1,7 @@
 <application>
 <name>Vizzy Startup part</name>
 	<dependencies>
+	      <port>/vizzy_ns</port>
 	</dependencies>
 
 	<module>
