@@ -93,7 +93,7 @@ typedef struct
     eOprotEntity_t      entity;
     ethFeatType_t       type;
     IethResource*       interface;
-    char                name[16];
+    char                name[128];
 } ethFeature_t;
 
 class can_string_eth;
