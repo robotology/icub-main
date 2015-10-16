@@ -1,3 +1,4 @@
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 <devices>
   <device name="inertial" type="inertial">
       <param name="name">  /icub/inertial  </param>
