@@ -14,7 +14,7 @@
         
         
        <group name="defaultCfgTriangle">
-            <param name="enabled">         false    </param> 
+            <param name="enabled">         true    </param> 
             <param name="shift">           2        </param>
             <param name="cdcOffset">       0x2200   </param>
         </group>
