@@ -4420,16 +4420,11 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     else if (key == "torqueControlEnabled")
     {
         
-        printf("\n\n _torqueControlEnabled = %d/n/n", _torqueControlEnabled);
         Bottle& r = val.addList();
         for(int i = 0; i<_njoints; i++)
         {
             r.addInt((int)_torqueControlEnabled);
         }
-//        if(_torqueControlEnabled)
-//            r.addString("true");
-//        else
-//            r.addString("false");
         return true;
     }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
