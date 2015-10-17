@@ -437,8 +437,7 @@ bool EyeAligner::calibrate(Matrix &H, double &error, const int max_iter,
     {
         Ipopt::SmartPtr<Ipopt::IpoptApplication> app=new Ipopt::IpoptApplication;
         app->Options()->SetNumericValue("tol",1e-8);
-        app->Options()->SetNumericValue("acceptable_tol",1e-8);
-        app->Options()->SetIntegerValue("acceptable_iter",10);
+        app->Options()->SetIntegerValue("acceptable_iter",0);
         app->Options()->SetStringValue("mu_strategy","adaptive");
         app->Options()->SetIntegerValue("max_iter",max_iter);
         app->Options()->SetStringValue("nlp_scaling_method","gradient-based");

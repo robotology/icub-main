@@ -295,8 +295,7 @@ ff2LayNNTrain::ff2LayNNTrain()
 {
     App=new Ipopt::IpoptApplication();
     CAST_IPOPTAPP(App)->Options()->SetNumericValue("tol",1e-8);
-    CAST_IPOPTAPP(App)->Options()->SetNumericValue("acceptable_tol",1e-8);
-    CAST_IPOPTAPP(App)->Options()->SetIntegerValue("acceptable_iter",10);
+    CAST_IPOPTAPP(App)->Options()->SetIntegerValue("acceptable_iter",0);
     CAST_IPOPTAPP(App)->Options()->SetStringValue("mu_strategy","adaptive");
     CAST_IPOPTAPP(App)->Options()->SetIntegerValue("max_iter",300);
     CAST_IPOPTAPP(App)->Options()->SetStringValue("nlp_scaling_method","gradient-based");

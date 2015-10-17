@@ -344,8 +344,7 @@ bool AffinityWithMatchedPoints::calibrate(Matrix &A, double &error)
     {
         Ipopt::SmartPtr<Ipopt::IpoptApplication> app=new Ipopt::IpoptApplication;
         app->Options()->SetNumericValue("tol",tol);
-        app->Options()->SetNumericValue("acceptable_tol",tol);
-        app->Options()->SetIntegerValue("acceptable_iter",10);
+        app->Options()->SetIntegerValue("acceptable_iter",0);
         app->Options()->SetStringValue("mu_strategy","adaptive");
         app->Options()->SetIntegerValue("max_iter",max_iter);
         app->Options()->SetStringValue("nlp_scaling_method","gradient-based");

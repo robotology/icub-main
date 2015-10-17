@@ -791,8 +791,7 @@ iKinIpOptMin::iKinIpOptMin(iKinChain &c, const unsigned int _ctrlPose, const dou
     App=new IpoptApplication();
 
     CAST_IPOPTAPP(App)->Options()->SetNumericValue("tol",tol);
-    CAST_IPOPTAPP(App)->Options()->SetNumericValue("acceptable_tol",tol);
-    CAST_IPOPTAPP(App)->Options()->SetIntegerValue("acceptable_iter",10);
+    CAST_IPOPTAPP(App)->Options()->SetIntegerValue("acceptable_iter",0);
     CAST_IPOPTAPP(App)->Options()->SetStringValue("mu_strategy","adaptive");
     CAST_IPOPTAPP(App)->Options()->SetIntegerValue("print_level",verbose);
 
@@ -882,8 +881,6 @@ int iKinIpOptMin::getMaxIter() const
 void iKinIpOptMin::setTol(const double tol)
 {
     CAST_IPOPTAPP(App)->Options()->SetNumericValue("tol",tol);
-    CAST_IPOPTAPP(App)->Options()->SetNumericValue("acceptable_tol",tol);
-
     CAST_IPOPTAPP(App)->Initialize();
 }
 
