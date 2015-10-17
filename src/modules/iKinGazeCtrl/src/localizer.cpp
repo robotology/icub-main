@@ -279,7 +279,7 @@ bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
     Matrix  *Prj=(isLeft?PrjL:PrjR);
     iCubEye *eye=(isLeft?eyeL:eyeR);
 
-    if (Prj)
+    if (Prj!=NULL)
     {
         Vector torso=commData->get_torso();
         Vector head=commData->get_q();
@@ -331,7 +331,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
     Matrix  *invPrj=(isLeft?invPrjL:invPrjR);
     iCubEye *eye=(isLeft?eyeL:eyeR);
 
-    if (invPrj)
+    if (invPrj!=NULL)
     {
         Vector torso=commData->get_torso();
         Vector head=commData->get_q();
