@@ -292,11 +292,7 @@ bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
         q[4]=head[1];
         q[5]=head[2];
         q[6]=head[3];
-
-        if (isLeft)
-            q[7]=head[4]+head[5]/2.0;
-        else
-            q[7]=head[4]-head[5]/2.0;
+        q[7]=head[4]+head[5]/(isLeft?2.0:-2.0);
         
         Vector xo=x;
         if (xo.length()<4)
@@ -344,11 +340,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
         q[4]=head[1];
         q[5]=head[2];
         q[6]=head[3];
-
-        if (isLeft)
-            q[7]=head[4]+head[5]/2.0;
-        else
-            q[7]=head[4]-head[5]/2.0;
+        q[7]=head[4]+head[5]/(isLeft?2.0:-2.0);
 
         Vector p(3);
         p[0]=z*u;
