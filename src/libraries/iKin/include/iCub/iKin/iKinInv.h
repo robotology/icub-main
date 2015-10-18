@@ -280,7 +280,7 @@ public:
     void switchWatchDog(bool sw) { watchDogOn=sw; }
 
     /**
-    * Sets tolerance for in-target check (1e-3 by default). 
+    * Sets tolerance for in-target check (5e-3 by default). 
     * @param tol_x is the tolerance
     */
     virtual void setInTargetTol(double tol_x) { inTargetTol=tol_x; }

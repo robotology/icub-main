@@ -27,7 +27,7 @@
 #include <iCub/iKin/iKinSlv.h>
 
 #define CARTSLV_DEFAULT_PER                 20      // [ms]
-#define CARTSLV_DEFAULT_TOL                 1e-3
+#define CARTSLV_DEFAULT_TOL                 1e-4
 #define CARTSLV_DEFAULT_CONSTR_TOL          1e-6
 #define CARTSLV_DEFAULT_MAXITER             200
 #define CARTSLV_WEIGHT_2ND_TASK             0.01

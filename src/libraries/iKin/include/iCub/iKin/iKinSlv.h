@@ -197,13 +197,13 @@
  * Commands concerning the solver configuration: 
  *  
  * \b cfg request: example [cfg] (robot icub) (type left) (pose
- *    full) (tol 1e-3) (maxIter 150) ... Once instantiated the
- *    solver is not automatically configured. To do that user
- *    can call the open() method locally or can configure the
- *    solver remotely by sending to the rpc port the
- *    configuration properties. For a list of these properties
- *    please see the documentation of open() method.
- *  
+ *    full) (tol 0.001) (constr_tol 0.000001) (maxIter 150) ...
+ *    Once instantiated the solver is not automatically
+ *    configured. To do that user can call the open() method
+ *    locally or can configure the solver remotely by sending to
+ *    the rpc port the configuration properties. For a list of
+ *    these properties please see the documentation of open()
+ *    method.
  *  
  * <b> /<solverName>/out </b> streams out a bottle containing 
  *    the result of optimization instance. The format is ([xd]
@@ -500,11 +500,15 @@ public:
     *    to report or not on the screen the result of each
     *    optimization instance; allowed values are [on] or [off].
     *  
+    * \b tol <double>: example (tol 0.001), specifies the desired 
+    *    tolerance on the task function to be minimized.
+    *  
+    * \b constr_tol <double>: example (constr_tol 0.000001), 
+    *    specifies the desired tolerance for the constraints to
+    *    comply with.
+    *  
     * \b maxIter <int>: example (maxIter 200), specifies the maximum
     *    number of iterations allowed for one optimization instance.
-    *  
-    * \b tol <double>: example (tol 1e-3), specifies the desired 
-    *    tolerance on the task function to be minimized.
     *  
     * \b interPoints <vocab>: example (interPoints on), selects 
     *    whether to force or not the solver to output on the port
