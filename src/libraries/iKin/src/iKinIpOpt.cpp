@@ -452,16 +452,32 @@ public:
     {
         if (priority=="position")
         {
-            e_1st=&e_ang;
-            J_1st=&J_ang;
+            if (ctrlPose==IKINCTRL_POSE_FULL)
+            {
+                e_1st=&e_ang;
+                J_1st=&J_ang;
+            }
+            else
+            {
+                e_1st=&e_zero;
+                J_1st=&J_zero;
+            }
 
             e_cst=&e_xyz;
             J_cst=&J_xyz;
         }
         else if (priority=="orientation")
         {
-            e_1st=&e_xyz;
-            J_1st=&J_xyz;
+            if (ctrlPose==IKINCTRL_POSE_FULL)
+            {
+                e_1st=&e_xyz;
+                J_1st=&J_xyz;
+            }
+            else
+            {
+                e_1st=&e_zero;
+                J_1st=&J_zero;
+            }
 
             e_cst=&e_ang;
             J_cst=&J_ang;
@@ -690,15 +706,19 @@ public:
                     h_ang[0]=h[3];
                     h_ang[1]=h[4];
                     h_ang[2]=h[5];
-                
-                    yarp::sig::Vector *h_1st;
-                    if (ctrlPose==IKINCTRL_POSE_FULL)
-                        h_1st=&h_ang;
-                    else
-                        h_1st=&h_zero;
 
-                    yarp::sig::Vector *h_cst=(e_cst==&e_xyz)?&h_xyz:&h_ang;
-                
+                    yarp::sig::Vector *h_1st,*h_cst;
+                    if (e_cst==&e_xyz)
+                    {
+                        h_1st=(ctrlPose==IKINCTRL_POSE_FULL)?&h_ang:&h_zero;
+                        h_cst=&h_xyz;
+                    }
+                    else
+                    {
+                        h_1st=(ctrlPose==IKINCTRL_POSE_FULL)?&h_xyz:&h_zero;
+                        h_cst=&h_ang;
+                    }
+
                     values[idx]=2.0*(obj_factor*(dot(*J_1st,row,*J_1st,col)-dot(*h_1st,*e_1st))+
                                      lambda[0]*(dot(*J_cst,row,*J_cst,col)-dot(*h_cst,*e_cst)));
                 
