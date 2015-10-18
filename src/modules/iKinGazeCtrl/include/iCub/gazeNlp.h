@@ -50,6 +50,7 @@ public:
                  iKinIpOptMin(_chain,IKINCTRL_POSE_XYZ,tol,max_iter,verbose,false) { }
 
     void   set_ctrlPose(const unsigned int _ctrlPose) { }
+    bool   set_posePriority(const string &priority)   { }
     void   setHessianOpt(const bool useHessian)       { }   // Hessian not implemented
     Vector solve(const Vector &q0, Vector &xd, const Vector &gDir);
 };
