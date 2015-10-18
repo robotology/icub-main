@@ -701,7 +701,7 @@ Vector Solver::computeTargetUserTolerance(const Vector &xd)
 bool Solver::threadInit()
 {
     // Instantiate optimizer
-    invNeck=new GazeIpOptMin(*chainNeck,1e-3,20);
+    invNeck=new GazeIpOptMin(*chainNeck,1e-3,1e-3,20);
 
     // Initialization
     Vector fp;

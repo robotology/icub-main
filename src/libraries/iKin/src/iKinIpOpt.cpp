@@ -796,7 +796,8 @@ public:
 
 /************************************************************************/
 iKinIpOptMin::iKinIpOptMin(iKinChain &c, const unsigned int _ctrlPose, const double tol,
-                           const int max_iter, const unsigned int verbose, bool useHessian) :
+                           const double constr_tol, const int max_iter,
+                           const unsigned int verbose, bool useHessian) :
                            chain(c)
 {
     ctrlPose=_ctrlPose;
@@ -811,6 +812,7 @@ iKinIpOptMin::iKinIpOptMin(iKinChain &c, const unsigned int _ctrlPose, const dou
     App=new IpoptApplication();
 
     CAST_IPOPTAPP(App)->Options()->SetNumericValue("tol",tol);
+    CAST_IPOPTAPP(App)->Options()->SetNumericValue("constr_viol_tol",constr_tol);
     CAST_IPOPTAPP(App)->Options()->SetIntegerValue("acceptable_iter",0);
     CAST_IPOPTAPP(App)->Options()->SetStringValue("mu_strategy","adaptive");
     CAST_IPOPTAPP(App)->Options()->SetIntegerValue("print_level",verbose);
@@ -911,6 +913,23 @@ double iKinIpOptMin::getTol() const
     double tol;
     CAST_IPOPTAPP(App)->Options()->GetNumericValue("tol",tol,"");
     return tol;
+}
+
+
+/************************************************************************/
+void iKinIpOptMin::setConstrTol(const double constr_tol)
+{
+    CAST_IPOPTAPP(App)->Options()->SetNumericValue("constr_viol_tol",constr_tol);
+    CAST_IPOPTAPP(App)->Initialize();
+}
+
+
+/************************************************************************/
+double iKinIpOptMin::getConstrTol() const
+{
+    double constr_tol;
+    CAST_IPOPTAPP(App)->Options()->GetNumericValue("constr_viol_tol",constr_tol,"");
+    return constr_tol;
 }
 
 

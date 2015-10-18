@@ -45,9 +45,11 @@ private:
     GazeIpOptMin &operator=(const GazeIpOptMin&);
 
 public:
-    GazeIpOptMin(iKinChain &_chain, const double tol, const int max_iter=IKINCTRL_DISABLED,
+    GazeIpOptMin(iKinChain &_chain, const double tol, const double constr_tol,
+                 const int max_iter=IKINCTRL_DISABLED,
                  const unsigned int verbose=0) :
-                 iKinIpOptMin(_chain,IKINCTRL_POSE_XYZ,tol,max_iter,verbose,false) { }
+                 iKinIpOptMin(_chain,IKINCTRL_POSE_XYZ,tol,constr_tol,
+                              max_iter,verbose,false) { }
 
     void   set_ctrlPose(const unsigned int _ctrlPose) { }
     bool   set_posePriority(const string &priority)   { }

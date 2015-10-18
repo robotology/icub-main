@@ -28,6 +28,7 @@
 
 #define CARTSLV_DEFAULT_PER                 20      // [ms]
 #define CARTSLV_DEFAULT_TOL                 1e-3
+#define CARTSLV_DEFAULT_CONSTR_TOL          1e-6
 #define CARTSLV_DEFAULT_MAXITER             200
 #define CARTSLV_WEIGHT_2ND_TASK             0.01
 #define CARTSLV_WEIGHT_3RD_TASK             0.01
@@ -689,13 +690,17 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             reply.addVocab(IKINSLV_VOCAB_REP_ACK);
                             Bottle &payLoad=reply.addList();
 
-                            Bottle &maxIter=payLoad.addList();
-                            maxIter.addString("max_iter");
-                            maxIter.addInt(slv->getMaxIter());
-
                             Bottle &tol=payLoad.addList();
                             tol.addString("tol");
                             tol.addDouble(slv->getTol());
+
+                            Bottle &constr_tol=payLoad.addList();
+                            constr_tol.addString("constr_tol");
+                            constr_tol.addDouble(slv->getConstrTol());
+
+                            Bottle &maxIter=payLoad.addList();
+                            maxIter.addString("max_iter");
+                            maxIter.addInt(slv->getMaxIter());
 
                             break;
                         }
@@ -932,15 +937,21 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                             if (Bottle *payLoad=command.get(2).asList())
                             {
                                 int cnt=0;
-                                if (payLoad->check("max_iter"))
-                                {
-                                    slv->setMaxIter(payLoad->find("max_iter").asInt());
-                                    cnt++;
-                                }
-
                                 if (payLoad->check("tol"))
                                 {
                                     slv->setTol(payLoad->find("tol").asDouble());
+                                    cnt++;
+                                }
+
+                                if (payLoad->check("constr_tol"))
+                                {
+                                    slv->setConstrTol(payLoad->find("constr_tol").asDouble());
+                                    cnt++;
+                                }
+
+                                if (payLoad->check("max_iter"))
+                                {
+                                    slv->setMaxIter(payLoad->find("max_iter").asInt());
                                     cnt++;
                                 }
 
@@ -1425,10 +1436,11 @@ bool CartesianSolver::open(Searchable &options)
             verbosity=true;
 
     double tol=options.check("tol",Value(CARTSLV_DEFAULT_TOL)).asDouble();
+    double constr_tol=options.check("constr_tol",Value(CARTSLV_DEFAULT_CONSTR_TOL)).asDouble();
     int maxIter=options.check("maxIter",Value(CARTSLV_DEFAULT_MAXITER)).asInt();
 
     // instantiate the optimizer
-    slv=new iKinIpOptMin(*prt->chn,ctrlPose,tol,maxIter);
+    slv=new iKinIpOptMin(*prt->chn,ctrlPose,tol,constr_tol,maxIter);
 
     // instantiate solver callback object if required    
     if (options.check("interPoints"))

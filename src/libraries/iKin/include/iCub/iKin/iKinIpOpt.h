@@ -239,20 +239,22 @@ public:
     *  IKINCTRL_POSE_FULL => complete pose control.
     *  IKINCTRL_POSE_XYZ  => translational part of pose controlled.
     *  IKINCTRL_POSE_ANG  => rotational part of pose controlled. 
-    * @param tol exits if 0.5*norm(xd-x)^2<tol.
-    * @param max_iter exits if iter>=max_iter (max_iter<0 disables
-    *                 this check, IKINCTRL_DISABLED(==-1) by
-    *                 default).
-    * @param verbose is a integer number which progressively enables 
-    *                different levels of warning messages or status
-    *                dump. The larger this value the more detailed
-    *                is the output (0=>off by default).
+    * @param tol        cost function tolerance. 
+    * @param constr_tol constraints tolerance.
+    * @param max_iter   exits if iter>=max_iter (max_iter<0 disables
+    *                   this check, IKINCTRL_DISABLED(==-1) by
+    *                   default).
+    * @param verbose    integer which progressively enables different
+    *                   levels of warning messages or status dump. The
+    *                   larger this value the more detailed is the
+    *                   output (0=>off by default).
     * @param useHessian relies on exact Hessian computation or  
-    *                enable Quasi-Newton approximation (true by
-    *                default).
+    *                   enable Quasi-Newton approximation (true by
+    *                   default).
     */
     iKinIpOptMin(iKinChain &c, const unsigned int _ctrlPose,
-                 const double tol, const int max_iter=IKINCTRL_DISABLED,
+                 const double tol, const double constr_tol,
+                 const int max_iter=IKINCTRL_DISABLED,
                  const unsigned int verbose=0, bool useHessian=true);
 
     /**
@@ -328,16 +330,28 @@ public:
     int getMaxIter() const;
 
     /**
-    * Sets Tolerance.
-    * @param tol exits if norm(xd-x)<tol.
+    * Sets cost function tolerance.
+    * @param tol tolerance.
     */
     void setTol(const double tol);
 
     /**
-    * Retrieves Tolerance.
+    * Retrieves cost function tolerance.
     * @return tolerance.
     */
     double getTol() const;
+
+    /**
+    * Sets constraints tolerance.
+    * @param tol tolerance.
+    */
+    void setConstrTol(const double constr_tol);
+
+    /**
+    * Retrieves constraints tolerance.
+    * @return tolerance.
+    */
+    double getConstrTol() const;
 
     /**
     * Sets Verbosity.

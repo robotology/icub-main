@@ -3836,7 +3836,8 @@ bool ServerCartesianController::tweakSet(const Bottle &options)
         ret&=setTask2ndOptions(options.find("task_2"));
 
     // solver convergence options
-    if (options.check("max_iter") || options.check("tol"))
+    if (options.check("tol") || options.check("constr_tol") ||
+        options.check("max_iter"))
         ret&=setSolverConvergenceOptions(options);
 
     mutex.unlock();
