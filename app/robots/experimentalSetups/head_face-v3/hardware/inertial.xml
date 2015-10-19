@@ -2,6 +2,6 @@
   <device name="inertial" type="inertial">
       <param name="name">  /icub/inertial  </param>
       <param name="subdevice">  xsensmtx  </param>
-      <param name="serial">  /dev/ttyUSB0   </param>
+      <param name="serial">  /dev/ttyS4   </param>
 </device>
 </devices>
