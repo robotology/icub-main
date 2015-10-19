@@ -11,10 +11,10 @@
  
 <group name="CALIBRATION">   
  
-<param name="calibrationType">            3             3             3             0             </param>       
+<param name="calibrationType">            3             3             3             3             </param>       
 <param name="calibration1">               2047.5        2047.5        2047.5        0             </param>       
 <param name="calibration2">               10            10            10            0             </param>       
-<param name="calibration3">               2962.5        3502.5        3817.5        0             </param>       
+<param name="calibration3">               3909.588      2335.288      3713.938      0             </param>       
 <param name="positionZero">               0             0             0             0             </param>       
 <param name="velocityZero">               10            10            10            0             </param>       
 <param name="maxPwm">                     120           120           120           0             </param>       
