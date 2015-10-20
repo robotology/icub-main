@@ -5,7 +5,8 @@
     <params file="hardware/electronics/pc104.xml" />
 
     <!-- CARTESIANS --> 
-    <!-- empty -->
+    <devices file="cartesian/left_leg_cartesian.xml" />
+    <devices file="cartesian/right_leg_cartesian.xml" />
     
     <!-- TORSO -->
     <devices file="hardware/motorControl/torso-ems5-mc.xml" />
