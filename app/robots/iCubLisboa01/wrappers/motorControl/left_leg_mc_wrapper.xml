@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<devices>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+<devices robot="iCubLisboa01" build="1">
   <device name="left_leg_mc_wrapper" type="controlboardwrapper2">
       <paramlist name="networks">
          <elem name="left_leg_joints">  0  5  0  5 </elem>
