@@ -72,19 +72,8 @@ if (ICUB_ICUBINTERFACE_EXPERIMENTAL)
 endif()
 yarp_end_plugin_library(icubmod)
 
-if(ICUB_COMPILE_COMAN_LIBRARY )
-# adding subdirectory for common library used by coman devices, if anyone of them is selected
-  add_subdirectory(coman/comanLib)
-endif(ICUB_COMPILE_COMAN_LIBRARY )
 
 if(ICUB_COMPILE_EMBOBJ_LIBRARY)
 # adding subdirectory for embObj library used by EMS devices, if anyone of them is selected
   add_subdirectory(embObjLib)
 endif(ICUB_COMPILE_EMBOBJ_LIBRARY)
-
-icub_export_library(icubmod)
-
-yarp_add_plugin_yarpdev_executable(icubmoddev icubmod)
-#target_link_libraries(icubmoddev YARP::YARP_OS YARP::YARP_dev YARP::YARP_init)
-INSTALL(TARGETS icubmoddev DESTINATION bin)
-#INSTALL(TARGETS icubmod DESTINATION lib)
