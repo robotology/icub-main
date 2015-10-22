@@ -11,7 +11,6 @@
 
 add_subdirectory(iCubIDLClients)
 add_subdirectory(iCubDev)
-add_subdirectory(iCubInterfaceGuiLib)
 add_subdirectory(ctrlLib)
 add_subdirectory(skinDynLib)
 add_subdirectory(iKin)

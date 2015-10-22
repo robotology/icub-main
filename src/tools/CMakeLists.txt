@@ -45,12 +45,8 @@ endif(ICUB_USE_SDL)
 
 if(ICUB_USE_GTK2)
    add_subdirectory(focusTool)
-   if(ICUB_USE_INTERFACEGUI)
-     add_subdirectory(iCubInterfaceGui)
-   endif(ICUB_USE_INTERFACEGUI)
 else(ICUB_USE_GTK2)
    message(STATUS "GTK2 not found/selected, skipping focusTool")
-   message(STATUS "GTK2 not found/selected, skipping iCubInterfaceGui")
 endif(ICUB_USE_GTK2)
 
 if(ICUB_USE_Qt5 AND ICUB_USE_OpenGL AND ICUB_USE_GLUT)

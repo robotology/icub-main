@@ -138,7 +138,6 @@ yarp_configure_external_installation(iCub WITH_PLUGINS)
 set_property(CACHE YARP_FORCE_DYNAMIC_PLUGINS PROPERTY TYPE INTERNAL)
 
 # temporary options for debugging/testing new functionalities
-set(ICUB_USE_INTERFACEGUI TRUE CACHE BOOL "enable interface gui")
 set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus protocol and firmware versions" FORCE)
 set(ICUB_CANMASKS_STRICT_FILTER TRUE CACHE BOOL "Enable strict filtering on can address. Needed with sharedcan.")
 set(ICUB_AUTOMATIC_MODE_SWITCHING FALSE CACHE BOOL "Enable automatic switching between control modes")

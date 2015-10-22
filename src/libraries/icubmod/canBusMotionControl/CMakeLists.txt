@@ -18,16 +18,12 @@ if(ICUB_HAS_icub_firmware_shared)
    endif()
 
    if (ICUB_AUTOMATIC_MODE_SWITCHING)
-	add_definitions(-DICUB_AUTOMATIC_MODE_SWITCHING)
+   add_definitions(-DICUB_AUTOMATIC_MODE_SWITCHING)
    endif()
 
    if (ICUB_CANMASKS_STRICT_FILTER)
        add_definitions(-DICUB_CANMASKS_STRICT_FILTER)
    endif()
-
-   if (ICUB_USE_INTERFACEGUI)
-       add_definitions(-D_USE_INTERFACEGUI)
-   endif (ICUB_USE_INTERFACEGUI)
 
    ADD_DEFINITIONS(-D_REENTRANT)
 
