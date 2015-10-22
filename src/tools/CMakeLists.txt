@@ -36,12 +36,6 @@ if(NOT ICUB_USE_Qt5 AND NOT ICUB_USE_GTK2)
 endif()
 
 
-if(ICUB_USE_GTK2)
-   add_subdirectory(robotMotorGui)
-else(ICUB_USE_GTK2)
-   message(STATUS "GTK2 not found/selected, skipping robotMotorGui")
-endif(ICUB_USE_GTK2)
-
 if(ICUB_USE_SDL)
    add_subdirectory(joystickCtrl)
    add_subdirectory(joystickCheck)
