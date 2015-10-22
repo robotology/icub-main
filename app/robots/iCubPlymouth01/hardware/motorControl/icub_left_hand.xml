@@ -34,7 +34,7 @@
 <param name="AxisName">     "l_thumb_oppose"     "l_thumb_proximal"     "l_thumb_distal"   "l_index_proximal"    "l_index_distal"    "l_middle_proximal"   "l_middle_distal"    "l_pinky"  </param>
 <!--USE THIS FOR CAN ROBOT MOTOR CONTROL-->
 <param name="Encoder">                                                                                                    21.778   -2.056   -2.824   -2.611   -2.853   -2.500   -2.765   -2.308   </param>
-<param name="Zeros">                                                                                                      27.55    -124.05  -180.63  -97.66   -178.76  -102.00  -184.47  -327.99  </param>
+<param name="Zeros">                                                                                                      27.55    -124.05  -180.63  -97.66   -178.76  -102.00  0.00     -3243.00 </param>
 
 <param name="TorqueId">     0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             0             0             </param>       
