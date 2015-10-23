@@ -2886,14 +2886,20 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 //             return false;
     }
 
+//VALE: removed read cached value. Now asck motion done to the board
+//    // Read the current value - it is signalled spontaneously every cycle, so we don't have to wait here
+//    protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_basic);
 
-    // Read the current value - it is signalled spontaneously every cycle, so we don't have to wait here
-    protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_basic);
+//    uint16_t size;
+//    eOmc_joint_status_basic_t status;
 
-    uint16_t size;
+//    res->readBufferedValue(protid,(uint8_t *) &status, &size);
+
+
     eOmc_joint_status_basic_t status;
+    bool ret = getStatusBasic_withWait(1, &j, &status);
+    if (ret == false) {yError ("An error occurred inside checkMotionDoneRaw()");}
 
-    res->readBufferedValue(protid,(uint8_t *) &status, &size);
     if(eomc_motionmonitorstatus_setpointisreached == status.motionmonitorstatus)
     {
         *flag = true;
@@ -3196,7 +3202,7 @@ bool embObjMotionControl::getControlModesRaw(const int n_joint, const int *joint
     return ret;
 }
 
-bool embObjMotionControl::getStatusBasic_withWait(const int n_joint, const int *joints, eOenum08_t *_modes)
+bool embObjMotionControl::getStatusBasic_withWait(const int n_joint, const int *joints, eOmc_joint_status_basic_t *_statuslist)
 {
     std::vector<eoThreadEntry *>  tt;
     eOmc_joint_status_basic_t     status;
@@ -3236,7 +3242,7 @@ bool embObjMotionControl::getStatusBasic_withWait(const int n_joint, const int *
             // Get the value
             uint16_t size;
             res->readBufferedValue(protid[idx], (uint8_t*)&status, &size);
-            _modes[idx] = status.controlmodestatus;
+            _statuslist[idx] = status;
         }
     }
     return true;
@@ -3247,6 +3253,7 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 {
     eOenum08_t      valSet;
     eOenum08_t      valGot;
+    eOmc_joint_status_basic_t status;
     bool ret = true;
 
     //yDebug() << "SetControlMode: received setControlMode command (SINGLE) for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
@@ -3271,8 +3278,9 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 
     do
     {
-        bool ret = getStatusBasic_withWait(1, &j, &valGot);
+        bool ret = getStatusBasic_withWait(1, &j, &status);
         if (ret == false) {yError ("An error occurred inside setControlModesRaw()"); break;}
+        valGot = status.controlmodestatus;
         current_mode = controlModeStatusConvert_embObj2yarp(valGot);
         if (current_mode==_mode) {ret = true; break;}
         if (current_mode==VOCAB_CM_IDLE     && _mode==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
@@ -3296,8 +3304,9 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 
 bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joints, int *modes)
 {
-    eOenum08_t          *valSet = new eOenum08_t[n_joint];
-    eOenum08_t          *valGot = new eOenum08_t[n_joint];
+    eOenum08_t                  *valSet = new eOenum08_t[n_joint];
+    eOenum08_t                  *valGot = new eOenum08_t[n_joint];
+    eOmc_joint_status_basic_t   *statuslist = new eOmc_joint_status_basic_t[_njoints];
     bool ret = true;
 
     //yDebug() << "SetControlMode: received setControlMode (GROUP) command for board " << _fId.boardNumber << " mode " << Vocab::decode(modes[0]);
@@ -3325,8 +3334,9 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         int timeout = 0;
         do
         {
-            bool ret = getStatusBasic_withWait(1, &joints[i], &valGot[i]);
+            bool ret = getStatusBasic_withWait(1, &joints[i], &statuslist[i]);
             if (ret == false) {yError ("An error occurred inside setControlModesRaw()"); break;}
+            valGot[i] = statuslist[i].controlmodestatus;
             current_mode = controlModeStatusConvert_embObj2yarp(valGot[i]);
             if (current_mode==modes[i]) {ret = true; break;}
             if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
@@ -3355,8 +3365,9 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
 {
     int  *jointVector = new int[_njoints];
 
-    eOenum08_t          *valSet = new eOenum08_t[_njoints];
-    eOenum08_t          *valGot = new eOenum08_t[_njoints];
+    eOenum08_t                  *valSet = new eOenum08_t[_njoints];
+    eOenum08_t                  *valGot = new eOenum08_t[_njoints];
+    eOmc_joint_status_basic_t   *statuslist = new eOmc_joint_status_basic_t[_njoints];
     bool ret = true;
 
     for(int i=0; i<_njoints; i++)
@@ -3384,8 +3395,9 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
         int timeout = 0;
         do
         {
-            bool ret = getStatusBasic_withWait(1, &i, &valGot[i]);
+            bool ret = getStatusBasic_withWait(1, &i, &statuslist[i]);
             if (ret == false) {yError ("An error occurred inside setControlModesRaw()"); break;}
+            valGot[i] = statuslist[i].controlmodestatus;
             current_mode = controlModeStatusConvert_embObj2yarp(valGot[i]);
             if (current_mode==modes[i]) {ret = true; break;}
             if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
