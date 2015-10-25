@@ -761,7 +761,7 @@ public:
 *
 * A class derived from iKinCtrl implementing the 
 * multi-referential approach (<a 
-* href="http://wiki.icub.org/viki/images/c/cf/CartesianControllersEvaluation.pdf">pdf</a>).
+* href="http://wiki.icub.org/images/c/cf/CartesianControllersEvaluation.pdf">pdf</a>).
 * @note Minimum-Jerk controllers in Task Space and Joint Space 
 */
 class MultiRefMinJerkCtrl : public iKinCtrl
