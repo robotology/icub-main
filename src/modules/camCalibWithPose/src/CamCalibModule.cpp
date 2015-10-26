@@ -418,9 +418,13 @@ bool CamCalibPort::updatePose(double time)
 #endif
     }
 
-    double ix = -h_encs.get(1).asDouble()/180.0*M_PI; // neck roll
-    double iy = h_encs.get(0).asDouble()/180.0*M_PI;  // neck pitch
-    double iz = h_encs.get(2).asDouble()/180.0*M_PI;  // neck yaw
+    double nix = -h_encs.get(1).asDouble()/180.0*M_PI; // neck roll
+    double niy = h_encs.get(0).asDouble()/180.0*M_PI;  // neck pitch
+    double niz = h_encs.get(2).asDouble()/180.0*M_PI;  // neck yaw
+
+    double tix = t_encs.get(1).asDouble()/180.0*M_PI; // torso roll
+    double tiy = -t_encs.get(2).asDouble()/180.0*M_PI;  // torso pitch
+    double tiz = -t_encs.get(0).asDouble()/180.0*M_PI;  // torso yaw
 
     double t =  h_encs.get(3).asDouble()/180.0*M_PI;  // eye tilt
     double vs = h_encs.get(4).asDouble()/180.0*M_PI;  // eye version
@@ -430,28 +434,50 @@ bool CamCalibPort::updatePose(double time)
     double imu_y = imu.get(1).asDouble()/180.0*M_PI; // imu pitch
     double imu_z = imu.get(2).asDouble()/180.0*M_PI; // imu yaw
 
-    yDebug() << ix << iy << iz;
+    yDebug() << nix << niy << niz;
 
+//-----
     yarp::sig::Vector neck_roll_vector(3);
-    neck_roll_vector(0) = ix;
+    neck_roll_vector(0) = nix;
     neck_roll_vector(1) = 0;
     neck_roll_vector(2) = 0;
     yarp::sig::Matrix neck_roll_dcm = yarp::math::rpy2dcm(neck_roll_vector);
 
     yarp::sig::Vector neck_pitch_vector(3);
     neck_pitch_vector(0) = 0;
-    neck_pitch_vector(1) = iy;
+    neck_pitch_vector(1) = niy;
     neck_pitch_vector(2) = 0;
     yarp::sig::Matrix neck_pitch_dcm = yarp::math::rpy2dcm(neck_pitch_vector);
 
     yarp::sig::Vector neck_yaw_vector(3);
     neck_yaw_vector(0) = 0;
     neck_yaw_vector(1) = 0;
-    neck_yaw_vector(2) = iz;
+    neck_yaw_vector(2) = niz;
     yarp::sig::Matrix neck_yaw_dcm = yarp::math::rpy2dcm(neck_yaw_vector);
 
     yarp::sig::Matrix neck_dcm = (neck_pitch_dcm * neck_roll_dcm) * neck_yaw_dcm;
 
+//-----
+    yarp::sig::Vector torso_roll_vector(3);
+    torso_roll_vector(0) = tix;
+    torso_roll_vector(1) = 0;
+    torso_roll_vector(2) = 0;
+    yarp::sig::Matrix torso_roll_dcm = yarp::math::rpy2dcm(torso_roll_vector);
+
+    yarp::sig::Vector torso_pitch_vector(3);
+    torso_pitch_vector(0) = 0;
+    torso_pitch_vector(1) = tiy;
+    torso_pitch_vector(2) = 0;
+    yarp::sig::Matrix torso_pitch_dcm = yarp::math::rpy2dcm(torso_pitch_vector);
+
+    yarp::sig::Vector torso_yaw_vector(3);
+    torso_yaw_vector(0) = 0;
+    torso_yaw_vector(1) = 0;
+    torso_yaw_vector(2) = tiz;
+    yarp::sig::Matrix torso_yaw_dcm = yarp::math::rpy2dcm(torso_yaw_vector);
+
+    yarp::sig::Matrix torso_dcm = (torso_pitch_dcm * torso_roll_dcm) * torso_yaw_dcm;
+//-----
 
     yarp::sig::Vector eye_pitch_vector(3);
     eye_pitch_vector(0) = 0;
@@ -472,7 +498,7 @@ bool CamCalibPort::updatePose(double time)
 
     yarp::sig::Matrix eye_dcm = eye_pitch_dcm * eye_yaw_dcm;
 
-    yarp::sig::Matrix T = neck_dcm * eye_dcm;
+    yarp::sig::Matrix T = torso_dcm * neck_dcm * eye_dcm;
 
 #if !USE_INERTIAL
     yarp::sig::Vector v = yarp::math::dcm2rpy(T);
