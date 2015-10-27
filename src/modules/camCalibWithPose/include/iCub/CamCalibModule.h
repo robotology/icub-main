@@ -47,6 +47,7 @@ private:
     double maxDelay;
 
     std::map<double, yarp::os::Bottle> h_encs_map;
+    std::map<double, yarp::os::Bottle> t_encs_map;
     std::map<double, yarp::os::Bottle> imu_map;
     yarp::os::Bottle h_encs;
     yarp::os::Bottle t_encs;
@@ -78,13 +79,20 @@ public:
     void setLeftEye(bool eye) { leftEye = eye; }
     void setMaxDelay(double delay) { maxDelay = delay; }
 
+    void setTorsoEncoders(double time, const yarp::os::Bottle &t_encs) { m.lock(); t_encs_map[time] = t_encs; m.unlock(); }
     void setHeadEncoders(double time, const yarp::os::Bottle &h_encs) { m.lock(); h_encs_map[time] = h_encs; m.unlock(); }
-    void setTorsoEncoders(double time, const yarp::os::Bottle &t_encs) { m.lock(); this->t_encs = t_encs; m.unlock(); }
     void setImuData(double time, const yarp::os::Bottle &imu) { m.lock(); imu_map[time] = imu; m.unlock(); }
 
     yarp::os::BufferedPort<yarp::os::Bottle> rpyPort;
 };
 
+
+class TorsoEncoderPort : public yarp::os::BufferedPort<yarp::os::Bottle> {
+private:
+    virtual void onRead(yarp::os::Bottle &t_encs);
+public:
+    CamCalibPort *_prtImgIn;
+};
 
 class HeadEncoderPort : public yarp::os::BufferedPort<yarp::os::Bottle> {
 private:
@@ -116,8 +124,8 @@ private:
     CamCalibPort    _prtImgIn;
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >  _prtImgOut;
     yarp::os::Port  _configPort;
+    TorsoEncoderPort  _prtTEncsIn;
     HeadEncoderPort _prtHEncsIn;
-    yarp::os::BufferedPort<yarp::os::Bottle>  _prtTEncsIn;
     ImuPort _prtImuIn;
     ICalibTool *    _calibTool;
     std::string strGroup;

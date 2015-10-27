@@ -222,7 +222,6 @@ void CamCalibPort::onRead(ImageOf<PixelRgb> &yrpImgIn)
         //BufferedPort<ImageOf<PixelRgb> >::getEnvelope(stamp);
         //portImgOut->setEnvelope(stamp);
 
-        yDebug() << "ROLL =" << roll;
         Bottle pose;
         pose.addDouble(roll);
         pose.addDouble(pitch);
@@ -407,7 +406,8 @@ bool CamCalibPort::selectBottleFromMap(double time,
 
 bool CamCalibPort::updatePose(double time)
 {
-    if (!selectBottleFromMap(time, &h_encs_map, &h_encs, true)) {
+    if (!selectBottleFromMap(time, &t_encs_map, &t_encs, false) ||
+        !selectBottleFromMap(time, &h_encs_map, &h_encs, false)) {
 #if !USE_INERTIAL
         return false;
 #endif
@@ -418,25 +418,47 @@ bool CamCalibPort::updatePose(double time)
 #endif
     }
 
+
+    double tix = t_encs.get(1).asDouble()/180.0*M_PI;  // torso roll
+    double tiy = -t_encs.get(2).asDouble()/180.0*M_PI; // torso pitch
+    double tiz = -t_encs.get(0).asDouble()/180.0*M_PI; // torso yaw
+
     double nix = -h_encs.get(1).asDouble()/180.0*M_PI; // neck roll
     double niy = h_encs.get(0).asDouble()/180.0*M_PI;  // neck pitch
     double niz = h_encs.get(2).asDouble()/180.0*M_PI;  // neck yaw
 
-    double tix = t_encs.get(1).asDouble()/180.0*M_PI; // torso roll
-    double tiy = -t_encs.get(2).asDouble()/180.0*M_PI;  // torso pitch
-    double tiz = -t_encs.get(0).asDouble()/180.0*M_PI;  // torso yaw
+    double t =  h_encs.get(3).asDouble()/180.0*M_PI;   // eye tilt
+    double vs = h_encs.get(4).asDouble()/180.0*M_PI;   // eye version
+    double vg = h_encs.get(5).asDouble()/180.0*M_PI;   // eye vergence
 
-    double t =  h_encs.get(3).asDouble()/180.0*M_PI;  // eye tilt
-    double vs = h_encs.get(4).asDouble()/180.0*M_PI;  // eye version
-    double vg = h_encs.get(5).asDouble()/180.0*M_PI;  // eye vergence
+    double imu_x = imu.get(0).asDouble()/180.0*M_PI;   // imu roll
+    double imu_y = imu.get(1).asDouble()/180.0*M_PI;   // imu pitch
+    double imu_z = imu.get(2).asDouble()/180.0*M_PI;   // imu yaw
 
-    double imu_x = imu.get(0).asDouble()/180.0*M_PI; // imu roll
-    double imu_y = imu.get(1).asDouble()/180.0*M_PI; // imu pitch
-    double imu_z = imu.get(2).asDouble()/180.0*M_PI; // imu yaw
 
-    yDebug() << nix << niy << niz;
+    // Torso rotation matrix
+    yarp::sig::Vector torso_roll_vector(3);
+    torso_roll_vector(0) = tix;
+    torso_roll_vector(1) = 0;
+    torso_roll_vector(2) = 0;
+    yarp::sig::Matrix torso_roll_dcm = yarp::math::rpy2dcm(torso_roll_vector);
 
-//-----
+    yarp::sig::Vector torso_pitch_vector(3);
+    torso_pitch_vector(0) = 0;
+    torso_pitch_vector(1) = tiy;
+    torso_pitch_vector(2) = 0;
+    yarp::sig::Matrix torso_pitch_dcm = yarp::math::rpy2dcm(torso_pitch_vector);
+
+    yarp::sig::Vector torso_yaw_vector(3);
+    torso_yaw_vector(0) = 0;
+    torso_yaw_vector(1) = 0;
+    torso_yaw_vector(2) = tiz;
+    yarp::sig::Matrix torso_yaw_dcm = yarp::math::rpy2dcm(torso_yaw_vector);
+
+    yarp::sig::Matrix torso_dcm = (torso_pitch_dcm * torso_roll_dcm) * torso_yaw_dcm;
+
+
+    // Neck rotation matrix
     yarp::sig::Vector neck_roll_vector(3);
     neck_roll_vector(0) = nix;
     neck_roll_vector(1) = 0;
@@ -457,28 +479,8 @@ bool CamCalibPort::updatePose(double time)
 
     yarp::sig::Matrix neck_dcm = (neck_pitch_dcm * neck_roll_dcm) * neck_yaw_dcm;
 
-//-----
-    yarp::sig::Vector torso_roll_vector(3);
-    torso_roll_vector(0) = tix;
-    torso_roll_vector(1) = 0;
-    torso_roll_vector(2) = 0;
-    yarp::sig::Matrix torso_roll_dcm = yarp::math::rpy2dcm(torso_roll_vector);
 
-    yarp::sig::Vector torso_pitch_vector(3);
-    torso_pitch_vector(0) = 0;
-    torso_pitch_vector(1) = tiy;
-    torso_pitch_vector(2) = 0;
-    yarp::sig::Matrix torso_pitch_dcm = yarp::math::rpy2dcm(torso_pitch_vector);
-
-    yarp::sig::Vector torso_yaw_vector(3);
-    torso_yaw_vector(0) = 0;
-    torso_yaw_vector(1) = 0;
-    torso_yaw_vector(2) = tiz;
-    yarp::sig::Matrix torso_yaw_dcm = yarp::math::rpy2dcm(torso_yaw_vector);
-
-    yarp::sig::Matrix torso_dcm = (torso_pitch_dcm * torso_roll_dcm) * torso_yaw_dcm;
-//-----
-
+    // Eye rotation matrix
     yarp::sig::Vector eye_pitch_vector(3);
     eye_pitch_vector(0) = 0;
     eye_pitch_vector(1) = t;
@@ -498,9 +500,13 @@ bool CamCalibPort::updatePose(double time)
 
     yarp::sig::Matrix eye_dcm = eye_pitch_dcm * eye_yaw_dcm;
 
-    yarp::sig::Matrix T = torso_dcm * neck_dcm * eye_dcm;
+
+    // Final rotation matrix
+    yarp::sig::Matrix T = (torso_dcm * neck_dcm) * eye_dcm;
+
 
 #if !USE_INERTIAL
+    // Inertial rotation matrix
     yarp::sig::Vector v = yarp::math::dcm2rpy(T);
 #endif
 
@@ -563,11 +569,9 @@ bool CamCalibPort::updatePose(double time)
     printf("\n--------------------------------------\n");
 #endif
 
-    yDebug() << v(0);
-
-    roll = v(0)*180.0/M_PI;
-    pitch = v(1)*180.0/M_PI;
-    yaw = v(2)*180.0/M_PI;
+    roll =  v(0) * 180.0/M_PI;
+    pitch = v(1) * 180.0/M_PI;
+    yaw =   v(2) * 180.0/M_PI;
 
 //    yDebug() << "IMU_X =" << imu_x;
 //    roll = imu_x*180.0/M_PI;
@@ -615,7 +619,7 @@ bool CamCalibPort::updatePose(double time)
 
 CamCalibModule::CamCalibModule(){
 
-    _calibTool = NULL;	
+    _calibTool = NULL;
 }
 
 CamCalibModule::~CamCalibModule(){
@@ -631,7 +635,7 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
     // pass configuration over to bottle
     Bottle botConfig(rf.toString().c_str());
-    botConfig.setMonitor(rf.getMonitor());		
+    botConfig.setMonitor(rf.getMonitor());
     // Load from configuration group ([<group_name>]), if group option present
     Value *valGroup; // check assigns pointer to reference
     if(botConfig.check("group", valGroup, "Configuration group to load module options from (string)."))
@@ -688,16 +692,22 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
     _prtImgIn.useCallback();
     _prtImgOut.open(getName("/out"));
     _configPort.open(getName("/conf"));
+
+    _prtTEncsIn.open(getName("/torso_encs/in"));
+    _prtTEncsIn._prtImgIn = &_prtImgIn;
+//    _prtTEncsIn.setStrict();
+    _prtTEncsIn.useCallback();
+
     _prtHEncsIn.open(getName("/head_encs/in"));
     _prtHEncsIn._prtImgIn = &_prtImgIn;
 //    _prtHEncsIn.setStrict();
     _prtHEncsIn.useCallback();
-    _prtTEncsIn.open(getName("/torso_encs/in"));
-//    _prtTEncsIn.setStrict();
+
     _prtImuIn.open(getName("/imu/in"));
     _prtImuIn._prtImgIn = &_prtImgIn;
 //    _prtImuIn.setStrict();
     _prtImuIn.useCallback();
+
     attach(_configPort);
     fflush(stdout);
 
@@ -708,9 +718,9 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf){
 
 bool CamCalibModule::close(){
     _prtImgIn.close();
-	_prtImgOut.close();
-    _prtHEncsIn.close();
+    _prtImgOut.close();
     _prtTEncsIn.close();
+    _prtHEncsIn.close();
     _prtImuIn.close();
     _configPort.close();
     if (_calibTool != NULL){
@@ -725,9 +735,19 @@ bool CamCalibModule::interruptModule(){
     _prtImgIn.interrupt();
     _prtImgOut.interrupt();
     _configPort.interrupt();
+    _prtTEncsIn.interrupt();
     _prtHEncsIn.interrupt();
     _prtImuIn.interrupt();
     return true;
+}
+
+void TorsoEncoderPort::onRead(yarp::os::Bottle &t_encs) {
+    yarp::os::Stamp s;
+    this->getEnvelope(s);
+    double time = s.getTime();
+    if(time !=0) {
+        _prtImgIn->setTorsoEncoders(time, t_encs);
+    }
 }
 
 void HeadEncoderPort::onRead(yarp::os::Bottle &h_encs) {
@@ -750,17 +770,6 @@ void ImuPort::onRead(yarp::os::Bottle &imu) {
 
 bool CamCalibModule::updateModule()
 {
-    Bottle* t_encs = _prtTEncsIn.read(false); //torso encoders
-
-    if (t_encs!=NULL) {
-        yarp::os::Stamp s;
-        _prtTEncsIn.getEnvelope(s);
-        double time = s.getTime();
-        if(time !=0) {
-            _prtImgIn.setTorsoEncoders(time, *t_encs);
-        }
-    }
-
     return true;
 }
 
@@ -803,4 +812,3 @@ bool CamCalibModule::respond(const Bottle& command, Bottle& reply)
     }
     return true;
 }
-
