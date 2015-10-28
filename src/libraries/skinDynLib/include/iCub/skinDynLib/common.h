@@ -224,12 +224,47 @@ int getLinkNum(SkinPart s);
 
 /**
 * @ingroup skinDynLib 
-* Retrieves a vector from a bottle:
-* @param b    is the bottle
-* @param in   is the index from which start acquiring values
-* @param size is the size of the vector
+* Converts a yarp::sig::Matrix to a yarp::sig::Vector.
+* @param  m the matrix to convert
+* @return   the matrix converted to a vector
+**/
+yarp::sig::Vector toVector(yarp::sig::Matrix m);
+
+/**
+* @ingroup skinDynLib 
+* Retrieves a vector from a bottle.
+* @param  b    the bottle to read the vector from
+* @param  in   the start index
+* @param  size the size of the vector (obviously, this have to hold: b.size()>in+size )
+* @return      the vector extracted from the bottle
 **/
 yarp::sig::Vector vectorFromBottle(const yarp::os::Bottle b, int in, const int size);
+
+/**
+* Puts a Vector into a bottle, by cycling through its elements
+* and adding them as doubles.
+* @param  v the vector to put into the bottle
+* @param  b the bottle to be filled with the vector
+**/
+void vectorIntoBottle(const yarp::sig::Vector v, yarp::os::Bottle &b);
+
+/**
+* Retrieves a matrix from a bottle.
+* @param  b  the bottle
+* @param  in the start index
+* @param  r  the number of rows of the matrix
+* @param  c  the number of cols of the matrix
+* #return    the matrix extracted from the bottle
+**/
+yarp::sig::Matrix matrixFromBottle(const yarp::os::Bottle b, int in, const int r, const int c);
+
+/**
+* Puts a matrix into a bottle, by cycling through its elements
+* and adding them as double
+* @param  m the matrix to put into the bottle
+* @param  b the bottle to be filled with the vector
+**/
+void      matrixIntoBottle(const yarp::sig::Matrix m, yarp::os::Bottle &b);
 
 /**
 * @ingroup skinDynLib 

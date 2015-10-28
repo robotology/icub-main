@@ -88,6 +88,18 @@ int iCub::skinDynLib::getLinkNum(SkinPart s)
     return -1;
 }
 
+yarp::sig::Vector iCub::skinDynLib::toVector(yarp::sig::Matrix m)
+{
+    Vector res(m.rows()*m.cols(),0.0);
+    
+    for (size_t r = 0; r < m.rows(); r++)
+    {
+        res.setSubvector(r*m.cols(),m.getRow(r));
+    }
+
+    return res;
+}
+
 yarp::sig::Vector iCub::skinDynLib::vectorFromBottle(const yarp::os::Bottle b, int in, const int size)
 {
     yarp::sig::Vector v(size,0.0);
@@ -98,4 +110,39 @@ yarp::sig::Vector iCub::skinDynLib::vectorFromBottle(const yarp::os::Bottle b, i
         in++;
     }
     return v;
+}
+
+void iCub::skinDynLib::vectorIntoBottle(const yarp::sig::Vector v, yarp::os::Bottle &b)
+{
+    for (unsigned int i = 0; i < v.size(); i++)
+    {
+        b.addDouble(v[i]);
+    }
+}
+
+yarp::sig::Matrix iCub::skinDynLib::matrixFromBottle(const yarp::os::Bottle b, int in, const int r, const int c)
+{
+    yarp::sig::Matrix m(r,c);
+    m.zero();
+    
+    for (size_t i = 0; i<r; i++)
+    {
+        for (size_t j = 0; j<c; j++)
+        {
+            m(i,j) =  b.get(in).asDouble();
+            in++;
+        }
+    }
+    
+    return m;
+}
+
+void iCub::skinDynLib::matrixIntoBottle(const yarp::sig::Matrix m, yarp::os::Bottle &b)
+{
+    Vector v = toVector(m);
+    
+    for (unsigned int i = 0; i < v.size(); i++)
+    {
+        b.addDouble(v[i]);
+    }
 }
