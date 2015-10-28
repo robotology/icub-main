@@ -63,7 +63,7 @@
 <param name="ki">           5             -5            10            -4            10            10            </param>       
 <param name="maxPwm">       800           800           1333          1333          1333          1333          </param>       
 <param name="maxInt">       800           800           1333          1333          1333          1333          </param>       
-<param name="shift">        8             8             6             4             5             5             </param>       
+<param name="shift">        9             9             6             4             5             5             </param>       
 <param name="ko">           0             0             0             0             0             0             </param>       
 <param name="stictionUp">   0             0             0             0             0             0             </param>       
 <param name="stictionDwn">  0             0             0             0             0             0             </param>       
