@@ -17,12 +17,12 @@
 
 		<group name="CALIBRATION">
 		    <param name="calibrationType">                    5               </param>
-		    <param name="calibration1">                       300             </param> <!-- used pwm  -->
-		    <param name="calibration2">                       65535           </param> <!-- pos of reached hw limit in icubdeg (500 deg) -->
-		    <param name="calibration3">                       0.0             </param> 
+		    <param name="calibration1">                       200             </param> <!-- used pwm  -->
+		    <param name="calibration2">                       65536           </param> <!-- pos of reached hw limit in icubdeg (500 deg) -->
+		    <param name="calibration3">                       0               </param> 
 
             <param name="calibrationZero">                    0.0             </param>
-            <param name="calibrationDelta">                   0.0             </param>
+            <param name="calibrationDelta">                   3.0             </param>
 
 		    <param name="startupPosition">                    0.0             </param> <!-- target position in deg after high level calib is terminated --> 
 		    <param name="startupVelocity">                    20.0            </param> <!-- and its velocity in deg/sec -->

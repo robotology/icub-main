@@ -8,18 +8,19 @@
 
                              <!--   0               logical axis number (ControlBoardWrapper) -->
 	    <param name="AxisMap">              0	    1           </param>   <!-- hardware axis number  (EMS) -->
+        <param name="AxisName">             "axis0" "axis1"     </param>
         <param name="HasHallSensor">        0       0           </param>
         <param name="HasTempSensor">        0       0           </param>
-        <param name="HasRotorEncoder">      0       0           </param>
+        <param name="HasRotorEncoder">      1       1           </param>
         <param name="HasRotorEncoderIndex"> 0       0           </param>
         <param name="Encoder">              182.044	182.044     </param>
         <param name="TorqueId">  	        0	    0           </param>
         <param name="TorqueChan">	        0	    0           </param>
         <param name="TorqueMax"> 	        0	    0           </param>
-        <param name="RotorEncoderRes">      0       0           </param>
+        <param name="RotorEncoderRes">      59400   255900      </param> <!-- j0 -> desk motor black-grey, j1 ->  black-blue-grey-->
         <param name="JointEncoderType">     "OPTICAL_QUAD"  "OPTICAL_QUAD" </param>
-        <param name="RotorEncoderType">     "NONE"  "NONE"      </param>
-        <param name="JointEncoderRes">      65535   65535       </param> <!-- random number for test -->
+        <param name="RotorEncoderType">     "OPTICAL_QUAD"  "OPTICAL_QUAD" </param>
+        <param name="JointEncoderRes">      59400   255900      </param> <!-- random number for test -->
         <param name="RotorIndexOffset">     0       0           </param>
         <param name="Gearbox">   	        1	    1           </param>
         <param name="MotorPoles">           0       0           </param> 

@@ -8,11 +8,12 @@
       <params file="hardware/mechanicals/devmc4plusjig-mc4plus01-mec.xml" />
 
     <group name="LIMITS">
-        <param name="Max">               360                     </param>
-        <param name="Min">              -360                     </param>
-        <param name="RotorMax">          360                     </param>
-        <param name="RotorMin">         -360                     </param>
-        <param name="Currents">          600                     </param>
+        <param name="Max">               360                   </param>
+        <param name="Min">               -360                  </param>
+        <param name="RotorMax">          0                     </param>
+        <param name="RotorMin">          0                     </param>
+        <param name="Currents">          600                   </param>
+        <param name="JntVelocityMax">    0                     </param>
     </group>
     
     <group name="IMPEDANCE">
@@ -26,8 +27,8 @@
         <param name="kp">            568.00                     </param>   
         <param name="kd">                 0                     </param>       
         <param name="ki">             	  0                     </param>       
-        <param name="limPwm">          	1500                    </param>       
-        <param name="maxPwm">          	1500                    </param>  
+        <param name="limPwm">          	3360                    </param>       
+        <param name="maxPwm">          	3360                    </param>  
         <param name="maxInt">           750                     </param>       
         <param name="shift">              0                     </param>       
         <param name="ko">                 0                     </param>       
