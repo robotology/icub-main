@@ -11,6 +11,7 @@
 
  // std
 #include <stdio.h>
+#include <map>
 
 // opencv
 #include <cv.h>
