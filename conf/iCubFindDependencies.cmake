@@ -44,6 +44,7 @@ find_package(OpenGL)
 find_package(ODE)
 find_package(SDL)
 
+set(GTK2_USE_IMPORTED_TARGETS ON)
 find_package(GTK2 COMPONENTS gtk gtkmm)
 if(WIN32 AND GTK2_FOUND)
     list(REMOVE_ITEM GTK2_LIBRARIES ${FREETYPE_LIBRARY} ${GTK2_PANGOXFT_LIBRARY})

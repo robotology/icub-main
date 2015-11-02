@@ -104,6 +104,22 @@ endif()
 # For older versions the position independent code is handled in
 # iCubHelpers.cmake, in the icub_export_library macro (and obviously
 # only for targets exported using that macro)
+
 if(CMAKE_VERSION VERSION_GREATER "2.8.9")
     set(CMAKE_POSITION_INDEPENDENT_CODE "TRUE")
+endif()
+
+
+#########################################################################
+# C++11 flags
+
+include(CheckCXXCompilerFlag)
+check_cxx_compiler_flag("-std=c++11" CXX_HAS_STD_CXX11)
+check_cxx_compiler_flag("-std=c++0x" CXX_HAS_STD_CXX0X)
+if(CXX_HAS_STD_CXX11)
+    set(CXX11_FLAGS "-std=c++11")
+elseif(CXX_HAS_STD_CXX0X)
+    set(CXX11_FLAGS "-std=c++0x")
+else()
+    set(CXX11_FLAGS)
 endif()
