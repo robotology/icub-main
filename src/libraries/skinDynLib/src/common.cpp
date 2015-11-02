@@ -92,7 +92,7 @@ yarp::sig::Vector iCub::skinDynLib::toVector(yarp::sig::Matrix m)
 {
     Vector res(m.rows()*m.cols(),0.0);
     
-    for (size_t r = 0; r < m.rows(); r++)
+    for (int r = 0; r < m.rows(); r++)
     {
         res.setSubvector(r*m.cols(),m.getRow(r));
     }
@@ -125,11 +125,11 @@ yarp::sig::Matrix iCub::skinDynLib::matrixFromBottle(const yarp::os::Bottle b, i
     yarp::sig::Matrix m(r,c);
     m.zero();
     
-    for (size_t i = 0; i<r; i++)
+    for (int i = 0; i<r; i++)
     {
-        for (size_t j = 0; j<c; j++)
+        for (int j = 0; j<c; j++)
         {
-            m(i,j) =  b.get(in).asDouble();
+            m(i,j) = b.get(in).asDouble();
             in++;
         }
     }
