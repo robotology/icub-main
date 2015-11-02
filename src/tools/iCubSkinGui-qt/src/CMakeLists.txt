@@ -29,9 +29,9 @@ qticub_use_qml_plugin()
 add_executable(iCubSkinGui-qt WIN32 ${iCubSkinGui_qt_SRCS}
                                     ${iCubSkinGui_qt_HDRS}
                                     ${iCubSkinGui_qt_QRC_GEN_SRCS})
-qt5_use_modules(iCubSkinGui-qt Widgets
-                               Qml
-                               Quick)
+qticub_use_modules(iCubSkinGui-qt Widgets
+                                  Qml
+                                  Quick)
 qticub_deprecate_with_cmake_version(2.8.11)
 if(WIN32 AND CMAKE_VERSION VERSION_LESS 2.8.11)
   target_link_libraries(iCubSkinGui-qt Qt5::WinMain)

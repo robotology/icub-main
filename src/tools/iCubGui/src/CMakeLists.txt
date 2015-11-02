@@ -75,7 +75,8 @@ target_link_libraries(iCubGui ${GLUT_LIBRARIES}
                               ${YARP_LIBRARIES}
                               skinDynLib)
 
-qt5_use_modules(iCubGui Widgets OpenGL)
+qticub_use_modules(iCubGui Widgets
+                           OpenGL)
 
 qticub_deprecate_with_cmake_version(2.8.11)
 if(WIN32 AND CMAKE_VERSION VERSION_LESS 2.8.11)
