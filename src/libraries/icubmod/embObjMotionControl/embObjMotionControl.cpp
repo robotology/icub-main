@@ -4505,7 +4505,9 @@ bool embObjMotionControl::setVelLimitsRaw(int axis, double min, double max)
 
 bool embObjMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getVelLimitsRaw");
+    *min = 0.0;
+    *max = _maxJntCmdVelocity[axis];
+    return true;
 }
 
 
