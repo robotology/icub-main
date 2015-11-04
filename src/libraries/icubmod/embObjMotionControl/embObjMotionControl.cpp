@@ -2155,6 +2155,7 @@ bool embObjMotionControl::close()
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::uninitialize();
     ImplementImpedanceControl::uninitialize();
     ImplementControlLimits2::uninitialize();
+    ImplementTorqueControl::uninitialize();
     ImplementPositionDirect::uninitialize();
     ImplementOpenLoopControl::uninitialize();
     ImplementInteractionMode::uninitialize();
