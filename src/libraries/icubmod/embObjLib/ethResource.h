@@ -215,7 +215,7 @@ private:
     uint8_t             boardEPsNumber;
     eOmn_comm_status_t  boardCommStatus;
     uint16_t            usedNumberOfRegularROPs;
-    uint16_t            usedSizeOfRegularROPframe;
+    //uint16_t            usedSizeOfRegularROPframe;
 
     can_string_eth*     c_string_handler[16];
 

@@ -53,7 +53,6 @@ ethResources::ethResources()
     memset(verifiedEPprotocol, 0, sizeof(verifiedEPprotocol));
     memset(configuredEP, 0, sizeof(configuredEP));
     usedNumberOfRegularROPs     = 0;
-    usedSizeOfRegularROPframe   = 0;
     memset(&boardCommStatus, 0, sizeof(boardCommStatus));
 
     //RXpacketSize = 0;
@@ -519,7 +518,6 @@ bool ethResources::clearRegulars(bool verify)
 
     // set number of used rops and size to zero.
     usedNumberOfRegularROPs     = 0;
-    usedSizeOfRegularROPframe   = 0;
 
     if(true == verify)
     {
@@ -1484,7 +1482,8 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
         yError() << "ethResource::addRegulars() cannot load the requested regular ROPs because they would be too many: (max, sofar, rqst) = " << boardCommStatus.transceiver.maxnumberRegularROPs << usedNumberOfRegularROPs << id32vectorsize;
         return false;
     }
-
+    /*
+    **  we dont do it anymore because it is enough to read back the number of regular rops from the board
     int extrasize = 0;
     // second check: about the size:
     for(int i=0; i<id32vectorsize; i++)
@@ -1503,7 +1502,8 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
         yError() << "ethResource::addRegulars() cannot load the requested regular ROPs because they need too much space: (max, sofar, rqst) = " << boardCommStatus.transceiver.maxsizeROPframeRegulars << usedSizeOfRegularROPframe << extrasize;
         return false;
     }
-
+    **
+    */
     // ok we can go on.
 
     for(int i=0; i<id32vectorsize; i++)
@@ -1547,7 +1547,7 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
 
     // if everything is ok we increment values
     usedNumberOfRegularROPs     += id32vectorsize;
-    usedSizeOfRegularROPframe   += extrasize;
+    //usedSizeOfRegularROPframe   += extrasize;
 
 
     if(true == verify)
