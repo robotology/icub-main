@@ -1353,6 +1353,12 @@ void MotorThread::run()
         }
 
 
+        case(HEAD_MODE_TRACK_CART):
+        {
+            ctrl_gaze->lookAtFixationPoint(track_cartesian_target);
+            break;
+        }
+
         case(HEAD_MODE_TRACK_FIX):
         {
             if(!gazeUnderControl)
@@ -2167,7 +2173,6 @@ bool MotorThread::goHome(Bottle &options)
     ctrl_gaze->getTrackingMode(&head_fixing);
 
     if(head_home)
-    //if(!head_fixing && head_mode!=HEAD_MODE_TRACK_TEMP && head_home)
         head_mode=HEAD_MODE_GO_HOME;
 
     if(arms_home)
@@ -2211,11 +2216,10 @@ bool MotorThread::goHome(Bottle &options)
             action[RIGHT]->pushAction("open_hand");
     }
 
-    if(head_home)
+    if (head_home)
     {
         ctrl_gaze->waitMotionDone(0.1,2.0);
-
-        if(!head_fixing && head_mode!=HEAD_MODE_TRACK_TEMP)
+        if (!head_fixing && (head_mode!=HEAD_MODE_TRACK_TEMP) && (head_mode!=HEAD_MODE_TRACK_CART))
             setGazeIdle();
     }
 

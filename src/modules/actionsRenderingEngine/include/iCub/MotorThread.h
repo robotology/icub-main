@@ -39,8 +39,9 @@
 #define HEAD_MODE_GO_HOME           1
 #define HEAD_MODE_TRACK_HAND        2
 #define HEAD_MODE_TRACK_TEMP        3
-#define HEAD_MODE_TRACK_FIX         4
-#define HEAD_MODE_LOOK              5
+#define HEAD_MODE_TRACK_CART        4
+#define HEAD_MODE_TRACK_FIX         5
+#define HEAD_MODE_LOOK              6
 
 #define ARM_MODE_IDLE               0
 #define ARM_MODE_LEARN_ACTION       1
@@ -110,7 +111,7 @@ class MotorThread: public RateThread
 private:
     ResourceFinder                      &rf;
 
-    StereoTarget                        &stereo_target;
+    StereoTarget                        &stereo_target;    
 
     ObjectPropertiesCollectorPort       &opcPort;
 
@@ -220,6 +221,7 @@ private:
     Dragger                             dragger;
 
     Vector                              gaze_fix_point;
+    Vector                              track_cartesian_target;
     double                              avoid_table_height[2];
 
     double                              random_pos_y;
@@ -245,7 +247,8 @@ private:
 
 public:
     MotorThread(ResourceFinder &_rf, Initializer *initializer)
-        :RateThread(20),rf(_rf),stereo_target(initializer->stereo_target),opcPort(initializer->port_opc)
+        :RateThread(20),rf(_rf),stereo_target(initializer->stereo_target),opcPort(initializer->port_opc),
+         track_cartesian_target(3,0.0)
     {
         ctrl_gaze=NULL;
         ctrl_mode_torso=NULL;
@@ -277,19 +280,29 @@ public:
             return false;
     }
 
-    void trackTemplate(Bottle &options)
+    void track(Bottle &options)
     {
-        if(!gazeUnderControl)
+        Bottle *bTarget=options.find("target").asList();
+        if (!gazeUnderControl)
         {
             ctrl_gaze->restoreContext(default_gaze_context);
 
-            if(checkOptions(options,"no_sacc"))
+            if (checkOptions(options,"no_sacc"))
                 ctrl_gaze->setSaccadesMode(false);
 
-            head_mode=HEAD_MODE_TRACK_TEMP;
+            if (bTarget!=NULL)
+                head_mode=(bTarget->check("cartesian")?HEAD_MODE_TRACK_CART:HEAD_MODE_TRACK_TEMP);
+            else
+                head_mode=HEAD_MODE_TRACK_TEMP;
 
             gazeUnderControl=true;
         }
+
+        if (bTarget!=NULL)
+            if (Bottle *bCartesian=bTarget->find("cartesian").asList())
+                if ((size_t)bCartesian->size()==track_cartesian_target.length())
+                    for (size_t i=0; i<track_cartesian_target.length(); i++)
+                        track_cartesian_target[i]=bCartesian->get(i).asDouble();
     }
 
 

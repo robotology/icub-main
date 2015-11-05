@@ -188,7 +188,7 @@ the object held in the hand is free to be taken.
 
 <b>TRACK</b> \n
 format: [track] [target] "param1" \n
-action: the specified [target] visual position is supplied to the tracker module and the gaze controller is 
+action: the specified [target] position is supplied to the tracker module and the gaze controller is 
 updated in order to keep the object constantly inside the robot fovea. The optional "param1" can be put equal to
 "no_sacc" in order to disable the saccadic movements of the gaze controller during the tracking process.
 
@@ -1384,16 +1384,13 @@ public:
 
                     case CMD_TRACK:
                     {
-                        //motion tracking is handled differently (temporary cheat)
-                        if(command.get(1).asVocab()!=Vocab::encode("motion"))
+                        if (command.get(1).asVocab()!=Vocab::encode("motion"))
                             visuoThr->getTarget(command.get(1),command);
                         else
                             visuoThr->trackMotion();
 
-                        motorThr->trackTemplate(command);
-
+                        motorThr->track(command);
                         reply.addVocab(ACK);
-
                         break;
                     }
                     case CMD_TAKE_TOOL:
