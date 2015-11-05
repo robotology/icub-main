@@ -21,7 +21,7 @@
         <param name="maxSizeROPframeOccasionals">   128	    </param>
         <param name="maxSizeROP">  		            256     </param>
         <param name="maxNumberRegularROPs">  		32      </param>
-        <param name="TXrate">  		                1       </param>
+        <param name="TXrate">  		                3       </param>
     </group>
     
     <group name="PROTOCOL">
