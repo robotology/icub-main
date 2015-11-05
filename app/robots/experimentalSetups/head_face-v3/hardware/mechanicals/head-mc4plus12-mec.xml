@@ -31,13 +31,13 @@
         <param name="TorqueId">                 0x0C     0x0C         </param>    <!-- m.a.: maybe not needed in eth-robots -->
         <param name="TorqueChan">               0        0            </param>
         <param name="TorqueMax">                24       24           </param>
-        <param name="RotorEncoderRes">          -14400   -14400       </param>
+        <param name="RotorEncoderRes">          2048    -2048         </param>
         <param name="JointEncoderType">         "AEA"    "AEA"        </param>
         <param name="RotorEncoderType">         "ROIE"   "ROIE"       </param>
         <param name="JointEncoderRes">          4096     -4096        </param>
         <param name="RotorIndexOffset">         0        0            </param>
         <param name="Rotor">                    1        1            </param>
-        <param name="Gearbox">                  1        1            </param>
+        <param name="Gearbox">                  161.68   -161.68       </param>
         <param name="MotorPoles">               8        8            </param>    <!-- ??? -->
         <param name="Verbose">                  0                     </param>
     </group>
