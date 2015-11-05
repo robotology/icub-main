@@ -5,7 +5,7 @@
   <group name="PC104">
      <param name="PC104IpAddress"> 10.0.1.104 </param> 
      <param name="PC104TXrate">	            1	</param> 
-     <param name="PC104RXrate">	            1	</param> 
+     <param name="PC104RXrate">	            5	</param> 
   </group>
 </params>
 
