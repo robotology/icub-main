@@ -16,33 +16,33 @@
         <param name="MotioncontrolVersion">  2 </param>
         <param name="Joints"> 2 </param> <!-- the number of joints of the robot part -->
 
-        <!-- joint number in sub-part           0           1           -->
-        <!-- joint name                         neck-pitch  neck-roll   -->         
+        <!-- joint number in sub-part           0              1           -->
+        <!-- joint name                         neck-pitch     neck-roll   -->         
 
-        <param name="AxisMap">                  0        1            </param>    <!-- joint as effectively mapped onto the hw of the board -->
+        <param name="AxisMap">                  0               1               </param>    <!-- joint as effectively mapped onto the hw of the board -->
         <!-- memo: Encoder = x [ticks/deg], joint->config.encoderconversionfactor = x / 182.044 [ticks/icubdeg] -->
-        <param name="AxisName">              "neck-pitch"  "neck-roll"  </param>
-        <param name="HasHallSensor">            0        0            </param>
-        <param name="HasTempSensor">            0        0            </param>
-        <param name="HasRotorEncoder">          1        1            </param>
-        <param name="HasRotorEncoderIndex">     0        0            </param>
-        <param name="Encoder">                  182.044  182.044      </param>    <!-- m.a.: encoderconversionfactor -->
-        <param name="Zeros">                    0        0            </param>
-        <param name="TorqueId">                 0x0C     0x0C         </param>    <!-- m.a.: maybe not needed in eth-robots -->
-        <param name="TorqueChan">               0        0            </param>
-        <param name="TorqueMax">                24       24           </param>
-        <param name="RotorEncoderRes">          2048    -2048         </param>
-        <param name="JointEncoderType">         "AEA"    "AEA"        </param>
-        <param name="RotorEncoderType">         "ROIE"   "ROIE"       </param>
-        <param name="JointEncoderRes">          4096     -4096        </param>
-        <param name="RotorIndexOffset">         0        0            </param>
-        <param name="Rotor">                    1        1            </param>
-        <param name="Gearbox">                  161.68   -161.68       </param>
-        <param name="MotorPoles">               8        8            </param>    <!-- ??? -->
-        <param name="Verbose">                  0                     </param>
+        <param name="AxisName">              "neck-pitch"       "neck-roll"     </param>
+        <param name="HasHallSensor">            0               0               </param>
+        <param name="HasTempSensor">            0               0               </param>
+        <param name="HasRotorEncoder">          1               1               </param>
+        <param name="HasRotorEncoderIndex">     0               0               </param>
+        <param name="Encoder">                  182.044         182.044         </param>    
+        <param name="TorqueId">                 0x0C            0x0C            </param>    <!-- vale: torque param to be checked -->
+        <param name="TorqueChan">               0               0               </param>
+        <param name="TorqueMax">                24              24              </param>
+        <param name="RotorEncoderRes">          2048            2048            </param>
+        <param name="JointEncoderType">         "AEA"           "AEA"           </param>
+        <param name="RotorEncoderType">         "OPTICAL_QUAD"  "OPTICAL_QUAD"  </param>
+        <param name="JointEncoderRes">          4096            -4096           </param>
+        <param name="RotorIndexOffset">         0               0               </param>
+        <param name="Rotor">                    1               1               </param>
+        <param name="Gearbox">                  161.68          161.68          </param>
+        <param name="MotorPoles">               0               0               </param>    
+        
+       <param name="Verbose">   0    </param>
     </group>
 
-    <group name ="JOINTS_COUPLING">
+    <group name ="JOINTS_COUPLING"> <!-- not correct -->
         <param name="kinematic_mj">   
             0.55    0.275   0.275   0.00
             0.00    0.50    0.50    0.00
