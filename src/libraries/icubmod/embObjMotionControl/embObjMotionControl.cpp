@@ -55,7 +55,10 @@ torqueControlHelper::torqueControlHelper(int njoints, double* p_angleToEncoders,
        memcpy(newtonsToSensor, p_newtonsTosens, sizeof(double)*jointsNum);
    else
        for (int i=0; i<jointsNum; i++) {newtonsToSensor[i]=1.0;}
+
+
 }
+
 torqueControlHelper::torqueControlHelper(int njoints, float* p_angleToEncoders, double* p_newtonsTosens )
 {
    jointsNum=njoints;
@@ -3221,6 +3224,7 @@ bool embObjMotionControl::getStatusBasic_withWait(const int n_joint, const int *
         if(!res->addGetMessage(protid[idx]) )
         {
             yError() << "Can't send getStatusBasic_withWait request for board " << _fId.boardNumber << "joint " << joints[idx];
+            delete[] protid;
             return false;
         }
     }
@@ -3236,6 +3240,8 @@ bool embObjMotionControl::getStatusBasic_withWait(const int n_joint, const int *
 
             if(requestQueue->threadPool->getId(&threadId))
                 requestQueue->cleanTimeouts(threadId);
+
+            delete[] protid;
             return false;
         }
         else
@@ -3246,6 +3252,8 @@ bool embObjMotionControl::getStatusBasic_withWait(const int n_joint, const int *
             _statuslist[idx] = status;
         }
     }
+
+    delete[] protid;
     return true;
 }
 
@@ -3319,7 +3327,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         if(!controlModeCommandConvert_yarp2embObj(modes[i], valSet[i]) )
         {
             yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNumber << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
-            delete valSet; delete valGot;
+            delete[] valSet; delete[] valGot; delete[] statuslist;
             return false;
         }
 
@@ -3327,7 +3335,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         if(! res->addSetMessage(protid, (uint8_t*) &valSet[i]) )
         {
             yError() << "setControlModeRaw failed for board " << _fId.boardNumber << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
-            delete valSet; delete valGot;
+            delete[] valSet; delete[] valGot; delete[] statuslist;
             return false;
         }
 
@@ -3358,7 +3366,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         }
     }
 
-    delete valSet; delete valGot;
+    delete[] valSet; delete[] valGot; delete[] statuslist;
     return ret;
 }
 
@@ -3380,7 +3388,7 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
         if(!controlModeCommandConvert_yarp2embObj(modes[i], valSet[i]) )
         {
             yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNumber << " joint " << i << " mode " << Vocab::decode(modes[i]);
-            delete jointVector; delete valSet; delete valGot;
+            delete[] jointVector; delete[] valSet; delete[] valGot; delete[] statuslist;
             return false;
         }
 
@@ -3388,7 +3396,7 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
         if(! res->addSetMessage(protid, (uint8_t*) &valSet[i]) )
         {
             yError() << "setControlModesRaw failed for board " << _fId.boardNumber << " joint " << i << " mode " << Vocab::decode(modes[i]);
-            delete jointVector; delete valSet; delete valGot;
+            delete[] jointVector; delete[] valSet; delete[] valGot; delete[] statuslist;
             return false;
         }
 
@@ -3419,7 +3427,8 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
         }
     }
 
-    delete jointVector; delete valSet; delete valGot;
+    delete[] jointVector; delete[] valSet; delete[] valGot; delete[] statuslist;
+
     return ret;
 }
 
@@ -5205,7 +5214,7 @@ bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const i
         if(!res->addGetMessage(protid[idx]) )
         {
             yError() << "Can't send getInteractionMode_withWait request for board " << _fId.boardNumber << " joint " << joints[idx];
-            delete protid;
+            delete[] protid;
             return false;
         }
     }
@@ -5222,7 +5231,7 @@ bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const i
             if(requestQueue->threadPool->getId(&threadId))
                 requestQueue->cleanTimeouts(threadId);
 
-            delete protid;
+            delete[] protid;
             return false;
         }
         else
@@ -5235,7 +5244,7 @@ bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const i
         }
     }
 
-    delete protid;
+    delete[] protid;
     return true;
 }
 
@@ -5328,7 +5337,7 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
         if(!interactionModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
         {
             yError() << "setInteractionModeRaw: received unknown interactionMode for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]) << " " << modes[j];
-            delete jointVector; delete valSet; delete valGot;
+            delete[] jointVector; delete[] valSet; delete[] valGot;
             return false;
         }
 
@@ -5336,7 +5345,7 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
         if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
         {
             yError() << "setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]);
-            delete jointVector; delete valSet; delete valGot;
+            delete[] jointVector; delete[] valSet; delete[] valGot;
             return false;
         }
     }
@@ -5363,7 +5372,7 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
 //        }
 //    }
 
-    delete jointVector; delete valSet; delete valGot;
+    delete[] jointVector; delete[] valSet; delete[] valGot;
     return true;
 }
 
@@ -5382,7 +5391,7 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
         if(!interactionModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
         {
             yError() << "setInteractionModeRaw: received unknown interactionMode for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]);
-            delete jointVector; delete valSet; delete valGot;
+            delete[] jointVector; delete[] valSet; delete[] valGot;
             return false;
         }
 
@@ -5390,7 +5399,7 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
         if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
         {
             yError() << "setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]);
-            delete jointVector; delete valSet; delete valGot;
+            delete[] jointVector; delete[] valSet; delete[] valGot;
             return false;
         }
     }
@@ -5416,7 +5425,7 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 //        }
 //    }
 
-    delete jointVector; delete valSet; delete valGot;
+    delete[] jointVector; delete[] valSet; delete[] valGot;
     return true;
 }
 
