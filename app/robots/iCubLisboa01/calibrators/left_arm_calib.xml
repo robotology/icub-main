@@ -1,6 +1,6 @@
  
 <?xml version="1.0" encoding="UTF-8" ?>    
-<!DOCTYPE robot PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 <devices robot="iCubLisboa01" build="1">      
     <device name="left_arm_calibrator" type="parametricCalibrator">    
 <params file="general.xml" />              
