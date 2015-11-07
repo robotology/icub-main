@@ -5,7 +5,7 @@
 // CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 #ifndef __DUALCAMCALIBMODULE__
-#define __DAULCAMCALIBMODULE__
+#define __DUALCAMCALIBMODULE__
 
 // opencv
 #include <cv.h>
