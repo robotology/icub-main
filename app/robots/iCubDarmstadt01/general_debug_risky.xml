@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubDarmstadt01" build="1">
+  
+  <group name="GENERAL">
+<!-- test for wrist calibration problem with julien -->
+
+<!--
+BEWARE!!! if you use this configuration, you must absolutely start the robotInterface 
+with the fault button pressed on!!
+The robotInterface will ask you many times to confirm, you must press enter many times.
+Once you do this, you can read the raw encoder values of the robot with the yarpmotorgui.
+-->
+
+<!--      <param name="skipCalibration">    false  </param>
+      <param name="useRawEncoderData">  false  </param>
+-->
+      <param name="skipCalibration">    true  </param>
+      <param name="useRawEncoderData">  true  </param>
+      <param name="useLimitedPWM">      false  </param>
+      <param name="verbose">            false  </param>
+  </group>
+</params>
