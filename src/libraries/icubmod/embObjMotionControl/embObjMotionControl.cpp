@@ -1859,7 +1859,6 @@ bool embObjMotionControl::init()
         jconfig.limitsofjoint.min = (eOmeas_position_t) S_32(convertA2I(_limitsMin[logico], 0.0, _angleToEncoder[logico]));
         jconfig.maxvelocityofjoint = S_32(_maxJntCmdVelocity[logico] * _angleToEncoder[logico]); //icubdeg/s
         jconfig.velocitysetpointtimeout = (eOmeas_time_t) U_16(_velocityTimeout[logico]);
-        jconfig.motionmonitormode = eomc_motionmonitormode_dontmonitor;
 
         jconfig.jntEncoderResolution = _jointEncoderRes[logico];
         jconfig.jntEncoderType = _jointEncoderType[logico];
@@ -2182,13 +2181,6 @@ void embObjMotionControl::cleanup(void)
         ethManager->killYourself();
 }
 
-
-#if 0
-ethFeature_t embObjMotionControl::getFeat_id()
-{
-    return(this->_fId);
-}
-#endif
 
 // TODO da eliminare?
 eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint32_t protoid)
@@ -2724,31 +2716,22 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 
 bool embObjMotionControl::doneRaw(int axis)
 {
-    // used only in calibration procedure, for normal work use the checkMotionDone
+    #warning marco.accame: now embObjMotionControl::doneRaw() sends an ask<eoprot_tag_mc_joint_status_controlmodestatus>
 
     bool result = false;
-    uint16_t size;
-    eOmc_controlmode_t type;
-    eOmc_joint_status_basic_t status;
+    eOenum08_t temp = 0;
+    uint16_t size = 0;
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_status_controlmodestatus);
+    if(false == askRemoteValue(id32, &temp, size))
+    {
+        return false;
+    }
 
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_status_basic);
-    //EO_WARNING("acemor-> see wait of 100 msec in embObjMotionControl::doneRaw(int axis)")
-    // acemor on 21 may 2013: the delay is not necessary in normal cases when the joint cleanly starts in eomc_controlmode_idle and the calibrator sets it to eomc_controlmode_calib.
-    // however we keep it because: ... sometimes the boards are not started cleanly (see later note1) and the controlmodestatus can contain an invalid value.
-    //                                 the value becomes eomc_controlmode_calib only after the calibration command has arrived to the ems (and if relevant then to the can board and it status
-    //                                 is signalled back). 
-    // thus: al least for the first call after a calibration command on that joint we should keep the delay. Moreover: a delay of 1 sec is 
-    // in parametricCalibrator::checkCalibrateJointEnded() just before calling doneRaw().
+    eOmc_controlmode_t type = (eOmc_controlmode_t) temp;
 
-    Time::delay(0.1);
-
-    //#warning --> marco.accame: embObjMotionControl::doneRaw() uses delay of 100ms to wait for something ... review this thing.
-
-    res->readBufferedValue(protid, (uint8_t*) &status, &size);
-    type = (eOmc_controlmode_t) status.controlmodestatus;
 
     // if the control mode is no longer a calibration type, it means calibration ended
-    if   (eomc_controlmode_idle == type)
+    if (eomc_controlmode_idle == type)
     {
         result = false;
     }
@@ -2860,70 +2843,19 @@ bool embObjMotionControl::relativeMoveRaw(const double *deltas)
 
 bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 {
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motionmonitormode);
+    #warning marco.accame: now embObjMotionControl::doneRaw() sends an ask<eoprot_tag_mc_joint_status_ismotiondone>
 
-//    EOnv *nvRoot_config = res->getNVhandler(protid, &tmpnv_config);
-//
-//    //    printf("nvid of check motion done 0x%04X\n", nvid_config);
-//    if(NULL == nvRoot_config)
-//    {
-//        NV_NOT_FOUND;
-//        return false;
-//    }
+    eObool_t ismotiondone = eobool_false;
+    uint16_t size = 0;
 
-    // monitor status until set point is reached, if it wasn't already set
-    // this is because the function has to be in a non blocking fashion and I want to avoid resending the same message over and over again!!
-
-    if(!checking_motiondone[j ])
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ismotiondone);
+    if(false == askRemoteValue(id32, &ismotiondone, size))
     {
-        checking_motiondone[j ] = true;
-
-        eOmc_motionmonitormode_t tmp = eomc_motionmonitormode_forever;
-
-        res->addSetMessage(protid,(uint8_t *) &tmp);
-//         if( !res->nvSetData(nvRoot_config, &tmp, eobool_true, eo_nv_upd_dontdo))
-//         {
-//             // print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
-//             return false;
-//         }
-//         if(!res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.endpoint, nvid_config) )
-//             return false;
+        return false;
     }
 
-//VALE: removed read cached value. Now asck motion done to the board
-//    // Read the current value - it is signalled spontaneously every cycle, so we don't have to wait here
-//    protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_basic);
+    *flag = ismotiondone; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
 
-//    uint16_t size;
-//    eOmc_joint_status_basic_t status;
-
-//    res->readBufferedValue(protid,(uint8_t *) &status, &size);
-
-
-    eOmc_joint_status_basic_t status;
-    bool ret = getStatusBasic_withWait(1, &j, &status);
-    if (ret == false) {yError ("An error occurred inside checkMotionDoneRaw()");}
-
-    if(eomc_motionmonitorstatus_setpointisreached == status.motionmonitorstatus)
-    {
-        *flag = true;
-
-        // to stop monitoring when set point is reached... this create problems when using the other version of
-        // the function with all axis togheter. A for loop cannot be used. Skip it for now
-        //        eOmc_motionmonitormode_t tmp = eomc_motionmonitormode_dontmonitor;
-        //        if( eomc_motionmonitormode_dontmonitor != *nvRoot_config->motionmonitormode)
-        //        {
-        //            if( !res->nvSetData(nvRoot_config, &val, eobool_true, eo_nv_upd_dontdo))
-        //            {
-        //                // print_debug(AC_error_file, "\n>>> ERROR eo_nv_Set !!\n");
-        //                return false;
-        //            }
-        //            res->load_occasional_rop(eo_ropcode_set, (uint16_t)_fId.endpoint, nvid_config);
-        //        }
-        //        checking_motiondone[j ]= false;
-    }
-    else
-        *flag = false;
     return true;
 }
 
@@ -3172,10 +3104,10 @@ bool embObjMotionControl::setOpenLoopModeRaw(int j)
 
 bool embObjMotionControl::getControlModeRaw(int j, int *v)
 {
-    uint16_t                      size;
-    eOmc_joint_status_basic_t     status;
+    uint16_t size = 0;
+    eOmc_joint_status_t status = {0};
 
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_basic);
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status);
     if(! res->readBufferedValue(protid, (uint8_t *)&status, &size))
         return false;
 
@@ -3206,6 +3138,8 @@ bool embObjMotionControl::getControlModesRaw(const int n_joint, const int *joint
     return ret;
 }
 
+#if 0
+deprecated ...
 bool embObjMotionControl::getStatusBasic_withWait(const int n_joint, const int *joints, eOmc_joint_status_basic_t *_statuslist)
 {
     std::vector<eoThreadEntry *>  tt;
@@ -3256,32 +3190,41 @@ bool embObjMotionControl::getStatusBasic_withWait(const int n_joint, const int *
     delete[] protid;
     return true;
 }
-
+#endif
 
 bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 {
-    eOenum08_t      valSet;
-    eOenum08_t      valGot;
-    eOmc_joint_status_basic_t status;
     bool ret = true;
+    eOenum08_t controlmodecommand = 0;
 
-    //yDebug() << "SetControlMode: received setControlMode command (SINGLE) for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
+    if((_mode == VOCAB_CM_TORQUE) && (_torqueControlEnabled == false))
+    {
+        yError()<<"Torque control is disabled. Check your configuration parameters";
+        return false;
+    }
 
-    if (_mode == VOCAB_CM_TORQUE && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
-
-    if(!controlModeCommandConvert_yarp2embObj(_mode, valSet) )
+    if(!controlModeCommandConvert_yarp2embObj(_mode, controlmodecommand) )
     {
         yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
         return false;
     }
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-    if(! res->addSetMessage(protid, (uint8_t*) &valSet) )
+    if(! res->addSetMessage(protid, (uint8_t*) &controlmodecommand) )
     {
         yError() << "setControlModeRaw failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
         return false;
     }
-    
+
+
+    #warning marco.accame: now embObjMotionControl::setControlModeRaw() sends an ask<eoprot_tag_mc_joint_status_controlmodestatus>
+
+    ret = checkRemoteControlModeStatus(j, _mode);
+
+    return ret;
+
+
+#if 0
     int timeout = 0;
     int current_mode = VOCAB_CM_UNKNOWN;
 
@@ -3309,36 +3252,39 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
         yError ("100ms Timeout occured in setControlModeRaw (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(_mode).c_str());
     }
     return ret;
+ #endif
 }
+
 
 bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joints, int *modes)
 {
-    eOenum08_t                  *valSet = new eOenum08_t[n_joint];
-    eOenum08_t                  *valGot = new eOenum08_t[n_joint];
-    eOmc_joint_status_basic_t   *statuslist = new eOmc_joint_status_basic_t[_njoints];
     bool ret = true;
+    eOenum08_t controlmodecommand = 0;
 
-    //yDebug() << "SetControlMode: received setControlMode (GROUP) command for board " << _fId.boardNumber << " mode " << Vocab::decode(modes[0]);
 
     for(int i=0; i<n_joint; i++)
     {
-        if (modes[i] == VOCAB_CM_TORQUE && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+        if ((modes[i] == VOCAB_CM_TORQUE) && (_torqueControlEnabled == false)) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
 
-        if(!controlModeCommandConvert_yarp2embObj(modes[i], valSet[i]) )
+        if(!controlModeCommandConvert_yarp2embObj(modes[i], controlmodecommand) )
         {
             yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNumber << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
-            delete[] valSet; delete[] valGot; delete[] statuslist;
+
             return false;
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joints[i], eoprot_tag_mc_joint_cmmnds_controlmode);
-        if(! res->addSetMessage(protid, (uint8_t*) &valSet[i]) )
+        if(! res->addSetMessage(protid, (uint8_t*) &controlmodecommand) )
         {
             yError() << "setControlModeRaw failed for board " << _fId.boardNumber << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
-            delete[] valSet; delete[] valGot; delete[] statuslist;
+
             return false;
         }
 
+        #warning marco.accame: now embObjMotionControl::setControlModesRaw() calls checkRemoteControlModeStatus() to verify imposed control mode.
+
+        ret = ret && checkRemoteControlModeStatus(i, modes[i]);
+#if 0
         int current_mode = VOCAB_CM_UNKNOWN;
         int timeout = 0;
         do
@@ -3364,42 +3310,47 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
             ret = false;
             yError ("100ms Timeout occured in setControlModesRaw (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
         }
+#endif
+
     }
 
-    delete[] valSet; delete[] valGot; delete[] statuslist;
+
     return ret;
 }
 
 bool embObjMotionControl::setControlModesRaw(int *modes)
 {
-    int  *jointVector = new int[_njoints];
-
-    eOenum08_t                  *valSet = new eOenum08_t[_njoints];
-    eOenum08_t                  *valGot = new eOenum08_t[_njoints];
-    eOmc_joint_status_basic_t   *statuslist = new eOmc_joint_status_basic_t[_njoints];
     bool ret = true;
+    eOenum08_t controlmodecommand = 0;
 
     for(int i=0; i<_njoints; i++)
     {
-        jointVector[i] = i;
         
-        if (modes[i] == VOCAB_CM_TORQUE && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+        if ((modes[i] == VOCAB_CM_TORQUE) && (_torqueControlEnabled == false))
+        {
+            yError()<<"Torque control is disabled. Check your configuration parameters";
+            continue;
+        }
             
-        if(!controlModeCommandConvert_yarp2embObj(modes[i], valSet[i]) )
+        if(!controlModeCommandConvert_yarp2embObj(modes[i], controlmodecommand) )
         {
             yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNumber << " joint " << i << " mode " << Vocab::decode(modes[i]);
-            delete[] jointVector; delete[] valSet; delete[] valGot; delete[] statuslist;
             return false;
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, i, eoprot_tag_mc_joint_cmmnds_controlmode);
-        if(! res->addSetMessage(protid, (uint8_t*) &valSet[i]) )
+        if(! res->addSetMessage(protid, (uint8_t*) &controlmodecommand) )
         {
             yError() << "setControlModesRaw failed for board " << _fId.boardNumber << " joint " << i << " mode " << Vocab::decode(modes[i]);
-            delete[] jointVector; delete[] valSet; delete[] valGot; delete[] statuslist;
             return false;
         }
 
+        #warning marco.accame: now embObjMotionControl::setControlModesRaw() calls checkRemoteControlModeStatus() to verify imposed control mode.
+
+        ret =  ret && checkRemoteControlModeStatus(i, modes[i]);
+
+
+#if 0
         int current_mode = VOCAB_CM_UNKNOWN;
         int timeout = 0;
         do
@@ -3425,9 +3376,9 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
             ret = false;
             yError ("100ms Timeout occured in setControlModesRaw (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
         }
+#endif
     }
 
-    delete[] jointVector; delete[] valSet; delete[] valGot; delete[] statuslist;
 
     return ret;
 }
@@ -3465,7 +3416,6 @@ bool embObjMotionControl::getEncoderRaw(int j, double *value)
 
     if(ret)
     {
-        eOmc_controlmode_t type = (eOmc_controlmode_t) status.controlmodestatus;
         *value = (double) status.jnt_position;
     }
     else
@@ -5196,7 +5146,7 @@ bool embObjMotionControl::setPositionsRaw(const double *refs)
 
 // InteractionMode
 
-
+#if 0
 bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes)
 {
     std::vector<eoThreadEntry *>tt;
@@ -5247,6 +5197,8 @@ bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const i
     delete[] protid;
     return true;
 }
+#endif
+
 
 bool embObjMotionControl::getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum* _mode)
 {
@@ -5289,143 +5241,152 @@ bool embObjMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum*
 
 bool embObjMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum _mode)
 {
-    eOenum08_t      valSet;
-    eOenum08_t      valGot;
+    eOenum08_t interactionmodecommand = 0;
+
 
 //    yDebug() << "received setInteractionModeRaw command (SINGLE) for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
 
     if (_mode == VOCAB_IM_COMPLIANT && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
 
-    if(!interactionModeCommandConvert_yarp2embObj(_mode, valSet) )
+    if(!interactionModeCommandConvert_yarp2embObj(_mode, interactionmodecommand) )
     {
         yError() << "setInteractionModeRaw: received unknown mode for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
     }
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
 
-    if(! res->addSetMessage(protid, (uint8_t*) &valSet) )
+    if(! res->addSetMessage(protid, (uint8_t*) &interactionmodecommand) )
     {
         yError() << "setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
         return false;
     }
 
-//    // ask back the controlMode to verify everything went correctly (some board could not support compliant mode)
-//    yarp::os::Time::delay(0.1);
-//    bool ret = getInteractionMode_withWait(1, &j, &valGot);
+    // marco.accame: use the following if you want to check the value of interactionmode on the remote board
+#if 0
+    eOenum08_t interactionmodestatus = 0;
+    uint16_t size = 0;
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_interactionmodestatus);
+    bool ret = askRemoteValue(id32, &interactionmodestatus, size);
 
-//    if( (!ret) || (valGot != valSet))
-//    {
-//        yError() << "check of setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
-//        return false;
-//    }
+    if((false == ret) || (interactionmodecommand != interactionmodestatus))
+    {
+        yError() << "check of embObjMotionControl::setInteractionModeRaw() failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(_mode);
+        return false;
+    }
+#endif
+
     return true;
 }
+
 
 bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes)
 {
 //    std::cout << "setInteractionModeRaw GROUP " << std::endl;
 
-    int  *jointVector = new int[n_joints];
-
-    eOenum08_t  *valSet = new eOenum08_t [n_joints];
-    eOenum08_t  *valGot = new eOenum08_t [n_joints];
+    eOenum08_t interactionmodecommand = 0;
 
     for(int j=0; j<n_joints; j++)
     {
         if (modes[j] == VOCAB_IM_COMPLIANT && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
 
-        if(!interactionModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
+        if(!interactionModeCommandConvert_yarp2embObj(modes[j], interactionmodecommand) )
         {
-            yError() << "setInteractionModeRaw: received unknown interactionMode for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]) << " " << modes[j];
-            delete[] jointVector; delete[] valSet; delete[] valGot;
+            yError() << "embObjMotionControl::setInteractionModesRaw(): received unknown interactionMode for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]) << " " << modes[j];
             return false;
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
-        if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
+        if(! res->addSetMessage(protid, (uint8_t*) &interactionmodecommand) )
         {
-            yError() << "setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]);
-            delete[] jointVector; delete[] valSet; delete[] valGot;
+            yError() << "embObjMotionControl::setInteractionModesRaw() failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]);
             return false;
         }
+
+        // marco.accame: use the following if you want to check the value of interactionmode on the remote board
+#if 0
+        eOenum08_t interactionmodestatus = 0;
+        uint16_t size = 0;
+        eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_interactionmodestatus);
+        bool ret = askRemoteValue(id32, &interactionmodestatus, size);
+
+        if((false == ret) || (interactionmodecommand != interactionmodestatus))
+        {
+            if(false == ret)
+            {
+                yError() << "check of embObjMotionControl::setInteractionModesRaw() failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]);
+                return false;
+            }
+
+            int tmp;
+            if(interactionModeStatusConvert_embObj2yarp(interactionmodestatus, tmp) )
+                yError() << "setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " because of interactionMode mismatching \n\tSet " \
+                         << Vocab::decode(modes[j]) << " Got " << Vocab::decode(tmp);
+            else
+                yError() << "setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " because of interactionMode mismatching \n\tSet " \
+                         << Vocab::decode(modes[j]) << " Got an unknown value!";
+            return false;
+        }
+#endif
+
     }
 
-//    // ask back the controlMode to verify everything went correctly (some board could not support compliant mode)
-//    if(!getInteractionMode_withWait(n_joints, joints, valGot) )
-//    {
-//        yError() << "setInteractionModeRaw failed while checking if the new interactionMode was correctly set";
-//        return false;
-//    }
-
-//    for(int j=0; j<n_joints; j++)
-//    {
-//        if( valGot[j] != valSet[j])
-//        {
-//            int tmp;
-//            if(interactionModeStatusConvert_embObj2yarp(valGot[j], tmp) )
-//                yError() << "setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " because of interactionMode mismatching \n\tSet " \
-//                         << Vocab::decode(modes[j]) << " Got " << Vocab::decode(tmp);
-//            else
-//                yError() << "setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " because of interactionMode mismatching \n\tSet " \
-//                         << Vocab::decode(modes[j]) << " Got an unknown value!";
-//            return false;
-//        }
-//    }
-
-    delete[] jointVector; delete[] valSet; delete[] valGot;
     return true;
 }
 
 bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes)
 {
-    int  *jointVector = new int[_njoints];
 
-    eOenum08_t     *valSet = new eOenum08_t [_njoints];
-    eOenum08_t     *valGot = new eOenum08_t [_njoints];
+    eOenum08_t interactionmodecommand = 0;
 
     for(int j=0; j<_njoints; j++)
     {
-        if (modes[j] == VOCAB_IM_COMPLIANT && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+        if ((modes[j] == VOCAB_IM_COMPLIANT) && (_torqueControlEnabled == false))
+        {
+            yError()<<"Torque control is disabled. Check your configuration parameters";
+            continue;
+        }
 
-        jointVector[j] = j;
-        if(!interactionModeCommandConvert_yarp2embObj(modes[j], valSet[j]) )
+        if(!interactionModeCommandConvert_yarp2embObj(modes[j], interactionmodecommand) )
         {
             yError() << "setInteractionModeRaw: received unknown interactionMode for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]);
-            delete[] jointVector; delete[] valSet; delete[] valGot;
             return false;
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
-        if(! res->addSetMessage(protid, (uint8_t*) &valSet[j]) )
+        if(! res->addSetMessage(protid, (uint8_t*) &interactionmodecommand) )
         {
             yError() << "setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]);
-            delete[] jointVector; delete[] valSet; delete[] valGot;
             return false;
         }
+
+        // marco.accame: use the following if you want to check the value of interactionmode on the remote board
+#if 0
+        eOenum08_t interactionmodestatus = 0;
+        uint16_t size = 0;
+        eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_interactionmodestatus);
+        bool ret = askRemoteValue(id32, &interactionmodestatus, size);
+
+        if((false == ret) || (interactionmodecommand != interactionmodestatus))
+        {
+            if(false == ret)
+            {
+                yError() << "check of embObjMotionControl::setInteractionModesRaw() failed for board " << _fId.boardNumber << " joint " << j << " mode " << Vocab::decode(modes[j]);
+                return false;
+            }
+
+            int tmp;
+            if(interactionModeStatusConvert_embObj2yarp(interactionmodestatus, tmp) )
+                yError() << "setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " because of interactionMode mismatching \n\tSet " \
+                         << Vocab::decode(modes[j]) << " Got " << Vocab::decode(tmp);
+            else
+                yError() << "setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " because of interactionMode mismatching \n\tSet " \
+                         << Vocab::decode(modes[j]) << " Got an unknown value!";
+            return false;
+        }
+#endif
+
     }
 
-//    // ask back the controlMode to verify everything went correctly (some board could not support compliant mode)
-//    if(!getInteractionMode_withWait(_njoints, jointVector, valGot) )
-//    {
-//        yError() << "setInteractionModeRaw failed while checking if the new interactionMode was correctly set";
-//        return false;
-//    }
-
-//    for(int j=0; j<_njoints; j++)
-//    {
-//        if( valGot[j] != valSet[j])
-//        {
-//            int tmp;
-//            if(interactionModeStatusConvert_embObj2yarp(valGot[j], tmp) )
-//                yError() << "setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " because of interactionMode mismatching \n\tSet " \
-//                         << Vocab::decode(modes[j]) << " Got " << Vocab::decode(tmp);
-//            else
-//                yError() << "setInteractionModeRaw failed for board " << _fId.boardNumber << " joint " << j << " because of interactionMode mismatching \n\tSet " \
-//                         << Vocab::decode(modes[j]) << " Got an unknown value!";            return false;
-//        }
-//    }
-
-    delete[] jointVector; delete[] valSet; delete[] valGot;
     return true;
 }
 
@@ -5550,6 +5511,84 @@ bool embObjMotionControl::getMotorOutputLimitRaw(int m, double *limit)
 bool embObjMotionControl::setMotorOutputLimitRaw(int m, const double limit)
 {
     return NOT_YET_IMPLEMENTED("setMotorOutputLimitRaw");
+}
+
+
+bool embObjMotionControl::askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size)
+{
+    // marco.accame: this is a private methods, thus it is responsibility of the called to pass value pointer of suitable size. we dont do controls.
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(eoprot_ID2index(id32), id32);
+    tt->setPending(1);
+
+    if (!res->addGetMessage(id32))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::askRemoteValue() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << eoprot_ID2index(id32);
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    return(res->readBufferedValue(id32, (uint8_t *)value, &size));
+}
+
+
+bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mode)
+{
+    bool ret = false;
+    eOenum08_t temp = 0;
+    uint16_t size = 0;
+
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joint, eoprot_tag_mc_joint_status_controlmodestatus);
+    const double timeout = 0.100f;  // 100 msec
+    const int maxretries = 10;
+    const double delaybetweenqueries = 0.010f; // 10 msec
+
+    // now i repeat the query until i am satisfied. how many times? for maximum time timeout seconds and with a gap of delaybetweenqueries
+
+    double timeofstart = yarp::os::Time::now();
+
+    for(int attempt = 0; attempt < maxretries; attempt++)
+    {
+        ret == askRemoteValue(id32, &temp, size);
+        if(ret == false) { yError ("An error occurred inside embObjMotionControl::checkRemoteControlModeStatus()"); break; }
+        int current_mode = controlModeStatusConvert_embObj2yarp(temp);
+        if(current_mode == target_mode)
+        {
+            ret = true;
+            break;
+        }
+        if((current_mode == VOCAB_CM_IDLE) && (target_mode == VOCAB_CM_FORCE_IDLE))
+        {
+            ret = true;
+            break;
+        }
+        if(current_mode == VOCAB_CM_HW_FAULT)
+        {
+            if(target_mode != VOCAB_CM_FORCE_IDLE) { yError ("embObjMotionControl::checkRemoteControlModeStatus(%d, %d) is unable to check the control mode of board %d because it is now in HW_FAULT", joint, target_mode, _fId.boardNumber); }
+            ret = true;
+            break;
+        }
+
+        if((yarp::os::Time::now()-timeofstart) > timeout)
+        {
+            ret = false;
+            yError ("A %f sec timeout occured in setControlModeRaw (board %d joint %d), current mode: %s, requested: %s", timeout, _fId.boardNumber, joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
+            break;
+        }
+        yWarning ("embObjMotionControl::checkRemoteControlModeStatus() will retry after a %f delay (board %d joint %d), current mode: %s, requested: %s", delaybetweenqueries, _fId.boardNumber, joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
+        yarp::os::Time::delay(delaybetweenqueries);
+    }
+
+
+    return ret;
 }
 
 

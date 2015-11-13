@@ -365,6 +365,9 @@ private:
 
 private:
 
+    bool askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size);
+    bool checkRemoteControlModeStatus(int joint, int target_mode);
+
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
 #if !defined(EMBOBJMC_DONT_USE_MAIS)
     bool configure_mais(yarp::os::Searchable &config);
@@ -375,8 +378,8 @@ private:
     bool parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], double kbemf[], double ktau[], int filterType[]);
     bool parseImpedanceGroup_NewFormat(Bottle& pidsGroup, ImpedanceParameters vals[]);
        
-    bool getStatusBasic_withWait(const int n_joint, const int *joints, eOmc_joint_status_basic_t *_statuslist);             // helper function
-    bool getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);     // helper function
+//    bool getStatusBasic_withWait(const int n_joint, const int *joints, eOmc_joint_status_basic_t *_statuslist);             // helper function
+//    bool getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);     // helper function
     bool interactionModeStatusConvert_embObj2yarp(eOenum08_t embObjMode, int &vocabOut);
     bool interactionModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut);
 
@@ -634,7 +637,6 @@ public:
     virtual bool getAmpStatusRaw(int *st);
     virtual bool getAmpStatusRaw(int j, int *st);
     /////////////// END AMPLIFIER INTERFACE
-    //ethFeature_t getFeat_id();
 
     // virtual analog sensor
     virtual int getState(int ch);
