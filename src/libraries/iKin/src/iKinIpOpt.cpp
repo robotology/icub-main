@@ -167,7 +167,7 @@ void iCubShoulderConstr::update(void*)
         row.zero();
         row[offs+1]=1.0; row[offs+2]=1.0;
         _C=pile(_C,row);
-        _lB=cat(_lB,-66.600*CTRL_DEG2RAD);
+        _lB=cat(_lB,-66.60*CTRL_DEG2RAD);
         _uB=cat(_uB,213.30*CTRL_DEG2RAD);
 
         // constraints to prevent arm from touching torso
