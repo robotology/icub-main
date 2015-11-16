@@ -3221,6 +3221,11 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 
     ret = checkRemoteControlModeStatus(j, _mode);
 
+    if(false == ret)
+    {
+        yError("In embObjMotionControl::setControlModeRaw(j=%d, mode=%s) for BOARD %d has failed checkRemoteControlModeStatus()", j, yarp::os::Vocab::decode(_mode).c_str(), _fId.boardNumber);
+    }
+
     return ret;
 
 
@@ -3268,7 +3273,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
 
         if(!controlModeCommandConvert_yarp2embObj(modes[i], controlmodecommand) )
         {
-            yError() << "SetControlMode: received unknown control mode for board " << _fId.boardNumber << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
+            yError() << "SetControlModesRaw(): received unknown control mode for board " << _fId.boardNumber << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
 
             return false;
         }
@@ -3276,14 +3281,20 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joints[i], eoprot_tag_mc_joint_cmmnds_controlmode);
         if(! res->addSetMessage(protid, (uint8_t*) &controlmodecommand) )
         {
-            yError() << "setControlModeRaw failed for board " << _fId.boardNumber << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
+            yError() << "setControlModesRaw() could not send set<cmmnds_controlmode> for board " << _fId.boardNumber << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
 
             return false;
         }
 
         #warning marco.accame: now embObjMotionControl::setControlModesRaw() calls checkRemoteControlModeStatus() to verify imposed control mode.
 
-        ret = ret && checkRemoteControlModeStatus(i, modes[i]);
+        bool tmpresult = checkRemoteControlModeStatus(i, modes[i]);
+        if(false == tmpresult)
+        {
+             yError() << "setControlModesRaw(const int n_joint, const int *joints, int *modes) could not check with checkRemoteControlModeStatus() for board " << _fId.boardNumber << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
+        }
+
+        ret = ret && tmpresult;
 #if 0
         int current_mode = VOCAB_CM_UNKNOWN;
         int timeout = 0;
@@ -3347,7 +3358,13 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
 
         #warning marco.accame: now embObjMotionControl::setControlModesRaw() calls checkRemoteControlModeStatus() to verify imposed control mode.
 
-        ret =  ret && checkRemoteControlModeStatus(i, modes[i]);
+        bool tmpresult = checkRemoteControlModeStatus(i, modes[i]);
+        if(false == tmpresult)
+        {
+             yError() << "setControlModesRaw(int *modes) could not check with checkRemoteControlModeStatus() for board " << _fId.boardNumber << " joint " << i << " mode " << Vocab::decode(modes[i]);
+        }
+
+        ret = ret && tmpresult;
 
 
 #if 0
@@ -5520,23 +5537,48 @@ bool embObjMotionControl::askRemoteValue(eOprotID32_t id32, void* value, uint16_
 
     // Sign up for waiting the reply
     eoThreadEntry *tt = appendWaitRequest(eoprot_ID2index(id32), id32);
+
+    if(NULL == tt)
+    {
+        char nvinfo[128];
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        yError() << "embObjMotionControl::askRemoteValue() has a NULL eoThreadEntry for BOARD" << _fId.boardNumber << "for nv" << nvinfo;
+    }
+
     tt->setPending(1);
 
     if (!res->addGetMessage(id32))
+    {
+        char nvinfo[128];
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        yError() << "embObjMotionControl::askRemoteValue() cannot send ask<> to BOARD" << _fId.boardNumber << "for nv" << nvinfo;
         return false;
+    }
+
+
 
     // wait here
     if (-1 == tt->synch())
     {
         int threadId;
-        yError() << "embObjMotionControl::askRemoteValue() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << eoprot_ID2index(id32);
+        char nvinfo[128];
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        yError() << "embObjMotionControl::askRemoteValue() timed out the wait of reply from BOARD" << _fId.boardNumber << "for nv" << nvinfo;
 
         if (requestQueue->threadPool->getId(&threadId))
             requestQueue->cleanTimeouts(threadId);
         return false;
     }
 
-    return(res->readBufferedValue(id32, (uint8_t *)value, &size));
+    bool ret = res->readBufferedValue(id32, (uint8_t *)value, &size);
+
+    if(false == ret)
+    {
+        char nvinfo[128];
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        yError() << "embObjMotionControl::askRemoteValue() fails res->readBufferedValue() for BOARD" << _fId.boardNumber << "and nv" << nvinfo;
+    }
+    return ret;
 }
 
 
@@ -5558,7 +5600,11 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
     for(int attempt = 0; attempt < maxretries; attempt++)
     {
         ret == askRemoteValue(id32, &temp, size);
-        if(ret == false) { yError ("An error occurred inside embObjMotionControl::checkRemoteControlModeStatus()"); break; }
+        if(ret == false)
+        {
+            yError ("An error occurred inside embObjMotionControl::checkRemoteControlModeStatus(j=%d, targetmode=%s) for BOARD %d", joint, yarp::os::Vocab::decode(target_mode).c_str(), _fId.boardNumber);
+            break;
+        }
         int current_mode = controlModeStatusConvert_embObj2yarp(temp);
         if(current_mode == target_mode)
         {
@@ -5580,11 +5626,16 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
         if((yarp::os::Time::now()-timeofstart) > timeout)
         {
             ret = false;
-            yError ("A %f sec timeout occured in setControlModeRaw (board %d joint %d), current mode: %s, requested: %s", timeout, _fId.boardNumber, joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
+            yError ("A %f sec timeout occured in embObjMotionControl::checkRemoteControlModeStatus(), board %d, joint %d, current mode: %s, requested: %s", timeout, _fId.boardNumber, joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
             break;
         }
         yWarning ("embObjMotionControl::checkRemoteControlModeStatus() will retry after a %f delay (board %d joint %d), current mode: %s, requested: %s", delaybetweenqueries, _fId.boardNumber, joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
         yarp::os::Time::delay(delaybetweenqueries);
+    }
+
+    if(false == ret)
+    {
+        yError("failure of embObjMotionControl::checkRemoteControlModeStatus(j=%d, targetmode=%s) for BOARD %d", joint, yarp::os::Vocab::decode(target_mode).c_str(), _fId.boardNumber);
     }
 
 
