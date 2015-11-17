@@ -2724,6 +2724,7 @@ bool embObjMotionControl::doneRaw(int axis)
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_status_controlmodestatus);
     if(false == askRemoteValue(id32, &temp, size))
     {
+        yError ("Failure of askRemoteValue() inside embObjMotionControl::doneRaw(axis=%d) for BOARD %d", axis, _fId.boardNumber);
         return false;
     }
 
@@ -2851,6 +2852,7 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ismotiondone);
     if(false == askRemoteValue(id32, &ismotiondone, size))
     {
+        yError ("Failure of askRemoteValue() inside embObjMotionControl::checkMotionDoneRaw(j=%d) for BOARD %d", j, _fId.boardNumber);
         return false;
     }
 
@@ -5582,6 +5584,8 @@ bool embObjMotionControl::askRemoteValue(eOprotID32_t id32, void* value, uint16_
 }
 
 
+
+
 bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mode)
 {
     bool ret = false;
@@ -5589,9 +5593,9 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
     uint16_t size = 0;
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joint, eoprot_tag_mc_joint_status_controlmodestatus);
-    const double timeout = 0.100f;  // 100 msec
+    const double timeout = 0.250f;  // 250 msec
     const int maxretries = 10;
-    const double delaybetweenqueries = 0.010f; // 10 msec
+    const double delaybetweenqueries = 0.025f; // 25 msec
 
     // now i repeat the query until i am satisfied. how many times? for maximum time timeout seconds and with a gap of delaybetweenqueries
 
@@ -5599,7 +5603,7 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
 
     for(int attempt = 0; attempt < maxretries; attempt++)
     {
-        ret == askRemoteValue(id32, &temp, size);
+        ret = askRemoteValue(id32, &temp, size);
         if(ret == false)
         {
             yError ("An error occurred inside embObjMotionControl::checkRemoteControlModeStatus(j=%d, targetmode=%s) for BOARD %d", joint, yarp::os::Vocab::decode(target_mode).c_str(), _fId.boardNumber);
