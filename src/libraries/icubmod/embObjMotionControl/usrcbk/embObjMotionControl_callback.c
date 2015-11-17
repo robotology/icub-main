@@ -249,6 +249,19 @@ static void wake(const EOnv* nv)
         snprintf(str, sizeof(str),"while releasing mutex in BOARD %d for variable %s", eo_nv_GetBRD(nv)+1, nvinfo); 
         embObjPrintWarning(str);
     }
+    else // marco.accame.debug
+    {
+        uint8_t brd = eo_nv_GetBRD(nv)+1;
+        if((2==brd) || (4==brd))
+        {
+            if((eoprot_tag_mc_joint_status_ismotiondone == eoprot_ID2tag(id32)) && (eoprot_entity_mc_joint == eoprot_ID2entity(id32)))
+            {
+                eObool_t motiondone = *((eObool_t*)eo_nv_RAM(nv));
+                printf("motiondone = %d for joint %d in BOARD %d", motiondone, eoprot_ID2index(id32), brd);
+                //yDebug() << "motiondone = " << motiondone << "for joint " << eoprot_ID2index(id32) << "board" << brd;
+            }
+        }
+    }
 }
 
 

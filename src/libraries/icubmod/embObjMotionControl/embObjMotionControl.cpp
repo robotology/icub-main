@@ -2842,6 +2842,7 @@ bool embObjMotionControl::relativeMoveRaw(const double *deltas)
     return NOT_YET_IMPLEMENTED("positionRelative");
 }
 
+
 bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 {
     #warning marco.accame: now embObjMotionControl::doneRaw() sends an ask<eoprot_tag_mc_joint_status_ismotiondone>
@@ -2854,6 +2855,10 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
     {
         yError ("Failure of askRemoteValue() inside embObjMotionControl::checkMotionDoneRaw(j=%d) for BOARD %d", j, _fId.boardNumber);
         return false;
+    }
+    else // marco.accame.debug
+    {
+        yDebug ("called askRemoteValue() inside embObjMotionControl::checkMotionDoneRaw(j=%d) for BOARD %d", j, _fId.boardNumber);
     }
 
     *flag = ismotiondone; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
@@ -3103,7 +3108,7 @@ bool embObjMotionControl::setOpenLoopModeRaw(int j)
 {
     return DEPRECATED("setOpenLoopModeRaw");
 }
-
+// puo' essere richiesto con get
 bool embObjMotionControl::getControlModeRaw(int j, int *v)
 {
     uint16_t size = 0;
@@ -3194,6 +3199,7 @@ bool embObjMotionControl::getStatusBasic_withWait(const int n_joint, const int *
 }
 #endif
 
+#warning marco.accame: la verifica nel setControlModeRaw() ed affini si fa oppure no? 
 bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 {
     bool ret = true;
@@ -3262,7 +3268,7 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
  #endif
 }
 
-
+// forse non serve la verifica. 
 bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joints, int *modes)
 {
     bool ret = true;
