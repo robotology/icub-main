@@ -49,12 +49,12 @@
         <param name="maxInt">     500          500              </param>       
         <param name="shift">        0            0              </param>       
         <param name="ko">           0            0              </param>       
-        <param name="stictionUp">   0            0              </param>       
-        <param name="stictionDwn">  0            0              </param>   
+        <param name="stictionUp">   1.11         0.8              </param>       
+        <param name="stictionDwn"> -0.6         -0.7              </param>   
         <param name="kff">          1            1              </param>         
-        <param name="kbemf">        0            0              </param>      
+        <param name="kbemf">        0.003        0.0031              </param>      
         <param name="filterType">   0            0              </param>                 
-        <param name="ktau">      -200         -200              </param>          
+        <param name="ktau">      -220          -210              </param>          
     </group>
 
   </device>
