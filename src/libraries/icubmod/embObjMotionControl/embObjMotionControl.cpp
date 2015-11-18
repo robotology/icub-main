@@ -2856,10 +2856,10 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
         yError ("Failure of askRemoteValue() inside embObjMotionControl::checkMotionDoneRaw(j=%d) for BOARD %d", j, _fId.boardNumber);
         return false;
     }
-    else // marco.accame.debug
-    {
-        yDebug ("called askRemoteValue() inside embObjMotionControl::checkMotionDoneRaw(j=%d) for BOARD %d", j, _fId.boardNumber);
-    }
+//    else // marco.accame.debug
+//    {
+//        yDebug ("called askRemoteValue() inside embObjMotionControl::checkMotionDoneRaw(j=%d) for BOARD %d", j, _fId.boardNumber);
+//    }
 
     *flag = ismotiondone; // eObool_t can have values only amongst: eobool_true (1) or eobool_false (0).
 
@@ -5600,8 +5600,8 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joint, eoprot_tag_mc_joint_status_controlmodestatus);
     const double timeout = 0.250f;  // 250 msec
-    const int maxretries = 10;
-    const double delaybetweenqueries = 0.025f; // 25 msec
+    const int maxretries = 25;
+    const double delaybetweenqueries = 0.010f; // 10 msec
 
     // now i repeat the query until i am satisfied. how many times? for maximum time timeout seconds and with a gap of delaybetweenqueries
 
@@ -5639,7 +5639,7 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
             yError ("A %f sec timeout occured in embObjMotionControl::checkRemoteControlModeStatus(), board %d, joint %d, current mode: %s, requested: %s", timeout, _fId.boardNumber, joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
             break;
         }
-        yWarning ("embObjMotionControl::checkRemoteControlModeStatus() will retry after a %f delay (board %d joint %d), current mode: %s, requested: %s", delaybetweenqueries, _fId.boardNumber, joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
+        yWarning ("embObjMotionControl::checkRemoteControlModeStatus() has done %d attempts and will retry again after a %f sec delay. (BOARD %d, joint %d) -> current mode = %s, requested = %s", attempt+1, delaybetweenqueries, _fId.boardNumber, joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
         yarp::os::Time::delay(delaybetweenqueries);
     }
 
