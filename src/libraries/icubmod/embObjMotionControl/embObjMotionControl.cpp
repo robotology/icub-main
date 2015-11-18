@@ -1841,7 +1841,7 @@ bool embObjMotionControl::init()
         int fisico = _axisMap[logico];
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, fisico, eoprot_tag_mc_joint_config);
 
-        eOmc_joint_config_t     jconfig;
+        eOmc_joint_config_t jconfig = {0};
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
         copyPid_iCub2eo(&_pids[logico],  &jconfig.pidposition);
         copyPid_iCub2eo(&_pids[logico],  &jconfig.pidvelocity);
@@ -1909,7 +1909,7 @@ bool embObjMotionControl::init()
         int fisico = _axisMap[logico];
 
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config);
-        eOmc_motor_config_t    motor_cfg;
+        eOmc_motor_config_t motor_cfg = {0};
         motor_cfg.maxvelocityofmotor = 0;//_maxMotorVelocity[logico]; //unused yet!
         motor_cfg.maxcurrentofmotor = _currentLimits[logico];
         motor_cfg.gearboxratio = _gearbox[logico];
@@ -1923,7 +1923,6 @@ bool embObjMotionControl::init()
         motor_cfg.rotorEncoderType = _rotorEncoderType[logico];
         motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_max[logico], 0.0, _angleToEncoder[logico]));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_min[logico], 0.0, _angleToEncoder[logico]));
-        motor_cfg.filler01 = 0;
         motor_cfg.pidcurrent.kp = 8;
         motor_cfg.pidcurrent.ki = 2;
         motor_cfg.pidcurrent.scale = 10;
@@ -2351,11 +2350,21 @@ bool embObjMotionControl::getErrorRaw(int j, double *err)
         return false;
     }
 
-    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
-    uint16_t size;
-    eOmc_joint_status_ofpid_t  tmpJointStatus;
-    res->readBufferedValue(protoId, (uint8_t *)&tmpJointStatus, &size);
-    *err = (double) tmpJointStatus.error;
+    uint16_t size = 0;
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status);
+    eOmc_joint_status_t  jstatus = {0};
+    res->readBufferedValue(id32, (uint8_t *)&jstatus, &size);
+    eOenum08_t controlmode = jstatus.modes.controlmodestatus;
+
+    if(eomc_controlmode_torque == controlmode)
+    {
+        *err = (double) jstatus.ofpid.torque.errtrq;
+    }
+    else
+    {   // position, velocity etc
+        *err = (double) jstatus.ofpid.stiffpos.errpos;
+    }
+
     return true;
 }
 
@@ -2436,11 +2445,21 @@ bool embObjMotionControl::getPidsRaw(Pid *pids)
 
 bool embObjMotionControl::getReferenceRaw(int j, double *ref)
 {
-    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
-    uint16_t size;
-    eOmc_joint_status_ofpid_t  tmpJointStatus;
-    res->readBufferedValue(protoId, (uint8_t *)&tmpJointStatus, &size);
-    *ref = tmpJointStatus.positionreference;
+    uint16_t size = 0;
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status);
+    eOmc_joint_status_t jstatus = {0};
+    res->readBufferedValue(id32, (uint8_t *)&jstatus, &size);
+    eOenum08_t controlmode = jstatus.modes.controlmodestatus;
+
+    if(eomc_controlmode_torque == controlmode)
+    {
+        *ref = (double) jstatus.ofpid.torque.reftrq;
+    }
+    else
+    {   // position, velocity etc (also open loop)
+        *ref = (double) jstatus.ofpid.stiffpos.refpos;
+    }
+
     return true;
 }
 
@@ -2719,7 +2738,7 @@ bool embObjMotionControl::doneRaw(int axis)
     bool result = false;
     eOenum08_t temp = 0;
     uint16_t size = 0;
-    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_status_controlmodestatus);
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_status_modes_controlmodestatus);
     if(false == askRemoteValue(id32, &temp, size))
     {
         yError ("Failure of askRemoteValue() inside embObjMotionControl::doneRaw(axis=%d) for BOARD %d", axis, _fId.boardNumber);
@@ -2846,7 +2865,7 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
     eObool_t ismotiondone = eobool_false;
     uint16_t size = 0;
 
-    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ismotiondone);
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_modes_ismotiondone);
     if(false == askRemoteValue(id32, &ismotiondone, size))
     {
         yError ("Failure of askRemoteValue() inside embObjMotionControl::checkMotionDoneRaw(j=%d) for BOARD %d", j, _fId.boardNumber);
@@ -3114,7 +3133,7 @@ bool embObjMotionControl::getControlModeRaw(int j, int *v)
     if(! res->readBufferedValue(protid, (uint8_t *)&status, &size))
         return false;
 
-    eOmc_controlmode_t type = (eOmc_controlmode_t) status.controlmodestatus;
+    eOmc_controlmode_t type = (eOmc_controlmode_t) status.modes.controlmodestatus;
 
     *v = controlModeStatusConvert_embObj2yarp(type);
     return true;
@@ -4554,9 +4573,9 @@ bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
     uint16_t size;
-    eOmc_joint_status_ofpid_t  jstatuspid;
+    eOmc_joint_status_ofpid_t jstatuspid = {0};
     res->readBufferedValue(id32, (uint8_t *)&jstatuspid, &size);
-    *t = (double) jstatuspid.torquereference;
+    *t = (double) jstatuspid.torque.reftrq;  // ok
     return true;
 
 }
@@ -4587,9 +4606,9 @@ bool embObjMotionControl::setTorquePidsRaw(const Pid *pids)
 
 bool embObjMotionControl::getTorqueErrorRaw(int j, double *err)
 {
-    uint16_t size;
+    uint16_t size = 0;
     bool ret = true;
-    eOmc_joint_status_ofpid_t pid_status;
+    eOmc_joint_status_ofpid_t jstatusofpid = {0};
     int mycontrolMode;
     /* Values in pid.XXX fields are valid ONLY IF we are in the corresponding control mode.
     Read it from the signalled message so we are sure that mode and pid values are coherent to each other
@@ -4605,8 +4624,8 @@ bool embObjMotionControl::getTorqueErrorRaw(int j, double *err)
     }
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
 
-    ret = res->readBufferedValue(protid, (uint8_t *)&pid_status, &size);
-    *err = (double) pid_status.error;
+    ret = res->readBufferedValue(protid, (uint8_t *)&jstatusofpid, &size);
+    *err = (double) jstatusofpid.torque.errtrq; // ok
     return ret;
 }
 
@@ -5084,7 +5103,7 @@ bool embObjMotionControl::getInteractionModeRaw(int j, yarp::dev::InteractionMod
     eOenum08_t   interactionmodestatus;
 //    std::cout << "eoMC getInteractionModeRaw SINGLE joint " << j << std::endl;
 
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_interactionmodestatus);
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_modes_interactionmodestatus);
     if(! res->readBufferedValue(protid, (uint8_t *)&interactionmodestatus, &size)) // it is broadcasted toghether with the jointStatus full
         return false;
 
@@ -5306,11 +5325,12 @@ bool embObjMotionControl::getRefOutputRaw(int j, double *out)
 {
     bool ret = true;
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
-    uint16_t size;
-    eOmc_joint_status_ofpid_t  tmpJointStatus;
-    if(res->readBufferedValue(protoId, (uint8_t *)&tmpJointStatus, &size) )
+    uint16_t size = 0;
+    eOmc_joint_status_ofpid_t jstatusofpid = {0};
+    if(res->readBufferedValue(protoId, (uint8_t *)&jstatusofpid, &size) )
     {
-        *out = (double) tmpJointStatus.positionreference;
+        #warning marco.accame TODO: verify what it must return (a refpos or a reftrq or what)
+        *out = (double) jstatusofpid.stiffpos.refpos;
     }
     else
     {
@@ -5334,11 +5354,11 @@ bool embObjMotionControl::getOutputRaw(int j, double *out)
 {
     bool ret = true;
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
-    uint16_t size;
-    eOmc_joint_status_ofpid_t  tmpJointStatus;
-    if(res->readBufferedValue(protoId, (uint8_t *)&tmpJointStatus, &size) )
+    uint16_t size = 0;
+    eOmc_joint_status_ofpid_t jstatusofpid = {0};
+    if(res->readBufferedValue(protoId, (uint8_t *)&jstatusofpid, &size) )
     {
-        *out = (double) tmpJointStatus.output;
+        *out = (double) jstatusofpid.generic.output; // ok
     }
     else
     {
@@ -5454,7 +5474,7 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
     eOenum08_t temp = 0;
     uint16_t size = 0;
 
-    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joint, eoprot_tag_mc_joint_status_controlmodestatus);
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joint, eoprot_tag_mc_joint_status_modes_controlmodestatus);
     const double timeout = 0.250f;  // 250 msec
     const int maxretries = 25;
     const double delaybetweenqueries = 0.010f; // 10 msec
