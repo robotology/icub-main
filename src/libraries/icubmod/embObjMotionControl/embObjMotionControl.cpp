@@ -2716,8 +2716,6 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
 
 bool embObjMotionControl::doneRaw(int axis)
 {
-    #warning marco.accame: now embObjMotionControl::doneRaw() sends an ask<eoprot_tag_mc_joint_status_controlmodestatus>
-
     bool result = false;
     eOenum08_t temp = 0;
     uint16_t size = 0;
@@ -2845,8 +2843,6 @@ bool embObjMotionControl::relativeMoveRaw(const double *deltas)
 
 bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
 {
-    #warning marco.accame: now embObjMotionControl::doneRaw() sends an ask<eoprot_tag_mc_joint_status_ismotiondone>
-
     eObool_t ismotiondone = eobool_false;
     uint16_t size = 0;
 
@@ -3199,7 +3195,9 @@ bool embObjMotionControl::getStatusBasic_withWait(const int n_joint, const int *
 }
 #endif
 
-#warning marco.accame: la verifica nel setControlModeRaw() ed affini si fa oppure no? 
+// marco.accame: con alberto cardellino abbiamo parlato della correttezza di effettuare la verifica di quanto imposto (in setControlModeRaw() ed affini)
+// andando a rileggere il valore nella scheda eth fino a che esso non sia quello atteso. si deve fare oppure no?
+// con il control mode il can ora lo fa ma e' giusto? era cosi' anche in passato?
 bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 {
     bool ret = true;
@@ -3225,8 +3223,6 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
     }
 
 
-    #warning marco.accame: now embObjMotionControl::setControlModeRaw() sends an ask<eoprot_tag_mc_joint_status_controlmodestatus>
-
     ret = checkRemoteControlModeStatus(j, _mode);
 
     if(false == ret)
@@ -3235,40 +3231,9 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
     }
 
     return ret;
-
-
-#if 0
-    int timeout = 0;
-    int current_mode = VOCAB_CM_UNKNOWN;
-
-    do
-    {
-        bool ret = getStatusBasic_withWait(1, &j, &status);
-        if (ret == false) {yError ("An error occurred inside setControlModesRaw()"); break;}
-        valGot = status.controlmodestatus;
-        current_mode = controlModeStatusConvert_embObj2yarp(valGot);
-        if (current_mode==_mode) {ret = true; break;}
-        if (current_mode==VOCAB_CM_IDLE     && _mode==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
-        if (current_mode==VOCAB_CM_HW_FAULT)
-        {
-            if (_mode!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of board %d joint %d in HW_FAULT", _fId.boardNumber, j);}
-            ret = true; break;
-        }
-        yarp::os::Time::delay(0.010);
-        if (timeout>0) yWarning ("setControlModeRaw delay (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(_mode).c_str());
-        timeout++;
-    }
-    while (timeout < 10);
-    if (timeout>=10)
-    {
-        ret = false;
-        yError ("100ms Timeout occured in setControlModeRaw (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, j, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(_mode).c_str());
-    }
-    return ret;
- #endif
 }
 
-// forse non serve la verifica. 
+
 bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joints, int *modes)
 {
     bool ret = true;
@@ -3294,8 +3259,6 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
             return false;
         }
 
-        #warning marco.accame: now embObjMotionControl::setControlModesRaw() calls checkRemoteControlModeStatus() to verify imposed control mode.
-
         bool tmpresult = checkRemoteControlModeStatus(i, modes[i]);
         if(false == tmpresult)
         {
@@ -3303,36 +3266,8 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         }
 
         ret = ret && tmpresult;
-#if 0
-        int current_mode = VOCAB_CM_UNKNOWN;
-        int timeout = 0;
-        do
-        {
-            bool ret = getStatusBasic_withWait(1, &joints[i], &statuslist[i]);
-            if (ret == false) {yError ("An error occurred inside setControlModesRaw()"); break;}
-            valGot[i] = statuslist[i].controlmodestatus;
-            current_mode = controlModeStatusConvert_embObj2yarp(valGot[i]);
-            if (current_mode==modes[i]) {ret = true; break;}
-            if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
-            if (current_mode==VOCAB_CM_HW_FAULT)
-            {
-                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of board %d joint %d in HW_FAULT", _fId.boardNumber, joints[i]);}
-                ret = true; break;
-            }
-            yarp::os::Time::delay(0.010);
-            if (timeout>0) yWarning ("setControlModesRaw delay (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
-            timeout++;
-        }
-        while (timeout < 10);
-        if (timeout>=10)
-        {
-            ret = false;
-            yError ("100ms Timeout occured in setControlModesRaw (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, joints[i], yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
-        }
-#endif
 
     }
-
 
     return ret;
 }
@@ -3364,8 +3299,6 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
             return false;
         }
 
-        #warning marco.accame: now embObjMotionControl::setControlModesRaw() calls checkRemoteControlModeStatus() to verify imposed control mode.
-
         bool tmpresult = checkRemoteControlModeStatus(i, modes[i]);
         if(false == tmpresult)
         {
@@ -3374,34 +3307,6 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
 
         ret = ret && tmpresult;
 
-
-#if 0
-        int current_mode = VOCAB_CM_UNKNOWN;
-        int timeout = 0;
-        do
-        {
-            bool ret = getStatusBasic_withWait(1, &i, &statuslist[i]);
-            if (ret == false) {yError ("An error occurred inside setControlModesRaw()"); break;}
-            valGot[i] = statuslist[i].controlmodestatus;
-            current_mode = controlModeStatusConvert_embObj2yarp(valGot[i]);
-            if (current_mode==modes[i]) {ret = true; break;}
-            if (current_mode==VOCAB_CM_IDLE     && modes[i]==VOCAB_CM_FORCE_IDLE) {ret = true; break;}
-            if (current_mode==VOCAB_CM_HW_FAULT)
-            {
-                if (modes[i]!=VOCAB_CM_FORCE_IDLE) {yError ("Unable to set the control mode of board %d joint %d in HW_FAULT", _fId.boardNumber, i);}
-                ret = true; break;
-            }
-            yarp::os::Time::delay(0.010);
-            if (timeout>0) yWarning ("setControlModesRaw delay (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
-            timeout++;
-        }
-        while (timeout < 10);
-        if (timeout>=10)
-        {
-            ret = false;
-            yError ("100ms Timeout occured in setControlModesRaw (board %d joint %d), current mode: %s, requested: %s", _fId.boardNumber, i, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(modes[i]).c_str());
-        }
-#endif
     }
 
 
@@ -5171,58 +5076,6 @@ bool embObjMotionControl::setPositionsRaw(const double *refs)
 
 // InteractionMode
 
-#if 0
-bool embObjMotionControl::getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes)
-{
-    std::vector<eoThreadEntry *>tt;
-    tt.resize(n_joint);
-
-    eOprotID32_t *protid = new eOprotID32_t[n_joint];
-
-    // Sign up for waiting the replies
-    for(int idx=0; idx<n_joint; idx++)
-    {
-        protid[idx] = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joints[idx], eoprot_tag_mc_joint_status_interactionmodestatus);
-        tt[idx] = appendWaitRequest(joints[idx], protid[idx]);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-        tt[idx]->setPending(1);  // 1 (not n_joint) because it is related to the specific variable
-
-        if(!res->addGetMessage(protid[idx]) )
-        {
-            yError() << "Can't send getInteractionMode_withWait request for board " << _fId.boardNumber << " joint " << joints[idx];
-            delete[] protid;
-            return false;
-        }
-    }
-
-    // wait for data to arrive and read it when available
-    for(int idx=0; idx<n_joint; idx++)
-    {
-        // wait here
-        if(-1 == tt[idx]->synch() )
-        {
-            int threadId;
-            yError () << "embObjMotionControl::getInteractionMode_withWait() timed out the reply from board "<< _fId.boardNumber << " joint " << joints[idx];
-
-            if(requestQueue->threadPool->getId(&threadId))
-                requestQueue->cleanTimeouts(threadId);
-
-            delete[] protid;
-            return false;
-        }
-        else
-        {
-            yWarning () << "getInteractionMode_withWait happily got reply board "<< _fId.boardNumber << " joint " << joints[idx];
-
-            // Get the value
-            uint16_t size;
-            res->readBufferedValue(protid[idx], (uint8_t*)&_modes[idx], &size);
-        }
-    }
-
-    delete[] protid;
-    return true;
-}
-#endif
 
 
 bool embObjMotionControl::getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum* _mode)
@@ -5264,6 +5117,9 @@ bool embObjMotionControl::getInteractionModesRaw(yarp::dev::InteractionModeEnum*
     return ret;
 }
 
+// marco.accame: con alberto cardellino abbiamo parlato della correttezza di effettuare la verifica di quanto imposto (in setInteractionModeRaw() ed affini)
+// andando a rileggere il valore nella scheda eth fino a che esso non sia quello atteso. si deve fare oppure no?
+// con il interaction mode il can ora non lo fa. mentre lo fa per il control mode. perche' diverso?
 bool embObjMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum _mode)
 {
     eOenum08_t interactionmodecommand = 0;
@@ -5606,8 +5462,9 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
     // now i repeat the query until i am satisfied. how many times? for maximum time timeout seconds and with a gap of delaybetweenqueries
 
     double timeofstart = yarp::os::Time::now();
+    int attempt = 0;
 
-    for(int attempt = 0; attempt < maxretries; attempt++)
+    for( attempt = 0; attempt < maxretries; attempt++)
     {
         ret = askRemoteValue(id32, &temp, size);
         if(ret == false)
@@ -5639,13 +5496,16 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
             yError ("A %f sec timeout occured in embObjMotionControl::checkRemoteControlModeStatus(), board %d, joint %d, current mode: %s, requested: %s", timeout, _fId.boardNumber, joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
             break;
         }
-        yWarning ("embObjMotionControl::checkRemoteControlModeStatus() has done %d attempts and will retry again after a %f sec delay. (BOARD %d, joint %d) -> current mode = %s, requested = %s", attempt+1, delaybetweenqueries, _fId.boardNumber, joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
+        if(attempt > 0)
+        {   // i print the warning only after at least one retry.
+            yWarning ("embObjMotionControl::checkRemoteControlModeStatus() has done %d attempts and will retry again after a %f sec delay. (BOARD %d, joint %d) -> current mode = %s, requested = %s", attempt+1, delaybetweenqueries, _fId.boardNumber, joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
+        }
         yarp::os::Time::delay(delaybetweenqueries);
     }
 
     if(false == ret)
     {
-        yError("failure of embObjMotionControl::checkRemoteControlModeStatus(j=%d, targetmode=%s) for BOARD %d", joint, yarp::os::Vocab::decode(target_mode).c_str(), _fId.boardNumber);
+        yError("failure of embObjMotionControl::checkRemoteControlModeStatus(j=%d, targetmode=%s) for BOARD %d after %d attempts and %f seconds", joint, yarp::os::Vocab::decode(target_mode).c_str(), _fId.boardNumber, attempt, yarp::os::Time::now()-timeofstart);
     }
 
 
