@@ -307,6 +307,23 @@ fakestdbool_t feat_embObjCANPrintHandler(eOprotBRD_t brd, eOmn_info_basic_t* inf
     return res;
 }
 
+const char * feat_embObj_GetBoardName(eOprotBRD_t brd)
+{
+    static const char * errorstr = "error";
+
+    if(_interface2ethManager == NULL)
+    {
+        return(errorstr);
+    }
+
+    brd++;
+
+    const char *ret = (brd >= TheEthManager::maxBoards) ? (TheEthManager::boardNames[0]) : (TheEthManager::boardNames[brd]);
+
+    return(ret);
+
+}
+
 #include <ace/ACE.h>
 #include <ace/config.h>
 #include <ace/Recursive_Thread_Mutex.h>

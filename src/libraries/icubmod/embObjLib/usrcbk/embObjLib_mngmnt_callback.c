@@ -274,18 +274,6 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
             "CAN2",
             "UNKNOWN"
         };
-        enum { maxboards = 32 }; // as TheEthManager::maxBoards, which is c++ ....
-        static const char * const boardname[maxboards] =
-        {
-            "unknown",
-            "leftUpperArm", "leftForearm", "rightUpperArm", "rightForearm",
-            "Torso",
-            "leftLeg", "leftFoot", "rightLeg", "rightFoot",
-            "leftLegSkin", "rightLegSkin",
-            "unknown12", "unknown13", "unknown14", "unknown15",
-            "unknown16", "unknown17", "unknown18", "unknown19", "unknown20", "unknown21", "unknown22", "unknown23",
-            "unknown24", "unknown25", "unknown26", "unknown27", "unknown28", "unknown29", "unknown30", "unknown31"
-        };
     
         static const char nullverbalextra[] = "no extra info despite we are in verbal mode";
         static const char emptyextra[] = "NO MORE";
@@ -321,7 +309,7 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
         p64 = (uint8_t*)&(infobasic->properties.par64);
 
         int boardnum = eo_nv_GetBRD(nv)+1;
-        const char *boardstr = (boardnum >= maxboards ) ? (boardname[0]) : (boardname[boardnum]);
+        const char *boardstr = feat_embObj_GetBoardName(eo_nv_GetBRD(nv));
     
         if(codecanprint == infobasic->properties.code)
         {

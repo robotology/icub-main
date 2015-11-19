@@ -39,6 +39,19 @@ yarp::os::Semaphore TheEthManager::managerMutex = 1;
 //            TheEthManager   Singleton
 // -------------------------------------------------------------------\\
 
+
+const char * TheEthManager::boardNames[TheEthManager::maxBoards] =
+{
+    "error",
+    "leftUpperArm", "leftForearm", "rightUpperArm", "rightForearm",
+    "Torso",
+    "leftLeg", "leftFoot", "rightLeg", "rightFoot",
+    "leftLegSkin", "rightLegSkin",
+    "unknown12", "unknown13", "unknown14", "unknown15",
+    "unknown16", "unknown17", "unknown18", "unknown19", "unknown20", "unknown21", "unknown22", "unknown23",
+    "unknown24", "unknown25", "unknown26", "unknown27", "unknown28", "unknown29", "unknown30", "unknown31"
+};
+
 bool TheEthManager::lock()
 {
     managerMutex.wait();

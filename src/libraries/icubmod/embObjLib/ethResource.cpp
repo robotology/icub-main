@@ -55,6 +55,8 @@ ethResources::ethResources()
     usedNumberOfRegularROPs     = 0;
     memset(&boardCommStatus, 0, sizeof(boardCommStatus));
 
+    boardNum = 0;
+
     //RXpacketSize = 0;
 
     for(int i = 0; i<16; i++)
@@ -2152,12 +2154,15 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
     uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
     uint32_t usec = infobasic->timestamp % 1000;
 
+    const char *boardstr = feat_embObj_GetBoardName(boardNum-1);
+
     // Validity check
     if(address > 15)
     {
         snprintf(canfullmessage,sizeof(canfullmessage),"Error while parsing the message: CAN address detected is out of allowed range");
-        snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
+        snprintf(str,sizeof(str), "from BOARD 10.0.1.%d (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
                                     this->boardNum,
+                                    boardstr,
                                     str_source,
                                     address,
                                     sec,
@@ -2188,8 +2193,9 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
             canfullmessage[63] = 0;
             c_string_handler[address]->clear_string(ret);
 
-            snprintf(str,sizeof(str), "from BOARD %d, src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
+            snprintf(str,sizeof(str), "from BOARD 10.0.1.%d (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
                                         this->boardNum,
+                                        boardstr,
                                         str_source,
                                         address,
                                         sec,

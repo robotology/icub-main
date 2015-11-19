@@ -125,6 +125,7 @@ public:
     // this keeps the size of info buffer
     enum { ETHMAN_SIZE_INFO = 128 };
 
+    static const char * boardNames[TheEthManager::maxBoards];
 
 public:
     static yarp::os::Semaphore    managerMutex;
