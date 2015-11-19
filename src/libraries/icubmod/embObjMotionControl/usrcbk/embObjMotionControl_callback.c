@@ -170,36 +170,6 @@ extern void eoprot_fun_UPDT_mc_joint_config_pidtorque(const EOnv* nv, const eOro
 {
 }
 
-#if 0
-#define DEG_2_ICUBDEG  182.04444
-#warning --> marco.accame on 16 oct 2014: the reception of a rop containing a setpoint command is not a good practice. remove this mechanism. see comment below
-// marco.accame: the pc104 should send set<id32_cmmnd_setpoint, value_cmmnd_setpoint> and never send ask<id32_cmmnd_setpoint>.
-//               the cmmnd variables should be write-only ....
-//               thus it should never receive say<id32_cmmnd_setpoint, value> or sig<id32_cmmnd_setpoint, value>.
-//               the reason is that the ems board manages the cmmd by writing the value_cmmnd_setpoint in its ram, but then it does not guarantee
-//               that the value stays unchanged. also, it may be that many sepoints of different kind are sent. in this case the last overwrite the previous,
-//               best way to know is to have a status variable whcih keeps the last received setpoint of some kind.
-extern void eoprot_fun_UPDT_mc_joint_cmmnds_setpoint(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    eOmc_setpoint_t *setpoint_got = (eOmc_setpoint_t*) rd->data;
-    static int32_t zero = 360;
-    static prev = 0;
-    int32_t pos;
-
-//	printf("Callback recv setpoint: \n");
-    uint16_t *checkProg = (uint16_t*) setpoint_got;
-//	printf("Prog Num %d\n", checkProg[1]);
-    pos = (int32_t)(setpoint_got->to.position.value / DEG_2_ICUBDEG) + zero;
-//	printf("position %d\n", pos);
-//	printf("velocity %d\n", setpoint_got->to.position.withvelocity);
-
-    if( (checkProg[1] - prev) != 1)
-        printf(">>>>>>Missing packet!! prev was %d, actual is %d (missing 0x%04X) <<<<<\n", prev, checkProg[1], prev+1);
-
-    prev = checkProg[1];
-    wake(nv);
-}
-#endif
 
 
 extern void eoprot_fun_UPDT_mc_joint_config_impedance(const EOnv* nv, const eOropdescriptor_t* rd)
@@ -207,7 +177,7 @@ extern void eoprot_fun_UPDT_mc_joint_config_impedance(const EOnv* nv, const eOro
 }
 
 
-extern void eoprot_fun_UPDT_mc_joint_status_interactionmodestatus(const EOnv* nv, const eOropdescriptor_t* rd)
+extern void eoprot_fun_UPDT_mc_joint_status_modes_interactionmodestatus(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 }
 
@@ -249,6 +219,20 @@ static void wake(const EOnv* nv)
         snprintf(str, sizeof(str),"while releasing mutex in BOARD %d for variable %s", eo_nv_GetBRD(nv)+1, nvinfo); 
         embObjPrintWarning(str);
     }
+#if 0
+    else // marco.accame: in here is code you may want using for debug purposes
+    {   es
+        uint8_t brd = eo_nv_GetBRD(nv)+1;
+        if((2==brd) || (4==brd))
+        {
+            if((eoprot_tag_mc_joint_status_ismotiondone == eoprot_ID2tag(id32)) && (eoprot_entity_mc_joint == eoprot_ID2entity(id32)))
+            {
+                eObool_t motiondone = *((eObool_t*)eo_nv_RAM(nv));
+                printf("motiondone = %d for joint %d in BOARD %d", motiondone, eoprot_ID2index(id32), brd);
+            }
+        }
+    }
+#endif
 }
 
 
