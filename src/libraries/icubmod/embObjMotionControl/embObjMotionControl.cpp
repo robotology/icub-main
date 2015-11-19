@@ -2354,8 +2354,8 @@ bool embObjMotionControl::getErrorRaw(int j, double *err)
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status);
     eOmc_joint_status_t  jstatus = {0};
     res->readBufferedValue(id32, (uint8_t *)&jstatus, &size);
+#if 0
     eOenum08_t controlmode = jstatus.modes.controlmodestatus;
-
     if(eomc_controlmode_torque == controlmode)
     {
         *err = (double) jstatus.ofpid.torque.errtrq;
@@ -2364,6 +2364,9 @@ bool embObjMotionControl::getErrorRaw(int j, double *err)
     {   // position, velocity etc
         *err = (double) jstatus.ofpid.stiffpos.errpos;
     }
+#else
+    *err = (double) jstatus.ofpid.legacy.error;
+#endif
 
     return true;
 }
@@ -2449,6 +2452,7 @@ bool embObjMotionControl::getReferenceRaw(int j, double *ref)
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status);
     eOmc_joint_status_t jstatus = {0};
     res->readBufferedValue(id32, (uint8_t *)&jstatus, &size);
+#if 0
     eOenum08_t controlmode = jstatus.modes.controlmodestatus;
 
     if(eomc_controlmode_torque == controlmode)
@@ -2459,7 +2463,9 @@ bool embObjMotionControl::getReferenceRaw(int j, double *ref)
     {   // position, velocity etc (also open loop)
         *ref = (double) jstatus.ofpid.stiffpos.refpos;
     }
-
+#else
+    *ref = jstatus.ofpid.legacy.positionreference;
+#endif
     return true;
 }
 
@@ -4575,7 +4581,11 @@ bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
     uint16_t size;
     eOmc_joint_status_ofpid_t jstatuspid = {0};
     res->readBufferedValue(id32, (uint8_t *)&jstatuspid, &size);
-    *t = (double) jstatuspid.torque.reftrq;  // ok
+#if 0
+    *t = (double) jstatuspid.torque.reftrq;
+#else
+    *t = (double) jstatuspid.legacy.torquereference;
+#endif
     return true;
 
 }
@@ -4625,7 +4635,11 @@ bool embObjMotionControl::getTorqueErrorRaw(int j, double *err)
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_ofpid);
 
     ret = res->readBufferedValue(protid, (uint8_t *)&jstatusofpid, &size);
-    *err = (double) jstatusofpid.torque.errtrq; // ok
+#if 0
+    *err = (double) jstatusofpid.torque.errtrq;
+#else
+    *err = (double) jstatusofpid.legacy.error;
+#endif
     return ret;
 }
 
@@ -5329,8 +5343,12 @@ bool embObjMotionControl::getRefOutputRaw(int j, double *out)
     eOmc_joint_status_ofpid_t jstatusofpid = {0};
     if(res->readBufferedValue(protoId, (uint8_t *)&jstatusofpid, &size) )
     {
+#if 0
         #warning marco.accame TODO: verify what it must return (a refpos or a reftrq or what)
         *out = (double) jstatusofpid.stiffpos.refpos;
+#else
+        *out = (double) jstatusofpid.legacy.positionreference;
+#endif
     }
     else
     {
@@ -5358,7 +5376,11 @@ bool embObjMotionControl::getOutputRaw(int j, double *out)
     eOmc_joint_status_ofpid_t jstatusofpid = {0};
     if(res->readBufferedValue(protoId, (uint8_t *)&jstatusofpid, &size) )
     {
-        *out = (double) jstatusofpid.generic.output; // ok
+#if 0
+        *out = (double) jstatusofpid.generic.output;
+#else
+        *out = (double) jstatusofpid.legacy.output;
+#endif
     }
     else
     {
