@@ -44,12 +44,12 @@
         <param name="maxInt">        500        500        500        500     </param>       
         <param name="shift">           0          0          0          0     </param>       
         <param name="ko">              0          0          0          0     </param>       
-        <param name="stictionUp">      3.7       -1.52       1.58       0.92  </param>       
-        <param name="stictionDwn">    -3.0        1.17      -2.68      -0.93  </param>       
+        <param name="stictionUp">      3.7       -1.52       1.80       0.92  </param>       
+        <param name="stictionDwn">    -3.0        1.17      -2.16      -0.93  </param>       
         <param name="kff">             1          1          1          1     </param>  
-        <param name="kbemf">           0.0035    -0.0036     0.0025    0.0024 </param>            
+        <param name="kbemf">           0.0035    -0.0036     0.0029    0.0024 </param>            
         <param name="filterType">      0          0          0          0     </param>     
-        <param name="ktau">         -163        189       -161       -246     </param>
+        <param name="ktau">         -163        189       -180       -246     </param>
     </group>
 
     <group name="IMPEDANCE">
