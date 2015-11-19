@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE robot PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<robot name="iCubExpSetupMC4PLUS_CER" build="1" portprefix="icub">
+
+    <!-- BOARD MC4PLUSjig -->
+    <!-- motor controllers wrappers -->
+    <devices file="./hardware/motorControl/mc4plusjig_mc_hardware.xml" /> 
+    <devices file="./wrappers/motorControl/mc4plusjig_mc_wrapper.xml" /> 
+
+    <!-- CALIBRATORS -->
+    <devices file="./calibrators/mc4plusjig_calib.xml" />
+    
+</robot> 
+
