@@ -266,13 +266,25 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
 #endif
 
     {
-        char str[384] = {0};
-        static const char * sourcestrings[] =
+        char str[512] = {0};
+        static const char * const sourcestrings[] =
         {
             "LOCAL",
             "CAN1",
             "CAN2",
             "UNKNOWN"
+        };
+        enum { maxboards = 32 }; // as TheEthManager::maxBoards, which is c++ ....
+        static const char * const boardname[maxboards] =
+        {
+            "unknown",
+            "leftUpperArm", "leftForearm", "rightUpperArm", "rightForearm",
+            "Torso",
+            "leftLeg", "leftFoot", "rightLeg", "rightFoot",
+            "leftLegSkin", "rightLegSkin",
+            "unknown12", "unknown13", "unknown14", "unknown15",
+            "unknown16", "unknown17", "unknown18", "unknown19", "unknown20", "unknown21", "unknown22", "unknown23",
+            "unknown24", "unknown25", "unknown26", "unknown27", "unknown28", "unknown29", "unknown30", "unknown31"
         };
     
         static const char nullverbalextra[] = "no extra info despite we are in verbal mode";
@@ -307,6 +319,9 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
         }
     
         p64 = (uint8_t*)&(infobasic->properties.par64);
+
+        int boardnum = eo_nv_GetBRD(nv)+1;
+        const char *boardstr = (boardnum >= maxboards ) ? (boardname[0]) : (boardname[boardnum]);
     
         if(codecanprint == infobasic->properties.code)
         {
@@ -331,8 +346,9 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
                 // we have a valid canframe
                 memcpy(canframestring, &p64[2], len-2);
                 canframestring[len-2] = 0;  // string terminator
-                snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: CANPRINT: %s [size = %d, D0 = 0x%.2x, D1 = 0x%.2x]",
-                                            eo_nv_GetBRD(nv)+1,
+                snprintf(str, sizeof(str), " from BOARD 10.0.1.%d (%s), src %s, adr %d, time %ds %dm %du: CANPRINT: %s [size = %d, D0 = 0x%.2x, D1 = 0x%.2x]",
+                                            boardnum,
+                                            boardstr,
                                             str_source,
                                             address,
                                             sec, msec, usec,
@@ -342,8 +358,9 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
             }
             else
             {
-                snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: CANPRINT is malformed (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + INFO = %s",
-                                            eo_nv_GetBRD(nv)+1,
+                snprintf(str, sizeof(str), " from BOARD 10.0.1.%d (%s), src %s, adr %d, time %ds %dm %du: CANPRINT is malformed (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + INFO = %s",
+                                            boardnum,
+                                            boardstr,
                                             str_source,
                                             address,
                                             sec, msec, usec,
@@ -361,8 +378,9 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
         else
         {   // treat it as the normal case
     
-            snprintf(str, sizeof(str), " from BOARD %d, src %s, adr %d, time %ds %dm %du: (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + INFO = %s",
-                                        eo_nv_GetBRD(nv)+1,
+            snprintf(str, sizeof(str), " from BOARD 10.0.1.%d (%s), src %s, adr %d, time %ds %dm %du: (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + INFO = %s",
+                                        boardnum,
+                                        boardstr,
                                         str_source,
                                         address,
                                         sec, msec, usec,
