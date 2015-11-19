@@ -626,7 +626,7 @@ void Controller::run()
     q_stamp=Time::now();
     if (!getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData,&q_stamp))
     {
-        yWarning("Communication timeout detected!");
+        yError("Communication timeout detected!");
         notifyEvent("comm-timeout");
         suspend();
         return;
