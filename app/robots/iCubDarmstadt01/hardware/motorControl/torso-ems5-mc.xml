@@ -37,17 +37,17 @@
 	<group name="TORQUE_CONTROL">
         <param name="controlLaw">    motor_pid_with_friction_v1 </param>    
         <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">            450        400        400  </param>       
+        <param name="kp">            450        500        500  </param>       
         <param name="kd">              0          0          0  </param>       
         <param name="ki">              0          0          0  </param>       
         <param name="maxPwm">       8000       8000       8000  </param>       
         <param name="maxInt">        500        500        500  </param>       
         <param name="shift">           0          0          0  </param>       
         <param name="ko">              0          0          0  </param>       
-        <param name="stictionUp">    2.8        0.8          1  </param>       
-        <param name="stictionDwn">  -1.5       -1.4       -1.5  </param>       
+        <param name="stictionUp">    2.0        2.2        2.2  </param>       
+        <param name="stictionDwn">  -2.0       -2.2       -2.2  </param>       
         <param name="kff">             0          0          0  </param>   
-        <param name="kbemf">     -0.0015    -0.0027     -0.001  </param>    
+        <param name="kbemf">     -0.0015    -0.0027     -0.002  </param>    
         <param name="filterType">      0          0          0  </param>           
         <param name="ktau">          200        200        200  </param>  
     </group>	
