@@ -663,41 +663,40 @@ bool parametricCalibratorEth::calibrateJoint(int joint)
 
 bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
 {
+    bool calibration_ok = true;
     int timeout = 0;
-    bool calibration_ok = false;
 
     std::list<int>::iterator lit;
     std::list<int>::iterator lend;
 
+    lit = set.begin();
     lend = set.end();
-    while (!calibration_ok)
+    
+    while (lit != lend)
     {
-        calibration_ok = true;
-        Time::delay(1.0);
-        lit  = set.begin();
-        while(lit != lend)    // per ogni giunto del set
+        if (abortCalib)
         {
-
-            if (abortCalib)
-            {
-                yWarning() << deviceName  << ": calibration aborted\n";
-            }
-
-            // Joint with absolute sensor doesn't need to move, so they are ok with just the calibration message,
-            // but I'll check anyway, in order to have everything the same
-            if( !(calibration_ok &=  iCalibrate->done((*lit))) )  // the assignement inside the if is INTENTIONAL
-                break;
-            lit++;
+            yWarning() << deviceName << ": calibration aborted\n";
         }
 
-        timeout++;
-        if (timeout > timeout_calibration[*lit]) break;
+        if (iCalibrate->done(*lit))
+        {
+            yDebug() << deviceName << ": calib joint " << (*lit) << "ended";
+            lit++;
+            timeout = 0;
+        }
+        else
+        {
+            if (timeout > timeout_calibration[*lit])
+            {
+                yError() << deviceName << ": Timeout while calibrating " << (*lit);
+                calibration_ok = false;
+            }
+            
+            yarp::os::Time::delay(1.0);
+            timeout++;
+        }
     }
-
-    if (timeout > timeout_calibration[*lit])
-        yError() << deviceName << ": Timeout while calibrating " << (*lit) << "\n";
-    else
-        yDebug() << deviceName << ": calib joint ended";
 
     return calibration_ok;
 }
