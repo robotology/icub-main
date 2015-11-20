@@ -290,17 +290,21 @@ bool ethResources::goToConfig(void)
     // however, if we do the loop over maxAttempts then we dont need it anymore. if the board can execute the order
     // then at most there will be two iterations of the for() loop.
 
-    yDebug() << "ethResources::goToConfig() called for BOARD" << get_protBRDnumber()+1;
+    yDebug("ethResources::goToConfig() is called for BOARD 10.0.1.%d (%s)", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()));
+
 
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
     eOmn_appl_status_t status = {0};
     uint16_t size = 0;
-    const char* statestr[] = {"applstate_config", "applstate_running", "applstate_error", "unknown error"};
+    const char* statestr[] = {"applstate_config", "applstate_running", "applstate_error", "applstate_unknown"};
 
     const int maxAttempts = 5;
     bool verified = false;
     bool found = false;
+
+    char foundmessage[512] = "nothing found";
+    const char *foundstatestr = statestr[3];
 
     for(int i=0; i<maxAttempts; i++)
     {
@@ -310,16 +314,32 @@ bool ethResources::goToConfig(void)
         {
             found = true;
 
-            const char *name = (const char*)status.name;
+            int index = (status.currstate > 2) ? (3) : (status.currstate);
+
+            foundstatestr = statestr[index];
+
+            snprintf(foundmessage, sizeof(foundmessage), "ethResources::goToConfig() detected BOARD 10.0.1.%d (%s). It has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
+                                            get_protBRDnumber()+1,
+                                            feat_embObj_GetBoardName(get_protBRDnumber()),
+                                            status.name,
+                                            status.version.major,
+                                            status.version.minor,
+                                            status.buildate.day,
+                                            status.buildate.month,
+                                            status.buildate.year,
+                                            status.buildate.hour,
+                                            status.buildate.min,
+                                            foundstatestr);
+
 
             if(applstate_config == status.currstate)
             {
-                yDebug() << "ethResources::goToConfig() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
-                yDebug() << "ethResources::goToConfig() successfully sent BOARD" << get_protBRDnumber()+1 << "in cfg mode";
+                yInfo("%s", foundmessage);
+                yDebug("ethResources::goToConfig() successfully sent BOARD 10.0.1.%d (%s) in cfg mode", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()));
+
                 verified = true;
                 isInRunningMode = false;
                 break;
-                //return true;
             }
             else
             {
@@ -332,23 +352,20 @@ bool ethResources::goToConfig(void)
         {
             // in here if we havent received any reply from the remote board. it is unlikely but possible. maybe the board crashed.
             // ok, there is also teh possibility that id32 is wrong (unlikely) or &status is NULL (unlikely).
-            yError() << "ethResources::goToConfig() called getRemoteValue() and there was no reply from BOARD" << get_protBRDnumber()+1;
+            yError("ethResources::goToConfig() called getRemoteValue() for BOARD 10.0.1.%d (%s) but there was no reply", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()));
+
         }
     }
 
     if(false == found)
     {
-        yError() << "ethResources::goToConfig() could not verify the status of BOARD" << get_protBRDnumber()+1 << "because it could not find it";
-
+        yError("ethResources::goToConfig() could not verify the status of BOARD 10.0.1.%d (%s) because it could not find it after %d attempts", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()), maxAttempts);
     }
     else if(false == verified)
     {
-        const char *name = (const char*)status.name;
-        int index = (status.currstate > 2) ? (3) : (status.currstate);
+        yInfo("%s", foundmessage);
+        yError("ethResources::goToConfig() could not send BOARD 10.0.1.%d (%s) in cfg state. the board is instead in state %s", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()), foundstatestr);
 
-        yDebug() << "ethResources::goToConfig() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
-        yError() << "ethResources::goToConfig() could not send BOARD" << get_protBRDnumber()+1 << "in cfg mode.";
-        yError() << "ethResources::goToConfig() detected instead that BOARD" << get_protBRDnumber()+1 << "is in state" << statestr[index];
         isInRunningMode = (applstate_running == status.currstate) ? true : false; // we quit robotInterface ... it means nothing to set this value
     }
 
@@ -359,11 +376,11 @@ bool ethResources::goToConfig(void)
 }
 
 
-bool ethResources::goToRun(void)
+bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "ethResources::clearRegulars() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "ethResources::goToRun() is in ETHRES_DEBUG_DONTREADBACK mode";
     // execute but force verify to false
     return true;
 #endif
@@ -374,7 +391,7 @@ bool ethResources::goToRun(void)
     eOenum08_t command_go2state = applstate_running;
     if(!addSetMessage(protid, (uint8_t*) &command_go2state))
     {
-        yError() << "ethResources::goToRun() fails to add a command go2state running to transceiver";
+        yError("ethResources::goToRun() in BOARD 10.0.1.%d (%s) fails to add a command go2state running to transceiver", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()));
         return false;
     }
 
@@ -391,16 +408,19 @@ bool ethResources::goToRun(void)
     // then at most there will be two iterations of the for() loop.
 
 
-    yDebug() << "ethResources::goToRun() called for BOARD" << get_protBRDnumber()+1;
+    yDebug("ethResources::goToRun() is called for BOARD 10.0.1.%d (%s) for the entity %s", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()), eoprot_EN2string(endpoint, entity));
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
     eOmn_appl_status_t status = {0};
     uint16_t size = 0;
-    const char* statestr[] = {"applstate_config", "applstate_running", "applstate_error", "unknown error"};
+    const char* statestr[] = {"applstate_config", "applstate_running", "applstate_error", "applstate_unknown"};
 
     const int maxAttempts = 5;
     bool verified = false;
     bool found = false;
+
+    char foundmessage[512] = "nothing found";
+    const char *foundstatestr = statestr[3];
 
     for(int i=0; i<maxAttempts; i++)
     {
@@ -410,17 +430,32 @@ bool ethResources::goToRun(void)
         {
             found = true;
 
-            const char *name = (const char*)status.name;
+            int index = (status.currstate > 2) ? (3) : (status.currstate);
+
+            foundstatestr = statestr[index];
+
+            snprintf(foundmessage, sizeof(foundmessage), "ethResources::goToRun() detected BOARD 10.0.1.%d (%s). It has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
+                                            get_protBRDnumber()+1,
+                                            feat_embObj_GetBoardName(get_protBRDnumber()),
+                                            status.name,
+                                            status.version.major,
+                                            status.version.minor,
+                                            status.buildate.day,
+                                            status.buildate.month,
+                                            status.buildate.year,
+                                            status.buildate.hour,
+                                            status.buildate.min,
+                                            foundstatestr);
+
 
             if(applstate_running == status.currstate)
             {
-                yDebug() << "ethResources::goToRun() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
-                yDebug() << "ethResources::goToRun() successfully sent BOARD" << get_protBRDnumber()+1 << "in run mode";
+                yInfo("%s", foundmessage);
+                yDebug("ethResources::goToRun() successfully sent BOARD 10.0.1.%d (%s) in run mode", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()));
 
                 verified = true;
                 isInRunningMode = true;
                 break;
-                //return true;
             }
             else
             {
@@ -433,24 +468,20 @@ bool ethResources::goToRun(void)
         {
             // in here if we havent received any reply from the remote board. it is unlikely but possible. maybe the board crashed.
             // ok, there is also teh possibility that id32 is wrong (unlikely) or &status is NULL (unlikely).
-            yError() << "ethResources::goToRun() called getRemoteValue() and there was no reply from BOARD" << get_protBRDnumber()+1;
+            yError("ethResources::goToRun() called getRemoteValue() for BOARD 10.0.1.%d (%s) but there was no reply", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()));
         }
     }
 
 
     if(false == found)
     {
-        yError() << "ethResources::goToRun() could not verify the status of BOARD" << get_protBRDnumber()+1 << "because it could not find it";
-
+        yError("ethResources::goToRun() could not verify the status of BOARD 10.0.1.%d (%s) because it could not find it after %d attempts", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()), maxAttempts);
     }
     else if(false == verified)
     {
-        const char *name = (const char*)status.name;
-        int index = (status.currstate > 2) ? (3) : (status.currstate);
+        yInfo("%s", foundmessage);
+        yError("ethResources::goToRun() could not send BOARD 10.0.1.%d (%s) in run state. the board is instead in state %s", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()), foundstatestr);
 
-        yDebug() << "ethResources::goToRun() detected BOARD" << get_protBRDnumber()+1 << "with name" << name << "and version = (" << status.version.major << status.version.minor << ")";
-        yError() << "ethResources::goToRun() could not send BOARD" << get_protBRDnumber()+1 << "in run mode";
-        yError() << "ethResources::goToRun() detected instead that BOARD" << get_protBRDnumber()+1 << "is in state" << statestr[index];
         if(applstate_config == status.currstate)
         {
             yError() << "It may be that the BOARD is not ready yet to enter in run mode: PLEASE WAIT A FEW SECONDS AND RELAUNCH robotInterface";

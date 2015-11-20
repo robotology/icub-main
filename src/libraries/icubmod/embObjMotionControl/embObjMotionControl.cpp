@@ -1026,7 +1026,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
 #endif // !defined(EMBOBJMC_DONT_USE_MAIS)
 
-    if(false == res->goToRun())
+    if(false == res->goToRun(eoprot_endpoint_motioncontrol, eoprot_entity_mc_controller))
     {
         yError() << "embObjMotionControl::open() fails to start control loop of board" << _fId.boardNumber << ": cannot continue";
         cleanup();

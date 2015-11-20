@@ -507,20 +507,25 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
     // configure the sensor(s)
 
+    eOprotEntity_t entity = eoprot_entity_none;
+
     switch(_as_type)
     {
         case AS_MAIS:
         {
+            entity = eoprot_entity_as_mais;
             ret = sendConfig2Mais();
         } break;
         
         case AS_STRAIN:
         {
+            entity = eoprot_entity_as_strain;
             ret = sendConfig2Strain();
         } break;
         
         case AS_INERTIAL_MTB:
         {
+            entity = eoprot_entity_as_inertial;
             ret = sendConfig2SkinInertial(config);
         } break;
 
@@ -543,7 +548,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if(false == res->goToRun())
+    if(false == res->goToRun(eoprot_endpoint_analogsensors, entity))
     {
         yError() << "embObjAnalogSensor::open() fails to start control loop of board" << _fId.boardNumber << ": cannot continue";
         cleanup();

@@ -257,10 +257,10 @@ public:
     void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true);
 
 
-    /*!   @fn       goToRun(void);
-     *    @brief    Tells the EMS to start the control loop.
+    /*!   @fn       goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity);
+     *    @brief    Tells the EMS to start the control loop to activate a given service described by (endpoint, entity).
      */
-    bool            goToRun(void);
+    bool            goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity);
 
 
     /*!   @fn       goToConfig(void);

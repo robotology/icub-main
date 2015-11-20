@@ -530,7 +530,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    if(false == res->goToRun())
+    if(false == res->goToRun(eoprot_endpoint_skin, eoprot_entity_sk_skin))
     {
         yError() << "embObjSkin::open() fails to start control loop of board" << _fId.boardNumber << ": cannot continue";
         cleanup();
