@@ -123,46 +123,32 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
         "applstate_config",
         "applstate_running",
         "applstate_error",
-        "not initted"
+        "applstate_unknown"
     };
 
-    char str[256] = {0};
+    char str[512] = {0};
 
     eOmn_appl_status_t* appstatus = (eOmn_appl_status_t*) rd->data;
 
     const char* state = (appstatus->currstate > 2) ? (states[3]) : (states[appstatus->currstate]);
 
-    snprintf(str, sizeof(str), "MANAGEMENT-appl-status: sign = 0x%x, board EB%d -> name = %s", rd->signature, eo_nv_GetBRD(nv)+1, appstatus->name);
-    printf("%s\n", str);
+    const char *boardstr = feat_embObj_GetBoardName(eo_nv_GetBRD(nv));
 
-    snprintf(str, sizeof(str), "                        version = %d.%d, built on date %d %d %d, at hour %d:%d",
-                                                        appstatus->version.major,
-                                                        appstatus->version.minor,
-                                                        appstatus->buildate.day,
-                                                        appstatus->buildate.month,
-                                                        appstatus->buildate.year,
-                                                        appstatus->buildate.hour,
-                                                        appstatus->buildate.min);
+    snprintf(str, sizeof(str), "BOARD 10.0.1.%d (%s) has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
+                                    eo_nv_GetBRD(nv)+1,
+                                    boardstr,
+                                    appstatus->name,
+                                    appstatus->version.major,
+                                    appstatus->version.minor,
+                                    appstatus->buildate.day,
+                                    appstatus->buildate.month,
+                                    appstatus->buildate.year,
+                                    appstatus->buildate.hour,
+                                    appstatus->buildate.min,
+                                    state);
 
-    printf("%s\n", str);
+    embObjPrintInfo(str);
 
-    //if running, print the control loop timings
-    if (appstatus->currstate == 1)
-    {
-        snprintf(str, sizeof(str), "                        control loop timings: RX->%dus, DO->%dus, TX->%dus",
-                                                            appstatus->cloop_timings[0],
-                                                            appstatus->cloop_timings[1],
-                                                            appstatus->cloop_timings[2]);
-
-        printf("%s\n", str);
-    }
-
-    snprintf(str, sizeof(str), "                        state = %s", state);
-
-    printf("%s\n", str);
-
-
-    fflush(stdout);
 }
 
 
@@ -199,7 +185,7 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, co
     {   // in here we have a sig and we cannot have the 0xaa000000 signature
         if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
         {
-            printf("ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() has received an unexpected message\n");
+            embObjPrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() has received an unexpected message");
             return;
         }
     }
@@ -216,7 +202,7 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, co
     {   // in here we have a sig and we cannot have the 0xaa000000 signature
         if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
         {
-            printf("ERROR: eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() has received an unexpected message\n");
+            embObjPrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() has received an unexpected message");
             return;
         }
     }
