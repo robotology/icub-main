@@ -118,6 +118,7 @@ extern void eoprot_fun_ONSAY_mn(const EOnv* nv, const eOropdescriptor_t* rd)
 
 void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
+#if 0
     static const char* states[] =
     {
         "applstate_config",
@@ -148,7 +149,7 @@ void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
                                     state);
 
     embObjPrintInfo(str);
-
+#endif
 }
 
 
