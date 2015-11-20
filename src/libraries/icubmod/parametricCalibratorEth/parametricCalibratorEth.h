@@ -139,6 +139,11 @@ private:
     bool    skipCalibration;
     bool    clearHwFault;
 
+    int    *timeout_park;
+    int    *timeout_goToZero;
+    int    *timeout_calibration;
+
+
     std::string deviceName;
 };
 #endif

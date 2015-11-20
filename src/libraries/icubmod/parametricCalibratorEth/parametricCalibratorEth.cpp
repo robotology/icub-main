@@ -18,11 +18,6 @@
 using namespace yarp::os;
 using namespace yarp::dev;
 
-// calibrator for the arm of the Arm iCub
-
-const int       PARK_TIMEOUT            = 30;
-const double    GO_TO_ZERO_TIMEOUT      = 10; //seconds how many? // was 10
-const int       CALIBRATE_JOINT_TIMEOUT = 20;
 const double    POSITION_THRESHOLD      = 2.0;
 
 // TODO use it!!
@@ -207,6 +202,13 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     homePos = new double[nj];
     homeVel = new double[nj];
     startupPosThreshold = new double[nj];
+    
+    timeout_park = new int[nj];
+    timeout_goToZero = new int[nj];
+    timeout_calibration = new int[nj];
+    for (int i = 0; i < nj; i++) timeout_park[i] = 30;
+    for (int i = 0; i < nj; i++) timeout_goToZero[i] = 10;
+    for (int i = 0; i < nj; i++) timeout_calibration[i] = 20;
 
     int i=0;
 
@@ -233,6 +235,10 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     xtmp = p.findGroup("CALIBRATION").findGroup("calibrationDelta");
     if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of calibrationDelta params"; return false; }
     for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param4 = calibParams[i - 1].param4 + xtmp.get(i).asDouble();
+
+    xtmp = p.findGroup("CALIBRATION").findGroup("calibrationTimeout");
+    if (xtmp.size() - 1 != nj) { } //this parameter is optional
+    else { for (i = 1; i < xtmp.size(); i++) timeout_calibration[i - 1] = (int)xtmp.get(i).asDouble(); }
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupPosition");
     if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupPosition params"; return false;}
@@ -298,6 +304,19 @@ bool parametricCalibratorEth::close ()
     if (limited_pid != NULL) {
         delete[] limited_pid;
         limited_pid = NULL;
+    }
+
+    if (timeout_park != NULL) {
+        delete[] timeout_park;
+        timeout_park = NULL;
+    }
+    if (timeout_goToZero != NULL) {
+        delete[] timeout_goToZero;
+        timeout_goToZero = NULL;
+    }
+    if (timeout_calibration != NULL) {
+        delete[] timeout_calibration;
+        timeout_calibration = NULL;
     }
 
     if (currPos != NULL) {
@@ -651,7 +670,7 @@ bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
     std::list<int>::iterator lend;
 
     lend = set.end();
-    while(!calibration_ok && (timeout <= CALIBRATE_JOINT_TIMEOUT))
+    while (!calibration_ok)
     {
         calibration_ok = true;
         Time::delay(1.0);
@@ -672,9 +691,10 @@ bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
         }
 
         timeout++;
+        if (timeout > timeout_calibration[*lit]) break;
     }
 
-    if(timeout > CALIBRATE_JOINT_TIMEOUT)
+    if (timeout > timeout_calibration[*lit])
         yError() << deviceName << ": Timeout while calibrating " << (*lit) << "\n";
     else
         yDebug() << deviceName << ": calib joint ended";
@@ -759,7 +779,7 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
             finished=true;
             break;
         }
-        if (yarp::os::Time::now() - start_time > GO_TO_ZERO_TIMEOUT)
+        if (yarp::os::Time::now() - start_time > timeout_goToZero[j])
         {
             yError() <<  deviceName << ": checkGoneToZeroThreshold: joint " << j << " Timeout while going to zero!";
             break;
@@ -839,15 +859,15 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     
     if (wait)
     {
-       int timeout = 0; //this variable is shared between all joints
-	   for (int i = 0; i < n_joints; i++)
+       for (int i = 0; i < n_joints; i++)
         {
+            int timeout = 0;
             if (cannotPark[i] ==false)
             {
                 yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << i;
                 bool done=false;
                 iPosition->checkMotionDone(i, &done);
-                while((!done) && (timeout<PARK_TIMEOUT) && (!abortParking))
+                while ((!done) && (timeout<timeout_park[i]) && (!abortParking))
                 {
                     Time::delay(1);
                     timeout++;
@@ -855,7 +875,7 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
                 }
                 if(!done)
                 {
-                    yError() << deviceName << ": joint " << i << " not in position after a timeout of" << PARK_TIMEOUT <<" seconds";
+                    yError() << deviceName << ": joint " << i << " not in position after a timeout of" << timeout_park << " seconds";
                 }
             }
         }
@@ -969,13 +989,13 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
 
     if (_wait)
     {
-        int timeout = 0; //this variable is shared between all joints
         if (cannotPark == false)
         {
+            int timeout = 0;
             yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << j;
             bool done=false;
             iPosition->checkMotionDone(j, &done);
-            while((!done) && (timeout<PARK_TIMEOUT) && (!abortParking))
+            while ((!done) && (timeout<timeout_park[j]) && (!abortParking))
             {
                 Time::delay(1);
                 timeout++;
@@ -983,7 +1003,7 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
             }
             if(!done)
             {
-                yError() << deviceName << ": joint " << j << " not in position after a timeout of" << PARK_TIMEOUT <<" seconds";
+                yError() << deviceName << ": joint " << j << " not in position after a timeout of" << timeout_park << " seconds";
             }
         }
     }
