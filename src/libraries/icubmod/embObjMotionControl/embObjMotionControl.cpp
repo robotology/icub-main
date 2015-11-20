@@ -108,6 +108,11 @@ bool embObjMotionControl::EncoderType_iCub2eo(const string* in, uint8_t *out)
         *out = 5;
         return true;
     }
+    else if (*in == "HALL_MOTOR_SENS")
+    {
+        *out = 6;
+        return true;
+    }
     *out = 0;
     return false;
 }
@@ -142,6 +147,11 @@ bool embObjMotionControl::EncoderType_eo2iCub(const uint8_t *in, string* out)
     else if (*in == 5)
     {
         *out = "OPTICAL_QUAD";
+        return true;
+    }
+    else if (*in == 6)
+    {
+        *out = "HALL_MOTOR_SENS";
         return true;
     }
     *out = "ERROR";
