@@ -8,8 +8,8 @@
       <params file="hardware/mechanicals/left_lower_leg-ems7-mec.xml" />
 
     <group name="LIMITS">
-        <param name="Max">        30.00         25.00		</param>
-        <param name="Min">       -30.00        -20.00		</param>
+        <param name="Max">        27.00         24.00		</param>
+        <param name="Min">       -36.00        -24.00		</param>
         <param name="RotorMin">   0             0           </param> 
         <param name="RotorMax">   0             0           </param>
         <param name="Currents">   5000          5000        </param>
@@ -48,12 +48,12 @@
         <param name="maxInt">     500          500              </param>       
         <param name="shift">        0            0              </param>       
         <param name="ko">           0            0              </param>       
-        <param name="stictionUp">   3            3              </param>       
-        <param name="stictionDwn"> -2           -3              </param>   
+        <param name="stictionUp">3.19         2.64              </param>       
+        <param name="stictionDwn">-2.08      -2.83              </param>   
         <param name="kff">          1            1              </param>         
-        <param name="kbemf">    0.003        0.003              </param>  
+        <param name="kbemf">    0.003       0.0041              </param>  
         <param name="filterType">   0            0              </param>        
-        <param name="ktau">       187          141              </param>          
+        <param name="ktau">       220          170              </param>          
     </group>
 
   </device>
