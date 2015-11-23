@@ -1139,15 +1139,24 @@ void hostTransceiver::eoprot_override_sk(void)
 
 }
 
-
-void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(uint32_t remipv4addr, uint64_t rec_seqnum, uint64_t expected_seqnum)
+//uint32_t remipv4addr, uint64_t rec_seqnum, uint64_t expected_seqnum
+void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(EOreceiver *r)
 {  
-    long long unsigned int exp = expected_seqnum;
-    long long unsigned int rec = rec_seqnum;
-    char *ipaddr = (char*)&remipv4addr;
+    const eOreceiver_seqnum_error_t * err = eo_receiver_GetSequenceNumberError(r);
+    long long unsigned int exp = err->exp_seqnum;
+    long long unsigned int rec = err->rec_seqnum;;
+    char *ipaddr = (char*)&err->remipv4addr;
     //printf("\nERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t received: \t%llu\n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec);
     char errmsg[256] = {0};
     snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t Received: \t%llu \t Missing: \t%llu \n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec, rec-exp);
+    yError() << errmsg;
+}
+
+void cpp_protocol_callback_incaseoferror_invalidFrame(EOreceiver *r)
+{
+    char errmsg[256] = {0};
+    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR of type INVALID FRAME from IP = TBD");
+    //snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR of type INVALID FRAME from IP = %d.%d.%d.%d", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3]);
     yError() << errmsg;
 }
 
@@ -1218,6 +1227,7 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
     
     // marco.accame on 29 apr 2014: so that the EOreceiver calls this funtion in case of error in sequence number
     hosttxrxcfg.extfn.onerrorseqnumber = cpp_protocol_callback_incaseoferror_in_sequencenumberReceived;
+    hosttxrxcfg.extfn.onerrorinvalidframe = cpp_protocol_callback_incaseoferror_invalidFrame;
 
 
 #if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
