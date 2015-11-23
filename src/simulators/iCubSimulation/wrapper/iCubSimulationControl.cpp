@@ -119,6 +119,8 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     
     limitsMin = allocAndCheck<double>(njoints);
     limitsMax = allocAndCheck<double>(njoints);
+    velLimitsMin = allocAndCheck<double>(njoints);
+    velLimitsMax = allocAndCheck<double>(njoints);
     torqueLimits = allocAndCheck<double>(njoints);
     
     refSpeed = allocAndCheck<double>(njoints);
@@ -349,6 +351,8 @@ bool iCubSimulationControl::close (void)
     checkAndDestroy<int>(interactionMode);
     checkAndDestroy<double>(limitsMin);
     checkAndDestroy<double>(limitsMax);
+    checkAndDestroy<double>(velLimitsMin);
+    checkAndDestroy<double>(velLimitsMax);
     checkAndDestroy<int>(axisMap);
     checkAndDestroy<int>(inputs);
     checkAndDestroy<double>(vels);
@@ -1431,12 +1435,29 @@ bool iCubSimulationControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKe
 // IControlLimits2
 bool iCubSimulationControl::setVelLimitsRaw(int axis, double min, double max)
 {
-    return NOT_YET_IMPLEMENTED("setVelLimitsRaw");
+    if ((axis >= 0) && (axis < njoints)){
+        _mutex.wait();
+        velLimitsMax[axis] = max;
+        velLimitsMin[axis] = min;
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        yError("setVelLimitsRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    return false;
 }
 
 bool iCubSimulationControl::getVelLimitsRaw(int axis, double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getVelLimitsRaw");
+    if ((axis >= 0) && (axis < njoints)) {
+        _mutex.wait();
+        *min = velLimitsMin[axis];
+        *max = velLimitsMax[axis];
+        _mutex.post();
+        return true;
+    }
+    //else
+    return false;
 }
 
 bool iCubSimulationControl::velocityMoveRaw(const int n_joint, const int *joints, const double *spds)

@@ -424,6 +424,8 @@ protected:
 
     double *limitsMin;                         // joint limits, min
     double *limitsMax;                         // joint limits, max
+    double *velLimitsMin;                      // joint vel limits, min
+    double *velLimitsMax;                      // joint vel limits, max
     double *torqueLimits;                      // torque limits
     double *maxCurrent;                        // max motor current (simulated)
     double *rotToEncoder;                      // angle to rotor conversion factors
