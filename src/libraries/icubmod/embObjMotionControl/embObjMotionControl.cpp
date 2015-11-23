@@ -1393,6 +1393,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
     }
 
+#warning marco.accame: why do we compute _newtonsToSensor like that? if we do so, then we map max torque to 32k ...
     if (!extractGroup(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", _njoints))
     {
         return false;
@@ -4497,7 +4498,7 @@ bool embObjMotionControl::updateMeasure(yarp::sig::Vector &fTorques)
 bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorque)
 {
     int j = _axisMap[userLevel_jointNumber];
-    double NEWTON2SCALE=32767.0/_maxTorque[j];
+    //double NEWTON2SCALE=32767.0/_maxTorque[j];
 
     eOmeas_torque_t meas_torque = 0;
     static double curr_time = Time::now();
@@ -4526,7 +4527,9 @@ bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorq
             count_saturation++;
         }
 
-        meas_torque = (eOmeas_torque_t) S_16(NEWTON2SCALE*fTorque);
+#warning marco.accame: torque sent to teh ETH board is normalised to _maxTorque .... ahhhh.
+        //meas_torque = (eOmeas_torque_t) S_16(NEWTON2SCALE*fTorque);
+        meas_torque = S_32(fTorque);
     }
 
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
@@ -4551,12 +4554,13 @@ bool embObjMotionControl::setTorqueModeRaw()
 
 bool embObjMotionControl::getTorqueRaw(int j, double *t)
 {
-    double NEWTON2SCALE=32767.0/_maxTorque[j];
-    eOmeas_torque_t meas_torque;
+    //double NEWTON2SCALE=32767.0/_maxTorque[j];
+    eOmeas_torque_t meas_torque = 0;
     uint16_t size;
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
     bool ret = res->readSentValue(protoid, (uint8_t*) &meas_torque, &size);
-    *t = ( (double) meas_torque / NEWTON2SCALE);
+    //*t = ( (double) meas_torque / NEWTON2SCALE);
+    *t = (double) meas_torque;
     return ret;
 }
 
@@ -4590,7 +4594,7 @@ bool embObjMotionControl::setRefTorqueRaw(int j, double t)
 {
     eOmc_setpoint_t setpoint;
     setpoint.type = (eOenum08_t) eomc_setpoint_torque;
-    setpoint.to.torque.value =  (eOmeas_torque_t) S_16(t);
+    setpoint.to.torque.value =  (eOmeas_torque_t) S_32(t);
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
     return res->addSetMessage(protid, (uint8_t*) &setpoint);
@@ -4868,7 +4872,7 @@ bool embObjMotionControl::setImpedanceOffsetRaw(int j, double offset)
 //    if(!getWholeImpedanceRaw(j, val))
 //        return false;
 
-    _cacheImpedance[j].offset   = (eOmeas_torque_t) S_16(offset);
+    _cacheImpedance[j].offset   = (eOmeas_torque_t) S_32(offset);
     val.stiffness     = _cacheImpedance[j].stiffness;
     val.damping     = _cacheImpedance[j].damping;
     val.offset      = _cacheImpedance[j].offset;
