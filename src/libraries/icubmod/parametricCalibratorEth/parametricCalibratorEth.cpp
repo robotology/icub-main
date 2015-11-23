@@ -59,7 +59,10 @@ parametricCalibratorEth::parametricCalibratorEth() :
     calibMutex(1),
     skipCalibration(false),
     clearHwFault(false),
-    n_joints(0)
+    n_joints(0),
+    timeout_park(NULL),
+    timeout_goToZero(NULL),
+    timeout_calibration(NULL)
 {
 }
 
@@ -874,7 +877,7 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
                 }
                 if(!done)
                 {
-                    yError() << deviceName << ": joint " << i << " not in position after a timeout of" << timeout_park << " seconds";
+                    yError() << deviceName << ": joint " << i << " not in position after a timeout of" << timeout_park[i] << " seconds";
                 }
             }
         }
@@ -1002,7 +1005,7 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
             }
             if(!done)
             {
-                yError() << deviceName << ": joint " << j << " not in position after a timeout of" << timeout_park << " seconds";
+                yError() << deviceName << ": joint " << j << " not in position after a timeout of" << timeout_park[j] << " seconds";
             }
         }
     }
