@@ -1139,16 +1139,49 @@ void hostTransceiver::eoprot_override_sk(void)
 
 }
 
-
-void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(uint32_t remipv4addr, uint64_t rec_seqnum, uint64_t expected_seqnum)
+//uint32_t remipv4addr, uint64_t rec_seqnum, uint64_t expected_seqnum
+void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(EOreceiver *r)
 {  
-    long long unsigned int exp = expected_seqnum;
-    long long unsigned int rec = rec_seqnum;
-    char *ipaddr = (char*)&remipv4addr;
+    const eOreceiver_seqnum_error_t * err = eo_receiver_GetSequenceNumberError(r);
+    long long unsigned int exp = err->exp_seqnum;
+    long long unsigned int rec = err->rec_seqnum;
+    long long unsigned int timeoftxofcurrent = err->timeoftxofcurrent;
+    long long unsigned int timeoftxofprevious = err->timeoftxofprevious;
+    char *ipaddr = (char*)&err->remipv4addr;
     //printf("\nERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t received: \t%llu\n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec);
     char errmsg[256] = {0};
-    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t Received: \t%llu \t Missing: \t%llu \n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec, rec-exp);
+    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR in sequence number from IP = %d.%d.%d.%d. Expected: %llu, Received: %llu, Missing: %llu, Prev Frame TX at %llu us, This Frame TX at %llu us",
+                                    ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3],
+                                    exp, rec, rec-exp,
+                                    timeoftxofprevious, timeoftxofcurrent);
     yError() << errmsg;
+}
+
+typedef struct
+{
+    uint32_t            startofframe;       /**< it is the start of the frame: it is EOFRAME_START */
+    uint16_t            ropssizeof;         /**< tells how many bytes are reserved for the rops: its value can be 0 to ... */
+    uint16_t            ropsnumberof;       /**< tells how many rops are inside: its value can be 0 to ... */
+    uint64_t            ageofframe;         /**< tells the time (in usec) of creation of the frame */
+    uint64_t            sequencenumber;     /**< contains a sequence number */
+} tmpStructROPframeHeader_t;
+
+void cpp_protocol_callback_incaseoferror_invalidFrame(EOreceiver *r)
+{
+    const eOreceiver_invalidframe_error_t * err = eo_receiver_GetInvalidFrameError(r);
+    char errmsg[256] = {0};
+    char *ipaddr = (char*)&err->remipv4addr;
+    tmpStructROPframeHeader_t *header = (tmpStructROPframeHeader_t*)err->ropframe;
+    long long unsigned int ageofframe = header->ageofframe;
+    long long unsigned int sequencenumber = header->sequencenumber;
+    uint16_t ropframesize = 0;
+    eo_ropframe_Size_Get(err->ropframe, &ropframesize);
+    //snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR of type INVALID FRAME from IP = TBD");
+    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR of type INVALID FRAME from IP = %d.%d.%d.%d", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3]);
+    yError() << errmsg;
+    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected: ropframesize = %d, ropsizeof = %d, ropsnumberof = %d, ageoframe = %llu, sequencenumber = %llu", ropframesize, header->ropssizeof, header->ropsnumberof, ageofframe, sequencenumber);
+    yDebug() << errmsg;
+
 }
 
 //extern "C" {
@@ -1218,6 +1251,7 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
     
     // marco.accame on 29 apr 2014: so that the EOreceiver calls this funtion in case of error in sequence number
     hosttxrxcfg.extfn.onerrorseqnumber = cpp_protocol_callback_incaseoferror_in_sequencenumberReceived;
+    hosttxrxcfg.extfn.onerrorinvalidframe = cpp_protocol_callback_incaseoferror_invalidFrame;
 
 
 #if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
