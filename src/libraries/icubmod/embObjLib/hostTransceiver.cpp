@@ -1150,10 +1150,11 @@ void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(EOreceiver *r
     char *ipaddr = (char*)&err->remipv4addr;
     //printf("\nERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t received: \t%llu\n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec);
     char errmsg[256] = {0};
-    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR in sequence number from IP = %d.%d.%d.%d\t Expected: \t%llu,\t Received: \t%llu \t Missing: \t%llu \n", ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3], exp, rec, rec-exp);
+    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected an ERROR in sequence number from IP = %d.%d.%d.%d. Expected: %llu, Received: %llu, Missing: %llu, Prev Frame TX at %llu us, This Frame TX at %llu us",
+                                    ipaddr[0], ipaddr[1], ipaddr[2], ipaddr[3],
+                                    exp, rec, rec-exp,
+                                    timeoftxofprevious, timeoftxofcurrent);
     yError() << errmsg;
-    snprintf(errmsg, sizeof(errmsg), "hostTransceiver()::onMsgReception() detected: timeoftxofcurrent = %llu, timeoftxofprevious = %llu", timeoftxofcurrent, timeoftxofprevious);
-    yDebug() << errmsg;
 }
 
 typedef struct
