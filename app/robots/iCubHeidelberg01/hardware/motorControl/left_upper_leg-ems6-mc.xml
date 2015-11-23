@@ -8,8 +8,8 @@
       <params file="hardware/mechanicals/left_upper_leg-ems6-mec.xml" />
 
     <group name="LIMITS">
-        <param name="Max">                85          70         70           0  </param>
-        <param name="Min">               -30         -15        -70        -100  </param>
+        <param name="Max">                100         75         75           0  </param>
+        <param name="Min">               -33         -17        -75        -100  </param>
         <param name="RotorMin">                 0             0             0             0     </param> 
         <param name="RotorMax">                 0             0             0             0     </param>
         <param name="JntVelocityMax">              1000          1000          1000          1000  </param>   
@@ -48,12 +48,12 @@
         <param name="maxInt">        500        500        500        500     </param>       
         <param name="shift">           0          0          0          0     </param>       
         <param name="ko">              0          0          0          0     </param>       
-        <param name="stictionUp">      3          2          1          0     </param>       
-        <param name="stictionDwn">    -3         -2         -1          0     </param>       
+        <param name="stictionUp">  -1.98        0.3      -0.78      -0.83     </param>       
+        <param name="stictionDwn">  3.07       -1.8       1.08       1.55     </param>       
         <param name="kff">             1          1          1          1     </param>      
-        <param name="kbemf">       0.004      0.002      0.002      0.002     </param>     
+        <param name="kbemf">     -0.0035     0.0017    -0.0029     -0.003     </param>     
         <param name="filterType">      0          0          0          0     </param>              
-        <param name="ktau">         -113        188       -240        230     </param>      
+        <param name="ktau">         -158        169       -219        219     </param>      
     </group>
 	
   </device>

@@ -8,8 +8,8 @@
       <params file="hardware/mechanicals/torso-ems5-mec.xml" />
 
     <group name="LIMITS">
-        <param name="Max">              50            25            50          </param>
-        <param name="Min">             -50           -25           -20          </param>
+        <param name="Max">              50            26            60          </param>
+        <param name="Min">             -50           -26           -20          </param>
         <param name="RotorMin">         0             0             0           </param> 
         <param name="RotorMax">         0             0             0           </param>
         <param name="Currents">         5000          5000          5000        </param>
@@ -51,7 +51,7 @@
         <param name="stictionUp">      2          2          2  </param>       
         <param name="stictionDwn">    -2         -2         -2  </param>       
         <param name="kff">             0          0          0  </param>   
-        <param name="kbemf">      0.0005     0.0008     0.0008  </param>    
+        <param name="kbemf">     -0.0005    -0.0008    -0.0008  </param>    
         <param name="filterType">      0          0          0  </param>           
         <param name="ktau">          736       -736       -736  </param>  
     </group>
