@@ -24,9 +24,9 @@
 	<group name="POSITION_CONTROL">
         <param name="controlLaw">    joint_pid_v1               </param>    
         <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">            300.00                    </param>   
+        <param name="kp">            1200.00                    </param>   
         <param name="kd">                 0                     </param>       
-        <param name="ki">             	  0                     </param>       
+        <param name="ki">             500.0                     </param>       
         <param name="limPwm">          	3360                    </param>       
         <param name="maxPwm">          	3360                    </param>  
         <param name="maxInt">             0                     </param>       
