@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
 
     IPositionControl *ipos=0;
     IPositionControl2 *ipos2=0;
-    IPositionDirect  *posDir=0;
+    IPositionDirect  *iposDir=0;
     IVelocityControl *vel=0;
     IEncoders *enc=0;
     IPidControl *pid=0;
@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
     ok &= dd.view(itorque);
     ok &= dd.view(iopenloop);
     ok &= dd.view(iimp);
-    ok &= dd.view(posDir);
+    ok &= dd.view(iposDir);
     ok &= dd.view(iMode2);
     ok &= dd.view(iInteract);
 
@@ -293,6 +293,8 @@ int main(int argc, char *argv[])
             printf("    [%s] <list> to set the reference acceleration for all axes\n", Vocab::decode(VOCAB_REF_ACCELERATIONS).c_str());          
             printf("    [%s] <int> to stop a single axis\n", Vocab::decode(VOCAB_STOP).c_str());
             printf("    [%s] <int> to stop all axes\n", Vocab::decode(VOCAB_STOPS).c_str());
+            printf("    [%s] <int> <double> to move single axis using position direct\n", Vocab::decode(VOCAB_POSITION_DIRECT).c_str());
+            printf("    [%s] <list> to move multiple axes using position direct\n", Vocab::decode(VOCAB_POSITION_DIRECTS).c_str());
             printf("    [%s] <int> <list> to set the PID values for a single axis\n", Vocab::decode(VOCAB_PID).c_str());
             printf("    [%s] <int> <list> to set the limits for a single axis\n", Vocab::decode(VOCAB_LIMITS).c_str());
             printf("    [%s] <int> to disable the PID control for a single axis\n", Vocab::decode(VOCAB_DISABLE).c_str());
@@ -758,6 +760,23 @@ int main(int argc, char *argv[])
                 case VOCAB_STOPS: {
                     printf("%s: stopping all axes\n", Vocab::decode(VOCAB_STOPS).c_str());
                     ipos->stop();
+                }
+                break;
+
+
+                case VOCAB_POSITION_DIRECT: {
+                    printf("%s: setting position direct reference\n", Vocab::decode(VOCAB_POSITION_DIRECT).c_str());
+                    iposDir->setPosition(p.get(2).asInt(), p.get(3).asDouble());
+                }
+                break;
+
+                case VOCAB_POSITION_DIRECTS: {
+                    printf("%s: setting position direct references to %s\n", Vocab::decode(VOCAB_POSITION_DIRECTS).c_str(), p.toString().c_str() );
+                    Bottle *l = p.get(2).asList();
+                    for (i = 0; i < jnts; i++) {
+                        tmp[i] = l->get(i).asDouble();
+                    }
+                    iposDir->setPositions(tmp);
                 }
                 break;
 
