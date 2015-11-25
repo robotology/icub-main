@@ -464,9 +464,7 @@ public:
     yarp::dev::TheEthManager    *ethManager;
 
     bool verifyMotionControlProtocol(Bottle groupProtocol);
-#if !defined(EMBOBJMC_DONT_USE_MAIS)
-    bool verifyMaisProtocol(Bottle groupProtocol);
-#endif
+
     void cleanup(void);
 
     // Device Driver
@@ -480,7 +478,6 @@ public:
     virtual eoThreadEntry *getThreadTable(int  threadId);
 
     eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
-    void refreshEncoderTimeStamp(int joint);
 
     bool alloc(int njoints);
     bool init(void);
