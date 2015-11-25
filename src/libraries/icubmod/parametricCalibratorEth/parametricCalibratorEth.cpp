@@ -694,6 +694,8 @@ bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
             {
                 yError() << deviceName << ": Timeout while calibrating " << (*lit);
                 calibration_ok = false;
+                lit++;
+                timeout = 0;
             }
             
             yarp::os::Time::delay(1.0);
