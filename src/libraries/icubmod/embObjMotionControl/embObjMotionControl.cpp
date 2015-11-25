@@ -4286,7 +4286,7 @@ bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorq
         {
             if (Time::now() - curr_time > 2.0)
             {
-                yWarning ("embObjMotionControl::updateMeasure() torque measure saturated to %+4.4f on board %d joint %d, count: %d", _maxTorque[j], _fId.boardNumber, userLevel_jointNumber, count_saturation);
+                yWarning ("embObjMotionControl::updateMeasure() torque measure saturated from %+4.4f to %+4.4f on board %d joint %d, count: %d", fTorque, _maxTorque[j], _fId.boardNumber, userLevel_jointNumber, count_saturation);
                 curr_time = Time::now();
             }
             fTorque = (- _maxTorque[j]);
@@ -4296,7 +4296,7 @@ bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorq
         {
             if (Time::now() - curr_time > 2.0)
             {
-                yWarning ("embObjMotionControl::updateMeasure() torque measure saturated to %+4.4f on board %d joint %d, count: %d", _maxTorque[j], _fId.boardNumber, userLevel_jointNumber, count_saturation);
+                yWarning ("embObjMotionControl::updateMeasure() torque measure saturated from %+4.4f to %+4.4f on board %d joint %d, count: %d", fTorque, _maxTorque[j], _fId.boardNumber, userLevel_jointNumber, count_saturation);
                 curr_time = Time::now();
             }
             fTorque = _maxTorque[j];
