@@ -181,7 +181,6 @@ AnalogServer::AnalogServer(): RateThread(0)
 AnalogServer::~AnalogServer()
 {
     yTrace();
-    threadRelease();
     _rate = 0;
     analogSensor_p = NULL;
 }
@@ -415,6 +414,7 @@ void AnalogServer::threadRelease()
     {
         analogPorts[i].port.close();
     }
+    close();
 }
 
 void AnalogServer::run()
