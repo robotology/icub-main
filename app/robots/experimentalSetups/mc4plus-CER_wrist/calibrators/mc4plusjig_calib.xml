@@ -17,8 +17,8 @@
 
 		<group name="CALIBRATION">
 		    <param name="calibrationType">                    8               </param>
-		    <param name="calibration1">                       -2000           </param> <!-- used pwm  -->
-		    <param name="calibration2">                       91022           </param> <!-- pos of reached hw limit in icubdeg-->
+		    <param name="calibration1">                       -2500           </param> <!-- used pwm  -->
+		    <param name="calibration2">                       32767           </param> <!-- pos of reached hw limit in icubdeg-->
 		    <param name="calibration3">                       0               </param> 
 
             <param name="calibrationZero">                    0.0             </param>

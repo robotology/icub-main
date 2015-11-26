@@ -8,7 +8,7 @@
 
                              <!--   0               logical axis number (ControlBoardWrapper) -->
 	    <param name="AxisMap">               0              </param>   <!-- hardware axis number  (EMS) -->
-        <param name="AxisName">              "axis0"        </param> 
+        <param name="AxisName">              "wrist0"        </param> 
         <param name="HasHallSensor">         0              </param>
         <param name="HasTempSensor">         0              </param>
         <param name="HasRotorEncoder">       0              </param>
@@ -20,7 +20,7 @@
         <param name="RotorEncoderRes">       1024           </param> 
         <param name="JointEncoderType">      "NONE"         </param>
         <param name="RotorEncoderType">      "NONE"         </param>
-        <param name="JointEncoderRes">       1024           </param> 
+        <param name="JointEncoderRes">       5120           </param> <!-- i.e. 5 revolutions (350deg) of the motor == 1 revolution of the joint -->
         <param name="RotorIndexOffset">      0              </param>
         <param name="Gearbox">               1              </param>
         <param name="MotorPoles">            0              </param> 

@@ -4,7 +4,7 @@
 <params robot="iCubExpSetupMC4PLUS_CER" build="1">
   
   <group name="GENERAL">
-      <param name="skipCalibration">    false   </param>
+      <param name="skipCalibration">    true   </param>
       <param name="useRawEncoderData">  false  </param>
       <param name="useLimitedPWM">      false  </param>
       <param name="verbose">            false  </param>
