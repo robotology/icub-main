@@ -56,7 +56,7 @@
         <param desc="This parameter allows increasing the node persistence over consecutive frames implementing a sort of low-pass filter.
                      Its value specifies the number of consecutive frames for which if a node gets active it is kept on." default=""> framesPersistence </param>
         <param desc="This parameter allows changing the the side of a squared cropping window placed on the center of the largest
-                     blob detected. By default, \e d=auto, meaning that the cropping window will adapt to the size of the blob." default=""> cropSize </param>
+                     blob detected. Default value is \e auto, meaning that the cropping window will adapt to the size of the blob." default="auto"> cropSize </param>
         <param desc="This parameter allows controlling the maximum number of
                      threads allocated by parallelized OpenCV functions. This
                      option is available only if the OpenMP layer is supported. By
