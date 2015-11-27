@@ -1180,8 +1180,9 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     if (!extractGroup(general, xtmp, "AxisName", "a list of strings representing the axes names", _njoints))
         return false;
 
+    //beware: axis name has to be remapped here because they are not set using the toHw() helper function  
     for (i = 1; i < xtmp.size(); i++)
-        _axisName[i - 1] = xtmp.get(i).asString();
+        _axisName[_axisMap[i - 1]] = xtmp.get(i).asString();
 
     double tmp_A2E;
     // Encoder scales
