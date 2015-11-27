@@ -42,7 +42,7 @@
  
   <data>
     <input>
-      <type>Image</type>
+      <type>yarp::sig::Image</type>
       <port carrier="tcp">/depth2kin/depth:i</port>
       <required>no</required>
       <priority>no</priority>
@@ -50,7 +50,7 @@
     </input>
 
     <output>
-      <type>Image</type>
+      <type>yarp::sig::Image</type>
       <port carrier="tcp">/depth2kin/depth:o</port>
       <description>
         stream out the depth image as result of the hand segmentation
