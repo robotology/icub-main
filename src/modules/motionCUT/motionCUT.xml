@@ -133,11 +133,9 @@
       <server>
         <port carrier="tcp">/motionCUT/rpc</port>
         <description>
-            The parameters <i>winSize</i>, <i>recogThres</i>, <i>adjNodesThres</i>,
-            <i>blobMinSizeThres</i>, <i>framesPersistence</i>, <i>cropSize</i>,
-            <i>numThreads</i>, <i>verbosity</i> can be changed/retrieved through
-            the commands set/get. Moreover, the further switch \e inhibition can
-            be accessed in order to enable/disable the motion detection at run-time.
+            The parameters winSize, recogThres, adjNodesThres, blobMinSizeThres, framesPersistence, cropSize,
+            numThreads, verbosity can be changed/retrieved through the commands set/get. Moreover, the further
+            switch inhibition can be accessed in order to enable/disable the motion detection at run-time.
         </description>
       </server>
     </services>
