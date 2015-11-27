@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <?xml-stylesheet type="text/xsl" href="yarpmanifest.xsl"?>
- 
+
 <module>
     <name>motionCUT</name>
     <doxygen-group>icub_module</doxygen-group>
-    <description>
-        The module exploits the pyramidal Lucas-Kanade algorithm to detect independent moving points
-        over a selectable grid of nodes. The algorithm is designed in such a way that it works also
-        - and especially - with moving cameras.
-    </description>
+    <description>Independent Motion Detector</description>
     <copypolicy>Released under the terms of the GNU GPL v2.0</copypolicy>
     <version>1.0</version>
 
     <description-long>
-      \note The name motionCUT stands for <i>motion Cover/Uncover 
+      The module exploits the pyramidal Lucas-Kanade algorithm to detect
+      independent moving points over a selectable grid of nodes. The algorithm
+      is designed in such a way that it works also - and especially - with
+      moving cameras.
+
+      \note The name motionCUT stands for <i>motion Cover/Uncover
       Trick</i> and refers to its working principle that is
       detailed in the paper: Ciliberto C., Pattacini U., Natale
       L., Nori F. and Metta G., "Reexamining Lucas-Kanade Method
@@ -21,15 +22,15 @@
       Application to the iCub Humanoid Robot", <i>IEEE/RSJ
       International Conference on Intelligent Robots and
       Systems</i>, San Francisco, CA, USA, 2011.
- 
-      \note <b>If you're going to use the motionCUT for your work, 
+
+      \note <b>If you're going to use the motionCUT for your work,
       please quote it within any resulting publication</b>.
- 
-      \note We warmly suggest to use OpenCV in conjunction with 
+
+      \note We warmly suggest to use OpenCV in conjunction with
       multi-threading layers such as OpenMP and TBB in order to
       achieve high performances for motion detection. Refer to
       the OpenCV documentation for the details.
- 
+
       \note A video on iCub employing \e motionCUT can be seen <a
       href="http://www.youtube.com/watch?v=Ql8Qe0oxHaY">here</a>.
     </description-long>
@@ -56,7 +57,7 @@
                      Its value specifies the number of consecutive frames for which if a node gets active it is kept on." default=""> framesPersistence </param>
         <param desc="This parameter allows changing the the side of a squared cropping window placed on the center of the largest
                      blob detected. By default, \e d is /"auto/", meaning that the cropping window will adapt to the size of the blob." default=""> cropSize </param>
-        <param desc="This parameter allows controlling the maximum number of 
+        <param desc="This parameter allows controlling the maximum number of
                      threads allocated by parallelized OpenCV functions. This
                      option is available only if the OpenMP layer is supported. By
                      contrast, the TBB layer automatically determines the number of
@@ -82,20 +83,6 @@
             <priority>no</priority>
             <description>Accepts the incoming images.</description>
         </input>
-        <input port_type="service">
-            <type>Rpc</type>
-            <port carrier="tcp">/motionCUT/rpc</port>
-            <required>no</required>
-            <priority>no</priority>
-            <description>
-                The parameters <i>winSize</i>, <i>recogThres</i>, <i>adjNodesThres</i>,
-                <i>blobMinSizeThres</i>, <i>framesPersistence</i>, <i>cropSize</i>,
-                <i>numThreads</i>, <i>verbosity</i> can be changed/retrieved through
-                the commands set/get. Moreover, the further switch \e inhibition can
-                be accessed in order to enable/disable the motion detection at run-time.
-            </description>
-        </input>
-
         <output>
             <type>yarp::sig::Image</type>
             <port carrier="udp">/motionCUT/img:o</port>
@@ -141,5 +128,17 @@
             </description>
         </output>
     </data>
-</module>
 
+    <services>
+      <server>
+        <port carrier="tcp">/motionCUT/rpc</port>
+        <description>
+            The parameters <i>winSize</i>, <i>recogThres</i>, <i>adjNodesThres</i>,
+            <i>blobMinSizeThres</i>, <i>framesPersistence</i>, <i>cropSize</i>,
+            <i>numThreads</i>, <i>verbosity</i> can be changed/retrieved through
+            the commands set/get. Moreover, the further switch \e inhibition can
+            be accessed in order to enable/disable the motion detection at run-time.
+        </description>
+      </server>
+    </services>
+</module>
