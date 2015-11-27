@@ -1302,9 +1302,9 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     { 
         //return false; //this parameter is not yet mandatory
     }
-
+    //beware: axis name has to be remapped here because they are not set using the toHw() helper function  
     for (i = 1; i < xtmp.size(); i++)
-        _axisName[i - 1] = xtmp.get(i).asString();
+        _axisName[_axisMap[i-1]] = xtmp.get(i).asString();
 
     if (!validate(general, xtmp, "Encoder", "a list of scales for the joint encoders", nj+1))
         return false;
