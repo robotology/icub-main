@@ -90,7 +90,10 @@ icub_install_with_rpath() #from icubHelpers
 # Shared library option (hide on windows for now)
 
 # The CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS was added in CMake 3.4
-if(NOT MSVC OR CMAKE_VERSION VERSION_GREATER "3.3.5")
+if(NOT ${CMAKE_MINIMUM_REQUIRED_VERSION} VERSION_LESS 3.4)
+  message(AUTHOR_WARNING "CMAKE_MINIMUM_REQUIRED_VERSION is now ${CMAKE_MINIMUM_REQUIRED_VERSION}. This check can be removed.")
+endif()
+if(NOT MSVC OR NOT CMAKE_VERSION VERSION_LESS 3.4)
     option(ICUB_SHARED_LIBRARY "Compile shared libraries rather than static libraries" FALSE)
     if(ICUB_SHARED_LIBRARY)
         set(BUILD_SHARED_LIBS ON)
