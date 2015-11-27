@@ -70,6 +70,7 @@ iCubSimulationControl::iCubSimulationControl() :
     ImplementMotorEncoders(this),
     ImplementOpenLoopControl(this),
     ImplementRemoteVariables(this),
+    ImplementAxisInfo(this),
     _done(0),
     _mutex(1)
 {
@@ -287,6 +288,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementPositionDirect::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementOpenLoopControl::initialize(njoints, axisMap);
     ImplementRemoteVariables::initialize(njoints, axisMap);
+    ImplementAxisInfo::initialize(njoints, axisMap);
 
     if (!p.check("joint_device")) {
         yError("Need a device to access the joints\n");
@@ -340,6 +342,7 @@ bool iCubSimulationControl::close (void)
         ImplementPositionDirect::uninitialize();
         ImplementOpenLoopControl::uninitialize();
         ImplementRemoteVariables::uninitialize();
+        ImplementAxisInfo::uninitialize();
     }
 
     checkAndDestroy<double>(current_jnt_pos);
@@ -1530,6 +1533,20 @@ bool iCubSimulationControl::getVelPidsRaw(yarp::dev::Pid *pids)
     return NOT_YET_IMPLEMENTED("getVelPidsRaw");
 }
 
+bool iCubSimulationControl::getAxisNameRaw(int axis, yarp::os::ConstString& name)
+{
+    if ((axis >= 0) && (axis < njoints))
+    {
+        _mutex.wait();
+        char buff[100];
+        sprintf(buff,"JOINT%d", axis);
+        name.assign(buff,strlen(buff));
+        _mutex.post();
+        return true;
+    }
+    
+    return false;
+}
 
 bool iCubSimulationControl::setTorqueModeRaw( )
 {

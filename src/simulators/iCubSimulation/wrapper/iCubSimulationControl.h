@@ -100,7 +100,9 @@ public ImplementPositionDirect,
 public IOpenLoopControlRaw,
 public ImplementOpenLoopControl,
 public IRemoteVariablesRaw,
-public ImplementRemoteVariables
+public ImplementRemoteVariables,
+public IAxisInfoRaw,
+public ImplementAxisInfo
 
 {
  private:
@@ -280,6 +282,9 @@ public ImplementRemoteVariables
   virtual bool getLimitsRaw(int axis, double *min, double *max);
   virtual bool setVelLimitsRaw(int axis, double min, double max);
   virtual bool getVelLimitsRaw(int axis, double *min, double *max);
+
+  /////// Axis Info
+  virtual bool getAxisNameRaw(int axis, yarp::os::ConstString& name);
 
     /////// Torque Control
     virtual bool setTorqueModeRaw(void);

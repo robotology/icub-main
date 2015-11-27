@@ -130,6 +130,7 @@ int main(int argc, char *argv[])
     IImpedanceControl *iimp=0;
     IInteractionMode *iInteract=0;
     IMotorEncoders *iMotEnc=0;
+    IAxisInfo *iInfo = 0;
 
     bool ok;
     ok = dd.view(ipos);
@@ -159,6 +160,10 @@ int main(int argc, char *argv[])
     ok &=dd.view(imot); 
     if (!ok) {
         yWarning("Problems acquiring optional interface iMotor\n");
+    }
+    ok &= dd.view(iInfo);
+    if (!ok) {
+        yWarning("Problems acquiring optional interface iInfo\n");
     }
 
     ipos->getAxes(&jnts);
@@ -263,6 +268,7 @@ int main(int argc, char *argv[])
             printf("Standard Interfaces:\n");
             printf("type [get] and one of the following:\n");
             printf("    [%s] to read the number of controlled axes\n", Vocab::decode(VOCAB_AXES).c_str());
+            printf("    [%s] <int> to read the name of a single axis\n", Vocab::decode(VOCAB_INFO_NAME).c_str());
             printf("    [%s] to read the encoder value for all axes\n", Vocab::decode(VOCAB_ENCODERS).c_str());
             printf("    [%s] to read the PID values for all axes\n", Vocab::decode(VOCAB_PIDS).c_str());
             printf("    [%s] <int> to read the PID values for a single axis\n", Vocab::decode(VOCAB_PID).c_str());
@@ -366,6 +372,16 @@ int main(int argc, char *argv[])
 
         case VOCAB_GET:
             switch(p.get(1).asVocab()) {
+                case VOCAB_INFO_NAME:
+                {
+                   int j = p.get(2).asInt();
+                   if (iInfo == 0) { printf("unavailable interface\n"); break; }
+                   yarp::os::ConstString tmp_str;
+                   iInfo->getAxisName(j,tmp_str);
+                   printf("%s: %d %s\n", Vocab::decode(VOCAB_INFO_NAME).c_str(), j, tmp_str.c_str());
+                }
+                break;
+
                 case VOCAB_AXES: {
                     int nj = 0;
                     enc->getAxes(&nj);
