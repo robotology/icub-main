@@ -205,6 +205,9 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     }
 
 
+    //fake position pid
+    for (int i = 1; i < njoints + 1; i++) position_pid[i - 1].max_output = 100;
+
     //torque sensor
     for (int i = 1; i < njoints+1; i++) newtonsToSensor[i-1] = 1.0;
 
