@@ -219,6 +219,13 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         }
     for( int i =1;i<xtmp.size();i++ ) 
         limitsMax[i-1] = xtmp.get(i).asDouble()*angleToEncoder[i-1];
+    
+    //max velocity
+    for (int i = 1; i < xtmp.size(); i++)
+    {
+        velLimitsMin[i - 1] = 0;
+        velLimitsMax[i - 1] = 100 * angleToEncoder[i - 1];
+    }
         
     xtmp = p.findGroup("LIMITS").findGroup("Min","access the joint limits min");
     if(xtmp.size() != njoints+1)
