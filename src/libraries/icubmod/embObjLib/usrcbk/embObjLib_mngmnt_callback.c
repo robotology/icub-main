@@ -392,11 +392,12 @@ const char * eoboard_get_name(eObrd_cantype_t type)
     {
         "UNKNOWN", "UNKNOWN", "UNKNOWN",
         "MC4",
-        "UNKNOWN"
+        "UNKNOWN",
         "MTB",
         "STRAIN",
         "MAIS",
-        "FOC"
+        "FOC",
+        "ERROR09", "ERROR10"
     };
     static const char *none = "NONE";
 
