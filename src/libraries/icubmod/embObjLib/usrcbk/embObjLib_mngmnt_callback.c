@@ -401,7 +401,7 @@ const char * eoboard_get_name(eObrd_cantype_t type)
     static const char *none = "NONE";
 
 
-    if(type <= eobrd_cantype_mais)
+    if(type <= eobrd_cantype_1foc)
     {
         return(names[type]);
     }
