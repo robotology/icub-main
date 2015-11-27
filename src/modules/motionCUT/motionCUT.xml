@@ -56,15 +56,15 @@
         <param desc="This parameter allows increasing the node persistence over consecutive frames implementing a sort of low-pass filter.
                      Its value specifies the number of consecutive frames for which if a node gets active it is kept on." default=""> framesPersistence </param>
         <param desc="This parameter allows changing the the side of a squared cropping window placed on the center of the largest
-                     blob detected. By default, \e d is /"auto/", meaning that the cropping window will adapt to the size of the blob." default=""> cropSize </param>
+                     blob detected. By default, \e d=auto, meaning that the cropping window will adapt to the size of the blob." default=""> cropSize </param>
         <param desc="This parameter allows controlling the maximum number of
                      threads allocated by parallelized OpenCV functions. This
                      option is available only if the OpenMP layer is supported. By
                      contrast, the TBB layer automatically determines the number of
                      threads. \n
-                     \e #  > 0 : assign # threads to OpenCV; \n
-                     \e # == 0 : assign all threads to OpenCV; \n
-                     \e #  < 0 : assign all threads but # to OpenCV; \n
+                     \e # positive integer: assign # threads to OpenCV; \n
+                     \e # equal to 0: assign all threads to OpenCV; \n
+                     \e # negative integer: assign all threads but # to OpenCV; \n
                      The default value is -1 meaning that all threads equal to the
                      number of available cores BUT ONE will be used." default=""> numThreads </param>
         <switch>verbosity</switch>
@@ -122,7 +122,7 @@
             <type>yarp::sig::Image</type>
             <port carrier="udp">/motionCUT/opt:o</port>
             <description>
-                Outputs monochrome images containing just the grid nodes signalling
+                Outputs monochrome images containing just the grid nodes signaling
                 independent movements. This port propagates the time-stamp carried by
                 the input image.
             </description>
