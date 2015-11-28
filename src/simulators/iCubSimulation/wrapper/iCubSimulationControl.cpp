@@ -534,8 +534,7 @@ bool iCubSimulationControl::setReferenceRaw (int axis, double ref)
 {
     int mode = 0;
     getControlModeRaw(axis, &mode);
-    if (mode != VOCAB_CM_POSITION_DIRECT &&
-        mode != VOCAB_CM_IDLE)
+    if (mode != VOCAB_CM_POSITION_DIRECT)
     {
         #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
         yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, part " << partSelec << " joint: " << axis;
@@ -727,9 +726,7 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
         int mode = 0;
         getControlModeRaw(axis, &mode);
         if (mode != VOCAB_CM_POSITION &&
-            mode != VOCAB_CM_MIXED    &&
-            mode != VOCAB_CM_IMPEDANCE_POS &&
-            mode != VOCAB_CM_IDLE)
+            mode != VOCAB_CM_MIXED  )
         {
             #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
             yWarning() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, part " << partSelec << " joint: " << axis;
@@ -776,11 +773,7 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
             }else
                 next_pos[axis] = ref;
         }
-        if (controlMode[axis] != MODE_IMPEDANCE_POS && 
-            controlMode[axis] != MODE_IMPEDANCE_VEL ) 
-            controlMode[axis] = MODE_POSITION; 
-        else 
-           controlMode[axis] = MODE_IMPEDANCE_POS; 
+
         motor_on[axis]=true;
 
         if (verbosity)
@@ -950,9 +943,7 @@ bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)
         int mode = 0;
         getControlModeRaw(axis, &mode);
         if (mode != VOCAB_CM_VELOCITY &&
-        mode != VOCAB_CM_MIXED    &&
-        mode != VOCAB_CM_IMPEDANCE_VEL && 
-        mode != VOCAB_CM_IDLE)
+        mode != VOCAB_CM_MIXED)
         {
             #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
             yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, part " << partSelec << " joint: " << axis;
@@ -2034,8 +2025,7 @@ bool iCubSimulationControl::setPositionRaw(int axis, double ref)
     {
         int mode = 0;
         getControlModeRaw(axis, &mode);
-        if (mode != VOCAB_CM_POSITION_DIRECT &&
-            mode != VOCAB_CM_IDLE)
+        if (mode != VOCAB_CM_POSITION_DIRECT)
         {
             #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
             yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, part:" << partSelec << " joint: " << axis;
