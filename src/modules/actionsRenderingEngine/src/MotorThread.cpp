@@ -2501,10 +2501,7 @@ bool MotorThread::calibFingers(Bottle &options)
     }
 
     if(!no_head)
-    {
         head_mode=HEAD_MODE_GO_HOME;
-        ctrl_gaze->waitMotionDone(0.1,1.0);
-    }
 
     setArmInUse(currentArm);
 
