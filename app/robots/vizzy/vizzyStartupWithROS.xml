@@ -2,6 +2,7 @@
 <name>Vizzy Startup with ROS</name>
     <dependencies>
       <port>/vizzy_ns</port>
+      <port>/ros</port>
     </dependencies>
 
     <module>
@@ -10,50 +11,38 @@
         <tag>robotInterface</tag>
     </module>
     <module>
-        <name>cfwFailUtility</name>
-        <node>vizzy-desktop</node>
-        <tag>cfw_fail_utility</tag>
-    </module>
-    <module>
          <name>yarpidl_rosmsg</name>
           <parameters>--name /typ@/yarpidl</parameters>
           <node>vizzy-desktop</node>
          <tag>yarpidl_rosmsg</tag>
     </module>
     <module>
-		<name>vizzy_head</name>
+		<name>vizzyUpperBodyJoints</name>
+		<dependencies>
+			<port timeout="70.0">/vizzy/right_shoulder_arm/state:o</port>
+		</dependencies>
 		<parameters></parameters>
 		<node>vizzy-desktop</node>
-	<tag>head_joint_state_ros_bridge</tag>
-	</module>
-	<module>
-		<name>vizzy_waist</name>
-		<parameters></parameters>
-		<node>vizzy-desktop</node>
-	<tag>waist_joint_state_ros_bridge</tag>
-	</module>
-	<module>
-		<name>vizzy_left_arm</name>
-		<parameters></parameters>
-		<node>vizzy-desktop</node>
-	<tag>left_arm_joint_state_ros_bridge</tag>
-	</module>
-	<module>
-		<name>vizzy_right_arm</name>
-		<parameters></parameters>
-		<node>vizzy-desktop</node>
-	<tag>right_arm_joint_state_ros_bridge</tag>
+	<tag>upper_body_joint_state_ros_bridge</tag>
 	</module>
 	<module>
 		<name>cartesianControllerServer</name>
 		<parameters>--from server_left_arm.ini</parameters>
 		<node>vizzy-desktop</node>
+		<dependencies>
+		    <port timeout="60">/vizzy/torso/state:o</port>
+		    <port timeout="90">/vizzy/left_shoulder_arm/stateExt:o</port>
+		</dependencies>
 		<tag>cart_serv_left</tag>
 	</module>
 	<module>
 		<name>cartesianControllerServer</name>
 		<parameters>--from server_right_arm.ini</parameters>
 		<node>vizzy-desktop</node>
+		<dependencies>
+		    <port timeout="60">/vizzy/torso/state:o</port>
+		    <port timeout="90">/vizzy/right_shoulder_arm/stateExt:o</port>
+		</dependencies>
 		<tag>cart_serv_right</tag>
 	</module>
 	<module>
@@ -61,8 +50,8 @@
 		<parameters>--from solver_left_arm.ini</parameters>
 		<node>vizzy-desktop</node>
 		<dependencies>
-		    <port timeout="40">/vizzy/torso/state:o</port>
-		    <port timeout="40">/vizzy/left_shoulder_arm/stateExt:o</port>
+		    <port timeout="60">/vizzy/torso/state:o</port>
+		    <port timeout="60">/vizzy/left_shoulder_arm/stateExt:o</port>
 		</dependencies>
 		<tag>cart_solv_left</tag>
 	</module>
@@ -71,8 +60,8 @@
 		<parameters>--from solver_right_arm.ini</parameters>
 		<node>vizzy-desktop</node>
 		<dependencies>
-		    <port timeout="40">/vizzy/torso/state:o</port>
-		    <port timeout="40">/vizzy/right_shoulder_arm/stateExt:o</port>
+		    <port timeout="60">/vizzy/torso/state:o</port>
+		    <port timeout="60">/vizzy/right_shoulder_arm/stateExt:o</port>
 		</dependencies>
 		<tag>cart_solv_right</tag>
 	</module>
@@ -80,8 +69,20 @@
 		<name>vizzy_iKinGazeCtrl</name>
 		<node>vizzy-desktop</node>
 		<dependencies>
-		    <port timeout="40">/vizzy/head/state:o</port>
+		    <port timeout="120">/vizzy/head/state:o</port>
 		</dependencies>
 		<tag>cart_gaze_ctrl</tag>
 	</module>
+
+    <module>
+        <name>fixationPointStatusBridge</name>
+        <node>vizzy-desktop</node>
+        <tag>fixationPointStatusBridge</tag>
+    </module>
+    <module>
+        <name>fixationPointActionBridge</name>
+        <node>vizzy-desktop</node>
+        <tag>fixationPointActionBridge</tag>
+    </module>
+
 </application>
