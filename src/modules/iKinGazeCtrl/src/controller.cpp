@@ -1049,9 +1049,14 @@ bool Controller::isMotionDone()
 /************************************************************************/
 void Controller::setTrackingMode(const bool f)
 {
+    LockGuard guard(mutexRun);
+
     commData->trackingModeOn=f;
+    yInfo("tracking mode set to %s",
+          commData->trackingModeOn?"on":"off");
+
     if (commData->trackingModeOn)
-        commData->port_xd->set_xd(commData->get_x());
+        commData->port_xd->set_xd(commData->get_x());    
 }
 
 

@@ -63,6 +63,7 @@ protected:
     ExchangeData         *commData;
     Controller           *ctrl;
     Integrator           *I;
+    Mutex                 mutex;
 
     double                orig_eye_tilt_min;
     double                orig_eye_tilt_max;

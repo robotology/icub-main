@@ -124,6 +124,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
 /************************************************************************/
 void EyePinvRefGen::minAllowedVergenceChanged()
 {
+    LockGuard guard(mutex);
     lim(2,0)=commData->minAllowedVergence;
     I->setLim(lim);
     orig_lim=lim;
@@ -133,8 +134,9 @@ void EyePinvRefGen::minAllowedVergenceChanged()
 /************************************************************************/
 bool EyePinvRefGen::bindEyes(const double ver)
 {
+    LockGuard guard(mutex);
     if (ver>=0.0)
-    {
+    {        
         double ver_rad=std::max(CTRL_DEG2RAD*ver,commData->minAllowedVergence);
         commData->eyesBoundVer=CTRL_RAD2DEG*ver_rad;
 
@@ -152,7 +154,8 @@ bool EyePinvRefGen::bindEyes(const double ver)
         lim(2,0)=lim(2,1)=ver_rad;
         I->setLim(lim);
 
-        commData->port_xd->set_xd(fp);
+        yInfo("eyes constrained at vergence %g deg",commData->eyesBoundVer);        
+        commData->port_xd->set_xd(fp);        
         return true;
     }
     else
@@ -163,8 +166,9 @@ bool EyePinvRefGen::bindEyes(const double ver)
 /************************************************************************/
 bool EyePinvRefGen::clearEyes()
 {
+    LockGuard guard(mutex);
     if (commData->eyesBoundVer>=0.0)
-    {
+    {        
         commData->eyesBoundVer=-1.0;
 
         // reinstate tilt and pan bound of the left eye
@@ -178,6 +182,8 @@ bool EyePinvRefGen::clearEyes()
         // reinstate the limits of the integrator
         lim=orig_lim;
         I->setLim(lim);
+
+        yInfo("eyes cleared");
         return true;
     }
     else
@@ -196,9 +202,11 @@ void EyePinvRefGen::manageBindEyes(const double ver)
 /************************************************************************/
 void EyePinvRefGen::setCounterRotGain(const Vector &gain)
 {
+    LockGuard guard(mutex);
     size_t len=std::min(counterRotGain.length(),gain.length());
     for (size_t i=0; i<len; i++)
         counterRotGain[i]=gain[i];
+    yInfo("counter-rotation gains set to (%s)",counterRotGain.toString(3,3).c_str());
 }
 
 
@@ -267,6 +275,7 @@ void EyePinvRefGen::run()
 {
     if (genOn)
     {
+        LockGuard guard(mutex);
         double timeStamp;
 
         // read encoders
