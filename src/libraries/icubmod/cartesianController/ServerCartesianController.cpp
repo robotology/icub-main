@@ -2439,6 +2439,8 @@ bool ServerCartesianController::setPosePriority(const ConstString &p)
     bool ret=false;
     if (connected && ((p=="position") || (p=="orientation")))
     {
+        mutex.lock();
+
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_PRIO);
@@ -2448,7 +2450,9 @@ bool ServerCartesianController::setPosePriority(const ConstString &p)
         if (portSlvRpc.write(command,reply))
             ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
         else
-            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());
+
+        mutex.unlock();
     }
 
     return ret;
@@ -2461,6 +2465,8 @@ bool ServerCartesianController::getPosePriority(ConstString &p)
     bool ret=false;
     if (connected)
     {
+        mutex.lock();
+
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_GET);
         command.addVocab(IKINSLV_VOCAB_OPT_PRIO);
@@ -2473,7 +2479,9 @@ bool ServerCartesianController::getPosePriority(ConstString &p)
                   "position":"orientation";
         }
         else
-            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());
+
+        mutex.unlock();
     }
 
     return ret;
@@ -3490,6 +3498,8 @@ bool ServerCartesianController::deleteContexts(Bottle *contextIdList)
 {
     if (contextIdList!=NULL)
     {
+        mutex.lock();
+
         for (int i=0; i<contextIdList->size(); i++)
         {
             int id=contextIdList->get(i).asInt();
@@ -3498,6 +3508,7 @@ bool ServerCartesianController::deleteContexts(Bottle *contextIdList)
                 contextMap.erase(itr);
         }
 
+        mutex.unlock();
         return true;
     }
     else

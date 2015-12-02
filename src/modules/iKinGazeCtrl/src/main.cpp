@@ -561,7 +561,7 @@ using namespace yarp::sig;
 
 
 /************************************************************************/
-class CtrlModule: public RFModule
+class GazeModule: public RFModule
 {
 protected:
     ResourceFinder *rf;
@@ -573,7 +573,8 @@ protected:
     ExchangeData    commData;    
     bool            interrupting;
     bool            doSaveTweakFile;
-    Mutex           savingTweakFile;
+    Mutex           mutexContext;
+    Mutex           mutexTweak;
     
     IMUPort   imuPort;    
     RpcServer rpcPort;
@@ -648,6 +649,7 @@ protected:
     /************************************************************************/
     void storeContext(int *id)
     {
+        LockGuard guard(mutexContext);
         Context &context=contextMap[contextIdCnt];
         
         // solver part
@@ -677,6 +679,7 @@ protected:
     /************************************************************************/
     bool restoreContext(const int id)
     {
+        LockGuard guard(mutexContext);
         map<int,Context>::iterator itr=contextMap.find(id);
         if (itr!=contextMap.end())
         {
@@ -713,6 +716,7 @@ protected:
     {
         if (contextIdList!=NULL)
         {
+            LockGuard guard(mutexContext);
             for (int i=0; i<contextIdList->size(); i++)
             {
                 int id=contextIdList->get(i).asInt();
@@ -742,43 +746,7 @@ protected:
 
         Bottle &minVer=info.addList();
         minVer.addString("min_allowed_vergence");
-        minVer.addDouble(CTRL_RAD2DEG*commData.minAllowedVergence);
-
-        Bottle &intrinsicsLeft=info.addList();
-        intrinsicsLeft.addString("camera_intrinsics_left");
-        Bottle &intrinsicsLeftValues=intrinsicsLeft.addList();
-        Matrix PrjL;
-        if (loc->getIntrinsicsMatrix("left",PrjL))
-            for (int r=0; r<PrjL.rows(); r++)
-                for (int c=0; c<PrjL.cols(); c++)
-                    intrinsicsLeftValues.addDouble(PrjL(r,c));
-
-        Bottle &intrinsicsRight=info.addList();
-        intrinsicsRight.addString("camera_intrinsics_right");
-        Bottle &intrinsicsRightValues=intrinsicsRight.addList();
-        Matrix PrjR;
-        if (loc->getIntrinsicsMatrix("right",PrjR))
-            for (int r=0; r<PrjR.rows(); r++)
-                for (int c=0; c<PrjR.cols(); c++)
-                    intrinsicsRightValues.addDouble(PrjR(r,c));
-
-        Bottle &extrinsicsLeft=info.addList();
-        extrinsicsLeft.addString("camera_extrinsics_left");
-        Bottle &extrinsicsLeftValues=extrinsicsLeft.addList();
-        Matrix HL;
-        if (loc->getExtrinsicsMatrix("left",HL))
-            for (int r=0; r<HL.rows(); r++)
-                for (int c=0; c<HL.cols(); c++)
-                    extrinsicsLeftValues.addDouble(HL(r,c));
-
-        Bottle &extrinsicsRight=info.addList();
-        extrinsicsRight.addString("camera_extrinsics_right");
-        Bottle &extrinsicsRightValues=extrinsicsRight.addList();
-        Matrix HR;
-        if (loc->getExtrinsicsMatrix("right",HR))
-            for (int r=0; r<HR.rows(); r++)
-                for (int c=0; c<HR.cols(); c++)
-                    extrinsicsRightValues.addDouble(HR(r,c));
+        minVer.addDouble(CTRL_RAD2DEG*commData.minAllowedVergence);        
 
         Bottle &events=info.addList();
         events.addString("events");
@@ -796,13 +764,15 @@ protected:
         eventsList.addString("comm-timeout");
         eventsList.addString("*");
 
+        tweakGet(info);
+
         return true;
     }
 
     /************************************************************************/
     bool tweakSet(const Bottle &options)
     {
-        savingTweakFile.lock();
+        LockGuard guard(mutexTweak);
 
         if (Bottle *pB=options.find("camera_intrinsics_left").asList())
         {
@@ -912,14 +882,50 @@ protected:
             eyesRefGen->minAllowedVergenceChanged();
         }
 
-        savingTweakFile.unlock();
         return true;
     }
 
     /************************************************************************/
     bool tweakGet(Bottle &options)
     {
-        options.clear();
+        LockGuard guard(mutexTweak);
+
+        Bottle &intrinsicsLeft=options.addList();
+        intrinsicsLeft.addString("camera_intrinsics_left");
+        Bottle &intrinsicsLeftValues=intrinsicsLeft.addList();
+        Matrix PrjL;
+        if (loc->getIntrinsicsMatrix("left",PrjL))
+            for (int r=0; r<PrjL.rows(); r++)
+                for (int c=0; c<PrjL.cols(); c++)
+                    intrinsicsLeftValues.addDouble(PrjL(r,c));
+
+        Bottle &intrinsicsRight=options.addList();
+        intrinsicsRight.addString("camera_intrinsics_right");
+        Bottle &intrinsicsRightValues=intrinsicsRight.addList();
+        Matrix PrjR;
+        if (loc->getIntrinsicsMatrix("right",PrjR))
+            for (int r=0; r<PrjR.rows(); r++)
+                for (int c=0; c<PrjR.cols(); c++)
+                    intrinsicsRightValues.addDouble(PrjR(r,c));
+
+        Bottle &extrinsicsLeft=options.addList();
+        extrinsicsLeft.addString("camera_extrinsics_left");
+        Bottle &extrinsicsLeftValues=extrinsicsLeft.addList();
+        Matrix HL;
+        if (loc->getExtrinsicsMatrix("left",HL))
+            for (int r=0; r<HL.rows(); r++)
+                for (int c=0; c<HL.cols(); c++)
+                    extrinsicsLeftValues.addDouble(HL(r,c));
+
+        Bottle &extrinsicsRight=options.addList();
+        extrinsicsRight.addString("camera_extrinsics_right");
+        Bottle &extrinsicsRightValues=extrinsicsRight.addList();
+        Matrix HR;
+        if (loc->getExtrinsicsMatrix("right",HR))
+            for (int r=0; r<HR.rows(); r++)
+                for (int c=0; c<HR.cols(); c++)
+                    extrinsicsRightValues.addDouble(HR(r,c));
+
         return true;
     }
 
@@ -987,7 +993,7 @@ protected:
 
 public:
     /************************************************************************/
-    CtrlModule()
+    GazeModule()
     {
         loc=NULL;
         eyesRefGen=NULL;
@@ -1945,10 +1951,9 @@ public:
     {
         if (doSaveTweakFile)
         {
-            savingTweakFile.lock();
+            LockGuard guard(mutexTweak);
             saveTweakFile();
             doSaveTweakFile=false;
-            savingTweakFile.unlock();
         }
 
         return true;
@@ -1972,7 +1977,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    CtrlModule mod;
+    GazeModule mod;
     return mod.runModule(rf);
 }
 

@@ -93,9 +93,9 @@ public:
     EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commData,
                   Controller *_ctrl, const Vector &_counterRotGain, const unsigned int _period);
 
-    void   enable()                               { genOn=true;            }
-    void   disable()                              { genOn=false;           }
-    Vector getCounterRotGain() const              { return counterRotGain; }    
+    void   enable()  { genOn=true;  }
+    void   disable() { genOn=false; }
+    Vector getCounterRotGain();
     void   setCounterRotGain(const Vector &gain);
     void   minAllowedVergenceChanged();
     bool   bindEyes(const double ver);
@@ -165,7 +165,7 @@ public:
     void   clearNeckPitch();
     void   clearNeckRoll();
     void   clearNeckYaw();
-    double getNeckAngleUserTolerance();
+    double getNeckAngleUserTolerance() const;
     void   setNeckAngleUserTolerance(const double angle);    
     bool   threadInit();
     void   afterStart(bool s);

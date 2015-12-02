@@ -200,6 +200,14 @@ void EyePinvRefGen::manageBindEyes(const double ver)
 
 
 /************************************************************************/
+Vector EyePinvRefGen::getCounterRotGain()
+{
+    LockGuard guard(mutex);
+    return counterRotGain;
+}
+
+
+/************************************************************************/
 void EyePinvRefGen::setCounterRotGain(const Vector &gain)
 {
     LockGuard guard(mutex);
@@ -647,7 +655,7 @@ void Solver::clearNeckYaw()
 
 
 /************************************************************************/
-double Solver::getNeckAngleUserTolerance()
+double Solver::getNeckAngleUserTolerance() const
 {
     return neckAngleUserTolerance;
 }
