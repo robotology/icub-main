@@ -1372,7 +1372,8 @@ void MotorThread::run()
             bool done;
             ctrl_gaze->checkMotionDone(&done);
             if (done)
-            {                
+            {
+                ctrl_gaze->stopControl();
                 ctrl_gaze->restoreContext(initial_gaze_context);
                 head_mode=HEAD_MODE_IDLE;
                 gazeUnderControl=false;
