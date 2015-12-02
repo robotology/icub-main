@@ -683,6 +683,7 @@ void Controller::run()
             motionOngoingEventsCurrent=motionOngoingEvents;
             mutexData.unlock();
 
+            ctrlActiveRisingEdgeTime=Time::now();
             commData->port_xd->get_new()=false;
         }
         // switch-off condition
@@ -691,7 +692,7 @@ void Controller::run()
             if (commData->trackingModeOn)
             {
                 if (!motionDone)
-                    event="motion-done"; 
+                    event="motion-done";
                 motionDone=true;
             }
             else
