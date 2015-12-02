@@ -1289,22 +1289,24 @@ void MotorThread::run()
     {
         case(HEAD_MODE_GO_HOME):
         {
-            if(!gazeUnderControl)
-            {
-                gazeUnderControl=true;
-            }
+            gazeUnderControl=true;
+            ctrl_gaze->stopControl();
+            ctrl_gaze->restoreContext(default_gaze_context);
+            ctrl_gaze->setTrackingMode(true);
 
-            homeFixCartType?ctrl_gaze->lookAtFixationPoint(homeFix):
-                            ctrl_gaze->lookAtAbsAngles(homeFix);
+            if (homeFixCartType)
+                ctrl_gaze->lookAtFixationPoint(homeFix);
+            else
+                ctrl_gaze->lookAtAbsAngles(homeFix);
+
+            head_mode=HEAD_MODE_LOOK;
             break;
         }
 
         case(HEAD_MODE_TRACK_HAND):
         {
-            if(!gazeUnderControl)
-            {
+            if (!gazeUnderControl)
                 gazeUnderControl=true;
-            }
 
             Vector x,o;
             action[armInUse]->getPose(x,o);
@@ -1352,7 +1354,6 @@ void MotorThread::run()
             break;
         }
 
-
         case(HEAD_MODE_TRACK_CART):
         {
             ctrl_gaze->lookAtFixationPoint(track_cartesian_target);
@@ -1361,13 +1362,8 @@ void MotorThread::run()
 
         case(HEAD_MODE_TRACK_FIX):
         {
-            if(!gazeUnderControl)
-            {
+            if (!gazeUnderControl)
                 gazeUnderControl=true;
-                //ctrl_gaze->restoreContext(default_gaze_context);
-                //ctrl_gaze->setTrackingMode(true);
-                //ctrl_gaze->lookAtFixationPoint(gaze_fix_point);
-            }
             break;
         }
 
@@ -1375,17 +1371,14 @@ void MotorThread::run()
         {
             bool done;
             ctrl_gaze->checkMotionDone(&done);
-            if(done)
-            {
-                gazeUnderControl=false;
+            if (done)
+            {                
                 ctrl_gaze->restoreContext(initial_gaze_context);
                 head_mode=HEAD_MODE_IDLE;
+                gazeUnderControl=false;
             }
             break;
         }
-
-        default:
-            break;
     }
 
     switch(arm_mode)
@@ -2169,9 +2162,6 @@ bool MotorThread::goHome(Bottle &options)
     if(!left_arm && !right_arm)
         left_arm=right_arm=true;
 
-    bool head_fixing=false;
-    ctrl_gaze->getTrackingMode(&head_fixing);
-
     if(head_home)
         head_mode=HEAD_MODE_GO_HOME;
 
@@ -2218,9 +2208,9 @@ bool MotorThread::goHome(Bottle &options)
 
     if (head_home)
     {
-        ctrl_gaze->waitMotionDone(0.1,2.0);
-        if (!head_fixing && (head_mode!=HEAD_MODE_TRACK_TEMP) && (head_mode!=HEAD_MODE_TRACK_CART))
-            setGazeIdle();
+        double t0=Time::now();
+        while ((head_mode!=HEAD_MODE_IDLE) && (Time::now()-t0<5.0))
+            Time::delay(0.1);
     }
 
     return true;
