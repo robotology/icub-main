@@ -343,14 +343,7 @@ Windows, Linux
 \author Carlo Ciliberto, Vadim Tikhanoff
 */ 
 
-#include <yarp/os/Network.h>
-#include <yarp/os/RFModule.h>
-#include <yarp/os/Bottle.h>
-#include <yarp/os/BufferedPort.h>
-#include <yarp/os/RpcServer.h>
-#include <yarp/os/PortReader.h>
-#include <yarp/os/Time.h>
-#include <yarp/os/Semaphore.h>
+#include <yarp/os/all.h>
 #include <yarp/sig/Vector.h>
 
 #include <string>
@@ -451,6 +444,7 @@ protected:
 
     Initializer                 *initializer;
 
+    Mutex                       processMutex;
     bool                        interrupted;
     volatile bool               closing;
     bool                        idle;
@@ -690,6 +684,8 @@ public:
 
     bool process(int &port_tag, Bottle &command, Bottle &reply)
     {
+        LockGuard guard(processMutex);
+
         if(closing)
         {
             reply.addVocab(NACK);
