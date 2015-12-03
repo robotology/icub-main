@@ -664,7 +664,7 @@ void Controller::run()
 
     double errNeck=norm(qd.subVector(0,2)-fbNeck);
     double errEyes=norm(qd.subVector(3,qd.length()-1)-fbEyes);
-    bool swOffCond=(Time::now()-ctrlActiveRisingEdgeTime<GAZECTRL_SWOFFCOND_DISABLETIME) ? false :
+    bool swOffCond=(Time::now()-ctrlActiveRisingEdgeTime<GAZECTRL_SWOFFCOND_DISABLESLOT*(0.001*getRate())) ? false :
                    (!commData->saccadeUnderway &&
                    (errNeck<GAZECTRL_MOTIONDONE_NECK_QTHRES*CTRL_DEG2RAD) &&
                    (errEyes<GAZECTRL_MOTIONDONE_EYES_QTHRES*CTRL_DEG2RAD));
