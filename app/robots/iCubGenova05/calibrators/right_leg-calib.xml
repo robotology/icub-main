@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<devices robot="iCubiCubGenova05" build="1">
+<devices robot="iCubGenova05" build="1">
 	<device name="right_leg_calibrator" type="parametricCalibratorEth">
                 <params file="general.xml" />
                 
@@ -11,7 +11,7 @@
 		</group>
 
 <group name="HOME">
-<param name="positionHome">                       0.00            0.00        0.00      0.00           0.00          0.00          </param>
+<param name="positionHome">                       0.00            10.00        0.00      0.00           0.00          0.00          </param>
 <param name="velocityHome">                       10.00           10.00       10.00     10.00          10.00         10.00         </param>
 </group>
 
@@ -21,12 +21,16 @@
 <param name="calibrationType">                    3               3           3         3              3             3             </param>
 <param name="calibration1">                       32767.9         32767.9     32767.9   32767.9        32767.9       32767.9       </param>
 <param name="calibration2">                       10.0            10.0        10.0      10.0           10.0          10.0          </param>
-<param name="calibration3">                       38239.9         18592.1     38255.9   26928.1        63183.9       8256.1        </param>
-<param name="positionZero">                       0.0             0.0         0.0       0.0            0.0           0.0           </param>
-<param name="velocityZero">                       10.0            10.0        10.0      10.0           10.0          10.0          </param>
-<param name="maxPwm">                             1200            1200        1200      1200           1200          1200          </param>
-<param name="posZeroThreshold">                   2               2           2         2              2             2             </param>
+<param name="calibration3">                       46137.9         32096.1     10352.1   56511.9        51199.9       42175.9       </param>
+<param name="calibrationZero">                    -180.00         -180.00     -180.00   180.00         180.00        -180.00       </param>
+<param name="calibrationDelta">                   1.0             1.0         0.0       -2.0           4.50          3.0           </param>
+
+<param name="startupPosition">                    0               0           0         0              0             0             </param>
+<param name="startupVelocity">                    10.0            10.0        10.0      10.0           10.0          10.0          </param>
+<param name="startupMaxPwm">                      1200            1200        1200      1200           4200          4200          </param>
+<param name="startupPosThreshold">                2               2           2         2              2             2             </param>
 </group>
+
 		<param name="CALIB_ORDER">(0 1 2 3 4 5) </param>
 
 		<action phase="startup" level="10" type="calibrate">

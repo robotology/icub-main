@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<params robot="iCubiCubGenova05" build="1">
+<params robot="iCubGenova05" build="1">
     <params file="hardware/electronics/pc104.xml" />
 
     <group name="ETH">
@@ -21,7 +21,7 @@
         <param name="maxSizeROPframeOccasionals">   128	    </param>
         <param name="maxSizeROP">  		            256     </param>
         <param name="maxNumberRegularROPs">  		32      </param>
-        <param name="TXrate">                       1       </param>
+        <param name="TXrate">                       3      </param>
     </group>
     
     <group name="PROTOCOL">
@@ -39,9 +39,29 @@
             <param name="entityASstrainNumberOf">                   0	</param> 
             <param name="entityASmaisNumberOf">                     1	</param>
             <param name="entityASextorqueNumberOf">                 1	</param>   
+            <param name="entityASinertialNumberOf">                 1	</param>
             
         <param name="endpointSkinIsSupported">                  1   </param> 
             <param name="entitySKskinNumberOf">                     1	</param>        
     </group>
+
+    <group name="SERVICES">
+
+        <group name="INERTIALS">
+            <param name="InertialsCAN1mapping"> 
+                none 
+                none            none            none            none            none            none            none 
+                none            none            none            none            none            none            none               
+            </param>
+
+            <param name="InertialsCAN2mapping">
+                none    
+                none            none            none            none            none            none            none
+                r_upper_arm_4   r_upper_arm_1   r_upper_arm_3   r_upper_arm_2   r_forearm_1     r_forearm_2     r_hand                
+            </param>
+        </group>
+
+    </group>
     
 </params>
+

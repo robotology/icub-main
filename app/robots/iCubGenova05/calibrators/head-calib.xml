@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<devices robot="iCubiCubGenova05" build="1">
+<devices robot="iCubGenova05" build="1">
 	<device name="head_calibrator" type="parametricCalibratorEth">
                 <params file="general.xml" />
 
@@ -21,11 +21,14 @@
 <param name="calibrationType">                    3          3       3       3          0         0            </param>
 <param name="calibration1">                       2047.5     2047.5  2047.5  2047.5     900.0     900.0        </param>
 <param name="calibration2">                       10.0       10.0    10.0    10.0       20.0      20.0         </param>
-<param name="calibration3">                       1171.5     2187.5  1664.5  3057.5     0.0       0.0          </param>
-<param name="positionZero">                       0.0        0.0     0.0     0.0        0.0       0.0          </param>
-<param name="velocityZero">                       10.0       10.0    10.0    10.0       10.0      10.0         </param>
-<param name="maxPwm">                             130        130     0       0          0         0            </param>
-<param name="posZeroThreshold">                   2          2       2       2          2         2            </param>
+<param name="calibration3">                       1803.5     44.5    287.5   1795.5     0.0       0.0          </param>
+<param name="calibrationZero">                    0.00       0.00    0.00    0.00       0.00      0.00         </param>
+<param name="calibrationDelta">                   0.00       0.00    0.00    0.00       0.00      0.00         </param>
+
+<param name="startupPosition">                    0.0        0.0     0.0     0.0        0.0       0.0          </param>
+<param name="startupVelocity">                    10.0       10.0    10.0    10.0       10.0      10.0         </param>
+<param name="startupMaxPwm">                      130        130     0       0          0         0            </param>
+<param name="startupPosThreshold">                2          2       2       2          2         2            </param>
 </group>
 
  <!-- check old calibrator for the correct sequence, then ask to Randazz -->

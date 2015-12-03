@@ -1,19 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<params robot="iCubiCubGenova05" build="1">
+<params robot="iCubGenova05" build="1">
     <group name="GENERAL">
-        <param name="Joints"> 12 </param> <!-- the number of joints of the robot part -->
-
-        <param name="AxisMap"> 	     0             1             2             3               4             5             6             7             8             9             10            11       </param>
-<param name="Encoder">                                                                -706.670 11.375   -11.375  -4.167   8.889    -2.722   -2.824   -2.689   -2.971   -2.722   -3.000   -2.264   </param>
-<param name="Zeros">                                                                  -75.00   180.00   -180.00  -571.20  135.00   -93.67   -180.63  -94.83   -171.68  -93.67   -170.00  -325.09  </param>
-
-        <param name="TorqueId">  0x0C     	0             0             0     		0             0              0             0            0             0            0             0              </param>
-        <param name="TorqueChan">   4     	0             0             0     		0             0              0             0            0             0            0             0          	</param>
-        <param name="TorqueMax">    2     	2             2             2     		0             0              0             0            0             0            0             0       	</param>
-        <param name="Rotor">        1     	1             1             1     		1             1              1             1            1             1            1             1       	</param>
-        <param name="Gearbox">      1     	1             1             1     		1             1              1             1            1             1            1             1     	</param>
+        <param name="MotioncontrolVersion">  2 </param>
+        <param name="Joints"> 12 </param>
+        <param name="AxisMap"> 	             0             1             2             3             4             5             6             7            8             9            10            11     </param>
+        <param name="AxisName">      "r_wrist_prosup" "r_wrist_pitch" "r_wrist_yaw"  "r_hand_finger"    "r_thumb_oppose"     "r_thumb_proximal"     "r_thumb_distal"   "r_index_proximal"    "r_index_distal"    "r_middle_proximal"   "r_middle_distal"    "r_pinky"  </param>
+        <param name="HasHallSensor">         0             0             0             0             0             0             0             0            0             0            0             0      </param>
+        <param name="HasTempSensor">         0             0             0             0             0             0             0             0            0             0            0             0      </param>
+        <param name="HasRotorEncoder">       1             1             1             1             1             1             1             1            1             1            1             1      </param>
+        <param name="HasRotorEncoderIndex">  0             0             0             0             0             0             0             0            0             0            0             0      </param>
+        <param name="Encoder">         182.044        182.044      182.044       182.044       182.044       182.044       182.044       182.044      182.044       182.044      182.044       182.044      </param>
+        <param name="TorqueId">           0x0C             0             0             0             0             0             0             0            0             0            0             0      </param>
+        <param name="TorqueChan">            4             0             0             0             0             0             0             0            0             0            0             0      </param>
+        <param name="TorqueMax">             2             2             2             2             0             0             0             0            0             0            0             0      </param>
+        <param name="JointEncoderType"> "OPTICAL_QUAD"  "AEA"         "AEA"          "HALL_ADC"    "HALL_ADC"    "MAIS"       "MAIS"        "MAIS"      "MAIS"        "MAIS"       "MAIS"        "MAIS"     </param>
+        <param name="RotorEncoderType"> "NONE"          "NONE"        "NONE"         "NONE"        "NONE"        "NONE"       "NONE"        "NONE"      "NONE"        "NONE"       "NONE"        "NONE"     </param>
+        <param name="JointEncoderRes"> -254440             4096         -4096         840          5280          -840          -855          -920         -855          -940        -1080          -858     </param>
+        <param name="RotorEncoderRes">       1             1            1               1             1             1             1             1            1             1           1             1      </param>
+        <param name="RotorIndexOffset">      0             0            0               0             0             0             0             0            0             0           0             0      </param>
+        <param name="Gearbox">               1             1            1               1             1             1             1             1            1             1           1             1      </param>
+        <param name="MotorType">         "DC_FH"         "DC_FH"        "DC_FH"      "DC_FH"       "DC_FH"        "DC_FH"       "DC_FH"       "DC_FH"     "DC_FH"        "DC_FH"       "DC_FH"      "DC_FH" </param>
+        <param name="MotorPoles">            1             1            1               1             1             1             1             1            1             1           1             1      </param>
         <param name="Verbose">      0    </param>
     </group>
 
