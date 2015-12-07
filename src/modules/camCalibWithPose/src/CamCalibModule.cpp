@@ -6,6 +6,8 @@
  *
  */
 
+#include <cmath>
+
 #include <iCub/CamCalibModule.h>
 #include <yarp/math/Math.h>
 #include <yarp/os/Stamp.h>
