@@ -163,6 +163,7 @@ bool skinWrapper::close()
 {
     if (NULL != analogServer)
     {
+	analogServer->close();
         delete analogServer;
     }
     if (NULL != analog)

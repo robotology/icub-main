@@ -181,7 +181,7 @@ AnalogServer::AnalogServer(): RateThread(0)
 AnalogServer::~AnalogServer()
 {
     yTrace();
-    threadRelease();
+    close();
     _rate = 0;
     analogSensor_p = NULL;
 }
