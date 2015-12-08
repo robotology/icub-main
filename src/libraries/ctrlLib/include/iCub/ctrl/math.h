@@ -45,16 +45,15 @@
 #ifndef __CTRLMATH_H__
 #define __CTRLMATH_H__
 
+#include <cmath>
+
 #include <yarp/sig/Vector.h>
 #include <yarp/sig/Matrix.h>
 #include <yarp/math/Math.h>
 
-#ifndef M_PI
-    #define M_PI        3.14159265358979323846264338328
-#endif
-
 #define CTRL_RAD2DEG    (180.0/M_PI)
 #define CTRL_DEG2RAD    (M_PI/180.0)
+
 
 namespace iCub
 {

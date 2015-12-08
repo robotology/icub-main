@@ -2,8 +2,7 @@
 # Authors: Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-set(PROJECTNAME iKin)
-project(${PROJECTNAME})
+project(iKin)
 
 set(folder_source src/iKinFwd.cpp
                   src/iKinInv.cpp
@@ -36,17 +35,17 @@ if(ICUB_USE_IPOPT)
    add_definitions(${IPOPT_DEFINITIONS})
 endif()
 
-add_library(${PROJECTNAME} ${folder_source} ${folder_header})
-target_link_libraries(${PROJECTNAME} ctrlLib ${YARP_LIBRARIES})
+add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+target_link_libraries(${PROJECT_NAME} ctrlLib ${YARP_LIBRARIES})
 
 if(ICUB_USE_IPOPT)
-   set_property(TARGET ${PROJECTNAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
-   target_link_libraries(${PROJECTNAME} ${IPOPT_LIBRARIES})
+   set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
+   target_link_libraries(${PROJECT_NAME} ${IPOPT_LIBRARIES})
 endif()
 
-icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                   DEPENDS ctrlLib
-                                   DESTINATION include/iCub/iKin
-                                   FILES ${folder_header})                                    
+icub_export_library(${PROJECT_NAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
+                                    DEPENDS ctrlLib
+                                    DESTINATION include/iCub/iKin
+                                    FILES ${folder_header})                                    
 
 

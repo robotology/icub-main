@@ -87,6 +87,10 @@ ELSE ()
    ADD_DEFINITIONS(-DOMIT_LOGPOLAR)
 ENDIF ()
 
+if(MSVC)
+  add_definitions(-D_USE_MATH_DEFINES)
+endif()
+
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES} iKin)

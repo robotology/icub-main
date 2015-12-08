@@ -25,7 +25,10 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${OpenCV_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
-add_definitions(-D_USE_MATH_DEFINES)
+if(MSVC)
+  add_definitions(-D_USE_MATH_DEFINES)
+endif()
+
 add_executable(${PROJECT_NAME} ${folder_source} ${folder_header})
 target_link_libraries(${PROJECT_NAME} ${OpenCV_LIBRARIES} ${YARP_LIBRARIES})
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
