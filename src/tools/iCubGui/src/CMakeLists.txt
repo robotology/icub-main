@@ -63,6 +63,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 # Set defines
 add_definitions(${QT_DEFINITIONS})
+if(MSVC)
+  add_definitions(-D_USE_MATH_DEFINES)
+endif()
 
 # Compile and link
 add_executable(iCubGui WIN32 ${iCubGui_HDRS}
