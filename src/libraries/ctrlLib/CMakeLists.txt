@@ -14,7 +14,7 @@ set(folder_source src/math.cpp
                   src/functionEncoder.cpp
                   src/optimalControl.cpp
                   src/neuralNetworks.cpp
-				          src/outliersDetection.cpp)
+                  src/outliersDetection.cpp)
 
 set(folder_header include/iCub/ctrl/math.h
                   include/iCub/ctrl/filters.h
@@ -26,7 +26,7 @@ set(folder_header include/iCub/ctrl/math.h
                   include/iCub/ctrl/functionEncoder.h
                   include/iCub/ctrl/optimalControl.h
                   include/iCub/ctrl/neuralNetworks.h
-				          include/iCub/ctrl/outliersDetection.h)
+                  include/iCub/ctrl/outliersDetection.h)
 
 source_group("Source Files" FILES ${folder_source})
 source_group("Header Files" FILES ${folder_header})
