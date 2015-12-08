@@ -2465,8 +2465,6 @@ bool ServerCartesianController::getPosePriority(ConstString &p)
     bool ret=false;
     if (connected)
     {
-        mutex.lock();
-
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_GET);
         command.addVocab(IKINSLV_VOCAB_OPT_PRIO);
@@ -2480,8 +2478,6 @@ bool ServerCartesianController::getPosePriority(ConstString &p)
         }
         else
             yError("%s: unable to get reply from solver!",ctrlName.c_str());
-
-        mutex.unlock();
     }
 
     return ret;
