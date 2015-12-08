@@ -3766,6 +3766,8 @@ bool ServerCartesianController::setTask2ndOptions(const Value &v)
     bool ret=false;
     if (connected)
     {
+        mutex.lock();
+
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_TASK2);
@@ -3775,7 +3777,9 @@ bool ServerCartesianController::setTask2ndOptions(const Value &v)
         if (portSlvRpc.write(command,reply))
             ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
         else
-            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());
+
+        mutex.unlock();
     }
 
     return ret;
@@ -3812,6 +3816,8 @@ bool ServerCartesianController::setSolverConvergenceOptions(const Bottle &option
     bool ret=false;
     if (connected)
     {
+        mutex.lock();
+
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_CONVERGENCE);
@@ -3821,7 +3827,9 @@ bool ServerCartesianController::setSolverConvergenceOptions(const Bottle &option
         if (portSlvRpc.write(command,reply))
             ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
         else
-            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());
+
+        mutex.unlock();
     }
 
     return ret;
@@ -3831,7 +3839,6 @@ bool ServerCartesianController::setSolverConvergenceOptions(const Bottle &option
 /************************************************************************/
 bool ServerCartesianController::tweakSet(const Bottle &options)
 {
-    mutex.lock();
     bool ret=true;
 
     // straightness
@@ -3847,7 +3854,6 @@ bool ServerCartesianController::tweakSet(const Bottle &options)
         options.check("max_iter"))
         ret&=setSolverConvergenceOptions(options);
 
-    mutex.unlock();
     return ret;
 }
 
