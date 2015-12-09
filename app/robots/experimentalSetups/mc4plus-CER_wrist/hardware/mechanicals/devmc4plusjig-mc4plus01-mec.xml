@@ -20,7 +20,7 @@
         <param name="RotorEncoderRes">       1024           </param> 
         <param name="JointEncoderType">      "NONE"         </param>
         <param name="RotorEncoderType">      "NONE"         </param>
-        <param name="JointEncoderRes">       5120           </param> <!-- i.e. 5 revolutions (350deg) of the motor == 1 revolution of the joint -->
+        <param name="JointEncoderRes">       15360          </param> <!-- i.e. 15 revolutions (360deg) of the motor == 1 revolution of the joint -->
         <param name="RotorIndexOffset">      0              </param>
         <param name="Gearbox">               1              </param>
         <param name="MotorPoles">            0              </param> 

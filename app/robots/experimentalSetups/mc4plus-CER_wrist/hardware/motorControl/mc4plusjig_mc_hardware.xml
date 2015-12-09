@@ -9,7 +9,7 @@
 
     <group name="LIMITS">
         <param name="Max">               180                   </param> <!-- maximum elongation should be of 120 deg -->
-        <param name="Min">               -180                  </param>
+        <param name="Min">               0                     </param>
         <param name="RotorMax">          0                     </param>
         <param name="RotorMin">          0                     </param>
         <param name="Currents">          600                   </param>
