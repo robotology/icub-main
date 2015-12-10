@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>    
+
+<devices>      
+	<device name="ikartLaser" type="fakeLaser">  
+
+	<group name="GENERAL">    
+		<param name="name">      ikart_laser        </param>     
+		<param name="Period">            10         </param>
+	</group>             
+		
+
+	</device>    
+</devices>     
+
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
