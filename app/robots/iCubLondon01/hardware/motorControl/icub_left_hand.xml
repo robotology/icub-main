@@ -29,6 +29,7 @@
 <group name="GENERAL">       
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
+<param name="AxisName"> "l_thumb_oppose" "l_thumb_proximal" "l_thumb_distal" "l_index_proximal" "l_index_distal" "l_middle_proximal" "l_middle_distal" "l_pinky" </param>
 <param name="Encoder">      19.11         -2.46         -2.54         -2.17         -2.33         -2.39         -2.31         -1.35         </param>       
 <param name="Zeros">        47.09         -96.11        -181.97       -101.54       -192.86       -98.37        -186.51       -509.64       </param>       
 <param name="TorqueId">     0             0             0             0             0             0             0             0             </param>       
