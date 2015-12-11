@@ -11,7 +11,7 @@
       
         <module>
                 <name>SFM</name>
-                <parameters></parameters>
+                <parameters>--elas_ipol_gap_width 20</parameters>
                 <node>gpu-node</node>
                 <tag>structFromMotion</tag>
         </module>
