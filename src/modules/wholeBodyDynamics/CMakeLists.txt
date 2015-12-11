@@ -3,25 +3,25 @@
 # Author: Matteo Fumagalli, Marco Randazzo
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
- 
-SET(PROJECTNAME wholeBodyDynamics)
+project(wholeBodyDynamics)
 
-PROJECT(${PROJECTNAME})
+file(GLOB folder_source main.cpp observerThread.cpp)
+file(GLOB folder_header observerThread.h)
 
-FILE(GLOB folder_source main.cpp observerThread.cpp)
-FILE(GLOB folder_header observerThread.h)
+source_group("Source Files" FILES ${folder_source})
+source_group("Header Files" FILES ${folder_header})
 
-SOURCE_GROUP("Source Files" FILES ${folder_source})
-SOURCE_GROUP("Header Files" FILES ${folder_header})
-
-INCLUDE_DIRECTORIES(${iDyn_INCLUDE_DIRS}
+include_directories(${iDyn_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS}
                     ${skinDynLib_INCLUDE_DIRS})
 
-ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
+if(MSVC)
+  add_definitions(-D_USE_MATH_DEFINES)
+endif()
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} iDyn
-                                     ${YARP_LIBRARIES}
-                                     skinDynLib)
+add_executable(${PROJECT_NAME} ${folder_source} ${folder_header})
+target_link_libraries(${PROJECT_NAME} iDyn
+                                      ${YARP_LIBRARIES}
+                                      skinDynLib)
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
-INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)

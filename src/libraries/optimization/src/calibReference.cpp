@@ -15,6 +15,7 @@
  * Public License for more details
 */
 
+#include <cmath>
 #include <algorithm>
 
 #include <yarp/math/Math.h>

@@ -2,41 +2,42 @@
 # Authors: Matteo Fumagalli, Serena Ivaldi
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-SET(PROJECTNAME iDyn)
+project(iDyn)
 
-PROJECT(${PROJECTNAME})
-
-SET(folder_source src/iDyn.cpp
+set(folder_source src/iDyn.cpp
                   src/iDynInv.cpp
                   src/iDynBody.cpp
                   src/iDynTransform.cpp
                   src/iDynContact.cpp)
 
-SET(folder_header include/iCub/iDyn/iDyn.h
+set(folder_header include/iCub/iDyn/iDyn.h
                   include/iCub/iDyn/iDynInv.h
                   include/iCub/iDyn/iDynBody.h
                   include/iCub/iDyn/iDynTransform.h
                   include/iCub/iDyn/iDynContact.h)
 
-SOURCE_GROUP("Source Files" FILES ${folder_source})
-SOURCE_GROUP("Header Files" FILES ${folder_header})
+source_group("Source Files" FILES ${folder_source})
+source_group("Header Files" FILES ${folder_header})
 
-INCLUDE_DIRECTORIES(${PROJECT_SOURCE_DIR}/include
+include_directories(${PROJECT_SOURCE_DIR}/include
                     ${iKin_INCLUDE_DIRS}
                     ${skinDynLib_INCLUDE_DIRS}
                     ${GSL_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS})
 
-ADD_LIBRARY(${PROJECTNAME} ${folder_source} ${folder_header})
+if(MSVC)
+  add_definitions(-D_USE_MATH_DEFINES)
+endif()
 
-TARGET_LINK_LIBRARIES(${PROJECTNAME} iKin
-                                     skinDynLib
-                                     ${GSL_LIBRARIES}
-                                     ${YARP_LIBRARIES})
+add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
+target_link_libraries(${PROJECT_NAME} iKin
+                                      skinDynLib
+                                      ${GSL_LIBRARIES}
+                                      ${YARP_LIBRARIES})
 
-icub_export_library(${PROJECTNAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
-                                   DEPENDS iKin skinDynLib
-                                   DESTINATION include/iCub/iDyn
-                                   FILES ${folder_header})
+icub_export_library(${PROJECT_NAME} INTERNAL_INCLUDE_DIRS ${PROJECT_SOURCE_DIR}/include
+                                    DEPENDS iKin skinDynLib
+                                    DESTINATION include/iCub/iDyn
+                                    FILES ${folder_header})
 
 

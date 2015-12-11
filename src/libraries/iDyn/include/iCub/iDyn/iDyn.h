@@ -456,7 +456,7 @@ public:
     * @param _Min is the joint angle lower bound in [-pi,pi] (-pi by default)
     * @param _Max is the joint angle higher bound in [-pi,pi] (pi by default)
     */
-    iDynLink(double _A, double _D, double _Alpha, double _Offset, double _Min=-M_PI, double _Max=M_PI);
+    iDynLink(double _A, double _D, double _Alpha, double _Offset, double _Min=-iCub::ctrl::CTRL_PI, double _Max=iCub::ctrl::CTRL_PI);
      
     /**
      * Constructor, with initialization of kinematic and dynamic data
@@ -470,7 +470,7 @@ public:
     * @param _Min is the joint angle lower bound in [-pi,pi] (-pi by default)
     * @param _Max is the joint angle higher bound in [-pi,pi] (pi by default)
      */
-    iDynLink(const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I, double _A, double _D, double _Alpha, double _Offset, double _Min=-M_PI, double _Max=M_PI);
+    iDynLink(const double _m, const yarp::sig::Matrix &_HC, const yarp::sig::Matrix &_I, double _A, double _D, double _Alpha, double _Offset, double _Min=-iCub::ctrl::CTRL_PI, double _Max=iCub::ctrl::CTRL_PI);
 
     /**
     * Constructor, with initialization of kinematic and dynamic data
@@ -484,7 +484,7 @@ public:
     * @param _Min is the joint angle lower bound in [-pi,pi] (-pi by default)
     * @param _Max is the joint angle higher bound in [-pi,pi] (pi by default)
      */
-    iDynLink(const double _m, const yarp::sig::Vector &_C, const yarp::sig::Matrix &_I, double _A, double _D, double _Alpha, double _Offset, double _Min=-M_PI, double _Max=M_PI);
+    iDynLink(const double _m, const yarp::sig::Vector &_C, const yarp::sig::Matrix &_I, double _A, double _D, double _Alpha, double _Offset, double _Min=-iCub::ctrl::CTRL_PI, double _Max=iCub::ctrl::CTRL_PI);
 
     /**
     * Constructor, with initialization of kinematic and dynamic data
@@ -505,7 +505,7 @@ public:
     * @param _Min is the joint angle lower bound in [-pi,pi] (-pi by default)
     * @param _Max is the joint angle higher bound in [-pi,pi] (pi by default)
      */
-    iDynLink(const double _m, const double _rCx, const double _rCy, const double _rCz, const double Ixx, const double Ixy, const double Ixz, const double Iyy, const double Iyz, const double Izz, double _A, double _D, double _Alpha, double _Offset, double _Min=-M_PI, double _Max=M_PI);
+    iDynLink(const double _m, const double _rCx, const double _rCy, const double _rCz, const double Ixx, const double Ixy, const double Ixz, const double Iyy, const double Iyz, const double Izz, double _A, double _D, double _Alpha, double _Offset, double _Min=-iCub::ctrl::CTRL_PI, double _Max=iCub::ctrl::CTRL_PI);
 
     /**
      * Copy constructor

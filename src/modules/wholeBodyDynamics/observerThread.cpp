@@ -16,6 +16,11 @@
  * Public License for more details
 */
 
+#include <cmath>
+#include <iostream>
+#include <iomanip>
+#include <string>
+
 #include <yarp/os/all.h>
 #include <yarp/sig/all.h>
 #include <yarp/dev/all.h>
@@ -25,9 +30,6 @@
 #include <iCub/iDyn/iDynBody.h>
 #include <iCub/skinDynLib/skinContact.h>
 
-#include <iostream>
-#include <iomanip>
-#include <string.h>
 #include "observerThread.h"
 
 using namespace yarp::os;

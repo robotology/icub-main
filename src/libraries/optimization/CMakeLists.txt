@@ -24,6 +24,10 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${YARP_INCLUDE_DIRS})
 
 add_definitions(${IPOPT_DEFINITIONS})
+if(MSVC)
+  add_definitions(-D_USE_MATH_DEFINES)
+endif()
+
 add_library(${PROJECTNAME} ${folder_source} ${folder_header})
 
 set_property(TARGET ${PROJECTNAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")

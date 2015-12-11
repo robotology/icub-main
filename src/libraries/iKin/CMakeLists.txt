@@ -35,6 +35,10 @@ if(ICUB_USE_IPOPT)
    add_definitions(${IPOPT_DEFINITIONS})
 endif()
 
+if(MSVC)
+  add_definitions(-D_USE_MATH_DEFINES)
+endif()
+
 add_library(${PROJECT_NAME} ${folder_source} ${folder_header})
 target_link_libraries(${PROJECT_NAME} ctrlLib ${YARP_LIBRARIES})
 

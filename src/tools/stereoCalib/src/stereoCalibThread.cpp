@@ -101,7 +101,7 @@ bool stereoCalibThread::threadInit()
     for(size_t i=0; i<head_angles.length()-2; i++)
         qL[i+torso_angles.length()]=head_angles[i];
     qL[7]=head_angles[4]+(0.5-(LEFT))*head_angles[5];
-    qL=CTRL_DEG2RAD*qL;
+    qL=iCub::ctrl::CTRL_DEG2RAD*qL;
 
     qR.resize(torso_angles.length()+head_angles.length()-1);
     for(size_t i=0; i<torso_angles.length(); i++)
@@ -110,7 +110,7 @@ bool stereoCalibThread::threadInit()
     for(size_t i=0; i<head_angles.length()-2; i++)
         qR[i+torso_angles.length()]=head_angles[i];
     qR[7]=head_angles[4]+(0.5-(RIGHT))*head_angles[5];
-    qR=CTRL_DEG2RAD*qR;
+    qR=iCub::ctrl::CTRL_DEG2RAD*qR;
 
    return true;
 }
