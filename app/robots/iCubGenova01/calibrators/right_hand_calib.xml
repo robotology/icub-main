@@ -11,6 +11,8 @@
         </group>             
  
 
+
+
 <!--USE THIS FOR CAN ROBOT CALIBRATION-->
 <group name="HOME">
 <param name="positionHome">                                                                                               45       0        0        0        0        0        0        0        </param>
@@ -20,7 +22,7 @@
 <!--USE THIS FOR CAN ROBOT CALIBRATION-->
 <group name="CALIBRATION">
 <param name="calibrationType">                                                                                            3        4        4        4        4        4        4        4        </param>
-<param name="calibration1">                                                                                               1263.9   233.0    0.0      238.0    35.0     255.0    7.0      700.0    </param>
+<param name="calibration1">                                                                                               1291.1   233.0    0.0      238.0    35.0     255.0    7.0      700.0    </param>
 <param name="calibration2">                                                                                               10.0     10.0     30.0     10.0     10.0     10.0     10.0     10.0     </param>
 <param name="calibration3">                                                                                               0.0      6000.0   6600.0   6000.0   -7000.0  6000.0   7000.0   14000.0  </param>
 <param name="positionZero">                                                                                               45.0     0.0      0.0      0.0      0.0      0.0      0.0      0.0      </param>
