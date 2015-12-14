@@ -9,7 +9,6 @@
             <param name="joints"> 8 </param>             
             <param name="deviceName"> Right_Arm_Calibrator </param>    
         </group>             
- 
 <!--USE THIS FOR CAN ROBOT MOTOR CONTROL-->
 <group name="HOME">
 <param name="positionHome">                       -30       30        0         45        0         0         40        15        </param>
@@ -27,8 +26,6 @@
 <param name="maxPwm">                             120       120       120       120       0         0         0         0         </param>
 <param name="posZeroThreshold">                   2         2         2         2         2         2         90        90        </param>
 </group>
-
-
        <param name="CALIB_ORDER">(0 1 2 3) (4 6 7) (5)</param>         
                
         <action phase="startup" level="10" type="calibrate">           

@@ -10,9 +10,6 @@
             <param name="deviceName"> Left_Arm_Calibrator </param>     
         </group>             
  
-
-
-
 <!--USE THIS FOR CAN ROBOT MOTOR CONTROL-->
 <group name="HOME">
 <param name="positionHome">                       -30        30         0          45         0          0          40         15         </param>
