@@ -32,7 +32,8 @@
     <param name="AxisName">       "neck_pitch" "neck_roll"    "neck_yaw"    "eyes_tilt"  "eyes_vergence"  "eyes_version" </param>
 <!--USE THIS FOR ROBOT MOTOR CONTROL-->
 <param name="Encoder">                            11.375     -11.375 11.375  11.375     568.880   284.440      </param>
-<param name="Zeros">                              171.00     -178.00 185.00  180.00     -45.00    0.00         </param>
+<param name="Zeros">                              180.00     -180.00 180.00  180.00     -45.00    0.00         </param>
+
 
 
     <param name="TorqueId">     0             0             0             0             0             0             </param>       
