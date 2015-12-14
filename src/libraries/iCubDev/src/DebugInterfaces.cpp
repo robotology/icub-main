@@ -68,68 +68,6 @@ bool yarp::dev::ImplementDebugInterface::getDebugReferencePosition(int j, double
 	return r;
 }
 
-bool yarp::dev::ImplementDebugInterface::getRotorPosition(int j, double* value)
-{
-    int k=castToMapper2(helper)->toHw(j);
-    double enc=0.0;
-    bool r= raw->getRotorPositionRaw(j, &enc);
-    if (r)
-    {
-        *value = castToMapper2(helper)->posR2A(enc,k);
-    }
-    else
-    {
-        *value = 0.0;
-    }
-    return r;
-}
-
-bool yarp::dev::ImplementDebugInterface::getRotorPositions(double* value)
-{
-    return false;
-}
-
-bool yarp::dev::ImplementDebugInterface::getRotorSpeed(int j, double* value)
-{
-    int k=castToMapper2(helper)->toHw(j);
-    double enc=0.0;
-    bool r= raw->getRotorSpeedRaw(j, &enc);
-    if (r)
-    {
-        *value = castToMapper2(helper)->posR2A(enc,k);
-    }
-    else
-    {
-        *value = 0.0;
-    }
-    return r;
-}
-
-bool yarp::dev::ImplementDebugInterface::getRotorSpeeds(double* value)
-{
-    return false;
-}
-
-bool yarp::dev::ImplementDebugInterface::getRotorAcceleration(int j, double* value)
-{
-    int k=castToMapper2(helper)->toHw(j);
-    double enc=0.0;
-    bool r= raw->getRotorAccelerationRaw(j, &enc);
-    if (r)
-    {
-        *value = castToMapper2(helper)->posR2A(enc,k);
-    }
-    else
-    {
-        *value = 0.0;
-    }
-    return r;
-}
-
-bool yarp::dev::ImplementDebugInterface::getRotorAccelerations(double* value)
-{
-    return false;
-}
 
 yarp::dev::ImplementDebugInterface::ImplementDebugInterface(IDebugInterfaceRaw *r)
 {
@@ -137,38 +75,9 @@ yarp::dev::ImplementDebugInterface::ImplementDebugInterface(IDebugInterfaceRaw *
     helper=0;
 }
 
-bool yarp::dev::ImplementDebugInterface::getJointPosition(int j, double* value)
-{
-	int k=castToMapper2(helper)->toHw(j);
-	double enc=0.0;
-    bool r= raw->getJointPositionRaw(j, &enc);
-	if (r)
-	{
-		*value = castToMapper2(helper)->posE2A(enc,k);
-	}
-	else
-	{
-		*value = 0.0;
-	}
-	return r;
-}
 
-bool yarp::dev::ImplementDebugInterface::getJointPositions(double* value)
-{
-    return false;
-	/*int k=castToMapper2(helper)->toHw(j);
-	double enc=0.0;
-    bool r= raw->getRotorPositionsRaw(j, &enc);
-	if (r)
-	{
-		*value = castToMapper2(helper)->posE2A(enc,k);
-	}
-	else
-	{
-		*value = 0.0;
-	}
-	return r;*/
-}
+
+
 
 bool yarp::dev::ImplementDebugInterface::initialize(int size, const int *amap, const double *angleToEncoder, const double *zeros, const double *rotToEncoder)
 {

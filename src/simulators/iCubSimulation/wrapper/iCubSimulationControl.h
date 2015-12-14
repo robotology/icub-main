@@ -73,8 +73,8 @@ namespace yarp{
 class yarp::dev::iCubSimulationControl :
 public DeviceDriver,
 //public yarp::os::RateThread, 
-public IPositionControlRaw,
-public ImplementPositionControl<iCubSimulationControl, IPositionControl>,
+public IPositionControl2Raw,
+public ImplementPositionControl2,
 public IVelocityControl2Raw,
 public ImplementVelocityControl2,
 public ITorqueControlRaw,
@@ -192,30 +192,35 @@ public ImplementAxisInfo
   virtual bool getRefAccelerationRaw(int j, double *acc);
   virtual bool getRefAccelerationsRaw(double *accs);
   virtual bool stopRaw(int j);
-  virtual bool stopRaw();/**/
+  virtual bool stopRaw();
 
-  //
-  //////////////////////// END Position Control INTERFACE
+  // Position Control2 Interface
+  virtual bool positionMoveRaw(const int n_joint, const int *joints, const double *refs);
+  virtual bool relativeMoveRaw(const int n_joint, const int *joints, const double *deltas);
+  virtual bool checkMotionDoneRaw(const int n_joint, const int *joints, bool *flags);
+  virtual bool setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds);
+  virtual bool setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs);
+  virtual bool getRefSpeedsRaw(const int n_joint, const int *joints, double *spds);
+  virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
+  virtual bool stopRaw(const int n_joint, const int *joints);
+  virtual bool getTargetPositionRaw(const int joint, double *ref);
+  virtual bool getTargetPositionRaw(double *refs);
+  virtual bool getTargetPositionRaw(const int n_joint, const int *joints, double *refs);
 
-  //////////////////////// BEGIN Velocity control interface raw
-  ///
+  // Velcoity Control
   virtual bool setVelocityModeRaw();
   virtual bool velocityMoveRaw(int j, double sp);
   virtual bool velocityMoveRaw(const double *sp);
-  //
-  //////////////////////// END Velocity Control INTERFACE
   
-  //////////////////////// BEGIN Velocity control 2 interface raw
-
+  // Velocity Control2 Interface
   virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
-  virtual bool setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs);
-  virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
-  virtual bool stopRaw(const int n_joint, const int *joints);
   virtual bool setVelPidRaw(int j, const yarp::dev::Pid &pid);
   virtual bool setVelPidsRaw(const yarp::dev::Pid *pids);
   virtual bool getVelPidRaw(int j, yarp::dev::Pid *pid);
   virtual bool getVelPidsRaw(yarp::dev::Pid *pids);
-  //////////////////////// END Velocity Control INTERFACE
+  virtual bool getRefVelocityRaw(const int joint, double *ref);
+  virtual bool getRefVelocityRaw(double *refs);
+  virtual bool getRefVelocityRaw(const int n_joint, const int *joints, double *refs);
 
 
   //////////////////////// BEGIN EncoderInterface
@@ -348,7 +353,9 @@ public ImplementAxisInfo
   virtual bool setPositionRaw(int j, double ref);
   virtual bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
   virtual bool setPositionsRaw(const double *refs);
-
+  virtual bool getRefPositionRaw(const int joint, double *ref);
+  virtual bool getRefPositionRaw(double *refs);
+  virtual bool getRefPositionRaw(const int n_joint, const int *joints, double *refs);
 
 //void run(void);
 

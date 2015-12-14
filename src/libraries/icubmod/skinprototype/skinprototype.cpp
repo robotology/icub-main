@@ -83,11 +83,11 @@ bool SkinPrototype::open(yarp::os::Searchable& config)
     driver.view(pCanBufferFactory);
     pCanBus->canSetBaudRate(0); //default 1MB/s
 
-	for (int i=0; i<cardId.size(); i++)
-		for (int id=0; id<16; ++id)
-		{
-			pCanBus->canIdAdd(0x300+(cardId[i]<<4)+id);
-		}
+    for (size_t i=0; i<cardId.size(); i++)
+        for (int id=0; id<16; ++id)
+        {
+            pCanBus->canIdAdd(0x300+(cardId[i]<<4)+id);
+        }
 
     outBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
     inBuffer=pCanBufferFactory->createBuffer(CAN_DRIVER_BUFFER_SIZE);
@@ -133,29 +133,29 @@ int SkinPrototype::getChannels()
 
 int SkinPrototype::calibrateSensor()
 {
-	for (int i=0; i<cardId.size(); i++)
-	{
-		#if SKIN_DEBUG
-			printf("SkinPrototype:: calibrating boardId: %d\n",cardId[i]);
-		#endif 
+    for (size_t i=0; i<cardId.size(); i++)
+    {
+        #if SKIN_DEBUG
+            printf("SkinPrototype:: calibrating boardId: %d\n",cardId[i]);
+        #endif 
 
-   		unsigned int canMessages=0;
-		unsigned id = 0x200 + cardId[i];
-	   
-		CanMessage &msg=outBuffer[0];
-		msg.setId(id);
-		msg.getData()[0]=0x4C; // message type
-		msg.getData()[1]=0x01; 
-		msg.getData()[2]=0x01; 
-		msg.getData()[3]=0x01;
-		msg.getData()[4]=0;
-		msg.getData()[5]=0x22;
-		msg.getData()[6]=0;
-		msg.getData()[7]=0;
-		msg.setLen(8);
-		canMessages=0;
-		pCanBus->canWrite(outBuffer, 1, &canMessages);
-	}
+        unsigned int canMessages=0;
+        unsigned id = 0x200 + cardId[i];
+
+        CanMessage &msg=outBuffer[0];
+        msg.setId(id);
+        msg.getData()[0]=0x4C; // message type
+        msg.getData()[1]=0x01; 
+        msg.getData()[2]=0x01; 
+        msg.getData()[3]=0x01;
+        msg.getData()[4]=0;
+        msg.getData()[5]=0x22;
+        msg.getData()[6]=0;
+        msg.getData()[7]=0;
+        msg.setLen(8);
+        canMessages=0;
+        pCanBus->canWrite(outBuffer, 1, &canMessages);
+    }
 
     return AS_OK;
 }
@@ -179,29 +179,28 @@ int SkinPrototype::calibrateChannel(int ch)
 
 bool SkinPrototype::threadInit()
 {
-	for (int i=0; i<cardId.size(); i++)
-	{
-		#if SKIN_DEBUG
-			printf("SkinPrototype:: thread initialising boardId:%d\n",cardId[i]);
-		#endif 
+    for (size_t i=0; i<cardId.size(); i++)
+    {
+        #if SKIN_DEBUG
+            printf("SkinPrototype:: thread initialising boardId:%d\n",cardId[i]);
+        #endif 
 
-   		unsigned int canMessages=0;
-		unsigned id = 0x200 + cardId[i];
-	   
-		CanMessage &msg=outBuffer[0];
-		msg.setId(id);
-		msg.getData()[0]=0x4C; // message type
-		msg.getData()[1]=0x01; 
-		msg.getData()[2]=0x01; 
-		msg.getData()[3]=0x01;
-		msg.getData()[4]=0;
-		msg.getData()[5]=0x22;
-		msg.getData()[6]=0;
-		msg.getData()[7]=0;
-		msg.setLen(8);
-		canMessages=0;
-		pCanBus->canWrite(outBuffer, 1, &canMessages);
-	}
+        unsigned int canMessages=0;
+        unsigned id = 0x200 + cardId[i];
+        CanMessage &msg=outBuffer[0];
+        msg.setId(id);
+        msg.getData()[0]=0x4C; // message type
+        msg.getData()[1]=0x01; 
+        msg.getData()[2]=0x01; 
+        msg.getData()[3]=0x01;
+        msg.getData()[4]=0;
+        msg.getData()[5]=0x22;
+        msg.getData()[6]=0;
+        msg.getData()[7]=0;
+        msg.setLen(8);
+        canMessages=0;
+        pCanBus->canWrite(outBuffer, 1, &canMessages);
+    }
 
     return true;
 }

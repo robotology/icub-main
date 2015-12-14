@@ -4931,6 +4931,84 @@ bool CanBusMotionControl::getTorqueErrorsRaw(double *errs)
     return true;
 }
 
+bool CanBusMotionControl::getTargetPositionRaw(int axis, double *ref)
+{
+    return NOT_YET_IMPLEMENTED("getTargetPositionRaw");
+}
+
+bool CanBusMotionControl::getTargetPositionRaw(double *ref)
+{
+    CanBusResources& r = RES(system_resources);
+    bool ret = true;
+    for (int j = 0; j < r.getJoints() && ret; j++)
+    {
+        ret &= getTargetPositionRaw(j, &ref[j]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::getTargetPositionRaw(int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int j = 0; j < nj && ret; j++)
+    {
+        ret &= getTargetPositionRaw(jnts[j], &refs[j]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::getRefVelocityRaw(int axis, double *ref)
+{
+    return NOT_YET_IMPLEMENTED("getRefVelocityRaw");
+}
+
+bool CanBusMotionControl::getRefVelocityRaw(double *ref)
+{
+    CanBusResources& r = RES(system_resources);
+    bool ret = true;
+    for (int j = 0; j < r.getJoints() && ret; j++)
+    {
+        ret &= getRefVelocityRaw(j, &ref[j]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::getRefVelocityRaw(int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int j = 0; j < nj && ret; j++)
+    {
+        ret &= getRefVelocityRaw(jnts[j], &refs[j]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::getRefPositionRaw(int axis, double *ref)
+{
+    return NOT_YET_IMPLEMENTED("getRefPositionRaw");
+}
+
+bool CanBusMotionControl::getRefPositionRaw(double *ref)
+{
+    CanBusResources& r = RES(system_resources);
+    bool ret = true;
+    for (int j = 0; j < r.getJoints() && ret; j++)
+    {
+        ret &= getRefPositionRaw(j, &ref[j]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::getRefPositionRaw(int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int j = 0; j < nj && ret; j++)
+    {
+        ret &= getRefPositionRaw(jnts[j], &refs[j]);
+    }
+    return ret;
+}
+
 bool CanBusMotionControl::getErrorRaw(int axis, double *err)
 {
     CanBusResources& r = RES(system_resources);
@@ -5069,70 +5147,6 @@ bool CanBusMotionControl::getDebugParameterRaw(int axis, unsigned int index, dou
     t->clear();
 
     return true;
-}
-
-bool CanBusMotionControl::getRotorPositionRaw(int axis, double* value)
-{
-    CanBusResources& r = RES(system_resources);
-    if (!(axis >= 0 && axis <= r.getJoints()))return false;
-
-    _mutex.wait();
-    *value = double(r._bcastRecvBuffer[axis]._position_rotor._value);
-    _mutex.post();
-    return true;
-}
-
-bool CanBusMotionControl::getRotorPositionsRaw(double* value)
-{
-    return NOT_YET_IMPLEMENTED("getRotorPositionsRaw");
-}
-
-bool CanBusMotionControl::getRotorSpeedRaw(int axis, double* value)
-{
-    CanBusResources& r = RES(system_resources);
-    if (!(axis >= 0 && axis <= r.getJoints()))return false;
-
-    _mutex.wait();
-    *value = double(r._bcastRecvBuffer[axis]._speed_rotor._value)*1000.0;
-    _mutex.post();
-    return true;
-}
-
-bool CanBusMotionControl::getRotorSpeedsRaw(double* value)
-{
-    return NOT_YET_IMPLEMENTED("getRotorSpeedsRaw");
-}
-
-bool CanBusMotionControl::getRotorAccelerationRaw(int axis, double* value)
-{
-    CanBusResources& r = RES(system_resources);
-    if (!(axis >= 0 && axis <= r.getJoints()))return false;
-
-    _mutex.wait();
-    *value = double(r._bcastRecvBuffer[axis]._accel_rotor._value)*1000000.0;
-    _mutex.post();
-    return true;
-}
-
-bool CanBusMotionControl::getRotorAccelerationsRaw(double* value)
-{
-    return NOT_YET_IMPLEMENTED("getRotorAccelerationsRaw");
-}
-
-bool CanBusMotionControl::getJointPositionRaw(int axis, double* value)
-{
-    CanBusResources& r = RES(system_resources);
-    if (!(axis >= 0 && axis <= r.getJoints()))return false;
-
-    _mutex.wait();
-    *value = double(r._bcastRecvBuffer[axis]._position_joint._value);
-    _mutex.post();
-    return true;
-}
-
-bool CanBusMotionControl::getJointPositionsRaw(double* value)
-{
-    return NOT_YET_IMPLEMENTED("getJointPositionsRaw");
 }
 
 bool CanBusMotionControl::getDebugReferencePositionRaw(int axis, double* value)

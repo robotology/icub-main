@@ -533,6 +533,9 @@ public:
     virtual bool getRefSpeedsRaw(const int n_joint, const int *joints, double *spds);
     virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
     virtual bool stopRaw(const int n_joint, const int *joints);
+    virtual bool getTargetPositionRaw(const int joint, double *ref);
+    virtual bool getTargetPositionRaw(double *refs);
+    virtual bool getTargetPositionRaw(const int n_joint, const int *joints, double *refs);
 
     //  Velocity control interface raw
     virtual bool setVelocityModeRaw();
@@ -642,152 +645,109 @@ public:
     virtual bool updateMeasure(int j, double &fTorque);
 
 #ifdef IMPLEMENT_DEBUG_INTERFACE
-    //----------------------------------------------\\
+    //----------------------------------------------
     //  Debug interface
-    //----------------------------------------------\\
-
-    /* Set a generic parameter (for debug)
-      * @param type is the CAN code representing the command message
-      * @return true/false on success/failure
-      */
-    bool setParameterRaw(int j, unsigned int type, double value);
-
-    /* Get a generic parameter (for debug)
-      * @param type is the CAN code representing the command message
-      * @return true/false on success/failure
-      */
-    bool getParameterRaw(int j, unsigned int type, double *value);
-
-    /* Set a generic parameter (for debug)
-      * @param index is the number of the debug parameter
-      * @return true/false on success/failure
-      */
-    bool setDebugParameterRaw(int j, unsigned int index, double value);
-
-    /* Set an instantaneous reference postion (for debug), bypassing the minimum jerk
-      * @param index is the number of the debug parameter
-      * @return true/false on success/failure
-      */
-    bool setDebugReferencePositionRaw(int j, double value);
-
-    /* Get an instantaneous reference postion (for debug), bypassing the minimum jerk
-      * @param index is the number of the debug parameter
-      * @return true/false on success/failure
-      */
-    bool getDebugParameterRaw(int j, unsigned int index, double *value);
-    bool getDebugReferencePositionRaw(int j, double *value);
-    bool getRotorPositionRaw(int j, double *value);
-    bool getRotorPositionsRaw(double *value);
-    bool getRotorSpeedRaw(int j, double *value);
-    bool getRotorSpeedsRaw(double *value);
-    bool getRotorAccelerationRaw(int j, double *value);
-    bool getRotorAccelerationsRaw(double *value);
-    bool getJointPositionRaw(int j, double *value);
-    bool getJointPositionsRaw(double *value);
+    //----------------------------------------------
+    virtual bool setParameterRaw(int j, unsigned int type, double value);
+    virtual bool getParameterRaw(int j, unsigned int type, double *value);
+    virtual bool setDebugParameterRaw(int j, unsigned int index, double value);
+    virtual bool setDebugReferencePositionRaw(int j, double value);
+    virtual bool getDebugParameterRaw(int j, unsigned int index, double *value);
+    virtual bool getDebugReferencePositionRaw(int j, double *value);
 #endif
 
     // Limits
-    bool setLimitsRaw(int axis, double min, double max);
-    bool getLimitsRaw(int axis, double *min, double *max);
+    virtual bool setLimitsRaw(int axis, double min, double max);
+    virtual bool getLimitsRaw(int axis, double *min, double *max);
     // Limits 2
-    bool setVelLimitsRaw(int axis, double min, double max);
-    bool getVelLimitsRaw(int axis, double *min, double *max);
+    virtual bool setVelLimitsRaw(int axis, double min, double max);
+    virtual bool getVelLimitsRaw(int axis, double *min, double *max);
 
     // Torque control
-    bool setTorqueModeRaw();
-    bool getTorqueRaw(int j, double *t);
-    bool getTorquesRaw(double *t);
-    bool getBemfParamRaw(int j, double *bemf);
-    bool setBemfParamRaw(int j, double bemf);
-    bool getTorqueRangeRaw(int j, double *min, double *max);
-    bool getTorqueRangesRaw(double *min, double *max);
-    bool setRefTorquesRaw(const double *t);
-    bool setRefTorqueRaw(int j, double t);
-    bool setRefTorquesRaw(const int n_joint, const int *joints, const double *t);
-    bool getRefTorquesRaw(double *t);
-    bool getRefTorqueRaw(int j, double *t);
-    bool setTorquePidRaw(int j, const Pid &pid);
-    bool setTorquePidsRaw(const Pid *pids);
-    bool setTorqueErrorLimitRaw(int j, double limit);
-    bool setTorqueErrorLimitsRaw(const double *limits);
-    bool getTorqueErrorRaw(int j, double *err);
-    bool getTorqueErrorsRaw(double *errs);
-    bool getTorquePidOutputRaw(int j, double *out);
-    bool getTorquePidOutputsRaw(double *outs);
-    bool getTorquePidRaw(int j, Pid *pid);
-    bool getTorquePidsRaw(Pid *pids);
-    bool getTorqueErrorLimitRaw(int j, double *limit);
-    bool getTorqueErrorLimitsRaw(double *limits);
-    bool resetTorquePidRaw(int j);
-    bool disableTorquePidRaw(int j);
-    bool enableTorquePidRaw(int j);
-    bool setTorqueOffsetRaw(int j, double v);
-    bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params);
-    bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
+    virtual bool setTorqueModeRaw();
+    virtual bool getTorqueRaw(int j, double *t);
+    virtual bool getTorquesRaw(double *t);
+    virtual bool getBemfParamRaw(int j, double *bemf);
+    virtual bool setBemfParamRaw(int j, double bemf);
+    virtual bool getTorqueRangeRaw(int j, double *min, double *max);
+    virtual bool getTorqueRangesRaw(double *min, double *max);
+    virtual bool setRefTorquesRaw(const double *t);
+    virtual bool setRefTorqueRaw(int j, double t);
+    virtual bool setRefTorquesRaw(const int n_joint, const int *joints, const double *t);
+    virtual bool getRefTorquesRaw(double *t);
+    virtual bool getRefTorqueRaw(int j, double *t);
+    virtual bool setTorquePidRaw(int j, const Pid &pid);
+    virtual bool setTorquePidsRaw(const Pid *pids);
+    virtual bool setTorqueErrorLimitRaw(int j, double limit);
+    virtual bool setTorqueErrorLimitsRaw(const double *limits);
+    virtual bool getTorqueErrorRaw(int j, double *err);
+    virtual bool getTorqueErrorsRaw(double *errs);
+    virtual bool getTorquePidOutputRaw(int j, double *out);
+    virtual bool getTorquePidOutputsRaw(double *outs);
+    virtual bool getTorquePidRaw(int j, Pid *pid);
+    virtual bool getTorquePidsRaw(Pid *pids);
+    virtual bool getTorqueErrorLimitRaw(int j, double *limit);
+    virtual bool getTorqueErrorLimitsRaw(double *limits);
+    virtual bool resetTorquePidRaw(int j);
+    virtual bool disableTorquePidRaw(int j);
+    virtual bool enableTorquePidRaw(int j);
+    virtual bool setTorqueOffsetRaw(int j, double v);
+    virtual bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params);
+    virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
     int32_t getRefSpeedInTbl(uint8_t boardNum, int j, eOmeas_position_t pos);
 
     // IVelocityControl2
-    bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
-    bool setVelPidRaw(int j, const Pid &pid);
-    bool setVelPidsRaw(const Pid *pids);
-    bool getVelPidRaw(int j, Pid *pid);
-    bool getVelPidsRaw(Pid *pids);
+    virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
+    virtual bool setVelPidRaw(int j, const Pid &pid);
+    virtual bool setVelPidsRaw(const Pid *pids);
+    virtual bool getVelPidRaw(int j, Pid *pid);
+    virtual bool getVelPidsRaw(Pid *pids);
+    virtual bool getRefVelocityRaw(const int joint, double *ref);
+    virtual bool getRefVelocityRaw(double *refs);
+    virtual bool getRefVelocityRaw(const int n_joint, const int *joints, double *refs);
 
-    bool getImpedanceRaw(int j, double *stiffness, double *damping);
-
-    /** Set current impedance parameters (stiffness,damping) for a specific joint.
-     * @return success/failure
-     */
-    bool setImpedanceRaw(int j, double stiffness, double damping);
-
-    /** Set current force Offset for a specific joint.
-     * @return success/failure
-     */
-    bool setImpedanceOffsetRaw(int j, double offset);
-
-    /** Get current force Offset for a specific joint.
-     * @return success/failure
-     */
-    bool getImpedanceOffsetRaw(int j, double *offset);
-
-    /** Get the current impedandance limits for a specific joint.
-     * @return success/failure
-     */
-    bool getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp);
-    // helper function for reading/writing impedance parameters
-    bool getWholeImpedanceRaw(int j, eOmc_impedance_t &imped);
+    // Impedance interface
+    virtual bool getImpedanceRaw(int j, double *stiffness, double *damping);
+    virtual bool setImpedanceRaw(int j, double stiffness, double damping);
+    virtual bool setImpedanceOffsetRaw(int j, double offset);
+    virtual bool getImpedanceOffsetRaw(int j, double *offset);
+    virtual bool getCurrentImpedanceLimitRaw(int j, double *min_stiff, double *max_stiff, double *min_damp, double *max_damp);
+    virtual bool getWholeImpedanceRaw(int j, eOmc_impedance_t &imped);
 
     // PositionDirect Interface
-    bool setPositionDirectModeRaw();
-    bool setPositionRaw(int j, double ref);
-    bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
-    bool setPositionsRaw(const double *refs);
+    virtual bool setPositionDirectModeRaw();
+    virtual bool setPositionRaw(int j, double ref);
+    virtual bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
+    virtual bool setPositionsRaw(const double *refs);
+    virtual bool getRefPositionRaw(const int joint, double *ref);
+    virtual bool getRefPositionRaw(double *refs);
+    virtual bool getRefPositionRaw(const int n_joint, const int *joints, double *refs);
 
     // InteractionMode interface
-    bool getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum* _mode);
-    bool getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
-    bool getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
-    bool setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum _mode);
-    bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
-    bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+    virtual bool getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum* _mode);
+    virtual bool getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    virtual bool getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+    virtual bool setInteractionModeRaw(int j, yarp::dev::InteractionModeEnum _mode);
+    virtual bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    virtual bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
 
     // IMotor interface
-    bool getNumberOfMotorsRaw(int * num);
-    bool getTemperatureRaw(int m, double* val);
-    bool getTemperaturesRaw(double *vals);
-    bool getTemperatureLimitRaw(int m, double *temp);
-    bool setTemperatureLimitRaw(int m, const double temp);
-    bool getMotorOutputLimitRaw(int m, double *limit);
-    bool setMotorOutputLimitRaw(int m, const double limit);
+    virtual bool getNumberOfMotorsRaw(int * num);
+    virtual bool getTemperatureRaw(int m, double* val);
+    virtual bool getTemperaturesRaw(double *vals);
+    virtual bool getTemperatureLimitRaw(int m, double *temp);
+    virtual bool setTemperatureLimitRaw(int m, const double temp);
+    virtual bool getMotorOutputLimitRaw(int m, double *limit);
+    virtual bool setMotorOutputLimitRaw(int m, const double limit);
     
     // OPENLOOP interface
-    bool setRefOutputRaw(int j, double v);
-    bool setRefOutputsRaw(const double *v);
-    bool getRefOutputRaw(int j, double *out);
-    bool getRefOutputsRaw(double *outs);
-    bool getOutputRaw(int j, double *out);
-    bool getOutputsRaw(double *outs);
-    bool setOpenLoopModeRaw();
+    virtual bool setRefOutputRaw(int j, double v);
+    virtual bool setRefOutputsRaw(const double *v);
+    virtual bool getRefOutputRaw(int j, double *out);
+    virtual bool getRefOutputsRaw(double *outs);
+    virtual bool getOutputRaw(int j, double *out);
+    virtual bool getOutputsRaw(double *outs);
+    virtual bool setOpenLoopModeRaw();
 };
 
 #endif // include guard

@@ -55,7 +55,7 @@ static inline bool DEPRECATED(const char *txt)
 
 iCubSimulationControl::iCubSimulationControl() : 
     //RateThread(10),
-    ImplementPositionControl<iCubSimulationControl, IPositionControl>(this),
+    ImplementPositionControl2(this),
     ImplementVelocityControl2(this),
     ImplementPidControl<iCubSimulationControl, IPidControl>(this),
     ImplementEncodersTimed(this),
@@ -269,8 +269,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         interactionMode[axis] = VOCAB_IM_STIFF;
    }
 
-    ImplementPositionControl<iCubSimulationControl, IPositionControl>::
-        initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementPositionControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementVelocityControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementPidControl<iCubSimulationControl, IPidControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
@@ -327,7 +326,7 @@ bool iCubSimulationControl::close (void)
         
         //RateThread::stop();/// stops the thread first (joins too).
         
-        ImplementPositionControl<iCubSimulationControl, IPositionControl>::uninitialize ();
+        ImplementPositionControl2::uninitialize();
         ImplementVelocityControl2::uninitialize();
         ImplementTorqueControl::uninitialize();
         ImplementPidControl<iCubSimulationControl, IPidControl>::uninitialize();
@@ -933,6 +932,139 @@ bool iCubSimulationControl::stopRaw()
     _mutex.post();
     return true;
 }
+
+bool iCubSimulationControl::getTargetPositionRaw(int axis, double *ref)
+{
+    return NOT_YET_IMPLEMENTED("@@@");
+}
+
+bool iCubSimulationControl::getTargetPositionRaw(double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<njoints; i++)
+    {
+        ret &= getTargetPositionRaw(i, &refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::getTargetPositionRaw(int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= getTargetPositionRaw(jnts[i], &refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::getRefVelocityRaw(int axis, double *ref)
+{
+    _mutex.wait();
+    *ref = next_vel[axis];
+    _mutex.post();
+    return true;
+}
+
+bool iCubSimulationControl::getRefVelocityRaw(double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<njoints; i++)
+    {
+        ret &= getRefVelocityRaw(i, &refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::getRefVelocityRaw(int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= getRefVelocityRaw(jnts[i], &refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::getRefPositionRaw(int axis, double *ref)
+{
+    _mutex.wait();
+    *ref = next_pos[axis];
+    _mutex.post();
+    return true;
+}
+
+bool iCubSimulationControl::getRefPositionRaw(double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<njoints; i++)
+    {
+        ret &= getRefPositionRaw(i, &refs[i]);
+    }
+    return ret;
+}
+
+
+bool iCubSimulationControl::getRefPositionRaw(int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= getRefPositionRaw(jnts[i], &refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::positionMoveRaw(int nj, const int * jnts, const double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= positionMoveRaw(jnts[i], refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::relativeMoveRaw(int nj, const int * jnts, const double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= relativeMoveRaw(jnts[i], refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::checkMotionDoneRaw(int nj, const int * jnts, bool *done)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= checkMotionDoneRaw(jnts[i], &done[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::setRefSpeedsRaw(const int nj, const int * jnts, const double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= setRefSpeedRaw(jnts[i], refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::getRefSpeedsRaw(const int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= getRefSpeedRaw(jnts[i], &refs[i]);
+    }
+    return ret;
+}
+
 // cmd is an array of double of length njoints specifying speed 
 /// for each axis
 bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)

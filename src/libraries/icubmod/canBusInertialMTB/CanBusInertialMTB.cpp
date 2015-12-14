@@ -160,7 +160,7 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
     this->nrOfTotalChannels = 0;
     
 
-    for(int board=0; board < this->boards.size(); board++ )
+    for(size_t board=0; board < this->boards.size(); board++ )
     {
         this->boards[board].boardId = canAddresses[board];
         if( config.find("sensorType").asString() == "acc" )
@@ -229,7 +229,7 @@ bool CanBusInertialMTB::open(yarp::os::Searchable& config)
 
     // open the can mask for the desired canDeviceId
     // messages class is 0x500
-    for(int board=0; board < this->boards.size(); board++ )
+    for(size_t board=0; board < this->boards.size(); board++ )
     {
         unsigned short     boardId = this->boards[board].boardId;
         if( this->boards[board].enabledGyro )
@@ -318,7 +318,7 @@ int CanBusInertialMTB::calibrateChannel(int ch)
 
 bool CanBusInertialMTB::threadInit()
 {
-    for(int board=0; board < this->boards.size(); board++ )
+    for(size_t board=0; board < this->boards.size(); board++ )
     {
         unsigned int canMessages=0;
         unsigned id = 0x200 + this->boards[board].boardId;
@@ -385,7 +385,7 @@ void CanBusInertialMTB::run()
     if(canMessages <0)
     {
         yError("CanBusInertialMTB::run() get %d canMessages\n", canMessages);
-        for(int board=0; board < this->boards.size(); board++ )
+        for(size_t board=0; board < this->boards.size(); board++ )
         {
             setPrivateBoardStatus(board,IAnalogSensor::AS_ERROR);
         }
@@ -404,7 +404,7 @@ void CanBusInertialMTB::run()
         unsigned char  msg_type   = ((msgid & 0x000f));
 
         // \todo TODO substitute the double for with a boardId -> board index vector? Worth?
-        for(int board=0; board < this->boards.size(); board++ )
+        for(size_t board=0; board < this->boards.size(); board++ )
         {
             unsigned short     boardId = this->boards[board].boardId;
             unsigned int       vectorOffset = this->boards[board].vectorOffset;
@@ -434,7 +434,7 @@ void CanBusInertialMTB::run()
 
     if(initted)
     {
-        for(int board=0; board < this->boards.size(); board++ )
+        for(size_t board=0; board < this->boards.size(); board++ )
         {
             unsigned short  boardId = this->boards[board].boardId;
 
@@ -483,7 +483,7 @@ void CanBusInertialMTB::run()
     // Copy the data in the output data
     mutex.wait();
     memcpy(data.data(), privateData.data(), sizeof(double)*privateData.size());
-    for(int ch=0; ch < privateStatus.size(); ch++ )
+    for(size_t ch=0; ch < privateStatus.size(); ch++ )
     {
         this->sharedStatus[ch] =  this->privateStatus[ch];
     }
@@ -495,7 +495,7 @@ void CanBusInertialMTB::run()
 
 void CanBusInertialMTB::threadRelease()
 {
-    for(int board=0; board < this->boards.size(); board++ )
+    for(size_t board=0; board < this->boards.size(); board++ )
     {
         unsigned int canMessages=0;
         unsigned id = 0x200 + this->boards[board].boardId;
