@@ -8,51 +8,51 @@
       <params file="hardware/mechanicals/devmc4plusjig-mc4plus01-mec.xml" />
 
     <group name="LIMITS">
-        <param name="Max">               180                   </param> <!-- maximum elongation should be of 120 deg -->
-        <param name="Min">               0                     </param>
-        <param name="RotorMax">          0                     </param>
-        <param name="RotorMin">          0                     </param>
-        <param name="Currents">          600                   </param>
-        <param name="JntVelocityMax">    0                     </param>
+        <param name="Max">               0.12   0.12    0.12                  </param> <!-- These are meters, NOT degrees -->
+        <param name="Min">               0      0       0                     </param>
+        <param name="RotorMax">          0      0       0                     </param>
+        <param name="RotorMin">          0      0       0                     </param>
+        <param name="Currents">          1000   1000    1000                  </param>
+        <param name="JntVelocityMax">    2817   2817    2817                  </param> <!-- to be changed in meters/seconds, now is ticks/second -->
     </group>
     
     <group name="IMPEDANCE">
-        <param name="stiffness">         0.0                    </param>
-        <param name="damping">           0.0	                </param>
+        <param name="stiffness">         0.0    0.0     0.0                    </param>
+        <param name="damping">           0.0	0.0     0.0                    </param>
     </group>
     
 	<group name="POSITION_CONTROL">
-        <param name="controlLaw">    joint_pid_v1               </param>    
-        <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">            1200.00                    </param>   
-        <param name="kd">                 0                     </param>       
-        <param name="ki">             500.0                     </param>       
-        <param name="limPwm">          	3360                    </param>       
-        <param name="maxPwm">          	3360                    </param>  
-        <param name="maxInt">             0                     </param>       
-        <param name="shift">              0                     </param>       
-        <param name="ko">                 0                     </param>       
-        <param name="stictionUp">         0                     </param>       
-        <param name="stictionDwn">        0                     </param>       
-        <param name="kff">                0                     </param>       
+        <param name="controlLaw">    joint_pid_v1                 </param>    
+        <param name="controlUnits">  machine_units                </param> 
+        <param name="kp">              6.00     6.00    6.00      </param>   
+        <param name="kd">                 0     0       0         </param>       
+        <param name="ki">              2.00     2.00    2.00      </param>       
+        <param name="limPwm">          	3360    3360    3360      </param>       
+        <param name="maxPwm">          	3360    3360    3360      </param>  
+        <param name="maxInt">             0     0       0         </param>       
+        <param name="shift">              0     0       0         </param>       
+        <param name="ko">                 0     0       0         </param>       
+        <param name="stictionUp">         0     0       0         </param>       
+        <param name="stictionDwn">        0     0       0         </param>       
+        <param name="kff">                0     0       0         </param>       
     </group>
 	
 	<group name="TORQUE_CONTROL">
         <param name="controlLaw">    motor_pid_with_friction_v1 </param>    
         <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">              0                        </param>       
-        <param name="kd">              0                        </param>       
-        <param name="ki">              0                        </param>       
-        <param name="maxPwm">          0                        </param>       
-        <param name="maxInt">          0                        </param>       
-        <param name="shift">           0                        </param>       
-        <param name="ko">              0                        </param>       
-        <param name="stictionUp">      0                        </param>       
-        <param name="stictionDwn">     0                        </param>       
-        <param name="kff">             0                        </param>   
-        <param name="kbemf">           0                        </param>    
-        <param name="filterType">      0                        </param>           
-        <param name="ktau">            0                        </param>  
+        <param name="kp">              0    0   0               </param>       
+        <param name="kd">              0    0   0               </param>       
+        <param name="ki">              0    0   0               </param>       
+        <param name="maxPwm">          0    0   0               </param>       
+        <param name="maxInt">          0    0   0               </param>       
+        <param name="shift">           0    0   0               </param>       
+        <param name="ko">              0    0   0               </param>       
+        <param name="stictionUp">      0    0   0               </param>       
+        <param name="stictionDwn">     0    0   0               </param>       
+        <param name="kff">             0    0   0               </param>   
+        <param name="kbemf">           0    0   0               </param>    
+        <param name="filterType">      0    0   0               </param>           
+        <param name="ktau">            0    0   0               </param>  
     </group>
 	
 	

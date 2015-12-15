@@ -4,27 +4,27 @@
 <params robot="iCubExpSetupMC4PLUS_CER" build="1">
     <group name="GENERAL">
         <param name="MotioncontrolVersion">  2 </param>
-        <param name="Joints"> 1 </param> <!-- the number of joints of the robot part -->
+        <param name="Joints"> 3 </param> <!-- the number of joints of the robot part -->
 
-                             <!--   0               logical axis number (ControlBoardWrapper) -->
-	    <param name="AxisMap">               0              </param>   <!-- hardware axis number  (EMS) -->
-        <param name="AxisName">              "wrist0"        </param> 
-        <param name="HasHallSensor">         0              </param>
-        <param name="HasTempSensor">         0              </param>
-        <param name="HasRotorEncoder">       0              </param>
-        <param name="HasRotorEncoderIndex">  0              </param>
-        <param name="Encoder">               182.044        </param> 
-        <param name="TorqueId">  	         0              </param> <!-- m.a.: maybe not needed in eth-robots -->
-        <param name="TorqueChan">	         0              </param>
-        <param name="TorqueMax"> 	         0              </param>
-        <param name="RotorEncoderRes">       1024           </param> 
-        <param name="JointEncoderType">      "NONE"         </param>
-        <param name="RotorEncoderType">      "NONE"         </param>
-        <param name="JointEncoderRes">       15360          </param> <!-- i.e. 15 revolutions (360deg) of the motor == 1 revolution of the joint -->
-        <param name="RotorIndexOffset">      0              </param>
-        <param name="Gearbox">               1              </param>
-        <param name="MotorPoles">            0              </param> 
-        <param name="Verbose">               0              </param>
+                                     <!--   logical axis number (ControlBoardWrapper) -->
+	    <param name="AxisMap">               0          1           2              </param>   <!-- hardware axis number  (EMS) -->
+        <param name="AxisName">              "wrist0"   "wrist1"    "wrist2"       </param> 
+        <param name="HasHallSensor">         0          0           0              </param>
+        <param name="HasTempSensor">         0          0           0              </param>
+        <param name="HasRotorEncoder">       0          0           0              </param>
+        <param name="HasRotorEncoderIndex">  0          0           0              </param>
+        <param name="Encoder">               56333.333  56333.333   56333.333      </param> <!-- conversion factor: meters to ticks --> 
+        <param name="TorqueId">  	         0          0           0              </param> <!-- m.a.: maybe not needed in eth-robots -->
+        <param name="TorqueChan">	         0          0           0              </param>
+        <param name="TorqueMax"> 	         0          0           0              </param>
+        <param name="RotorEncoderRes">       65535      65535       65535          </param> <!-- so that EOAppEncodersReader makes no conversion after getting hal value-->
+        <param name="JointEncoderType">      "NONE"     "NONE"      "NONE"         </param>
+        <param name="RotorEncoderType">      "NONE"     "NONE"      "NONE"         </param>
+        <param name="JointEncoderRes">       65535      65535       65535          </param> <!-- so that EOAppEncodersReader makes no conversion after getting hal value-->
+        <param name="RotorIndexOffset">      0          0           0              </param>
+        <param name="Gearbox">               1          1           1              </param>
+        <param name="MotorPoles">            0          0           0              </param> 
+        <param name="Verbose">               0          0           0              </param>
     </group>
 
     <group name ="JOINTS_COUPLING">
@@ -36,12 +36,12 @@
     </group>
     
     <group name="VELOCITY">
-        <param name="MOT_speed_estimation">	0               </param>
-        <param name="MOT_accel_estimation">	0               </param>
-        <param name="JNT_accel_estimation">	0               </param>
-        <param name="JNT_speed_estimation">	0               </param>
-        <param name="Shifts">              	0               </param>
-        <param name="Timeout">             	0               </param>
+        <param name="MOT_speed_estimation">	0   0   0              </param>
+        <param name="MOT_accel_estimation">	0   0   0               </param>
+        <param name="JNT_accel_estimation">	0   0   0               </param>
+        <param name="JNT_speed_estimation">	0   0   0               </param>
+        <param name="Shifts">              	0   0   0               </param>
+        <param name="Timeout">             	0   0   0               </param>
     </group>
 
 </params>

@@ -6,32 +6,32 @@
                 <params file="general.xml" />
                 
 		<group name="GENERAL">
-		    <param name="joints"> 1 </param> <!-- the number of joints of the robot part -->
+		    <param name="joints"> 3 </param> <!-- the number of joints of the robot part -->
 		    <param name="deviceName"> MC4plusCER_Calibrator </param> <!-- forse non e' funzionale ma serve solo per debug -->
 		</group>
 
         <group name="HOME">
-		    <param name="positionHome">                       0             </param>
-		    <param name="velocityHome">                       50            </param>
+		    <param name="positionHome">                       0.06      0.06        0.06            </param>
+		    <param name="velocityHome">                       0.02      0.02        0.02            </param>
 		</group>
 
 		<group name="CALIBRATION">
-		    <param name="calibrationType">                    8               </param>
-		    <param name="calibration1">                       -2500           </param> <!-- used pwm  -->
-		    <param name="calibration2">                       0               </param> <!-- pos of reached hw limit in icubdeg-->
-		    <param name="calibration3">                       0               </param> 
+		    <param name="calibrationType">                    8         8           8               </param>
+		    <param name="calibration1">                       -2500     -2500       -2500           </param> <!-- used pwm  -->
+		    <param name="calibration2">                       0         0           0               </param> <!-- pos of reached hw limit in meters-->
+		    <param name="calibration3">                       0         0           0               </param> 
 
-            <param name="calibrationZero">                    0.0             </param>
-            <param name="calibrationDelta">                   0.0             </param>
+            <param name="calibrationZero">                    0.0       0.0         0.0             </param>
+            <param name="calibrationDelta">                   0.0       0.0         0.0             </param>
 
-		    <param name="startupPosition">                    0.0             </param> <!-- target position in deg after high level calib is terminated --> 
-		    <param name="startupVelocity">                    50.0            </param> <!-- and its velocity in deg/sec -->
-		    <param name="startupMaxPwm">                      3360            </param> <!-- max pwm used in calib (it is a pid param)-->
-		    <param name="startupPosThreshold">                3               </param> <!-- tolerance of position in deg relative to positionZero param -->  
+		    <param name="startupPosition">                    0.06      0.06        0.06            </param> <!-- target position in m after high level calib is terminated --> 
+		    <param name="startupVelocity">                    0.02      0.02        0.02            </param> <!-- and its velocity in m/sec -->
+		    <param name="startupMaxPwm">                      3360      3360        3360            </param> <!-- max pwm used in calib (it is a pid param)-->
+		    <param name="startupPosThreshold">                0.005     0.005       0.005           </param> <!-- tolerance of position in deg relative to positionZero param -->  
 		</group>
 
 	
-		<param name="CALIB_ORDER"> (0) </param>	<!-- order of calibration-goto-zero in parallel. within () they can go in parallel -->
+		<param name="CALIB_ORDER"> (0 1 2) </param>	<!-- order of calibration-goto-zero in parallel. within () they can go in parallel -->
 
 		<action phase="startup" level="10" type="calibrate">
 		    <param name="target">devmc4plusCER_mc_wrapper</param>

@@ -32,8 +32,8 @@
             <param name="entityMNinformationNumberOf">              1	</param>
 
         <param name="endpointMotionControlIsSupported">         1   </param> 
-            <param name="entityMCjointNumberOf">                    1	</param> 
-            <param name="entityMCmotorNumberOf">                    1	</param>
+            <param name="entityMCjointNumberOf">                    3	</param> 
+            <param name="entityMCmotorNumberOf">                    3	</param>
             <param name="entityMCcontrollerNumberOf">               1	</param> 
             
         <param name="endpointAnalogSensorsIsSupported">         0   </param> 
