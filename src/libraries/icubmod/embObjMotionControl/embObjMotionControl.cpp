@@ -5298,6 +5298,25 @@ bool embObjMotionControl::setMotorOutputLimitRaw(int m, const double limit)
     return NOT_YET_IMPLEMENTED("setMotorOutputLimitRaw");
 }
 
+bool embObjMotionControl::getPeakCurrentRaw(int m, double *val)
+{
+    return NOT_YET_IMPLEMENTED("getPeakCurrentRaw");
+}
+
+bool embObjMotionControl::setPeakCurrentRaw(int m, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setPeakCurrentRaw");
+}
+
+bool embObjMotionControl::getNominalCurrentRaw(int m, double *val)
+{
+    return NOT_YET_IMPLEMENTED("getNominalCurrentRaw");
+}
+
+bool embObjMotionControl::setNominalCurrentRaw(int m, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setNominalCurrentRaw");
+}
 
 bool embObjMotionControl::askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size)
 {

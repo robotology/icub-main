@@ -739,6 +739,10 @@ public:
     virtual bool setTemperatureLimitRaw(int m, const double temp);
     virtual bool getMotorOutputLimitRaw(int m, double *limit);
     virtual bool setMotorOutputLimitRaw(int m, const double limit);
+    virtual bool getPeakCurrentRaw(int m, double *val);
+    virtual bool setPeakCurrentRaw(int m, const double val);
+    virtual bool getNominalCurrentRaw(int m, double *val);
+    virtual bool setNominalCurrentRaw(int m, const double val);
     
     // OPENLOOP interface
     virtual bool setRefOutputRaw(int j, double v);

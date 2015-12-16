@@ -6432,6 +6432,26 @@ bool CanBusMotionControl::setMotorOutputLimitRaw(int m, const double limit)
     return NOT_YET_IMPLEMENTED("setMotorOutputLimitRaw");
 }
 
+bool CanBusMotionControl::getPeakCurrentRaw(int m, double *val)
+{
+    return NOT_YET_IMPLEMENTED("getPeakCurrentRaw");
+}
+
+bool CanBusMotionControl::setPeakCurrentRaw(int m, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setPeakCurrentRaw");
+}
+
+bool CanBusMotionControl::getNominalCurrentRaw(int m, double *val)
+{
+    return NOT_YET_IMPLEMENTED("getNominalCurrentRaw");
+}
+
+bool CanBusMotionControl::setNominalCurrentRaw(int m, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setNominalCurrentRaw");
+}
+
 bool CanBusMotionControl::setSpeedEstimatorShiftRaw(int axis, double jnt_speed, double jnt_acc, double mot_speed, double mot_acc)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))

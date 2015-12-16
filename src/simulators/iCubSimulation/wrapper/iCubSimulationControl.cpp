@@ -70,6 +70,7 @@ iCubSimulationControl::iCubSimulationControl() :
     ImplementOpenLoopControl(this),
     ImplementRemoteVariables(this),
     ImplementAxisInfo(this),
+    ImplementMotor(this),
     _done(0),
     _mutex(1)
 {
@@ -287,6 +288,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementOpenLoopControl::initialize(njoints, axisMap);
     ImplementRemoteVariables::initialize(njoints, axisMap);
     ImplementAxisInfo::initialize(njoints, axisMap);
+    ImplementMotor::initialize(njoints, axisMap);
 
     if (!p.check("joint_device")) {
         yError("Need a device to access the joints\n");
@@ -341,6 +343,7 @@ bool iCubSimulationControl::close (void)
         ImplementOpenLoopControl::uninitialize();
         ImplementRemoteVariables::uninitialize();
         ImplementAxisInfo::uninitialize();
+        ImplementMotor::uninitialize();
     }
 
     checkAndDestroy<double>(current_jnt_pos);
@@ -610,6 +613,62 @@ bool iCubSimulationControl::getOutputsRaw(double *outs)
         outs[axis] = openloop_ref[axis];
     _mutex.post();
     return true;}
+
+bool iCubSimulationControl::getNumberOfMotorsRaw(int* num)
+{
+    *num = njoints;
+    return true;
+}
+
+bool iCubSimulationControl::getTemperatureRaw(int m, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getTemperatureRaw");
+}
+
+bool iCubSimulationControl::getTemperaturesRaw(double *vals)
+{
+    return NOT_YET_IMPLEMENTED("getTemperaturesRaw");
+}
+
+bool iCubSimulationControl::getTemperatureLimitRaw(int m, double *temp)
+{
+    return NOT_YET_IMPLEMENTED("getTemperatureLimitRaw");
+}
+
+bool iCubSimulationControl::setTemperatureLimitRaw(int m, const double temp)
+{
+    return NOT_YET_IMPLEMENTED("setTemperatureLimitRaw");
+}
+
+bool iCubSimulationControl::getMotorOutputLimitRaw(int m, double *limit)
+{
+    return NOT_YET_IMPLEMENTED("getMotorOutputLimitRaw");
+}
+
+bool iCubSimulationControl::setMotorOutputLimitRaw(int m, const double limit)
+{
+    return NOT_YET_IMPLEMENTED("setMotorOutputLimitRaw");
+}
+
+bool iCubSimulationControl::getPeakCurrentRaw(int m, double *val)
+{
+    return NOT_YET_IMPLEMENTED("getPeakCurrentRaw");
+}
+
+bool iCubSimulationControl::setPeakCurrentRaw(int m, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setPeakCurrentRaw");
+}
+
+bool iCubSimulationControl::getNominalCurrentRaw(int m, double *val)
+{
+    return NOT_YET_IMPLEMENTED("getNominalCurrentRaw");
+}
+
+bool iCubSimulationControl::setNominalCurrentRaw(int m, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setNominalCurrentRaw");
+}
 
 bool iCubSimulationControl::setRefOutputRaw (int j, double v)
 {
