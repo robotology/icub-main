@@ -636,6 +636,10 @@ public:
     virtual bool getMaxCurrentRaw(int j, double *val);
     virtual bool getAmpStatusRaw(int *st);
     virtual bool getAmpStatusRaw(int j, int *st);
+    virtual bool getPWMRaw(int j, double* val);
+    virtual bool getPWMLimitRaw(int j, double* val);
+    virtual bool setPWMLimitRaw(int j, const double val);
+    virtual bool getPowerSupplyVoltageRaw(int j, double* val);
     /////////////// END AMPLIFIER INTERFACE
 
     // virtual analog sensor

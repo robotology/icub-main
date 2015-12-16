@@ -209,7 +209,7 @@ public ImplementAxisInfo
   virtual bool getTargetPositionRaw(double *refs);
   virtual bool getTargetPositionRaw(const int n_joint, const int *joints, double *refs);
 
-  // Velcoity Control
+  // Velocity Control
   virtual bool setVelocityModeRaw();
   virtual bool velocityMoveRaw(int j, double sp);
   virtual bool velocityMoveRaw(const double *sp);
@@ -225,7 +225,7 @@ public ImplementAxisInfo
   virtual bool getRefVelocityRaw(const int n_joint, const int *joints, double *refs);
 
 
-  //////////////////////// BEGIN EncoderInterface
+  //////////////////////// BEGIN Encoder Interface
   //
   virtual bool resetEncoderRaw(int j);
   virtual bool resetEncodersRaw();
@@ -277,6 +277,10 @@ public ImplementAxisInfo
   virtual bool getMaxCurrentRaw(int j, double* val);
   virtual bool getAmpStatusRaw(int *st);
   virtual bool getAmpStatusRaw(int k, int *st);
+  virtual bool getPWMRaw(int j, double* val);
+  virtual bool getPWMLimitRaw(int j, double* val);
+  virtual bool setPWMLimitRaw(int j, const double val);
+  virtual bool getPowerSupplyVoltageRaw(int j, double* val);
   //
   /////////////// END AMPLIFIER INTERFACE
 

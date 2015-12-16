@@ -670,6 +670,26 @@ bool iCubSimulationControl::setNominalCurrentRaw(int m, const double val)
     return NOT_YET_IMPLEMENTED("setNominalCurrentRaw");
 }
 
+bool iCubSimulationControl::getPWMRaw(int j, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getPWMRaw");
+}
+
+bool iCubSimulationControl::getPWMLimitRaw(int j, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getPWMLimitRaw");
+}
+
+bool iCubSimulationControl::setPWMLimitRaw(int j, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setPWMLimitRaw");
+}
+
+bool iCubSimulationControl::getPowerSupplyVoltageRaw(int j, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getPowerSupplyVoltageRaw");
+}
+
 bool iCubSimulationControl::setRefOutputRaw (int j, double v)
 {
     if( (j>=0) && (j<njoints) )

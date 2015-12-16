@@ -5318,6 +5318,26 @@ bool embObjMotionControl::setNominalCurrentRaw(int m, const double val)
     return NOT_YET_IMPLEMENTED("setNominalCurrentRaw");
 }
 
+bool embObjMotionControl::getPWMRaw(int j, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getPWM");
+}
+
+bool embObjMotionControl::getPWMLimitRaw(int j, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getPWMLimitRaw");
+}
+
+bool embObjMotionControl::setPWMLimitRaw(int j, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setPWMLimitRaw");
+}
+
+bool embObjMotionControl::getPowerSupplyVoltageRaw(int j, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getPowerSupplyVoltageRaw");
+}
+
 bool embObjMotionControl::askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size)
 {
     // marco.accame: this is a private methods, thus it is responsibility of the called to pass value pointer of suitable size. we dont do controls.
