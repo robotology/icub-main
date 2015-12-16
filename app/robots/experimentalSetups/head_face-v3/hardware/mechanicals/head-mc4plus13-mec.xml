@@ -30,12 +30,12 @@
         <param name="TorqueId">                 0x0C           0x0C            0x0C            0x0C                </param>    <!-- torque params: still to be checked -->
         <param name="TorqueChan">               0              0               0               0                   </param>
         <param name="TorqueMax">                24             24              24              24                  </param>
-        <param name="RotorEncoderRes">          2048           -2048            2048            2048               </param> <!--j yaw and tilt: 512(ppr)* 4= 2048 hal raed VALE: updated values but not signs-->
+        <param name="RotorEncoderRes">          2048           2048            2048            2048               </param> <!--j yaw and tilt: 512(ppr)* 4= 2048 hal raed VALE: updated values but not signs-->
         <param name="JointEncoderType">         "AEA"          "AEA"          "OPTICAL_QUAD"  "OPTICAL_QUAD"       </param>
         <param name="RotorEncoderType">         "OPTICAL_QUAD" "OPTICAL_QUAD" "OPTICAL_QUAD"  "OPTICAL_QUAD"       </param>
         <param name="JointEncoderRes">          4096            4096           102400          102400              </param>
         <param name="RotorIndexOffset">         0               0              0               0                   </param>
-        <param name="Gearbox">                  100             141            50              50                  </param> <!-- VALE: updated values but not signs -->
+        <param name="Gearbox">                  100             -141            50              50                  </param> <!-- VALE: updated values but not signs -->
         <param name="MotorPoles">               0               0              0               0                   </param>   <!-- ??? -->
         <param name="Verbose">  0   </param>
     </group>

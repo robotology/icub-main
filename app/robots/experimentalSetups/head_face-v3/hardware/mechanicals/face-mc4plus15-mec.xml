@@ -31,12 +31,12 @@
         <param name="TorqueId">                 0              0                0                0              </param>    <!-- torque params: still to be checked -->
         <param name="TorqueChan">               0              0                0                0              </param>
         <param name="TorqueMax">                0              0                0                0              </param>
-        <param name="RotorEncoderRes">          -1600         -1600             -1600           -1600           </param> <!-- VALE: updated values but not signs -->
+        <param name="RotorEncoderRes">          1600           1600             1600             1600           </param> 
         <param name="JointEncoderType">         "OPTICAL_QUAD" "OPTICAL_QUAD"  "OPTICAL_QUAD"   "OPTICAL_QUAD"  </param>
         <param name="RotorEncoderType">         "OPTICAL_QUAD" "OPTICAL_QUAD"  "OPTICAL_QUAD"   "OPTICAL_QUAD"  </param>
         <param name="JointEncoderRes">          -105600        105600          105600           -105600         </param>
         <param name="RotorIndexOffset">         0              0               0                0               </param>
-        <param name="Gearbox">                  66             66              66               66              </param> <!-- VALE: updated values but not signs -->
+        <param name="Gearbox">                  -66            66              66               -66              </param> <!-- VALE: updated values but not signs -->
         <param name="MotorPoles">               0              0               0                0               </param>   
         
        <param name="Verbose">     0  </param>

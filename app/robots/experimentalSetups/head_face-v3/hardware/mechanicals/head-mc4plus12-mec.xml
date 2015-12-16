@@ -30,7 +30,7 @@
         <param name="TorqueId">                 0x0C            0x0C            </param>    <!-- vale: torque param to be checked -->
         <param name="TorqueChan">               0               0               </param>
         <param name="TorqueMax">                24              24              </param>
-        <param name="RotorEncoderRes">          -2048           -2048           </param>
+        <param name="RotorEncoderRes">          2048            2048           </param>
         <param name="JointEncoderType">         "AEA"           "AEA"           </param>
         <param name="RotorEncoderType">         "OPTICAL_QUAD"  "OPTICAL_QUAD"  </param>
         <param name="JointEncoderRes">          4096            -4096           </param>

@@ -27,12 +27,12 @@
         <param name="TorqueId">              0               0          </param>    <!--torque pram: still to be verified -->
         <param name="TorqueChan">            0               0          </param>
         <param name="TorqueMax">             0               0          </param>
-        <param name="RotorEncoderRes">       0               -14400     </param>
+        <param name="RotorEncoderRes">       0               40        </param>
         <param name="JointEncoderType">      "AEA"           "AEA"      </param>
         <param name="RotorEncoderType">      "OPTICAL_QUAD"  "NONE"     </param>
         <param name="JointEncoderRes">       4096            4096      </param>
         <param name="RotorIndexOffset">      0               0          </param>
-        <param name="Gearbox">               1               1          </param>
+        <param name="Gearbox">               1               -16         </param>
         <param name="MotorPoles">            0               0          </param> 
         
         <param name="Verbose">  0  </param>
