@@ -8,9 +8,9 @@
 	  <elem name="FirstSetOfJoints">  0  2  0  2 </elem> <!-- the 4 numbers are: joint-start-user, jonit-end-user, joint-startboard, joint-end-board -->
       </paramlist>
 
-        <param name="period"> 10                              </param>
-        <param name="name">   /icub/mc4plusCER-joint          </param>
-        <param name="joints"> 3                               </param>
+        <param name="period"> 10                                </param>
+        <param name="name">   /icub/mc4plusCERwrist-elongations </param>
+        <param name="joints"> 3                                 </param>
 
 
       <action phase="startup" level="5" type="attach">

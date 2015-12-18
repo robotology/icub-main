@@ -8,7 +8,7 @@
 
                                      <!--   logical axis number (ControlBoardWrapper) -->
 	    <param name="AxisMap">               0          1           2              </param>   <!-- hardware axis number  (EMS) -->
-        <param name="AxisName">              "wrist0"   "wrist1"    "wrist2"       </param> 
+        <param name="AxisName">              "wrist0_elongation"   "wrist1_elongation"    "wrist2_elongation"       </param> 
         <param name="HasHallSensor">         0          0           0              </param>
         <param name="HasTempSensor">         0          0           0              </param>
         <param name="HasRotorEncoder">       0          0           0              </param>
