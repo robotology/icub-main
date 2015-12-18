@@ -15,10 +15,8 @@ include_directories(${iDyn_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS}
                     ${skinDynLib_INCLUDE_DIRS})
 
-if(MSVC)
-  add_definitions(-D_USE_MATH_DEFINES)
-endif()
-
+# import math symbols from standard cmath
+add_definitions(-D_USE_MATH_DEFINES)
 add_executable(${PROJECT_NAME} ${folder_source} ${folder_header})
 target_link_libraries(${PROJECT_NAME} iDyn
                                       ${YARP_LIBRARIES}

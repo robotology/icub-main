@@ -62,10 +62,8 @@ include_directories(${GLUT_INCLUDE_DIRS}
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
 # Set defines
-add_definitions(${QT_DEFINITIONS})
-if(MSVC)
-  add_definitions(-D_USE_MATH_DEFINES)
-endif()
+# import math symbols from standard cmath
+add_definitions(${QT_DEFINITIONS} -D_USE_MATH_DEFINES)
 
 # Compile and link
 add_executable(iCubGui WIN32 ${iCubGui_HDRS}
