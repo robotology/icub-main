@@ -14,11 +14,14 @@
 
     <!--    analog sensors-mais2 //this is not REALLY another mais, cause it's the same phisical device of the first one, but handled by another board
             This leads to the initialization of two different analog sensor device at high level, but they roughly refer to the same data-->
+<!--
     <devices file="./wrappers/MAIS/mc4plusjig-mais2_wrapper.xml" />
     <devices file="./hardware/MAIS/mc4plusjig-mais2.xml" />
+-->
 
     <!-- CALIBRATORS -->
     <!--<devices file="./calibrators/mc4plusjig_calib.xml" /> -->
+
     
 </robot> 
 

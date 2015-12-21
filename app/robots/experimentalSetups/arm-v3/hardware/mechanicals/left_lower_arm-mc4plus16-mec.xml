@@ -7,8 +7,8 @@
         <param name="Joints"> 4 </param> <!-- the number of joints of the robot part -->
 
         <!-- joint number in sub-part           0           1               2               3           -->
-        <!-- joint name                         indx-distal middle-proximal middle-distal   little-fingers  -->
-        <param name="AxisMap">                  0           1               2               3                   </param>   <!-- joint as effectively mapped onto the hw of the board -->
+        <param name="AxisName">                 indx-distal middle-proximal middle-distal   little-fingers  </param> 
+        <param name="AxisMap">                  0           1               2               3               </param>   <!-- joint as effectively mapped onto the hw of the board -->
         <param name="HasHallSensor">            0           0           0               0                   </param>
         <param name="HasTempSensor">            0           0           0               0                   </param>
         <param name="HasRotorEncoder">          1           1           1               1                   </param>
