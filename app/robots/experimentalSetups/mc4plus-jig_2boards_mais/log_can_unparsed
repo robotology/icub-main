@@ -1,0 +1,210 @@
+| configuring
+||| no policy found
+||| default config file specified as robotInterface.ini
+||| checking [/home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/robotInterface.ini] (pwd)
+||| found /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/robotInterface.ini
+||| finding file [config]
+||| checking [/home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/./main.xml] (pwd)
+||| found /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/./main.xml
+[DEBUG]Reading file /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/./main.xml 
+[DEBUG]Reading file /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/././hardware/motorControl/mc4plusjig_mc_hardware.xml 
+[DEBUG]Reading file /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/./general.xml 
+[DEBUG]Reading file /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/./hardware/electronics/devmc4plusjig-mc4plus01-eln.xml 
+[DEBUG]Reading file /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/./hardware/electronics/pc104.xml 
+[DEBUG]Reading file /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/./hardware/mechanicals/devmc4plusjig-mc4plus01-mec.xml 
+[DEBUG]Reading file /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/././wrappers/motorControl/mc4plusjig_mc_wrapper.xml 
+[DEBUG]Reading file /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/././wrappers/MAIS/mc4plusjig-mais_wrapper.xml 
+[DEBUG]Reading file /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/././hardware/MAIS/mc4plusjig-mais.xml 
+[DEBUG]Reading file /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/./general.xml 
+[DEBUG]Reading file /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/./hardware/electronics/pc104.xml 
+[DEBUG]Reading file /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/./hardware/electronics/devmc4plusjig-mc4plus01-eln.xml 
+[DEBUG]Reading file /home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/./hardware/electronics/pc104.xml 
+yarp: Port /icub/robotInterface active at tcp://10.0.1.104:10002
+[INFO]startup phase starting... 
+||| finding paths [plugins]
+||| checking [/home/dave-iit/Workspace/icub-main/app/robots/experimentalSetups/mc4plus-jig_2boards_mais/plugins] (pwd)
+||| checking [/home/dave-iit/Workspace/icub-main/build_test/share/iCub/robots/iCubGenova04/plugins] (robot)
+||| checking [/home/dave-iit/.config/yarp/plugins] (YARP_CONFIG_HOME)
+||| checking [/home/dave-iit/.local/share/yarp/plugins] (YARP_DATA_HOME)
+||| checking [/etc/xdg/xdg-default/yarp/plugins] (YARP_CONFIG_DIRS)
+||| checking [/etc/xdg/yarp/plugins] (YARP_CONFIG_DIRS)
+||| checking [plugins] (YARP_DATA_DIRS)
+||| checking [/home/dave-iit/Workspace/icub-main/build_test/share/iCub/plugins] (YARP_DATA_DIRS)
+||| found /home/dave-iit/Workspace/icub-main/build_test/share/iCub/plugins
+[DEBUG]POSITION_CONTROL: using metric_units
+[DEBUG]POSITION_CONTROL: using control law joint_pid_v1
+[DEBUG]TORQUE_CONTROL: using metric_units
+[DEBUG]TORQUE_CONTROL: using control law motor_pid_with_friction_v1
+[INFO]IMPEDANCE section: parameters successfully loaded
+[DEBUG]EthSender is a RateThread with rate = 1 ms 
+[DEBUG]EthReceiver is a RateThread with rate = 5 ms 
+[WARNING]in EthReceiver::config() the config socket has queue size =  425984 ; you request ETHRECEIVER_BUFFER_SIZE=  
+[WARNING]ethResources::verifyBoardPresence() cannot reach BOARD 17 at attempt # 1 w/ timeout of 0.5 seconds 
+[WARNING]ethResources::verifyBoardPresence() cannot reach BOARD 17 at attempt # 2 w/ timeout of 0.5 seconds 
+[WARNING]ethResources::verifyBoardPresence() cannot reach BOARD 17 at attempt # 3 w/ timeout of 0.5 seconds 
+[WARNING]ethResources::verifyBoardPresence() cannot reach BOARD 17 at attempt # 4 w/ timeout of 0.5 seconds 
+[WARNING]ethResources::verifyBoardPresence() cannot reach BOARD 17 at attempt # 5 w/ timeout of 0.5 seconds 
+[WARNING]ethResources::verifyBoardPresence() cannot reach BOARD 17 at attempt # 6 w/ timeout of 0.5 seconds 
+[WARNING]ethResources::verifyBoardPresence() cannot reach BOARD 17 at attempt # 7 w/ timeout of 0.5 seconds 
+[INFO] from BOARD 17, src LOCAL, adr 0, time 1s 952m 816u: (code 0x00000009, par16 0x0000 par64 0x0000000000000000) -> SYS: the board is running happily + INFO = main socket listens on 12345
+[WARNING]ethResources::verifyBoardPresence() cannot reach BOARD 17 at attempt # 8 w/ timeout of 0.5 seconds 
+[DEBUG]ethResources::verifyBoardPresence() found BOARD  17  at attempt # 9 after 4.0174 seconds 
+[DEBUG]ethResources::verifyBoardTransceiver() has validated the transceiver of BOARD  17 
+[DEBUG]ethResources::verifyRemoteValue() verified value inside ID32 = 0x00010002 -> IND = 0, TAG = eoprot_tag_mn_appl_config_txratedivider from BOARD 17  at attempt # 1 after 0.005162 seconds 
+[DEBUG]ethResources::setRemoteValueUntilVerified has set and verified ID ID32 = 0x00010002 -> IND = 0, TAG = eoprot_tag_mn_appl_config_txratedivider in BOARD 17 at attempt # 1 
+[DEBUG]ethResources::setTXrate() has succesfully set the TX rate of the transceiver of BOARD  17 at 5 ms 
+[DEBUG]ethResources::setTXrate() has succesfully set the TX rate of the transceiver of BOARD  17 at 5 ms 
+[DEBUG]ethResources::goToConfig() called for BOARD 17 
+MANAGEMENT-appl-status: sign = 0xaa000000, board EB17 -> name = aMC400v3
+                        version = 2.11, built on date 17 11 2015, at hour 16:25
+                        state = applstate_config
+[DEBUG]ethResources::getRemoteValue() obtained value inside ID32 = 0x00010003 -> IND = 0, TAG = eoprot_tag_mn_appl_status from BOARD 17  at attempt # 1 after 0.00492883 seconds 
+[DEBUG]ethResources::goToConfig() detected BOARD 17 with name aMC400v3 and version = ( 2 11 ) 
+[DEBUG]ethResources::goToConfig() successfully sent BOARD 17 in cfg mode 
+[DEBUG]ethResources::numberofRegulars() retrieved value from BOARD 17  at attempt # 1 after 0.00515604 seconds 
+[DEBUG]ethResources::clearRegulars() has detected 0 regulars in BOARD 17 now is attempting clearing them 
+[DEBUG]ethResources::numberofRegulars() retrieved value from BOARD 17  at attempt # 1 after 0.00160599 seconds 
+[DEBUG]ethResources::clearRegulars() has correctly checked regulars: expected =  0  and number in board =  0 
+[DEBUG]ethResources::cleanBoardBehaviour() has cleaned the application in BOARD  17 : config mode + cleared all its regulars 
+[ERROR]ethResources::verifyENTITYnumber() has detected a mismatching number of  eoprot_entity_mc_joint  between the XML files: cannot proceed any further 
+[ERROR] protocol uses = 4 but calling device uses 1 
+[ERROR]ethResources::verifyENTITYnumber() has detected a mismatching number of  eoprot_entity_mc_motor  between the XML files: cannot proceed any further 
+[ERROR] protocol uses = 4 but calling device uses 1 
+[DEBUG]ethResources::numberofRegulars() retrieved value from BOARD 17  at attempt # 1 after 0.010597 seconds 
+[DEBUG]ethResources::addRegulars() has correctly checked regulars: expected =  2  and number in board =  2 
+[DEBUG]ethResources::verifyRemoteValue() verified value inside ID32 = 0x01000001 -> IND = 0, TAG = eoprot_tag_mc_joint_config from BOARD 17  at attempt # 1 after 0.00572085 seconds 
+[DEBUG]ethResources::setRemoteValueUntilVerified has set and verified ID ID32 = 0x01000001 -> IND = 0, TAG = eoprot_tag_mc_joint_config in BOARD 17 at attempt # 1 
+[DEBUG]ethResources::verifyRemoteValue() verified value inside ID32 = 0x01010001 -> IND = 0, TAG = eoprot_tag_mc_motor_config from BOARD 17  at attempt # 1 after 0.00612497 seconds 
+[DEBUG]ethResources::setRemoteValueUntilVerified has set and verified ID ID32 = 0x01010001 -> IND = 0, TAG = eoprot_tag_mc_motor_config in BOARD 17 at attempt # 1 
+[DEBUG]ethResources::verifyRemoteValue() verified value inside ID32 = 0x01020002 -> IND = 0, TAG = eoprot_tag_mc_controller_config_jointcoupling from BOARD 17  at attempt # 1 after 0.010716 seconds 
+[DEBUG]ethResources::setRemoteValueUntilVerified has set and verified ID ID32 = 0x01020002 -> IND = 0, TAG = eoprot_tag_mc_controller_config_jointcoupling in BOARD 17 at attempt # 1 
+[DEBUG]ethResources::goToRun() called for BOARD 17 
+MANAGEMENT-appl-status: sign = 0xaa000000, board EB17 -> name = aMC400v3
+                        version = 2.11, built on date 17 11 2015, at hour 16:25
+                        state = applstate_config
+[DEBUG]ethResources::getRemoteValue() obtained value inside ID32 = 0x00010003 -> IND = 0, TAG = eoprot_tag_mn_appl_status from BOARD 17  at attempt # 1 after 0.00578809 seconds 
+MANAGEMENT-appl-status: sign = 0xaa000000, board EB17 -> name = aMC400v3
+                        version = 2.11, built on date 17 11 2015, at hour 16:25
+                        control loop timings: RX->400us, DO->300us, TX->300us
+                        state = applstate_running
+[DEBUG]ethResources::getRemoteValue() obtained value inside ID32 = 0x00010003 -> IND = 0, TAG = eoprot_tag_mn_appl_status from BOARD 17  at attempt # 1 after 0.00478506 seconds 
+[DEBUG]ethResources::goToRun() detected BOARD 17 with name aMC400v3 and version = ( 2 11 ) 
+[DEBUG]ethResources::goToRun() successfully sent BOARD 17 in run mode 
+[INFO]created device <embObjMotionControl>. See C++ class yarp::dev::embObjMotionControl for documentation.
+[INFO]/icub/mc4plusjig : no ROS initialization required 
+[INFO]/icub/mc4plusjig  initting YARP initialization 
+yarp: Port /icub/mc4plusjig/rpc:i active at tcp://10.0.1.104:10007
+yarp: Port /icub/mc4plusjig/command:i active at tcp://10.0.1.104:10008
+yarp: Port /icub/mc4plusjig/state:o active at tcp://10.0.1.104:10009
+yarp: Port /icub/mc4plusjig/stateExt:o active at tcp://10.0.1.104:10010
+[INFO]created wrapper <controlboardwrapper2>. See C++ class yarp::dev::ControlBoardWrapper2 for documentation.
+[INFO]No ROS group found in config file ... skipping ROS initialization. 
+[INFO]AnalogServer : no ROS initialization required 
+yarp: Port /icub/mais/mais/rpc:i active at tcp://10.0.1.104:10013
+[INFO]created wrapper <analogServer>. See C++ class yarp::dev::AnalogWrapper for documentation.
+[DEBUG]embObjAnalogSensor::fromConfig() detects embObjAnalogSensor Using value of 10 
+[DEBUG]Using old syntax 
+[DEBUG]ethResources::verifyRemoteValue() verified value inside ID32 = 0x02010003 -> IND = 0, TAG = eoprot_tag_as_mais_config_datarate from BOARD 17  at attempt # 1 after 0.00633693 seconds 
+[DEBUG]ethResources::setRemoteValueUntilVerified has set and verified ID ID32 = 0x02010003 -> IND = 0, TAG = eoprot_tag_as_mais_config_datarate in BOARD 17 at attempt # 1 
+[DEBUG]ethResources::verifyRemoteValue() verified value inside ID32 = 0x02010002 -> IND = 0, TAG = eoprot_tag_as_mais_config_mode from BOARD 17  at attempt # 1 after 0.00712109 seconds 
+[DEBUG]ethResources::setRemoteValueUntilVerified has set and verified ID ID32 = 0x02010002 -> IND = 0, TAG = eoprot_tag_as_mais_config_mode in BOARD 17 at attempt # 1 
+[DEBUG]ethResources::numberofRegulars() retrieved value from BOARD 17  at attempt # 1 after 0.00550795 seconds 
+[DEBUG]ethResources::addRegulars() has correctly checked regulars: expected =  3  and number in board =  3 
+[DEBUG]ethResources::goToRun() called for BOARD 17 
+MANAGEMENT-appl-status: sign = 0xaa000000, board EB17 -> name = aMC400v3
+                        version = 2.11, built on date 17 11 2015, at hour 16:25
+                        control loop timings: RX->400us, DO->300us, TX->300us
+                        state = applstate_running
+[DEBUG]ethResources::getRemoteValue() obtained value inside ID32 = 0x00010003 -> IND = 0, TAG = eoprot_tag_mn_appl_status from BOARD 17  at attempt # 1 after 0.005373 seconds 
+[DEBUG]ethResources::goToRun() detected BOARD 17 with name aMC400v3 and version = ( 2 11 ) 
+[DEBUG]ethResources::goToRun() successfully sent BOARD 17 in run mode 
+[INFO]created device <embObjAnalogSensor>. See C++ class yarp::dev::embObjAnalogSensor for documentation.
+[INFO]Entering action level 5 of phase startup 
+yarp: Port /icub/mais/mais active at tcp://10.0.1.104:10014
+[INFO]All actions for action level 5 of startup phase started. Waiting for unfinished actions. 
+[INFO]All actions for action level 5 of startup phase finished. 
+[INFO]startup phase finished. 
+[INFO]run phase starting... 
+[DEBUG]robot-interface running happily 
+[INFO] from BOARD 17, src LOCAL, adr 0, time 8s 954m 200u: (code 0x00000009, par16 0x0000 par64 0x0000000000000000) -> SYS: the board is running happily + INFO = EOMtheSystem: init task completed, system runnin
+[INFO] from BOARD 17, src CAN1, adr 0, time 8s 955m 204u: (code 0x05000002, par16 0x0701 par64 0x0001000001000000) -> CFG: CANdiscovery successful. In p16: target board type in 0xff00,  number of boards in 0x000f. In p64: search time [ms] in 0xffff000000000000, req prot in 0x00000000ffff0000, req fw in 0x000000000000ffff, + INFO = NO MORE
+[INFO] from BOARD 17, src CAN1, adr 0, time 8s 955m 284u: (code 0x05000003, par16 0x070e par64 0x0001000001000301) -> CFG: CANdiscovery has detected this board. In p16: board type in 0xff00, board address in 0x000f. In p64: search time [ms] in 0xffff000000000000, prot in 0x00000000ffff0000, fw in 0x000000000000ffff. + INFO = NO MORE
+[ERROR] from BOARD 17, src LOCAL, adr 0, time 33s 886m 210u: (code 0x00000013, par16 0x006c par64 0x0000000000000000) -> SYS: the EOtheInfoDispatcher could not accept a eOmn_info_properties_t item inside its transmitting queue. In par16 there is the number of lost items. + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 884m 119u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 884m 192u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 884m 264u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 884m 337u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 884m 413u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 884m 485u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 884m 557u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 884m 634u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 884m 706u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 884m 779u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 885m 13u: (code 0x0000001b, par16 0x0000 par64 0x0000006800000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 885m 91u: (code 0x0000001b, par16 0x0000 par64 0x0001000000005555) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 885m 164u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 885m 236u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 885m 308u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 885m 385u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 885m 457u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 885m 530u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 885m 602u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 885m 679u: (code 0x0000001b, par16 0x7000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 885m 752u: (code 0x0000001b, par16 0x0000 par64 0x20012e6020012e08) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 11, time 33s 885m 826u: (code 0x0000001b, par16 0x0eb8 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 886m 65u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 33s 886m 138u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+yarp: Sending output from /icub/mais/mais to /tmp/port/1 using tcp
+[DEBUG]robot-interface running happily 
+[ERROR] from BOARD 17, src LOCAL, adr 0, time 122s 283m 222u: (code 0x00000013, par16 0x00a1 par64 0x0000000000000000) -> SYS: the EOtheInfoDispatcher could not accept a eOmn_info_properties_t item inside its transmitting queue. In par16 there is the number of lost items. + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 281m 121u: (code 0x0000001b, par16 0x0109 par64 0x200129c820013128) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 10, time 122s 281m 196u: (code 0x0000001b, par16 0x1ba0 par64 0x20012b7020012f50) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 4, time 122s 281m 269u: (code 0x0000001b, par16 0x1d48 par64 0x00000000200130f8) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 281m 347u: (code 0x0000001b, par16 0x0000 par64 0xffea3d0c00000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 15, time 122s 281m 420u: (code 0x0000001b, par16 0x0ff1 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 281m 492u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 281m 565u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 281m 642u: (code 0x0000001b, par16 0x0000 par64 0x0000000200000002) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 281m 715u: (code 0x0000001b, par16 0x0002 par64 0x0000000200000002) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 281m 788u: (code 0x0000001b, par16 0x0002 par64 0x0000000100000001) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 282m 28u: (code 0x0000001b, par16 0x0001 par64 0x0000000100000001) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 282m 100u: (code 0x0000001b, par16 0x0001 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 282m 173u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 282m 245u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 282m 317u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 282m 396u: (code 0x0000001b, par16 0x0000 par64 0x20012ab020012a58) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 282m 469u: (code 0x0000001b, par16 0x0b08 par64 0xfffffff900000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 282m 542u: (code 0x0000001b, par16 0x1000 par64 0x0000000000000001) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 282m 619u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 282m 691u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 282m 763u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 282m 837u: (code 0x0000001b, par16 0x0000 par64 0x000b000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 283m 77u: (code 0x0000001b, par16 0x0001 par64 0x0000800000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[WARNING] from BOARD 17, src CAN1, adr 0, time 122s 283m 149u: (code 0x0000001b, par16 0x0000 par64 0x0000000000000000) -> SYS: the EOappCanSP could not parse a rx can frame. In par16 there is frame.id and frame.size (in most significant nibble). In par64 there is the frame.data + INFO = NO MORE
+[DEBUG]robot-interface running happily 
+^C[try 1 of 3] Trying to shut down
+[WARNING]Interrupt # 1 # received. 
+[INFO]Interrupt received. Stopping all running threads. 
+RFModule closing
+[INFO]interrupt1 phase starting... 
+[INFO]interrupt1 phase finished. 
+[INFO]shutdown phase starting... 
+[INFO]Entering action level 5 of phase shutdown 
+[INFO]All actions for action level 5 of shutdown phase started. Waiting for unfinished actions. 
+[INFO]All actions for action level 5 of shutdown phase finished. 
+[DEBUG]ethResources::goToConfig() called for BOARD 17 
+MANAGEMENT-appl-status: sign = 0xaa000000, board EB17 -> name = aMC400v3
+                        version = 2.11, built on date 17 11 2015, at hour 16:25
+                        control loop timings: RX->400us, DO->300us, TX->300us
+                        state = applstate_running
+[DEBUG]ethResources::getRemoteValue() obtained value inside ID32 = 0x00010003 -> IND = 0, TAG = eoprot_tag_mn_appl_status from BOARD 17  at attempt # 1 after 0.020231 seconds 
+MANAGEMENT-appl-status: sign = 0xaa000000, board EB17 -> name = aMC400v3
+                        version = 2.11, built on date 17 11 2015, at hour 16:25
+                        state = applstate_config
+[DEBUG]ethResources::getRemoteValue() obtained value inside ID32 = 0x00010003 -> IND = 0, TAG = eoprot_tag_mn_appl_status from BOARD 17  at attempt # 1 after 0.00875592 seconds 
+[DEBUG]ethResources::goToConfig() detected BOARD 17 with name aMC400v3 and version = ( 2 11 ) 
+[DEBUG]ethResources::goToConfig() successfully sent BOARD 17 in cfg mode 
+yarp: Removing output from /icub/mais/mais to /tmp/port/1
+[INFO]shutdown phase finished. 
+RFModule finished
+

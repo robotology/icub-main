@@ -3,18 +3,28 @@
 
 <params robot="iCubExpSetupMC4PLUSjig" build="1">
     <group name="GENERAL">
+        <param name="MotioncontrolVersion">  2 </param>
         <param name="Joints"> 1 </param> <!-- the number of joints of the robot part -->
 
                              <!--   0               logical axis number (ControlBoardWrapper) -->
-	<param name="AxisMap">          0                       </param>   <!-- hardware axis number  (EMS) -->
-        <param name="Encoder">      182.044                 </param>   <!-- m.a.: encoderconversionfactor -->
-        <param name="Zeros">        0                 	    </param>
-        <param name="TorqueId">  	0x0C                    </param> <!-- m.a.: maybe not needed in eth-robots -->
-        <param name="TorqueChan">	0                       </param>
-        <param name="TorqueMax"> 	24                      </param>
-        <param name="Rotor">     	1                       </param>
-        <param name="Gearbox">   	100                     </param>
-        <param name="Verbose">		0   </param>
+	    <param name="AxisMap">               0              </param>   <!-- hardware axis number  (EMS) -->
+        <param name="AxisName">              "axis0"        </param> 
+        <param name="HasHallSensor">         0              </param>
+        <param name="HasTempSensor">         0              </param>
+        <param name="HasRotorEncoder">       0              </param>
+        <param name="HasRotorEncoderIndex">  0              </param>
+        <param name="Encoder">               182.044        </param> <!-- 182.044 -->
+        <param name="TorqueId">  	         0              </param> <!-- m.a.: maybe not needed in eth-robots -->
+        <param name="TorqueChan">	         0              </param>
+        <param name="TorqueMax"> 	         0              </param>
+        <param name="RotorEncoderRes">       59400          </param> <!-- j0 -> desk motor black-grey -->
+        <param name="JointEncoderType">      "OPTICAL_QUAD" </param>
+        <param name="RotorEncoderType">      "OPTICAL_QUAD" </param>
+        <param name="JointEncoderRes">       59400          </param> <!-- random number for test -->
+        <param name="RotorIndexOffset">      0              </param>
+        <param name="Gearbox">               1              </param>
+        <param name="MotorPoles">            0              </param> <!-- ??? -->
+        <param name="Verbose">               0              </param>
     </group>
 
     <group name ="JOINTS_COUPLING">

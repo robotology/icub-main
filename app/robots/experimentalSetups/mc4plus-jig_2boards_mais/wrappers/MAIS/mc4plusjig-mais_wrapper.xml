@@ -3,9 +3,9 @@
 
 <devices robot="iCubExpSetupMC4PLUSjig" build="1">
 	<device name="devmc4plusjig_mais_wrapper" type="analogServer">
-        <param name="name">     /iCubExpSetupMC4PLUSjig/mais/mais   </param>
         <param name="period">   10                                  </param>
-        
+        <param name="name">     /icub/mais/mais   </param>
+
         <action phase="startup" level="5" type="attach">
             <paramlist name="networks">
                  <elem name="mc4plusjig_mais"> mc4plusjig_mais </elem>
