@@ -2474,8 +2474,19 @@ bool MotorThread::calibFingers(Bottle &options)
             Bottle b(arm==LEFT?"left":"right");
             drawNear(b);
 
+            Bottle fingers;
+            Bottle &fng=fingers.addList();
+            fng.addString("index");
+            fng.addString("middle");
+            fng.addString("ring");
+            fng.addString("little");
+
             Property prop;
-            prop.put("finger","all_parallel");
+            prop.put("finger",fingers.get(0));
+            graspModel[arm]->calibrate(prop);
+
+            prop.clear();
+            prop.put("finger","thumb");
             graspModel[arm]->calibrate(prop);
 
             ofstream fout;

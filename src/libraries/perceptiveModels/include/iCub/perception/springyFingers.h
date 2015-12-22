@@ -307,7 +307,10 @@ public:
     * "all_serial", "all_parallel". The special tags "all" and 
     * "all_serial" serve to calibrate all the fingers consecutively, 
     * whereas the tag "all_parallel" allows calibrating all the 
-    * fingers at the same time.
+    * fingers at the same time. Moreover, if a list is provided in 
+    * place of a string - e.g. ("thumb" "little" "middle") - then 
+    * the specified fingers are calibrated in parallel. 
+    * - 
     * @return true/false on success/failure. 
     */
     bool calibrate(const yarp::os::Property &options);

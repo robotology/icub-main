@@ -19,6 +19,8 @@
 #include <iomanip>
 #include <cmath>
 #include <limits>
+#include <deque>
+#include <set>
 
 #include <yarp/math/Math.h>
 
@@ -520,66 +522,160 @@ bool SpringyFingersModel::calibrate(const Property &options)
         }
 
         printMessage(log::info,1,"proceeding with the calibration");
-        string tag=options.check("finger",Value("all")).asString().c_str();
-        if (tag=="thumb")
-        {
-            calibrateFinger(fingers[0],10,qmin[10],qmax[10]);
-        }
-        else if (tag=="index")
-        {
-            calibrateFinger(fingers[1],12,qmin[12],qmax[12]);
-        }
-        else if (tag=="middle")
-        {
-            calibrateFinger(fingers[2],14,qmin[14],qmax[14]);
-        }
-        else if (tag=="ring")
-        {
-            calibrateFinger(fingers[3],15,qmin[15],qmax[15]);
-        }
-        else if (tag=="little")
-        {
-            calibrateFinger(fingers[4],15,qmin[15],qmax[15]);
-        }
-        else if ((tag=="all") || (tag=="all_serial"))
-        {
-            calibrateFinger(fingers[0],10,qmin[10],qmax[10]);
-            calibrateFinger(fingers[1],12,qmin[12],qmax[12]);
-            calibrateFinger(fingers[2],14,qmin[14],qmax[14]);
-            calibrateFinger(fingers[3],15,qmin[15],qmax[15]);
-            calibrateFinger(fingers[4],15,qmin[15],qmax[15]);
-        }
-        else if (tag=="all_parallel")
-        {
-            CalibThread thr[5];
-            thr[0].setInfo(this,fingers[0],10,qmin[10],qmax[10]);
-            thr[1].setInfo(this,fingers[1],12,qmin[12],qmax[12]);
-            thr[2].setInfo(this,fingers[2],14,qmin[14],qmax[14]);
-            thr[3].setInfo(this,fingers[3],15,qmin[15],qmax[15]);
-            thr[4].setInfo(this,fingers[4],15,qmin[15],qmax[15]);
+        bool ok=true;
 
-            thr[0].start(); thr[1].start(); thr[2].start();
-            thr[3].start(); thr[4].start();
-
-            bool done=false;
-            while (!done)
+        Value fng=options.check("finger",Value("all"));
+        if (fng.isString())
+        {
+            string tag=options.check("finger",Value("all")).asString().c_str();
+            if (tag=="thumb")
             {
-                done=true;
-                for (int i=0; i<5; i++)
-                {
-                    done&=thr[i].isDone();
-                    if (thr[i].isDone() && thr[i].isRunning())
-                        thr[i].stop();
-                }
-
-                Time::delay(0.1);
+                calibrateFinger(fingers[0],10,qmin[10],qmax[10]);
             }
+            else if (tag=="index")
+            {
+                calibrateFinger(fingers[1],12,qmin[12],qmax[12]);
+            }
+            else if (tag=="middle")
+            {
+                calibrateFinger(fingers[2],14,qmin[14],qmax[14]);
+            }
+            else if (tag=="ring")
+            {
+                calibrateFinger(fingers[3],15,qmin[15],qmax[15]);
+            }
+            else if (tag=="little")
+            {
+                calibrateFinger(fingers[4],15,qmin[15],qmax[15]);
+            }
+            else if ((tag=="all") || (tag=="all_serial"))
+            {
+                calibrateFinger(fingers[0],10,qmin[10],qmax[10]);
+                calibrateFinger(fingers[1],12,qmin[12],qmax[12]);
+                calibrateFinger(fingers[2],14,qmin[14],qmax[14]);
+                calibrateFinger(fingers[3],15,qmin[15],qmax[15]);
+                calibrateFinger(fingers[4],15,qmin[15],qmax[15]);
+            }
+            else if (tag=="all_parallel")
+            {
+                CalibThread thr[5];
+                thr[0].setInfo(this,fingers[0],10,qmin[10],qmax[10]);
+                thr[1].setInfo(this,fingers[1],12,qmin[12],qmax[12]);
+                thr[2].setInfo(this,fingers[2],14,qmin[14],qmax[14]);
+                thr[3].setInfo(this,fingers[3],15,qmin[15],qmax[15]);
+                thr[4].setInfo(this,fingers[4],15,qmin[15],qmax[15]);
+
+                thr[0].start(); thr[1].start(); thr[2].start();
+                thr[3].start(); thr[4].start();
+
+                bool done=false;
+                while (!done)
+                {
+                    done=true;
+                    for (int i=0; i<5; i++)
+                    {
+                        done&=thr[i].isDone();
+                        if (thr[i].isDone() && thr[i].isRunning())
+                            thr[i].stop();
+                    }
+
+                    Time::delay(0.1);
+                }
+            }
+            else
+                ok=false;
+        }
+        else if (fng.isList())
+        {
+            deque<CalibThread*> db;
+            set<string> singletons;
+
+            Bottle *items=fng.asList();
+            for (int i=0; i<items->size(); i++)
+            {
+                string tag=items->get(i).asString().c_str();
+                if (tag=="thumb")
+                {
+                    if (singletons.find(tag)==singletons.end())
+                    {
+                        CalibThread *thr=new CalibThread; 
+                        thr->setInfo(this,fingers[0],10,qmin[10],qmax[10]);
+                        thr->start();
+                        db.push_back(thr);
+                        singletons.insert(tag);
+                    }
+                }
+                else if (tag=="index")
+                {
+                    if (singletons.find(tag)==singletons.end())
+                    {
+                        CalibThread *thr=new CalibThread;
+                        thr->setInfo(this,fingers[1],12,qmin[12],qmax[12]);
+                        thr->start();
+                        db.push_back(thr);
+                        singletons.insert(tag);
+                    }
+                }
+                else if (tag=="middle")
+                {
+                    if (singletons.find(tag)==singletons.end())
+                    {
+                        CalibThread *thr=new CalibThread;
+                        thr->setInfo(this,fingers[2],14,qmin[14],qmax[14]);
+                        thr->start();
+                        db.push_back(thr);
+                        singletons.insert(tag);
+                    }
+                }
+                else if (tag=="ring")
+                {
+                    if (singletons.find(tag)==singletons.end())
+                    {
+                        CalibThread *thr=new CalibThread;
+                        thr->setInfo(this,fingers[3],15,qmin[15],qmax[15]);
+                        thr->start();
+                        db.push_back(thr);
+                        singletons.insert(tag);
+                    }
+                }
+                else if (tag=="little")
+                {
+                    if (singletons.find(tag)==singletons.end())
+                    {
+                        CalibThread *thr=new CalibThread;
+                        thr->setInfo(this,fingers[4],15,qmin[15],qmax[15]);
+                        thr->start();
+                        db.push_back(thr);
+                        singletons.insert(tag);
+                    }
+                }
+            }
+
+            if (db.size()>0)
+            {
+                size_t i=0;
+                while (db.size()>0)
+                {
+                    if (db[i]->isDone())
+                    {
+                        db[i]->stop();
+                        delete db[i];
+                        db.erase(db.begin()+i);
+                    }
+
+                    Time::delay(0.1);
+                    if (++i>=db.size())
+                        i=0;
+                }
+            }
+            else
+                ok=false;
         }
         else
-        {
-            printMessage(log::error,1,"unknown finger request %s",tag.c_str());
-            return false;
-        }
+            ok=false;
+
+        if (!ok)
+            printMessage(log::error,1,"unknown finger request %s",fng.toString().c_str()); 
 
         for (int j=7; j<nAxes; j++)
         {
@@ -587,7 +683,7 @@ bool SpringyFingersModel::calibrate(const Property &options)
             ipos->setRefSpeed(j,vel[j]);
         }
 
-        return true;
+        return ok;
     }
     else
         return false;
