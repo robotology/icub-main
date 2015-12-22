@@ -590,14 +590,6 @@ public:
      */
     virtual bool getDebugReferencePosition(int j, double* value)=0;
 
-    virtual bool getRotorPosition         (int j, double* value)=0;
-    virtual bool getRotorPositions        (double* value)=0;
-    virtual bool getRotorSpeed            (int j, double* value)=0;
-    virtual bool getRotorSpeeds           (double* value)=0;
-    virtual bool getRotorAcceleration     (int j, double* value)=0;
-    virtual bool getRotorAccelerations    (double* value)=0;
-    virtual bool getJointPosition         (int j, double* value)=0;
-    virtual bool getJointPositions        (double* value)=0;
 };
 
 class yarp::dev::IDebugInterfaceRaw {
@@ -640,14 +632,6 @@ public:
      */
     virtual bool getDebugReferencePositionRaw(int j, double* value)=0;
     
-    virtual bool getRotorPositionRaw         (int j, double* value)=0;
-    virtual bool getRotorPositionsRaw        (double* value)=0;
-    virtual bool getRotorSpeedRaw            (int j, double* value)=0;
-    virtual bool getRotorSpeedsRaw           (double* value)=0;
-    virtual bool getRotorAccelerationRaw     (int j, double* value)=0;
-    virtual bool getRotorAccelerationsRaw    (double* value)=0;
-    virtual bool getJointPositionRaw         (int j, double* value)=0;
-    virtual bool getJointPositionsRaw        (double* value)=0;
 };
 
 class yarp::dev::ImplementDebugInterface: public IDebugInterface
@@ -666,14 +650,6 @@ public:
     bool getDebugParameter         (int j, unsigned int index, double *value);
     bool setDebugReferencePosition (int j, double value);
     bool getDebugReferencePosition (int j, double *value);
-    bool getRotorPosition          (int j, double* value);
-    bool getRotorPositions         (double* value);
-    bool getRotorSpeed             (int j, double* value);
-    bool getRotorSpeeds            (double* value);
-    bool getRotorAcceleration      (int j, double* value);
-    bool getRotorAccelerations     (double* value);
-    bool getJointPosition          (int j, double* value);
-    bool getJointPositions         (double* value);
 };
 
 #endif /* __DEBUGINTERFACES__ */

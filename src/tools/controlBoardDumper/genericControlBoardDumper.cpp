@@ -283,7 +283,7 @@ bool GetRotorPosition::getData(double *e)
   if (idbg)
     {
 //      for (int i=0; i<6; i++) idbg->getRotorPosition(i,&(e[i]));
-      idbg->getRotorPositions(e);
+   //   idbg->getRotorPositions(e);
       return 1;
     }
   else
@@ -301,7 +301,7 @@ bool GetRotorSpeed::getData(double *e)
   if (idbg)
     {
 //      for (int i=0; i<6; i++) idbg->getRotorSpeed(i,&(e[i]));
-      idbg->getRotorSpeeds(e);
+ //     idbg->getRotorSpeeds(e);
       return 1;
     }
   else
@@ -319,7 +319,7 @@ bool GetRotorAcceleration::getData(double *e)
   if (idbg)
     {
 //      for (int i=0; i<6; i++) idbg->getRotorAcceleration(i,&(e[i]));
-      idbg->getRotorAccelerations(e);
+ //     idbg->getRotorAccelerations(e);
       return 1;
     }
   else

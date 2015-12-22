@@ -73,8 +73,8 @@ namespace yarp{
 class yarp::dev::iCubSimulationControl :
 public DeviceDriver,
 //public yarp::os::RateThread, 
-public IPositionControlRaw,
-public ImplementPositionControl<iCubSimulationControl, IPositionControl>,
+public IPositionControl2Raw,
+public ImplementPositionControl2,
 public IVelocityControl2Raw,
 public ImplementVelocityControl2,
 public ITorqueControlRaw,
@@ -95,6 +95,8 @@ public IEncodersTimedRaw,
 public ImplementEncodersTimed,
 public IMotorEncodersRaw,
 public ImplementMotorEncoders,
+public IMotorRaw,
+public ImplementMotor,
 public IPositionDirectRaw,
 public ImplementPositionDirect,
 public IOpenLoopControlRaw,
@@ -192,33 +194,38 @@ public ImplementAxisInfo
   virtual bool getRefAccelerationRaw(int j, double *acc);
   virtual bool getRefAccelerationsRaw(double *accs);
   virtual bool stopRaw(int j);
-  virtual bool stopRaw();/**/
+  virtual bool stopRaw();
 
-  //
-  //////////////////////// END Position Control INTERFACE
+  // Position Control2 Interface
+  virtual bool positionMoveRaw(const int n_joint, const int *joints, const double *refs);
+  virtual bool relativeMoveRaw(const int n_joint, const int *joints, const double *deltas);
+  virtual bool checkMotionDoneRaw(const int n_joint, const int *joints, bool *flags);
+  virtual bool setRefSpeedsRaw(const int n_joint, const int *joints, const double *spds);
+  virtual bool setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs);
+  virtual bool getRefSpeedsRaw(const int n_joint, const int *joints, double *spds);
+  virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
+  virtual bool stopRaw(const int n_joint, const int *joints);
+  virtual bool getTargetPositionRaw(const int joint, double *ref);
+  virtual bool getTargetPositionRaw(double *refs);
+  virtual bool getTargetPositionRaw(const int n_joint, const int *joints, double *refs);
 
-  //////////////////////// BEGIN Velocity control interface raw
-  ///
+  // Velocity Control
   virtual bool setVelocityModeRaw();
   virtual bool velocityMoveRaw(int j, double sp);
   virtual bool velocityMoveRaw(const double *sp);
-  //
-  //////////////////////// END Velocity Control INTERFACE
   
-  //////////////////////// BEGIN Velocity control 2 interface raw
-
+  // Velocity Control2 Interface
   virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
-  virtual bool setRefAccelerationsRaw(const int n_joint, const int *joints, const double *accs);
-  virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
-  virtual bool stopRaw(const int n_joint, const int *joints);
   virtual bool setVelPidRaw(int j, const yarp::dev::Pid &pid);
   virtual bool setVelPidsRaw(const yarp::dev::Pid *pids);
   virtual bool getVelPidRaw(int j, yarp::dev::Pid *pid);
   virtual bool getVelPidsRaw(yarp::dev::Pid *pids);
-  //////////////////////// END Velocity Control INTERFACE
+  virtual bool getRefVelocityRaw(const int joint, double *ref);
+  virtual bool getRefVelocityRaw(double *refs);
+  virtual bool getRefVelocityRaw(const int n_joint, const int *joints, double *refs);
 
 
-  //////////////////////// BEGIN EncoderInterface
+  //////////////////////// BEGIN Encoder Interface
   //
   virtual bool resetEncoderRaw(int j);
   virtual bool resetEncodersRaw();
@@ -270,6 +277,10 @@ public ImplementAxisInfo
   virtual bool getMaxCurrentRaw(int j, double* val);
   virtual bool getAmpStatusRaw(int *st);
   virtual bool getAmpStatusRaw(int k, int *st);
+  virtual bool getPWMRaw(int j, double* val);
+  virtual bool getPWMLimitRaw(int j, double* val);
+  virtual bool setPWMLimitRaw(int j, const double val);
+  virtual bool getPowerSupplyVoltageRaw(int j, double* val);
   //
   /////////////// END AMPLIFIER INTERFACE
 
@@ -286,47 +297,60 @@ public ImplementAxisInfo
   /////// Axis Info
   virtual bool getAxisNameRaw(int axis, yarp::os::ConstString& name);
 
-    /////// Torque Control
-    virtual bool setTorqueModeRaw(void);
-    virtual bool getTorqueRaw(int, double *);
-    virtual bool getTorquesRaw(double *);
-    virtual bool getTorqueRangeRaw(int,double *,double *);
-    virtual bool getTorqueRangesRaw(double *,double *);
-    virtual bool setRefTorquesRaw(const double *);
-    virtual bool setRefTorqueRaw(int,double);
-    virtual bool setRefTorquesRaw(const int n_joint, const int *joints, const double *t);
-    virtual bool getRefTorquesRaw(double *);
-    virtual bool getRefTorqueRaw(int,double *);
-    virtual bool getBemfParamRaw(int,double *);
-    virtual bool setBemfParamRaw(int,double );
-    virtual bool setTorquePidRaw(int,const yarp::dev::Pid &);
-    virtual bool setTorquePidsRaw(const yarp::dev::Pid *);
-    virtual bool setTorqueErrorLimitRaw(int,double);
-    virtual bool setTorqueErrorLimitsRaw(const double *);
-    virtual bool getTorqueErrorRaw(int,double *);
-    virtual bool getTorqueErrorsRaw(double *);
-    virtual bool getTorquePidOutputRaw(int,double *);
-    virtual bool getTorquePidOutputsRaw(double *);
-    virtual bool getTorquePidRaw(int,yarp::dev::Pid *);
-    virtual bool getTorquePidsRaw(yarp::dev::Pid *);
-    virtual bool getTorqueErrorLimitRaw(int,double *);
-    virtual bool getTorqueErrorLimitsRaw(double *);
-    virtual bool resetTorquePidRaw(int);
-    virtual bool disableTorquePidRaw(int);
-    virtual bool enableTorquePidRaw(int);
-    virtual bool setTorqueOffsetRaw(int,double);
-    virtual bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params);
-    virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
+  /// IMotor
+  virtual bool getNumberOfMotorsRaw(int* m);
+  virtual bool getTemperatureRaw(int m, double* val);
+  virtual bool getTemperaturesRaw(double *vals);
+  virtual bool getTemperatureLimitRaw(int m, double *temp);
+  virtual bool setTemperatureLimitRaw(int m, const double temp);
+  virtual bool getMotorOutputLimitRaw(int m, double *limit);
+  virtual bool setMotorOutputLimitRaw(int m, const double limit);
+  virtual bool getPeakCurrentRaw(int m, double *val);
+  virtual bool setPeakCurrentRaw(int m, const double val);
+  virtual bool getNominalCurrentRaw(int m, double *val);
+  virtual bool setNominalCurrentRaw(int m, const double val);
 
-   /////// Control Mode Interface
-    virtual bool setPositionModeRaw(int j);
-    virtual bool setVelocityModeRaw(int j);
-    virtual bool setTorqueModeRaw(int j);
-    virtual bool setImpedancePositionModeRaw(int j);
-    virtual bool setImpedanceVelocityModeRaw(int j);
-    virtual bool setOpenLoopModeRaw(int j);
-    virtual bool getControlModeRaw(int j, int *mode);
-    virtual bool getControlModesRaw(int* modes);
+   /////// Torque Control
+  virtual bool setTorqueModeRaw(void);
+  virtual bool getTorqueRaw(int, double *);
+  virtual bool getTorquesRaw(double *);
+  virtual bool getTorqueRangeRaw(int,double *,double *);
+  virtual bool getTorqueRangesRaw(double *,double *);
+  virtual bool setRefTorquesRaw(const double *);
+  virtual bool setRefTorqueRaw(int,double);
+  virtual bool setRefTorquesRaw(const int n_joint, const int *joints, const double *t);
+  virtual bool getRefTorquesRaw(double *);
+  virtual bool getRefTorqueRaw(int,double *);
+  virtual bool getBemfParamRaw(int,double *);
+  virtual bool setBemfParamRaw(int,double );
+  virtual bool setTorquePidRaw(int,const yarp::dev::Pid &);
+  virtual bool setTorquePidsRaw(const yarp::dev::Pid *);
+  virtual bool setTorqueErrorLimitRaw(int,double);
+  virtual bool setTorqueErrorLimitsRaw(const double *);
+  virtual bool getTorqueErrorRaw(int,double *);
+  virtual bool getTorqueErrorsRaw(double *);
+  virtual bool getTorquePidOutputRaw(int,double *);
+  virtual bool getTorquePidOutputsRaw(double *);
+  virtual bool getTorquePidRaw(int,yarp::dev::Pid *);
+  virtual bool getTorquePidsRaw(yarp::dev::Pid *);
+  virtual bool getTorqueErrorLimitRaw(int,double *);
+  virtual bool getTorqueErrorLimitsRaw(double *);
+  virtual bool resetTorquePidRaw(int);
+  virtual bool disableTorquePidRaw(int);
+  virtual bool enableTorquePidRaw(int);
+  virtual bool setTorqueOffsetRaw(int,double);
+  virtual bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params);
+  virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
+
+  /////// Control Mode Interface
+  virtual bool setPositionModeRaw(int j);
+  virtual bool setVelocityModeRaw(int j);
+  virtual bool setTorqueModeRaw(int j);
+  virtual bool setImpedancePositionModeRaw(int j);
+  virtual bool setImpedanceVelocityModeRaw(int j);
+  virtual bool setOpenLoopModeRaw(int j);
+  virtual bool getControlModeRaw(int j, int *mode);
+  virtual bool getControlModesRaw(int* modes);
 
   /////// Control Mode2 Interface
   virtual bool getControlModesRaw(const int n_joint, const int *joints, int *modes);
@@ -348,7 +372,9 @@ public ImplementAxisInfo
   virtual bool setPositionRaw(int j, double ref);
   virtual bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
   virtual bool setPositionsRaw(const double *refs);
-
+  virtual bool getRefPositionRaw(const int joint, double *ref);
+  virtual bool getRefPositionRaw(double *refs);
+  virtual bool getRefPositionRaw(const int n_joint, const int *joints, double *refs);
 
 //void run(void);
 

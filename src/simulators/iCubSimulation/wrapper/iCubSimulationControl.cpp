@@ -55,7 +55,7 @@ static inline bool DEPRECATED(const char *txt)
 
 iCubSimulationControl::iCubSimulationControl() : 
     //RateThread(10),
-    ImplementPositionControl<iCubSimulationControl, IPositionControl>(this),
+    ImplementPositionControl2(this),
     ImplementVelocityControl2(this),
     ImplementPidControl<iCubSimulationControl, IPidControl>(this),
     ImplementEncodersTimed(this),
@@ -70,6 +70,7 @@ iCubSimulationControl::iCubSimulationControl() :
     ImplementOpenLoopControl(this),
     ImplementRemoteVariables(this),
     ImplementAxisInfo(this),
+    ImplementMotor(this),
     _done(0),
     _mutex(1)
 {
@@ -269,8 +270,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         interactionMode[axis] = VOCAB_IM_STIFF;
    }
 
-    ImplementPositionControl<iCubSimulationControl, IPositionControl>::
-        initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementPositionControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementVelocityControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementPidControl<iCubSimulationControl, IPidControl>::
         initialize(njoints, axisMap, angleToEncoder, zeros);
@@ -288,6 +288,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementOpenLoopControl::initialize(njoints, axisMap);
     ImplementRemoteVariables::initialize(njoints, axisMap);
     ImplementAxisInfo::initialize(njoints, axisMap);
+    ImplementMotor::initialize(njoints, axisMap);
 
     if (!p.check("joint_device")) {
         yError("Need a device to access the joints\n");
@@ -327,7 +328,7 @@ bool iCubSimulationControl::close (void)
         
         //RateThread::stop();/// stops the thread first (joins too).
         
-        ImplementPositionControl<iCubSimulationControl, IPositionControl>::uninitialize ();
+        ImplementPositionControl2::uninitialize();
         ImplementVelocityControl2::uninitialize();
         ImplementTorqueControl::uninitialize();
         ImplementPidControl<iCubSimulationControl, IPidControl>::uninitialize();
@@ -342,6 +343,7 @@ bool iCubSimulationControl::close (void)
         ImplementOpenLoopControl::uninitialize();
         ImplementRemoteVariables::uninitialize();
         ImplementAxisInfo::uninitialize();
+        ImplementMotor::uninitialize();
     }
 
     checkAndDestroy<double>(current_jnt_pos);
@@ -611,6 +613,82 @@ bool iCubSimulationControl::getOutputsRaw(double *outs)
         outs[axis] = openloop_ref[axis];
     _mutex.post();
     return true;}
+
+bool iCubSimulationControl::getNumberOfMotorsRaw(int* num)
+{
+    *num = njoints;
+    return true;
+}
+
+bool iCubSimulationControl::getTemperatureRaw(int m, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getTemperatureRaw");
+}
+
+bool iCubSimulationControl::getTemperaturesRaw(double *vals)
+{
+    return NOT_YET_IMPLEMENTED("getTemperaturesRaw");
+}
+
+bool iCubSimulationControl::getTemperatureLimitRaw(int m, double *temp)
+{
+    return NOT_YET_IMPLEMENTED("getTemperatureLimitRaw");
+}
+
+bool iCubSimulationControl::setTemperatureLimitRaw(int m, const double temp)
+{
+    return NOT_YET_IMPLEMENTED("setTemperatureLimitRaw");
+}
+
+bool iCubSimulationControl::getMotorOutputLimitRaw(int m, double *limit)
+{
+    return NOT_YET_IMPLEMENTED("getMotorOutputLimitRaw");
+}
+
+bool iCubSimulationControl::setMotorOutputLimitRaw(int m, const double limit)
+{
+    return NOT_YET_IMPLEMENTED("setMotorOutputLimitRaw");
+}
+
+bool iCubSimulationControl::getPeakCurrentRaw(int m, double *val)
+{
+    return NOT_YET_IMPLEMENTED("getPeakCurrentRaw");
+}
+
+bool iCubSimulationControl::setPeakCurrentRaw(int m, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setPeakCurrentRaw");
+}
+
+bool iCubSimulationControl::getNominalCurrentRaw(int m, double *val)
+{
+    return NOT_YET_IMPLEMENTED("getNominalCurrentRaw");
+}
+
+bool iCubSimulationControl::setNominalCurrentRaw(int m, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setNominalCurrentRaw");
+}
+
+bool iCubSimulationControl::getPWMRaw(int j, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getPWMRaw");
+}
+
+bool iCubSimulationControl::getPWMLimitRaw(int j, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getPWMLimitRaw");
+}
+
+bool iCubSimulationControl::setPWMLimitRaw(int j, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setPWMLimitRaw");
+}
+
+bool iCubSimulationControl::getPowerSupplyVoltageRaw(int j, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getPowerSupplyVoltageRaw");
+}
 
 bool iCubSimulationControl::setRefOutputRaw (int j, double v)
 {
@@ -933,6 +1011,139 @@ bool iCubSimulationControl::stopRaw()
     _mutex.post();
     return true;
 }
+
+bool iCubSimulationControl::getTargetPositionRaw(int axis, double *ref)
+{
+    return NOT_YET_IMPLEMENTED("@@@");
+}
+
+bool iCubSimulationControl::getTargetPositionRaw(double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<njoints; i++)
+    {
+        ret &= getTargetPositionRaw(i, &refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::getTargetPositionRaw(int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= getTargetPositionRaw(jnts[i], &refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::getRefVelocityRaw(int axis, double *ref)
+{
+    _mutex.wait();
+    *ref = next_vel[axis];
+    _mutex.post();
+    return true;
+}
+
+bool iCubSimulationControl::getRefVelocityRaw(double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<njoints; i++)
+    {
+        ret &= getRefVelocityRaw(i, &refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::getRefVelocityRaw(int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= getRefVelocityRaw(jnts[i], &refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::getRefPositionRaw(int axis, double *ref)
+{
+    _mutex.wait();
+    *ref = next_pos[axis];
+    _mutex.post();
+    return true;
+}
+
+bool iCubSimulationControl::getRefPositionRaw(double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<njoints; i++)
+    {
+        ret &= getRefPositionRaw(i, &refs[i]);
+    }
+    return ret;
+}
+
+
+bool iCubSimulationControl::getRefPositionRaw(int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= getRefPositionRaw(jnts[i], &refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::positionMoveRaw(int nj, const int * jnts, const double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= positionMoveRaw(jnts[i], refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::relativeMoveRaw(int nj, const int * jnts, const double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= relativeMoveRaw(jnts[i], refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::checkMotionDoneRaw(int nj, const int * jnts, bool *done)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= checkMotionDoneRaw(jnts[i], &done[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::setRefSpeedsRaw(const int nj, const int * jnts, const double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= setRefSpeedRaw(jnts[i], refs[i]);
+    }
+    return ret;
+}
+
+bool iCubSimulationControl::getRefSpeedsRaw(const int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= getRefSpeedRaw(jnts[i], &refs[i]);
+    }
+    return ret;
+}
+
 // cmd is an array of double of length njoints specifying speed 
 /// for each axis
 bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)

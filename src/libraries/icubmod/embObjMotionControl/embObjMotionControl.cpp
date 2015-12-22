@@ -3485,52 +3485,6 @@ bool embObjMotionControl::getDebugReferencePositionRaw(int j, double* value)    
 
 #endif //IMPLEMENT_DEBUG_INTERFACE
 
-bool embObjMotionControl::getRotorPositionRaw         (int j, double* value)
-{
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
-    uint16_t size;
-    eOmc_motor_status_basic_t  tmpMotorStatus;
-    bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
-
-    *value = (double) tmpMotorStatus.mot_position;
-    return true;
-}
-
-bool embObjMotionControl::getRotorPositionsRaw        (double* value)
-{
-    bool ret = true;
-    for(int j=0; j< _njoints; j++)
-        ret = getRotorPositionRaw(j, &value[j]) && ret;
-
-    return ret;
-}
-
-bool embObjMotionControl::getRotorSpeedRaw            (int j, double* value)
-{
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
-    uint16_t size;
-    eOmc_motor_status_basic_t  tmpMotorStatus;
-    bool ret = res->readBufferedValue(protid, (uint8_t *)&tmpMotorStatus, &size);
-
-    *value = (double) tmpMotorStatus.mot_velocity;
-    return true;
-}
-
-bool embObjMotionControl::getRotorSpeedsRaw           (double* value)
-{
-    bool ret = true;
-     for(int j=0; j< _njoints; j++)
-         ret = getRotorSpeedRaw(j, &value[j]) && ret;
-
-     return ret;
-}
-
-bool embObjMotionControl::getRotorAccelerationRaw     (int j, double* value)        { return NOT_YET_IMPLEMENTED("getRotorAccelerationRaw");  }
-bool embObjMotionControl::getRotorAccelerationsRaw    (double* value)               { return NOT_YET_IMPLEMENTED("getRotorAccelerationsRaw");  }
-bool embObjMotionControl::getJointPositionRaw         (int j, double* value)        { return NOT_YET_IMPLEMENTED("getJointPositionRaw");  }
-bool embObjMotionControl::getJointPositionsRaw        (double* value)               { return NOT_YET_IMPLEMENTED("getJointPositionsRaw");  }
-
-
 // Limit interface
 bool embObjMotionControl::setLimitsRaw(int j, double min, double max)
 {
@@ -4903,7 +4857,6 @@ bool embObjMotionControl::setPositionDirectModeRaw()
 
 bool embObjMotionControl::setPositionRaw(int j, double ref)
 {
-    // needs to send both position and velocit as well as positionMove
     // does the same as setReferenceRaw, with some more misterious (missing) checks.
     int mode = 0;
     getControlModeRaw(j, &mode);
@@ -4923,7 +4876,6 @@ bool embObjMotionControl::setPositionRaw(int j, double ref)
 
 bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
 {
-    // needs to send both position and velocit as well as positionMove
     bool ret = true;    
     for(int i=0; i<n_joint; i++)
     {
@@ -4934,11 +4886,84 @@ bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, 
 
 bool embObjMotionControl::setPositionsRaw(const double *refs)
 {
-    // needs to send both position and velocit as well as positionMove
     return setReferencesRaw(refs);
 }
 
 
+bool embObjMotionControl::getTargetPositionRaw(int axis, double *ref)
+{
+    return NOT_YET_IMPLEMENTED("getTargetPositionRaw");
+}
+
+bool embObjMotionControl::getTargetPositionRaw(double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<_njoints; i++)
+    {
+        ret &= getTargetPositionRaw(i, &refs[i]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getTargetPositionRaw(int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= getTargetPositionRaw(jnts[i], &refs[i]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getRefVelocityRaw(int axis, double *ref)
+{
+    return NOT_YET_IMPLEMENTED("getRefVelocityRaw");
+}
+
+bool embObjMotionControl::getRefVelocityRaw(double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<_njoints; i++)
+    {
+        ret &= getRefVelocityRaw(i, &refs[i]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getRefVelocityRaw(int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= getRefVelocityRaw(jnts[i], &refs[i]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getRefPositionRaw(int axis, double *ref)
+{
+    return NOT_YET_IMPLEMENTED("getRefPositionRaw");
+}
+
+bool embObjMotionControl::getRefPositionRaw(double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<_njoints; i++)
+    {
+        ret &= getRefPositionRaw(i, &refs[i]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getRefPositionRaw(int nj, const int * jnts, double *refs)
+{
+    bool ret = true;
+    for (int i = 0; i<nj; i++)
+    {
+        ret &= getRefPositionRaw(jnts[i], &refs[i]);
+    }
+    return ret;
+}
 
 // InteractionMode
 
@@ -5273,6 +5298,45 @@ bool embObjMotionControl::setMotorOutputLimitRaw(int m, const double limit)
     return NOT_YET_IMPLEMENTED("setMotorOutputLimitRaw");
 }
 
+bool embObjMotionControl::getPeakCurrentRaw(int m, double *val)
+{
+    return NOT_YET_IMPLEMENTED("getPeakCurrentRaw");
+}
+
+bool embObjMotionControl::setPeakCurrentRaw(int m, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setPeakCurrentRaw");
+}
+
+bool embObjMotionControl::getNominalCurrentRaw(int m, double *val)
+{
+    return NOT_YET_IMPLEMENTED("getNominalCurrentRaw");
+}
+
+bool embObjMotionControl::setNominalCurrentRaw(int m, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setNominalCurrentRaw");
+}
+
+bool embObjMotionControl::getPWMRaw(int j, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getPWM");
+}
+
+bool embObjMotionControl::getPWMLimitRaw(int j, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getPWMLimitRaw");
+}
+
+bool embObjMotionControl::setPWMLimitRaw(int j, const double val)
+{
+    return NOT_YET_IMPLEMENTED("setPWMLimitRaw");
+}
+
+bool embObjMotionControl::getPowerSupplyVoltageRaw(int j, double* val)
+{
+    return NOT_YET_IMPLEMENTED("getPowerSupplyVoltageRaw");
+}
 
 bool embObjMotionControl::askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size)
 {

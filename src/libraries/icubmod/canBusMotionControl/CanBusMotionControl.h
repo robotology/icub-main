@@ -968,14 +968,11 @@ public:
     /////////////////////////////// END Velocity Control INTERFACE
 
     //Shift factors for velocity control
-    bool setVelocityShiftRaw(int j, double val);
+    virtual bool setVelocityShiftRaw(int j, double val);
     //Timeout factors for velocity control
-    bool setVelocityTimeoutRaw(int j, double val);
+    virtual bool setVelocityTimeoutRaw(int j, double val);
     //Shift factors for speed / acceleration estimation
-    bool setSpeedEstimatorShiftRaw(int j, double jnt_speed, double jnt_acc, double mot_speed, double mot_acc);
-    //Factor used to make correspond optical encoder units to joint angle degrees
-    bool setOpticalRatioRaw(int axis, double ratio);
-
+    virtual bool setSpeedEstimatorShiftRaw(int j, double jnt_speed, double jnt_acc, double mot_speed, double mot_acc);
 
     //////////////////////// BEGIN EncoderInterface
     //
@@ -1024,6 +1021,11 @@ public:
     virtual bool getMaxCurrentRaw(int j, double *val);
     virtual bool getAmpStatusRaw(int *st);
     virtual bool getAmpStatusRaw(int j, int *st);
+    virtual bool getPWMRaw(int j, double* val);
+    virtual bool getPWMLimitRaw(int j, double* val);
+    virtual bool setPWMLimitRaw(int j, const double val);
+    virtual bool getPowerSupplyVoltageRaw(int j, double* val);
+
     //
     /////////////// END AMPLIFIER INTERFACE
 
@@ -1035,6 +1037,10 @@ public:
     virtual bool setTemperatureLimitRaw(int m, const double temp);
     virtual bool getMotorOutputLimitRaw(int m, double *limit);
     virtual bool setMotorOutputLimitRaw(int m, const double limit);
+    virtual bool getPeakCurrentRaw(int m, double *val);
+    virtual bool setPeakCurrentRaw(int m, const double val);
+    virtual bool getNominalCurrentRaw(int m, double *val);
+    virtual bool setNominalCurrentRaw(int m, const double val);
 
     /// IAxisInfo
     virtual bool getAxisNameRaw(int axis, yarp::os::ConstString& name);
@@ -1057,21 +1063,13 @@ public:
     virtual bool getDebugParameterRaw(int j, unsigned int index, double* value);
     virtual bool setDebugReferencePositionRaw(int j, double value);
     virtual bool getDebugReferencePositionRaw(int j, double *value);
-    virtual bool getRotorPositionRaw(int j, double* value);
-    virtual bool getRotorPositionsRaw(double *value);
-    virtual bool getRotorSpeedRaw(int j, double* value);
-    virtual bool getRotorSpeedsRaw(double *value);
-    virtual bool getRotorAccelerationRaw(int j, double* value);
-    virtual bool getRotorAccelerationsRaw(double *value);
-    virtual bool getJointPositionRaw(int j, double* value);
-    virtual bool getJointPositionsRaw(double *value);
 
     /////// Limits
     virtual bool setLimitsRaw(int axis, double min, double max);
     virtual bool getLimitsRaw(int axis, double *min, double *max);
     // Limits 2
-    bool setVelLimitsRaw(int axis, double min, double max);
-    bool getVelLimitsRaw(int axis, double *min, double *max);
+    virtual bool setVelLimitsRaw(int axis, double min, double max);
+    virtual bool getVelLimitsRaw(int axis, double *min, double *max);
 
     /////// IPreciselyTimed interface
     virtual yarp::os::Stamp getLastInputStamp();
@@ -1086,32 +1084,41 @@ public:
     virtual bool getRefSpeedsRaw(const int n_joint, const int *joints, double *spds);
     virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
     virtual bool stopRaw(const int n_joint, const int *joints);
+    virtual bool getTargetPositionRaw(const int joint, double *ref);
+    virtual bool getTargetPositionRaw(double *refs);
+    virtual bool getTargetPositionRaw(const int n_joint, const int *joints, double *refs);
 
     // IVelocityControl2
-    bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
-    bool setVelPidRaw(int j, const Pid &pid);
-    bool setVelPidsRaw(const Pid *pids);
-    bool getVelPidRaw(int j, Pid *pid);
-    bool getVelPidsRaw(Pid *pids);
+    virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
+    virtual bool setVelPidRaw(int j, const Pid &pid);
+    virtual bool setVelPidsRaw(const Pid *pids);
+    virtual bool getVelPidRaw(int j, Pid *pid);
+    virtual bool getVelPidsRaw(Pid *pids);
+    virtual bool getRefVelocityRaw(const int joint, double *ref);
+    virtual bool getRefVelocityRaw(double *refs);
+    virtual bool getRefVelocityRaw(const int n_joint, const int *joints, double *refs);
 
     // Firmware version
-    bool getFirmwareVersionRaw (int axis, can_protocol_info const& icub_interface_protocol, firmware_info *info);
+    virtual bool getFirmwareVersionRaw(int axis, can_protocol_info const& icub_interface_protocol, firmware_info *info);
     // Torque measurement selection
-    bool setTorqueSource (int axis, char board_id, char board_chan );
+    virtual bool setTorqueSource(int axis, char board_id, char board_chan);
 
     // PositionDirect Interface
-    bool setPositionDirectModeRaw();
-    bool setPositionRaw(int j, double ref);
-    bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
-    bool setPositionsRaw(const double *refs);
+    virtual bool setPositionDirectModeRaw();
+    virtual bool setPositionRaw(int j, double ref);
+    virtual bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
+    virtual bool setPositionsRaw(const double *refs);
+    virtual bool getRefPositionRaw(const int joint, double *ref);
+    virtual bool getRefPositionRaw(double *refs);
+    virtual bool getRefPositionRaw(const int n_joint, const int *joints, double *refs);
 
     // InteractionMode interface
-    bool getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode);
-    bool getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
-    bool getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
-    bool setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode);
-    bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
-    bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+    virtual bool getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode);
+    virtual bool getInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    virtual bool getInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+    virtual bool setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode);
+    virtual bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
+    virtual bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
 
 protected:
     bool setBCastMessages (int axis, unsigned int v);
