@@ -33,8 +33,9 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${iKin_INCLUDE_DIRS}
                     ${optimization_INCLUDE_DIRS}
                     ${learningMachine_INCLUDE_DIRS})
-                    
-add_definitions(${IPOPT_DEFINITIONS})
+
+# import math symbols from standard cmath
+add_definitions(${IPOPT_DEFINITIONS} -D_USE_MATH_DEFINES)
 add_executable(${PROJECTNAME} ${header_files} ${source_files} ${idl_files} ${doc_files})
 set_property(TARGET ${PROJECTNAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}

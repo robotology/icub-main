@@ -16,12 +16,15 @@
 * Public License for more details
 */
 
+#include <cmath>
+#include <cstdio>
+#include <iostream>
+#include <iomanip>
+
+#include <yarp/os/Log.h>
 #include <iCub/iDyn/iDyn.h>
 #include <iCub/ctrl/math.h>
-#include <stdio.h>
-#include <iostream>
-#include <yarp/os/Log.h>
-#include <iomanip>
+
 
 using namespace std;
 using namespace yarp::os;

@@ -140,7 +140,7 @@ public:
     *             default).
     */
     iKinLink(double _A, double _D, double _Alpha, double _Offset,
-             double _Min=-M_PI, double _Max=M_PI);
+             double _Min=-iCub::ctrl::CTRL_PI, double _Max=iCub::ctrl::CTRL_PI);
 
     /**
     * Creates a new Link from an already existing Link object.
