@@ -2501,6 +2501,13 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         calib.params.type5.calibrationZero = (int32_t)S_32(params.param4 * _angleToEncoder[j]);
         break;
 
+        //muove
+    case eomc_calibration_type8_adc_and_incr_mc4plus:
+        calib.params.type8.pwmlimit   = (int32_t) S_32(params.param1);
+        calib.params.type8.final_pos  = (int32_t) S_32(params.param2);
+        calib.params.type8.calibrationZero = (int32_t)S_32(params.param4 * _angleToEncoder[j]);
+        break;
+
     default:
         yError() << "Calibration type unknown!! (embObjMotionControl)\n";
         return false;
@@ -5240,7 +5247,8 @@ bool embObjMotionControl::getOutputRaw(int j, double *out)
 
     //return value if j is in openloop or position (both compliant and stiff)
     if((eomc_controlmode_openloop == jstatus.modes.controlmodestatus) ||
-       (eomc_controlmode_position == jstatus.modes.controlmodestatus))
+       (eomc_controlmode_position == jstatus.modes.controlmodestatus) ||
+       (eomc_controlmode_calib == jstatus.modes.controlmodestatus))
        *out = (double) jstatus.ofpid.generic.output;
 
     return true;
