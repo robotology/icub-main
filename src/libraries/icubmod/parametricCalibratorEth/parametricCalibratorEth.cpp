@@ -227,17 +227,25 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     if (xtmp.size()-1!=nj) {yError() << deviceName << ": invalid number of Calibration3 params"; return false;}
     for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param3 = xtmp.get(i).asDouble();
 
+    xtmp = p.findGroup("CALIBRATION").findGroup("calibration4");
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of Calibration4 params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param4 = xtmp.get(i).asDouble();
+
+    xtmp = p.findGroup("CALIBRATION").findGroup("calibration5");
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of Calibration5 params"; return false; }
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param5 = xtmp.get(i).asDouble();
+
     xtmp = p.findGroup("CALIBRATION").findGroup("calibrationType");
     if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of Calibration3 params"; return false;}
     for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].type = (unsigned char)xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibrationZero");
     if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of calibrationZero params"; return false; }
-    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param4 = xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].paramZero = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibrationDelta");
     if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of calibrationDelta params"; return false; }
-    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].param4 = calibParams[i - 1].param4 + xtmp.get(i).asDouble();
+    for (i = 1; i < xtmp.size(); i++) calibParams[i - 1].paramZero += xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("calibrationTimeout");
     if (xtmp.size() - 1 != nj) { } //this parameter is optional
