@@ -580,12 +580,26 @@ bool iCubSimulationControl::setErrorLimitsRaw(const double *limit)
 
 bool iCubSimulationControl::getErrorRaw(int axis, double *err)
 {
-    return NOT_YET_IMPLEMENTED("getErrorRaw");
+    if ((axis >= 0) && (axis<njoints))
+    {
+        _mutex.wait();
+        *err = current_jnt_pos[axis] - next_pos[axis];
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        yError("getErrorRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    return false;
 }
 
 bool iCubSimulationControl::getErrorsRaw(double *errs)
 {
-    return NOT_YET_IMPLEMENTED("getErrorsRaw");
+    bool ret = true;
+    for (int axis = 0; axis<njoints; axis++)
+    {
+        ret &= getErrorRaw(axis, &errs[axis]);
+    }
+    return ret;
 }
 
 bool iCubSimulationControl::setOpenLoopModeRaw()
@@ -604,7 +618,8 @@ bool iCubSimulationControl::getOutputRaw(int axis, double *out)
         }
     if (verbosity)
         yError("getOutputRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
-    return false;}
+    return false;
+}
 
 bool iCubSimulationControl::getOutputsRaw(double *outs)
 {
@@ -612,7 +627,8 @@ bool iCubSimulationControl::getOutputsRaw(double *outs)
     for(int axis = 0; axis<njoints; axis++)
         outs[axis] = openloop_ref[axis];
     _mutex.post();
-    return true;}
+    return true;
+}
 
 bool iCubSimulationControl::getNumberOfMotorsRaw(int* num)
 {
