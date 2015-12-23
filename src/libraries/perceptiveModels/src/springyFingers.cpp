@@ -499,6 +499,13 @@ bool SpringyFingersModel::calibrate(const Property &options)
 {
     if (configured)
     {
+        Value fng=options.find("finger");
+        if (fng.isNull())
+        {
+            printMessage(log::error,1,"unspecified option \"finger\"");
+            return false;
+        }
+
         IControlMode2    *imod; driver.view(imod);
         IControlLimits   *ilim; driver.view(ilim);
         IEncoders        *ienc; driver.view(ienc);
@@ -524,7 +531,6 @@ bool SpringyFingersModel::calibrate(const Property &options)
         printMessage(log::info,1,"proceeding with the calibration");
         bool ok=true;
 
-        Value fng=options.check("finger",Value("all"));
         if (fng.isString())
         {
             string tag=options.check("finger",Value("all")).asString().c_str();
@@ -558,34 +564,21 @@ bool SpringyFingersModel::calibrate(const Property &options)
             }
             else if (tag=="all_parallel")
             {
-                CalibThread thr[5];
-                thr[0].setInfo(this,fingers[0],10,qmin[10],qmax[10]);
-                thr[1].setInfo(this,fingers[1],12,qmin[12],qmax[12]);
-                thr[2].setInfo(this,fingers[2],14,qmin[14],qmax[14]);
-                thr[3].setInfo(this,fingers[3],15,qmin[15],qmax[15]);
-                thr[4].setInfo(this,fingers[4],15,qmin[15],qmax[15]);
+                Bottle b;
+                Bottle &bl=b.addList();
+                bl.addString("thumb");
+                bl.addString("index");
+                bl.addString("middle");
+                bl.addString("ring");
+                bl.addString("little");
 
-                thr[0].start(); thr[1].start(); thr[2].start();
-                thr[3].start(); thr[4].start();
-
-                bool done=false;
-                while (!done)
-                {
-                    done=true;
-                    for (int i=0; i<5; i++)
-                    {
-                        done&=thr[i].isDone();
-                        if (thr[i].isDone() && thr[i].isRunning())
-                            thr[i].stop();
-                    }
-
-                    Time::delay(0.1);
-                }
+                fng=b.get(0);
             }
             else
                 ok=false;
         }
-        else if (fng.isList())
+
+        if (fng.isList())
         {
             deque<CalibThread*> db;
             set<string> singletons;
@@ -671,11 +664,12 @@ bool SpringyFingersModel::calibrate(const Property &options)
             else
                 ok=false;
         }
-        else
+        
+        if (!fng.isString() && !fng.isList())
             ok=false;
 
         if (!ok)
-            printMessage(log::error,1,"unknown finger request %s",fng.toString().c_str()); 
+            printMessage(log::error,1,"unknown finger request %s",fng.toString().c_str());
 
         for (int j=7; j<nAxes; j++)
         {
