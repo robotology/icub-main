@@ -387,7 +387,23 @@ public:
                 else
                 {
                     yError() << "unable to reach start position!";
-                    actions.current_status = ACTION_STOP;
+                    if (0) 
+                    {
+                        //very strict behavior! if your are controlling fingers, you will probably end here
+                        actions.current_status = ACTION_STOP;
+                    }
+                    else
+                    {
+                        for (int j = 0; j <nj; j++)
+                        {
+                            driver->icmd_ll->setControlMode(j, VOCAB_CM_POSITION_DIRECT);
+                        }
+                        yarp::os::Time::delay(0.1);
+                        compute_and_send_command(0);
+
+                        actions.current_status = ACTION_RUNNING;
+                        start_time = yarp::os::Time::now();
+                    }
                 }
             }
             else
