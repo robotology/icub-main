@@ -381,8 +381,7 @@ bool TactileFingersModel::getOutput(Value &out) const
         ins.addDouble(val[3].asDouble());
         ins.addDouble(val[4].asDouble());
 
-        out.fromString(bOut.toString().c_str());
-
+        out=bOut.get(0);
         return true;
     }
     else
