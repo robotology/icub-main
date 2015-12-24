@@ -1228,11 +1228,6 @@ void inverseDynamics::calibrateOffset(calib_enum calib_code)
     Offset_LFoot = 1.0/(double)Ntrials * Offset_LFoot;
     Offset_RFoot = 1.0/(double)Ntrials * Offset_RFoot;
 
-    //printVector(Offset_LArm, "Offset left arm:");
-    //printVector(Offset_RArm, "Offset right arm:");
-    //printVector(Offset_LLeg, "Offset left leg:");
-    //printVector(Offset_RLeg, "Offset right leg:");
-    
     it=previous_status.begin();
     yDebug("\n");
     yDebug( "Ntrials: %d\n", (int)Ntrials);

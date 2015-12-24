@@ -2736,23 +2736,6 @@ bool iCubWholeBody::EXPERIMENTAL_computeCOMjacobian()
     Matrix mm = T_ad*upperTorso->COM_jacob_UP;
     COM_Jacob+=tmp_Jac;
 
-//*********************************************************************************************
-//  debug block
-#ifdef DEBUG_ONLY_TORSO_JACOB
-    for (r=0; r<6; r++)
-    {
-        ct = 6+6;
-        for (c=0; c<3; c++, ct++)
-            COM_Jacob(r,ct) = lowerTorso->COM_jacob_UP(r,c);
-    }
-    printMatrix("torso",lowerTorso->COM_jacob_UP);
-#endif
-    //printMatrix("left leg",lowerTorso->COM_jacob_LF);
-    //printMatrix("all",COM_Jacob);
-    //printMatrix("T_UP",T_UP);
-
-//*********************************************************************************************
-
     return true;
 }
 

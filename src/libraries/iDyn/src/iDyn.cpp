@@ -51,30 +51,6 @@ using namespace iCub::iDyn;
 //================================
 
 
-
-// moved to iCub::skinDynLib
-//void iCub::iDyn::printMatrix(std::string s, const yarp::sig::Matrix &m)
-//{
-//  printf ("%s \n",s.c_str());
-//  for(int i=0;i<m.rows();i++)
-//  {
-//      for(int j=0;j<m.cols();j++)
-//      {
-//          printf ("%+7.4f\t",m(i,j));
-//      }
-//      printf ("\n");
-//  }
-//}
-void iCub::iDyn::printVector(std::string s, const yarp::sig::Vector &v)
-{
-    printf ("%s :",s.c_str());
-    for(size_t i=0;i<v.size();i++)
-    {
-        printf ("%+6.3f\t",v(i));
-    }
-    printf ("\n");
-}
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 void iCub::iDyn::notImplemented(const unsigned int verbose)
 {
     if(verbose) yError("iDyn: error: not implemented \n");

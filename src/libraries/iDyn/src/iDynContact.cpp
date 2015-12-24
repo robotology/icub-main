@@ -143,14 +143,6 @@ const dynContactList& iDynContactSolver::computeExternalContacts()
     Matrix pinv_A = pinv(A, TOLLERANCE);
     Vector X = pinv_A * B;
     
-    /*if(verbose){
-        Vector AX = A*X;
-        printMatrix(A, "A");
-        printVector(B, "B");
-        printVector(X, "X");
-        printVector(AX, "AX");
-    }*/
-    
     // SET THE COMPUTED VALUES IN THE CONTACT LIST
     unsigned int unknownInd = 0;
     Matrix H, R;
