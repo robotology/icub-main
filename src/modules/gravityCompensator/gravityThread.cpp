@@ -673,8 +673,7 @@ void gravityCompensatorThread::run()
             delay_check = 0;
         }
 
-        Vector F_up(6);
-        F_up=0.0;
+        Vector F_up(6,0.0);
         icub->upperTorso->setInertialMeasure(w0,dw0,d2p0);
         icub->upperTorso->solveKinematics();
         icub->upperTorso->solveWrench();
@@ -884,8 +883,6 @@ void gravityCompensatorThread::run()
 
             readAndUpdate(true);
 
-            Vector F_up(6);
-            F_up=0.0;
             icub->upperTorso->setInertialMeasure(w0,dw0,d2p0);
             Matrix F_sens_up = icub->upperTorso->estimateSensorsWrench(F_ext_up,false);
             icub->lowerTorso->setInertialMeasure(icub->upperTorso->getTorsoAngVel(),
