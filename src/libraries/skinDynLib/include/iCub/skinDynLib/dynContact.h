@@ -60,24 +60,24 @@ protected:
     BodyPart bodyPart;
     /// number of the link where the contact is applied
     unsigned int linkNumber;
-	/// center of pressure of the contact expressed w.r.t. the reference frame of the link
-	yarp::sig::Vector CoP;
+    /// center of pressure of the contact expressed w.r.t. the reference frame of the link
+    yarp::sig::Vector CoP;
     ///contact force direction (unit vector)
-	yarp::sig::Vector Fdir;
+    yarp::sig::Vector Fdir;
     ///contact force
     yarp::sig::Vector F;
     /// contact force module
     double Fmodule;
-	/// contact moment
-	yarp::sig::Vector Mu;
+    /// contact moment
+    yarp::sig::Vector Mu;
 
     /// True if the moment applied at the contact point is known
     bool muKnown;
     /// True if the direction of the force applied at the contact point is known
     bool fDirKnown;
 
-	///verbosity flag
-	unsigned int verbose;
+    ///verbosity flag
+    unsigned int verbose;
 
 
     void init(const BodyPart &_bodyPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
@@ -86,8 +86,8 @@ protected:
 
 public:
     //~~~~~~~~~~~~~~~~~~~~~~
-	//   CONSTRUCTORS
-	//~~~~~~~~~~~~~~~~~~~~~~
+    //   CONSTRUCTORS
+    //~~~~~~~~~~~~~~~~~~~~~~
     /**
     * Default constructor
     */
@@ -119,38 +119,38 @@ public:
         const yarp::sig::Vector &_Mu, const yarp::sig::Vector &_Fdir);
 
     //~~~~~~~~~~~~~~~~~~~~~~
-	//   GET methods
-	//~~~~~~~~~~~~~~~~~~~~~~
+    //   GET methods
+    //~~~~~~~~~~~~~~~~~~~~~~
     /**
      * Get the contact force and moment in a single (6x1) vector
-	 * @return a 6x1 vector where 0:2=force 3:5=moment
+     * @return a 6x1 vector where 0:2=force 3:5=moment
      */
-	virtual yarp::sig::Vector           getForceMoment()        const;
+    virtual yarp::sig::Vector           getForceMoment()        const;
     /**
     * Get the contact force.
     * @return a 3-dim vector
     */
-    virtual const yarp::sig::Vector&    getForce()		        const;
+    virtual const yarp::sig::Vector&    getForce()              const;
     /**
     * Get the contact force direction.
     * @return a 3-dim vector with norm equal to one
     */
-    virtual const yarp::sig::Vector&    getForceDirection()	    const;
+    virtual const yarp::sig::Vector&    getForceDirection()     const;
     /**
     * Get the contact force module.
     * @return the intensity of the contact force
     */
-    virtual double                      getForceModule()	    const;
+    virtual double                      getForceModule()        const;
     /**
     * Get the contact moment.
     * @return a 3-dim vector
     */
-	virtual const yarp::sig::Vector&    getMoment()		        const;
+    virtual const yarp::sig::Vector&    getMoment()             const;
     /**
     * Get the contact center of pressure expressed in the link reference frame.
     * @return a 3-dim vector
     */
-	virtual const yarp::sig::Vector&    getCoP()                const;
+    virtual const yarp::sig::Vector&    getCoP()                const;
     /**
     * Get the link number (where 0 is the first link of the chain).
     * @return the link number
@@ -171,10 +171,10 @@ public:
     * @return the contact id
     */
     virtual unsigned long               getId()                 const;
- 	
+    
     //~~~~~~~~~~~~~~~~~~~~~~
-	//   IS methods
-	//~~~~~~~~~~~~~~~~~~~~~~
+    //   IS methods
+    //~~~~~~~~~~~~~~~~~~~~~~
     /**
     * Get true if the moment applied at this contact is known a-priori.
     * @return true if the moment is known, false otherwise.
@@ -187,68 +187,68 @@ public:
     virtual bool isForceDirectionKnown()        const;
    
     //~~~~~~~~~~~~~~~~~~~~~~
-	//   SET methods
-	//~~~~~~~~~~~~~~~~~~~~~~    
+    //   SET methods
+    //~~~~~~~~~~~~~~~~~~~~~~    
     /**
      * Set the contact force
-	 * @param _F a 3-dim vector containing the contact force
+     * @param _F a 3-dim vector containing the contact force
      * @return true if the operation succeeded, false otherwise
      */
     virtual bool setForce(const yarp::sig::Vector &_F);
     /**
      * Set the contact force module
-	 * @param _Fmodule the module of the contact force
+     * @param _Fmodule the module of the contact force
      * @return true if the operation succeeded, false otherwise
      */
     virtual bool setForceModule(double _Fmodule);
     /**
      * Set the direction of the contact force
-	 * @param _Fdir a 3-dim vector containing the direction of the contact force
+     * @param _Fdir a 3-dim vector containing the direction of the contact force
      * @return true if the operation succeeded, false otherwise
      * @note If norm(_Fdir) is not 1 then _Fdir is normalized so that its norm is 1
      */
     virtual bool setForceDirection(const yarp::sig::Vector &_Fdir);
     /**
      * Set the contact moment
-	 * @param _Mu a 3-dim vector containing the contact moment
+     * @param _Mu a 3-dim vector containing the contact moment
      * @return true if the operation succeeded, false otherwise
      */
-	virtual bool setMoment(const yarp::sig::Vector &_Mu);
+    virtual bool setMoment(const yarp::sig::Vector &_Mu);
     /**
      * Set the contact force and moment
-	 * @param _F a 3-dim vector containing the contact force
+     * @param _F a 3-dim vector containing the contact force
      * @param _Mu a 3-dim vector containing the contact moment
      * @return true if the operation succeeded, false otherwise
      */
     virtual bool setForceMoment(const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu);
     /**
      * Set the contact force and moment as a single (6x1) vector
-	 * @param _FMu a 6x1 vector where 0:2=force 3:5=moment
+     * @param _FMu a 6x1 vector where 0:2=force 3:5=moment
      * @return true if the operation succeeded, false otherwise
      */
     virtual bool setForceMoment(const yarp::sig::Vector &_FMu);
     /**
      * Set the contact center of pressure in link reference frame
-	 * @param _CoP a 3x1 vector
+     * @param _CoP a 3x1 vector
      * @return true if the operation succeeded, false otherwise
      */
     virtual bool setCoP(const yarp::sig::Vector &_CoP);
     /**
      * Set the contact link number (0 is the first link)
-	 * @param _linkNum the link number
+     * @param _linkNum the link number
      * @return true if the operation succeeded, false otherwise
      */
     virtual void setLinkNumber(unsigned int _linkNum);
     /**
      * Set the body part of this contact
-	 * @param _bodyPart the contact body part
+     * @param _bodyPart the contact body part
      * @return true if the operation succeeded, false otherwise
      */
     virtual void setBodyPart(BodyPart _bodyPart);
 
     //~~~~~~~~~~~~~~~~~~~~~~
-	//   FIX/UNFIX methods
-	//~~~~~~~~~~~~~~~~~~~~~~ 
+    //   FIX/UNFIX methods
+    //~~~~~~~~~~~~~~~~~~~~~~ 
     /**
     * Fix the direction of the contact force. Differently from the method
     * setForceDirection, this method also sets the flag 'fDirKnown'
@@ -261,7 +261,7 @@ public:
     /**
     * Equivalent to calling fixMoment(zeros(3)).
     */
-	virtual bool fixMoment();
+    virtual bool fixMoment();
     /**
     * Fix the contact moment. Differently from the method
     * setMoment, this method also sets the flag 'muKnown'
@@ -285,8 +285,8 @@ public:
     virtual void unfixMoment();
 
     //~~~~~~~~~~~~~~~~~~~~~~
-	//   SERIALIZATION methods
-	//~~~~~~~~~~~~~~~~~~~~~~ 
+    //   SERIALIZATION methods
+    //~~~~~~~~~~~~~~~~~~~~~~ 
     /*
     * Read dynContact from a connection. It expects a list of 4 elements, that are:
     * - a list of 3 int, containing contactId, bodyPart and linkNumber
@@ -316,12 +316,12 @@ public:
      * "Contact id: "<< contactId<< "Body part: "<< bodyPartName<< ", link: "<< linkNumber<< 
      * ", CoP: "<< CoP<< ", F: "<< F<< ", M: "<< Mu
      */
-	virtual std::string toString(int precision=-1) const;
+    virtual std::string toString(int precision=-1) const;
     /**
-	* Set the verbosity level of comments during operations
+    * Set the verbosity level of comments during operations
     * @param verb level of verbosity
-	*/
-	virtual void setVerbose(unsigned int verb = VERBOSE);
+    */
+    virtual void setVerbose(unsigned int verb = VERBOSE);
 };
 
 }

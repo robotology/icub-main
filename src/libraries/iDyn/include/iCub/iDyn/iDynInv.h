@@ -70,13 +70,6 @@ enum ChainComputationMode { KINFWD_WREFWD, KINFWD_WREBWD, KINBWD_WREFWD, KINBWD_
 const std::string ChainIterationMode_s[2] = {"Forward (Base To End)","Backward (End To Base)"};
 const std::string ChainComputationMode_s[4] = {"Kinematic Forward - Wrench Forward","Kinematic Forward - Wrench Backward","Kinematic Backward - Wrench Forward","Kinematic Backward - Wrench Backward"};
 
-// verbosity levels
-// useful for all classes
-//enum VerbosityLevel { NO_VERBOSE, VERBOSE, MORE_VERBOSE};
-
-// contact flags
-//enum ContactStatus { NO_CONTACT, CONTACT };
-
     class iDynLink;
     class iDynChain;
     class iDynLimb;
@@ -92,8 +85,6 @@ const std::string ChainComputationMode_s[4] = {"Kinematic Forward - Wrench Forwa
     class iGenericFrame;
     class iFrameOnLink;
     class iFTransformation;
-
-
 
 
 /**

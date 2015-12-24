@@ -418,7 +418,7 @@ iDynNode::iDynNode(const NewEulMode _mode)
 {
     rbtList.clear();
     mode = _mode;
-    verbose = VERBOSE;
+    verbose = iCub::skinDynLib::VERBOSE;
     zero();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
