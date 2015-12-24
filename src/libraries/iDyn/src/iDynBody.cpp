@@ -1060,7 +1060,7 @@ void iDynNode::compute_Pn_HAN(unsigned int iChainA, JacobType dirA, unsigned int
     }
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynNode::TESTING_computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, const bool axisRep)
+Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, const bool axisRep)
 {
     //first check param coherence:
     // - wrong limb index
@@ -1120,7 +1120,7 @@ Vector iDynNode::TESTING_computePose(unsigned int iChainA, JacobType dirA, unsig
     return v;
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Vector iDynNode::TESTING_computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, const bool axisRep)
+Vector iDynNode::computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, const bool axisRep)
 {
     //first check param coherence:
     // - wrong limb index

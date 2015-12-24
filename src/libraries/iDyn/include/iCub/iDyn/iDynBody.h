@@ -852,7 +852,7 @@ public:
     * @param dirB the 'direction' of visit of the chain
     * @return the Jacobian matrix
     */
-    yarp::sig::Vector TESTING_computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, const bool axisRep);
+    yarp::sig::Vector computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, JacobType dirB, const bool axisRep);
 
     /**
     * Compute the Pose of the end-effector, given a "virtual" chain connecting two limbs.
@@ -872,7 +872,7 @@ public:
     * @param dirB the 'direction' of visit of the chain
     * @return the Jacobian matrix
     */
-    yarp::sig::Vector TESTING_computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, const bool axisRep);
+    yarp::sig::Vector computePose(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB, const bool axisRep);
 
     
     //---------------
@@ -902,8 +902,6 @@ public:
     * @return the Jacobian matrix of the COM
     */
     yarp::sig::Matrix TESTING_computeCOMJacobian(unsigned int iChainA, JacobType dirA, unsigned int iChainB, unsigned int iLinkB, JacobType dirB);
-
-
 };
 
 
