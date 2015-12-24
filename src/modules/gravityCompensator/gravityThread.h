@@ -104,7 +104,7 @@ private:
     IImpedanceControl *iImp_leg_right;
     ITorqueControl    *iTqs_leg_right;
 
-	Vector encoders_arm_left;
+    Vector encoders_arm_left;
     Vector encoders_arm_right;
     Vector encoders_head;
 
@@ -126,65 +126,65 @@ private:
     int torso_ctrlJnt;
     int allJnt;
 
-	iCubWholeBody* icub;
+    iCubWholeBody* icub;
 
-	Vector q_head, dq_head, d2q_head;
-	Vector q_larm, dq_larm, d2q_larm;
-	Vector q_rarm, dq_rarm, d2q_rarm;
-	Vector all_q_up, all_dq_up, all_d2q_up;
+    Vector q_head, dq_head, d2q_head;
+    Vector q_larm, dq_larm, d2q_larm;
+    Vector q_rarm, dq_rarm, d2q_rarm;
+    Vector all_q_up, all_dq_up, all_d2q_up;
 
-	Vector q_torso, dq_torso, d2q_torso;
-	Vector q_lleg, dq_lleg, d2q_lleg;
-	Vector q_rleg, dq_rleg, d2q_rleg;
-	Vector all_q_low, all_dq_low, all_d2q_low;
+    Vector q_torso, dq_torso, d2q_torso;
+    Vector q_lleg, dq_lleg, d2q_lleg;
+    Vector q_rleg, dq_rleg, d2q_rleg;
+    Vector all_q_low, all_dq_low, all_d2q_low;
 
-	Vector w0,dw0,d2p0,Fend,Muend;
-	Vector F_LArm, F_RArm, F_iDyn_LArm, F_iDyn_RArm, Offset_LArm, Offset_RArm;
+    Vector w0,dw0,d2p0,Fend,Muend;
+    Vector F_LArm, F_RArm, F_iDyn_LArm, F_iDyn_RArm, Offset_LArm, Offset_RArm;
     Vector F_LLeg, F_RLeg, F_iDyn_LLeg, F_iDyn_RLeg, Offset_LLeg, Offset_RLeg;
-	Matrix F_ext_up, F_ext_low;
-	Vector inertial_measurements;
+    Matrix F_ext_up, F_ext_low;
+    Vector inertial_measurements;
 
-	std::string side;
-	std::string part;
+    std::string side;
+    std::string part;
 
-	Vector exec_torques_LA,exec_torques_RA,exec_torques_LL,exec_torques_RL,exec_torques_TO;
+    Vector exec_torques_LA,exec_torques_RA,exec_torques_LL,exec_torques_RL,exec_torques_TO;
     Vector gravity_torques_LA,gravity_torques_RA,gravity_torques_LL,gravity_torques_RL,gravity_torques_TO;
-	Vector externalcmd_torques_LA,externalcmd_torques_RA,externalcmd_torques_LL,externalcmd_torques_RL, externalcmd_torques_TO;
-	Vector ampli_LA, ampli_RA, ampli_LL, ampli_RL, ampli_TO;
-	bool isCalibrated;
+    Vector externalcmd_torques_LA,externalcmd_torques_RA,externalcmd_torques_LL,externalcmd_torques_RL, externalcmd_torques_TO;
+    Vector ampli_LA, ampli_RA, ampli_LL, ampli_RL, ampli_TO;
+    bool isCalibrated;
     bool inertial_enabled;
-	
+    
     Vector evalVelUp(const Vector &x);
-	Vector evalVelLow(const Vector &x);
+    Vector evalVelLow(const Vector &x);
     Vector evalAccUp(const Vector &x);
     Vector evalAccLow(const Vector &x);
 
-	void init_upper();
-	void init_lower();
-	void setLowerMeasure();
-	void setUpperMeasure();
+    void init_upper();
+    void init_lower();
+    void setLowerMeasure();
+    void setUpperMeasure();
 
 public:
-	
-	int gravity_mode;
-	int external_mode;
+    
+    int gravity_mode;
+    int external_mode;
 
     gravityCompensatorThread(std::string _wholeBodyName, int _rate, PolyDriver *_ddLA, PolyDriver *_ddRA, PolyDriver *_ddH, PolyDriver *_ddLL, PolyDriver *_ddRL, PolyDriver *_ddT, version_tag icub_type, bool _inertial_enabled);
 
-	void setZeroJntAngVelAcc();
-	bool readAndUpdate(bool waitMeasure=false);
-	bool getLowerEncodersSpeedAndAcceleration();
-	bool getUpperEncodersSpeedAndAcceleration();
+    void setZeroJntAngVelAcc();
+    bool readAndUpdate(bool waitMeasure=false);
+    bool getLowerEncodersSpeedAndAcceleration();
+    bool getUpperEncodersSpeedAndAcceleration();
     bool threadInit();
-	void feedFwdGravityControl(int part_ctrlJnt, std::string s_part, IControlMode2 *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing=false);
+    void feedFwdGravityControl(int part_ctrlJnt, std::string s_part, IControlMode2 *iCtrlMode, ITorqueControl *iTqs, IImpedanceControl *iImp, IInteractionMode *iIntMode, const Vector &command, bool releasing=false);
     void run();
     void threadRelease();
-	void closePort(Contactable *_port);
+    void closePort(Contactable *_port);
 
-	inline thread_status_enum getThreadStatus() 
-	{
-		return thread_status;
-	}
+    inline thread_status_enum getThreadStatus() 
+    {
+        return thread_status;
+    }
 
 };
 
