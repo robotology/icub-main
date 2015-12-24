@@ -113,85 +113,6 @@ bool RpcMsgHandler::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& reply
                 }
                 break;
 
-                case VOCAB_DEBUG_DESIRED_POS:
-                {
-                    int j = cmd.get(2).asInt();
-                    ok = caller->getDebugReferencePosition(j, &dtmp);
-                    reply.addInt(j);
-                    reply.addDouble(dtmp);
-                }
-                break;
-
-                case VOCAB_DEBUG_ROTOR_POS:
-                {
-                    int j = cmd.get(2).asInt();
-                    ok = caller->getRotorPosition(j, &dtmp);
-                    reply.addInt(j);
-                    reply.addDouble(dtmp);
-                }
-                break;
-
-                case VOCAB_DEBUG_ROTOR_POSS:
-                {
-                    ok = caller->getRotorPositions(tmpDoubleArray);
-                    for(int j=0; j<controlledJoints; j++)
-                    {
-                        reply.addDouble(tmpDoubleArray[j]);
-                    }
-                }
-                break;
-
-                case VOCAB_DEBUG_ROTOR_SPEED:
-                {
-                    int j = cmd.get(2).asInt();
-                    ok = caller->getRotorSpeed(j, &dtmp);
-                    reply.addInt(j);
-                    reply.addDouble(dtmp);
-                }
-                break;
-
-                case VOCAB_DEBUG_ROTOR_SPEEDS:
-                {
-                    ok = caller->getRotorSpeeds(tmpDoubleArray);
-                    for(int j=0; j<controlledJoints; j++)
-                        reply.addDouble(tmpDoubleArray[j]);
-                }
-                break;
-
-                case VOCAB_DEBUG_ROTOR_ACCEL:
-                {
-                    int j     = cmd.get(2).asInt();
-                    ok = caller->getRotorAcceleration(j, &dtmp);
-                    reply.addInt(j);
-                    reply.addDouble(dtmp);
-                }
-                break;
-
-                case VOCAB_DEBUG_ROTOR_ACCELS:
-                {
-                    ok = caller->getRotorAccelerations(tmpDoubleArray);
-                    for(int j=0; j<controlledJoints; j++)
-                        reply.addDouble(tmpDoubleArray[j]);
-                }
-                break;
-
-                case VOCAB_DEBUG_JOINT_POS:
-                {
-                    int j     = cmd.get(2).asInt();
-                    ok = caller->getJointPosition(j, &dtmp);
-                    reply.addInt(j);
-                    reply.addDouble(dtmp);
-                }
-                break;
-
-                case VOCAB_DEBUG_JOINT_POSS:
-                {
-                    ok = caller->getJointPositions(tmpDoubleArray);
-                    for(int j=0; j<controlledJoints; j++)
-                        reply.addDouble(tmpDoubleArray[j]);
-                }
-                break;
-
                 case VOCAB_GENERIC_PARAMETER:
                 {
                     int j     = cmd.get(2).asInt();
@@ -232,16 +153,6 @@ bool RpcMsgHandler::respond(const yarp::os::Bottle& cmd, yarp::os::Bottle& reply
                     int index = cmd.get(3).asInt();
                     double val   = cmd.get(4).asDouble();
                     ok = caller->setDebugParameter(j, index, val);
-                }
-                break;
-
-                case VOCAB_DEBUG_DESIRED_POS:
-                {
-                    std::cout << " set VOCAB_DEBUG_DESIRED_POS " << std::endl;
-
-                    int j     = cmd.get(2).asInt();
-                    double val   = cmd.get(3).asDouble();
-                    ok = caller->setDebugReferencePosition(j, val);
                 }
                 break;
 

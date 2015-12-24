@@ -46,22 +46,13 @@
 // additional vocabs defined for the IDebug interface.
 #define VOCAB_GENERIC_PARAMETER   VOCAB4('g','e','n','p')
 #define VOCAB_DEBUG_PARAMETER     VOCAB4('d','b','g','p')
-#define VOCAB_DEBUG_DESIRED_POS   VOCAB4('d','d','p','s')
-#define VOCAB_DEBUG_ROTOR_POS     VOCAB3('d','r','p')
-#define VOCAB_DEBUG_ROTOR_POSS    VOCAB4('d','r','p','s')
-#define VOCAB_DEBUG_ROTOR_SPEED   VOCAB3('d','r','v')
-#define VOCAB_DEBUG_ROTOR_SPEEDS  VOCAB4('d','r','v','s')
-#define VOCAB_DEBUG_ROTOR_ACCEL   VOCAB3('d','r','a')
-#define VOCAB_DEBUG_ROTOR_ACCELS  VOCAB4('d','r','a','s')
-#define VOCAB_DEBUG_JOINT_POS     VOCAB3('d','j','p')
-#define VOCAB_DEBUG_JOINT_POSS    VOCAB4('d','j','p','s')
 
 /* LATER: is it likely that some of these would move into iCub::dev namespace? */
 namespace yarp{
     namespace dev {
         class IDebugInterface;
-		class IDebugInterfaceRaw;
-		class ImplementDebugInterface;
+        class IDebugInterfaceRaw;
+        class ImplementDebugInterface;
     }
 }
 
@@ -573,23 +564,10 @@ public:
     virtual bool setDebugParameter(int j, unsigned int index, double value)=0;
 
     /* Get a generic parameter (for debug)
-	 * @param index is the number of the debug parameter
-     * @return true/false on success/failure
-     */
-    virtual bool getDebugParameter(int j, unsigned int index, double* value)=0;
-
-	/* Set an instantaneous reference postion (for debug), bypassing the minimum jerk
      * @param index is the number of the debug parameter
      * @return true/false on success/failure
      */
-    virtual bool setDebugReferencePosition(int j, double value)=0;
-
-    /* Get an instantaneous reference postion (for debug), bypassing the minimum jerk
-	 * @param index is the number of the debug parameter
-     * @return true/false on success/failure
-     */
-    virtual bool getDebugReferencePosition(int j, double* value)=0;
-
+    virtual bool getDebugParameter(int j, unsigned int index, double* value)=0;
 };
 
 class yarp::dev::IDebugInterfaceRaw {
@@ -619,19 +597,6 @@ public:
      * @return true/false on success/failure
      */
     virtual bool getDebugParameterRaw(int j, unsigned int index, double* value)=0;
-
-    /* Set an instantaneous reference postion (for debug), bypassing the minimum jerk
-     * @param index is the number of the debug parameter
-     * @return true/false on success/failure
-     */
-    virtual bool setDebugReferencePositionRaw(int j, double value)=0;
-
-    /* Get an instantaneous reference postion (for debug), bypassing the minimum jerk
-	 * @param index is the number of the debug parameter
-     * @return true/false on success/failure
-     */
-    virtual bool getDebugReferencePositionRaw(int j, double* value)=0;
-    
 };
 
 class yarp::dev::ImplementDebugInterface: public IDebugInterface
@@ -648,8 +613,6 @@ public:
     bool getParameter              (int j, unsigned int type, double* value);
     bool setDebugParameter         (int j, unsigned int index, double value);
     bool getDebugParameter         (int j, unsigned int index, double *value);
-    bool setDebugReferencePosition (int j, double value);
-    bool getDebugReferencePosition (int j, double *value);
 };
 
 #endif /* __DEBUGINTERFACES__ */

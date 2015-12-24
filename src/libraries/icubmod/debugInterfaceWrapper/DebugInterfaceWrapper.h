@@ -160,27 +160,6 @@ public:
      * @return true/false on success/failure
      */
     virtual bool getDebugParameter(int j, unsigned int index, double* value);
-
-    /* Set an instantaneous reference postion (for debug), bypassing the minimum jerk
-     * @param index is the number of the debug parameter
-     * @return true/false on success/failure
-     */
-    virtual bool setDebugReferencePosition(int j, double value);
-
-    /* Get an instantaneous reference postion (for debug), bypassing the minimum jerk
-     * @param index is the number of the debug parameter
-     * @return true/false on success/failure
-     */
-    virtual bool getDebugReferencePosition(int j, double* value);
-    virtual bool getRotorPosition         (int j, double* value);
-    virtual bool getRotorPositions        (double* value);
-    virtual bool getRotorSpeed            (int j, double* value);
-    virtual bool getRotorSpeeds           (double* value);
-    virtual bool getRotorAcceleration     (int j, double* value);
-    virtual bool getRotorAccelerations    (double* value);
-    virtual bool getJointPosition         (int j, double* value);
-    virtual bool getJointPositions        (double* value);
-
 };
 
 #endif  // DEBUG_INTERFACE_WRAPPER

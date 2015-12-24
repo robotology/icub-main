@@ -41,43 +41,15 @@ bool yarp::dev::ImplementDebugInterface::setDebugParameter(int j, unsigned int i
 
 bool yarp::dev::ImplementDebugInterface::getDebugParameter(int j, unsigned int index, double* value)
 {
-	int k=castToMapper2(helper)->toHw(j);
+    int k=castToMapper2(helper)->toHw(j);
     return raw->getDebugParameterRaw(j, index, value);
 }
-
-bool yarp::dev::ImplementDebugInterface::setDebugReferencePosition(int j, double value)
-{
-	int k=castToMapper2(helper)->toHw(j);
-	double enc=castToMapper2(helper)->posA2E(value,k);
-	return raw->setDebugReferencePositionRaw(j, enc);
-}
-
-bool yarp::dev::ImplementDebugInterface::getDebugReferencePosition(int j, double* value)
-{
-	int k=castToMapper2(helper)->toHw(j);
-	double enc=0.0;
-    bool r= raw->getDebugReferencePositionRaw(j, &enc);
-	if (r)
-	{
-		*value = castToMapper2(helper)->posE2A(enc,k);
-	}
-	else
-	{
-		*value = 0.0;
-	}
-	return r;
-}
-
 
 yarp::dev::ImplementDebugInterface::ImplementDebugInterface(IDebugInterfaceRaw *r)
 {
     raw=r;
     helper=0;
 }
-
-
-
-
 
 bool yarp::dev::ImplementDebugInterface::initialize(int size, const int *amap, const double *angleToEncoder, const double *zeros, const double *rotToEncoder)
 {

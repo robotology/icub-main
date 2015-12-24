@@ -71,19 +71,7 @@ public:
     bool getParameter(int j, unsigned int type, double *t);
     bool setDebugParameter(int j, unsigned int index, double t);
     bool getDebugParameter(int j, unsigned int index, double *t);
-    bool setDebugReferencePosition(int j, double value);
-    bool getDebugReferencePosition(int j, double *value);
     
-    bool getRotorPosition(int j, double *value);
-    bool getRotorPositions(double *value);
-    bool getRotorSpeed(int j, double *value);
-    bool getRotorSpeeds(double *value);
-    bool getRotorAcceleration(int j, double *value);
-    bool getRotorAccelerations(double *value);
-
-    bool getJointPosition(int j, double *value);
-    bool getJointPositions(double *value);
-
     virtual Stamp getLastInputStamp();
     bool getTimeStamp(Bottle &bot, Stamp &st);
 };
