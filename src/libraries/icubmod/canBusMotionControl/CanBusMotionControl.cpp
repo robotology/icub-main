@@ -1451,7 +1451,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 {for (j=0;j<nj;j++) this->_ktau[j] = 1; }
                 
                 xtmp = trqPidsGroup.findGroup("filterType"); 
-                {for (j=0;j<nj;j++) this->_filterType[j] = 0; }
+                {for (j=0;j<nj;j++) this->_filterType[j] = 3; }
                 
                 xtmp = trqPidsGroup.findGroup("controlUnits"); 
                 this->_torqueControlUnits = MACHINE_UNITS;
@@ -1476,7 +1476,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 {for (j=0;j<nj;j++) this->_ktau[j] = 1; }
             
                 xtmp = trqPidsGroup.findGroup("filterType"); 
-                {for (j=0;j<nj;j++) this->_filterType[j] = 0; }
+                {for (j=0;j<nj;j++) this->_filterType[j] = 3; }
             
                 xtmp = trqPidsGroup.findGroup("controlUnits"); 
                 this->_torqueControlUnits = MACHINE_UNITS;
@@ -1510,7 +1510,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 if (!xtmp.isNull())
                 {for (j=0;j<nj;j++) this->_filterType[j] = xtmp.get(j+1).asInt();}
                 else
-                {for (j=0;j<nj;j++) this->_filterType[j] = 0; yWarning ("TORQUE_PIDS: 'filterType' param missing");}
+                {for (j=0;j<nj;j++) this->_filterType[j] = 3; yWarning ("TORQUE_PIDS: 'filterType' param missing");}
                 
                 xtmp = trqControlGroup.findGroup("controlUnits"); 
                 if (!xtmp.isNull())

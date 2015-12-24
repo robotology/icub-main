@@ -20,9 +20,9 @@
 
 
 #define CAN_PROTOCOL_MAJOR          1 //this must be an exact match with the firmware protocol, otherwise terminates.
-#define CAN_PROTOCOL_MINOR          2 //this must be smaller or equal than the firmware protocol, otherwise terminates.
-#define LAST_BLL_BUILD             80 //this value is used only to print "please update" message
-#define LAST_MC4_BUILD             80 //this value is used only to print "please update" message
+#define CAN_PROTOCOL_MINOR          4 //this must be smaller or equal than the firmware protocol, otherwise terminates.
+#define LAST_BLL_BUILD             85 //this value is used only to print "please update" message
+#define LAST_MC4_BUILD             85 //this value is used only to print "please update" message
 
 //#define MODE_IDLE                   icubCanProto_controlmode_idle
 //#define MODE_POSITION               icubCanProto_controlmode_position
