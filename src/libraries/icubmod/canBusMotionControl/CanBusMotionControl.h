@@ -1162,6 +1162,7 @@ protected:
     bool _writeDWord (int msg, int axis, int value);
     bool _writeNone  (int msg, int axis);
     bool _writeByte8 (int msg, int axis, int value);
+    bool _readByte8(int msg, int axis, int& value);
     bool _writeByteWords16(int msg, int axis, unsigned char value, short s1, short s2, short s3);
     axisTorqueHelper      *_axisTorqueHelper;
     torqueControlHelper   *_torqueControlHelper;

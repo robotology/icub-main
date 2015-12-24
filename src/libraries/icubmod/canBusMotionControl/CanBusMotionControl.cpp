@@ -5860,7 +5860,21 @@ bool CanBusMotionControl::getMotorTorqueParamsRaw (int axis, MotorTorqueParamete
 
 bool CanBusMotionControl::getFilterTypeRaw(int j, int* type)
 {
-    return NOT_YET_IMPLEMENTED("getFilterTypeRaw");
+    const int axis = j;
+
+    /// prepare Can message.
+    CanBusResources& r = RES(system_resources);
+
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
+        return false;
+
+    int val = 0;
+    if (!_readByte8(ICUBCANPROTO_POL_MC_CMD__GET_TCFILTER_TYPE, axis, val))
+    {
+        return false;
+    }
+    *type = val;
+    return true;
 }
 
 bool CanBusMotionControl::setFilterTypeRaw (int j, int type)
@@ -7206,6 +7220,58 @@ bool CanBusMotionControl::_readWord16 (int msg, int axis, short& value)
     }
 
     value = *((short *)(m->getData()+1));
+    t->clear();
+    return true;
+}
+
+bool CanBusMotionControl::_readByte8(int msg, int axis, int& value)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
+        return false;
+
+    if (!ENABLED(axis))
+    {
+        value = short(0);
+        return true;
+    }
+
+    _mutex.wait();
+    int id;
+    if (!threadPool->getId(id))
+    {
+        yError("More than %d threads, cannot allow more\n", CANCONTROL_MAX_THREADS);
+        _mutex.post();
+        return false;
+    }
+
+    DEBUG_FUNC("_readByte8: called from thread %d, axis %d msg %d\n", id, axis, msg);
+    r.startPacket();
+    r.addMessage(id, axis, msg);
+    r.writePacket(); //write immediatly
+
+    ThreadTable2 *t = threadPool->getThreadTable(id);
+    DEBUG_FUNC("_readByte8: going to wait for packet %d\n", id);
+    t->setPending(r._writeMessages);
+    _mutex.post();
+    t->synch();
+    DEBUG_FUNC("_readByte8: ok, wait done %d\n", id);
+
+    if (!r.getErrorStatus() || (t->timedOut()))
+    {
+        yError("_readByte8: message timed out\n");
+        value = 0;
+        return false;
+    }
+
+    CanMessage *m = t->get(0);
+
+    if (m == 0)
+    {
+        return false;
+    }
+
+    value = *((char *)(m->getData() + 1));
     t->clear();
     return true;
 }
