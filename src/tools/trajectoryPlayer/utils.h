@@ -54,6 +54,8 @@ using namespace yarp::math;
 #define ACTION_IDLE    0
 #define ACTION_START   1
 #define ACTION_RUNNING 2
+#define ACTION_STOP    3
+#define ACTION_RESET   4
 
 // ******************** ACTION CLASS
 class action_struct

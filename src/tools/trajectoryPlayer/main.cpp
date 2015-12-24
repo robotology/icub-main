@@ -205,28 +205,11 @@ public:
         if (!enable_execute_joint_command) return true;
 
         double *ll = actions.action_vector[action_id].q_joints;
+        int nj = actions.action_vector[action_id].get_n_joints();
 
-        if (action_id == 0)
+        for (int j = 0; j < nj; j++)
         {
-            //the first step
-            for (int j = 0; j < actions.action_vector[action_id].get_n_joints(); j++)
-            {
-                driver->icmd_ll->setControlMode(j, VOCAB_CM_POSITION);
-            }
-            yarp::os::Time::delay(0.0);
-            driver->ipos_ll->positionMove(ll);
-            yInfo() << "going to to home position";
-            yarp::os::Time::delay(0.0);
-            yInfo() << "done";
-            for (int j = 0; j < actions.action_vector[action_id].get_n_joints(); j++)
-            {
-                driver->icmd_ll->setControlMode(j, VOCAB_CM_POSITION_DIRECT);
-            }
-            yarp::os::Time::delay(0.0);
-        }
-        else
-        {
-            driver->iposdir_ll->setPositions(ll);
+            driver->iposdir_ll->setPosition(j, ll[j]);
         }
         return true;
     }
@@ -240,19 +223,29 @@ public:
         bot.addDouble(actions.action_vector[action_id].time);
         bot.addString(actions.action_vector[action_id].tag.c_str());
         //@@@ you can add stuff here...
+
         //send the output command
         port_command_out.write();
-        execute_joint_command(action_id);
+        if (!execute_joint_command(action_id))
+        {
+            yError("failed to execute command");
+        }
 
         //quick reads the current position
         double encs[50];
         if (driver && driver->ienc_ll)
         {
-            driver->ienc_ll->getEncoders(encs);
+            //driver->ienc_ll->getEncoders(encs);
+            int nj; driver->ienc_ll->getAxes(&nj);
+            for (int j = 0; j < nj; j++)
+            {
+                driver->ienc_ll->getEncoder(j, &encs[j]);
+            }
         }
         else
         {
             //invalid driver
+            yError("Critical error: invalid driver");
         }
 
         //send the joints angles on debug port
@@ -279,22 +272,35 @@ public:
     {
         mutex.wait();
         double current_time = yarp::os::Time::now();
-        //static double last_time = yarp::os::Time::now();
         if (actions.current_status==ACTION_IDLE)
         {
-            //last_time = current_time;
+            // do nothing
         }
-        else if (actions.current_status==ACTION_RUNNING)
+        else if (actions.current_status == ACTION_STOP)
         {
-            //if it's not the last action
+            int nj = actions.action_vector[0].get_n_joints();
+            actions.current_status = ACTION_IDLE;
+        }
+        else if (actions.current_status == ACTION_RESET)
+        {
+            int nj = actions.action_vector[0].get_n_joints();
+            for (int j = 0; j < nj; j++)
+            {
+                driver->icmd_ll->setControlMode(j, VOCAB_CM_POSITION);
+            }
+            actions.current_status = ACTION_IDLE;
+        }
+        else if (actions.current_status == ACTION_RUNNING)
+        {
             size_t last_action = actions.action_vector.size();
             if (last_action == 0)
             {
-                yWarning("sequence empty!");
-                actions.current_status=ACTION_IDLE;
+                yError("sequence empty!");
+                actions.current_status=ACTION_RESET;
                 return;
             }
 
+            //if it's not the last action
             if (actions.current_action < last_action-1)
             {
                 //if enough time is passed from the previous action
@@ -307,6 +313,7 @@ public:
                     //last_time = current_time;
                     actions.current_action++;
                     compute_and_send_command(actions.current_action);
+                    yDebug("Executing action: %4d/%4d", actions.current_action , last_action);
                     //printf("EXECUTING %d, elapsed_time:%.5f requested_time:%.5f\n", actions.current_action, current_time-last_time, duration);
                 }
                 else
@@ -317,29 +324,75 @@ public:
             else
             {
                 if (actions.forever==false)
-                    {
-                        yInfo("sequence complete");
-                        actions.current_status=ACTION_IDLE;
-                    }
+                {
+                    yInfo("sequence complete");
+                    actions.current_status=ACTION_RESET;
+                }
                 else
-                    {
-                        yInfo("sequence complete, restarting");
-                        actions.current_action=0;
-                    }
+                {
+                    yInfo("sequence complete, restarting");
+                    actions.current_action=0;
+                    start_time = yarp::os::Time::now();
+                }
             }
         }
         else if (actions.current_status==ACTION_START)
         {
             if (actions.action_vector.size()>0)
             {
-                compute_and_send_command(0);
-                actions.current_status=ACTION_RUNNING;
-                start_time = yarp::os::Time::now();
+                double *ll = actions.action_vector[0].q_joints;
+                int nj = actions.action_vector[0].get_n_joints();
+                for (int j = 0; j < nj; j++)
+                {
+                    driver->icmd_ll->setControlMode(j, VOCAB_CM_POSITION);
+                }
+                yarp::os::Time::delay(0.1);
+                for (int j = 0; j < nj; j++)
+                {
+                    driver->ipos_ll->positionMove(j, ll[j]);
+                }
+                
+                yInfo() << "going to to home position";
+                double enc[50];
+                int loops = 100;
+                bool check = true;
+                do
+                {
+                    check = true;
+                    for (int j = 0; j < nj; j++)
+                    {
+                        driver->ienc_ll->getEncoder(j, &enc[j]);
+                        double err = fabs(enc[j] - ll[j]);
+                        check &= (err < 2.0);
+                    }
+                    yarp::os::Time::delay(0.1);
+                    loops--;
+                } while (!check && loops>0);
+
+                if (check)
+                {
+                    yInfo() << "done";
+
+                    for (int j = 0; j <nj; j++)
+                    {
+                        driver->icmd_ll->setControlMode(j, VOCAB_CM_POSITION_DIRECT);
+                    }
+                    yarp::os::Time::delay(0.1);
+                    compute_and_send_command(0);
+
+                    actions.current_status = ACTION_RUNNING;
+                    start_time = yarp::os::Time::now();
+                }
+                else
+                {
+                    yError() << "unable to reach start position!";
+                    actions.current_status = ACTION_STOP;
+                }
             }
             else
             {
                 yWarning("no sequence in memory");
-                actions.current_status=ACTION_IDLE;
+                actions.current_status=ACTION_STOP;
             }
         }
         else
@@ -435,19 +488,30 @@ public:
         if (rf.check("filename")==true)
         {
             string filename = rf.find("filename").asString().c_str();
-            int req_joints = 6; //default value
+            int req_joints = 0; //default value
             if (rf.check("joints")) 
-            {req_joints = rf.find("joints").asInt();}
+            {
+                req_joints = rf.find("joints").asInt();}
+            else
+            {
+                yError() << "Missing parameter 'joints' (number of joints to control)";
+                return false;
+            }
 
             if (req_joints < robot.n_joints) 
             {
-                yInfo () << "changing n joints from" << robot.n_joints << "to" << req_joints;
+                yWarning () << "changing n joints from" << robot.n_joints << "to" << req_joints;
                 robot.n_joints = req_joints;
+            }
+            else if (req_joints > robot.n_joints)
+            {
+                yError() << "Requested number of joints exceeds the number of available joints on the robot!";
+                return false;
             }
 
             if (!w_thread.actions.openFile(filename,robot.n_joints))
             {
-                yError() << "Unable to parse file";
+                yError() << "Unable to parse file " << filename;
                 return false;
             };
         }
@@ -516,7 +580,7 @@ public:
                     }
                 else if  (cmdstring == "stop")
                     {
-                        this->w_thread.actions.current_status = ACTION_IDLE;
+                        this->w_thread.actions.current_status = ACTION_STOP;
                         if (this->b_thread.isRunning()==true) b_thread.askToStop();
 
                         reply.addVocab(Vocab::encode("ack"));
@@ -534,7 +598,10 @@ public:
                             reply.addVocab(Vocab::encode("ERROR Unable to parse file"));
                         }
                         else
+                        {
+                            yInfo() << "Command added";
                             reply.addVocab(Vocab::encode("ack"));
+                        }
                     }
                 else if  (cmdstring == "load")
                     {
@@ -545,11 +612,14 @@ public:
                             reply.addVocab(Vocab::encode("ERROR Unable to parse file"));
                         }
                         else
+                        {
+                            yInfo() << "File opened";
                             reply.addVocab(Vocab::encode("ack"));
+                        }
                     }
                 else if  (cmdstring == "reset")
                     {
-                        this->w_thread.actions.current_status = ACTION_IDLE;
+                        this->w_thread.actions.current_status = ACTION_RESET;
                         this->w_thread.actions.current_action = 0;
 
                         if (this->b_thread.isRunning()==true) b_thread.askToStop();
@@ -608,6 +678,7 @@ int main(int argc, char *argv[])
         yInfo() << "\t--filename     <filename>:   the positions file";
         yInfo() << "\t--execute      activate the iPid->setReference() control";
         yInfo() << "\t--period       <period>: the period in ms of the internal thread (default 5)";
+        yInfo() << "\t--verbose      to display additional infos";
         return 0;
     }
 

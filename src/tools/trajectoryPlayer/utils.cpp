@@ -172,10 +172,12 @@ bool action_class::parseCommandLineFixTime(const char* command_line, int line, d
     strcpy(cline,command_line);
     tok = strtok (cline," ");
     int i=0;
-    while (tok!= 0)
+    int joints_count = 0;
+    while (tok != 0 && joints_count < n_joints)
     {
         sscanf(tok, "%lf", &tmp_action.q_joints[i++]);
         tok = strtok (NULL," ");
+        joints_count++;
     }
 
     //insertion in the vector based on the timestamp
@@ -259,6 +261,9 @@ bool robotDriver::configure(const Property &copt)
 
     drvOptions_ll.put("device","remote_controlboard");
 
+    if (!options.check("robot")) { yError() << "Missing robot parameter"; return false; }
+    if (!options.check("part")) { yError() << "Missing part parameter"; return false; }
+
     string remote_ll;
     string local_ll;
     remote_ll = string("/") + string(options.find("robot").asString()) + string("/") +string(options.find("part").asString());
@@ -272,7 +277,7 @@ bool robotDriver::configure(const Property &copt)
     }
 
     return ret;
-    }
+}
 
 bool robotDriver::init()
 {
@@ -290,6 +295,7 @@ bool robotDriver::init()
             delete drv_ll;
             drv_ll=0;
         }
+        return false;
     }
 
     //get the number of the joints
