@@ -900,6 +900,23 @@ int iKinIpOptMin::getMaxIter() const
 
 
 /************************************************************************/
+void iKinIpOptMin::setMaxCpuTime(const double max_cpu_time)
+{
+    CAST_IPOPTAPP(App)->Options()->SetNumericValue("max_cpu_time",max_cpu_time);
+    CAST_IPOPTAPP(App)->Initialize();
+}
+
+
+/************************************************************************/
+double iKinIpOptMin::getMaxCpuTime() const
+{
+    double max_cpu_time;
+    CAST_IPOPTAPP(App)->Options()->GetNumericValue("max_cpu_time",max_cpu_time,"");
+    return max_cpu_time;
+}
+
+
+/************************************************************************/
 void iKinIpOptMin::setTol(const double tol)
 {
     CAST_IPOPTAPP(App)->Options()->SetNumericValue("tol",tol);

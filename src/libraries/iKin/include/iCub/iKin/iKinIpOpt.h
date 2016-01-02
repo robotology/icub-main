@@ -330,6 +330,19 @@ public:
     int getMaxIter() const;
 
     /**
+    * Sets Maximum CPU seconds.
+    * @param max_cpu_time exits if cpu_time>=max_cpu_time given in 
+    *                     seconds.
+    */ 
+    void setMaxCpuTime(const double max_cpu_time);
+
+    /**
+    * Retrieves the current value of Maximum CPU seconds.
+    * @return max_cpu_time.
+    */ 
+    double getMaxCpuTime() const;
+
+    /**
     * Sets cost function tolerance.
     * @param tol tolerance.
     */
