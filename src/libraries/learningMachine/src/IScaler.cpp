@@ -20,6 +20,7 @@
 #include <cmath>
 
 #include <yarp/os/Bottle.h>
+#include <yarp/os/Value.h>
 
 #include "iCub/learningMachine/IScaler.h"
 

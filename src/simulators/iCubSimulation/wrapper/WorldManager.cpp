@@ -23,6 +23,8 @@
 #include <stdio.h>
 #include <cstring>
 
+#include <yarp/os/Value.h>
+
 class ManagerState {
 public:
     bool failed;

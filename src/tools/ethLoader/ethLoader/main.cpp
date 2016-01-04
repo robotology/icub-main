@@ -18,6 +18,7 @@
 
 #include <yarp/os/Property.h>
 #include <yarp/os/Log.h>
+#include <yarp/os/Value.h>
 
 EthUpdater gUpdater;
 

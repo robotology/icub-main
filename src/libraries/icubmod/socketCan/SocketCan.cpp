@@ -25,6 +25,7 @@
 #include "SocketCan.h"
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/os/Bottle.h>
+#include <yarp/os/Value.h>
 #include <sys/types.h>
 #include <yarp/os/Time.h>
 #include <sys/socket.h>

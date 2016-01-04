@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include <yarp/os/Bottle.h>
+#include <yarp/os/Value.h>
 
 using namespace std;
 using namespace yarp::dev;
