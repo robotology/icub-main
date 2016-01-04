@@ -16,6 +16,7 @@
 */
 
 #include <iCub/perception/private/ports.h>
+#include <yarp/os/Value.h>
 
 using namespace yarp::os;
 using namespace iCub::perception;
