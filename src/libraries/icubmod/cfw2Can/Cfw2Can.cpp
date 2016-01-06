@@ -13,6 +13,7 @@
 #include "libcfw002.h"
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/os/Bottle.h>
+#include <yarp/os/Value.h>
 #include "Cfw2Can.h"
 
 using namespace yarp::dev;
