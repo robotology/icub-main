@@ -28,6 +28,7 @@
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
+#include <yarp/os/Value.h>
 
 #define NUM_DMA_BUFFERS 4
 
