@@ -1691,6 +1691,12 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     else
         for(i=1; i<xtmp.size(); i++) _rotorlimits_min[i-1]=xtmp.get(i).asDouble();
 
+    // Motor pwm limit
+    if (!extractGroup(limits, xtmp, "MotorPwmLimit","a list of motor PWM limits", _njoints))
+        return false;
+    else
+        for(i=1; i<xtmp.size(); i++) _motorPwmLimits[i-1]=xtmp.get(i).asDouble();
+
     /////// [VELOCITY]
     Bottle &velocityGroup=config.findGroup("VELOCITY");
     if (!velocityGroup.isNull())
@@ -1954,6 +1960,7 @@ bool embObjMotionControl::init()
         motor_cfg.motorPoles = _motorPoles[logico];
         motor_cfg.rotorIndexOffset = _rotorIndexOffset[logico];
         motor_cfg.rotorEncoderType = _rotorEncoderType[logico];
+        motor_cfg.pwmLimit =_motorPwmLimits[logico];
         motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_max[logico], 0.0, _angleToEncoder[logico]));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_min[logico], 0.0, _angleToEncoder[logico]));
         motor_cfg.pidcurrent.kp = 8;
@@ -5509,17 +5516,48 @@ bool embObjMotionControl::setNominalCurrentRaw(int m, const double val)
 
 bool embObjMotionControl::getPWMRaw(int j, double* val)
 {
-    return NOT_YET_IMPLEMENTED("getPWM");
+    uint16_t      size;
+    eOmc_motor_status_basic_t     status;
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
+
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&status, &size);
+    if(ret)
+    {
+        *val = (double) status.mot_pwm;
+    }
+    else
+    {
+        yError() << "getPWMRaw failed for board " << _fId.boardNumber << " motor " << j ;
+        *val = 0;
+    }
+
+    return ret;
 }
 
 bool embObjMotionControl::getPWMLimitRaw(int j, double* val)
 {
-    return NOT_YET_IMPLEMENTED("getPWMLimitRaw");
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_pwmlimit);
+    uint16_t size;
+    eOmeas_pwm_t  motorPwmLimit;
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&motorPwmLimit, &size);
+    if(ret)
+    {
+        *val = (double) motorPwmLimit;
+    }
+    else
+    {
+        yError() << "getPWMLimitRaw failed for board " << _fId.boardNumber << " motor " << j ;
+        *val = 0;
+    }
+
+    return ret;
 }
 
 bool embObjMotionControl::setPWMLimitRaw(int j, const double val)
 {
-    return NOT_YET_IMPLEMENTED("setPWMLimitRaw");
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_pwmlimit);
+    eOmeas_pwm_t  motorPwmLimit = (eOmeas_pwm_t) S_16(val);
+    return res->addSetMessage(protid, (uint8_t*) &motorPwmLimit);
 }
 
 bool embObjMotionControl::getPowerSupplyVoltageRaw(int j, double* val)

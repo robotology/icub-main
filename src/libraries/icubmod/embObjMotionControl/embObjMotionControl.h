@@ -310,6 +310,7 @@ private:
     bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
     #define MAX_POSITION_MOVE_INTERVAL 0.080
     double *_last_position_move_time;           /** time stamp for last received position move command*/
+    double *_motorPwmLimits;                    /** motors PWM limits*/
 
     // TODO doubled!!! optimize using just one of the 2!!!
     ImpedanceParameters *_impedance_params;     /** impedance parameters */
