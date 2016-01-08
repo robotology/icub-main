@@ -456,7 +456,8 @@ bool embObjMotionControl::alloc(int nj)
     _limitsMax=allocAndCheck<double>(nj);
     _limitsMin=allocAndCheck<double>(nj);
     _kinematic_mj=allocAndCheck<double>(16);
-    _currentLimits=allocAndCheck<double>(nj);
+    _currentLimits=allocAndCheck<MotorCurrentLimits>(nj);
+    _motorPwmLimits=allocAndCheck<double>(nj);
     checking_motiondone=allocAndCheck<bool>(nj);
 
     _velocityShifts=allocAndCheck<int>(nj);
@@ -514,6 +515,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_limitsMin);
     checkAndDestroy(_kinematic_mj);
     checkAndDestroy(_currentLimits);
+    checkAndDestroy(_motorPwmLimits);
     checkAndDestroy(checking_motiondone);
     checkAndDestroy(_velocityShifts);
     checkAndDestroy(_velocityTimeout);
@@ -601,6 +603,7 @@ embObjMotionControl::embObjMotionControl() :
     _limitsMin        = NULL;
     _limitsMax        = NULL;
     _currentLimits    = NULL;
+    _motorPwmLimits   = NULL;
     _velocityShifts   = NULL;
     _velocityTimeout  = NULL;
     _torqueSensorId   = NULL;
@@ -1659,7 +1662,19 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     if (!extractGroup(limits, xtmp, "Currents","a list of current limits", _njoints))
         return false;
     else
-        for(i=1; i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();
+        for(i=1; i<xtmp.size(); i++) _currentLimits[i-1].overloadCurrent=xtmp.get(i).asDouble();
+
+    // nominal current
+    if (!extractGroup(limits, xtmp, "MotorNominalCurrents","a list of nominal current limits", _njoints))
+        return false;
+    else
+        for(i=1; i<xtmp.size(); i++) _currentLimits[i-1].nominalCurrent =xtmp.get(i).asDouble();
+
+    // nominal current
+    if (!extractGroup(limits, xtmp, "MotorPeakCurrents","a list of peak current limits", _njoints))
+        return false;
+    else
+        for(i=1; i<xtmp.size(); i++) _currentLimits[i-1].peakCurrent=xtmp.get(i).asDouble();
 
     // max limit
     if (!extractGroup(limits, xtmp, "Max","a list of maximum angles (in degrees)", _njoints))
@@ -1950,7 +1965,9 @@ bool embObjMotionControl::init()
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, fisico, eoprot_tag_mc_motor_config);
         eOmc_motor_config_t motor_cfg = {0};
         motor_cfg.maxvelocityofmotor = 0;//_maxMotorVelocity[logico]; //unused yet!
-        motor_cfg.maxcurrentofmotor = _currentLimits[logico];
+        motor_cfg.currentLimits.nominalCurrent = _currentLimits[logico].nominalCurrent;
+        motor_cfg.currentLimits.overloadCurrent = _currentLimits[logico].overloadCurrent;
+        motor_cfg.currentLimits.peakCurrent = _currentLimits[logico].peakCurrent;
         motor_cfg.gearboxratio = _gearbox[logico];
         motor_cfg.rotorEncoderResolution = _rotorEncoderRes[logico];
         motor_cfg.hasHallSensor = _hasHallSensor[logico];
@@ -3503,18 +3520,53 @@ bool embObjMotionControl::getCurrentsRaw(double *vals)
 
 bool embObjMotionControl::setMaxCurrentRaw(int j, double val)
 {
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_maxcurrentofmotor);
-    eOmeas_current_t  maxCurrent = (eOmeas_current_t) S_16(val);
-    return res->addSetMessage(protid, (uint8_t*) &val);
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_currentlimits);
+    eoThreadEntry *tt = appendWaitRequest(j, protid);
+    tt->setPending(1);
+
+    if(!res->addGetMessage(protid) )
+    {
+        yError() << "embObjMotionControl::setMaxCurrentRaw() can't send get current limit for board" << _fId.boardNumber << " joint " << j;
+        return false;
+    }
+
+    // wait here
+    if(-1 == tt->synch() )
+    {
+        int threadId;
+        yError () << "embObjMotionControl::setMaxCurrentRaw() timed out the wait of reply from board " << _fId.boardNumber << " joint " << j;
+
+        if(requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    //get current limit params
+    uint16_t size;
+    eOmc_current_limits_params_t currentlimits = {0};
+    res->readBufferedValue(protid, (uint8_t *)&currentlimits, &size);
+
+    //set current overload
+    currentlimits.overloadCurrent = (eOmeas_current_t) S_16(val);
+
+    //send new values
+    return res->addSetMessage(protid, (uint8_t*) &currentlimits);
 }
 
 bool embObjMotionControl::getMaxCurrentRaw(int j, double *val)
 {
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_maxcurrentofmotor);
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_currentlimits);
     uint16_t size;
-    eOmeas_current_t  maxCurrent;
-    bool ret = res->readBufferedValue(protid, (uint8_t *)&maxCurrent, &size);
-    *val = (double) maxCurrent;
+    eOmc_current_limits_params_t currentlimits = {0};
+    *val = 0;
+    if(!res->readBufferedValue(protid, (uint8_t *)&currentlimits, &size))
+    {
+        yError() << "embObjMotionControl::getMaxCurrentRaw() can't read current limits  for board " << _fId.boardNumber << " joint " << j;
+        return false;
+    }
+
+    *val = (double) currentlimits.overloadCurrent;
+
     return true;
 }
 
@@ -5496,22 +5548,107 @@ bool embObjMotionControl::setMotorOutputLimitRaw(int m, const double limit)
 
 bool embObjMotionControl::getPeakCurrentRaw(int m, double *val)
 {
-    return NOT_YET_IMPLEMENTED("getPeakCurrentRaw");
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_currentlimits);
+    uint16_t size;
+    eOmc_current_limits_params_t currentlimits = {0};
+    *val = 0;
+    if(!res->readBufferedValue(protid, (uint8_t *)&currentlimits, &size))
+    {
+        yError() << "embObjMotionControl::getPeakCurrentRaw() can't read current limits  for board " << _fId.boardNumber << " joint " << m;
+        return false;
+    }
+
+    *val = (double) currentlimits.peakCurrent ;
+
+    return true;
+
 }
 
 bool embObjMotionControl::setPeakCurrentRaw(int m, const double val)
 {
-    return NOT_YET_IMPLEMENTED("setPeakCurrentRaw");
+   eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_currentlimits);
+    eoThreadEntry *tt = appendWaitRequest(m, protid);
+    tt->setPending(1);
+
+    if(!res->addGetMessage(protid) )
+    {
+        yError() << "embObjMotionControl::setPeakCurrentRaw() can't send get current limit for board" << _fId.boardNumber << " joint " << m;
+        return false;
+    }
+
+    // wait here
+    if(-1 == tt->synch() )
+    {
+        int threadId;
+        yError () << "embObjMotionControl::setPeakCurrentRaw() timed out the wait of reply from board " << _fId.boardNumber << " joint " << m;
+
+        if(requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    //get current limit params
+    uint16_t size;
+    eOmc_current_limits_params_t currentlimits = {0};
+    res->readBufferedValue(protid, (uint8_t *)&currentlimits, &size);
+
+    //set current overload
+    currentlimits.peakCurrent = (eOmeas_current_t) S_16(val);
+
+    //send new values
+    return res->addSetMessage(protid, (uint8_t*) &currentlimits);
 }
 
 bool embObjMotionControl::getNominalCurrentRaw(int m, double *val)
 {
-    return NOT_YET_IMPLEMENTED("getNominalCurrentRaw");
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_currentlimits);
+    uint16_t size;
+    eOmc_current_limits_params_t currentlimits = {0};
+    *val = 0;
+    if(!res->readBufferedValue(protid, (uint8_t *)&currentlimits, &size))
+    {
+        yError() << "embObjMotionControl::getNominalCurrentRaw() can't read current limits  for board " << _fId.boardNumber << " joint " << m;
+        return false;
+    }
+
+    *val = (double) currentlimits.nominalCurrent ;
+
+    return true;
 }
 
 bool embObjMotionControl::setNominalCurrentRaw(int m, const double val)
 {
-    return NOT_YET_IMPLEMENTED("setNominalCurrentRaw");
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_currentlimits);
+    eoThreadEntry *tt = appendWaitRequest(m, protid);
+    tt->setPending(1);
+
+    if(!res->addGetMessage(protid) )
+    {
+        yError() << "embObjMotionControl::setNominalCurrentRaw() can't send get current limit for board" << _fId.boardNumber << " joint " << m;
+        return false;
+    }
+
+    // wait here
+    if(-1 == tt->synch() )
+    {
+        int threadId;
+        yError () << "embObjMotionControl::setNominalCurrentRaw() timed out the wait of reply from board " << _fId.boardNumber << " joint " << m;
+
+        if(requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    //get current limit params
+    uint16_t size;
+    eOmc_current_limits_params_t currentlimits = {0};
+    res->readBufferedValue(protid, (uint8_t *)&currentlimits, &size);
+
+    //set current overload
+    currentlimits.nominalCurrent = (eOmeas_current_t) S_16(val);
+
+    //send new values
+    return res->addSetMessage(protid, (uint8_t*) &currentlimits);
 }
 
 bool embObjMotionControl::getPWMRaw(int j, double* val)

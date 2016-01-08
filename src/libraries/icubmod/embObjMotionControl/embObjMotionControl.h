@@ -169,6 +169,15 @@ struct SpeedEstimationParameters
     }
 };
 
+struct MotorCurrentLimits
+{
+    double nominalCurrent;
+    double peakCurrent;
+    double overloadCurrent;
+    MotorCurrentLimits() {nominalCurrent=0; peakCurrent=0; overloadCurrent=0;}
+};
+
+
 class torqueControlHelper
 {
     int  jointsNum;
@@ -295,7 +304,8 @@ private:
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_kinematic_mj;                      /** the kinematic coupling matrix from joints space to motor space */
-    double *_currentLimits;                     /** current limits */
+    //double *_currentLimits;                     /** current limits */
+    MotorCurrentLimits *_currentLimits;
     double *_maxJntCmdVelocity;                 /** max joint commanded velocity */
     double *_maxMotorVelocity;                  /** max motor velocity */
     int *_velocityShifts;                       /** velocity shifts */
