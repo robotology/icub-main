@@ -2,30 +2,21 @@
 # Authors: Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-cmake_minimum_required(VERSION 2.6)
-set(PROJECTNAME depth2kin)
-project(${PROJECTNAME})
+project(depth2kin)
 
 include(YarpIDL)
 
 file(GLOB header_files include/*.h)
 file(GLOB source_files src/*.cpp)
-list(APPEND header_files ${IDL_GENERATED_CODE_DIR}/include/${PROJECTNAME}_IDL.h
-                         ${IDL_GENERATED_CODE_DIR}/include/PointReq.h)
-list(APPEND source_files ${IDL_GENERATED_CODE_DIR}/src/${PROJECTNAME}_IDL.cpp
-                         ${IDL_GENERATED_CODE_DIR}/src/PointReq.cpp)
-set(idl_files ${PROJECTNAME}.thrift)
-set(doc_files ${PROJECTNAME}.xml)
+set(idl_files ${PROJECT_NAME}.thrift)
+set(doc_files ${PROJECT_NAME}.xml)
 
-yarp_idl_to_dir(${idl_files} ${IDL_GENERATED_CODE_DIR})
+yarp_add_idl(IDL_GEN_FILES ${PROJECT_NAME}.thrift)
 
-source_group("Header Files" FILES ${header_files})
-source_group("Source Files" FILES ${source_files})
-source_group("IDL Files"    FILES ${idl_files})
-source_group("DOC Files"    FILES ${doc_files})
+source_group("IDL Files" FILES ${idl_files})
+source_group("DOC Files" FILES ${doc_files})
 
 include_directories(${PROJECT_SOURCE_DIR}/include
-                    ${IDL_GENERATED_CODE_DIR}/include
                     ${YARP_INCLUDE_DIRS}
                     ${IPOPT_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS}
@@ -36,15 +27,15 @@ include_directories(${PROJECT_SOURCE_DIR}/include
 
 # import math symbols from standard cmath
 add_definitions(${IPOPT_DEFINITIONS} -D_USE_MATH_DEFINES)
-add_executable(${PROJECTNAME} ${header_files} ${source_files} ${idl_files} ${doc_files})
-set_property(TARGET ${PROJECTNAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
-target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES}
-                                     ${IPOPT_LIBRARIES}
-                                     ${OpenCV_LIBRARIES}
-                                     ctrlLib
-                                     iKin
-                                     optimization
-                                     learningMachine)
-install(TARGETS ${PROJECTNAME} DESTINATION bin)
+add_executable(${PROJECT_NAME} ${header_files} ${source_files} ${IDL_GEN_FILES} ${idl_files} ${doc_files})
+set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
+target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES}
+                                      ${IPOPT_LIBRARIES}
+                                      ${OpenCV_LIBRARIES}
+                                      ctrlLib
+                                      iKin
+                                      optimization
+                                      learningMachine)
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 yarp_install(FILES ${doc_files} DESTINATION ${ICUB_MODULES_INSTALL_DIR})
 

@@ -9,7 +9,6 @@
 # put B before A. Failure to do so might break the build.
 #
 
-add_subdirectory(iCubIDLClients)
 add_subdirectory(iCubDev)
 add_subdirectory(ctrlLib)
 add_subdirectory(skinDynLib)

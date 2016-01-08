@@ -24,7 +24,7 @@ project(iCub)
 set(ICUB_REQYARP_VERSION_MAJOR "2")
 set(ICUB_REQYARP_VERSION_MINOR "3")
 set(ICUB_REQYARP_VERSION_PATCH "64")
-set(ICUB_REQYARP_VERSION_TWEAK "9")
+set(ICUB_REQYARP_VERSION_TWEAK "10")
 
 if(ICUB_REQYARP_VERSION_TWEAK)
     set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH}.${ICUB_REQYARP_VERSION_TWEAK})
@@ -110,10 +110,6 @@ make_directory(${LIBRARY_OUTPUT_PATH})
 make_directory(${EXECUTABLE_OUTPUT_PATH})
 mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
 mark_as_advanced(CMAKE_BACKWARDS_COMPATIBILITY)
-
-set(IDL_GENERATED_CODE_DIR ${PROJECT_SOURCE_DIR}/src/idl_generated_code)
-mark_as_advanced(IDL_GENERATED_CODE_DIR)
-message(STATUS "IDL generated files go to ${IDL_GENERATED_CODE_DIR}")
 
 # clean up:
 # icub-export-build.cmake, icub-export-build-includes.cmake and icub-export-install-includes.cmake

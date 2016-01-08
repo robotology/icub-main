@@ -2,26 +2,17 @@
 # Authors: Ugo Pattacini
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-set(PROJECTNAME fingersTuner)
-project(${PROJECTNAME})
+project(fingersTuner)
 
 include(YarpIDL)
 
-set(header_files ${IDL_GENERATED_CODE_DIR}/include/${PROJECTNAME}_IDL.h)
-set(source_files ${IDL_GENERATED_CODE_DIR}/src/${PROJECTNAME}_IDL.cpp
-                 main.cpp)
-set(idl_files ${PROJECTNAME}.thrift)
+set(idl_files ${PROJECT_NAME}.thrift)
 
-yarp_idl_to_dir(${idl_files} ${IDL_GENERATED_CODE_DIR})
+yarp_add_idl(IDL_GEN_FILES ${PROJECT_NAME}.thrift)
 
-source_group("Header Files" FILES ${header_files})
-source_group("Source Files" FILES ${source_files})
-source_group("IDL Files"    FILES ${idl_files})
+source_group("IDL Files" FILES ${idl_files})
 
-include_directories(${IDL_GENERATED_CODE_DIR}/include
-                    ${YARP_INCLUDE_DIRS}
-                    ${ctrlLib_INCLUDE_DIRS})
-
-add_executable(${PROJECTNAME} ${header_files} ${source_files} ${idl_files})
-target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ctrlLib)
-install(TARGETS ${PROJECTNAME} DESTINATION bin)
+include_directories(${YARP_INCLUDE_DIRS} ${ctrlLib_INCLUDE_DIRS})
+add_executable(${PROJECT_NAME} main.cpp ${IDL_GEN_FILES} ${idl_files})
+target_link_libraries(${PROJECT_NAME} ${YARP_LIBRARIES} ctrlLib)
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
