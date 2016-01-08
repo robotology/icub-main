@@ -5518,22 +5518,57 @@ bool embObjMotionControl::getNumberOfMotorsRaw(int* num)
 
 bool embObjMotionControl::getTemperatureRaw(int m, double* val)
 {
-    return NOT_YET_IMPLEMENTED("getTemperatureRaw");
+    uint16_t      size;
+    eOmc_motor_status_basic_t     status;
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_status_basic);
+
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&status, &size);
+    if(ret)
+    {
+        *val = (double) status.mot_temperature;
+    }
+    else
+    {
+        yError() << "getTemperatureRaw failed for board " << _fId.boardNumber << " motor " << m ;
+        *val = 0;
+    }
+
+    return ret;
 }
 
 bool embObjMotionControl::getTemperaturesRaw(double *vals)
 {
-    return NOT_YET_IMPLEMENTED("getTemperaturesRaw");
+    bool ret = true;
+    for(int j=0; j< _njoints; j++)
+    {
+        ret &= getTemperatureRaw(j, &vals[j]);
+    }
+    return ret;
 }
 
 bool embObjMotionControl::getTemperatureLimitRaw(int m, double *temp)
 {
-    return NOT_YET_IMPLEMENTED("getTemperatureLimitRaw");
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_temperaturelimit);
+    uint16_t size;
+    eOmeas_temperature_t temperaturelimit = {0};
+    *temp = 0;
+    if(!res->readBufferedValue(protid, (uint8_t *)&temperaturelimit, &size))
+    {
+        yError() << "embObjMotionControl::getTemperatureLimitRaw() can't read temperature limits  for board " << _fId.boardNumber << " joint " << m;
+        return false;
+    }
+
+    *temp = (double) temperaturelimit;
+
+    return true;
 }
 
 bool embObjMotionControl::setTemperatureLimitRaw(int m, const double temp)
 {
-    return NOT_YET_IMPLEMENTED("setTemperatureLimitRaw");
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_temperaturelimit);
+    eOmeas_temperature_t  temperatureLimit = (eOmeas_pwm_t) S_16(temp);
+    return res->addSetMessage(protid, (uint8_t*) &temperatureLimit);
+
 }
 
 bool embObjMotionControl::getMotorOutputLimitRaw(int m, double *limit)
