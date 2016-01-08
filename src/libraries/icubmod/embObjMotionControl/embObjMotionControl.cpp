@@ -1659,7 +1659,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         return false;
     }
     // current limit
-    if (!extractGroup(limits, xtmp, "Currents","a list of current limits", _njoints))
+    if (!extractGroup(limits, xtmp, "OverloadCurrents","a list of current limits", _njoints))
         return false;
     else
         for(i=1; i<xtmp.size(); i++) _currentLimits[i-1].overloadCurrent=xtmp.get(i).asDouble();
@@ -5538,12 +5538,12 @@ bool embObjMotionControl::setTemperatureLimitRaw(int m, const double temp)
 
 bool embObjMotionControl::getMotorOutputLimitRaw(int m, double *limit)
 {
-    return NOT_YET_IMPLEMENTED("getMotorOutputLimitRaw");
+    return DEPRECATED("getMotorOutputLimitRaw");
 }
 
 bool embObjMotionControl::setMotorOutputLimitRaw(int m, const double limit)
 {
-    return NOT_YET_IMPLEMENTED("setMotorOutputLimitRaw");
+    return DEPRECATED("setMotorOutputLimitRaw");
 }
 
 bool embObjMotionControl::getPeakCurrentRaw(int m, double *val)
