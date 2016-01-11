@@ -80,7 +80,7 @@ public:
         if (nRecv>=mBufferSize)
         {
             synchroMutex.post();
-            yError("recv buffer overrun (%4d > %4d) \n", nRecv, mBufferSize);
+            yError("recv buffer overrun (%4d > %4d)", nRecv, mBufferSize);
             return false;
         }
 

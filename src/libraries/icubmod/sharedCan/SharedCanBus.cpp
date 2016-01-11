@@ -136,7 +136,10 @@ public:
                 {
                     if (accessPoints[p]->hasId(id))
                     {
-                        accessPoints[p]->pushReadMsg(readBufferUnion[i]);    
+                        if (accessPoints[p]->pushReadMsg(readBufferUnion[i])==false)
+                        {
+                            yError("run()-pushReadMsg() failed on CAN bus %d", mCanDeviceNum);
+                        }
                     }
                 }
             }
@@ -161,7 +164,10 @@ public:
                 {
                     if (accessPoints[p]!=pFrom && accessPoints[p]->hasId(id))
                     {
-                        accessPoints[p]->pushReadMsg(buff[m]);
+                        if (accessPoints[p]->pushReadMsg(buff[m])==false)
+                        {
+                            yError("canWrite()-pushReadMsg() failed on CAN bus %d", mCanDeviceNum);
+                        }
                     }
                 }
             }
