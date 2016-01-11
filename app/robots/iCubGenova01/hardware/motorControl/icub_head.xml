@@ -29,7 +29,7 @@
     <param name="Joints">       6            </param>       
     <param name="MaxDAC">       100           100           100           100           100           100           </param>       
     <param name="AxisMap">      0             1             2             3             4             5             </param>       
-    <param name="AxisName">       "neck_pitch" "neck_roll"    "neck_yaw"    "eyes_tilt"  "eyes_vergence"  "eyes_version" </param>
+    <param name="AxisName">       "neck_pitch" "neck_roll"    "neck_yaw"    "eyes_tilt"  "eyes_version"  "eyes_vergence" </param>
     <param name="AxisType">       "revolute"  "revolute"    "revolute"    "revolute"   "revolute"     "revolute" </param>
 <param name="Encoder">                            11.375     -11.375 11.375  11.375     568.880   284.440      </param>
 <param name="Zeros">                              180.00     -180.00 180.00  180.00     -45.00    0.00         </param>
