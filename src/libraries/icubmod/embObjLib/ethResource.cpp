@@ -1322,6 +1322,8 @@ bool ethResources::configureENDPOINT(yarp::os::Searchable &protconfig, eOprot_en
 
 bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber)
 {
+    // so that, it can work with branch runtime_ems_config and its future merge into master 
+    return(true);
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
     yWarning() << "ethResources::verifyENTITYnumber() is in ETHRES_DEBUG_DONTREADBACK mode";
