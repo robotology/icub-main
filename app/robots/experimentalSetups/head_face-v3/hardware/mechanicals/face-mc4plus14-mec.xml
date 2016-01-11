@@ -19,6 +19,7 @@
                                       <!--   0               1               logical axis number (ControlBoardWrapper) -->
         <param name="AxisMap">               0               1          </param>    <!-- hardware axis number  (EMS) -->
         <param name="AxisName">              "jaw"           "eyelids"  </param>
+        <param name="AxisType">              "revolute"    "revolute"   </param>
         <param name="HasHallSensor">         0               0          </param>
         <param name="HasTempSensor">         0               0          </param>
         <param name="HasRotorEncoder">       0               1          </param>

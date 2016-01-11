@@ -32,6 +32,7 @@
 <param name="Joints">       6             </param>       
 <param name="AxisMap">      2             3             0             1             4             5             </param>       
 <param name="AxisName">     "l_hip_pitch"   "l_hip_roll"    "l_hip_yaw"   "l_knee"     "l_ankle_pitch"  "l_ankle_roll"</param>
+<param name="AxisType">    "revolute"  "revolute"    "revolute"    "revolute"   "revolute"     "revolute"       </param>
 <param name="Encoder">                            11.375         11.375     11.375       11.375      11.375    11.375      </param>
 <param name="Zeros">                              180.00         180.00     180.00       180.00      180.00    180.00      </param> 
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          0x0C          0x0C          </param>       

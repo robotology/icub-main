@@ -175,6 +175,7 @@ public:
     int _timeout;                               /** number of cycles before timing out */
 
     std::string *_axisName;                     /** axis name */
+    std::string *_axisType;                     /** axis type */
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to encoder conversion factors */
     double *_rotToEncoder;                      /** angle to rotor conversion factors */

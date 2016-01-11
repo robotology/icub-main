@@ -7,6 +7,7 @@
         <param name="Joints">  2  </param> 
         <param name="AxisMap">              0           1       </param>
         <param name="AxisName">   "r_ankle_pitch"  "r_ankle_roll"  </param>
+        <param name="AxisType">       "revolute"    "revolute"     </param>
         <param name="HasHallSensor">         1             1       </param>
         <param name="HasTempSensor">         0             0       </param>
         <param name="HasRotorEncoder">       1             1       </param>

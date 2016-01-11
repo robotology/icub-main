@@ -451,6 +451,7 @@ bool embObjMotionControl::alloc(int nj)
     _impedance_limits=allocAndCheck<ImpedanceLimits>(nj);
     _estim_params=allocAndCheck<SpeedEstimationParameters>(nj);
     _axisName = new string[nj];
+    _axisType = new string[nj];
 
     _limitsMax=allocAndCheck<double>(nj);
     _limitsMin=allocAndCheck<double>(nj);
@@ -533,7 +534,8 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_rotorIndexOffset);
     checkAndDestroy(_motorPoles);
     checkAndDestroy(_axisName);
-	checkAndDestroy(_rotorlimits_max);
+    checkAndDestroy(_axisType);
+    checkAndDestroy(_rotorlimits_max);
     checkAndDestroy(_rotorlimits_min);
 
     if(requestQueue)
@@ -593,6 +595,7 @@ embObjMotionControl::embObjMotionControl() :
     _rotorlimits_min  = NULL;
 
     _axisName         = NULL;
+    _axisType         = NULL;
     _limitsMin        = NULL;
     _limitsMax        = NULL;
     _currentLimits    = NULL;
@@ -1179,10 +1182,15 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (!extractGroup(general, xtmp, "AxisName", "a list of strings representing the axes names", _njoints))
         return false;
-
     //beware: axis name has to be remapped here because they are not set using the toHw() helper function  
     for (i = 1; i < xtmp.size(); i++)
         _axisName[_axisMap[i - 1]] = xtmp.get(i).asString();
+
+    if (!extractGroup(general, xtmp, "AxisType", "a list of strings representing the axes type (revolute/prismatic)", _njoints))
+        return false;
+    //beware: axis type has to be remapped here because they are not set using the toHw() helper function  
+    for (i = 1; i < xtmp.size(); i++)
+        _axisType[_axisMap[i - 1]] = xtmp.get(i).asString();
 
     double tmp_A2E;
     // Encoder scales

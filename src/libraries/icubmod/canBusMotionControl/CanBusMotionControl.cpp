@@ -1306,6 +1306,14 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
     for (i = 1; i < xtmp.size(); i++)
         _axisName[_axisMap[i-1]] = xtmp.get(i).asString();
 
+    if (!validate(general, xtmp, "AxisType", "a list of strings representing the axes types (revolute/prismatic)", nj + 1))
+    {
+        //return false; //this parameter is not yet mandatory
+    }
+    //beware: axis name has to be remapped here because they are not set using the toHw() helper function  
+    for (i = 1; i < xtmp.size(); i++)
+        _axisType[_axisMap[i - 1]] = xtmp.get(i).asString();
+
     if (!validate(general, xtmp, "Encoder", "a list of scales for the joint encoders", nj+1))
         return false;
 
@@ -1841,6 +1849,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _bemfGain=0;
     _ktau=0;
     _axisName = 0;
+    _axisType = 0;
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1872,6 +1881,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _maxStep=allocAndCheck<double>(nj);
     _filterType=allocAndCheck<int>(nj);
     _axisName = new std::string[nj];
+    _axisType = new std::string[nj];
 
     _pids=allocAndCheck<Pid>(nj);
     _tpids=allocAndCheck<Pid>(nj);
@@ -1932,6 +1942,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<double>(_maxStep);
     checkAndDestroy<int>(_filterType);
     checkAndDestroy<std::string>(_axisName);
+    checkAndDestroy<std::string>(_axisType);
 
     checkAndDestroy<Pid>(_pids);
     checkAndDestroy<Pid>(_tpids);

@@ -32,7 +32,7 @@
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
 <param name="AxisName">    "r_thumb_oppose"     "r_thumb_proximal"     "r_thumb_distal"   "r_index_proximal"    "r_index_distal"    "r_middle_proximal"   "r_middle_distal"    "r_pinky"  </param>
-<!--USE THIS FOR CAN ROBOT MOTOR CONTROL-->
+<param name="AxisType">    "revolute"  "revolute"    "revolute"    "revolute"   "revolute"     "revolute"   "revolute"     "revolute"       </param>
 <param name="Encoder">                                                                                                    6.111    -1.922   -2.753   -2.500   -2.576   -2.722   -2.676   -2.220   </param>
 <param name="Zeros">                                                                                                      201.27   -121.21  -170.00  -95.20   -183.58  -93.67   -172.62  -315.32  </param>
 

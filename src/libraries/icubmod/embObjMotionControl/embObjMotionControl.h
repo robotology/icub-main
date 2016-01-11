@@ -291,6 +291,7 @@ private:
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
 
     string *_axisName;                          /** axis name */
+    string *_axisType;                          /** axis type */
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
