@@ -35,7 +35,7 @@ CentSur::CentSur(cv::Size tmpSize,int tmpGauss, double tmpSigma)
     proi = (cv::Rect*)malloc(ngauss*sizeof(cv::Rect));
 
     for (int ng=0;ng<ngauss;ng++)
-	{
+    {
         psize[ng].width     = (int)ceil( (  (double)srcSize.width ) / double( 1<<ng ) );
         psize[ng].height    = (int)ceil( ( ((double)srcSize.height) / ( (double)srcSize.width) ) * psize[ng].width );
         proi[ng].x          = 0;
@@ -47,10 +47,10 @@ CentSur::CentSur(cv::Size tmpSize,int tmpGauss, double tmpSigma)
         gauss[ng]           = cv::Mat ( srcSize.height, srcSize.width, CV_32FC1 );
         
     }
-    img_32f			= cv::Mat ( srcSize.height, srcSize.width, CV_32FC1 );
-	csTot32f		= cv::Mat ( srcSize.height, srcSize.width, CV_32FC1 );
-	csTot32fTmp		= cv::Mat ( srcSize.height, srcSize.width, CV_32FC1 );
-	csTot8u			= cv::Mat ( srcSize.height, srcSize.width, CV_8UC1 );
+    img_32f         = cv::Mat ( srcSize.height, srcSize.width, CV_32FC1 );
+    csTot32f        = cv::Mat ( srcSize.height, srcSize.width, CV_32FC1 );
+    csTot32fTmp     = cv::Mat ( srcSize.height, srcSize.width, CV_32FC1 );
+    csTot8u         = cv::Mat ( srcSize.height, srcSize.width, CV_8UC1 );
 }
 
 CentSur::~CentSur() 
@@ -65,11 +65,11 @@ CentSur::~CentSur()
         pyramid_gauss[ng].release();
         gauss[ng].release();
     }
-	
+    
     img_32f.release();
-	csTot32f.release();
-	csTot8u.release();
-	csTot32fTmp.release();
+    csTot32f.release();
+    csTot8u.release();
+    csTot32fTmp.release();
 }
 
 void CentSur::proc_im_8u( const cv::Mat &img_8u )
@@ -86,31 +86,31 @@ void CentSur::proc_im_32f( const cv::Mat &im_32f )
     make_pyramid( im_32f );
     
     //reset tot cs_tot_tmp:
-	csTot32f.setTo( cv::Scalar(0) );
+    csTot32f.setTo( cv::Scalar(0) );
 
     //subtractions (ABSDIFF) to make DOG pyramid:
-  	//1st neighbours:  
+    //1st neighbours:  
     for (int nd=0; nd<ngauss-1; nd++)
-	{
-		cv::absdiff( gauss[nd], gauss[nd+1], csTot32fTmp);
-		cv::add(csTot32fTmp, csTot32f, csTot32f);
+    {
+        cv::absdiff( gauss[nd], gauss[nd+1], csTot32fTmp);
+        cv::add(csTot32fTmp, csTot32f, csTot32f);
     }
 
-  	//2nd neighbours:
-	for (int ndd=0;ndd<ngauss-2;ndd++)
-	{
-		cv::absdiff( gauss[ndd], gauss[ndd+2], csTot32fTmp);
+    //2nd neighbours:
+    for (int ndd=0;ndd<ngauss-2;ndd++)
+    {
+        cv::absdiff( gauss[ndd], gauss[ndd+2], csTot32fTmp);
         cv::add(csTot32fTmp, csTot32f, csTot32f);
-	}
-  	/*//norm8u:
-  	double min, max;
+    }
+    /*//norm8u:
+    double min, max;
     min = 0.0f;
     max = 0.0f;
     cv::minMaxLoc(csTot32f, &min, &max);
-  	if (max == min){max=255.0f;min=0.0f;}*/
+    if (max == min){max=255.0f;min=0.0f;}*/
 
-	//convert back to 8u with scale
-	csTot32f.convertTo( csTot8u, CV_8UC1, 1.0 * 255.0 );
+    //convert back to 8u with scale
+    csTot32f.convertTo( csTot8u, CV_8UC1, 1.0 * 255.0 );
 }
 
 void CentSur::make_pyramid( const cv::Mat &im_32f )
@@ -121,25 +121,25 @@ void CentSur::make_pyramid( const cv::Mat &im_32f )
     cv::Point anchor(-1,-1);
     cv::Size ksize(KERNSIZE, KERNSIZE);
     cv::boxFilter(pyramid[0], pyramid_gauss[0],-1, ksize, anchor, true, cv::BORDER_REPLICATE); 
-	//cv::GaussianBlur(pyramid[0], pyramid_gauss[0], cv::Size(1, 1), sigma, 0.0, cv::BORDER_REPLICATE );
+    //cv::GaussianBlur(pyramid[0], pyramid_gauss[0], cv::Size(1, 1), sigma, 0.0, cv::BORDER_REPLICATE );
     //copy filter output to gauss:
-	pyramid_gauss[0].copyTo( gauss[0] );
+    pyramid_gauss[0].copyTo( gauss[0] );
 
-	double sd = 0.5;
-	double su = 2.0;
+    double sd = 0.5;
+    double su = 2.0;
 
     for (int sg=1;sg<ngauss;sg++)
     {
         //Downsize previous pyramid image by half:
-		cv::resize(pyramid[sg-1], pyramid[sg], cv::Size(proi[sg].width, proi[sg].height), sd, sd, cv::INTER_LANCZOS4);
-		//filter:
+        cv::resize(pyramid[sg-1], pyramid[sg], cv::Size(proi[sg].width, proi[sg].height), sd, sd, cv::INTER_LANCZOS4);
+        //filter:
         cv::Point anchor(-1,-1);
         cv::Size ksize(KERNSIZE, KERNSIZE);
         cv::boxFilter(pyramid[sg], pyramid_gauss[sg],-1, ksize, anchor, true, cv::BORDER_REPLICATE); 
-		//cv::GaussianBlur(pyramid[sg], pyramid_gauss[sg], cv::Size(1, 1), sigma, 0.0, cv::BORDER_REPLICATE );
-		su = double(1<< sg); 
+        //cv::GaussianBlur(pyramid[sg], pyramid_gauss[sg], cv::Size(1, 1), sigma, 0.0, cv::BORDER_REPLICATE );
+        su = double(1<< sg); 
         //Upsize and store to gauss:
-		cv::resize(pyramid_gauss[sg], gauss[sg], srcSize/*cv::Size(proi[sg].width,proi[sg].height)*/, su, su, cv::INTER_LANCZOS4);
+        cv::resize(pyramid_gauss[sg], gauss[sg], srcSize/*cv::Size(proi[sg].width,proi[sg].height)*/, su, su, cv::INTER_LANCZOS4);
 //cv::INTER_LANCZOS4 INTER_CUBIC
     }
 }

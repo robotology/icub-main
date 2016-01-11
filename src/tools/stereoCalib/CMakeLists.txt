@@ -1,20 +1,25 @@
 # Copyright: (C) 2012 RobotCub Consortium
 # Authors: Sean Ryan Fanello
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
-SET(PROJECTNAME stereoCalib)
-PROJECT(${PROJECTNAME})
+set(PROJECTNAME stereoCalib)
+project(${PROJECTNAME})
 
-FILE(GLOB source src/*.cpp)
-FILE(GLOB header include/*.h)
+file(GLOB source src/*.cpp)
+file(GLOB header include/*.h)
 
-SOURCE_GROUP("Source Files" FILES ${source})
-SOURCE_GROUP("Header Files" FILES ${header})
+source_group("Source Files" FILES ${source})
+source_group("Header Files" FILES ${header})
 
-INCLUDE_DIRECTORIES(${iKin_INCLUDE_DIRS}   ${PROJECT_SOURCE_DIR}/include
+if(OpenCV_VERSION_MAJOR GREATER 2)
+  add_definitions(-DOPENCV_GREATER_2)
+endif()
+
+include_directories(${PROJECT_SOURCE_DIR}/include
+                    ${iKin_INCLUDE_DIRS}
                     ${YARP_INCLUDE_DIRS}
                     ${OpenCV_INCLUDE_DIRS})
 
-ADD_EXECUTABLE(${PROJECTNAME} ${source} ${header})
-TARGET_LINK_LIBRARIES(${PROJECTNAME}  ${YARP_LIBRARIES} ${OpenCV_LIBRARIES} iKin)
-INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
+add_executable(${PROJECTNAME} ${source} ${header})
+target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ${OpenCV_LIBRARIES} iKin)
+install(TARGETS ${PROJECTNAME} DESTINATION bin)
 

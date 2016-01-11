@@ -1,28 +1,23 @@
 #include <iostream>
 #include <fstream>
 #include <string>
-#include <yarp/sig/all.h>
+
+#include <opencv2/opencv.hpp>
+
 #include <yarp/os/all.h>
-#include <yarp/os/RFModule.h>
-#include <yarp/os/Network.h>
-#include <yarp/os/Thread.h>
-#include <yarp/os/Stamp.h>
-#include <cv.h>
-#include <yarp/dev/GazeControl.h>
-#include <highgui.h>
-#include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/all.h>
+#include <yarp/sig/all.h>
+#include <yarp/math/Math.h>
+
 #include <iCub/iKin/iKinFwd.h>
-#include <iCub/ctrl/math.h>
 
-
-using namespace cv;
-using namespace yarp::sig;
 using namespace std;
-using namespace yarp::os; 
-using namespace yarp::sig;
+using namespace cv;
+using namespace yarp::os;
 using namespace yarp::dev;
-using namespace iCub::iKin;
+using namespace yarp::sig;
 using namespace yarp::math;
+using namespace iCub::iKin;
 
 
 #define LEFT    0

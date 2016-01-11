@@ -29,9 +29,8 @@
 #ifndef __CENTSUR_H__
 #define __CENTSUR_H__
 
-#include <cv.h>
-#include <highgui.h>
-	
+#include <opencv2/opencv.hpp>
+
 class CentSur 
 { 
 public:
@@ -42,9 +41,9 @@ public:
     /**
      * destructor
      */
-	~CentSur();
+    ~CentSur();
 
-	cv::Mat csTot32f, csTot32fTmp, csTot8u;
+    cv::Mat csTot32f, csTot32fTmp, csTot8u;
 
     /**
      * convert image to 32f precision
@@ -59,14 +58,14 @@ public:
     /**
      * get center surround image in 32f precision
     */
-	cv::Mat get_centsur_32f(){ return csTot32f; }
+    cv::Mat get_centsur_32f(){ return csTot32f; }
 
     /**
      * get center surround image in 8u precision
      */
-	cv::Mat  get_centsur_norm8u(){ return csTot8u; }
+    cv::Mat  get_centsur_norm8u(){ return csTot8u; }
     
-	
+    
 private:
 
     cv::Size srcSize, *psize;
@@ -74,7 +73,6 @@ private:
     cv::Mat pyramid[10], pyramid_gauss[10], gauss[10], img_32f;
     double sigma;
     int ngauss;
-    cv::Ptr<cv::FilterEngine> f;
     std::vector<cv::Mat> dst;
     /**
      * creates pyramids

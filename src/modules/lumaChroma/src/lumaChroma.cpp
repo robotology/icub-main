@@ -227,10 +227,11 @@ void PROCThread::onRead(ImageOf<yarp::sig::PixelRgb> &img)
         allocate( img );
     }
     extender( img, KERNSIZEMAX );
+    cv::Mat inputMat=cv::cvarrToMat((IplImage*)inputExtImage->getIplImage());
     if ( isYUV )
-        cv::cvtColor( cv::Mat((IplImage*)inputExtImage->getIplImage()), orig, CV_RGB2YCrCb);
+        cv::cvtColor( inputMat, orig, CV_RGB2YCrCb);
     else
-        cv::cvtColor( cv::Mat((IplImage*)inputExtImage->getIplImage()), orig, CV_RGB2HSV);
+        cv::cvtColor( inputMat, orig, CV_RGB2HSV);
     
     vector<cv::Mat> planes;
     cv::split(orig, planes);
@@ -238,7 +239,7 @@ void PROCThread::onRead(ImageOf<yarp::sig::PixelRgb> &img)
     centerSurr->proc_im_8u( planes[0] );
 
     IplImage y_img = centerSurr->get_centsur_norm8u();
-    cvCopyImage( &y_img, ( IplImage *)img_Y->getIplImage());
+    cvCopy( &y_img, ( IplImage *)img_Y->getIplImage());
     csTot32f.setTo(cv::Scalar(0));
 
     //performs centre-surround uniqueness analysis on second plane:
@@ -248,7 +249,7 @@ void PROCThread::onRead(ImageOf<yarp::sig::PixelRgb> &img)
     else
     {
         IplImage s_img = centerSurr->get_centsur_norm8u();
-        cvCopyImage( &y_img, ( IplImage *)img_UV->getIplImage());
+        cvCopy( &y_img, ( IplImage *)img_UV->getIplImage());
     }
     //performs centre-surround uniqueness analysis on third plane:
     centerSurr->proc_im_8u( planes[2] );
@@ -257,7 +258,7 @@ void PROCThread::onRead(ImageOf<yarp::sig::PixelRgb> &img)
     else
     {
         IplImage v_img = centerSurr->get_centsur_norm8u();
-        cvCopyImage( &v_img, ( IplImage *)img_V->getIplImage());
+        cvCopy( &v_img, ( IplImage *)img_V->getIplImage());
     }
     if ( isYUV )
     {
@@ -271,7 +272,7 @@ void PROCThread::onRead(ImageOf<yarp::sig::PixelRgb> &img)
         }
         cv::convertScaleAbs( csTot32f, uvimg, 255/(valueMax - valueMin), -255*valueMin/(valueMax-valueMin) );
         IplImage uv_img = uvimg;
-        cvCopyImage( &uv_img, ( IplImage *)img_UV->getIplImage());
+        cvCopy( &uv_img, ( IplImage *)img_UV->getIplImage());
     }
     //this is nasty, resizes the images...
     unsigned char* imgY = img_Y->getPixelAddress( KERNSIZEMAX, KERNSIZEMAX );

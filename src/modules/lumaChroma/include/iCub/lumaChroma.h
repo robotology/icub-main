@@ -29,8 +29,7 @@
 #include <yarp/os/Time.h>
 #include <yarp/os/Semaphore.h>
 
-#include <cv.h>
-#include <highgui.h>
+#include <opencv2/opencv.hpp>
 
 #include "iCub/centsur.h"
  
