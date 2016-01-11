@@ -58,7 +58,7 @@ message(STATUS "OpenCV version is ${OpenCV_VERSION_MAJOR}.${OpenCV_VERSION_MINOR
 
 if (OpenCV_FOUND)
   # check version of openCV
-  if (OpenCV_VERSION_MAJOR EQUAL 2)
+  if (OpenCV_VERSION_MAJOR GREATER 1)
     message(STATUS "OpenCV is at least version 2")
     set(ICUB_OpenCV_LEGACY false CACHE BOOL "Legacy version of OpenCV detected" FORCE)
     mark_as_advanced(ICUB_OpenCV_LEGACY)
