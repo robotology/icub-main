@@ -2227,7 +2227,7 @@ bool embObjMotionControl::getErrorRaw(int j, double *err)
 {
     uint16_t size = 0;
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
-    eOmc_joint_status2_core_t  jcore = {0};
+    eOmc_joint_status_core_t  jcore = {0};
     *err = 0;
     if(!res->readBufferedValue(id32, (uint8_t *)&jcore, &size))
         return false;
@@ -2340,7 +2340,7 @@ bool embObjMotionControl::getReferenceRaw(int j, double *ref)
 {
     uint16_t size = 0;
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
-    eOmc_joint_status2_core_t jcore = {0};
+    eOmc_joint_status_core_t jcore = {0};
     *ref = 0;
     if(!res->readBufferedValue(id32, (uint8_t *)&jcore, &size))
         return false;
@@ -3058,7 +3058,7 @@ bool embObjMotionControl::setOpenLoopModeRaw(int j)
 bool embObjMotionControl::getControlModeRaw(int j, int *v)
 {
     uint16_t size = 0;
-    eOmc_joint_status2_core_t jcore = {0};
+    eOmc_joint_status_core_t jcore = {0};
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     if(! res->readBufferedValue(protid, (uint8_t *)&jcore, &size))
@@ -3237,7 +3237,7 @@ bool embObjMotionControl::resetEncodersRaw()
 bool embObjMotionControl::getEncoderRaw(int j, double *value)
 {
     uint16_t      size;
-    eOmc_joint_status2_core_t     core;
+    eOmc_joint_status_core_t     core;
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
 
     bool ret = res->readBufferedValue(protid, (uint8_t *)&core, &size);
@@ -3270,7 +3270,7 @@ bool embObjMotionControl::getEncoderSpeedRaw(int j, double *sp)
 {
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     uint16_t      size;
-    eOmc_joint_status2_core_t  core;
+    eOmc_joint_status_core_t  core;
     *sp = 0;
     if(!res->readBufferedValue(protid, (uint8_t *)&core, &size))
     {
@@ -3295,7 +3295,7 @@ bool embObjMotionControl::getEncoderAccelerationRaw(int j, double *acc)
 {
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     uint16_t      size;
-    eOmc_joint_status2_core_t  core;
+    eOmc_joint_status_core_t  core;
     *acc = 0;
     if(! res->readBufferedValue(protid, (uint8_t *)&core, &size))
     {
@@ -4462,7 +4462,7 @@ bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
 {   
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_target);
     uint16_t size;
-    eOmc_joint_status2_core_t jcore = {0};
+    eOmc_joint_status_core_t jcore = {0};
     *t =0 ;
     if(!askRemoteValue(id32, (uint8_t *)&jcore, size))
     {
@@ -4520,7 +4520,7 @@ bool embObjMotionControl::getTorqueErrorRaw(int j, double *err)
 {
     uint16_t size = 0;
     bool ret = true;
-    eOmc_joint_status2_core_t jcore = {0};
+    eOmc_joint_status_core_t jcore = {0};
     
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     *err = 0;
@@ -4761,7 +4761,7 @@ bool embObjMotionControl::getTorquePidOutputRaw(int j, double *out)
 {
         uint16_t size = 0;
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
-    eOmc_joint_status2_core_t  jcore = {0};
+    eOmc_joint_status_core_t  jcore = {0};
     *out = 0;
     if(!res->readBufferedValue(id32, (uint8_t *)&jcore, &size))
         return false;
@@ -5042,7 +5042,7 @@ bool embObjMotionControl::getTargetPositionRaw(int axis, double *ref)
 
     // Get the value
     uint16_t size;
-    eOmc_joint_status2_target_t  target = {0};
+    eOmc_joint_status_target_t  target = {0};
     if(!askRemoteValue(id32, (uint8_t *)&target, size))
     {
         yError() << "embObjMotionControl::getTargetPositionRaw() could not read reference pos for  BOARD" << _fId.boardNumber << "joint " << axis;
@@ -5086,7 +5086,7 @@ bool embObjMotionControl::getRefVelocityRaw(int axis, double *ref)
 
     // Get the value
     uint16_t size;
-    eOmc_joint_status2_target_t  target = {0};
+    eOmc_joint_status_target_t  target = {0};
     if(!askRemoteValue(id32, (uint8_t *)&target, size))
     {
         yError() << "embObjMotionControl::getRefVelocityRaw() could not read reference vel for  BOARD" << _fId.boardNumber << "joint " << axis;
@@ -5128,7 +5128,7 @@ bool embObjMotionControl::getRefPositionRaw(int axis, double *ref)
     *ref = 0;
     // Get the value
     uint16_t size;
-    eOmc_joint_status2_target_t  target = {0};
+    eOmc_joint_status_target_t  target = {0};
     if(!askRemoteValue(id32, (uint8_t *)&target, size))
     {
         yError() << "embObjMotionControl::getRefPositionRaw() could not read reference pos for  BOARD" << _fId.boardNumber << "joint " << axis;
@@ -5396,7 +5396,7 @@ bool embObjMotionControl::getRefOutputRaw(int j, double *out)
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_target);
     uint16_t size = 0;
     *out = 0;    
-    eOmc_joint_status2_target_t  target = {0};
+    eOmc_joint_status_target_t  target = {0};
 
 
     if(!askRemoteValue(protoId, (uint8_t *)&target, size))
@@ -5434,7 +5434,7 @@ bool embObjMotionControl::getOutputRaw(int j, double *out)
 {
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     uint16_t size = 0;
-    eOmc_joint_status2_core_t jcore = {0};
+    eOmc_joint_status_core_t jcore = {0};
     *out = 0;
     if(!res->readBufferedValue(protoId, (uint8_t *)&jcore, &size) )
         return false;
