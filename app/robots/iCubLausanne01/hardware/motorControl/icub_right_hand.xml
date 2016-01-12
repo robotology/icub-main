@@ -30,8 +30,10 @@
 <group name="GENERAL">       
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
-<param name="Encoder">      8.78          -2.50         -2.54         -2.83         -2.44         -2.09         -2.37         -1.46         </param>       
-<param name="Zeros">        113.92        -102.00       -193.00       -90.00        -200.45       -112.50       -196.86       -428.57       </param>       
+<param name="AxisName">     "r_thumb_oppose"            "r_thumb_proximal"          "r_thumb_distal"            "r_index_proximal"          "r_index_distal"            "r_middle_proximal"         "r_middle_distal"           "r_pinky"     </param>       
+<param name="AxisType">     "revolute"    "revolute"    "revolute"    "revolute"    "revolute"    "revolute"    "revolute"    "revolute"    </param>       
+<param name="Encoder">      8.78          -2.50         -2.27         -2.83         -2.29         -2.09         -2.24         -1.70         </param>       
+<param name="Zeros">        113.92        -102.00       -202.00       -90.00        -201.79       -112.50       -197.82       -402.94       </param>       
 <param name="TorqueId">     0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueChan">   0             0             0             0             0             0             0             0             </param>       
 <param name="TorqueMax">    0             0             0             0             0             0             0             0             </param>       
@@ -56,9 +58,9 @@
 </group>       
  
 <group name="POS_PIDS">      
-<param name="kp">           -8000         -8000         8000          -8000         -8000         -8000         8000          -120          </param>       
-<param name="kd">           -32000        -32000        32000         -32000        -32000        -32000        32000         -1250         </param>       
-<param name="ki">           -5            -5            5             -5            -5            -5            5             0             </param>       
+<param name="kp">           -8000         -8000         8000          -8000         8000          -8000         -8000         -120          </param>       
+<param name="kd">           -32000        -32000        32000         -32000        32000         -32000        -32000        -1250         </param>       
+<param name="ki">           -5            -5            5             -5            5             -5            -5            0             </param>       
 <param name="maxPwm">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
 <param name="maxInt">       1333          1333          1333          1333          1333          1333          1333          1333          </param>       
 <param name="shift">        10            10            10            10            10            10            10            4             </param>       
