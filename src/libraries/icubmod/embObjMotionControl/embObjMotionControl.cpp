@@ -4460,14 +4460,15 @@ bool embObjMotionControl::getRefTorquesRaw(double *t)
 
 bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
 {   
-    //VALE: add check if j is in compliant pos and torque else return false;
-    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_target);
     uint16_t size;
     eOmc_joint_status2_core_t jcore = {0};
     *t =0 ;
-    if(!res->readBufferedValue(id32, (uint8_t *)&jcore, &size))
+    if(!askRemoteValue(id32, (uint8_t *)&jcore, size))
+    {
+        yError() << "embObjMotionControl::getTargetPositionRaw() could not read reference pos for  BOARD" << _fId.boardNumber << "joint " << j;
         return false;
-
+    }
 #if NEW_JSTATUS_STRUCT
    
     if ((eOmc_interactionmode_compliant == jcore.modes.interactionmodestatus) &&
@@ -5038,32 +5039,16 @@ bool embObjMotionControl::getTargetPositionRaw(int axis, double *ref)
 #if ASK_REFERENCE_TO_FIRMWARE
    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_status_target);
    *ref = 0;
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(axis, id32);
-    tt->setPending(1);
-
-    if(!res->addGetMessage(id32) )
-    {
-        yError() << "embObjMotionControl::getTargetPositionRaw() could not send get message for BOARD" << _fId.boardNumber << "joint " << axis;
-        return false;
-    }
-
-    // wait here
-    if(-1 == tt->synch() )
-    {
-        int threadId;
-        yError () << "embObjMotionControl::getTargetPositionRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << axis;
-
-        if(requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
 
     // Get the value
     uint16_t size;
     eOmc_joint_status2_target_t  target = {0};
-    res->readBufferedValue(id32, (uint8_t *)&target, &size);
-
+    if(!askRemoteValue(id32, (uint8_t *)&target, size))
+    {
+        yError() << "embObjMotionControl::getTargetPositionRaw() could not read reference pos for  BOARD" << _fId.boardNumber << "joint " << axis;
+        return false;
+    }
+    
     *ref = (double) target.trgt_position;
     return true;
 #else
@@ -5098,32 +5083,15 @@ bool embObjMotionControl::getRefVelocityRaw(int axis, double *ref)
 #if ASK_REFERENCE_TO_FIRMWARE
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_status_target);
     *ref = 0;
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(axis, id32);
-    tt->setPending(1);
-
-    if(!res->addGetMessage(id32) )
-    {
-        yError() << "embObjMotionControl::getRefVelocityRaw() could not send get message for BOARD" << _fId.boardNumber << "joint " << axis;
-        return false;
-    }
-
-    // wait here
-    if(-1 == tt->synch() )
-    {
-        int threadId;
-        yError () << "embObjMotionControl::getRefVelocityRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << axis;
-
-        if(requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
 
     // Get the value
     uint16_t size;
     eOmc_joint_status2_target_t  target = {0};
-    res->readBufferedValue(id32, (uint8_t *)&target, &size);
-
+    if(!askRemoteValue(id32, (uint8_t *)&target, size))
+    {
+        yError() << "embObjMotionControl::getRefVelocityRaw() could not read reference vel for  BOARD" << _fId.boardNumber << "joint " << axis;
+        return false;
+    }
     *ref = (double) target.trgt_velocity;
     return true;
 #else
@@ -5158,31 +5126,14 @@ bool embObjMotionControl::getRefPositionRaw(int axis, double *ref)
 #if ASK_REFERENCE_TO_FIRMWARE
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_status_target);
     *ref = 0;
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(axis, id32);
-    tt->setPending(1);
-
-    if(!res->addGetMessage(id32) )
-    {
-        yError() << "embObjMotionControl::getRefPositionRaw() could not send get message for BOARD" << _fId.boardNumber << "joint " << axis;
-        return false;
-    }
-
-    // wait here
-    if(-1 == tt->synch() )
-    {
-        int threadId;
-        yError () << "embObjMotionControl::getRefPositionRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << "joint " << axis;
-
-        if(requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
     // Get the value
     uint16_t size;
     eOmc_joint_status2_target_t  target = {0};
-    res->readBufferedValue(id32, (uint8_t *)&target, &size);
+    if(!askRemoteValue(id32, (uint8_t *)&target, size))
+    {
+        yError() << "embObjMotionControl::getRefPositionRaw() could not read reference pos for  BOARD" << _fId.boardNumber << "joint " << axis;
+        return false;
+    }
 
     *ref = (double) target.trgt_position;
     return true;
@@ -5444,15 +5395,21 @@ bool embObjMotionControl::getRefOutputRaw(int j, double *out)
 {
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_target);
     uint16_t size = 0;
-    eOmc_joint_status2_target_t jtarget = {0};
-    *out = 0;
-    if(!res->readBufferedValue(protoId, (uint8_t *)&jtarget, &size))
+    *out = 0;    
+    eOmc_joint_status2_target_t  target = {0};
+
+
+    if(!askRemoteValue(protoId, (uint8_t *)&target, size))
+    {
+        yError() << "embObjMotionControl::getRefOutputRaw() could not read openloop reference for  BOARD" << _fId.boardNumber << "joint " << j;
         return false;
+    }
+
 
     
 #if NEW_JSTATUS_STRUCT
     
-    *out = (double) jtarget.trgt_openloop;
+    *out = (double) target.trgt_openloop;
 
     return true;
     
@@ -5529,7 +5486,7 @@ bool embObjMotionControl::getTemperatureRaw(int m, double* val)
     }
     else
     {
-        yError() << "getTemperatureRaw failed for board " << _fId.boardNumber << " motor " << m ;
+        yError() << "embObjMotionControl::getTemperatureRaw failed for board " << _fId.boardNumber << " motor " << m ;
         *val = 0;
     }
 
@@ -5552,9 +5509,9 @@ bool embObjMotionControl::getTemperatureLimitRaw(int m, double *temp)
     uint16_t size;
     eOmeas_temperature_t temperaturelimit = {0};
     *temp = 0;
-    if(!res->readBufferedValue(protid, (uint8_t *)&temperaturelimit, &size))
+    if(!askRemoteValue(protid, (uint8_t *)&temperaturelimit, size))
     {
-        yError() << "embObjMotionControl::getTemperatureLimitRaw() can't read temperature limits  for board " << _fId.boardNumber << " joint " << m;
+        yError() << "embObjMotionControl::getTemperatureLimitRaw() can't read temperature limits  for board " << _fId.boardNumber << " motor " << m;
         return false;
     }
 
@@ -5587,51 +5544,38 @@ bool embObjMotionControl::getPeakCurrentRaw(int m, double *val)
     uint16_t size;
     eOmc_current_limits_params_t currentlimits = {0};
     *val = 0;
-    if(!res->readBufferedValue(protid, (uint8_t *)&currentlimits, &size))
+    if(!askRemoteValue(protid, (uint8_t *)&currentlimits, size))
     {
-        yError() << "embObjMotionControl::getPeakCurrentRaw() can't read current limits  for board " << _fId.boardNumber << " joint " << m;
+        yError() << "embObjMotionControl::getPeakCurrentRaw() can't read current limits  for board " << _fId.boardNumber << " motor " << m;
         return false;
     }
 
     *val = (double) currentlimits.peakCurrent ;
-
     return true;
-
 }
 
 bool embObjMotionControl::setPeakCurrentRaw(int m, const double val)
 {
-   eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_currentlimits);
-    eoThreadEntry *tt = appendWaitRequest(m, protid);
-    tt->setPending(1);
-
-    if(!res->addGetMessage(protid) )
-    {
-        yError() << "embObjMotionControl::setPeakCurrentRaw() can't send get current limit for board" << _fId.boardNumber << " joint " << m;
-        return false;
-    }
-
-    // wait here
-    if(-1 == tt->synch() )
-    {
-        int threadId;
-        yError () << "embObjMotionControl::setPeakCurrentRaw() timed out the wait of reply from board " << _fId.boardNumber << " joint " << m;
-
-        if(requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_currentlimits);
     //get current limit params
     uint16_t size;
     eOmc_current_limits_params_t currentlimits = {0};
-    res->readBufferedValue(protid, (uint8_t *)&currentlimits, &size);
+    if(!askRemoteValue(protid, (uint8_t *)&currentlimits, size))
+    {
+        yError() << "embObjMotionControl::setPeakCurrentRaw can't read current limits for board " << _fId.boardNumber << " motor " << m ;
+        return false;
+    }
 
     //set current overload
     currentlimits.peakCurrent = (eOmeas_current_t) S_16(val);
 
     //send new values
-    return res->addSetMessage(protid, (uint8_t*) &currentlimits);
+    bool ret = res->addSetMessage(protid, (uint8_t*) &currentlimits);
+    if(!ret)
+    {
+         yError() << "embObjMotionControl::setPeakCurrentRaw failed sending new value for board " << _fId.boardNumber << " motor " << m ;
+    }
+    return ret;
 }
 
 bool embObjMotionControl::getNominalCurrentRaw(int m, double *val)
@@ -5640,50 +5584,40 @@ bool embObjMotionControl::getNominalCurrentRaw(int m, double *val)
     uint16_t size;
     eOmc_current_limits_params_t currentlimits = {0};
     *val = 0;
-    if(!res->readBufferedValue(protid, (uint8_t *)&currentlimits, &size))
+    if(!askRemoteValue(protid, (uint8_t *)&currentlimits, size))
     {
-        yError() << "embObjMotionControl::getNominalCurrentRaw() can't read current limits  for board " << _fId.boardNumber << " joint " << m;
+        yError() << "embObjMotionControl::getNominalCurrentRaw() can't read current limits  for board " << _fId.boardNumber << " motor " << m;
         return false;
     }
 
     *val = (double) currentlimits.nominalCurrent ;
-
     return true;
 }
 
 bool embObjMotionControl::setNominalCurrentRaw(int m, const double val)
 {
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_currentlimits);
-    eoThreadEntry *tt = appendWaitRequest(m, protid);
-    tt->setPending(1);
-
-    if(!res->addGetMessage(protid) )
-    {
-        yError() << "embObjMotionControl::setNominalCurrentRaw() can't send get current limit for board" << _fId.boardNumber << " joint " << m;
-        return false;
-    }
-
-    // wait here
-    if(-1 == tt->synch() )
-    {
-        int threadId;
-        yError () << "embObjMotionControl::setNominalCurrentRaw() timed out the wait of reply from board " << _fId.boardNumber << " joint " << m;
-
-        if(requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
+    
     //get current limit params
     uint16_t size;
     eOmc_current_limits_params_t currentlimits = {0};
-    res->readBufferedValue(protid, (uint8_t *)&currentlimits, &size);
+    if(!askRemoteValue(protid, (uint8_t *)&currentlimits, size))
+    {
+        yError() << "embObjMotionControl::setNominalCurrentRaw can't read current limits for board " << _fId.boardNumber << " motor " << m ;
+        return false;
+    }
 
     //set current overload
     currentlimits.nominalCurrent = (eOmeas_current_t) S_16(val);
 
     //send new values
-    return res->addSetMessage(protid, (uint8_t*) &currentlimits);
+    bool ret = res->addSetMessage(protid, (uint8_t*) &currentlimits);
+    if(!ret)
+    {
+         yError() << "embObjMotionControl::setNominalCurrentRaw failed sending new value for board " << _fId.boardNumber << " motor " << m ;
+    }
+
+    return ret;
 }
 
 bool embObjMotionControl::getPWMRaw(int j, double* val)
@@ -5699,7 +5633,7 @@ bool embObjMotionControl::getPWMRaw(int j, double* val)
     }
     else
     {
-        yError() << "getPWMRaw failed for board " << _fId.boardNumber << " motor " << j ;
+        yError() << "embObjMotionControl::getPWMRaw failed for board " << _fId.boardNumber << " motor " << j ;
         *val = 0;
     }
 
@@ -5711,14 +5645,15 @@ bool embObjMotionControl::getPWMLimitRaw(int j, double* val)
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_pwmlimit);
     uint16_t size;
     eOmeas_pwm_t  motorPwmLimit;
-    bool ret = res->readBufferedValue(protid, (uint8_t *)&motorPwmLimit, &size);
+
+    bool ret = askRemoteValue(protid, (uint8_t *)&motorPwmLimit, size);
     if(ret)
     {
         *val = (double) motorPwmLimit;
     }
     else
     {
-        yError() << "getPWMLimitRaw failed for board " << _fId.boardNumber << " motor " << j ;
+        yError() << "embObjMotionControl::getPWMLimitRaw failed for board " << _fId.boardNumber << " motor " << j ;
         *val = 0;
     }
 
@@ -5734,7 +5669,22 @@ bool embObjMotionControl::setPWMLimitRaw(int j, const double val)
 
 bool embObjMotionControl::getPowerSupplyVoltageRaw(int j, double* val)
 {
-    return NOT_YET_IMPLEMENTED("getPowerSupplyVoltageRaw");
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_controller_status);
+    uint16_t size;
+    eOmc_controller_status_t  controllerStatus;
+
+    bool ret = askRemoteValue(protid, (uint8_t *)&controllerStatus, size);
+    if(ret)
+    {
+        *val = (double) controllerStatus.supplyVoltage;
+    }
+    else
+    {
+        yError() << "embObjMotionControl::getPowerSupplyVoltageRaw failed for board " << _fId.boardNumber << " motor " << j ;
+        *val = 0;
+    }
+
+    return ret;
 }
 
 bool embObjMotionControl::askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size)
