@@ -772,7 +772,7 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
                         this->Kleft, this->DistL,
                         this->Kright, this->DistR,
                         imageSize, this->R, this->T, E, F,
-                    #if OPENCV_GREATER_2
+                    #ifdef OPENCV_GREATER_2
                         CV_CALIB_FIX_ASPECT_RATIO + CV_CALIB_ZERO_TANGENT_DIST + CV_CALIB_SAME_FOCAL_LENGTH + CV_CALIB_FIX_K3,
                         TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5));
                     #else
@@ -786,7 +786,7 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
                 this->Kleft, this->DistL,
                 this->Kright, this->DistR,
                 imageSize, this->R, this->T, E, F,
-            #if OPENCV_GREATER_2
+            #ifdef OPENCV_GREATER_2
                  CV_CALIB_FIX_ASPECT_RATIO + CV_CALIB_FIX_INTRINSIC + CV_CALIB_FIX_K3);
                  TermCriteria(TermCriteria::MAX_ITER+TermCriteria::EPS, 100, 1e-5),
             #else
