@@ -19,6 +19,7 @@
 #define __PERCEPTIVEMODELS_PORTS_H__
 
 #include <yarp/os/Mutex.h>
+#include <yarp/os/Value.h>
 #include <yarp/os/Bottle.h>
 #include <yarp/os/BufferedPort.h>
 
