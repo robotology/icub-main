@@ -45,13 +45,15 @@
         <group name="CALIBRATION">
          <!-- memo: parameters of calib type 4 (5 actually): c1 = used pwm (int32_t); c2 = velocity of come back expressed in icubdeg/sec (int32_t); c3 = position in icubdeg of the reached hw limit (int32_t). -->
          <!-- memo: parameters of calib type 4: c1 = NOT USED pos; c2 = NOT USED vel; c3 = offset in icubdeg with which to correct the encoder reading (int32_t) -->
-            <param name="calibrationType">       3          3              5            5            5          5         </param>
-            <param name="calibration1">         666         666         500.0           500.0        500.0      900.0       </param> <!-- calib3: none; calib5: pwm  -->
-            <param name="calibration2">         999         999         -6371.54        5097.23      6371.54    0.0   </param> <!-- calib3: none; calib5: pos (j2->133deg, j3->30deg, j4->133deg, j5->51deg) -->
-            <param name="calibration3">        3332.1       50142.9       0.0             0.0          0.0        0.0         </param> <!-- calib3: offset (j0->, j1->) -->
-
-            <param name="calibrationZero">         180        180.0       0.0          0.0          0.0          0.0       </param>
-            <param name="calibrationDelta">         0.0        0.0         0.0           0.0         0.0          0.0        </param>
+            <param name="calibrationType">      3           3           5           5            5          5         </param>
+            <param name="calibration1">         666         666         500.0       500.0        500.0      900.0       </param> <!-- calib3: none; calib5: pwm  -->
+            <param name="calibration2">         999         999         -6371.54    5097.23      6371.54    0.0     </param> <!-- calib3: none; calib5: pos (j2->133deg, j3->30deg, j4->133deg, j5->51deg) -->
+            <param name="calibration3">         3332.1      50142.9     0.0         0.0          0.0        0.0         </param> <!-- calib3: offset (j0->, j1->) -->
+            <param name="calibration4">         0           0           0           0            0          0         </param>
+            <param name="calibration5">         0           0           0           0            0          0         </param>
+            
+            <param name="calibrationZero">      180         180.0       0.0          0.0          0.0          0.0       </param>
+            <param name="calibrationDelta">     0.0        0.0         0.0           0.0         0.0          0.0        </param>
 
             <param name="startupPosition">          15         0            0.0          0.0         0.0          0.0      </param> <!-- target position in deg after high level calib is terminated --> 
             <param name="startupVelocity">          10         10           20.0         20.0        20.0         20.0     </param> <!-- and its velocity in deg/sec -->

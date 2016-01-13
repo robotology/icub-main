@@ -46,6 +46,9 @@
         <param name="calibration1">         666         666         666         666         8000        8000        </param>        
         <param name="calibration2">         999         999         999         999         8191        8191     </param>        
         <param name="calibration3">         51787.9     20557       30479       54628.9     0.0         0.0     </param>
+        <param name="calibration4">         0           0           0           0            0          0         </param>
+        <param name="calibration5">         0           0           0           0            0          0         </param>        
+        
         <param name="calibrationZero">      180.0       -180.0      180.0       180.0       0.0         0.0         </param>
         <param name="calibrationDelta">     0.0         0.0         0.0         0.0         0.0         0.0         </param>
        
