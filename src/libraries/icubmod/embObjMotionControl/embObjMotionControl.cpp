@@ -1710,8 +1710,15 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     if (!extractGroup(limits, xtmp, "MotorPwmLimit","a list of motor PWM limits", _njoints))
         return false;
     else
-        for(i=1; i<xtmp.size(); i++) _motorPwmLimits[i-1]=xtmp.get(i).asDouble();
-
+        for(i=1; i<xtmp.size(); i++) 
+        {
+            _motorPwmLimits[i-1]=xtmp.get(i).asDouble();
+            if(_motorPwmLimits[i-1]<0)
+            {
+                yError() << "MotorPwmLimit should be a positive value";
+                return false;
+            }
+        }
     /////// [VELOCITY]
     Bottle &velocityGroup=config.findGroup("VELOCITY");
     if (!velocityGroup.isNull())
@@ -4466,7 +4473,7 @@ bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
     *t =0 ;
     if(!askRemoteValue(id32, (uint8_t *)&jcore, size))
     {
-        yError() << "embObjMotionControl::getTargetPositionRaw() could not read reference pos for  BOARD" << _fId.boardNumber << "joint " << j;
+        yError() << "embObjMotionControl::getRefTorqueRaw() could not read reference pos for  BOARD" << _fId.boardNumber << "joint " << j;
         return false;
     }
 #if NEW_JSTATUS_STRUCT
@@ -5662,6 +5669,11 @@ bool embObjMotionControl::getPWMLimitRaw(int j, double* val)
 
 bool embObjMotionControl::setPWMLimitRaw(int j, const double val)
 {
+    if (val < 0)
+    {
+        yError() << "embObjMotionControl::setPWMLimitRaw failed because pwmLimit is negative for board " << _fId.boardNumber << " motor " << j ;
+        return true; //return true because the error ios not due to communication error
+    }
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_pwmlimit);
     eOmeas_pwm_t  motorPwmLimit = (eOmeas_pwm_t) S_16(val);
     return res->addSetMessage(protid, (uint8_t*) &motorPwmLimit);
