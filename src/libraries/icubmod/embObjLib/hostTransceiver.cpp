@@ -862,9 +862,9 @@ void hostTransceiver::eoprot_override_mc(void)
         {   // joint_status_basic
             EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
             EO_INIT(.entity)        eoprot_entity_mc_joint,
-            EO_INIT(.tag)           eoprot_tag_mc_joint_status_basic,
+            EO_INIT(.tag)           eoprot_tag_mc_joint_status_core,
             EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_status_basic
+            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_status_core
         },
 //        {   // joint_cmmnds_setpoint
 //            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
@@ -883,9 +883,9 @@ void hostTransceiver::eoprot_override_mc(void)
         {   // joint_status_interactionmodestatus
             EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
             EO_INIT(.entity)        eoprot_entity_mc_joint,
-            EO_INIT(.tag)           eoprot_tag_mc_joint_status_modes_interactionmodestatus,
+            EO_INIT(.tag)           eoprot_tag_mc_joint_status_core_modes_interactionmodestatus,
             EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_status_modes_interactionmodestatus
+            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_status_core_modes_interactionmodestatus
         },
         // motor
         {   // motor_config
@@ -898,9 +898,9 @@ void hostTransceiver::eoprot_override_mc(void)
         {   // motor_config_maxcurrentofmotor
             EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
             EO_INIT(.entity)        eoprot_entity_mc_motor,
-            EO_INIT(.tag)           eoprot_tag_mc_motor_config_maxcurrentofmotor,
+            EO_INIT(.tag)           eoprot_tag_mc_motor_config_currentlimits,
             EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_motor_config_maxcurrentofmotor
+            EO_INIT(.update)        eoprot_fun_UPDT_mc_motor_config_currentlimits
         },
         {   // motor_config_gearboxratio
             EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
