@@ -1798,41 +1798,25 @@ bool MotorThread::point(Bottle &options)
 
     Bottle *bTarget=options.find("target").asList();
 
-    Vector target,xd;
-    if(!targetToCartesian(bTarget,target))
+    Vector xd;
+    if(!targetToCartesian(bTarget,xd))
         return false;
 
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
         look(options);
-        //keepFixation(options);
-        //ctrl_gaze->setTrackingMode(true);
     }
 
-    arm=checkArm(arm,target);
+    arm=checkArm(arm,xd);
+    xd[0]+=0.10;
+    xd[1]=(arm==LEFT)?-0.05:0.05;
+    xd[2]+=0.08;
 
-    Vector x,o;
-    action[arm]->getPose(x,o);
-
-    // set the new position
-    Vector x_o=(target-x);
-    x_o/=norm(x_o);
-    xd=target-0.15*x_o;
-
-    // set the new orientation
-    Vector z_o(3,0.0);
-    z_o[2]=(arm==LEFT)?1.0:-1.0;
-
-    Vector y_o=cross(z_o,x_o);
-    y_o/=norm(y_o);
-
-    z_o=cross(x_o,y_o);
-
-    Matrix R(3,3);
-    R.setCol(0,x_o);
-    R.setCol(1,y_o);
-    R.setCol(2,z_o);
+    Matrix R=zeros(3,3);
+    R(0,0)=-1.0;
+    R(1,1)=(arm==LEFT)?-1.0:1.0;
+    R(2,2)=(arm==LEFT)?1.0:-1.0;
 
     Vector od=dcm2axis(R);
     action[arm]->pushAction(xd,od,"pointing_hand");
