@@ -1809,8 +1809,8 @@ bool MotorThread::point(Bottle &options)
     }
 
     arm=checkArm(arm,xd);
-    xd[0]+=0.10;
-    xd[1]+=(arm==LEFT)?-0.05:0.05;
+    xd[0]+=0.06;
+    xd[1]+=(arm==LEFT)?-0.07:0.07;
     xd[2]+=0.08;
 
     Matrix R=zeros(3,3);
