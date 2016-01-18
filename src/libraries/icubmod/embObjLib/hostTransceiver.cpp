@@ -900,7 +900,7 @@ void hostTransceiver::eoprot_override_mc(void)
             EO_INIT(.entity)        eoprot_entity_mc_motor,
             EO_INIT(.tag)           eoprot_tag_mc_motor_config_currentlimits,
             EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_motor_config_currentlimits
+            EO_INIT(.update)        NULL, //eoprot_fun_UPDT_mc_motor_config_currentlimits
         },
         {   // motor_config_gearboxratio
             EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,

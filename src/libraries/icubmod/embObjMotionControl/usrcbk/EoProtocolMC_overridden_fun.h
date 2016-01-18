@@ -33,14 +33,13 @@
 	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_config_pidtorque
 
 	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_status
-	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_status_basic
-	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_status
-  #define OVERRIDE_eoprot_fun_UPDT_mc_joint_status_interactionmodestatus
+	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_status_core
+    #define OVERRIDE_eoprot_fun_UPDT_mc_joint_status_interactionmodestatus
 
 	#define OVERRIDE_eoprot_fun_UPDT_mc_joint_cmmnds_setpoint
 
 	#define OVERRIDE_eoprot_fun_UPDT_mc_motor_config
-	#define OVERRIDE_eoprot_fun_UPDT_mc_motor_config_maxcurrentofmotor
+	#define OVERRIDE_eoprot_fun_UPDT_mc_motor_config_currentlimits
 
 	#define OVERRIDE_eoprot_fun_UPDT_mc_motor_status_basic
 

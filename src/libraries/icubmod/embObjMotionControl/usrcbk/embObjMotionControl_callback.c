@@ -121,6 +121,11 @@ extern void eoprot_fun_UPDT_mc_joint_status_core(const EOnv* nv, const eOropdesc
 }
 
 
+extern void eoprot_fun_UPDT_mc_motor_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+}
+
+
 extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 #if defined(ENABLE_DEBUG_CONTROLMODESTATUS)
