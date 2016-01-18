@@ -546,8 +546,8 @@ public:
     virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
     virtual bool stopRaw(const int n_joint, const int *joints);
     virtual bool getTargetPositionRaw(const int joint, double *ref);
-    virtual bool getTargetPositionRaw(double *refs);
-    virtual bool getTargetPositionRaw(const int n_joint, const int *joints, double *refs);
+    virtual bool getTargetPositionsRaw(double *refs);
+    virtual bool getTargetPositionsRaw(const int n_joint, const int *joints, double *refs);
 
     //  Velocity control interface raw
     virtual bool setVelocityModeRaw();
@@ -737,8 +737,8 @@ public:
     virtual bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     virtual bool setPositionsRaw(const double *refs);
     virtual bool getRefPositionRaw(const int joint, double *ref);
-    virtual bool getRefPositionRaw(double *refs);
-    virtual bool getRefPositionRaw(const int n_joint, const int *joints, double *refs);
+    virtual bool getRefPositionsRaw(double *refs);
+    virtual bool getRefPositionsRaw(const int n_joint, const int *joints, double *refs);
 
     // InteractionMode interface
     virtual bool getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum* _mode);

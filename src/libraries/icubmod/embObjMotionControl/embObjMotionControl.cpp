@@ -5064,7 +5064,7 @@ bool embObjMotionControl::getTargetPositionRaw(int axis, double *ref)
 #endif
 }
 
-bool embObjMotionControl::getTargetPositionRaw(double *refs)
+bool embObjMotionControl::getTargetPositionsRaw(double *refs)
 {
     bool ret = true;
     for (int i = 0; i<_njoints; i++)
@@ -5074,7 +5074,7 @@ bool embObjMotionControl::getTargetPositionRaw(double *refs)
     return ret;
 }
 
-bool embObjMotionControl::getTargetPositionRaw(int nj, const int * jnts, double *refs)
+bool embObjMotionControl::getTargetPositionsRaw(int nj, const int * jnts, double *refs)
 {
     bool ret = true;
     for (int i = 0; i<nj; i++)
@@ -5150,7 +5150,7 @@ bool embObjMotionControl::getRefPositionRaw(int axis, double *ref)
 #endif
 }
 
-bool embObjMotionControl::getRefPositionRaw(double *refs)
+bool embObjMotionControl::getRefPositionsRaw(double *refs)
 {
     bool ret = true;
     for (int i = 0; i<_njoints; i++)
@@ -5160,7 +5160,7 @@ bool embObjMotionControl::getRefPositionRaw(double *refs)
     return ret;
 }
 
-bool embObjMotionControl::getRefPositionRaw(int nj, const int * jnts, double *refs)
+bool embObjMotionControl::getRefPositionsRaw(int nj, const int * jnts, double *refs)
 {
     bool ret = true;
     for (int i = 0; i<nj; i++)
