@@ -269,6 +269,10 @@ int main(int argc, char *argv[])
             printf("type [get] and one of the following:\n");
             printf("    [%s] to read the number of controlled axes\n", Vocab::decode(VOCAB_AXES).c_str());
             printf("    [%s] <int> to read the name of a single axis\n", Vocab::decode(VOCAB_INFO_NAME).c_str());
+            printf("    [%s] <int> to read target position for a single axis (iPositionControl)\n", Vocab::decode(VOCAB_POSITION_MOVE).c_str());
+            printf("    [%s] to read target positions for all axes (iPositionControl)\n", Vocab::decode(VOCAB_POSITION_MOVES).c_str());
+            printf("    [%s] <int> to read reference position for single axis (iPositionDirect)\n", Vocab::decode(VOCAB_POSITION_DIRECT).c_str());
+            printf("    [%s] to read reference position for all axes (iPositionDirect)\n", Vocab::decode(VOCAB_POSITION_DIRECTS).c_str());
             printf("    [%s] to read the encoder value for all axes\n", Vocab::decode(VOCAB_ENCODERS).c_str());
             printf("    [%s] to read the PID values for all axes\n", Vocab::decode(VOCAB_PIDS).c_str());
             printf("    [%s] <int> to read the PID values for a single axis\n", Vocab::decode(VOCAB_PID).c_str());
@@ -378,7 +382,60 @@ int main(int argc, char *argv[])
             }
 
         case VOCAB_GET:
-            switch(p.get(1).asVocab()) {
+            switch(p.get(1).asVocab())
+            {
+                case VOCAB_POSITION_MOVE:
+                {
+                    if(!ipos2)
+                    {
+                        printf ("unavailable interface\n");
+                        break;
+                    }
+                    double ref;
+                    int j = p.get(2).asInt();
+                    bool ret = ipos2->getTargetPosition(j, &ref);
+                    printf("Ref joint %d is %.2f - [ret val is %s]\n", j, ref, ret?"true":"false");
+                }
+                break;
+
+                case VOCAB_POSITION_MOVES:
+                {
+                    if(!ipos2)
+                    {
+                        printf ("unavailable interface\n");
+                        break;
+                    }
+                    double ref;
+                    bool ret = ipos2->getTargetPositions(tmp);
+                    printf ("%s: (", Vocab::decode(VOCAB_POSITION_MOVES).c_str());
+                    for(i = 0; i < jnts; i++)
+                        printf ("%.2f ", tmp[i]);
+                    printf (")  - ret is [%s]\n", ret? "true":"false");
+                }
+                break;
+
+
+                case VOCAB_POSITION_DIRECT:
+                {
+                    ok = iposDir->getRefPosition(p.get(3).asInt(), tmp);
+                    response.addDouble(tmp[0]);
+                    printf("Ref joint %d is %.2f - [ret val is %s]\n", p.get(3).asInt(), tmp[0], ok?"true":"false");
+                }
+                break;
+
+                case VOCAB_POSITION_DIRECTS:
+                {
+                    ok = iposDir->getRefPositions(tmp);
+                    Bottle& b = response.addList();
+                    int i;
+                    for (i = 0; i < jnts; i++)
+                        b.addDouble(tmp[i]);
+                    for(i = 0; i < jnts; i++)
+                        printf ("%.2f ", tmp[i]);
+                    printf (")  - ret is [%s]\n", ok? "true":"false");
+                }
+                break;
+
                 case VOCAB_INFO_NAME:
                 {
                    int j = p.get(2).asInt();
@@ -780,8 +837,11 @@ int main(int argc, char *argv[])
 
                 case VOCAB_POSITION_MOVES: {
                     Bottle *l = p.get(2).asList();
+                    printf("received %s\n", l->toString().c_str());
                     for (i = 0; i < jnts; i++) {
+                        printf("%d - ", i); fflush(stdout);
                         tmp[i] = l->get(i).asDouble();
+                        printf("tmp[i] %f\n", tmp[i]); fflush(stdout);
                     }
                     printf("%s: moving all joints\n", Vocab::decode(VOCAB_POSITION_MOVES).c_str());
                     ipos->positionMove(tmp);
