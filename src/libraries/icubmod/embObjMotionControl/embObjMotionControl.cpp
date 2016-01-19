@@ -5142,7 +5142,7 @@ bool embObjMotionControl::getRefPositionRaw(int axis, double *ref)
         return false;
     }
 
-    *ref = (double) target.trgt_position;
+    *ref = (double) target.trgt_positionraw;
     return true;
 #else
     *ref = _ref_positions[axis];
