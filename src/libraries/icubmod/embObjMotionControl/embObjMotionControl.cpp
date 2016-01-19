@@ -1659,7 +1659,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         return false;
     }
     // current limit
-    if (!extractGroup(limits, xtmp, "OverloadCurrents","a list of current limits", _njoints))
+    if (!extractGroup(limits, xtmp, "MotorOverloadCurrents","a list of current limits", _njoints))
         return false;
     else
         for(i=1; i<xtmp.size(); i++) _currentLimits[i-1].overloadCurrent=xtmp.get(i).asDouble();
