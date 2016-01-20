@@ -296,6 +296,7 @@ public ImplementAxisInfo
 
   /////// Axis Info
   virtual bool getAxisNameRaw(int axis, yarp::os::ConstString& name);
+  virtual bool getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type);
 
   /// IMotor
   virtual bool getNumberOfMotorsRaw(int* m);

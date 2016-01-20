@@ -451,7 +451,7 @@ bool embObjMotionControl::alloc(int nj)
     _impedance_limits=allocAndCheck<ImpedanceLimits>(nj);
     _estim_params=allocAndCheck<SpeedEstimationParameters>(nj);
     _axisName = new string[nj];
-    _axisType = new string[nj];
+    _jointType = allocAndCheck<JointTypeEnum>(nj);
 
     _limitsMax=allocAndCheck<double>(nj);
     _limitsMin=allocAndCheck<double>(nj);
@@ -534,7 +534,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_rotorIndexOffset);
     checkAndDestroy(_motorPoles);
     checkAndDestroy(_axisName);
-    checkAndDestroy(_axisType);
+    checkAndDestroy(_jointType);
     checkAndDestroy(_rotorlimits_max);
     checkAndDestroy(_rotorlimits_min);
 
@@ -595,7 +595,7 @@ embObjMotionControl::embObjMotionControl() :
     _rotorlimits_min  = NULL;
 
     _axisName         = NULL;
-    _axisType         = NULL;
+    _jointType        = NULL;
     _limitsMin        = NULL;
     _limitsMax        = NULL;
     _currentLimits    = NULL;
@@ -1190,7 +1190,17 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         return false;
     //beware: axis type has to be remapped here because they are not set using the toHw() helper function  
     for (i = 1; i < xtmp.size(); i++)
-        _axisType[_axisMap[i - 1]] = xtmp.get(i).asString();
+    {
+        string s = xtmp.get(i).asString();
+        if (s == "revolute")  _jointType[_axisMap[i - 1]] = JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
+        else if (s == "prismatic")  _jointType[_axisMap[i - 1]] = JointTypeEnum::VOCAB_JOINTTYPE_PRISMATIC;
+        else
+        {
+            yError("Unknown AxisType value %s!", s.c_str());
+            _jointType[_axisMap[i - 1]] = JointTypeEnum::VOCAB_JOINTTYPE_UNKNOWN;
+            return false;
+        }
+    }
 
     double tmp_A2E;
     // Encoder scales
@@ -4020,6 +4030,19 @@ bool embObjMotionControl::getAxisNameRaw(int axis, yarp::os::ConstString& name)
     else
     {
         name = "ERROR";
+        return false;
+    }
+}
+
+bool embObjMotionControl::getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type)
+{
+    if (axis >= 0 && axis < _njoints)
+    {
+        type = _jointType[axis];
+        return true;
+    }
+    else
+    {
         return false;
     }
 }

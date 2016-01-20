@@ -1045,6 +1045,7 @@ public:
 
     /// IAxisInfo
     virtual bool getAxisNameRaw(int axis, yarp::os::ConstString& name);
+    virtual bool getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type);
 
     ////// calibration
     virtual bool calibrateRaw(int j, double p);

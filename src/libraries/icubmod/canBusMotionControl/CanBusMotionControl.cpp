@@ -4154,6 +4154,21 @@ bool CanBusMotionControl::getAxisNameRaw(int axis, yarp::os::ConstString& name)
     }
 }
 
+bool CanBusMotionControl::getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type)
+{
+    CanBusResources& r = RES(system_resources);
+    if (axis >= 0 && axis < r.getJoints())
+    {
+        //type = joint_type[axis];
+        type = JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
 bool CanBusMotionControl::setControlModesRaw(int *modes)
 {
     DEBUG_FUNC("Calling SET_CONTROL_MODE_RAW ALL JOINT\n");

@@ -289,9 +289,8 @@ private:
     Pid *_tpids;                                /** initial torque gains */
     Pid *_cpids;                                /** initial current gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
-
     string *_axisName;                          /** axis name */
-    string *_axisType;                          /** axis type */
+    JointTypeEnum *_jointType;                  /** axis type */
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
@@ -610,6 +609,7 @@ public:
 
     //////////////////////// BEGIN IAxisInfo Interface
     virtual bool getAxisNameRaw(int axis, yarp::os::ConstString& name);
+    virtual bool getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type);
     ///////////////////////// END IAxisInfo Interface
 
     //Internal use, not exposed by Yarp (yet)

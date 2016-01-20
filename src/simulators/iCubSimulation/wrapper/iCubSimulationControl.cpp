@@ -447,7 +447,7 @@ void iCubSimulationControl::jointStep() {
             }
             else if (controlMode[axis]==VOCAB_CM_POSITION_DIRECT)
             {
-                ctrl.setControlParameters(10,1);
+                ctrl.setControlParameters(5,1);
                 ctrl.setPosition(next_pos[axis]);
             }
             else if (controlMode[axis]==MODE_TORQUE)
@@ -1030,7 +1030,15 @@ bool iCubSimulationControl::stopRaw()
 
 bool iCubSimulationControl::getTargetPositionRaw(int axis, double *ref)
 {
-    return NOT_YET_IMPLEMENTED("@@@");
+    if ((axis >= 0) && (axis<njoints)) {
+        _mutex.wait();
+        *ref = next_pos[axis];
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        yError("getTargetPositionRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    return false;
 }
 
 bool iCubSimulationControl::getTargetPositionRaw(double *refs)
@@ -1762,6 +1770,19 @@ bool iCubSimulationControl::getAxisNameRaw(int axis, yarp::os::ConstString& name
         return true;
     }
     
+    return false;
+}
+
+bool iCubSimulationControl::getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& type)
+{
+    if ((axis >= 0) && (axis < njoints))
+    {
+        _mutex.wait();
+        type = yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
+        _mutex.post();
+        return true;
+    }
+
     return false;
 }
 
