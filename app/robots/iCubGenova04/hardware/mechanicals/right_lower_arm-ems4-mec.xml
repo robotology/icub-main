@@ -18,9 +18,9 @@
         <param name="TorqueMax">    2     	2             2             2     		0             0              0             0            0             0            0             0       	</param>
         <param name="JointEncoderType"> "OPTICAL_QUAD"  "AEA"         "AEA"          "HALL_ADC"    "HALL_ADC"    "MAIS"       "MAIS"        "MAIS"      "MAIS"        "MAIS"       "MAIS"        "MAIS"     </param>
         <param name="RotorEncoderType"> "NONE"          "NONE"        "NONE"         "NONE"        "NONE"        "NONE"       "NONE"        "NONE"      "NONE"        "NONE"       "NONE"        "NONE"     </param>
-        <param name="JointEncoderRes">     254400        352245       352245          1829          -5079         -860          -984       -1000          -963         -939          -1027        -792      </param>
+        <param name="JointEncoderRes">     254400        352245       352245          65535          65535         65535         65535        65535       65535          65535         65535         65535  </param>
         <param name="RotorEncoderRes">      1             1            1               1             1             1             1             1            1             1            1             1      </param>
-        <param name="RotorIndexOffset">      0             0            0               0             0             0             0             0            0             0           0             0      </param>
+        <param name="RotorIndexOffset">     0             0            0               0             0             0             0             0            0             0            0             0      </param>
         <param name="Gearbox">              1             1            1               1             1             1             1             1            1             1            1             1      </param>
         <param name="MotorType">         "DC_FH"         "DC_FH"        "DC_FH"      "DC_FH"       "DC_FH"        "DC_FH"       "DC_FH"       "DC_FH"     "DC_FH"        "DC_FH"       "DC_FH"      "DC_FH" </param>
         <param name="MotorPoles">           1             1            1               1             1             1             1             1            1             1            1             1      </param>
