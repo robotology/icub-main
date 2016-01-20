@@ -46,6 +46,7 @@ if(ICUB_INSTALL_ALL_ROBOTS) # Install all robot-specific files
   add_subdirectory(iCubRome01)
   add_subdirectory(iCubRome02)
   add_subdirectory(iCubSheffield01)
+  add_subdirectory(iCubTwente01)
   add_subdirectory(iCubUrbana01)
   add_subdirectory(iCubZurich01)
   add_subdirectory(SkinTableTop)  
