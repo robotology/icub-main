@@ -2523,8 +2523,9 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
     case eomc_calibration_type7_hall_sensor:
         calib.params.type7.position = (int32_t)S_32(params.param1);
         calib.params.type7.velocity = (int32_t)S_32(params.param2);
-        calib.params.type7.vmin = (int32_t)S_32(params.param3);
-        calib.params.type7.vmax = (int32_t)S_32(params.param4);
+        //param3 is not used
+        calib.params.type7.vmin = (int32_t)S_32(params.param4);
+        calib.params.type7.vmax = (int32_t)S_32(params.param5);
         calib.params.type7.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
         break;
 
