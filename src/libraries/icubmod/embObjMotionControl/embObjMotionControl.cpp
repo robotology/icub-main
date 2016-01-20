@@ -1192,12 +1192,12 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     for (i = 1; i < xtmp.size(); i++)
     {
         string s = xtmp.get(i).asString();
-        if (s == "revolute")  _jointType[_axisMap[i - 1]] = JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
-        else if (s == "prismatic")  _jointType[_axisMap[i - 1]] = JointTypeEnum::VOCAB_JOINTTYPE_PRISMATIC;
+        if (s == "revolute")  _jointType[_axisMap[i - 1]] = VOCAB_JOINTTYPE_REVOLUTE;
+        else if (s == "prismatic")  _jointType[_axisMap[i - 1]] = VOCAB_JOINTTYPE_PRISMATIC;
         else
         {
             yError("Unknown AxisType value %s!", s.c_str());
-            _jointType[_axisMap[i - 1]] = JointTypeEnum::VOCAB_JOINTTYPE_UNKNOWN;
+            _jointType[_axisMap[i - 1]] = VOCAB_JOINTTYPE_UNKNOWN;
             return false;
         }
     }

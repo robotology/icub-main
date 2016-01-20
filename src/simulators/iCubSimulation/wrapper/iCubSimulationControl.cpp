@@ -1778,7 +1778,7 @@ bool iCubSimulationControl::getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& 
     if ((axis >= 0) && (axis < njoints))
     {
         _mutex.wait();
-        type = yarp::dev::JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
+        type = yarp::dev::VOCAB_JOINTTYPE_REVOLUTE;
         _mutex.post();
         return true;
     }

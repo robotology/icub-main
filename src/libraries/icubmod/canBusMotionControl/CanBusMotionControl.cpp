@@ -4160,7 +4160,7 @@ bool CanBusMotionControl::getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& ty
     if (axis >= 0 && axis < r.getJoints())
     {
         //type = joint_type[axis];
-        type = JointTypeEnum::VOCAB_JOINTTYPE_REVOLUTE;
+        type = VOCAB_JOINTTYPE_REVOLUTE;
         return true;
     }
     else
