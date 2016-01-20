@@ -82,13 +82,3 @@
     <devices file="calibrators/torso-calib.xml" /> 
     <devices file="calibrators/head-calib.xml" /> 
     </robot> 
-
-
-
-
-    <devices file="wrappers/skin/left_leg-skin_wrapper.xml" />
-    <devices file="wrappers/skin/right_leg-skin_wrapper.xml" />
-
-
-    <devices file="hardware/skin/left_leg-ems10-skin.xml" />
-    <devices file="hardware/skin/right_leg-ems11-skin.xml" />
