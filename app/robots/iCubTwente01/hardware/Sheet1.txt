@@ -1,0 +1,182 @@
+
+       HEAD V2
+JOINT i       JOINT        |value_rea  zeros  |value_rea         Formula           Min    Max       Vmin               Vmax          Encoders               Notes                                 Calibration Calilbration Calilbration
+   0   Head Joint 0            3248.0    180.0     105.5                    1200.5                                                       11.375using aea                                               3            2047.50           10
+   1   Head Joint 1             148.0   -180.0    -167.0                    2195.5                                                      -11.375using aea                                               3            2047.50           10
+   2   Head Joint 2            3688.0    180.0     144.2                    1640.5                                                       11.375using aea                                               3            2047.50           10
+   3   Head Joint 3               985    180.0     -93.4                    3032.5                                                       11.375using aea                                               3            2047.50           10
+   4   Head Joint 4                      -45.0                                                                                           568.88using relativ enc                                  0                     900         20.0
+   5   Head Joint 5                        0.0                                                                                           284.44using relativ enc                                  0                     900         20.0
+
+       TORSO
+JOINT i       JOINT        |value_rea  zeros  |value_rea         Formula           Min    Max       Vmin               Vmax          Encoders               Notes                                 Calibration Calilbration Calilbration
+   0   Torso Joint 0          58191.0    180.0     139.7                   25423.1                                                      182.044using aea                                               3           32767.92        10.00
+   1   Torso Joint 1          46687.0    180.0      76.5                   13919.1                                                      182.044using aea                                               3           32767.92        10.00
+   2   Torso Joint 2          13359.0    180.0    -106.6                   46126.9                                                      182.044using aea                                               3           32767.92        10.00
+
+       LEFT_ARM V2
+JOINT i       JOINT        value_read  zeros  |value_rea         Formula           Min    Max       Vmin               Vmax          Encoders               Notes                                 Calibration Calilbration Calilbration
+   0   LeftArm Joint 0          49711   -180.0      93.1                   16943.1                                                     -182.044using aea                                               3           38229.24        10.00
+   1   LeftArm Joint 1          17647   -315.0    -218.1                   25839.0                                                     -182.044using aea                                               3           51882.54        10.00
+   2   LeftArm Joint2           14463    180.0    -100.6                   47230.9                                                      182.044using aea                                               3           32767.92        10.00
+   3   LeftArm Joint 3          15231   -180.0     -96.3                   47998.9                                                     -182.044using aea                                               3           24575.94        10.00
+   4   LeftArm Joint 4                   -75.0                                                                                           706.67using relativ enc                                  0                  500.00        20.00
+   5   LeftArm Joint 5        29839.0   -180.0    2443.2                   27791.5                                                      -11.375using aea                                               3            2047.50        10.00
+   6   LeftArm Joint 6        17400.0    180.0    1349.7                   15352.5                                                       11.375using aea                                               3            2047.50        10.00
+   7   LeftArm Joint 7                  419.38                                          0    60          67800                 77500     161.67using hall effect                                       3           67800.00       100.00
+   8   LeftArm Joint 8                  199.58                                         10    90          13250                 19225      66.39using hall effect                                       3           13913.89        10.00
+   9   LeftArm Joint 9                  -93.02                                          0    90          18500                   600    -198.89using mais                                                    4     18500.00        10.00
+  10   LeftArm Joint 10                -181.65                                          0   170          32500                  2085    -178.91using mais                                                    4      2085.00        30.00
+  11   LeftArm Joint 11                 -90.39                                          0    90          17450                    75    -193.06using mais                                                    4     17450.00        10.00
+  12   LeftArm Joint 12                -170.00                                          0   170          32200                     0    -189.41using mais                                                    4         0.00        10.00
+  13   LeftArm Joint 13                 -93.88                                          0    90          15850                   655    -168.83using mais                                                    4     15850.00        10.00
+  14   LeftArm Joint 14                -178.17                                          0   170          29100                  1335    -163.32using mais                                                    4      1335.00        10.00
+  15   LeftArm Joint 15                -306.57                                          0   250          54192                 10000    -176.77using mais                                                    4     54192.00        10.00
+
+       RIGHT_ARM V2
+JOINT i       JOINT        value_read  zeros  |value_rea         Formula           Min    Max       Vmin               Vmax          Encoders               Notes                                 Calibration Calilbration Calilbration
+   0   RightArm Joint 0         24463    180.0     -45.6                   57230.9                                                      182.044using aea                                               3           27306.60        10.00
+   1   RightArm Joint 1         37935     45.0     163.4                   29743.0                                                      182.044using aea                                               3           13653.30        10.00
+   2   RightArm Joint2           2191   -180.0    -168.0                   34958.9                                                     -182.044using aea                                               3           32767.92        10.00
+   3   RightArm Joint 3         61935    180.0     160.2                   29167.1                                                      182.044using aea                                               3           40959.90        10.00
+   4   RightArm Joint 4                  -75.0                                                                                         -706.670using relativ enc                                  0                  500.00       -20.00
+   5   RightArm Joint 5        7039.0    180.0     438.8                    4991.5                                                       11.375using aea                                               3            2047.50        10.00
+   6   RightArm Joint 6       37167.0   -180.0    3087.4                   35119.5                                                      -11.375using aea                                               3            2047.50        10.00
+   7   RightArm Joint 7                 922.58                                        0.0  60.0         143000                152300    155.000using hall effect                                       3          143000.00       100.00
+   8   RightArm Joint 8                 147.92                                         10    90          16600                 26700     112.22using hall effect                                       3           17722.22        10.00
+   9   RightArm Joint 9                -163.82                                          0    90          19738                  8894    -120.49using mais                                                    4     19738.00        10.00
+  10   RightArm Joint 10               -175.97                                          0   170          38400                  1303    -218.22using mais                                                    4      1303.00        30.00
+  11   RightArm Joint 11                -90.00                                          0    90          18164                     0    -201.82using mais                                                    4     18164.00        10.00
+  12   RightArm Joint 12               -185.94                                          0   170          35000                  3000    -188.24using mais                                                    4      3000.00        10.00
+  13   RightArm Joint 13                -91.49                                          0    90          17080                   278    -186.69using mais                                                    4     17080.00        10.00
+  14   RightArm Joint 14               -172.59                                          0   170          28277                   424    -163.84using mais                                                    4       424.00        10.00
+  15   RightArm Joint 15               -321.89                                          0   250          51939                 11600    -161.36using mais                                                    4     51939.00        10.00
+
+       LEFT_LEG
+JOINT i       JOINT        value read  zeros  |value_rea         Formula           Min    Max       Vmin               Vmax          Encoders               Notes                                 Calibration Calilbration Calilbration
+   0   LeftLeg Joint 0        61711.0    180.0     159.0                   28943.1                                                      182.044using aea                                               3           32767.92        10.00
+   1   LeftLeg Joint 1         7343.0    180.0    -139.7                   40110.9                                                      182.044using aea                                               3           32767.92        10.00
+   2   LeftLeg Joint 2        25519.0    180.0     -39.8                   58286.9                                                      182.044using aea                                               3           32767.92        10.00
+   3   LeftLeg Joint 3        20783.0   -180.0     -65.8                   53550.9                                                     -182.044using aea                                               3           32767.92        10.00
+   4   LeftLeg Joint 4         9807.0   -180.0    -126.1                   42574.9                                                     -182.044using aea                                               3           32767.92        10.00
+   5   LeftLeg Joint 5         6623.0    180.0    -143.6                   39390.9                                                      182.044using aea                                               3           32767.92        10.00
+
+       RIGHT_LEG
+JOINT i       JOINT        value read  zeros  |value_rea         Formula           Min    Max       Vmin               Vmax          Encoders               Notes                                 Calibration Calilbration Calilbration
+   0   RightLeg Joint 0       26111.0   -180.0     -36.6                   58878.9                                                     -182.044using aea                                               3           32767.92        10.00
+   1   RightLeg Joint 1       56223.0   -180.0     128.8                   23455.1                                                     -182.044using aea                                               3           32767.92        10.00
+   2   RightLeg Joint 2       39711.0   -180.0      38.1                    6943.1                                                     -182.044using aea                                               3           32767.92        10.00
+   3   RightLeg Joint 3       57039.0    180.0     133.3                   24271.1                                                      182.044using aea                                               3           32767.92        10.00
+   4   RightLeg Joint 4       22911.0    180.0     -54.1                   55678.9                                                      182.044using aea                                               3           32767.92        10.00
+   5   RightLeg Joint 5        8159.0   -180.0    -135.2                   40926.9                                                     -182.044using aea                                               3           32767.92        10.00
+
+path:  C:\icub\icub-main\app\robots\iCubTwente01\hardware                                                                           <--- DO NOT PUT FINAL SLASH
+
+
+       Author:             Marco Maggiali
+       Release: 0.0        new configuration files for the V2 robot version with ETHERNET BOARDS
+       Data 10/08/12
+
+
+                           COLORS LEGEND
+
+                                              text
+
+                                              value to be inserted by the user
+
+                                              value that can be changed by a SUPERUSER
+
+                                              value written in the configuration file
+
+                                              not used
+
+
+Calilbration  Position Velocity ZHOME PosiHOME VeloDelta
+      1200.50      0.00     10.00   -30.00    10.00   0.00
+      2195.50      0.00     10.00     0.00    10.00   0.00
+      1640.50      0.00     10.00     0.00    10.00   0.00
+      3032.50      0.00     10.00     0.00    10.00   0.00
+          0.0      0.00     10.00     0.00    10.00   0.00
+          0.0      0.00     10.00     0.00    10.00   0.00
+
+
+Calilbration  Position Velocity ZHOME PosiHOME VeloDelta
+     25423.08      0.00     10.00     0.00    10.00   0.00
+     13919.08      0.00     10.00     0.00    10.00   0.00
+     46126.92      0.00     10.00   -20.00    10.00   0.00
+
+
+Calilbration  Position Velocity ZHOME PosiHOME VeloDelta
+     16943.08    -30.00     10.00   -30.00    10.00   0.00
+     25838.98     30.00     10.00    30.00    10.00   0.00
+     47230.92      0.00     10.00     0.00    10.00   0.00
+     47998.92     45.00     10.00    45.00    10.00   0.00
+         0.00      0.00     30.00     0.00    30.00   0.00
+     27791.50      0.00     30.00     0.00    30.00   0.00
+     15352.50      0.00     30.00    40.00    30.00   3.00
+         0.00     15.00    100.00    15.00   100.00   0.00
+         0.00     30.00    100.00    30.00    10.00   0.00
+      6000.00      0.00    100.00     0.00    10.00   0.00
+     -6600.00      0.00    100.00     0.00    10.00   0.00
+      6000.00      0.00    100.00     0.00    10.00   0.00
+      7000.00      0.00    100.00     0.00    10.00   0.00
+      6000.00      0.00    100.00     0.00    10.00   0.00
+     -7000.00      0.00    100.00     0.00    10.00   0.00
+    -14000.00      0.00    100.00     0.00    10.00   0.00
+
+
+Calilbration  Position Velocity ZHOME PosiHOME VeloDelta
+     57230.92    -30.00     10.00   -30.00    10.00   0.00
+     29743.02     30.00     10.00    30.00    10.00   0.00
+     34958.92      0.00     10.00     0.00    10.00   0.00
+     29167.08     45.00     10.00    45.00    10.00   0.00
+         0.00      0.00     30.00     0.00    30.00   0.00
+      4991.50      0.00     30.00     0.00    30.00   0.00
+     35119.50      0.00     30.00    40.00    30.00   0.00
+         0.00     15.00    100.00    15.00   100.00   0.00
+         0.00     30.00    100.00    30.00    10.00   0.00
+      6000.00      0.00    100.00     0.00    10.00   0.00
+      6600.00      0.00    100.00     0.00    10.00   0.00
+      6000.00      0.00    100.00     0.00    10.00   0.00
+     -7000.00      0.00    100.00     0.00    10.00   0.00
+      6000.00      0.00    100.00     0.00    10.00   0.00
+      7000.00      0.00    100.00     0.00    10.00   0.00
+     14000.00      0.00    100.00     0.00    10.00   0.00
+
+
+Calilbration  Position Velocity ZHOME PosiHOME VeloDelta
+     28943.08      0.00     10.00     0.00    10.00   0.00
+     40110.92      0.00     10.00     0.00    10.00   0.00
+     58286.92      0.00     10.00     0.00    10.00   0.00
+     53550.92      0.00     10.00     0.00    10.00   0.00
+     42574.92      0.00     10.00     0.00    10.00   0.00
+     39390.92      0.00     10.00     0.00    10.00   0.00
+
+
+Calilbration  Position Velocity ZHOME PosiHOME VeloDelta
+     58878.92      0.00     10.00     0.00    10.00   0.00
+     23455.08      0.00     10.00     0.00    10.00   0.00
+      6943.08      0.00     10.00     0.00    10.00   0.00
+     24271.08      0.00     10.00     0.00    10.00   0.00
+     55678.92      0.00     10.00     0.00    10.00   0.00
+     40926.92      0.00     10.00     0.00    10.00   0.00
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
