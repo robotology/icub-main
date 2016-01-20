@@ -68,7 +68,8 @@ file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(ICUB_INCLUDE_DIRS \"
 ### now write to file the list of dependencies with which iCub was compiled 
 get_property(dependency_flags GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS)
 foreach (t ${dependency_flags})
-		file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t} \"${${t}}\" CACHE BOOL \"dependency flag\" FORCE)\n")
+		file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "unset(${t} CACHE)\n")
+		file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t} \"${${t}}\")\n")
 endforeach()
 
 install(EXPORT icub-targets DESTINATION lib/ICUB FILE ${EXPORT_CONFIG_FILE} COMPONENT Development)
