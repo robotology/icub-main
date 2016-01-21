@@ -1,22 +1,22 @@
 # Copyright: (C) 2010 RobotCub Consortium
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
-# 
+#
 # Code to export the installd project
-# 
-# Files: 
+#
+# Files:
 # EXPORT_CONFIG_FILE: in build directory, store libraries and dependenecies
 # automatically generated with CMake export command.
 # EXPORT_INCLUDE_FILE: in build directory, store include directories for each library,
 # this is installed in CMAKE_INSTALL_PREFIX
-# INSTALL_CONFIG_FILE: tmp file, it is generated from a template and will 
+# INSTALL_CONFIG_FILE: tmp file, it is generated from a template and will
 # become the real icub-config.cmake that is installed in CMAKE_INSTALL_PREFIX
 # INSTALL_CONFIG_TEMPLATE: INSTALL_CONFIG_FILE template
 #
-# In the template the variable $ICUB_INCLUDE_DIRS is substituted with the 
+# In the template the variable $ICUB_INCLUDE_DIRS is substituted with the
 # correct value which is a combination of:
-# - ${CMAKE_INSTALL_PREFIX}/include (this is the general include directory where header files 
-# are installed 
+# - ${CMAKE_INSTALL_PREFIX}/include (this is the general include directory where header files
+# are installed
 # - a list of external directories, as specified in the target's EXTERNAL_INCLUDE_DIRS property
 # set in icub_export_library inside iCubHelpers.cmake
 #
@@ -43,16 +43,17 @@ file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "# List of include direct
 set(include_dirs "")
 foreach (t ${ICUB_TARGETS})
   get_property(target_INCLUDE_DIRS TARGET ${t} PROPERTY EXTERNAL_INCLUDE_DIRS)
-  set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS}) 
+  set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS})
 
   if (ICUB_VERBOSE)
 	message(STATUS "Header files for ${t}: ${target_INCLUDE_DIRS}")
   endif()
 
+  file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "unset(${t}_INCLUDE_DIRS CACHE)\n")
   if (target_INCLUDE_DIRS)
-      file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t}_INCLUDE_DIRS \"${CMAKE_INSTALL_PREFIX}/include\" \"${target_INCLUDE_DIRS}\" CACHE STRING \"include dir for target ${t}\")\n")
+      file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t}_INCLUDE_DIRS \"${CMAKE_INSTALL_PREFIX}/include\" \"${target_INCLUDE_DIRS}\")\n")
   else()
-      file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t}_INCLUDE_DIRS \"${CMAKE_INSTALL_PREFIX}/include\" CACHE STRING \"include dir for target ${t}\")\n")
+      file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t}_INCLUDE_DIRS \"${CMAKE_INSTALL_PREFIX}/include\")\n")
  endif()
 endforeach(t)
 
@@ -65,7 +66,7 @@ file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(ICUB_INCLUDE_DIRS \"
 
 #message(STATUS "Header files global directory: ${ICUB_INCLUDE_DIRS}")
 
-### now write to file the list of dependencies with which iCub was compiled 
+### now write to file the list of dependencies with which iCub was compiled
 get_property(dependency_flags GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS)
 foreach (t ${dependency_flags})
 		file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "unset(${t} CACHE)\n")
