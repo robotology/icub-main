@@ -118,7 +118,7 @@ int main(int argc, char *argv[])
     IPositionControl *ipos=0;
     IPositionControl2 *ipos2=0;
     IPositionDirect  *iposDir=0;
-    IVelocityControl *vel=0;
+    IVelocityControl2 *vel=0;
     IEncoders *enc=0;
     IPidControl *pid=0;
     IAmplifierControl *amp=0;
@@ -276,6 +276,8 @@ int main(int argc, char *argv[])
             printf("    [%s] to read target positions for all axes (iPositionControl)\n", Vocab::decode(VOCAB_POSITION_MOVES).c_str());
             printf("    [%s] <int> to read reference position for single axis (iPositionDirect)\n", Vocab::decode(VOCAB_POSITION_DIRECT).c_str());
             printf("    [%s] to read reference position for all axes (iPositionDirect)\n", Vocab::decode(VOCAB_POSITION_DIRECTS).c_str());
+            printf("    [%s] <int> to read reference velocity for single axis (for velocityMove)\n", Vocab::decode(VOCAB_VELOCITY_MOVE).c_str());
+            printf("    [%s] to read reference velocities for all axes (for velocityMove)\n", Vocab::decode(VOCAB_VELOCITY_MOVES).c_str());
             printf("    [%s] to read the encoder value for all axes\n", Vocab::decode(VOCAB_ENCODERS).c_str());
             printf("    [%s] to read the PID values for all axes\n", Vocab::decode(VOCAB_PIDS).c_str());
             printf("    [%s] <int> to read the PID values for a single axis\n", Vocab::decode(VOCAB_PID).c_str());
@@ -418,7 +420,6 @@ int main(int argc, char *argv[])
                 }
                 break;
 
-
                 case VOCAB_POSITION_DIRECT:
                 {
                     ok = iposDir->getRefPosition(p.get(3).asInt(), tmp);
@@ -436,7 +437,28 @@ int main(int argc, char *argv[])
                         b.addDouble(tmp[i]);
                     for(i = 0; i < jnts; i++)
                         printf ("%.2f ", tmp[i]);
-                    printf (")  - ret is [%s]\n", ok? "true":"false");
+                    printf (" - ret is [%s]\n", ok? "true":"false");
+                }
+                break;
+
+                case VOCAB_VELOCITY_MOVE:
+                {
+                    ok = vel->getRefVelocity(p.get(2).asInt(), tmp);
+                    response.addDouble(tmp[0]);
+                    printf("Ref vel joint %d is %.2f - [ret val is %s]\n", p.get(3).asInt(), tmp[0], ok?"true":"false");
+                }
+                break;
+
+                case VOCAB_VELOCITY_MOVES:
+                {
+                    ok = vel->getRefVelocities(tmp);
+                    Bottle& b = response.addList();
+                    int i;
+                    for (i = 0; i < jnts; i++)
+                        b.addDouble(tmp[i]);
+                    for(i = 0; i < jnts; i++)
+                        printf ("%.2f ", tmp[i]);
+                    printf (" - ret is [%s]\n", ok? "true":"false");
                 }
                 break;
 
