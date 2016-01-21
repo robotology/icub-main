@@ -47,7 +47,7 @@
 <group name="LIMITS">        
 <param name="Max">          90            90            78            0             39            22            </param>       
 <param name="Min">          -30           -20           -80           -120          -20           -22           </param>       
-<param name="Currents">     7000          7000          7000          7000          7000          7000          </param>       
+<param name="MotorOverloadCurrents">     7000          7000          7000          7000          7000          7000          </param>       
 </group>       
  
    
@@ -56,7 +56,7 @@
 <param name="kp">           32000         -32000        32000         -32000        32000        -32000         </param>       
 <param name="kd">           100           -100          100           -100          100          -100          </param>       
 <param name="ki">           60            -60           60            -60           60            -60           </param>       
-<param name="maxPwm">       800           800           800           800           800           800           </param>       
+<param name="maxOutput">       800           800           800           800           800           800           </param>       
 <param name="maxInt">       800           800           800           800           800           800           </param>       
 <param name="shift">        13            13            13            13            13            13            </param>       
 <param name="ko">           0             0             0             0             0             0             </param>       
@@ -68,7 +68,7 @@
 <param name="kp">           76            -76           76            76            0             0             </param>       
 <param name="kd">           0             0             0             0             0             0             </param>       
 <param name="ki">           0             0             0             0             0             0             </param>       
-<param name="maxPwm">       800           800           800           800           800           800           </param>       
+<param name="maxOutput">       800           800           800           800           800           800           </param>       
 <param name="maxInt">       800           800           800           800           800           800           </param>       
 <param name="shift">        14            14            14            14            14            14            </param>       
 <param name="ko">           0             0             0             0             0             0             </param>       

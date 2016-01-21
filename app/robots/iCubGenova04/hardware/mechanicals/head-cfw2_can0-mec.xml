@@ -41,7 +41,7 @@
         <param name="Min">             -30           -20           -45           -30           -30            0     </param>
         <param name="RotorMin">         0             0             0             0             0             0     </param> 
         <param name="RotorMax">         0             0             0             0             0             0     </param>
-        <param name="Currents">         2000          2000          1200          620           600           600   </param>
+        <param name="MotorOverloadCurrents">         2000          2000          1200          620           600           600   </param>
     </group>
 
     <group name="PIDS">

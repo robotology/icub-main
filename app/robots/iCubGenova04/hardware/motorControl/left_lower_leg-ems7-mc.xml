@@ -14,7 +14,7 @@
         <param name="Min">       -20.00        -22.00		</param>
         <param name="RotorMin">   0             0           </param> 
         <param name="RotorMax">   0             0           </param>
-        <param name="Currents">   5000          5000		</param>
+        <param name="MotorOverloadCurrents">   5000          5000		</param>
         <param name="JntVelocityMax"> 1000        1000         </param>
     </group>
 	
@@ -25,7 +25,7 @@
         <param name="kd">            0.00         0.00         </param>       
         <param name="ki">        -4444.43     -4444.43         </param>       
         <param name="limPwm">        5000         5000         </param>       
-        <param name="maxPwm">        5000         8000         </param>       
+        <param name="maxOutput">        5000         8000         </param>       
         <param name="maxInt">         750          750         </param>       
         <param name="shift">            0            0         </param>       
         <param name="ko">               0            0         </param>       
@@ -45,7 +45,7 @@
         <param name="kp">         -100        -100          </param>       
         <param name="kd">            0           0          </param>       
         <param name="ki">            0           0          </param>       
-        <param name="maxPwm">     8000        8000          </param>       
+        <param name="maxOutput">     8000        8000          </param>       
         <param name="maxInt">        0           0          </param>       
         <param name="shift">         0           0          </param>       
         <param name="ko">            0           0          </param>       
