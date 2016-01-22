@@ -847,21 +847,40 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
 
     for(int i=0; i<n_joints; i++)
     {
-        if(currentControlModes[i] != VOCAB_CM_IDLE &&
-           currentControlModes[i] != VOCAB_CM_HW_FAULT)
+        switch(currentControlModes[i])
         {
-            iControlMode->setControlMode(i,VOCAB_CM_POSITION);
-            cannotPark[i] = false;
-        }
-        else if (currentControlModes[i] == VOCAB_CM_IDLE)
-        {
-            yError() << deviceName << ": joint " << i << " is idle, skipping park";
-            cannotPark[i] = true;
-        }
-        else if (currentControlModes[i] == VOCAB_CM_HW_FAULT)
-        {
-            yError() << deviceName << ": joint " << i << " has an hardware fault, skipping park";
-            cannotPark[i] = true;
+            case VOCAB_CM_IDLE:
+            {
+                yError() << deviceName << ": joint " << i << " is idle, skipping park";
+                cannotPark[i] = true;
+            }
+            break;
+
+            case VOCAB_CM_HW_FAULT:
+            {
+                yError() << deviceName << ": joint " << i << " has an hardware fault, skipping park";
+                cannotPark[i] = true;
+            }
+            break;
+
+            case VOCAB_CM_NOT_CONFIGURED:
+            {
+                yError() << deviceName << ": joint " << i << " is not configured, skipping park";
+                cannotPark[i] = true;
+            }
+            break;
+
+            case VOCAB_CM_UNKNOWN:
+            {
+                yError() << deviceName << ": joint " << i << " is in unknown state, skipping park";
+                cannotPark[i] = true;
+            }
+
+            default:
+            {
+                iControlMode->setControlMode(i,VOCAB_CM_POSITION);
+                cannotPark[i] = false;
+            }
         }
     }
 
