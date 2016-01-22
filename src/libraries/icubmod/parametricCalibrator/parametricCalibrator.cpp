@@ -848,7 +848,19 @@ bool parametricCalibrator::park(DeviceDriver *dd, bool wait)
     yDebug() << deviceName.c_str() << ": Park " << (abortParking ? "aborted" : "completed");
     for(int j=0; j < n_joints; j++)
     {
-        iControlMode->setControlMode(j,VOCAB_CM_IDLE);
+        switch(currentControlModes[j])
+        {
+            case VOCAB_CM_IDLE:
+            case VOCAB_CM_HW_FAULT:
+            case VOCAB_CM_NOT_CONFIGURED:
+            case VOCAB_CM_UNKNOWN:
+                // Do nothing.
+                break;
+            default:
+            {
+                iControlMode->setControlMode(j,VOCAB_CM_IDLE);
+            }
+        }
     }
     return true;
 }
