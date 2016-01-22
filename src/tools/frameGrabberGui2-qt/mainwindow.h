@@ -41,7 +41,7 @@ private:
 
 
     LoadingWidget loadingWidget;
-    DC1394Thread dc1394Thread;
+    DC1394Thread dc1394Thread;      //  --> dinamico o può rimanere lo stesso?
     QMutex sliderInitMutex;
 
 

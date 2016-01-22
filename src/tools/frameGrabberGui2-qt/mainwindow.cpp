@@ -19,11 +19,13 @@ MainWindow::MainWindow(char *loc, char *rem, QWidget *parent) :
 {
     ui->setupUi(this);
 
+//    ui->tabWidget->setTabEnabled(ui->tabWidget->indexOf(ui->tabCamera), false);
+
     initMainWindow();
     initFeatureTab();
     initFeatureAdvTab();
     dc1394Thread.doTask(_initFormatTab);
-    initCameraTab();
+
     dc1394Thread.doTask(_init);
     dc1394Thread.doTask(_reload);
 
@@ -199,20 +201,20 @@ void MainWindow::disconnectWidgets()
 
 void MainWindow::initFeatureAdvTab()
 {
-    ui->sliderSharpness->init(DC1394_FEATURE_SHARPNESS,(char*)"Sharpness",&dc1394Thread);
-    ui->sliderHue->init(DC1394_FEATURE_HUE,(char*)"Hue",&dc1394Thread);
-    ui->sliderSaturation->init(DC1394_FEATURE_SATURATION,(char*)"Saturation",&dc1394Thread);
-    ui->sliderGamma->init(DC1394_FEATURE_GAMMA,(char*)"Gamma",&dc1394Thread);
-    ui->sliderIris->init(DC1394_FEATURE_IRIS,(char*)"Iris",&dc1394Thread);
-    ui->sliderFocus->init(DC1394_FEATURE_FOCUS,(char*)"Focus",&dc1394Thread);
+    ui->sliderSharpness->init(YARP_FEATURE_SHARPNESS,(char*)"Sharpness",&dc1394Thread);
+    ui->sliderHue->init(YARP_FEATURE_HUE,(char*)"Hue",&dc1394Thread);
+    ui->sliderSaturation->init(YARP_FEATURE_SATURATION,(char*)"Saturation",&dc1394Thread);
+    ui->sliderGamma->init(YARP_FEATURE_GAMMA,(char*)"Gamma",&dc1394Thread);
+    ui->sliderIris->init(YARP_FEATURE_IRIS,(char*)"Iris",&dc1394Thread);
+    ui->sliderFocus->init(YARP_FEATURE_FOCUS,(char*)"Focus",&dc1394Thread);
 }
 
 void MainWindow::initFeatureTab()
 {
-    ui->sliderShutter->init(DC1394_FEATURE_SHUTTER,(char*)"Shutter",&dc1394Thread);
-    ui->sliderBrightness->init(DC1394_FEATURE_BRIGHTNESS,(char*)"Brightness",&dc1394Thread);
-    ui->sliderGain->init(DC1394_FEATURE_GAIN,(char*)"Gain",&dc1394Thread);
-    ui->sliderExposure->init(DC1394_FEATURE_EXPOSURE,(char*)"Exposure",&dc1394Thread);
+    ui->sliderShutter->init(YARP_FEATURE_SHUTTER,(char*)"Shutter",&dc1394Thread);
+    ui->sliderBrightness->init(YARP_FEATURE_BRIGHTNESS,(char*)"Brightness",&dc1394Thread);
+    ui->sliderGain->init(YARP_FEATURE_GAIN,(char*)"Gain",&dc1394Thread);
+    ui->sliderExposure->init(YARP_FEATURE_EXPOSURE,(char*)"Exposure",&dc1394Thread);
     ui->sliderWB->init(&dc1394Thread);
 }
 
@@ -287,7 +289,7 @@ void MainWindow::Init(uint videoModeDC1394, uint fPSDC1394, uint iSOSpeedDC1394,
                       uint colorCodingDC1394, QSize max, QSize step, QSize offset, QSize dim, QSize pos,
                       uint bytesPerPacketDC1394, bool transmissionDC1394)
 {
-    //LOG("Init\n");
+    LOG("Init\n");
 
     //for (int n=0; n<m_nFeatures; ++n) m_pSli[n]->Refresh();
     disconnectWidgets();
@@ -360,6 +362,21 @@ void MainWindow::Init(uint videoModeDC1394, uint fPSDC1394, uint iSOSpeedDC1394,
     ui->m_bpp->setValue(bytesPerPacketDC1394);
     ui->m_bpp->setEnabled(bFormat7);
     ui->m_transmission->setChecked(transmissionDC1394);
+
+
+    CameraDescriptor camera;
+    if(dc1394Thread.getCameraDescription(&camera))
+    {
+        std::cout << "BUS type is " << camera.busType << "; description is " << camera.deviceDescription << std::endl;
+
+        if(camera.busType != BUS_FIREWIRE)
+            ui->tabWidget->removeTab(ui->tabWidget->indexOf(ui->tabCamera));
+        else
+            initCameraTab();
+    }
+    else
+        LOG("Remote camera device has no IFrameGrabberControl2 interface\n");
+
     connectWidgets();
 }
 
@@ -369,6 +386,7 @@ void MainWindow::Reload(uint videoModeDC1394, uint colorCodingMaskDC1394,
                         uint fPSDC1394,uint iSOSpeedDC1394)
 {
     disconnectWidgets();
+
     unsigned int video_mode=videoModeDC1394;
     ui->m_MenuMode->setCurrentText(video_mode_labels.at(video_mode));
     LOG("video mode %s %d\n",video_mode_labels[video_mode].toLatin1().data(),video_mode);

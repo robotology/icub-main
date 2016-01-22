@@ -42,10 +42,13 @@ void DC1394Slider::resizeEvent(QResizeEvent* event)
 
 }
 
-bool DC1394Slider::init(dc1394feature_id_t feature, char* label, DC1394Thread *controlThread)
+bool DC1394Slider::init(cameraFeature_id_t feature, char* label, DC1394Thread *controlThread)
 {
     m_Feature=feature;
     this->controlThread = controlThread;
+
+    connect(controlThread,SIGNAL(sliderHasFeatureDone(QObject*,bool)),
+           this,SLOT(onHasFeatureDone(QObject*,bool)),Qt::QueuedConnection);
 
     connect(controlThread,SIGNAL(sliderRefreshDone(QObject*,bool,bool,bool,bool,bool,bool,double)),
             this,SLOT(onRefreshDone(QObject*,bool,bool,bool,bool,bool,bool,double)),Qt::QueuedConnection);
@@ -53,12 +56,14 @@ bool DC1394Slider::init(dc1394feature_id_t feature, char* label, DC1394Thread *c
     connect(controlThread,SIGNAL(sliderSetFeatureDC1394Done(QObject*,double)),
             this,SLOT(onSliderSetFeatureDone(QObject*,double)),Qt::QueuedConnection);
 
+    connect(controlThread,SIGNAL(sliderRadioAutoDone(QObject*,bool,bool)),
+            this,SLOT(onRadioAutoDone(QObject*,bool,bool)),Qt::QueuedConnection);
+
     connect(controlThread,SIGNAL(sliderPowerDone(QObject*,bool,bool,bool,bool)),
             this,SLOT(onPowerDone(QObject*,bool,bool,bool,bool)),Qt::QueuedConnection);
 
-    connect(controlThread,SIGNAL(sliderHasFeatureDone(QObject*,bool)),
-           this,SLOT(onHasFeatureDone(QObject*,bool)),Qt::QueuedConnection);
-
+    connect(controlThread,SIGNAL(sliderOnePushDone(QObject*,double)),
+            this,SLOT(onOnePushDone(QObject*,double)),Qt::QueuedConnection);
 
     type = SLIDER;
     m_Name=label;
@@ -147,7 +152,7 @@ void DC1394Slider::onRefreshDone(QObject *slider,bool bON,bool bAuto,bool bHasOn
     ui->pRBm->setEnabled(bON && bHasManual);
     ui->m_Slider->setEnabled(bON && !bAuto);
     ui->lblValue->setEnabled(bON && !bAuto);
-    ui->m_OnePush->setEnabled(bON && bHasOnePush);
+    ui->m_OnePush->setEnabled(bON && bHasOnePush);    // why setEnabled(false) is different from setDisable(true)?
 
     if (bAuto) {
         ui->pRBa->setChecked(true);
@@ -262,9 +267,11 @@ void DC1394Slider::onRadioAutoDone(QObject *slider,bool bON, bool bAuto)
     if(slider != this){
         return;
     }
+    std::cout << "slider enable is " << ui->m_Slider->isEnabled() << std::endl;
 
     ui->m_Slider->setEnabled(bON && !bAuto);
     ui->lblValue->setEnabled(bON && !bAuto);
+
     LOG("%s\n",ui->pRBa->isChecked() ? "auto":"man");
 
     controlThread->doTask(_reload);
@@ -287,11 +294,13 @@ void DC1394Slider::onPowerDone(QObject *slider, bool bON,bool hasAuto, bool hasM
         return;
     }
 
+    std::cout << "slider enable is " << ui->m_Slider->isEnabled() << std::endl;
+
     ui->pRBa->setEnabled(bON && hasAuto);
     ui->pRBm->setEnabled(bON && hasManual);
     ui->m_Slider->setEnabled(bON && ui->pRBm->isChecked());
     ui->lblValue->setEnabled(bON && ui->pRBm->isChecked());
-    ui->m_OnePush->setEnabled(bON && hasOnePush);
+    ui->m_OnePush->setEnabled(bON && hasOnePush);    // why setEnabled(false) is different from setDisable(true)?
     LOG("power %s\n",ui->pPwr->isChecked()?"on":"off");
 
 

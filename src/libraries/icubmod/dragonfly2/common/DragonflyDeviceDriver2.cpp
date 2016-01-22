@@ -382,3 +382,98 @@ unsigned int DragonflyDeviceDriver2::getBytesPerPacketDC1394()
 	return RES(system_resources)->getBytesPerPacketDC1394();
 }
 
+///////////////////////////
+// IFrameGrabberControl2 //
+///////////////////////////
+
+bool DragonflyDeviceDriver2::getCameraDescription(CameraDescriptor* camera)
+{
+    camera->busType = BUS_FIREWIRE;
+    camera->deviceDescription = "DragonFly2";
+    return true;
+}
+
+bool DragonflyDeviceDriver2::getActive(int feature, bool* isActive)
+{
+    *isActive = RES(system_resources)->getActiveDC1394(feature);
+    return true;
+}
+
+bool DragonflyDeviceDriver2::getFeature(int feature, double* values)
+{
+    *values = RES(system_resources)->getFeatureDC1394(feature);
+    return true;
+}
+
+bool DragonflyDeviceDriver2::getMode(int feature, FeatureMode* mode)
+{
+    *mode = TRANSL_MODE( RES(system_resources)->getModeDC1394(feature) );
+    return true;
+}
+
+bool DragonflyDeviceDriver2::hasAuto(int feature, bool* hasAuto)
+{
+    *hasAuto = RES(system_resources)->hasAutoDC1394(feature);
+    return true;
+}
+
+bool DragonflyDeviceDriver2::hasFeature(int feature, bool* hasFeature)
+{
+    *hasFeature = RES(system_resources)->hasFeatureDC1394(feature);
+    return true;
+}
+
+bool DragonflyDeviceDriver2::hasManual(int feature, bool* hasManual)
+{
+    *hasManual = RES(system_resources)->hasManualDC1394(feature);
+    return true;
+}
+
+bool DragonflyDeviceDriver2::hasOnePush(int feature, bool* hasOnePush)
+{
+    *hasOnePush = RES(system_resources)->hasOnePushDC1394(feature);
+    return true;
+}
+
+bool DragonflyDeviceDriver2::hasOnOff(int feature, bool* HasOnOff)
+{
+    *HasOnOff = RES(system_resources)->hasOnOffDC1394(feature);
+    return true;
+}
+
+bool DragonflyDeviceDriver2::setActive(int feature, bool onoff)
+{
+    return RES(system_resources)->setActiveDC1394(feature,onoff);
+}
+
+bool DragonflyDeviceDriver2::setFeature(int feature, double value)
+{
+    return RES(system_resources)->setFeatureDC1394(feature, value);
+}
+
+bool DragonflyDeviceDriver2::getFeature(int feature, double* value1, double* value2)
+{
+    if(feature == YARP_FEATURE_WHITE_BALANCE)
+        return RES(system_resources)->getWhiteBalanceDC1394(*value1, *value2);
+    else
+        return false;
+}
+
+bool DragonflyDeviceDriver2::setFeature(int feature, double value1, double value2)
+{
+    if(feature == YARP_FEATURE_WHITE_BALANCE)
+        return RES(system_resources)->setWhiteBalanceDC1394(value1, value2);
+    else
+        return false;
+}
+
+bool DragonflyDeviceDriver2::setMode(int feature, FeatureMode mode)
+{
+    return RES(system_resources)->setModeDC1394(feature, TRANSL_MODE(mode));
+}
+
+bool DragonflyDeviceDriver2::setOnePush(int feature)
+{
+    return RES(system_resources)->setOnePushDC1394(feature);
+}
+

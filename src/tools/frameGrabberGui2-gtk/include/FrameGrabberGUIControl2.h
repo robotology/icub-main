@@ -123,10 +123,10 @@ public:
         // FEATURES
         m_nFeatures=0;
 
-        m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_SHUTTER,(char*)"Shutter",m_VBoxFeat1,this);
-        m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_BRIGHTNESS,(char*)"Brightness",m_VBoxFeat1,this);
-        m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_GAIN,(char*)"Gain",m_VBoxFeat1,this);
-        m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_EXPOSURE,(char*)"Exposure",m_VBoxFeat1,this);
+        m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_SHUTTER,(char*)"Shutter",m_VBoxFeat1,this);
+        m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_BRIGHTNESS,(char*)"Brightness",m_VBoxFeat1,this);
+        m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_GAIN,(char*)"Gain",m_VBoxFeat1,this);
+        m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_EXPOSURE,(char*)"Exposure",m_VBoxFeat1,this);
         m_pSli[m_nFeatures++]=new DC1394SliderWB(m_VBoxFeat1,this);
 
         int height_panel_1=DC1394SliderBase::GetHeight();
@@ -135,16 +135,16 @@ public:
         pHBox->pack_start(m_Refresh1,Gtk::PACK_EXPAND_PADDING);
         m_VBoxFeat1.pack_start(*pHBox,Gtk::PACK_SHRINK,12);
 
-        m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_SHARPNESS,(char*)"Sharpness",m_VBoxFeat2,this);
-        m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_HUE,(char*)"Hue",m_VBoxFeat2,this);
-        m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_SATURATION,(char*)"Saturation",m_VBoxFeat2,this);
-        m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_GAMMA,(char*)"Gamma",m_VBoxFeat2,this);
-        m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_IRIS,(char*)"Iris",m_VBoxFeat2,this);
-        m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_FOCUS,(char*)"Focus",m_VBoxFeat2,this);
-        //m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_TEMPERATURE,(char*)"Temperature",m_VBoxFeat2,this);
-        //m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_TRIGGER,(char*)"Trigger",m_VBoxFeat2,this);
-        //m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_TRIGGER_DELAY,(char*)"Trigger delay",m_VBoxFeat2,this);
-        //m_pSli[m_nFeatures++]=new DC1394Slider(DC1394_FEATURE_WHITE_SHADING,(char*)"White shading",m_VBoxFeat2,this);
+        m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_SHARPNESS,(char*)"Sharpness",m_VBoxFeat2,this);
+        m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_HUE,(char*)"Hue",m_VBoxFeat2,this);
+        m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_SATURATION,(char*)"Saturation",m_VBoxFeat2,this);
+        m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_GAMMA,(char*)"Gamma",m_VBoxFeat2,this);
+        m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_IRIS,(char*)"Iris",m_VBoxFeat2,this);
+        m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_FOCUS,(char*)"Focus",m_VBoxFeat2,this);
+        //m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_TEMPERATURE,(char*)"Temperature",m_VBoxFeat2,this);
+        //m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_TRIGGER,(char*)"Trigger",m_VBoxFeat2,this);
+        //m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_TRIGGER_DELAY,(char*)"Trigger delay",m_VBoxFeat2,this);
+        //m_pSli[m_nFeatures++]=new DC1394Slider(YARP_FEATURE_WHITE_SHADING,(char*)"White shading",m_VBoxFeat2,this);
 
         int height_panel_2=DC1394SliderBase::GetHeight()-height_panel_1;
 

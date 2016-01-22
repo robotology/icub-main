@@ -1,6 +1,7 @@
 #include "dc1394thread.h"
 #include <QDebug>
 #include "dc1394SliderBase.h"
+#include <yarp/os/LogStream.h>
 
 DC1394Thread::DC1394Thread(char *loc, char *rem,QObject *parent) :
     QThread(parent)
@@ -11,18 +12,55 @@ DC1394Thread::DC1394Thread(char *loc, char *rem,QObject *parent) :
     opCounter = 0;
 }
 
+bool DC1394Thread::getCameraDescription(CameraDescriptor *camera)
+{
+    if(fgControl2)
+        return fgControl2->getCameraDescription(camera);
+
+    return false;
+}
+
 
 void DC1394Thread::run()
 {
 
-    DC1394Control = new yarp::dev::RemoteFrameGrabberControlsDC1394();
+    // create firewire thread
+    //DC1394Control = new yarp::dev::RemoteFrameGrabberControlsDC1394();
 
+    grabberControl = new yarp::dev::PolyDriver;
+    // create usb thread
 
     yarp::os::Property config;
+    config.put("device", "remote_grabber");
     config.put("remote",rem.toLatin1().data());
     config.put("local",loc.toLatin1().data());
 
-    bool opened = DC1394Control->open(config);
+    bool opened = grabberControl->open(config);
+    if(!opened)
+    {
+        yError() << "Cannot open remote_grabber device.";
+        // TODO: What to do here??
+    }
+
+    grabberControl->view(fgControl);
+    grabberControl->view(fgControl2);
+    grabberControl->view(DC1394Control);
+
+    if(!fgControl)
+    {
+        yError() << "RemoteGrabber does not have IFrameGrabberControl interface. Cannot proceed.";
+        // TODO: What to do here??
+    }
+
+    if(!fgControl2)
+    {
+        yWarning() << "RemoteGrabber does not have IFrameGrabberControl2 interface, please update yarp.";
+    }
+
+    if(!DC1394Control)
+    {
+        yWarning() << "RemoteGrabber does not have IFrameGrabberControlDC1394 interface, please update yarp.";
+    }
 
     keepRunning = true;
     while(keepRunning){
@@ -146,8 +184,8 @@ void DC1394Thread::run()
         }
     }
 
-    DC1394Control->close();
-    delete DC1394Control;
+    grabberControl->close();
+    delete grabberControl;
 }
 
 void DC1394Thread::stop()
@@ -218,8 +256,15 @@ void DC1394Thread::initFormatTab()
     }
 }
 
+
+//DC1394Thread::initDC1394()
+//{
+
+//}
+
 void DC1394Thread::init()
 {
+
     uint videoModeDC1394 = DC1394Control->getVideoModeDC1394();
     uint fPSDC1394 = DC1394Control->getFPSDC1394();
     uint iSOSpeedDC1394 = DC1394Control->getISOSpeedDC1394();
@@ -459,21 +504,33 @@ void DC1394Thread::setOperationModeDC1394(QVariantList arg)
 void DC1394Thread::sliderRefresh(QVariantList arg)
 {
     qDebug() << "sliderRefresh";
-    dc1394feature_id_t feature;
+    cameraFeature_id_t feature;
 
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
-    feature = (dc1394feature_id_t)value;
+    feature = (cameraFeature_id_t)value;
 
-    bool bON=DC1394Control->getActiveDC1394(feature);
-    bool bAuto=DC1394Control->getModeDC1394(feature);
-    bool bHasOnOff=DC1394Control->hasOnOffDC1394(feature);
-    bool bHasAuto=DC1394Control->hasAutoDC1394(feature);
-    bool bHasManual=DC1394Control->hasManualDC1394(feature);
-    bool bHasOnePush=DC1394Control->hasOnePushDC1394(feature);
-    double val=DC1394Control->getFeatureDC1394(feature);
+    FeatureMode mode;
+    bool bON, bAuto, bHasAuto, bHasManual, bHasOnePush, bHasOnOff;
+    fgControl2->getActive(feature, &bON);
+    fgControl2->getMode(feature, &mode);
+    fgControl2->hasOnOff(feature, &bHasOnOff);
+    fgControl2->hasAuto(feature, &bHasAuto);
+    fgControl2->hasManual(feature, &bHasManual);
+    fgControl2->hasOnePush(feature, &bHasOnePush);
+    double val;
+    fgControl2->getFeature(feature, &val);
+    mode == MODE_AUTO ? bAuto = true : bAuto = false;
 
+//    bool bON=true;   //DC1394Control->getActiveDC1394(feature);
+//    bool bAuto=false;  //DC1394Control->getModeDC1394(feature);
+//    bool bHasOnOff=true; //DC1394Control->hasOnOffDC1394(feature);
+//    bool bHasAuto= true; //DC1394Control->hasAutoDC1394(feature);
+//    bool bHasManual=true; //DC1394Control->hasManualDC1394(feature);
+//    bool bHasOnePush=true; //DC1394Control->hasOnePushDC1394(feature);
+//    double val=0.5; //DC1394Control->getFeatureDC1394(feature);
 
+//     fgControl2->setActive(feature,bON); refresh should not send commands right?
 
     sliderRefreshDone(ptr,bON,bAuto,bHasOnOff,bHasAuto,bHasManual,bHasOnePush,val);
 
@@ -487,23 +544,32 @@ void DC1394Thread::sliderRefresh(QVariantList arg)
 void DC1394Thread::sliderWBRefresh(QVariantList arg)
 {
     qDebug() << "sliderWBRefresh";
-    dc1394feature_id_t feature;
+    cameraFeature_id_t feature;
 
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
-    feature = (dc1394feature_id_t)value;
+    feature = (cameraFeature_id_t)value;
 
-    bool bON=DC1394Control->getActiveDC1394(feature);
-    bool bAuto=DC1394Control->getModeDC1394(feature);
-    bool bHasOnOff=DC1394Control->hasOnOffDC1394(feature);
-    bool bHasAuto=DC1394Control->hasAutoDC1394(feature);
-    bool bHasManual=DC1394Control->hasManualDC1394(feature);
-    bool bHasOnePush=DC1394Control->hasOnePushDC1394(feature);
+//    bool bON=DC1394Control->getActiveDC1394(feature);
+//    bool bAuto=DC1394Control->getModeDC1394(feature);
+//    bool bHasOnOff=DC1394Control->hasOnOffDC1394(feature);
+//    bool bHasAuto=DC1394Control->hasAutoDC1394(feature);
+//    bool bHasManual=DC1394Control->hasManualDC1394(feature);
+//    bool bHasOnePush=DC1394Control->hasOnePushDC1394(feature);
+
+    FeatureMode mode;
+    bool bON, bAuto, bHasAuto, bHasManual, bHasOnePush, bHasOnOff;
+    fgControl2->getActive(feature, &bON);
+    fgControl2->getMode(feature, &mode);
+    fgControl2->hasOnOff(feature, &bHasOnOff);
+    fgControl2->hasAuto(feature, &bHasAuto);
+    fgControl2->hasManual(feature, &bHasManual);
+    fgControl2->hasOnePush(feature, &bHasOnePush);
+    mode == MODE_AUTO ? bAuto = true : bAuto = false;
+
     double redVal;
     double blueVal;
-    DC1394Control->getWhiteBalanceDC1394(blueVal,redVal);
-
-
+    fgControl2->getFeature(feature, &blueVal, &redVal);
 
     sliderWBRefreshDone(ptr,bON,bAuto,bHasOnOff,bHasAuto,bHasManual,bHasOnePush,redVal,blueVal);
 
@@ -518,18 +584,20 @@ void DC1394Thread::sliderPropagate(QVariantList arg)
 {
     qDebug() << "sliderPropagate";
 
-    dc1394feature_id_t feature;
+    cameraFeature_id_t feature;
     int value = arg.at(0).toInt();
-    feature = (dc1394feature_id_t)value;
+    feature = (cameraFeature_id_t)value;
 
 
     double val = arg.at(1).toDouble();
     bool bRBa = arg.at(2).toBool();
     bool bPwr = arg.at(3).toBool();
 
-    DC1394Control->setFeatureDC1394(feature,val);
-    DC1394Control->setModeDC1394(feature,bRBa);
-    DC1394Control->setActiveDC1394(feature,bPwr);
+    FeatureMode mode = bRBa ? MODE_AUTO : MODE_MANUAL;
+
+    fgControl2->setFeature(feature,val);
+    fgControl2->setMode(feature,mode);
+    fgControl2->setActive(feature,bPwr);
 
     sliderPropagateDone();
 
@@ -544,9 +612,9 @@ void DC1394Thread::sliderWBPropagate(QVariantList arg)
 {
     qDebug() << "sliderWBPropagate";
 
-    dc1394feature_id_t feature;
+    cameraFeature_id_t feature;
     int value = arg.at(0).toInt();
-    feature = (dc1394feature_id_t)value;
+    feature = (cameraFeature_id_t)value;
 
 
     double redVal = arg.at(1).toDouble();
@@ -554,9 +622,12 @@ void DC1394Thread::sliderWBPropagate(QVariantList arg)
     bool bRBa = arg.at(3).toBool();
     bool bPwr = arg.at(4).toBool();
 
-    DC1394Control->setWhiteBalanceDC1394(blueVal,redVal);
-    DC1394Control->setModeDC1394(feature,bRBa);
-    DC1394Control->setActiveDC1394(feature,bPwr);
+    fgControl2->setFeature(feature, blueVal, redVal);
+    FeatureMode mode;
+    bRBa ? mode = MODE_AUTO : mode = MODE_MANUAL;
+
+    fgControl2->setMode(feature,mode);
+    fgControl2->setActive(feature,bPwr);
 
     sliderWBPropagateDone();
 
@@ -572,14 +643,14 @@ void DC1394Thread::sliderSetFeatureDC1394(QVariantList arg)
 {
     qDebug() << "sliderSetFeatureDC1394";
 
-    dc1394feature_id_t feature;
+    cameraFeature_id_t feature;
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
-    feature = (dc1394feature_id_t)value;
+    feature = (cameraFeature_id_t)value;
 
     double val = arg.at(2).toDouble();
 
-    DC1394Control->setFeatureDC1394(feature,val);
+    fgControl2->setFeature(feature,val);
 
     sliderSetFeatureDC1394Done(ptr,val);
 
@@ -593,15 +664,15 @@ void DC1394Thread::sliderWBSetFeatureDC1394(QVariantList arg)
 {
     qDebug() << "sliderWBSetFeatureDC1394";
 
-    dc1394feature_id_t feature;
+    cameraFeature_id_t feature;
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
-    feature = (dc1394feature_id_t)value;
+    feature = (cameraFeature_id_t)value;
 
     double redVal = arg.at(2).toDouble();
     double blueVal = arg.at(3).toDouble();
 
-    DC1394Control->setWhiteBalanceDC1394(blueVal,redVal);
+    fgControl2->setFeature(feature, blueVal,redVal);
 
     sliderWBSetFeatureDC1394Done(ptr,redVal,blueVal);
 
@@ -615,14 +686,15 @@ void DC1394Thread::sliderOnePush(QVariantList arg)
 {
     qDebug() << "sliderOnePush";
 
-    dc1394feature_id_t feature;
+    cameraFeature_id_t feature;
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
-    feature = (dc1394feature_id_t)value;
+    feature = (cameraFeature_id_t)value;
 
-    DC1394Control->setOnePushDC1394(feature);
+    fgControl2->setOnePush(feature);
 
-    double val = DC1394Control->getFeatureDC1394(feature);
+    double val;
+    fgControl2->getFeature(feature, &val);
 
     sliderOnePushDone(ptr,val);
 
@@ -637,16 +709,16 @@ void DC1394Thread::sliderWBOnePush(QVariantList arg)
 {
     qDebug() << "sliderWBOnePush";
 
-    dc1394feature_id_t feature;
+    cameraFeature_id_t feature;
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
-    feature = (dc1394feature_id_t)value;
+    feature = (cameraFeature_id_t)value;
 
     double redVal;
     double blueVal;
 
-    DC1394Control->setOnePushDC1394(feature);
-    DC1394Control->getWhiteBalanceDC1394(blueVal,redVal);
+    fgControl2->setOnePush(feature);
+    fgControl2->getFeature(feature, &blueVal, &redVal);
 
     sliderWBOnePushDone(ptr,redVal,blueVal);
 
@@ -662,16 +734,18 @@ void DC1394Thread::sliderRadioAuto(QVariantList arg)
 {
     qDebug() << "sliderRadioAuto";
 
-    dc1394feature_id_t feature;
+    cameraFeature_id_t feature;
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
     bool bVal = arg.at(2).toBool();
-    feature = (dc1394feature_id_t)value;
+    feature = (cameraFeature_id_t)value;
+    FeatureMode mode = bVal ? MODE_AUTO : MODE_MANUAL;
 
-    bool bON = DC1394Control->getActiveDC1394(feature);
-    DC1394Control->setModeDC1394(feature,bVal);
+    bool bON;
+    fgControl2->getActive(feature, &bON);
+    fgControl2->setMode(feature, mode);
 
-    sliderRadioAutoDone(ptr,bON,bVal);
+    sliderRadioAutoDone(ptr,true, bVal);
 
     opCounter--;
     if(opCounter == 0){
@@ -684,18 +758,18 @@ void DC1394Thread::sliderPower(QVariantList arg)
 {
     qDebug() << "sliderPower";
 
-    dc1394feature_id_t feature;
+    cameraFeature_id_t feature;
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
     bool bON = arg.at(2).toBool();
-    feature = (dc1394feature_id_t)value;
+    feature = (cameraFeature_id_t)value;
 
-    DC1394Control->setActiveDC1394(feature,bON);
+    fgControl2->setActive(feature, bON);
 
-    bool hasAuto = DC1394Control->hasAutoDC1394(feature);
-    bool hasManual = DC1394Control->hasManualDC1394(feature);
-    bool hasOnePush = DC1394Control->hasOnePushDC1394(feature);
-
+    bool hasAuto, hasManual, hasOnePush;
+    fgControl2->hasAuto(feature, &hasAuto);
+    /*bool hasManual  = */ fgControl2->hasManual(feature, &hasManual);
+    /*bool hasOnePush = */ fgControl2->hasOnePush(feature, &hasOnePush);
     sliderPowerDone(ptr,bON,hasAuto,hasManual,hasOnePush);
 
     opCounter--;
@@ -709,12 +783,14 @@ void DC1394Thread::sliderHasFeature(QVariantList arg)
 {
     qDebug() << "sliderHasFeature";
 
-    dc1394feature_id_t feature;
+    cameraFeature_id_t feature;
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
-    feature = (dc1394feature_id_t)value;
+    feature = (cameraFeature_id_t)value;
 
-    bool hasFeature = DC1394Control->hasFeatureDC1394(feature);
+    bool hasFeature;
+    fgControl2->hasFeature(feature, &hasFeature);
+//     hasFeature = true;// fgControl2->hasFeature(feature);
 
     opCounter--;
     if(opCounter == 0){
