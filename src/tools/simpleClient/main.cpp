@@ -282,6 +282,11 @@ int main(int argc, char *argv[])
             printf("    [%s] to read the reference acceleration for all axes\n", Vocab::decode(VOCAB_REF_ACCELERATIONS).c_str());
             printf("    [%s] <int> to read the reference acceleration for a single axis\n", Vocab::decode(VOCAB_REF_ACCELERATION).c_str());
             printf("    [%s] to read the current consumption for all axes\n", Vocab::decode(VOCAB_AMP_CURRENTS).c_str());
+            printf("    [%s] <int> to get the nominal current for a motor\n", Vocab::decode(VOCAB_AMP_NOMINAL_CURRENT).c_str());
+            printf("    [%s] <int> to get the peak current for a motor\n", Vocab::decode(VOCAB_AMP_PEAK_CURRENT).c_str());
+            printf("    [%s] <int> to get the PWM output for a motor\n", Vocab::decode(VOCAB_AMP_PWM).c_str());
+            printf("    [%s] <int> to get the PWM limit for a motor\n", Vocab::decode(VOCAB_AMP_PWM_LIMIT).c_str());
+            printf("    [%s] <int> to get the power supply voltage for a single motor\n", Vocab::decode(VOCAB_AMP_VOLTAGE_SUPPLY).c_str());
             printf("    [%s] <int> to get the current limit of single motor\n", Vocab::decode(VOCAB_AMP_MAXCURRENT).c_str());
             printf("    [%s] <int> to check motionDone on a single motor\n", Vocab::decode(VOCAB_MOTION_DONE).c_str());
             printf("    [%s] to check motionDone on all motors \n", Vocab::decode(VOCAB_MOTION_DONES).c_str());
@@ -308,6 +313,8 @@ int main(int argc, char *argv[])
             printf("    [%s] <int> <double> to set the encoder value for a single axis\n", Vocab::decode(VOCAB_ENCODER).c_str());
             printf("    [%s] <list> to set the encoder value for all axes\n", Vocab::decode(VOCAB_ENCODERS).c_str());
             printf("    [%s] <int> <double> to set the current limit for single motor\n", Vocab::decode(VOCAB_AMP_MAXCURRENT).c_str());
+            printf("    [%s] <int> <double> to set the peak current for a motor\n", Vocab::decode(VOCAB_AMP_PEAK_CURRENT).c_str());
+            printf("    [%s] <int> <double> to set the PWM limit for a motor\n", Vocab::decode(VOCAB_AMP_PWM_LIMIT).c_str());
             printf("\n");
 
             printf("NOTES: - A list is a sequence of numbers in parenthesis, e.g. (10 2 1 10)\n");
@@ -689,6 +696,51 @@ int main(int argc, char *argv[])
                     printf (")\n");
                 }
                 break;
+
+                case VOCAB_AMP_PWM:
+                {
+                    int j = p.get(2).asInt();
+                    amp->getPWM(j, tmp);
+                    printf ("%s: (", Vocab::decode(VOCAB_AMP_PWM).c_str());
+                    printf ("%.2f )\n", tmp[0]);
+                }
+                break;
+
+                case VOCAB_AMP_PWM_LIMIT:
+                {
+                    int j = p.get(2).asInt();
+                    amp->getPWMLimit(j, tmp);
+                    printf ("%s: (", Vocab::decode(VOCAB_AMP_PWM_LIMIT).c_str());
+                    printf ("%.2f )\n", tmp[0]);
+                }
+                break;
+
+                case VOCAB_AMP_PEAK_CURRENT:
+                {
+                    int j = p.get(2).asInt();
+                    amp->getPeakCurrent(j, tmp);
+                    printf ("%s: (", Vocab::decode(VOCAB_AMP_PEAK_CURRENT).c_str());
+                    printf ("%.2f )\n", tmp[0]);
+                }
+                break;
+
+                case VOCAB_AMP_NOMINAL_CURRENT:
+                {
+                    int j = p.get(2).asInt();
+                    amp->getNominalCurrent(j, tmp);
+                    printf ("%s: (", Vocab::decode(VOCAB_AMP_NOMINAL_CURRENT).c_str());
+                    printf ("%.2f )\n", tmp[0]);
+                }
+                break;
+
+                case VOCAB_AMP_VOLTAGE_SUPPLY:
+                {
+                    int j = p.get(2).asInt();
+                    amp->getPowerSupplyVoltage(j, tmp);
+                    printf ("%s: (", Vocab::decode(VOCAB_AMP_VOLTAGE_SUPPLY).c_str());
+                    printf ("%.2f )\n", tmp[0]);
+                }
+                break;
             }
             break;
 
@@ -896,6 +948,24 @@ int main(int argc, char *argv[])
                     printf("%s: setting limits for axis %d\n", Vocab::decode(VOCAB_LIMITS).c_str(), j);
                     Bottle *l = p.get(3).asList();
                     lim->setLimits(j, l->get(0).asDouble(), l->get(1).asDouble());
+                }
+                break;
+
+                case VOCAB_AMP_PWM_LIMIT:
+                {
+                    int j = p.get(2).asInt();
+                    double lim = p.get(3).asDouble();
+                    bool ret = amp->setPWMLimit(j, lim);
+                    printf("%s: setting PWM limits for axis %d to %0.2f - ret: %d\n", Vocab::decode(VOCAB_AMP_PWM_LIMIT).c_str(), j, lim, ret);
+                }
+                break;
+
+                case VOCAB_AMP_PEAK_CURRENT:
+                {
+                    int j = p.get(2).asInt();
+                    double lim = p.get(3).asDouble();
+                    bool ret = amp->setPeakCurrent(j, lim);
+                    printf("%s: setting peak current for axis %d to %0.2f - ret: %d\n", Vocab::decode(VOCAB_AMP_PEAK_CURRENT).c_str(), j, lim, ret);
                 }
                 break;
 
