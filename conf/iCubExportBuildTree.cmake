@@ -1,29 +1,29 @@
 # Copyright: (C) 2010 RobotCub Consortium
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
-# 
-# Code to export the project build tree. Note this is similar to the code 
+#
+# Code to export the project build tree. Note this is similar to the code
 # that export the installed project but is also different in important aspects.
 # For this reason the code is more complicated and produces separate files.
 #
-# This produces a file called icub-config.cmake in ${CMAKE_BINARY_DIR} that 
+# This produces a file called icub-config.cmake in ${CMAKE_BINARY_DIR} that
 # other projects should execute (with find_package) to use the project.
 #
-# This files assumes that each target you want to export has previously 
+# This files assumes that each target you want to export has previously
 # called icub_export_library.
 #
-# Files: 
-# EXPORT_INCLUDE_FILE: this file contains a list of all the targets in the 
-# build, and a corresponding include directories. This is generated from 
-# information in each target that is listed in the property ICUB_TARGETS. For each 
+# Files:
+# EXPORT_INCLUDE_FILE: this file contains a list of all the targets in the
+# build, and a corresponding include directories. This is generated from
+# information in each target that is listed in the property ICUB_TARGETS. For each
 # target get property INCLUDE_DIRS. The list ICUB_TARGETS is populated
-# by each target by calling icub_export_library in iCubHelpers.cmake. The same 
-# function created a given target the property INCLUDE_DIRS that contains the list 
+# by each target by calling icub_export_library in iCubHelpers.cmake. The same
+# function created a given target the property INCLUDE_DIRS that contains the list
 # of include directories required by the target.
-# 
+#
 # EXPORT_CONFIG_FILE: in build directory, store libraries and dependenecies
 # automatically generated with CMake export command.
-# 
+#
 # BUILD_CONFIG_TEMPLATE: template for the real config file (icub-config.cmake)
 # that exports the build tree
 #
@@ -41,11 +41,12 @@ file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "# This file is automatic
 file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "###################\n")
 file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "# List of include directories for exported targets\n\n")
 set(include_dirs "")
-foreach (t ${ICUB_TARGETS})  
+foreach (t ${ICUB_TARGETS})
     get_property(target_INCLUDE_DIRS TARGET ${t} PROPERTY INCLUDE_DIRS)
     #some targets do not export include directory
     if (target_INCLUDE_DIRS)
-        file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t}_INCLUDE_DIRS \"${target_INCLUDE_DIRS}\" CACHE STRING \"include dir for target ${t}\")\n")
+        file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "unset(${t}_INCLUDE_DIRS CACHE)\n")
+        file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t}_INCLUDE_DIRS \"${target_INCLUDE_DIRS}\")\n")
         set(include_dirs ${include_dirs} ${target_INCLUDE_DIRS})
     endif()
 endforeach(t)
@@ -55,11 +56,11 @@ list(REMOVE_DUPLICATES include_dirs)
 #message(STATUS "Header files global directory: ${include_dirs}")
 file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(ICUB_INCLUDE_DIRS \"${include_dirs}\" CACHE STRING \"list of include directories, all exported targets\")\n\n")
 
-### now write to file the list of dependencies with which iCub was compiled 
+### now write to file the list of dependencies with which iCub was compiled
 get_property(dependency_flags GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS)
 foreach (t ${dependency_flags})
-		file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "unset(${t} CACHE)\n")
-		file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t} \"${${t}}\")\n")
+    file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "unset(${t} CACHE)\n")
+    file(APPEND ${CMAKE_BINARY_DIR}/${EXPORT_INCLUDE_FILE} "set(${t} \"${${t}}\")\n")
 endforeach()
 
 CONFIGURE_FILE(${CMAKE_SOURCE_DIR}/${BUILD_CONFIG_TEMPLATE}
