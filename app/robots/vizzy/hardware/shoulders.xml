@@ -46,7 +46,7 @@
 	<param name="JNT_speed_estimation">	0	0	0	0	0	0</param>
 </group>
 <group name="LIMITS">
-	<param name="Max">	18	135	75	18	135	75</param>
+	<param name="Max">	18	135	70	18	135	70</param>
 	<param name="Min">	-18	-75	0	-18	-75	0</param>
 	<param name="Currents">	3000	3000	3000	3000	3000	3000</param>
 </group>
