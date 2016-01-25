@@ -29,7 +29,7 @@
 	<!--AxisMap		0	1	2	3	4	5	6	7	8	9 -->
 	<param name="AxisMap">	1	0	4	5	2	7	6	9	8	3 </param>
 	<param name="Encoder">	-568.9 568.9 568.9 568.9 -568.9 -1844.4 -1844.4 1844.4 0 0</param>
-	<param name="Zeros">	90	0	-90	-40	35	0	0	0	0	0</param>
+	<param name="Zeros">	90	5	-90	-40	35	0	0	0	0	0</param>
 	<param name="TorqueId">	0	0	0	0	0	0	0	0	0	0</param>
 	<param name="TorqueChan">	0	0	0	0	0	0	0	0	0	0</param>
 	<param name="TorqueMax">	0	0	0	0	0	0	0	0	0	0</param>
@@ -47,7 +47,7 @@
 	<param name="JNT_speed_estimation">	0	0	0	0	0	0	0	0	0	0	</param>
 </group>
 <group name="LIMITS">
-	<param name="Max">	85	110	85	35	35	150	225	225	0	0</param>
+	<param name="Max">	85	105	85	35	35	150	225	225	0	0</param>
 	<param name="Min">	-85	0	-85	-35	-35	0	0	0	0	0</param>
 	<param name="Currents">	2500 2000 1500 1500 1500 1500 1500 1500 1500 1500</param>
 </group>
