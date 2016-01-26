@@ -4313,9 +4313,38 @@ bool embObjMotionControl::setVelLimitsRaw(int axis, double min, double max)
 
 bool embObjMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 {
-    *min = 0.0;
-    *max = _maxJntCmdVelocity[axis];
-    return true;
+    eOmc_joint_config_t jconfig;
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(axis, protoid);
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+    {
+        yError() << "Can't send getVelLimits request for board" << _fId.boardNumber << "joint " << axis;
+        return false;
+    }
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getVelLimitsRaw() timed out the wait of reply from BOARD" << _fId.boardNumber << " joint " << axis;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+    // Get the value
+    uint16_t size;
+
+    bool ret = res->readBufferedValue(protoid, (uint8_t *)&jconfig, &size);
+
+    *max = jconfig.maxvelocityofjoint;
+    *min = 0;
+
+    return ret;
 }
 
 
