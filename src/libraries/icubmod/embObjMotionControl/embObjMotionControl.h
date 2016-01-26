@@ -355,9 +355,10 @@ private:
     bool    *_enabledAmp;       // Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
     bool    *_enabledPid;       // Depends on enabledAmp. When both are set, the joint exits the idle mode and goes into position mode. If one of them is disabled, it falls to idle.
     bool    *_calibrated;       // Flag to know if the calibrate function has been called for the joint
-    double  *_ref_positions;    // used for position control.
+    double  *_ref_command_positions;// used for position control.
     double  *_ref_speeds;       // used for position control.
-    double  *_command_speeds;   // used for velocity control.
+    double  *_ref_command_speeds;   // used for velocity control.
+    double  *_ref_positions;    // used for direct position control.
     double  *_ref_accs;         // for velocity control, in position min jerk eq is used.
     double  *_ref_torques;      // for torque control.
 

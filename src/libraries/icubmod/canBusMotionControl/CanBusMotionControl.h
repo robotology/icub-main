@@ -1179,11 +1179,12 @@ protected:
     inline int from_interactionint_to_interactionvocab (unsigned char interactionint);
 
     // internal stuff.
-    double *_ref_trajectory_speeds;      // used for position control.
-    double *_ref_command_speeds;         // used for velocity control.
-    double *_ref_accs;                   // for velocity control, in position min jerk eq is used.
-    double *_ref_torques;                // for torque control.
-    double *_ref_trajectory_positions;   // for position control.
+    double *_ref_speeds;              // used for position control.
+    double *_ref_command_speeds;      // used for velocity control.
+    double *_ref_accs;                // for velocity control, in position min jerk eq is used.
+    double *_ref_torques;             // for torque control.
+    double *_ref_command_positions;   // for position control.
+    double *_ref_positions;           // for direct position control
     bool _MCtorqueControlEnabled;
     #define MAX_POSITION_MOVE_INTERVAL 0.080
     double *_last_position_move_time;           /** time stamp for last received position move command*/

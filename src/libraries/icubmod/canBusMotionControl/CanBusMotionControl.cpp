@@ -2358,9 +2358,10 @@ _done(0)
     _firmwareVersionHelper = 0;
     _speedEstimationHelper = 0;
     _MCtorqueControlEnabled = false;
-    _ref_trajectory_positions = 0;
+    _ref_command_positions = 0;
+    _ref_positions = 0;
     _ref_command_speeds = 0;
-    _ref_trajectory_speeds = 0;
+    _ref_speeds = 0;
     _ref_accs=0;
     _ref_torques=0;
     _last_position_move_time = 0;
@@ -2370,9 +2371,10 @@ _done(0)
 
 CanBusMotionControl::~CanBusMotionControl ()
 {
-    checkAndDestroy<double>(_ref_trajectory_positions);
+    checkAndDestroy<double>(_ref_command_positions);
     checkAndDestroy<double>(_ref_command_speeds);
-    checkAndDestroy<double>(_ref_trajectory_speeds);
+    checkAndDestroy<double>(_ref_positions);
+    checkAndDestroy<double>(_ref_speeds);
     checkAndDestroy<double>(_ref_accs);
     checkAndDestroy<double>(_ref_torques);
     checkAndDestroy<double>(_last_position_move_time);
@@ -2493,9 +2495,10 @@ bool CanBusMotionControl::open (Searchable &config)
     delete [] tmpOnes;  tmpOnes=0;
 
     // temporary variables used by the ddriver.
-    _ref_trajectory_positions = allocAndCheck<double>(p._njoints);
+    _ref_command_positions = allocAndCheck<double>(p._njoints);
+    _ref_positions = allocAndCheck<double>(p._njoints);
     _ref_command_speeds = allocAndCheck<double>(p._njoints);
-    _ref_trajectory_speeds = allocAndCheck<double>(p._njoints);
+    _ref_speeds = allocAndCheck<double>(p._njoints);
     _ref_accs = allocAndCheck<double>(p._njoints);
     _ref_torques = allocAndCheck<double>(p._njoints);
     _last_position_move_time=allocAndCheck<double>(p._njoints);
@@ -2503,8 +2506,8 @@ bool CanBusMotionControl::open (Searchable &config)
 
     for (int i = 0; i<p._njoints; i++)
     {
-        _ref_trajectory_positions[i] = NAN;
-        _ref_trajectory_speeds[i] = 0.0;
+        _ref_command_positions[i] = NAN;
+        _ref_speeds[i] = 0.0;
         _ref_command_speeds[i] = 0.0;
     }
 
@@ -2985,9 +2988,10 @@ bool CanBusMotionControl::close (void)
     if (_firmwareVersionHelper != 0)
        {delete _firmwareVersionHelper; _firmwareVersionHelper =0;}
 
-    checkAndDestroy<double> (_ref_trajectory_positions);
+    checkAndDestroy<double> (_ref_command_positions);
     checkAndDestroy<double> (_ref_command_speeds);
-    checkAndDestroy<double> (_ref_trajectory_speeds);
+    checkAndDestroy<double> (_ref_positions);
+    checkAndDestroy<double> (_ref_speeds);
     checkAndDestroy<double> (_ref_accs);
     checkAndDestroy<double> (_ref_torques);
 
@@ -4977,7 +4981,7 @@ bool CanBusMotionControl::getTargetPositionRaw(int axis, double *ref)
     if (!(axis >= 0 && axis <= r.getJoints()))
         return false;
     _mutex.wait();
-    *(ref) = this->_ref_trajectory_positions[axis];
+    *(ref) = this->_ref_command_positions[axis];
     _mutex.post();
     return true;
 }
@@ -5037,7 +5041,11 @@ bool CanBusMotionControl::getRefVelocityRaw(int nj, const int * jnts, double *re
 
 bool CanBusMotionControl::getRefPositionRaw(int axis, double *ref)
 {
-    return NOT_YET_IMPLEMENTED("getRefPositionRaw");
+    CanBusResources& r = RES(system_resources);
+    if (!(axis >= 0 && axis <= r.getJoints()))
+        return false;
+    *ref = _ref_positions[axis];
+    return true;
 }
 
 bool CanBusMotionControl::getRefPositionRaw(double *ref)
@@ -5514,7 +5522,7 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
     if (!ENABLED (axis))
     {
         // still fills the _ref_position structure.
-        _ref_trajectory_positions[axis] = ref;
+        _ref_command_positions[axis] = ref;
         return true;
     }
 
@@ -5544,9 +5552,9 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
     r.startPacket();
     r.addMessage (ICUBCANPROTO_POL_MC_CMD__POSITION_MOVE, axis);
 
-    _ref_trajectory_positions[axis] = ref;
-    *((int*)(r._writeBuffer[0].getData() + 1)) = S_32(_ref_trajectory_positions[axis]);/// pos
-    *((short*)(r._writeBuffer[0].getData() + 5)) = S_16(_ref_trajectory_speeds[axis]);/// speed
+    _ref_command_positions[axis] = ref;
+    *((int*)(r._writeBuffer[0].getData() + 1)) = S_32(_ref_command_positions[axis]);/// pos
+    *((short*)(r._writeBuffer[0].getData() + 5)) = S_16(_ref_command_speeds[axis]);/// speed
     r._writeBuffer[0].setLen(7);
 
     r.writePacket();
@@ -5683,17 +5691,17 @@ bool CanBusMotionControl::setRefSpeedRaw(int axis, double sp)
         return false;
 
     sp /= 10.0; // encoder ticks per ms
-    _ref_trajectory_speeds[axis] = sp;
+    _ref_speeds[axis] = sp;
     return true;
 }
 
 bool CanBusMotionControl::setRefSpeedsRaw(const double *spds)
 {
     CanBusResources& r = RES(system_resources);
-    memcpy(_ref_trajectory_speeds, spds, sizeof(double)* r.getJoints());
+    memcpy(_ref_speeds, spds, sizeof(double)* r.getJoints());
     int i;
     for (i = 0; i < r.getJoints(); i++)
-        _ref_trajectory_speeds[i] /= 10.0;
+        _ref_speeds[i] /= 10.0;
 
     return true;
 }
@@ -5745,7 +5753,7 @@ bool CanBusMotionControl::getRefSpeedsRaw (double *spds)
 {
     CanBusResources& r = RES(system_resources);
 
-    memcpy(spds, _ref_trajectory_speeds, sizeof(double)* r.getJoints());
+    memcpy(spds, _ref_speeds, sizeof(double)* r.getJoints());
     int i;
     for (i = 0; i < r.getJoints(); i++)
         spds[i] *= 10.0;
@@ -5757,7 +5765,7 @@ bool CanBusMotionControl::getRefSpeedRaw (int axis, double *spd)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
-    *spd = _ref_trajectory_speeds[axis] * 10.0;
+    *spd = _ref_speeds[axis] * 10.0;
 
     return true;
 }

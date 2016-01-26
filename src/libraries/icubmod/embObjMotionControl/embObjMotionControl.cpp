@@ -467,8 +467,9 @@ bool embObjMotionControl::alloc(int nj)
     _last_position_move_time=allocAndCheck<double>(nj);
 
     // Reserve space for data stored locally. values are initialize to 0
+    _ref_command_positions = allocAndCheck<double>(nj);
     _ref_positions = allocAndCheck<double>(nj);
-    _command_speeds = allocAndCheck<double>(nj);
+    _ref_command_speeds = allocAndCheck<double>(nj);
     _ref_speeds = allocAndCheck<double>(nj);
     _ref_accs = allocAndCheck<double>(nj);
     _ref_torques = allocAndCheck<double>(nj);
@@ -519,8 +520,9 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_kbemf);
     checkAndDestroy(_ktau);
     checkAndDestroy(_filterType);
+    checkAndDestroy(_ref_command_positions);
     checkAndDestroy(_ref_positions);
-    checkAndDestroy(_command_speeds);
+    checkAndDestroy(_ref_command_speeds);
     checkAndDestroy(_ref_speeds);
     checkAndDestroy(_ref_accs);
     checkAndDestroy(_ref_torques);
@@ -612,7 +614,8 @@ embObjMotionControl::embObjMotionControl() :
     _rotorEncoderRes  = NULL;
     _rotorEncoderType = NULL;
     _ref_accs         = NULL;
-    _command_speeds   = NULL;
+    _ref_command_speeds   = NULL;
+    _ref_command_positions= NULL;
     _ref_positions    = NULL;
     _ref_speeds       = NULL;
     _ref_torques      = NULL;
@@ -2428,11 +2431,11 @@ bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
 
-    _command_speeds[j] = sp ;   // save internally the new value of speed.
+    _ref_command_speeds[j] = sp ;   // save internally the new value of speed.
 
     eOmc_setpoint_t setpoint;
     setpoint.type = eomc_setpoint_velocity;
-    setpoint.to.velocity.value =  (eOmeas_velocity_t) S_32(_command_speeds[j]);
+    setpoint.to.velocity.value =  (eOmeas_velocity_t) S_32(_ref_command_speeds[j]);
     setpoint.to.velocity.withacceleration = (eOmeas_acceleration_t) S_32(_ref_accs[j]);
 
 
@@ -2730,12 +2733,12 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     }
     
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
-    _ref_positions[j] = ref;   // save internally the new value of pos.
+    _ref_command_positions[j] = ref;   // save internally the new value of pos.
 
     eOmc_setpoint_t setpoint;
 
     setpoint.type = (eOenum08_t) eomc_setpoint_position;
-    setpoint.to.position.value =  (eOmeas_position_t) S_32(_ref_positions[j]);
+    setpoint.to.position.value =  (eOmeas_position_t) S_32(_ref_command_positions[j]);
     setpoint.to.position.withvelocity = (eOmeas_velocity_t) S_32(_ref_speeds[j]);
 
 
@@ -2863,8 +2866,14 @@ bool embObjMotionControl::setRefAccelerationsRaw(const double *accs)
 
 bool embObjMotionControl::getRefSpeedRaw(int j, double *spd)
 {
+    if (j<0 || j>_njoints) return false;
+#if ASK_REFERENCE_TO_FIRMWARE
+    *spd = _ref_speeds[j];
+    //return NOT_YET_IMPLEMENTED("getRefSpeedRaw");
+#else
     *spd = _ref_speeds[j];
     return true;
+#endif
 }
 
 bool embObjMotionControl::getRefSpeedsRaw(double *spds)
@@ -4950,7 +4959,13 @@ bool embObjMotionControl::setPositionsRaw(const double *refs)
 
 bool embObjMotionControl::getTargetPositionRaw(int axis, double *ref)
 {
+    if (axis<0 || axis>_njoints) return false;
+#if ASK_REFERENCE_TO_FIRMWARE
     return NOT_YET_IMPLEMENTED("getTargetPositionRaw");
+#else
+    *ref = _ref_command_positions[axis];
+    return true;
+#endif
 }
 
 bool embObjMotionControl::getTargetPositionRaw(double *refs)
@@ -4975,7 +4990,13 @@ bool embObjMotionControl::getTargetPositionRaw(int nj, const int * jnts, double 
 
 bool embObjMotionControl::getRefVelocityRaw(int axis, double *ref)
 {
+    if (axis<0 || axis>_njoints) return false;
+#if ASK_REFERENCE_TO_FIRMWARE
     return NOT_YET_IMPLEMENTED("getRefVelocityRaw");
+#else
+    *ref = _ref_command_speeds[axis];
+    return true;
+#endif
 }
 
 bool embObjMotionControl::getRefVelocityRaw(double *refs)
@@ -5000,7 +5021,13 @@ bool embObjMotionControl::getRefVelocityRaw(int nj, const int * jnts, double *re
 
 bool embObjMotionControl::getRefPositionRaw(int axis, double *ref)
 {
+    if (axis<0 || axis>_njoints) return false;
+#if ASK_REFERENCE_TO_FIRMWARE
     return NOT_YET_IMPLEMENTED("getRefPositionRaw");
+#else
+    *ref = _ref_positions[axis];
+    return true;
+#endif
 }
 
 bool embObjMotionControl::getRefPositionRaw(double *refs)
