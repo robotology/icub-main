@@ -4986,7 +4986,7 @@ bool CanBusMotionControl::getTargetPositionRaw(int axis, double *ref)
     return true;
 }
 
-bool CanBusMotionControl::getTargetPositionRaw(double *ref)
+bool CanBusMotionControl::getTargetPositionsRaw(double *ref)
 {
     CanBusResources& r = RES(system_resources);
     bool ret = true;
@@ -4997,7 +4997,7 @@ bool CanBusMotionControl::getTargetPositionRaw(double *ref)
     return ret;
 }
 
-bool CanBusMotionControl::getTargetPositionRaw(int nj, const int * jnts, double *refs)
+bool CanBusMotionControl::getTargetPositionsRaw(int nj, const int * jnts, double *refs)
 {
     bool ret = true;
     for (int j = 0; j < nj && ret; j++)
@@ -5018,7 +5018,7 @@ bool CanBusMotionControl::getRefVelocityRaw(int axis, double *ref)
     return true;
 }
 
-bool CanBusMotionControl::getRefVelocityRaw(double *ref)
+bool CanBusMotionControl::getRefVelocitiesRaw(double *ref)
 {
     CanBusResources& r = RES(system_resources);
     bool ret = true;
@@ -5029,7 +5029,7 @@ bool CanBusMotionControl::getRefVelocityRaw(double *ref)
     return ret;
 }
 
-bool CanBusMotionControl::getRefVelocityRaw(int nj, const int * jnts, double *refs)
+bool CanBusMotionControl::getRefVelocitiesRaw(int nj, const int * jnts, double *refs)
 {
     bool ret = true;
     for (int j = 0; j < nj && ret; j++)
@@ -5048,7 +5048,7 @@ bool CanBusMotionControl::getRefPositionRaw(int axis, double *ref)
     return true;
 }
 
-bool CanBusMotionControl::getRefPositionRaw(double *ref)
+bool CanBusMotionControl::getRefPositionsRaw(double *ref)
 {
     CanBusResources& r = RES(system_resources);
     bool ret = true;
@@ -5059,7 +5059,7 @@ bool CanBusMotionControl::getRefPositionRaw(double *ref)
     return ret;
 }
 
-bool CanBusMotionControl::getRefPositionRaw(int nj, const int * jnts, double *refs)
+bool CanBusMotionControl::getRefPositionsRaw(int nj, const int * jnts, double *refs)
 {
     bool ret = true;
     for (int j = 0; j < nj && ret; j++)

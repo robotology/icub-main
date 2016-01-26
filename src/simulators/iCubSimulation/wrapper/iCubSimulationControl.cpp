@@ -1041,7 +1041,7 @@ bool iCubSimulationControl::getTargetPositionRaw(int axis, double *ref)
     return false;
 }
 
-bool iCubSimulationControl::getTargetPositionRaw(double *refs)
+bool iCubSimulationControl::getTargetPositionsRaw(double *refs)
 {
     bool ret = true;
     for (int i = 0; i<njoints; i++)
@@ -1051,7 +1051,7 @@ bool iCubSimulationControl::getTargetPositionRaw(double *refs)
     return ret;
 }
 
-bool iCubSimulationControl::getTargetPositionRaw(int nj, const int * jnts, double *refs)
+bool iCubSimulationControl::getTargetPositionsRaw(int nj, const int * jnts, double *refs)
 {
     bool ret = true;
     for (int i = 0; i<nj; i++)
@@ -1069,7 +1069,7 @@ bool iCubSimulationControl::getRefVelocityRaw(int axis, double *ref)
     return true;
 }
 
-bool iCubSimulationControl::getRefVelocityRaw(double *refs)
+bool iCubSimulationControl::getRefVelocitiesRaw(double *refs)
 {
     bool ret = true;
     for (int i = 0; i<njoints; i++)
@@ -1079,7 +1079,7 @@ bool iCubSimulationControl::getRefVelocityRaw(double *refs)
     return ret;
 }
 
-bool iCubSimulationControl::getRefVelocityRaw(int nj, const int * jnts, double *refs)
+bool iCubSimulationControl::getRefVelocitiesRaw(int nj, const int * jnts, double *refs)
 {
     bool ret = true;
     for (int i = 0; i<nj; i++)
@@ -1097,7 +1097,7 @@ bool iCubSimulationControl::getRefPositionRaw(int axis, double *ref)
     return true;
 }
 
-bool iCubSimulationControl::getRefPositionRaw(double *refs)
+bool iCubSimulationControl::getRefPositionsRaw(double *refs)
 {
     bool ret = true;
     for (int i = 0; i<njoints; i++)
@@ -1108,7 +1108,7 @@ bool iCubSimulationControl::getRefPositionRaw(double *refs)
 }
 
 
-bool iCubSimulationControl::getRefPositionRaw(int nj, const int * jnts, double *refs)
+bool iCubSimulationControl::getRefPositionsRaw(int nj, const int * jnts, double *refs)
 {
     bool ret = true;
     for (int i = 0; i<nj; i++)

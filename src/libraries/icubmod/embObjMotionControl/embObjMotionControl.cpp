@@ -5107,7 +5107,7 @@ bool embObjMotionControl::getRefVelocityRaw(int axis, double *ref)
 #endif
 }
 
-bool embObjMotionControl::getRefVelocityRaw(double *refs)
+bool embObjMotionControl::getRefVelocitiesRaw(double *refs)
 {
     bool ret = true;
     for (int i = 0; i<_njoints; i++)
@@ -5117,7 +5117,7 @@ bool embObjMotionControl::getRefVelocityRaw(double *refs)
     return ret;
 }
 
-bool embObjMotionControl::getRefVelocityRaw(int nj, const int * jnts, double *refs)
+bool embObjMotionControl::getRefVelocitiesRaw(int nj, const int * jnts, double *refs)
 {
     bool ret = true;
     for (int i = 0; i<nj; i++)

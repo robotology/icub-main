@@ -1087,8 +1087,8 @@ public:
     virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
     virtual bool stopRaw(const int n_joint, const int *joints);
     virtual bool getTargetPositionRaw(const int joint, double *ref);
-    virtual bool getTargetPositionRaw(double *refs);
-    virtual bool getTargetPositionRaw(const int n_joint, const int *joints, double *refs);
+    virtual bool getTargetPositionsRaw(double *refs);
+    virtual bool getTargetPositionsRaw(const int n_joint, const int *joints, double *refs);
 
     // IVelocityControl2
     virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
@@ -1097,8 +1097,8 @@ public:
     virtual bool getVelPidRaw(int j, Pid *pid);
     virtual bool getVelPidsRaw(Pid *pids);
     virtual bool getRefVelocityRaw(const int joint, double *ref);
-    virtual bool getRefVelocityRaw(double *refs);
-    virtual bool getRefVelocityRaw(const int n_joint, const int *joints, double *refs);
+    virtual bool getRefVelocitiesRaw(double *refs);
+    virtual bool getRefVelocitiesRaw(const int n_joint, const int *joints, double *refs);
 
     // Firmware version
     virtual bool getFirmwareVersionRaw(int axis, can_protocol_info const& icub_interface_protocol, firmware_info *info);
@@ -1111,8 +1111,8 @@ public:
     virtual bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     virtual bool setPositionsRaw(const double *refs);
     virtual bool getRefPositionRaw(const int joint, double *ref);
-    virtual bool getRefPositionRaw(double *refs);
-    virtual bool getRefPositionRaw(const int n_joint, const int *joints, double *refs);
+    virtual bool getRefPositionsRaw(double *refs);
+    virtual bool getRefPositionsRaw(const int n_joint, const int *joints, double *refs);
 
     // InteractionMode interface
     virtual bool getInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum* mode);
