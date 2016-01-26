@@ -6555,16 +6555,6 @@ bool CanBusMotionControl::setTemperatureLimitRaw(int m, const double temp)
     return NOT_YET_IMPLEMENTED("setTemperatureLimitRaw");
 }
 
-bool CanBusMotionControl::getMotorOutputLimitRaw(int m, double *limit)
-{
-    return NOT_YET_IMPLEMENTED("getMotorOutputLimitRaw");
-}
-
-bool CanBusMotionControl::setMotorOutputLimitRaw(int m, const double limit)
-{
-    return NOT_YET_IMPLEMENTED("setMotorOutputLimitRaw");
-}
-
 bool CanBusMotionControl::getPeakCurrentRaw(int m, double *val)
 {
     return NOT_YET_IMPLEMENTED("getPeakCurrentRaw");

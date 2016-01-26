@@ -253,10 +253,8 @@ int main(int argc, char *argv[])
             printf("    [%s] <int> to read the temperature value for a single motor\n", Vocab::decode(VOCAB_TEMPERATURE).c_str());
             printf("    [%s] <int> to read the temperatures of all motors\n", Vocab::decode(VOCAB_TEMPERATURES).c_str());
             printf("    [%s] <int> to read the temperature limit for a single motor\n", Vocab::decode(VOCAB_TEMPERATURE_LIMIT).c_str());
-            printf("    [%s] <int> to read the output limit for a single motor\n", Vocab::decode(VOCAB_MOTOR_OUTPUT_LIMIT).c_str());
             printf("type [set] and one of the following:\n");
             printf("    [%s] <int> to set the temperature limit for a single motor\n", Vocab::decode(VOCAB_TEMPERATURE_LIMIT).c_str());
-            printf("    [%s] <int> to set the output limit for a single motor\n", Vocab::decode(VOCAB_MOTOR_OUTPUT_LIMIT).c_str());
             printf("\n");
 
             printf("IMotorEncoder Interfaces:\n");
@@ -691,17 +689,6 @@ int main(int argc, char *argv[])
                 }
                 break;
 
-                case VOCAB_MOTOR_OUTPUT_LIMIT: {
-                    if (imot==0) {printf ("unavailable interface\n"); break;}
-                    int j = p.get(2).asInt();
-                    double v;
-                    imot->getMotorOutputLimit(j, &v);
-                    printf("%s: ", Vocab::decode(VOCAB_MOTOR_OUTPUT_LIMIT).c_str());
-                    printf("%.2f ", v);
-                    printf("\n");
-                }
-                break;
-
                 case VOCAB_OUTPUTS: {
                     if (iopenloop==0) {printf ("unavailable interface\n"); break;}
                     iopenloop->getOutputs(tmp);
@@ -1004,16 +991,6 @@ int main(int argc, char *argv[])
                 }
                 break;
 
-                case VOCAB_MOTOR_OUTPUT_LIMIT: {
-                    if (imot==0) {printf ("unavailable interface\n"); break;}
-                    int j=p.get(2).asInt();
-                    double v=p.get(3).asDouble();
-                    imot->setMotorOutputLimit(j,v);
-                    printf("%s: setting output for axis %d to %f\n", Vocab::decode(VOCAB_MOTOR_OUTPUT_LIMIT).c_str(), j, v);            
-                }
-                break;
-
-                
                 case VOCAB_AMP_MAXCURRENT: {
                     int j=p.get(2).asInt();
                     double v=p.get(3).asDouble();

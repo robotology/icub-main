@@ -755,8 +755,6 @@ public:
     virtual bool getTemperaturesRaw(double *vals);
     virtual bool getTemperatureLimitRaw(int m, double *temp);
     virtual bool setTemperatureLimitRaw(int m, const double temp);
-    virtual bool getMotorOutputLimitRaw(int m, double *limit);
-    virtual bool setMotorOutputLimitRaw(int m, const double limit);
     virtual bool getPeakCurrentRaw(int m, double *val);
     virtual bool setPeakCurrentRaw(int m, const double val);
     virtual bool getNominalCurrentRaw(int m, double *val);

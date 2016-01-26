@@ -5614,16 +5614,6 @@ bool embObjMotionControl::setTemperatureLimitRaw(int m, const double temp)
 
 }
 
-bool embObjMotionControl::getMotorOutputLimitRaw(int m, double *limit)
-{
-    return DEPRECATED("getMotorOutputLimitRaw");
-}
-
-bool embObjMotionControl::setMotorOutputLimitRaw(int m, const double limit)
-{
-    return DEPRECATED("setMotorOutputLimitRaw");
-}
-
 bool embObjMotionControl::getPeakCurrentRaw(int m, double *val)
 {
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_currentlimits);
