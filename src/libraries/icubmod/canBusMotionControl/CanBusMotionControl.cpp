@@ -1607,7 +1607,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         return false;
     }
 
-    if (!validate(limits, xtmp, "Currents","a list of current limits", nj+1))
+    if (!validate(limits, xtmp, "MotorOverloadCurrents","a list of current limits", nj+1))
         return false;
 
     for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();
