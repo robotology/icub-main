@@ -45,14 +45,14 @@
 <group name="LIMITS">        
     <param name="Max">          50            30            70            0             </param>       
     <param name="Min">          -50           -30           -22           0             </param>       
-    <param name="Currents">     7000          7000          7000          7000          </param>       
+    <param name="MotorOverloadCurrents">     7000          7000          7000          7000          </param>       
 </group>       
  
  <group name="POS_PIDS">      
 <param name="kp">           32000         32000         32000         0             </param>       
 <param name="kd">           6000          6000          6000          0             </param>       
 <param name="ki">           60            60            60            0             </param>       
-<param name="maxPwm">       1333          1333          1333          1333          </param>       
+<param name="maxOutput">       1333          1333          1333          1333          </param>       
 <param name="maxInt">       1333          1333          1333          1333          </param>       
 <param name="shift">        13            13            13            0             </param>       
 <param name="ko">           0             0             0             0             </param>       
@@ -64,7 +64,7 @@
 <param name="kp">           6             6             6             0             </param>       
 <param name="kd">           0             0             0             0             </param>       
 <param name="ki">           0             0             0             0             </param>       
-<param name="maxPwm">       1333          1333          1333          1333          </param>       
+<param name="maxOutput">       1333          1333          1333          1333          </param>       
 <param name="maxInt">       1333          1333          1333          1333          </param>       
 <param name="shift">        11            11            11            0             </param>       
 <param name="ko">           0             0             0             0             </param>       

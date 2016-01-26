@@ -111,13 +111,18 @@ extern void eoprot_fun_ONSAY_mc(const EOnv* nv, const eOropdescriptor_t* rd)
 }
 
 
-extern void eoprot_fun_UPDT_mc_joint_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
+extern void eoprot_fun_UPDT_mc_joint_status_core(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 #if defined(ENABLE_DEBUG_CONTROLMODESTATUS)
     eOmc_joint_status_basic_t *jsb = (eOmc_joint_status_basic_t*)rd->data;
     s_debug_monitor_controlmodestatus(eo_nv_GetBRD(nv), eoprot_ID2index(rd->id32), jsb->controlmodestatus);
 #endif
     feat_manage_motioncontrol_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)rd->data);
+}
+
+
+extern void eoprot_fun_UPDT_mc_motor_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
+{
 }
 
 
@@ -129,12 +134,6 @@ extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescripto
 #endif
     feat_manage_motioncontrol_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)rd->data);
 }
-
-
-extern void eoprot_fun_UPDT_mc_motor_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
 
 extern void eoprot_fun_UPDT_mc_joint_config(const EOnv* nv, const eOropdescriptor_t* rd)
 {
@@ -150,7 +149,7 @@ extern void eoprot_fun_UPDT_mc_joint_config_limitsofjoint(const EOnv* nv, const 
 {
 }
 
-extern void eoprot_fun_UPDT_mc_motor_config_maxcurrentofmotor(const EOnv* nv, const eOropdescriptor_t* rd)
+extern void eoprot_fun_UPDT_mc_motor_config_currentLimits(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 }
 
@@ -177,7 +176,7 @@ extern void eoprot_fun_UPDT_mc_joint_config_impedance(const EOnv* nv, const eOro
 }
 
 
-extern void eoprot_fun_UPDT_mc_joint_status_modes_interactionmodestatus(const EOnv* nv, const eOropdescriptor_t* rd)
+extern void eoprot_fun_UPDT_mc_joint_status_core_modes_interactionmodestatus(const EOnv* nv, const eOropdescriptor_t* rd)
 {
 }
 

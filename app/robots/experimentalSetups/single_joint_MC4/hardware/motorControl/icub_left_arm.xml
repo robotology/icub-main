@@ -44,14 +44,14 @@
 <group name="LIMITS">        
 <param name="Min">             -60           -80           -20           0             </param>       
 <param name="Max">              60            25            25           60            </param>       
-<param name="Currents">       1000          800           800           800           </param>       
+<param name="MotorOverloadCurrents">       1000          800           800           800           </param>       
 </group>       
      
 <group name="POS_PIDS">      
 <param name="kp">           -200          -1000         1000         200           </param>       
 <param name="kd">           -1000         -10000        10000        200           </param>       
 <param name="ki">           -1            -1            1            1             </param>       
-<param name="maxPwm">       200          200          200          200          </param>       
+<param name="maxOutput">       200          200          200          200          </param>       
 <param name="maxInt">       200          200          200          200          </param>       
 <param name="shift">        6             7             7             4             </param>       
 <param name="ko">           0             0             0             0             </param>       

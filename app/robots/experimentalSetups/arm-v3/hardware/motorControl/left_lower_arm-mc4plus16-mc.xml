@@ -17,7 +17,7 @@
             <param name="RotorMin">             0           0               0               0           </param> 
             <param name="RotorMax">             0           0               0               0            </param>
             <param name="JntVelocityMax">       0           0               0               0            </param>
-            <param name="Currents">             600         600             600             600            </param>
+            <param name="MotorOverloadCurrents">             600         600             600             600            </param>
         </group>
     
 
@@ -34,7 +34,7 @@
             <param name="kd">                   0.0         0.0         0.0         0.0         </param>     
             <param name="ki">                   0.0         0.0         0.0         0.0         </param>      
             <param name="limPwm">               500         500         500         500         </param>       
-            <param name="maxPwm">               1333        1333        1333        1333        </param>  
+            <param name="maxOutput">               1333        1333        1333        1333        </param>  
             <param name="maxInt">               0           0           0           0           </param> 
             <param name="shift">                0           0           0           0           </param>       
             <param name="ko">                   0           0           0           0           </param>  
@@ -49,7 +49,7 @@
             <param name="kp">                   0           0           0           0    </param>    
             <param name="kd">                   0           0           0           0    </param>        
             <param name="ki">                   0           0           0           0    </param>        
-            <param name="maxPwm">               0           0           0           0    </param>       
+            <param name="maxOutput">               0           0           0           0    </param>       
             <param name="maxInt">               0           0           0           0    </param>       
             <param name="shift">                0           0           0           0    </param>        
             <param name="ko">                   0           0           0           0    </param>        

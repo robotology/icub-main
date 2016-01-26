@@ -8,12 +8,16 @@
       <params file="hardware/mechanicals/right_upper_leg-ems8-mec.xml" />
 
     <group name="LIMITS">
-        <param name="Max">              100           75            75          0       </param>
-        <param name="Min">             -33           -17           -75         -100     </param>
-        <param name="RotorMin">         0             0             0           0       </param> 
-        <param name="RotorMax">         0             0             0           0       </param>
-        <param name="Currents">         5000          6500          5000        5000    </param>
-        <param name="JntVelocityMax">      1000          1000          1000        1000    </param>  
+        <param name="Max">                   100           75            75          0       </param>
+        <param name="Min">                   -33           -17           -75         -100    </param>
+        <param name="RotorMin">              0             0             0           0       </param> 
+        <param name="RotorMax">              0             0             0           0       </param>
+        <param name="MotorOverloadCurrents"> 5000          6500          5000        5000    </param>
+        <param name="MotorNominalCurrents">  0             0             0           0       </param>
+	    <param name="MotorPeakCurrents">     0             0             0           0       </param>
+        <param name="JntVelocityMax">        1000          1000          1000        1000    </param>
+        <param name="MotorPwmLimit">         10000         10000         10000       10000   </param>    
+
     </group>
 
     <group name="IMPEDANCE">
@@ -28,7 +32,7 @@
         <param name="kd">               0.00        0.00       0.00       0.00 </param>       
         <param name="ki">           10666.64   -14222.18    7111.09  -10666.64 </param>       
         <param name="limPwm">           2500        2500       2500       2500 </param>      
-        <param name="maxPwm">           8000        8000       8000       8000 </param>          
+        <param name="maxOutput">        8000        8000       8000       8000 </param>          
         <param name="maxInt">           1500        1500        750       1000 </param>       
         <param name="shift">               0           0          0          0 </param>       
         <param name="ko">                  0           0          0          0 </param>       
@@ -43,7 +47,7 @@
         <param name="kp">                 50        -100        100       -100     </param>       
         <param name="kd">                  0           0          0          0     </param>       
         <param name="ki">                  0           0          0          0     </param>       
-        <param name="maxPwm">           8000        8000       8000       8000     </param>   
+        <param name="maxOutput">           8000        8000       8000       8000     </param>   
         <param name="limPwm">       3000       3000       3000       3000     </param>     
         <param name="maxInt">            500         500        500        500     </param>       
         <param name="shift">               0           0          0          0     </param>       

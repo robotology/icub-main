@@ -1095,7 +1095,7 @@ bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, 
     if (!validate(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
     if (!validate(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
     if (!validate(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
-    if (!validate(pidsGroup, xtmp, "maxPwm", "Pid maxPwm parameter", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    if (!validate(pidsGroup, xtmp, "maxOutput", "Pid maxOutput parameter", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
     if (!validate(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints+1))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
     if (!validate(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints+1))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
     if (!validate(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints+1))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
@@ -1607,7 +1607,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         return false;
     }
 
-    if (!validate(limits, xtmp, "Currents","a list of current limits", nj+1))
+    if (!validate(limits, xtmp, "MotorOverloadCurrents","a list of current limits", nj+1))
         return false;
 
     for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();

@@ -12,7 +12,7 @@
     <group name="LIMITS">
         <param name="Min">             -100     +65   		</param> 
 		<param name="Max">             +100     +220         </param>
-        <param name="Currents">        500       501      	</param>
+        <param name="MotorOverloadCurrents">        500       501      	</param>
     </group>
     
 
@@ -29,7 +29,7 @@
         <param name="kd">           0.0         0.0     	</param>     
         <param name="ki">           4.0         -4.0     		</param>      
         <param name="limPwm">       500         500   			</param>       
-        <param name="maxPwm">       1333        900   			</param>  
+        <param name="maxOutput">       1333        900   			</param>  
         <param name="maxInt">       1333        900     		</param> 
 		<param name="shift">        0           0       	</param>       
         <param name="ko">           0           0       		</param>  
@@ -44,7 +44,7 @@
         <param name="kp">           0       0       	</param>    
         <param name="kd">           0       0       		</param>        
         <param name="ki">           0       0       		</param>        
-        <param name="maxPwm">       8000    8000    	</param>       
+        <param name="maxOutput">       8000    8000    	</param>       
         <param name="maxInt">      	500     500     		</param>       
         <param name="shift">        0       0       		</param>        
         <param name="ko">           0       0      		</param>        

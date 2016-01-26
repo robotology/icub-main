@@ -169,6 +169,15 @@ struct SpeedEstimationParameters
     }
 };
 
+struct MotorCurrentLimits
+{
+    double nominalCurrent;
+    double peakCurrent;
+    double overloadCurrent;
+    MotorCurrentLimits() {nominalCurrent=0; peakCurrent=0; overloadCurrent=0;}
+};
+
+
 class torqueControlHelper
 {
     int  jointsNum;
@@ -295,7 +304,8 @@ private:
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_kinematic_mj;                      /** the kinematic coupling matrix from joints space to motor space */
-    double *_currentLimits;                     /** current limits */
+    //double *_currentLimits;                     /** current limits */
+    MotorCurrentLimits *_currentLimits;
     double *_maxJntCmdVelocity;                 /** max joint commanded velocity */
     double *_maxMotorVelocity;                  /** max motor velocity */
     int *_velocityShifts;                       /** velocity shifts */
@@ -310,6 +320,7 @@ private:
     bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
     #define MAX_POSITION_MOVE_INTERVAL 0.080
     double *_last_position_move_time;           /** time stamp for last received position move command*/
+    double *_motorPwmLimits;                    /** motors PWM limits*/
 
     // TODO doubled!!! optimize using just one of the 2!!!
     ImpedanceParameters *_impedance_params;     /** impedance parameters */
@@ -535,8 +546,8 @@ public:
     virtual bool getRefAccelerationsRaw(const int n_joint, const int *joints, double *accs);
     virtual bool stopRaw(const int n_joint, const int *joints);
     virtual bool getTargetPositionRaw(const int joint, double *ref);
-    virtual bool getTargetPositionRaw(double *refs);
-    virtual bool getTargetPositionRaw(const int n_joint, const int *joints, double *refs);
+    virtual bool getTargetPositionsRaw(double *refs);
+    virtual bool getTargetPositionsRaw(const int n_joint, const int *joints, double *refs);
 
     //  Velocity control interface raw
     virtual bool setVelocityModeRaw();
@@ -726,8 +737,8 @@ public:
     virtual bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     virtual bool setPositionsRaw(const double *refs);
     virtual bool getRefPositionRaw(const int joint, double *ref);
-    virtual bool getRefPositionRaw(double *refs);
-    virtual bool getRefPositionRaw(const int n_joint, const int *joints, double *refs);
+    virtual bool getRefPositionsRaw(double *refs);
+    virtual bool getRefPositionsRaw(const int n_joint, const int *joints, double *refs);
 
     // InteractionMode interface
     virtual bool getInteractionModeRaw(int j, yarp::dev::InteractionModeEnum* _mode);
