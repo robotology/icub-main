@@ -196,6 +196,7 @@ public:
     int *_velocityShifts;                       /** velocity shifts */
     int *_velocityTimeout;                      /** velocity shifts */
     double *_maxStep;                           /** max size of a positionDirect step */
+    double *_maxJntCmdVelocity;                 /** max velocity command for a joint */
     double *_optical_factor;                    /** reduction ratio of the optical encoder on motor axis */ 
     int *_torqueSensorId;                       /** Id of associated Joint Torque Sensor */
     int *_torqueSensorChan;                     /** Channel of associated Joint Torque Sensor */
@@ -1185,6 +1186,7 @@ protected:
     double *_ref_torques;             // for torque control.
     double *_ref_command_positions;   // for position control.
     double *_ref_positions;           // for direct position control
+    double *_max_vel_jnt_cmd;         // maximum velocity command for a joint, internally cached, not sent to the fw yet
     bool _MCtorqueControlEnabled;
     #define MAX_POSITION_MOVE_INTERVAL 0.080
     double *_last_position_move_time;           /** time stamp for last received position move command*/

@@ -1612,6 +1612,25 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
 
     for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();
 
+    if (!validate_optional(limits, xtmp, "JntVelocityMax", "the maximum velocity command of a joint", nj + 1))
+    {
+        yWarning("JntVelocityMax: Using default JntVelocityMax=100 deg/s\n");
+        for (i = 1; i<nj + 1; i++)
+            _maxJntCmdVelocity[i - 1] = 100;   //Default value
+    }
+    else
+    {
+        for (i = 1; i<xtmp.size(); i++)
+        {
+            _maxJntCmdVelocity[i - 1] = xtmp.get(i).asDouble();
+            if (_maxJntCmdVelocity[i - 1]<0)
+            {
+                yError() << "Invalid JntVelocityMax parameter <0\n";
+                return false;
+            }
+        }
+    }
+
     if (!validate_optional(limits, xtmp, "maxPosStep", "the maximum amplitude of a position direct step", nj+1))
     {
         yWarning("maxPosStep: Using default MaxPosStep=10 degs\n");
@@ -1879,6 +1898,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _bemfGain=allocAndCheck<double>(nj);
     _ktau=allocAndCheck<double>(nj);
     _maxStep=allocAndCheck<double>(nj);
+    _maxJntCmdVelocity = allocAndCheck<double>(nj);
     _filterType=allocAndCheck<int>(nj);
     _axisName = new std::string[nj];
     _axisType = new std::string[nj];
@@ -1903,6 +1923,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     memset(_optical_factor, 0, sizeof(double)*nj);
     memset(_velocityTimeout, 0, sizeof(int)*nj);
     memset(_maxStep, 0, sizeof(double)*nj);
+    memset(_maxJntCmdVelocity, 0, sizeof(double)*nj);
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1940,6 +1961,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<double>(_bemfGain);
     checkAndDestroy<double>(_ktau);
     checkAndDestroy<double>(_maxStep);
+    checkAndDestroy<double>(_maxJntCmdVelocity);
     checkAndDestroy<int>(_filterType);
     checkAndDestroy<std::string>(_axisName);
     checkAndDestroy<std::string>(_axisType);
@@ -2360,6 +2382,7 @@ _done(0)
     _MCtorqueControlEnabled = false;
     _ref_command_positions = 0;
     _ref_positions = 0;
+    _max_vel_jnt_cmd = 0;
     _ref_command_speeds = 0;
     _ref_speeds = 0;
     _ref_accs=0;
@@ -2374,6 +2397,7 @@ CanBusMotionControl::~CanBusMotionControl ()
     checkAndDestroy<double>(_ref_command_positions);
     checkAndDestroy<double>(_ref_command_speeds);
     checkAndDestroy<double>(_ref_positions);
+    checkAndDestroy<double>(_max_vel_jnt_cmd);
     checkAndDestroy<double>(_ref_speeds);
     checkAndDestroy<double>(_ref_accs);
     checkAndDestroy<double>(_ref_torques);
@@ -2497,6 +2521,7 @@ bool CanBusMotionControl::open (Searchable &config)
     // temporary variables used by the ddriver.
     _ref_command_positions = allocAndCheck<double>(p._njoints);
     _ref_positions = allocAndCheck<double>(p._njoints);
+    _max_vel_jnt_cmd = allocAndCheck<double>(p._njoints);
     _ref_command_speeds = allocAndCheck<double>(p._njoints);
     _ref_speeds = allocAndCheck<double>(p._njoints);
     _ref_accs = allocAndCheck<double>(p._njoints);
@@ -2579,6 +2604,9 @@ bool CanBusMotionControl::open (Searchable &config)
     {
         yarp::os::Time::delay(0.001);
         setLimits(i, p._limitsMin[i], p._limitsMax[i]);
+        yarp::os::Time::delay(0.001);
+        setVelLimits(i, 0, p._maxJntCmdVelocity[i]);
+        yarp::os::Time::delay(0.001);
         setMaxCurrent(i, p._currentLimits[i]);
     }
 
@@ -2994,6 +3022,7 @@ bool CanBusMotionControl::close (void)
     checkAndDestroy<double> (_ref_speeds);
     checkAndDestroy<double> (_ref_accs);
     checkAndDestroy<double> (_ref_torques);
+    checkAndDestroy<double> (_max_vel_jnt_cmd);
 
     int ret = res.uninitialize ();
     _opened = false;
@@ -6799,14 +6828,25 @@ bool CanBusMotionControl::getVelPidsRaw(Pid *pids)
 // IControlLimits2
 bool CanBusMotionControl::setVelLimitsRaw(int axis, double min, double max)
 {
-    return NOT_YET_IMPLEMENTED("setVelLimitsRaw");
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
+        return false;
+    _mutex.wait();
+    _max_vel_jnt_cmd[axis]=max;
+    //min not implemented
+    _mutex.post();
+    return true;
 }
 
 bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getVelLimitsRaw");
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
+        return false;
+    _mutex.wait();
+    *max = _max_vel_jnt_cmd[axis];
+    *min = 0;
+    _mutex.post();
+    return true;
 }
-
 
 // PositionDirect Interface
 bool CanBusMotionControl::setPositionDirectModeRaw()
