@@ -416,12 +416,17 @@ protected:
     
     //next position of the joints
     double *next_pos;
+    double *ref_command_positions;
+    double *ref_positions;
 
     //next velocity of the joints during velocity control
     double *next_vel;
+    double *ref_command_speeds;
+    double *ref_speeds;
 
     //next torques of the joints during torque control
     double *next_torques;
+    double *ref_torques;
     
     //semaphore access for synch with run function of webots
     int semaphoreNum;
