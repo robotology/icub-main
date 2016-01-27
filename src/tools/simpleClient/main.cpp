@@ -36,6 +36,7 @@
 #include <yarp/os/Vocab.h>
 
 #include <yarp/dev/ControlBoardInterfaces.h>
+#include <yarp/dev/IControlLimits2.h>
 #include <yarp/dev/PolyDriver.h>
 
 #include <yarp/os/LogStream.h>
@@ -122,6 +123,7 @@ int main(int argc, char *argv[])
     IPidControl *pid=0;
     IAmplifierControl *amp=0;
     IControlLimits *lim=0;
+    IControlLimits2 *lim2 = 0;
 //    IControlMode *icm=0;
     IControlMode2 *iMode2=0;
     IMotor *imot=0;
@@ -140,6 +142,7 @@ int main(int argc, char *argv[])
     ok &= dd.view(pid);
     ok &= dd.view(amp);
     ok &= dd.view(lim);
+    ok &= dd.view(lim2);
 //    ok &= dd.view(icm);
     ok &= dd.view(itorque);
     ok &= dd.view(iopenloop);
@@ -276,7 +279,8 @@ int main(int argc, char *argv[])
             printf("    [%s] to read the encoder value for all axes\n", Vocab::decode(VOCAB_ENCODERS).c_str());
             printf("    [%s] to read the PID values for all axes\n", Vocab::decode(VOCAB_PIDS).c_str());
             printf("    [%s] <int> to read the PID values for a single axis\n", Vocab::decode(VOCAB_PID).c_str());
-            printf("    [%s] <int> to read the limit values for a single axis\n", Vocab::decode(VOCAB_LIMITS).c_str());
+            printf("    [%s] <int> to read the position limits for a single axis\n", Vocab::decode(VOCAB_LIMITS).c_str());
+            printf("    [%s] <int> to read the velocity limits for a single axis\n", Vocab::decode(VOCAB_VEL_LIMITS).c_str());
             printf("    [%s] to read the PID error for all axes\n", Vocab::decode(VOCAB_ERRS).c_str());
             printf("    [%s] to read the PID output for all axes\n", Vocab::decode(VOCAB_OUTPUTS).c_str());
             printf("    [%s] to read the reference position for all axes\n", Vocab::decode(VOCAB_REFERENCES).c_str());
@@ -612,6 +616,15 @@ int main(int argc, char *argv[])
                     lim->getLimits(j, &min, &max);
                     printf("%s: ", Vocab::decode(VOCAB_LIMITS).c_str());
                     printf("limits: (%.2f %.2f)\n", min, max);
+                }
+                break;
+
+                case VOCAB_VEL_LIMITS: {
+                     double min, max;
+                     int j = p.get(2).asInt();
+                     lim2->getVelLimits(j, &min, &max);
+                     printf("%s: ", Vocab::decode(VOCAB_VEL_LIMITS).c_str());
+                     printf("limits: (%.2f %.2f)\n", min, max);
                 }
                 break;
 
