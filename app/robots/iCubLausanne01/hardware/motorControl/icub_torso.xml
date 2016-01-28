@@ -54,7 +54,7 @@
 <group name="LIMITS">        
 <param name="Min">          -50           -30           -22           0             </param>       
 <param name="Max">          50            30            70            0             </param>       
-<param name="Currents">     7000          7000          7000          0             </param>       
+<param name="MotorOverloadCurrents">     7000          7000          7000          0             </param>       
 </group>       
  
 <group name="POS_PIDS">      
