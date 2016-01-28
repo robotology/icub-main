@@ -25,10 +25,9 @@
             <param name="Max">                  +22         +20         </param>
             <param name="RotorMin">             0           0           </param> 
             <param name="RotorMax">             0           0           </param>
-            <param name="MotorOverloadCurrents">             600         600         </param>
-            <param name="MotorOverloadCurrents"> 600         600         </param>
-            <param name="MotorNominalCurrents"> 600         600         </param>
-            <param name="MotorPeakCurrents">    600         600         </param>
+            <param name="MotorOverloadCurrents"> 600         600        </param>
+            <param name="MotorNominalCurrents"> 0           0           </param>
+            <param name="MotorPeakCurrents">    0           0           </param>
             <param name="JntVelocityMax">       1000        1000        </param>
             <param name="MotorPwmLimit">        3300        3300        </param>
         </group>
@@ -46,7 +45,7 @@
             <param name="kd">                   30.0        -30.0         </param>     
             <param name="ki">                   300.0       -300         </param>      
             <param name="limPwm">               1001        1002        </param>       
-            <param name="maxOutput">               3360        3360        </param>  
+            <param name="maxOutput">            3360        3360        </param>  
             <param name="maxInt">               3360        3360         </param> 
             <param name="shift">                0           0           </param>       
             <param name="ko">                   0           0           </param>  
@@ -61,7 +60,7 @@
             <param name="kp">                   0           0           </param>    
             <param name="kd">                   0           0           </param>        
             <param name="ki">                   0           0           </param>        
-            <param name="maxOutput">               0           0           </param>       
+            <param name="maxOutput">            0           0           </param>       
             <param name="maxInt">               0           0           </param>       
             <param name="shift">                0           0           </param>        
             <param name="ko">                   0           0           </param>        

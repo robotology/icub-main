@@ -27,10 +27,9 @@
             <param name="Max">                  +35         +28         +35         +28         </param>
             <param name="RotorMin">             0           0           0           0           </param> 
             <param name="RotorMax">             0           0           0           0           </param>
-            <param name="MotorOverloadCurrents">             600         600         600         600         </param>
-            <param name="MotorOverloadCurrents"> 600         600         600         600         </param>
-            <param name="MotorNominalCurrents"> 600         600         600         600         </param>
-            <param name="MotorPeakCurrents">    600         600         600         600        </param>
+            <param name="MotorOverloadCurrents"> 600        600        600        600         </param>
+            <param name="MotorNominalCurrents">  0          0           0           0         </param>
+            <param name="MotorPeakCurrents">    0           0           0           0        </param>
             <param name="JntVelocityMax">       1000        1000        1000        1000        </param>
             <param name="MotorPwmLimit">        3300        3300        3300        3300        </param>
         </group>
