@@ -2201,6 +2201,7 @@ bool embObjMotionControl::setReferenceRaw(int j, double ref)
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
     eOmc_setpoint_t setpoint = {0};
 
+    _ref_positions[j] = ref;   // save internally the new value of pos.
     setpoint.type = (eOenum08_t) eomc_setpoint_positionraw;
     setpoint.to.position.value = (eOmeas_position_t) S_32(ref);
     setpoint.to.position.withvelocity = 0;
@@ -5058,14 +5059,19 @@ bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, 
     bool ret = true;    
     for(int i=0; i<n_joint; i++)
     {
-        ret &= setReferenceRaw(joints[i], refs[i]);
+        ret &= setPositionRaw(joints[i], refs[i]);
     }
     return ret;
 }
 
 bool embObjMotionControl::setPositionsRaw(const double *refs)
 {
-    return setReferencesRaw(refs);
+    bool ret = true;
+    for (int i = 0; i<_njoints; i++)
+    {
+        ret &= setPositionRaw(i, refs[i]);
+    }
+    return ret;
 }
 
 
