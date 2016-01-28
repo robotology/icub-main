@@ -15,16 +15,16 @@
         <param name="Min">        -60           -80           -20           0             10            0             0             0             0             0             0             0  	</param>
         <param name="Currents">   500           800           800           485           485           485           485           485           485           485           485           485   	</param>
         <param name="RotorMin">     0             0             0           0             0             -10           +16         -1.65          -16          -1.65          16               0   </param> 
-        <param name="RotorMax">     0             0             0           0             0             33            -36            33           38             33         -38              77     </param>
+        <param name="RotorMax">     0             0             0           0             0             33            -36            33           38             33         -38              -77     </param>
         <param name="JntVelocityMax"> 1000        1000          1000        1000          1000          1000          1000          1000          1000          1000          1000          1000   </param>   
    </group>
 
     <group name="POSITION_CONTROL">
         <param name="controlLaw">    joint_pid_v1 </param> 
         <param name="controlUnits">  machine_units               </param> 
-        <param name="kp">          -200          1000          -1000         -200    -500          -8000         -8000         -8000         8000          -8000         -8000         1200         </param>       
-        <param name="kd">          -1000         10000         -10000        -200    -32000        -32000        -32000        -32000        32000         -32000        -32000        12500        </param>       
-        <param name="ki">          -1            1             -1            -1      -1            -5            -5            -5            5             -5            -5            1            </param>       
+        <param name="kp">          -200          1000          -1000         200    -500          -8000         -8000         -8000         8000          -8000         -8000         1200         </param>       
+        <param name="kd">          -1000         10000         -10000        200    -32000        -32000        -32000        -32000        32000         -32000        -32000        12500        </param>       
+        <param name="ki">          -1            1             -1            1      -1            -5            -5            -5            5             -5            -5            1            </param>       
         <param name="limPwm">      1333          1333          1333          1333    1333          1333          1333          1333          1333          1333          1333          1333         </param>       
         <param name="maxPwm">      1333          1333          1333          1333    1333          1333          1333          1333          1333          1333          1333          1333         </param>       
         <param name="maxInt">      1333          1333          1333          1333    1333          1333          1333          1333          1333          1333          1333          1333         </param>       

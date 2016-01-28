@@ -40,7 +40,7 @@
         <param name="Min">             -30           -20           -45           -30           -30            0 	</param>
         <param name="RotorMin">         0             0             0             0             0             0     </param> 
         <param name="RotorMax">         0             0             0             0             0             0     </param>
-        <param name="MotorOverloadCurrents">  		2000          2000          1200          620           600           600	</param>
+        <param name="Currents">  		2000          2000          1200          620           600           600	</param>
     </group>
 
     <group name="POS_PIDS">      
@@ -48,7 +48,7 @@
         <param name="kd">           500           -500          3200          -400          1000          1000          </param>       
         <param name="ki">           5             -5            10            -4            10            10            </param>     
         <param name="limPwm">       480           480           480           1333          1333          1333          </param>               
-        <param name="maxOutput">       480           480           480           1333          1333          1333          </param>       
+        <param name="maxPwm">       480           480           480           1333          1333          1333          </param>       
         <param name="maxInt">       800           800           800           1333          1333          1333          </param>       
         <param name="shift">        9             9             6             4             5             5             </param>       
         <param name="ko">           0             0             0             0             0             0             </param>       
