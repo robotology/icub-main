@@ -73,7 +73,7 @@
 <param name="kp">           -76           76            -76           76            0             0             </param>       
 <param name="kd">           0             0             0             0             0             0             </param>       
 <param name="ki">           0             0             0             0             0             0             </param>       
-<param name="maxPwm">       800           800           800           800           800           800           </param>       
+<param name="maxOutput">    800           800           800           800           800           800           </param>       
 <param name="maxInt">       800           800           800           800           800           800           </param>       
 <param name="shift">        14            14            14            14            14            14            </param>       
 <param name="ko">           0             0             0             0             0             0             </param>       
