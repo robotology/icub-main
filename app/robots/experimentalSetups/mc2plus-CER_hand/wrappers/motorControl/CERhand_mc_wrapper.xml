@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<!--
+    NOTE: (m.a.) 
+    on 23jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file face_mc_wrapper.xml). 
+    i believe that nothing else is to be done in here
+    
+ -->
+
+<devices robot="CER_hand" build="1">
+
+    <device name="devicename_CERhand_mc_wrapper" type="controlboardwrapper2">
+        <paramlist name="networks">
+            <elem name="CERhand_joints"> 0  1  0  1 </elem> 
+        </paramlist>
+
+        <param name="period"> 10                        </param>
+        <param name="name">   /CERhand/hand              </param>
+        <param name="ports">  hand                      </param>
+        <param name="joints"> 2                         </param>
+
+        <action phase="startup" level="5" type="attach">
+            <paramlist name="networks">
+                <elem name="CERhand_joints">  CER_hand_device </elem>    
+            </paramlist>
+        </action>
+
+        <action phase="shutdown" level="5" type="detach" />
+
+    </device> 
+    
+</devices>
