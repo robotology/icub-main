@@ -1113,19 +1113,6 @@ bool embObjMotionControl::parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[])
         //do nothing
     }
 
-    //optional PWM limit
-    if(_pwmIsLimited)
-    {   // check for value in the file
-        if (!extractGroup(pidsGroup, xtmp, "limPwm", "Limited PWD", _njoints))
-        {
-            yError() << "The PID parameter limPwm was requested but was not correctly set in the configuration file, please fill it.";
-            return false;
-        }
-
-        fprintf(stderr,  "embObjMotionControl using LIMITED PWM!! \n");
-        for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
-    }
-
     return true;
 }
 
@@ -1155,19 +1142,6 @@ bool embObjMotionControl::parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], d
         myPid[j].kd = myPid[j].kd / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
         myPid[j].stiction_up_val   = myPid[j].stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
         myPid[j].stiction_down_val = myPid[j].stiction_down_val * _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
-    }
-
-    //optional PWM limit
-    if(_pwmIsLimited)
-    {   // check for value in the file
-        if (!extractGroup(pidsGroup, xtmp, "limPwm", "Limited PWD", _njoints))
-        {
-            yError() << "The PID parameter limPwm was requested but was not correctly set in the configuration file, please fill it.";
-            return false;
-        }
-
-        fprintf(stderr,  "embObjMotionControl using LIMITED PWM!! \n");
-        for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
     }
 
     return true;

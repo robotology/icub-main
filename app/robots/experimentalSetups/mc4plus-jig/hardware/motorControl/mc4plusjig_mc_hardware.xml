@@ -26,8 +26,7 @@
         <param name="controlUnits">  metric_units               </param> 
         <param name="kp">            568.00                     </param>   
         <param name="kd">                 0                     </param>       
-        <param name="ki">             	  0                     </param>       
-        <param name="limPwm">          	3360                    </param>       
+        <param name="ki">             	  0                     </param>          
         <param name="maxOutput">          	3360                    </param>  
         <param name="maxInt">           750                     </param>       
         <param name="shift">              0                     </param>       

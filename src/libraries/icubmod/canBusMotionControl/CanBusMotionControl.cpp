@@ -1101,19 +1101,6 @@ bool CanBusMotionControlParameters::parsePidsGroup_NewFormat(Bottle& pidsGroup, 
     if (!validate(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints+1))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
     if (!validate(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints+1))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
 
-    //optional PWM limit
-    if(_pwmIsLimited)
-    {   // check for value in the file
-        if (!validate(pidsGroup, xtmp, "limPwm", "Limited PWM", _njoints+1))
-        {
-            yError() << "The PID parameter limPwm was requested but was not correctly set in the configuration file, please fill it.";
-            return false;
-        }
-
-        yInfo("using LIMITED PWM!! \n");
-        for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
-    }
-
     //optional kff
     xtmp = pidsGroup.findGroup("kff");         
     if (!xtmp.isNull())

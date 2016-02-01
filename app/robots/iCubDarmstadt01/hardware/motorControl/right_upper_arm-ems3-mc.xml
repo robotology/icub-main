@@ -29,8 +29,7 @@
         <param name="controlUnits">  metric_units               </param> 
         <param name="kp">           711.10    1066.66     711.10    1066.66 </param>       
         <param name="kd">             0.00       0.00       0.00       0.00 </param>       
-        <param name="ki">          7111.09   10666.64    7111.09   10666.64 </param>       
-        <param name="limPwm">         3000       3000       3000       3000 </param>      
+        <param name="ki">          7111.09   10666.64    7111.09   10666.64 </param>         
         <param name="maxOutput">     8000       8000       8000       8000 </param>              
         <param name="maxInt">          200        200        200       1000 </param>       
         <param name="shift">             0          0          0          0 </param>       
