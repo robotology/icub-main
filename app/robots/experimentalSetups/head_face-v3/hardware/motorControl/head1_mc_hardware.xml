@@ -21,21 +21,21 @@
         <!-- joint name                         neck-yaw    eyes-tilt   eyes-vers   eyes-verg   -->         <!-- j2 is right-eye, j3 is left-eye -->
         <group name="LIMITS">
 <!-- use these limits for version-vergence -->        
-            <param name="Min">                  -45         -30         -45         0           </param> 
-            <param name="Max">                  +45         +30         +45         +45         </param>
-            <param name="RotorMin">             0           0           0           0           </param> 
-            <param name="RotorMax">             0           0           0           0           </param>
-            <param name="MotorOverloadCurrents"> 10000         10000         10000         10000        </param>
-            <param name="MotorNominalCurrents"> 0           0           0           0           </param>
-            <param name="MotorPeakCurrents">    0           0           0           0           </param>
-            <param name="JntVelocityMax">       1000        1000        1000        1000        </param>
-            <param name="MotorPwmLimit">        3300        3300        3300        3300        </param>
+            <param name="jntPosMin">                  -45         -30         -45         0           </param> 
+            <param name="jntPosMax">                  +45         +30         +45         +45         </param>
+            <param name="rotorPosMin">             0           0           0           0           </param> 
+            <param name="rotorPosMax">             0           0           0           0           </param>
+            <param name="motorOverloadCurrents"> 10000         10000         10000         10000        </param>
+            <param name="motorNominalCurrents"> 0           0           0           0           </param>
+            <param name="motorPeakCurrents">    0           0           0           0           </param>
+            <param name="jntVelMax">             1000        1000        1000        1000        </param>
+            <param name="motorPwmLimit">        3300        3300        3300        3300        </param>
 <!-- -->  
 
 <!-- use these limits for independent movement of eyes        
-            <param name="Min">                  -45         -30         -45         -45         </param> 
-            <param name="Max">                  +45         +30         +45         +45         </param>
-            <param name="MotorOverloadCurrents">             600         600         600         600         </param>
+            <param name="jntPosMin">                  -45         -30         -45         -45         </param> 
+            <param name="jntPosMax">                  +45         +30         +45         +45         </param>
+            <param name="motorOverloadCurrents">             600         600         600         600         </param>
  -->            
         </group>
     

@@ -48,9 +48,9 @@
 </group>       
  
 <group name="LIMITS">        
-<param name="Min">          -30           -20           -45           -30           -30           0             </param>       
-<param name="Max">          22            20            45            30            30            50            </param>       
-<param name="MotorOverloadCurrents">     2000          2000          1200          620           600           600           </param>       
+<param name="jntPosMin">          -30           -20           -45           -30           -30           0             </param>       
+<param name="jntPosMax">          22            20            45            30            30            50            </param>       
+<param name="motorOverloadCurrents">     2000          2000          1200          620           600           600           </param>       
 </group>       
  
 <group name="POS_PIDS">      

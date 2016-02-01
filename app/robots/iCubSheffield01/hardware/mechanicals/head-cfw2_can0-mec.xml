@@ -36,11 +36,11 @@
 
     <group name="LIMITS">
         <!--                      		0             1             2             3             4             5          -->
-        <param name="Max">        		22            20            45            30            30            50 	</param>
-        <param name="Min">        	   -30           -20           -45           -30           -30            0 	</param>
-        <param name="RotorMin">         0             0             0             0             0             0     </param> 
-        <param name="RotorMax">         0             0             0             0             0             0     </param>
-        <param name="MotorOverloadCurrents">  		2000          2000          1200          620           600           600	</param>
+        <param name="jntPosMax">        		22            20            45            30            30            50 	</param>
+        <param name="jntPosMin">        	   -30           -20           -45           -30           -30            0 	</param>
+        <param name="rotorPosMin">         0             0             0             0             0             0     </param> 
+        <param name="rotorPosMax">         0             0             0             0             0             0     </param>
+        <param name="motorOverloadCurrents">  		2000          2000          1200          620           600           600	</param>
     </group>
 
     <group name="POS_PIDS">      

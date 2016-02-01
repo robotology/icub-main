@@ -1633,55 +1633,55 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         return false;
     }
     // current limit
-    if (!extractGroup(limits, xtmp, "MotorOverloadCurrents","a list of current limits", _njoints))
+    if (!extractGroup(limits, xtmp, "motorOverloadCurrents","a list of current limits", _njoints))
         return false;
     else
         for(i=1; i<xtmp.size(); i++) _currentLimits[i-1].overloadCurrent=xtmp.get(i).asDouble();
 
     // nominal current
-    if (!extractGroup(limits, xtmp, "MotorNominalCurrents","a list of nominal current limits", _njoints))
+    if (!extractGroup(limits, xtmp, "motorNominalCurrents","a list of nominal current limits", _njoints))
         return false;
     else
         for(i=1; i<xtmp.size(); i++) _currentLimits[i-1].nominalCurrent =xtmp.get(i).asDouble();
 
     // nominal current
-    if (!extractGroup(limits, xtmp, "MotorPeakCurrents","a list of peak current limits", _njoints))
+    if (!extractGroup(limits, xtmp, "motorPeakCurrents","a list of peak current limits", _njoints))
         return false;
     else
         for(i=1; i<xtmp.size(); i++) _currentLimits[i-1].peakCurrent=xtmp.get(i).asDouble();
 
     // max limit
-    if (!extractGroup(limits, xtmp, "Max","a list of maximum angles (in degrees)", _njoints))
+    if (!extractGroup(limits, xtmp, "jntPosMax","a list of maximum angles (in degrees)", _njoints))
         return false;
     else
         for(i=1; i<xtmp.size(); i++) _limitsMax[i-1]=xtmp.get(i).asDouble();
 
     // min limit
-    if (!extractGroup(limits, xtmp, "Min","a list of minimum angles (in degrees)", _njoints))
+    if (!extractGroup(limits, xtmp, "jntPosMin","a list of minimum angles (in degrees)", _njoints))
         return false;
     else
         for(i=1; i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asDouble();
 
     // Rotor max limit
-    if (!extractGroup(limits, xtmp, "RotorMax","a list of maximum rotor angles (in degrees)", _njoints))
+    if (!extractGroup(limits, xtmp, "rotorPosMax","a list of maximum rotor angles (in degrees)", _njoints))
         return false;
     else
         for(i=1; i<xtmp.size(); i++) _rotorlimits_max[i-1]=xtmp.get(i).asDouble();
 
     // joint Velocity command max limit
-    if (!extractGroup(limits, xtmp, "JntVelocityMax", "a list of maximum velocities for the joints (in degrees/s)", _njoints))
+    if (!extractGroup(limits, xtmp, "jntVelMax", "a list of maximum velocities for the joints (in degrees/s)", _njoints))
         return false;
     else
         for (i = 1; i<xtmp.size(); i++) _maxJntCmdVelocity[i - 1] = xtmp.get(i).asDouble();
 
     // Rotor min limit
-    if (!extractGroup(limits, xtmp, "RotorMin","a list of minimum roto angles (in degrees)", _njoints))
+    if (!extractGroup(limits, xtmp, "rotorPosMin","a list of minimum roto angles (in degrees)", _njoints))
         return false;
     else
         for(i=1; i<xtmp.size(); i++) _rotorlimits_min[i-1]=xtmp.get(i).asDouble();
 
     // Motor pwm limit
-    if (!extractGroup(limits, xtmp, "MotorPwmLimit","a list of motor PWM limits", _njoints))
+    if (!extractGroup(limits, xtmp, "motorPwmLimit","a list of motor PWM limits", _njoints))
         return false;
     else
         for(i=1; i<xtmp.size(); i++) 
@@ -1689,7 +1689,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             _motorPwmLimits[i-1]=xtmp.get(i).asDouble();
             if(_motorPwmLimits[i-1]<0)
             {
-                yError() << "MotorPwmLimit should be a positive value";
+                yError() << "motorPwmLimit should be a positive value";
                 return false;
             }
         }

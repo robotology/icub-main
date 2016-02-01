@@ -8,12 +8,12 @@
       <params file="hardware/mechanicals/devmc4plusjig-mc4plus01-mec.xml" />
 
     <group name="LIMITS">
-        <param name="Max">               0.12   0.12    0.12                  </param> <!-- These are meters, NOT degrees -->
-        <param name="Min">               0      0       0                     </param>
-        <param name="RotorMax">          0      0       0                     </param>
-        <param name="RotorMin">          0      0       0                     </param>
-        <param name="MotorOverloadCurrents">          1000   1000    1000                  </param>
-        <param name="JntVelocityMax">    2817   2817    2817                  </param> <!-- to be changed in meters/seconds, now is ticks/second -->
+        <param name="jntPosMax">               0.12   0.12    0.12                  </param> <!-- These are meters, NOT degrees -->
+        <param name="jntPosMin">               0      0       0                     </param>
+        <param name="rotorPosMax">          0      0       0                     </param>
+        <param name="rotorPosMin">          0      0       0                     </param>
+        <param name="motorOverloadCurrents">          1000   1000    1000                  </param>
+        <param name="jntVelMax">          2817   2817    2817                  </param> <!-- to be changed in meters/seconds, now is ticks/second -->
     </group>
     
     <group name="IMPEDANCE">

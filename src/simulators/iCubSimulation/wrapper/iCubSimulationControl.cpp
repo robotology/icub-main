@@ -220,7 +220,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ////////////////////////
     /*   LIMITS           */
     ////////////////////////
-    xtmp = p.findGroup("LIMITS").findGroup("Max","access the joint limits max");
+    xtmp = p.findGroup("LIMITS").findGroup("jntPosMax","access the joint limits max");
     if(xtmp.size() != njoints+1)
         {
             yError("Not enough max joint limits\n");
@@ -236,7 +236,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         velLimitsMax[i - 1] = 100 * angleToEncoder[i - 1];
     }
         
-    xtmp = p.findGroup("LIMITS").findGroup("Min","access the joint limits min");
+    xtmp = p.findGroup("LIMITS").findGroup("jntPosMin","access the joint limits min");
     if(xtmp.size() != njoints+1)
         {
             yError("Not enough min joint limits\n");

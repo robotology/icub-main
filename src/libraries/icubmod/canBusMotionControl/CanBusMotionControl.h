@@ -193,6 +193,7 @@ public:
     double *_limitsMin;                         /** joint limits, max*/
     double *_limitsMax;                         /** joint limits, min*/
     double *_currentLimits;                     /** current limits */
+    double *_motorPwmLimits;                    /** pwm limits */
     int *_velocityShifts;                       /** velocity shifts */
     int *_velocityTimeout;                      /** velocity shifts */
     double *_maxStep;                           /** max size of a positionDirect step */

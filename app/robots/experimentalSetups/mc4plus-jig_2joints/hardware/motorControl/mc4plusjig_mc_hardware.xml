@@ -8,12 +8,12 @@
       <params file="hardware/mechanicals/devmc4plusjig-mc4plus01-mec.xml" />
 
     <group name="LIMITS">
-        <param name="Max">               360	 360                  </param>
-        <param name="Min">              -360	-360                  </param>
-        <param name="RotorMax">          100	 200                  </param>
-        <param name="RotorMin">         -100	-200                  </param>
-        <param name="MotorOverloadCurrents">          600	 600                  </param>
-        <param name="JntVelocityMax">      0       0                  </param>  
+        <param name="jntPosMax">               360	 360                  </param>
+        <param name="jntPosMin">              -360	-360                  </param>
+        <param name="rotorPosMax">          100	 200                  </param>
+        <param name="rotorPosMin">         -100	-200                  </param>
+        <param name="motorOverloadCurrents">          600	 600                  </param>
+        <param name="jntVelMax">            0       0                  </param>  
     </group>
     
     <group name="IMPEDANCE">

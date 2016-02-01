@@ -11,12 +11,12 @@
 
     <group name="LIMITS">
         <!--                      0             1             2             3             4             5             6             7             8             9             10            11-->
-        <param name="Max">         60            25            25            60            90            90            180           90            180           90            180           270    	</param>
-        <param name="Min">        -60           -80           -20           0             10            0             0             0             0             0             0             0   </param>
+        <param name="jntPosMax">         60            25            25            60            90            90            180           90            180           90            180           270    	</param>
+        <param name="jntPosMin">        -60           -80           -20           0             10            0             0             0             0             0             0             0   </param>
         <param name="Currents">   500           800           800           485           485           485           485           485           485           485           485           485 </param>
-        <param name="RotorMin">     0             0             0           0             0             -10           -16          -1.65            16        -1.65          -16              0    </param> 
-        <param name="RotorMax">     0             0             0           0             0             33             36             33           -38          33            38             77   </param>
-        <param name="JntVelocityMax"> 1000        1000          1000        1000          1000          1000          1000          1000          1000          1000          1000          1000   </param>   
+        <param name="rotorPosMin">     0             0             0           0             0             -10           -16          -1.65            16        -1.65          -16              0    </param> 
+        <param name="rotorPosMax">     0             0             0           0             0             33             36             33           -38          33            38             77   </param>
+        <param name="jntVelMax">       1000        1000          1000        1000          1000          1000          1000          1000          1000          1000          1000          1000   </param>   
     </group>
 
     

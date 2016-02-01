@@ -46,9 +46,9 @@
 	<param name="JNT_speed_estimation">	0	0	0	0	0	0	0	0	0	0	</param>
 </group>
 <group name="LIMITS">
-	<param name="Max">	85	105	85	35	35	150	225	225	0	0   </param>
-	<param name="Min">	-85	0	-85	-35	-35	0	0	0	0	0   </param>
-	<param name="MotorOverloadCurrents">	2500	2000	1500	1500	1500	1500	1500	1500	1500	1500</param>
+	<param name="jntPosMax">	85	105	85	35	35	150	225	225	0	0   </param>
+	<param name="jntPosMin">	-85	0	-85	-35	-35	0	0	0	0	0   </param>
+	<param name="motorOverloadCurrents">	2500	2000	1500	1500	1500	1500	1500	1500	1500	1500</param>
 </group>
 <group name="POS_PIDS">
 	<param name="kp">	2000	2000	2000	2000	70	50	50	50	0	0</param>

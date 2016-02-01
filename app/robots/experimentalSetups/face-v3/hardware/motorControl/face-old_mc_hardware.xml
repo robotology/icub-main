@@ -11,9 +11,9 @@
 
 	<!-- TBD: marco.accame: i joints che stiamo usando sono i lib-rigth e lip-left che sono indici 4 e 4 nel face di grenoble ... --> 
     <group name="LIMITS">
-        <param name="Min">             -100     -101     -130     -30     -130	-45		</param> 
-		<param name="Max">             +100     +101     +130     +30     +130    +45     </param>
-        <param name="MotorOverloadCurrents">        500       501     600     600     600     600  	</param>
+        <param name="jntPosMin">             -100     -101     -130     -30     -130	-45		</param> 
+		<param name="jntPosMax">             +100     +101     +130     +30     +130    +45     </param>
+        <param name="motorOverloadCurrents">        500       501     600     600     600     600  	</param>
     </group>
     
     <group name="IMPEDANCE">

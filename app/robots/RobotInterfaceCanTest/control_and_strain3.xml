@@ -92,9 +92,9 @@
     </group>
     <group name="LIMITS">
         <!--                            0               1                -->
-        <param name="Max">              100.0          100.0            </param>
-        <param name="Min">             -100.0         -100.0            </param>
-        <param name="MotorOverloadCurrents">         8000            8000            </param>
+        <param name="jntPosMax">              100.0          100.0            </param>
+        <param name="jntPosMin">             -100.0         -100.0            </param>
+        <param name="motorOverloadCurrents">         8000            8000            </param>
     </group>
     <group name="PIDS">
         <!--                 Proportional  Derivative     Integral   Integral Limit      PWM Limit     scale factor   offset    -->

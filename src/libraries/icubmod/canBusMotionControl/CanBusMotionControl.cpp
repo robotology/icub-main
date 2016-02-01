@@ -1594,14 +1594,35 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         return false;
     }
 
-    if (!validate(limits, xtmp, "MotorOverloadCurrents","a list of current limits", nj+1))
+    // motor oveload current
+    if (!validate(limits, xtmp, "motorOverloadCurrents","a list of current limits", nj+1))
         return false;
-
     for(i=1;i<xtmp.size(); i++) _currentLimits[i-1]=xtmp.get(i).asDouble();
 
-    if (!validate_optional(limits, xtmp, "JntVelocityMax", "the maximum velocity command of a joint", nj + 1))
+    // Motor pwm limit
+    if (!validate(limits, xtmp, "motorPwmLimit", "a list of motor PWM limits", _njoints))
     {
-        yWarning("JntVelocityMax: Using default JntVelocityMax=100 deg/s\n");
+        yWarning("motorPwmLimit: Using default motorPwmLimit=1333\n");
+        for (i = 1; i<nj + 1; i++)
+            _motorPwmLimits[i - 1] = 1333;   //Default value
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+        {
+            _motorPwmLimits[i - 1] = xtmp.get(i).asDouble();
+            if (_motorPwmLimits[i - 1] < 0)
+            {
+                yError() << "motorPwmLimit should be a positive value";
+                return false;
+            }
+        }
+    }
+
+    // Max Joint velocity
+    if (!validate_optional(limits, xtmp, "jntVelMax", "the maximum velocity command of a joint", nj + 1))
+    {
+        yWarning("jntVelMax: Using default jntVelMax=100 deg/s\n");
         for (i = 1; i<nj + 1; i++)
             _maxJntCmdVelocity[i - 1] = 100;   //Default value
     }
@@ -1612,7 +1633,7 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
             _maxJntCmdVelocity[i - 1] = xtmp.get(i).asDouble();
             if (_maxJntCmdVelocity[i - 1]<0)
             {
-                yError() << "Invalid JntVelocityMax parameter <0\n";
+                yError() << "Invalid jntVelMax parameter <0\n";
                 return false;
             }
         }
@@ -1637,24 +1658,23 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
         }
     }
 
-    if (!validate(limits, xtmp, "Max","a list of maximum angles (in degrees)", nj+1))
+    // max joint position
+    if (!validate(limits, xtmp, "jntPosMax","a list of maximum angles (in degrees)", nj+1))
         return false;
-
     for(i=1;i<xtmp.size(); i++) _limitsMax[i-1]=xtmp.get(i).asDouble();
 
-    if (!validate(limits, xtmp, "Min","a list of minimum angles (in degrees)", nj+1))
+    // min joint position
+    if (!validate(limits, xtmp, "jntPosMin","a list of minimum angles (in degrees)", nj+1))
         return false;
-  
-    for (i=0;i<nj; i++)
+    for(i=1;i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asDouble();
+    for (i = 0; i<nj; i++)
     {
         if (_limitsMax[i] < _limitsMin[i])
-           {
-               yError("invalid limit on joint %d : Max value (%f) < Min value(%f)\n", i, _limitsMax[i], _limitsMin[i] );
-               return false;
-           }
+        {
+            yError("invalid limit on joint %d : Max value (%f) < Min value(%f)\n", i, _limitsMax[i], _limitsMin[i]);
+            return false;
+        }
     }
-
-    for(i=1;i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asDouble();
 
     /////// [VELOCITY]
     Bottle &velocityGroup=p.findGroup("VELOCITY");
@@ -1856,6 +1876,8 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _ktau=0;
     _axisName = 0;
     _axisType = 0;
+    _motorPwmLimits = 0;
+    _maxJntCmdVelocity = 0;
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1886,6 +1908,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _ktau=allocAndCheck<double>(nj);
     _maxStep=allocAndCheck<double>(nj);
     _maxJntCmdVelocity = allocAndCheck<double>(nj);
+    _motorPwmLimits = allocAndCheck<double>(nj);
     _filterType=allocAndCheck<int>(nj);
     _axisName = new std::string[nj];
     _axisType = new std::string[nj];
@@ -1911,6 +1934,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     memset(_velocityTimeout, 0, sizeof(int)*nj);
     memset(_maxStep, 0, sizeof(double)*nj);
     memset(_maxJntCmdVelocity, 0, sizeof(double)*nj);
+    memset(_motorPwmLimits, 0, sizeof(double)*nj);
 
     _my_address = 0;
     _polling_interval = 10;
@@ -1949,6 +1973,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<double>(_ktau);
     checkAndDestroy<double>(_maxStep);
     checkAndDestroy<double>(_maxJntCmdVelocity);
+    checkAndDestroy<double>(_motorPwmLimits);
     checkAndDestroy<int>(_filterType);
     checkAndDestroy<std::string>(_axisName);
     checkAndDestroy<std::string>(_axisType);
@@ -2602,7 +2627,10 @@ bool CanBusMotionControl::open (Searchable &config)
     {   
         yarp::os::Time::delay(0.001);
         setVelocityShiftRaw(i, p._velocityShifts[i]);
+        yarp::os::Time::delay(0.001);
         setVelocityTimeoutRaw(i, p._velocityTimeout[i]);
+        yarp::os::Time::delay(0.001);
+        setPWMLimit(i, p._motorPwmLimits[i]);
     }
 
     // set parameters for speed/acceleration estimation

@@ -10,11 +10,11 @@
 
     <group name="LIMITS">
         <!--                            0               1               2             3 -->
-        <param name="Max">              10              160.8            80           106       </param>  
-        <param name="Min">              -95.5           0               -37           15        </param>
-        <param name="RotorMin">         0               0               0             0         </param> 
-        <param name="RotorMax">         0               0               0             0         </param>
-        <param name="JntVelocityMax">      1000            1000            1000          1000      </param>
+        <param name="jntPosMax">              10              160.8            80           106       </param>  
+        <param name="jntPosMin">              -95.5           0               -37           15        </param>
+        <param name="rotorPosMin">         0               0               0             0         </param> 
+        <param name="rotorPosMax">         0               0               0             0         </param>
+        <param name="jntVelMax">            1000            1000            1000          1000      </param>
         <param name="Currents">         5000            5000            5000          5000      </param>
     </group>
 

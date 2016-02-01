@@ -12,12 +12,12 @@
         <!-- joint number in sub-part           0           1               2               3              -->
         <!-- joint name                         indx-distal middle-proximal middle-distal   little-fingers -->     
         <group name="LIMITS">
-            <param name="Min">                  0           0               0               0              </param> 
+            <param name="jntPosMin">                  0           0               0               0              </param> 
             <param name="Max">                  90          90              90              90             </param>
-            <param name="RotorMin">             0           0               0               0           </param> 
-            <param name="RotorMax">             0           0               0               0            </param>
+            <param name="rotorPosMin">             0           0               0               0           </param> 
+            <param name="rotorPosMax">             0           0               0               0            </param>
             <param name="JntVelocityMax">       0           0               0               0            </param>
-            <param name="MotorOverloadCurrents">             600         600             600             600            </param>
+            <param name="motorOverloadCurrents">             600         600             600             600            </param>
         </group>
     
 
