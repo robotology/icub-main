@@ -4144,6 +4144,7 @@ bool CanBusMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
 {
     listOfKeys->clear();
     listOfKeys->addString("filterType");
+    listOfKeys->addString("PWMLimit");
     return true;
 }
 
@@ -4154,6 +4155,11 @@ bool CanBusMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     if (key == "filterType")
     {
         Bottle& r = val.addList(); for (int i = 0; i< res.getJoints(); i++) { int tmp = 0; getFilterTypeRaw(i, &tmp);  r.addInt(tmp); }
+        return true;
+    }
+    if (key == "PWMLimit")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i< res.getJoints(); i++) { double tmp = 0; getPWMLimitRaw(i, &tmp);  r.addDouble(tmp); }
         return true;
     }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
@@ -4179,6 +4185,15 @@ bool CanBusMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const 
         {
             int filter_type = bval->get(i).asInt();
             this->setFilterTypeRaw(i, filter_type);
+        }
+        return true;
+    }
+    if (key == "PWMLimit")
+    {
+        for (int i = 0; i < r.getJoints(); i++)
+        {
+            double limit = bval->get(i).asDouble();
+            this->setPWMLimitRaw(i, (int)(limit));
         }
         return true;
     }
