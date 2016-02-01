@@ -6562,12 +6562,21 @@ bool CanBusMotionControl::getPWMRaw(int j, double* val)
 
 bool CanBusMotionControl::getPWMLimitRaw(int j, double* val)
 {
-    return NOT_YET_IMPLEMENTED("getPWMLimitRaw");
+    if (!(j >= 0 && j <= (CAN_MAX_CARDS - 1) * 2))
+        return false;
+
+    short s = 0;
+    bool ret = _readWord16(ICUBCANPROTO_POL_MC_CMD__GET_PWM_LIMIT, j, s);
+    *val = s;
+    return ret;
 }
 
 bool CanBusMotionControl::setPWMLimitRaw(int j, const double val)
 {
-    return NOT_YET_IMPLEMENTED("setPWMLimitRaw");
+    if (!(j >= 0 && j <= (CAN_MAX_CARDS - 1) * 2))
+        return false;
+
+    return _writeWord16(ICUBCANPROTO_POL_MC_CMD__SET_PWM_LIMIT, j, S_16(val));
 }
 
 bool CanBusMotionControl::getPowerSupplyVoltageRaw(int j, double* val)
