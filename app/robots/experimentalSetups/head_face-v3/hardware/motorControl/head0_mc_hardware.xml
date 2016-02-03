@@ -21,15 +21,16 @@
         <!-- joint logical number               0           1           -->
         <!-- joint name                         neck-pitch  neck-roll   -->           
         <group name="LIMITS">
-            <param name="jntPosMin">                  -30         -20         </param> 
-            <param name="jntPosMax">                  +22         +20         </param>
+
+            <param name="jntPosMin">               -30         -20         </param> 
+            <param name="jntPosMax">               +22         +20         </param>
             <param name="rotorPosMin">             0           0           </param> 
             <param name="rotorPosMax">             0           0           </param>
-            <param name="motorOverloadCurrents"> 600         600        </param>
-            <param name="motorNominalCurrents"> 0           0           </param>
-            <param name="motorPeakCurrents">    0           0           </param>
-            <param name="jntVelMax">             1000        1000        </param>
-            <param name="motorPwmLimit">        3300        3300        </param>
+            <param name="motorOverloadCurrents">   10000       10000        </param>
+            <param name="motorNominalCurrents">    0           0           </param>
+            <param name="motorPeakCurrents">       0           0           </param>
+            <param name="jntVelMax">               1000        1000        </param>
+            <param name="motorPwmLimit">          3300        3300        </param>
         </group>
     
         <group name="IMPEDANCE">
