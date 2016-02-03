@@ -43,6 +43,14 @@ map<BodyPart, skinContactList> skinContactList::splitPerBodyPart()
         res[it->getBodyPart()].push_back(*it);
     return res;
 }
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+map<SkinPart, skinContactList> skinContactList::splitPerSkinPart()
+{
+    map<SkinPart, skinContactList> res;
+    for(iterator it=begin(); it!=end(); it++)
+        res[it->getSkinPart()].push_back(*it);
+    return res;
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //   SERIALIZATION methods
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

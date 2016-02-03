@@ -64,7 +64,12 @@ public:
     */
     virtual std::map<BodyPart, skinContactList> splitPerBodyPart();
 
+    /**
+    * Split the list in N lists dividing the contacts per skin part.
+    */
+    virtual std::map<SkinPart, skinContactList> splitPerSkinPart();
 
+    
     //~~~~~~~~~~~~~~~~~~~~~~~~~
     //   SERIALIZATION methods
     //~~~~~~~~~~~~~~~~~~~~~~~~~
