@@ -115,6 +115,7 @@ private:
     IEncoders *iEncoders;
     IPositionControl *iPosition;
     IControlMode2 *iControlMode;
+    IAmplifierControl *iAmp;
 
     std::list<std::list<int> > joints;
 
@@ -126,8 +127,8 @@ private:
     int    *maxPWM;
     double *currPos;
     double *currVel;
-    Pid    *original_pid;
-    Pid    *limited_pid;
+    double *original_max_pwm;
+    double *limited_max_pwm;
     double *zeroVel;
     double *zeroPos;
     double *homeVel;
