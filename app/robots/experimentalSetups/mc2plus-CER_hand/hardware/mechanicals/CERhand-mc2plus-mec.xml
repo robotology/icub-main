@@ -20,12 +20,21 @@
         <param name="TorqueId">              0                  0          </param>    
         <param name="TorqueChan">            0                  0          </param>
         <param name="TorqueMax">             0                  0          </param>
-        <param name="RotorEncoderRes">       2048               1600        </param>
+       <!-- <param name="RotorEncoderRes">       2048               1600        </param>
         <param name="JointEncoderType">      "OPTICAL_QUAD"     "OPTICAL_QUAD"      </param>
         <param name="RotorEncoderType">      "OPTICAL_QUAD"     "OPTICAL_QUAD"     </param>
         <param name="JointEncoderRes">       503808             105600      </param>
         <param name="RotorIndexOffset">      0                  0          </param>
-        <param name="Gearbox">               246                 66         </param>
+        <param name="Gearbox">               246                 66         </param> -->
+
+
+        <param name="RotorEncoderRes">               1600       2048        </param>
+        <param name="JointEncoderType">      "OPTICAL_QUAD"     "OPTICAL_QUAD"      </param>
+        <param name="RotorEncoderType">      "OPTICAL_QUAD"     "OPTICAL_QUAD"     </param>
+        <param name="JointEncoderRes">       105600      503808             </param>
+        <param name="RotorIndexOffset">      0                  0          </param>
+        <param name="Gearbox">                 66               246         </param> 
+
         <param name="MotorPoles">            0                  0          </param> 
         
         <param name="Verbose">  0  </param>

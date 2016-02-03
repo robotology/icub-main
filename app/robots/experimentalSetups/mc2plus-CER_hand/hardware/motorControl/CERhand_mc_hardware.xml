@@ -13,16 +13,17 @@
         <!-- joint number in sub-part           0           1               -->
         <!-- joint name                         first       second           -->     
         <group name="LIMITS">
-            <param name="jntPosMin">                  0          0               </param> 
-            <param name="jntPosMax">                  160         160             </param>
+            <param name="jntPosMin">               -360         -360               </param> 
+            <param name="jntPosMax">               360         360              </param>
             <param name="rotorPosMin">             0           0               </param> 
             <param name="rotorPosMax">             0           0               </param>
-            <param name="motorOverloadCurrents"> 600        600             </param>
+            <param name="motorOverloadCurrents"> 1000        1000             </param>
             <param name="motorOverloadCurrents"> 0          0             </param>
             <param name="motorNominalCurrents">  0          0             </param>
             <param name="motorPeakCurrents">     0          0             </param>
              <param name="jntVelMax">            1000        1000            </param>
             <param name="motorPwmLimit">        3300        3300            </param>
+
         </group>
     
 
@@ -35,10 +36,11 @@
         <group name="POSITION_CONTROL">
             <param name="controlLaw">       joint_pid_v1                    </param>    
             <param name="controlUnits">     metric_units                    </param> 
-            <param name="kp">                   100.00      100.00         </param>       
+            <param name="kp">                   100.00     100.00         </param>       
             <param name="kd">                   0.0         0.0             </param>     
             <param name="ki">                   0.0         0.0             </param>      
-            <param name="maxOutput">            500         500             </param>  
+            <param name="limPwm">               500         500             </param>       
+            <param name="maxOutput">            800         800             </param>  
             <param name="maxInt">               500         500             </param> 
             <param name="shift">                0           0               </param>       
             <param name="ko">                   0           0               </param>  
