@@ -4222,6 +4222,31 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         }
         return true;
     }
+    else if (key == "PWMLimit")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getPWMLimitRaw(i, &tmp);  r.addDouble(tmp); }
+        return true;
+    }
+    else if (key == "motOverloadCurr")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getMaxCurrentRaw(i, &tmp);  r.addDouble(tmp); }
+        return true;
+    }
+    else if (key == "motNominalCurr")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getNominalCurrentRaw(i, &tmp);  r.addDouble(tmp); }
+        return true;
+    }
+    else if (key == "motPeakCurr")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getPeakCurrentRaw(i, &tmp);  r.addDouble(tmp); }
+        return true;
+    }
+    else if (key == "PowerSuppVoltage")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getPowerSupplyVoltageRaw(i, &tmp);  r.addDouble(tmp); }
+        return true;
+    }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
 }
@@ -4277,6 +4302,12 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     listOfKeys->addString("torqueControlFilterType");
     listOfKeys->addString("jointEncoderType");
     listOfKeys->addString("rotorEncoderType");
+    listOfKeys->addString("PWMLimit");
+    listOfKeys->addString("motOverloadCurr");
+    listOfKeys->addString("motNominalCurr");
+    listOfKeys->addString("motPeakCurr");
+    listOfKeys->addString("PowerSuppVoltage");
+
     return true;
 }
 
