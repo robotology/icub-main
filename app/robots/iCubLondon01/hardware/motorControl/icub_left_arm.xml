@@ -30,8 +30,9 @@
 <param name="Joints">       8             </param>       
 <param name="AxisMap">      0             1             2             3             4             5             6             7             </param>       
 <param name="AxisName"> "l_shoulder_pitch" "l_shoulder_roll" "l_shoulder_yaw" "l_elbow" "l_wrist_prosup" "l_wrist_pitch" "l_wrist_yaw" "l_hand_finger" </param>
+<param name="AxisType"> "revolute"        "revolute"    "revolute"    "revolute"    "revolute"    "revolute"    "revolute"    "revolute"    </param>
 <param name="Encoder">      -11.375       -11.375       -11.375       -11.375       -706.67       -978.46       -978.46       2.916667      </param>       
-<param name="Zeros">        -229          -328          -37.74218      -180          90            -20           -52           670.2857      </param>       
+<param name="Zeros">        -229          -328          -37.74218      -180          90            -20           -52           670.2857     </param>       
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          0x0C          0             0             0             </param>       
 <param name="TorqueChan">   0             1             2             3             4             0             0             0             </param>       
 <param name="TorqueMax">    8             8             8             8             2             2             2             2             </param>       
