@@ -56,6 +56,7 @@
 <param name="jntPosMin">          -50           -30           -22           0             </param>       
 <param name="jntPosMax">          50            30            70            0             </param>       
 <param name="motorOverloadCurrents">     7000          7000          7000          0             </param>       
+<param name="motorPwmLimit">             1333          1333          1333          0      </param>
 </group>       
  
 <group name="POS_PIDS">      
