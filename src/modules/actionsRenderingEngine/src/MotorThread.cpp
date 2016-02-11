@@ -3058,7 +3058,7 @@ void MotorThread::getStatus(Bottle &status)
         bool ongoing;
         action[LEFT]->checkActionsDone(ongoing,false);
 
-        if(ongoing)
+        if(!ongoing)
             left_arm.addString("busy");
         else
             left_arm.addString("idle");
@@ -3075,7 +3075,7 @@ void MotorThread::getStatus(Bottle &status)
         bool ongoing;
         action[RIGHT]->checkActionsDone(ongoing,false);
 
-        if(ongoing)
+        if(!ongoing)
             right_arm.addString("busy");
         else
             right_arm.addString("idle");
