@@ -442,8 +442,8 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             uint8_t num = infobasic->properties.par16 & 0x000f;
             const char *canboardname = eoboard_get_name(infobasic->properties.par16 >> 8);
             uint64_t searchtime = (infobasic->properties.par64 & 0xffff000000000000) >> 48;
-            eObrd_version_t prot = {0};
-            eObrd_version_t appl = {0};
+            eOmn_version_t prot = {0};
+            eOmn_version_t appl = {0};
             uint64_t reqpr = (infobasic->properties.par64 & 0x00000000ffff0000) >> 16;
             uint64_t reqfw = (infobasic->properties.par64 & 0x000000000000ffff);
             prot.major = reqpr >> 8;
@@ -470,8 +470,8 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
         {
             const char *canboardname = eoboard_get_name(infobasic->properties.par16 >> 8);
             uint64_t searchtime = (infobasic->properties.par64 & 0xffff000000000000) >> 48;
-            eObrd_version_t prot = {0};
-            eObrd_version_t appl = {0};
+            eOmn_version_t prot = {0};
+            eOmn_version_t appl = {0};
             uint64_t reqpr = (infobasic->properties.par64 & 0x00000000ffff0000) >> 16;
             uint64_t reqfw = (infobasic->properties.par64 & 0x000000000000ffff);
             prot.major = reqpr >> 8;
