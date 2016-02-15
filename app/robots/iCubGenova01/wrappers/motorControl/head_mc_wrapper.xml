@@ -16,6 +16,7 @@
       <action phase="startup" level="5" type="attach">
       <paramlist name="networks">
          <elem name="head_joints">  head_mc </elem>
+	 <elem name="Calibrator"> head_calibrator </elem>
       </paramlist>
       </action>
 
