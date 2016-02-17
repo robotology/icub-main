@@ -21,7 +21,7 @@
         <param name="Gearbox">               1             1             1             1             1             1             1             1             1             1             1             1     </param>
         <param name="JointEncoderType">  "OPTICAL_QUAD"  "AEA"          "AEA"       "HALL_ADC"     "HALL_ADC"     "MAIS"        "MAIS"        "MAIS"      "MAIS"         "MAIS"        "MAIS"         "MAIS" </param>
         <param name="RotorEncoderType">  "NONE"          "NONE"         "NONE"      "NONE"         "NONE"         "NONE"        "NONE"        "NONE"      "NONE"         "NONE"        "NONE"         "NONE" </param>
-        <param name="JointEncoderRes">  254440         -4096          4096         65535           65535          65535         65535        65535        65535          65535         65535         65535   </param>
+        <param name="JointEncoderRes">  254440         -4096          4096          1860          6320          -871          -974          -920          -995         -1000         -1080          -832     </param>
         <param name="MotorType">         "DC_FH"         "DC_FH"        "DC_FH"      "DC_FH"       "DC_FH"        "DC_FH"       "DC_FH"       "DC_FH"     "DC_FH"        "DC_FH"       "DC_FH"       "DC_FH" </param>
         <param name="MotorPoles">            1             1             1             1             1             1             1             1             1             1             1             1     </param>
         <param name="Verbose"> 0 </param> 

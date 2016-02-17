@@ -17,11 +17,11 @@
         <param name="maxSizeRXpacket">		        768		</param>
         <param name="maxSizeTXpacket">		        1408	</param>
         <param name="maxSizeROPframeRegulars">      1024    </param>
-        <param name="maxSizeROPframeReplies">  	    128     </param>
-        <param name="maxSizeROPframeOccasionals">   256	    </param>
+        <param name="maxSizeROPframeReplies">  	    256     </param>
+        <param name="maxSizeROPframeOccasionals">   128	    </param>
         <param name="maxSizeROP">  		            256     </param>
         <param name="maxNumberRegularROPs">  		32      </param>
-        <param name="TXrate">  		                5       </param>
+        <param name="TXrate">                       5       </param>
     </group>
     
     <group name="PROTOCOL">

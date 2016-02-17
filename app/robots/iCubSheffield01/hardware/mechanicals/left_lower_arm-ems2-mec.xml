@@ -4,8 +4,8 @@
 <params robot="iCubSheffield01" build="1">
     <group name="GENERAL">
         <param name="MotioncontrolVersion">  2 </param>
-        <param name="Joints"> 12 </param>  
-        <param name="AxisMap"> 0             1             2             3             4             5             6             7             8             9             10            11    </param>
+        <param name="Joints"> 12 </param>
+        <param name="AxisMap">               0             1             2             3             4             5             6             7             8             9             10            11    </param>
         <param name="AxisName">      "l_wrist_prosup" "l_wrist_pitch" "l_wrist_yaw"  "l_hand_finger"    "l_thumb_oppose"     "l_thumb_proximal"     "l_thumb_distal"   "l_index_proximal"    "l_index_distal"    "l_middle_proximal"   "l_middle_distal"    "l_pinky"  </param>
         <param name="AxisType">       "revolute"    "revolute"    "revolute"    "revolute"   "revolute"       "revolute"     "revolute"    "revolute"    "revolute"    "revolute"   "revolute"    "revolute" </param>
         <param name="HasHallSensor">         0             0             0             0             0             0             0             0             0             0             0             0     </param>
@@ -21,10 +21,10 @@
         <param name="Gearbox">               1             1             1             1             1             1             1             1             1             1             1             1     </param>
         <param name="JointEncoderType">  "OPTICAL_QUAD"  "AEA"          "AEA"       "HALL_ADC"     "HALL_ADC"     "MAIS"        "MAIS"        "MAIS"      "MAIS"         "MAIS"        "MAIS"         "MAIS" </param>
         <param name="RotorEncoderType">  "NONE"          "NONE"         "NONE"      "NONE"         "NONE"         "NONE"        "NONE"        "NONE"      "NONE"         "NONE"        "NONE"         "NONE" </param>
-        <param name="JointEncoderRes">  254440         -4096          4096          918           6048          -920.16          -1031.4       -1019.88    -1027.08       -1019.88     -1027.08       -813.6 </param>
+        <param name="JointEncoderRes">  254440         -4096          4096          1860          6320          -871          -974          -920          -995         -1000         -1080          -832     </param>
         <param name="MotorType">         "DC_FH"         "DC_FH"        "DC_FH"      "DC_FH"       "DC_FH"        "DC_FH"       "DC_FH"       "DC_FH"     "DC_FH"        "DC_FH"       "DC_FH"       "DC_FH" </param>
         <param name="MotorPoles">            1             1             1             1             1             1             1             1             1             1             1             1     </param>
-        <param name="Verbose"> 0 </param>
+        <param name="Verbose"> 0 </param> 
     </group>
 
     <group name="VELOCITY">
