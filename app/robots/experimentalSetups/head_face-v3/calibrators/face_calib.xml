@@ -25,7 +25,7 @@
  -->
 
 <devices robot="iCubExpHeadV3" build="1">
-    <device name="devicename_face_calibrator" type="parametricCalibratorEth">
+    <device name="face_calibrator" type="parametricCalibratorEth">
     
         <params file="general.xml" />
                 
@@ -65,11 +65,11 @@
         <param name="CALIB_ORDER"> (0 1 2 4 5) </param>       <!-- we can calibrate all joints in parallel (for now not the jaw yet)-->
 
         <action phase="startup" level="10" type="calibrate">
-            <param name="target">devicename_face_mc_wrapper</param>
+            <param name="target">face_mc_wrapper</param>
         </action>
 
         <action phase="interrupt1" level="1" type="park">
-            <param name="target">devicename_face_mc_wrapper</param>
+            <param name="target">face_mc_wrapper</param>
         </action>
 
         <action phase="interrupt3" level="1" type="abort" />
