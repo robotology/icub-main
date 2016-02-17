@@ -3,21 +3,24 @@
 
 <devices robot="iCubExpArmV3" build="1">
 
-    <device name="left_lower_arm_mc" type="embObjMotionControl">
+    <device name="left_lower_arm-j12_15-mc" type="embObjMotionControl">
     
         <params file="general.xml" />
-        <params file="hardware/electronics/left_lower_arm-mc4plus16-eln.xml" />
-        <params file="hardware/mechanicals/left_lower_arm-mc4plus16-mec.xml" />
+        <params file="hardware/electronics/left_lower_arm-mc4plus9-eln.xml" />
+        <params file="hardware/mechanicals/left_lower_arm-j12_15-mec.xml" />
 
-        <!-- joint number in sub-part           0           1               2               3              -->
-        <!-- joint name                         indx-distal middle-proximal middle-distal   little-fingers -->     
+        <!-- joint number in sub-part           0            1               2               3              -->
+        <!-- joint name                         index-distal middle-proximal middle-distal   little-fingers -->     
         <group name="LIMITS">
-            <param name="jntPosMin">                  0           0               0               0              </param> 
-            <param name="Max">                  90          90              90              90             </param>
-            <param name="rotorPosMin">             0           0               0               0           </param> 
-            <param name="rotorPosMax">             0           0               0               0            </param>
-            <param name="JntVelocityMax">       0           0               0               0            </param>
-            <param name="motorOverloadCurrents">             600         600             600             600            </param>
+            <param name="jntPosMin">                0           0               0               0           </param> 
+            <param name="jntPosMax">                90          90              90              90          </param>
+            <param name="rotorPosMin">              0           0               0               0           </param> 
+            <param name="rotorPosMax">              0           0               0               0           </param>
+            <param name="JntVelocityMax">           0           0               0               0           </param>
+            <param name="motorOverloadCurrents">    600         600             600             600         </param>
+            <param name="motorNominalCurrents">     0           0               0               0           </param>
+            <param name="motorPeakCurrents">        0           0               0               0           </param>
+            <param name="motorPwmLimit">            3360        3360            3360            3360       </param>
         </group>
     
 
@@ -26,14 +29,13 @@
             <param name="damping">              0.0         0.0     0.0         0.0             </param>
         </group>
 
-        <!-- TBD: marco.accame: vedere come tradurre i valori in iCubGrenoble01 in metric units ... --> 
         <group name="POSITION_CONTROL">
             <param name="controlLaw">       joint_pid_v1                                        </param>    
             <param name="controlUnits">     metric_units                                        </param> 
             <param name="kp">                   500.00      500.00      500.00      500.00      </param>       
             <param name="kd">                   0.0         0.0         0.0         0.0         </param>     
             <param name="ki">                   0.0         0.0         0.0         0.0         </param>       
-            <param name="maxOutput">               1333        1333        1333        1333        </param>  
+            <param name="maxOutput">            1333        1333        1333        1333        </param>  
             <param name="maxInt">               0           0           0           0           </param> 
             <param name="shift">                0           0           0           0           </param>       
             <param name="ko">                   0           0           0           0           </param>  
@@ -48,7 +50,7 @@
             <param name="kp">                   0           0           0           0    </param>    
             <param name="kd">                   0           0           0           0    </param>        
             <param name="ki">                   0           0           0           0    </param>        
-            <param name="maxOutput">               0           0           0           0    </param>       
+            <param name="maxOutput">            0           0           0           0    </param>       
             <param name="maxInt">               0           0           0           0    </param>       
             <param name="shift">                0           0           0           0    </param>        
             <param name="ko">                   0           0           0           0    </param>        
