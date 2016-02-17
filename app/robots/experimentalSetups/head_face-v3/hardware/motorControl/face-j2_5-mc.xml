@@ -14,11 +14,11 @@
 
 <devices robot="iCubExpHeadV3" build="1">
 
-    <device name="devicename_face1_mc" type="embObjMotionControl">
+    <device name="face-j2_5-mc" type="embObjMotionControl">
     
         <params file="general.xml" />
-        <params file="hardware/electronics/face-mc4plus15-eln.xml" />
-        <params file="hardware/mechanicals/face-mc4plus15-mec.xml" />
+        <params file="hardware/electronics/face-mc4plus1-eln.xml" />
+        <params file="hardware/mechanicals/face-j2_5-mec.xml" />
 
         <!-- joint number in sub-part           0           1           2           3            -->
         <!-- joint name                         lip-right   lip-high    lip-left   lip-bottom   -->   

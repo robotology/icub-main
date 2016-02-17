@@ -8,8 +8,8 @@
     <!-- MOTOR CONTROLLERS -->
     
     <!-- face motor controller. there are two board/devices: face0 and face1 -->
-    <devices file="./hardware/motorControl/face0_mc_hardware.xml" /> 
-    <devices file="./hardware/motorControl/face1_mc_hardware.xml" /> 
+    <devices file="./hardware/motorControl/face-j0_1-mc.xml" /> 
+    <devices file="./hardware/motorControl/face-j2_5-mc.xml" /> 
     <devices file="./wrappers/motorControl/face_mc_wrapper.xml" /> 
 
     <!-- head motor controller. there are two board/devices: head0 and head1 -->

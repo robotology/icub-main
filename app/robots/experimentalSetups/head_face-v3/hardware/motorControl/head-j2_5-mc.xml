@@ -11,11 +11,11 @@
  
 <devices robot="iCubExpHeadV3" build="1">
     
-    <device name="devicename_head1_mc" type="embObjMotionControl">
+    <device name=""head-j2_5-mc"" type="embObjMotionControl">
     
         <params file="general.xml" />
-        <params file="hardware/electronics/head-mc4plus13-eln.xml" />
-        <params file="hardware/mechanicals/head-mc4plus13-mec.xml" />
+        <params file="hardware/electronics/head-mc4plus3-eln.xml" />
+        <params file="hardware/mechanicals/head-j2_5-mec.xml" />
         
         <!-- joint logical number               0           1           2           3           -->
         <!-- joint name                         neck-yaw    eyes-tilt   eyes-vers   eyes-verg   -->         <!-- j2 is right-eye, j3 is left-eye -->
