@@ -9,6 +9,7 @@
         <param name="Ems">              9            </param>
         <param name="CmdPort">          12345        </param>
         <param name="SrvPort">          4444        </param>
+        <param name="Name">            "leftLowerArm-j12_15"    </param> 
     </group>
     
     <group name="TRANSCEIVER">
