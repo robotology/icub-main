@@ -83,7 +83,7 @@ typedef enum
     ethFeatType_AnalogInertial  = 0x06
 } ethFeatType_t;
 
-
+#define BOARDNAME_MAXSIZE 50
 typedef struct
 {
     ethFeatIPaddress_t  pc104IPaddr;
@@ -94,6 +94,7 @@ typedef struct
     ethFeatType_t       type;
     IethResource*       interface;
     char                name[128];
+    char                boardName[BOARDNAME_MAXSIZE]; //this is the name read in xml file
 } ethFeature_t;
 
 class can_string_eth;
@@ -222,7 +223,7 @@ private:
 public:
     TheEthManager     *ethManager;          //!< Pointer to the Singleton handling the UDP socket
     int               boardNum;             // the number of ems board with range [1, TheEthManager::maxBoards]
-
+    char              boardName[BOARDNAME_MAXSIZE];        //this is the name read in xml file
     ethResources();
     ~ethResources();
 

@@ -316,10 +316,24 @@ const char * feat_embObj_GetBoardName(eOprotBRD_t brd)
         return(errorstr);
     }
 
-    brd++;
 
-    const char *ret = (brd >= TheEthManager::maxBoards) ? (TheEthManager::boardNames[0]) : (TheEthManager::boardNames[brd]);
+    ethResources* ethres = _interface2ethManager->GetEthResource(nvBoardNum2FeatIdBoardNum(brd));
+    if(ethres == NULL)
+    {
+        return(errorstr);
+    }
 
+
+    const char *ret = NULL;
+    if(strlen(ethres->boardName)>1)
+    {
+        ret = ethres->boardName;
+    }
+    else
+    {
+        brd++;
+        ret = (brd >= TheEthManager::maxBoards) ? (TheEthManager::boardNames[0]) : (TheEthManager::boardNames[brd]);
+    }
     return(ret);
 
 }

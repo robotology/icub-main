@@ -248,6 +248,20 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
+    _fId.boardName[0] = '\0';
+    Value *valName;
+    if(config.findGroup("ETH").check("Name", valName, "Board name"))
+    {
+        if(valName->isString())
+        {
+            memset(_fId.boardName, 0, BOARDNAME_MAXSIZE);
+            snprintf(_fId.boardName, BOARDNAME_MAXSIZE, "%s", valName->asString().c_str());
+        }
+        else
+        {
+            yError () << "embObjAnalogSensor: EMS Board name is not valid";
+        }
+    }
 
     ethManager = TheEthManager::instance();
     if(NULL == ethManager)

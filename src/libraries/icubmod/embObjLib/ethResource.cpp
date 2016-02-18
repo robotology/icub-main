@@ -152,6 +152,13 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
 
     infoPkts->setBoardNum(boardNum);
 
+    boardName[0] = '\0';
+    if(strlen(request.boardName)>1)
+    {
+        memset(boardName, 0, BOARDNAME_MAXSIZE);
+        snprintf(boardName, BOARDNAME_MAXSIZE, "%s", request.boardName);
+     }
+
     unlock();
 
     return ret;

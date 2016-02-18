@@ -943,6 +943,21 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
+    _fId.boardName[0] = '\0';
+    Value *valName;
+    if(config.findGroup("ETH").check("Name", valName, "Board name"))
+    {
+        if(valName->isString())
+        {
+            memset(_fId.boardName, 0, BOARDNAME_MAXSIZE);
+            snprintf(_fId.boardName, BOARDNAME_MAXSIZE, "%s", valName->asString().c_str());
+        }
+        else
+        {
+            yError () << "embObjMotionControl: EMS Board name is not valid";
+        }
+    }
+
     _fId.endpoint = eoprot_endpoint_motioncontrol;
     _fId.entity = eoprot_entity_mc_joint; // actually, embobjmotioncontrol manages joints, motors, and controller. however in case of this endpoint we use entity joint
     //
