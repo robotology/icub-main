@@ -6,7 +6,7 @@
     <device name="left_lower_arm-j4_7-mc" type="embObjMotionControl">
     
         <params file="general.xml" />
-        <params file="hardware/electronics/left_lower_arm-mc4plus7-eln.xml" />
+        <params file="hardware/electronics/left_lower_arm-j4_7-eln.xml" />
         <params file="hardware/mechanicals/left_lower_arm-j4_7-mec.xml" />
 
         <!-- joint number in sub-part           0               1               2               3              -->
