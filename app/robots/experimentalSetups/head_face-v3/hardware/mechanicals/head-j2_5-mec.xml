@@ -51,11 +51,6 @@
     </group>
     
     <group name="VELOCITY">
-        <param name="MOT_speed_estimation">     1           1           1           1           </param>
-        <param name="MOT_accel_estimation">     1           1           1           1           </param>
-        <param name="JNT_accel_estimation">     5           5           5           5           </param>
-        <param name="JNT_speed_estimation">     5           5           5           5           </param>
-        <param name="Shifts">                   8           8           8           8           </param>
         <param name="Timeout">                  100         100         100         100         </param>
     </group>
 

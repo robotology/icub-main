@@ -449,7 +449,6 @@ bool embObjMotionControl::alloc(int nj)
 
     _impedance_params=allocAndCheck<ImpedanceParameters>(nj);
     _impedance_limits=allocAndCheck<ImpedanceLimits>(nj);
-    _estim_params=allocAndCheck<SpeedEstimationParameters>(nj);
     _axisName = new string[nj];
     _jointType = allocAndCheck<JointTypeEnum>(nj);
 
@@ -510,7 +509,6 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_cpids);
     checkAndDestroy(_impedance_params);
     checkAndDestroy(_impedance_limits);
-    checkAndDestroy(_estim_params);
     checkAndDestroy(_limitsMax);
     checkAndDestroy(_limitsMin);
     checkAndDestroy(_kinematic_mj);
@@ -594,7 +592,6 @@ embObjMotionControl::embObjMotionControl() :
     _cacheImpedance   = NULL;
     _impedance_params = NULL;
     _impedance_limits = NULL;
-    _estim_params     = NULL;
     _rotorlimits_max  = NULL;
     _rotorlimits_min  = NULL;
 
@@ -1712,19 +1709,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     Bottle &velocityGroup=config.findGroup("VELOCITY");
     if (!velocityGroup.isNull())
     {
-        /////// Shifts
-        if (!extractGroup(velocityGroup, xtmp, "Shifts", "a list of shifts to be used in the vmo control", _njoints))
-        {
-            fprintf(stderr, "Using default Shifts=4\n");
-            for(i=1; i<_njoints+1; i++)
-                _velocityShifts[i-1] = 4;   //Default value
-        }
-        else
-        {
-            for(i=1; i<xtmp.size(); i++)
-                _velocityShifts[i-1]=xtmp.get(i).asInt();
-        }
-
         /////// Timeout
         xtmp.clear();
         if (!extractGroup(velocityGroup, xtmp, "Timeout", "a list of timeout to be used in the vmo control", _njoints))
@@ -1738,82 +1722,13 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
             for(i=1; i<xtmp.size(); i++)
                 _velocityTimeout[i-1]=xtmp.get(i).asInt();
         }
-
-        /////// Joint Speed Estimation
-        xtmp.clear();
-        if (!extractGroup(velocityGroup, xtmp, "JNT_speed_estimation", "a list of shift factors used by the firmware joint speed estimator", _njoints))
-        {
-            fprintf(stderr, "Using default value=5\n");
-            for(i=1; i<_njoints+1; i++)
-                _estim_params[i-1].jnt_Vel_estimator_shift = 0;   //Default value
-        }
-        else
-        {
-            for(i=1; i<xtmp.size(); i++)
-                _estim_params[i-1].jnt_Vel_estimator_shift = xtmp.get(i).asInt();
-        }
-
-        /////// Motor Speed Estimation
-        xtmp.clear();
-        if (!extractGroup(velocityGroup, xtmp, "MOT_speed_estimation", "a list of shift factors used by the firmware motor speed estimator", _njoints))
-        {
-            fprintf(stderr, "Using default value=5\n");
-            for(i=1; i<_njoints+1; i++)
-                _estim_params[i-1].mot_Vel_estimator_shift = 0;   //Default value
-        }
-        else
-        {
-            for(i=1; i<xtmp.size(); i++)
-                _estim_params[i-1].mot_Vel_estimator_shift = xtmp.get(i).asInt();
-        }
-
-        /////// Joint Acceleration Estimation
-        xtmp.clear();
-        if (!extractGroup(velocityGroup, xtmp, "JNT_accel_estimation", "a list of shift factors used by the firmware joint speed estimator", _njoints))
-        {
-            fprintf(stderr, "Using default value=5\n");
-            for(i=1; i<_njoints+1; i++)
-                _estim_params[i-1].jnt_Acc_estimator_shift = 0;   //Default value
-        }
-        else
-        {
-            for(i=1; i<xtmp.size(); i++)
-                _estim_params[i-1].jnt_Acc_estimator_shift = xtmp.get(i).asInt();
-        }
-
-        /////// Motor Acceleration Estimation
-        xtmp.clear();
-        if (!extractGroup(velocityGroup, xtmp, "MOT_accel_estimation", "a list of shift factors used by the firmware motor speed estimator", _njoints))
-        {
-            fprintf(stderr, "Using default value=5\n");
-            for(i=1; i<_njoints+1; i++)
-                _estim_params[i-1].mot_Acc_estimator_shift = 5;   //Default value
-        }
-        else
-        {
-            for(i=1; i<xtmp.size(); i++)
-                _estim_params[i-1].mot_Acc_estimator_shift = xtmp.get(i).asInt();
-        }
-
     }
     else
     {
-        fprintf(stderr, "A suitable value for [VELOCITY] Shifts was not found. Using default Shifts=4\n");
-        for(i=1; i<_njoints+1; i++)
-            _velocityShifts[i-1] = 0;   //Default value // not used now!! In the future this value may (should?) be read from config file and sertnto the EMS
-
         fprintf(stderr, "A suitable value for [VELOCITY] Timeout was not found. Using default Timeout=1000, i.e 1s.\n");
         for(i=1; i<_njoints+1; i++)
             _velocityTimeout[i-1] = 1000;   //Default value
 
-        fprintf(stderr, "A suitable value for [VELOCITY] speed estimation was not found. Using default shift factor=5.\n");
-        for(i=1; i<_njoints+1; i++)
-        {
-            _estim_params[i-1].jnt_Vel_estimator_shift = 0;   //Default value
-            _estim_params[i-1].jnt_Acc_estimator_shift = 0;
-            _estim_params[i-1].mot_Vel_estimator_shift = 0;
-            _estim_params[i-1].mot_Acc_estimator_shift = 0;
-        }
     }
     return true;
 }
