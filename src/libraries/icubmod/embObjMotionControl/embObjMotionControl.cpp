@@ -5760,7 +5760,7 @@ bool embObjMotionControl::setPWMLimitRaw(int j, const double val)
 
 bool embObjMotionControl::getPowerSupplyVoltageRaw(int j, double* val)
 {
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_controller_status);
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_controller, 0, eoprot_tag_mc_controller_status);
     uint16_t size;
     eOmc_controller_status_t  controllerStatus;
 
