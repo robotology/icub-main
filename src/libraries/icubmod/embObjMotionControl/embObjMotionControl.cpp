@@ -1159,6 +1159,37 @@ bool embObjMotionControl::parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], d
     return true;
 }
 
+
+bool embObjMotionControl::parseCurrentPidsGroup(Bottle& pidsGroup, Pid myPid[])
+{
+    int j=0;
+    Bottle xtmp;
+
+    if (!extractGroup(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "maxOutput", "Pid maxOutput parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+
+    //conversion from metric to machine units (if applicable)
+//     if (_positionControlUnits==P_METRIC_UNITS)
+//     {
+//         for (j=0; j<_njoints; j++)
+//         {
+//             myPid[j].kp = myPid[j].kp / _angleToEncoder[j];  //[PWM/deg]
+//             myPid[j].ki = myPid[j].ki / _angleToEncoder[j];  //[PWM/deg]
+//             myPid[j].kd = myPid[j].kd / _angleToEncoder[j];  //[PWM/deg]
+//         }
+//     }
+//     else
+//     {
+//         //do nothing
+//     }
+
+    return true;
+}
+
+
 bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 {
     Bottle xtmp;
@@ -1577,6 +1608,78 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         }
     }
 
+
+    ////// CURRENT PIDS
+    {
+        Bottle currentPidsGroup;
+        currentPidsGroup=config.findGroup("CURRENT_CONTROL", "Current control parameters");
+        if (currentPidsGroup.isNull()==false)
+        {
+           Value &controlUnits=currentPidsGroup.find("controlUnits");
+           if  (controlUnits.isNull() == false && controlUnits.isString() == true)
+           {
+                if (controlUnits.toString()==string("metric_units"))
+                {
+                    yDebug("CURRENT_CONTROL: using metric_units");
+                }
+                else if (controlUnits.toString()==string("machine_units"))
+                {
+                    yError("embObjMotionControl::fromConfig(): CURRENT_CONTROL: is not possible to use machine_units");
+                    return false;
+
+                }
+                else
+                {
+                    yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: invalid controlUnits value";
+                    return false;
+
+                }
+           }
+           else
+           {
+                yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: missing controlUnits parameter. Assuming metric_units. Please fix your configuration file.";
+           }
+
+
+
+           Value &controlLaw=currentPidsGroup.find("controlLaw");
+           if (controlLaw.isNull() == false && controlLaw.isString() == true)
+           {
+               string s_controlaw = controlLaw.toString();
+               if (s_controlaw==string("2foc_feedback"))
+               {
+                   yDebug("CORRENT_CONTROL: using control law motor 2foc_feedback");
+                   if (!parseCurrentPidsGroup (currentPidsGroup, _cpids))
+                   {
+                       yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: error detected in parameters syntax";
+                       return false;
+                   }
+              }
+              else if (s_controlaw==string("not_implemented"))
+               {
+                   yDebug() << "current control not not_implemented on this robot part. Disabling.";
+               }
+               else if (s_controlaw==string("disabled"))
+               {
+                   yDebug() << "current control disabled on this robot part.";
+               }
+               else
+               {
+                  yError() << "Unable to use control law " << s_controlaw << ". Disabling current control";
+               }
+           }
+           else
+           {
+                yDebug() << "Unable to find a valid control law parameter. Disabling current control";
+           }
+        }
+        else
+        {
+            yDebug() <<"embObjMotionControl::fromConfig(): no CURRENT_CONTROL group found in config file";
+            //return true; //current control group is not mandatory
+        }
+    }
+
     ////// IMPEDANCE PARAMETERS
     Bottle impedanceGroup;
     impedanceGroup=config.findGroup("IMPEDANCE","IMPEDANCE parameters");
@@ -1656,7 +1759,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     else
         for(i=1; i<xtmp.size(); i++) _currentLimits[i-1].nominalCurrent =xtmp.get(i).asDouble();
 
-    // nominal current
+    // peak current
     if (!extractGroup(limits, xtmp, "motorPeakCurrents","a list of peak current limits", _njoints))
         return false;
     else
@@ -1809,7 +1912,6 @@ bool embObjMotionControl::init()
         eOmc_joint_config_t jconfig = {0};
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
         copyPid_iCub2eo(&_pids[logico],  &jconfig.pidposition);
-        copyPid_iCub2eo(&_pids[logico],  &jconfig.pidvelocity);
         copyPid_iCub2eo(&_tpids[logico], &jconfig.pidtorque);
 
         jconfig.impedance.damping   = (eOmeas_damping_t)   U_32(_impedance_params[logico].damping * 1000);
@@ -1891,6 +1993,7 @@ bool embObjMotionControl::init()
         motor_cfg.pwmLimit =_motorPwmLimits[logico];
         motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_max[logico], 0.0, _angleToEncoder[logico]));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_min[logico], 0.0, _angleToEncoder[logico]));
+        copyPid_iCub2eo(&_cpids[logico],  &motor_cfg.pidcurrent);
         motor_cfg.pidcurrent.kp = 8;
         motor_cfg.pidcurrent.ki = 2;
         motor_cfg.pidcurrent.scale = 10;
@@ -4104,6 +4207,11 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; getCurrentPidRaw(i, &p); r.addDouble(p.scale); }
         return true;
     }
+    else if (key == "pidCurrentOutput")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)  { Pid p; getCurrentPidRaw(i, &p); r.addDouble(p.max_output); }
+        return true;
+    }
     else if (key == "jointEncoderType")
     {
         Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++)
@@ -4228,6 +4336,7 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     listOfKeys->addString("pidCurrentKp");
     listOfKeys->addString("pidCurrentKi");
     listOfKeys->addString("pidCurrentShift");
+    listOfKeys->addString("pidCurrentOutput");
     listOfKeys->addString("coulombThreshold");
     listOfKeys->addString("torqueControlFilterType");
     listOfKeys->addString("jointEncoderType");

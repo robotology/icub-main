@@ -389,7 +389,8 @@ private:
     bool parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[]);
     bool parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], double kbemf[], double ktau[], int filterType[]);
     bool parseImpedanceGroup_NewFormat(Bottle& pidsGroup, ImpedanceParameters vals[]);
-       
+    bool parseCurrentPidsGroup(Bottle& pidsGroup, Pid myPid[]);
+
 //    bool getStatusBasic_withWait(const int n_joint, const int *joints, eOmc_joint_status_basic_t *_statuslist);             // helper function
 //    bool getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);     // helper function
     bool interactionModeStatusConvert_embObj2yarp(eOenum08_t embObjMode, int &vocabOut);
