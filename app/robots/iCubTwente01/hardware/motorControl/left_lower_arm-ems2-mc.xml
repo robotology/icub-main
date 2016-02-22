@@ -25,9 +25,9 @@
     <group name="POSITION_CONTROL">
         <param name="controlLaw">    joint_pid_v1 </param> 
         <param name="controlUnits">  machine_units               </param> 
-        <param name="kp">          -200          1000          -1000         -200    -500          -8000         -8000         -8000         8000          -8000         -8000         1200         </param>       
-        <param name="kd">          -1000         10000         -10000        -200    -32000        -32000        -32000        -32000        32000         -32000        -32000        12500        </param>       
-        <param name="ki">          -1            1             -1            -1      -1            -5            -5            -5            5             -5            -5            1            </param>       
+        <param name="kp">          -200          1000          -1000         200    -500          -8000         -8000         -8000         8000          -8000         -8000         1200         </param>       
+        <param name="kd">          -1000         10000         -10000        200    -32000        -32000        -32000        -32000        32000         -32000        -32000        12500        </param>       
+        <param name="ki">          -1            1             -1            1      -1            -5            -5            -5            5             -5            -5            1            </param>       
         <param name="maxOutput">   1333          1333          1333          1333    1333          1333          1333          1333          1333          1333          1333          1333         </param>       
         <param name="maxInt">      1333          1333          1333          1333    1333          1333          1333          1333          1333          1333          1333          1333         </param>       
         <param name="shift">       6             7             7             4       6             8             8             8             8             8             8             6            </param>       
