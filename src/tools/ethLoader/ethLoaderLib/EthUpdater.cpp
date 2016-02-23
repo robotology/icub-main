@@ -31,7 +31,7 @@ void EthUpdater::cmdScan()
         {
             if (rxAddress!=mMyAddress)
             {
-                printf("ADDRESS=%x\n",rxAddress);
+                printf("ADDRESS=%x",rxAddress);
                 fflush(stdout);
 
                 ACE_UINT8 version=mRxBuffer[1];
@@ -39,6 +39,7 @@ void EthUpdater::cmdScan()
                 ACE_UINT8 build  =mRxBuffer[3];
 
                 ACE_UINT32 mask=*(ACE_UINT32*)(mRxBuffer+4);
+                printf(" mask=%x\n",mask);
                 ACE_UINT64 mac=0;
 
                 for (int i=8; i<14; ++i)

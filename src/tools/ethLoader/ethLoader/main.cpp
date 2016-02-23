@@ -293,6 +293,15 @@ bool dialog_question_ip_address(char* old_addr,char* new_addr,const char* ip_or_
     return response==GTK_RESPONSE_YES;
 }
 
+void dialog_error_ip_address(char* new_addr)
+{
+    char text[256];
+    sprintf(text,"New address %s is not permitted!\r\n\r\n",new_addr);
+
+    dialog_message(GTK_MESSAGE_ERROR,"ip address is wrong!",text);
+    return;
+}
+
 static void edited_ip_addr(GtkCellRendererText *cell,gchar *path_str,gchar *new_addr,gpointer data)
 {
     GtkTreeModel *model=gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
@@ -306,7 +315,22 @@ static void edited_ip_addr(GtkCellRendererText *cell,gchar *path_str,gchar *new_
     if (ip1<0 || ip1>255 || ip2<0 || ip2>255 || ip3<0 || ip3>255 || ip4<0 || ip4>255) return;
     ACE_UINT32 iNewAddress=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
 
+
     ACE_UINT32 address=gUpdater.getBoardList()[index[0]].mAddress;
+    ACE_UINT32 mask=gUpdater.getBoardList()[index[0]].mMask;
+
+    if(iNewAddress == (iNewAddress & mask)) // checks new ip address is not a network address . For example x.y.z.w/24 x.y.z.0
+    {
+        dialog_error_ip_address(new_addr);
+        return;
+    }
+
+    if((~mask) == (iNewAddress & (~mask))) // checks new ip address is not a broadcast address . For example x.y.z.w/24 x.y.z.255
+    {
+        dialog_error_ip_address(new_addr);
+        return;
+    }
+
 
     if (iNewAddress!=address)
     {
@@ -317,6 +341,7 @@ static void edited_ip_addr(GtkCellRendererText *cell,gchar *path_str,gchar *new_
         {
             gUpdater.cmdChangeAddress(address,iNewAddress);
         }
+
     }
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
