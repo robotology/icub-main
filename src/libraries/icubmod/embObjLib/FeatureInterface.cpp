@@ -292,7 +292,7 @@ fakestdbool_t feat_signal_network_reply(eOprotBRD_t brd, eOprotID32_t id32, uint
         return(fakestdbool_false);
     }
 
-    return(ethres->aNetworkQueryReplyHasArrived(id32, signature));
+    return(ethres->aNetQueryReplyHasArrived(id32, signature));
 }
 
 fakestdbool_t feat_embObjCANPrintHandler(eOprotBRD_t brd, eOmn_info_basic_t* infobasic)

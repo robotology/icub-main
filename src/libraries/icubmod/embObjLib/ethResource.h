@@ -177,6 +177,27 @@ public:
     void setBoardNum(int board);
 };
 
+class ethNetworkQuery
+{
+
+private:
+
+    eOprotID32_t id2wait;           // the id32 which we wait
+    yarp::os::Semaphore* netwait;   // the semaphore used by the class to wait for a reply from network. it must have exclusive access
+    yarp::os::Semaphore* isbusy;    // the semaphore used to guarantee exclusive access of ::netwait to calling threads
+    yarp::os::Semaphore* iswaiting; // the semaphore used to guarantee that the wait of the class is unblocked only once and when it is required
+
+public:
+
+    ethNetworkQuery();
+    ~ethNetworkQuery();
+
+    Semaphore* start(eOprotID32_t id32, uint32_t signature);     // associates a semaphore to a (id2wait, signature) pair
+    bool wait(Semaphore* sem, double timeout);                      // waits the semaphore until either a reply arrives or timeout expires (returns false)
+    bool arrived(eOprotID32_t id32, uint32_t signature);            // a reply has arrived. the rx handler must call it. true if it releases, false if not
+    bool stop(Semaphore* sem);                                      // we deassociate the semaphore to the waiting pair
+};
+
 
 class yarp::dev::ethResources:  public DeviceDriver,
                                 public hostTransceiver
@@ -198,6 +219,8 @@ private:
     infoOfRecvPkts    *infoPkts;
 
     yarp::os::Semaphore*  objLock;
+
+    ethNetworkQuery*    ethQuery;
 
     yarp::os::Semaphore*  networkQuerySem;      // the semaphore used by the class to wait for a reply from network. it must have exclusive access
     yarp::os::Semaphore*  isbusyNQsem;          // the semaphore used to guarantee exclusive access of networkQuerySem to calling threads
@@ -320,16 +343,26 @@ public:
     bool verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber = -1);
 
 
-    Semaphore* startNetworkQuerySession(eOprotID32_t id32, uint32_t signature); // to the associated board
-    bool waitForNetworkQueryReply(Semaphore* sem, double timeout);
-    bool aNetworkQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
-    bool stopNetworkQuerySession(Semaphore* sem);
+//    Semaphore* startNetworkQuerySession(eOprotID32_t id32, uint32_t signature); // to the associated board
+//    bool waitForNetworkQueryReply(Semaphore* sem, double timeout);
+    bool aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
+//    bool stopNetworkQuerySession(Semaphore* sem);
 
     bool printRXstatistics(void);
     bool CANPrintHandler(eOmn_info_basic_t* infobasic);
 
 
+    bool serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_configuration_t* config, double timeout = 0.500);
+
+    bool serviceStart(eOmn_serv_category_t category, double timeout = 0.500);
+
+    bool serviceStop(eOmn_serv_category_t category, double timeout = 0.500);
+
+
 private:
+
+    bool serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_configuration_t* config, double timeout);
+
     bool verbosewhenok;
     //uint64_t        RXpacket[maxRXpacketsize/8];    // buffer holding the received messages after EthReceiver::run() has read it from socket
     //uint16_t        RXpacketSize;

@@ -645,9 +645,6 @@ embObjMotionControl::embObjMotionControl() :
 
     useRawEncoderData = false;
     _pwmIsLimited     = false;
-#if !defined(EMBOBJMC_DONT_USE_MAIS)
-    numberofmaisboards = 0;
-#endif // defined(EMBOBJMC_DONT_USE_MAIS)
 
     ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
@@ -674,11 +671,11 @@ bool embObjMotionControl::initialised()
 
 bool embObjMotionControl::verifyMotionControlProtocol(Bottle groupProtocol )
 {
-    if(false == res->isEPmanaged(eoprot_endpoint_motioncontrol))
-    {
-        yError() << "embObjMotionControl::open() detected that EMS "<< _fId.boardNumber << " does not support motion control";
-        return false;
-    }
+//    if(false == res->isEPmanaged(eoprot_endpoint_motioncontrol))
+//    {
+//        yError() << "embObjMotionControl::open() detected that EMS "<< _fId.boardNumber << " does not support motion control";
+//        return false;
+//    }
 
 
     if(false == res->verifyBoard(groupProtocol))
@@ -708,29 +705,29 @@ bool embObjMotionControl::verifyMotionControlProtocol(Bottle groupProtocol )
     }
 
 
-    if(false == res->configureENDPOINT(groupProtocol, eoprot_endpoint_motioncontrol))
-    {
-        yError() << "embObjMotionControl::open() fails in function configureENDPOINT() for BOARD "<< _fId.boardNumber << " and endpoint eoprot_endpoint_motioncontrol: VERIFY XML files";
-        return false;
-    }
+//    if(false == res->configureENDPOINT(groupProtocol, eoprot_endpoint_motioncontrol))
+//    {
+//        yError() << "embObjMotionControl::open() fails in function configureENDPOINT() for BOARD "<< _fId.boardNumber << " and endpoint eoprot_endpoint_motioncontrol: VERIFY XML files";
+//        return false;
+//    }
 
 
-    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, _njoints))
-    {
-        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for BOARD "<< _fId.boardNumber << " and entity eoprot_entity_mc_joint: VERIFY their number in board, and in XML files";
-        return false;
-    }
+//    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, _njoints))
+//    {
+//        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for BOARD "<< _fId.boardNumber << " and entity eoprot_entity_mc_joint: VERIFY their number in board, and in XML files";
+//        return false;
+//    }
 //    else
 //    {
 //        yDebug() << "embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNumber << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_joint";
 //    }
 
 
-    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, _njoints))
-    {
-        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_mc_motor: VERIFY their number in board, and in XML files";
-        return false;
-    }
+//    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, _njoints))
+//    {
+//        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_mc_motor: VERIFY their number in board, and in XML files";
+//        return false;
+//    }
 //    else
 //    {
 //        yDebug() << "embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNumber << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_motor";
@@ -739,55 +736,6 @@ bool embObjMotionControl::verifyMotionControlProtocol(Bottle groupProtocol )
     return true;
 }
 
-#if !defined(EMBOBJMC_DONT_USE_MAIS)
-
-bool embObjMotionControl::verifyMaisProtocol(Bottle groupProtocol)
-{
-    numberofmaisboards = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNumber), eoprot_endpoint_analogsensors, eoprot_entity_as_mais);
-
-    if(0 != numberofmaisboards)
-    {
-        // must verify protocol and then the entity number
-
-        if(false == res->verifyEPprotocol(groupProtocol, eoprot_endpoint_analogsensors))
-        {
-            yError() << "embObjMotionControl::open() fails in function verifyProtocol() of eoprot_endpoint_analogsensors for BOARD "<< _fId.boardNumber << ": probably it does not have the same eoprot_endpoint_analogsensors protocol version: DO A FW UPGRADE";
-            return false;
-        }
-        else
-        {
-            if(verbosewhenok)
-            {
-                yDebug() << "embObjMotionControl::open() detected that there is a mais, thus called verifyProtocol() of eoprot_endpoint_analogsensors for board "<< _fId.boardNumber;
-            }
-        }
-
-
-
-        if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_analogsensors, eoprot_entity_as_mais))
-        {
-            yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_as_mais: VERIFY their number in board, and in XML files";
-            return false;
-        }
-
-
-        if(false == configure_mais(groupProtocol))
-        {
-            yError() << "embObjMotionControl::open() had an error while configuring mais for board " << _fId.boardNumber;
-            return false;
-        }
-        else
-        {
-            if(verbosewhenok)
-            {
-                yDebug() << "embObjMotionControl::open() succesfully configured the MAIS attached to board" << _fId.boardNumber;
-            }
-        }
-    }
-    return true;
-}
-
-#endif // !defined(EMBOBJMC_DONT_USE_MAIS)
 
 
 bool embObjMotionControl::open(yarp::os::Searchable &config)
@@ -1027,6 +975,13 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
+    if(false == res->serviceVerifyActivate(eomn_serv_category_mc, NULL))
+    {
+        yError() << "embObjMotionControl::open() has an error in call of ethResources::serviceVerifyActivate() for board" << _fId.boardNumber;
+        cleanup();
+        return false;
+    }
+
 
     NVnumber = res->getNVnumber(eoprot_endpoint_motioncontrol);
     requestQueue = new eoRequestsQueue(NVnumber);
@@ -1045,21 +1000,9 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
 
-#if !defined(EMBOBJMC_DONT_USE_MAIS)
-
-    // now if this device has a mais ... we configure it
-
-    if(!verifyMaisProtocol(groupProtocol))
+    if(false == res->serviceStart(eomn_serv_category_mc))
     {
-        cleanup();
-        return false;
-    }
-
-#endif // !defined(EMBOBJMC_DONT_USE_MAIS)
-
-    if(false == res->goToRun(eoprot_endpoint_motioncontrol, eoprot_entity_mc_controller))
-    {
-        yError() << "embObjMotionControl::open() fails to start control loop of board" << _fId.boardNumber << ": cannot continue";
+        yError() << "embObjMotionControl::open() fails to start mc service for BOARD" << _fId.boardNumber << ": cannot continue";
         cleanup();
         return false;
     }
@@ -1067,7 +1010,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjMotionControl::open() correctly activated control loop of BOARD" << _fId.boardNumber;
+            yDebug() << "embObjMotionControl::open() correctly starts mc service of BOARD" << _fId.boardNumber;
         }
     }
 
@@ -2083,6 +2026,11 @@ bool embObjMotionControl::close()
     ImplementAxisInfo::uninitialize();
     
     if (_torqueControlHelper)  {delete _torqueControlHelper; _torqueControlHelper=0;}
+
+
+    res->serviceStop(eomn_serv_category_mc);
+
+    #warning TODO: clear the regulars imposed by motion-control.
     
     cleanup();
 

@@ -226,6 +226,19 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, co
 
 }
 
+extern void eoprot_fun_UPDT_mn_service_status_commandresult(const EOnv* nv, const eOropdescriptor_t* rd)
+{
+    if(eo_ropcode_sig == rd->ropcode)
+    {   // in here we have a sig
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        {
+            embObjPrintError("eoprot_fun_UPDT_mn_service_status_commandresult() has received an unexpected message");
+            return;
+        }
+    }
+
+}
+
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern hidden functions 
 // --------------------------------------------------------------------------------------------------------------------

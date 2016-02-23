@@ -775,7 +775,15 @@ void hostTransceiver::eoprot_override_mn(void)
             EO_INIT(.tag)           eoprot_tag_mn_comm_cmmnds_command_replyarray,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray
+        },
+        {   // mn_service_status_commandresult
+            EO_INIT(.endpoint)      eoprot_endpoint_management,
+            EO_INIT(.entity)        eoprot_entity_mn_service,
+            EO_INIT(.tag)           eoprot_tag_mn_service_status_commandresult,
+            EO_INIT(.init)          NULL,
+            EO_INIT(.update)        eoprot_fun_UPDT_mn_service_status_commandresult
         }
+
     };
 
 
