@@ -2318,8 +2318,8 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
 
 bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_configuration_t* config, double timeout)
 {
-    eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_service_cmmnds_command);;
-    eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_service_status_commandresult);;
+    eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_cmmnds_command);;
+    eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_status_commandresult);;
 
     // get a sem, transmit a set<>, wait for a reply (add code in callback of status_commandresult), retrieve the result. return true or false
 
