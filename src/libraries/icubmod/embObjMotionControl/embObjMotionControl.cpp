@@ -2028,9 +2028,13 @@ bool embObjMotionControl::close()
     if (_torqueControlHelper)  {delete _torqueControlHelper; _torqueControlHelper=0;}
 
 
-    res->serviceStop(eomn_serv_category_mc);
-
-    #warning TODO: clear the regulars imposed by motion-control.
+    // in cleanup, at date of 23feb2016 there is a call to ethManager->releaseResource() which ...
+    // send to config all the boards and stops tx and rx treads.
+    // thus, in here we cannot call serviceStop(mc) because there will be tx/rx activity only for the first call of ::close().
+    // i termporarily put serviceStop(eomn_serv_category_all) inside releaseResource()
+    // todo: later on: clear regulars of mc, stop(mc), inside releaseresource() DO NOT stop tx/rx activity and DO NOT stop all services
+    // res->serviceStop(eomn_serv_category_mc);
+    // #warning TODO: clear the regulars imposed by motion-control.
     
     cleanup();
 

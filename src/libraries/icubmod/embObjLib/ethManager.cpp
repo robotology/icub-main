@@ -206,7 +206,7 @@ int TheEthManager::releaseResource(ethFeature_t &resource)
         while(it != itend)
         {
             tmpEthRes = (*it);
-            tmpEthRes->goToConfig();
+            tmpEthRes->serviceStop(eomn_serv_category_all);
             tmpEthRes->clearRegulars();
             it++;
         }
