@@ -35,8 +35,11 @@ Filter::Filter(const Vector &num, const Vector &den, const Vector &y0)
     b=num;
     a=den;
     
-    m=b.length(); uold.resize(m-1);
-    n=a.length(); yold.resize(n-1);
+    m=b.length(); n=a.length();
+    yAssert((m>1)&&(n>1));
+
+    uold.resize(m-1);
+    yold.resize(n-1);
     
     init(y0);
 }
@@ -106,8 +109,11 @@ void Filter::setCoeffs(const Vector &num, const Vector &den)
     uold.clear();
     yold.clear();
 
-    m=b.length(); uold.resize(m-1);
-    n=a.length(); yold.resize(n-1);
+    m=b.length(); n=a.length();
+    yAssert((m>1)&&(n>1));
+
+    uold.resize(m-1);
+    yold.resize(n-1);
 
     init(y);
 }
