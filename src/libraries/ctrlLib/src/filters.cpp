@@ -17,6 +17,7 @@
 */
 
 #include <cmath>
+#include <limits>
 #include <algorithm>
 
 #include <yarp/os/Log.h>
@@ -36,23 +37,24 @@ Filter::Filter(const Vector &num, const Vector &den, const Vector &y0)
     a=den;
     
     m=b.length(); n=a.length();
-    yAssert((m>1)&&(n>1));
+    yAssert((m>0)&&(n>0));
 
-    uold.resize(m-1);
-    yold.resize(n-1);
-    
-    init(y0);
+    uold.insert(uold.begin(),m-1,zeros(y0.length()));
+    yold.insert(yold.begin(),n-1,zeros(y0.length()));
+
+    init(y0);    
 }
 
 
 /***************************************************************************/
 void Filter::init(const Vector &y0)
 {
-    // if there is a last input then take it as guess for the next input
-    if (uold[0].size()>0)
+    // take the last input
+    // as guess for the next input
+    if (uold.size()>0)
         init(y0,uold[0]);
     else    // otherwise use zero
-        init(y0,zeros(y0.length()));
+        init(y0,zeros(y0.length()));    
 }
 
 
@@ -71,7 +73,8 @@ void Filter::init(const Vector &y0, const Vector &u0)
     for (size_t i=0; i<a.length(); i++)
         sum_a+=a[i];
     
-    if (fabs(sum_b)>1e-9)   // if filter DC gain is not zero
+    // if filter DC gain is not zero
+    if (fabs(sum_b)>std::numeric_limits<double>::epsilon())
         u_init=(sum_a/sum_b)*y0;
     else
     {
@@ -79,7 +82,7 @@ void Filter::init(const Vector &y0, const Vector &u0)
         // the next input is going to be for initializing (that is u0)
         // Note that, unless y0=0, the filter output is not going to be stable
         u_init=u0;
-        if (fabs(sum_a-a[0])>1e-9)
+        if (fabs(sum_a-a[0])>std::numeric_limits<double>::epsilon())
             y_init=a[0]/(a[0]-sum_a)*y;
         // if sum_a==a[0] then the filter can only be initialized to zero
     }
@@ -110,10 +113,10 @@ void Filter::setCoeffs(const Vector &num, const Vector &den)
     yold.clear();
 
     m=b.length(); n=a.length();
-    yAssert((m>1)&&(n>1));
+    yAssert((m>0)&&(n>0));
 
-    uold.resize(m-1);
-    yold.resize(n-1);
+    uold.insert(uold.begin(),m-1,zeros(y.length()));
+    yold.insert(yold.begin(),n-1,zeros(y.length()));
 
     init(y);
 }
