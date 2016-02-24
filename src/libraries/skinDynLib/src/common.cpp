@@ -88,6 +88,41 @@ int iCub::skinDynLib::getLinkNum(SkinPart s)
     return -1;
 }
 
+SkinPart iCub::skinDynLib::getSkinPartFromString(const std::string skinPartString)
+{
+    
+   if (skinPartString == SkinPart_s[SKIN_LEFT_HAND])
+        return SKIN_LEFT_HAND;
+   else if(skinPartString == SkinPart_s[SKIN_LEFT_FOREARM]) 
+        return SKIN_LEFT_FOREARM;
+   else if(skinPartString == SkinPart_s[SKIN_LEFT_UPPER_ARM]) 
+        return SKIN_LEFT_UPPER_ARM;
+   else if(skinPartString == SkinPart_s[SKIN_RIGHT_HAND]) 
+        return SKIN_RIGHT_HAND;
+   else if(skinPartString == SkinPart_s[SKIN_RIGHT_FOREARM]) 
+        return SKIN_RIGHT_FOREARM;
+   else if(skinPartString == SkinPart_s[SKIN_RIGHT_UPPER_ARM]) 
+        return SKIN_RIGHT_UPPER_ARM;
+   else if(skinPartString == SkinPart_s[SKIN_FRONT_TORSO]) 
+        return SKIN_FRONT_TORSO;
+   else if(skinPartString == SkinPart_s[LEFT_LEG_UPPER]) 
+        return LEFT_LEG_UPPER;
+   else if(skinPartString == SkinPart_s[LEFT_LEG_LOWER]) 
+        return LEFT_LEG_LOWER;
+   else if(skinPartString == SkinPart_s[LEFT_FOOT]) 
+        return LEFT_FOOT;
+   else if(skinPartString == SkinPart_s[RIGHT_LEG_UPPER]) 
+        return RIGHT_LEG_UPPER;
+   else if(skinPartString == SkinPart_s[RIGHT_LEG_LOWER]) 
+        return RIGHT_LEG_LOWER;
+   else if(skinPartString == SkinPart_s[RIGHT_FOOT]) 
+       return RIGHT_FOOT;
+   else 
+       return SKIN_PART_UNKNOWN;
+ 
+    
+}
+
 yarp::sig::Vector iCub::skinDynLib::toVector(yarp::sig::Matrix m)
 {
     Vector res(m.rows()*m.cols(),0.0);

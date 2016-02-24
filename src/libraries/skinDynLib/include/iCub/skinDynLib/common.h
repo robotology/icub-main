@@ -222,6 +222,17 @@ std::vector<SkinPart> getSkinParts(BodyPart b);
 */
 int getLinkNum(SkinPart s);
 
+/** 
+* @ingroup skinDynLib 
+*  
+* Get the SkinPart enum from the string version - essentially the opposite of SkinPart_s[]
+* @param skinPartString the string of the skin part
+* @return the SkinPart enum, SKIN_PART_UNKNOWN if the string cannot be resolved
+*/
+SkinPart getSkinPartFromString(const std::string skinPartString);
+
+
+
 /**
 * @ingroup skinDynLib 
 * Converts a yarp::sig::Matrix to a yarp::sig::Vector.
