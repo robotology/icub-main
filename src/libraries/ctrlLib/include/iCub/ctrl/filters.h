@@ -125,6 +125,13 @@ public:
    bool adjustCoeffs(const yarp::sig::Vector &num, const yarp::sig::Vector &den);
 
    /**
+   * Returns the current filter states.
+   * @param u the current input states. 
+   * @param y the current output states. 
+   */ 
+   void getStates(std::deque<yarp::sig::Vector> &u, std::deque<yarp::sig::Vector> &y);
+
+   /**
    * Performs filtering on the actual input.
    * @param u reference to the actual input. 
    * @return the corresponding output. 

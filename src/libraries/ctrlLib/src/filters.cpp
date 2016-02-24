@@ -128,6 +128,14 @@ bool Filter::adjustCoeffs(const Vector &num, const Vector &den)
 
 
 /***************************************************************************/
+void Filter::getStates(deque<Vector> &u, deque<Vector> &y)
+{
+    u=uold;
+    y=yold;
+}
+
+
+/***************************************************************************/
 const Vector& Filter::filt(const Vector &u)
 {
     yAssert(y.length()==u.length());
