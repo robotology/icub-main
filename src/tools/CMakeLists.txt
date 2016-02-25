@@ -7,6 +7,7 @@ add_subdirectory(simpleClient)
 add_subdirectory(testStereoMatch)
 add_subdirectory(fingersTuner)
 add_subdirectory(imuFilter)
+add_subdirectory(imageSplitter)
 add_subdirectory(trajectoryPlayer)
 add_subdirectory(embObjProtoTools/boardTransceiver)
 
