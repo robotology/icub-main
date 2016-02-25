@@ -16,6 +16,10 @@ yarp_prepare_device(embObjMotionControl TYPE yarp::dev::embObjMotionControl
 	add_definitions(-DICUB_AUTOMATIC_MODE_SWITCHING)
   endif()
 
+  if (ICUB_ASK_REFERENCE_TO_FIRMWARE)
+      add_definitions(-DASK_REFERENCE_TO_FIRMWARE)
+  endif()
+
   set(ICUB_COMPILE_EMBOBJ_LIBRARY ON CACHE INTERNAL "use the embObjLib lib")
   INCLUDE(../embObjLib/embObjLib.cmake)
   
