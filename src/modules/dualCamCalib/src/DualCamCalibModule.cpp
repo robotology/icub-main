@@ -200,149 +200,149 @@ bool CamCalibModule::updateModule()
 
     unsigned char *left_raw, *right_raw, *dual_raw;
 
-        if(dualImage_mode)
+    if(dualImage_mode)
+    {
+        // read the dual image and split it up into 2 separated images for calibration
+        yarp::sig::ImageOf<yarp::sig::PixelRgb>* dual = imageInLeft.read();
+        if(dual == NULL)
         {
-            // read the dual image and split it up into 2 separated images for calibration
-            yarp::sig::ImageOf<yarp::sig::PixelRgb>* dual = imageInLeft.read();
-            if(dual == NULL)
-            {
-                yarp::os::Time::delay(0.001);
-                return true;
-            }
-
-            dual_rowsize_pixels = dual->width();
-            single_rowsize_pixels = dual_rowsize_pixels/2;
-            dual_height_pixels = dual->height();
-
-            dual_rowsize_bytes = dual->getRowSize();
-            single_rowsize_bytes = dual_rowsize_bytes/2;
-
-            leftImage->resize(dual_rowsize_pixels/2, dual_height_pixels);
-            rightImage->resize(dual_rowsize_pixels/2, dual_height_pixels);
-
-            leftImage->setQuantum(dual->getQuantum());
-            rightImage->setQuantum(dual->getQuantum());
-
-            left_raw  = leftImage->getRawImage();
-            right_raw = rightImage->getRawImage();
-            dual_raw  = dual->getRawImage();
-
-            for(int h=0; h<dual_height_pixels; h++)
-            {
-                memcpy(left_raw+(h*single_rowsize_bytes),  dual_raw+(h*dual_rowsize_bytes),                         single_rowsize_bytes);
-                memcpy(right_raw+(h*single_rowsize_bytes), dual_raw+(h*dual_rowsize_bytes) + single_rowsize_bytes,  single_rowsize_bytes);
-            }
-        }
-        else
-        {
-            leftImage  = imageInLeft.read(false);
-            rightImage = imageInRight.read(false);
+            yarp::os::Time::delay(0.001);
+            return true;
         }
 
-        yarp::sig::ImageOf<yarp::sig::PixelRgb> &calibratedImgOut=imageOut.prepare();
+        dual_rowsize_pixels = dual->width();
+        single_rowsize_pixels = dual_rowsize_pixels/2;
+        dual_height_pixels = dual->height();
 
-        if (calibToolLeft!=NULL && leftImage!=NULL)
+        dual_rowsize_bytes = dual->getRowSize();
+        single_rowsize_bytes = dual_rowsize_bytes/2;
+
+        leftImage->resize(dual_rowsize_pixels/2, dual_height_pixels);
+        rightImage->resize(dual_rowsize_pixels/2, dual_height_pixels);
+
+        leftImage->setQuantum(dual->getQuantum());
+        rightImage->setQuantum(dual->getQuantum());
+
+        left_raw  = leftImage->getRawImage();
+        right_raw = rightImage->getRawImage();
+        dual_raw  = dual->getRawImage();
+
+        for(int h=0; h<dual_height_pixels; h++)
         {
-            calibToolLeft->apply(*leftImage,calibratedImgLeft);
-            lready=true;
-
-            if (init==false)
-            {
-                if (align == ALIGN_WIDTH)
-                {
-                    outw = calibratedImgLeft.width()*2;
-                    outh = calibratedImgLeft.height();
-                }
-                else if (align==ALIGN_HEIGHT)
-                {
-                    outw = calibratedImgLeft.width();
-                    outh = calibratedImgLeft.height()*2;
-                }
-                else
-                {
-                    yError() << "Invalid alignment";
-                }
-                calibratedImgOut.copy(calibratedImgLeft,outw,outh);
-                init=true;
-            }
-
-            calibratedImgOut.resize(outw, outh);
-            for (int r=0; r<calibratedImgLeft.height(); r++)
-            for (int c=0; c<calibratedImgLeft.width(); c++)
-            {
-                unsigned char *pixel = calibratedImgOut.getPixelAddress(c,r);
-
-                pixel[0] = *(calibratedImgLeft.getPixelAddress(c,r)+0);
-                pixel[1] = *(calibratedImgLeft.getPixelAddress(c,r)+1);
-                pixel[2] = *(calibratedImgLeft.getPixelAddress(c,r)+2);
-            }
-
+            memcpy(left_raw+(h*single_rowsize_bytes),  dual_raw+(h*dual_rowsize_bytes),                         single_rowsize_bytes);
+            memcpy(right_raw+(h*single_rowsize_bytes), dual_raw+(h*dual_rowsize_bytes) + single_rowsize_bytes,  single_rowsize_bytes);
         }
-        if (calibToolRight!=NULL && rightImage!=NULL)
+    }
+    else
+    {
+        leftImage  = imageInLeft.read(false);
+        rightImage = imageInRight.read(false);
+    }
+
+    yarp::sig::ImageOf<yarp::sig::PixelRgb> &calibratedImgOut=imageOut.prepare();
+
+    if (calibToolLeft!=NULL && leftImage!=NULL)
+    {
+        calibToolLeft->apply(*leftImage,calibratedImgLeft);
+        lready=true;
+
+        if (init==false)
         {
-            calibToolRight->apply(*rightImage,calibratedImgRight);
-            rready=true;
-
-            if (init==false)
+            if (align == ALIGN_WIDTH)
             {
-                int outw = 0;
-                int outh = 0;
-                if (align == ALIGN_WIDTH)
-                {
-                    outw = calibratedImgLeft.width()*2;
-                    outh = calibratedImgLeft.height();
-                }
-                else if (align==ALIGN_HEIGHT)
-                {
-                    outw = calibratedImgLeft.width();
-                    outh = calibratedImgLeft.height()*2;
-                }
-                else
-                {
-                    yError() << "Invalid alignment";
-                }
-                calibratedImgOut.copy(calibratedImgRight,outw,outh);
-                init=true;
+                outw = calibratedImgLeft.width()*2;
+                outh = calibratedImgLeft.height();
             }
-
-            for (int r=0; r<calibratedImgLeft.height(); r++)
-            for (int c=0; c<calibratedImgLeft.width(); c++)
+            else if (align==ALIGN_HEIGHT)
             {
-                int cp = 0;
-                int rp = 0;
-                if      (align == ALIGN_WIDTH)  {cp = c+calibratedImgLeft.width();  rp = r;}
-                else if (align == ALIGN_HEIGHT) {cp = c; rp = r+calibratedImgLeft.height();}
-                unsigned char *pixel = calibratedImgOut.getPixelAddress(cp,rp);
-                pixel[0] = *(calibratedImgRight.getPixelAddress(c,r)+0);
-                pixel[1] = *(calibratedImgRight.getPixelAddress(c,r)+1);
-                pixel[2] = *(calibratedImgRight.getPixelAddress(c,r)+2);
+                outw = calibratedImgLeft.width();
+                outh = calibratedImgLeft.height()*2;
             }
+            else
+            {
+                yError() << "Invalid alignment";
+            }
+            calibratedImgOut.copy(calibratedImgLeft,outw,outh);
+            init=true;
         }
 
-        if (requested_fps==0)
+        calibratedImgOut.resize(outw, outh);
+        for (int r=0; r<calibratedImgLeft.height(); r++)
+        for (int c=0; c<calibratedImgLeft.width(); c++)
         {
-            if (lready==true || rready==true)
-            {
-                imageOut.writeStrict();
-                double diffOut = yarp::os::Time::now() -time_lastOut;
-                time_lastOut = yarp::os::Time::now();
-                if (verboseExecTime) yDebug ("%f", diffOut);
-                lready=false;
-                rready=false;
-            }
+            unsigned char *pixel = calibratedImgOut.getPixelAddress(c,r);
+
+            pixel[0] = *(calibratedImgLeft.getPixelAddress(c,r)+0);
+            pixel[1] = *(calibratedImgLeft.getPixelAddress(c,r)+1);
+            pixel[2] = *(calibratedImgLeft.getPixelAddress(c,r)+2);
         }
-        else
+
+    }
+    if (calibToolRight!=NULL && rightImage!=NULL)
+    {
+        calibToolRight->apply(*rightImage,calibratedImgRight);
+        rready=true;
+
+        if (init==false)
         {
-            double diffOut = yarp::os::Time::now() - time_lastOut;
-            if (diffOut>(1/requested_fps))
+            int outw = 0;
+            int outh = 0;
+            if (align == ALIGN_WIDTH)
             {
-                imageOut.writeStrict();
-                time_lastOut = yarp::os::Time::now();
-                if (verboseExecTime) yDebug ("%f", diffOut);
-                lready=false;
-                rready=false;
+                outw = calibratedImgLeft.width()*2;
+                outh = calibratedImgLeft.height();
             }
+            else if (align==ALIGN_HEIGHT)
+            {
+                outw = calibratedImgLeft.width();
+                outh = calibratedImgLeft.height()*2;
+            }
+            else
+            {
+                yError() << "Invalid alignment";
+            }
+            calibratedImgOut.copy(calibratedImgRight,outw,outh);
+            init=true;
         }
+
+        for (int r=0; r<calibratedImgLeft.height(); r++)
+        for (int c=0; c<calibratedImgLeft.width(); c++)
+        {
+            int cp = 0;
+            int rp = 0;
+            if      (align == ALIGN_WIDTH)  {cp = c+calibratedImgLeft.width();  rp = r;}
+            else if (align == ALIGN_HEIGHT) {cp = c; rp = r+calibratedImgLeft.height();}
+            unsigned char *pixel = calibratedImgOut.getPixelAddress(cp,rp);
+            pixel[0] = *(calibratedImgRight.getPixelAddress(c,r)+0);
+            pixel[1] = *(calibratedImgRight.getPixelAddress(c,r)+1);
+            pixel[2] = *(calibratedImgRight.getPixelAddress(c,r)+2);
+        }
+    }
+
+    if (requested_fps==0)
+    {
+        if (lready==true || rready==true)
+        {
+            imageOut.writeStrict();
+            double diffOut = yarp::os::Time::now() -time_lastOut;
+            time_lastOut = yarp::os::Time::now();
+            if (verboseExecTime) yDebug ("%f", diffOut);
+            lready=false;
+            rready=false;
+        }
+    }
+    else
+    {
+        double diffOut = yarp::os::Time::now() - time_lastOut;
+        if (diffOut>(1/requested_fps))
+        {
+            imageOut.writeStrict();
+            time_lastOut = yarp::os::Time::now();
+            if (verboseExecTime) yDebug ("%f", diffOut);
+            lready=false;
+            rready=false;
+        }
+    }
 
     return true;
 }
