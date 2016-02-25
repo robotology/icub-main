@@ -178,7 +178,6 @@ bool CamCalibModule::close()
 
 bool CamCalibModule::interruptModule()
 {
-    yTrace();
     imageInLeft.interrupt();
     if(!dualImage_mode)
         imageInRight.interrupt();
@@ -201,7 +200,6 @@ bool CamCalibModule::updateModule()
 
     unsigned char *left_raw, *right_raw, *dual_raw;
 
-    std::cout << "Ciaut" << std::endl;
     while(1)
     {
         if(dualImage_mode)
@@ -230,9 +228,6 @@ bool CamCalibModule::updateModule()
             left_raw  = leftImage->getRawImage();
             right_raw = rightImage->getRawImage();
             dual_raw  = dual->getRawImage();
-
-            std::cout << "dual row size: " << dual->width() << std::endl;
-            std::cout << "left row size: " << leftImage->width() << std::endl;
 
             for(int h=0; h<dual_height_pixels; h++)
             {
@@ -271,9 +266,6 @@ bool CamCalibModule::updateModule()
                     yError() << "Invalid alignment";
                 }
                 calibratedImgOut.copy(calibratedImgLeft,outw,outh);
-                yDebug() << "created output buffer from left input, size: " << outw << "x" << outh;
-                yDebug() << calibratedImgOut.width();
-                yDebug() << calibratedImgOut.height();
                 init=true;
             }
 
@@ -313,9 +305,6 @@ bool CamCalibModule::updateModule()
                     yError() << "Invalid alignment";
                 }
                 calibratedImgOut.copy(calibratedImgRight,outw,outh);
-                yDebug() << "created output buffer from right input, size: " << outw << "x" << outh;
-                yDebug() << calibratedImgOut.width();
-                yDebug() << calibratedImgOut.height();
                 init=true;
             }
 
