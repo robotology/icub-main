@@ -200,16 +200,14 @@ bool CamCalibModule::updateModule()
 
     unsigned char *left_raw, *right_raw, *dual_raw;
 
-    while(1)
-    {
         if(dualImage_mode)
         {
             // read the dual image and split it up into 2 separated images for calibration
-            yarp::sig::ImageOf<yarp::sig::PixelRgb>* dual = imageInLeft.read(false);
+            yarp::sig::ImageOf<yarp::sig::PixelRgb>* dual = imageInLeft.read();
             if(dual == NULL)
             {
                 yarp::os::Time::delay(0.001);
-                continue;
+                return true;
             }
 
             dual_rowsize_pixels = dual->width();
@@ -248,7 +246,6 @@ bool CamCalibModule::updateModule()
             calibToolLeft->apply(*leftImage,calibratedImgLeft);
             lready=true;
 
-
             if (init==false)
             {
                 if (align == ALIGN_WIDTH)
@@ -274,7 +271,7 @@ bool CamCalibModule::updateModule()
             for (int c=0; c<calibratedImgLeft.width(); c++)
             {
                 unsigned char *pixel = calibratedImgOut.getPixelAddress(c,r);
-                
+
                 pixel[0] = *(calibratedImgLeft.getPixelAddress(c,r)+0);
                 pixel[1] = *(calibratedImgLeft.getPixelAddress(c,r)+1);
                 pixel[2] = *(calibratedImgLeft.getPixelAddress(c,r)+2);
@@ -347,8 +344,6 @@ bool CamCalibModule::updateModule()
             }
         }
 
-        yarp::os::Time::delay(0.001);
-    }
     return true;
 }
 
