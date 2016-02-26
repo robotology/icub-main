@@ -365,7 +365,7 @@ public:
 
 private:
 
-    bool serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout);
+    bool serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times);
 
     bool verbosewhenok;
     //uint64_t        RXpacket[maxRXpacketsize/8];    // buffer holding the received messages after EthReceiver::run() has read it from socket

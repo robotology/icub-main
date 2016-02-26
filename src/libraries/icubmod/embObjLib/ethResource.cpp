@@ -2327,7 +2327,7 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
 }
 
 
-bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout)
+bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times)
 {
     eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_cmmnds_command);
     eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_status_commandresult);;
@@ -2359,20 +2359,31 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
 
 
     sem = ethQueryServices->start(id2wait, 0);
+    bool replied = false;
 
-    if(false == addSetMessage(id2send, (uint8_t*)&command))
+    for(int i=0; i<times; i++)
     {
-        yError() << "ethResources::serviceCommand() cannot transmit an activation request to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
-        return(false);
-    }
+
+        if(false == addSetMessage(id2send, (uint8_t*)&command))
+        {
+            ethQueryServices->stop(sem);
+            yError() << "ethResources::serviceCommand() cannot transmit an activation request to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+            return(false);
+        }
 
 
-    if(false == ethQueryServices->wait(sem, timeout))
-    {
-        // must release the semaphore
-        ethQueryServices->stop(sem);
-        yError() << "ethResources::serviceCommand() had a timeout of" << timeout << "secs when sending an activation request to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
-        return(false);
+        if(false == ethQueryServices->wait(sem, timeout))
+        {
+            yWarning() << "ethResources::serviceCommand() had a timeout of" << timeout << "secs when sending an activation request to BOARD" << get_protBRDnumber()+1;
+            // must release the semaphore
+            //ethQueryServices->stop(sem);
+            //return(false);
+        }
+        else
+        {
+            replied = true;
+            break;
+        }
     }
     // must release the semaphore
     ethQueryServices->stop(sem);
@@ -2393,19 +2404,19 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
 
 bool ethResources::serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout)
 {
-    return(serviceCommand(eomn_serv_operation_verifyactivate, category, param, timeout));
+    return(serviceCommand(eomn_serv_operation_verifyactivate, category, param, timeout, 1));
 }
 
 
 bool ethResources::serviceStart(eOmn_serv_category_t category, double timeout)
 {
-    return(serviceCommand(eomn_serv_operation_start, category, NULL, timeout));
+    return(serviceCommand(eomn_serv_operation_start, category, NULL, timeout, 1));
 }
 
 
 bool ethResources::serviceStop(eOmn_serv_category_t category, double timeout)
 {
-    return(serviceCommand(eomn_serv_operation_stop, category, NULL, timeout));
+    return(serviceCommand(eomn_serv_operation_stop, category, NULL, timeout, 3));
 }
 
 
