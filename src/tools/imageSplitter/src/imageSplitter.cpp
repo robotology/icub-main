@@ -156,7 +156,7 @@ bool ImageSplitter::updateModule()
     outRightImage.resize(outWidth, outHeight);
 
     // alloc and compute some vars for efficency
-    int w2;
+    int h2, w2;
     unsigned char *pixelLeft, *pixelRight;
     unsigned char *pixelInputL, *pixelInputR;
     unsigned char *pixelInput = inputImage->getRawImage();
@@ -174,7 +174,7 @@ bool ImageSplitter::updateModule()
         {
             if(horizontal)
             {
-                for(int h=0; h<inHeight; h++)
+                for(int h=0; h<outHeight; h++)
                 {
                     for(int w1=0; w1<outWidth; w1++)
                     {
@@ -193,7 +193,22 @@ bool ImageSplitter::updateModule()
             }
             else
             {
+                for(int h1=0; h1<outHeight; h1++)
+                {
+                    for(int w=0; w<outWidth; w++)
+                    {
+                        h2 = h1+outHeight;
+                        pixelLeft = outLeftImage.getPixelAddress(w, h1);
+                        pixelLeft[0] = *(inputImage->getPixelAddress(w, h1)+0);
+                        pixelLeft[1] = *(inputImage->getPixelAddress(w, h1)+1);
+                        pixelLeft[2] = *(inputImage->getPixelAddress(w, h1)+2);
 
+                        pixelRight = outRightImage.getPixelAddress(w, h1);
+                        pixelRight[0] = *(inputImage->getPixelAddress(w, h2)+0);
+                        pixelRight[1] = *(inputImage->getPixelAddress(w, h2)+1);
+                        pixelRight[2] = *(inputImage->getPixelAddress(w, h2)+2);
+                    }
+                }
             }
         } break;
 
