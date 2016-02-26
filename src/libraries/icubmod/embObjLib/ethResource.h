@@ -224,9 +224,9 @@ private:
 
     ethNetworkQuery*    ethQueryServices;
 
-    yarp::os::Semaphore*  networkQuerySem;      // the semaphore used by the class to wait for a reply from network. it must have exclusive access
-    yarp::os::Semaphore*  isbusyNQsem;          // the semaphore used to guarantee exclusive access of networkQuerySem to calling threads
-    yarp::os::Semaphore*  iswaitingNQsem;       // the semaphore used to guarantee that the wait of the class is unblocked only once and when it is required
+//    yarp::os::Semaphore*  networkQuerySem;      // the semaphore used by the class to wait for a reply from network. it must have exclusive access
+//    yarp::os::Semaphore*  isbusyNQsem;          // the semaphore used to guarantee exclusive access of networkQuerySem to calling threads
+//    yarp::os::Semaphore*  iswaitingNQsem;       // the semaphore used to guarantee that the wait of the class is unblocked only once and when it is required
 
     bool lock();
     bool unlock();

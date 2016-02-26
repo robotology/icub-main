@@ -236,6 +236,10 @@ extern void eoprot_fun_UPDT_mn_service_status_commandresult(const EOnv* nv, cons
             return;
         }
     }
+    else
+    {
+        embObjPrintError("eoprot_fun_UPDT_mn_service_status_commandresult() has received an unexpected opcode");
+    }
 
 }
 

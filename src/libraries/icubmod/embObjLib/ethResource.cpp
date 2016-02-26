@@ -116,9 +116,9 @@ ethResources::ethResources()
     isInRunningMode             = false;
     infoPkts                    = new infoOfRecvPkts();
     objLock                     = new Semaphore(1);
-    networkQuerySem             = new Semaphore(0);
-    isbusyNQsem                 = new Semaphore(1);
-    iswaitingNQsem              = new Semaphore(0);
+//    networkQuerySem             = new Semaphore(0);
+//    isbusyNQsem                 = new Semaphore(1);
+//    iswaitingNQsem              = new Semaphore(0);
     verifiedBoardPresence       = false;
     remoteBoardNumberIsSet      = false;
     verifiedBoardTransceiver    = false;
@@ -162,9 +162,9 @@ ethResources::~ethResources()
 
     delete infoPkts;
     delete objLock;
-    delete networkQuerySem;
-    delete isbusyNQsem;
-    delete iswaitingNQsem;
+//    delete networkQuerySem;
+//    delete isbusyNQsem;
+//    delete iswaitingNQsem;
 
     delete ethQuery;
     delete ethQueryServices;
