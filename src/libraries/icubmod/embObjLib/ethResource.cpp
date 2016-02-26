@@ -26,7 +26,6 @@ using namespace yarp::os;
 using namespace yarp::os::impl;
 
 
-#undef TEST_FEATURE_CONFIG_REMOTEBOARD
 
 #define ETHRES_CHECK_MN_APPL_STATUS
 
@@ -806,6 +805,8 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
         //yWarning() << "ethResources::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": FW upgrade is advised";
     }
 
+#if 0
+
     // now i must check brdstatus.transceiver vs hostTransceiver::localTransceiverProperties
 
     if(localTransceiverProperties.listeningPort != brdstatus.transceiver.destinationPort)
@@ -921,6 +922,8 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 //    yDebug() << "ethResources::verifyBoardTransceiver() detected" << boardEPsNumber << "endpoints in BOARD" << get_protBRDnumber()+1;
 
 
+#endif
+
     if(verbosewhenok)
     {
         yDebug() << "ethResources::verifyBoardTransceiver() has validated the transceiver of BOARD " << get_protBRDnumber()+1;
@@ -997,19 +1000,13 @@ bool ethResources::cleanBoardBehaviour(void)
     }
 
 
-    // step 1: go to config mode
-    if(false == goToConfig())
+    // send a ...
+    if(false == serviceStop(eomn_serv_category_all))
     {
-        yError() << "ethResources::cleanBoardBehaviour() cannot send to config mode BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "ethResources::cleanBoardBehaviour() cannot stop services for BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
-    // step 2: clear the regulars
-    if(false == clearRegulars(true))
-    {
-        yError() << "ethResources::cleanBoardBehaviour() cannot clear the regulars of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
-        return(false);
-    }
 
     if(verbosewhenok)
     {
@@ -1063,21 +1060,9 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
     eOmn_command_t command = {0};
     uint16_t size = 0;
 
-    bool res = false;
-
-
-    uint16_t numOfEPsInXML = 0;
 
     // the semaphore used for waiting for replies from the board
     yarp::os::Semaphore* sem = NULL;
-
-
-    // then we compare with
-
-    const eoprot_version_t * pc104versionMN = eoprot_version_of_endpoint_get(eoprot_endpoint_management);
-    const eoprot_version_t * pc104versionEP = eoprot_version_of_endpoint_get(ep);
-
-    uint16_t pc104entitiesinside = eoprot_entities_in_endpoint_numberof_get(get_protBRDnumber(), ep);
 
 
     if(boardEPsNumber > capacityOfArrayOfEPDES)
@@ -1208,39 +1193,8 @@ bool ethResources::verifyBoard(yarp::os::Searchable &protconfig)
 
 bool ethResources::setRemoteBoardNumber(void)
 {
-#if !defined(TEST_FEATURE_CONFIG_REMOTEBOARD)
     remoteBoardNumberIsSet = true;
     return(remoteBoardNumberIsSet);
-#else
-
-    if(remoteBoardNumberIsSet)
-    {
-        return(true);
-    }
-
-    // send a message of type mn comm config
-    eOprotBRD_t protbrd = get_protBRDnumber();
-    eOprotID32_t id2send = eo_prot_ID32dummy;
-
-    eOmn_command_t command = {0};
-    uint16_t size = 0;
-
-    id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
-    memset(&command, 0, sizeof(command));
-    command.cmd.opc                             = eomn_opc_config_PROT_boardnumber;
-    command.cmd.config.array[0]                 = protbrd;
-
-    if(false == addSetMessage(id2send, (uint8_t*)&command))
-    {
-        yError() << "ethResources::setRemoteBoardNumber() cannot transmit a command which sets its number to BOARD" << get_protBRDnumber()+1;
-        return(false);
-    }
-
-    remoteBoardNumberIsSet = true;
-
-
-    return remoteBoardNumberIsSet;
-#endif
 }
 
 bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
@@ -1262,8 +1216,8 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 
     //#warning --> marco.accame: inside ethResources::verifyBoardPresence() in the future you shall ask eoprot_tag_mn_comm_status_mnprotocolversion instead of eoprot_tag_mn_comm_status
 
-    const double timeout = 0.500;   // 500 ms is more than enough if board is present. if link is not on it is a godd time to wait
-    const int retries = 120;         // the number of retries depends on the above timeout and on link-up time of the EMS.
+    const double timeout = 0.500;   // 500 ms is more than enough if board is present. if link is not on it is a good time to wait
+    const int retries = 20;         // the number of retries depends on the above timeout and on link-up time of the EMS.
 
     uint32_t signature = 0xaa000000;
     eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status);
@@ -1342,64 +1296,9 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 
 bool ethResources::configureENDPOINT(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep)
 {
-#if !defined(TEST_FEATURE_CONFIG_REMOTEBOARD)
-    configuredEP[ep] = true;
-    return(true);
-#else
-
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "ethResources::configureENDPOINT() is in ETHRES_DEBUG_DONTREADBACK mode";
-    return true;
-#endif
-
-    if(false == verifyEPprotocol(protconfig, ep))
-    {
-        yError() << "ethResources::configureENDPOINT() cannot even verify protocol in BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
-        return(false);
-    }
-
-    if(eoprot_endpoint_management == ep)
-    {   // already configured in every board
-        configuredEP[ep] = true;
-        return true;
-    }
-
-    if(true == configuredEP[ep])
-    {
-        return true;
-    }
-
-
-
-    // step 1: form a eOprot_EPcfg_t
-    eOprot_EPcfg_t epconfig = {0};
-    epconfig.endpoint = ep;
-    uint8_t maxentities = eoprot_endpoint_get_numberofentities(ep);
-    eOprotBRD_t protbrd = get_protBRDnumber();
-    for(int ent=0; ent<maxentities; ent++)
-    {
-        epconfig.numberofentities[ent] = eoprot_entity_numberof_get(protbrd, ep, ent);
-    }
-
-    // step 2: send the command
-    eOprotID32_t id2send = eo_prot_ID32dummy;
-    eOmn_command_t command = {0};
-
-    id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_config);
-    memset(&command, 0, sizeof(command));
-    command.cmd.opc                             = eomn_opc_config_PROT_endpoint;
-    memcpy(&command.cmd.config.array[0], &epconfig, sizeof(epconfig));
-
-    if(false == addSetMessage(id2send, (uint8_t*)&command))
-    {
-        yError() << "ethResources::configureENDPOINT() cannot transmit a command to configure the endpoint" << eoprot_EP2string(ep) << "to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
-        return(false);
-    }
 
     configuredEP[ep] = true;
-
     return(true);
-#endif
 }
 
 
@@ -2406,6 +2305,21 @@ bool ethResources::serviceVerifyActivate(eOmn_serv_category_t category, const eO
 {
     return(serviceCommand(eomn_serv_operation_verifyactivate, category, param, timeout, 1));
 }
+
+
+bool ethResources::serviceSetRegulars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout)
+{
+    eOmn_serv_parameter_t param = {0};
+    EOarray *array = eo_array_New(eOmn_serv_capacity_arrayof_id32, 4, &param.arrayofid32);
+    for(int i=0; i<id32vector.size(); i++)
+    {
+        eOprotID32_t id32 = id32vector.at(i);
+        eo_array_PushBack(array, &id32);
+    }
+
+    return(serviceCommand(eomn_serv_operation_regsig_load, category, &param, timeout, 1));
+}
+
 
 
 bool ethResources::serviceStart(eOmn_serv_category_t category, double timeout)

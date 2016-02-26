@@ -705,34 +705,6 @@ bool embObjMotionControl::verifyMotionControlProtocol(Bottle groupProtocol )
     }
 
 
-//    if(false == res->configureENDPOINT(groupProtocol, eoprot_endpoint_motioncontrol))
-//    {
-//        yError() << "embObjMotionControl::open() fails in function configureENDPOINT() for BOARD "<< _fId.boardNumber << " and endpoint eoprot_endpoint_motioncontrol: VERIFY XML files";
-//        return false;
-//    }
-
-
-//    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, _njoints))
-//    {
-//        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for BOARD "<< _fId.boardNumber << " and entity eoprot_entity_mc_joint: VERIFY their number in board, and in XML files";
-//        return false;
-//    }
-//    else
-//    {
-//        yDebug() << "embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNumber << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_joint";
-//    }
-
-
-//    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, _njoints))
-//    {
-//        yError() << "embObjMotionControl::open() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_mc_motor: VERIFY their number in board, and in XML files";
-//        return false;
-//    }
-//    else
-//    {
-//        yDebug() << "embObjMotionControl::open() has succesfully verified that board "<< _fId.boardNumber << " has multiplicity" << _njoints << "for entity eoprot_entity_mc_motor";
-//    }
-
     return true;
 }
 
@@ -969,7 +941,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
 
-    if(!verifyMotionControlProtocol(groupProtocol) )
+    if(false == verifyMotionControlProtocol(groupProtocol))
     {
         cleanup();
         return false;
@@ -1789,7 +1761,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 bool embObjMotionControl::init()
 {
     eOprotID32_t protid = 0;
-    bool result = true;
 
     /////////////////////////////////////////////////
     //SEND DISABLE TO ALL JOINTS
@@ -1807,11 +1778,9 @@ bool embObjMotionControl::init()
             // return(false); i dont return false. because even if a failure, that is not a severe error.
             // MOREOVER: to verify we must read the status of the joint and NOT the command ... THINK OF IT
         }
-        //Time::delay(0.001);
     }
 
-    Time::delay(0.010);  // 10 ms (m.a.a-delay: before it was 0.01)
-
+    Time::delay(0.010);
 
 
     ////////////////////////////////////////////////
@@ -1827,7 +1796,10 @@ bool embObjMotionControl::init()
         id32v.push_back(protid);
     }
 
-    if(false == res->addRegulars(id32v, true))
+    //res->serviceSetRegulars(eomn_serv_category_mc, id32v)
+
+    //if(false == res->addRegulars(id32v, true))
+    if(false == res->serviceSetRegulars(eomn_serv_category_mc, id32v))
     {
         yError() << "embObjMotionControl::init() fails to add its variables to regulars in BOARD" << res->get_protBRDnumber()+1 << ": cannot proceed any further";
         return false;

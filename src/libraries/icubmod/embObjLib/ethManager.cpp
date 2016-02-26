@@ -207,7 +207,6 @@ int TheEthManager::releaseResource(ethFeature_t &resource)
         {
             tmpEthRes = (*it);
             tmpEthRes->serviceStop(eomn_serv_category_all);
-            tmpEthRes->clearRegulars();
             it++;
         }
         // before stopping threads, flush all pkts not yet sent.

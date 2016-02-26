@@ -358,6 +358,8 @@ public:
 
     bool serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout = 0.500);
 
+    bool serviceSetRegulars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout = 0.500);
+
     bool serviceStart(eOmn_serv_category_t category, double timeout = 0.500);
 
     bool serviceStop(eOmn_serv_category_t category, double timeout = 0.500);
