@@ -222,6 +222,8 @@ private:
 
     ethNetworkQuery*    ethQuery;
 
+    ethNetworkQuery*    ethQueryServices;
+
     yarp::os::Semaphore*  networkQuerySem;      // the semaphore used by the class to wait for a reply from network. it must have exclusive access
     yarp::os::Semaphore*  isbusyNQsem;          // the semaphore used to guarantee exclusive access of networkQuerySem to calling threads
     yarp::os::Semaphore*  iswaitingNQsem;       // the semaphore used to guarantee that the wait of the class is unblocked only once and when it is required
@@ -345,14 +347,16 @@ public:
 
 //    Semaphore* startNetworkQuerySession(eOprotID32_t id32, uint32_t signature); // to the associated board
 //    bool waitForNetworkQueryReply(Semaphore* sem, double timeout);
-    bool aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
 //    bool stopNetworkQuerySession(Semaphore* sem);
+
+    bool aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
+
 
     bool printRXstatistics(void);
     bool CANPrintHandler(eOmn_info_basic_t* infobasic);
 
 
-    bool serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_configuration_t* config, double timeout = 0.500);
+    bool serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout = 0.500);
 
     bool serviceStart(eOmn_serv_category_t category, double timeout = 0.500);
 
@@ -361,7 +365,7 @@ public:
 
 private:
 
-    bool serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_configuration_t* config, double timeout);
+    bool serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout);
 
     bool verbosewhenok;
     //uint64_t        RXpacket[maxRXpacketsize/8];    // buffer holding the received messages after EthReceiver::run() has read it from socket

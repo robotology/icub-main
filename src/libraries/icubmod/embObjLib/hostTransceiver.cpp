@@ -1398,12 +1398,14 @@ const eOnvset_BRDcfg_t * hostTransceiver::getNVset_BRDcfg(yarp::os::Searchable &
                 protcfg.en_mn_entity_comm_numberof          = cfgprotocol.find("entityMNcommunicationNumberOf").asInt();
                 protcfg.en_mn_entity_appl_numberof          = cfgprotocol.find("entityMNapplicationNumberOf").asInt();
                 protcfg.en_mn_entity_info_numberof          = cfgprotocol.find("entityMNinformationNumberOf").asInt();
+                protcfg.en_mn_entity_service_numberof       = 1;
             }
             else
             {
                 protcfg.en_mn_entity_comm_numberof          = 0;
                 protcfg.en_mn_entity_appl_numberof          = 0;
                 protcfg.en_mn_entity_info_numberof          = 0;
+                protcfg.en_mn_entity_service_numberof       = 0;
             }
             // sanity check
             if((protcfg.en_mn_entity_comm_numberof != 1) || (protcfg.en_mn_entity_appl_numberof != 1) || (protcfg.en_mn_entity_info_numberof != 1))

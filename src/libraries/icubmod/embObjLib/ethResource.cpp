@@ -134,6 +134,8 @@ ethResources::ethResources()
 
     ethQuery = new ethNetworkQuery();
 
+    ethQueryServices = new ethNetworkQuery();
+
     //RXpacketSize = 0;
 
     for(int i = 0; i<16; i++)
@@ -165,6 +167,7 @@ ethResources::~ethResources()
     delete iswaitingNQsem;
 
     delete ethQuery;
+    delete ethQueryServices;
 
     //Delete every can_string_eth object eventually initialized
     for(int i=0; i<16; i++)
@@ -713,8 +716,16 @@ bool ethResources::stopNetworkQuerySession(Semaphore* sem)
 
 bool ethResources::aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature)
 {
-    return(ethQuery->arrived(id32, signature));
+    if(id32 == eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_status_commandresult))
+    {
+        return(ethQueryServices->arrived(id32, signature));
+    }
+    else
+    {
+        return(ethQuery->arrived(id32, signature));
+    }
 }
+
 
 
 bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
@@ -2316,9 +2327,9 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
 }
 
 
-bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_configuration_t* config, double timeout)
+bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout)
 {
-    eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_cmmnds_command);;
+    eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_cmmnds_command);
     eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_status_commandresult);;
 
     // get a sem, transmit a set<>, wait for a reply (add code in callback of status_commandresult), retrieve the result. return true or false
@@ -2329,17 +2340,25 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
     eOmn_service_cmmnds_command_t command = {0};
     command.operation = operation;
     command.category = category;
-    if(NULL != config)
+    if(NULL != param)
     {
-        memcpy(&command.configuration, config, sizeof(eOmn_serv_configuration_t));
+        memcpy(&command.parameter, param, sizeof(eOmn_serv_parameter_t));
     }
     else
     {
-       command.configuration.type = eomn_serv_NONE;
+       memset(&command.parameter, 0, sizeof(eOmn_serv_parameter_t));
+       if((eomn_serv_operation_regsig_load == operation) || ((eomn_serv_operation_regsig_clear == operation)))
+       {    // we send an empty array
+            eo_array_New(eOmn_serv_capacity_arrayof_id32, 4, &command.parameter.arrayofid32);
+       }
+       else
+       {
+            command.parameter.configuration.type = eomn_serv_NONE;
+       }
     }
 
 
-    sem = ethQuery->start(id2wait, 0);
+    sem = ethQueryServices->start(id2wait, 0);
 
     if(false == addSetMessage(id2send, (uint8_t*)&command))
     {
@@ -2348,15 +2367,15 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
     }
 
 
-    if(false == ethQuery->wait(sem, timeout))
+    if(false == ethQueryServices->wait(sem, timeout))
     {
         // must release the semaphore
-        ethQuery->stop(sem);
+        ethQueryServices->stop(sem);
         yError() << "ethResources::serviceCommand() had a timeout of" << timeout << "secs when sending an activation request to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
     // must release the semaphore
-    ethQuery->stop(sem);
+    ethQueryServices->stop(sem);
 
     // now i get the answer
     eOmn_service_command_result_t result = {0};
@@ -2372,9 +2391,9 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
 }
 
 
-bool ethResources::serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_configuration_t* config, double timeout)
+bool ethResources::serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout)
 {
-    return(serviceCommand(eomn_serv_operation_verifyactivate, category, config, timeout));
+    return(serviceCommand(eomn_serv_operation_verifyactivate, category, param, timeout));
 }
 
 
