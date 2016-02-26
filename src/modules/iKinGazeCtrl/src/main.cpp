@@ -353,7 +353,8 @@ following ports:
     - [bind] [yaw] <min> <max>: bind the neck yaw within a range
       given in degrees.
     - [bind] [eyes] <ver>: bind the eyes to look always straight
-      with a specified vergence given in degrees.
+      ahead (the tilt can vary) with a specified vergence given
+	  in degrees.
     - [clear] [pitch]: restore the neck pitch range.
     - [clear] [roll]: restore the neck roll range.
     - [clear] [yaw]: restore the neck yaw range.

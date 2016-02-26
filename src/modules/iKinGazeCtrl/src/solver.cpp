@@ -136,20 +136,19 @@ bool EyePinvRefGen::bindEyes(const double ver)
 {
     LockGuard guard(mutex);
     if (ver>=0.0)
-    {        
+    {
         double ver_rad=std::max(CTRL_DEG2RAD*ver,commData->minAllowedVergence);
         commData->eyesBoundVer=CTRL_RAD2DEG*ver_rad;
 
-        // block tilt and pan of the left eye
-        (*chainEyeL)[nJointsTorso+3].setMin(0.0);          (*chainEyeL)[nJointsTorso+3].setMax(0.0);
-        (*chainEyeL)[nJointsTorso+4].setMin(ver_rad/2.0);  (*chainEyeL)[nJointsTorso+4].setMax(ver_rad/2.0);
+        // block pan of the left eye
+        (*chainEyeL)[nJointsTorso+4].setMin(ver_rad/2.0);
+        (*chainEyeL)[nJointsTorso+4].setMax(ver_rad/2.0);
 
-        // block tilt and pan of the right eye
-        (*chainEyeR)[nJointsTorso+3].setMin(0.0);          (*chainEyeR)[nJointsTorso+3].setMax(0.0);
-        (*chainEyeR)[nJointsTorso+4].setMin(-ver_rad/2.0); (*chainEyeR)[nJointsTorso+4].setMax(-ver_rad/2.0);
+        // block pan of the right eye
+        (*chainEyeR)[nJointsTorso+4].setMin(-ver_rad/2.0);
+        (*chainEyeR)[nJointsTorso+4].setMax(-ver_rad/2.0);
 
         // change the limits of the integrator
-        lim(0,0)=lim(0,1)=0.0;
         lim(1,0)=lim(1,1)=0.0;
         lim(2,0)=lim(2,1)=ver_rad;
         I->setLim(lim);
@@ -171,13 +170,13 @@ bool EyePinvRefGen::clearEyes()
     {        
         commData->eyesBoundVer=-1.0;
 
-        // reinstate tilt and pan bound of the left eye
-        (*chainEyeL)[nJointsTorso+3].setMin(orig_eye_tilt_min); (*chainEyeL)[nJointsTorso+3].setMax(orig_eye_tilt_max);
-        (*chainEyeL)[nJointsTorso+4].setMin(orig_eye_pan_min);  (*chainEyeL)[nJointsTorso+4].setMax(orig_eye_pan_max);
+        // reinstate pan bound of the left eye
+        (*chainEyeL)[nJointsTorso+4].setMin(orig_eye_pan_min);
+        (*chainEyeL)[nJointsTorso+4].setMax(orig_eye_pan_max);
 
-        // reinstate tilt and pan bound of the right eye
-        (*chainEyeR)[nJointsTorso+3].setMin(orig_eye_tilt_min); (*chainEyeR)[nJointsTorso+3].setMax(orig_eye_tilt_max);
-        (*chainEyeR)[nJointsTorso+4].setMin(orig_eye_pan_min);  (*chainEyeR)[nJointsTorso+4].setMax(orig_eye_pan_max);
+        // reinstate pan bound of the right eye
+        (*chainEyeR)[nJointsTorso+4].setMin(orig_eye_pan_min);
+        (*chainEyeR)[nJointsTorso+4].setMax(orig_eye_pan_max);
 
         // reinstate the limits of the integrator
         lim=orig_lim;
