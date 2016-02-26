@@ -10,8 +10,8 @@
       <params file="hardware/mechanicals/left_upper_leg-ems6-mec.xml" />
 
     <group name="LIMITS">
-        <param name="jntPosMax">                      85            90            70            0     </param>
-        <param name="jntPosMin">                      -30          -15            -70           -100  </param>
+        <param name="jntPosMax">                      85            85            70            0     </param>
+        <param name="jntPosMin">                      -30          0            -70           -100  </param>
         <param name="rotorPosMin">                 0             0             0             0     </param> 
         <param name="rotorPosMax">                 0             0             0             0     </param>
         <param name="jntVelMax">                 1000          1000          1000          1000  </param>   

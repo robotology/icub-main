@@ -4,6 +4,7 @@
 <devices robot="iCubTwente01" build="1">
 	<device name="right_foot_as_wrapper" type="analogServer">
 		<param name="period">       10  				</param>
+		<param name="name">       /icub/right_foot/analog:o		</param>
 		<param name="deviceId">     right_foot				</param>
 		
 		<action phase="startup" level="5" type="attach">
