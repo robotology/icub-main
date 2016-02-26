@@ -354,7 +354,7 @@ following ports:
       given in degrees.
     - [bind] [eyes] <ver>: bind the eyes to look always straight
       ahead (the tilt can vary) with a specified vergence given
-	  in degrees.
+      in degrees.
     - [clear] [pitch]: restore the neck pitch range.
     - [clear] [roll]: restore the neck roll range.
     - [clear] [yaw]: restore the neck yaw range.
