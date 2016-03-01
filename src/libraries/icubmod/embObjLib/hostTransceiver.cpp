@@ -129,7 +129,7 @@ hostTransceiver::~hostTransceiver()
 }
 
 
-bool hostTransceiver::init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, uint32_t _localipaddr, uint32_t _remoteipaddr, uint16_t _ipport, uint16_t _pktsizerx, FEAT_boardnumber_t _board_n)
+bool hostTransceiver::init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, eOipv4addr_t _localipaddr, eOipv4addr_t _remoteipaddr, eOipv4port_t _ipport, uint16_t _pktsizerx, FEAT_boardnumber_t _board_n)
 {
     // the configuration of the transceiver: it is specific of a given remote board
     yTrace();
@@ -678,6 +678,11 @@ uint32_t hostTransceiver::translate_NVid2index(eOprotID32_t protid)
 eOprotBRD_t hostTransceiver::get_protBRDnumber(void)
 {
     return(protboardnumber);
+}
+
+eOipv4addr_t hostTransceiver::get_remoteIPaddress(void)
+{
+    return(remoteipaddr);
 }
 
 

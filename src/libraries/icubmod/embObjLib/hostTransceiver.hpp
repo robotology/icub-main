@@ -73,9 +73,9 @@ protected:
     EOtransceiver           *pc104txrx;
     eOhosttransceiver_cfg_t hosttxrxcfg;
     EOnvSet                 *nvset;
-    uint32_t                localipaddr;
-    uint32_t                remoteipaddr;
-    uint16_t                ipport;
+    eOipv4addr_t            localipaddr;
+    eOipv4addr_t            remoteipaddr;
+    eOipv4port_t            ipport;
     EOpacket                *p_RxPkt;
     uint16_t                pktsizerx;
     EOprotocolConfigurator* protconfigurator;
@@ -91,7 +91,7 @@ public:
 
 
 
-    bool init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, uint32_t localipaddr, uint32_t remoteipaddr, uint16_t ipport, uint16_t pktsize, FEAT_boardnumber_t board_n);
+    bool init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, eOipv4addr_t localipaddr, eOipv4addr_t remoteipaddr, eOipv4port_t ipport, uint16_t pktsize, FEAT_boardnumber_t board_n);
 
     bool addSetMessage(eOprotID32_t protid, uint8_t* data);
     bool addSetMessageWithSignature(eOprotID32_t protid, uint8_t* data, uint32_t sig);   //as above, but with signature
@@ -176,6 +176,8 @@ public:
     uint32_t translate_NVid2index(eOprotID32_t protid);
     
     eOprotBRD_t get_protBRDnumber(void);    // the number in range [0, max-1]
+
+    eOipv4addr_t get_remoteIPaddress(void);
 };
 
 #endif  // include-guard

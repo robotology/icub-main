@@ -109,7 +109,7 @@ bool ethNetworkQuery::stop(Semaphore *sem)
 ethResources::ethResources()
 {
     yTrace();
-    how_many_features           = 0;
+//    how_many_features           = 0;
     ethManager                  = NULL;
     lastRecvMsgTimestamp        = -1.0;
     isInRunningMode             = false;
@@ -154,7 +154,7 @@ ethResources::ethResources()
 ethResources::~ethResources()
 {
     yTrace() << info;
-    how_many_features   = 0;
+//    how_many_features   = 0;
     ethManager          = NULL;
 
     // marco.accame on 11sept14: in here we must surely deinit/delete what we have created/initted in teh constructor and in open() or init()
@@ -229,16 +229,17 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
     ACE_UINT32 hostip = (request.boardIPaddr.ip1 << 24) | (request.boardIPaddr.ip2 << 16) | (request.boardIPaddr.ip3 << 8) | (request.boardIPaddr.ip4);
     ACE_INET_Addr myIP((u_short)request.boardIPaddr.port, hostip);
     remote_dev = myIP;
+    ipv4addr = eo_common_ipv4addr(request.boardIPaddr.ip1, request.boardIPaddr.ip2, request.boardIPaddr.ip3, request.boardIPaddr.ip4);
 
 
     infoPkts->setBoardNum(boardNum);
 
     boardName[0] = '\0';
-    if(strlen(request.boardName)>1)
+    if(0 != strlen(request.boardName))
     {
-        memset(boardName, 0, BOARDNAME_MAXSIZE);
-        snprintf(boardName, BOARDNAME_MAXSIZE, "%s", request.boardName);
-     }
+        memset(boardName, 0, sizeof(boardName));
+        snprintf(boardName, sizeof(boardName), "%s", request.boardName);
+    }
 
     unlock();
 
@@ -251,24 +252,24 @@ bool ethResources::close()
     return false;
 }
 
-bool ethResources::registerFeature(ethFeature_t &request)
-{
-    yTrace() << request.boardNumber;
-    lock();
-    how_many_features++;
-    unlock();
-    return true;
-}
+//bool ethResources::registerFeature(ethFeature_t &request)
+//{
+//    yTrace() << request.boardNumber;
+//    lock();
+//    how_many_features++;
+//    unlock();
+//    return true;
+//}
 
-int ethResources::deregisterFeature(ethFeature_t &request)
-{
-    yTrace() << request.boardNumber;
-    lock();
-    how_many_features--;
-    int ret = how_many_features;
-    unlock();
-    return ret;
-}
+//int ethResources::deregisterFeature(ethFeature_t &request)
+//{
+//    yTrace() << request.boardNumber;
+//    lock();
+//    how_many_features--;
+//    int ret = how_many_features;
+//    unlock();
+//    return ret;
+//}
 
 
 bool ethResources::getPointer2TxPack(uint8_t **pack, uint16_t *size, uint16_t *numofrops)
@@ -298,7 +299,10 @@ void ethResources::checkIsAlive(double curr_time)
 
     if((curr_time - infoPkts->last_recvPktTime) > infoPkts->timeout)
     {
-        yError() << "ethResources::checkIsAlive() detected that board " << boardNum << " @ time" << int(floor(curr_time)) << "secs," << curr_time - floor(curr_time) << "has: more than " << infoPkts->timeout *1000 << "ms without any news. LAST =" << (curr_time - infoPkts->last_recvPktTime) << "sec ago";
+        char ipinfo[20];
+        eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo);
+
+        yError() << "ethResources::checkIsAlive() detected that BOARD " << ipinfo << " @ time" << int(floor(curr_time)) << "secs," << curr_time - floor(curr_time) << "has: more than " << infoPkts->timeout *1000 << "ms without any news. LAST =" << (curr_time - infoPkts->last_recvPktTime) << "sec ago";
         infoPkts->isInError =true;
         infoPkts->printStatistics();
         infoPkts->clearStatistics();
@@ -346,10 +350,25 @@ void ethResources::processRXpacket(uint64_t *data, uint16_t size, bool collectSt
     }
 }
 
-
 ACE_INET_Addr ethResources::getRemoteAddress()
 {
     return  remote_dev;
+}
+
+eOipv4addr_t ethResources::getIPv4remoteAddress(void)
+{
+    return ipv4addr;
+}
+
+const char * ethResources::getName(void)
+{
+    return boardName;
+}
+
+
+int ethResources::getNumberOfAttachedInterfaces(void)
+{
+    ethManager->ethBoards->number_of_interfaces(this);
 }
 
 
@@ -378,7 +397,10 @@ bool ethResources::goToConfig(void)
     // however, if we do the loop over maxAttempts then we dont need it anymore. if the board can execute the order
     // then at most there will be two iterations of the for() loop.
 
-    yDebug("ethResources::goToConfig() is called for BOARD 10.0.1.%d (%s)", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()));
+    char ipinfo[20];
+    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo);
+
+    yDebug("ethResources::goToConfig() is called for BOARD %s (%s)", ipinfo, feat_embObj_GetBoardName(get_remoteIPaddress()));
 
 
 
@@ -406,9 +428,9 @@ bool ethResources::goToConfig(void)
 
             foundstatestr = statestr[index];
 
-            snprintf(foundmessage, sizeof(foundmessage), "ethResources::goToConfig() detected BOARD 10.0.1.%d (%s). It has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
-                                            get_protBRDnumber()+1,
-                                            feat_embObj_GetBoardName(get_protBRDnumber()),
+            snprintf(foundmessage, sizeof(foundmessage), "ethResources::goToConfig() detected BOARD %s (%s). It has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
+                                            ipinfo,
+                                            feat_embObj_GetBoardName(get_remoteIPaddress()),
                                             status.name,
                                             status.version.major,
                                             status.version.minor,
@@ -423,7 +445,7 @@ bool ethResources::goToConfig(void)
             if(applstate_config == status.currstate)
             {
                 yInfo("%s", foundmessage);
-                yDebug("ethResources::goToConfig() successfully sent BOARD 10.0.1.%d (%s) in cfg mode", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()));
+                yDebug("ethResources::goToConfig() successfully sent BOARD %s (%s) in cfg mode", ipinfo, feat_embObj_GetBoardName(get_remoteIPaddress()));
 
                 verified = true;
                 isInRunningMode = false;
@@ -440,19 +462,19 @@ bool ethResources::goToConfig(void)
         {
             // in here if we havent received any reply from the remote board. it is unlikely but possible. maybe the board crashed.
             // ok, there is also teh possibility that id32 is wrong (unlikely) or &status is NULL (unlikely).
-            yError("ethResources::goToConfig() called getRemoteValue() for BOARD 10.0.1.%d (%s) but there was no reply", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()));
+            yError("ethResources::goToConfig() called getRemoteValue() for BOARD %s (%s) but there was no reply", ipinfo, feat_embObj_GetBoardName(get_remoteIPaddress()));
 
         }
     }
 
     if(false == found)
     {
-        yError("ethResources::goToConfig() could not verify the status of BOARD 10.0.1.%d (%s) because it could not find it after %d attempts", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()), maxAttempts);
+        yError("ethResources::goToConfig() could not verify the status of BOARD %s (%s) because it could not find it after %d attempts", ipinfo, feat_embObj_GetBoardName(get_remoteIPaddress()), maxAttempts);
     }
     else if(false == verified)
     {
         yInfo("%s", foundmessage);
-        yError("ethResources::goToConfig() could not send BOARD 10.0.1.%d (%s) in cfg state. the board is instead in state %s", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()), foundstatestr);
+        yError("ethResources::goToConfig() could not send BOARD %s (%s) in cfg state. the board is instead in state %s", ipinfo, feat_embObj_GetBoardName(get_remoteIPaddress()), foundstatestr);
 
         isInRunningMode = (applstate_running == status.currstate) ? true : false; // we quit robotInterface ... it means nothing to set this value
     }
@@ -476,10 +498,13 @@ bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
     // start the control loop by sending a proper message to the board
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
 
+    char ipinfo[20];
+    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo);
+
     eOenum08_t command_go2state = applstate_running;
     if(!addSetMessage(protid, (uint8_t*) &command_go2state))
     {
-        yError("ethResources::goToRun() in BOARD 10.0.1.%d (%s) fails to add a command go2state running to transceiver", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()));
+        yError("ethResources::goToRun() in BOARD %s (%s) fails to add a command go2state running to transceiver", ipinfo, feat_embObj_GetBoardName(get_remoteIPaddress()));
         return false;
     }
 
@@ -496,7 +521,8 @@ bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
     // then at most there will be two iterations of the for() loop.
 
 
-    yDebug("ethResources::goToRun() is called for BOARD 10.0.1.%d (%s) for the entity %s", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()), eoprot_EN2string(endpoint, entity));
+
+    yDebug("ethResources::goToRun() is called for BOARD %s (%s) for the entity %s", ipinfo, feat_embObj_GetBoardName(get_remoteIPaddress()), eoprot_EN2string(endpoint, entity));
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
     eOmn_appl_status_t status = {0};
@@ -522,9 +548,9 @@ bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
 
             foundstatestr = statestr[index];
 
-            snprintf(foundmessage, sizeof(foundmessage), "ethResources::goToRun() detected BOARD 10.0.1.%d (%s). It has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
-                                            get_protBRDnumber()+1,
-                                            feat_embObj_GetBoardName(get_protBRDnumber()),
+            snprintf(foundmessage, sizeof(foundmessage), "ethResources::goToRun() detected BOARD %s (%s). It has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
+                                            ipinfo,
+                                            feat_embObj_GetBoardName(get_remoteIPaddress()),
                                             status.name,
                                             status.version.major,
                                             status.version.minor,
@@ -539,7 +565,7 @@ bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
             if(applstate_running == status.currstate)
             {
                 yInfo("%s", foundmessage);
-                yDebug("ethResources::goToRun() successfully sent BOARD 10.0.1.%d (%s) in run mode", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()));
+                yDebug("ethResources::goToRun() successfully sent BOARD %s (%s) in run mode", ipinfo, feat_embObj_GetBoardName(get_remoteIPaddress()));
 
                 verified = true;
                 isInRunningMode = true;
@@ -556,19 +582,19 @@ bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
         {
             // in here if we havent received any reply from the remote board. it is unlikely but possible. maybe the board crashed.
             // ok, there is also teh possibility that id32 is wrong (unlikely) or &status is NULL (unlikely).
-            yError("ethResources::goToRun() called getRemoteValue() for BOARD 10.0.1.%d (%s) but there was no reply", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()));
+            yError("ethResources::goToRun() called getRemoteValue() for BOARD %s (%s) but there was no reply", ipinfo, feat_embObj_GetBoardName(get_remoteIPaddress()));
         }
     }
 
 
     if(false == found)
     {
-        yError("ethResources::goToRun() could not verify the status of BOARD 10.0.1.%d (%s) because it could not find it after %d attempts", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()), maxAttempts);
+        yError("ethResources::goToRun() could not verify the status of BOARD %s (%s) because it could not find it after %d attempts", ipinfo, feat_embObj_GetBoardName(get_remoteIPaddress()), maxAttempts);
     }
     else if(false == verified)
     {
         yInfo("%s", foundmessage);
-        yError("ethResources::goToRun() could not send BOARD 10.0.1.%d (%s) in run state. the board is instead in state %s", get_protBRDnumber()+1, feat_embObj_GetBoardName(get_protBRDnumber()), foundstatestr);
+        yError("ethResources::goToRun() could not send BOARD %s (%s) in run state. the board is instead in state %s", ipinfo, feat_embObj_GetBoardName(get_remoteIPaddress()), foundstatestr);
 
         if(applstate_config == status.currstate)
         {
@@ -2169,14 +2195,17 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
     uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
     uint32_t usec = infobasic->timestamp % 1000;
 
-    const char *boardstr = feat_embObj_GetBoardName(boardNum-1);
+    const char *boardstr = feat_embObj_GetBoardName(get_remoteIPaddress());
+
+    char ipinfo[20];
+    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo);
 
     // Validity check
     if(address > 15)
     {
         snprintf(canfullmessage,sizeof(canfullmessage),"Error while parsing the message: CAN address detected is out of allowed range");
-        snprintf(str,sizeof(str), "from BOARD 10.0.1.%d (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
-                                    this->boardNum,
+        snprintf(str,sizeof(str), "from BOARD %s (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
+                                    ipinfo,
                                     boardstr,
                                     str_source,
                                     address,
@@ -2208,8 +2237,8 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
             canfullmessage[63] = 0;
             c_string_handler[address]->clear_string(ret);
 
-            snprintf(str,sizeof(str), "from BOARD 10.0.1.%d (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
-                                        this->boardNum,
+            snprintf(str,sizeof(str), "from BOARD %s (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
+                                        ipinfo,
                                         boardstr,
                                         str_source,
                                         address,
@@ -2235,6 +2264,9 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
 
     // the semaphore used for waiting for replies from the board
     yarp::os::Semaphore* sem = NULL;
+
+    char ipinfo[20];
+    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo);
 
     eOmn_service_cmmnds_command_t command = {0};
     command.operation = operation;
@@ -2266,14 +2298,14 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
         if(false == addSetMessage(id2send, (uint8_t*)&command))
         {
             ethQueryServices->stop(sem);
-            yError() << "ethResources::serviceCommand() cannot transmit an activation request to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+            yError() << "ethResources::serviceCommand() cannot transmit an activation request to BOARD" << ipinfo << ": cannot proceed any further";
             return(false);
         }
 
 
         if(false == ethQueryServices->wait(sem, timeout))
         {
-            yWarning() << "ethResources::serviceCommand() had a timeout of" << timeout << "secs when sending an activation request to BOARD" << get_protBRDnumber()+1;
+            yWarning() << "ethResources::serviceCommand() had a timeout of" << timeout << "secs when sending an activation request to BOARD" << ipinfo;
             // must release the semaphore
             //ethQueryServices->stop(sem);
             //return(false);
@@ -2292,7 +2324,7 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
     uint16_t size = 0;
     if(false == readBufferedValue(id2wait, (uint8_t*)&result, &size))
     {
-        yError() << "ethResources::serviceCommand() cannot retrieve the result for BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "ethResources::serviceCommand() cannot retrieve the result for BOARD" << ipinfo << ": cannot proceed any further";
         return(false);
     }
 

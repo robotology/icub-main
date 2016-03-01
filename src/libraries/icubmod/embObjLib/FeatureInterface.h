@@ -30,6 +30,7 @@ extern "C"
 {
 #endif
 
+
 void embObjPrintTrace(char *string);
 void embObjPrintDebug(char *string);
 void embObjPrintInfo(char *string);
@@ -46,16 +47,16 @@ void feat_Initialise(void *ethman);
 
 void feat_DeInitialise();
 
-fakestdbool_t feat_addEncoderTimeStamp(FEAT_boardnumber_t boardnum, eOprotID32_t id32);
+//fakestdbool_t feat_addEncoderTimeStamp(eOipv4addr_t ipv4, eOprotID32_t id32);
 
-fakestdbool_t feat_manage_motioncontrol_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void* rxdata);
+fakestdbool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, void* rxdata);
 
-fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *arrayofcandata);
+fakestdbool_t feat_manage_skin_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *arrayofcandata);
 
-fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *data);
+fakestdbool_t feat_manage_analogsensors_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *data);
 
 // requires boardnum in range [1, max] as used by cpp objects
-void * feat_MC_handler_get(FEAT_boardnumber_t boardnum, eOprotID32_t id32);
+void * feat_MC_handler_get(eOipv4addr_t ipv4, eOprotID32_t id32);
 
 fakestdbool_t feat_MC_mutex_post(void * mchandler, uint32_t prognum);
 
@@ -66,11 +67,11 @@ eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum);
 
 double feat_yarp_time_now(void);
 
-fakestdbool_t feat_signal_network_reply(eOprotBRD_t brd, eOprotID32_t id32, uint32_t signature);
+fakestdbool_t feat_signal_network_reply(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature);
 
-fakestdbool_t feat_embObjCANPrintHandler(eOprotBRD_t brd, eOmn_info_basic_t* infobasic);
+fakestdbool_t feat_embObjCANPrintHandler(eOipv4addr_t ipv4, eOmn_info_basic_t* infobasic);
 
-const char * feat_embObj_GetBoardName(eOprotBRD_t brd);
+const char * feat_embObj_GetBoardName(eOipv4addr_t ipv4);
 
 void* ace_mutex_new(void);
 

@@ -41,9 +41,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 // - #define with internal scope
 // --------------------------------------------------------------------------------------------------------------------
-
-#undef ENABLE_DEBUG_CONTROLMODESTATUS
-
+// empty-section
 
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of static functions
@@ -51,17 +49,6 @@
 
 static void wake(const EOnv* nv);
 
-
-#if defined(ENABLE_DEBUG_CONTROLMODESTATUS)
-static eObool_t s_debug_is_controlmodestatus_tobemonitored(eOnvBRD_t board, uint8_t joint);
-static void s_debug_monitor_controlmodestatus(eOnvBRD_t board, uint8_t joint, eOenum08_t ctrlmodestatus);
-// max 4 boards: eb1, eb2, eb3, and eb4 (values 1 and 3)
-// max 12 joints
-// inital value is 0: eomc_controlmode_cmd_idle
-// target boards are eb2 and eb4 (index 1 and 3)
-// target joint is: 4:
-static eOenum08_t s_debug_some_controlmodevalues[4][12] = {0};
-#endif
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition (and initialisation) of static variables
@@ -94,7 +81,7 @@ extern void eoprot_fun_ONSAY_mc(const EOnv* nv, const eOropdescriptor_t* rd)
 
     if(0xaa000000 == rd->signature)
     {   // case a:
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             char str[256] = {0};
             char nvinfo[128];
@@ -113,11 +100,7 @@ extern void eoprot_fun_ONSAY_mc(const EOnv* nv, const eOropdescriptor_t* rd)
 
 extern void eoprot_fun_UPDT_mc_joint_status_core(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-#if defined(ENABLE_DEBUG_CONTROLMODESTATUS)
-    eOmc_joint_status_basic_t *jsb = (eOmc_joint_status_basic_t*)rd->data;
-    s_debug_monitor_controlmodestatus(eo_nv_GetBRD(nv), eoprot_ID2index(rd->id32), jsb->controlmodestatus);
-#endif
-    feat_manage_motioncontrol_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)rd->data);
+    feat_manage_motioncontrol_data(eo_nv_GetIP(nv), rd->id32, (void *)rd->data);
 }
 
 
@@ -128,11 +111,7 @@ extern void eoprot_fun_UPDT_mc_motor_status_basic(const EOnv* nv, const eOropdes
 
 extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-#if defined(ENABLE_DEBUG_CONTROLMODESTATUS)
-    eOmc_joint_status_t *js = (eOmc_joint_status_t*)rd->data;
-    s_debug_monitor_controlmodestatus(eo_nv_GetBRD(nv), eoprot_ID2index(rd->id32), js->basic.controlmodestatus);
-#endif
-    feat_manage_motioncontrol_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)rd->data);
+    feat_manage_motioncontrol_data(eo_nv_GetIP(nv), rd->id32, (void *)rd->data);
 }
 
 extern void eoprot_fun_UPDT_mc_joint_config(const EOnv* nv, const eOropdescriptor_t* rd)
@@ -201,7 +180,7 @@ static void wake(const EOnv* nv)
 {
     eOprotID32_t id32 = 0;
     eOprotProgNumber_t prognum = 0 ;
-    void *mchandler = (void*) feat_MC_handler_get(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), eo_nv_GetID32(nv));
+    void *mchandler = (void*) feat_MC_handler_get(eo_nv_GetIP(nv), eo_nv_GetID32(nv));
     if(NULL == mchandler)
     {
         printf("eoMC class not found\n");
@@ -213,70 +192,17 @@ static void wake(const EOnv* nv)
     if(fakestdbool_false == feat_MC_mutex_post(mchandler, prognum) )
     {
         char nvinfo[128];
+        char ipinfo[20];
         char str[256] = {0};
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        snprintf(str, sizeof(str),"while releasing mutex in BOARD %d for variable %s", eo_nv_GetBRD(nv)+1, nvinfo); 
+        eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo);
+        snprintf(str, sizeof(str),"while releasing mutex for IP %s and NV %s", ipinfo, nvinfo);
         embObjPrintWarning(str);
     }
-#if 0
-    else // marco.accame: in here is code you may want using for debug purposes
-    {   es
-        uint8_t brd = eo_nv_GetBRD(nv)+1;
-        if((2==brd) || (4==brd))
-        {
-            if((eoprot_tag_mc_joint_status_ismotiondone == eoprot_ID2tag(id32)) && (eoprot_entity_mc_joint == eoprot_ID2entity(id32)))
-            {
-                eObool_t motiondone = *((eObool_t*)eo_nv_RAM(nv));
-                printf("motiondone = %d for joint %d in BOARD %d", motiondone, eoprot_ID2index(id32), brd);
-            }
-        }
-    }
-#endif
-}
-
-
-
-#if defined(ENABLE_DEBUG_CONTROLMODESTATUS)
-static eObool_t s_debug_is_controlmodestatus_tobemonitored(eOnvBRD_t board, uint8_t joint)
-{
-
-    if((1 == board) && (4 == joint))
-    {
-        return(eobool_true);
-    }
-    if((3 == board) && (4 == joint))
-    {
-        return(eobool_true);
-    }
-
-    return(eobool_false);
-}
-
-static void s_debug_monitor_controlmodestatus(eOnvBRD_t board, uint8_t joint, eOenum08_t ctrlmodestatus)
-{
-    eOenum08_t *stored = NULL;
-
-    if(eobool_false == s_debug_is_controlmodestatus_tobemonitored(board, joint))
-    {
-        return;
-    }
-
-    stored = &s_debug_some_controlmodevalues[board][joint];
-
-    if(ctrlmodestatus != *stored)
-    {
-        // 1. print the values together with the current time
-        double time = feat_yarp_time_now();
-
-        printf("DEBUG: controlmodestatus changes %d -> %d at time %f\n", *stored, ctrlmodestatus, time);
-
-
-        // 2. change the value
-        *stored = ctrlmodestatus;
-    }
 
 }
-#endif
+
+
 
 
 

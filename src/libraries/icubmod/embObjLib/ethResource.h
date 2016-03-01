@@ -83,6 +83,8 @@ typedef enum
     ethFeatType_AnalogInertial  = 0x06
 } ethFeatType_t;
 
+enum { ethFeatType_numberof = 7 };
+
 #define BOARDNAME_MAXSIZE 50
 typedef struct
 {
@@ -94,8 +96,30 @@ typedef struct
     ethFeatType_t       type;
     IethResource*       interface;
     char                name[128];
-    char                boardName[BOARDNAME_MAXSIZE]; //this is the name read in xml file
+    char                boardName[BOARDNAME_MAXSIZE]; // this is the name read in xml file
 } ethFeature_t;
+
+//// each possible feature can be searched using this key: the board number and the type
+//typedef struct
+//{
+//    FEAT_boardnumber_t  boardNumber;
+//    ethFeatType_t       type;
+//} ethFeatureKey_t;
+
+
+
+//enum { ethresBoardNameMaxSize = 32 };
+
+//typedef struct
+//{
+//    eOipv4addr_t        boardIP;
+//    char                boardName[BOARDNAME_MAXSIZE];
+//    uint8_t             boardNumber; // format is 0 ...
+//    void*               resource;
+//    IethResource*       interfaces[ethFeatType_numberof];
+//} ethresProperties_t;
+
+
 
 class can_string_eth;
 
@@ -212,7 +236,8 @@ private:
     enum { ETHRES_SIZE_INFO = 128 };
 
     char              info[ETHRES_SIZE_INFO];
-    int               how_many_features;      //!< Keep track of how many high level class registered. onto this EMS
+//    int               how_many_features;      //!< Keep track of how many high level class registered. onto this EMS
+    eOipv4addr_t      ipv4addr;
     ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
     bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
@@ -260,14 +285,20 @@ public:
      *    @grief    tells the EMS a new device requests its services.
      *    @return   true.
      */
-    bool            registerFeature(ethFeature_t &request);
+//    bool            registerFeature(ethFeature_t &request);
 
     /*!   @fn       unregisterFeature();
      *    @brief    tell the EMS a user has been closed. If was the last one, close the EMS
      */
-    int             deregisterFeature(ethFeature_t &request);
+//    int             deregisterFeature(ethFeature_t &request);
 
     ACE_INET_Addr   getRemoteAddress(void);
+
+    eOipv4addr_t    getIPv4remoteAddress(void);
+
+    const char *    getName(void);
+
+    int             getNumberOfAttachedInterfaces(void);
 
     // the function returns true if the packet can be transmitted. 
     // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere

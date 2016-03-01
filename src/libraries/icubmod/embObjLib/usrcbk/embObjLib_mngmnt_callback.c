@@ -117,12 +117,14 @@ extern void eoprot_fun_ONSAY_mn(const EOnv* nv, const eOropdescriptor_t* rd)
 
     if(0xaa000000 == rd->signature)
     {   // case a:
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             char str[256] = {0};
             char nvinfo[128];
+            char ipinfo[20];
             eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
-            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_mn() received an unexpected message w/ 0xaa000000 signature for %s", nvinfo);
+            eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo);
+            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_mn() received an unexpected message w/ 0xaa000000 signature for IP %s and NV %s", ipinfo, nvinfo);
             embObjPrintWarning(str);
             return;
        }
@@ -134,38 +136,7 @@ extern void eoprot_fun_ONSAY_mn(const EOnv* nv, const eOropdescriptor_t* rd)
 
 void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-#if 0
-    static const char* states[] =
-    {
-        "applstate_config",
-        "applstate_running",
-        "applstate_error",
-        "applstate_unknown"
-    };
 
-    char str[512] = {0};
-
-    eOmn_appl_status_t* appstatus = (eOmn_appl_status_t*) rd->data;
-
-    const char* state = (appstatus->currstate > 2) ? (states[3]) : (states[appstatus->currstate]);
-
-    const char *boardstr = feat_embObj_GetBoardName(eo_nv_GetBRD(nv));
-
-    snprintf(str, sizeof(str), "BOARD 10.0.1.%d (%s) has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
-                                    eo_nv_GetBRD(nv)+1,
-                                    boardstr,
-                                    appstatus->name,
-                                    appstatus->version.major,
-                                    appstatus->version.minor,
-                                    appstatus->buildate.day,
-                                    appstatus->buildate.month,
-                                    appstatus->buildate.year,
-                                    appstatus->buildate.hour,
-                                    appstatus->buildate.min,
-                                    state);
-
-    embObjPrintInfo(str);
-#endif
 }
 
 
@@ -200,7 +171,7 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, co
 
     if(eo_ropcode_sig == rd->ropcode)
     {   // in here we have a sig and we cannot have the 0xaa000000 signature
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             embObjPrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() has received an unexpected message");
             return;
@@ -217,7 +188,7 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, co
 
     if(eo_ropcode_sig == rd->ropcode)
     {   // in here we have a sig and we cannot have the 0xaa000000 signature
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             embObjPrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() has received an unexpected message");
             return;
@@ -230,7 +201,7 @@ extern void eoprot_fun_UPDT_mn_service_status_commandresult(const EOnv* nv, cons
 {
     if(eo_ropcode_sig == rd->ropcode)
     {   // in here we have a sig
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             embObjPrintError("eoprot_fun_UPDT_mn_service_status_commandresult() has received an unexpected message");
             return;
@@ -339,7 +310,7 @@ static void s_process_category_Default(eOmn_info_basic_t* infobasic, uint8_t * e
 
 
     int boardnum = eo_nv_GetBRD(nv)+1;
-    const char *boardstr = feat_embObj_GetBoardName(eo_nv_GetBRD(nv));
+    const char *boardstr = feat_embObj_GetBoardName(eo_nv_GetIP(nv));
 
 
     snprintf(str, sizeof(str), " from BOARD 10.0.1.%d (%s), src %s, adr %d, time %ds %dm %du: (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + %s",
@@ -399,7 +370,7 @@ static void s_print_string(char *str, eOmn_info_type_t errortype)
 
 static void s_process_CANPRINT(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    feat_embObjCANPrintHandler(eo_nv_GetBRD(nv), infobasic);
+    feat_embObjCANPrintHandler(eo_nv_GetIP(nv), infobasic);
 }
 
 //#warning --> do a proper function in EoBoards.c
@@ -446,7 +417,7 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
 
     eOmn_info_type_t type = EOMN_INFO_PROPERTIES_FLAGS_get_type(infobasic->properties.flags);
     int ethboardnum = eo_nv_GetBRD(nv)+1;
-    const char *ethboardname = feat_embObj_GetBoardName(eo_nv_GetBRD(nv));
+    const char *ethboardname = feat_embObj_GetBoardName(eo_nv_GetIP(nv));
     timeofmessage_t tom = {0};
     s_get_timeofmessage(infobasic, &tom);
 

@@ -115,40 +115,106 @@ typedef std::list<ethResources *>::reverse_iterator ethResRIt;
 // -------------------------------------------------------------------\\
 
 
+enum { ethboardNameMaxSize = 32 };
+typedef struct
+{
+    eOipv4addr_t        ipv4;
+    char                name[ethboardNameMaxSize];
+    uint8_t             numberofinterfaces;
+    uint8_t             boardnumber;
+    ethResources*       resource;
+    IethResource*       interfaces[ethFeatType_numberof];
+} ethboardProperties_t;
+
+class EthBoards
+{
+
+public:
+
+    enum { maxEthBoards = 32 };
+
+    static const char * names[EthBoards::maxEthBoards];
+
+public:
+
+    EthBoards();
+    ~EthBoards();
+
+
+    size_t number_of_resources(void);
+
+    size_t number_of_interfaces(ethResources* res);
+
+    bool add(ethResources* res);
+
+    bool add(ethResources* res, IethResource* interface, ethFeatType_t type);
+
+    bool rem(ethResources* res);
+    bool rem(ethResources* res, ethFeatType_t type);
+
+
+//    ethResources* get(ACE_INET_Addr ipaddr);
+//    ethResources* get(ethFeatIPaddress_t ipaddr);
+
+    ethResources* get_resource(eOipv4addr_t ipv4);
+    IethResource* get_interface(eOipv4addr_t ipv4, eOprotID32_t id32);
+
+//    const char * name(ACE_INET_Addr adr);
+    const char * name(eOipv4addr_t ipv4);
+
+    bool execute(void (*action)(ethResources* res, void* p), void* par);
+
+private:
+    // later on we may optimise and reduce these three to only one ....
+//    ethResources* ethresLUT[maxEthBoards];
+//    std::list<ethResources *>  ethresList;
+//    map<ethFeatureKey_t, ethFeature_t>  featMap;
+
+    int sizeofLUT;
+    ethboardProperties_t LUT[maxEthBoards];
+};
+
+
 class yarp::dev::TheEthManager: public DeviceDriver
 {
 
 public:
     // this is the maximum number of boards that the singleton can manage.
-    enum { maxBoards = 32 };
+    enum { maxBoards = EthBoards::maxEthBoards }; // which is 32 ...
 
     // this keeps the size of info buffer
     enum { ETHMAN_SIZE_INFO = 128 };
 
-    static const char * boardNames[TheEthManager::maxBoards];
+    //static const char * boardNames[TheEthManager::maxBoards];
+
+    EthBoards* ethBoards;
 
 public:
     static yarp::os::Semaphore    managerMutex;
 
+    static yarp::os::Semaphore    txMutex;
+    static yarp::os::Semaphore    rxMutex;
+
 private:
     // Data for Singleton handling
 
-    static TheEthManager          *handle;
-    bool                          keepGoingOn;
-    bool                          emsAlreadyClosed;
+    static TheEthManager*         handle;
+//    bool                          keepGoingOn;
+//    bool                          emsAlreadyClosed;
     double                        starttime;
 
-    enum { ethresLUTsize = TheEthManager::maxBoards };
+//    enum { ethresLUTsize = TheEthManager::maxBoards };
 
-    ethResources*                 ethresLUT[ethresLUTsize];
-    int                           numberOfUsedBoards;
+//    ethResources*                 ethresLUT[ethresLUTsize];
+//    int                           numberOfUsedBoards;
 
 
     // Data for EMS handling
 public:
-    map<std::pair<FEAT_boardnumber_t, uint32_t>, ethFeature_t>  boards_map_ext; // the second element of the pair is id32 & 0xffff0000 or: (endpoint<<24)|(entity<<16)
-    std::list<ethResources *>     EMS_list;           //!< List of pointer to classes that represent EMS boards
-    ACE_INET_Addr                 local_addr;         
+//    map<std::pair<FEAT_boardnumber_t, uint32_t>, ethFeature_t>  boards_map_ext; // the second element of the pair is id32 & 0xffff0000 or: (endpoint<<24)|(entity<<16)
+//    std::list<ethResources *>     EMS_list;           //!< List of pointer to classes that represent EMS boards
+    ACE_INET_Addr                 local_addr;
+
 
 private:
     // Data for UDP socket handling
@@ -218,39 +284,23 @@ public:
     int releaseResource(ethFeature_t &resource);
 
 private:
-    /*! @fn     void addLUTelement(ethFeature_t id);
-     *  @brief  Insert a ethResource class descriptor of ethFeature_t type in a map to easy the access from the embObj callbacks
-     *  @param  id  A struct of ethFeature_t type with useful information about the class requesting an ethResource, they can be eoMotionControl, eoSkin, eoAnalogSensor...
-     */
-    void addLUTelement(ethFeature_t &id);
+//    /*! @fn     void addLUTelement(ethFeature_t id);
+//     *  @brief  Insert a ethResource class descriptor of ethFeature_t type in a map to easy the access from the embObj callbacks
+//     *  @param  id  A struct of ethFeature_t type with useful information about the class requesting an ethResource, they can be eoMotionControl, eoSkin, eoAnalogSensor...
+//     */
+//    void addLUTelement(ethFeature_t &id);
 
-    /*! @fn     bool removeLUTelement(ethFeature_t element);
-     *  @brief  Remove a ethResource class descriptor of ethFeature_t type from the map used by the callbacks.
-     *  @param  id  A struct of ethFeature_t type with information about the class to be removed.
-     *  @return True if everything went as expected, false if class not found or more than one were removed.
-     */
-    bool removeLUTelement(ethFeature_t &element);
+//    /*! @fn     bool removeLUTelement(ethFeature_t element);
+//     *  @brief  Remove a ethResource class descriptor of ethFeature_t type from the map used by the callbacks.
+//     *  @param  id  A struct of ethFeature_t type with information about the class to be removed.
+//     *  @return True if everything went as expected, false if class not found or more than one were removed.
+//     */
+//    bool removeLUTelement(ethFeature_t &element);
 
 public:
-    /*! @fn     getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32, IethResource * interfacePointer, ethFeatType_t *type);
-     *  @brief  Get a infos about the class handling the specified network variable
-     *  @param  boardnum  in range [1, max]
-     *  @param  id32  The desired network variable id
-     *  @param  interfacePointer return the pointer to the IethResource of that device class
-     *  @param  type  return the type of the class (skin, analog, motionControl ... ) using the enum type ethFeatType_t
-     *  @return Pointer to the class, casted to a portable void type. The user must cast it to the correct, expected type like eoMotionControl ecc..
-     */
-    bool getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32, IethResource **interfacePointer, ethFeatType_t *type);
 
-#if 0
-    /*! @fn     ethFeature_t getFeatInfoFromEP(eOnvEP_t ep);
-     *  @brief  Get the struct of ethFeature_t type with useful information about the class handling the desired EndPoint.
-     *  @param  boardnum the board number in range [1, max]
-     *  @param  ep  The desired EndPoint
-     *  @return std::list<ethResources *>Struct with info
-     */
-    ethFeature_t getFeatInfo(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
-#endif
+    bool getHandle(eOipv4addr_t ipv4, eOprotID32_t id32, IethResource **interfacePointer);
+
 
 
     // Methods for UDP socket handling
@@ -265,6 +315,10 @@ private:
     bool lock();
     bool unlock();
 
+    bool lockTX(bool on);
+    bool lockRX(bool on);
+    bool lockTXRX(bool on);
+
 public:
     /*! @fn     int send(void *data, size_t len, ACE_INET_Addr remote_addr);
      *  @brief  Send a message to the EMSs
@@ -275,7 +329,11 @@ public:
      */
     int send(void *data, size_t len, ACE_INET_Addr remote_addr);
 
-    ethResources* GetEthResource(FEAT_boardnumber_t boardnum);
+
+    bool Transmission(void);
+    bool Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, bool collectStatistics);
+
+    ethResources* GetEthResource(eOipv4addr_t ipv4);
 
 
     EthSender* getEthSender(void);
