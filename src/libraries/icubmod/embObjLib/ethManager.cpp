@@ -384,6 +384,7 @@ const char * EthBoards::name(eOipv4addr_t ipv4)
 }
 
 
+
 bool EthBoards::execute(void (*action)(ethResources* res, void* p), void* par)
 {
     if(NULL == action)
@@ -1256,6 +1257,17 @@ ethResources* TheEthManager::IPtoResource(ACE_INET_Addr adr)
 int TheEthManager::GetNumberOfUsedBoards(void)
 {
     return(ethBoards->number_of_resources());
+}
+
+const char * TheEthManager::getName(eOipv4addr_t ipv4)
+{
+    const char * ret = ethBoards->name(ipv4);
+    if(NULL == ret)
+    {
+        ret = EthBoards::names[0];
+    }
+
+    return ret;
 }
 
 ethResources* TheEthManager::GetEthResource(eOipv4addr_t ipv4)

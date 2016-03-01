@@ -342,6 +342,8 @@ public:
     ethResources* IPtoResource(ACE_INET_Addr adr);
     int GetNumberOfUsedBoards(void);
 
+    const char * getName(eOipv4addr_t ipv4);
+
 };
 
 

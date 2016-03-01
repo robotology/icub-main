@@ -1145,7 +1145,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
 
     if(sizeofarray != boardEPsNumber)
     {
-        yWarning() << "ethResources::verifyEPprotocol() retrieved from BOARD" << get_protBRDnumber()+1 << ":" << sizeofarray << "endpoint descriptors, and there are" << boardEPsNumber << "endpoints";
+        yWarning() << "ethResources::verifyEPprotocol() retrieved from BOARD" << ethManager->getName(ipv4addr) << ":" << sizeofarray << "endpoint descriptors, and there are" << boardEPsNumber << "endpoints";
     }
 
 
