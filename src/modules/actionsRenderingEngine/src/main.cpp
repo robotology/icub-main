@@ -121,22 +121,18 @@ format: [take] [target] "param1" \n
 action: the robot tries to reach the specified [target] and grasp it.
 Optional parameter "side" or "above" can be supplied to choose the orientation the robot
 should try to mantain while performing the action (default: "above").
-    
-<b>CLOSE</b> \n
-format: [close] "param1" \n
-action: close the hand ("left"/"right" option can be given).
-    
+
+<b>HAND</b> \n
+format: [hand] "action-type" "hand-type" \n
+action: perform the hand sequence specified by the action-type with the hand specified
+by the hand-type.
+
 <b>TAKE_TOOL</b> \n
 format: [tato] "param1" \n    
 action: the robot will reach a specified position to take the 
 tool from a user. Optional parameter "left" or "right" can be    
 supplied to choose the orientation the robot    
 
-<b>CLOSE_TOOL</b> \n
-format: [clto] "param1" \n
-action: close the hand (predefined or specified) for grabbing    
-the tool.    
-    
 <b>GRASP</b> \n    
 format: [grasp] [target] \n    
 action: the robot tries to reach the specified [target] and 
@@ -390,16 +386,14 @@ Windows, Linux
 #define CMD_TRACK                   VOCAB4('t','r','a','c')
 #define CMD_EXPECT                  VOCAB4('e','x','p','e')
 #define CMD_GIVE                    VOCAB4('g','i','v','e')
-#define CMD_CLOSE                   VOCAB4('c','l','o','s')
+#define CMD_HAND                    VOCAB4('h','a','n','d')
 #define CMD_GAZE                    VOCAB4('r','e','l','e')
 
 //commands for tool
 #define CMD_TAKE_TOOL               VOCAB4('t','a','t','o')
-#define CMD_CLOSE_TOOL              VOCAB4('c','l','t','o')
 
 #define CMD_ACTION_TEACH            VOCAB4('t','e','a','c')
 #define CMD_ACTION_IMITATE          VOCAB4('i','m','i','t')
-
 
 //sub commands: get
 #define GET_S2C                     VOCAB3('s','2','c')
@@ -820,17 +814,12 @@ public:
 
                         break;
                     }
-                    case CMD_CLOSE:
+                    case CMD_HAND:
                     {
-                        motorThr->grasp(command);
-                        reply.addVocab(ACK);
-
-                        break;
-                    }
-                    case CMD_CLOSE_TOOL:
-                    {
-                        motorThr->grasp_tool(command);
-                        reply.addVocab(ACK);
+                        if (motorThr->hand(command))
+                            reply.addVocab(ACK);
+                        else
+                            reply.addVocab(NACK);
 
                         break;
                     }

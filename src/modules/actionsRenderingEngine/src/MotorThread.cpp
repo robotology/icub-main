@@ -38,7 +38,7 @@ using namespace iCub::iKin;
 using namespace iCub::perception;
 
 
-bool MotorThread::checkOptions(Bottle &options, const string &parameter)
+bool MotorThread::checkOptions(const Bottle &options, const string &parameter)
 {
     bool found=false;
     for (int i=0; i<options.size(); i++)
@@ -2003,55 +2003,50 @@ bool MotorThread::clearIt(Bottle &options)
     return true;
 }
 
-bool MotorThread::grasp(Bottle &options)
+bool MotorThread::hand(const Bottle &options, const string &type)
 {
     int arm=ARM_IN_USE;
-    if(checkOptions(options,"left") || checkOptions(options,"right"))
+    if (checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
     arm=checkArm(arm);
 
-    action[arm]->pushAction("close_hand");
+    string action_type;
+    if (type.empty())
+    {
+        if (options.size()<2)
+        {
+            yError("Too few arguments for HAND command!");
+            return false;
+        }
+        action_type=options.get(1).asString();
+    }
+    else
+        action_type=type;
 
-    bool f;
-    action[arm]->checkActionsDone(f,true);
-
-    return isHolding(options);
+    if (action[arm]->pushAction(action_type))
+    {
+        bool f;
+        action[arm]->checkActionsDone(f,true);
+        return isHolding(options);
+    }
+    else
+    {
+        yError("Unknown hand sequence \"%s\"",action_type.c_str());
+        return false;
+    }
 }
 
-bool MotorThread::grasp_tool(Bottle &options)
+bool MotorThread::grasp(const Bottle &options)
 {
-    int arm=ARM_IN_USE;
-    if(checkOptions(options,"left") || checkOptions(options,"right"))
-        arm=checkOptions(options,"left")?LEFT:RIGHT;
-
-    arm=checkArm(arm);
-
-    action[arm]->pushAction("close_hand_tool");
-
-    bool f;
-    action[arm]->checkActionsDone(f,true);
-
-    return isHolding(options);
+    return hand(options,"close_hand");
 }
 
-
-bool MotorThread::release(Bottle &options)
+bool MotorThread::release(const Bottle &options)
 {
-    int arm=ARM_IN_USE;
-    if(checkOptions(options,"left") || checkOptions(options,"right"))
-        arm=checkOptions(options,"left")?LEFT:RIGHT;
-
-    arm=checkArm(arm);
-
-    action[arm]->pushAction("release_hand");
-
-    bool f;
-    action[arm]->checkActionsDone(f,true);
-
+    hand(options,"release_hand");
     return true;
 }
-
 
 bool MotorThread::changeElbowHeight(const int arm, const double height, const double weight)
 {
@@ -2333,7 +2328,7 @@ bool MotorThread::getHandImagePosition(Bottle &hand_image_pos)
     return true;
 }
 
-bool MotorThread::isHolding(Bottle &options)
+bool MotorThread::isHolding(const Bottle &options)
 {
     int arm=ARM_IN_USE;
     if(checkOptions(options,"left") || checkOptions(options,"right"))

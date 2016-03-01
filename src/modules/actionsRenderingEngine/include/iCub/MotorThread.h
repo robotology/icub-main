@@ -230,7 +230,7 @@ private:
     bool loadExplorationPoses(const string &file_name);
     int checkArm(int arm);
     int checkArm(int arm, Vector &xd, const bool applyOffset=true);
-    bool checkOptions(Bottle &options, const string &parameter);
+    bool checkOptions(const Bottle &options, const string &parameter);
     Vector eye2root(const Vector &out,bool forehead);
     bool stereoToCartesianHomography(const Vector &stereo, Vector &xd);
     bool stereoToCartesianDisparity(const Vector &stereo, Vector &xd);
@@ -385,9 +385,9 @@ public:
     bool push(Bottle &options);
     bool point(Bottle &options);
     bool look(Bottle &options);
-    bool grasp(Bottle &options);
-    bool grasp_tool(Bottle &options);
-    bool release(Bottle &options);
+    bool hand(const Bottle &options, const string &type="");
+    bool grasp(const Bottle &options);
+    bool release(const Bottle &options);
     bool deploy(Bottle &options);
     bool drawNear(Bottle &options);
     bool shiftAndGrasp(Bottle &options);
@@ -405,7 +405,7 @@ public:
 
 
     bool getHandImagePosition(Bottle &hand_image_pos);
-    bool isHolding(Bottle &options);
+    bool isHolding(const Bottle &options);
     bool calibTable(Bottle &options);
     bool calibFingers(Bottle &options);
 
