@@ -116,19 +116,19 @@ the optional parameter "side" or "above" can be specified. Furthermore in this c
 parameters "gently" can be specified in order for the robot to gently deploy the hand-held
 object over the target.
 
+<b>HAND</b> \n
+format: [hand] "action-type" "hand-type" \n
+action: perform the hand sequence specified by the action-type with the hand specified
+by the hand-type.
+ 
 <b>TAKE</b> \n
 format: [take] [target] "param1" \n
 action: the robot tries to reach the specified [target] and grasp it.
 Optional parameter "side" or "above" can be supplied to choose the orientation the robot
 should try to mantain while performing the action (default: "above").
 
-<b>HAND</b> \n
-format: [hand] "action-type" "hand-type" \n
-action: perform the hand sequence specified by the action-type with the hand specified
-by the hand-type.
-
 <b>TAKE_TOOL</b> \n
-format: [tato] "param1" \n    
+format: [tato] "param1" \n
 action: the robot will reach a specified position to take the 
 tool from a user. Optional parameter "left" or "right" can be    
 supplied to choose the orientation the robot    
