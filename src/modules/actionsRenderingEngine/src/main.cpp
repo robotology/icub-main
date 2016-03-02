@@ -1,4 +1,4 @@
-/* 
+/*
 * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
 * Author: Carlo Ciliberto, Vadim Tikhanoff
 * email:   carlo.ciliberto@iit.it vadim.tikhanoff@iit.it
@@ -16,7 +16,7 @@
 * Public License for more details
 */
 
-/** 
+/**
 @ingroup icub_module
 \defgroup actionsRenderingEngine actionsRenderingEngine
 
@@ -24,7 +24,7 @@ A module combining multiple libraries and modules from the iCub repository
 that allows to execute some basic and complex actions on objects placed on
 a table in front of the robot.
 
-\section intro_sec Description 
+\section intro_sec Description
 This module makes use of the \ref ActionPrimitives library in order to interact
 with the objects placed on a table. The module can independently receive
 visual inputs from a stereo/mono tracker or from an object detector.
@@ -43,10 +43,10 @@ estimate of the 2D target.
 \section cmd_port Issuing commands
 
 The commands sent as bottles to the module port /<modName>/cmd:io
-are described in the following. The response to any command    
-consists in the vocab [ack]/[nack] in case of success/failure. 
+are described in the following. The response to any command
+consists in the vocab [ack]/[nack] in case of success/failure.
 
-Some commands require to specify a visual target for 
+Some commands require to specify a visual target for
 the action required. In these cases the parameter [target] can be expressed as follows:
 
 (notation: [.] identifies a vocab, "." identifies a string)
@@ -61,8 +61,8 @@ the action required. In these cases the parameter [target] can be expressed as f
 
 --("left"|"right" u v) when the target is a 2D couple of camera plane coordinates. If not specified, camera is assumed to be "left".
 
---("cartesian" x y z) or (x y z) when the target is a 3D cartesian position wrt the robot's reference frame.    
-    
+--("cartesian" x y z) or (x y z) when the target is a 3D cartesian position wrt the robot's reference frame.
+
 --("cartesian" x y z ax ay az theta) or (x y z ax ay az theta): occasionally also the orientation can be provided.
 
 --"object_name" when using a visual classifier to localize objects. This option represents a label to access online information stored in the
@@ -78,17 +78,17 @@ The majority of commands can usually be provided with general optional parameter
 --"no_head"/"no_gaze": the action does not affect the gaze of the robot (this parameter does not influece commands that explicitly require
   to move the head like LOOK).
 
---"no_sacc": disables the saccadic movements of the gaze controller during the action.    
-    
+--"no_sacc": disables the saccadic movements of the gaze controller during the action.
+
 --"still": prevents the robot from bringing back home the arm after having accomplished the action.
-    
-The commands:    
+
+The commands:
 
 <b>IDLE</b> \n
 format: [idle] \n
 action: the gaze controller is reset to the original context stored at
 start and head/eye control is interrupted.
- 
+
 <b>HOME</b> \n
 format: [home] "param1" "param2" \n
 action: the arms are sent to home position. the optional parameters
@@ -96,7 +96,7 @@ action: the arms are sent to home position. the optional parameters
 "head" in order to bring the gaze controller in home position
 and "fingers" or "hands" to open the robot hands. Alternatively
 the parameter "all" can be supplied to perform both optional actions.
- 
+
 <b>OBSERVE</b> \n
 format: [observe] \n
 action: if the robot is holding an object it brings it in the FoV of
@@ -106,7 +106,7 @@ its cameras with the final purpose of visually explore it.
 format: [drop] "param1" "param2" or [drop] "over" [target] "param1" "param2" \n
 action: if the robot is holding an object it brings it over the table and drops it
 on a random position approximatively in front of it.
-Optional parameter "side" or "above" can be provided in order to select the 
+Optional parameter "side" or "above" can be provided in order to select the
 hand orientation that the robot should try to mantain during the drop action.
 Optional parameter "away" can be provided in orded to have the robot leave the object
 outside the cameras FoV (on the right or left side of the robot depending on the arm in use).
@@ -120,7 +120,7 @@ object over the target.
 format: [hand] "action-type" "hand-type" \n
 action: perform the hand sequence specified by the action-type with the hand specified
 by the hand-type.
- 
+
 <b>TAKE</b> \n
 format: [take] [target] "param1" \n
 action: the robot tries to reach the specified [target] and grasp it.
@@ -129,20 +129,20 @@ should try to mantain while performing the action (default: "above").
 
 <b>TAKE_TOOL</b> \n
 format: [tato] "param1" \n
-action: the robot will reach a specified position to take the 
-tool from a user. Optional parameter "left" or "right" can be    
-supplied to choose the orientation the robot    
+action: the robot will reach a specified position to take the
+tool from a user. Optional parameter "left" or "right" can be
+supplied to choose the orientation the robot
 
-<b>GRASP</b> \n    
-format: [grasp] [target] \n    
-action: the robot tries to reach the specified [target] and 
-performs a power grasp. The target must be specified both in    
-cartesian position and orientation. \n    
-As further parameter user may specify the way the robot will 
-approach the target by providing the options ("approach" (dx dy    
-dz wrist_pitch)), where dx/dy/dz account for offset displacement    
-in meters wrt to the grasping reference frame and wrist_pitch is    
-the apporaching pitch of the wrist given in degrees.    
+<b>GRASP</b> \n
+format: [grasp] [target] \n
+action: the robot tries to reach the specified [target] and
+performs a power grasp. The target must be specified both in
+cartesian position and orientation. \n
+As further parameter user may specify the way the robot will
+approach the target by providing the options ("approach" (dx dy
+dz wrist_pitch)), where dx/dy/dz account for offset displacement
+in meters wrt to the grasping reference frame and wrist_pitch is
+the apporaching pitch of the wrist given in degrees.
 
 <b>TOUCH</b> \n
 format: [touch] [target] "param1" "param2" \n
@@ -163,14 +163,15 @@ action: the robot tries to point the specified [target] with its index finger.
 <b>LOOK</b> \n
 format: [look] [target] "param1" (block_eyes ver) \n
 action: the robot looks at the specified [target]. "param1" can be set equal to "fixate" in order to
-keep the gaze fixating the requested target also when other    
-commands are issued to the torso. \n    
-If provided, the option (block_eyes ver) serves to block the    
-eyes at the specified vergence while gazing. \n    
-Note: the special target [hand] (with optional parameter 
-"left"/"right") can be provided to have the robot look at its   
-own hand. The robot will keep looking at its own hand until an    
-idle command.    
+keep the gaze fixating the requested target also when other
+commands are issued to the torso. The further option "wait" can be specified in
+order to let the robot wait until the target is under fixation before returning.\n    
+If provided, the option (block_eyes ver) serves to block the
+eyes at the specified vergence while gazing. \n
+Note: the special target [hand] (with optional parameter
+"left"/"right") can be provided to have the robot look at its
+own hand. The robot will keep looking at its own hand until an
+idle command.
 
 <b>EXPECT</b> \n
 format: [expect] \n
@@ -184,7 +185,7 @@ the object held in the hand is free to be taken.
 
 <b>TRACK</b> \n
 format: [track] [target] "param1" \n
-action: the specified [target] position is supplied to the tracker module and the gaze controller is 
+action: the specified [target] position is supplied to the tracker module and the gaze controller is
 updated in order to keep the object constantly inside the robot fovea. The optional "param1" can be put equal to
 "no_sacc" in order to disable the saccadic movements of the gaze controller during the tracking process.
 
@@ -193,106 +194,106 @@ format: [teach] "action_name" [start/stop] "param1" \n
 action: If parameter [start] is specified and the action "action_name" has not been registered yet, the
 robot arm is set to torque  control mode. The cartesian position (wrt the starting point) and orientation
 of the robot arm is stored until the command [teach] "action_name" [stop] is received. The learned action
-is recorded to the file "actions/<arm>/<action_name>.txt" and can be repeated autonomously 
+is recorded to the file "actions/<arm>/<action_name>.txt" and can be repeated autonomously
 using the command <b>IMITATE ACTION</b> ([imitate] "action_name").
 
 <b>IMITATE ACTION</b> \n
 format: [imitate] "action_name" \n
-action:  the system loads the file "actions/<arm>/<action_name>.txt" and controls the arm in order to 
+action:  the system loads the file "actions/<arm>/<action_name>.txt" and controls the arm in order to
 repeat the trajectory previously registered.
 
 <b>CALIBRATION</b>\n
 different types of calibrations can be requested by issuing commands of the form: [calib] [calibration_type] "param1" "param2"
 In the following a short description of the possible values of [calibration_type]:
 
---[table] the robot will try to find out the table height 
-exploiting the contact detection based on force control. If the 
-contact is detected then the new table height is sent to the 
-homography module that is in charge of extracting the 3d 
-coordinates of the object from its 2d projection on the image 
-plane. The file containing the table information is also updated 
+--[table] the robot will try to find out the table height
+exploiting the contact detection based on force control. If the
+contact is detected then the new table height is sent to the
+homography module that is in charge of extracting the 3d
+coordinates of the object from its 2d projection on the image
+plane. The file containing the table information is also updated
 accordingly to avoid calibrating always at start-up.
 
 --[fingers] the robot will calibrate the fingers in order to detect
 whether correct grasp has been achieved.
 
---[kinematics] this option requires a parameter [start/stop]. 
-when started, the system is set to cartesian torque control and 
-the robot arm can be moved around by the human user. When the 
-[calib] [kinematics] [stop] command is received, the system is 
-set to stiff mode and the offset between the initial and the 
-current position is stored. It is also possible to associate a 
-specific kinematic offset to a single object. To do 
+--[kinematics] this option requires a parameter [start/stop].
+when started, the system is set to cartesian torque control and
+the robot arm can be moved around by the human user. When the
+[calib] [kinematics] [stop] command is received, the system is
+set to stiff mode and the offset between the initial and the
+current position is stored. It is also possible to associate a
+specific kinematic offset to a single object. To do
 so, it is required to issue the command [calib] [kinematics] [stop] <object_name>. Then, whenever the system
 will be asked to preform an action over such object, the system will use the learnt offset.
- 
+
 <b>EXPLORATION</b> \n
 different types of explorations can be requested by issuing commands of the form: [explore] [exploration_type]
 In the following a short description of the possible values of [exploration_type]:
- 
+
 --[torso] the robot will start moving its torso exploring different positions (specified in the file exploration_poses.ini).
 then it will go back to the initial position.
- 
+
 --[hand] the robot will start moving its hand (typically while holding an object) and at the same time look at it. For safety
 issues, by default the robot moves the other hand back to home position in order to avoid collision. This behaviour can be modified
 by providing the optional parameter "keep_other_hand_still".
 
- 
+
 \section get_port The "Get" Port
- 
-The actionsRenderingEngine can be queried via the port /<modName>/get:io in order to obtain 
+
+The actionsRenderingEngine can be queried via the port /<modName>/get:io in order to obtain
 the following data:
- 
- 
-<b>GET</b> 
+
+
+<b>GET</b>
 format: [get] <request>
-action: the system returns the requested element.    
-    
+action: the system returns the requested element.
+
 <request> can be of the form:
- 
---[s2c] [target_1] ... [target_n]: returns the current cartesian    
-coordinates of the n visual targets wrt to the robot root    
-reference frame. The number of targets is not predefined.    
- 
---[table]: returns the current height of the table in front of    
-  the robot  
- 
---[holding]: returns true if the robot is holding an object in  
-its active hand.    
-    
---[hand] [image]: returns a vector of the form (u_left v_left    
-u_right v_right hand-head-distance) that reports the projection    
-of the end-effector of the active arm in both the robot cameras    
-together with the distance (in meters) between the robot    
-forehead and its hand.    
- 
-\section lib_sec Libraries 
-- YARP libraries. 
-- \ref ActionPrimitives library. 
- 
+
+--[s2c] [target_1] ... [target_n]: returns the current cartesian
+coordinates of the n visual targets wrt to the robot root
+reference frame. The number of targets is not predefined.
+
+--[table]: returns the current height of the table in front of
+  the robot
+
+--[holding]: returns true if the robot is holding an object in
+its active hand.
+
+--[hand] [image]: returns a vector of the form (u_left v_left
+u_right v_right hand-head-distance) that reports the projection
+of the end-effector of the active arm in both the robot cameras
+together with the distance (in meters) between the robot
+forehead and its hand.
+
+\section lib_sec Libraries
+- YARP libraries.
+- \ref ActionPrimitives library.
+
 \section portsa_sec Ports Accessed
 Assume that the robot interface is operative and the
 \ref wholeBodyDynamics is running.
- 
-\section portsc_sec Ports Created 
-Aside from the internal ports created by \ref ActionPrimitives 
-library, we also have: 
- 
+
+\section portsc_sec Ports Created
+Aside from the internal ports created by \ref ActionPrimitives
+library, we also have:
+
 - \e /<modName>/wbd:rpc to be connected to \e
   /wholeBodyDynamics/rpc:i in order to allow for resetting
   force offsets in the computation of internal dynamics of the
   robot.
- 
-- \e /<modName>/cmd:io receives a bottle containing commands 
-  whose formats are specified in the previous section. The port 
+
+- \e /<modName>/cmd:io receives a bottle containing commands
+  whose formats are specified in the previous section. The port
   replies as soon as the current action has been completed.
- 
-- \e /<modName>/rpc remote procedure call. 
+
+- \e /<modName>/rpc remote procedure call.
     Recognized remote commands:\n
     -[help]: returns the list of available rpc commands.\n
     -[get]: get requests\n
     -[status]: returns the bottle (gaze <status>)
-     (left_arm <status>) (right_arm <status>) where 
+     (left_arm <status>) (right_arm <status>) where
      <status> can be equal to "idle", "busy" or "unavailable".\n
     -[impedance] [on]/[off]: enable/disable (if available)
      impedance control.\n
@@ -305,30 +306,30 @@ library, we also have:
     -[time] <time>: to change default arm movement execution
      time (in seconds).
 
-\section parameters_sec Parameters 
-The following are the options that are not usually contained 
-within the configuration file. 
- 
+\section parameters_sec Parameters
+The following are the options that are not usually contained
+within the configuration file.
+
 --name \e name
-- specify the module name, which is \e actionsRenderingEngine by 
+- specify the module name, which is \e actionsRenderingEngine by
   default.
 
---from \e file 
-- specify the configuration file (use \e --context option to 
+--from \e file
+- specify the configuration file (use \e --context option to
   select the current context)
 
 \section in_files_sec Input/Output Data Files
 -- kinematic_offsets.ini contains the table height as well as
-   the arms kinematic offsets and is updated on-line as result 
-   of an exploration phase. 
--- network.ini contains the information needed by the system to 
+   the arms kinematic offsets and is updated on-line as result
+   of an exploration phase.
+-- network.ini contains the information needed by the system to
    load the neural network that computes the stereo2cartesian mapping.
--- hands_sequences.ini contains the list of hand sequences for the 
+-- hands_sequences.ini contains the list of hand sequences for the
    action primitives.
 -- exploration_poses.ini contains a list of position used to explore
    multiple points of view with the robot torso.
 -- grasp_model_<hand>.ini contains the information needed by the
-   PerceptiveModel layer. 
+   PerceptiveModel layer.
 -- actions/<arm>/<action_name>.actions each action "learned by imitation"
    is stored in a .txt file with the same name of the action itself.
 
@@ -337,7 +338,7 @@ within the configuration file.
 Windows, Linux
 
 \author Carlo Ciliberto, Vadim Tikhanoff
-*/ 
+*/
 
 #include <yarp/os/all.h>
 #include <yarp/sig/Vector.h>
@@ -505,7 +506,7 @@ public:
         }
 
         initializer->close();
-        
+
         delete initializer;
 
         return true;
@@ -770,7 +771,7 @@ public:
 
                             break;
                         }
-                        
+
                         case GET_HAND:
                         {
                             if(command.get(2).asVocab()==GET_IMAGE)
@@ -907,7 +908,7 @@ public:
                         }
                         break;
                     }
-                    
+
                     case CMD_CALIBRATE:
                     {
                         switch(command.get(1).asVocab())
@@ -1033,7 +1034,7 @@ public:
                     case CMD_LEARN_MIL:
                     {
                         string obj_name=command.get(1).asString().c_str();
-                        if(motorThr->isHolding(command)) // 
+                        if(motorThr->isHolding(command)) //
                             motorThr->deploy(command);
 
                         //if it is not currently tracking anything, start learning what it has in fixation
@@ -1212,7 +1213,7 @@ public:
                         else
                         {
                            motorThr->setGazeIdle();
-                           motorThr->release(command);                           
+                           motorThr->release(command);
 
                            if (!check(command,"still"))
                            {
@@ -1291,7 +1292,7 @@ public:
 
                         reply.addVocab(ACK);
                         break;
-                    } 
+                    }
 
                     case CMD_PUSH:
                     {
@@ -1353,7 +1354,7 @@ public:
                             reply.addVocab(NACK);
                             break;
                         }
-                        
+
                         if(!check(command,"hand"))
                             visuoThr->getTarget(command.get(1),command);
 
@@ -1398,7 +1399,7 @@ public:
                     }
                 }
             }
-            
+
         }
 
         if(reply.isNull() || reply.size()==0)
@@ -1544,7 +1545,7 @@ public:
 
 int main(int argc, char *argv[])
 {
-    Network yarp;   
+    Network yarp;
 
     if (!yarp.checkNetwork())
         return 1;
@@ -1560,5 +1561,3 @@ int main(int argc, char *argv[])
 
     return mod.runModule(rf);
 }
-
-
