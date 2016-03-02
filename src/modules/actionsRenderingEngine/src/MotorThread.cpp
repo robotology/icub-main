@@ -2005,7 +2005,8 @@ bool MotorThread::clearIt(Bottle &options)
     return true;
 }
 
-bool MotorThread::hand(const Bottle &options, const string &type)
+bool MotorThread::hand(const Bottle &options, const string &type,
+                       bool *holding)
 {
     int arm=ARM_IN_USE;
     if (checkOptions(options,"left") || checkOptions(options,"right"))
@@ -2030,7 +2031,9 @@ bool MotorThread::hand(const Bottle &options, const string &type)
     {
         bool f;
         action[arm]->checkActionsDone(f,true);
-        return isHolding(options);
+        if (holding!=NULL)
+            *holding=isHolding(options); 
+        return true;
     }
     else
     {
@@ -2041,7 +2044,11 @@ bool MotorThread::hand(const Bottle &options, const string &type)
 
 bool MotorThread::grasp(const Bottle &options)
 {
-    return hand(options,"close_hand");
+    bool holding;
+    if (hand(options,"close_hand",&holding))
+        return holding;
+    else
+        return false;
 }
 
 bool MotorThread::release(const Bottle &options)

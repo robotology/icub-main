@@ -385,7 +385,7 @@ public:
     bool push(Bottle &options);
     bool point(Bottle &options);
     bool look(Bottle &options);
-    bool hand(const Bottle &options, const string &type="");
+    bool hand(const Bottle &options, const string &type="", bool *holding=NULL);
     bool grasp(const Bottle &options);
     bool release(const Bottle &options);
     bool deploy(Bottle &options);

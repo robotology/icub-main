@@ -817,8 +817,12 @@ public:
                     }
                     case CMD_HAND:
                     {
-                        if (motorThr->hand(command))
+                        bool holding;
+                        if (motorThr->hand(command,"",&holding))
+                        {
                             reply.addVocab(ACK);
+                            reply.addInt(holding?1:0);
+                        }
                         else
                             reply.addVocab(NACK);
 
