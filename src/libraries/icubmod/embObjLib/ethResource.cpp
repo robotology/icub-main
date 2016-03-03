@@ -1080,11 +1080,14 @@ bool ethResources::cleanBoardBehaviour(void)
         return(true);
     }
 
+    char ipinfo[20];
+    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
+
 
     // send a ...
     if(false == serviceStop(eomn_serv_category_all))
     {
-        yError() << "ethResources::cleanBoardBehaviour() cannot stop services for BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "ethResources::cleanBoardBehaviour() cannot stop services for BOARD" << ipinfo << ethManager->getName(get_remoteIPaddress()) << ": cannot proceed any further";
         return(false);
     }
 
@@ -1905,13 +1908,17 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
 
     if(eobool_false == eoprot_id_isvalid(brd, id32))
     {
-        yError() << "ethResources::verifyRemoteValue() detected an invalid" << nvinfo << "for BOARD" << get_protBRDnumber()+1;
+        char ipinfo[20];
+        eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
+        yError() << "ethResources::verifyRemoteValue() detected an invalid" << nvinfo << "for BOARD" << ipinfo << ethManager->getName(get_remoteIPaddress());
         return false;
     }
 
     if((NULL == value) || (0 == size))
     {
-        yError() << "ethResources::verifyRemoteValue() detected an value or size" << nvinfo << "for BOARD" << get_protBRDnumber()+1;
+        char ipinfo[20];
+        eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
+        yError() << "ethResources::verifyRemoteValue() detected an value or size" << nvinfo << "for BOARD" << ipinfo << ethManager->getName(get_remoteIPaddress());
         return false;
     }
 
@@ -2128,13 +2135,17 @@ bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size
 
     if(eobool_false == eoprot_id_isvalid(brd, id32))
     {
-        yError() << "ethResources::getRemoteValue() detected an invalid" << nvinfo << "for BOARD" << get_protBRDnumber()+1;
+        char ipinfo[20];
+        eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
+        yError() << "ethResources::getRemoteValue() detected an invalid" << nvinfo << "for BOARD" << ipinfo << ethManager->getName(get_remoteIPaddress());
         return false;
     }
 
     if((NULL == value))
     {
-        yError() << "ethResources::getRemoteValue() detected an value or size" << nvinfo << "for BOARD" << get_protBRDnumber()+1;
+        char ipinfo[20];
+        eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
+        yError() << "ethResources::getRemoteValue() detected an value or size" << nvinfo << "for BOARD" << ipinfo << ethManager->getName(get_remoteIPaddress());
         return false;
     }
 
@@ -2379,7 +2390,7 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
     uint16_t size = 0;
     if(false == readBufferedValue(id2wait, (uint8_t*)&result, &size))
     {
-        yError() << "ethResources::serviceCommand() cannot retrieve the result for BOARD" << ipinfo << ": cannot proceed any further";
+        yError() << "ethResources::serviceCommand() cannot retrieve the result for BOARD" << ipinfo << ethManager->getName(get_remoteIPaddress()) << ": cannot proceed any further";
         return(false);
     }
 
