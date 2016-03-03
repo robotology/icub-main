@@ -18,13 +18,14 @@
         <param name="TorqueId">                 0x0C             0x0C               0x0C             0x0C            </param>
         <param name="TorqueChan">               0                0                  0                0               </param>
         <param name="TorqueMax">                24               24                 24               24              </param>
-        <param name="RotorEncoderType">         TBD              "OPTICAL_QUAD"     "OPTICAL_QUAD"   "OPTICAL_QUAD"  </param>
-        <param name="RotorEncoderRes">          TBD              TBD                TBD              TBD             </param>
-        <param name="JointEncoderType">         TBD              "NONE"             "NONE"           "NONE"          </param>
-        <param name="JointEncoderRes">          TBD              0                  0                0               </param>
+        <param name="RotorEncoderType">         "NONE"           "OPTICAL_QUAD"     "OPTICAL_QUAD"   "OPTICAL_QUAD"  </param>
+        <!-- <param name="RotorEncoderRes">          1                40                 40                40             </param> -->
+        <param name="RotorEncoderRes">          1                65535              65535            65535             </param>
+        <param name="JointEncoderType">         "HALL_ADC"       "MAIS"             "MAIS"           "MAIS"          </param>
+        <param name="JointEncoderRes">          65535            65535              65535            65535           </param> <!-- 65535:this value will change by fw during calibration (type 6) -->
         <param name="RotorIndexOffset">         0                0                  0                0               </param>
-        <param name="Gearbox">                  TBD              TBD                TBD              TBD             </param>
-        <param name="MotorPoles">               TBD              TBD                TBD              TBD             </param>   
+        <param name="Gearbox">                  256                256                256              256               </param>
+        <param name="MotorPoles">               1                1                  1                1               </param>   
         <param name="Verbose">                  0                                                                    </param>
     </group>
 

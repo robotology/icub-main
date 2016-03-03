@@ -5,7 +5,7 @@
   <device name="left_hand_mais" type="embObjAnalogSensor">
      <params file="general.xml" />
      <params file="hardware/electronics/pc104.xml" />
-     <params file="hardware/electronics/left_lower_arm-mc4plus9-eln.xml" />
+     <params file="hardware/electronics/left_lower_arm-j12_15-eln.xml" />
      <group name="GENERAL"> 
         <param name="CanAddress">   0x0E    </param>
         <param name="Format">       8       </param>

@@ -16,8 +16,9 @@
             <param name="jntPosMax">                90          90              90              90          </param>
             <param name="rotorPosMin">              0           0               0               0           </param> 
             <param name="rotorPosMax">              0           0               0               0           </param>
-            <param name="JntVelocityMax">           0           0               0               0           </param>
-            <param name="motorOverloadCurrents">    600         600             600             600         </param>
+            <param name="jntVelMax">                1000        1000            1000           1000         </param>
+            <param name="motorOverloadCurrents">    10000       10000           90000          10000         </param>
+            <!-- <param name="motorOverloadCurrents">    600         600             600             600         </param>  -->          
             <param name="motorNominalCurrents">     0           0               0               0           </param>
             <param name="motorPeakCurrents">        0           0               0               0           </param>
             <param name="motorPwmLimit">            3360        3360            3360            3360       </param>

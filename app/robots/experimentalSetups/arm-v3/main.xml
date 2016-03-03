@@ -14,11 +14,11 @@
 
     <!-- ANALOG SENSOR MAIS -->
     <devices file="wrappers/MAIS/left_hand-mais_wrapper.xml" />  
-    <devices file="hardware/MAIS/left_hand-mc4plus9-mais.xml" /> 
+    <devices file="hardware/MAIS/left_hand-mais.xml" /> 
     
     <!-- CALIBRATORS --> 
-    <!-- left-arm calibrator -->
-    <devices file="./calibrators/left_arm-calib.xml" />
+    <!-- left-arm calibrator
+    <devices file="./calibrators/left_arm-calib.xml" /> -->
     
 </robot> 
 

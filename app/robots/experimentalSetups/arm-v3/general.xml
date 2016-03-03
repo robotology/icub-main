@@ -5,7 +5,7 @@
   
   <group name="GENERAL">
       <param name="skipCalibration">    true  </param>
-      <param name="useRawEncoderData">  false  </param>
+      <param name="useRawEncoderData">  true  </param>
       <param name="useLimitedPWM">      false  </param>
       <param name="verbose">            false  </param>
   </group>
