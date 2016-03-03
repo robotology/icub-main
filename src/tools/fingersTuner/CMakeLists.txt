@@ -5,11 +5,8 @@
 project(fingersTuner)
 
 include(YarpIDL)
-
 set(idl_files ${PROJECT_NAME}.thrift)
-
-yarp_add_idl(IDL_GEN_FILES ${PROJECT_NAME}.thrift)
-
+yarp_add_idl(IDL_GEN_FILES ${idl_files})
 source_group("IDL Files" FILES ${idl_files})
 
 include_directories(${YARP_INCLUDE_DIRS} ${ctrlLib_INCLUDE_DIRS})

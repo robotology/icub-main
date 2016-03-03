@@ -11,7 +11,7 @@ file(GLOB source_files src/*.cpp)
 set(idl_files ${PROJECT_NAME}.thrift)
 set(doc_files ${PROJECT_NAME}.xml)
 
-yarp_add_idl(IDL_GEN_FILES ${PROJECT_NAME}.thrift)
+yarp_add_idl(IDL_GEN_FILES ${idl_files})
 
 source_group("IDL Files" FILES ${idl_files})
 source_group("DOC Files" FILES ${doc_files})
