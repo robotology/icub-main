@@ -137,7 +137,7 @@ void feat_DeInitialise()
 //    {
 //        char ipinfo[20];
 //        char nvinfo[128];
-//        eo_common_ipv4addr_to_string(ipv4, ipinfo);
+//        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
 //        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
 //        yDebug("feat_addEncoderTimeStamp() fails to get a handle of embObjMotionControl for IP = %s and NV = %s", ipinfo, nvinfo);
 //        return eobool_false;
@@ -171,7 +171,7 @@ eObool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, vo
     {
         char ipinfo[20];
         char nvinfo[128];
-        eo_common_ipv4addr_to_string(ipv4, ipinfo);
+        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yDebug("feat_manage_motioncontrol_data() fails to get a handle of embObjMotionControl for IP = %s and NV = %s", ipinfo, nvinfo);
         return eobool_false;
@@ -204,7 +204,7 @@ eObool_t feat_manage_skin_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *array
     {
         char ipinfo[20];
         char nvinfo[128];
-        eo_common_ipv4addr_to_string(ipv4, ipinfo);
+        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yDebug("feat_manage_skin_data() fails to get a handle of embObjSkin for IP = %s and NV = %s", ipinfo, nvinfo);
         return eobool_false;
@@ -238,7 +238,7 @@ eObool_t feat_manage_analogsensors_data(eOipv4addr_t ipv4, eOprotID32_t id32, vo
     {
         char ipinfo[20];
         char nvinfo[128];
-        eo_common_ipv4addr_to_string(ipv4, ipinfo);
+        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yDebug("feat_manage_analogsensors_data() fails to get a handle of embObjAnalogSensor for IP = %s and NV = %s", ipinfo, nvinfo);
         return eobool_false;

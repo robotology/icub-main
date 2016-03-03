@@ -604,8 +604,8 @@ ethResources *TheEthManager::requestResource2(IethResource *interface, yarp::os:
     if(NULL == rr)
     {
         char ipinfo[20] = {0};
-        eo_common_ipv4addr_to_string(ipv4addr, ipinfo);
-        yDebug() << "TheEthManager::requestResource2() will create a new ethResource for IP = " << ipinfo;
+        eo_common_ipv4addr_to_string(ipv4addr, ipinfo, sizeof(ipinfo));
+        yDebug() << "TheEthManager::requestResource2() will create a new ethResource for board" << boardname << "with IP = " << ipinfo;
         rr = new ethResources;
 
         if(false == rr->open2(ipv4addr, boardname, cfgtotal, cfgtransceiver, cfgprotocol))

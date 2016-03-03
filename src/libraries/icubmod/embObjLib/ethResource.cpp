@@ -356,7 +356,7 @@ void ethResources::checkIsAlive(double curr_time)
     if((curr_time - infoPkts->last_recvPktTime) > infoPkts->timeout)
     {
         char ipinfo[20];
-        eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo);
+        eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
 
         yError() << "ethResources::checkIsAlive() detected that BOARD " << ipinfo << " @ time" << int(floor(curr_time)) << "secs," << curr_time - floor(curr_time) << "has: more than " << infoPkts->timeout *1000 << "ms without any news. LAST =" << (curr_time - infoPkts->last_recvPktTime) << "sec ago";
         infoPkts->isInError =true;
@@ -454,7 +454,7 @@ bool ethResources::goToConfig(void)
     // then at most there will be two iterations of the for() loop.
 
     char ipinfo[20];
-    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo);
+    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
 
     yDebug("ethResources::goToConfig() is called for BOARD %s (%s)", ipinfo, ethManager->getName(get_remoteIPaddress()));
 
@@ -554,7 +554,7 @@ bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
 
     char ipinfo[20];
-    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo);
+    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
 
     eOenum08_t command_go2state = applstate_running;
     if(!addSetMessage(protid, (uint8_t*) &command_go2state))
@@ -2253,7 +2253,7 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
     const char *boardstr = ethManager->getName(get_remoteIPaddress());
 
     char ipinfo[20];
-    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo);
+    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
 
     // Validity check
     if(address > 15)
@@ -2321,7 +2321,7 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
     yarp::os::Semaphore* sem = NULL;
 
     char ipinfo[20];
-    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo);
+    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
 
     eOmn_service_cmmnds_command_t command = {0};
     command.operation = operation;

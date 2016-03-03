@@ -123,7 +123,7 @@ extern void eoprot_fun_ONSAY_mn(const EOnv* nv, const eOropdescriptor_t* rd)
             char nvinfo[128];
             char ipinfo[20];
             eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
-            eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo);
+            eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
             snprintf(str, sizeof(str), "eoprot_fun_ONSAY_mn() received an unexpected message w/ 0xaa000000 signature for IP %s and NV %s", ipinfo, nvinfo);
             feat_PrintWarning(str);
             return;
@@ -309,7 +309,7 @@ static void s_process_category_Default(eOmn_info_basic_t* infobasic, uint8_t * e
     p64 = (uint8_t*)&(infobasic->properties.par64);
 
     char ipinfo[20] = {0};
-    eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo);
+    eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
     //int boardnum = eo_nv_GetBRD(nv)+1;
     const char *boardstr = feat_GetBoardName(eo_nv_GetIP(nv));
 
@@ -420,7 +420,7 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
     eOmn_info_type_t type = EOMN_INFO_PROPERTIES_FLAGS_get_type(infobasic->properties.flags);
     //int ethboardnum = eo_nv_GetBRD(nv)+1;
     char ipinfo[20] = {0};
-    eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo);
+    eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
     const char *ethboardname = feat_GetBoardName(eo_nv_GetIP(nv));
     timeofmessage_t tom = {0};
     s_get_timeofmessage(infobasic, &tom);

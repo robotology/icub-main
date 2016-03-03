@@ -195,7 +195,7 @@ static void wake(const EOnv* nv)
         char ipinfo[20];
         char str[256] = {0};
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo);
+        eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
         snprintf(str, sizeof(str),"while releasing mutex for IP %s and NV %s", ipinfo, nvinfo);
         embObjPrintWarning(str);
     }
