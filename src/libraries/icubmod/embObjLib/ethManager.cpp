@@ -514,7 +514,11 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
     snprintf(strIP, sizeof(strIP), "%d.%d.%d.%d:%d", ip1, ip2, ip3, ip4, port);
     // now strIP is 10.0.1.104:12345
 
-    ipaddress.string_to_addr(strIP);
+    ACE_UINT32 hostip = (ip1 << 24) | (ip2 << 16) | (ip3 << 8) | (ip4);
+    ACE_INET_Addr myIP((u_short)port, hostip);
+
+    //ipaddress.string_to_addr(strIP);
+    myIP.addr_to_string(strIP, 64);
 
     yDebug() << "TheEthManager::startCommunication() has found IP for PC104 = " << strIP;
 
@@ -543,7 +547,7 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
     }
 
     // localaddress
-    if(false == createSocket(ipaddress, txrate, rxrate) )
+    if(false == createSocket(myIP, txrate, rxrate) )
     {
         yError () << "TheEthManager::requestResource() cannot create socket";
         return false;
