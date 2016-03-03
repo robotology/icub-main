@@ -504,8 +504,15 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
     Bottle paramIPaddress(groupPC104.find("PC104IpAddress").asString());
     ACE_UINT16 port = groupPC104.find("PC104IpPort").asInt();              // .get(1).asInt();
     char strIP[64] = {0};
+    char tmp[32] = {0};
 
-    snprintf(strIP, sizeof(strIP), "%s:%d", paramIPaddress.toString().c_str(), port);
+    snprintf(tmp, sizeof(tmp), "%s", paramIPaddress.toString().c_str());
+    // tmp is now "10.0.1.104" ... i want to remove the "".
+    int ip1, ip2, ip3, ip4;
+    sscanf(tmp, "%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
+
+    snprintf(strIP, sizeof(strIP), "%d.%d.%d.%d:%d", ip1, ip2, ip3, ip4, port);
+    // now strIP is 10.0.1.104:12345
 
     ipaddress.string_to_addr(strIP);
 
@@ -558,9 +565,8 @@ ethResources *TheEthManager::requestResource2(IethResource *interface, yarp::os:
         if(false == startCommunication(cfgtotal))
         {
             yError() << "TheEthManager::requestResource2(): cannot init the communication";
+            return NULL;
         }
-
-        return NULL;
     }
 
     // now we extract the ip address of the board & its name
@@ -569,13 +575,13 @@ ethResources *TheEthManager::requestResource2(IethResource *interface, yarp::os:
     if(groupEth.isNull())
     {
         yError() << "TheEthManager::requestResource2() cannot find ETH group in config files";
-        return false;
+        return NULL;
     }
     Bottle paramIPboard(groupEth.find("IpAddress").asString());
     Bottle paramNameBoard(groupEth.find("Name").asString());
     char str[64] = {0};
     strcpy(str, paramIPboard.toString().c_str());
-    uint8_t ip1, ip2, ip3, ip4;
+    int ip1, ip2, ip3, ip4;
     sscanf(str, "%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
     eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
     char boardname[64] = {0};

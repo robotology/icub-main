@@ -933,7 +933,8 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     _fId.interface  = this;
     _fId.type = ethFeatType_MotionControl;
 
-    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, _fId);
+    //res = ethManager->requestResource(config, groupTransceiver, groupProtocol, _fId);
+    res = ethManager->requestResource2(this, config, groupTransceiver, groupProtocol);
     if(NULL == res)
     {
         yError() << "embObjMotionControl::open() fails because could not instantiate the ethResource for board" << _fId.boardNumber << " ... unable to continue";
