@@ -6,61 +6,108 @@
  */
 
 
+// --------------------------------------------------------------------------------------------------------------------
+// - external dependencies
+// --------------------------------------------------------------------------------------------------------------------
  
-#include "FeatureInterface.h"
-#include "FeatureInterface_hid.h"
+#include "EOconstvector_hid.h"
 
 #include <ethManager.h>
 #include "embObjMotionControl.h"
 #include "embObjAnalogSensor.h"
 #include "embObjSkin.h"
 
-#include "EoProtocol.h"
-
 #include <yarp/os/Time.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/LogStream.h>
 
+
+#include <ace/ACE.h>
+#include <ace/config.h>
+#include <ace/Recursive_Thread_Mutex.h>
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - declaration of extern public interface
+// --------------------------------------------------------------------------------------------------------------------
+
+#include "FeatureInterface.h"
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - declaration of extern hidden interface
+// --------------------------------------------------------------------------------------------------------------------
+
+#include "FeatureInterface_hid.h"
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition (and initialisation) of extern variables. deprecated: better using _get(), _set() on static variables
+// --------------------------------------------------------------------------------------------------------------------
+// empty-section
+
+// --------------------------------------------------------------------------------------------------------------------
+// - typedef with internal scope
+// --------------------------------------------------------------------------------------------------------------------
+// empty-section
+
+// --------------------------------------------------------------------------------------------------------------------
+// - declaration of static functions
+// --------------------------------------------------------------------------------------------------------------------
+// empty-secction
+
+// --------------------------------------------------------------------------------------------------------------------
+// - #define with internal scope
+// --------------------------------------------------------------------------------------------------------------------
+// empty-secction
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition (and initialisation) of static variables
+// --------------------------------------------------------------------------------------------------------------------
+
 static TheEthManager *_interface2ethManager = NULL;
 
+//static const eOprot_EPcfg_t s_eo_theservices_theEPcfgsOthersMAX[] =
+//{
+//    {
+//        EO_INIT(endpoint)           eoprot_endpoint_motioncontrol,
+//        EO_INIT(numberofentities)   {12, 12, 1, 0, 0, 0, 0}
+//    },
+//    {
+//        EO_INIT(endpoint)           eoprot_endpoint_analogsensors,
+//        EO_INIT(numberofentities)   {1, 1, 1, 1, 0, 0, 0}
+//    },
+//    {
+//        EO_INIT(endpoint)           eoprot_endpoint_skin,
+//        EO_INIT(numberofentities)   {2, 0, 0, 0, 0, 0, 0}
+//    }
+//};
 
-void embObjPrintTrace(char *string)
-{
-    yTrace("%s", string);
-}
+//static const EOconstvector s_eo_theservices_vectorof_EPcfg_max =
+//{
+//    EO_INIT(capacity)       sizeof(s_eo_theservices_theEPcfgsOthersMAX)/sizeof(eOprot_EPcfg_t),
+//    EO_INIT(size)           sizeof(s_eo_theservices_theEPcfgsOthersMAX)/sizeof(eOprot_EPcfg_t),
+//    EO_INIT(item_size)      sizeof(eOprot_EPcfg_t),
+//    EO_INIT(dummy)          0,
+//    EO_INIT(stored_items)   (void*)s_eo_theservices_theEPcfgsOthersMAX,
+//    EO_INIT(functions)      NULL
+//};
 
-void embObjPrintDebug(char *string)
-{
-    yDebug("%s", string);
-}
 
-void embObjPrintInfo(char *string)
-{
-    yInfo("%s", string);
-}
+// --------------------------------------------------------------------------------------------------------------------
+// - definition of extern public functions
+// --------------------------------------------------------------------------------------------------------------------
 
-void embObjPrintWarning(char *string)
-{
-    yWarning("%s", string);
-}
 
-void embObjPrintError(char *string)
-{
-    yError("%s", string);
-}
-
-void embObjPrintFatal(char *string)
-{
-    yError("EMS received the following FATAL error: %s", string);
-}
-
-void feat_Initialise(void *ethman)
+void feat_Initialise(void *handleOfTheEthManager)
 {
     if(_interface2ethManager == NULL )
     {
-        _interface2ethManager = (TheEthManager*) ethman;
+        _interface2ethManager = (TheEthManager*) handleOfTheEthManager;
     }
 }
+
 
 void feat_DeInitialise()
 {
@@ -68,13 +115,20 @@ void feat_DeInitialise()
 }
 
 
-//fakestdbool_t feat_addEncoderTimeStamp(eOipv4addr_t ipv4, eOprotID32_t id32)
+
+//const EOconstvector*  feat_get_vectorofOtherEPcfgs_MAXcapabilities(void)
+//{
+//    return(&s_eo_theservices_vectorof_EPcfg_max);
+//}
+
+
+//eObool_t feat_addEncoderTimeStamp(eOipv4addr_t ipv4, eOprotID32_t id32)
 //{
 //    IethResource* mc = NULL;
 
 //    if(NULL == _interface2ethManager)
 //    {
-//        return fakestdbool_false;
+//        return eobool_false;
 //    }
 
 //    bool ret = _interface2ethManager->getHandle(ipv4, id32, &mc);
@@ -86,120 +140,120 @@ void feat_DeInitialise()
 //        eo_common_ipv4addr_to_string(ipv4, ipinfo);
 //        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
 //        yDebug("feat_addEncoderTimeStamp() fails to get a handle of embObjMotionControl for IP = %s and NV = %s", ipinfo, nvinfo);
-//        return fakestdbool_false;
+//        return eobool_false;
 //    }
 
 //    if(false == mc->initialised())
 //    {
-//        return fakestdbool_false;
+//        return eobool_false;
 //    }
 //    else
 //    {
 //        mc->update(id32, yarp::os::Time::now(), NULL);
 //    }
 
-//    return fakestdbool_true;
+//    return eobool_true;
 //}
 
 
-fakestdbool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, void* rxdata)
+eObool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, void* rxdata)
 {
     IethResource* mc = NULL;
 
     if(NULL == _interface2ethManager)
     {
-        return fakestdbool_false;
+        return eobool_false;
     }
 
-    bool ret = _interface2ethManager->getHandle(ipv4, id32, &mc);
+    mc = _interface2ethManager->getInterface(ipv4, id32);
 
-    if((false == ret) || (NULL == mc))
+    if(NULL == mc)
     {
         char ipinfo[20];
         char nvinfo[128];
         eo_common_ipv4addr_to_string(ipv4, ipinfo);
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yDebug("feat_manage_motioncontrol_data() fails to get a handle of embObjMotionControl for IP = %s and NV = %s", ipinfo, nvinfo);
-        return fakestdbool_false;
+        return eobool_false;
     }
 
     if(false == mc->initialised())
     {
-        return fakestdbool_false;
+        return eobool_false;
     }
     else
     {
         mc->update(id32, yarp::os::Time::now(), rxdata);
     }
 
-    return fakestdbool_true;
+    return eobool_true;
 }
 
-fakestdbool_t feat_manage_skin_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *arrayofcandata)
+eObool_t feat_manage_skin_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *arrayofcandata)
 {   
     IethResource* skin;
 
     if(NULL == _interface2ethManager)
     {
-        return fakestdbool_false;
+        return eobool_false;
     }
 
-    bool ret = _interface2ethManager->getHandle(ipv4, id32, &skin);
+    skin = _interface2ethManager->getInterface(ipv4, id32);
 
-    if((false == ret) || (NULL == skin))
+    if(NULL == skin)
     {
         char ipinfo[20];
         char nvinfo[128];
         eo_common_ipv4addr_to_string(ipv4, ipinfo);
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yDebug("feat_manage_skin_data() fails to get a handle of embObjSkin for IP = %s and NV = %s", ipinfo, nvinfo);
-        return fakestdbool_false;
+        return eobool_false;
     }
 
     if(false == skin->initialised())
     {
-        return fakestdbool_false;
+        return eobool_false;
     }
     else
     {
         skin->update(id32, yarp::os::Time::now(), (void *)arrayofcandata);
     }
 
-    return fakestdbool_true;
+    return eobool_true;
 }
 
 
-fakestdbool_t feat_manage_analogsensors_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *data)
+eObool_t feat_manage_analogsensors_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *data)
 {
     IethResource* sensor;
 
     if(NULL == _interface2ethManager)
     {
-        return fakestdbool_false;
+        return eobool_false;
     }
 
-    bool ret = _interface2ethManager->getHandle(ipv4, id32, &sensor);
+    sensor = _interface2ethManager->getInterface(ipv4, id32);
 
-    if((false == ret) || (NULL == sensor))
+    if(NULL == sensor)
     {
         char ipinfo[20];
         char nvinfo[128];
         eo_common_ipv4addr_to_string(ipv4, ipinfo);
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yDebug("feat_manage_analogsensors_data() fails to get a handle of embObjAnalogSensor for IP = %s and NV = %s", ipinfo, nvinfo);
-        return fakestdbool_false;
+        return eobool_false;
     }
 
     if(false == sensor->initialised())
     {
-        return fakestdbool_false;
+        return eobool_false;
     }
     else
     {   // data is a EOarray* in case of mais or strain but it is a eOas_inertial_status_t* in case of inertial sensor
         sensor->update(id32, yarp::os::Time::now(), data);
     }
 
-    return fakestdbool_true;
+    return eobool_true;
 }
 
 
@@ -212,11 +266,12 @@ void* feat_MC_handler_get(eOipv4addr_t ipv4, eOprotID32_t id32)
         return NULL;
     }
 
-    _interface2ethManager->getHandle(ipv4, id32, &h);
+    h = _interface2ethManager->getInterface(ipv4, id32);
+
     return (void*) h;
 }
 
-fakestdbool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
+eObool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
 {
     eoThreadEntry *th = NULL;
     IethResource *ier = static_cast<IethResource*>(mchandler);
@@ -224,11 +279,11 @@ fakestdbool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
 
     if(NULL == mc)
     {
-        return fakestdbool_false;
+        return eobool_false;
     }
     else if(false == mc->initialised())
     {   // it can be that the object is already created but its open() not yet completed. it is in open() that we allocate requestQueue ....
-        return fakestdbool_false;
+        return eobool_false;
     }
 
 
@@ -238,7 +293,7 @@ fakestdbool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
     if( (threadId = fuffy->pop()) < 0)
     {
         yError() << "Received an answer message nobody is waiting for (MCmutex_post)";
-        return fakestdbool_false;
+        return eobool_false;
     }
     else
     {
@@ -246,10 +301,10 @@ fakestdbool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
         if(NULL == th)
             yError() << "MCmutex_post error at line " << __LINE__;
         th->push();
-        return fakestdbool_true;
+        return eobool_true;
     }
 
-    return fakestdbool_false;
+    return eobool_false;
 }
 
 
@@ -273,33 +328,36 @@ eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum)
     return(fid_boardnum-1);
 }
 
+
 double feat_yarp_time_now(void)
 {
     return(yarp::os::Time::now());
 }
 
-fakestdbool_t feat_signal_network_reply(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature)
+
+eObool_t feat_signal_network_reply(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature)
 {
     if(NULL == _interface2ethManager)
     {
-        return(fakestdbool_false);
+        return(eobool_false);
     }
 
     ethResources* ethres = _interface2ethManager->GetEthResource(ipv4);
 
     if(NULL == ethres)
     {
-        return(fakestdbool_false);
+        return(eobool_false);
     }
 
     return(ethres->aNetQueryReplyHasArrived(id32, signature));
 }
 
-fakestdbool_t feat_embObjCANPrintHandler(eOipv4addr_t ipv4, eOmn_info_basic_t* infobasic)
+
+eObool_t feat_CANprint(eOipv4addr_t ipv4, eOmn_info_basic_t* infobasic)
 {
     if(NULL == _interface2ethManager)
     {
-        return(fakestdbool_false);
+        return(eobool_false);
     }
 
     ethResources* ethres = _interface2ethManager->GetEthResource(ipv4);
@@ -308,7 +366,8 @@ fakestdbool_t feat_embObjCANPrintHandler(eOipv4addr_t ipv4, eOmn_info_basic_t* i
     return res;
 }
 
-const char * feat_embObj_GetBoardName(eOipv4addr_t ipv4)
+
+const char * feat_GetBoardName(eOipv4addr_t ipv4)
 {
     static const char * errorstr = "error";
 
@@ -317,33 +376,39 @@ const char * feat_embObj_GetBoardName(eOipv4addr_t ipv4)
         return errorstr;
     }
 
-
-    ethResources* ethres = _interface2ethManager->GetEthResource(ipv4);
-    if(NULL == ethres)
-    {
-        return(errorstr);
-    }
-
-    const char *ret = NULL;
-    if(strlen(ethres->boardName)>1)
-    {
-        ret = ethres->boardName;
-    }
-    else
-    {
-        ret = _interface2ethManager->ethBoards->name(ipv4);
-        if(NULL == ret)
-        {
-            return errorstr;
-        }
-    }
-
-    return(ret);
+    return(_interface2ethManager->getName(ipv4));
 }
 
-#include <ace/ACE.h>
-#include <ace/config.h>
-#include <ace/Recursive_Thread_Mutex.h>
+
+void feat_PrintTrace(char *string)
+{
+    yTrace("%s", string);
+}
+
+void feat_PrintDebug(char *string)
+{
+    yDebug("%s", string);
+}
+
+void feat_PrintInfo(char *string)
+{
+    yInfo("%s", string);
+}
+
+void feat_PrintWarning(char *string)
+{
+    yWarning("%s", string);
+}
+
+void feat_PrintError(char *string)
+{
+    yError("%s", string);
+}
+
+void feat_PrintFatal(char *string)
+{
+    yError("EMS received the following FATAL error: %s", string);
+}
 
 
 
@@ -392,7 +457,23 @@ void ace_mutex_delete(void* m)
 }
 
 
-// eof
+// --------------------------------------------------------------------------------------------------------------------
+// - definition of extern hidden functions
+// --------------------------------------------------------------------------------------------------------------------
+// empty-section
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition of static functions
+// --------------------------------------------------------------------------------------------------------------------
+// empty-section
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - end-of-file (leave a blank line after)
+// --------------------------------------------------------------------------------------------------------------------
+
+
 
 
 

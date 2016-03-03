@@ -5,60 +5,59 @@
  *
  */
 
- 
-#ifndef FEATUREINTERFACE_H_
-#define FEATUREINTERFACE_H_
+// - include guard ----------------------------------------------------------------------------------------------------
 
+#ifndef _FEATUREINTERFACE_H_
+#define _FEATUREINTERFACE_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include <stdint.h>
-typedef uint8_t fakestdbool_t;
-#define fakestdbool_true    1
-#define fakestdbool_false   0
+// -- this file can be included also by C modules. it provides interface to C++ classes by means of its functions.
 
-#include <string.h>
-
-extern void eo_receiver_callback_incaseoferror_in_sequencenumberReceived(uint64_t rec_seqnum, uint64_t expected_seqnum);
-
+// - external dependencies --------------------------------------------------------------------------------------------
 
 #include "EoCommon.h"
 #include "EoProtocol.h"
+#include "EOconstvector.h"
+#include "EOnvSet.h"
 
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
+// - public #define  --------------------------------------------------------------------------------------------------
+// empty-section
 
 
-void embObjPrintTrace(char *string);
-void embObjPrintDebug(char *string);
-void embObjPrintInfo(char *string);
-void embObjPrintWarning(char *string);
-void embObjPrintError(char *string);
-void embObjPrintFatal(char *string);
-
+// - declaration of public user-defined types -------------------------------------------------------------------------
 
 typedef uint8_t FEAT_boardnumber_t;     // boards are numbered in range [1, maxnum]. moreover 0xff is the invalid value.
 enum { FEAT_boardnumber_dummy = 0xff};
 
 
-void feat_Initialise(void *ethman);
+// - declaration of extern public functions ---------------------------------------------------------------------------
+
+
+void feat_Initialise(void *handleOfTheEthManager);
 
 void feat_DeInitialise();
 
-//fakestdbool_t feat_addEncoderTimeStamp(eOipv4addr_t ipv4, eOprotID32_t id32);
+//extern const eOnvset_BRDcfg_t * feat_get_fullBRDcfg(void);
 
-fakestdbool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, void* rxdata);
+//extern const EOconstvector*  feat_get_vectorofOtherEPcfgs_MAXcapabilities(void);
 
-fakestdbool_t feat_manage_skin_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *arrayofcandata);
 
-fakestdbool_t feat_manage_analogsensors_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *data);
+//eObool_t feat_addEncoderTimeStamp(eOipv4addr_t ipv4, eOprotID32_t id32);
+
+eObool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, void* rxdata);
+
+eObool_t feat_manage_skin_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *arrayofcandata);
+
+eObool_t feat_manage_analogsensors_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *data);
 
 // requires boardnum in range [1, max] as used by cpp objects
 void * feat_MC_handler_get(eOipv4addr_t ipv4, eOprotID32_t id32);
 
-fakestdbool_t feat_MC_mutex_post(void * mchandler, uint32_t prognum);
+eObool_t feat_MC_mutex_post(void * mchandler, uint32_t prognum);
 
 // it converts the protocol board number with range [0, max-1] into the range used by cpp object [1, max]
 FEAT_boardnumber_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum);
@@ -67,11 +66,25 @@ eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum);
 
 double feat_yarp_time_now(void);
 
-fakestdbool_t feat_signal_network_reply(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature);
+eObool_t feat_signal_network_reply(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature);
 
-fakestdbool_t feat_embObjCANPrintHandler(eOipv4addr_t ipv4, eOmn_info_basic_t* infobasic);
+eObool_t feat_CANprint(eOipv4addr_t ipv4, eOmn_info_basic_t* infobasic);
 
-const char * feat_embObj_GetBoardName(eOipv4addr_t ipv4);
+const char * feat_GetBoardName(eOipv4addr_t ipv4);
+
+
+void feat_PrintTrace(char *string);
+
+void feat_PrintDebug(char *string);
+
+void feat_PrintInfo(char *string);
+
+void feat_PrintWarning(char *string);
+
+void feat_PrintError(char *string);
+
+void feat_PrintFatal(char *string);
+
 
 void* ace_mutex_new(void);
 
@@ -84,14 +97,16 @@ int8_t ace_mutex_release(void* m);
 void ace_mutex_delete(void* m);
 
 
+
 #ifdef __cplusplus
-}
+}       // closing brace for extern "C"
 #endif
 
-#endif /* FEATUREINTERFACE_H_ */
+#endif  // include-guard
 
 
-// eof
+// - end-of-file (leave a blank line after)----------------------------------------------------------------------------
+
 
 
 

@@ -475,12 +475,12 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    if(false == res->isEPmanaged(eoprot_endpoint_skin))
-    {
-        yError() << "embObjSkin::open() detected that EMS "<< _fId.boardNumber << " does not support skin";
-        cleanup();
-        return false;
-    }
+//    if(false == res->isEPmanaged(eoprot_endpoint_skin))
+//    {
+//        yError() << "embObjSkin::open() detected that EMS "<< _fId.boardNumber << " does not support skin";
+//        cleanup();
+//        return false;
+//    }
 
 
     if(false == res->verifyBoard(groupProtocol))
@@ -790,6 +790,11 @@ bool EmbObjSkin::init()
 bool EmbObjSkin::initialised()
 {
     return opened;
+}
+
+iethresType_t EmbObjSkin::type()
+{
+    return iethres_skin;
 }
 
 bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)

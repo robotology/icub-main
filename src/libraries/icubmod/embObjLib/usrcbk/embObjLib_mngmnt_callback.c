@@ -117,7 +117,7 @@ extern void eoprot_fun_ONSAY_mn(const EOnv* nv, const eOropdescriptor_t* rd)
 
     if(0xaa000000 == rd->signature)
     {   // case a:
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             char str[256] = {0};
             char nvinfo[128];
@@ -125,7 +125,7 @@ extern void eoprot_fun_ONSAY_mn(const EOnv* nv, const eOropdescriptor_t* rd)
             eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
             eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo);
             snprintf(str, sizeof(str), "eoprot_fun_ONSAY_mn() received an unexpected message w/ 0xaa000000 signature for IP %s and NV %s", ipinfo, nvinfo);
-            embObjPrintWarning(str);
+            feat_PrintWarning(str);
             return;
        }
     }
@@ -171,9 +171,9 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, co
 
     if(eo_ropcode_sig == rd->ropcode)
     {   // in here we have a sig and we cannot have the 0xaa000000 signature
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
-            embObjPrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() has received an unexpected message");
+            feat_PrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() has received an unexpected message");
             return;
         }
     }
@@ -188,9 +188,9 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, co
 
     if(eo_ropcode_sig == rd->ropcode)
     {   // in here we have a sig and we cannot have the 0xaa000000 signature
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
-            embObjPrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() has received an unexpected message");
+            feat_PrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() has received an unexpected message");
             return;
         }
     }
@@ -201,15 +201,15 @@ extern void eoprot_fun_UPDT_mn_service_status_commandresult(const EOnv* nv, cons
 {
     if(eo_ropcode_sig == rd->ropcode)
     {   // in here we have a sig
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
-            embObjPrintError("eoprot_fun_UPDT_mn_service_status_commandresult() has received an unexpected message");
+            feat_PrintError("eoprot_fun_UPDT_mn_service_status_commandresult() has received an unexpected message");
             return;
         }
     }
     else
     {
-        embObjPrintError("eoprot_fun_UPDT_mn_service_status_commandresult() has received an unexpected opcode");
+        feat_PrintError("eoprot_fun_UPDT_mn_service_status_commandresult() has received an unexpected opcode");
     }
 
 }
@@ -308,13 +308,14 @@ static void s_process_category_Default(eOmn_info_basic_t* infobasic, uint8_t * e
 
     p64 = (uint8_t*)&(infobasic->properties.par64);
 
+    char ipinfo[20] = {0};
+    eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo);
+    //int boardnum = eo_nv_GetBRD(nv)+1;
+    const char *boardstr = feat_GetBoardName(eo_nv_GetIP(nv));
 
-    int boardnum = eo_nv_GetBRD(nv)+1;
-    const char *boardstr = feat_embObj_GetBoardName(eo_nv_GetIP(nv));
 
-
-    snprintf(str, sizeof(str), " from BOARD 10.0.1.%d (%s), src %s, adr %d, time %ds %dm %du: (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + %s",
-                                boardnum,
+    snprintf(str, sizeof(str), " from BOARD %s (%s), src %s, adr %d, time %ds %dm %du: (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + %s",
+                                ipinfo,
                                 boardstr,
                                 str_source,
                                 address,
@@ -336,41 +337,42 @@ static void s_print_string(char *str, eOmn_info_type_t errortype)
     {
         case eomn_info_type_info:
         {
-            embObjPrintInfo(str);
+            feat_PrintInfo(str);
         } break;
 
         case eomn_info_type_debug:
         {
-            embObjPrintDebug(str);
+            feat_PrintDebug(str);
         } break;
 
         case eomn_info_type_warning:
         {
-            embObjPrintWarning(str);
+            feat_PrintWarning(str);
         } break;
 
         case eomn_info_type_error:
         {
-            embObjPrintError(str);
+            feat_PrintError(str);
         } break;
 
         case eomn_info_type_fatal:
         {
-            embObjPrintFatal(str);
+            feat_PrintFatal(str);
         } break;
 
         default:
         {
-            embObjPrintError(str);
+            feat_PrintError(str);
         } break;
     }
 
 }
 
 
+
 static void s_process_CANPRINT(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    feat_embObjCANPrintHandler(eo_nv_GetIP(nv), infobasic);
+    feat_CANprint(eo_nv_GetIP(nv), infobasic);
 }
 
 //#warning --> do a proper function in EoBoards.c
@@ -416,8 +418,10 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
     // but now we do a better parsing
 
     eOmn_info_type_t type = EOMN_INFO_PROPERTIES_FLAGS_get_type(infobasic->properties.flags);
-    int ethboardnum = eo_nv_GetBRD(nv)+1;
-    const char *ethboardname = feat_embObj_GetBoardName(eo_nv_GetIP(nv));
+    //int ethboardnum = eo_nv_GetBRD(nv)+1;
+    char ipinfo[20] = {0};
+    eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo);
+    const char *ethboardname = feat_GetBoardName(eo_nv_GetIP(nv));
     timeofmessage_t tom = {0};
     s_get_timeofmessage(infobasic, &tom);
 
@@ -439,8 +443,8 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             appl.major = reqfw >> 8;
             appl.minor = reqfw & 0xff;
 
-            snprintf(str, sizeof(str), " from BOARD 10.0.1.%d (%s) @ %ds %dm %du: successful CAN discovery of %d %s boards with target can protocol ver %d.%d and application ver %d.%d. Search time was %d ms",
-                                        ethboardnum,
+            snprintf(str, sizeof(str), " from BOARD %s (%s) @ %ds %dm %du: successful CAN discovery of %d %s boards with target can protocol ver %d.%d and application ver %d.%d. Search time was %d ms",
+                                        ipinfo,
                                         ethboardname,
                                         tom.sec, tom.msec, tom.usec,
 
@@ -470,8 +474,8 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             const char *source = s_get_sourceofmessage(infobasic, NULL);
 
 
-            snprintf(str, sizeof(str), " from BOARD 10.0.1.%d (%s) @ %ds %dm %du: CAN discovery has detected a %s board in %s addr %d with can protocol ver %d.%d and application ver %d.%d. Search time was %d ms",
-                                        ethboardnum,
+            snprintf(str, sizeof(str), " from BOARD %s (%s) @ %ds %dm %du: CAN discovery has detected a %s board in %s addr %d with can protocol ver %d.%d and application ver %d.%d. Search time was %d ms",
+                                        ipinfo,
                                         ethboardname,
                                         tom.sec, tom.msec, tom.usec,
 
@@ -494,8 +498,8 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             const char *source = s_get_sourceofmessage(infobasic, NULL);
 
 
-            snprintf(str, sizeof(str), " from BOARD 10.0.1.%d (%s) @ %ds %dm %du: CAN discovery after %d ms has detected %d missing %s boards in %s:",
-                                        ethboardnum,
+            snprintf(str, sizeof(str), " from BOARD %s (%s) @ %ds %dm %du: CAN discovery after %d ms has detected %d missing %s boards in %s:",
+                                        ipinfo,
                                         ethboardname,
                                         tom.sec, tom.msec, tom.usec,
 
@@ -513,9 +517,9 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             {
                 if(eobool_true == eo_common_hlfword_bitcheck(maskofmissing, i))
                 {
-                    snprintf(str, sizeof(str), "%d of %d: missing %s BOARD 10.0.1.%d:%s:%d",
+                    snprintf(str, sizeof(str), "%d of %d: missing %s BOARD %s:%s:%d",
                                                 n, numofmissing, canboardname,
-                                                ethboardnum, source, i
+                                                ipinfo, source, i
                                                 );
                     s_print_string(str, type);
                     n++;
@@ -533,8 +537,8 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             const char *source = s_get_sourceofmessage(infobasic, NULL);
 
 
-            snprintf(str, sizeof(str), " from BOARD 10.0.1.%d (%s) @ %ds %dm %du: CAN discovery has detected %d invalid %s boards in %s:",
-                                        ethboardnum,
+            snprintf(str, sizeof(str), " from BOARD %s (%s) @ %ds %dm %du: CAN discovery has detected %d invalid %s boards in %s:",
+                                        ipinfo,
                                         ethboardname,
                                         tom.sec, tom.msec, tom.usec,
 
@@ -556,9 +560,9 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
                 uint64_t val = (invalidmask >> (4*i)) & 0x0f;
                 if(0 != val)
                 {
-                    snprintf(str, sizeof(str), "%d of %d: wrong %s BOARD 10.0.1.%d:%s:%d because it has: %s %s %s",
+                    snprintf(str, sizeof(str), "%d of %d: wrong %s BOARD %s:%s:%d because it has: %s %s %s",
                                                 n, numofinvalid, canboardname,
-                                                ethboardnum, source, i,
+                                                ipinfo, source, i,
                                                 ((val & 0x1) == 0x1) ? (wrongtype) : (empty),
                                                 ((val & 0x2) == 0x2) ? (wrongappl) : (empty),
                                                 ((val & 0x4) == 0x4) ? (wrongprot) : (empty)
@@ -579,8 +583,8 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
 
         case EOERROR_VALUE_DUMMY:
         {
-            snprintf(str, sizeof(str), " from BOARD 10.0.1.%d (%s) @ %ds %dm %du: unrecognised eoerror_category_Config error value:",
-                                    ethboardnum,
+            snprintf(str, sizeof(str), " from BOARD %s (%s) @ %ds %dm %du: unrecognised eoerror_category_Config error value:",
+                                    ipinfo,
                                     ethboardname,
                                     tom.sec, tom.msec, tom.usec
                                     );

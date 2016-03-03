@@ -81,7 +81,7 @@ extern void eoprot_fun_ONSAY_mc(const EOnv* nv, const eOropdescriptor_t* rd)
 
     if(0xaa000000 == rd->signature)
     {   // case a:
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             char str[256] = {0};
             char nvinfo[128];
@@ -189,7 +189,7 @@ static void wake(const EOnv* nv)
 
     id32 = eo_nv_GetID32(nv);
     prognum = eoprot_endpoint_id2prognum(eo_nv_GetBRD(nv), id32);
-    if(fakestdbool_false == feat_MC_mutex_post(mchandler, prognum) )
+    if(eobool_false == feat_MC_mutex_post(mchandler, prognum) )
     {
         char nvinfo[128];
         char ipinfo[20];

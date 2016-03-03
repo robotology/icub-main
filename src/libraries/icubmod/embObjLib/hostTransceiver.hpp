@@ -78,10 +78,10 @@ protected:
     eOipv4port_t            ipport;
     EOpacket                *p_RxPkt;
     uint16_t                pktsizerx;
-    EOprotocolConfigurator* protconfigurator;
+//    EOprotocolConfigurator* protconfigurator;
 
-    eOmn_transceiver_properties_t remoteTransceiverProperties;  // contains properties of the transceiver of the remote board as read from xml file
-    eOmn_transceiver_properties_t localTransceiverProperties;   // contains properties of the transceiver here instantiated.
+//    eOmn_transceiver_properties_t remoteTransceiverProperties;  // contains properties of the transceiver of the remote board as read from xml file
+//    eOmn_transceiver_properties_t localTransceiverProperties;   // contains properties of the transceiver here instantiated.
                                                                 // properties derive from remoteTransceiverProperties, from hosttxrxcfg and from elsewhere
     uint8_t TXrate;
 public:
@@ -159,6 +159,8 @@ private:
     void eoprot_override_sk(void); 
 
     bool prepareTransceiverConfig(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol);
+
+    bool prepareTransceiverConfigNOnvset(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol);
 
     bool fillRemoteProperties(yarp::os::Searchable &cfgprotocol);
 

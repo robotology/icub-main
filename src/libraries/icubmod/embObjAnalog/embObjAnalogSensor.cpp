@@ -407,12 +407,12 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if(false == res->isEPmanaged(eoprot_endpoint_analogsensors))
-    {
-        yError() << "embObjAnalogSensor::open() detected that EMS "<< _fId.boardNumber << " does not support analog sensors";
-        cleanup();
-        return false;
-    }
+//    if(false == res->isEPmanaged(eoprot_endpoint_analogsensors))
+//    {
+//        yError() << "embObjAnalogSensor::open() detected that EMS "<< _fId.boardNumber << " does not support analog sensors";
+//        cleanup();
+//        return false;
+//    }
 
     if(false == res->verifyBoard(groupProtocol))
     {
@@ -1389,6 +1389,36 @@ int embObjAnalogSensor::calibrateChannel(int ch)
 int embObjAnalogSensor::calibrateChannel(int ch, double v)
 {
     return AS_OK;
+}
+
+iethresType_t embObjAnalogSensor::type()
+{
+    iethresType_t ret = iethres_none;
+
+    switch(_as_type)
+    {
+        case AS_MAIS:
+        {
+            ret = iethres_analogmais;
+        } break;
+
+        case AS_STRAIN:
+        {
+            ret = iethres_analogstrain;
+        } break;
+
+        case AS_INERTIAL_MTB:
+        {
+            ret = iethres_analoginertial;
+        } break;
+
+        default:
+        {
+            ret = iethres_none;
+        }
+    }
+
+    return ret;
 }
 
 bool embObjAnalogSensor::update(eOprotID32_t id32, double timestamp, void* rxdata)

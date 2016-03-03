@@ -73,17 +73,17 @@ typedef struct
 
 typedef enum
 {
-    ethFeatType_NULL            = 0xFF,
-    ethFeatType_Management      = 0x00,
-    ethFeatType_AnalogMais      = 0x01,
-    ethFeatType_AnalogStrain    = 0x02,
-    ethFeatType_MotionControl   = 0x03,
-    ethFeatType_Skin            = 0x04,
-    ethFeatType_AnalogVirtual   = 0x05,
-    ethFeatType_AnalogInertial  = 0x06
+    ethFeatType_NULL            = iethres_none,
+    ethFeatType_Management      = iethres_management,
+    ethFeatType_AnalogMais      = iethres_analogmais,
+    ethFeatType_AnalogStrain    = iethres_analogstrain,
+    ethFeatType_MotionControl   = iethres_motioncontrol,
+    ethFeatType_Skin            = iethres_skin,
+    ethFeatType_AnalogVirtual   = iethres_analogvirtual,
+    ethFeatType_AnalogInertial  = iethres_analoginertial
 } ethFeatType_t;
 
-enum { ethFeatType_numberof = 7 };
+enum { ethFeatType_numberof = iethresType_numberof };
 
 #define BOARDNAME_MAXSIZE 50
 typedef struct
@@ -99,25 +99,6 @@ typedef struct
     char                boardName[BOARDNAME_MAXSIZE]; // this is the name read in xml file
 } ethFeature_t;
 
-//// each possible feature can be searched using this key: the board number and the type
-//typedef struct
-//{
-//    FEAT_boardnumber_t  boardNumber;
-//    ethFeatType_t       type;
-//} ethFeatureKey_t;
-
-
-
-//enum { ethresBoardNameMaxSize = 32 };
-
-//typedef struct
-//{
-//    eOipv4addr_t        boardIP;
-//    char                boardName[BOARDNAME_MAXSIZE];
-//    uint8_t             boardNumber; // format is 0 ...
-//    void*               resource;
-//    IethResource*       interfaces[ethFeatType_numberof];
-//} ethresProperties_t;
 
 
 
@@ -201,6 +182,10 @@ public:
     void setBoardNum(int board);
 };
 
+
+// -- class ethNetworkQuery
+// -- it is used to wait for a reply from a board.
+
 class ethNetworkQuery
 {
 
@@ -223,6 +208,9 @@ public:
 };
 
 
+// -- class ethResources
+// -- it is used to manage udp communication towards a given board
+
 class yarp::dev::ethResources:  public DeviceDriver,
                                 public hostTransceiver
 {
@@ -236,7 +224,6 @@ private:
     enum { ETHRES_SIZE_INFO = 128 };
 
     char              info[ETHRES_SIZE_INFO];
-//    int               how_many_features;      //!< Keep track of how many high level class registered. onto this EMS
     eOipv4addr_t      ipv4addr;
     ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
@@ -249,48 +236,33 @@ private:
 
     ethNetworkQuery*    ethQueryServices;
 
-//    yarp::os::Semaphore*  networkQuerySem;      // the semaphore used by the class to wait for a reply from network. it must have exclusive access
-//    yarp::os::Semaphore*  isbusyNQsem;          // the semaphore used to guarantee exclusive access of networkQuerySem to calling threads
-//    yarp::os::Semaphore*  iswaitingNQsem;       // the semaphore used to guarantee that the wait of the class is unblocked only once and when it is required
-
     bool lock();
     bool unlock();
 
     bool                verifiedEPprotocol[eoprot_endpoints_numberof];
-    bool                configuredEP[eoprot_endpoints_numberof];
+//    bool                configuredEP[eoprot_endpoints_numberof];
     bool                verifiedBoardPresence;
-    bool                remoteBoardNumberIsSet;
+//    bool                remoteBoardNumberIsSet;
     bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
     bool                txrateISset;
     bool                cleanedBoardBehaviour;    // the board is in config mode and does not have any regulars
-    uint8_t             boardEPsNumber;
+//    uint8_t             boardEPsNumber;
     eOmn_comm_status_t  boardCommStatus;
     uint16_t            usedNumberOfRegularROPs;
-    //uint16_t            usedSizeOfRegularROPframe;
 
     can_string_eth*     c_string_handler[16];
 
 public:
-    TheEthManager     *ethManager;          //!< Pointer to the Singleton handling the UDP socket
-    int               boardNum;             // the number of ems board with range [1, TheEthManager::maxBoards]
-    char              boardName[BOARDNAME_MAXSIZE];        //this is the name read in xml file
+    TheEthManager       *ethManager;          //!< Pointer to the Singleton handling the UDP socket
+    int                 boardNum;             // the number of ems board with range [1, TheEthManager::maxBoards]
+    char                boardName[BOARDNAME_MAXSIZE];        //this is the name read in xml file
+
     ethResources();
     ~ethResources();
 
 
     bool            open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
     bool            close();
-
-    /*!   @fn       registerFeature(void);
-     *    @grief    tells the EMS a new device requests its services.
-     *    @return   true.
-     */
-//    bool            registerFeature(ethFeature_t &request);
-
-    /*!   @fn       unregisterFeature();
-     *    @brief    tell the EMS a user has been closed. If was the last one, close the EMS
-     */
-//    int             deregisterFeature(ethFeature_t &request);
 
     ACE_INET_Addr   getRemoteAddress(void);
 
@@ -314,16 +286,12 @@ public:
     void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true);
 
 
-    /*!   @fn       goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity);
-     *    @brief    Tells the EMS to start the control loop to activate a given service described by (endpoint, entity).
-     */
+    // we remove goToRun() and goToConfig() and we use serviceStart() and serviceStop()
     bool            goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity);
-
-
-    /*!   @fn       goToConfig(void);
-     *    @brief    Tells the EMS to stop the control loop and go into configuration mode.
-     */
     bool            goToConfig(void);
+
+    // we keep isRunning() and we add a field in the reply of serviceStart()/Stop() which tells if the board is in run mode or not.
+    bool            isRunning(void);
 
     /*!   @fn       getLastRecvMsgTimestamp(void);
      *    @brief    return the system time of the last received message from the corresponding EMS board.
@@ -331,15 +299,12 @@ public:
      */
     double          getLastRecvMsgTimestamp(void);
 
-    /*!   @fn       clearRegulars(void);
-     *    @brief    clears periodic signal message of EMS
-     *    @return   true on success else false
-     */
-    bool            clearRegulars(bool verify = false);
 
+    // -- remove the following three and use the new serviceSetRegulars() method instead ...
+//    bool clearRegulars(bool verify = false);
     bool addRegulars(vector<eOprotID32_t> &id32vector, bool verify = false);
-
     bool numberofRegulars(uint16_t &numberofregulars);
+
 
     bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout = 0.100, int retries = 10);
 
@@ -350,30 +315,24 @@ public:
     bool setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries = 10, double waitbeforeverification = 0.001, double verificationtimeout = 0.050, int verificationretries = 2);
 
 
-    /*!   @fn       isRunning(void);
-     *    @brief    says if goToRun command has been sent to EMS
-     *    @return   true if goToRun command has been sent to EMS else false
-     */
-    bool            isRunning(void);
-
     /*!   @fn       checkIsAlive(double curr_time);
      *    @brief    check if ems is ok by verifing time elapsed from last received packet. In case of error print yError.
      *    @return
      */
     void checkIsAlive(double curr_time);
 
-    bool isEPmanaged(eOprot_endpoint_t ep);
+//    bool isEPmanaged(eOprot_endpoint_t ep);
 
     bool verifyBoard(yarp::os::Searchable &protconfig);
     bool verifyBoardPresence(yarp::os::Searchable &protconfig);
     bool verifyBoardTransceiver(yarp::os::Searchable &protconfig);   
     bool setTXrate(yarp::os::Searchable &protconfig);
     bool cleanBoardBehaviour(void);
-    bool setRemoteBoardNumber(void);
+//    bool setRemoteBoardNumber(void);
 
     bool verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);
-    bool configureENDPOINT(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);
-    bool verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber = -1);
+//    bool configureENDPOINT(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);
+//    bool verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber = -1);
 
 
 //    Semaphore* startNetworkQuerySession(eOprotID32_t id32, uint32_t signature); // to the associated board
@@ -401,9 +360,6 @@ private:
     bool serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times);
 
     bool verbosewhenok;
-    //uint64_t        RXpacket[maxRXpacketsize/8];    // buffer holding the received messages after EthReceiver::run() has read it from socket
-    //uint16_t        RXpacketSize;
-    //    ACE_UINT16      recv_size;                      // size of the received message
 };
 
 

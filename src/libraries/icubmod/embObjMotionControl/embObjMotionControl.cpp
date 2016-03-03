@@ -2036,6 +2036,10 @@ eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint32_t protoid)
     return requestQueue->threadPool->getThreadTable(req.threadId);
 }
 
+iethresType_t embObjMotionControl::type()
+{
+    return iethres_motioncontrol;
+}
 
 bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxdata)
 {

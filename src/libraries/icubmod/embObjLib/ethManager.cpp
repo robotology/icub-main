@@ -31,25 +31,30 @@ using namespace yarp::os;
 using namespace yarp::os::impl;
 
 TheEthManager* TheEthManager::handle = NULL;
-yarp::os::Semaphore TheEthManager::managerMutex = 1;
+yarp::os::Semaphore TheEthManager::managerSem = 1;
 
-yarp::os::Semaphore TheEthManager::rxMutex = 1;
-yarp::os::Semaphore TheEthManager::txMutex = 1;
+yarp::os::Semaphore TheEthManager::rxSem = 1;
+yarp::os::Semaphore TheEthManager::txSem = 1;
 
 
 
 // - class EthBoards
 
-const char * EthBoards::names[EthBoards::maxEthBoards] =
+const char * EthBoards::defaultnames[EthBoards::maxEthBoards] =
 {
-    "error",
-    "leftUpperArm", "leftForearm", "rightUpperArm", "rightForearm",
-    "Torso",
-    "leftLeg", "leftFoot", "rightLeg", "rightFoot",
-    "leftLegSkin", "rightLegSkin",
-    "unknown12", "unknown13", "unknown14", "unknown15",
-    "unknown16", "unknown17", "unknown18", "unknown19", "unknown20", "unknown21", "unknown22", "unknown23",
-    "unknown24", "unknown25", "unknown26", "unknown27", "unknown28", "unknown29", "unknown30", "unknown31"
+    "noname-in-xml-board.1", "noname-in-xml-board.2", "noname-in-xml-board.3", "noname-in-xml-board.4",
+    "noname-in-xml-board.5", "noname-in-xml-board.6", "noname-in-xml-board.7", "noname-in-xml-board.8",
+    "noname-in-xml-board.9", "noname-in-xml-board.10", "noname-in-xml-board.11", "noname-in-xml-board.12",
+    "noname-in-xml-board.13", "noname-in-xml-board.14", "noname-in-xml-board.15", "noname-in-xml-board.16",
+    "noname-in-xml-board.17", "noname-in-xml-board.18", "noname-in-xml-board.19", "noname-in-xml-board.20",
+    "noname-in-xml-board.21", "noname-in-xml-board.22", "noname-in-xml-board.23", "noname-in-xml-board.24",
+    "noname-in-xml-board.25", "noname-in-xml-board.26", "noname-in-xml-board.27", "noname-in-xml-board.28",
+    "noname-in-xml-board.29", "noname-in-xml-board.30", "noname-in-xml-board.31", "noname-in-xml-board.32"
+};
+
+const char * EthBoards::errorname[1] =
+{
+    "wrong-unknown-board"
 };
 
 EthBoards::EthBoards()
@@ -118,7 +123,11 @@ bool EthBoards::add(ethResources* res)
     LUT[index].resource = res;
     LUT[index].ipv4 = ipv4;
     LUT[index].boardnumber = index;
-    memcpy(LUT[index].name, res->getName(), sizeof(LUT[index].name));
+    snprintf(LUT[index].name, sizeof(LUT[index].name), "%s", res->getName());
+    if(0 == strlen(LUT[index].name))
+    {   // use default name
+        snprintf(LUT[index].name, sizeof(LUT[index].name), "%s", defaultnames[index]);
+    }
     LUT[index].numberofinterfaces = 0;
     for(int i=0; i<ethFeatType_numberof; i++)
     {
@@ -237,39 +246,6 @@ bool EthBoards::rem(ethResources* res, ethFeatType_t type)
 }
 
 
-
-//ethResources* EthBoards::get(ACE_INET_Addr adr)
-//{
-//    ethResources * ret = NULL;
-
-//    ACE_UINT32 a32 = adr.get_ip_address();
-//    uint8_t index = a32 & 0xff;
-//    index --;
-//    if(index<maxEthBoards)
-//    {
-//        ret = ethresLUT[index];
-//    }
-
-//    return(ret);
-//}
-
-
-//ethResources* EthBoards::get(ethFeatIPaddress_t ipaddr)
-//{
-//    ethResources * ret = NULL;
-
-//    ACE_UINT32 a32 = ipaddr.ip4;
-//    uint8_t index = a32 & 0xff;
-//    index --;
-//    if(index<maxEthBoards)
-//    {
-//        ret = ethresLUT[index];
-//    }
-
-//    return(ret);
-//}
-
-
 ethResources* EthBoards::get_resource(eOipv4addr_t ipv4)
 {
     ethResources * ret = NULL;
@@ -352,22 +328,6 @@ IethResource* EthBoards::get_interface(eOipv4addr_t ipv4, eOprotID32_t id32)
 }
 
 
-//const char * EthBoards::name(ACE_INET_Addr adr)
-//{
-//    const char * ret = NULL;
-
-//    ACE_UINT32 a32 = adr.get_ip_address();
-//    uint8_t index = a32 & 0xff;
-//    index --;
-//    if(index<maxEthBoards)
-//    {
-//        ret = names[index];
-//    }
-
-//    return(ret);
-//}
-
-
 const char * EthBoards::name(eOipv4addr_t ipv4)
 {
     const char * ret = NULL;
@@ -377,7 +337,11 @@ const char * EthBoards::name(eOipv4addr_t ipv4)
     index --;
     if(index<maxEthBoards)
     {
-        ret = names[index];
+        ret = LUT[index].name;
+    }
+    else
+    {
+        ret = errorname[0]; // the last one contains an error string
     }
 
     return(ret);
@@ -406,32 +370,24 @@ bool EthBoards::execute(void (*action)(ethResources* res, void* p), void* par)
 }
 
 
+
 // -------------------------------------------------------------------\\
 //            TheEthManager   Singleton
 // -------------------------------------------------------------------\\
 
 
-//const char * TheEthManager::boardNames[TheEthManager::maxBoards] =
-//{
-//    "error",
-//    "leftUpperArm", "leftForearm", "rightUpperArm", "rightForearm",
-//    "Torso",
-//    "leftLeg", "leftFoot", "rightLeg", "rightFoot",
-//    "leftLegSkin", "rightLegSkin",
-//    "unknown12", "unknown13", "unknown14", "unknown15",
-//    "unknown16", "unknown17", "unknown18", "unknown19", "unknown20", "unknown21", "unknown22", "unknown23",
-//    "unknown24", "unknown25", "unknown26", "unknown27", "unknown28", "unknown29", "unknown30", "unknown31"
-//};
 
-bool TheEthManager::lock()
+bool TheEthManager::lock(bool on)
 {
-    managerMutex.wait();
-    return true;
-}
+    if(on)
+    {
+        managerSem.wait();
+    }
+    else
+    {
+        managerSem.post();
+    }
 
-bool TheEthManager::unlock()
-{
-    managerMutex.post();
     return true;
 }
 
@@ -440,11 +396,41 @@ bool TheEthManager::lockTX(bool on)
 {
     if(on)
     {
-        txMutex.wait();
+        txSem.wait();
     }
     else
     {
-        txMutex.post();
+        txSem.post();
+    }
+
+    return true;
+}
+
+bool TheEthManager::lockRX(bool on)
+{
+    if(on)
+    {
+        rxSem.wait();
+    }
+    else
+    {
+        rxSem.post();
+    }
+
+    return true;
+}
+
+bool TheEthManager::lockTXRX(bool on)
+{
+    if(on)
+    {
+        txSem.wait();
+        rxSem.wait();
+    }
+    else
+    {
+        rxSem.post();
+        txSem.post();
     }
 
     return true;
@@ -484,42 +470,14 @@ bool TheEthManager::Transmission(void)
 }
 
 
-bool TheEthManager::lockRX(bool on)
-{
-    if(on)
-    {
-        rxMutex.wait();
-    }
-    else
-    {
-        rxMutex.post();
-    }
-
-    return true;
-}
-
-bool TheEthManager::lockTXRX(bool on)
-{
-    if(on)
-    {
-        txMutex.wait();
-        rxMutex.wait();
-    }
-    else
-    {
-        rxMutex.post();
-        txMutex.post();
-    }
-
-    return true;
-}
 
 ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request)
 {
-    yTrace() << " Requested BRD" << request.boardNumber;
     // Check if local socket is initted, if not do it.
     ACE_TCHAR address[64] = {0};
     snprintf(address, sizeof(address), "%s:%d", request.pc104IPaddr.string, request.pc104IPaddr.port);
+
+    yTrace() << "TheEthManager::requestResource(): called for board #" << request.boardNumber;
 
     if(request.boardNumber > TheEthManager::maxBoards)
     {
@@ -548,8 +506,6 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
     int rxrate = -1; // uses default
 
     // if i find it in section ... of cfgtotal then i change it
-
-
     if(cfgtotal.findGroup("PC104").check("PC104TXrate"))
     {
         int value = cfgtotal.findGroup("PC104").find("PC104TXrate").asInt();
@@ -558,7 +514,7 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
     }
     else
     {
-        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104TXrate. thus using default value";
+        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104TXrate. thus using default value" << EthSender::EthSenderDefaultRate;;
     }
 
     if(cfgtotal.findGroup("PC104").check("PC104RXrate"))
@@ -569,14 +525,16 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
     }
     else
     {
-        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104RXrate. thus using default value";
+        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104RXrate. thus using default value" << EthReceiver::EthReceiverDefaultRate;
     }
 
     if(!createSocket(myIP, txrate, rxrate) )
-    {  return NULL;  }
+    {
+        return NULL;
+    }
 
 
-#if 1
+    // i want to lock the use of resources managed by ethBoards to avoid that we attempt to use for TX a ethres not completely initted
 
     lockTXRX(true);
 
@@ -603,83 +561,17 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
     }
 
     ethBoards->add(rr, request.interface, request.type);
-    //it is the same as addLUTelement(request);
 
-
-//    rr->registerFeature(request);
 
     lockTXRX(false);
 
     return(rr);
-
-#else
-    //    int justCreated = false;
-    //    ethResources *newRes = NULL;
-
-//    lock();          // lock so that we can use EMS_list in exclusive way
-//    ethResIt it = EMS_list.begin();
-//    ethResIt itend = EMS_list.end();
-
-//    while(it != itend)
-//    {
-//        (*it)->getRemoteAddress().addr_to_string(tmp_addr, 64);
-//        if( strcmp(tmp_addr, request.boardIPaddr.string) == 0 )
-//        {
-//            // device already exists, return the pointer.
-//            newRes = (*it);
-//            break;
-//        }
-//        it++;
-//    }
-//    unlock(); // must unlock now. because ethResources::open() need to use the receiver which uses the lock() to get the EMS_list
-
-//    if(NULL == newRes)
-//    {
-//        // device doesn't exist yet: create it
-//        yTrace() << "Creating BRD device with IP " << request.boardIPaddr.string;
-//        newRes = new ethResources;
-//        if(!newRes->open(cfgtotal, cfgtransceiver, cfgprotocol, request))
-//        {
-//            yError() << "Error creating new BRD!!";
-//            if(NULL != newRes)
-//                delete newRes;
-
-//            newRes = NULL;
-//            return NULL;
-//        }
-//        justCreated = true;
-//    }
-
-
-//    lock(); // lock because i use the EMS_list and i call addLUTelement
-
-//    // the push_back has to be done only once for EMS
-//    if(justCreated)
-//    {
-//        EMS_list.push_back(newRes);
-//        int index = request.boardNumber-1;
-//        if(index < ethresLUTsize)
-//        {
-//            ethresLUT[index] = newRes;
-//            numberOfUsedBoards++;
-//        }
-//    }
-
-//    // The registerFeature has to be done always
-//    newRes->registerFeature(request);
-//    addLUTelement(request);
-
-//    unlock();
-
-//    return newRes;
-#endif
 }
 
 
 
 int TheEthManager::releaseResource(ethFeature_t &resource)
 {
-#if 1
 
     int ret = 1; // -1 means that the singleton is not needed anymore
 
@@ -692,7 +584,7 @@ int TheEthManager::releaseResource(ethFeature_t &resource)
         success = success;
 
 
-        // now we operate on the boards .. disable tx and rx
+        // now we change internal data structure of ethBoards, thus .. must disable tx and rx
         lockTXRX(true);
 
         // remove the interface
@@ -716,224 +608,21 @@ int TheEthManager::releaseResource(ethFeature_t &resource)
     }
 
     return(ret);
-
-
-#else
-    yTrace() << resource.boardNumber;
-    int           ret           = 0;
-    int           stillUsed     = 0;
-    ethResources  *res2release  = NULL;
-    char tmp_addr[64];
-
-
-    ethResources *tmpEthRes;
-    ACE_INET_Addr  tmp_ace_addr;
-
-    lock();
-    ethResIt it = EMS_list.begin();
-    ethResIt itend = EMS_list.end();
-    unlock();
-
-    if(false == emsAlreadyClosed)
-    {
-        while(it != itend)
-        {
-            tmpEthRes = (*it);
-            tmpEthRes->serviceStop(eomn_serv_category_all);
-            it++;
-        }
-        // before stopping threads, flush all pkts not yet sent.
-        flush();
-        emsAlreadyClosed = true;
-    }
-    stopThreads();
-
-    removeLUTelement(resource);
-
-    lock();
-    it = EMS_list.begin();
-    itend = EMS_list.end();
-    while(it != itend)
-    {
-        tmpEthRes = (*it);
-        tmp_ace_addr = tmpEthRes->getRemoteAddress();
-        tmp_ace_addr.addr_to_string(tmp_addr, 64);
-        if( strcmp(tmp_addr, resource.boardIPaddr.string) == 0)
-        {
-            // device exists
-            res2release = (*it);
-            stillUsed = res2release->deregisterFeature(resource);
-            if( !! stillUsed)
-            {
-                ret = 1;
-                break;
-            }
-            else
-            {
-                res2release->close();
-                EMS_list.remove(res2release);
-                delete res2release;
-                ret = 1;
-                break;
-            }
-        }
-        it++;
-    }
-
-    if(     (EMS_list.size() == 0 ) && (boards_map_ext.size() != 0 )
-        ||  (EMS_list.size() != 0 ) && (boards_map_ext.size() == 0 ) )
-    {
-        yError() << "Something strange happened... EMS_list.size is" << EMS_list.size() << "while boards_map_ext.size is "<< boards_map_ext.size();
-    }
-
-    if(!ret)
-        //yError() << "EthManager: Trying to release a non existing resource" << resource.name << " for boardId " << resource.boardNumber << "maybe already deleted?";
-        yError() << "EthManager: Trying to release a non existing resource for boardId " << resource.boardNumber << "maybe already deleted?";
-
-    // ret = -1 means that the singleton is not needed anymore
-    if( (EMS_list.size() == 0 ) || (boards_map_ext.size() == 0 ) )
-        ret = -1;
-
-    unlock();
-
-    return ret;
-#endif
 }
 
 
-//void TheEthManager::addLUTelement(ethFeature_t &id)
-//{
-//    yTrace() << id.boardNumber;
-//    //in maps use board num starts from 0 so
-//    FEAT_boardnumber_t brdnum = id.boardNumber;
-//    uint8_t entity = (eoprot_endpoint_motioncontrol == id.endpoint) ? (eoprot_entity_mc_joint) : id.entity;
-//    //uint8_t entity = id.entity;
-//    uint32_t item2 = (id.endpoint<<24)|(entity<<16);
-
-//    /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
-//    /* Defined the var addLUT_result to have the true/false result of the insert operation...It helped catching a bug.
-//     * It fails if the element is already present. This can happen if someone tries to read an element with
-//     * the '[]' operator before the insert, because the std::map will create it automatically (hopefully initted
-//     * with zeros.
-//     */
-
-
-//    bool addLUT_result =  boards_map_ext.insert(std::pair< std::pair<FEAT_boardnumber_t, uint32_t>, ethFeature_t>(std::make_pair(brdnum, item2), id)).second;
-
-//    // Check result of insertion
-//    addLUT_result ? (yTrace() << "ok add lut element for board " << id.boardNumber << " and ep " << id.endpoint << " and entity " << id.entity) :
-//                    (yError() << "NON ok add lut element for board " << id.boardNumber << " and ep " << id.endpoint << " and entity " << id.entity);
-
-
-//    std::pair<FEAT_boardnumber_t, uint32_t > key (brdnum, item2);
-//    try
-//    {
-//        // USE .at AND NOT the '[ ]' alternative!!! It will create a bug!!!
-//        /* The bug is caused by the fact that the [] version will create an unitialized element inside the map,
-//            * causing the return of a wrong pointer.
-//            * Furthermore the insert method used to correctly initialze the element will fail because a (wrong)
-//            * element is already present preventing the map to be corrected.
-//            */
-//        IethResource * ret = boards_map_ext.at(key).interface;
-//    }
-//    catch (const std::out_of_range& errMsg)
-//    {
-//        yError() << "Error after  LUT insertion!!! (" << errMsg.what() << ")";
-//    }
-//}
-
-//bool TheEthManager::removeLUTelement(ethFeature_t &element)
-//{
-//    yTrace() << element.boardNumber;
-//    /* NO MUTEX HERE because it's a PRIVATE method, so called only inside other already mutexed methods */
-//    bool ret = false;
-//    uint8_t entity = (eoprot_endpoint_motioncontrol == element.endpoint) ? (eoprot_entity_mc_joint) : element.entity;
-//    //uint8_t entity = element.entity;
-//    uint32_t item2 = (element.endpoint<<24)|(entity<<16);
-//    int n = (int) boards_map_ext.erase(std::make_pair(element.boardNumber, item2));
-
-//    switch(n)
-//    {
-//        case 0:
-//        {
-//            yError() << "Trying to remove a non-existing element" << element.name << "maybe already removed?";
-//            ret = false;
-//            break;
-//        }
-
-//        case 1:
-//        {
-//            yTrace() << "ethFeature_t element removed succesfully from the map" << element.name;
-//            ret = true;
-//            break;
-//        }
-//        default:
-//        {
-//            yError() << "More than one element were removed with key board num " << element.boardNumber << "ep " << element.endpoint;
-//            ret = true;
-//            break;
-//        }
-//    }
-
-//    return ret;
-//}
-
-bool TheEthManager::getHandle(eOipv4addr_t ipv4, eOprotID32_t id32, IethResource **interfacePointer)
+const ACE_INET_Addr& TheEthManager::getLocalIPaddress(void)
 {
-    *interfacePointer = ethBoards->get_interface(ipv4, id32);
-
-    if(NULL == *interfacePointer)
-    {
-        return false;
-    }
-
-    return true;
-
-//    eOprotEndpoint_t ep = eoprot_ID2endpoint(id32);
-//    eOprotEntity_t entity = eoprot_ID2entity(id32);
-
-//    if(eoprot_endpoint_motioncontrol == ep)
-//    {   // motion control is registered in board_maps-ext as (brd,ep-joint), thus if the id32 is about a motor entity we must be able to cope ...
-//        entity = eoprot_entity_mc_joint;
-//    }
-
-
-////     lock(); // marco.accame: found already commented. see why
-//    bool ret = false;
-//    static int _error = 0;
-//    uint32_t item2 = (ep<<24)|(entity<<16);
-//    std::pair<FEAT_boardnumber_t, uint32_t > key (boardnum, item2);
-
-//    try
-//    {
-//        // USE .at AND NOT the '[ ]' alternative!!! It will create a bug!!!
-//        /* The bug is caused by the fact that the [] version will create an unitialized element inside the map,
-//         * causing the return of a wrong pointer.
-//         * Furthermore the insert method used to correctly initialze the element will fail because a (wrong)
-//         * element is already present preventing the map to be corrected.
-//         */
-//        *interfacePointer = boards_map_ext.at(key).interface;
-//        *type = boards_map_ext.at(key).type;
-//        ret = true;
-//    }
-//    catch (const std::out_of_range& errMsg)
-//    {
-//        if(0 == (_error%1000))
-//        {
-//            char nvinfo[128];
-//            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-//            interfacePointer = NULL;
-//            *type = ethFeatType_NULL;
-
-//            yError() << "TheEthManager::getHandle() cannot find a handle for boardNum "<< boardnum << " and nv" << nvinfo << " ... maybe the board was in running mode before robotInterface was started (" << errMsg.what() <<")";
-//        }
-//        ret = false;
-//        _error++;
-//    }
-////     unlock(); // marco.accame: found already commented. see why
-//    return ret;
+    return(localIPaddress);
 }
 
+
+IethResource* TheEthManager::getInterface(eOipv4addr_t ipv4, eOprotID32_t id32)
+{
+    IethResource *interfacePointer = ethBoards->get_interface(ipv4, id32);
+
+    return interfacePointer;
+}
 
 
 
@@ -957,50 +646,36 @@ void embOBJerror(eOerrmanErrorType_t errtype, const char *info, eOerrmanCaller_t
 TheEthManager::TheEthManager()
 {
     yTrace();
-    memset(info, 0, sizeof(info));
-    snprintf(info, sizeof(info), "TheEthManager");
 
-//    memset(ethresLUT, 0, sizeof(ethresLUT));
-//    numberOfUsedBoards = 0;
-
-//    EMS_list.clear();
     UDP_initted = false;
     UDP_socket  = NULL;
-//    emsAlreadyClosed = false;
+    localIPaddress = ACE_INET_Addr("10.0.1.104:12345");
 
     ethBoards = new(EthBoards);
 
     TheEthManager::initEOYsystem();
 
-    starttime = yarp::os::Time::now();
+    startUpTime = yarp::os::Time::now();
 }
 
 
-EthSender* TheEthManager::getEthSender(void)
-{
-    return sender;
-}
-
-
-EthReceiver* TheEthManager::getEthReceiver(void)
-{
-    return receiver;
-}
-
-
-double TheEthManager::getStartTime(void)
-{
-    return starttime;
-}
-
-//bool TheEthManager::getEMSlistRiterators(ethResRIt& rbegin, ethResRIt& rend)
-//{   // marco.accame: added this function so that we can keep lock()/unlock() private
-//    lock();
-//    rbegin = EMS_list.rbegin();
-//    rend = EMS_list.rend();
-//    unlock();
-//    return true;
+//EthSender* TheEthManager::getEthSender(void)
+//{
+//    return sender;
 //}
+
+
+//EthReceiver* TheEthManager::getEthReceiver(void)
+//{
+//    return receiver;
+//}
+
+
+double TheEthManager::getTimeOfStartUp(void)
+{
+    return startUpTime;
+}
+
 
 void TheEthManager::initEOYsystem(void)
 {
@@ -1014,22 +689,21 @@ void TheEthManager::initEOYsystem(void)
 }
 
 
-bool TheEthManager::createSocket(ACE_INET_Addr local_addr, int txrate, int rxrate)
+bool TheEthManager::createSocket(ACE_INET_Addr localaddress, int txrate, int rxrate)
 {
-    yTrace();
-    lock();
+    lock(true);
 
 
     if(!UDP_initted)
     {
         UDP_socket = new ACE_SOCK_Dgram();
-        char tmp[64];
-        if(-1 == UDP_socket->open(local_addr))
+        if(-1 == UDP_socket->open(localaddress))
         {
-            local_addr.addr_to_string(tmp, 64);
-            yError() <<   "\n/---------------------------------------------------\\"
-                     <<   "\n| Unable to bind to local IP address " << tmp
-                     <<   "\n\\---------------------------------------------------/";
+            char tmp[64] = {0};
+            localaddress.addr_to_string(tmp, 64);
+            yError() <<   "\n/--------------------------------------------------------------------------------------------------------------\\"
+                     <<   "\n| TheEthManager::createSocket() is unable to bind to local IP address " << tmp
+                     <<   "\n\\--------------------------------------------------------------------------------------------------------------/";
             delete UDP_socket;
             UDP_socket = NULL;
             UDP_initted = false;
@@ -1037,6 +711,7 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr, int txrate, int rxrat
         else
         {
             UDP_initted = true;
+            localIPaddress = localaddress;
 
             if((txrate <= 0) || (txrate > EthSender::EthSenderMaxRate))
             {
@@ -1051,6 +726,7 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr, int txrate, int rxrat
 
             sender->config(UDP_socket, this);
             receiver->config(UDP_socket, this);
+
             /* Start the threads sending to and receiving messages from the boards.
              * It will execute the threadInit and pass its return value to the following calls
              * afterStart to check if they started correctly.
@@ -1061,10 +737,10 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr, int txrate, int rxrat
 
             if(!ret1 || !ret2)
             {
-                yError() << "EthManager: issue while starting threads for UDP communication with EMSs";
+                yError() << "TheEthManager::createSocket() fails in starting UDP communication threads ethSender / ethReceiver";
 
                 // stop threads
-                stopThreads();
+                stopCommunicationThreads();
 
                 delete UDP_socket;
                 UDP_initted = false;
@@ -1072,30 +748,32 @@ bool TheEthManager::createSocket(ACE_INET_Addr local_addr, int txrate, int rxrat
             }
             else
             {
-                yTrace() << "Both sending and Receiving thread started correctly!";
+                yTrace() << "TheEthManager::createSocket(): both UDP communication threads ethSender / ethReceiver start correctly!";
 
             }
         }
     }
 
-    unlock();
+    lock(false);
     return UDP_initted;
 }
 
-bool TheEthManager::isInitted(void)
+bool TheEthManager::isCommunicationInitted(void)
 {
     yTrace();
     bool ret;
-    lock();
+    lock(true);
     ret = UDP_initted;
-    unlock();
+    lock(false);
     return ret;
 }
 
 TheEthManager *TheEthManager::instance()
 {
     yTrace();
-    managerMutex.wait();    // marco.accame: in here we dont use this->lock() because if object does not already exists, the function does not exists. i can use the static semaphore instead
+    // marco.accame: in here we dont use this->lock() because if object does not already exists, the function does (?) not exist.
+    // much better using the static semaphore instead
+    managerSem.wait();
     if (NULL == handle)
     {
         yTrace() << "Calling EthManager Constructor";
@@ -1103,9 +781,9 @@ TheEthManager *TheEthManager::instance()
         if (NULL == handle)
             yError() << "While calling EthManager constructor";
         else
-            feat_Initialise(static_cast<void*>(handle));
+            feat_Initialise(static_cast<void*>(handle)); // we give the pointer to the feature-interface c module
     }
-    managerMutex.post();
+    managerSem.post();
 
     return handle;
 }
@@ -1119,7 +797,7 @@ bool TheEthManager::killYourself()
     return true;
 }
 
-bool TheEthManager::stopThreads()
+bool TheEthManager::stopCommunicationThreads()
 {
     bool ret = true;
     // Stop method also make a join waiting the thread to exit
@@ -1127,14 +805,11 @@ bool TheEthManager::stopThreads()
         sender->stop();
     if(receiver->isRunning() )
     {
-#ifdef ETHRECEIVER_ISPERIODICTHREAD
         receiver->stop();
-#else
-        ret = receiver->stop();
-#endif
     }
     return ret;
 }
+
 
 void delete_resources(ethResources *p, void* par)
 {
@@ -1145,61 +820,44 @@ TheEthManager::~TheEthManager()
 {
     yTrace();
 
-    // for sure we shoudl stop threads tx / rx
-    // before stopping threads, flush all pkts not yet sent.
-    flush();
-    stopThreads();
-
-    // Deinitialize fetaure interface
+    // Deinitialize feature interface
     feat_DeInitialise();
 
-    // Close UDP socket
-    if(isInitted())
-    {
-        lock();
+    // close communication (tx and rx threads, socket) BUT only if they were created and initted
+    if(isCommunicationInitted())
+    {        
+        // for sure we should stop threads tx / rx. before stopping threads, flush all pkts not yet sent.
+        flush();
+        stopCommunicationThreads();
+
+        // then we close and delete the socket
+        lock(true);
         UDP_socket->close();
         delete UDP_socket;
         UDP_initted = false;
-        unlock();
+
+        // dont we delete sender and receiver ???
+        delete sender;
+        delete receiver;
+
+        lock(false);
     }
 
 
-    lock();
-//    // Destroy all EMS boards
-//    if(EMS_list.size() != 0)
-//    {
-//        memset(ethresLUT, 0, sizeof(ethresLUT));
-//        numberOfUsedBoards = 0;
-
-//        ethResIt iterator = EMS_list.begin();
-
-//        while(iterator != EMS_list.end())
-//        {
-//            delete(*iterator);
-//            iterator++;
-//        }
-//    }
+    lock(true);
 
     // remove all ethresource ... we dont need to call lockTXRX() because we are not transmitting now
     ethBoards->execute(delete_resources, NULL);
     delete ethBoards;
 
-//    if(boards_map_ext.size() != 0)
-//    {
-//        std::map<std::pair<FEAT_boardnumber_t, uint32_t>, ethFeature_t>::iterator mIt;
-//        for(mIt = boards_map_ext.begin(); mIt!=boards_map_ext.end(); mIt++)
-//        {
-//            yError() << "Feature " << mIt->second.name << "was not correctly removed from map.., removing it now in the EthManager destructor.";
-//            removeLUTelement(mIt->second);
-//        }
-//    }
-    unlock();
+    lock(false);
+
     handle = NULL;
 }
 
-int TheEthManager::send(void *data, size_t len, ACE_INET_Addr remote_addr)
+int TheEthManager::send(void *udpframe, size_t len, ACE_INET_Addr toaddress)
 {
-    ssize_t ret = UDP_socket->send(data, len, remote_addr);
+    ssize_t ret = UDP_socket->send(udpframe, len, toaddress);
     return ret;
 }
 
@@ -1254,6 +912,13 @@ ethResources* TheEthManager::IPtoResource(ACE_INET_Addr adr)
     return(ethBoards->get_resource(ipv4addr));
 }
 
+int TheEthManager::IPtoBoardNumber(ACE_INET_Addr adr)
+{
+    ACE_UINT32 a32 = adr.get_ip_address();
+    uint8_t ip4 = a32 & 0xff;
+    return(ip4);
+}
+
 int TheEthManager::GetNumberOfUsedBoards(void)
 {
     return(ethBoards->number_of_resources());
@@ -1262,38 +927,12 @@ int TheEthManager::GetNumberOfUsedBoards(void)
 const char * TheEthManager::getName(eOipv4addr_t ipv4)
 {
     const char * ret = ethBoards->name(ipv4);
-    if(NULL == ret)
-    {
-        ret = EthBoards::names[0];
-    }
 
     return ret;
 }
 
 ethResources* TheEthManager::GetEthResource(eOipv4addr_t ipv4)
 {
-//    #warning --> see if protect with a mutex or not ... sure not in runtime. surely yes in opening or closing
-//    ethResources *res = NULL;
-//    lock();
-
-//    ethResIt iterator = EMS_list.begin();
-
-//    eOprotBRD_t targetbrd = featIdBoardNum2nvBoardNum(boardnum);
-//    while(iterator != EMS_list.end())
-//    {
-//        eOprotBRD_t brdn = (*iterator)->get_protBRDnumber();
-
-//        if(brdn == targetbrd)
-//        {
-//            res = *iterator;
-//            break;
-//        }
-//        iterator++;
-//    }
-
-
-//    unlock();
-
     return(ethBoards->get_resource(ipv4));
 }
 
@@ -1301,6 +940,7 @@ ethResources* TheEthManager::GetEthResource(eOipv4addr_t ipv4)
 bool TheEthManager::open()
 {
     yTrace();
+
     return true;
 }
 
@@ -1320,12 +960,19 @@ void TheEthManager::flush()
 }
 
 
+// -- class EthSender
+// -- here is it code
+
 EthSender::EthSender(int txrate) : RateThread(txrate)
 {
-
     rateofthread = txrate;
-    yDebug() << "EthSender is a RateThread with rate =" << rateofthread << "ms";
+    yDebug() << "EthSender is a RateThread with txrate =" << rateofthread << "ms";
     yTrace();
+}
+
+EthSender::~EthSender()
+{
+
 }
 
 bool EthSender::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
@@ -1355,56 +1002,62 @@ bool EthSender::threadInit()
     return true;
 }
 
-void EthSender::evalPrintTXstatistics(void)
-{
-#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
-    // For statistic purpose
+//void EthSender::evalPrintTXstatistics(void)
+//{
+//#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
+//    // For statistic purpose
 
-    unsigned int it=getIterations();
-    if(it == ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_NUMBEROF_CYCLES)
-    {
-        printTXstatistics();
-    }
-#endif
-}
-
-void EthSender::printTXstatistics(void)
-{
-#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
-    // For statistic purpose
-
-    unsigned int it=getIterations();
-
-    double avPeriod, stdPeriod;
-    double avThTime, stdTime;
-
-    getEstUsed(avThTime, stdTime);
-    getEstPeriod(avPeriod, stdPeriod);
-
-    char string[128] = {0};
-    snprintf(string, sizeof(string), "  (STATS-TX)-> EthSender::run() thread run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n",
-                            it,
-                            avPeriod, stdPeriod,
-                            avThTime, stdTime);
-    yDebug() << string;
-
-    resetStat();
-
-#endif
-}
+//    unsigned int it = getIterations();
+//    if(it == ethmanager_stats_frequency_numberofcycles)
+//    {
+//        printTXstatistics();
+//    }
+//#endif
+//}
 
 
-#define ETHMANAGER_TEST_NEW_SENDER_RUN
+//void EthSender::printTXstatistics(void)
+//{
+//#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
+//    // For statistic purpose
+
+//    unsigned int it=getIterations();
+
+//    double avPeriod, stdPeriod;
+//    double avThTime, stdTime;
+
+//    getEstUsed(avThTime, stdTime);
+//    getEstPeriod(avPeriod, stdPeriod);
+
+//    char string[128] = {0};
+//    snprintf(string, sizeof(string), "  (STATS-TX)-> EthSender::run() thread run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n",
+//                            it,
+//                            avPeriod, stdPeriod,
+//                            avThTime, stdTime);
+//    yDebug() << string;
+
+//    resetStat();
+
+//#endif
+//}
+
+
+
 #if defined(ETHMANAGER_TEST_NEW_SENDER_RUN)
 
 
 void EthSender::run()
 {    
+    // by calling this metod of ethManager, we put protection vs concurrency internal to the class.
+    // for tx we must protect the ethresources not being changed. they can be changed by a device such as
+    // embObjMotionControl etc which adds or releases its resources.
     ethManager->Transmission();
 }
 
 
 #else
+
+#error dont use that
 
 void EthSender::run()
 {
@@ -1454,26 +1107,11 @@ void EthSender::run()
 #endif // defined(ETHMANAGER_TEST_NEW_SENDER_RUN)
 
 
-#ifdef ETHRECEIVER_ISPERIODICTHREAD
 EthReceiver::EthReceiver(int raterx): RateThread(raterx)
-#else
-EthReceiver::EthReceiver()
-#endif
 {
-    yTrace();
-#ifdef ETHRECEIVER_STATISTICS_ON
-    stat = new StatExt();
-    stat_onRecFunc  = new StatExt();
-    stat_onMutex = new StatExt();
-#endif
-
-#ifdef ETHRECEIVER_ISPERIODICTHREAD
-    count=0;
-    isFirst=true;
     rateofthread = raterx;
-    yDebug() << "EthReceiver is a RateThread with rate =" << rateofthread << "ms";
+    yDebug() << "EthReceiver is a RateThread with rxrate =" << rateofthread << "ms";
     // ok, and now i get it from xml file ... if i find it.
-#endif
 
     ConstString tmp = NetworkBase::getEnvironment("ETHSTAT_PRINT_INTERVAL");
     if (tmp != "")
@@ -1488,18 +1126,14 @@ EthReceiver::EthReceiver()
 
 void EthReceiver::onStop()
 {
-    uint8_t tmp;
-    ethManager->send( &tmp, 1, ethManager->local_addr);
+    // in here i send a small packet to ... myself ?
+    uint8_t tmp = 0;
+    ethManager->send( &tmp, 1, ethManager->getLocalIPaddress());
 }
 
 EthReceiver::~EthReceiver()
 {
-    yTrace();
-#ifdef ETHRECEIVER_STATISTICS_ON
-    delete stat;
-    delete stat_onRecFunc;
-    delete stat_onMutex;
-#endif
+
 }
 
 bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
@@ -1510,8 +1144,8 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
 
     ACE_HANDLE sockfd = pSocket->get_handle();
     int retval;
-    int32_t mysize = 1024*1024; //1Mb note:actually kernel uses memory with size doblem of mysize
-                            //with this size i'm sure ems pkts are not lost
+    int32_t mysize = 1024*1024;     // 1Mb note:actually kernel uses memory with size doblem of mysize
+                                    // with this size i'm sure ems pkts are not lost
     int len = sizeof(mysize);
 
     // the user can change buffer size by environment variable ETHRECEIVER_BUFFER_SIZE
@@ -1536,12 +1170,14 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
 
     yWarning() << "in EthReceiver::config() the config socket has queue size = "<< sock_input_buf_size<< "; you request ETHRECEIVER_BUFFER_SIZE=" << _dgram_buffer_size;
 
-
+#if defined(ETHMANAGER_RECEIVER_CHECK_SEQUENCE_NUMBER)
     for(int i=0; i<TheEthManager::maxBoards; i++)
     {
         recFirstPkt[i] = false;
         seqnumList[i] = 0;
     }
+#endif
+
     return true;
 }
 
@@ -1571,22 +1207,11 @@ uint64_t getRopFrameAge(char *pck)
 }
 
 
-
-int EthReceiver::getBoardNum(ACE_INET_Addr addr)
-{
-    int board;
-    ACE_UINT32 ip = addr.get_ip_address();
-
-    // board is last number in ip address
-    board = ip & 0xff;
-    return(board);
-}
-
-
+#if defined(ETHMANAGER_RECEIVER_CHECK_SEQUENCE_NUMBER)
 
 void EthReceiver::checkPktSeqNum(char* pktpayload, ACE_INET_Addr addr)
 {
-    int board = getBoardNum(addr);
+    int board = ethManager->IPtoBoardNumber(addr);
     uint64_t seqnum = eo_ropframedata_seqnum_Get((EOropframeData*)pktpayload);
 
     if(board > TheEthManager::maxBoards)
@@ -1619,14 +1244,17 @@ void EthReceiver::checkPktSeqNum(char* pktpayload, ACE_INET_Addr addr)
     }
 }
 
-#if 1
+#endif // #if defined(ETHMANAGER_RECEIVER_CHECK_SEQUENCE_NUMBER)
+
+
+#if defined(ETHMANAGER_TEST_NEW_RECEIVER_RUN)
 
 void EthReceiver::run()
 {
     ssize_t       incoming_msg_size = 0;
     ACE_INET_Addr sender_addr;
-    uint64_t      incoming_msg_data[ethResources::maxRXpacketsize/8]; // 8-byte aligned local buffer for incoming packet: it must be able to accomodate max size of packet
-    const int     incoming_msg_capacity = ethResources::maxRXpacketsize;
+    uint64_t      incoming_msg_data[ethResources::maxRXpacketsize/8];   // 8-byte aligned local buffer for incoming packet: it must be able to accomodate max size of packet
+    const ssize_t incoming_msg_capacity = ethResources::maxRXpacketsize;
 
     int flags = 0;
 #ifndef WIN32
@@ -1649,7 +1277,13 @@ void EthReceiver::run()
             return;
         }
 
-        // we have a packet ... give it to the ethmanager
+#if defined(ETHMANAGER_RECEIVER_CHECK_SEQUENCE_NUMBER)
+        // redundant check. this check is already done inside hostTransceiver wherein case of errors it is called:
+        // cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(EOreceiver *r)
+        checkPktSeqNum((char *)incoming_msg_data, sender_addr);
+#endif
+
+        // we have a packet ... we give it to the ethmanager for it parsing
         bool collectStatistics = (statPrintInterval > 0) ? true : false;
         ethManager->Reception(sender_addr, incoming_msg_data, incoming_msg_size, collectStatistics);
     }
@@ -1657,6 +1291,8 @@ void EthReceiver::run()
 }
 
 #else
+
+#error dont use it
 
 #ifdef ETHRECEIVER_ISPERIODICTHREAD
 

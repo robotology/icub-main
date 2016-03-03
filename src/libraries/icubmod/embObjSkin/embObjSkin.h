@@ -148,6 +148,7 @@ public:
 #endif
 
     virtual bool    initialised();
+    virtual iethresType_t type();
     virtual bool    update(eOprotID32_t id32, double timestamp, void *rxdata);
 
 };
