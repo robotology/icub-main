@@ -474,7 +474,7 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
 {
     // we need: ip address of pc104, port used by socket, tx rate, rx rate.
 
-    ACE_INET_Addr ipaddress;            // it must be found ...
+    //ACE_INET_Addr ipaddress((u_short)12345, ((10 << 24) | (0 << 16) | (1 << 8) | (104)));            // it must be found ...
     int txrate = -1;                    // it uses default
     int rxrate = -1;                    // it uses default
 
@@ -504,20 +504,16 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
     Bottle paramIPaddress(groupPC104.find("PC104IpAddress").asString());
     ACE_UINT16 port = groupPC104.find("PC104IpPort").asInt();              // .get(1).asInt();
     char strIP[64] = {0};
-    char tmp[32] = {0};
 
-    snprintf(tmp, sizeof(tmp), "%s", paramIPaddress.toString().c_str());
-    // tmp is now "10.0.1.104" ... i want to remove the "".
+
+    snprintf(strIP, sizeof(strIP), "%s", paramIPaddress.toString().c_str());
+    // strIP is now "10.0.1.104" ... i want to remove the "".... VERY IMPORTANT: use \" in sscanf
     int ip1, ip2, ip3, ip4;
-    sscanf(tmp, "%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
-
-    snprintf(strIP, sizeof(strIP), "%d.%d.%d.%d:%d", ip1, ip2, ip3, ip4, port);
-    // now strIP is 10.0.1.104:12345
+    sscanf(strIP, "\"%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
 
     ACE_UINT32 hostip = (ip1 << 24) | (ip2 << 16) | (ip3 << 8) | (ip4);
     ACE_INET_Addr myIP((u_short)port, hostip);
 
-    //ipaddress.string_to_addr(strIP);
     myIP.addr_to_string(strIP, 64);
 
     yDebug() << "TheEthManager::startCommunication() has found IP for PC104 = " << strIP;
@@ -553,6 +549,12 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
         return false;
     }
 
+    // save local address
+
+    localIPaddress = myIP;
+    ipv4local.addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
+    ipv4local.port = port;
+
     return true;
 }
 
@@ -586,7 +588,7 @@ ethResources *TheEthManager::requestResource2(IethResource *interface, yarp::os:
     char str[64] = {0};
     strcpy(str, paramIPboard.toString().c_str());
     int ip1, ip2, ip3, ip4;
-    sscanf(str, "%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
+    sscanf(str, "\"%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
     eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
     char boardname[64] = {0};
     strcpy(boardname, paramNameBoard.toString().c_str());
@@ -605,9 +607,8 @@ ethResources *TheEthManager::requestResource2(IethResource *interface, yarp::os:
         eo_common_ipv4addr_to_string(ipv4addr, ipinfo);
         yDebug() << "TheEthManager::requestResource2() will create a new ethResource for IP = " << ipinfo;
         rr = new ethResources;
-        eOipv4addr_t localIP = eo_common_ipv4addr(10, 0, 1, 104);
-        eOipv4port_t port = 12345;
-        if(false == rr->open2(localIP, ipv4addr, port, boardname, cfgtotal, cfgtransceiver, cfgprotocol))
+
+        if(false == rr->open2(ipv4addr, boardname, cfgtotal, cfgtransceiver, cfgprotocol))
         {
             yError() << "TheEthManager::requestResource2(): error creating a new ethResource for IP = " << ipinfo;
             if(NULL != rr)
@@ -781,6 +782,13 @@ const ACE_INET_Addr& TheEthManager::getLocalIPaddress(void)
 }
 
 
+const eOipv4addressing_t& TheEthManager::getLocalIPV4addressing(void)
+{
+    return(ipv4local);
+}
+
+
+
 IethResource* TheEthManager::getInterface(eOipv4addr_t ipv4, eOprotID32_t id32)
 {
     IethResource *interfacePointer = ethBoards->get_interface(ipv4, id32);
@@ -818,6 +826,10 @@ TheEthManager::TheEthManager()
     ethBoards = new(EthBoards);
 
     TheEthManager::initEOYsystem();
+
+    ipv4local.addr = eo_common_ipv4addr(10, 0, 1, 104);
+    ipv4local.port = 12345;
+
 
     startUpTime = yarp::os::Time::now();
 }

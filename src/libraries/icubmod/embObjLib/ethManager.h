@@ -197,16 +197,19 @@ private:
     // contains the start-up time of teh system so that time measures / prints can be done relative.
     double                        startUpTime;
 
-    ACE_INET_Addr                 localIPaddress;
+    ACE_INET_Addr                   localIPaddress;
+    eOipv4addressing_t              ipv4local;
 
 private:
 
-    bool                          communicationIsInitted;
+    bool                            communicationIsInitted;
+
+
 
     // periodic threads which use methods of class TheEthManager to transmit / receive + the udp socket
-    EthSender                     *sender;
-    EthReceiver                   *receiver;
-    ACE_SOCK_Dgram                *UDP_socket;
+    EthSender                       *sender;
+    EthReceiver                     *receiver;
+    ACE_SOCK_Dgram                  *UDP_socket;
 
 private:
 
@@ -242,6 +245,8 @@ public:
     int releaseResource(ethFeature_t &resource);
 
     const ACE_INET_Addr& getLocalIPaddress(void);
+
+    const eOipv4addressing_t & getLocalIPV4addressing(void);
 
 
     // Methods for UDP socket handling

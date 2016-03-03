@@ -262,7 +262,7 @@ public:
 
 
 
-    bool            open2(eOipv4addr_t locIP, eOipv4addr_t remIP, eOipv4port_t port, const char *name, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol);
+    bool            open2(eOipv4addr_t remIP, const char *name, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol);
     bool            open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
     bool            close();
 

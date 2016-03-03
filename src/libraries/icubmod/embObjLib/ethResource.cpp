@@ -191,7 +191,7 @@ bool ethResources::unlock()
     return true;
 }
 
-bool ethResources::open2(eOipv4addr_t locIP, eOipv4addr_t remIP, eOipv4port_t port, const char *name, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol)
+bool ethResources::open2(eOipv4addr_t remIP, const char *name, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol)
 {
     // Get the pointer to the actual Singleton ethManager
     ethManager = TheEthManager::instance();
@@ -208,11 +208,13 @@ bool ethResources::open2(eOipv4addr_t locIP, eOipv4addr_t remIP, eOipv4port_t po
     }
 
 
+    eOipv4addressing_t localIPv4 = ethManager->getLocalIPV4addressing();
+
     bool ret;
     uint8_t num = 0;
     eo_common_ipv4addr_to_decimal(remIP, NULL, NULL, NULL, &num);
     const uint16_t packetRXcapacity = ethResources::maxRXpacketsize; // for safety i use the maximum size ... however, i could read the xml file and set this number equal to max tx size of teh ems ...
-    if(!hostTransceiver::init(cfgtransceiver, cfgprotocol, locIP, remIP, port, packetRXcapacity, num))
+    if(!hostTransceiver::init(cfgtransceiver, cfgprotocol, localIPv4.addr, remIP, localIPv4.port, packetRXcapacity, num))
     {
         ret = false;
         yError() << "cannot init transceiver... maybe wrong board number... check log and config file.";
@@ -226,7 +228,7 @@ bool ethResources::open2(eOipv4addr_t locIP, eOipv4addr_t remIP, eOipv4port_t po
     uint8_t ip1, ip2, ip3, ip4;
     eo_common_ipv4addr_to_decimal(remIP, &ip1, &ip2, &ip3, &ip4);
     ACE_UINT32 hostip = (ip1 << 24) | (ip2 << 16) | (ip3 << 8) | (ip4);
-    ACE_INET_Addr myIP((u_short)port, hostip);
+    ACE_INET_Addr myIP((u_short)localIPv4.port, hostip);
     remote_dev = myIP;
     ipv4addr = remIP;
 
