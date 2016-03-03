@@ -433,7 +433,7 @@ private:
             gainStr = gainStr + numberId;
 
             Bottle c,r;
-            c.add("gain");
+            c.addString("gain");
             c.addInt(i);
             if (rf->check(gainStr))
             {
@@ -459,7 +459,7 @@ private:
             svelStr = svelStr + numberId;
 
             Bottle c,r;
-            c.add("svel");
+            c.addString("svel");
             c.addInt(i);
             if (rf->check(svelStr))
             {

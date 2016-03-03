@@ -426,7 +426,6 @@ class scriptModule: public RFModule
 protected:
     Port                rpcPort;
     string              name;
-    string              contextPath;
     bool                verbose;
     robotDriver         robot;
     WorkingThread       w_thread;
@@ -446,8 +445,6 @@ public:
             name=string("/")+rf.find("name").asString().c_str();
         else
             name="/trajectoryPlayer";
-
-        contextPath=rf.getContextPath().c_str();
 
         rpcPort.open((name+"/rpc").c_str());
         attach(rpcPort);
