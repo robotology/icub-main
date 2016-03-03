@@ -36,7 +36,7 @@ using namespace yarp::os::impl;
 
 // macros
 #define NEW_JSTATUS_STRUCT 1
-
+#define ASK_REFERENCE_TO_FIRMWARE 1
 
 
 // Utilities
@@ -5136,6 +5136,7 @@ bool embObjMotionControl::getTargetPositionRaw(int axis, double *ref)
     }
     
     *ref = (double) target.trgt_position;
+    //yError() << "embObjMotionControl::getTargetPositionRaw()  BOARD" << _fId.boardNumber << "joint " << axis << "pos=" << target.trgt_position;
     return true;
 #else
     *ref = _ref_command_positions[axis];
