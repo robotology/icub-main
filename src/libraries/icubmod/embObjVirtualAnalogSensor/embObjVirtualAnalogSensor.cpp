@@ -178,6 +178,13 @@ bool embObjVirtualAnalogSensor::update(eOprotID32_t id32, double timestamp, void
     return true;
 }
 
+iethresType_t embObjVirtualAnalogSensor::type()
+{
+    return iethres_analogvirtual;
+}
+
+
+
 bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
 {
     std::string str;

@@ -73,6 +73,7 @@ public:
 
     virtual bool initialised();
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
+    virtual iethresType_t type();
 
     // IvirtualAnalogSensor interface
     virtual int getState(int ch);
