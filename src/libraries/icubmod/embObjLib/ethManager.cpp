@@ -470,6 +470,160 @@ bool TheEthManager::Transmission(void)
 }
 
 
+bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
+{
+    // we need: ip address of pc104, port used by socket, tx rate, rx rate.
+
+    ACE_INET_Addr ipaddress;            // it must be found ...
+    int txrate = -1;                    // it uses default
+    int rxrate = -1;                    // it uses default
+
+
+    // localaddress
+
+    Bottle groupPC104  = Bottle(cfgtotal.findGroup("PC104"));
+    if (groupPC104.isNull())
+    {
+        yError() << "TheEthManager::startCommunication cannot find PC104 group in config files";
+        return false;
+    }
+
+    Value *value;
+
+    if (!groupPC104.check("PC104IpAddress", value))
+    {
+        yError() << "missing PC104/PC104IpAddress in config files";
+        return false;
+    }
+    if (!groupPC104.check("PC104IpPort", value))
+    {
+        yError() << "missing PC104/PC104IpPort in config files";
+        return false;
+    }
+
+    Bottle paramIPaddress(groupPC104.find("PC104IpAddress").asString());
+    ACE_UINT16 port = groupPC104.find("PC104IpPort").asInt();              // .get(1).asInt();
+    char strIP[64] = {0};
+
+    snprintf(strIP, sizeof(strIP), "%s:%d", paramIPaddress.toString().c_str(), port);
+
+    ipaddress.string_to_addr(strIP);
+
+    yDebug() << "TheEthManager::startCommunication() has found IP for PC104 = " << strIP;
+
+    // txrate
+    if(cfgtotal.findGroup("PC104").check("PC104TXrate"))
+    {
+        int value = cfgtotal.findGroup("PC104").find("PC104TXrate").asInt();
+        if(value > 0)
+            txrate = value;
+    }
+    else
+    {
+        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104TXrate. thus using default value" << EthSender::EthSenderDefaultRate;
+    }
+
+    // rxrate
+    if(cfgtotal.findGroup("PC104").check("PC104RXrate"))
+    {
+        int value = cfgtotal.findGroup("PC104").find("PC104RXrate").asInt();
+        if(value > 0)
+            rxrate = value;
+    }
+    else
+    {
+        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104RXrate. thus using default value" << EthReceiver::EthReceiverDefaultRate;
+    }
+
+    // localaddress
+    if(false == createSocket(ipaddress, txrate, rxrate) )
+    {
+        yError () << "TheEthManager::requestResource() cannot create socket";
+        return false;
+    }
+
+    return true;
+}
+
+
+ethResources *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol)
+{
+
+    // 1. must create communication objects: sender, receiver, socket
+
+    if(communicationIsInitted == false)
+    {
+        yTrace() << "TheEthManager::requestResource2(): we need to init the communication";
+
+        if(false == startCommunication(cfgtotal))
+        {
+            yError() << "TheEthManager::requestResource2(): cannot init the communication";
+        }
+
+        return NULL;
+    }
+
+    // now we extract the ip address of the board & its name
+
+    Bottle groupEth  = Bottle(cfgtotal.findGroup("ETH"));
+    if(groupEth.isNull())
+    {
+        yError() << "TheEthManager::requestResource2() cannot find ETH group in config files";
+        return false;
+    }
+    Bottle paramIPboard(groupEth.find("IpAddress").asString());
+    Bottle paramNameBoard(groupEth.find("Name").asString());
+    char str[64] = {0};
+    strcpy(str, paramIPboard.toString().c_str());
+    uint8_t ip1, ip2, ip3, ip4;
+    sscanf(str, "%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
+    eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
+    char boardname[64] = {0};
+    strcpy(boardname, paramNameBoard.toString().c_str());
+
+
+
+    // i want to lock the use of resources managed by ethBoards to avoid that we attempt to use for TX a ethres not completely initted
+
+    lockTXRX(true);
+
+    ethResources *rr = ethBoards->get_resource(ipv4addr);
+
+    if(NULL == rr)
+    {
+        char ipinfo[20] = {0};
+        eo_common_ipv4addr_to_string(ipv4addr, ipinfo);
+        yDebug() << "TheEthManager::requestResource2() will create a new ethResource for IP = " << ipinfo;
+        rr = new ethResources;
+        eOipv4addr_t localIP = eo_common_ipv4addr(10, 0, 1, 104);
+        eOipv4port_t port = 12345;
+        if(false == rr->open2(localIP, ipv4addr, port, boardname, cfgtotal, cfgtransceiver, cfgprotocol))
+        {
+            yError() << "TheEthManager::requestResource2(): error creating a new ethResource for IP = " << ipinfo;
+            if(NULL != rr)
+            {
+                delete rr;
+            }
+
+            rr = NULL;
+            return NULL;
+        }
+
+        ethBoards->add(rr);
+    }
+
+    iethresType_t type = interface->type();
+    ethFeatType_t tt = (ethFeatType_t) type;
+    ethBoards->add(rr, interface, tt);
+
+
+    lockTXRX(false);
+
+    return(rr);
+}
+
+
+
 
 ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request)
 {
@@ -647,7 +801,7 @@ TheEthManager::TheEthManager()
 {
     yTrace();
 
-    UDP_initted = false;
+    communicationIsInitted = false;
     UDP_socket  = NULL;
     localIPaddress = ACE_INET_Addr("10.0.1.104:12345");
 
@@ -694,7 +848,7 @@ bool TheEthManager::createSocket(ACE_INET_Addr localaddress, int txrate, int rxr
     lock(true);
 
 
-    if(!UDP_initted)
+    if(!communicationIsInitted)
     {
         UDP_socket = new ACE_SOCK_Dgram();
         if(-1 == UDP_socket->open(localaddress))
@@ -706,11 +860,11 @@ bool TheEthManager::createSocket(ACE_INET_Addr localaddress, int txrate, int rxr
                      <<   "\n\\--------------------------------------------------------------------------------------------------------------/";
             delete UDP_socket;
             UDP_socket = NULL;
-            UDP_initted = false;
+            communicationIsInitted = false;
         }
         else
         {
-            UDP_initted = true;
+            communicationIsInitted = true;
             localIPaddress = localaddress;
 
             if((txrate <= 0) || (txrate > EthSender::EthSenderMaxRate))
@@ -743,7 +897,7 @@ bool TheEthManager::createSocket(ACE_INET_Addr localaddress, int txrate, int rxr
                 stopCommunicationThreads();
 
                 delete UDP_socket;
-                UDP_initted = false;
+                communicationIsInitted = false;
                 return false;
             }
             else
@@ -755,7 +909,7 @@ bool TheEthManager::createSocket(ACE_INET_Addr localaddress, int txrate, int rxr
     }
 
     lock(false);
-    return UDP_initted;
+    return communicationIsInitted;
 }
 
 bool TheEthManager::isCommunicationInitted(void)
@@ -763,7 +917,7 @@ bool TheEthManager::isCommunicationInitted(void)
     yTrace();
     bool ret;
     lock(true);
-    ret = UDP_initted;
+    ret = communicationIsInitted;
     lock(false);
     return ret;
 }
@@ -834,7 +988,7 @@ TheEthManager::~TheEthManager()
         lock(true);
         UDP_socket->close();
         delete UDP_socket;
-        UDP_initted = false;
+        communicationIsInitted = false;
 
         // dont we delete sender and receiver ???
         delete sender;

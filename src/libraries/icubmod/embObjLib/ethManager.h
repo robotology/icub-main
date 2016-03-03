@@ -201,14 +201,12 @@ private:
 
 private:
 
-    // data for UDP socket handling
-    bool                          UDP_initted;
-    ACE_SOCK_Dgram                *UDP_socket;
+    bool                          communicationIsInitted;
 
-    // periodic threads which use methods of class TheEthManager to transmit / receive
-
+    // periodic threads which use methods of class TheEthManager to transmit / receive + the udp socket
     EthSender                     *sender;
     EthReceiver                   *receiver;
+    ACE_SOCK_Dgram                *UDP_socket;
 
 private:
 
@@ -235,7 +233,9 @@ public:
     bool close(void);
 
 
+    bool startCommunication(yarp::os::Searchable &cfgtotal);
 
+    ethResources* requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol);
     ethResources* requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
 
 
