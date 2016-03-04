@@ -1446,6 +1446,12 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         {
             _maxTorque[i-1] = xtmp.get(i).asInt();
             _newtonsToSensor[i-1] = 1000.0f; // conversion from Nm into milliNm
+            //@@@RANDAZ: this is tempory fix to increase torque resolution on MC4-controlled joints (i.e. arm pronosupination)
+            //without this user may experience poor resolution of stiffness/damping values.
+            if (_maxTorque[i-1] < 10.0)
+            {
+               _newtonsToSensor[i-1] = 10000.0f;
+            }
         }
     }
 
@@ -2906,8 +2912,8 @@ bool embObjMotionControl::getRefSpeedRaw(int j, double *spd)
     //return NOT_YET_IMPLEMENTED("getRefSpeedRaw");
 #else
     *spd = _ref_speeds[j];
-    return true;
 #endif
+    return true;
 }
 
 bool embObjMotionControl::getRefSpeedsRaw(double *spds)
