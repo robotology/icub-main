@@ -918,7 +918,8 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
                         if (fullMsg != SkinErrorCode::StatusOK)
                         {
                             yError() << "embObjSkin error code: " <<
-                                        "EMS: " << res->boardNum  <<
+                                        "BOARD: " << res->getName()  <<
+                                        "IP:"     << res->getIPv4string() <<
                                         "canDeviceNum: " << errors[i].net <<
                                         "board: " <<  errors[i].board <<
                                         "sensor: " << errors[i].sensor <<
@@ -941,7 +942,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
         else
         {
             if(error == 0)
-                yError() << "EMS: " << res->boardNum << " Unknown Message received from skin (" << i<<"/"<< sizeofarray <<"): frameID=" << canframeid11<< " len="<<canframesize << "canframe.data="<<canframedata[0] << " " <<canframedata[1] << " " <<canframedata[2] << " " <<canframedata[3] <<"\n" ;
+                yError() << "EMS: " << res->getIPv4string() << " Unknown Message received from skin (" << i<<"/"<< sizeofarray <<"): frameID=" << canframeid11<< " len="<<canframesize << "canframe.data="<<canframedata[0] << " " <<canframedata[1] << " " <<canframedata[2] << " " <<canframedata[3] <<"\n" ;
             error++;
             if (error == 10000)
                 error = 0;

@@ -468,7 +468,7 @@ public:
     eoRequestsQueue     *requestQueue;      // it contains the list of requests done to the remote board
 
     // embObjLib stuff
-    ethResources                *res;
+    EthResource                *res;
     yarp::dev::TheEthManager    *ethManager;
 
     bool verifyMotionControlProtocol(Bottle groupProtocol);

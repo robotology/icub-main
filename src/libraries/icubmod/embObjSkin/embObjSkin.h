@@ -82,7 +82,7 @@ protected:
 
     TheEthManager   *ethManager;
     PolyDriver      resource;
-    ethResources    *res;
+    EthResource    *res;
     ethFeature_t    _fId;
     Semaphore       mutex;
     //int             totalCardsNum;

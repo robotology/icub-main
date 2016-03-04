@@ -106,7 +106,7 @@ class can_string_eth;
 
 namespace yarp{
     namespace dev{
-        class ethResources;
+        class EthResource;
         class TheEthManager;
     }
 }
@@ -117,15 +117,23 @@ using namespace yarp::dev;
 using namespace std;
 
 
-//this class contains all info about pkts received from a specific ems (its id is stored in "board" field)
-//and let you calculate statistic about receive timing and check if one of following errors occur:
-// 1) error in sequence number
-// 2) between two consecutive pkts there are more the "timeout" sec (default is 0.01 sec and this is can modified by environment var ETHREC_STATISTICS_TIMEOUT_MSEC):
-      //this elapsed time is calculated in two way:
-      //1) using sys time: when arrived a pkt number n its received time(get by sys call) is compared with received time of pkt number n-1
-      //2) using ageOfFrame filed in packets: this time is insert by transmitter board. when arrive a pkt number n its is compared with ageOfFrme of pkt n-1.
-      //   if there are more then timeout sec it mean that board did not transmit for this period.
-class infoOfRecvPkts
+
+
+
+// -- class InfoOfRecvPkts
+// -- it is used to compute (and print) statistics about time or reception of UDP packets from a given IP address, and hence for a given EthResource.
+// -- further comments (maybe to be revised and verified) are in the following.
+// --
+// -- this class contains all info about pkts received from a specific ems (its id is stored in "board" field)
+// -- and let you calculate statistic about receive timing and check if one of following errors occur:
+// -- 1) error in sequence number
+// -- 2) between two consecutive pkts there are more the "timeout" sec (default is 0.01 sec and this is can modified by environment var ETHREC_STATISTICS_TIMEOUT_MSEC):
+// --    this elapsed time is calculated in two way:
+// --    1) using sys time: when arrived a pkt number n its received time(get by sys call) is compared with received time of pkt number n-1
+// --    2) using ageOfFrame filed in packets: this time is insert by transmitter board. when arrive a pkt number n its is compared with ageOfFrme of pkt n-1.
+// --       if there are more then timeout sec it mean that board did not transmit for this period.
+
+class InfoOfRecvPkts
 {
 
 private:
@@ -133,7 +141,8 @@ private:
     const double DEFAULT_TIMEOUT_STAT;
 
 private:
-    int             board;              // the number of ems board with range [1, TheEthManager::maxBoards]
+    eOipv4addr_t    ipv4;
+    char            ipv4string[20];
 public:
     bool            initted;          //if true is pc104 has already received a pkt from the ems when it is in running mode
     bool            isInError;        //is true if an error occur. it is used to avoid to print error every cicle
@@ -160,8 +169,8 @@ public:
     bool            _verbose;
     bool            justprinted;
 
-    infoOfRecvPkts();
-    ~infoOfRecvPkts();
+    InfoOfRecvPkts();
+    ~InfoOfRecvPkts();
     void printStatistics(void);
     void clearStatistics(void);
     uint64_t getSeqNum(uint64_t *packet, uint16_t size);
@@ -179,14 +188,14 @@ public:
 
     void forceReport(void);
 
-    void setBoardNum(int board);
+    void setBoardIP(eOipv4addr_t ip);
 };
 
 
-// -- class ethNetworkQuery
+// -- class EthNetworkQuery
 // -- it is used to wait for a reply from a board.
 
-class ethNetworkQuery
+class EthNetworkQuery
 {
 
 private:
@@ -198,8 +207,8 @@ private:
 
 public:
 
-    ethNetworkQuery();
-    ~ethNetworkQuery();
+    EthNetworkQuery();
+    ~EthNetworkQuery();
 
     Semaphore* start(eOprotID32_t id32, uint32_t signature);     // associates a semaphore to a (id2wait, signature) pair
     bool wait(Semaphore* sem, double timeout);                      // waits the semaphore until either a reply arrives or timeout expires (returns false)
@@ -208,45 +217,48 @@ public:
 };
 
 
-// -- class ethResources
+// -- class EthResource
 // -- it is used to manage udp communication towards a given board
 
-class yarp::dev::ethResources:  public DeviceDriver,
-                                public hostTransceiver
+class yarp::dev::EthResource:  public DeviceDriver,
+                               public hostTransceiver
 {
 public:
+
+    // the size of the boardname must belong to EthResources because it is this class which extracts it from the xml file.
+    // all other places where this name is stored have copied it from here using EthResource::getName(void).
+    // an example is TheEthManager::ethBoards which makes it available with TheEthManager::getName(eOipv4addr_t ipv4)
+
+    enum { boardNameSize = 32 };
 
     // this is the maximum size of rx and tx packets managed by the ethresource.
     enum { maxRXpacketsize = 1496, maxTXpacketsize = 1496 };
 
 private:
 
-    enum { ETHRES_SIZE_INFO = 128 };
-
-    char              info[ETHRES_SIZE_INFO];
     eOipv4addr_t      ipv4addr;
+    char              ipv4addrstring[20];
+    char              boardName[32];
     ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
     bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
-    infoOfRecvPkts    *infoPkts;
+    InfoOfRecvPkts    *infoPkts;
 
     yarp::os::Semaphore*  objLock;
 
-    ethNetworkQuery*    ethQuery;
+    EthNetworkQuery*    ethQuery;
 
-    ethNetworkQuery*    ethQueryServices;
+    EthNetworkQuery*    ethQueryServices;
 
     bool lock();
     bool unlock();
 
     bool                verifiedEPprotocol[eoprot_endpoints_numberof];
-//    bool                configuredEP[eoprot_endpoints_numberof];
     bool                verifiedBoardPresence;
-//    bool                remoteBoardNumberIsSet;
+
     bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
     bool                txrateISset;
     bool                cleanedBoardBehaviour;    // the board is in config mode and does not have any regulars
-//    uint8_t             boardEPsNumber;
     eOmn_comm_status_t  boardCommStatus;
     uint16_t            usedNumberOfRegularROPs;
 
@@ -254,15 +266,13 @@ private:
 
 public:
     TheEthManager       *ethManager;          //!< Pointer to the Singleton handling the UDP socket
-    int                 boardNum;             // the number of ems board with range [1, TheEthManager::maxBoards]
-    char                boardName[BOARDNAME_MAXSIZE];        //this is the name read in xml file
 
-    ethResources();
-    ~ethResources();
+    EthResource();
+    ~EthResource();
 
 
 
-    bool            open2(eOipv4addr_t remIP, const char *name, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol);
+    bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver);
     bool            open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
     bool            close();
 
@@ -271,6 +281,7 @@ public:
     eOipv4addr_t    getIPv4remoteAddress(void);
 
     const char *    getName(void);
+    const char *    getIPv4string(void);
 
     int             getNumberOfAttachedInterfaces(void);
 

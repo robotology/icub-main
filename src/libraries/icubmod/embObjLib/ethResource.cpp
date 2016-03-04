@@ -30,9 +30,9 @@ using namespace yarp::os::impl;
 #define ETHRES_CHECK_MN_APPL_STATUS
 
 
-// - class ethNetworkQuery
+// - class EthNetworkQuery
 
-ethNetworkQuery::ethNetworkQuery()
+EthNetworkQuery::EthNetworkQuery()
 {
     id2wait     = eo_prot_ID32dummy;
     netwait     = new Semaphore(0);
@@ -40,14 +40,14 @@ ethNetworkQuery::ethNetworkQuery()
     iswaiting   = new Semaphore(0);
 }
 
-ethNetworkQuery::~ethNetworkQuery()
+EthNetworkQuery::~EthNetworkQuery()
 {
     delete netwait;
     delete isbusy;
     delete iswaiting;
 }
 
-Semaphore* ethNetworkQuery::start(eOprotID32_t id32, uint32_t signature)
+Semaphore* EthNetworkQuery::start(eOprotID32_t id32, uint32_t signature)
 {
     // i wait until the busy semaphore is released ... in this way no other thread is able to manage the true semaphore
     isbusy->wait();
@@ -59,7 +59,7 @@ Semaphore* ethNetworkQuery::start(eOprotID32_t id32, uint32_t signature)
     return(netwait);
 }
 
-bool ethNetworkQuery::wait(Semaphore *sem, double timeout)
+bool EthNetworkQuery::wait(Semaphore *sem, double timeout)
 {
     if(NULL == sem)
     {
@@ -68,7 +68,7 @@ bool ethNetworkQuery::wait(Semaphore *sem, double timeout)
     return(sem->waitWithTimeout(timeout));
 }
 
-bool ethNetworkQuery::arrived(eOprotID32_t id32, uint32_t signature)
+bool EthNetworkQuery::arrived(eOprotID32_t id32, uint32_t signature)
 {
     Semaphore* sem = NULL;
     signature = signature;
@@ -88,7 +88,7 @@ bool ethNetworkQuery::arrived(eOprotID32_t id32, uint32_t signature)
     return(true);
 }
 
-bool ethNetworkQuery::stop(Semaphore *sem)
+bool EthNetworkQuery::stop(Semaphore *sem)
 {
     sem = sem;
     // make sure that the control semaphores have zero value. i use check() because if value is already zero it does not harm.
@@ -104,38 +104,37 @@ bool ethNetworkQuery::stop(Semaphore *sem)
 
 
 
-// - class ethResources
+// - class EthResource
 
-ethResources::ethResources()
+EthResource::EthResource()
 {
     yTrace();
-//    how_many_features           = 0;
+
+    ipv4addr = 0;
+    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
+
     ethManager                  = NULL;
     lastRecvMsgTimestamp        = -1.0;
     isInRunningMode             = false;
-    infoPkts                    = new infoOfRecvPkts();
+    infoPkts                    = new InfoOfRecvPkts();
     objLock                     = new Semaphore(1);
-//    networkQuerySem             = new Semaphore(0);
-//    isbusyNQsem                 = new Semaphore(1);
-//    iswaitingNQsem              = new Semaphore(0);
+
     verifiedBoardPresence       = false;
-//    remoteBoardNumberIsSet      = false;
+
     verifiedBoardTransceiver    = false;
     txrateISset                 = false;
     cleanedBoardBehaviour       = false;
-//    boardEPsNumber              = 0;
+
     memset(verifiedEPprotocol, 0, sizeof(verifiedEPprotocol));
-//    memset(configuredEP, 0, sizeof(configuredEP));
+
     usedNumberOfRegularROPs     = 0;
     memset(&boardCommStatus, 0, sizeof(boardCommStatus));
 
-    boardNum = 0;
 
-    ethQuery = new ethNetworkQuery();
+    ethQuery = new EthNetworkQuery();
 
-    ethQueryServices = new ethNetworkQuery();
+    ethQueryServices = new EthNetworkQuery();
 
-    //RXpacketSize = 0;
 
     for(int i = 0; i<16; i++)
         c_string_handler[i]     = NULL;
@@ -151,19 +150,14 @@ ethResources::ethResources()
     }
 }
 
-ethResources::~ethResources()
+EthResource::~EthResource()
 {
-    yTrace() << info;
-//    how_many_features   = 0;
     ethManager          = NULL;
 
     // marco.accame on 11sept14: in here we must surely deinit/delete what we have created/initted in teh constructor and in open() or init()
 
     delete infoPkts;
     delete objLock;
-//    delete networkQuerySem;
-//    delete isbusyNQsem;
-//    delete iswaitingNQsem;
 
     delete ethQuery;
     delete ethQueryServices;
@@ -179,22 +173,39 @@ ethResources::~ethResources()
     }
 }
 
-bool ethResources::lock()
+bool EthResource::lock()
 {
     objLock->wait();
     return true;
 }
 
-bool ethResources::unlock()
+bool EthResource::unlock()
 {
     objLock->post();
     return true;
 }
 
-bool ethResources::open2(eOipv4addr_t remIP, const char *name, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol)
+bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver)
 {
-    // Get the pointer to the actual Singleton ethManager
+    // Get the pointer to the actual Singleton TheEthManager
     ethManager = TheEthManager::instance();
+
+    Bottle groupEth  = Bottle(cfgtotal.findGroup("ETH"));
+    if(groupEth.isNull())
+    {
+        yError() << "EthResource::open2() cannot find ETH group in config files";
+        return NULL;
+    }
+// -- i dont use this code as long as i retrieve the remote ip address from the remIP argument .... however i may remove this argument and use the following code
+//    Bottle paramIPboard(groupEth.find("IpAddress").asString());
+//    char str[64] = {0};
+//    strcpy(str, paramIPboard.toString().c_str());
+//    int ip1, ip2, ip3, ip4;
+//    sscanf(str, "\"%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
+//    eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
+    Bottle paramNameBoard(groupEth.find("Name").asString());
+    char xmlboardname[64] = {0};
+    strcpy(xmlboardname, paramNameBoard.toString().c_str());
 
     lock();
 
@@ -213,8 +224,7 @@ bool ethResources::open2(eOipv4addr_t remIP, const char *name, yarp::os::Searcha
     bool ret;
     uint8_t num = 0;
     eo_common_ipv4addr_to_decimal(remIP, NULL, NULL, NULL, &num);
-    const uint16_t packetRXcapacity = ethResources::maxRXpacketsize; // for safety i use the maximum size ... however, i could read the xml file and set this number equal to max tx size of teh ems ...
-    if(!hostTransceiver::init(cfgtransceiver, cfgprotocol, localIPv4.addr, remIP, localIPv4.port, packetRXcapacity, num))
+    if(!hostTransceiver::init2(cfgtransceiver, localIPv4, remIP))
     {
         ret = false;
         yError() << "cannot init transceiver... maybe wrong board number... check log and config file.";
@@ -224,22 +234,26 @@ bool ethResources::open2(eOipv4addr_t remIP, const char *name, yarp::os::Searcha
         ret = true;
     }
 
-    boardNum = num;
     uint8_t ip1, ip2, ip3, ip4;
     eo_common_ipv4addr_to_decimal(remIP, &ip1, &ip2, &ip3, &ip4);
     ACE_UINT32 hostip = (ip1 << 24) | (ip2 << 16) | (ip3 << 8) | (ip4);
     ACE_INET_Addr myIP((u_short)localIPv4.port, hostip);
     remote_dev = myIP;
     ipv4addr = remIP;
+    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
 
 
-    infoPkts->setBoardNum(boardNum);
+
+    infoPkts->setBoardIP(remIP);
 
 
-    if(0 != strlen(name))
+    if(0 != strlen(xmlboardname))
     {
-        memset(boardName, 0, sizeof(boardName));
-        snprintf(boardName, sizeof(boardName), "%s", name);
+        snprintf(boardName, sizeof(boardName), "%s", xmlboardname);
+    }
+    else
+    {
+        snprintf(boardName, sizeof(boardName), "NOT-NAMED");
     }
 
     unlock();
@@ -247,16 +261,15 @@ bool ethResources::open2(eOipv4addr_t remIP, const char *name, yarp::os::Searcha
     return ret;
 }
 
-bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request)
+
+
+bool EthResource::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request)
 {
     // Get the pointer to the actual Singleton ethManager
     ethManager = TheEthManager::instance();
 
     lock();
 
-    // Fill 'info' field with human friendly string
-    snprintf(info, sizeof(info), "ethResources - referred to BRD: %s:%d", request.boardIPaddr.string, request.boardIPaddr.port);
-    yTrace() << "BRD IP address " << info;
     if(cfgtotal.findGroup("GENERAL").find("verbose").asBool())
     {
         infoPkts->_verbose = true;
@@ -270,7 +283,7 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
     bool ret;
     eOipv4addr_t eo_locIp = eo_common_ipv4addr(request.pc104IPaddr.ip1, request.pc104IPaddr.ip2, request.pc104IPaddr.ip3, request.pc104IPaddr.ip4);
     eOipv4addr_t eo_remIp = eo_common_ipv4addr(request.boardIPaddr.ip1, request.boardIPaddr.ip2, request.boardIPaddr.ip3, request.boardIPaddr.ip4);
-    const uint16_t packetRXcapacity = ethResources::maxRXpacketsize; // for safety i use the maximum size ... however, i could read the xml file and set this number equal to max tx size of teh ems ...
+    const uint16_t packetRXcapacity = EthResource::maxRXpacketsize; // for safety i use the maximum size ... however, i could read the xml file and set this number equal to max tx size of teh ems ...
     if(!hostTransceiver::init(cfgtransceiver, cfgprotocol, eo_locIp, eo_remIp, request.boardIPaddr.port, packetRXcapacity, request.boardNumber))
     {
         ret = false;
@@ -281,14 +294,14 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
         ret = true;
     }
 
-    boardNum = request.boardNumber;
     ACE_UINT32 hostip = (request.boardIPaddr.ip1 << 24) | (request.boardIPaddr.ip2 << 16) | (request.boardIPaddr.ip3 << 8) | (request.boardIPaddr.ip4);
     ACE_INET_Addr myIP((u_short)request.boardIPaddr.port, hostip);
     remote_dev = myIP;
     ipv4addr = eo_common_ipv4addr(request.boardIPaddr.ip1, request.boardIPaddr.ip2, request.boardIPaddr.ip3, request.boardIPaddr.ip4);
+    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
 
 
-    infoPkts->setBoardNum(boardNum);
+    infoPkts->setBoardIP(eo_remIp);
 
     boardName[0] = '\0';
     if(0 != strlen(request.boardName))
@@ -302,51 +315,34 @@ bool ethResources::open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cf
     return ret;
 }
 
-bool ethResources::close()
+bool EthResource::close()
 {
     yTrace();
     return false;
 }
 
-//bool ethResources::registerFeature(ethFeature_t &request)
-//{
-//    yTrace() << request.boardNumber;
-//    lock();
-//    how_many_features++;
-//    unlock();
-//    return true;
-//}
 
-//int ethResources::deregisterFeature(ethFeature_t &request)
-//{
-//    yTrace() << request.boardNumber;
-//    lock();
-//    how_many_features--;
-//    int ret = how_many_features;
-//    unlock();
-//    return ret;
-//}
-
-
-bool ethResources::getPointer2TxPack(uint8_t **pack, uint16_t *size, uint16_t *numofrops)
+bool EthResource::getPointer2TxPack(uint8_t **pack, uint16_t *size, uint16_t *numofrops)
 {
     bool res = hostTransceiver::getTransmit(pack, size, numofrops);
     return res;
 }
 
-int ethResources::getRXpacketCapacity()
+
+int EthResource::getRXpacketCapacity()
 {
     return hostTransceiver::getCapacityOfRXpacket();
 }
 
-bool ethResources::printRXstatistics(void)
+
+bool EthResource::printRXstatistics(void)
 {
     infoPkts->forceReport();
     return true;
 }
 
 
-void ethResources::checkIsAlive(double curr_time)
+void EthResource::checkIsAlive(double curr_time)
 {
     if((infoPkts->isInError) || (!infoPkts->initted))
     {
@@ -355,10 +351,8 @@ void ethResources::checkIsAlive(double curr_time)
 
     if((curr_time - infoPkts->last_recvPktTime) > infoPkts->timeout)
     {
-        char ipinfo[20];
-        eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
 
-        yError() << "ethResources::checkIsAlive() detected that BOARD " << ipinfo << " @ time" << int(floor(curr_time)) << "secs," << curr_time - floor(curr_time) << "has: more than " << infoPkts->timeout *1000 << "ms without any news. LAST =" << (curr_time - infoPkts->last_recvPktTime) << "sec ago";
+        yError() << "EthResource::checkIsAlive() detected that BOARD " << ipv4addrstring << " @ time" << int(floor(curr_time)) << "secs," << curr_time - floor(curr_time) << "has: more than " << infoPkts->timeout *1000 << "ms without any news. LAST =" << (curr_time - infoPkts->last_recvPktTime) << "sec ago";
         infoPkts->isInError =true;
         infoPkts->printStatistics();
         infoPkts->clearStatistics();
@@ -366,7 +360,7 @@ void ethResources::checkIsAlive(double curr_time)
 
 }
 
-bool ethResources::canProcessRXpacket(uint64_t *data, uint16_t size)
+bool EthResource::canProcessRXpacket(uint64_t *data, uint16_t size)
 {
     if(NULL == data)
         return false;
@@ -377,17 +371,8 @@ bool ethResources::canProcessRXpacket(uint64_t *data, uint16_t size)
     return true;
 }
 
-void ethResources::processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics)
+void EthResource::processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics)
 {
-    // at first we copy data into an internal buffer. in future we may avoid doing that.
-    // marco.accame on 11 sept 14: so far, hostTransceiver::onMsgReception() has not used the ethResources::RXpacket buffer.
-    //                             the function directly copies what is pointer by data into the EOpacket of hostTransceiver
-    //                             THUS: yes we can remove the useless ethResources::RXpacket.
-    //                             TODO: remove it and change the method whih returns it capacity with a method returning capacity of the
-    //                                   EOpacket internal to hostTranceiver.
-    //memcpy(ethResources::RXpacket, data, size);
-    //ethResources::RXpacketSize = size;
-
     bool collect = collectStatistics && isInRunningMode;
 
     double curr_timeBeforeParsing = 0;
@@ -406,29 +391,33 @@ void ethResources::processRXpacket(uint64_t *data, uint16_t size, bool collectSt
     }
 }
 
-ACE_INET_Addr ethResources::getRemoteAddress()
+ACE_INET_Addr EthResource::getRemoteAddress()
 {
     return remote_dev;
 }
 
-eOipv4addr_t ethResources::getIPv4remoteAddress(void)
+eOipv4addr_t EthResource::getIPv4remoteAddress(void)
 {
     return ipv4addr;
 }
 
-const char * ethResources::getName(void)
+const char * EthResource::getName(void)
 {
     return boardName;
 }
 
+const char * EthResource::getIPv4string(void)
+{
+    return ipv4addrstring;
+}
 
-int ethResources::getNumberOfAttachedInterfaces(void)
+int EthResource::getNumberOfAttachedInterfaces(void)
 {
     ethManager->ethBoards->number_of_interfaces(this);
 }
 
 
-bool ethResources::goToConfig(void)
+bool EthResource::goToConfig(void)
 {
     // stop the control loop (if running) and force the board to enter in config mode
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
@@ -453,10 +442,8 @@ bool ethResources::goToConfig(void)
     // however, if we do the loop over maxAttempts then we dont need it anymore. if the board can execute the order
     // then at most there will be two iterations of the for() loop.
 
-    char ipinfo[20];
-    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
 
-    yDebug("ethResources::goToConfig() is called for BOARD %s (%s)", ipinfo, ethManager->getName(get_remoteIPaddress()));
+    yDebug("EthResource::goToConfig() is called for BOARD %s (%s)", ipv4addrstring, boardName);
 
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
@@ -483,9 +470,9 @@ bool ethResources::goToConfig(void)
 
             foundstatestr = statestr[index];
 
-            snprintf(foundmessage, sizeof(foundmessage), "ethResources::goToConfig() detected BOARD %s (%s). It has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
-                                            ipinfo,
-                                            ethManager->getName(get_remoteIPaddress()),
+            snprintf(foundmessage, sizeof(foundmessage), "EthResource::goToConfig() detected BOARD %s (%s). It has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
+                                            ipv4addrstring,
+                                            boardName,
                                             status.name,
                                             status.version.major,
                                             status.version.minor,
@@ -500,7 +487,7 @@ bool ethResources::goToConfig(void)
             if(applstate_config == status.currstate)
             {
                 yInfo("%s", foundmessage);
-                yDebug("ethResources::goToConfig() successfully sent BOARD %s (%s) in cfg mode", ipinfo, ethManager->getName(get_remoteIPaddress()));
+                yDebug("EthResource::goToConfig() successfully sent BOARD %s (%s) in cfg mode", ipv4addrstring, boardName);
 
                 verified = true;
                 isInRunningMode = false;
@@ -517,19 +504,19 @@ bool ethResources::goToConfig(void)
         {
             // in here if we havent received any reply from the remote board. it is unlikely but possible. maybe the board crashed.
             // ok, there is also teh possibility that id32 is wrong (unlikely) or &status is NULL (unlikely).
-            yError("ethResources::goToConfig() called getRemoteValue() for BOARD %s (%s) but there was no reply", ipinfo, ethManager->getName(get_remoteIPaddress()));
+            yError("EthResource::goToConfig() called getRemoteValue() for BOARD %s (%s) but there was no reply", ipv4addrstring, boardName);
 
         }
     }
 
     if(false == found)
     {
-        yError("ethResources::goToConfig() could not verify the status of BOARD %s (%s) because it could not find it after %d attempts", ipinfo, ethManager->getName(get_remoteIPaddress()), maxAttempts);
+        yError("EthResource::goToConfig() could not verify the status of BOARD %s (%s) because it could not find it after %d attempts", ipv4addrstring, boardName, maxAttempts);
     }
     else if(false == verified)
     {
         yInfo("%s", foundmessage);
-        yError("ethResources::goToConfig() could not send BOARD %s (%s) in cfg state. the board is instead in state %s", ipinfo, ethManager->getName(get_remoteIPaddress()), foundstatestr);
+        yError("EthResource::goToConfig() could not send BOARD %s (%s) in cfg state. the board is instead in state %s", ipv4addrstring, boardName, foundstatestr);
 
         isInRunningMode = (applstate_running == status.currstate) ? true : false; // we quit robotInterface ... it means nothing to set this value
     }
@@ -541,11 +528,11 @@ bool ethResources::goToConfig(void)
 }
 
 
-bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
+bool EthResource::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "ethResources::goToRun() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "EthResource::goToRun() is in ETHRES_DEBUG_DONTREADBACK mode";
     // execute but force verify to false
     return true;
 #endif
@@ -553,13 +540,11 @@ bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
     // start the control loop by sending a proper message to the board
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
 
-    char ipinfo[20];
-    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
 
     eOenum08_t command_go2state = applstate_running;
     if(!addSetMessage(protid, (uint8_t*) &command_go2state))
     {
-        yError("ethResources::goToRun() in BOARD %s (%s) fails to add a command go2state running to transceiver", ipinfo, ethManager->getName(get_remoteIPaddress()));
+        yError("EthResource::goToRun() in BOARD %s (%s) fails to add a command go2state running to transceiver", ipv4addrstring, boardName);
         return false;
     }
 
@@ -577,7 +562,7 @@ bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
 
 
 
-    yDebug("ethResources::goToRun() is called for BOARD %s (%s) for the entity %s", ipinfo, ethManager->getName(get_remoteIPaddress()), eoprot_EN2string(endpoint, entity));
+    yDebug("EthResource::goToRun() is called for BOARD %s (%s) for the entity %s", ipv4addrstring, boardName, eoprot_EN2string(endpoint, entity));
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
     eOmn_appl_status_t status = {0};
@@ -603,9 +588,9 @@ bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
 
             foundstatestr = statestr[index];
 
-            snprintf(foundmessage, sizeof(foundmessage), "ethResources::goToRun() detected BOARD %s (%s). It has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
-                                            ipinfo,
-                                            ethManager->getName(get_remoteIPaddress()),
+            snprintf(foundmessage, sizeof(foundmessage), "EthResource::goToRun() detected BOARD %s (%s). It has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
+                                            ipv4addrstring,
+                                            boardName,
                                             status.name,
                                             status.version.major,
                                             status.version.minor,
@@ -620,7 +605,7 @@ bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
             if(applstate_running == status.currstate)
             {
                 yInfo("%s", foundmessage);
-                yDebug("ethResources::goToRun() successfully sent BOARD %s (%s) in run mode", ipinfo, ethManager->getName(get_remoteIPaddress()));
+                yDebug("EthResource::goToRun() successfully sent BOARD %s (%s) in run mode", ipv4addrstring, boardName);
 
                 verified = true;
                 isInRunningMode = true;
@@ -637,19 +622,19 @@ bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
         {
             // in here if we havent received any reply from the remote board. it is unlikely but possible. maybe the board crashed.
             // ok, there is also teh possibility that id32 is wrong (unlikely) or &status is NULL (unlikely).
-            yError("ethResources::goToRun() called getRemoteValue() for BOARD %s (%s) but there was no reply", ipinfo, ethManager->getName(get_remoteIPaddress()));
+            yError("EthResource::goToRun() called getRemoteValue() for BOARD %s (%s) but there was no reply", ipv4addrstring, boardName);
         }
     }
 
 
     if(false == found)
     {
-        yError("ethResources::goToRun() could not verify the status of BOARD %s (%s) because it could not find it after %d attempts", ipinfo, ethManager->getName(get_remoteIPaddress()), maxAttempts);
+        yError("EthResource::goToRun() could not verify the status of BOARD %s (%s) because it could not find it after %d attempts", ipv4addrstring, boardName, maxAttempts);
     }
     else if(false == verified)
     {
         yInfo("%s", foundmessage);
-        yError("ethResources::goToRun() could not send BOARD %s (%s) in run state. the board is instead in state %s", ipinfo, ethManager->getName(get_remoteIPaddress()), foundstatestr);
+        yError("EthResource::goToRun() could not send BOARD %s (%s) in run state. the board is instead in state %s", ipv4addrstring, boardName, foundstatestr);
 
         if(applstate_config == status.currstate)
         {
@@ -665,16 +650,16 @@ bool ethResources::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
 }
 
 
-double  ethResources::getLastRecvMsgTimestamp(void)
+double  EthResource::getLastRecvMsgTimestamp(void)
 {
     return(infoPkts->last_recvPktTime);
 }
 
 
-//bool ethResources::clearRegulars(bool verify)
+//bool EthResource::clearRegulars(bool verify)
 //{
 //#if defined(ETHRES_DEBUG_DONTREADBACK)
-//    yWarning() << "ethResources::clearRegulars() is in ETHRES_DEBUG_DONTREADBACK mode";
+//    yWarning() << "EthResource::clearRegulars() is in ETHRES_DEBUG_DONTREADBACK mode";
 //    // execute but force verify to false
 //    verify = false;
 //#endif
@@ -691,7 +676,7 @@ double  ethResources::getLastRecvMsgTimestamp(void)
 //        {
 //            if(verbosewhenok)
 //            {
-//                yDebug() << "ethResources::clearRegulars() has detected" << numberofregulars << "regulars in BOARD" << get_protBRDnumber()+1 << "now is attempting clearing them";
+//                yDebug() << "EthResource::clearRegulars() has detected" << numberofregulars << "regulars in BOARD" << get_protBRDnumber()+1 << "now is attempting clearing them";
 //            }
 //        }
 //    }
@@ -713,7 +698,7 @@ double  ethResources::getLastRecvMsgTimestamp(void)
 
 //    if(!addSetMessage(IDcmdconfig, (uint8_t*) &cmdconfig))
 //    {
-//        yError() << "ethResources::clearRegulars(): call of addSetMessage() has failed";
+//        yError() << "EthResource::clearRegulars(): call of addSetMessage() has failed";
 //        return false;
 //    }
 
@@ -741,7 +726,7 @@ double  ethResources::getLastRecvMsgTimestamp(void)
 
 //        if(verbosewhenok)
 //        {
-//            yDebug() << "ethResources::clearRegulars() has correctly checked regulars: expected = " << usedNumberOfRegularROPs << " and number in board = " << numberofregulars;
+//            yDebug() << "EthResource::clearRegulars() has correctly checked regulars: expected = " << usedNumberOfRegularROPs << " and number in board = " << numberofregulars;
 //        }
 //    }
 
@@ -750,14 +735,14 @@ double  ethResources::getLastRecvMsgTimestamp(void)
 //}
 
 
-bool ethResources::isRunning(void)
+bool EthResource::isRunning(void)
 {
     return(isInRunningMode);
 }
 
 #if 0
 
-Semaphore* ethResources::startNetworkQuerySession(eOprotID32_t id32, uint32_t signature)
+Semaphore* EthResource::startNetworkQuerySession(eOprotID32_t id32, uint32_t signature)
 {
 #if 0
     return(networkQuerySem);
@@ -772,12 +757,12 @@ Semaphore* ethResources::startNetworkQuerySession(eOprotID32_t id32, uint32_t si
 }
 
 
-bool ethResources::waitForNetworkQueryReply(Semaphore* sem, double timeout)
+bool EthResource::waitForNetworkQueryReply(Semaphore* sem, double timeout)
 {
     return(sem->waitWithTimeout(timeout));
 }
 
-bool ethResources::stopNetworkQuerySession(Semaphore* sem)
+bool EthResource::stopNetworkQuerySession(Semaphore* sem)
 {
 #if 0
     return(true);
@@ -794,7 +779,7 @@ bool ethResources::stopNetworkQuerySession(Semaphore* sem)
 
 #endif
 
-bool ethResources::aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature)
+bool EthResource::aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature)
 {
     if(id32 == eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_status_commandresult))
     {
@@ -808,11 +793,11 @@ bool ethResources::aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signatur
 
 
 
-bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
+bool EthResource::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "ethResources::verifyBoardTransceiver() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "EthResource::verifyBoardTransceiver() is in ETHRES_DEBUG_DONTREADBACK mode";
     verifiedBoardTransceiver = true;
     return true;
 #endif
@@ -839,7 +824,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     // send ask message
     if(false == addGetMessageWithSignature(id2send, signature))
     {
-        yError() << "ethResources::verifyBoardTransceiver() cannot transmit a request about the communication status to board" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "EthResource::verifyBoardTransceiver() cannot transmit a request about the communication status to board" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
@@ -848,8 +833,8 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     {
         // must release the semaphore
         ethQuery->stop(sem);
-        yError() << "  FATAL: ethResources::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the comm status to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
-        yError() << "         ethResources::verifyEPprotocol() asks: can you ping the board? if so, is the MN protocol version of BOARD equal to (" << pc104versionMN->major << pc104versionMN->minor << ")? if not, perform FW upgrade. if so, was the ropframe transmitted in time?";
+        yError() << "  FATAL: EthResource::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the comm status to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "         EthResource::verifyEPprotocol() asks: can you ping the board? if so, is the MN protocol version of BOARD equal to (" << pc104versionMN->major << pc104versionMN->minor << ")? if not, perform FW upgrade. if so, was the ropframe transmitted in time?";
         return(false);
     }
 
@@ -859,7 +844,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     // get the reply
     if(false == readBufferedValue(id2wait, (uint8_t*)&brdstatus, &size))
     {
-        yError() << "ethResources::verifyBoardTransceiver() cannot read the comm status of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "EthResource::verifyBoardTransceiver() cannot read the comm status of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
@@ -867,23 +852,23 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     memcpy(&boardCommStatus, &brdstatus, sizeof(boardCommStatus));
 
 
-    //#warning --> marco.accame: inside ethResources::verifyBoardTransceiver() in the future you shall use variable mnprotocolversion
+    //#warning --> marco.accame: inside EthResource::verifyBoardTransceiver() in the future you shall use variable mnprotocolversion
     // now i must verify that there is the same mn protocol version
     //const eoprot_version_t * brdversionMN = pc104versionMN; // at the moment we cannot get it from remote board
     eoprot_version_t * brdversionMN = (eoprot_version_t*)&brdstatus.managementprotocolversion;
 
     if(pc104versionMN->major != brdversionMN->major)
     {
-        yError() << "ethResources::verifyBoardTransceiver() detected different mn protocol major versions: local =" << pc104versionMN->major << ", remote =" << brdversionMN->major << ": cannot proceed any further. FW upgrade is required";
+        yError() << "EthResource::verifyBoardTransceiver() detected different mn protocol major versions: local =" << pc104versionMN->major << ", remote =" << brdversionMN->major << ": cannot proceed any further. FW upgrade is required";
         return(false);
     }
 
 
     if(pc104versionMN->minor != brdversionMN->minor)
     {
-        yError() << "ethResources::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": cannot proceed any further. FW upgrade is required";
+        yError() << "EthResource::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": cannot proceed any further. FW upgrade is required";
         return(false);
-        //yWarning() << "ethResources::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": FW upgrade is advised";
+        //yWarning() << "EthResource::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": FW upgrade is advised";
     }
 
 #if 0
@@ -893,67 +878,67 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     if(localTransceiverProperties.listeningPort != brdstatus.transceiver.destinationPort)
     {
         // marco.accame: if i am in here, it means that i received the message back ... it means that the ports are correct. however i keep this control.
-        yError() << "ethResources::verifyBoardTransceiver() detected different ports: local listening =" << localTransceiverProperties.listeningPort << ", remote destination=" << brdstatus.transceiver.destinationPort << ": cannot proceed any further";
+        yError() << "EthResource::verifyBoardTransceiver() detected different ports: local listening =" << localTransceiverProperties.listeningPort << ", remote destination=" << brdstatus.transceiver.destinationPort << ": cannot proceed any further";
         return(false);
     }
 
     if(localTransceiverProperties.destinationPort != brdstatus.transceiver.listeningPort)
     {
         // marco.accame: if i am in here, it means that i received the message back ... it means that the ports are correct. however i keep this control.
-        yError() << "ethResources::verifyBoardTransceiver() detected different ports: local destination =" << localTransceiverProperties.destinationPort << ", remote listening=" << brdstatus.transceiver.listeningPort << ": cannot proceed any further";
+        yError() << "EthResource::verifyBoardTransceiver() detected different ports: local destination =" << localTransceiverProperties.destinationPort << ", remote listening=" << brdstatus.transceiver.listeningPort << ": cannot proceed any further";
         return(false);
     }
 
     if(localTransceiverProperties.maxsizeRXpacket < brdstatus.transceiver.maxsizeTXpacket)
     {
-        yError() << "ethResources::verifyBoardTransceiver() detected that max size of rx packet is too small: max size local rx =" << localTransceiverProperties.maxsizeRXpacket << ", max size remote tx=" << brdstatus.transceiver.maxsizeTXpacket << ": cannot proceed any further";
+        yError() << "EthResource::verifyBoardTransceiver() detected that max size of rx packet is too small: max size local rx =" << localTransceiverProperties.maxsizeRXpacket << ", max size remote tx=" << brdstatus.transceiver.maxsizeTXpacket << ": cannot proceed any further";
         return(false);
     }
     else
  //   {
- //       yDebug() << "ethResources::verifyBoardTransceiver() detected that local max size of rx packet = " << localTransceiverProperties.maxsizeRXpacket << "can accept board tx packet of max size = " << brdstatus.transceiver.maxsizeTXpacket;
+ //       yDebug() << "EthResource::verifyBoardTransceiver() detected that local max size of rx packet = " << localTransceiverProperties.maxsizeRXpacket << "can accept board tx packet of max size = " << brdstatus.transceiver.maxsizeTXpacket;
  //   }
 
     if(localTransceiverProperties.maxsizeTXpacket > brdstatus.transceiver.maxsizeRXpacket)
     {
-        yError() << "ethResources::verifyBoardTransceiver() detected that max size of tx packet is too big for the board: max size local tx =" << localTransceiverProperties.maxsizeTXpacket << ", max size remote rx=" << brdstatus.transceiver.maxsizeRXpacket << ": verify";
+        yError() << "EthResource::verifyBoardTransceiver() detected that max size of tx packet is too big for the board: max size local tx =" << localTransceiverProperties.maxsizeTXpacket << ", max size remote rx=" << brdstatus.transceiver.maxsizeRXpacket << ": verify";
         return(false);
     }
     else
  //   {
- //       yDebug() << "ethResources::verifyBoardTransceiver() detected that local max size of tx packet = " << localTransceiverProperties.maxsizeTXpacket << "can be accepted by remote board with max rx size = " << brdstatus.transceiver.maxsizeRXpacket;
+ //       yDebug() << "EthResource::verifyBoardTransceiver() detected that local max size of tx packet = " << localTransceiverProperties.maxsizeTXpacket << "can be accepted by remote board with max rx size = " << brdstatus.transceiver.maxsizeRXpacket;
  //   }
 
     if(remoteTransceiverProperties.maxsizeROPframeRegulars != brdstatus.transceiver.maxsizeROPframeRegulars)
     {
-        yWarning() << "ethResources::verifyBoardTransceiver() detected different maxsizeROPframeRegulars: from xml =" << remoteTransceiverProperties.maxsizeROPframeRegulars << ", board=" << brdstatus.transceiver.maxsizeROPframeRegulars << ": correct xml file";
+        yWarning() << "EthResource::verifyBoardTransceiver() detected different maxsizeROPframeRegulars: from xml =" << remoteTransceiverProperties.maxsizeROPframeRegulars << ", board=" << brdstatus.transceiver.maxsizeROPframeRegulars << ": correct xml file";
         //return(false); // it is not a fatal error because for this value we use what we have received from the board
     }
 
     if(remoteTransceiverProperties.maxsizeROPframeReplies != brdstatus.transceiver.maxsizeROPframeReplies)
     {
-        yWarning() << "ethResources::verifyBoardTransceiver() detected different maxsizeROPframeReplies: from xml =" << remoteTransceiverProperties.maxsizeROPframeReplies << ", board=" << brdstatus.transceiver.maxsizeROPframeReplies << ": correct xml file";
+        yWarning() << "EthResource::verifyBoardTransceiver() detected different maxsizeROPframeReplies: from xml =" << remoteTransceiverProperties.maxsizeROPframeReplies << ", board=" << brdstatus.transceiver.maxsizeROPframeReplies << ": correct xml file";
         //return(false); // it is not a fatal error because we dont use this value
     }
 
 
     if(remoteTransceiverProperties.maxsizeROPframeOccasionals != brdstatus.transceiver.maxsizeROPframeOccasionals)
     {
-        yWarning() << "ethResources::verifyBoardTransceiver() detected different maxsizeROPframeOccasionals: from xml =" << remoteTransceiverProperties.maxsizeROPframeOccasionals << ", board=" << brdstatus.transceiver.maxsizeROPframeOccasionals << ": correct xml file";
+        yWarning() << "EthResource::verifyBoardTransceiver() detected different maxsizeROPframeOccasionals: from xml =" << remoteTransceiverProperties.maxsizeROPframeOccasionals << ", board=" << brdstatus.transceiver.maxsizeROPframeOccasionals << ": correct xml file";
         //return(false); // it is not a fatal error because we dont use this value
     }
 
 
     if(localTransceiverProperties.maxsizeROP != brdstatus.transceiver.maxsizeROP )
     {
-        yError() << "ethResources::verifyBoardTransceiver() detected different maxsizeROP: local =" << localTransceiverProperties.maxsizeROP << ", remote=" << brdstatus.transceiver.maxsizeROP << ": cannot proceed any further";
+        yError() << "EthResource::verifyBoardTransceiver() detected different maxsizeROP: local =" << localTransceiverProperties.maxsizeROP << ", remote=" << brdstatus.transceiver.maxsizeROP << ": cannot proceed any further";
         return(false);
     }
 
 
     if(remoteTransceiverProperties.maxnumberRegularROPs != brdstatus.transceiver.maxnumberRegularROPs)
     {
-        yWarning() << "ethResources::verifyBoardTransceiver() detected different maxnumberRegularROPs: from xml =" << remoteTransceiverProperties.maxnumberRegularROPs << ", board=" << brdstatus.transceiver.maxnumberRegularROPs << ": correct xml file";
+        yWarning() << "EthResource::verifyBoardTransceiver() detected different maxnumberRegularROPs: from xml =" << remoteTransceiverProperties.maxnumberRegularROPs << ", board=" << brdstatus.transceiver.maxnumberRegularROPs << ": correct xml file";
         //return(false); // it is not a fatal error because for this value we use what we have received from the board
     }
 
@@ -973,7 +958,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     // send set message
     if(false == addSetMessage(id2send, (uint8_t*)&command))
     {
-        yError() << "ethResources::verifyBoardTransceiver() cannot transmit a request about the number of owned endpoints to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "EthResource::verifyBoardTransceiver() cannot transmit a request about the number of owned endpoints to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
@@ -982,7 +967,7 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
     {
         // must release the semaphore
         ethQuery->stop(sem);
-        yError() << "  FATAL: ethResources::verifyBoardTransceiver() had a timeout of" << timeout << "secs when asking the number of endpoints to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "  FATAL: EthResource::verifyBoardTransceiver() had a timeout of" << timeout << "secs when asking the number of endpoints to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
@@ -994,20 +979,20 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 
     if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
     {
-        yError() << "  FATAL: ethResources::verifyBoardTransceiver() cannot read the number of endpoints of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "  FATAL: EthResource::verifyBoardTransceiver() cannot read the number of endpoints of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
     boardEPsNumber = command.cmd.replynumof.opcpar.numberof;
 
-//    yDebug() << "ethResources::verifyBoardTransceiver() detected" << boardEPsNumber << "endpoints in BOARD" << get_protBRDnumber()+1;
+//    yDebug() << "EthResource::verifyBoardTransceiver() detected" << boardEPsNumber << "endpoints in BOARD" << get_protBRDnumber()+1;
 
 
 #endif
 
     if(verbosewhenok)
     {
-        yDebug() << "ethResources::verifyBoardTransceiver() has validated the transceiver of BOARD " << get_protBRDnumber()+1;
+        yDebug() << "EthResource::verifyBoardTransceiver() has validated the transceiver of BOARD " << get_protBRDnumber()+1;
     }
 
     verifiedBoardTransceiver = true;
@@ -1017,11 +1002,11 @@ bool ethResources::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 }
 
 
-bool ethResources::setTXrate(yarp::os::Searchable &protconfig)
+bool EthResource::setTXrate(yarp::os::Searchable &protconfig)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "ethResources::setTXrate() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "EthResource::setTXrate() is in ETHRES_DEBUG_DONTREADBACK mode";
     txrateISset = true;
     return true;
 #endif
@@ -1051,19 +1036,19 @@ bool ethResources::setTXrate(yarp::os::Searchable &protconfig)
     uint8_t txratediv = TXrate;
     if(false == setRemoteValueUntilVerified(id32, &txratediv, sizeof(txratediv), 5, 0.010, 0.050, 2))
     {
-        yWarning() << "ethResources::setTXrate() could not configure txrate divider at" << txratediv << "in BOARD" << get_protBRDnumber()+1;
+        yWarning() << "EthResource::setTXrate() could not configure txrate divider at" << txratediv << "in BOARD" << get_protBRDnumber()+1;
         return true;
     }
     else
     {
-        yDebug() << "ethResources::setTXrate() has succesfully set the TX rate of the transceiver of BOARD " << get_protBRDnumber()+1 << "at" << TXrate << "ms";
+        yDebug() << "EthResource::setTXrate() has succesfully set the TX rate of the transceiver of BOARD " << get_protBRDnumber()+1 << "at" << TXrate << "ms";
     }
 
 
 
     if(verbosewhenok)
     {
-        yDebug() << "ethResources::setTXrate() has succesfully set the TX rate of the transceiver of BOARD " << get_protBRDnumber()+1 << "at" << TXrate << "ms";
+        yDebug() << "EthResource::setTXrate() has succesfully set the TX rate of the transceiver of BOARD " << get_protBRDnumber()+1 << "at" << TXrate << "ms";
     }
 
     txrateISset = true;
@@ -1073,28 +1058,24 @@ bool ethResources::setTXrate(yarp::os::Searchable &protconfig)
 }
 
 
-bool ethResources::cleanBoardBehaviour(void)
+bool EthResource::cleanBoardBehaviour(void)
 {
     if(cleanedBoardBehaviour)
     {
         return(true);
     }
 
-    char ipinfo[20];
-    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
-
-
     // send a ...
     if(false == serviceStop(eomn_serv_category_all))
     {
-        yError() << "ethResources::cleanBoardBehaviour() cannot stop services for BOARD" << ipinfo << ethManager->getName(get_remoteIPaddress()) << ": cannot proceed any further";
+        yError() << "EthResource::cleanBoardBehaviour() cannot stop services for BOARD" << ipv4addrstring << boardName << ": cannot proceed any further";
         return(false);
     }
 
 
     if(verbosewhenok)
     {
-        yDebug() << "ethResources::cleanBoardBehaviour() has cleaned the application in BOARD " << get_protBRDnumber()+1 << ": config mode + cleared all its regulars";
+        yDebug() << "EthResource::cleanBoardBehaviour() has cleaned the application in BOARD " << get_protBRDnumber()+1 << ": config mode + cleared all its regulars";
     }
 
     cleanedBoardBehaviour = true;
@@ -1104,11 +1085,11 @@ bool ethResources::cleanBoardBehaviour(void)
 }
 
 
-bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep)
+bool EthResource::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep)
 {
     if((uint8_t)ep >= eoprot_endpoints_numberof)
     {
-        yError() << "ethResources::verifyEPprotocol() called with wrong ep = " << ep << ": cannot proceed any further";
+        yError() << "EthResource::verifyEPprotocol() called with wrong ep = " << ep << ": cannot proceed any further";
         return(false);
     }
 
@@ -1119,14 +1100,14 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
 
     if(false == verifyBoard(protconfig))
     {
-        yError() << "ethResources::verifyEPprotocol() cannot verify BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "EthResource::verifyEPprotocol() cannot verify BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
     verifiedEPprotocol[ep] =  true;
-    yWarning() << "ethResources::verifyEPprotocol() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "EthResource::verifyEPprotocol() is in ETHRES_DEBUG_DONTREADBACK mode";
     return true;
 #endif
 
@@ -1151,7 +1132,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
 
 //    if(boardEPsNumber > capacityOfArrayOfEPDES)
 //    {   // to support more than capacityOfArrayOfEPDES (= 16 on date of jul 22 2014) endpoints: just send two (or more) eoprot_tag_mn_comm_cmmnds_command_queryarray messages with setnumbers 0 and 1 (or more)
-//        yError() << "ethResources::verifyEPprotocol() detected that BOARD" << get_protBRDnumber()+1 << "has" << boardEPsNumber << "endpoints and at most" << capacityOfArrayOfEPDES << "are supported: cannot proceed any further (review the code to support them all)";
+//        yError() << "EthResource::verifyEPprotocol() detected that BOARD" << get_protBRDnumber()+1 << "has" << boardEPsNumber << "endpoints and at most" << capacityOfArrayOfEPDES << "are supported: cannot proceed any further (review the code to support them all)";
 //        return(false);
 //    }
 
@@ -1170,7 +1151,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
 
     if(false == addSetMessage(id2send, (uint8_t*)&command))
     {
-        yError() << "ethResources::verifyEPprotocol() cannot transmit a request about the endpoint descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "EthResource::verifyEPprotocol() cannot transmit a request about the endpoint descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
@@ -1179,7 +1160,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
     {
         // must release the semaphore
         ethQuery->stop(sem);
-        yError() << "  FATAL: ethResources::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the endpoint descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "  FATAL: EthResource::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the endpoint descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
     // must release the semaphore
@@ -1189,7 +1170,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
     memset(&command, 0, sizeof(command));
     if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
     {
-        yError() << "  FATAL: ethResources::verifyEPprotocol() cannot retrieve the endpoint descriptors of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "  FATAL: EthResource::verifyEPprotocol() cannot retrieve the endpoint descriptors of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
@@ -1197,13 +1178,13 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
     eOmn_cmd_replyarray_t* cmdreplyarray = (eOmn_cmd_replyarray_t*)&command.cmd.replyarray;
     EOarray* array = (EOarray*)cmdreplyarray->array;
 
-    //yDebug() << "ethResources::verifyEPprotocol() -> xxx-debug TO BE REMOVED AFTER DEBUG: head.capacity, itemsize, size" << array->head.capacity << array->head.itemsize << array->head.size;
+    //yDebug() << "EthResource::verifyEPprotocol() -> xxx-debug TO BE REMOVED AFTER DEBUG: head.capacity, itemsize, size" << array->head.capacity << array->head.itemsize << array->head.size;
 
     uint8_t sizeofarray = eo_array_Size(array);
 
 //    if(sizeofarray != boardEPsNumber)
 //    {
-//        yWarning() << "ethResources::verifyEPprotocol() retrieved from BOARD" << ethManager->getName(ipv4addr) << ":" << sizeofarray << "endpoint descriptors, and there are" << boardEPsNumber << "endpoints";
+//        yWarning() << "EthResource::verifyEPprotocol() retrieved from BOARD" << ethManager->getName(ipv4addr) << ":" << sizeofarray << "endpoint descriptors, and there are" << boardEPsNumber << "endpoints";
 //    }
 
 
@@ -1216,14 +1197,14 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
             const eoprot_version_t * pc104versionMN = eoprot_version_of_endpoint_get(eoprot_endpoint_management);
             if(pc104versionMN->major != epd->version.major)
             {
-                yError() << "ethResources::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.major =" << pc104versionMN->major << "and board.version.major =" << epd->version.major;
-                yError() << "ethResources::verifyEPprotocol() detected mismatching protocol version.major in BOARD " << get_protBRDnumber()+1 << "for eoprot_endpoint_management: cannot proceed any further. FW upgrade is required";
+                yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.major =" << pc104versionMN->major << "and board.version.major =" << epd->version.major;
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD " << get_protBRDnumber()+1 << "for eoprot_endpoint_management: cannot proceed any further. FW upgrade is required";
                 return(false);
             }
             if(pc104versionMN->minor != epd->version.minor)
             {
-                yWarning() << "ethResources::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionMN->minor << "and board.version.minor =" << epd->version.minor;
-                yWarning() << "ethResources::verifyEPprotocol() detected mismatching protocol version.minor BOARD " << get_protBRDnumber()+1 << "for eoprot_endpoint_management: FW upgrade is advised";
+                yWarning() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionMN->minor << "and board.version.minor =" << epd->version.minor;
+                yWarning() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor BOARD " << get_protBRDnumber()+1 << "for eoprot_endpoint_management: FW upgrade is advised";
             }
         }
         if(epd->endpoint == ep)
@@ -1231,14 +1212,14 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
             const eoprot_version_t * pc104versionEP = eoprot_version_of_endpoint_get(ep);
             if(pc104versionEP->major != epd->version.major)
             {
-                yError() << "ethResources::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.major =" << pc104versionEP->major << "and board.version.major =" << epd->version.major;
-                yError() << "ethResources::verifyEPprotocol() detected mismatching protocol version.major in BOARD " << get_protBRDnumber()+1 << " for" << eoprot_EP2string(ep) << ": cannot proceed any further. FW upgrade is required";
+                yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.major =" << pc104versionEP->major << "and board.version.major =" << epd->version.major;
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD " << get_protBRDnumber()+1 << " for" << eoprot_EP2string(ep) << ": cannot proceed any further. FW upgrade is required";
                 return(false);
             }
             if(pc104versionEP->minor != epd->version.minor)
             {
-                yError() << "ethResources::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionEP->minor << "and board.version.minor =" << epd->version.minor;
-                yError() << "ethResources::verifyEPprotocol() detected mismatching protocol version.minor in BOARD " << get_protBRDnumber()+1 << " for" << eoprot_EP2string(ep) << ": FW upgrade is required";
+                yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionEP->minor << "and board.version.minor =" << epd->version.minor;
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor in BOARD " << get_protBRDnumber()+1 << " for" << eoprot_EP2string(ep) << ": FW upgrade is required";
                 return(false);
             }
         }
@@ -1250,7 +1231,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
 
 }
 
-//bool ethResources::isEPmanaged(eOprot_endpoint_t ep)
+//bool EthResource::isEPmanaged(eOprot_endpoint_t ep)
 //{
 //    if(eobool_true == eoprot_endpoint_configured_is(get_protBRDnumber(), ep))
 //    {
@@ -1261,7 +1242,7 @@ bool ethResources::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_end
 //}
 
 
-bool ethResources::verifyBoard(yarp::os::Searchable &protconfig)
+bool EthResource::verifyBoard(yarp::os::Searchable &protconfig)
 {
     if((true == verifyBoardPresence(protconfig)) &&
        (true == verifyBoardTransceiver(protconfig)) &&
@@ -1275,17 +1256,17 @@ bool ethResources::verifyBoard(yarp::os::Searchable &protconfig)
     return(false);
 }
 
-//bool ethResources::setRemoteBoardNumber(void)
+//bool EthResource::setRemoteBoardNumber(void)
 //{
 //    remoteBoardNumberIsSet = true;
 //    return(remoteBoardNumberIsSet);
 //}
 
-bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
+bool EthResource::verifyBoardPresence(yarp::os::Searchable &protconfig)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "ethResources::verifyBoardPresence() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "EthResource::verifyBoardPresence() is in ETHRES_DEBUG_DONTREADBACK mode";
     verifiedBoardPresence =  true;
     return true;
 #endif
@@ -1298,7 +1279,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
     // we ask the remote board a variable which is surely supported. best thing to do is asking the mn-protocol-version.
     // however, at 03 sept 2014 there is not a single variable to contain this, thus ... ask the eoprot_tag_mn_comm_status variable.
 
-    //#warning --> marco.accame: inside ethResources::verifyBoardPresence() in the future you shall ask eoprot_tag_mn_comm_status_mnprotocolversion instead of eoprot_tag_mn_comm_status
+    //#warning --> marco.accame: inside EthResource::verifyBoardPresence() in the future you shall ask eoprot_tag_mn_comm_status_mnprotocolversion instead of eoprot_tag_mn_comm_status
 
     const double timeout = 0.500;   // 500 ms is more than enough if board is present. if link is not on it is a good time to wait
     const int retries = 20;         // the number of retries depends on the above timeout and on link-up time of the EMS.
@@ -1323,21 +1304,21 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
         // send ask message
         if(false == addGetMessageWithSignature(id2send, signature))
         {
-            yWarning() << "ethResources::verifyBoardPresence() cannot transmit a request about the communication status to BOARD" << get_protBRDnumber()+1;
+            yWarning() << "EthResource::verifyBoardPresence() cannot transmit a request about the communication status to BOARD" << get_protBRDnumber()+1;
         }
 
         // wait for a say message arriving from the board. the eoprot_fun_UPDT_mn_xxx() function shall release the waiting semaphore
         if(false == ethQuery->wait(sem, timeout))
         {
-            //yWarning() << "ethResources::verifyBoardPresence() had a timeout of" << timeout << "secs when asking a variable to BOARD" << get_protBRDnumber()+1;
-            //yError() << "ethResources::verifyBoardPresence() asks: can you ping the board?";
+            //yWarning() << "EthResource::verifyBoardPresence() had a timeout of" << timeout << "secs when asking a variable to BOARD" << get_protBRDnumber()+1;
+            //yError() << "EthResource::verifyBoardPresence() asks: can you ping the board?";
         }
         else
         {
             // get the reply
             if(false == readBufferedValue(id2wait, (uint8_t*)&brdstatus, &size))
             {
-                yWarning() << "ethResources::verifyBoardPresence() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
+                yWarning() << "EthResource::verifyBoardPresence() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
             }
             else
             {
@@ -1350,7 +1331,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 
         if(!pinged)
         {
-            yWarning() << "ethResources::verifyBoardPresence() cannot reach BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
+            yWarning() << "EthResource::verifyBoardPresence() cannot reach BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
         }
 
     }
@@ -1364,12 +1345,12 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
         verifiedBoardPresence = true;
         if(verbosewhenok)
         {
-            yDebug() << "ethResources::verifyBoardPresence() found BOARD " << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";
+            yDebug() << "EthResource::verifyBoardPresence() found BOARD " << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";
         }
     }
     else
     {
-        yError() << "ethResources::verifyBoardPresence() DID NOT have replies from BOARD " << get_protBRDnumber()+1 << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+        yError() << "EthResource::verifyBoardPresence() DID NOT have replies from BOARD " << get_protBRDnumber()+1 << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
     }
 
 
@@ -1378,7 +1359,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 }
 
 
-//bool ethResources::configureENDPOINT(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep)
+//bool EthResource::configureENDPOINT(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep)
 //{
 
 //    configuredEP[ep] = true;
@@ -1386,19 +1367,19 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 //}
 
 
-//bool ethResources::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber)
+//bool EthResource::verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber)
 //{
 //    // so that, it can work with branch runtime_ems_config and its future merge into master
 //    return(true);
 
 //#if defined(ETHRES_DEBUG_DONTREADBACK)
-//    yWarning() << "ethResources::verifyENTITYnumber() is in ETHRES_DEBUG_DONTREADBACK mode";
+//    yWarning() << "EthResource::verifyENTITYnumber() is in ETHRES_DEBUG_DONTREADBACK mode";
 //    return true;
 //#endif
 
 //    if(false == verifyEPprotocol(protconfig, ep))
 //    {
-//        yError() << "ethResources::verifyENTITYnumber() cannot even verify protocol in BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+//        yError() << "EthResource::verifyENTITYnumber() cannot even verify protocol in BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
 //        return(false);
 //    }
 
@@ -1415,7 +1396,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 //    {
 //        if(expectednumber != numofentities_prot)
 //        {
-//            yError() << "ethResources::verifyENTITYnumber() has detected a mismatching number of " << eoprot_EN2string(ep, en) << " between the XML files: cannot proceed any further";
+//            yError() << "EthResource::verifyENTITYnumber() has detected a mismatching number of " << eoprot_EN2string(ep, en) << " between the XML files: cannot proceed any further";
 //            yError() << " protocol uses =" << numofentities_prot << "but calling device uses" << expectednumber;
 //        }
 //    }
@@ -1448,7 +1429,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 
 //    if(entities_in_endpoint > capacityOfArrayOfENDES)
 //    {   // to support more than capacityOfArrayOfENDES (= 16 on date of jul 22 2014) endpoints: just send two (or more) eoprot_tag_mn_comm_cmmnds_command_queryarray messages with setnumbers 0 and 1 (or more)
-//        yError() << "ethResources::verifyENTITYnumber() detected that BOARD" << get_protBRDnumber()+1 << "has" << numofentities_prot << "entities in" <<  eoprot_EP2string(ep) << "and at most" << capacityOfArrayOfENDES << "are supported: cannot proceed any further (review the code to support them all)";
+//        yError() << "EthResource::verifyENTITYnumber() detected that BOARD" << get_protBRDnumber()+1 << "has" << numofentities_prot << "entities in" <<  eoprot_EP2string(ep) << "and at most" << capacityOfArrayOfENDES << "are supported: cannot proceed any further (review the code to support them all)";
 //        return(false);
 //    }
 
@@ -1467,7 +1448,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 
 //    if(false == addSetMessage(id2send, (uint8_t*)&command))
 //    {
-//        yError() << "ethResources::verifyENTITYnumber() cannot transmit a request about the entity descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+//        yError() << "EthResource::verifyENTITYnumber() cannot transmit a request about the entity descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
 //        return(false);
 //    }
 
@@ -1476,7 +1457,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 //    {
 //        // must release the semaphore
 //        ethQuery->stop(sem);
-//        yError() << "ethResources::verifyENTITYnumber() had a timeout of" << timeout << "secs when asking the entity descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+//        yError() << "EthResource::verifyENTITYnumber() had a timeout of" << timeout << "secs when asking the entity descriptors to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
 //        return(false);
 //    }
 //    // must release the semaphore
@@ -1486,7 +1467,7 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 //    memset(&command, 0, sizeof(command));
 //    if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
 //    {
-//        yError() << "ethResources::verifyENTITYnumber() cannot retrieve the entity descriptors of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+//        yError() << "EthResource::verifyENTITYnumber() cannot retrieve the entity descriptors of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
 //        return(false);
 //    }
 
@@ -1494,13 +1475,13 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 //    eOmn_cmd_replyarray_t* cmdreplyarray = (eOmn_cmd_replyarray_t*)&command.cmd.replyarray;
 //    EOarray* array = (EOarray*)cmdreplyarray->array;
 
-//    //yDebug() << "ethResources::verifyENTITYnumber() -> xxx-debug TO BE REMOVED AFTER DEBUG: head.capacity, itemsize, size" << array->head.capacity << array->head.itemsize << array->head.size;
+//    //yDebug() << "EthResource::verifyENTITYnumber() -> xxx-debug TO BE REMOVED AFTER DEBUG: head.capacity, itemsize, size" << array->head.capacity << array->head.itemsize << array->head.size;
 
 //    uint8_t sizeofarray = eo_array_Size(array);
 
 //    if(sizeofarray != entities_in_endpoint)
 //    {
-//        yWarning() << "ethResources::verifyEPprotocol() retrieved from BOARD" << get_protBRDnumber()+1 << ":" << sizeofarray << "entity descriptors, BUT there are" << entities_in_endpoint << "in local protocol";
+//        yWarning() << "EthResource::verifyEPprotocol() retrieved from BOARD" << get_protBRDnumber()+1 << ":" << sizeofarray << "entity descriptors, BUT there are" << entities_in_endpoint << "in local protocol";
 //    }
 
 
@@ -1520,29 +1501,29 @@ bool ethResources::verifyBoardPresence(yarp::os::Searchable &protconfig)
 
 //    if(255 == numofentities_brd)
 //    {
-//        yError() << "ethResources::verifyEPprotocol() could not retrieve from BOARD" << get_protBRDnumber()+1 << "the multiplicity of entity" << eoprot_EN2string(ep, en) << ": cannot proceed anymore";
+//        yError() << "EthResource::verifyEPprotocol() could not retrieve from BOARD" << get_protBRDnumber()+1 << "the multiplicity of entity" << eoprot_EN2string(ep, en) << ": cannot proceed anymore";
 //        return false;
 //    }
 
 //    if(numofentities_brd != numofentities_prot)
 //    {
-//        yError() << "  FATAL: ethResources::verifyENTITYnumber() has detected a mismatching number of " << eoprot_EN2string(ep, en) << " between the PC104 and remote BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+//        yError() << "  FATAL: EthResource::verifyENTITYnumber() has detected a mismatching number of " << eoprot_EN2string(ep, en) << " between the PC104 and remote BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
 //        yError() << "         pc014 uses =" << numofentities_prot << "but remote board has" << numofentities_brd;
 //        return false;
 //    }
 
-//    // yDebug() << "ethResources::verifyENTITYnumber(): PC104 uses =" << numofentities_prot << " entities and remote board has" << numofentities_brd;
+//    // yDebug() << "EthResource::verifyENTITYnumber(): PC104 uses =" << numofentities_prot << " entities and remote board has" << numofentities_brd;
 
 //    return(true);
 //}
 
 
 
-bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
+bool EthResource::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "ethResources::addRegulars() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "EthResource::addRegulars() is in ETHRES_DEBUG_DONTREADBACK mode";
     verify = false;
     return true; // uncomment to avoid sending command
 #endif
@@ -1669,7 +1650,7 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
 
         if(verbosewhenok)
         {
-            yDebug() << "ethResources::addRegulars() has correctly checked regulars: expected = " << usedNumberOfRegularROPs << " and number in board = " << numberofregulars;
+            yDebug() << "EthResource::addRegulars() has correctly checked regulars: expected = " << usedNumberOfRegularROPs << " and number in board = " << numberofregulars;
         }
     }
 
@@ -1677,11 +1658,11 @@ bool ethResources::addRegulars(vector<eOprotID32_t> &id32vector, bool verify)
 }
 
 
-bool ethResources::numberofRegulars(uint16_t &numberofregulars)
+bool EthResource::numberofRegulars(uint16_t &numberofregulars)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "ethResources::numberofRegulars() is in ETHRES_DEBUG_DONTREADBACK mode and always gives back 0";
+    yWarning() << "EthResource::numberofRegulars() is in ETHRES_DEBUG_DONTREADBACK mode and always gives back 0";
     return true;
 #endif
 
@@ -1706,7 +1687,7 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
     // send set message
     if(false == addSetMessage(id2send, (uint8_t*)&command))
     {
-        yError() << "ethResources::numberofRegulars() cannot transmit a request about the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "EthResource::numberofRegulars() cannot transmit a request about the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
@@ -1715,7 +1696,7 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
     {
         // must release the semaphore
         ethQuery->stop(sem);
-        yError() << "ethResources::numberofRegulars() had a timeout of" << timeout << "secs when asking the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "EthResource::numberofRegulars() had a timeout of" << timeout << "secs when asking the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
     ethQuery->stop(sem);
@@ -1725,7 +1706,7 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
 
     if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
     {
-        yError() << "ethResources::numberofRegulars() cannot read the number of regulars of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "EthResource::numberofRegulars() cannot read the number of regulars of BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
         return(false);
     }
 
@@ -1753,8 +1734,8 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
         // send set message
         if(false == addSetMessage(id2send, (uint8_t*)&command))
         {
-            yWarning() << "ethResources::numberofRegulars() cannot transmit a request about the number of regulars to BOARD" << get_protBRDnumber()+1;
-            //yError() << "ethResources::numberofRegulars() cannot transmit a request about the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+            yWarning() << "EthResource::numberofRegulars() cannot transmit a request about the number of regulars to BOARD" << get_protBRDnumber()+1;
+            //yError() << "EthResource::numberofRegulars() cannot transmit a request about the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
             //return(false);
         }
 
@@ -1763,7 +1744,7 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
         {
             // must release the semaphore
             //ethQuery->stop(sem);
-            //yError() << "ethResources::numberofRegulars() had a timeout of" << timeout << "secs when asking the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
+            //yError() << "EthResource::numberofRegulars() had a timeout of" << timeout << "secs when asking the number of regulars to BOARD" << get_protBRDnumber()+1 << ": cannot proceed any further";
             //return(false);
         }
         else
@@ -1773,7 +1754,7 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
 
             if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
             {
-                yWarning() << "ethResources::numberofRegulars() cannot read the number of regulars of BOARD" << get_protBRDnumber()+1;
+                yWarning() << "EthResource::numberofRegulars() cannot read the number of regulars of BOARD" << get_protBRDnumber()+1;
             }
             else
             {
@@ -1787,7 +1768,7 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
 
         if(!replied)
         {
-            yWarning() << "ethResources::numberofRegulars() cannot have a reply from BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
+            yWarning() << "EthResource::numberofRegulars() cannot have a reply from BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
         }
 
     }
@@ -1806,18 +1787,18 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
         {
             if(verbosewhenok)
             {
-                yDebug() << "ethResources::numberofRegulars() retrieved value from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+                yDebug() << "EthResource::numberofRegulars() retrieved value from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
             }
         }
         else
         {
-            yWarning() << "ethResources::numberofRegulars() retrieved value from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+            yWarning() << "EthResource::numberofRegulars() retrieved value from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
         }
 
     }
     else
     {
-        yError() << "  FATAL: ethResources::numberofRegulars() DID NOT have replies from BOARD " << get_protBRDnumber()+1 << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+        yError() << "  FATAL: EthResource::numberofRegulars() DID NOT have replies from BOARD " << get_protBRDnumber()+1 << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
         numberisreceived = false;
     }
 
@@ -1829,7 +1810,7 @@ bool ethResources::numberofRegulars(uint16_t &numberofregulars)
 #endif
 }
 
-bool ethResources::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries, double waitbeforeverification, double verificationtimeout, int verificationretries)
+bool EthResource::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries, double waitbeforeverification, double verificationtimeout, int verificationretries)
 {
     int attempt = 0;
     bool done = false;
@@ -1841,12 +1822,12 @@ bool ethResources::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, u
 
         if(!addSetMessage(id32, (uint8_t *) value))
         {
-            yWarning() << "ethResources::setRemoteValueUntilVerified() had an error while calling addSetMessage() in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt+1;
+            yWarning() << "EthResource::setRemoteValueUntilVerified() had an error while calling addSetMessage() in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt+1;
             continue;
         }
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-        yWarning() << "ethResources::setRemoteValueUntilVerified() is in ETHRES_DEBUG_DONTREADBACK";
+        yWarning() << "EthResource::setRemoteValueUntilVerified() is in ETHRES_DEBUG_DONTREADBACK";
         return true;
 #endif
 
@@ -1855,7 +1836,7 @@ bool ethResources::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, u
 
         if(false == verifyRemoteValue(id32, (uint8_t *) value, size, verificationtimeout, verificationretries))
         {
-            yWarning() << "ethResources::setRemoteValueUntilVerified() had an error while calling verifyRemoteValue() in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt+1;
+            yWarning() << "EthResource::setRemoteValueUntilVerified() had an error while calling verifyRemoteValue() in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt+1;
         }
         else
         {
@@ -1871,19 +1852,19 @@ bool ethResources::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, u
     {
         if(attempt > 1)
         {
-            yWarning() << "ethResources::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt;
+            yWarning() << "EthResource::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt;
         }
         else
         {
             if(verbosewhenok)
             {
-                yDebug() << "ethResources::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt;
+                yDebug() << "EthResource::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << "at attempt #" << attempt;
             }
         }
     }
     else
     {
-        yError() << "FATAL: ethResources::setRemoteValueUntilVerified could not set and verify ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << " even after " << attempt << "attempts";
+        yError() << "FATAL: EthResource::setRemoteValueUntilVerified could not set and verify ID" << nvinfo << "in BOARD" << get_protBRDnumber()+1 << " even after " << attempt << "attempts";
     }
 
 
@@ -1893,11 +1874,11 @@ bool ethResources::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, u
 
 
 // must: 1. be sure we have the callback written and configured, 2. that the callback releases the sem (maybe if a suitable signature is found).
-bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout, int retries)
+bool EthResource::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout, int retries)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-        yWarning() << "ethResources::verifyRemoteValue() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not verify";
+        yWarning() << "EthResource::verifyRemoteValue() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not verify";
         return true;
 #endif
 
@@ -1908,17 +1889,13 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
 
     if(eobool_false == eoprot_id_isvalid(brd, id32))
     {
-        char ipinfo[20];
-        eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
-        yError() << "ethResources::verifyRemoteValue() detected an invalid" << nvinfo << "for BOARD" << ipinfo << ethManager->getName(get_remoteIPaddress());
+        yError() << "EthResource::verifyRemoteValue() detected an invalid" << nvinfo << "for BOARD" << ipv4addrstring << boardName;
         return false;
     }
 
     if((NULL == value) || (0 == size))
     {
-        char ipinfo[20];
-        eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
-        yError() << "ethResources::verifyRemoteValue() detected an value or size" << nvinfo << "for BOARD" << ipinfo << ethManager->getName(get_remoteIPaddress());
+        yError() << "EthResource::verifyRemoteValue() detected an value or size" << nvinfo << "for BOARD" << ipv4addrstring << boardName;
         return false;
     }
 
@@ -1941,7 +1918,7 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
     {
         free(datainside);
         ethQuery->stop(sem);
-        yError() << "ethResources::verifyRemoteValue() cannot transmit a request about" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
+        yError() << "EthResource::verifyRemoteValue() cannot transmit a request about" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
         return false;
     }
 
@@ -1950,7 +1927,7 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
     {
         free(datainside);
         ethQuery->stop(sem);
-        yError() << "  FATAL: ethResources::verifyRemoteValue() had a timeout of" << timeout << "secs when asking value of" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
+        yError() << "  FATAL: EthResource::verifyRemoteValue() had a timeout of" << timeout << "secs when asking value of" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
         return false;
     }
     else
@@ -1960,7 +1937,7 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
         {
             free(datainside);
             ethQuery->stop(sem);
-            yError() << "ethResources::verifyRemoteValue() received a reply about" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
+            yError() << "EthResource::verifyRemoteValue() received a reply about" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
             return false;
         }
         else
@@ -1971,18 +1948,18 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
             if(size != sizeinside)
             {
                 free(datainside);
-                yError() << "ethResources::verifyRemoteValue() has found different sizes for" << nvinfo <<"arg, inside =" << size << sizeinside;
+                yError() << "EthResource::verifyRemoteValue() has found different sizes for" << nvinfo <<"arg, inside =" << size << sizeinside;
                 return false;
             }
             else if(0 != memcmp(datainside, value, size))
             {
                 free(datainside);
-                yError() << "ethResources::verifyRemoteValue() has found different values for" << nvinfo << "from BOARD" << get_protBRDnumber()+1;
+                yError() << "EthResource::verifyRemoteValue() has found different values for" << nvinfo << "from BOARD" << get_protBRDnumber()+1;
                 return false;
             }
             else
             {
-                yDebug() << "ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1;
+                yDebug() << "EthResource::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1;
             }
         }
     }
@@ -2016,10 +1993,10 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
             // send ask message
             if(false == addGetMessageWithSignature(id2send, signature))
             {
-                yWarning() << "ethResources::verifyRemoteValue() cannot transmit a request to BOARD" << get_protBRDnumber()+1;
+                yWarning() << "EthResource::verifyRemoteValue() cannot transmit a request to BOARD" << get_protBRDnumber()+1;
             //    free(datainside);
             //    ethQuery->stop(sem);
-            //    yError() << "ethResources::verifyRemoteValue() cannot transmit a request about" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
+            //    yError() << "EthResource::verifyRemoteValue() cannot transmit a request about" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
             //    return false;
             }
 
@@ -2028,7 +2005,7 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
             {
             //    free(datainside);
             //    ethQuery->stop(sem);
-            //    yError() << "  FATAL: ethResources::verifyRemoteValue() had a timeout of" << timeout << "secs when asking value of" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
+            //    yError() << "  FATAL: EthResource::verifyRemoteValue() had a timeout of" << timeout << "secs when asking value of" << nvinfo << "to BOARD" << get_protBRDnumber()+1;
             //    return false;
             }
             else
@@ -2038,9 +2015,9 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
                 {
                 //    free(datainside);
                 //    ethQuery->stop(sem);
-                //    yError() << "ethResources::verifyRemoteValue() received a reply about" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
+                //    yError() << "EthResource::verifyRemoteValue() received a reply about" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
                 //    return false;
-                    yWarning() << "ethResources::verifyRemoteValue() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
+                    yWarning() << "EthResource::verifyRemoteValue() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
                 }
                 else
                 {
@@ -2054,7 +2031,7 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
 
             if(!replied)
             {
-                yWarning() << "ethResources::verifyRemoteValue() cannot have a reply from BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
+                yWarning() << "EthResource::verifyRemoteValue() cannot have a reply from BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
             }
 
         }
@@ -2071,12 +2048,12 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
 
             if(size != sizeinside)
             {
-                yError() << "  FATAL: ethResources::verifyRemoteValue() has found different sizes for" << nvinfo <<"arg, inside =" << size << sizeinside;
+                yError() << "  FATAL: EthResource::verifyRemoteValue() has found different sizes for" << nvinfo <<"arg, inside =" << size << sizeinside;
                 valueisverified = false;
             }
             else if(0 != memcmp(datainside, value, size))
             {
-                yError() << "  FATAL: ethResources::verifyRemoteValue() has found different values for" << nvinfo << "from BOARD" << get_protBRDnumber()+1;
+                yError() << "  FATAL: EthResource::verifyRemoteValue() has found different values for" << nvinfo << "from BOARD" << get_protBRDnumber()+1;
                 valueisverified = false;
             }
             else
@@ -2085,12 +2062,12 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
                 {
                     if(verbosewhenok)
                     {
-                        yDebug() << "ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+                        yDebug() << "EthResource::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
                     }
                 }
                 else
                 {
-                    yWarning() << "ethResources::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+                    yWarning() << "EthResource::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
                 }
                 valueisverified = true;
             }
@@ -2099,7 +2076,7 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
         }
         else
         {
-            yError() << "  FATAL: ethResources::verifyRemoteValue() DID NOT have replies from BOARD " << get_protBRDnumber()+1 << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+            yError() << "  FATAL: EthResource::verifyRemoteValue() DID NOT have replies from BOARD " << get_protBRDnumber()+1 << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
             valueisverified = false;
         }
 
@@ -2116,11 +2093,11 @@ bool ethResources::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t si
 
 
 
-bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size, double timeout, int retries)
+bool EthResource::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size, double timeout, int retries)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-        yWarning() << "ethResources::getRemoteValue() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not verify";
+        yWarning() << "EthResource::getRemoteValue() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not verify";
         return true;
 #endif
 
@@ -2135,17 +2112,13 @@ bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size
 
     if(eobool_false == eoprot_id_isvalid(brd, id32))
     {
-        char ipinfo[20];
-        eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
-        yError() << "ethResources::getRemoteValue() detected an invalid" << nvinfo << "for BOARD" << ipinfo << ethManager->getName(get_remoteIPaddress());
+        yError() << "EthResource::getRemoteValue() detected an invalid" << nvinfo << "for BOARD" << ipv4addrstring << boardName;
         return false;
     }
 
     if((NULL == value))
     {
-        char ipinfo[20];
-        eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
-        yError() << "ethResources::getRemoteValue() detected an value or size" << nvinfo << "for BOARD" << ipinfo << ethManager->getName(get_remoteIPaddress());
+        yError() << "EthResource::getRemoteValue() detected an value or size" << nvinfo << "for BOARD" << ipv4addrstring << boardName;
         return false;
     }
 
@@ -2169,7 +2142,7 @@ bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size
         // send ask message
         if(false == addGetMessageWithSignature(id2send, signature))
         {
-            yWarning() << "ethResources::getRemoteValue() cannot transmit a request to BOARD" << get_protBRDnumber()+1;
+            yWarning() << "EthResource::getRemoteValue() cannot transmit a request to BOARD" << get_protBRDnumber()+1;
         }
 
         // wait for a say message arriving from the board. the proper function shall release the waiting semaphore
@@ -2183,7 +2156,7 @@ bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size
             // get the reply
             if(false == readBufferedValue(id2wait, (uint8_t*)value, &ss))
             {
-                yWarning() << "ethResources::getRemoteValue() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
+                yWarning() << "EthResource::getRemoteValue() received a reply from BOARD" << get_protBRDnumber()+1 << "but cannot read it";
             }
             else
             {
@@ -2198,7 +2171,7 @@ bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size
 
         if(!replied)
         {
-            yWarning() << "ethResources::getRemoteValue() cannot have a reply from BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
+            yWarning() << "EthResource::getRemoteValue() cannot have a reply from BOARD" << get_protBRDnumber()+1 << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
         }
 
     }
@@ -2218,18 +2191,18 @@ bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size
         {
             if(myverbosewhenok)
             {
-                yDebug() << "ethResources::getRemoteValue() obtained value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+                yDebug() << "EthResource::getRemoteValue() obtained value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
             }
         }
         else
         {
-            yWarning() << "ethResources::getRemoteValue() obtained value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+            yWarning() << "EthResource::getRemoteValue() obtained value inside" << nvinfo << "from BOARD" << get_protBRDnumber()+1 << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
         }
 
     }
     else
     {
-        yError() << "  FATAL: ethResources::getRemoteValue() DID NOT have replies from BOARD " << get_protBRDnumber()+1 << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+        yError() << "  FATAL: EthResource::getRemoteValue() DID NOT have replies from BOARD " << get_protBRDnumber()+1 << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
     }
 
 
@@ -2238,7 +2211,7 @@ bool ethResources::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size
 
 }
 
-bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
+bool EthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
 {
     char str[256];
     char canfullmessage[64];
@@ -2261,17 +2234,15 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
     uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
     uint32_t usec = infobasic->timestamp % 1000;
 
-    const char *boardstr = ethManager->getName(get_remoteIPaddress());
+    const char *boardstr = boardName;
 
-    char ipinfo[20];
-    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
 
     // Validity check
     if(address > 15)
     {
         snprintf(canfullmessage,sizeof(canfullmessage),"Error while parsing the message: CAN address detected is out of allowed range");
         snprintf(str,sizeof(str), "from BOARD %s (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
-                                    ipinfo,
+                                    ipv4addrstring,
                                     boardstr,
                                     str_source,
                                     address,
@@ -2304,7 +2275,7 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
             c_string_handler[address]->clear_string(ret);
 
             snprintf(str,sizeof(str), "from BOARD %s (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
-                                        ipinfo,
+                                        ipv4addrstring,
                                         boardstr,
                                         str_source,
                                         address,
@@ -2321,7 +2292,7 @@ bool ethResources::CANPrintHandler(eOmn_info_basic_t *infobasic)
 }
 
 
-bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times)
+bool EthResource::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times)
 {
     eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_cmmnds_command);
     eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_status_commandresult);;
@@ -2331,8 +2302,6 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
     // the semaphore used for waiting for replies from the board
     yarp::os::Semaphore* sem = NULL;
 
-    char ipinfo[20];
-    eo_common_ipv4addr_to_string(get_remoteIPaddress(), ipinfo, sizeof(ipinfo));
 
     eOmn_service_cmmnds_command_t command = {0};
     command.operation = operation;
@@ -2364,14 +2333,14 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
         if(false == addSetMessage(id2send, (uint8_t*)&command))
         {
             ethQueryServices->stop(sem);
-            yError() << "ethResources::serviceCommand() cannot transmit an activation request to BOARD" << ipinfo << ": cannot proceed any further";
+            yError() << "EthResource::serviceCommand() cannot transmit an activation request to BOARD" << ipv4addrstring << ": cannot proceed any further";
             return(false);
         }
 
 
         if(false == ethQueryServices->wait(sem, timeout))
         {
-            yWarning() << "ethResources::serviceCommand() had a timeout of" << timeout << "secs when sending an activation request to BOARD" << ipinfo;
+            yWarning() << "EthResource::serviceCommand() had a timeout of" << timeout << "secs when sending an activation request to BOARD" << ipv4addrstring;
             // must release the semaphore
             //ethQueryServices->stop(sem);
             //return(false);
@@ -2390,7 +2359,7 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
     uint16_t size = 0;
     if(false == readBufferedValue(id2wait, (uint8_t*)&result, &size))
     {
-        yError() << "ethResources::serviceCommand() cannot retrieve the result for BOARD" << ipinfo << ethManager->getName(get_remoteIPaddress()) << ": cannot proceed any further";
+        yError() << "EthResource::serviceCommand() cannot retrieve the result for BOARD" << ipv4addrstring << boardName << ": cannot proceed any further";
         return(false);
     }
 
@@ -2399,13 +2368,13 @@ bool ethResources::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_
 }
 
 
-bool ethResources::serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout)
+bool EthResource::serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout)
 {
     return(serviceCommand(eomn_serv_operation_verifyactivate, category, param, timeout, 1));
 }
 
 
-bool ethResources::serviceSetRegulars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout)
+bool EthResource::serviceSetRegulars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout)
 {
     eOmn_serv_parameter_t param = {0};
     EOarray *array = eo_array_New(eOmn_serv_capacity_arrayof_id32, 4, &param.arrayofid32);
@@ -2420,25 +2389,27 @@ bool ethResources::serviceSetRegulars(eOmn_serv_category_t category, vector<eOpr
 
 
 
-bool ethResources::serviceStart(eOmn_serv_category_t category, double timeout)
+bool EthResource::serviceStart(eOmn_serv_category_t category, double timeout)
 {
     return(serviceCommand(eomn_serv_operation_start, category, NULL, timeout, 1));
 }
 
 
-bool ethResources::serviceStop(eOmn_serv_category_t category, double timeout)
+bool EthResource::serviceStop(eOmn_serv_category_t category, double timeout)
 {
     return(serviceCommand(eomn_serv_operation_stop, category, NULL, timeout, 3));
 }
 
 
 
-// - class infoOfRecvPkts
+// - class InfoOfRecvPkts
 
 
-infoOfRecvPkts::infoOfRecvPkts() : DEFAULT_TIMEOUT_STAT(0.010) // 100 ms expessed in sec
+InfoOfRecvPkts::InfoOfRecvPkts() : DEFAULT_TIMEOUT_STAT(0.010) // 100 ms expessed in sec
 {
-    board = 0;      // after ethresource is opened, then this board num is set
+    ipv4 = 0;
+    eo_common_ipv4addr_to_string(ipv4, ipv4string, sizeof(ipv4string));
+
     initted = false;
     isInError = false;
     count = 0;
@@ -2483,7 +2454,7 @@ infoOfRecvPkts::infoOfRecvPkts() : DEFAULT_TIMEOUT_STAT(0.010) // 100 ms expesse
 }
 
 
-infoOfRecvPkts::~infoOfRecvPkts()
+InfoOfRecvPkts::~InfoOfRecvPkts()
 {
     delete stat_ageOfFrame;
     delete stat_periodPkt;
@@ -2493,42 +2464,43 @@ infoOfRecvPkts::~infoOfRecvPkts()
     delete stat_pktSize;
 }
 
-void infoOfRecvPkts::setBoardNum(int boardnum)
+void InfoOfRecvPkts::setBoardIP(eOipv4addr_t ip)
 {
-    board = boardnum;
+    ipv4 = ip;
+    eo_common_ipv4addr_to_string(ipv4, ipv4string, sizeof(ipv4string));
 }
 
-void infoOfRecvPkts::printStatistics(void)
+void InfoOfRecvPkts::printStatistics(void)
 {
-    yDebug() << "  (STATS-RX)-> BOARD " << board << ":" << receivedPackets << "ropframes have been received by EthReceiver() in this period";
+    yDebug() << "  (STATS-RX)-> BOARD " << ipv4string << ":" << receivedPackets << "ropframes have been received by EthReceiver() in this period";
 
     if(0 == receivedPackets)
     {
-        yDebug() << "  (STATS-RX)-> BOARD " << board << "DID NOT SEND ROPFRAMES in this period\n";
+        yDebug() << "  (STATS-RX)-> BOARD " << ipv4string << "DID NOT SEND ROPFRAMES in this period\n";
     }
     else if(0 != currPeriodPktLost)
     {
-        yDebug() << "  (STATS-RX)-> BOARD " << board << "has ropframe losses in this period:" << currPeriodPktLost << "---------------------";
+        yDebug() << "  (STATS-RX)-> BOARD " << ipv4string << "has ropframe losses in this period:" << currPeriodPktLost << "---------------------";
     }
     else
     {
-        yDebug() << "  (STATS-RX)-> BOARD " << board << " does not have ropframe losses in this period";
+        yDebug() << "  (STATS-RX)-> BOARD " << ipv4string << " does not have ropframe losses in this period";
     }
 
     if(0 != receivedPackets)
     {
-        yDebug() << "  (STATS-RX)-> BOARD " << board << " curr ropframe losses = " << currPeriodPktLost<< "   tot ropframe lost = " << totPktLost;
-        yDebug() << "  (STATS-RX)-> BOARD " << board << " inter-ropframe gap (as written by remote board)[holes are discarded]: avg=" << stat_ageOfFrame->mean()<< "ms std=" << stat_ageOfFrame->deviation()<< "ms min=" << stat_ageOfFrame->getMin() << "ms max=" << stat_ageOfFrame->getMax()<< "ms on " << stat_ageOfFrame->count() << "values";
-        yDebug() << "  (STATS-RX)-> BOARD " << board << " gap between processed ropframes [holes are discarded]: avg=" << stat_periodPkt->mean()*1000 << "ms std=" << stat_periodPkt->deviation()*1000 << "ms min=" << stat_periodPkt->getMin()*1000 << "ms max=" << stat_periodPkt->getMax()*1000 << "ms on " << stat_periodPkt->count() << "values";
-        yDebug() << "  (STATS-RX)-> BOARD " << board << " duration of holes in rx ropframes: avg=" << stat_lostPktgap->mean()*1000 << "ms std=" << stat_lostPktgap->deviation()*1000 << "ms min=" << stat_lostPktgap->getMin()*1000 << "ms max=" << stat_lostPktgap->getMax()*1000 << "ms on " << stat_lostPktgap->count() << "values";
-        yDebug() << "  (STATS-RX)-> BOARD " << board << " gap between two ropframe w/ a print stat in between: avg=" << stat_printstatPktgap->mean()*1000 << "ms std=" << stat_printstatPktgap->deviation()*1000 << "ms min=" << stat_printstatPktgap->getMin()*1000 << "ms max=" << stat_printstatPktgap->getMax()*1000 << "ms on " << stat_printstatPktgap->count() << "values";
-        yDebug() << "  (STATS-RX)-> BOARD " << board << " ropframe process time: avg=" << stat_precessPktTime->mean()*1000 << "ms std=" << stat_precessPktTime->deviation()*1000 << "ms min=" << stat_precessPktTime->getMin()*1000 << "ms max=" << stat_precessPktTime->getMax()*1000 << "ms on " << stat_precessPktTime->count() << "values";
-        yDebug() << "  (STATS-RX)-> BOARD " << board << " ropframe size time: avg=" << stat_pktSize->mean() << "bytes std=" << stat_pktSize->deviation() << "min=" << stat_pktSize->getMin() << "max=" << stat_pktSize->getMax() << " on " << stat_pktSize->count() << "values\n";
+        yDebug() << "  (STATS-RX)-> BOARD " << ipv4string << " curr ropframe losses = " << currPeriodPktLost<< "   tot ropframe lost = " << totPktLost;
+        yDebug() << "  (STATS-RX)-> BOARD " << ipv4string << " inter-ropframe gap (as written by remote board)[holes are discarded]: avg=" << stat_ageOfFrame->mean()<< "ms std=" << stat_ageOfFrame->deviation()<< "ms min=" << stat_ageOfFrame->getMin() << "ms max=" << stat_ageOfFrame->getMax()<< "ms on " << stat_ageOfFrame->count() << "values";
+        yDebug() << "  (STATS-RX)-> BOARD " << ipv4string << " gap between processed ropframes [holes are discarded]: avg=" << stat_periodPkt->mean()*1000 << "ms std=" << stat_periodPkt->deviation()*1000 << "ms min=" << stat_periodPkt->getMin()*1000 << "ms max=" << stat_periodPkt->getMax()*1000 << "ms on " << stat_periodPkt->count() << "values";
+        yDebug() << "  (STATS-RX)-> BOARD " << ipv4string << " duration of holes in rx ropframes: avg=" << stat_lostPktgap->mean()*1000 << "ms std=" << stat_lostPktgap->deviation()*1000 << "ms min=" << stat_lostPktgap->getMin()*1000 << "ms max=" << stat_lostPktgap->getMax()*1000 << "ms on " << stat_lostPktgap->count() << "values";
+        yDebug() << "  (STATS-RX)-> BOARD " << ipv4string << " gap between two ropframe w/ a print stat in between: avg=" << stat_printstatPktgap->mean()*1000 << "ms std=" << stat_printstatPktgap->deviation()*1000 << "ms min=" << stat_printstatPktgap->getMin()*1000 << "ms max=" << stat_printstatPktgap->getMax()*1000 << "ms on " << stat_printstatPktgap->count() << "values";
+        yDebug() << "  (STATS-RX)-> BOARD " << ipv4string << " ropframe process time: avg=" << stat_precessPktTime->mean()*1000 << "ms std=" << stat_precessPktTime->deviation()*1000 << "ms min=" << stat_precessPktTime->getMin()*1000 << "ms max=" << stat_precessPktTime->getMax()*1000 << "ms on " << stat_precessPktTime->count() << "values";
+        yDebug() << "  (STATS-RX)-> BOARD " << ipv4string << " ropframe size time: avg=" << stat_pktSize->mean() << "bytes std=" << stat_pktSize->deviation() << "min=" << stat_pktSize->getMin() << "max=" << stat_pktSize->getMax() << " on " << stat_pktSize->count() << "values\n";
     }
 
 }
 
-void infoOfRecvPkts::clearStatistics(void)
+void InfoOfRecvPkts::clearStatistics(void)
 {
     stat_ageOfFrame->clear();
     stat_periodPkt->clear();
@@ -2546,18 +2518,18 @@ void infoOfRecvPkts::clearStatistics(void)
 }
 
 
-uint64_t infoOfRecvPkts::getSeqNum(uint64_t *packet, uint16_t size)
+uint64_t InfoOfRecvPkts::getSeqNum(uint64_t *packet, uint16_t size)
 {
     return(eo_ropframedata_seqnum_Get((EOropframeData*)packet));
 }
 
 
-uint64_t infoOfRecvPkts::getAgeOfFrame(uint64_t *packet, uint16_t size)
+uint64_t InfoOfRecvPkts::getAgeOfFrame(uint64_t *packet, uint16_t size)
 {
     return(eo_ropframedata_age_Get((EOropframeData*)packet));
 }
 
-void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reckPktTime, double processPktTime, bool evalreport)
+void InfoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reckPktTime, double processPktTime, bool evalreport)
 {
     uint64_t curr_seqNum = getSeqNum(packet, size);;
     uint64_t curr_ageOfFrame = getAgeOfFrame(packet, size); // in usec
@@ -2581,7 +2553,7 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
             if(curr_seqNum < (last_seqNum+1))
             {
                 if(local_verbose)
-                    yError()<< "REC PKTS not in order!!!!" << board << " seq num rec=" << curr_seqNum << " expected=" << last_seqNum+1 << "!!!!!!!" ;
+                    yError()<< "REC PKTS not in order!!!!" << ipv4string << " seq num rec=" << curr_seqNum << " expected=" << last_seqNum+1 << "!!!!!!!" ;
             }
             else
             {
@@ -2592,7 +2564,7 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
             totPktLost += num_lost_pkts;
 
             if(local_verbose)
-                yError()<< "LOST "<< num_lost_pkts <<"  PKTS on board=" << board << " seq num rec="<< curr_seqNum << " expected=" << last_seqNum+1 << "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
+                yError()<< "LOST "<< num_lost_pkts <<"  PKTS on board=" << ipv4string << " seq num rec="<< curr_seqNum << " expected=" << last_seqNum+1 << "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
         }
 
 
@@ -2603,7 +2575,7 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
         if( diff_ageofframe_ms > (timeout*1000))
         {
             if(local_verbose)
-                yError() << "Board " << board << ": EMS time (ageOfFrame) between 2 pkts bigger then " << timeout * 1000 << "ms;\t Actual delay is" << diff_ageofframe_ms << "ms diff = "<< double(diff)/1000.0;
+                yError() << "Board " << ipv4string << ": EMS time (ageOfFrame) between 2 pkts bigger then " << timeout * 1000 << "ms;\t Actual delay is" << diff_ageofframe_ms << "ms diff = "<< double(diff)/1000.0;
         }
 
         if(0 == num_lost_pkts)
@@ -2618,7 +2590,7 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
         if(curr_periodPkt > timeout)
         {
             if(local_verbose)
-                yError() << "Board " << board << ": Gap of " << curr_periodPkt*1000 << "ms between two consecutive messages !!!";
+                yError() << "Board " << ipv4string << ": Gap of " << curr_periodPkt*1000 << "ms between two consecutive messages !!!";
         }
 
 
@@ -2670,7 +2642,7 @@ void infoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
 }
 
 
-void infoOfRecvPkts::evalReport(void)
+void InfoOfRecvPkts::evalReport(void)
 {
     double timenow = yarp::os::Time::now();
 
@@ -2682,7 +2654,7 @@ void infoOfRecvPkts::evalReport(void)
 
 }
 
-void infoOfRecvPkts::forceReport(void)
+void InfoOfRecvPkts::forceReport(void)
 {
     double timenow = yarp::os::Time::now();
 

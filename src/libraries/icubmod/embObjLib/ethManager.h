@@ -97,8 +97,8 @@ using namespace std;
 
 // -- class EthBoards
 // -- it collects all the ETH boards managed by ethManager.
-// -- each board surely has an ethResources object associated to it. and it may have one or more interfaces which use the
-// -- services of ethResources to transmit or receive.
+// -- each board surely has an EthResource object associated to it. and it may have one or more interfaces which use the
+// -- services of EthResource to transmit or receive.
 // -- it is responsibility of the object which owns EthBoards (it is ethManager) to protect the class EthBoards vs concurrent use.
 // -- examples of concurrent use are: transmit or receive using an ethresource and ... attempting to create or destroy a resource.
 
@@ -116,27 +116,30 @@ public:
     ~EthBoards();
 
     size_t number_of_resources(void);
-    bool add(ethResources* res);
-    ethResources* get_resource(eOipv4addr_t ipv4);
-    bool rem(ethResources* res);
+    bool add(EthResource* res);
+    EthResource* get_resource(eOipv4addr_t ipv4);
+    bool rem(EthResource* res);
 
-    size_t number_of_interfaces(ethResources* res);
-    bool add(ethResources* res, IethResource* interface, ethFeatType_t type);
+    size_t number_of_interfaces(EthResource* res);
+    bool add(EthResource* res, IethResource* interface);
     IethResource* get_interface(eOipv4addr_t ipv4, eOprotID32_t id32);
-    bool rem(ethResources* res, ethFeatType_t type);
+    bool rem(EthResource* res, iethresType_t type);
 
     // the name of the board
     const char * name(eOipv4addr_t ipv4);
 
-    // executes an action on all ethResources which have been added in the class.
-    bool execute(void (*action)(ethResources* res, void* p), void* par);
+    // executes an action on all EthResource which have been added in the class.
+    bool execute(void (*action)(EthResource* res, void* p), void* par);
+
+    // executes an action on the ethResource having a specific ipv4.
+    bool execute(eOipv4addr_t ipv4, void (*action)(EthResource* res, void* p), void* par);
 
 
 private:
 
     // private types
 
-    enum { ethboardNameMaxSize = 32 };
+    enum { ethboardNameMaxSize = EthResource::boardNameSize };
 
     typedef struct
     {
@@ -144,8 +147,8 @@ private:
         char                name[EthBoards::ethboardNameMaxSize];
         uint8_t             numberofinterfaces;
         uint8_t             boardnumber;
-        ethResources*       resource;
-        IethResource*       interfaces[ethFeatType_numberof];
+        EthResource*        resource;
+        IethResource*       interfaces[iethresType_numberof];
     } ethboardProperties_t;
 
 
@@ -165,8 +168,8 @@ private:
 // -- class TheEthManager
 // -- it is the main singleton which delas with eth communication.
 // -- it holds the two tx and rx threads (classes EthSender and EthReceiver)
-// -- it holds class EthBoards which stores references to ethResources (what is used to form / parse UDP packets for the eth board)
-// -- and to the interfaces which use the ethResources of a given board.
+// -- it holds class EthBoards which stores references to EthResource (what is used to form / parse UDP packets for the eth board)
+// -- and to the interfaces which use the EthResource of a given board.
 
 // forward declaration because they are used inside TheEthManager
 class EthSender;
@@ -238,8 +241,8 @@ public:
 
     bool startCommunication(yarp::os::Searchable &cfgtotal);
 
-    ethResources* requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol);
-    ethResources* requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
+    EthResource* requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver);
+    EthResource* requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
 
 
     int releaseResource(ethFeature_t &resource);
@@ -268,7 +271,7 @@ public:
     bool Transmission(void);
     bool Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, bool collectStatistics);
 
-    ethResources* GetEthResource(eOipv4addr_t ipv4);
+    EthResource* GetEthResource(eOipv4addr_t ipv4);
 
 
     IethResource* getInterface(eOipv4addr_t ipv4, eOprotID32_t id32);
@@ -277,7 +280,7 @@ public:
     //EthSender* getEthSender(void);
     //EthReceiver* getEthReceiver(void);
 
-    ethResources* IPtoResource(ACE_INET_Addr adr);
+    EthResource* IPtoResource(ACE_INET_Addr adr);
     int IPtoBoardNumber(ACE_INET_Addr adr); // non-zero value: 1, 2, ......
 
     int GetNumberOfUsedBoards(void);

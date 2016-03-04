@@ -107,7 +107,7 @@ private:
 
     //! eth messaging stuff
     TheEthManager       *ethManager;
-    ethResources        *res;
+    EthResource        *res;
     ethFeature_t        _fId;
 
     bool opened;

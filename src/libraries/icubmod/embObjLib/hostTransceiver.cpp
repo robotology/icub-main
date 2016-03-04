@@ -132,7 +132,97 @@ hostTransceiver::~hostTransceiver()
 }
 
 
+bool hostTransceiver::init2(yarp::os::Searchable &cfgtransceiver, eOipv4addressing_t& localIPaddressing, eOipv4addr_t remoteIP, uint16_t _pktsizerx)
+{
+    // the configuration of the transceiver: it is specific of a given remote board
+    yTrace();
 
+
+    if(NULL != hosttxrx)
+    {
+        yError() << "hostTransceiver::init(): called but ... its EOhostTransceiver is already created";
+        return false;
+    }
+
+    // ok. we can go on. assign values of some member variables
+
+    uint8_t ip4 = 0;
+    eo_common_ipv4addr_to_decimal(remoteIP, NULL, NULL, NULL, &ip4);
+    protboardnumber = ip4;
+    localipaddr     = localIPaddressing.addr;
+    remoteipaddr    = remoteIP;
+    ipport          = localIPaddressing.port;
+    pktsizerx       = _pktsizerx;
+
+
+    if(!initProtocol())
+    {
+        yError() << "hostTransceiver::init() -> hostTransceiver::initProtocol() fails";
+        return false;
+    }
+
+
+    if(eobool_false == eoprot_board_can_be_managed(protboardnumber))
+    {
+        yError() << "hostTransceiver::init() -> the BOARD " << protboardnumber+1 << "cannot be managed by EOprotocol";
+        return false;
+    }
+
+
+
+
+
+    // this can be greatly simplified ...
+    if(!prepareTransceiverConfigNOnvset(cfgtransceiver))
+    {
+        yError() << "hostTransceiver::init() -> hostTransceiver::prepareTransceiverConfigNOnvset() fails";
+        return false;
+    }
+
+
+    // ok, now the nvset ...
+    eOnvset_BRDcfg_t brdcfg = {0};
+    memcpy(&brdcfg, &eonvset_BRDcfgMax, sizeof(eOnvset_BRDcfg_t));
+    brdcfg.boardnum = get_protBRDnumber();
+
+    hosttxrxcfg.nvsetbrdcfg = &brdcfg;
+
+    // now hosttxrxcfg is ready, thus ...
+    // initialise the transceiver: it creates a EOhostTransceiver and its EOnvSet
+    hosttxrx = eo_hosttransceiver_New(&hosttxrxcfg);
+    if(hosttxrx == NULL)
+    {   // it never returns NULL. on allocation failure it calls its error manager. however ...
+        yError() << "hostTransceiver::init(): .... eo_hosttransceiver_New() failed";
+        return false;
+    }
+
+    // retrieve the transceiver
+    pc104txrx = eo_hosttransceiver_GetTransceiver(hosttxrx);
+    if(pc104txrx == NULL)
+    {
+        return false;
+    }
+
+    // retrieve the nvset
+    nvset = eo_hosttransceiver_GetNVset(hosttxrx);
+    if(NULL == nvset)
+    {
+        return false;
+    }
+
+
+
+
+    // build the packet used for reception.
+    p_RxPkt = eo_packet_New(_pktsizerx);
+    if(p_RxPkt == NULL)
+    {
+        return false;
+    }
+
+
+    return true;
+}
 
 
 bool hostTransceiver::init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, eOipv4addr_t _localipaddr, eOipv4addr_t _remoteipaddr, eOipv4port_t _ipport, uint16_t _pktsizerx, FEAT_boardnumber_t _board_n)
@@ -156,7 +246,7 @@ bool hostTransceiver::init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searc
     pktsizerx       = _pktsizerx;
 
 
-    if(!initProtocol(cfgprotocol))
+    if(!initProtocol())
     {
         yError() << "hostTransceiver::init() -> hostTransceiver::initProtocol() fails";
         return false;     
@@ -209,7 +299,7 @@ bool hostTransceiver::init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searc
     #warning --> USING EXPERIMENTAL MODE
 
     // this can be greatly simplified ...
-    if(!prepareTransceiverConfigNOnvset(cfgtransceiver, cfgprotocol))
+    if(!prepareTransceiverConfigNOnvset(cfgtransceiver))
     {
         yError() << "hostTransceiver::init() -> hostTransceiver::prepareTransceiverConfigNOnvset() fails";
         return false;
@@ -757,7 +847,7 @@ eOipv4addr_t hostTransceiver::get_remoteIPaddress(void)
 }
 
 
-bool hostTransceiver::initProtocol(yarp::os::Searchable &cfgprotocol)
+bool hostTransceiver::initProtocol()
 {
     static bool alreadyinitted = false;
 
@@ -1353,7 +1443,7 @@ bool hostTransceiver::prepareTransceiverConfig(yarp::os::Searchable &cfgtranscei
 }
 
 
-bool hostTransceiver::prepareTransceiverConfigNOnvset(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol)
+bool hostTransceiver::prepareTransceiverConfigNOnvset(yarp::os::Searchable &cfgtransceiver)
 {
     // hosttxrxcfg is a class member ...
 

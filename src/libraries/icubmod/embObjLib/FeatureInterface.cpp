@@ -342,7 +342,7 @@ eObool_t feat_signal_network_reply(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_
         return(eobool_false);
     }
 
-    ethResources* ethres = _interface2ethManager->GetEthResource(ipv4);
+    EthResource* ethres = _interface2ethManager->GetEthResource(ipv4);
 
     if(NULL == ethres)
     {
@@ -360,7 +360,7 @@ eObool_t feat_CANprint(eOipv4addr_t ipv4, eOmn_info_basic_t* infobasic)
         return(eobool_false);
     }
 
-    ethResources* ethres = _interface2ethManager->GetEthResource(ipv4);
+    EthResource* ethres = _interface2ethManager->GetEthResource(ipv4);
 
     bool res = ethres->CANPrintHandler(infobasic);
     return res;

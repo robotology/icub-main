@@ -76,7 +76,7 @@ size_t EthBoards::number_of_resources(void)
     return(sizeofLUT);
 }
 
-size_t EthBoards::number_of_interfaces(ethResources * res)
+size_t EthBoards::number_of_interfaces(EthResource * res)
 {
     eOipv4addr_t ipv4 = res->getIPv4remoteAddress();
     uint8_t index = 0;
@@ -98,7 +98,7 @@ size_t EthBoards::number_of_interfaces(ethResources * res)
 }
 
 
-bool EthBoards::add(ethResources* res)
+bool EthBoards::add(EthResource* res)
 {
     if(NULL == res)
     {
@@ -140,9 +140,16 @@ bool EthBoards::add(ethResources* res)
 }
 
 
-bool EthBoards::add(ethResources* res, IethResource* interface, ethFeatType_t type)
+bool EthBoards::add(EthResource* res, IethResource* interface)
 {
-    if((NULL == res) || (NULL == interface) || (ethFeatType_NULL == type))
+    if((NULL == res) || (NULL == interface))
+    {
+        return false;
+    }
+
+    iethresType_t type = interface->type();
+
+    if(iethres_none == type)
     {
         return false;
     }
@@ -176,7 +183,7 @@ bool EthBoards::add(ethResources* res, IethResource* interface, ethFeatType_t ty
 }
 
 
-bool EthBoards::rem(ethResources* res)
+bool EthBoards::rem(EthResource* res)
 {
     if(NULL == res)
     {
@@ -203,7 +210,7 @@ bool EthBoards::rem(ethResources* res)
     LUT[index].boardnumber = 0;
     memset(LUT[index].name, 0, sizeof(LUT[index].name));
     LUT[index].numberofinterfaces = 0;
-    for(int i=0; i<ethFeatType_numberof; i++)
+    for(int i=0; i<iethresType_numberof; i++)
     {
         LUT[index].interfaces[i] = NULL;
     }
@@ -214,9 +221,9 @@ bool EthBoards::rem(ethResources* res)
 }
 
 
-bool EthBoards::rem(ethResources* res, ethFeatType_t type)
+bool EthBoards::rem(EthResource* res, iethresType_t type)
 {
-    if((NULL == res) || (ethFeatType_NULL == type))
+    if((NULL == res) || (iethres_none == type))
     {
         return false;
     }
@@ -246,9 +253,9 @@ bool EthBoards::rem(ethResources* res, ethFeatType_t type)
 }
 
 
-ethResources* EthBoards::get_resource(eOipv4addr_t ipv4)
+EthResource* EthBoards::get_resource(eOipv4addr_t ipv4)
 {
-    ethResources * ret = NULL;
+    EthResource * ret = NULL;
 
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
@@ -279,45 +286,45 @@ IethResource* EthBoards::get_interface(eOipv4addr_t ipv4, eOprotID32_t id32)
         return dev;
     }
 
-    ethFeatType_t type = ethFeatType_NULL;
+    iethresType_t type = iethres_none;
     eOprotEndpoint_t ep = eoprot_ID2endpoint(id32);
     switch(ep)
     {
         case eoprot_endpoint_management:
         {
-            type = ethFeatType_Management;
+            type = iethres_management;
         } break;
 
         case eoprot_endpoint_motioncontrol:
         {
-            type = ethFeatType_MotionControl;
+            type = iethres_motioncontrol;
         } break;
 
         case eoprot_endpoint_skin:
         {
-            type = ethFeatType_Skin;
+            type = iethres_skin;
         } break;
 
         case eoprot_endpoint_analogsensors:
         {
             eOprotEntity_t en = eoprot_ID2entity(id32);
             if(eoprot_entity_as_strain == en)
-                type = ethFeatType_AnalogStrain;
+                type = iethres_analogstrain;
             else if(eoprot_entity_as_mais == en)
-                type = ethFeatType_AnalogMais;
+                type = iethres_analogmais;
             else if(eoprot_entity_as_inertial == en)
-                type = ethFeatType_AnalogInertial;
+                type = iethres_analoginertial;
             else
-                type = ethFeatType_NULL;
+                type = iethres_none;
         } break;
 
         default:
         {
-            type = ethFeatType_NULL;
+            type = iethres_none;
         } break;
     }
 
-    if(ethFeatType_NULL != type)
+    if(iethres_none != type)
     {
         dev = LUT[index].interfaces[type];
     }
@@ -349,7 +356,7 @@ const char * EthBoards::name(eOipv4addr_t ipv4)
 
 
 
-bool EthBoards::execute(void (*action)(ethResources* res, void* p), void* par)
+bool EthBoards::execute(void (*action)(EthResource* res, void* p), void* par)
 {
     if(NULL == action)
     {
@@ -358,13 +365,33 @@ bool EthBoards::execute(void (*action)(ethResources* res, void* p), void* par)
 
     for(int i=0; i<maxEthBoards; i++)
     {
-        ethResources* res = LUT[i].resource;
+        EthResource* res = LUT[i].resource;
         if(NULL != res)
         {
             action(res, par);
         }
 
     }
+
+    return(true);
+}
+
+
+bool EthBoards::execute(eOipv4addr_t ipv4, void (*action)(EthResource* res, void* p), void* par)
+{
+    if(NULL == action)
+    {
+        return(false);
+    }
+
+    EthResource* res = get_resource(ipv4);
+
+    if(NULL == res)
+    {
+        return(false);
+    }
+
+    action(res, par);
 
     return(true);
 }
@@ -436,7 +463,7 @@ bool TheEthManager::lockTXRX(bool on)
     return true;
 }
 
-void ethEvalTXropframe(ethResources *r, void* p)
+void ethEvalTXropframe(EthResource *r, void* p)
 {
     if((NULL == r) || (NULL == p))
     {
@@ -559,7 +586,7 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
 }
 
 
-ethResources *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol)
+EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver)
 {
 
     // 1. must create communication objects: sender, receiver, socket
@@ -584,32 +611,39 @@ ethResources *TheEthManager::requestResource2(IethResource *interface, yarp::os:
         return NULL;
     }
     Bottle paramIPboard(groupEth.find("IpAddress").asString());
-    Bottle paramNameBoard(groupEth.find("Name").asString());
     char str[64] = {0};
     strcpy(str, paramIPboard.toString().c_str());
     int ip1, ip2, ip3, ip4;
     sscanf(str, "\"%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
     eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
-    char boardname[64] = {0};
-    strcpy(boardname, paramNameBoard.toString().c_str());
-
+//    Bottle paramNameBoard(groupEth.find("Name").asString());
+//    char boardname[64] = {0};
+//    strcpy(boardname, paramNameBoard.toString().c_str());
 
 
     // i want to lock the use of resources managed by ethBoards to avoid that we attempt to use for TX a ethres not completely initted
 
     lockTXRX(true);
 
-    ethResources *rr = ethBoards->get_resource(ipv4addr);
+    // i do an attempt to get the resource.
+    EthResource *rr = ethBoards->get_resource(ipv4addr);
 
     if(NULL == rr)
     {
+        // i dont have the resource yet ...
+
         char ipinfo[20] = {0};
         eo_common_ipv4addr_to_string(ipv4addr, ipinfo, sizeof(ipinfo));
-        yDebug() << "TheEthManager::requestResource2() will create a new ethResource for board" << boardname << "with IP = " << ipinfo;
-        rr = new ethResources;
 
-        if(false == rr->open2(ipv4addr, boardname, cfgtotal, cfgtransceiver, cfgprotocol))
+        rr = new EthResource;
+
+        if(true == rr->open2(ipv4addr, cfgtotal, cfgtransceiver))
         {
+            ethBoards->add(rr);
+        }
+        else
+        {
+
             yError() << "TheEthManager::requestResource2(): error creating a new ethResource for IP = " << ipinfo;
             if(NULL != rr)
             {
@@ -620,12 +654,11 @@ ethResources *TheEthManager::requestResource2(IethResource *interface, yarp::os:
             return NULL;
         }
 
-        ethBoards->add(rr);
+        yDebug() << "TheEthManager::requestResource2(): has just succesfully created a new EthResource for IP = " << ipinfo;
     }
 
-    iethresType_t type = interface->type();
-    ethFeatType_t tt = (ethFeatType_t) type;
-    ethBoards->add(rr, interface, tt);
+
+    ethBoards->add(rr, interface);
 
 
     lockTXRX(false);
@@ -636,7 +669,7 @@ ethResources *TheEthManager::requestResource2(IethResource *interface, yarp::os:
 
 
 
-ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request)
+EthResource *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request)
 {
     // Check if local socket is initted, if not do it.
     ACE_TCHAR address[64] = {0};
@@ -703,13 +736,13 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
 
     lockTXRX(true);
 
-    ethResources *rr = ethBoards->get_resource(ipv4addr);
+    EthResource *rr = ethBoards->get_resource(ipv4addr);
 
     if(NULL == rr)
     {
         // device doesn't exist yet: create it
         yTrace() << "Creating ethResource for IP " << request.boardIPaddr.string;
-        rr = new ethResources;
+        rr = new EthResource;
         if(false == rr->open(cfgtotal, cfgtransceiver, cfgprotocol, request))
         {
             yError() << "Error creating new ethReasource for IP " << request.boardIPaddr.string;
@@ -725,7 +758,7 @@ ethResources *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yar
         ethBoards->add(rr);
     }
 
-    ethBoards->add(rr, request.interface, request.type);
+    ethBoards->add(rr, request.interface);
 
 
     lockTXRX(false);
@@ -742,7 +775,7 @@ int TheEthManager::releaseResource(ethFeature_t &resource)
 
     eOipv4addr_t ipv4addr = eo_common_ipv4addr(resource.boardIPaddr.ip1, resource.boardIPaddr.ip2, resource.boardIPaddr.ip3, resource.boardIPaddr.ip4);
 
-    ethResources* rr = ethBoards->get_resource(ipv4addr);
+    EthResource* rr = ethBoards->get_resource(ipv4addr);
     if(NULL != rr)
     {
         bool success = rr->serviceStop(eomn_serv_category_all); // but you must change later on with eomn_serv_category_mc or ...
@@ -753,7 +786,7 @@ int TheEthManager::releaseResource(ethFeature_t &resource)
         lockTXRX(true);
 
         // remove the interface
-        ethBoards->rem(rr, resource.type);
+        ethBoards->rem(rr, static_cast<iethresType_t>(resource.type));
 
         int remaining = ethBoards->number_of_interfaces(rr);
         if(0 == remaining)
@@ -987,7 +1020,7 @@ bool TheEthManager::stopCommunicationThreads()
 }
 
 
-void delete_resources(ethResources *p, void* par)
+void delete_resources(EthResource *p, void* par)
 {
     delete p;
 }
@@ -1049,13 +1082,13 @@ bool TheEthManager::Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, b
 
     lockRX(true);
 
-    ethResources* r = ethBoards->get_resource(ipv4addr);
+    EthResource* r = ethBoards->get_resource(ipv4addr);
 
     if(NULL != r)
     {
         if(false == r->canProcessRXpacket(data, size))
         {   // cannot give packet to ethresource
-            yError() << "TheEthManager::Reception() cannot give a received packet of size" << size << "to ethResources because ethResources::canProcessRXpacket() returns false.";
+            yError() << "TheEthManager::Reception() cannot give a received packet of size" << size << "to EthResource because EthResource::canProcessRXpacket() returns false.";
         }
         else
         {
@@ -1076,7 +1109,7 @@ bool TheEthManager::Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, b
 }
 
 
-ethResources* TheEthManager::IPtoResource(ACE_INET_Addr adr)
+EthResource* TheEthManager::IPtoResource(ACE_INET_Addr adr)
 {
     ACE_UINT32 a32 = adr.get_ip_address();
     uint8_t ip4 = a32 & 0xff;
@@ -1107,7 +1140,7 @@ const char * TheEthManager::getName(eOipv4addr_t ipv4)
     return ret;
 }
 
-ethResources* TheEthManager::GetEthResource(eOipv4addr_t ipv4)
+EthResource* TheEthManager::GetEthResource(eOipv4addr_t ipv4)
 {
     return(ethBoards->get_resource(ipv4));
 }
@@ -1225,7 +1258,7 @@ bool EthSender::threadInit()
 void EthSender::run()
 {    
     // by calling this metod of ethManager, we put protection vs concurrency internal to the class.
-    // for tx we must protect the ethresources not being changed. they can be changed by a device such as
+    // for tx we must protect the EthResource not being changed. they can be changed by a device such as
     // embObjMotionControl etc which adds or releases its resources.
     ethManager->Transmission();
 }
@@ -1237,7 +1270,7 @@ void EthSender::run()
 
 void EthSender::run()
 {
-    ethResources  *ethRes;
+    EthResource  *ethRes;
     uint16_t      bytes_to_send = 0;
     uint16_t      numofrops = 0;
     ethResRIt     riterator, _rBegin, _rEnd;
@@ -1429,8 +1462,8 @@ void EthReceiver::run()
 {
     ssize_t       incoming_msg_size = 0;
     ACE_INET_Addr sender_addr;
-    uint64_t      incoming_msg_data[ethResources::maxRXpacketsize/8];   // 8-byte aligned local buffer for incoming packet: it must be able to accomodate max size of packet
-    const ssize_t incoming_msg_capacity = ethResources::maxRXpacketsize;
+    uint64_t      incoming_msg_data[EthResource::maxRXpacketsize/8];   // 8-byte aligned local buffer for incoming packet: it must be able to accomodate max size of packet
+    const ssize_t incoming_msg_capacity = EthResource::maxRXpacketsize;
 
     int flags = 0;
 #ifndef WIN32
@@ -1478,11 +1511,11 @@ void EthReceiver::run()
     //yTrace();
 
     ACE_TCHAR     address[64];
-    ethResources  *ethRes;
+    EthResource  *ethRes;
     ssize_t       incoming_msg_size = 0;
     ACE_INET_Addr sender_addr;
-    uint64_t      incoming_msg_data[ethResources::maxRXpacketsize/8]; // 8-byte aligned local buffer for incoming packet: it must be able to accomodate max size of packet
-    const int     incoming_msg_capacity = ethResources::maxRXpacketsize;
+    uint64_t      incoming_msg_data[EthResource::maxRXpacketsize/8]; // 8-byte aligned local buffer for incoming packet: it must be able to accomodate max size of packet
+    const int     incoming_msg_capacity = EthResource::maxRXpacketsize;
 
 
     //ACE_Time_Value recvTimeOut;
@@ -1516,7 +1549,7 @@ void EthReceiver::run()
         {
             if(false == ethRes->canProcessRXpacket(incoming_msg_data, incoming_msg_size))
             {   // cannot give packet to ethresource
-                yError() << "EthReceiver::run() cannot give a received packet of size" << incoming_msg_size << "to ethResources because ethResources::canProcessRXpacket() returns false.";
+                yError() << "EthReceiver::run() cannot give a received packet of size" << incoming_msg_size << "to EthResource because EthResource::canProcessRXpacket() returns false.";
             }
             else
             {

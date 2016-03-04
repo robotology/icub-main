@@ -62,6 +62,8 @@ using namespace yarp::dev;
 
 class hostTransceiver
 {
+public:
+     enum { maxSizeUDPpacket = 1496 };
 private:
     enum { maxNumberOfROPloadingAttempts = 5 };
     double delayAfterROPloadingFailure;
@@ -90,6 +92,7 @@ public:
     ~hostTransceiver();
 
 
+    bool init2(yarp::os::Searchable &cfgtransceiver, eOipv4addressing_t& localIPaddressing, eOipv4addr_t remoteIP, uint16_t pktsize = maxSizeUDPpacket);
 
     bool init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, eOipv4addr_t localipaddr, eOipv4addr_t remoteipaddr, eOipv4port_t ipport, uint16_t pktsize, FEAT_boardnumber_t board_n);
 
@@ -151,7 +154,7 @@ private:
     bool addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32_t signature, bool writelocalrxcache = false);
     bool addGetMessage__(eOprotID32_t protid, uint32_t signature);
 
-    bool initProtocol(yarp::os::Searchable &cfgprotocol);
+    bool initProtocol();
 
     void eoprot_override_mn(void);
     void eoprot_override_mc(void);
@@ -160,7 +163,7 @@ private:
 
     bool prepareTransceiverConfig(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol);
 
-    bool prepareTransceiverConfigNOnvset(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol);
+    bool prepareTransceiverConfigNOnvset(yarp::os::Searchable &cfgtransceiver);
 
     bool fillRemoteProperties(yarp::os::Searchable &cfgprotocol);
 
