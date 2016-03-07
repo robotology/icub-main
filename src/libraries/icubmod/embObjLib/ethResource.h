@@ -296,21 +296,14 @@ public:
 
 
 
-    bool verifyBoard(yarp::os::Searchable &protconfig);
-    bool verifyBoardPresence(yarp::os::Searchable &protconfig);
-    bool verifyBoardTransceiver(yarp::os::Searchable &protconfig);   
-    bool setTXrate(yarp::os::Searchable &protconfig);
+    bool verifyBoard();
+    bool verifyBoardPresence();
+    bool verifyBoardTransceiver();
+    bool setTXrate();
     bool cleanBoardBehaviour(void);
-//    bool setRemoteBoardNumber(void);
-
-    bool verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);
-//    bool configureENDPOINT(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);
-//    bool verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber = -1);
 
 
-//    Semaphore* startNetworkQuerySession(eOprotID32_t id32, uint32_t signature); // to the associated board
-//    bool waitForNetworkQueryReply(Semaphore* sem, double timeout);
-//    bool stopNetworkQuerySession(Semaphore* sem);
+    bool verifyEPprotocol(eOprot_endpoint_t ep);
 
     bool aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
 

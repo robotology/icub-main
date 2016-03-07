@@ -497,6 +497,60 @@ bool TheEthManager::Transmission(void)
 }
 
 
+bool TheEthManager::parseEthBoardInfo(yarp::os::Searchable &cfgtotal, ethFeature_t& ethbrdinfo)
+{
+    // Get PC104 address and port from config file
+    Bottle groupPC104  = Bottle(cfgtotal.findGroup("PC104"));
+    if (groupPC104.isNull())
+    {
+        yError() << "TheEthManager::parseEthBoardInfo() cannot find PC104 group in config files";
+        return false;
+    }
+    Value *PC104IpAddress_p;
+    if (!groupPC104.check("PC104IpAddress", PC104IpAddress_p))
+    {
+        yError() << "missing PC104IpAddress";
+        return false;
+    }
+    Bottle parameter1(groupPC104.find("PC104IpAddress").asString());
+    ACE_UINT16 port = groupPC104.find("PC104IpPort").asInt();
+
+    strcpy(ethbrdinfo.pc104IPaddr.string, parameter1.toString().c_str());
+    ethbrdinfo.pc104IPaddr.port = port;
+
+    // get ip adress and port for board from config file
+    Bottle groupETH_BOARD  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
+    if (groupETH_BOARD.isNull())
+    {
+        yError() << "TheEthManager::parseEthBoardInfo() cannot find ETH_BOARD group in config files";
+        return false;
+    }
+    Bottle groupETH_BOARD_PROPERTIES  = Bottle(cfgtotal.findGroup("ETH_BOARD_PROPERTIES"));
+    if (groupETH_BOARD_PROPERTIES.isNull())
+    {
+        yError() << "TheEthManager::parseEthBoardInfo() cannot find ETH_BOARD_PROPERTIES group in config files";
+        return false;
+    }
+    Bottle parameter2( groupETH_BOARD_PROPERTIES.find("IpAddress").asString() );
+    strcpy(ethbrdinfo.boardIPaddr.string, parameter2.toString().c_str());
+    ethbrdinfo.boardIPaddr.port = port;
+
+    sscanf(ethbrdinfo.boardIPaddr.string,"\"%d.%d.%d.%d", &ethbrdinfo.boardIPaddr.ip1, &ethbrdinfo.boardIPaddr.ip2, &ethbrdinfo.boardIPaddr.ip3, &ethbrdinfo.boardIPaddr.ip4);
+    sscanf(ethbrdinfo.pc104IPaddr.string,"\"%d.%d.%d.%d", &ethbrdinfo.pc104IPaddr.ip1, &ethbrdinfo.pc104IPaddr.ip2, &ethbrdinfo.pc104IPaddr.ip3, &ethbrdinfo.pc104IPaddr.ip4);
+
+    snprintf(ethbrdinfo.boardIPaddr.string, sizeof(ethbrdinfo.boardIPaddr.string), "%u.%u.%u.%u:%u", ethbrdinfo.boardIPaddr.ip1, ethbrdinfo.boardIPaddr.ip2, ethbrdinfo.boardIPaddr.ip3, ethbrdinfo.boardIPaddr.ip4, ethbrdinfo.boardIPaddr.port);
+    snprintf(ethbrdinfo.pc104IPaddr.string, sizeof(ethbrdinfo.pc104IPaddr.string), "%u.%u.%u.%u:%u", ethbrdinfo.pc104IPaddr.ip1, ethbrdinfo.pc104IPaddr.ip2, ethbrdinfo.pc104IPaddr.ip3, ethbrdinfo.pc104IPaddr.ip4, ethbrdinfo.pc104IPaddr.port);
+
+    // Check input parameters
+    //snprintf(info, sizeof(info), "xxxxxxxxxxxxxxxxx - referred to EMS: %s", ethbrdinfo.boardIPaddr.string);
+
+
+    snprintf(ethbrdinfo.boardName, sizeof(ethbrdinfo.boardName), "BRD-IP-%s", ethbrdinfo.boardIPaddr.string);
+    ethbrdinfo.boardNumber  = ethbrdinfo.boardIPaddr.ip4;
+
+    return true;
+}
+
 bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
 {
     // we need: ip address of pc104, port used by socket, tx rate, rx rate.
@@ -588,7 +642,6 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
 
 EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal)
 {
-
     // 1. must create communication objects: sender, receiver, socket
 
     if(communicationIsInitted == false)
@@ -775,46 +828,132 @@ EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::
 
 
 
-int TheEthManager::releaseResource(ethFeature_t &resource)
+//int TheEthManager::releaseResource(ethFeature_t &resource)
+//{
+
+//    int ret = 1; // -1 means that the singleton is not needed anymore
+
+//    eOipv4addr_t ipv4addr = eo_common_ipv4addr(resource.boardIPaddr.ip1, resource.boardIPaddr.ip2, resource.boardIPaddr.ip3, resource.boardIPaddr.ip4);
+
+//    EthResource* rr = ethBoards->get_resource(ipv4addr);
+//    if(NULL != rr)
+//    {
+//        bool success = rr->serviceStop(eomn_serv_category_all); // but you must change later on with eomn_serv_category_mc or ...
+//        success = success;
+
+
+//        // now we change internal data structure of ethBoards, thus .. must disable tx and rx
+//        lockTXRX(true);
+
+//        // remove the interface
+//        ethBoards->rem(rr, static_cast<iethresType_t>(resource.type));
+
+//        int remaining = ethBoards->number_of_interfaces(rr);
+//        if(0 == remaining)
+//        {   // remove also the resource
+//            rr->close();
+//            ethBoards->rem(rr);
+//            delete rr;
+//        }
+
+//        if(0 == ethBoards->number_of_resources())
+//        {   // we dont have any more resources
+//            ret = -1;
+//        }
+
+//        lockTXRX(false);
+
+//    }
+
+//    return(ret);
+//}
+
+
+int TheEthManager::releaseResource2(EthResource* ethresource, IethResource* interface)
 {
-
-    int ret = 1; // -1 means that the singleton is not needed anymore
-
-    eOipv4addr_t ipv4addr = eo_common_ipv4addr(resource.boardIPaddr.ip1, resource.boardIPaddr.ip2, resource.boardIPaddr.ip3, resource.boardIPaddr.ip4);
-
-    EthResource* rr = ethBoards->get_resource(ipv4addr);
-    if(NULL != rr)
+    int ret = 1; // -1 means that the singleton is not needed anymore. 0 means error
+    if((NULL == ethresource) || (NULL == interface))
     {
-        bool success = rr->serviceStop(eomn_serv_category_all); // but you must change later on with eomn_serv_category_mc or ...
-        success = success;
-
-
-        // now we change internal data structure of ethBoards, thus .. must disable tx and rx
-        lockTXRX(true);
-
-        // remove the interface
-        ethBoards->rem(rr, static_cast<iethresType_t>(resource.type));
-
-        int remaining = ethBoards->number_of_interfaces(rr);
-        if(0 == remaining)
-        {   // remove also the resource
-            rr->close();
-            ethBoards->rem(rr);
-            delete rr;
-        }
-
-        if(0 == ethBoards->number_of_resources())
-        {   // we dont have any more resources
-            ret = -1;
-        }
-
-        lockTXRX(false);
-
+        yError() << "TheEthManager::releaseResource2(): there is an attempt to release a NULL EthResource or IethResource";
+        return 0;
     }
+
+
+    EthResource* rr = ethresource;
+
+    iethresType_t type = interface->type();
+
+    // but you must change later on with eomn_serv_category_mc or ...
+    eOmn_serv_category_t category = eomn_serv_category_all;
+    switch(type)
+    {
+        iethres_analogmais:
+        {
+            category = eomn_serv_category_mais;
+        } break;
+
+        iethres_analogstrain:
+        {
+            category = eomn_serv_category_strain;
+        } break;
+
+        iethres_motioncontrol:
+        {
+            category = eomn_serv_category_mc;
+        } break;
+
+        iethres_skin:
+        {
+            category = eomn_serv_category_skin;
+        } break;
+
+        iethres_analogvirtual:
+        {
+            category = eomn_serv_category_none;
+        } break;
+
+        iethres_analoginertial:
+        {
+            category = eomn_serv_category_inertials;
+        } break;
+
+        default:
+        {
+            category = eomn_serv_category_none;
+        } break;
+    }
+
+    if(eomn_serv_category_none != category)
+    {
+        bool success = rr->serviceStop(category);
+        success = success;
+    }
+
+
+    // now we change internal data structure of ethBoards, thus .. must disable tx and rx
+    lockTXRX(true);
+
+    // remove the interface
+    ethBoards->rem(rr, type);
+
+    int remaining = ethBoards->number_of_interfaces(rr);
+    if(0 == remaining)
+    {   // remove also the resource
+        rr->close();
+        ethBoards->rem(rr);
+        delete rr;
+    }
+
+    if(0 == ethBoards->number_of_resources())
+    {   // we dont have any more resources
+        ret = -1;
+    }
+
+    lockTXRX(false);
+
 
     return(ret);
 }
-
 
 const ACE_INET_Addr& TheEthManager::getLocalIPaddress(void)
 {

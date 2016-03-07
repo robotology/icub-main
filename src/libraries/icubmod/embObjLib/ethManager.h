@@ -208,12 +208,17 @@ public:
     bool close(void);
 
 
+    bool parseEthBoardInfo(yarp::os::Searchable &cfgtotal, ethFeature_t& info);
+
+
     bool startCommunication(yarp::os::Searchable &cfgtotal);
 
     EthResource* requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal);
 
 
-    int releaseResource(ethFeature_t &resource);
+//    int releaseResource(ethFeature_t &resource);
+
+    int releaseResource2(EthResource* ethresource, IethResource* interface);
 
     const ACE_INET_Addr& getLocalIPaddress(void);
 

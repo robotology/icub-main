@@ -808,7 +808,7 @@ bool EthResource::aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature
 
 
 
-bool EthResource::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
+bool EthResource::verifyBoardTransceiver()
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
@@ -1017,7 +1017,7 @@ bool EthResource::verifyBoardTransceiver(yarp::os::Searchable &protconfig)
 }
 
 
-bool EthResource::setTXrate(yarp::os::Searchable &protconfig)
+bool EthResource::setTXrate()
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
@@ -1088,7 +1088,7 @@ bool EthResource::cleanBoardBehaviour(void)
 }
 
 
-bool EthResource::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep)
+bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
 {
     if((uint8_t)ep >= eoprot_endpoints_numberof)
     {
@@ -1101,7 +1101,7 @@ bool EthResource::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endp
         return(true);
     }
 
-    if(false == verifyBoard(protconfig))
+    if(false == verifyBoard())
     {
         yError() << "EthResource::verifyEPprotocol() cannot verify BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
         return(false);
@@ -1236,12 +1236,12 @@ bool EthResource::verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endp
 
 
 
-bool EthResource::verifyBoard(yarp::os::Searchable &protconfig)
+bool EthResource::verifyBoard(void)
 {
-    if((true == verifyBoardPresence(protconfig)) &&
-       (true == verifyBoardTransceiver(protconfig)) &&
+    if((true == verifyBoardPresence()) &&
+       (true == verifyBoardTransceiver()) &&
 //       (true == setRemoteBoardNumber()) &&
-       (true == setTXrate(protconfig)) &&
+       (true == setTXrate()) &&
        (true == cleanBoardBehaviour()) )
     {
         return(true);
@@ -1256,7 +1256,7 @@ bool EthResource::verifyBoard(yarp::os::Searchable &protconfig)
 //    return(remoteBoardNumberIsSet);
 //}
 
-bool EthResource::verifyBoardPresence(yarp::os::Searchable &protconfig)
+bool EthResource::verifyBoardPresence(void)
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
