@@ -379,7 +379,11 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    ethManager->parseEthBoardInfo(config, _fId);
+    if(false == ethManager->parseEthBoardInfo(config, _fId))
+    {
+        yError() << "embObjSkin::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
+        return false;
+    }
     // add specific info about this device ...
     _fId.endpoint = eoprot_endpoint_skin;
     _fId.entity = eoprot_entity_sk_skin; // actually, embobjmotioncontrol manages joints, motors, and controller. however in case of this endpoint we use entity joint

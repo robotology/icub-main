@@ -184,7 +184,11 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-    ethManager->parseEthBoardInfo(config, _fId);
+    if(false == ethManager->parseEthBoardInfo(config, _fId))
+    {
+        yError() << "embObjVirtualAnalogSensor::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
+        return false;
+    }
     // add specific info about this device ...
     _fId.endpoint = eoprot_endpoint_none;
     _fId.entity = eoprot_entity_none;

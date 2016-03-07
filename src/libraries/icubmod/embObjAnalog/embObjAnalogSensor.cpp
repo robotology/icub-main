@@ -286,7 +286,11 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-    ethManager->parseEthBoardInfo(config, _fId);
+    if(false == ethManager->parseEthBoardInfo(config, _fId))
+    {
+        yError() << "embObjAnalogSensor::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
+        return false;
+    }
     // add specific info about this device ...
     _fId.interface  = this;
     _fId.endpoint = eoprot_endpoint_analogsensors;

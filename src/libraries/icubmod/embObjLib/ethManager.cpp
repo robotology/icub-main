@@ -525,7 +525,7 @@ bool TheEthManager::parseEthBoardInfo(yarp::os::Searchable &cfgtotal, ethFeature
         yError() << "TheEthManager::parseEthBoardInfo() cannot find ETH_BOARD group in config files";
         return false;
     }
-    Bottle groupETH_BOARD_PROPERTIES  = Bottle(cfgtotal.findGroup("ETH_BOARD_PROPERTIES"));
+    Bottle groupETH_BOARD_PROPERTIES  = Bottle(groupETH_BOARD.findGroup("ETH_BOARD_PROPERTIES"));
     if (groupETH_BOARD_PROPERTIES.isNull())
     {
         yError() << "TheEthManager::parseEthBoardInfo() cannot find ETH_BOARD_PROPERTIES group in config files";
