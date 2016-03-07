@@ -281,7 +281,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     _fId.interface = this;
     _fId.type = ethFeatType_AnalogVirtual;
 
-    res = ethManager->requestResource2(this, config, groupTransceiver);
+    res = ethManager->requestResource2(this, config);
     if(NULL == res)
     {
         yError() << "embObjMotionControl::open() fails because could not instantiate the ethResource for board" << _fId.boardNumber << " ... unable to continue";

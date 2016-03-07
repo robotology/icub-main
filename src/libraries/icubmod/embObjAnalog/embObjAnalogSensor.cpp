@@ -402,7 +402,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     }
 
 
-    res = ethManager->requestResource2(this, config, groupTransceiver);
+    res = ethManager->requestResource2(this, config);
     if(NULL == res)
     {
         yError() << "embObjAnalogSensor::open() fails because could not instantiate the ethResource board" << _fId.boardNumber << " ... unable to continue";

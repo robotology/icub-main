@@ -586,7 +586,7 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
 }
 
 
-EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver)
+EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal)
 {
 
     // 1. must create communication objects: sender, receiver, socket
@@ -602,21 +602,28 @@ EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::
         }
     }
 
-    // now we extract the ip address of the board & its name
+    // now we extract the ip address of the board
 
-    Bottle groupEth  = Bottle(cfgtotal.findGroup("ETH"));
-    if(groupEth.isNull())
+    Bottle groupEthBoard  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
+    if(groupEthBoard.isNull())
     {
-        yError() << "TheEthManager::requestResource2() cannot find ETH group in config files";
+        yError() << "TheEthManager::requestResource2() cannot find ETH_BOARD group in config files";
         return NULL;
     }
-    Bottle paramIPboard(groupEth.find("IpAddress").asString());
+    Bottle groupEthBoardProps = Bottle(groupEthBoard.findGroup("ETH_BOARD_PROPERTIES"));
+    if(groupEthBoardProps.isNull())
+    {
+        yError() << "TheEthManager::requestResource2() cannot find ETH_BOARD_PROPERTIES group in config files";
+        return NULL;
+    }
+
+    Bottle paramIPboard(groupEthBoardProps.find("IpAddress").asString());
     char str[64] = {0};
     strcpy(str, paramIPboard.toString().c_str());
     int ip1, ip2, ip3, ip4;
     sscanf(str, "\"%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
     eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
-//    Bottle paramNameBoard(groupEth.find("Name").asString());
+//    Bottle paramNameBoard(groupEthBoardParams.find("Name").asString());
 //    char boardname[64] = {0};
 //    strcpy(boardname, paramNameBoard.toString().c_str());
 
@@ -637,7 +644,7 @@ EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::
 
         rr = new EthResource;
 
-        if(true == rr->open2(ipv4addr, cfgtotal, cfgtransceiver))
+        if(true == rr->open2(ipv4addr, cfgtotal))
         {
             ethBoards->add(rr);
         }

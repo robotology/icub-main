@@ -210,8 +210,7 @@ public:
 
     bool startCommunication(yarp::os::Searchable &cfgtotal);
 
-    EthResource* requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver);
-//    EthResource* requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
+    EthResource* requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal);
 
 
     int releaseResource(ethFeature_t &resource);

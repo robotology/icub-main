@@ -63,7 +63,8 @@ using namespace yarp::dev;
 class HostTransceiver
 {
 public:
-     enum { maxSizeUDPpacket = 1496 };
+     enum { maxSizeOfRXpacket = 1496 };
+     enum { defTXrateOfRegulars = 1, defMaxSizeOfROP = 256, defMaxSizeOfTXpacket = 768 };
 private:
     enum { maxNumberOfROPloadingAttempts = 5 };
     double delayAfterROPloadingFailure;
@@ -85,16 +86,19 @@ protected:
 //    eOmn_transceiver_properties_t remoteTransceiverProperties;  // contains properties of the transceiver of the remote board as read from xml file
 //    eOmn_transceiver_properties_t localTransceiverProperties;   // contains properties of the transceiver here instantiated.
                                                                 // properties derive from remoteTransceiverProperties, from hosttxrxcfg and from elsewhere
-    uint8_t TXrate;
+    uint8_t TXrateOfRegulars;
+    uint16_t capacityofTXpacket;
+    uint16_t maxSizeOfROP;
+    eOnvset_BRDcfg_t nvsetbrdconfig;
 public:
 
     HostTransceiver();
     ~HostTransceiver();
 
 
-    bool init2(yarp::os::Searchable &cfgtransceiver, eOipv4addressing_t& localIPaddressing, eOipv4addr_t remoteIP, uint16_t pktsize = maxSizeUDPpacket);
+    bool init2(yarp::os::Searchable &cfgEthBoard, eOipv4addressing_t& localIPaddressing, eOipv4addr_t remoteIP, uint16_t rxpktsize = maxSizeOfRXpacket);
 
-    bool init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, eOipv4addr_t localipaddr, eOipv4addr_t remoteipaddr, eOipv4port_t ipport, uint16_t pktsize, FEAT_boardnumber_t board_n);
+//    bool init(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, eOipv4addr_t localipaddr, eOipv4addr_t remoteipaddr, eOipv4port_t ipport, uint16_t pktsize, FEAT_boardnumber_t board_n);
 
     bool addSetMessage(eOprotID32_t protid, uint8_t* data);
     bool addSetMessageWithSignature(eOprotID32_t protid, uint8_t* data, uint32_t sig);   //as above, but with signature
@@ -165,13 +169,11 @@ private:
     void eoprot_override_as(void);
     void eoprot_override_sk(void); 
 
-    bool prepareTransceiverConfig(yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol);
+    bool prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoard);
 
-    bool prepareTransceiverConfigNOnvset(yarp::os::Searchable &cfgtransceiver);
+    //bool fillRemoteProperties(yarp::os::Searchable &cfgprotocol);
 
-    bool fillRemoteProperties(yarp::os::Searchable &cfgprotocol);
-
-    const eOnvset_BRDcfg_t * getNVset_BRDcfg(yarp::os::Searchable &cfgprotocol);
+    //const eOnvset_BRDcfg_t * getNVset_BRDcfg(yarp::os::Searchable &cfgprotocol);
 
 public:
 

@@ -464,7 +464,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     _fId.interface = this;
 
 
-    res = ethManager->requestResource2(this, config, groupTransceiver);
+    res = ethManager->requestResource2(this, config);
     if(NULL == res)
     {
         yError() << "embObjSkin::open() fails because could not instantiate the ethResource for board" << _fId.boardNumber << " ... unable to continue";

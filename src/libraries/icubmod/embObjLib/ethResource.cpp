@@ -184,17 +184,29 @@ bool EthResource::lock(bool on)
 }
 
 
-bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver)
+bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 {
-    // Get the pointer to the actual Singleton TheEthManager
     ethManager = TheEthManager::instance();
 
-    Bottle groupEth  = Bottle(cfgtotal.findGroup("ETH"));
-    if(groupEth.isNull())
+    Bottle groupEthBoard  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
+    if(groupEthBoard.isNull())
     {
-        yError() << "EthResource::open2() cannot find ETH group in config files";
+        yError() << "EthResource::open2() cannot find ETH_BOARD group in config files";
         return NULL;
     }
+    Bottle groupEthBoardProps = Bottle(groupEthBoard.findGroup("ETH_BOARD_PROPERTIES"));
+    if(groupEthBoardProps.isNull())
+    {
+        yError() << "EthResource::open2() cannot find ETH_BOARD_PROPERTIES group in config files";
+        return NULL;
+    }
+    Bottle groupEthBoardSettings = Bottle(groupEthBoard.findGroup("ETH_BOARD_SETTINGS"));
+    if(groupEthBoardSettings.isNull())
+    {
+        yError() << "EthResource::open2() cannot find ETH_BOARD_PROPERTIES group in config files";
+        return NULL;
+    }
+
 // -- i dont use this code as long as i retrieve the remote ip address from the remIP argument .... however i may remove this argument and use the following code
 //    Bottle paramIPboard(groupEth.find("IpAddress").asString());
 //    char str[64] = {0};
@@ -202,7 +214,7 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal, yarp
 //    int ip1, ip2, ip3, ip4;
 //    sscanf(str, "\"%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
 //    eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
-    Bottle paramNameBoard(groupEth.find("Name").asString());
+    Bottle paramNameBoard(groupEthBoardSettings.find("Name").asString());
     char xmlboardname[64] = {0};
     strcpy(xmlboardname, paramNameBoard.toString().c_str());
 
@@ -217,13 +229,12 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal, yarp
         infoPkts->_verbose = false;
     }
 
-
     eOipv4addressing_t localIPv4 = ethManager->getLocalIPV4addressing();
 
     bool ret;
     uint8_t num = 0;
     eo_common_ipv4addr_to_decimal(remIP, NULL, NULL, NULL, &num);
-    if(!HostTransceiver::init2(cfgtransceiver, localIPv4, remIP))
+    if(!HostTransceiver::init2(groupEthBoard, localIPv4, remIP))
     {
         ret = false;
         char ipinfo[20] = {0};
@@ -1025,19 +1036,8 @@ bool EthResource::setTXrate(yarp::os::Searchable &protconfig)
 
     // call a set until verified
 
-    TXrate = TXrate;
-    if(0 == TXrate)
-    {
-        TXrate = 1;
-    }
-
-    if(TXrate > 20)
-    {
-        TXrate = 20;
-    }
-
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_config_txratedivider);
-    uint8_t txratediv = TXrate;
+    uint8_t txratediv = HostTransceiver::TXrateOfRegulars;
     if(false == setRemoteValueUntilVerified(id32, &txratediv, sizeof(txratediv), 5, 0.010, 0.050, 2))
     {
         yWarning() << "EthResource::setTXrate() could not configure txrate divider at" << txratediv << "in BOARD" << getName() << "with IP" << getIPv4string();
@@ -1045,14 +1045,13 @@ bool EthResource::setTXrate(yarp::os::Searchable &protconfig)
     }
     else
     {
-        yDebug() << "EthResource::setTXrate() has succesfully set the TX rate of the transceiver of BOARD" << getName() << "with IP" << getIPv4string() << "at" << TXrate << "ms";
+        yDebug() << "EthResource::setTXrate() has succesfully set the TX rate of the transceiver of BOARD" << getName() << "with IP" << getIPv4string() << "at" << HostTransceiver::TXrateOfRegulars << "ms";
     }
-
 
 
     if(verbosewhenok)
     {
-        yDebug() << "EthResource::setTXrate() has succesfully set the TX rate of the transceiver of BOARD" << getName() << "with IP" << getIPv4string() << "at" << TXrate << "ms";
+        yDebug() << "EthResource::setTXrate() has succesfully set the TX rate of the transceiver of BOARD" << getName() << "with IP" << getIPv4string() << "at" << HostTransceiver::TXrateOfRegulars << "ms";
     }
 
     txrateISset = true;

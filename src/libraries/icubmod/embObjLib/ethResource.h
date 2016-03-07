@@ -241,7 +241,7 @@ public:
     ~EthResource();
 
 
-    bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver);
+    bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal);
     bool            close();
     bool            isEPsupported(eOprot_endpoint_t ep);
 
