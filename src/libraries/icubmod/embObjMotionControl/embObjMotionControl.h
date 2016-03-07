@@ -471,7 +471,6 @@ public:
     EthResource                *res;
     yarp::dev::TheEthManager    *ethManager;
 
-    bool verifyMotionControlProtocol(Bottle groupProtocol);
 
     void cleanup(void);
 

@@ -475,7 +475,7 @@ void ethEvalTXropframe(EthResource *r, void* p)
     uint16_t numofbytes = 0;
     uint16_t numofrops = 0;
     uint8_t* data2send = NULL;
-    bool transmitthepacket = r->getPointer2TxPack(&data2send, &numofbytes, &numofrops);
+    bool transmitthepacket = r->getTXpacket(&data2send, &numofbytes, &numofrops);
 
     if(true == transmitthepacket)
     {
@@ -669,102 +669,102 @@ EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::
 
 
 
-EthResource *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request)
-{
-    // Check if local socket is initted, if not do it.
-    ACE_TCHAR address[64] = {0};
-    snprintf(address, sizeof(address), "%s:%d", request.pc104IPaddr.string, request.pc104IPaddr.port);
+//EthResource *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request)
+//{
+//    // Check if local socket is initted, if not do it.
+//    ACE_TCHAR address[64] = {0};
+//    snprintf(address, sizeof(address), "%s:%d", request.pc104IPaddr.string, request.pc104IPaddr.port);
 
-    yTrace() << "TheEthManager::requestResource(): called for board #" << request.boardNumber;
+//    yTrace() << "TheEthManager::requestResource(): called for board #" << request.boardNumber;
 
-    if(request.boardNumber > TheEthManager::maxBoards)
-    {
-        yError() << "FATAL ERROR: TheEthManager::requestResource() detected a board number beyond the maximum allowed (max, rqst) =" << maxBoards << request.boardNumber << ")";
-        return NULL;
-    }
+//    if(request.boardNumber > TheEthManager::maxBoards)
+//    {
+//        yError() << "FATAL ERROR: TheEthManager::requestResource() detected a board number beyond the maximum allowed (max, rqst) =" << maxBoards << request.boardNumber << ")";
+//        return NULL;
+//    }
 
-    if(request.boardIPaddr.ip4 != request.boardNumber)
-    {
-        yError() << "FATAL ERROR: TheEthManager::requestResource() detected a board number different from its ip4 address (boardNumber, ip4) =" << request.boardNumber << request.boardIPaddr.ip4 << ")";
-        return NULL;
-    }
+//    if(request.boardIPaddr.ip4 != request.boardNumber)
+//    {
+//        yError() << "FATAL ERROR: TheEthManager::requestResource() detected a board number different from its ip4 address (boardNumber, ip4) =" << request.boardNumber << request.boardIPaddr.ip4 << ")";
+//        return NULL;
+//    }
 
-    if(0 == strlen(request.boardName))
-    {
-        // set default name: unset_xml_boardName__10.0.1.x
-        snprintf(request.boardName, sizeof(request.boardName), "unsetXMLboardName__10.0.1.%d", request.boardNumber);
-    }
+//    if(0 == strlen(request.boardName))
+//    {
+//        // set default name: unset_xml_boardName__10.0.1.x
+//        snprintf(request.boardName, sizeof(request.boardName), "unsetXMLboardName__10.0.1.%d", request.boardNumber);
+//    }
 
-    eOipv4addr_t ipv4addr = eo_common_ipv4addr(request.pc104IPaddr.ip1, request.pc104IPaddr.ip2, request.pc104IPaddr.ip3, request.pc104IPaddr.ip4);
-    ACE_UINT32 hostip = (request.pc104IPaddr.ip1 << 24) | (request.pc104IPaddr.ip2 << 16) | (request.pc104IPaddr.ip3 << 8) | (request.pc104IPaddr.ip4);
-    ACE_INET_Addr myIP((u_short)request.pc104IPaddr.port, hostip);
-    myIP.dump();
+//    eOipv4addr_t ipv4addr = eo_common_ipv4addr(request.pc104IPaddr.ip1, request.pc104IPaddr.ip2, request.pc104IPaddr.ip3, request.pc104IPaddr.ip4);
+//    ACE_UINT32 hostip = (request.pc104IPaddr.ip1 << 24) | (request.pc104IPaddr.ip2 << 16) | (request.pc104IPaddr.ip3 << 8) | (request.pc104IPaddr.ip4);
+//    ACE_INET_Addr myIP((u_short)request.pc104IPaddr.port, hostip);
+//    myIP.dump();
 
-    int txrate = -1; // uses default
-    int rxrate = -1; // uses default
+//    int txrate = -1; // uses default
+//    int rxrate = -1; // uses default
 
-    // if i find it in section ... of cfgtotal then i change it
-    if(cfgtotal.findGroup("PC104").check("PC104TXrate"))
-    {
-        int value = cfgtotal.findGroup("PC104").find("PC104TXrate").asInt();
-        if(value > 0)
-            txrate = value;
-    }
-    else
-    {
-        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104TXrate. thus using default value" << EthSender::EthSenderDefaultRate;;
-    }
+//    // if i find it in section ... of cfgtotal then i change it
+//    if(cfgtotal.findGroup("PC104").check("PC104TXrate"))
+//    {
+//        int value = cfgtotal.findGroup("PC104").find("PC104TXrate").asInt();
+//        if(value > 0)
+//            txrate = value;
+//    }
+//    else
+//    {
+//        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104TXrate. thus using default value" << EthSender::EthSenderDefaultRate;;
+//    }
 
-    if(cfgtotal.findGroup("PC104").check("PC104RXrate"))
-    {
-        int value = cfgtotal.findGroup("PC104").find("PC104RXrate").asInt();
-        if(value > 0)
-            rxrate = value;
-    }
-    else
-    {
-        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104RXrate. thus using default value" << EthReceiver::EthReceiverDefaultRate;
-    }
+//    if(cfgtotal.findGroup("PC104").check("PC104RXrate"))
+//    {
+//        int value = cfgtotal.findGroup("PC104").find("PC104RXrate").asInt();
+//        if(value > 0)
+//            rxrate = value;
+//    }
+//    else
+//    {
+//        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104RXrate. thus using default value" << EthReceiver::EthReceiverDefaultRate;
+//    }
 
-    if(!createSocket(myIP, txrate, rxrate) )
-    {
-        return NULL;
-    }
-
-
-    // i want to lock the use of resources managed by ethBoards to avoid that we attempt to use for TX a ethres not completely initted
-
-    lockTXRX(true);
-
-    EthResource *rr = ethBoards->get_resource(ipv4addr);
-
-    if(NULL == rr)
-    {
-        // device doesn't exist yet: create it
-        yTrace() << "Creating ethResource for IP " << request.boardIPaddr.string;
-        rr = new EthResource;
-        if(false == rr->open(cfgtotal, cfgtransceiver, cfgprotocol, request))
-        {
-            yError() << "Error creating new ethReasource for IP " << request.boardIPaddr.string;
-            if(NULL != rr)
-            {
-                delete rr;
-            }
-
-            rr = NULL;
-            return NULL;
-        }
-
-        ethBoards->add(rr);
-    }
-
-    ethBoards->add(rr, request.interface);
+//    if(!createSocket(myIP, txrate, rxrate) )
+//    {
+//        return NULL;
+//    }
 
 
-    lockTXRX(false);
+//    // i want to lock the use of resources managed by ethBoards to avoid that we attempt to use for TX a ethres not completely initted
 
-    return(rr);
-}
+//    lockTXRX(true);
+
+//    EthResource *rr = ethBoards->get_resource(ipv4addr);
+
+//    if(NULL == rr)
+//    {
+//        // device doesn't exist yet: create it
+//        yTrace() << "Creating ethResource for IP " << request.boardIPaddr.string;
+//        rr = new EthResource;
+//        if(false == rr->open(cfgtotal, cfgtransceiver, cfgprotocol, request))
+//        {
+//            yError() << "Error creating new ethReasource for IP " << request.boardIPaddr.string;
+//            if(NULL != rr)
+//            {
+//                delete rr;
+//            }
+
+//            rr = NULL;
+//            return NULL;
+//        }
+
+//        ethBoards->add(rr);
+//    }
+
+//    ethBoards->add(rr, request.interface);
+
+
+//    lockTXRX(false);
+
+//    return(rr);
+//}
 
 
 
@@ -1301,7 +1301,7 @@ void EthSender::run()
         ethRes = (*riterator);
 
         // This uses directly the pointer of the transceiver
-        bool transmitthepacket = ethRes->getPointer2TxPack(&p_sendData, &bytes_to_send, &numofrops);
+        bool transmitthepacket = ethRes->getTXpacket(&p_sendData, &bytes_to_send, &numofrops);
 
         if(true == transmitthepacket)
         {

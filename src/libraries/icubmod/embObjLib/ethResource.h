@@ -221,7 +221,7 @@ public:
 // -- it is used to manage udp communication towards a given board
 
 class yarp::dev::EthResource:  public DeviceDriver,
-                               public hostTransceiver
+                               public HostTransceiver
 {
 public:
 
@@ -234,47 +234,16 @@ public:
     // this is the maximum size of rx and tx packets managed by the ethresource.
     enum { maxRXpacketsize = 1496, maxTXpacketsize = 1496 };
 
-private:
-
-    eOipv4addr_t      ipv4addr;
-    char              ipv4addrstring[20];
-    char              boardName[32];
-    ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
-    double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
-    bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
-    InfoOfRecvPkts    *infoPkts;
-
-    yarp::os::Semaphore*  objLock;
-
-    EthNetworkQuery*    ethQuery;
-
-    EthNetworkQuery*    ethQueryServices;
-
-    bool lock();
-    bool unlock();
-
-    bool                verifiedEPprotocol[eoprot_endpoints_numberof];
-    bool                verifiedBoardPresence;
-
-    bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
-    bool                txrateISset;
-    bool                cleanedBoardBehaviour;    // the board is in config mode and does not have any regulars
-    eOmn_comm_status_t  boardCommStatus;
-    uint16_t            usedNumberOfRegularROPs;
-
-    can_string_eth*     c_string_handler[16];
 
 public:
-    TheEthManager       *ethManager;          //!< Pointer to the Singleton handling the UDP socket
 
     EthResource();
     ~EthResource();
 
 
-
     bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver);
-    bool            open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
     bool            close();
+    bool            isEPsupported(eOprot_endpoint_t ep);
 
     ACE_INET_Addr   getRemoteAddress(void);
 
@@ -283,11 +252,11 @@ public:
     const char *    getName(void);
     const char *    getIPv4string(void);
 
-    int             getNumberOfAttachedInterfaces(void);
+//    int             getNumberOfAttachedInterfaces(void);
 
     // the function returns true if the packet can be transmitted. 
     // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
-    bool            getPointer2TxPack(uint8_t **pack, uint16_t *size, uint16_t *numofrops);
+    bool            getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops);
 
 
     // returns the capacity of the receiving buffer.
@@ -299,24 +268,18 @@ public:
     void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true);
 
 
-    // we remove goToRun() and goToConfig() and we use serviceStart() and serviceStop()
-    bool            goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity);
-    bool            goToConfig(void);
+//    // we remove goToRun() and goToConfig() and we use serviceStart() and serviceStop()
+//    bool            goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity);
+//    bool            goToConfig(void);
 
     // we keep isRunning() and we add a field in the reply of serviceStart()/Stop() which tells if the board is in run mode or not.
     bool            isRunning(void);
 
-    /*!   @fn       getLastRecvMsgTimestamp(void);
-     *    @brief    return the system time of the last received message from the corresponding EMS board.
-     *    @return   seconds passed from the very first message received.
-     */
-    double          getLastRecvMsgTimestamp(void);
 
-
-    // -- remove the following three and use the new serviceSetRegulars() method instead ...
+//    // -- remove the following three and use the new serviceSetRegulars() method instead ...
 //    bool clearRegulars(bool verify = false);
-    bool addRegulars(vector<eOprotID32_t> &id32vector, bool verify = false);
-    bool numberofRegulars(uint16_t &numberofregulars);
+//    bool addRegulars(vector<eOprotID32_t> &id32vector, bool verify = false);
+//    bool numberofRegulars(uint16_t &numberofregulars);
 
 
     bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout = 0.100, int retries = 10);
@@ -328,13 +291,10 @@ public:
     bool setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries = 10, double waitbeforeverification = 0.001, double verificationtimeout = 0.050, int verificationretries = 2);
 
 
-    /*!   @fn       checkIsAlive(double curr_time);
-     *    @brief    check if ems is ok by verifing time elapsed from last received packet. In case of error print yError.
-     *    @return
-     */
     void checkIsAlive(double curr_time);
+//    double          getLastRecvMsgTimestamp(void);
 
-//    bool isEPmanaged(eOprot_endpoint_t ep);
+
 
     bool verifyBoard(yarp::os::Searchable &protconfig);
     bool verifyBoardPresence(yarp::os::Searchable &protconfig);
@@ -369,6 +329,38 @@ public:
 
 
 private:
+
+    eOipv4addr_t      ipv4addr;
+    char              ipv4addrstring[20];
+    char              boardName[32];
+    ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
+    double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
+    bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
+    InfoOfRecvPkts    *infoPkts;
+
+    yarp::os::Semaphore*  objLock;
+
+    EthNetworkQuery*    ethQuery;
+
+    EthNetworkQuery*    ethQueryServices;
+
+    bool                verifiedEPprotocol[eoprot_endpoints_numberof];
+    bool                verifiedBoardPresence;
+
+    bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
+    bool                txrateISset;
+    bool                cleanedBoardBehaviour;    // the board is in config mode and does not have any regulars
+    eOmn_comm_status_t  boardCommStatus;
+    uint16_t            usedNumberOfRegularROPs;
+
+    can_string_eth*     c_string_handler[16];
+
+
+    TheEthManager       *ethManager;
+private:
+
+    // lock of the object: on / off
+    bool lock(bool on);
 
     bool serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times);
 

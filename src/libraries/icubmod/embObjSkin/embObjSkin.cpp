@@ -464,31 +464,13 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     _fId.interface = this;
 
 
-    /* Once I'm ok, ask for resources, through the _fId struct I'll give the ip addr, port and
-    *  and boradNum to the ethManagerin order to create the ethResource requested.
-    * I'll Get back the very same sturct filled with other data useful for future handling
-    * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, _fId);
+    res = ethManager->requestResource2(this, config, groupTransceiver);
     if(NULL == res)
     {
-        yError() << "embObjSkin::open() fails because could not instantiate the ethResource board" << _fId.boardNumber << " ... unable to continue";
+        yError() << "embObjSkin::open() fails because could not instantiate the ethResource for board" << _fId.boardNumber << " ... unable to continue";
         return false;
     }
 
-//    if(false == res->isEPmanaged(eoprot_endpoint_skin))
-//    {
-//        yError() << "embObjSkin::open() detected that EMS "<< _fId.boardNumber << " does not support skin";
-//        cleanup();
-//        return false;
-//    }
-
-
-    if(false == res->verifyBoard(groupProtocol))
-    {
-        yError() << "embObjSkin::init() fails in function verifyBoard() for board " << _fId.boardNumber << ": CANNOT PROCEED ANY FURTHER";
-        cleanup();
-        return false;
-    }
 
     if(!res->verifyEPprotocol(groupProtocol, eoprot_endpoint_skin))
     {
@@ -497,14 +479,13 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    //    // marco.accame on 04 sept 2014: we could add a verification about the entities of skin ... MAYBE in the future
-    //
-    //    uint8_t numberofskins = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNumber), eoprot_endpoint_skin, eoprot_entity_sk_skin);
-    //    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_skin, eoprot_entity_sk_skin, numberofskins))
-    //    {   // JUST AN EXAMPLE OF HOW TO DO IT FOR THE SKIN.
-    //        yError() << "embObjSkin::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_sk_skin: VERIFY their number in board, and in XML files";
-    //        return false;
-    //    }
+
+    if(false == res->serviceVerifyActivate(eomn_serv_category_skin, NULL))
+    {
+        yError() << "embObjSkin::open() has an error in call of ethResources::serviceVerifyActivate() for board" << _fId.boardNumber;
+        cleanup();
+        return false;
+    }
 
 
     if(!this->fromConfig(config))
@@ -544,9 +525,11 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    if(false == res->goToRun(eoprot_endpoint_skin, eoprot_entity_sk_skin))
+
+
+    if(false == res->serviceStart(eomn_serv_category_skin))
     {
-        yError() << "embObjSkin::open() fails to start control loop of board" << _fId.boardNumber << ": cannot continue";
+        yError() << "embObjSkin::open() fails to start skin service for BOARD" << _fId.boardNumber << ": cannot continue";
         cleanup();
         return false;
     }
@@ -554,7 +537,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjSkin::open() correctly activated control loop of BOARD" << _fId.boardNumber;
+            yDebug() << "embObjSkin::open() correctly starts skin service of BOARD" << _fId.boardNumber;
         }
     }
 
@@ -564,12 +547,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
 bool EmbObjSkin::isEpManagedByBoard()
 {
-    if(eobool_true == eoprot_endpoint_configured_is(res->get_protBRDnumber(), eoprot_endpoint_skin))
-    {
-        return true;
-    }
-
-    return false;
+    return res->isEPsupported(eoprot_endpoint_skin);
 }
 
 void EmbObjSkin::cleanup(void)
@@ -687,8 +665,7 @@ bool EmbObjSkin::configPeriodicMessage(void)
     }
 
 
-    // configure the regulars
-    if(false == res->addRegulars(id32v, true))
+    if(false == res->serviceSetRegulars(eomn_serv_category_skin, id32v))
     {
         yError() << "EmbObjSkin::configPeriodicMessage() fails to add its variables to regulars: cannot proceed any further";
         return false;
@@ -697,7 +674,7 @@ bool EmbObjSkin::configPeriodicMessage(void)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjSkin::configPeriodicMessage() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjSkin::configPeriodicMessage() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
             char nvinfo[128];
             for(int r=0; r<id32v.size(); r++)
             {

@@ -187,42 +187,11 @@ public:
 
 private:
 
-    // this semaphore is used to ....
-    static yarp::os::Semaphore    managerSem;
-    // the following two semaphore are used separately or together to stop tx and rx if a change is done on ethboards (in startup and shutdown phases)
-    static yarp::os::Semaphore    txSem;
-    static yarp::os::Semaphore    rxSem;
-
-private:
-
-    static TheEthManager*         handle;
-
-    // contains the start-up time of teh system so that time measures / prints can be done relative.
-    double                        startUpTime;
-
-    ACE_INET_Addr                   localIPaddress;
-    eOipv4addressing_t              ipv4local;
-
-private:
-
-    bool                            communicationIsInitted;
-
-
-
-    // periodic threads which use methods of class TheEthManager to transmit / receive + the udp socket
-    EthSender                       *sender;
-    EthReceiver                     *receiver;
-    ACE_SOCK_Dgram                  *UDP_socket;
-
-private:
-
     // singletons have private constructor / destructor
-
     TheEthManager();
     ~TheEthManager();
 
 public:
-
 
     double getTimeOfStartUp(void);
 
@@ -242,7 +211,7 @@ public:
     bool startCommunication(yarp::os::Searchable &cfgtotal);
 
     EthResource* requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver);
-    EthResource* requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
+//    EthResource* requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
 
 
     int releaseResource(ethFeature_t &resource);
@@ -250,23 +219,6 @@ public:
     const ACE_INET_Addr& getLocalIPaddress(void);
 
     const eOipv4addressing_t & getLocalIPV4addressing(void);
-
-
-    // Methods for UDP socket handling
-private:
-
-    void flush();
-
-    bool createSocket(ACE_INET_Addr local_addr, int txrate, int rxrate);
-
-    bool lock(bool on);
-
-    bool lockTX(bool on);
-    bool lockRX(bool on);
-    bool lockTXRX(bool on);
-
-
-public:
 
     bool Transmission(void);
     bool Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, bool collectStatistics);
@@ -288,6 +240,43 @@ public:
     const char * getName(eOipv4addr_t ipv4);
 
     int send(void *udpframe, size_t len, ACE_INET_Addr toaddress);
+
+private:
+
+    // this semaphore is used to ....
+    static yarp::os::Semaphore    managerSem;
+    // the following two semaphore are used separately or together to stop tx and rx if a change is done on ethboards (in startup and shutdown phases)
+    static yarp::os::Semaphore    txSem;
+    static yarp::os::Semaphore    rxSem;
+
+    static TheEthManager*         handle;
+
+    // contains the start-up time of teh system so that time measures / prints can be done relative.
+    double                        startUpTime;
+
+    ACE_INET_Addr                   localIPaddress;
+    eOipv4addressing_t              ipv4local;
+
+    bool                            communicationIsInitted;
+
+    // periodic threads which use methods of class TheEthManager to transmit / receive + the udp socket
+    EthSender                       *sender;
+    EthReceiver                     *receiver;
+    ACE_SOCK_Dgram                  *UDP_socket;
+
+
+private:
+
+    void flush();
+
+    bool createSocket(ACE_INET_Addr local_addr, int txrate, int rxrate);
+
+    bool lock(bool on);
+
+    bool lockTX(bool on);
+    bool lockRX(bool on);
+    bool lockTXRX(bool on);
+
 };
 
 

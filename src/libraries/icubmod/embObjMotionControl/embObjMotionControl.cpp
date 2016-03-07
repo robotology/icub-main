@@ -669,44 +669,38 @@ bool embObjMotionControl::initialised()
     return opened;
 }
 
-bool embObjMotionControl::verifyMotionControlProtocol(Bottle groupProtocol )
-{
-//    if(false == res->isEPmanaged(eoprot_endpoint_motioncontrol))
+//bool embObjMotionControl::verifyMotionControlProtocol(Bottle groupProtocol )
+//{
+
+//    if(false == res->verifyBoard(groupProtocol))
 //    {
-//        yError() << "embObjMotionControl::open() detected that EMS "<< _fId.boardNumber << " does not support motion control";
+//        yError() << "embObjMotionControl::open() fails in function verifyBoard() for BOARD # " << _fId.boardNumber << ": CANNOT PROCEED ANY FURTHER";
 //        return false;
+//    }
+//    else
+//    {
+//        if(verbosewhenok)
+//        {
+//            yDebug() << "embObjMotionControl::open() has verified that BOARD #"<< _fId.boardNumber << " is communicating correctly";
+//        }
+//    }
+
+//    if(false == res->verifyEPprotocol(groupProtocol, eoprot_endpoint_motioncontrol))
+//    {
+//        yError() << "embObjMotionControl::open() fails in function verifyProtocol() for BOARD #"<< _fId.boardNumber << ": probably it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_motioncontrol protocol version: DO A FW UPGRADE";
+//        return false;
+//    }
+//    else
+//    {
+//        if(verbosewhenok)
+//        {
+//            yDebug() << "embObjMotionControl::open() has succesfully verified that BOARD #"<< _fId.boardNumber << " has same protocol version for motioncontrol as robotInterface";
+//        }
 //    }
 
 
-    if(false == res->verifyBoard(groupProtocol))
-    {
-        yError() << "embObjMotionControl::open() fails in function verifyBoard() for board " << _fId.boardNumber << ": CANNOT PROCEED ANY FURTHER";
-        return false;
-    }
-    else
-    {
-        if(verbosewhenok)
-        {
-            yDebug() << "embObjMotionControl::open() has verified that BOARD "<< _fId.boardNumber << " is communicating correctly";
-        }
-    }
-
-    if(false == res->verifyEPprotocol(groupProtocol, eoprot_endpoint_motioncontrol))
-    {
-        yError() << "embObjMotionControl::open() fails in function verifyProtocol() for BOARD "<< _fId.boardNumber << ": probably it does not have the same eoprot_endpoint_management and/or eoprot_endpoint_motioncontrol protocol version: DO A FW UPGRADE";
-        return false;
-    }
-    else
-    {
-        if(verbosewhenok)
-        {
-            yDebug() << "embObjMotionControl::open() has succesfully verified that BOARD "<< _fId.boardNumber << " has same protocol version for motioncontrol as robotInterface";
-        }
-    }
-
-
-    return true;
-}
+//    return true;
+//}
 
 
 
@@ -778,8 +772,8 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     Bottle groupEth  = Bottle(config.findGroup("ETH"));
     if(groupEth.isNull())
     {
-    yError() << "embObjMotionControl::open() cannot find ETH group in config files";
-    return false;
+        yError() << "embObjMotionControl::open() cannot find ETH group in config files";
+        return false;
     }
     port = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
     strcpy(_fId.pc104IPaddr.string, parameter1.toString().c_str());
@@ -933,7 +927,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     _fId.interface  = this;
     _fId.type = ethFeatType_MotionControl;
 
-    //res = ethManager->requestResource(config, groupTransceiver, groupProtocol, _fId);
     res = ethManager->requestResource2(this, config, groupTransceiver);
     if(NULL == res)
     {
@@ -942,7 +935,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
 
-    if(false == verifyMotionControlProtocol(groupProtocol))
+    if(!res->verifyEPprotocol(groupProtocol, eoprot_endpoint_motioncontrol))
     {
         cleanup();
         return false;
@@ -994,12 +987,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
 bool embObjMotionControl::isEpManagedByBoard()
 {
-    if(eobool_true == eoprot_endpoint_configured_is(res->get_protBRDnumber(), eoprot_endpoint_motioncontrol))
-    {
-        return true;
-    }
-    
-    return false;
+    return res->isEPsupported(eoprot_endpoint_motioncontrol);
 }
 
 bool embObjMotionControl::parseImpedanceGroup_NewFormat(Bottle& pidsGroup, ImpedanceParameters vals[])
@@ -1775,7 +1763,7 @@ bool embObjMotionControl::init()
 
         if(!res->addSetMessage(protid, (uint8_t *) &controlMode))
         {
-            yError() << "embObjMotionControl::init() had an error while setting eomc_controlmode_cmd_idle in BOARD" << res->get_protBRDnumber()+1;
+            yError() << "embObjMotionControl::init() had an error while setting eomc_controlmode_cmd_idle in BOARD" << res->getName() << "with IP" << res->getIPv4string();
             // return(false); i dont return false. because even if a failure, that is not a severe error.
             // MOREOVER: to verify we must read the status of the joint and NOT the command ... THINK OF IT
         }
@@ -1797,19 +1785,17 @@ bool embObjMotionControl::init()
         id32v.push_back(protid);
     }
 
-    //res->serviceSetRegulars(eomn_serv_category_mc, id32v)
 
-    //if(false == res->addRegulars(id32v, true))
     if(false == res->serviceSetRegulars(eomn_serv_category_mc, id32v))
     {
-        yError() << "embObjMotionControl::init() fails to add its variables to regulars in BOARD" << res->get_protBRDnumber()+1 << ": cannot proceed any further";
+        yError() << "embObjMotionControl::init() fails to add its variables to regulars in BOARD" << res->getName() << "with IP" << res->getIPv4string() << ": cannot proceed any further";
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjMotionControl::init() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjMotionControl::init() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
             char nvinfo[128];
             for(unsigned int r=0; r<id32v.size(); r++)
             {
@@ -1861,14 +1847,14 @@ bool embObjMotionControl::init()
 
         if(false == res->setRemoteValueUntilVerified(protid, &jconfig, sizeof(jconfig), 10, 0.010, 0.050, 2))
         {
-            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for joint config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for joint config fisico #" << fisico << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
             return false;
         }
         else
         {
             if(verbosewhenok)
             {
-                yDebug() << "embObjMotionControl::init() correctly configured joint config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber()+1;
+                yDebug() << "embObjMotionControl::init() correctly configured joint config fisico #" << fisico << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
             }
         }
     }
@@ -1921,14 +1907,14 @@ bool embObjMotionControl::init()
         motor_cfg.pidcurrent.scale = 10;
         if (false == res->setRemoteValueUntilVerified(protid, &motor_cfg, sizeof(motor_cfg), 10, 0.010, 0.050, 2))
         {
-            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber() + 1;
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
             return false;
         }
         else
         {
             if (verbosewhenok)
             {
-                yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->get_protBRDnumber() + 1;
+                yDebug() << "embObjMotionControl::init() correctly configured motor config fisico #" << fisico << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
             }
         }
 
@@ -1957,14 +1943,14 @@ bool embObjMotionControl::init()
 
         if(false == res->setRemoteValueUntilVerified(id32, protmatrix, sizeof(protmatrix), 10, 0.010, 0.050, 2))
         {
-            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for mc controller config joint coupling matrix" << "in BOARD" << res->get_protBRDnumber()+1;
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for mc controller config joint coupling matrix" << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
             return false;
         }
         else
         {
             if(verbosewhenok)
             {
-                yDebug() << "embObjMotionControl::init() correctly configured mc controller config joint coupling matrix" << "in BOARD" << res->get_protBRDnumber()+1;
+                yDebug() << "embObjMotionControl::init() correctly configured mc controller config joint coupling matrix" << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
             }
         }
 

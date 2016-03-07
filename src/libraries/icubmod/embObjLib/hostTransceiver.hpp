@@ -60,7 +60,7 @@ using namespace yarp::dev;
 // debug
 //void checkDataForDebug(uint8_t *data, uint16_t size);
 
-class hostTransceiver
+class HostTransceiver
 {
 public:
      enum { maxSizeUDPpacket = 1496 };
@@ -88,8 +88,8 @@ protected:
     uint8_t TXrate;
 public:
 
-    hostTransceiver();
-    ~hostTransceiver();
+    HostTransceiver();
+    ~HostTransceiver();
 
 
     bool init2(yarp::os::Searchable &cfgtransceiver, eOipv4addressing_t& localIPaddressing, eOipv4addr_t remoteIP, uint16_t pktsize = maxSizeUDPpacket);
@@ -116,7 +116,7 @@ public:
      */
     bool readBufferedValue(eOprotID32_t protid,  uint8_t *data, uint16_t* size);
 
-    /* ! This method echoes back a value that has just been sent from the hostTransceiver to someone else, if called addSetMessageAndCacheLocally() */
+    /* ! This method echoes back a value that has just been sent from the HostTransceiver to someone else, if called addSetMessageAndCacheLocally() */
     bool readSentValue(eOprotID32_t protid, uint8_t *data, uint16_t* size);
 
     // Set user data in the local memory, ready to be loaded by the load_occasional_rop method
@@ -135,10 +135,14 @@ protected:
     // the function returns true if the packet can be transmitted, false if not.
     // if _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ is undefined, the function returns false also if there are no rops
     // inside the ropframe. in such a way the macro _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ can have
-    // a scope that is local only to hostTransceiver.cpp
+    // a scope that is local only to HostTransceiver.cpp
     bool getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops);
 
+    bool isSupported(eOprot_endpoint_t ep);
+
 private:
+
+    eOprotBRD_t get_protBRDnumber(void);    // the number in range [0, max-1]
 
 
     bool lock_transceiver();
@@ -180,9 +184,9 @@ public:
     // progressive index on the endpoint of the variable described by protid. EOK_uint32dummy if the id does not exist on that board.
     uint32_t translate_NVid2index(eOprotID32_t protid);
     
-    eOprotBRD_t get_protBRDnumber(void);    // the number in range [0, max-1]
 
     eOipv4addr_t get_remoteIPaddress(void);
+
 };
 
 #endif  // include-guard

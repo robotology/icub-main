@@ -281,15 +281,10 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     _fId.interface = this;
     _fId.type = ethFeatType_AnalogVirtual;
 
-    /* Once I'm ok, ask for resources, through the _fId struct I'll give the ip addr, port and
-    *  and boradNum to the ethManagerin order to create the ethResource requested.
-    * I'll Get back the very same sturct filled with other data useful for future handling
-    * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, _fId);
+    res = ethManager->requestResource2(this, config, groupTransceiver);
     if(NULL == res)
     {
-        yError() << "EMS device not instantiated... unable to continue";
-        cleanup();
+        yError() << "embObjMotionControl::open() fails because could not instantiate the ethResource for board" << _fId.boardNumber << " ... unable to continue";
         return false;
     }
 
@@ -360,6 +355,10 @@ bool embObjVirtualAnalogSensor::updateMeasure(int ch, double &measure)
 
 void embObjVirtualAnalogSensor::cleanup(void)
 {
+    yTrace() << _fId.name;
+    if(_fullscale != NULL)
+        delete(_fullscale);
+
     if(ethManager == NULL) return;
 
     int ret = ethManager->releaseResource(_fId);
@@ -370,18 +369,12 @@ void embObjVirtualAnalogSensor::cleanup(void)
 
 bool embObjVirtualAnalogSensor::close()
 {
-    yTrace() << _fId.name;
-    if(_fullscale != NULL)
-        delete(_fullscale);
-
-    int ret = ethManager->releaseResource(_fId);
-    if(ret == -1)
-    {
-        ethManager->killYourself();
-    }
-    res = NULL;
+    cleanup();
     return true;
 }
+
+
+
 
 // eof
 

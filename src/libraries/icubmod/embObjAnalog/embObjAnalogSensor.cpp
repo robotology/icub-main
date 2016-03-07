@@ -380,53 +380,35 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     // N.B.: use a dynamic_cast<> to extract correct interface when using this pointer
     _fId.interface = this;
 
+    eOmn_serv_category_t servcategory = eomn_serv_category_none;
     _fId.endpoint = eoprot_endpoint_analogsensors;
     if(AS_STRAIN == _as_type)
     {
         _fId.entity = eoprot_entity_as_strain;
         _fId.type = ethFeatType_AnalogStrain;
+        servcategory = eomn_serv_category_strain;
     }
     else if(AS_MAIS == _as_type)
     {
         _fId.entity = eoprot_entity_as_mais;
         _fId.type = ethFeatType_AnalogMais;
+        servcategory = eomn_serv_category_mais;
     }
     else if(AS_INERTIAL_MTB == _as_type)
     {
         _fId.entity = eoprot_entity_as_inertial;
         _fId.type = ethFeatType_AnalogInertial;
+        servcategory = eomn_serv_category_inertials;
     }
 
-    /* Once I'm ok, ask for resources, through the _fId struct I'll give the ip addr, port and
-    *  and boardNum to the ethManager in order to create the ethResource requested.
-    */
-    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, _fId);
+
+    res = ethManager->requestResource2(this, config, groupTransceiver);
     if(NULL == res)
     {
         yError() << "embObjAnalogSensor::open() fails because could not instantiate the ethResource board" << _fId.boardNumber << " ... unable to continue";
         return false;
     }
 
-//    if(false == res->isEPmanaged(eoprot_endpoint_analogsensors))
-//    {
-//        yError() << "embObjAnalogSensor::open() detected that EMS "<< _fId.boardNumber << " does not support analog sensors";
-//        cleanup();
-//        return false;
-//    }
-
-    if(false == res->verifyBoard(groupProtocol))
-    {
-        yError() << "embObjAnalogSensor::open() fails in function verifyBoard() for board " << _fId.boardNumber << ": CANNOT PROCEED ANY FURTHER";
-        cleanup();
-        return false;
-    }
-    else
-    {
-        if(verbosewhenok)
-        {
-            yDebug() << "embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNumber << " is communicating correctly";
-        }
-    }
 
     if(!res->verifyEPprotocol(groupProtocol, eoprot_endpoint_analogsensors))
     {
@@ -434,28 +416,14 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         cleanup();
         return false;
     }
-    else
-    {
-        if(verbosewhenok)
-        {
-            yDebug() << "embObjAnalogSensor::open() has succesfully verified that board "<< _fId.boardNumber << " has same protocol version for analogsensors as robotInterface";
-        }
-    }
 
-//    // marco.accame on 04 sept 2014: we could add a verification about the entities of analog ... MAYBE in the future
-//
-//    uint8_t numberofmaisboards = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNumber), eoprot_endpoint_analogsensors, eoprot_entity_as_mais);
-//    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_analogsensors, eoprot_entity_as_mais, numberofmaisboards))
-//    {   // JUST AN EXAMPLE OF HOW TO DO IT FOR THE MAIS.
-//        yError() << "embObjAnalogSensor::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_as_mais: VERIFY their number in board, and in XML files";
-//        return false;
-//    }
-//    uint8_t numberofstrainboards = eoprot_entity_numberof_get(featIdBoardNum2nvBoardNum(_fId.boardNumber), eoprot_endpoint_analogsensors, eoprot_entity_as_strain);
-//    if(false == res->verifyENTITYnumber(groupProtocol, eoprot_endpoint_analogsensors, eoprot_entity_as_strain, numberofstrainboards))
-//    {   // JUST AN EXAMPLE OF HOW TO DO IT FOR THE STRAIN.
-//        yError() << "embObjAnalogSensor::init() fails in function verifyENTITYnumber() for board "<< _fId.boardNumber << " and entity eoprot_entity_as_strain: VERIFY their number in board, and in XML files";
-//        return false;
-//    }
+
+    if(false == res->serviceVerifyActivate(servcategory, NULL))
+    {
+        yError() << "embObjAnalogSensor::open() has an error in call of ethResources::serviceVerifyActivate() for board" << _fId.boardNumber;
+        cleanup();
+        return false;
+    }
 
 
     if(_as_type == AS_INERTIAL_MTB)
@@ -562,9 +530,11 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if(false == res->goToRun(eoprot_endpoint_analogsensors, entity))
+
+
+    if(false == res->serviceStart(servcategory))
     {
-        yError() << "embObjAnalogSensor::open() fails to start control loop of board" << _fId.boardNumber << ": cannot continue";
+        yError() << "embObjAnalogSensor::open() fails to start as service for BOARD" << _fId.boardNumber << ": cannot continue";
         cleanup();
         return false;
     }
@@ -572,7 +542,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::open() correctly activated control loop of BOARD" << _fId.boardNumber;
+            yDebug() << "embObjAnalogSensor::open() correctly starts as service of BOARD" << _fId.boardNumber;
         }
     }
 
@@ -581,14 +551,8 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 }
 
 bool embObjAnalogSensor::isEpManagedByBoard()
-{
-
-    if(eobool_true == eoprot_endpoint_configured_is(res->get_protBRDnumber(), eoprot_endpoint_analogsensors))
-    {   // we can extend to the entity by evaluating eoprot_entity_configured_is(res->get_protBRDnumber(), eoprot_endpoint_analogsensors, eoprot_entity_as_xxx)
-        return true;
-    }
-    
-    return false;
+{    
+    return res->isEPsupported(eoprot_endpoint_analogsensors);
 }
 
 bool embObjAnalogSensor::sendConfig2Strain(void)
@@ -620,14 +584,14 @@ bool embObjAnalogSensor::sendConfig2Strain(void)
 
     if(false == res->setRemoteValueUntilVerified(id32, &strainConfig, sizeof(strainConfig), 10, 0.010, 0.050, 2))
     {
-        yError() << "FATAL: embObjAnalogSensor::sendConfig2Strain() had an error while calling setRemoteValueUntilVerified() for strain config in BOARD" << res->get_protBRDnumber()+1;
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Strain() had an error while calling setRemoteValueUntilVerified() for strain config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::sendConfig2Strain() correctly configured strain coinfig in BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjAnalogSensor::sendConfig2Strain() correctly configured strain coinfig in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         }
     }
 
@@ -660,14 +624,14 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 
     if(false == res->setRemoteValueUntilVerified(id32, &datarate, sizeof(datarate), 10, 0.010, 0.050, 2))
     {
-        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais datarate in BOARD" << res->get_protBRDnumber()+1;
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais datarate in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::sendConfig2Mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjAnalogSensor::sendConfig2Mais() correctly configured mais datarate at value" << datarate << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         }
     }
 
@@ -678,14 +642,14 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 
     if(false == res->setRemoteValueUntilVerified(id32, &maismode, sizeof(maismode), 10, 0.010, 0.050, 2))
     {
-        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais mode in BOARD" << res->get_protBRDnumber()+1;
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais mode in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::sendConfig2Mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjAnalogSensor::sendConfig2Mais() correctly configured mais mode at value" << maismode << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         }
     }
 
@@ -774,14 +738,14 @@ bool embObjAnalogSensor::configServiceInertials(Searchable& globalConfig)
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config_service);
     if(false == res->setRemoteValueUntilVerified(id32, &inertialServiceConfig, sizeof(inertialServiceConfig), 10, 0.010, 0.050, 2))
     {
-        yError() << "FATAL: embObjAnalogSensor::configServiceInertials() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->get_protBRDnumber()+1;
+        yError() << "FATAL: embObjAnalogSensor::configServiceInertials() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::configServiceInertials() correctly configured the service in BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjAnalogSensor::configServiceInertials() correctly configured the service in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         }
     }
 
@@ -854,14 +818,14 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config_sensors);
     if(false == res->setRemoteValueUntilVerified(id32, &inertialSensorsConfig, sizeof(inertialSensorsConfig), 10, 0.010, 0.050, 2))
     {
-        yError() << "FATAL: embObjAnalogSensor::sendConfig2SkinInertial() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->get_protBRDnumber()+1;
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2SkinInertial() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         return false;
     }
     else
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::sendConfig2SkinInertial() correctly configured enabled sensors with period" << _period << "in BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjAnalogSensor::sendConfig2SkinInertial() correctly configured enabled sensors with period" << _period << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         }
     }
 
@@ -1227,12 +1191,11 @@ bool embObjAnalogSensor::getFullscaleValues()
 bool embObjAnalogSensor::init()
 {
     yTrace();
-
     
     // - configure regular rops
-
     vector<eOprotID32_t> id32v(0);
     eOprotID32_t protoid = eo_prot_ID32dummy;
+    eOmn_serv_category_t servcategory = eomn_serv_category_none;
 
     // we need to choose the protoid to put inside the vector
 
@@ -1240,11 +1203,16 @@ bool embObjAnalogSensor::init()
     {
         case AS_MAIS:
         {
+            servcategory = eomn_serv_category_mais;
+
             protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_status_the15values);
+
         } break;
         
         case AS_STRAIN:
         {
+            servcategory = eomn_serv_category_strain;
+
             if(_useCalibration)
                 protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_calibratedvalues);
             else
@@ -1253,6 +1221,7 @@ bool embObjAnalogSensor::init()
         
         case AS_INERTIAL_MTB:
         {
+            servcategory = eomn_serv_category_inertials;
             protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_status);
         } break;
 
@@ -1264,20 +1233,11 @@ bool embObjAnalogSensor::init()
         }
     }
 
-    if(eobool_false == eoprot_id_isvalid(featIdBoardNum2nvBoardNum(_fId.boardNumber), protoid))
-    {
-        char str[128];
-        eoprot_ID2information(protoid, str, sizeof(str));
-        yError () << "embObjAnalogSensor::init() recognised invalid ID to put in regulars: " << str;
-        return false;
-    }
-
     // put it inside vector
-
     id32v.push_back(protoid);
 
-    // configure the regulars
-    if(false == res->addRegulars(id32v, true))
+
+    if(false == res->serviceSetRegulars(servcategory, id32v))
     {
         yError() << "embObjAnalogSensor::init() fails to add its variables to regulars: cannot proceed any further";
         return false;
@@ -1286,7 +1246,7 @@ bool embObjAnalogSensor::init()
     {
         if(verbosewhenok)
         {
-            yDebug() << "embObjAnalogSensor::init() added" << id32v.size() << "regular rops to BOARD" << res->get_protBRDnumber()+1;
+            yDebug() << "embObjAnalogSensor::init() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
             char nvinfo[128];
             for(int r=0; r<id32v.size(); r++)
             {
