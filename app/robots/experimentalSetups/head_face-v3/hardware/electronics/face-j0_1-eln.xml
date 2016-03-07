@@ -102,6 +102,6 @@
             <param name="protocolToUse">            STANDARD        </param> 
         </group>
 
-    <group>  
+    </group>  
 
 </params>
