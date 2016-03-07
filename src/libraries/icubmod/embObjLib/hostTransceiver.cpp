@@ -1456,18 +1456,20 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
     hosttxrxcfg.remoteboardipv4addr     = remoteipaddr;
     hosttxrxcfg.remoteboardipv4port     = ipport;
 
+    char ipinfo[2] = {0};
+    eo_common_ipv4addr_to_string(remoteipaddr, ipinfo, sizeof(ipinfo));
 
     Bottle groupEthBoardProperties = Bottle(cfgEthBoard.findGroup("ETH_BOARD_PROPERTIES"));
     if(groupEthBoardProperties.isNull())
     {
-        yError() << "HostTransceiver::method() cannot find ETH_BOARD_PROPERTIES group in config files";
+        yError() << "HostTransceiver::method() cannot find ETH_BOARD_PROPERTIES group in config files for BOARD IP" << ipinfo;
         return NULL;
     }
 
     Bottle groupEthBoardSettings = Bottle(cfgEthBoard.findGroup("ETH_BOARD_SETTINGS"));
     if(groupEthBoardSettings.isNull())
     {
-        yError() << "HostTransceiver::method() cannot find ETH_BOARD_PROPERTIES group in config files";
+        yError() << "HostTransceiver::method() cannot find ETH_BOARD_PROPERTIES group in config files for BOARD IP" << ipinfo;
         return NULL;
     }
 
@@ -1485,19 +1487,19 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
         {
             TXrateOfRegulars = 20;
         }
-        yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected TXrateOfRegulars =" << TXrateOfRegulars;
+        yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected TXrateOfRegulars =" << TXrateOfRegulars << "for BOARD IP" << ipinfo;
     }
 
     if(true == groupEthBoardProperties.check("maxSizeRXpacket"))
     {
         capacityofTXpacket = groupEthBoardProperties.find("maxSizeRXpacket").asInt();
-        yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected capacityofTXpacket =" << capacityofTXpacket;
+        yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected capacityofTXpacket =" << capacityofTXpacket << "for BOARD IP" << ipinfo;
     }
 
     if(true == groupEthBoardProperties.check("maxSizeROP"))
     {
         maxSizeOfROP = groupEthBoardProperties.find("maxSizeROP").asInt();
-        yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected maxSizeOfROP =" << maxSizeOfROP;
+        yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected maxSizeOfROP =" << maxSizeOfROP << "for BOARD IP" << ipinfo;
     }
 
 
@@ -1533,6 +1535,7 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
             jomos = 4;
             brdcf2use = &eonvset_BRDcfgStd;
         }
+        yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected protocolToUse =" << protocol2use << "and will prepare protocol for" << jomos << "jomos for BOARD IP" << ipinfo;
     }
 
     memcpy(&nvsetbrdconfig, brdcf2use, sizeof(eOnvset_BRDcfg_t));
