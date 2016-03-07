@@ -30,7 +30,8 @@ namespace yarp{
 
 
 class TheEthManager;
-class ethResources;
+
+class EthResource;
 /*! class yarp::dev::embObjVirtualAnalogSensor
  * 
  */
@@ -42,7 +43,7 @@ private:
 
     //! embObj stuff
     TheEthManager       *ethManager;
-    ethResources        *res;
+    EthResource         *res;
     ethFeature_t        _fId;
 
     ////////////////////
