@@ -231,9 +231,8 @@ public:
 
     enum { boardNameSize = 32 };
 
-    // this is the maximum size of rx and tx packets managed by the ethresource.
+    // this is the maximum size of rx and tx packets managed by the ethresource. however, the HostTranceveiver can reduce these values.
     enum { maxRXpacketsize = 1496, maxTXpacketsize = 1496 };
-
 
 public:
 
@@ -252,34 +251,13 @@ public:
     const char *    getName(void);
     const char *    getIPv4string(void);
 
-//    int             getNumberOfAttachedInterfaces(void);
-
     // the function returns true if the packet can be transmitted. 
     // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
     bool            getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops);
 
-
-    // returns the capacity of the receiving buffer.
-    int             getRXpacketCapacity();
-
-
     bool            canProcessRXpacket(uint64_t *data, uint16_t size);
 
     void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true);
-
-
-//    // we remove goToRun() and goToConfig() and we use serviceStart() and serviceStop()
-//    bool            goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity);
-//    bool            goToConfig(void);
-
-    // we keep isRunning() and we add a field in the reply of serviceStart()/Stop() which tells if the board is in run mode or not.
-    bool            isRunning(void);
-
-
-//    // -- remove the following three and use the new serviceSetRegulars() method instead ...
-//    bool clearRegulars(bool verify = false);
-//    bool addRegulars(vector<eOprotID32_t> &id32vector, bool verify = false);
-//    bool numberofRegulars(uint16_t &numberofregulars);
 
 
     bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout = 0.100, int retries = 10);
@@ -289,18 +267,6 @@ public:
 
     // very important note: it works only if there is an handler for the id32 and it manages the unlock of the mutex
     bool setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries = 10, double waitbeforeverification = 0.001, double verificationtimeout = 0.050, int verificationretries = 2);
-
-
-    void checkIsAlive(double curr_time);
-//    double          getLastRecvMsgTimestamp(void);
-
-
-
-    bool verifyBoard();
-    bool verifyBoardPresence();
-    bool verifyBoardTransceiver();
-    bool setTXrate();
-    bool cleanBoardBehaviour(void);
 
 
     bool verifyEPprotocol(eOprot_endpoint_t ep);
@@ -320,6 +286,13 @@ public:
 
     bool serviceStop(eOmn_serv_category_t category, double timeout = 0.500);
 
+
+    // -- not used at the moment
+    void checkIsAlive(double curr_time);
+    // double          getLastRecvMsgTimestamp(void);
+    // int             getNumberOfAttachedInterfaces(void);
+    // returns the capacity of the receiving buffer.
+    // int getRXpacketCapacity();
 
 private:
 
@@ -348,9 +321,18 @@ private:
 
     can_string_eth*     c_string_handler[16];
 
-
     TheEthManager       *ethManager;
+
 private:
+
+
+    bool verifyBoard();
+    bool setTXrate();
+    bool verifyBoardPresence();
+    bool verifyBoardTransceiver();
+    bool cleanBoardBehaviour(void);
+    // we keep isRunning() and we add a field in the reply of serviceStart()/Stop() which tells if the board is in run mode or not.
+    bool isRunning(void);
 
     // lock of the object: on / off
     bool lock(bool on);

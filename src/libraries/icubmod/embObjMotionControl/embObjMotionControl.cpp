@@ -1918,7 +1918,7 @@ eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint32_t protoid)
     if(!requestQueue->threadPool->getId(&req.threadId) )
         yError() << "Error: too much threads!! (embObjMotionControl)";
     req.joint = j;
-    req.nvid = res->translate_NVid2index(protoid);
+    req.prognum = res->translate_NVid2index(protoid);
     requestQueue->append(req);
     return requestQueue->threadPool->getThreadTable(req.threadId);
 }

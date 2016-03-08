@@ -149,12 +149,12 @@ eoThreadFifo *eoRequestsQueue::getFifo(int nv_index)
 // append requests
 void eoRequestsQueue::append(const eoRequest &rqst)
 {
-    yTrace() << "th_id=" << rqst.threadId << " nv_prog_num=" << rqst.nvid << " joint=" << rqst.joint;
-    eoThreadFifo *fifo=getFifo(rqst.nvid);
+    yTrace() << "th_id=" << rqst.threadId << " nv_prog_num=" << rqst.prognum << " joint=" << rqst.joint;
+    eoThreadFifo *fifo=getFifo(rqst.prognum);
 
     if(!fifo)
     {
-        yError() << "eoRequestsQueue::append: fifo is null for th_id=" << rqst.threadId << " nvid=" << rqst.nvid << " joint=" << rqst.joint;
+        yError() << "eoRequestsQueue::append: fifo is null for th_id=" << rqst.threadId << " nvid=" << rqst.prognum << " joint=" << rqst.joint;
         return;
     }
     fifo->push(rqst.threadId);

@@ -54,7 +54,8 @@ class eoRequestsQueue;
 typedef struct
 {
     int joint;
-    uint32_t nvid;
+    //uint32_t nvid;
+    uint32_t prognum;
     int threadId;
 }eoRequest;
 
