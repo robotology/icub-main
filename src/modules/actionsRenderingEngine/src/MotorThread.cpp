@@ -2289,8 +2289,10 @@ bool MotorThread::drawNear(Bottle &options)
 
     Bottle look_options;
     Bottle &target=look_options.addList();
-    target.addString("cartesian");
-    target.addList().read(drawNearPos[arm]);
+    target.addString("target");
+    Bottle &payLoad=target.addList().addList();
+    payLoad.addString("cartesian");
+    payLoad.addList().read(drawNearPos[arm]);
     look_options.addString("wait");
     look(look_options);
 
