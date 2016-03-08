@@ -728,147 +728,6 @@ EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::
 
 
 
-
-//EthResource *TheEthManager::requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request)
-//{
-//    // Check if local socket is initted, if not do it.
-//    ACE_TCHAR address[64] = {0};
-//    snprintf(address, sizeof(address), "%s:%d", request.pc104IPaddr.string, request.pc104IPaddr.port);
-
-//    yTrace() << "TheEthManager::requestResource(): called for board #" << request.boardNumber;
-
-//    if(request.boardNumber > TheEthManager::maxBoards)
-//    {
-//        yError() << "FATAL ERROR: TheEthManager::requestResource() detected a board number beyond the maximum allowed (max, rqst) =" << maxBoards << request.boardNumber << ")";
-//        return NULL;
-//    }
-
-//    if(request.boardIPaddr.ip4 != request.boardNumber)
-//    {
-//        yError() << "FATAL ERROR: TheEthManager::requestResource() detected a board number different from its ip4 address (boardNumber, ip4) =" << request.boardNumber << request.boardIPaddr.ip4 << ")";
-//        return NULL;
-//    }
-
-//    if(0 == strlen(request.boardName))
-//    {
-//        // set default name: unset_xml_boardName__10.0.1.x
-//        snprintf(request.boardName, sizeof(request.boardName), "unsetXMLboardName__10.0.1.%d", request.boardNumber);
-//    }
-
-//    eOipv4addr_t ipv4addr = eo_common_ipv4addr(request.pc104IPaddr.ip1, request.pc104IPaddr.ip2, request.pc104IPaddr.ip3, request.pc104IPaddr.ip4);
-//    ACE_UINT32 hostip = (request.pc104IPaddr.ip1 << 24) | (request.pc104IPaddr.ip2 << 16) | (request.pc104IPaddr.ip3 << 8) | (request.pc104IPaddr.ip4);
-//    ACE_INET_Addr myIP((u_short)request.pc104IPaddr.port, hostip);
-//    myIP.dump();
-
-//    int txrate = -1; // uses default
-//    int rxrate = -1; // uses default
-
-//    // if i find it in section ... of cfgtotal then i change it
-//    if(cfgtotal.findGroup("PC104").check("PC104TXrate"))
-//    {
-//        int value = cfgtotal.findGroup("PC104").find("PC104TXrate").asInt();
-//        if(value > 0)
-//            txrate = value;
-//    }
-//    else
-//    {
-//        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104TXrate. thus using default value" << EthSender::EthSenderDefaultRate;;
-//    }
-
-//    if(cfgtotal.findGroup("PC104").check("PC104RXrate"))
-//    {
-//        int value = cfgtotal.findGroup("PC104").find("PC104RXrate").asInt();
-//        if(value > 0)
-//            rxrate = value;
-//    }
-//    else
-//    {
-//        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104RXrate. thus using default value" << EthReceiver::EthReceiverDefaultRate;
-//    }
-
-//    if(!createSocket(myIP, txrate, rxrate) )
-//    {
-//        return NULL;
-//    }
-
-
-//    // i want to lock the use of resources managed by ethBoards to avoid that we attempt to use for TX a ethres not completely initted
-
-//    lockTXRX(true);
-
-//    EthResource *rr = ethBoards->get_resource(ipv4addr);
-
-//    if(NULL == rr)
-//    {
-//        // device doesn't exist yet: create it
-//        yTrace() << "Creating ethResource for IP " << request.boardIPaddr.string;
-//        rr = new EthResource;
-//        if(false == rr->open(cfgtotal, cfgtransceiver, cfgprotocol, request))
-//        {
-//            yError() << "Error creating new ethReasource for IP " << request.boardIPaddr.string;
-//            if(NULL != rr)
-//            {
-//                delete rr;
-//            }
-
-//            rr = NULL;
-//            return NULL;
-//        }
-
-//        ethBoards->add(rr);
-//    }
-
-//    ethBoards->add(rr, request.interface);
-
-
-//    lockTXRX(false);
-
-//    return(rr);
-//}
-
-
-
-//int TheEthManager::releaseResource(ethFeature_t &resource)
-//{
-
-//    int ret = 1; // -1 means that the singleton is not needed anymore
-
-//    eOipv4addr_t ipv4addr = eo_common_ipv4addr(resource.boardIPaddr.ip1, resource.boardIPaddr.ip2, resource.boardIPaddr.ip3, resource.boardIPaddr.ip4);
-
-//    EthResource* rr = ethBoards->get_resource(ipv4addr);
-//    if(NULL != rr)
-//    {
-//        bool success = rr->serviceStop(eomn_serv_category_all); // but you must change later on with eomn_serv_category_mc or ...
-//        success = success;
-
-
-//        // now we change internal data structure of ethBoards, thus .. must disable tx and rx
-//        lockTXRX(true);
-
-//        // remove the interface
-//        ethBoards->rem(rr, static_cast<iethresType_t>(resource.type));
-
-//        int remaining = ethBoards->number_of_interfaces(rr);
-//        if(0 == remaining)
-//        {   // remove also the resource
-//            rr->close();
-//            ethBoards->rem(rr);
-//            delete rr;
-//        }
-
-//        if(0 == ethBoards->number_of_resources())
-//        {   // we dont have any more resources
-//            ret = -1;
-//        }
-
-//        lockTXRX(false);
-
-//    }
-
-//    return(ret);
-//}
-
-
 int TheEthManager::releaseResource2(EthResource* ethresource, IethResource* interface)
 {
     int ret = 1; // -1 means that the singleton is not needed anymore. 0 means error
@@ -922,6 +781,11 @@ int TheEthManager::releaseResource2(EthResource* ethresource, IethResource* inte
             category = eomn_serv_category_none;
         } break;
     }
+
+    // marco.accame on 8 mar 2016: better to stop all services so that all regulars are removed and board immediately
+    // exits the control loop. later on i will remove this line .... when robotInterface stops crashing in exit.
+
+    category = eomn_serv_category_all;
 
     if(eomn_serv_category_none != category)
     {
