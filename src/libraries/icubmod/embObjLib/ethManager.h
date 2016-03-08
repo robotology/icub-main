@@ -74,27 +74,20 @@
 
 // -- defines
 
+// the check of sequence number is done inside the hostTransceiver. by defining this macro there is an additional redundant check.
+// i recommend to keep it undefined.
+#undef ETHMANAGER_RECEIVER_CHECK_SEQUENCE_NUMBER
 
-#define  ETHRECEIVER_ISPERIODICTHREAD
-#define  ETHRECEIVER_TEST_QUICKER_ONEVENT_RX_MODE
-
-
-#define ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
-
-#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
-#define ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_NUMBEROF_CYCLES   2000
-#include "testStats.h"
-#endif
+// marco.accame: the following two are for new tx and rx modes with different protection vs concurrency
+#define ETHMANAGER_TEST_NEW_SENDER_RUN
+#define ETHMANAGER_TEST_NEW_RECEIVER_RUN
 
 
-#if 0
-// marco.accame: actually there should be no need to include this class into yarp::dev namespace.
-namespace yarp {
-    namespace dev {
-        class TheEthManager;
-    }
-}
-#endif
+//#define ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
+//#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
+//enum { ethmanager_stats_frequency_numberofcycles = 2000 };
+//#include "testStats.h"
+//#endif
 
 
 using namespace yarp::os;
@@ -102,267 +95,256 @@ using namespace yarp::dev;
 using namespace std;
 
 
+// -- class EthBoards
+// -- it collects all the ETH boards managed by ethManager.
+// -- each board surely has an EthResource object associated to it. and it may have one or more interfaces which use the
+// -- services of EthResource to transmit or receive.
+// -- it is responsibility of the object which owns EthBoards (it is ethManager) to protect the class EthBoards vs concurrent use.
+// -- examples of concurrent use are: transmit or receive using an ethresource and ... attempting to create or destroy a resource.
+
+
+class EthBoards
+{
+
+public:
+
+    enum { maxEthBoards = 32 };
+
+public:
+
+    EthBoards();
+    ~EthBoards();
+
+    size_t number_of_resources(void);
+    bool add(EthResource* res);
+    EthResource* get_resource(eOipv4addr_t ipv4);
+    bool rem(EthResource* res);
+
+    size_t number_of_interfaces(EthResource* res);
+    bool add(EthResource* res, IethResource* interface);
+    IethResource* get_interface(eOipv4addr_t ipv4, eOprotID32_t id32);
+    bool rem(EthResource* res, iethresType_t type);
+
+    // the name of the board
+    const char * name(eOipv4addr_t ipv4);
+
+    // executes an action on all EthResource which have been added in the class.
+    bool execute(void (*action)(EthResource* res, void* p), void* par);
+
+    // executes an action on the ethResource having a specific ipv4.
+    bool execute(eOipv4addr_t ipv4, void (*action)(EthResource* res, void* p), void* par);
+
+
+private:
+
+    // private types
+
+    enum { ethboardNameMaxSize = EthResource::boardNameSize };
+
+    typedef struct
+    {
+        eOipv4addr_t        ipv4;
+        char                name[EthBoards::ethboardNameMaxSize];
+        uint8_t             numberofinterfaces;
+        uint8_t             boardnumber;
+        EthResource*        resource;
+        IethResource*       interfaces[iethresType_numberof];
+    } ethboardProperties_t;
+
+
+private:
+
+    // private variables
+
+    static const char * defaultnames[EthBoards::maxEthBoards];
+    static const char * errorname[1];
+
+    int sizeofLUT;
+    ethboardProperties_t LUT[EthBoards::maxEthBoards];
+};
+
+
+
+// -- class TheEthManager
+// -- it is the main singleton which delas with eth communication.
+// -- it holds the two tx and rx threads (classes EthSender and EthReceiver)
+// -- it holds class EthBoards which stores references to EthResource (what is used to form / parse UDP packets for the eth board)
+// -- and to the interfaces which use the EthResource of a given board.
+
+// forward declaration because they are used inside TheEthManager
 class EthSender;
 class EthReceiver;
-//class ethResource;
-
-
-typedef std::list<ethResources *>::iterator ethResIt;
-typedef std::list<ethResources *>::reverse_iterator ethResRIt;
-
-// -------------------------------------------------------------------\\
-//            TheEthManager   Singleton
-// -------------------------------------------------------------------\\
-
 
 class yarp::dev::TheEthManager: public DeviceDriver
 {
 
 public:
     // this is the maximum number of boards that the singleton can manage.
-    enum { maxBoards = 32 };
+    enum { maxBoards = EthBoards::maxEthBoards };
 
-    // this keeps the size of info buffer
-    enum { ETHMAN_SIZE_INFO = 128 };
-
-    static const char * boardNames[TheEthManager::maxBoards];
-
-public:
-    static yarp::os::Semaphore    managerMutex;
+    // these are the boards, their use is protected by txSem or rxSem or both of them.
+    EthBoards* ethBoards;
 
 private:
-    // Data for Singleton handling
 
-    static TheEthManager          *handle;
-    bool                          keepGoingOn;
-    bool                          emsAlreadyClosed;
-    double                        starttime;
-
-    enum { ethresLUTsize = TheEthManager::maxBoards };
-
-    ethResources*                 ethresLUT[ethresLUTsize];
-    int                           numberOfUsedBoards;
-
-
-    // Data for EMS handling
-public:
-    map<std::pair<FEAT_boardnumber_t, uint32_t>, ethFeature_t>  boards_map_ext; // the second element of the pair is id32 & 0xffff0000 or: (endpoint<<24)|(entity<<16)
-    std::list<ethResources *>     EMS_list;           //!< List of pointer to classes that represent EMS boards
-    ACE_INET_Addr                 local_addr;         
-
-private:
-    // Data for UDP socket handling
-    bool                          UDP_initted;
-    ACE_SOCK_Dgram                *UDP_socket;
-
-
-    EthSender                     *sender;            //!< class used to send messages to the EMSs every 1ms. Derived from RathThread
-    EthReceiver                   *receiver;          //!< class handling data coming from EMSs with a blocking recv mechanism. Derived rom Thread
-
-    // Data for Debug or support
-    char                          info[ETHMAN_SIZE_INFO];
-
-    // Methods for Singleton handling#include <yarp/os/Bottle.h>
-private:
-
-    /*! @fn     flush();
-     *  @brief  flush all packets not yet sent
-     *  @warning currently is developed like a wait of 1 second. TODO. make it better!!
-     */
-    void flush();
-    TheEthManager();                      // Singletons have private constructor
+    // singletons have private constructor / destructor
+    TheEthManager();
     ~TheEthManager();
+
 public:
 
-    bool getEMSlistRiterators(ethResRIt& begin, ethResRIt& end);
-
-    double getStartTime(void);
+    double getTimeOfStartUp(void);
 
     void initEOYsystem(void);
 
-    /*! @fn     static  TheEthManager* instance();
-     *  @brief  Create the Singleton if it doesn't exists yet and return the pointer.
-     *  @return Pointer to TheEthManager singleton
-     */
     static  TheEthManager* instance();
 
-    /*! @fn     static  bool killYourself();
-     *  @brief  Destroy the Singleton
-     *  @return True if ok, false if errors or cannot kill yet.
-     */
     static bool killYourself();
 
-    /*! @fn     bool isInitted(void);
-     *  @brief  Tells if the Signleton is correctly initialized
-     *  @return True if initted, false otherwise
-     */
-    bool isInitted(void);
+
+    bool isCommunicationInitted(void);
     bool open(void);
-    bool stopThreads(void);
+    bool stopCommunicationThreads(void);
     bool close(void);
 
 
-    /*! @fn     ethResources* requestResource(ethFeature_t request);
-     *  @brief  Get the pointer to a specific EMS board. If it doesn't exists yet it'll be created.
-     *  @param  config  Description and parameter for the identifying the requested class
-     *  @return Pointer to the requested EMS, NULL if errors arise in the creation.
-     */
-    ethResources* requestResource(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
+    bool parseEthBoardInfo(yarp::os::Searchable &cfgtotal, ethFeature_t& info);
 
-    /*! @fn     bool releaseResource(ethFeature_t resouce);
-     *  @brief  Tells the manager the specified resource is not used anymore by the caller,
-     *          therefore the manager could decide to delete it if no used by any other one.
-     *  @param  config  Description and parameter identifying the releasing class
-     *  @return True if ok, false in case of errors.
-     */
-    int releaseResource(ethFeature_t &resource);
+
+    bool startCommunication(yarp::os::Searchable &cfgtotal);
+
+    EthResource* requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal);
+
+
+//    int releaseResource(ethFeature_t &resource);
+
+    int releaseResource2(EthResource* ethresource, IethResource* interface);
+
+    const ACE_INET_Addr& getLocalIPaddress(void);
+
+    const eOipv4addressing_t & getLocalIPV4addressing(void);
+
+    bool Transmission(void);
+    bool Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, bool collectStatistics);
+
+    EthResource* GetEthResource(eOipv4addr_t ipv4);
+
+
+    IethResource* getInterface(eOipv4addr_t ipv4, eOprotID32_t id32);
+
+
+    //EthSender* getEthSender(void);
+    //EthReceiver* getEthReceiver(void);
+
+    EthResource* IPtoResource(ACE_INET_Addr adr);
+    int IPtoBoardNumber(ACE_INET_Addr adr); // non-zero value: 1, 2, ......
+
+    int GetNumberOfUsedBoards(void);
+
+    const char * getName(eOipv4addr_t ipv4);
+
+    int send(void *udpframe, size_t len, ACE_INET_Addr toaddress);
 
 private:
-    /*! @fn     void addLUTelement(ethFeature_t id);
-     *  @brief  Insert a ethResource class descriptor of ethFeature_t type in a map to easy the access from the embObj callbacks
-     *  @param  id  A struct of ethFeature_t type with useful information about the class requesting an ethResource, they can be eoMotionControl, eoSkin, eoAnalogSensor...
-     */
-    void addLUTelement(ethFeature_t &id);
 
-    /*! @fn     bool removeLUTelement(ethFeature_t element);
-     *  @brief  Remove a ethResource class descriptor of ethFeature_t type from the map used by the callbacks.
-     *  @param  id  A struct of ethFeature_t type with information about the class to be removed.
-     *  @return True if everything went as expected, false if class not found or more than one were removed.
-     */
-    bool removeLUTelement(ethFeature_t &element);
+    // this semaphore is used to ....
+    static yarp::os::Semaphore    managerSem;
+    // the following two semaphore are used separately or together to stop tx and rx if a change is done on ethboards (in startup and shutdown phases)
+    static yarp::os::Semaphore    txSem;
+    static yarp::os::Semaphore    rxSem;
 
-public:
-    /*! @fn     getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32, IethResource * interfacePointer, ethFeatType_t *type);
-     *  @brief  Get a infos about the class handling the specified network variable
-     *  @param  boardnum  in range [1, max]
-     *  @param  id32  The desired network variable id
-     *  @param  interfacePointer return the pointer to the IethResource of that device class
-     *  @param  type  return the type of the class (skin, analog, motionControl ... ) using the enum type ethFeatType_t
-     *  @return Pointer to the class, casted to a portable void type. The user must cast it to the correct, expected type like eoMotionControl ecc..
-     */
-    bool getHandle(FEAT_boardnumber_t boardnum, eOprotID32_t id32, IethResource **interfacePointer, ethFeatType_t *type);
+    static TheEthManager*         handle;
 
-#if 0
-    /*! @fn     ethFeature_t getFeatInfoFromEP(eOnvEP_t ep);
-     *  @brief  Get the struct of ethFeature_t type with useful information about the class handling the desired EndPoint.
-     *  @param  boardnum the board number in range [1, max]
-     *  @param  ep  The desired EndPoint
-     *  @return std::list<ethResources *>Struct with info
-     */
-    ethFeature_t getFeatInfo(FEAT_boardnumber_t boardnum, eOprotEndpoint_t ep);
-#endif
+    // contains the start-up time of teh system so that time measures / prints can be done relative.
+    double                        startUpTime;
+
+    ACE_INET_Addr                   localIPaddress;
+    eOipv4addressing_t              ipv4local;
+
+    bool                            communicationIsInitted;
+
+    // periodic threads which use methods of class TheEthManager to transmit / receive + the udp socket
+    EthSender                       *sender;
+    EthReceiver                     *receiver;
+    ACE_SOCK_Dgram                  *UDP_socket;
 
 
-    // Methods for UDP socket handling
 private:
-    /*! @fn     bool createSocket(ACE_INET_Addr local_addr);
-     *  @brief  Create the UDP socket if it doesn't already exists.
-     *  @param  local_addr  The IP address and port to be used for the local machine (pc104) in ACE_INET_Addr form
-     *  @return True if creation went well, or socket already created, false if errors
-     */
+
+    void flush();
+
     bool createSocket(ACE_INET_Addr local_addr, int txrate, int rxrate);
 
-    bool lock();
-    bool unlock();
+    bool lock(bool on);
 
-public:
-    /*! @fn     int send(void *data, size_t len, ACE_INET_Addr remote_addr);
-     *  @brief  Send a message to the EMSs
-     *  @param  data  pointer to the data to be sent
-     *  @param  len   number of bytes to be sent
-     *  @param  remote_addr  destination address in ACE format
-     *  @return Number of bytes actually sent
-     */
-    int send(void *data, size_t len, ACE_INET_Addr remote_addr);
-
-    ethResources* GetEthResource(FEAT_boardnumber_t boardnum);
-
-
-    EthSender* getEthSender(void);
-    EthReceiver* getEthReceiver(void);
-
-    ethResources* IPtoResource(ACE_INET_Addr adr);
-    int GetNumberOfUsedBoards(void);
+    bool lockTX(bool on);
+    bool lockRX(bool on);
+    bool lockTXRX(bool on);
 
 };
 
 
-// -------------------------------------------------------------------\\
-//            EthSender
-// -------------------------------------------------------------------\\
+// -- class EthSender
+// -- it is a rate thread created by singleton TheEthManager. it regularly transmits packets (if any available) to the eth boards.
+// -- it uses methods made available by TheEthManager.
 
 class EthSender : public yarp::os::RateThread
 {
 private:
+    int rateofthread;
+
     uint8_t                       *p_sendData;
     TheEthManager                 *ethManager;
     ACE_SOCK_Dgram                *send_socket;
     void run();
 
 
-
-
-    int rateofthread;
-
-#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
-    // for statistic debug purpose
-    Stats stats;
-    Port statsPort;
-#endif
+//#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
+//    // for statistic debug purpose
+//    Stats stats;
+//    Port statsPort;
+//#endif
 
 public:
 
     enum { EthSenderDefaultRate = 1, EthSenderMaxRate = 20 };
 
     EthSender(int txrate);
+    ~EthSender();
     bool config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager);
     bool threadInit();
-    void evalPrintTXstatistics(void);
-    void printTXstatistics(void);
+
+//    void evalPrintTXstatistics(void);
+//    void printTXstatistics(void);
 };
 
-// -------------------------------------------------------------------\\
-//            EthReceiver
-// -------------------------------------------------------------------\\
 
-#ifdef ETHRECEIVER_ISPERIODICTHREAD
+// -- class EthReceiver
+// -- it is a rate thread created by singleton TheEthManager.
+// -- it regularly wakes up to see if a packet is in its listening socket and it parses that with methods made available by TheEthManager.
+
 class EthReceiver : public yarp::os::RateThread
-#else
-class EthReceiver : public yarp::os::Thread
-#endif
 {
 private:
-    // the 8-byte aligned buffer containing a received packet. it must be able to hold maximum size of packet managed by ethResource
-    uint64_t                        recvBuffer[ethResources::maxRXpacketsize/8];
+    int rateofthread;
+
     ACE_SOCK_Dgram                  *recv_socket;
     TheEthManager                   *ethManager;
-    uint64_t                        seqnumList[TheEthManager::maxBoards];
-    bool                            recFirstPkt[TheEthManager::maxBoards];
-
     double                          statPrintInterval;
 
 
+//#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
+//    // for statistic debug purpose
+//    Stats stats[TheEthManager::maxBoards];
+//    Port statsPort;
+//#endif
 
-#ifdef ETHRECEIVER_STATISTICS_ON
-    StatExt                         *stat;
-    StatExt                         *stat_onRecFunc;
-    StatExt                         *stat_onMutex;
-#endif
-
-#ifdef ETHRECEIVER_ISPERIODICTHREAD
-    int rateofthread;
-    int count;
-    bool isFirst;
-#endif
-
-#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
-    // for statistic debug purpose
-    Stats stats[TheEthManager::maxBoards];
-    Port statsPort;
-#endif
-
-    int getBoardNum(ACE_INET_Addr addr); //return board number from address (returns 0 in case of error)
+#if defined(ETHMANAGER_RECEIVER_CHECK_SEQUENCE_NUMBER)
     void checkPktSeqNum(char* pktpayload, ACE_INET_Addr addr);
+    uint64_t seqnumList[TheEthManager::maxBoards];
+    bool recFirstPkt[TheEthManager::maxBoards];
+#endif
+
 public:
 
     enum { EthReceiverDefaultRate = 5, EthReceiverMaxRate = 20 };

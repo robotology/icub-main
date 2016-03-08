@@ -73,15 +73,17 @@ typedef struct
 
 typedef enum
 {
-    ethFeatType_NULL            = 0xFF,
-    ethFeatType_Management      = 0x00,
-    ethFeatType_AnalogMais      = 0x01,
-    ethFeatType_AnalogStrain    = 0x02,
-    ethFeatType_MotionControl   = 0x03,
-    ethFeatType_Skin            = 0x04,
-    ethFeatType_AnalogVirtual   = 0x05,
-    ethFeatType_AnalogInertial  = 0x06
+    ethFeatType_NULL            = iethres_none,
+    ethFeatType_Management      = iethres_management,
+    ethFeatType_AnalogMais      = iethres_analogmais,
+    ethFeatType_AnalogStrain    = iethres_analogstrain,
+    ethFeatType_MotionControl   = iethres_motioncontrol,
+    ethFeatType_Skin            = iethres_skin,
+    ethFeatType_AnalogVirtual   = iethres_analogvirtual,
+    ethFeatType_AnalogInertial  = iethres_analoginertial
 } ethFeatType_t;
+
+enum { ethFeatType_numberof = iethresType_numberof };
 
 #define BOARDNAME_MAXSIZE 50
 typedef struct
@@ -94,14 +96,17 @@ typedef struct
     ethFeatType_t       type;
     IethResource*       interface;
     char                name[128];
-    char                boardName[BOARDNAME_MAXSIZE]; //this is the name read in xml file
+    char                boardName[BOARDNAME_MAXSIZE]; // this is the name read in xml file
 } ethFeature_t;
+
+
+
 
 class can_string_eth;
 
 namespace yarp{
     namespace dev{
-        class ethResources;
+        class EthResource;
         class TheEthManager;
     }
 }
@@ -112,15 +117,23 @@ using namespace yarp::dev;
 using namespace std;
 
 
-//this class contains all info about pkts received from a specific ems (its id is stored in "board" field)
-//and let you calculate statistic about receive timing and check if one of following errors occur:
-// 1) error in sequence number
-// 2) between two consecutive pkts there are more the "timeout" sec (default is 0.01 sec and this is can modified by environment var ETHREC_STATISTICS_TIMEOUT_MSEC):
-      //this elapsed time is calculated in two way:
-      //1) using sys time: when arrived a pkt number n its received time(get by sys call) is compared with received time of pkt number n-1
-      //2) using ageOfFrame filed in packets: this time is insert by transmitter board. when arrive a pkt number n its is compared with ageOfFrme of pkt n-1.
-      //   if there are more then timeout sec it mean that board did not transmit for this period.
-class infoOfRecvPkts
+
+
+
+// -- class InfoOfRecvPkts
+// -- it is used to compute (and print) statistics about time or reception of UDP packets from a given IP address, and hence for a given EthResource.
+// -- further comments (maybe to be revised and verified) are in the following.
+// --
+// -- this class contains all info about pkts received from a specific ems (its id is stored in "board" field)
+// -- and let you calculate statistic about receive timing and check if one of following errors occur:
+// -- 1) error in sequence number
+// -- 2) between two consecutive pkts there are more the "timeout" sec (default is 0.01 sec and this is can modified by environment var ETHREC_STATISTICS_TIMEOUT_MSEC):
+// --    this elapsed time is calculated in two way:
+// --    1) using sys time: when arrived a pkt number n its received time(get by sys call) is compared with received time of pkt number n-1
+// --    2) using ageOfFrame filed in packets: this time is insert by transmitter board. when arrive a pkt number n its is compared with ageOfFrme of pkt n-1.
+// --       if there are more then timeout sec it mean that board did not transmit for this period.
+
+class InfoOfRecvPkts
 {
 
 private:
@@ -128,7 +141,8 @@ private:
     const double DEFAULT_TIMEOUT_STAT;
 
 private:
-    int             board;              // the number of ems board with range [1, TheEthManager::maxBoards]
+    eOipv4addr_t    ipv4;
+    char            ipv4string[20];
 public:
     bool            initted;          //if true is pc104 has already received a pkt from the ems when it is in running mode
     bool            isInError;        //is true if an error occur. it is used to avoid to print error every cicle
@@ -155,8 +169,8 @@ public:
     bool            _verbose;
     bool            justprinted;
 
-    infoOfRecvPkts();
-    ~infoOfRecvPkts();
+    InfoOfRecvPkts();
+    ~InfoOfRecvPkts();
     void printStatistics(void);
     void clearStatistics(void);
     uint64_t getSeqNum(uint64_t *packet, uint16_t size);
@@ -174,116 +188,77 @@ public:
 
     void forceReport(void);
 
-    void setBoardNum(int board);
+    void setBoardIP(eOipv4addr_t ip);
 };
 
 
-class yarp::dev::ethResources:  public DeviceDriver,
-                                public hostTransceiver
-{
-public:
+// -- class EthNetworkQuery
+// -- it is used to wait for a reply from a board.
 
-    // this is the maximum size of rx and tx packets managed by the ethresource.
-    enum { maxRXpacketsize = 1496, maxTXpacketsize = 1496 };
+class EthNetworkQuery
+{
 
 private:
 
-    enum { ETHRES_SIZE_INFO = 128 };
-
-    char              info[ETHRES_SIZE_INFO];
-    int               how_many_features;      //!< Keep track of how many high level class registered. onto this EMS
-    ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
-    double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
-    bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
-    infoOfRecvPkts    *infoPkts;
-
-    yarp::os::Semaphore*  objLock;
-
-    yarp::os::Semaphore*  networkQuerySem;      // the semaphore used by the class to wait for a reply from network. it must have exclusive access
-    yarp::os::Semaphore*  isbusyNQsem;          // the semaphore used to guarantee exclusive access of networkQuerySem to calling threads
-    yarp::os::Semaphore*  iswaitingNQsem;       // the semaphore used to guarantee that the wait of the class is unblocked only once and when it is required
-
-    bool lock();
-    bool unlock();
-
-    bool                verifiedEPprotocol[eoprot_endpoints_numberof];
-    bool                configuredEP[eoprot_endpoints_numberof];
-    bool                verifiedBoardPresence;
-    bool                remoteBoardNumberIsSet;
-    bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
-    bool                txrateISset;
-    bool                cleanedBoardBehaviour;    // the board is in config mode and does not have any regulars
-    uint8_t             boardEPsNumber;
-    eOmn_comm_status_t  boardCommStatus;
-    uint16_t            usedNumberOfRegularROPs;
-    //uint16_t            usedSizeOfRegularROPframe;
-
-    can_string_eth*     c_string_handler[16];
+    eOprotID32_t id2wait;           // the id32 which we wait
+    yarp::os::Semaphore* netwait;   // the semaphore used by the class to wait for a reply from network. it must have exclusive access
+    yarp::os::Semaphore* isbusy;    // the semaphore used to guarantee exclusive access of ::netwait to calling threads
+    yarp::os::Semaphore* iswaiting; // the semaphore used to guarantee that the wait of the class is unblocked only once and when it is required
 
 public:
-    TheEthManager     *ethManager;          //!< Pointer to the Singleton handling the UDP socket
-    int               boardNum;             // the number of ems board with range [1, TheEthManager::maxBoards]
-    char              boardName[BOARDNAME_MAXSIZE];        //this is the name read in xml file
-    ethResources();
-    ~ethResources();
+
+    EthNetworkQuery();
+    ~EthNetworkQuery();
+
+    Semaphore* start(eOprotID32_t id32, uint32_t signature);     // associates a semaphore to a (id2wait, signature) pair
+    bool wait(Semaphore* sem, double timeout);                      // waits the semaphore until either a reply arrives or timeout expires (returns false)
+    bool arrived(eOprotID32_t id32, uint32_t signature);            // a reply has arrived. the rx handler must call it. true if it releases, false if not
+    bool stop(Semaphore* sem);                                      // we deassociate the semaphore to the waiting pair
+};
 
 
-    bool            open(yarp::os::Searchable &cfgtotal, yarp::os::Searchable &cfgtransceiver, yarp::os::Searchable &cfgprotocol, ethFeature_t &request);
+// -- class EthResource
+// -- it is used to manage udp communication towards a given board
+
+class yarp::dev::EthResource:  public DeviceDriver,
+                               public HostTransceiver
+{
+public:
+
+    // the size of the boardname must belong to EthResources because it is this class which extracts it from the xml file.
+    // all other places where this name is stored have copied it from here using EthResource::getName(void).
+    // an example is TheEthManager::ethBoards which makes it available with TheEthManager::getName(eOipv4addr_t ipv4)
+
+    enum { boardNameSize = 32 };
+
+    // this is the maximum size of rx and tx packets managed by the ethresource. however, the HostTranceveiver can reduce these values.
+    enum { maxRXpacketsize = 1496, maxTXpacketsize = 1496 };
+
+public:
+
+    EthResource();
+    ~EthResource();
+
+
+    bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal);
     bool            close();
-
-    /*!   @fn       registerFeature(void);
-     *    @grief    tells the EMS a new device requests its services.
-     *    @return   true.
-     */
-    bool            registerFeature(ethFeature_t &request);
-
-    /*!   @fn       unregisterFeature();
-     *    @brief    tell the EMS a user has been closed. If was the last one, close the EMS
-     */
-    int             deregisterFeature(ethFeature_t &request);
+    bool            isEPsupported(eOprot_endpoint_t ep);
 
     ACE_INET_Addr   getRemoteAddress(void);
 
+    eOipv4addr_t    getIPv4remoteAddress(void);
+
+    const char *    getName(void);
+    const char *    getIPv4string(void);
+
     // the function returns true if the packet can be transmitted. 
     // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
-    bool            getPointer2TxPack(uint8_t **pack, uint16_t *size, uint16_t *numofrops);
-
-
-    // returns the capacity of the receiving buffer.
-    int             getRXpacketCapacity();
-
+    bool            getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops);
 
     bool            canProcessRXpacket(uint64_t *data, uint16_t size);
 
     void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true);
 
-
-    /*!   @fn       goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity);
-     *    @brief    Tells the EMS to start the control loop to activate a given service described by (endpoint, entity).
-     */
-    bool            goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity);
-
-
-    /*!   @fn       goToConfig(void);
-     *    @brief    Tells the EMS to stop the control loop and go into configuration mode.
-     */
-    bool            goToConfig(void);
-
-    /*!   @fn       getLastRecvMsgTimestamp(void);
-     *    @brief    return the system time of the last received message from the corresponding EMS board.
-     *    @return   seconds passed from the very first message received.
-     */
-    double          getLastRecvMsgTimestamp(void);
-
-    /*!   @fn       clearRegulars(void);
-     *    @brief    clears periodic signal message of EMS
-     *    @return   true on success else false
-     */
-    bool            clearRegulars(bool verify = false);
-
-    bool addRegulars(vector<eOprotID32_t> &id32vector, bool verify = false);
-
-    bool numberofRegulars(uint16_t &numberofregulars);
 
     bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout = 0.100, int retries = 10);
 
@@ -294,46 +269,77 @@ public:
     bool setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries = 10, double waitbeforeverification = 0.001, double verificationtimeout = 0.050, int verificationretries = 2);
 
 
-    /*!   @fn       isRunning(void);
-     *    @brief    says if goToRun command has been sent to EMS
-     *    @return   true if goToRun command has been sent to EMS else false
-     */
-    bool            isRunning(void);
+    bool verifyEPprotocol(eOprot_endpoint_t ep);
 
-    /*!   @fn       checkIsAlive(double curr_time);
-     *    @brief    check if ems is ok by verifing time elapsed from last received packet. In case of error print yError.
-     *    @return
-     */
-    void checkIsAlive(double curr_time);
+    bool aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
 
-    bool isEPmanaged(eOprot_endpoint_t ep);
-
-    bool verifyBoard(yarp::os::Searchable &protconfig);
-    bool verifyBoardPresence(yarp::os::Searchable &protconfig);
-    bool verifyBoardTransceiver(yarp::os::Searchable &protconfig);   
-    bool setTXrate(yarp::os::Searchable &protconfig);
-    bool cleanBoardBehaviour(void);
-    bool setRemoteBoardNumber(void);
-
-    bool verifyEPprotocol(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);
-    bool configureENDPOINT(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep);
-    bool verifyENTITYnumber(yarp::os::Searchable &protconfig, eOprot_endpoint_t ep, eOprotEntity_t en, int expectednumber = -1);
-
-
-    Semaphore* startNetworkQuerySession(eOprotID32_t id32, uint32_t signature); // to the associated board
-    bool waitForNetworkQueryReply(Semaphore* sem, double timeout);
-    bool aNetworkQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
-    bool stopNetworkQuerySession(Semaphore* sem);
 
     bool printRXstatistics(void);
     bool CANPrintHandler(eOmn_info_basic_t* infobasic);
 
 
+    bool serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout = 0.500);
+
+    bool serviceSetRegulars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout = 0.500);
+
+    bool serviceStart(eOmn_serv_category_t category, double timeout = 0.500);
+
+    bool serviceStop(eOmn_serv_category_t category, double timeout = 0.500);
+
+
+    // -- not used at the moment
+    void checkIsAlive(double curr_time);
+    // double          getLastRecvMsgTimestamp(void);
+    // int             getNumberOfAttachedInterfaces(void);
+    // returns the capacity of the receiving buffer.
+    // int getRXpacketCapacity();
+
 private:
+
+    eOipv4addr_t      ipv4addr;
+    char              ipv4addrstring[20];
+    char              boardName[32];
+    ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
+    double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
+    bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
+    InfoOfRecvPkts    *infoPkts;
+
+    yarp::os::Semaphore*  objLock;
+
+    EthNetworkQuery*    ethQuery;
+
+    EthNetworkQuery*    ethQueryServices;
+
+    bool                verifiedEPprotocol[eoprot_endpoints_numberof];
+    bool                verifiedBoardPresence;
+
+    bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
+    bool                txrateISset;
+    bool                cleanedBoardBehaviour;    // the board is in config mode and does not have any regulars
+    eOmn_comm_status_t  boardCommStatus;
+    uint16_t            usedNumberOfRegularROPs;
+
+    can_string_eth*     c_string_handler[16];
+
+    TheEthManager       *ethManager;
+
+private:
+
+
+    bool verifyBoard();
+    bool setTXrate();
+    bool verifyBoardPresence();
+    bool verifyBoardTransceiver();
+    bool cleanBoardBehaviour(void);
+    // we keep isRunning() and we add a field in the reply of serviceStart()/Stop() which tells if the board is in run mode or not.
+    bool isRunning(void);
+
+    // lock of the object: on / off
+    bool lock(bool on);
+
+    bool serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times);
+
     bool verbosewhenok;
-    //uint64_t        RXpacket[maxRXpacketsize/8];    // buffer holding the received messages after EthReceiver::run() has read it from socket
-    //uint16_t        RXpacketSize;
-    //    ACE_UINT16      recv_size;                      // size of the received message
 };
 
 

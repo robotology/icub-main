@@ -72,18 +72,6 @@ bool embObjVirtualAnalogSensor::fromConfig(yarp::os::Searchable &_config)
 {
     Bottle xtmp;
 
-  // embObj parameters, in ETH group
-    Value val =_config.findGroup("ETH").check("Ems",Value(1), "Board number");
-    if(val.isInt())
-    {
-        _fId.boardNumber =val.asInt();
-    }
-    else
-    {
-        yError () << "embObjVirtualAnalogSensor: EMS Board number identifier not found\n";
-        return false;
-    }
-
     // Analog Sensor stuff
     Bottle config = _config.findGroup("GENERAL");
 
@@ -178,8 +166,39 @@ bool embObjVirtualAnalogSensor::update(eOprotID32_t id32, double timestamp, void
     return true;
 }
 
+iethresType_t embObjVirtualAnalogSensor::type()
+{
+    return iethres_analogvirtual;
+}
+
+
+
 bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
 {
+    // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
+
+    ethManager = TheEthManager::instance();
+    if(NULL == ethManager)
+    {
+        yFatal() << "embObjVirtualAnalogSensor::open() fails to instantiate ethManager";
+        return false;
+    }
+
+    if(false == ethManager->parseEthBoardInfo(config, _fId))
+    {
+        yError() << "embObjVirtualAnalogSensor::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
+        return false;
+    }
+    // add specific info about this device ...
+    _fId.endpoint = eoprot_endpoint_none;
+    _fId.entity = eoprot_entity_none;
+    _fId.interface  = this;
+    _fId.type = ethFeatType_AnalogVirtual;
+
+
+    // - now all other things
+
+
     std::string str;
     if(config.findGroup("GENERAL").find("verbose").asBool())
     {
@@ -198,107 +217,26 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-    // Tmp variables
-    Bottle          groupEth;
-    ACE_TCHAR       address[64];
-    ACE_UINT16      port;
 
-    Bottle groupTransceiver = Bottle(config.findGroup("TRANSCEIVER"));
-    if(groupTransceiver.isNull())
-    {
-        yError() << "embObjVirtualAnalogSensor: Can't find TRANSCEIVER group in config files";
-        return false;
-    }
+    // -- instantiate EthResource etc.
 
-    Bottle groupProtocol = Bottle(config.findGroup("PROTOCOL"));
-    if(groupProtocol.isNull())
-    {
-        yError() << "embObjVirtualAnalogSensor: Can't find PROTOCOL group in config files";
-        return false;
-    }
-
-
-    // Get both PC104 and EMS ip addresses and port from config file
-    groupEth  = Bottle(config.findGroup("ETH"));
-    Bottle parameter1( groupEth.find("PC104IpAddress").asString() );    // .findGroup("IpAddress");
-    port      = groupEth.find("CmdPort").asInt();              // .get(1).asInt();
-    snprintf(_fId.pc104IPaddr.string, sizeof(_fId.pc104IPaddr.string), "%s", parameter1.toString().c_str());
-    _fId.pc104IPaddr.port = port;
-
-    Bottle parameter2( groupEth.find("IpAddress").asString() );    // .findGroup("IpAddress");
-    snprintf(_fId.boardIPaddr.string, sizeof(_fId.boardIPaddr.string), "%s", parameter2.toString().c_str());
-    _fId.boardIPaddr.port = port;
-
-    sscanf(_fId.boardIPaddr.string,"\"%d.%d.%d.%d", &_fId.boardIPaddr.ip1, &_fId.boardIPaddr.ip2, &_fId.boardIPaddr.ip3, &_fId.boardIPaddr.ip4);
-    sscanf(_fId.pc104IPaddr.string,"\"%d.%d.%d.%d", &_fId.pc104IPaddr.ip1, &_fId.pc104IPaddr.ip2, &_fId.pc104IPaddr.ip3, &_fId.pc104IPaddr.ip4);
-
-    snprintf(_fId.boardIPaddr.string, sizeof(_fId.boardIPaddr.string), "%u.%u.%u.%u:%u", _fId.boardIPaddr.ip1, _fId.boardIPaddr.ip2, _fId.boardIPaddr.ip3, _fId.boardIPaddr.ip4, _fId.boardIPaddr.port);
-    snprintf(_fId.pc104IPaddr.string, sizeof(_fId.pc104IPaddr.string), "%u.%u.%u.%u:%u", _fId.pc104IPaddr.ip1, _fId.pc104IPaddr.ip2, _fId.pc104IPaddr.ip3, _fId.pc104IPaddr.ip4, _fId.pc104IPaddr.port);
-
-    //   Debug info
-    snprintf(_fId.name, sizeof(_fId.name), "embObjAnalogSensor: referred to EMS: %d at address %s\n", _fId.boardNumber, address);       // Saving User Friendly Id
-
-
-    Value val =config.findGroup("ETH").check("Ems",Value(1), "Board number");
-    if(val.isInt())
-        _fId.boardNumber =val.asInt();
-    else
-    {
-        yError () << "embObjAnalogSensor: EMS Board number identifier not found for IP" << _fId.pc104IPaddr.string;
-        return false;
-    }
-
-    _fId.boardName[0] = '\0';
-    Value *valName;
-    if(config.findGroup("ETH").check("Name", valName, "Board name"))
-    {
-        if(valName->isString())
-        {
-            memset(_fId.boardName, 0, BOARDNAME_MAXSIZE);
-            snprintf(_fId.boardName, BOARDNAME_MAXSIZE, "%s", valName->asString().c_str());
-        }
-        else
-        {
-            yError () << "embObjAnalogSensor: EMS Board name is not valid";
-        }
-    }
-
-    ethManager = TheEthManager::instance();
-    if(NULL == ethManager)
-    {
-        yError() << "Unable to instantiate ethManager";
-        return false;
-    }
-
-    // N.B.: use a dynamic_cast to extract correct interface when using this pointer
-    _fId.interface = this;
-    _fId.type = ethFeatType_AnalogVirtual;
-
-    /* Once I'm ok, ask for resources, through the _fId struct I'll give the ip addr, port and
-    *  and boradNum to the ethManagerin order to create the ethResource requested.
-    * I'll Get back the very same sturct filled with other data useful for future handling
-    * like the EPvector and EPhash_function */
-    res = ethManager->requestResource(config, groupTransceiver, groupProtocol, _fId);
+    res = ethManager->requestResource2(this, config);
     if(NULL == res)
     {
-        yError() << "EMS device not instantiated... unable to continue";
+        yError() << "embObjVirtualAnalogSensor::open() fails because could not instantiate the ethResource for BOARD w/ IP = " << _fId.boardIPaddr.string << " ... unable to continue";
+        return false;
+    }
+
+    // i verify the motion-control because .... in here we use messages of this endpoint ... and we need to verfy in order to send messages.
+    if(!res->verifyEPprotocol(eoprot_endpoint_motioncontrol))
+    {
         cleanup();
         return false;
     }
 
-    /*IMPORTANT: implement isEpManagedByBoard like every embObj obj when virtaulAnalogSensor will be exist in eo proto!!!!*/
-//    if(!isEpManagedByBoard())
-//    {
-//        yError() << "EMS "<< _fId.boardNumber << "is not connected to virtual analog sensor";
-//        return false;
-//    }
-//    if(!res->verifyProtocol(groupProtocol, eoprot_endpoint_???))
-//    {
-//        yError() << "embObjVirtualAnalogSensor and board "<< _fId.boardNumber << "dont not have the same eoprot_endpoint_??? protocol version: DO A FW UPGRADE";
-//        return false;
-//    }
 
-    yTrace() << "EmbObj Virtual Analog Sensor for board "<< _fId.boardNumber << "instantiated correctly";
+
+    yTrace() << "embObjVirtualAnalogSensor::open(); succefully called for BOARD" << res->getName() << "IP" << res->getIPv4string() << "instantiated correctly";
 
     opened = true;
     return true;
@@ -353,9 +291,14 @@ bool embObjVirtualAnalogSensor::updateMeasure(int ch, double &measure)
 
 void embObjVirtualAnalogSensor::cleanup(void)
 {
+    yTrace() << "embObjVirtualAnalogSensor::cleanup(): called for BOARD" << res->getName() << "IP" << res->getIPv4string();
+
+    if(_fullscale != NULL)
+        delete(_fullscale);
+
     if(ethManager == NULL) return;
 
-    int ret = ethManager->releaseResource(_fId);
+    int ret = ethManager->releaseResource2(res, this);
     res = NULL;
     if(ret == -1)
         ethManager->killYourself();
@@ -363,18 +306,12 @@ void embObjVirtualAnalogSensor::cleanup(void)
 
 bool embObjVirtualAnalogSensor::close()
 {
-    yTrace() << _fId.name;
-    if(_fullscale != NULL)
-        delete(_fullscale);
-
-    int ret = ethManager->releaseResource(_fId);
-    if(ret == -1)
-    {
-        ethManager->killYourself();
-    }
-    res = NULL;
+    cleanup();
     return true;
 }
+
+
+
 
 // eof
 

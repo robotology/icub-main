@@ -338,9 +338,6 @@ private:
     enum       positionControlUnitsType {P_MACHINE_UNITS=0, P_METRIC_UNITS=1};
     positionControlUnitsType _positionControlUnits;
     
-#if !defined(EMBOBJMC_DONT_USE_MAIS)
-    int         numberofmaisboards;
-#endif
 
     // debug purpose
       
@@ -381,9 +378,7 @@ private:
     bool checkRemoteControlModeStatus(int joint, int target_mode);
 
     bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
-#if !defined(EMBOBJMC_DONT_USE_MAIS)
-    bool configure_mais(yarp::os::Searchable &config);
-#endif
+
     bool dealloc();
     bool isEpManagedByBoard();
     bool parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[]);
@@ -473,10 +468,9 @@ public:
     eoRequestsQueue     *requestQueue;      // it contains the list of requests done to the remote board
 
     // embObjLib stuff
-    ethResources                *res;
+    EthResource                *res;
     yarp::dev::TheEthManager    *ethManager;
 
-    bool verifyMotionControlProtocol(Bottle groupProtocol);
 
     void cleanup(void);
 
@@ -486,6 +480,7 @@ public:
     bool fromConfig(yarp::os::Searchable &config);
 
     virtual bool initialised();
+    virtual iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
     virtual eoThreadFifo * getFifo(uint32_t variableProgNum);
     virtual eoThreadEntry *getThreadTable(int  threadId);

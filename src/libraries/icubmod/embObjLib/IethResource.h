@@ -30,7 +30,7 @@
 #ifndef __IethResource__
 #define __IethResource__
 
-// embobj includes
+
 #include "EoProtocol.h"
 
 
@@ -62,13 +62,30 @@
 class eoThreadFifo;
 class eoThreadEntry;
 
+typedef enum
+{
+    iethres_none            = 255,
+    iethres_management      = 0,
+    iethres_analogmais      = 1,
+    iethres_analogstrain    = 2,
+    iethres_motioncontrol   = 3,
+    iethres_skin            = 4,
+    iethres_analogvirtual   = 5,
+    iethres_analoginertial  = 6
+} iethresType_t;
+
+enum { iethresType_numberof = 7 };
+
+
 class IethResource
 {
-    public:
+
+public:
         virtual ~IethResource() {}
 
         virtual bool initialised() = 0;
         virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata) = 0;
+        virtual iethresType_t type() = 0;
         virtual eoThreadFifo * getFifo(uint32_t variableProgNum) { return NULL;}
         virtual eoThreadEntry *getThreadTable(int  threadId) {return NULL;}
 };

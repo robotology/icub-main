@@ -6,219 +6,272 @@
  */
 
 
+// --------------------------------------------------------------------------------------------------------------------
+// - external dependencies
+// --------------------------------------------------------------------------------------------------------------------
  
-#include "FeatureInterface.h"
-#include "FeatureInterface_hid.h"
+#include "EOconstvector_hid.h"
 
 #include <ethManager.h>
 #include "embObjMotionControl.h"
 #include "embObjAnalogSensor.h"
 #include "embObjSkin.h"
 
-#include "EoProtocol.h"
-
 #include <yarp/os/Time.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/LogStream.h>
 
+
+#include <ace/ACE.h>
+#include <ace/config.h>
+#include <ace/Recursive_Thread_Mutex.h>
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - declaration of extern public interface
+// --------------------------------------------------------------------------------------------------------------------
+
+#include "FeatureInterface.h"
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - declaration of extern hidden interface
+// --------------------------------------------------------------------------------------------------------------------
+
+#include "FeatureInterface_hid.h"
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition (and initialisation) of extern variables. deprecated: better using _get(), _set() on static variables
+// --------------------------------------------------------------------------------------------------------------------
+// empty-section
+
+// --------------------------------------------------------------------------------------------------------------------
+// - typedef with internal scope
+// --------------------------------------------------------------------------------------------------------------------
+// empty-section
+
+// --------------------------------------------------------------------------------------------------------------------
+// - declaration of static functions
+// --------------------------------------------------------------------------------------------------------------------
+// empty-secction
+
+// --------------------------------------------------------------------------------------------------------------------
+// - #define with internal scope
+// --------------------------------------------------------------------------------------------------------------------
+// empty-secction
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition (and initialisation) of static variables
+// --------------------------------------------------------------------------------------------------------------------
+
 static TheEthManager *_interface2ethManager = NULL;
 
-void embObjPrintTrace(char *string)
-{
-    yTrace("%s", string);
-}
+//static const eOprot_EPcfg_t s_eo_theservices_theEPcfgsOthersMAX[] =
+//{
+//    {
+//        EO_INIT(endpoint)           eoprot_endpoint_motioncontrol,
+//        EO_INIT(numberofentities)   {12, 12, 1, 0, 0, 0, 0}
+//    },
+//    {
+//        EO_INIT(endpoint)           eoprot_endpoint_analogsensors,
+//        EO_INIT(numberofentities)   {1, 1, 1, 1, 0, 0, 0}
+//    },
+//    {
+//        EO_INIT(endpoint)           eoprot_endpoint_skin,
+//        EO_INIT(numberofentities)   {2, 0, 0, 0, 0, 0, 0}
+//    }
+//};
 
-void embObjPrintDebug(char *string)
-{
-    yDebug("%s", string);
-}
+//static const EOconstvector s_eo_theservices_vectorof_EPcfg_max =
+//{
+//    EO_INIT(capacity)       sizeof(s_eo_theservices_theEPcfgsOthersMAX)/sizeof(eOprot_EPcfg_t),
+//    EO_INIT(size)           sizeof(s_eo_theservices_theEPcfgsOthersMAX)/sizeof(eOprot_EPcfg_t),
+//    EO_INIT(item_size)      sizeof(eOprot_EPcfg_t),
+//    EO_INIT(dummy)          0,
+//    EO_INIT(stored_items)   (void*)s_eo_theservices_theEPcfgsOthersMAX,
+//    EO_INIT(functions)      NULL
+//};
 
-void embObjPrintInfo(char *string)
-{
-    yInfo("%s", string);
-}
 
-void embObjPrintWarning(char *string)
-{
-    yWarning("%s", string);
-}
+// --------------------------------------------------------------------------------------------------------------------
+// - definition of extern public functions
+// --------------------------------------------------------------------------------------------------------------------
 
-void embObjPrintError(char *string)
-{
-    yError("%s", string);
-}
 
-void embObjPrintFatal(char *string)
-{
-    yError("EMS received the following FATAL error: %s", string);
-}
-
-void feat_Initialise(void *ethman)
+void feat_Initialise(void *handleOfTheEthManager)
 {
     if(_interface2ethManager == NULL )
     {
-        _interface2ethManager = (TheEthManager*) ethman;
+        _interface2ethManager = (TheEthManager*) handleOfTheEthManager;
     }
 }
+
 
 void feat_DeInitialise()
 {
     _interface2ethManager = NULL;
 }
 
-fakestdbool_t feat_addEncoderTimeStamp(FEAT_boardnumber_t boardnum, eOprotID32_t id32)
+
+
+//const EOconstvector*  feat_get_vectorofOtherEPcfgs_MAXcapabilities(void)
+//{
+//    return(&s_eo_theservices_vectorof_EPcfg_max);
+//}
+
+
+//eObool_t feat_addEncoderTimeStamp(eOipv4addr_t ipv4, eOprotID32_t id32)
+//{
+//    IethResource* mc = NULL;
+
+//    if(NULL == _interface2ethManager)
+//    {
+//        return eobool_false;
+//    }
+
+//    bool ret = _interface2ethManager->getHandle(ipv4, id32, &mc);
+
+//    if((false == ret) || (NULL == mc))
+//    {
+//        char ipinfo[20];
+//        char nvinfo[128];
+//        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
+//        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+//        yDebug("feat_addEncoderTimeStamp() fails to get a handle of embObjMotionControl for IP = %s and NV = %s", ipinfo, nvinfo);
+//        return eobool_false;
+//    }
+
+//    if(false == mc->initialised())
+//    {
+//        return eobool_false;
+//    }
+//    else
+//    {
+//        mc->update(id32, yarp::os::Time::now(), NULL);
+//    }
+
+//    return eobool_true;
+//}
+
+
+eObool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, void* rxdata)
 {
     IethResource* mc = NULL;
-    ethFeatType_t type;
 
-    if (_interface2ethManager == NULL)
-        return fakestdbool_false;
-
-    bool ret = _interface2ethManager->getHandle(boardnum, id32, &mc, &type);
-
-    if(!ret)
+    if(NULL == _interface2ethManager)
     {
-        yDebug("EMS callback was unable to get access to the embObjMotionControl");
-        return fakestdbool_false;
+        return eobool_false;
     }
 
-    if(type != ethFeatType_MotionControl)
+    mc = _interface2ethManager->getInterface(ipv4, id32);
+
+    if(NULL == mc)
     {
-        return fakestdbool_false;
-    }
-    else if(false == mc->initialised())
-    {
-        return fakestdbool_false;
-    }
-    else
-    {
-        mc->update(id32, yarp::os::Time::now(), NULL);
-    }
-
-    return fakestdbool_true;
-}
-
-
-fakestdbool_t feat_manage_motioncontrol_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void* rxdata)
-{
-    IethResource* mc = NULL;
-    ethFeatType_t type;
-
-    if (_interface2ethManager == NULL)
-        return fakestdbool_false;
-
-    bool ret = _interface2ethManager->getHandle(boardnum, id32, &mc, &type);
-
-    if(!ret)
-    {
-        yDebug("EMS callback was unable to get access to the embObjMotionControl");
-        return fakestdbool_false;
+        char ipinfo[20];
+        char nvinfo[128];
+        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        yDebug("feat_manage_motioncontrol_data() fails to get a handle of embObjMotionControl for IP = %s and NV = %s", ipinfo, nvinfo);
+        return eobool_false;
     }
 
-    if(type != ethFeatType_MotionControl)
+    if(false == mc->initialised())
     {
-        return fakestdbool_false;
-    }
-    else if(false == mc->initialised())
-    {
-        return fakestdbool_false;
+        return eobool_false;
     }
     else
     {
         mc->update(id32, yarp::os::Time::now(), rxdata);
     }
 
-    return fakestdbool_true;
+    return eobool_true;
 }
 
-fakestdbool_t feat_manage_skin_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *arrayofcandata)
+eObool_t feat_manage_skin_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *arrayofcandata)
 {   
-    static int error = 0;
     IethResource* skin;
-    ethFeatType_t type;
 
-    if (_interface2ethManager == NULL)
-        return fakestdbool_false;
-
-    bool ret = _interface2ethManager->getHandle(boardnum, id32, &skin, &type);
-
-    if(!ret)
+    if(NULL == _interface2ethManager)
     {
-        yDebug("EMS callback was unable to get access to the embObjSkin");
-        return fakestdbool_false;
+        return eobool_false;
     }
 
-    if(type != ethFeatType_Skin)
-    {   // the ethmanager does not know this object yet or the dynamic cast failed because it is not an embObjSkin
+    skin = _interface2ethManager->getInterface(ipv4, id32);
+
+    if(NULL == skin)
+    {
+        char ipinfo[20];
         char nvinfo[128];
+        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        if(0 == (error%1000) )
-            yWarning() << "feat_manage_skin_data() received a request from BOARD" << boardnum << "with ID:" << nvinfo << "but no class was jet instatiated for it";
-
-        error++;
-        return fakestdbool_false;
+        yDebug("feat_manage_skin_data() fails to get a handle of embObjSkin for IP = %s and NV = %s", ipinfo, nvinfo);
+        return eobool_false;
     }
-    else if(false == skin->initialised())
-    {   // the ethmanager has the object, but the device was not fully opened yet. cannot use it
-        return fakestdbool_false;
+
+    if(false == skin->initialised())
+    {
+        return eobool_false;
     }
     else
-    {   // the object exists and is completed: it can be used
+    {
         skin->update(id32, yarp::os::Time::now(), (void *)arrayofcandata);
     }
 
-    return fakestdbool_true;
+    return eobool_true;
 }
 
 
-fakestdbool_t feat_manage_analogsensors_data(FEAT_boardnumber_t boardnum, eOprotID32_t id32, void *data)
+eObool_t feat_manage_analogsensors_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *data)
 {
     IethResource* sensor;
-    ethFeatType_t type;
 
-    if (_interface2ethManager == NULL)
-        return fakestdbool_false;
-
-    bool ret = _interface2ethManager->getHandle(boardnum, id32, &sensor, &type);
-
-    if(!ret)
+    if(NULL == _interface2ethManager)
     {
-        yDebug("EMS callback was unable to get access to the embObjAnalogSensor");
-        return fakestdbool_false;
+        return eobool_false;
     }
 
-    if(! ((type == ethFeatType_AnalogMais) || (type == ethFeatType_AnalogStrain) || (type == ethFeatType_AnalogInertial)) )
+    sensor = _interface2ethManager->getInterface(ipv4, id32);
+
+    if(NULL == sensor)
     {
-        yError("EMS analog sensor callback - the ethmanager does not know this object YET or a wrong pointer has been returned because it is not an embObjAnalogSensor");
-        return fakestdbool_false;
+        char ipinfo[20];
+        char nvinfo[128];
+        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        yDebug("feat_manage_analogsensors_data() fails to get a handle of embObjAnalogSensor for IP = %s and NV = %s", ipinfo, nvinfo);
+        return eobool_false;
     }
-    else if(false == sensor->initialised())
-    {   // the ethmanager has the object, but the obiect was not full initted yet. cannot use it
-        return fakestdbool_false;
+
+    if(false == sensor->initialised())
+    {
+        return eobool_false;
     }
     else
-    {   // the object exists and is completed: it can be used.
-        // data is a EOarray* in case of mais or strain but it is a eOas_inertial_status_t* in case of inertial sensor
+    {   // data is a EOarray* in case of mais or strain but it is a eOas_inertial_status_t* in case of inertial sensor
         sensor->update(id32, yarp::os::Time::now(), data);
     }
 
-    return fakestdbool_true;
+    return eobool_true;
 }
 
 
-void* feat_MC_handler_get(FEAT_boardnumber_t boardnum, eOprotID32_t id32)
+void* feat_MC_handler_get(eOipv4addr_t ipv4, eOprotID32_t id32)
 {
     IethResource* h = NULL;
-    ethFeatType_t type;
 
-    if (_interface2ethManager == NULL)
+    if(NULL == _interface2ethManager)
+    {
         return NULL;
+    }
 
-    _interface2ethManager->getHandle(boardnum, id32, &h, &type);
+    h = _interface2ethManager->getInterface(ipv4, id32);
+
     return (void*) h;
 }
 
-fakestdbool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
+eObool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
 {
     eoThreadEntry *th = NULL;
     IethResource *ier = static_cast<IethResource*>(mchandler);
@@ -226,11 +279,11 @@ fakestdbool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
 
     if(NULL == mc)
     {
-        return fakestdbool_false;
+        return eobool_false;
     }
     else if(false == mc->initialised())
     {   // it can be that the object is already created but its open() not yet completed. it is in open() that we allocate requestQueue ....
-        return fakestdbool_false;
+        return eobool_false;
     }
 
 
@@ -240,7 +293,7 @@ fakestdbool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
     if( (threadId = fuffy->pop()) < 0)
     {
         yError() << "Received an answer message nobody is waiting for (MCmutex_post)";
-        return fakestdbool_false;
+        return eobool_false;
     }
     else
     {
@@ -248,10 +301,10 @@ fakestdbool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
         if(NULL == th)
             yError() << "MCmutex_post error at line " << __LINE__;
         th->push();
-        return fakestdbool_true;
+        return eobool_true;
     }
 
-    return fakestdbool_false;
+    return eobool_false;
 }
 
 
@@ -275,72 +328,87 @@ eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum)
     return(fid_boardnum-1);
 }
 
+
 double feat_yarp_time_now(void)
 {
     return(yarp::os::Time::now());
 }
 
-fakestdbool_t feat_signal_network_reply(eOprotBRD_t brd, eOprotID32_t id32, uint32_t signature)
-{
-    if (_interface2ethManager == NULL)
-        return(fakestdbool_false);
 
-    ethResources* ethres = _interface2ethManager->GetEthResource(nvBoardNum2FeatIdBoardNum(brd));
+eObool_t feat_signal_network_reply(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature)
+{
+    if(NULL == _interface2ethManager)
+    {
+        return(eobool_false);
+    }
+
+    EthResource* ethres = _interface2ethManager->GetEthResource(ipv4);
 
     if(NULL == ethres)
     {
-        return(fakestdbool_false);
+        return(eobool_false);
     }
 
-    return(ethres->aNetworkQueryReplyHasArrived(id32, signature));
+    return(ethres->aNetQueryReplyHasArrived(id32, signature));
 }
 
-fakestdbool_t feat_embObjCANPrintHandler(eOprotBRD_t brd, eOmn_info_basic_t* infobasic)
+
+eObool_t feat_CANprint(eOipv4addr_t ipv4, eOmn_info_basic_t* infobasic)
 {
-    if (_interface2ethManager == NULL)
-        return(fakestdbool_false);
+    if(NULL == _interface2ethManager)
+    {
+        return(eobool_false);
+    }
 
-    ethResources* ethres = _interface2ethManager->GetEthResource(nvBoardNum2FeatIdBoardNum(brd));
+    EthResource* ethres = _interface2ethManager->GetEthResource(ipv4);
 
-    //Call the ethres manager
     bool res = ethres->CANPrintHandler(infobasic);
     return res;
 }
 
-const char * feat_embObj_GetBoardName(eOprotBRD_t brd)
+
+const char * feat_GetBoardName(eOipv4addr_t ipv4)
 {
     static const char * errorstr = "error";
 
-    if(_interface2ethManager == NULL)
+    if(NULL == _interface2ethManager)
     {
-        return(errorstr);
+        return errorstr;
     }
 
-
-    ethResources* ethres = _interface2ethManager->GetEthResource(nvBoardNum2FeatIdBoardNum(brd));
-    if(ethres == NULL)
-    {
-        return(errorstr);
-    }
-
-
-    const char *ret = NULL;
-    if(strlen(ethres->boardName)>1)
-    {
-        ret = ethres->boardName;
-    }
-    else
-    {
-        brd++;
-        ret = (brd >= TheEthManager::maxBoards) ? (TheEthManager::boardNames[0]) : (TheEthManager::boardNames[brd]);
-    }
-    return(ret);
-
+    return(_interface2ethManager->getName(ipv4));
 }
 
-#include <ace/ACE.h>
-#include <ace/config.h>
-#include <ace/Recursive_Thread_Mutex.h>
+
+void feat_PrintTrace(char *string)
+{
+    yTrace("%s", string);
+}
+
+void feat_PrintDebug(char *string)
+{
+    yDebug("%s", string);
+}
+
+void feat_PrintInfo(char *string)
+{
+    yInfo("%s", string);
+}
+
+void feat_PrintWarning(char *string)
+{
+    yWarning("%s", string);
+}
+
+void feat_PrintError(char *string)
+{
+    yError("%s", string);
+}
+
+void feat_PrintFatal(char *string)
+{
+    yError("EMS received the following FATAL error: %s", string);
+}
 
 
 
@@ -389,7 +457,23 @@ void ace_mutex_delete(void* m)
 }
 
 
-// eof
+// --------------------------------------------------------------------------------------------------------------------
+// - definition of extern hidden functions
+// --------------------------------------------------------------------------------------------------------------------
+// empty-section
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - definition of static functions
+// --------------------------------------------------------------------------------------------------------------------
+// empty-section
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - end-of-file (leave a blank line after)
+// --------------------------------------------------------------------------------------------------------------------
+
+
 
 
 

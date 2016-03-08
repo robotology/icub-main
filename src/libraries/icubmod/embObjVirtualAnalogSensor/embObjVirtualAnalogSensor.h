@@ -30,7 +30,8 @@ namespace yarp{
 
 
 class TheEthManager;
-class ethResources;
+
+class EthResource;
 /*! class yarp::dev::embObjVirtualAnalogSensor
  * 
  */
@@ -42,7 +43,7 @@ private:
 
     //! embObj stuff
     TheEthManager       *ethManager;
-    ethResources        *res;
+    EthResource         *res;
     ethFeature_t        _fId;
 
     ////////////////////
@@ -73,6 +74,7 @@ public:
 
     virtual bool initialised();
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
+    virtual iethresType_t type();
 
     // IvirtualAnalogSensor interface
     virtual int getState(int ch);

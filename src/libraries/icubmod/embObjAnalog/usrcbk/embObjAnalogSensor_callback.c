@@ -85,7 +85,7 @@ extern void eoprot_fun_ONSAY_as(const EOnv* nv, const eOropdescriptor_t* rd)
 
     if(0xaa000000 == rd->signature)
     {   // case a:
-        if(fakestdbool_false == feat_signal_network_reply(eo_nv_GetBRD(nv), rd->id32, rd->signature))
+        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             char str[256] = {0};
             char nvinfo[128];
@@ -193,14 +193,14 @@ static void handle_data(const EOnv* nv, const eOropdescriptor_t* rd)
     uint8_t sizeofarray = eo_array_Size(arrayof);
     if(0 != sizeofarray)
     {
-        feat_manage_analogsensors_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)arrayof);
+        feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)arrayof);
     }
 }
 
 static void handle_data_inertial(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     eOas_inertial_status_t *inertialstatus  = (eOas_inertial_status_t*)rd->data;
-    feat_manage_analogsensors_data(nvBoardNum2FeatIdBoardNum(eo_nv_GetBRD(nv)), rd->id32, (void *)inertialstatus);
+    feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)inertialstatus);
 }
 
 
