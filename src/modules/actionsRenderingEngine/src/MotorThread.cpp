@@ -1589,13 +1589,13 @@ bool MotorThread::goUp(Bottle &options, const double h)
 bool MotorThread::reach(Bottle &options)
 {
     int arm=ARM_MOST_SUITED;
-    if(checkOptions(options,"left") || checkOptions(options,"right"))
+    if (checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
     Bottle *bTarget=options.find("target").asList();
 
     Vector xd;
-    if(!targetToCartesian(bTarget,xd))
+    if (!targetToCartesian(bTarget,xd))
         return false;
 
     arm=checkArm(arm,xd);
@@ -1610,14 +1610,16 @@ bool MotorThread::reach(Bottle &options)
     bool side=checkOptions(options,"side");
     Vector tmpOrient,tmpDisp;
 
-    if(side)
+    if (side)
     {
         tmpOrient=reachSideOrient[arm];
         tmpDisp=reachSideDisp[arm];
     }
     else
-    {
-        tmpOrient=reachAboveCata[arm];
+    {        
+        tmpOrient=(checkOptions(options,"take")?
+                   reachAboveOrient[arm]:
+                   reachAboveCata[arm]);
         tmpDisp=reachAboveDisp;
     }
     
@@ -1646,7 +1648,7 @@ bool MotorThread::reach(Bottle &options)
         Vector x,o;
         action[arm]->getPose(x,o);
 
-        if(!side)
+        if (!side)
             action[arm]->pushAction(x+graspAboveRelief,o);
 
         action[arm]->checkActionsDone(f,true);
@@ -1654,7 +1656,7 @@ bool MotorThread::reach(Bottle &options)
 
     setGraspState(side);
 
-    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
 
     return true;
