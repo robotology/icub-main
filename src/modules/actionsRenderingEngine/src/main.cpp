@@ -1070,7 +1070,6 @@ public:
 
                         motorThr->lookAtHand(command);
                         motorThr->drawNear(command);
-                        motorThr->setGazeIdle();
 
                         reply.addVocab(ACK);
 
@@ -1092,11 +1091,8 @@ public:
 
                         if(motorThr->isHolding(command))
                         {
-                            if(check(command,"near"))
-                            {
+                            if (check(command,"near"))
                                 motorThr->drawNear(command);
-                                motorThr->setGazeIdle();
-                            }
                             else
                             {
                                 motorThr->setGazeIdle();
@@ -1194,10 +1190,7 @@ public:
                         if (motorThr->isHolding(command))
                         {
                             if (check(command,"near"))
-                            {
                                 motorThr->drawNear(command);
-                                motorThr->setGazeIdle();
-                            }
                             else
                             {
                                 motorThr->goUp(command,0.1);

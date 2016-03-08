@@ -1837,7 +1837,7 @@ bool MotorThread::point(Bottle &options)
 
 bool MotorThread::look(Bottle &options)
 {
-    if(checkOptions(options,"hand"))
+    if (checkOptions(options,"hand"))
     {
         setGazeIdle();
         ctrl_gaze->restoreContext(default_gaze_context);
@@ -1846,17 +1846,15 @@ bool MotorThread::look(Bottle &options)
         if(checkOptions(options,"left") || checkOptions(options,"right"))
             arm=checkOptions(options,"left")?LEFT:RIGHT;
 
-        arm=checkArm(arm);
-        
-        lookAtHand(options);
-        
+        arm=checkArm(arm);        
+        lookAtHand(options);        
         return true;
     }
 
     Bottle *bTarget=options.find("target").asList();
 
     Vector xd;
-    if(!targetToCartesian(bTarget,xd))
+    if (!targetToCartesian(bTarget,xd))
         return false;
 
     setGazeIdle();
@@ -1865,7 +1863,7 @@ bool MotorThread::look(Bottle &options)
     if (options.check("block_eyes"))
         ctrl_gaze->blockEyes(options.find("block_eyes").asDouble());
 
-    if(checkOptions(options,"fixate"))
+    if (checkOptions(options,"fixate"))
     {
         gaze_fix_point=xd;
         keepFixation(options);
@@ -2286,13 +2284,15 @@ bool MotorThread::drawNear(Bottle &options)
     int arm=ARM_IN_USE;
     if(checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
-
+    
     arm=checkArm(arm);
+    action[arm]->pushAction(drawNearPos[arm],drawNearOrient[arm]);    
+    bool f; action[arm]->checkActionsDone(f,true);
 
-    action[arm]->pushAction(drawNearPos[arm],drawNearOrient[arm]);
-
-    bool f;
-    action[arm]->checkActionsDone(f,true);
+    Bottle look_options;
+    look_options.addList().read(drawNearPos[arm]);
+    look_options.addString("wait");
+    look(look_options);
 
     return true;
 }
