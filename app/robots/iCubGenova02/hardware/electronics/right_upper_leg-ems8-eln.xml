@@ -5,44 +5,7 @@
 
     <params file="hardware/electronics/pc104.xml" />
     
-    <!-- ETH_BOARD is a new group which will substitute ETH, TRANSCEIVER, and PROTOCOL -->
-
     <group name="ETH_BOARD">
-
-    <!--
-            LEGENDA
-
-            The group ETH_BOARD keeps whatwever is required to init a EthResource (and below objects) to communicate
-            with an Ethernet board.
-            There are two sub-groups: ETH_BOARD_PROPERTIES and ETH_BOARD_SETTINGS. 
-            The former contains fixed parameters which are proper of the remote board, whereas the latter contains
-            what can be changed by the user.
-
-            ETH_BOARD_PROPERTIES:
-            - IpAddress             no need of explanations.
-            - IpPort                IT MUST BE the same as PC104/PC104IpPort.
-            - Type                  [EMS4, MC4PLUS, MC2PLUS]
-            - maxSizeRXpacket       the board is able to accept UDP packets of this size at most, 
-                                    thus the EthResource shall NOT send bigger packets.
-            - maxSizeROP            the board is able to accept a ROP (command inside a UDP packet) of this size at most, 
-                                    thus the EthResource shall NOT send bigger ROPs. 
-            - maxNumberRegularROPs  the board can accomodate at most this number of regular ROPs. If EthResource attempts to 
-                                    configure more, than the board will reply w/ error
-            - protocolCapability    [STANDARD, MAXIMUM]. Both allow to manage all the entities in every endopoint. 
-                                    MAXIMUM means 12 joints/motors, STANDARD means only 4. More joints, more memory is used.
-                                    Only the EMS4 of forearm in mecV1 and mecV2 manage 12 joints, all the others manage at
-                                    most 4 joints. Moreover, the MC4PLUS can physically manage only 4 and the MC2PLUS only 2. 
-            ETH_BOARD_SETTINGS:
-            - Name                  [upto32chars]. It is the name assigned by the user to this board. This name is printed by robotInterface.
-            - regularsTXrate        [1, 20]. It is the rate in ms which is imposed by robotInterface to the board to send up UDP packets 
-                                    containing regular ROPs. Regular ROPs are sig<> ROPs programmed by robotInterface to be transmitted
-                                    regularly to inform about some status of the board. Keep this rate low in order to reduce CPU load
-                                    in the PC104. The say<> ROPs which reply to specific ask<> ROPs are instead transmitted straigth
-                                    away. The same for sig<> ROPs used for diagnostics or for confirmation of configuration commands.
-            - protocolToUse         [STANDARD, MAXIMUM]. It is the protocol used by EthResource. Use STANDARD except for boards where
-                                    we need 12 joints (left and rigth forearms in V1 and V2 mechanics).
-            
-    -->
    
         <group name="ETH_BOARD_PROPERTIES">
             <param name="IpAddress">                10.0.1.8        </param>
@@ -55,7 +18,7 @@
         </group>
 
         <group name="ETH_BOARD_SETTINGS">
-            <param name="Name">                     "rightUpperLeg"     </param> 
+            <param name="Name">                     "EB8"           </param> 
             <param name="regularsTXrate">           5               </param> 
             <param name="protocolToUse">            STANDARD        </param> 
         </group>
@@ -63,3 +26,4 @@
     </group>  
     
 </params>
+
