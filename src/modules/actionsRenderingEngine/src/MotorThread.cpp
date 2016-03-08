@@ -269,12 +269,10 @@ bool MotorThread::targetToCartesian(Bottle *bTarget, Vector &xd)
     // if the tartget's cartesian coordinates was specified, use them.
     if(!found && bTarget!=NULL && bTarget->check("cartesian") && bTarget->find("cartesian").asList()->size()>=3)
     {
-        Bottle *bCartesian=bTarget->find("cartesian").asList();
-
+        Bottle *bCartesian=bTarget->find("cartesian").asList(); 
         xd.clear();
         for(int i=0; i<bCartesian->size(); i++)
             xd.push_back(bCartesian->get(i).asDouble());
-
         found=true;
     }
 
@@ -2290,7 +2288,9 @@ bool MotorThread::drawNear(Bottle &options)
     bool f; action[arm]->checkActionsDone(f,true);
 
     Bottle look_options;
-    look_options.addList().read(drawNearPos[arm]);
+    Bottle &target=look_options.addList();
+    target.addString("cartesian");
+    target.addList().read(drawNearPos[arm]);
     look_options.addString("wait");
     look(look_options);
 
