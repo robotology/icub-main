@@ -484,6 +484,23 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         }
     }
 
+
+    if(AS_INERTIAL_MTB == _as_type)
+    {
+        // start the configured sensors
+
+        eOmc_inertial_commands_t startCommand = {0};
+        startCommand.enable = 1;
+
+        id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_cmmnds_enable);
+        if(!res->addSetMessage(id32, (uint8_t*) &startCommand))
+        {
+            yError() << "embObjAnalogSensor::open() fails to command the start transmission of the inertials";
+            cleanup();
+            return false;
+        }
+    }
+
     opened = true;
     return true;
 }
@@ -769,17 +786,17 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
     }
 
 
-    // start the configured sensors
+//    // start the configured sensors
 
-    eOmc_inertial_commands_t startCommand = {0};
-    startCommand.enable = 1;
+//    eOmc_inertial_commands_t startCommand = {0};
+//    startCommand.enable = 1;
 
-    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_cmmnds_enable);
-    if(!res->addSetMessage(id32, (uint8_t*) &startCommand))
-    {
-        yError() << "ethResources::sendConfig2SkinInertial() fails to command the start transmission of the inertials";
-        return false;
-    }
+//    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_cmmnds_enable);
+//    if(!res->addSetMessage(id32, (uint8_t*) &startCommand))
+//    {
+//        yError() << "ethResources::sendConfig2SkinInertial() fails to command the start transmission of the inertials";
+//        return false;
+//    }
 
     return true;
 }
