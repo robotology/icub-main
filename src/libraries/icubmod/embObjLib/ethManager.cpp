@@ -78,6 +78,11 @@ size_t EthBoards::number_of_resources(void)
 
 size_t EthBoards::number_of_interfaces(EthResource * res)
 {
+    if(NULL == res)
+    {
+        return(0);
+    }
+
     eOipv4addr_t ipv4 = res->getIPv4remoteAddress();
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
@@ -1010,7 +1015,9 @@ TheEthManager *TheEthManager::instance()
 bool TheEthManager::killYourself()
 {
     yTrace();
-    //TODO harakiri
+
+//  maybe we can move things from the destructor into here, or into close() and call close in here.
+
     delete handle;
 
     return true;
@@ -1020,9 +1027,11 @@ bool TheEthManager::stopCommunicationThreads()
 {
     bool ret = true;
     // Stop method also make a join waiting the thread to exit
-    if(sender->isRunning() )
+    if(sender->isRunning())
+    {
         sender->stop();
-    if(receiver->isRunning() )
+    }
+    if(receiver->isRunning())
     {
         receiver->stop();
     }
