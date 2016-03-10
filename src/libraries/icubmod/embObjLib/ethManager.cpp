@@ -37,6 +37,27 @@ yarp::os::Semaphore TheEthManager::rxSem = 1;
 yarp::os::Semaphore TheEthManager::txSem = 1;
 
 
+// - class IethResource
+
+const char * IethResource::names[iethresType_numberof+1] =
+{
+    "resManagement", "resAnalogMais", "resAnalogStrain", "resMotionControl",
+    "resSkin", "resAnalogVirtual", "resAnalogInertial", "resNONE"
+};
+
+const char * IethResource::stringOfType()
+{
+    iethresType_t t = this->type();
+
+    if(iethres_none == t)
+    {
+        return names[iethresType_numberof];
+    }
+
+    return names[t];
+}
+
+
 
 // - class EthBoards
 
@@ -94,7 +115,7 @@ size_t EthBoards::number_of_interfaces(EthResource * res)
         return 0;
     }
 
-    if(NULL != LUT[index].resource)
+    if(NULL == LUT[index].resource)
     {
         return 0;
     }
@@ -751,32 +772,32 @@ int TheEthManager::releaseResource2(EthResource* ethresource, IethResource* inte
     eOmn_serv_category_t category = eomn_serv_category_all;
     switch(type)
     {
-        iethres_analogmais:
+        case iethres_analogmais:
         {
             category = eomn_serv_category_mais;
         } break;
 
-        iethres_analogstrain:
+        case iethres_analogstrain:
         {
             category = eomn_serv_category_strain;
         } break;
 
-        iethres_motioncontrol:
+        case iethres_motioncontrol:
         {
             category = eomn_serv_category_mc;
         } break;
 
-        iethres_skin:
+        case iethres_skin:
         {
             category = eomn_serv_category_skin;
         } break;
 
-        iethres_analogvirtual:
+        case iethres_analogvirtual:
         {
             category = eomn_serv_category_none;
         } break;
 
-        iethres_analoginertial:
+        case iethres_analoginertial:
         {
             category = eomn_serv_category_inertials;
         } break;
@@ -789,6 +810,8 @@ int TheEthManager::releaseResource2(EthResource* ethresource, IethResource* inte
 
     // marco.accame on 8 mar 2016: better to stop all services so that all regulars are removed and board immediately
     // exits the control loop. later on i will remove this line .... when robotInterface stops crashing in exit.
+    // marco.accame on 10 mar 2016: now robotInterface does not crash in exit anymore. see today's commit.
+    // however, for now i keep on stopping all services in the board. i will change it later on if needed.
 
     category = eomn_serv_category_all;
 
@@ -798,6 +821,9 @@ int TheEthManager::releaseResource2(EthResource* ethresource, IethResource* inte
         success = success;
     }
 
+    // at this time, if the serviceStop() is successful [hey, change its interfce to retrieve num of rops in category, in total and run mode and print them]
+    // the ropframe sent now do not contain any regular for the interface anymore, thus we can just removing the interface in list of those assciated
+    // to the resource, without any harm. only thing is: protect ethBoards with a mutex.
 
     // now we change internal data structure of ethBoards, thus .. must disable tx and rx
     lockTXRX(true);
