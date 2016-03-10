@@ -88,6 +88,12 @@ public:
         virtual iethresType_t type() = 0;
         virtual eoThreadFifo * getFifo(uint32_t variableProgNum) { return NULL;}
         virtual eoThreadEntry *getThreadTable(int  threadId) {return NULL;}
+
+public:
+        const char * stringOfType();
+
+private:
+        static const char * names[iethresType_numberof+1];
 };
 
 
