@@ -303,15 +303,10 @@ protected:
                 v[2]=xd[5];
                 v[3]=xd[6];
             }
-
-            yarp::sig::Matrix Des=axis2dcm(v);
-            Des(0,3)=xd[0];
-            Des(1,3)=xd[1];
-            Des(2,3)=xd[2];
-        
+            
             q=chain.setAng(q);
             yarp::sig::Matrix H=chain.getH();
-            yarp::sig::Matrix E=Des*SE3inv(H);
+            yarp::sig::Matrix E=axis2dcm(v)*H.transposed();
             v=dcm2axis(E);
             
             e_xyz[0]=xd[0]-H(0,3);

@@ -111,7 +111,7 @@ Vector iKinCtrl::calc_e()
         if (ctrlPose!=IKINCTRL_POSE_XYZ)
         {
             Matrix Des=axis2dcm(x_set.subVector(3,6));
-            Vector ax=dcm2axis(Des*SE3inv(H));
+            Vector ax=dcm2axis(Des*H.transposed()); 
             e[3]=ax[3]*ax[0];
             e[4]=ax[3]*ax[1];
             e[5]=ax[3]*ax[2];
