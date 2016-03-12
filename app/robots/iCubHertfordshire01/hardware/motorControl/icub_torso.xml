@@ -27,7 +27,9 @@
  
 <group name="GENERAL">       
 <param name="Joints">       4             </param>       
-<param name="AxisMap">      0             2             3             1             </param>       
+<param name="AxisMap">      0             2             3             1             </param>
+<param name="AxisName"> "torso_yaw" "torso_roll" "torso_pitch" "none" </param>
+<param name="AxisType"> "revolute" "revolute" "revolute" "revolute" </param>
 <param name="Encoder">      11.375        11.375        11.375        0             </param>       
 <param name="Zeros">        175           180           180           0             </param>       
 <param name="TorqueId">     0x0C          0x0C          0x0C          0x0C          </param>       
@@ -50,7 +52,8 @@
 <group name="LIMITS">        
 <param name="jntPosMin">          -50           -30           -22           0             </param>       
 <param name="jntPosMax">          50            30            70            0             </param>       
-<param name="motorOverloadCurrents">     7000          7000          7000          0             </param>       
+<param name="motorOverloadCurrents">     7000          7000          7000          0      </param>
+<param name="motorPwmLimit">             1333          1333          1333          0      </param>
 </group>       
  
 <group name="POS_PIDS">      
