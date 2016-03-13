@@ -186,18 +186,18 @@ to (cond1)&&(cond2) || (cond1)&&(cond3).
 - To specify the context where to search for the database file; 
   \e objectsPropertiesCollector is the default context.
  
---empty 
+--no-load-db 
 - If this options is given then an empty database is started.
  
---nosave
+--no-save-db
 - If this option is given then the content of database is not 
   saved at shutdown.
  
---sync_bc <T> 
+--sync-bc <T> 
 - Broadcast the database content each \e T seconds. If not 
   specified, a period of 1.0 second is assumed.
  
---async_bc 
+--async-bc 
 - Broadcast the database content whenever a change occurs. 
  
 --stats 
@@ -424,7 +424,7 @@ protected:
     Mutex mutex;
     int  idCnt;
     bool initialized;
-    bool nosave;
+    bool nosavedb;
     bool quitting;
 
     BufferedPort<Bottle> *pBroadcastPort;
@@ -516,7 +516,7 @@ public:
         pBroadcastPort=NULL;
         asyncBroadcast=false;
         initialized=false;
-        nosave=false;
+        nosavedb=false;
         quitting=false;
         idCnt=0;
     }
@@ -541,21 +541,21 @@ public:
             return;
         }
 
-        nosave=rf.check("nosave");
-        if (!rf.check("empty"))
+        nosavedb=rf.check("no-save-db");
+        if (!rf.check("no-load-db"))
             load();
 
         dump();
         initialized=true;
         yInfo("database ready ...");
 
-        if (rf.check("sync_bc"))
+        if (rf.check("sync-bc"))
         {
-            setRate((int)(1000.0*rf.check("sync_bc",Value(1.0)).asDouble()));
+            setRate((int)(1000.0*rf.check("sync-bc",Value(1.0)).asDouble()));
             start();
         }
 
-        asyncBroadcast=rf.check("async_bc");
+        asyncBroadcast=rf.check("async-bc");
     }
 
     /************************************************************************/
@@ -626,7 +626,7 @@ public:
     /************************************************************************/
     void save()
     {
-        if (nosave)
+        if (nosavedb)
             return;
 
         LockGuard lg(mutex);
@@ -1645,10 +1645,10 @@ int main(int argc, char *argv[])
         printf("\t--name        <name>: collector name (default: objectsPropertiesCollector)\n");
         printf("\t--db      <fileName>: database file name to load at startup/save at shutdown (default: dataBase.ini)\n");
         printf("\t--context  <context>: context to search for database file (default: objectsPropertiesCollector)\n");
-        printf("\t--empty             : start an empty database\n");
-        printf("\t--nosave            : prevent from saving the content of database at shutdown\n");
-        printf("\t--sync_bc        <T>: broadcast the database content each T seconds\n");
-        printf("\t--async_bc          : broadcast the database content whenever a change occurs\n");
+        printf("\t--no-load-db        : start an empty database\n");
+        printf("\t--no-save-db        : prevent from saving the content of database at shutdown\n");
+        printf("\t--sync-bc        <T>: broadcast the database content each T seconds\n");
+        printf("\t--async-bc          : broadcast the database content whenever a change occurs\n");
         printf("\t--stats             : enable statistics printouts\n");
         printf("\n");
         return 0;
