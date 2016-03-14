@@ -61,44 +61,24 @@
 #include <ace/SOCK_Dgram_Bcast.h>
 
 
-typedef struct
-{
-    uint16_t    port;
-    int         ip1;
-    int         ip2;
-    int         ip3;
-    int         ip4;
-    char        string[64];
-} ethFeatIPaddress_t;
+//typedef struct
+//{
+//    uint16_t    port;
+//    int         ip1;
+//    int         ip2;
+//    int         ip3;
+//    int         ip4;
+//    char        string[64];
+//} ethFeatIPaddress_t;
 
-typedef enum
-{
-    ethFeatType_NULL            = iethres_none,
-    ethFeatType_Management      = iethres_management,
-    ethFeatType_AnalogMais      = iethres_analogmais,
-    ethFeatType_AnalogStrain    = iethres_analogstrain,
-    ethFeatType_MotionControl   = iethres_motioncontrol,
-    ethFeatType_Skin            = iethres_skin,
-    ethFeatType_AnalogVirtual   = iethres_analogvirtual,
-    ethFeatType_AnalogInertial  = iethres_analoginertial
-} ethFeatType_t;
 
-enum { ethFeatType_numberof = iethresType_numberof };
-
-#define BOARDNAME_MAXSIZE 50
-typedef struct
-{
-    ethFeatIPaddress_t  pc104IPaddr;
-    ethFeatIPaddress_t  boardIPaddr;
-    FEAT_boardnumber_t  boardNumber;
-    eOprotEndpoint_t    endpoint;
-    eOprotEntity_t      entity;
-    ethFeatType_t       type;
-    IethResource*       interface;
-    char                name[128];
-    char                boardName[BOARDNAME_MAXSIZE]; // this is the name read in xml file
-} ethFeature_t;
-
+//typedef struct
+//{
+//    ethFeatIPaddress_t  pc104IPaddr;
+//    ethFeatIPaddress_t  boardIPaddr;
+//    iethresType_t       type;
+//    IethResource*       interface;
+//} ethFeature_t;
 
 
 
@@ -176,12 +156,7 @@ public:
     uint64_t getSeqNum(uint64_t *packet, uint16_t size);
     uint64_t getAgeOfFrame(uint64_t *packet, uint16_t size);
 
-    /*!   @fn       void updateAndCheck(uint8_t *packet, double reckPktTime, double processPktTime);
-     *    @brief    updates communication info statistics and checks if there is a transmission error with this ems board.In case of error print it.
-     *    @param    packet           pointer to received packet
-     *    @param    reckPktTime      sys time on rec pkt (expressed in seconds)
-     *    @param    processPktTime   time needed to process this packet (expressed in seconds)
-     */
+
     void updateAndCheck(uint64_t *packet, uint16_t size, double reckPktTime, double processPktTime, bool evalreport = false);
 
     void evalReport(void);
@@ -198,6 +173,16 @@ public:
 class EthNetworkQuery
 {
 
+public:
+
+    EthNetworkQuery();
+    ~EthNetworkQuery();
+
+    Semaphore* start(eOprotID32_t id32, uint32_t signature);    // associates a semaphore to a (id2wait, signature) pair
+    bool wait(Semaphore* sem, double timeout);                  // waits the semaphore until either a reply arrives or timeout expires (returns false)
+    bool arrived(eOprotID32_t id32, uint32_t signature);        // a reply has arrived. the rx handler must call it. true if it releases, false if not
+    bool stop(Semaphore* sem);                                  // we deassociate the semaphore to the waiting pair
+
 private:
 
     eOprotID32_t id2wait;           // the id32 which we wait
@@ -205,23 +190,15 @@ private:
     yarp::os::Semaphore* isbusy;    // the semaphore used to guarantee exclusive access of ::netwait to calling threads
     yarp::os::Semaphore* iswaiting; // the semaphore used to guarantee that the wait of the class is unblocked only once and when it is required
 
-public:
-
-    EthNetworkQuery();
-    ~EthNetworkQuery();
-
-    Semaphore* start(eOprotID32_t id32, uint32_t signature);     // associates a semaphore to a (id2wait, signature) pair
-    bool wait(Semaphore* sem, double timeout);                      // waits the semaphore until either a reply arrives or timeout expires (returns false)
-    bool arrived(eOprotID32_t id32, uint32_t signature);            // a reply has arrived. the rx handler must call it. true if it releases, false if not
-    bool stop(Semaphore* sem);                                      // we deassociate the semaphore to the waiting pair
 };
 
 
 // -- class EthResource
-// -- it is used to manage udp communication towards a given board
+// -- it is used to manage udp communication towards a given board ... there is no need to derive it from DeviceDriver, is there?
 
 class yarp::dev::EthResource:  public DeviceDriver,
                                public HostTransceiver
+//class yarp::dev::EthResource:    public HostTransceiver
 {
 public:
 

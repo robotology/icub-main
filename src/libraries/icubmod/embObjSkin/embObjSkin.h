@@ -80,10 +80,12 @@ public:
 
 protected:
 
+    char boardIPstring[20];
+
     TheEthManager   *ethManager;
     PolyDriver      resource;
     EthResource    *res;
-    ethFeature_t    _fId;
+
     Semaphore       mutex;
     //int             totalCardsNum;
     //std::vector<SkinPatchInfo> patchInfoList;

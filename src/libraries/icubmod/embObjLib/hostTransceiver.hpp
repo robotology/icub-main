@@ -126,6 +126,7 @@ protected:
     EOnvSet                 *nvset;
     eOipv4addr_t            localipaddr;
     eOipv4addr_t            remoteipaddr;
+    char                    remoteipstring[20];
     eOipv4port_t            ipport;
     EOpacket                *p_RxPkt;
     uint16_t                pktsizerx;

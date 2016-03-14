@@ -286,15 +286,14 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if(false == ethManager->parseEthBoardInfo(config, _fId))
+
+    if(false == ethManager->verifyEthBoardInfo(config, NULL, boardIPstring, sizeof(boardIPstring)))
     {
         yError() << "embObjAnalogSensor::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
     }
     // add specific info about this device ...
-    _fId.interface  = this;
-    _fId.endpoint = eoprot_endpoint_analogsensors;
-    // for _fId.entity, _fId.type and servcategory ... must call fromConfig() which initialises _as_type.
+
     // when we split this device in three ones ... _as_type will be lost and we can move code tagged with tag__XXX0123_ in here
 
 
@@ -322,20 +321,14 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     eOmn_serv_category_t servcategory = eomn_serv_category_none;
     if(AS_STRAIN == _as_type)
     {
-        _fId.entity = eoprot_entity_as_strain;
-        _fId.type = ethFeatType_AnalogStrain;
         servcategory = eomn_serv_category_strain;
     }
     else if(AS_MAIS == _as_type)
     {
-        _fId.entity = eoprot_entity_as_mais;
-        _fId.type = ethFeatType_AnalogMais;
         servcategory = eomn_serv_category_mais;
     }
     else if(AS_INERTIAL_MTB == _as_type)
     {
-        _fId.entity = eoprot_entity_as_inertial;
-        _fId.type = ethFeatType_AnalogInertial;
         servcategory = eomn_serv_category_inertials;
     }
 
@@ -346,7 +339,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     res = ethManager->requestResource2(this, config);
     if(NULL == res)
     {
-        yError() << "embObjAnalogSensor::open() fails because could not instantiate the ethResource for BOARD w/ IP = " << _fId.boardIPaddr.string << " ... unable to continue";
+        yError() << "embObjAnalogSensor::open() fails because could not instantiate the ethResource for BOARD w/ IP = " << boardIPstring << " ... unable to continue";
         return false;
     }
 

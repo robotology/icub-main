@@ -379,16 +379,14 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    if(false == ethManager->parseEthBoardInfo(config, _fId))
+    eOipv4addr_t boardIPaddress = 0;
+    if(false == ethManager->verifyEthBoardInfo(config, &boardIPaddress, boardIPstring, sizeof(boardIPstring)))
     {
         yError() << "embObjSkin::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
     }
     // add specific info about this device ...
-    _fId.endpoint = eoprot_endpoint_skin;
-    _fId.entity = eoprot_entity_sk_skin; // actually, embobjmotioncontrol manages joints, motors, and controller. however in case of this endpoint we use entity joint
-    _fId.interface  = this;
-    _fId.type = ethFeatType_Skin;
+
 
 
     // - now all other things
@@ -408,7 +406,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
     res = ethManager->requestResource2(this, config);
     if(NULL == res)
     {
-        yError() << "embObjSkin::open() fails because could not instantiate the ethResource for BOARD w/ IP = " << _fId.boardIPaddr.string << " ... unable to continue";
+        yError() << "embObjSkin::open() fails because could not instantiate the ethResource for BOARD w/ IP = " << boardIPstring << " ... unable to continue";
         return false;
     }
 

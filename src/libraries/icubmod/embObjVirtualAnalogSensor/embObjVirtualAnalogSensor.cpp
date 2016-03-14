@@ -184,16 +184,14 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if(false == ethManager->parseEthBoardInfo(config, _fId))
+
+    if(false == ethManager->verifyEthBoardInfo(config, NULL, boardIPstring, sizeof(boardIPstring)))
     {
         yError() << "embObjVirtualAnalogSensor::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
     }
     // add specific info about this device ...
-    _fId.endpoint = eoprot_endpoint_none;
-    _fId.entity = eoprot_entity_none;
-    _fId.interface  = this;
-    _fId.type = ethFeatType_AnalogVirtual;
+
 
 
     // - now all other things
@@ -223,7 +221,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     res = ethManager->requestResource2(this, config);
     if(NULL == res)
     {
-        yError() << "embObjVirtualAnalogSensor::open() fails because could not instantiate the ethResource for BOARD w/ IP = " << _fId.boardIPaddr.string << " ... unable to continue";
+        yError() << "embObjVirtualAnalogSensor::open() fails because could not instantiate the ethResource for BOARD w/ IP = " << boardIPstring << " ... unable to continue";
         return false;
     }
 

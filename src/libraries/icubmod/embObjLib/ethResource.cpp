@@ -27,9 +27,6 @@ using namespace yarp::os::impl;
 
 
 
-#define ETHRES_CHECK_MN_APPL_STATUS
-
-
 // - class EthNetworkQuery
 
 EthNetworkQuery::EthNetworkQuery()
@@ -149,11 +146,10 @@ EthResource::EthResource()
     }
 }
 
+
 EthResource::~EthResource()
 {
-    ethManager          = NULL;
-
-    // marco.accame on 11sept14: in here we must surely deinit/delete what we have created/initted in teh constructor and in open() or init()
+    ethManager = NULL;
 
     delete infoPkts;
     delete objLock;
@@ -161,7 +157,7 @@ EthResource::~EthResource()
     delete ethQuery;
     delete ethQueryServices;
 
-    //Delete every can_string_eth object eventually initialized
+    // Delete every initialized can_string_eth object
     for(int i=0; i<16; i++)
     {
         if (c_string_handler[i] != NULL)
@@ -317,6 +313,7 @@ void EthResource::checkIsAlive(double curr_time)
 
 }
 
+
 bool EthResource::canProcessRXpacket(uint64_t *data, uint16_t size)
 {
     if(NULL == data)
@@ -327,6 +324,7 @@ bool EthResource::canProcessRXpacket(uint64_t *data, uint16_t size)
 
     return true;
 }
+
 
 void EthResource::processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics)
 {
@@ -347,6 +345,7 @@ void EthResource::processRXpacket(uint64_t *data, uint16_t size, bool collectSta
         infoPkts->updateAndCheck(data, size, curr_timeBeforeParsing, (curr_timeAfterParsing-curr_timeBeforeParsing), false);
     }
 }
+
 
 ACE_INET_Addr EthResource::getRemoteAddress()
 {
@@ -378,7 +377,7 @@ bool EthResource::isEPsupported(eOprot_endpoint_t ep)
     return HostTransceiver::isSupported(ep);
 }
 
-
+// #define ETHRES_CHECK_MN_APPL_STATUS
 //bool EthResource::goToConfig(void)
 //{
 //    // stop the control loop (if running) and force the board to enter in config mode
@@ -833,7 +832,6 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
 
 
 
-    const int capacityOfArrayOfEPDES = (EOMANAGEMENT_COMMAND_DATA_SIZE - sizeof(eOarray_head_t)) / sizeof(eoprot_endpoint_descriptor_t);
     const double timeout = 0.100;
 
     eOprotID32_t id2send = eo_prot_ID32dummy;
@@ -845,7 +843,7 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
     // the semaphore used for waiting for replies from the board
     yarp::os::Semaphore* sem = NULL;
 
-
+//    const int capacityOfArrayOfEPDES = (EOMANAGEMENT_COMMAND_DATA_SIZE - sizeof(eOarray_head_t)) / sizeof(eoprot_endpoint_descriptor_t);
 //    if(boardEPsNumber > capacityOfArrayOfEPDES)
 //    {   // to support more than capacityOfArrayOfEPDES (= 16 on date of jul 22 2014) endpoints: just send two (or more) eoprot_tag_mn_comm_cmmnds_command_queryarray messages with setnumbers 0 and 1 (or more)
 //        yError() << "EthResource::verifyEPprotocol() detected that BOARD" << getName() << "with IP" << getIPv4string() << "has" << boardEPsNumber << "endpoints and at most" << capacityOfArrayOfEPDES << "are supported: cannot proceed any further (review the code to support them all)";
@@ -1470,6 +1468,11 @@ bool EthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
 
 bool EthResource::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times)
 {
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+        yWarning() << "EthResource::serviceCommand() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not send the command";
+        return true;
+#endif
+
     eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_cmmnds_command);
     eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_status_commandresult);;
 
@@ -1517,9 +1520,6 @@ bool EthResource::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_c
         if(false == ethQueryServices->wait(sem, timeout))
         {
             yWarning() << "EthResource::serviceCommand() had a timeout of" << timeout << "secs when sending an activation request to BOARD" << getName() << "with IP" << getIPv4string();
-            // must release the semaphore
-            //ethQueryServices->stop(sem);
-            //return(false);
         }
         else
         {
@@ -1582,7 +1582,7 @@ bool EthResource::serviceStop(eOmn_serv_category_t category, double timeout)
 {
     bool ret = serviceCommand(eomn_serv_operation_stop, category, NULL, timeout, 3);
 
-    #warning TODO: the result for command stop shall also tell if the the board is in running mode or not.
+    //#warning TODO: the result for command stop shall also tell if the the board is in running mode or not.
     return ret;
 }
 
@@ -1736,18 +1736,18 @@ void InfoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
             if(curr_seqNum < (last_seqNum+1))
             {
                 if(local_verbose)
-                    yError()<< "REC PKTS not in order!!!!" << ipv4string << " seq num rec=" << curr_seqNum << " expected=" << last_seqNum+1 << "!!!!!!!" ;
+                    yError()<< "InfoOfRecvPkts::updateAndCheck(): REC PKTS not in order!!!!" << ipv4string << " seq num rec=" << curr_seqNum << " expected=" << last_seqNum+1 << "!!!!!!!" ;
             }
             else
             {
-                //i lost some pkts
+                // i lost some pkts
                 num_lost_pkts = curr_seqNum - last_seqNum -1;
             }
             currPeriodPktLost += num_lost_pkts;
             totPktLost += num_lost_pkts;
 
             if(local_verbose)
-                yError()<< "LOST "<< num_lost_pkts <<"  PKTS on board=" << ipv4string << " seq num rec="<< curr_seqNum << " expected=" << last_seqNum+1 << "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
+                yError()<< "LOST "<< num_lost_pkts <<"  PKTS on BOARD /w IP=" << ipv4string << " seq num rec="<< curr_seqNum << " expected=" << last_seqNum+1 << "!! curr pkt lost=" << currPeriodPktLost << "  Tot lost pkt=" << totPktLost;
         }
 
 
@@ -1758,7 +1758,7 @@ void InfoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
         if( diff_ageofframe_ms > (timeout*1000))
         {
             if(local_verbose)
-                yError() << "Board " << ipv4string << ": EMS time (ageOfFrame) between 2 pkts bigger then " << timeout * 1000 << "ms;\t Actual delay is" << diff_ageofframe_ms << "ms diff = "<< double(diff)/1000.0;
+                yError() << "InfoOfRecvPkts::updateAndCheck(): For BOARD w/ IP" << ipv4string << ": ETH time (ageOfFrame) between 2 pkts bigger then " << timeout * 1000 << "ms;\t Actual delay is" << diff_ageofframe_ms << "ms diff = "<< double(diff)/1000.0;
         }
 
         if(0 == num_lost_pkts)
@@ -1773,7 +1773,7 @@ void InfoOfRecvPkts::updateAndCheck(uint64_t *packet, uint16_t size, double reck
         if(curr_periodPkt > timeout)
         {
             if(local_verbose)
-                yError() << "Board " << ipv4string << ": Gap of " << curr_periodPkt*1000 << "ms between two consecutive messages !!!";
+                yError() << "InfoOfRecvPkts::updateAndCheck(): For BOARD w/ IP" << ipv4string << ": Gap of " << curr_periodPkt*1000 << "ms between two consecutive messages !!!";
         }
 
 
