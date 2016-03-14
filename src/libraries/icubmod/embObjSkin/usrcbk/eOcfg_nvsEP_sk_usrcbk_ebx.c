@@ -88,7 +88,7 @@ extern void eoprot_fun_ONSAY_sk(const EOnv* nv, const eOropdescriptor_t* rd)
             eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
             eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
             snprintf(str, sizeof(str), "eoprot_fun_ONSAY_sk() received an unexpected message w/ 0xaa000000 signature for IP %s and NV %s", ipinfo, nvinfo);
-            embObjPrintWarning(str);
+            feat_PrintWarning(str);
             return;
         }
     }

@@ -87,7 +87,7 @@ extern void eoprot_fun_ONSAY_mc(const EOnv* nv, const eOropdescriptor_t* rd)
             char nvinfo[128];
             eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
             snprintf(str, sizeof(str), "eoprot_fun_ONSAY_mc() received an unexpected message w/ 0xaa000000 signature for %s", nvinfo);
-            embObjPrintWarning(str);
+            feat_PrintWarning(str);
             return;
         }
     }
@@ -197,7 +197,7 @@ static void wake(const EOnv* nv)
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
         snprintf(str, sizeof(str),"while releasing mutex for IP %s and NV %s", ipinfo, nvinfo);
-        embObjPrintWarning(str);
+        feat_PrintWarning(str);
     }
 
 }
