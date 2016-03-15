@@ -152,7 +152,7 @@ bool MotorThread::setTorque(bool turn_on, int arm)
     if(turn_on)
     {
         for(int i=0; i<4; i++)
-            done=done && ctrl_mode_arm[arm]->setTorqueMode(i);
+            done=done && ctrl_mode_arm[arm]->setControlMode(i,VOCAB_CM_TORQUE);
 
         for(int i=0; i<3; i++)
             done=done && int_mode_torso->setInteractionMode(i,VOCAB_IM_COMPLIANT);
