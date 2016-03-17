@@ -268,13 +268,14 @@ public:
     enum { EMBMC_SIZE_INFO = 128 };
 
 private:
+    char boardIPstring[20];
 
     int           tot_packet_recv, errors;
 
     bool opened;
 
     yarp::os::Semaphore     _mutex;
-    ethFeature_t            _fId;
+
 
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */

@@ -30,8 +30,8 @@ extern "C" {
 
 // - declaration of public user-defined types -------------------------------------------------------------------------
 
-typedef uint8_t FEAT_boardnumber_t;     // boards are numbered in range [1, maxnum]. moreover 0xff is the invalid value.
-enum { FEAT_boardnumber_dummy = 0xff};
+//typedef uint8_t FEAT_boardnumber_t;     // boards are numbered in range [1, maxnum]. moreover 0xff is the invalid value.
+//enum { FEAT_boardnumber_dummy = 0xff};
 
 
 // - declaration of extern public functions ---------------------------------------------------------------------------
@@ -60,9 +60,9 @@ void * feat_MC_handler_get(eOipv4addr_t ipv4, eOprotID32_t id32);
 eObool_t feat_MC_mutex_post(void * mchandler, uint32_t prognum);
 
 // it converts the protocol board number with range [0, max-1] into the range used by cpp object [1, max]
-FEAT_boardnumber_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum);
+//FEAT_boardnumber_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum);
 
-eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum);
+//eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum);
 
 double feat_yarp_time_now(void);
 

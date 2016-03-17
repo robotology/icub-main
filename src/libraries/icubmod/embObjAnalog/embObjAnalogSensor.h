@@ -105,10 +105,12 @@ public:
 
 private:
 
+    char boardIPstring[20];
+
     //! eth messaging stuff
     TheEthManager       *ethManager;
     EthResource        *res;
-    ethFeature_t        _fId;
+
 
     bool opened;
     bool verbosewhenok;

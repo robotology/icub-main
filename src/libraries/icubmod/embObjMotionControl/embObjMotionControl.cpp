@@ -413,7 +413,7 @@ bool embObjMotionControl::extractGroup(Bottle &input, Bottle &out, const std::st
         }
         else
         {
-            yError () << key1.c_str() << " incorrect number of entries in BOARD IP =" << _fId.boardIPaddr.string;
+            yError () << key1.c_str() << " incorrect number of entries in BOARD IP =" << boardIPstring;
         }
         return false;
     }
@@ -690,16 +690,13 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if(false == ethManager->parseEthBoardInfo(config, _fId))
+
+    if(false == ethManager->verifyEthBoardInfo(config, NULL, boardIPstring, sizeof(boardIPstring)))
     {
         yError() << "embObjMotionControl::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
     }
     // add specific info about this device ...
-    _fId.endpoint = eoprot_endpoint_motioncontrol;
-    _fId.entity = eoprot_entity_mc_joint; // actually, embobjmotioncontrol manages joints, motors, and controller. however in case of this endpoint we use entity joint
-    _fId.interface  = this;
-    _fId.type = ethFeatType_MotionControl;
 
 
     // - now all other things
@@ -830,7 +827,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     res = ethManager->requestResource2(this, config);
     if(NULL == res)
     {
-        yError() << "embObjMotionControl::open() fails because could not instantiate the ethResource for BOARD w/ IP = " << _fId.boardIPaddr.string << " ... unable to continue";
+        yError() << "embObjMotionControl::open() fails because could not instantiate the ethResource for BOARD w/ IP = " << boardIPstring << " ... unable to continue";
         return false;
     }
 

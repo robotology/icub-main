@@ -308,25 +308,25 @@ eObool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
 }
 
 
-FEAT_boardnumber_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum)
-{
-    if(eo_prot_BRDdummy == nvboardnum)
-    {
-        return(FEAT_boardnumber_dummy);
-    }
+//FEAT_boardnumber_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum)
+//{
+//    if(eo_prot_BRDdummy == nvboardnum)
+//    {
+//        return(FEAT_boardnumber_dummy);
+//    }
     
-    return(nvboardnum+1);
-}
+//    return(nvboardnum+1);
+//}
 
-eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum)
-{
-    if(FEAT_boardnumber_dummy == fid_boardnum)
-    {
-        return(eo_prot_BRDdummy);
-    }
+//eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum)
+//{
+//    if(FEAT_boardnumber_dummy == fid_boardnum)
+//    {
+//        return(eo_prot_BRDdummy);
+//    }
 
-    return(fid_boardnum-1);
-}
+//    return(fid_boardnum-1);
+//}
 
 
 double feat_yarp_time_now(void)
@@ -342,7 +342,7 @@ eObool_t feat_signal_network_reply(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_
         return(eobool_false);
     }
 
-    EthResource* ethres = _interface2ethManager->GetEthResource(ipv4);
+    EthResource* ethres = _interface2ethManager->getEthResource(ipv4);
 
     if(NULL == ethres)
     {
@@ -360,7 +360,7 @@ eObool_t feat_CANprint(eOipv4addr_t ipv4, eOmn_info_basic_t* infobasic)
         return(eobool_false);
     }
 
-    EthResource* ethres = _interface2ethManager->GetEthResource(ipv4);
+    EthResource* ethres = _interface2ethManager->getEthResource(ipv4);
 
     bool res = ethres->CANPrintHandler(infobasic);
     return res;

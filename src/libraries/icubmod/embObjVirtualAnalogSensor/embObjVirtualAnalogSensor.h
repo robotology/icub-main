@@ -41,10 +41,11 @@ class yarp::dev::embObjVirtualAnalogSensor:     public yarp::dev::IVirtualAnalog
 {
 private:
 
+    char boardIPstring[20];
+
     //! embObj stuff
     TheEthManager       *ethManager;
     EthResource         *res;
-    ethFeature_t        _fId;
 
     ////////////////////
     // parameters

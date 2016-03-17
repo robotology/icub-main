@@ -70,26 +70,6 @@
 #include <yarp/os/LogStream.h>              // iCub debug class include
 
 
-
-
-// -- defines
-
-// the check of sequence number is done inside the hostTransceiver. by defining this macro there is an additional redundant check.
-// i recommend to keep it undefined.
-#undef ETHMANAGER_RECEIVER_CHECK_SEQUENCE_NUMBER
-
-// marco.accame: the following two are for new tx and rx modes with different protection vs concurrency
-#define ETHMANAGER_TEST_NEW_SENDER_RUN
-#define ETHMANAGER_TEST_NEW_RECEIVER_RUN
-
-
-//#define ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
-//#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
-//enum { ethmanager_stats_frequency_numberofcycles = 2000 };
-//#include "testStats.h"
-//#endif
-
-
 using namespace yarp::os;
 using namespace yarp::dev;
 using namespace std;
@@ -176,6 +156,7 @@ class EthSender;
 class EthReceiver;
 
 class yarp::dev::TheEthManager: public DeviceDriver
+//class yarp::dev::TheEthManager
 {
 
 public:
@@ -193,30 +174,23 @@ private:
 
 public:
 
-    double getTimeOfStartUp(void);
+    // singletons use this method to retrieve an handle to the object
+    static TheEthManager* instance();
 
-    void initEOYsystem(void);
-
-    static  TheEthManager* instance();
-
+    // we use this method to for a destruction of the object.
     static bool killYourself();
 
-
-    bool isCommunicationInitted(void);
     bool open(void);
-    bool stopCommunicationThreads(void);
     bool close(void);
 
+    // useful for printing times relative to start of the object
+    double getLifeTime(void);
 
-    bool parseEthBoardInfo(yarp::os::Searchable &cfgtotal, ethFeature_t& info);
+    bool verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t* boardipv4, char *boardipv4string, int stringsize);
 
-
-    bool startCommunication(yarp::os::Searchable &cfgtotal);
+//    bool parseEthBoardInfo(yarp::os::Searchable &cfgtotal, ethFeature_t& info);
 
     EthResource* requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal);
-
-
-//    int releaseResource(ethFeature_t &resource);
 
     int releaseResource2(EthResource* ethresource, IethResource* interface);
 
@@ -225,61 +199,60 @@ public:
     const eOipv4addressing_t & getLocalIPV4addressing(void);
 
     bool Transmission(void);
+
     bool Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, bool collectStatistics);
 
-    EthResource* GetEthResource(eOipv4addr_t ipv4);
-
+    EthResource* getEthResource(eOipv4addr_t ipv4);
 
     IethResource* getInterface(eOipv4addr_t ipv4, eOprotID32_t id32);
 
-
-    //EthSender* getEthSender(void);
-    //EthReceiver* getEthReceiver(void);
-
-    EthResource* IPtoResource(ACE_INET_Addr adr);
-    int IPtoBoardNumber(ACE_INET_Addr adr); // non-zero value: 1, 2, ......
-
-    int GetNumberOfUsedBoards(void);
+    int getNumberOfResources(void);
 
     const char * getName(eOipv4addr_t ipv4);
 
-    int send(void *udpframe, size_t len, ACE_INET_Addr toaddress);
+    int sendPacket(void *udpframe, size_t len, ACE_INET_Addr toaddress);
 
 private:
 
-    // this semaphore is used to ....
-    static yarp::os::Semaphore    managerSem;
-    // the following two semaphore are used separately or together to stop tx and rx if a change is done on ethboards (in startup and shutdown phases)
-    static yarp::os::Semaphore    txSem;
-    static yarp::os::Semaphore    rxSem;
+    bool isCommunicationInitted(void);
 
-    static TheEthManager*         handle;
+    bool createCommunicationObjects(ACE_INET_Addr local_addr, int txrate, int rxrate);
 
-    // contains the start-up time of teh system so that time measures / prints can be done relative.
-    double                        startUpTime;
+    bool initCommunication(yarp::os::Searchable &cfgtotal);
 
-    ACE_INET_Addr                   localIPaddress;
-    eOipv4addressing_t              ipv4local;
-
-    bool                            communicationIsInitted;
-
-    // periodic threads which use methods of class TheEthManager to transmit / receive + the udp socket
-    EthSender                       *sender;
-    EthReceiver                     *receiver;
-    ACE_SOCK_Dgram                  *UDP_socket;
-
-
-private:
-
-    void flush();
-
-    bool createSocket(ACE_INET_Addr local_addr, int txrate, int rxrate);
+    bool stopCommunicationThreads(void);
 
     bool lock(bool on);
 
     bool lockTX(bool on);
     bool lockRX(bool on);
     bool lockTXRX(bool on);
+
+
+private:
+
+    void initEOYsystem(void);
+
+    // this semaphore is used to ....
+    static yarp::os::Semaphore managerSem;
+    // the following two semaphore are used separately or together to stop tx and rx if a change is done on ethboards (in startup and shutdown phases)
+    static yarp::os::Semaphore txSem;
+    static yarp::os::Semaphore rxSem;
+
+    static TheEthManager* handle;
+
+    // contains the start-up time of the system so that time measures / prints can be done relative.
+    double startUpTime;
+
+    ACE_INET_Addr localIPaddress;
+    eOipv4addressing_t ipv4local;
+
+    bool communicationIsInitted;
+
+    // periodic threads which use methods of class TheEthManager to transmit / receive + the udp socket
+    EthSender* sender;
+    EthReceiver* receiver;
+    ACE_SOCK_Dgram* UDP_socket;
 
 };
 
@@ -299,12 +272,6 @@ private:
     void run();
 
 
-//#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
-//    // for statistic debug purpose
-//    Stats stats;
-//    Port statsPort;
-//#endif
-
 public:
 
     enum { EthSenderDefaultRate = 1, EthSenderMaxRate = 20 };
@@ -314,8 +281,6 @@ public:
     bool config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager);
     bool threadInit();
 
-//    void evalPrintTXstatistics(void);
-//    void printTXstatistics(void);
 };
 
 
@@ -332,18 +297,6 @@ private:
     TheEthManager                   *ethManager;
     double                          statPrintInterval;
 
-
-//#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
-//    // for statistic debug purpose
-//    Stats stats[TheEthManager::maxBoards];
-//    Port statsPort;
-//#endif
-
-#if defined(ETHMANAGER_RECEIVER_CHECK_SEQUENCE_NUMBER)
-    void checkPktSeqNum(char* pktpayload, ACE_INET_Addr addr);
-    uint64_t seqnumList[TheEthManager::maxBoards];
-    bool recFirstPkt[TheEthManager::maxBoards];
-#endif
 
 public:
 

@@ -155,7 +155,7 @@ bool EthBoards::add(EthResource* res)
         snprintf(LUT[index].name, sizeof(LUT[index].name), "%s", defaultnames[index]);
     }
     LUT[index].numberofinterfaces = 0;
-    for(int i=0; i<ethFeatType_numberof; i++)
+    for(int i=0; i<iethresType_numberof; i++)
     {
         LUT[index].interfaces[i] = NULL;
     }
@@ -424,70 +424,152 @@ bool EthBoards::execute(eOipv4addr_t ipv4, void (*action)(EthResource* res, void
 
 
 
-// -------------------------------------------------------------------\\
-//            TheEthManager   Singleton
-// -------------------------------------------------------------------\\
+// - class TheEthManager
 
 
-
-bool TheEthManager::lock(bool on)
+TheEthManager::TheEthManager()
 {
-    if(on)
+    // it is a singleton. the constructor is private.
+    communicationIsInitted = false;
+    UDP_socket  = NULL;
+
+    // the container of ethernet boards: resources and attached interfaces
+    ethBoards = new(EthBoards);
+
+    // required by embobj system
+    TheEthManager::initEOYsystem();
+
+    // default address
+    localIPaddress = ACE_INET_Addr("10.0.1.104:12345");
+    ipv4local.addr = eo_common_ipv4addr(10, 0, 1, 104);
+    ipv4local.port = 12345;
+
+    // the time of creation according to yarp
+    startUpTime = yarp::os::Time::now();
+}
+
+
+
+void delete_resources(EthResource *p, void* par)
+{
+    delete p;
+}
+
+
+TheEthManager::~TheEthManager()
+{
+    yTrace();
+
+    // Deinitialize feature interface
+    feat_DeInitialise();
+
+    // close communication (tx and rx threads, socket) BUT only if they were created and initted
+    if(isCommunicationInitted())
     {
-        managerSem.wait();
+        // for sure we should stop threads tx / rx.
+        // before stopping threads, flush all pkts not yet sent. we wait 250 ms.
+        yarp::os::Time::delay(0.250);
+        stopCommunicationThreads();
+
+        // then we close and delete the socket
+        lock(true);
+        UDP_socket->close();
+        delete UDP_socket;
+        communicationIsInitted = false;
+
+
+        delete sender;
+        delete receiver;
+
+        lock(false);
     }
-    else
+
+
+    lock(true);
+
+    // remove all ethresource ... we dont need to call lockTXRX() because we are not transmitting now
+    ethBoards->execute(delete_resources, NULL);
+    delete ethBoards;
+
+    lock(false);
+
+    handle = NULL;
+}
+
+
+
+TheEthManager *TheEthManager::instance()
+{
+    yTrace();
+    // marco.accame: in here we dont use this->lock() because if object does not already exists, the function does (?) not exist.
+    // much better using the static semaphore instead
+    managerSem.wait();
+    if (NULL == handle)
     {
-        managerSem.post();
+        yTrace() << "Calling EthManager Constructor";
+        handle = new TheEthManager();
+        if (NULL == handle)
+            yError() << "While calling EthManager constructor";
+        else
+            feat_Initialise(static_cast<void*>(handle)); // we give the pointer to the feature-interface c module
     }
+    managerSem.post();
+
+    return handle;
+}
+
+
+bool TheEthManager::killYourself()
+{
+    yTrace();
+    delete handle;
 
     return true;
 }
 
 
-bool TheEthManager::lockTX(bool on)
+bool TheEthManager::open()
 {
-    if(on)
-    {
-        txSem.wait();
-    }
-    else
-    {
-        txSem.post();
-    }
-
+    yTrace();
     return true;
 }
 
-bool TheEthManager::lockRX(bool on)
-{
-    if(on)
-    {
-        rxSem.wait();
-    }
-    else
-    {
-        rxSem.post();
-    }
 
+bool TheEthManager::close()
+{
+    yTrace();
     return true;
 }
 
-bool TheEthManager::lockTXRX(bool on)
+// this function is called by the embobj error manager
+void embOBJerror(eOerrmanErrorType_t errtype, const char *info, eOerrmanCaller_t *caller, const eOerrmanDescriptor_t *des)
 {
-    if(on)
+    const char defobjstr[] = "EO?";
+    const char *eobjstr = (NULL == caller) ? (defobjstr) : (caller->eobjstr);
+
+    yError() << "embOBJerror(): errtype = " << eo_errman_ErrorStringGet(eo_errman_GetHandle(), errtype) << "from EOobject = " << eobjstr << " w/ message = " << info;
+
+    if(errtype == eo_errortype_fatal)
     {
-        txSem.wait();
-        rxSem.wait();
-    }
-    else
-    {
-        rxSem.post();
-        txSem.post();
+        yError() << "embOBJerror(): FATAL ERROR: the calling thread shall now be stopped in a forever loop here inside";
+        for(;;);
     }
 
-    return true;
 }
+
+void TheEthManager::initEOYsystem(void)
+{
+    // marco.accame: in here we init the embOBJ system for YARP.
+    eOerrman_cfg_t errmanconfig = {0};
+    errmanconfig.extfn.usr_on_error     = embOBJerror;
+    const eOysystem_cfg_t *syscfg       = NULL;
+    const eOmempool_cfg_t *mpoolcfg     = NULL;     // uses standard mode
+    //const eOerrman_cfg_t *errmancf      = NULL;     // uses default mode
+    eoy_sys_Initialise(syscfg, mpoolcfg, &errmanconfig);
+}
+
+
+
 
 void ethEvalTXropframe(EthResource *r, void* p)
 {
@@ -506,7 +588,7 @@ void ethEvalTXropframe(EthResource *r, void* p)
     if(true == transmitthepacket)
     {
         ACE_INET_Addr ipaddress = r->getRemoteAddress();
-        ethman->send(data2send, (size_t)numofbytes, ipaddress);
+        ethman->sendPacket(data2send, (size_t)numofbytes, ipaddress);
     }
 }
 
@@ -522,62 +604,125 @@ bool TheEthManager::Transmission(void)
     return true;
 }
 
-
-bool TheEthManager::parseEthBoardInfo(yarp::os::Searchable &cfgtotal, ethFeature_t& ethbrdinfo)
+bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t* boardipv4, char *boardipv4string, int stringsize)
 {
     // Get PC104 address and port from config file
     Bottle groupPC104  = Bottle(cfgtotal.findGroup("PC104"));
     if (groupPC104.isNull())
     {
-        yError() << "TheEthManager::parseEthBoardInfo() cannot find PC104 group in config files";
+        yError() << "TheEthManager::verifyEthBoardInfo() cannot find PC104 group in config files";
         return false;
     }
     Value *PC104IpAddress_p;
     if (!groupPC104.check("PC104IpAddress", PC104IpAddress_p))
     {
-        yError() << "missing PC104IpAddress";
+        yError() << "TheEthManager::verifyEthBoardInfo() cannot find PC104/PC104IpAddress";
         return false;
     }
-    Bottle parameter1(groupPC104.find("PC104IpAddress").asString());
-    ACE_UINT16 port = groupPC104.find("PC104IpPort").asInt();
+    Value *PC104IpPort_p;
+    if (!groupPC104.check("PC104IpPort", PC104IpPort_p))
+    {
+        yError() << "TheEthManager::verifyEthBoardInfo() cannot find PC104/PC104IpPort";
+        return false;
+    }
 
-    strcpy(ethbrdinfo.pc104IPaddr.string, parameter1.toString().c_str());
-    ethbrdinfo.pc104IPaddr.port = port;
 
     // get ip adress and port for board from config file
     Bottle groupETH_BOARD  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
     if (groupETH_BOARD.isNull())
     {
-        yError() << "TheEthManager::parseEthBoardInfo() cannot find ETH_BOARD group in config files";
+        yError() << "TheEthManager::verifyEthBoardInfo() cannot find ETH_BOARD group in config files";
         return false;
     }
     Bottle groupETH_BOARD_PROPERTIES  = Bottle(groupETH_BOARD.findGroup("ETH_BOARD_PROPERTIES"));
     if (groupETH_BOARD_PROPERTIES.isNull())
     {
-        yError() << "TheEthManager::parseEthBoardInfo() cannot find ETH_BOARD_PROPERTIES group in config files";
+        yError() << "TheEthManager::verifyEthBoardInfo() cannot find ETH_BOARD_PROPERTIES group in config files";
         return false;
     }
+
+    Value *BOARDIpAddress_p;
+    if (!groupETH_BOARD_PROPERTIES.check("IpAddress", BOARDIpAddress_p))
+    {
+        yError() << "TheEthManager::verifyEthBoardInfo() cannot find ETH_BOARD_PROPERTIES/IpAddress";
+        return false;
+    }
+
+    char strIPaddress[32];
     Bottle parameter2( groupETH_BOARD_PROPERTIES.find("IpAddress").asString() );
-    strcpy(ethbrdinfo.boardIPaddr.string, parameter2.toString().c_str());
-    ethbrdinfo.boardIPaddr.port = port;
+    strcpy(strIPaddress, parameter2.toString().c_str());
 
-    sscanf(ethbrdinfo.boardIPaddr.string,"\"%d.%d.%d.%d", &ethbrdinfo.boardIPaddr.ip1, &ethbrdinfo.boardIPaddr.ip2, &ethbrdinfo.boardIPaddr.ip3, &ethbrdinfo.boardIPaddr.ip4);
-    sscanf(ethbrdinfo.pc104IPaddr.string,"\"%d.%d.%d.%d", &ethbrdinfo.pc104IPaddr.ip1, &ethbrdinfo.pc104IPaddr.ip2, &ethbrdinfo.pc104IPaddr.ip3, &ethbrdinfo.pc104IPaddr.ip4);
+    int ip1, ip2, ip3, ip4;
+    sscanf(strIPaddress,"\"%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
 
-    snprintf(ethbrdinfo.boardIPaddr.string, sizeof(ethbrdinfo.boardIPaddr.string), "%u.%u.%u.%u:%u", ethbrdinfo.boardIPaddr.ip1, ethbrdinfo.boardIPaddr.ip2, ethbrdinfo.boardIPaddr.ip3, ethbrdinfo.boardIPaddr.ip4, ethbrdinfo.boardIPaddr.port);
-    snprintf(ethbrdinfo.pc104IPaddr.string, sizeof(ethbrdinfo.pc104IPaddr.string), "%u.%u.%u.%u:%u", ethbrdinfo.pc104IPaddr.ip1, ethbrdinfo.pc104IPaddr.ip2, ethbrdinfo.pc104IPaddr.ip3, ethbrdinfo.pc104IPaddr.ip4, ethbrdinfo.pc104IPaddr.port);
+    eOipv4addr_t ipv4 = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
 
-    // Check input parameters
-    //snprintf(info, sizeof(info), "xxxxxxxxxxxxxxxxx - referred to EMS: %s", ethbrdinfo.boardIPaddr.string);
+    if(NULL != boardipv4)
+    {
+        *boardipv4 = ipv4;
+    }
 
-
-    snprintf(ethbrdinfo.boardName, sizeof(ethbrdinfo.boardName), "BRD-IP-%s", ethbrdinfo.boardIPaddr.string);
-    ethbrdinfo.boardNumber  = ethbrdinfo.boardIPaddr.ip4;
+    if((NULL != boardipv4string) && (stringsize > 0))
+    {
+        eo_common_ipv4addr_to_string(ipv4, boardipv4string, stringsize);
+    }
 
     return true;
 }
 
-bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
+//bool TheEthManager::parseEthBoardInfo(yarp::os::Searchable &cfgtotal, ethFeature_t& ethbrdinfo)
+//{
+//    // Get PC104 address and port from config file
+//    Bottle groupPC104  = Bottle(cfgtotal.findGroup("PC104"));
+//    if (groupPC104.isNull())
+//    {
+//        yError() << "TheEthManager::parseEthBoardInfo() cannot find PC104 group in config files";
+//        return false;
+//    }
+//    Value *PC104IpAddress_p;
+//    if (!groupPC104.check("PC104IpAddress", PC104IpAddress_p))
+//    {
+//        yError() << "missing PC104IpAddress";
+//        return false;
+//    }
+//    Bottle parameter1(groupPC104.find("PC104IpAddress").asString());
+//    ACE_UINT16 port = groupPC104.find("PC104IpPort").asInt();
+
+//    strcpy(ethbrdinfo.pc104IPaddr.string, parameter1.toString().c_str());
+//    ethbrdinfo.pc104IPaddr.port = port;
+
+//    // get ip adress and port for board from config file
+//    Bottle groupETH_BOARD  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
+//    if (groupETH_BOARD.isNull())
+//    {
+//        yError() << "TheEthManager::parseEthBoardInfo() cannot find ETH_BOARD group in config files";
+//        return false;
+//    }
+//    Bottle groupETH_BOARD_PROPERTIES  = Bottle(groupETH_BOARD.findGroup("ETH_BOARD_PROPERTIES"));
+//    if (groupETH_BOARD_PROPERTIES.isNull())
+//    {
+//        yError() << "TheEthManager::parseEthBoardInfo() cannot find ETH_BOARD_PROPERTIES group in config files";
+//        return false;
+//    }
+//    Bottle parameter2( groupETH_BOARD_PROPERTIES.find("IpAddress").asString() );
+//    strcpy(ethbrdinfo.boardIPaddr.string, parameter2.toString().c_str());
+//    ethbrdinfo.boardIPaddr.port = port;
+
+//    sscanf(ethbrdinfo.boardIPaddr.string,"\"%d.%d.%d.%d", &ethbrdinfo.boardIPaddr.ip1, &ethbrdinfo.boardIPaddr.ip2, &ethbrdinfo.boardIPaddr.ip3, &ethbrdinfo.boardIPaddr.ip4);
+//    sscanf(ethbrdinfo.pc104IPaddr.string,"\"%d.%d.%d.%d", &ethbrdinfo.pc104IPaddr.ip1, &ethbrdinfo.pc104IPaddr.ip2, &ethbrdinfo.pc104IPaddr.ip3, &ethbrdinfo.pc104IPaddr.ip4);
+
+//    snprintf(ethbrdinfo.boardIPaddr.string, sizeof(ethbrdinfo.boardIPaddr.string), "%u.%u.%u.%u:%u", ethbrdinfo.boardIPaddr.ip1, ethbrdinfo.boardIPaddr.ip2, ethbrdinfo.boardIPaddr.ip3, ethbrdinfo.boardIPaddr.ip4, ethbrdinfo.boardIPaddr.port);
+//    snprintf(ethbrdinfo.pc104IPaddr.string, sizeof(ethbrdinfo.pc104IPaddr.string), "%u.%u.%u.%u:%u", ethbrdinfo.pc104IPaddr.ip1, ethbrdinfo.pc104IPaddr.ip2, ethbrdinfo.pc104IPaddr.ip3, ethbrdinfo.pc104IPaddr.ip4, ethbrdinfo.pc104IPaddr.port);
+
+
+////    snprintf(ethbrdinfo.boardName, sizeof(ethbrdinfo.boardName), "BRD-IP-%s", ethbrdinfo.boardIPaddr.string);
+////    ethbrdinfo.boardNumber  = ethbrdinfo.boardIPaddr.ip4;
+
+//    return true;
+//}
+
+
+bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
 {
     // we need: ip address of pc104, port used by socket, tx rate, rx rate.
 
@@ -591,7 +736,7 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
     Bottle groupPC104  = Bottle(cfgtotal.findGroup("PC104"));
     if (groupPC104.isNull())
     {
-        yError() << "TheEthManager::startCommunication cannot find PC104 group in config files";
+        yError() << "TheEthManager::initCommunication cannot find PC104 group in config files";
         return false;
     }
 
@@ -623,7 +768,7 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
 
     myIP.addr_to_string(strIP, 64);
 
-    yDebug() << "TheEthManager::startCommunication() has found IP for PC104 = " << strIP;
+    yDebug() << "TheEthManager::initCommunication() has found IP for PC104 = " << strIP;
 
     // txrate
     if(cfgtotal.findGroup("PC104").check("PC104TXrate"))
@@ -634,7 +779,7 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
     }
     else
     {
-        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104TXrate. thus using default value" << EthSender::EthSenderDefaultRate;
+        yWarning () << "TheEthManager::initCommunication() cannot find ETH/PC104TXrate. thus using default value" << EthSender::EthSenderDefaultRate;
     }
 
     // rxrate
@@ -646,13 +791,13 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
     }
     else
     {
-        yWarning () << "TheEthManager::requestResource() cannot find ETH/PC104RXrate. thus using default value" << EthReceiver::EthReceiverDefaultRate;
+        yWarning () << "TheEthManager::initCommunication() cannot find ETH/PC104RXrate. thus using default value" << EthReceiver::EthReceiverDefaultRate;
     }
 
     // localaddress
-    if(false == createSocket(myIP, txrate, rxrate) )
+    if(false == createCommunicationObjects(myIP, txrate, rxrate) )
     {
-        yError () << "TheEthManager::requestResource() cannot create socket";
+        yError () << "TheEthManager::initCommunication() cannot create communication objects";
         return false;
     }
 
@@ -668,13 +813,12 @@ bool TheEthManager::startCommunication(yarp::os::Searchable &cfgtotal)
 
 EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal)
 {
-    // 1. must create communication objects: sender, receiver, socket
 
     if(communicationIsInitted == false)
     {
         yTrace() << "TheEthManager::requestResource2(): we need to init the communication";
 
-        if(false == startCommunication(cfgtotal))
+        if(false == initCommunication(cfgtotal))
         {
             yError() << "TheEthManager::requestResource2(): cannot init the communication";
             return NULL;
@@ -850,6 +994,7 @@ int TheEthManager::releaseResource2(EthResource* ethresource, IethResource* inte
     return(ret);
 }
 
+
 const ACE_INET_Addr& TheEthManager::getLocalIPaddress(void)
 {
     return(localIPaddress);
@@ -862,50 +1007,11 @@ const eOipv4addressing_t& TheEthManager::getLocalIPV4addressing(void)
 }
 
 
-
 IethResource* TheEthManager::getInterface(eOipv4addr_t ipv4, eOprotID32_t id32)
 {
     IethResource *interfacePointer = ethBoards->get_interface(ipv4, id32);
 
     return interfacePointer;
-}
-
-
-
-// this function is called by the embobj error manager
-void embOBJerror(eOerrmanErrorType_t errtype, const char *info, eOerrmanCaller_t *caller, const eOerrmanDescriptor_t *des)
-{
-    const char defobjstr[] = "EO?";
-    const char *eobjstr = (NULL == caller) ? (defobjstr) : (caller->eobjstr);
-
-    yError() << "embOBJerror(): errtype = " << eo_errman_ErrorStringGet(eo_errman_GetHandle(), errtype) << "from EOobject = " << eobjstr << " w/ message = " << info;
-
-    if(errtype == eo_errortype_fatal)
-    {
-        yError() << "embOBJerror(): FATAL ERROR: the calling thread shall now be stopped in a forever loop here inside";
-        for(;;);
-    }
-
-}
-
-
-TheEthManager::TheEthManager()
-{
-    yTrace();
-
-    communicationIsInitted = false;
-    UDP_socket  = NULL;
-    localIPaddress = ACE_INET_Addr("10.0.1.104:12345");
-
-    ethBoards = new(EthBoards);
-
-    TheEthManager::initEOYsystem();
-
-    ipv4local.addr = eo_common_ipv4addr(10, 0, 1, 104);
-    ipv4local.port = 12345;
-
-
-    startUpTime = yarp::os::Time::now();
 }
 
 
@@ -921,25 +1027,15 @@ TheEthManager::TheEthManager()
 //}
 
 
-double TheEthManager::getTimeOfStartUp(void)
+double TheEthManager::getLifeTime(void)
 {
-    return startUpTime;
+    return(yarp::os::Time::now() - startUpTime);
 }
 
 
-void TheEthManager::initEOYsystem(void)
-{
-    // marco.accame: in here we init the embOBJ system for YARP.
-    eOerrman_cfg_t errmanconfig = {0};
-    errmanconfig.extfn.usr_on_error     = embOBJerror;
-    const eOysystem_cfg_t *syscfg       = NULL;
-    const eOmempool_cfg_t *mpoolcfg     = NULL;     // uses standard mode
-    //const eOerrman_cfg_t *errmancf      = NULL;     // uses default mode
-    eoy_sys_Initialise(syscfg, mpoolcfg, &errmanconfig);
-}
 
 
-bool TheEthManager::createSocket(ACE_INET_Addr localaddress, int txrate, int rxrate)
+bool TheEthManager::createCommunicationObjects(ACE_INET_Addr localaddress, int txrate, int rxrate)
 {
     lock(true);
 
@@ -952,7 +1048,7 @@ bool TheEthManager::createSocket(ACE_INET_Addr localaddress, int txrate, int rxr
             char tmp[64] = {0};
             localaddress.addr_to_string(tmp, 64);
             yError() <<   "\n/--------------------------------------------------------------------------------------------------------------\\"
-                     <<   "\n| TheEthManager::createSocket() is unable to bind to local IP address " << tmp
+                     <<   "\n| TheEthManager::createCommunicationObjects() is unable to bind to local IP address " << tmp
                      <<   "\n\\--------------------------------------------------------------------------------------------------------------/";
             delete UDP_socket;
             UDP_socket = NULL;
@@ -987,7 +1083,7 @@ bool TheEthManager::createSocket(ACE_INET_Addr localaddress, int txrate, int rxr
 
             if(!ret1 || !ret2)
             {
-                yError() << "TheEthManager::createSocket() fails in starting UDP communication threads ethSender / ethReceiver";
+                yError() << "TheEthManager::createCommunicationObjects() fails in starting UDP communication threads ethSender / ethReceiver";
 
                 // stop threads
                 stopCommunicationThreads();
@@ -998,7 +1094,7 @@ bool TheEthManager::createSocket(ACE_INET_Addr localaddress, int txrate, int rxr
             }
             else
             {
-                yTrace() << "TheEthManager::createSocket(): both UDP communication threads ethSender / ethReceiver start correctly!";
+                yTrace() << "TheEthManager::createCommunicationObjects(): both UDP communication threads ethSender / ethReceiver start correctly!";
 
             }
         }
@@ -1007,6 +1103,7 @@ bool TheEthManager::createSocket(ACE_INET_Addr localaddress, int txrate, int rxr
     lock(false);
     return communicationIsInitted;
 }
+
 
 bool TheEthManager::isCommunicationInitted(void)
 {
@@ -1018,36 +1115,7 @@ bool TheEthManager::isCommunicationInitted(void)
     return ret;
 }
 
-TheEthManager *TheEthManager::instance()
-{
-    yTrace();
-    // marco.accame: in here we dont use this->lock() because if object does not already exists, the function does (?) not exist.
-    // much better using the static semaphore instead
-    managerSem.wait();
-    if (NULL == handle)
-    {
-        yTrace() << "Calling EthManager Constructor";
-        handle = new TheEthManager();
-        if (NULL == handle)
-            yError() << "While calling EthManager constructor";
-        else
-            feat_Initialise(static_cast<void*>(handle)); // we give the pointer to the feature-interface c module
-    }
-    managerSem.post();
 
-    return handle;
-}
-
-bool TheEthManager::killYourself()
-{
-    yTrace();
-
-//  maybe we can move things from the destructor into here, or into close() and call close in here.
-
-    delete handle;
-
-    return true;
-}
 
 bool TheEthManager::stopCommunicationThreads()
 {
@@ -1065,55 +1133,13 @@ bool TheEthManager::stopCommunicationThreads()
 }
 
 
-void delete_resources(EthResource *p, void* par)
-{
-    delete p;
-}
 
-TheEthManager::~TheEthManager()
-{
-    yTrace();
-
-    // Deinitialize feature interface
-    feat_DeInitialise();
-
-    // close communication (tx and rx threads, socket) BUT only if they were created and initted
-    if(isCommunicationInitted())
-    {        
-        // for sure we should stop threads tx / rx. before stopping threads, flush all pkts not yet sent.
-        flush();
-        stopCommunicationThreads();
-
-        // then we close and delete the socket
-        lock(true);
-        UDP_socket->close();
-        delete UDP_socket;
-        communicationIsInitted = false;
-
-        // dont we delete sender and receiver ???
-        delete sender;
-        delete receiver;
-
-        lock(false);
-    }
-
-
-    lock(true);
-
-    // remove all ethresource ... we dont need to call lockTXRX() because we are not transmitting now
-    ethBoards->execute(delete_resources, NULL);
-    delete ethBoards;
-
-    lock(false);
-
-    handle = NULL;
-}
-
-int TheEthManager::send(void *udpframe, size_t len, ACE_INET_Addr toaddress)
+int TheEthManager::sendPacket(void *udpframe, size_t len, ACE_INET_Addr toaddress)
 {
     ssize_t ret = UDP_socket->send(udpframe, len, toaddress);
     return ret;
 }
+
 
 bool TheEthManager::Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, bool collectStatistics)
 {
@@ -1154,63 +1180,104 @@ bool TheEthManager::Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, b
 }
 
 
-EthResource* TheEthManager::IPtoResource(ACE_INET_Addr adr)
-{
-    ACE_UINT32 a32 = adr.get_ip_address();
-    uint8_t ip4 = a32 & 0xff;
-    uint8_t ip3 = (a32 >> 8) & 0xff;
-    uint8_t ip2 = (a32 >> 16) & 0xff;
-    uint8_t ip1 = (a32 >> 24) & 0xff;
+//EthResource* TheEthManager::IPtoResource(ACE_INET_Addr adr)
+//{
+//    ACE_UINT32 a32 = adr.get_ip_address();
+//    uint8_t ip4 = a32 & 0xff;
+//    uint8_t ip3 = (a32 >> 8) & 0xff;
+//    uint8_t ip2 = (a32 >> 16) & 0xff;
+//    uint8_t ip1 = (a32 >> 24) & 0xff;
 
-    eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
-    return(ethBoards->get_resource(ipv4addr));
-}
+//    eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
+//    return(ethBoards->get_resource(ipv4addr));
+//}
 
-int TheEthManager::IPtoBoardNumber(ACE_INET_Addr adr)
-{
-    ACE_UINT32 a32 = adr.get_ip_address();
-    uint8_t ip4 = a32 & 0xff;
-    return(ip4);
-}
 
-int TheEthManager::GetNumberOfUsedBoards(void)
+//int TheEthManager::IPtoBoardNumber(ACE_INET_Addr adr)
+//{
+//    ACE_UINT32 a32 = adr.get_ip_address();
+//    uint8_t ip4 = a32 & 0xff;
+//    return(ip4);
+//}
+
+
+int TheEthManager::getNumberOfResources(void)
 {
     return(ethBoards->number_of_resources());
 }
 
+
 const char * TheEthManager::getName(eOipv4addr_t ipv4)
 {
     const char * ret = ethBoards->name(ipv4);
-
     return ret;
 }
 
-EthResource* TheEthManager::GetEthResource(eOipv4addr_t ipv4)
+
+EthResource* TheEthManager::getEthResource(eOipv4addr_t ipv4)
 {
     return(ethBoards->get_resource(ipv4));
 }
 
-// Probably useless
-bool TheEthManager::open()
+
+bool TheEthManager::lock(bool on)
 {
-    yTrace();
+    if(on)
+    {
+        managerSem.wait();
+    }
+    else
+    {
+        managerSem.post();
+    }
 
     return true;
 }
 
-bool TheEthManager::close()
+
+bool TheEthManager::lockTX(bool on)
 {
-    yTrace();
+    if(on)
+    {
+        txSem.wait();
+    }
+    else
+    {
+        txSem.post();
+    }
 
     return true;
 }
 
 
-void TheEthManager::flush()
+bool TheEthManager::lockRX(bool on)
 {
-    //#warning --> marco.accame: TODO think about how removing delay of 1 second
-    // here sleep is essential in order to let sender thread send gotoconfig command.
-    yarp::os::Time::delay(1);
+    if(on)
+    {
+        rxSem.wait();
+    }
+    else
+    {
+        rxSem.post();
+    }
+
+    return true;
+}
+
+bool TheEthManager::lockTXRX(bool on)
+{
+    if(on)
+    {
+        txSem.wait();
+        rxSem.wait();
+    }
+    else
+    {
+        rxSem.post();
+        txSem.post();
+    }
+
+    return true;
 }
 
 
@@ -1256,48 +1323,6 @@ bool EthSender::threadInit()
     return true;
 }
 
-//void EthSender::evalPrintTXstatistics(void)
-//{
-//#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
-//    // For statistic purpose
-
-//    unsigned int it = getIterations();
-//    if(it == ethmanager_stats_frequency_numberofcycles)
-//    {
-//        printTXstatistics();
-//    }
-//#endif
-//}
-
-
-//void EthSender::printTXstatistics(void)
-//{
-//#ifdef ETHMANAGER_DEBUG_COMPUTE_STATS_FOR_CYCLE_TIME_
-//    // For statistic purpose
-
-//    unsigned int it=getIterations();
-
-//    double avPeriod, stdPeriod;
-//    double avThTime, stdTime;
-
-//    getEstUsed(avThTime, stdTime);
-//    getEstPeriod(avPeriod, stdPeriod);
-
-//    char string[128] = {0};
-//    snprintf(string, sizeof(string), "  (STATS-TX)-> EthSender::run() thread run %d times, est period: %.3lf, +-%.4lf[ms], est used: %.3lf, +-%.4lf[ms]\n",
-//                            it,
-//                            avPeriod, stdPeriod,
-//                            avThTime, stdTime);
-//    yDebug() << string;
-
-//    resetStat();
-
-//#endif
-//}
-
-
-
-#if defined(ETHMANAGER_TEST_NEW_SENDER_RUN)
 
 
 void EthSender::run()
@@ -1309,56 +1334,6 @@ void EthSender::run()
 }
 
 
-#else
-
-#error dont use that
-
-void EthSender::run()
-{
-    EthResource  *ethRes;
-    uint16_t      bytes_to_send = 0;
-    uint16_t      numofrops = 0;
-    ethResRIt     riterator, _rBegin, _rEnd;
-
-
-    /*
-        Usare un reverse iterator per scorrere la lista dalla fine verso l'inizio. Questo aiuta a poter scorrere
-        la lista con un iteratore anche durante la fase iniziale in cui vengono ancora aggiunti degli elementi,
-        in teoria senza crashare. Al più salvarsi il puntatore alla rbegin sotto mutex prima di iniziare il ciclo,
-        giusto per evitare che venga aggiunto un elemento in concomitanza con la lettura dell rbegin stesso.
-        Siccome gli elementi vengono aggiunti solamente in coda alla lista, questa iterazione a ritroso non
-        dovrebbe avere altri problemi e quindi safe anche senza il mutex che prende TUTTO il ciclo.
-    */
-
-    ethManager->getEMSlistRiterators(_rBegin, _rEnd);
-
-    for(riterator = _rBegin; riterator != _rEnd && (isRunning()); riterator++)
-    {
-        p_sendData = NULL;
-        bytes_to_send = 0;
-        numofrops = 0;
-        if(NULL == *riterator)
-        {
-            yError() << "EthManager::run, iterator==NULL";
-            continue;
-        }
-
-        ethRes = (*riterator);
-
-        // This uses directly the pointer of the transceiver
-        bool transmitthepacket = ethRes->getTXpacket(&p_sendData, &bytes_to_send, &numofrops);
-
-        if(true == transmitthepacket)
-        {
-            ACE_INET_Addr addr = ethRes->getRemoteAddress();
-            int ret = ethManager->send(p_sendData, (size_t)bytes_to_send, addr);
-        }
-
-    }
-
-}
-
-#endif // defined(ETHMANAGER_TEST_NEW_SENDER_RUN)
 
 
 EthReceiver::EthReceiver(int raterx): RateThread(raterx)
@@ -1382,7 +1357,7 @@ void EthReceiver::onStop()
 {
     // in here i send a small packet to ... myself ?
     uint8_t tmp = 0;
-    ethManager->send( &tmp, 1, ethManager->getLocalIPaddress());
+    ethManager->sendPacket( &tmp, 1, ethManager->getLocalIPaddress());
 }
 
 EthReceiver::~EthReceiver()
@@ -1424,14 +1399,6 @@ bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
 
     yWarning() << "in EthReceiver::config() the config socket has queue size = "<< sock_input_buf_size<< "; you request ETHRECEIVER_BUFFER_SIZE=" << _dgram_buffer_size;
 
-#if defined(ETHMANAGER_RECEIVER_CHECK_SEQUENCE_NUMBER)
-    for(int i=0; i<TheEthManager::maxBoards; i++)
-    {
-        recFirstPkt[i] = false;
-        seqnumList[i] = 0;
-    }
-#endif
-
     return true;
 }
 
@@ -1461,47 +1428,6 @@ uint64_t getRopFrameAge(char *pck)
 }
 
 
-#if defined(ETHMANAGER_RECEIVER_CHECK_SEQUENCE_NUMBER)
-
-void EthReceiver::checkPktSeqNum(char* pktpayload, ACE_INET_Addr addr)
-{
-    int board = ethManager->IPtoBoardNumber(addr);
-    uint64_t seqnum = eo_ropframedata_seqnum_Get((EOropframeData*)pktpayload);
-
-    if(board > TheEthManager::maxBoards)
-    {
-        yError() << "EthReceiver::checkPktSeqNum() detected a board number beyond maximum allowed: (detected, maximum) =" << board << "," << TheEthManager::maxBoards << ")";
-        return;
-    }
-
-    if(0 == board)
-    {
-        yError() << "EthReceiver::checkPktSeqNum() detected a zero board number";
-        return;
-    }
-
-    int boardindex = board - 1;
-
-    if(recFirstPkt[boardindex]==false)
-    {
-        seqnumList[boardindex] = seqnum;
-        recFirstPkt[boardindex] = true;
-        yError() << "EthREceiver: FIRST SEQ NUM for board=" << board << " is " << seqnum;
-    }
-    else
-    {
-        if(seqnum != (seqnumList[boardindex]+1))
-        {
-            yError() << "EthREceiver: ---LOST PKTS---board =" << board << " seq num rec=" << seqnum << " expected=" << seqnumList[boardindex]+1;
-        }
-        seqnumList[boardindex] = seqnum;
-    }
-}
-
-#endif // #if defined(ETHMANAGER_RECEIVER_CHECK_SEQUENCE_NUMBER)
-
-
-#if defined(ETHMANAGER_TEST_NEW_RECEIVER_RUN)
 
 void EthReceiver::run()
 {
@@ -1517,7 +1443,8 @@ void EthReceiver::run()
 
     static int earlyexit = 0;
 
-    int maxUDPpackets = EthReceiver::rateofthread*ethManager->GetNumberOfUsedBoards() + 2 + earlyexit*5; // marco.accame: set it as the number of boards plus a ... margin of 30% plus a +/- offset which depends on activity
+    //  marco.accame: set it as a fixed minimum number + the number of boards + an offset of 30% which depends on activity
+    int maxUDPpackets = 2 + EthReceiver::rateofthread*ethManager->getNumberOfResources() * (1.0f + 0.3f * earlyexit);
 
     earlyexit = 0;
 
@@ -1530,12 +1457,6 @@ void EthReceiver::run()
             earlyexit = 1;
             return;
         }
-
-#if defined(ETHMANAGER_RECEIVER_CHECK_SEQUENCE_NUMBER)
-        // redundant check. this check is already done inside hostTransceiver wherein case of errors it is called:
-        // cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(EOreceiver *r)
-        checkPktSeqNum((char *)incoming_msg_data, sender_addr);
-#endif
 
         // we have a packet ... we give it to the ethmanager for it parsing
         bool collectStatistics = (statPrintInterval > 0) ? true : false;
@@ -1544,82 +1465,6 @@ void EthReceiver::run()
 
 }
 
-#else
-
-#error dont use it
-
-#ifdef ETHRECEIVER_ISPERIODICTHREAD
-
-void EthReceiver::run()
-{
-
-    //yTrace();
-
-    ACE_TCHAR     address[64];
-    EthResource  *ethRes;
-    ssize_t       incoming_msg_size = 0;
-    ACE_INET_Addr sender_addr;
-    uint64_t      incoming_msg_data[EthResource::maxRXpacketsize/8]; // 8-byte aligned local buffer for incoming packet: it must be able to accomodate max size of packet
-    const int     incoming_msg_capacity = EthResource::maxRXpacketsize;
-
-
-    //ACE_Time_Value recvTimeOut;
-    //recvTimeOut.set(0.010f); // timeout of socket reception is 10 milliseconds
-
-    //double myTestTimeout = recvTimeOut.sec() + (double)recvTimeOut.msec()/1000.0f;
-
-    int flags = 0;
-#ifndef WIN32
-    flags |= MSG_DONTWAIT;
-#endif
-
-    static int earlyexit = 0;
-
-    int maxUDPpackets = EthReceiver::rateofthread*ethManager->GetNumberOfUsedBoards() + 2 + earlyexit*5; // marco.accame: set it as the number of boards plus a ... margin of 30% plus a +/- offset which depends on activity
-
-    earlyexit = 0;
-
-    for(int i=0; i<maxUDPpackets; i++)
-    {
-        incoming_msg_size = recv_socket->recv((void *) incoming_msg_data, incoming_msg_capacity, sender_addr, flags);
-        if(incoming_msg_size <= 0)
-        {
-            // marco.accame: i prefer using <= 0.
-            earlyexit = 1;
-            return;
-        }
-
-        ethRes = ethManager->IPtoResource(sender_addr);
-        if(NULL != ethRes)
-        {
-            if(false == ethRes->canProcessRXpacket(incoming_msg_data, incoming_msg_size))
-            {   // cannot give packet to ethresource
-                yError() << "EthReceiver::run() cannot give a received packet of size" << incoming_msg_size << "to EthResource because EthResource::canProcessRXpacket() returns false.";
-            }
-            else
-            {
-                // we collect statistics only if we ever print them, thus statPrintInterval > 0
-                bool collectStatistics = (statPrintInterval > 0) ? true : false;
-                ethRes->processRXpacket(incoming_msg_data, incoming_msg_size, collectStatistics);
-            }
-
-        }
-        else
-        {
-        //    sender_addr.addr_to_string(address, sizeof(address));
-        //    yError() << "EthReceiver::run() cannot get a ethres associated to address" << address;
-        }
-
-
-    }
-
-}
-
-#else
-    #error -> ETHRECEIVER_ISPERIODICTHREAD must be defined
-#endif
-
-#endif // 1
 
 
 // eof
