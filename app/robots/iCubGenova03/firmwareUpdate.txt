@@ -35,7 +35,7 @@ cfw2can 4 9  2BLL.1.51.out.S
 cfw2can 4 10 2BLL.1.51.out.S
 
 // skin left arm
-cfw2can 7 8  skin.he
+cfw2can 7 8  skin.hex
 cfw2can 7 9  skin.hex
 cfw2can 7 10 skin.hex
 cfw2can 7 11 skin.hex
@@ -44,7 +44,7 @@ cfw2can 7 13 skin.hex
 cfw2can 7 14 skin.hex
 
 // skin right arm
-cfw2can 8 8  skin.he
+cfw2can 8 8  skin.hex
 cfw2can 8 9  skin.hex
 cfw2can 8 10 skin.hex
 cfw2can 8 11 skin.hex
