@@ -1535,11 +1535,7 @@ protected:
 
 public:
     /************************************************************************/
-    DataBaseModifyPort()
-    {
-        pDataBase=NULL;
-        useCallback();
-    }
+    DataBaseModifyPort() : pDataBase(NULL) { }
 
     /************************************************************************/
     void setDataBase(DataBase &dataBase)
@@ -1579,6 +1575,7 @@ public:
         rpcProcessor.setDataBase(dataBase);
         rpcPort.setReader(rpcProcessor);
         modifyPort.setDataBase(dataBase);
+        modifyPort.useCallback();
         rpcPort.open(("/"+name+"/rpc").c_str());
         bcPort.open(("/"+name+"/broadcast:o").c_str());
         modifyPort.open(("/"+name+"/modify:i").c_str());
