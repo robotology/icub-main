@@ -1120,9 +1120,7 @@ public:
         }
 
         reply.clear();
-
         int cmd=command.get(0).asVocab();
-
         switch(cmd)
         {
             //-----------------
@@ -1460,25 +1458,32 @@ public:
 /************************************************************************/
 class RpcProcessor : public PortReader
 {
-protected:
+protected:    
     DataBase *pDataBase;
+    Mutex mutex;
+    bool enabled;
+
     unsigned int nCalls;
-    double cumTime;
+    double cumTime;    
 
     /************************************************************************/
     bool read(ConnectionReader &connection)
     {
-        Bottle command, reply;
-        if (!command.read(connection) || (pDataBase==NULL))
-            return false;
+        LockGuard lg(mutex);
+        if (enabled)
+        {
+            Bottle command, reply; 
+            if (!command.read(connection) || (pDataBase==NULL))
+                return false;
 
-        double t0=Time::now();
-        pDataBase->respond(connection,command,reply);
-        cumTime+=Time::now()-t0;
-        nCalls++;
+            double t0=Time::now();
+            pDataBase->respond(connection,command,reply);
+            cumTime+=Time::now()-t0;
+            nCalls++;
 
-        if (ConnectionWriter *writer=connection.getWriter())
-            reply.write(*writer);
+            if (ConnectionWriter *writer=connection.getWriter())
+                reply.write(*writer);
+        }
 
         return true;
     }
@@ -1488,8 +1493,9 @@ public:
     RpcProcessor()
     {
         pDataBase=NULL;
+        enabled=true;
         nCalls=0;
-        cumTime=0.0;
+        cumTime=0.0;        
     }
 
     /************************************************************************/
@@ -1503,6 +1509,13 @@ public:
     {
         nCalls=this->nCalls;
         cumTime=this->cumTime;
+    }
+
+    /************************************************************************/
+    void disable()
+    {
+        LockGuard lg(mutex);
+        enabled=false;
     }
 };
 
@@ -1579,10 +1592,10 @@ public:
 
     /************************************************************************/
     bool close()
-    {
-        rpcPort.interrupt();
-        bcPort.interrupt();
-        modifyPort.interrupt();
+    {        
+        rpcProcessor.disable();
+        modifyPort.disableCallback();
+        dataBase.stop();
 
         rpcPort.close();
         bcPort.close();
