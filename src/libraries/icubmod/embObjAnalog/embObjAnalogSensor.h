@@ -40,6 +40,7 @@ namespace yarp{
     }
 }
 
+
 class AnalogData
 {
 private:
@@ -81,27 +82,39 @@ class yarp::dev::embObjAnalogSensor:    public yarp::dev::IAnalogSensor,
 
 public:
 
-    enum { EMBAS_SIZE_INFO  = 128 };
-
     enum { NUMCHANNEL_STRAIN = 6, NUMCHANNEL_MAIS = 15, FORMATDATA_STRAIN = 16, FORMATDATA_MAIS = 8 };
 
-    enum SensorStatus
-    {
-        ANALOG_IDLE=0,
-        ANALOG_OK=1,
-        ANALOG_NOT_RESPONDING=-1,
-        ANALOG_SATURATION=-2,
-        ANALOG_ERROR=-3,
-    };
 
     enum AnalogSensorType
     {
-        AS_NONE = 0,
-        AS_MAIS = 1,
-        AS_STRAIN = 2,
-        AS_INERTIAL_MTB = 3
+        AS_Type_NONE = 0,
+        AS_Type_MAIS = 1,
+        AS_Type_STRAIN = 2,
+        AS_Type_INERTIAL_MTB = 3
     };
 
+public:
+
+    embObjAnalogSensor();
+    ~embObjAnalogSensor();
+
+    // An open function yarp factory compatible
+    bool open(yarp::os::Searchable &config);
+    bool close();
+
+    // IAnalogSensor interface
+    virtual int read(yarp::sig::Vector &out);
+    virtual int getState(int ch);
+    virtual int getChannels();
+    virtual int calibrateChannel(int ch, double v);
+    virtual int calibrateSensor();
+    virtual int calibrateSensor(const yarp::sig::Vector& value);
+    virtual int calibrateChannel(int ch);
+
+    // IethResource interface
+    virtual bool initialised();
+    virtual iethresType_t type();
+    virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
 
 private:
 
@@ -111,16 +124,12 @@ private:
     TheEthManager       *ethManager;
     EthResource        *res;
 
-
     bool opened;
     bool verbosewhenok;
 
-
-    //! debug messages
     unsigned int    counterSat;
     unsigned int    counterError;
     unsigned int    counterTimeout;
-    char            info[EMBAS_SIZE_INFO];   
 
     ////////////////////
     // parameters
@@ -128,110 +137,50 @@ private:
     int                 _channels;
     int                 _numofsensors;
     short               _useCalibration;
-    //AnalogDataFormat    _format;
     AnalogSensorType    _as_type;
 
     uint8_t _fromInertialPos2DataIndexAccelerometers[eoas_inertial_pos_max_numberof];
     uint8_t _fromInertialPos2DataIndexGyroscopes[eoas_inertial_pos_max_numberof];
 
-    AnalogData *data;
+    AnalogData *analogdata;
     short status;
 
     double timeStamp;
     double* scaleFactor;
     yarp::os::Semaphore mutex;
 
+private:
 
-    // Read useful data from config and check for correctness
+    // for all
+    bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
     bool fromConfig(yarp::os::Searchable &config);
-    bool getFullscaleValues();
-    bool sendConfig2Strain(void);
-    bool sendConfig2SkinInertial(yarp::os::Searchable &config);
-    bool sendConfig2Mais(void);
-    bool fillDatOfStrain(void *as_array_raw);
-    bool fillDatOfMais(void *as_array_raw);
-    bool fillDatOfInertial(void *inertialdata);
+    bool init();
+    void cleanup(void);
+    // not used ...
     bool isEpManagedByBoard();
 
-    bool configServiceInertials(Searchable& globalConfig);
 
+    // for strain
+    bool fillDatOfStrain(void *as_array_raw);
+    bool sendConfig2Strain(void);
+    bool getFullscaleValues();
+
+
+    // for mais
+    bool fillDatOfMais(void *as_array_raw);
+    bool sendConfig2Mais(void);
+
+
+    // for inertials
+    bool fillDatOfInertial(void *inertialdata);
+    bool configServiceInertials(Searchable& globalConfig);
+    bool sendConfig2SkinInertial(yarp::os::Searchable &config);
     eOas_inertial_position_t getLocationOfInertialSensor(yarp::os::ConstString &strpos);
 
-public:
 
-    embObjAnalogSensor();
-    ~embObjAnalogSensor();
-//     bool handleAnalog(void *);
-    
-    // An open function yarp factory compatible
-    bool open(yarp::os::Searchable &config);
-    bool close();
-    void cleanup(void);
-
-    // IAnalogSensor interface
-    virtual int read(yarp::sig::Vector &out);
-    virtual int getState(int ch);
-    virtual int getChannels();
-    virtual int calibrateChannel(int ch, double v);
-    virtual int calibrateSensor();
-    virtual int calibrateSensor(const yarp::sig::Vector& value);
-
-    virtual int calibrateChannel(int ch);
-    
-    // Internal stuff
-    void resetCounters()
-    {
-        counterSat=0;
-        counterError=0;
-        counterTimeout=0;
-    }
-
-    void getCounters(unsigned int &sat, unsigned int &err, unsigned int &to)
-    {
-        sat=counterSat;
-        err=counterError;
-        to=counterTimeout;
-    }
-
-    // will this be substitute by an axis map?
-#ifdef _OLD_STYLE_
-    short getId()
-    { return boardId;}
-
-    short getStatus()
-    { return status;}
-
-    bool isOpen()
-    {
-        if (data)
-            return true;
-        else
-            return false;
-    }
-
-    short getUseCalibration()
-        {return useCalibration;}
-    double* getScaleFactor()
-        {return scaleFactor;}
-    double getScaleFactor(int chan)
-        {
-            if (chan>=0 && chan<data->size())
-                return scaleFactor[chan];
-            else
-                return 0;
-        }
-#endif
-
-
-    // this method will be added in the virtualAnalogSensor, not here
-    //virtual int sendVirtualData(const yarp::sig::Vector& value);
-    
-    // embObj interface
-    bool init();
-
-    virtual bool initialised();
-    virtual iethresType_t type();
-    virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
+    // for ??
+    void resetCounters();
+    void getCounters(unsigned int &saturations, unsigned int &errors, unsigned int &timeouts);
 };
 
 

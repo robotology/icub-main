@@ -56,7 +56,7 @@ inline bool NOT_YET_IMPLEMENTED(const char *txt)
 
 // generic function that checks is key1 is present in input bottle and that the result has size elements
 // return true/false
-static inline bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
+bool embObjAnalogSensor::extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
 {
     size++;  // size includes also the name of the parameter
     Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
@@ -89,7 +89,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
     {
         yError() << "embObjAnalogSensor Using default value = 0 (disabled)";
         _period = 0;
-        _as_type=AS_NONE;
+        _as_type=AS_Type_NONE;
     }
     else
     {
@@ -103,7 +103,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
         _channels = 0;
         _numofsensors = 0;
         _period   = 0;
-        _as_type=AS_NONE;
+        _as_type=AS_Type_NONE;
     }
     else
     {
@@ -129,19 +129,19 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
         yarp::os::ConstString type = config.find("Type").asString();
         if(type == "inertial")
         {
-            _as_type=AS_INERTIAL_MTB;
+            _as_type=AS_Type_INERTIAL_MTB;
         }
         else if(type == "strain")
         {
-            _as_type=AS_STRAIN;
+            _as_type=AS_Type_STRAIN;
         }
         else if(type == "mais")
         {
-            _as_type=AS_MAIS;
+            _as_type=AS_Type_MAIS;
         }
         else
         {
-            _as_type=AS_NONE;
+            _as_type=AS_Type_NONE;
             yError() << "embObjAnalogSensor: unknown device " << type << ". Supported devices are 'mais', 'strain' and 'inertial'";
             return false;
         }
@@ -156,7 +156,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
             yWarning("embObjAnalogSensor: Using default value = 0 (disabled)");
             _channels = 0;
             _period   = 0;
-            _as_type=AS_NONE;
+            _as_type=AS_Type_NONE;
         }
         else
         {
@@ -165,15 +165,15 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
 
         if((_channels==NUMCHANNEL_STRAIN) && (format==FORMATDATA_STRAIN))
         {
-            _as_type=AS_STRAIN;
+            _as_type=AS_Type_STRAIN;
         }
         else if((_channels==NUMCHANNEL_MAIS) && (format==FORMATDATA_MAIS))
         {
-            _as_type=AS_MAIS;
+            _as_type=AS_Type_MAIS;
         }
         else
         {
-            _as_type=AS_NONE;
+            _as_type=AS_Type_NONE;
             yError() << "embObjAnalogSensor incorrect config!channels="<< _channels <<" format="<< format;
             cleanup();
             return false;
@@ -182,9 +182,9 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
 
     _numofsensors = 1;
 
-    // however, if we have a AS_INERTIAL_MTB, then we may have more than one. for sure not zero.
+    // however, if we have a AS_Type_INERTIAL_MTB, then we may have more than one. for sure not zero.
 
-    if(AS_INERTIAL_MTB == _as_type)
+    if(AS_Type_INERTIAL_MTB == _as_type)
     {
         Bottle tmp;
         _numofsensors = 0;
@@ -211,7 +211,7 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
 
 
 
-    if(AS_STRAIN == _as_type)
+    if(AS_Type_STRAIN == _as_type)
     {
         if (!extractGroup(config, xtmp, "UseCalibration","Calibration parameters are needed", 1))
         {
@@ -227,13 +227,13 @@ bool embObjAnalogSensor::fromConfig(yarp::os::Searchable &_config)
 }
 
 
-embObjAnalogSensor::embObjAnalogSensor(): data(0)
+embObjAnalogSensor::embObjAnalogSensor(): analogdata(0)
 {
     _useCalibration=0;
     _channels=0;
     _numofsensors = 1;
     _period=0;
-    _as_type=AS_NONE;
+    _as_type=AS_Type_NONE;
     //_format=ANALOG_FORMAT_NONE;
 
 
@@ -264,8 +264,8 @@ embObjAnalogSensor::embObjAnalogSensor(): data(0)
 
 embObjAnalogSensor::~embObjAnalogSensor()
 {
-    if (data != NULL)
-        delete data;
+    if (analogdata != NULL)
+        delete analogdata;
     if (scaleFactor != NULL)
         delete scaleFactor;
 }
@@ -319,15 +319,15 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
     // some other things ... tag__XXX0123_
     eOmn_serv_category_t servcategory = eomn_serv_category_none;
-    if(AS_STRAIN == _as_type)
+    if(AS_Type_STRAIN == _as_type)
     {
         servcategory = eomn_serv_category_strain;
     }
-    else if(AS_MAIS == _as_type)
+    else if(AS_Type_MAIS == _as_type)
     {
         servcategory = eomn_serv_category_mais;
     }
-    else if(AS_INERTIAL_MTB == _as_type)
+    else if(AS_Type_INERTIAL_MTB == _as_type)
     {
         servcategory = eomn_serv_category_inertials;
     }
@@ -358,22 +358,22 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     }
 
 
-    if(_as_type == AS_INERTIAL_MTB)
+    if(_as_type == AS_Type_INERTIAL_MTB)
     {
         // must create data to be of capacity: _channels*_numofsensors+2.
         // scaleFactor is not used
         // however we do that inside
-        data = new AnalogData(2+_channels*_numofsensors, 2+_channels*_numofsensors+2+1);  // i keep the +1 in second argument but i dont know why
+        analogdata = new AnalogData(2+_channels*_numofsensors, 2+_channels*_numofsensors+2+1);  // i keep the +1 in second argument but i dont know why
 
         // the first two are: number of sensors and of channels
-        double *buffer = this->data->getBuffer();
+        double *buffer = this->analogdata->getBuffer();
         buffer[0] = _numofsensors;
         buffer[1] = _channels;
         // all the others
     }
     else
     {
-        data = new AnalogData(_channels, _channels+1);
+        analogdata = new AnalogData(_channels, _channels+1);
         scaleFactor = new double[_channels];
         int i=0;
         for (i=0; i<_channels; i++) scaleFactor[i]=1;
@@ -391,24 +391,24 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     
     switch(_as_type)
     {
-        case AS_MAIS:
+        case AS_Type_MAIS:
         {
             ret = true;     // not yet implemented
         } break;
 
-        case AS_STRAIN:
+        case AS_Type_STRAIN:
         {
             ret = true;     // not yet implemented
         } break;
 
-        case AS_INERTIAL_MTB:
+        case AS_Type_INERTIAL_MTB:
         {
             ret = configServiceInertials(config);
         } break;
 
         default:
         {
-            //i should not be here. if AS_NONE then i should get error in fromConfig function
+            //i should not be here. if AS_Type_NONE then i should get error in fromConfig function
             ret = false;
         }
 
@@ -425,19 +425,19 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
     switch(_as_type)
     {
-        case AS_MAIS:
+        case AS_Type_MAIS:
         {
             entity = eoprot_entity_as_mais;
             ret = sendConfig2Mais();
         } break;
         
-        case AS_STRAIN:
+        case AS_Type_STRAIN:
         {
             entity = eoprot_entity_as_strain;
             ret = sendConfig2Strain();
         } break;
         
-        case AS_INERTIAL_MTB:
+        case AS_Type_INERTIAL_MTB:
         {
             entity = eoprot_entity_as_inertial;
             ret = sendConfig2SkinInertial(config);
@@ -445,7 +445,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
         default:
         {
-            //i should not be here. if AS_NONE then i should get error in fromConfig function
+            //i should not be here. if AS_Type_NONE then i should get error in fromConfig function
             ret = false;
         }
     }
@@ -478,7 +478,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     }
 
 
-    if(AS_INERTIAL_MTB == _as_type)
+    if(AS_Type_INERTIAL_MTB == _as_type)
     {
         // start the configured sensors
 
@@ -1112,7 +1112,7 @@ bool embObjAnalogSensor::init()
 
     switch(_as_type)
     {
-        case AS_MAIS:
+        case AS_Type_MAIS:
         {
             servcategory = eomn_serv_category_mais;
 
@@ -1120,7 +1120,7 @@ bool embObjAnalogSensor::init()
 
         } break;
         
-        case AS_STRAIN:
+        case AS_Type_STRAIN:
         {
             servcategory = eomn_serv_category_strain;
 
@@ -1130,7 +1130,7 @@ bool embObjAnalogSensor::init()
                 protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_uncalibratedvalues);
         } break;
         
-        case AS_INERTIAL_MTB:
+        case AS_Type_INERTIAL_MTB:
         {
             servcategory = eomn_serv_category_inertials;
             protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_status);
@@ -1181,11 +1181,11 @@ bool embObjAnalogSensor::init()
  **/
 int embObjAnalogSensor::read(yarp::sig::Vector &out)
 {
-    // This method gives data to the analogServer
+    // This method gives analogdata to the analogServer
 
       mutex.wait();
 
-      if (!data)
+      if (!analogdata)
       {
           mutex.post();
           return false;
@@ -1197,39 +1197,53 @@ int embObjAnalogSensor::read(yarp::sig::Vector &out)
           switch (status)
           {
               case IAnalogSensor::AS_OVF:
-                  {
-                      counterSat++;
-                  }
-                  break;
+              {
+                  counterSat++;
+              }  break;
               case IAnalogSensor::AS_ERROR:
-                  {
-                      counterError++;
-                  }
-                  break;
+              {
+                  counterError++;
+              } break;
               case IAnalogSensor::AS_TIMEOUT:
-                  {
-                     counterTimeout++;
-                  }
-                  break;
+              {
+                 counterTimeout++;
+              } break;
               default:
               {
                   counterError++;
-              }
+              } break;
           }
           mutex.post();
           return status;
       }
 
-      out.resize(data->size());
-      for(int k=0;k<data->size();k++)
+      out.resize(analogdata->size());
+      for(int k=0;k<analogdata->size();k++)
       {
-          out[k]=(*data)[k];
+          out[k]=(*analogdata)[k];
       }
 
       mutex.post();
     
     return status;
 }
+
+
+void embObjAnalogSensor::resetCounters()
+{
+    counterSat=0;
+    counterError=0;
+    counterTimeout=0;
+}
+
+
+void embObjAnalogSensor::getCounters(unsigned int &sat, unsigned int &err, unsigned int &to)
+{
+    sat=counterSat;
+    err=counterError;
+    to=counterTimeout;
+}
+
 
 int embObjAnalogSensor::getState(int ch)
 {
@@ -1239,7 +1253,7 @@ int embObjAnalogSensor::getState(int ch)
 
 int embObjAnalogSensor::getChannels()
 {
-    return data->size();
+    return analogdata->size();
 }
 
 int embObjAnalogSensor::calibrateSensor()
@@ -1268,17 +1282,17 @@ iethresType_t embObjAnalogSensor::type()
 
     switch(_as_type)
     {
-        case AS_MAIS:
+        case AS_Type_MAIS:
         {
             ret = iethres_analogmais;
         } break;
 
-        case AS_STRAIN:
+        case AS_Type_STRAIN:
         {
             ret = iethres_analogstrain;
         } break;
 
-        case AS_INERTIAL_MTB:
+        case AS_Type_INERTIAL_MTB:
         {
             ret = iethres_analoginertial;
         } break;
@@ -1299,24 +1313,24 @@ bool embObjAnalogSensor::update(eOprotID32_t id32, double timestamp, void* rxdat
 //#warning --> marco.accame: retrieve the entity from id32 and see is it is mais or strain or inertial.
     switch(_as_type)
     {
-        case AS_MAIS:
+        case AS_Type_MAIS:
         {
             ret = fillDatOfMais(rxdata);
         } break;
         
-        case AS_STRAIN:
+        case AS_Type_STRAIN:
         {
             ret = fillDatOfStrain(rxdata);
         } break;
         
-        case AS_INERTIAL_MTB:
+        case AS_Type_INERTIAL_MTB:
         {
             ret = fillDatOfInertial(rxdata);
         } break;
         
         default:
         {
-            //i should not be here. if AS_NONE then i should get error in fromConfig function
+            //i should not be here. if AS_Type_NONE then i should get error in fromConfig function
             ret = false;
         }
     }
@@ -1340,14 +1354,14 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
         return false;
     }
 
-    // lock data
+    // lock analogdata
     mutex.wait();
 
-    double *_buffer = this->data->getBuffer();
+    double *_buffer = this->analogdata->getBuffer();
 
     if(NULL == _buffer)
     {
-        // unlock data
+        // unlock analogdata
         mutex.post();
         return false;
     }
@@ -1373,7 +1387,7 @@ bool embObjAnalogSensor::fillDatOfStrain(void *as_array_raw)
         }
     }
      
-    // unlock data
+    // unlock analogdata
     mutex.post();
 
     return true;
@@ -1397,7 +1411,7 @@ bool embObjAnalogSensor::fillDatOfMais(void *as_array_raw)
 
     mutex.wait();
 
-    double *_buffer = this->data->getBuffer();
+    double *_buffer = this->analogdata->getBuffer();
 
     if(NULL == _buffer)
     {
@@ -1431,11 +1445,11 @@ bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
    
     mutex.wait();
 
-    double *_buffer = this->data->getBuffer();
+    double *_buffer = this->analogdata->getBuffer();
 
     if(NULL == _buffer)
     {
-        // unlock data
+        // unlock analogdata
         mutex.post();
         return false;
     }
