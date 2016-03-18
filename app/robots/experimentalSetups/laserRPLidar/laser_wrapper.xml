@@ -11,6 +11,13 @@
          </paramlist>
       </action>
 
+      <group name = "ROS">
+         <param name = "useROS"> true </param>
+         <param name = "ROS_nodeName"> /laser </param>
+         <param name = "ROS_topicName"> /lasertopic </param>
+         <param name = "frame_id"> /base_link </param>
+      </group>
+
       <action phase="shutdown" level="5" type="detach" />
   </device>
 </devices>
