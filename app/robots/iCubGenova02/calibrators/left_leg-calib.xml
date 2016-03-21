@@ -25,7 +25,7 @@
 <param name="calibration4">                       0.0            0.0        0.0          0.0         0.0       0.0         </param>
 <param name="calibration5">                       0.0            0.0        0.0          0.0         0.0       0.0         </param>
 <param name="calibrationZero">                    180.00         180.00     180.00       -180.00     -180.00   180.00      </param>
-<param name="calibrationDelta">                   1.40           -2.0       -7.0          -3.0        -1.0      2.7         </param>
+<param name="calibrationDelta">                   1.40           -1.0       -7.0          -3.8        -1.8     0.525         </param>
 
 <param name="startupPosition">                    0              10         0            0           0         0           </param>
 <param name="startupVelocity">                    10.0           10.0       10.0         10.0        10.0      10.0        </param>
