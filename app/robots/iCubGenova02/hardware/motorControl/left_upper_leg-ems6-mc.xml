@@ -44,7 +44,7 @@
     <group name="TORQUE_CONTROL">
         <param name="controlLaw">    motor_pid_with_friction_v1               </param>
         <param name="controlUnits">  metric_units                             </param>         
-        <param name="kp">           -400        400          0        200     </param>       <!--        -200        200       -200        200      --> 
+        <param name="kp">           -400        400       -300        200     </param>       <!--        -200        200       -200        200      --> 
         <param name="kd">              0          0          0          0     </param>       
         <param name="ki">              0          0          0          0     </param>     
         <param name="maxOutput">    8000       8000       8000       8000     </param>       
