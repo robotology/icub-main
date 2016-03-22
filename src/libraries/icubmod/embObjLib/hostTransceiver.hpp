@@ -33,10 +33,6 @@
 
 
 
-#undef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ // if this macro is defined then ethManager sends pkts to ems even if they are empty
-
-#undef  TEST_TX_HOSTTRANSCEIVER_OPTIMISATION
-
 // - external dependencies --------------------------------------------------------------------------------------------
 
 #include "FeatureInterface.h"
@@ -48,7 +44,6 @@
 #include "EOnv.h"
 #include "EOpacket.h"
 #include "EoProtocol.h"
-#include "EOprotocolConfigurator.h"
 
 
 #include <yarp/os/Semaphore.h>
@@ -57,8 +52,8 @@
 using namespace yarp::dev;
 
 
-// debug
-//void checkDataForDebug(uint8_t *data, uint16_t size);
+// -- class HostTransceiver
+// -- it contains methods for communication with the ETH boards.
 
 class HostTransceiver
 {
@@ -74,48 +69,39 @@ public:
 
     bool init2(yarp::os::Searchable &cfgEthBoard, eOipv4addressing_t& localIPaddressing, eOipv4addr_t remoteIP, uint16_t rxpktsize = maxSizeOfRXpacket);
 
-    bool addSetMessage(eOprotID32_t protid, uint8_t* data);
-    bool addSetMessageWithSignature(eOprotID32_t protid, uint8_t* data, uint32_t sig);   //as above, but with signature
-    bool addSetMessageAndCacheLocally(eOprotID32_t protid, uint8_t* data);
+    // methods which put a set<> ROP inside the UDP packet which will be transmitted by the EthSender
+    bool addSetMessage(eOprotID32_t id32, uint8_t* data);
+    bool addSetMessageWithSignature(eOprotID32_t id32, uint8_t* data, uint32_t sig);
+    bool addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data);
 
-    /*! This method add a Get type rop in the next ropframe.
-        Parameters are:
-        protid: unique network variable identifier given the board
-        */
-    bool addGetMessage(eOprotID32_t protid);
+    // methods which put a ask<> ROP inside the UDP packet which will be transmitted by the EthSender
+    bool addGetMessage(eOprotID32_t id32);
+    bool addGetMessageWithSignature(eOprotID32_t id32, uint32_t signature);
 
-    bool addGetMessageWithSignature(eOprotID32_t protid, uint32_t signature);
-
-
-    /*! Read data from the transceiver internal memory.
-        Parameters are:
-        protid: unique network variable identifier given the board
-        data: pointer to
-     */
-    bool readBufferedValue(eOprotID32_t protid,  uint8_t *data, uint16_t* size);
-
-    /* ! This method echoes back a value that has just been sent from the HostTransceiver to someone else, if called addSetMessageAndCacheLocally() */
-    bool readSentValue(eOprotID32_t protid, uint8_t *data, uint16_t* size);
-
-    // Set user data in the local memory, ready to be loaded by the load_occasional_rop method
-    bool nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd);
-
-    int getCapacityOfRXpacket(void);
-
-    // pass and process the received packet
+    // called inside the thread ethReceiver (by a call to TheEthManager::Reception() which calls ... etc.) to process incoming UDP packet.
+    // this function processes sig<> ROPs and say<> ROPs and it: 1. writes the received values into internal buffered memory, and
+    // 2. calls the relevant callback functions.
     void onMsgReception(uint64_t *data, uint16_t size);
 
-    bool getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size);
-    EOnv* getNVhandler(eOprotID32_t protid, EOnv* nv);
+    // reads the value of a network variable buffered by the object at reception of a UDP packet by method onMsgReception().
+    bool readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size);
+
+    // This method echoes back a value that has just been sent from the HostTransceiver to someone else, if called addSetMessageAndCacheLocally()
+    bool readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size);
+
+
+    // gives maximum size of UDP packet which can be managed in reception
+    int getCapacityOfRXpacket(void);
+
+
+    // much better to remove this function from here, because direct access to EOnv data is not recommended.
+    EOnv* getNVhandler(eOprotID32_t id32, EOnv* nv);
 
     // total number of variables inside the endpoint of the given board. on wrong params or is the ep is not present the function returns 0
     uint16_t getNVnumber(eOnvEP8_t ep);
 
     // progressive index on the endpoint of the variable described by protid. EOK_uint32dummy if the id does not exist on that board.
-    uint32_t translate_NVid2index(eOprotID32_t protid);
-
-
-    eOipv4addr_t get_remoteIPaddress(void);
+    uint32_t translate_NVid2index(eOprotID32_t id32);
 
 protected:
 
@@ -143,9 +129,8 @@ protected:
      * This pointer will be modified by the getPack function to point to the TX buffer.
      * No need to allocate memory here */
     // the function returns true if the packet can be transmitted, false if not.
-    // if _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ is undefined, the function returns false also if there are no rops
-    // inside the ropframe. in such a way the macro _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_ can have
-    // a scope that is local only to HostTransceiver.cpp
+    // if HOSTTRANSCEIVER_EmptyROPframesAreTransmitted is defined, the function returns true also if there are no rops
+    // inside the ropframe.
     bool getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops);
 
     bool isSupported(eOprot_endpoint_t ep);
@@ -162,18 +147,16 @@ private:
     eOprotBRD_t get_protBRDnumber(void);    // the number in range [0, max-1]
 
 
-    bool lock_transceiver();
-    bool unlock_transceiver();
+    bool lock_transceiver(bool on);
     yarp::os::Semaphore *htmtx;
 
 
-    bool lock_nvs();
-    bool unlock_nvs();
+    bool lock_nvs(bool on);
     yarp::os::Semaphore *nvmtx;
 
 
-    bool addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32_t signature, bool writelocalrxcache = false);
-    bool addGetMessage__(eOprotID32_t protid, uint32_t signature);
+    bool addSetMessage__(eOprotID32_t id32, uint8_t* data, uint32_t signature, bool writelocalrxcache = false);
+    bool addGetMessage__(eOprotID32_t id32, uint32_t signature);
 
     bool initProtocol();
 
@@ -183,6 +166,14 @@ private:
     void eoprot_override_sk(void); 
 
     bool prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoard);
+
+    // set user data in the local memory, ready to be loaded by the load_occasional_rop method
+//    bool nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd);
+    bool getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size);
+
+    // the ip address
+    eOipv4addr_t get_remoteIPaddress(void);
+
 
 };
 

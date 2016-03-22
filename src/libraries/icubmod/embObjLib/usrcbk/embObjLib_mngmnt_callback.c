@@ -133,35 +133,19 @@ extern void eoprot_fun_ONSAY_mn(const EOnv* nv, const eOropdescriptor_t* rd)
 
 
 
-
-void eoprot_fun_UPDT_mn_appl_status(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-
-}
-
-
-
-
 extern void eoprot_fun_UPDT_mn_info_status(const EOnv* nv, const eOropdescriptor_t* rd)
-{
+{   // callback used to print diagnostics sent by eth boards in full form (with strings)
     eOmn_info_status_t* infostatus = (eOmn_info_status_t*) rd->data;
-
     s_eoprot_print_mninfo_status(&infostatus->basic, infostatus->extra, nv, rd);
 }
 
 
 extern void eoprot_fun_UPDT_mn_info_status_basic(const EOnv* nv, const eOropdescriptor_t* rd)
-{
+{   // callback used to print diagnostics sent by eth boards in compact form
     eOmn_info_basic_t* infostatusbasic = (eOmn_info_basic_t*) rd->data;
-
     s_eoprot_print_mninfo_status(infostatusbasic, NULL, nv, rd);
 }
 
-
-
-extern void eoprot_fun_UPDT_mn_comm_status(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
 
 extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, const eOropdescriptor_t* rd)
 {
@@ -179,6 +163,7 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, co
     }
 
 }
+
 
 extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, const eOropdescriptor_t* rd)
 {
@@ -214,12 +199,11 @@ extern void eoprot_fun_UPDT_mn_service_status_commandresult(const EOnv* nv, cons
 
 }
 
+
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern hidden functions 
 // --------------------------------------------------------------------------------------------------------------------
 // empty-section
-
-
 
 
 

@@ -12,6 +12,8 @@
 
 #define HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES
 
+// if this macro is defined then ethManager sends pkts even if they dont have ROPs inside
+#undef HOSTTRANSCEIVER_EmptyROPframesAreTransmitted
 
 // --------------------------------------------------------------------------------------------------------------------
 // - external dependencies
@@ -56,38 +58,31 @@ using namespace std;
 
 
 
-bool HostTransceiver::lock_transceiver()
+bool HostTransceiver::lock_transceiver(bool on)
 {
 #if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
-    htmtx->wait();
-#endif
-    return true;
-}
-
-bool HostTransceiver::unlock_transceiver()
-{
-#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
-    htmtx->post();
+    if(on)
+        htmtx->wait();
+    else
+        htmtx->post();
 #endif
     return true;
 }
 
 
-bool HostTransceiver::lock_nvs()
+
+
+bool HostTransceiver::lock_nvs(bool on)
 {
 #if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
-    nvmtx->wait();
+    if(on)
+        nvmtx->wait();
+    else
+        nvmtx->post();
 #endif
     return true;
 }
 
-bool HostTransceiver::unlock_nvs()
-{
-#if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
-    nvmtx->post();
-#endif
-    return true;
-}
 
 
 HostTransceiver::HostTransceiver():delayAfterROPloadingFailure(0.001) // 1ms
@@ -119,6 +114,7 @@ HostTransceiver::HostTransceiver():delayAfterROPloadingFailure(0.001) // 1ms
 #endif
 }
 
+
 HostTransceiver::~HostTransceiver()
 {
 #if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
@@ -126,10 +122,21 @@ HostTransceiver::~HostTransceiver()
     delete nvmtx;
 #endif
 
-    // marco.accame on 11sept14: TODO: must provide a deallocator for EOpacket, EOhostTransceiver, EOprotocolConfigurator, ... what else ?
-//    eo_hosttransceiver_Delete(hosttxrx);
-//    eo_packet_Delete(p_RxPkt);
-//    eo_protconfig_Delete(protconfigurator);
+    if(NULL != p_RxPkt)
+    {
+        eo_packet_Delete(p_RxPkt);
+        p_RxPkt = NULL;
+    }
+    if(NULL != hosttxrx)
+    {
+        eo_hosttransceiver_Delete(hosttxrx);
+        hosttxrx = NULL;
+    }
+
+    // pointers nvset and pc104txrx are just handles retrieved (and deallocated) by object EOhostTransceiver.
+    // thus no _Delete() method is required for them
+    nvset = NULL;
+    pc104txrx = NULL;
 
     yTrace();
 }
@@ -219,30 +226,31 @@ bool HostTransceiver::init2(yarp::os::Searchable &cfgEthBoard, eOipv4addressing_
 
 
 
-bool HostTransceiver::nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd)
-{
-    if((NULL == nv) || (NULL == dat))
-    {
-        yError() << "eo HostTransceiver: called nvSetData() with NULL nv or dat";
-        return false;
-    }  
+//bool HostTransceiver::nvSetData(const EOnv *nv, const void *dat, eObool_t forceset, eOnvUpdate_t upd)
+//{
+//    if((NULL == nv) || (NULL == dat))
+//    {
+//        yError() << "eo HostTransceiver: called nvSetData() with NULL nv or dat";
+//        return false;
+//    }
     
-    lock_nvs();
-    eOresult_t eores = eo_nv_Set(nv, dat, forceset, upd);
-    unlock_nvs();
+//    lock_nvs(true);
+//    eOresult_t eores = eo_nv_Set(nv, dat, forceset, upd);
+//    lock_nvs(false);
 
-    bool ret = true;
-    if(eores_OK != eores)
-    {
-        yError() << "HostTransceiver::nvSetData(): error while setting NV data w/ eo_nv_Set()\n";
-        ret = false;
-    }
+//    bool ret = true;
+//    if(eores_OK != eores)
+//    {
+//        yError() << "HostTransceiver::nvSetData(): error while setting NV data w/ eo_nv_Set()\n";
+//        ret = false;
+//    }
 
-    return ret;
-}
+//    return ret;
+//}
+
 
 // if signature is eo_rop_SIGNATUREdummy (0xffffffff) we dont send the signature. if writelocalcache is true we copy data into local ram of the EOnv 
-bool HostTransceiver::addSetMessage__(eOprotID32_t protid, uint8_t* data, uint32_t signature, bool writelocalrxcache)
+bool HostTransceiver::addSetMessage__(eOprotID32_t id32, uint8_t* data, uint32_t signature, bool writelocalrxcache)
 {
 #ifdef    ETHRES_DEBUG_DONTREADBACK   // in test beds in which no EMS are connected, just skip this and go on
 return true;
@@ -253,10 +261,10 @@ return true;
     int32_t info1 = -1;
     int32_t info2 = -1;
 
-    if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
+    if(eobool_false == eoprot_id_isvalid(protboardnumber, id32))
     {
         char nvinfo[128];
-        eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yError() << "HostTransceiver::addSetMessage__() called w/ invalid id on BOARD /w IP" << remoteipstring <<
                     "with id: " << nvinfo;
         return false;
@@ -273,17 +281,17 @@ return true;
         EOnv    nv;
         EOnv*   nv_ptr = NULL;
 
-        nv_ptr = getNVhandler(protid, &nv);
+        nv_ptr = getNVhandler(id32, &nv);
 
         if(NULL == nv_ptr)
         {
-            yError() << "HostTransceiver::addSetMessage__(): Unable to get pointer to desired NV with protid" << protid;
+            yError() << "HostTransceiver::addSetMessage__(): Unable to get pointer to desired NV with id32" << id32;
             return false;
         }
 
-        lock_nvs();
+        lock_nvs(true);
         eores = eo_nv_Set(&nv, data, eobool_false, eo_nv_upd_dontdo);
-        unlock_nvs();
+        lock_nvs(false);
 
         // marco.accame on 09 apr 2014:
         // we write data into 
@@ -304,7 +312,7 @@ return true;
     ropdesc.control.plustime    = 1;
     ropdesc.control.plussign    = (eo_rop_SIGNATUREdummy == signature) ? 0 : 1;
     ropdesc.ropcode             = eo_ropcode_set;
-    ropdesc.id32                = protid;
+    ropdesc.id32                = id32;
     ropdesc.size                = 0;        // marco.accame: the size is internally computed from the id32
     ropdesc.data                = data;
     ropdesc.signature           = signature;
@@ -313,14 +321,14 @@ return true;
 
     for(int i=0; ( (i<maxNumberOfROPloadingAttempts) && (!ret) ); i++)
     {
-        lock_transceiver();
+        lock_transceiver(true);
         eores = eo_transceiver_OccasionalROP_Load(pc104txrx, &ropdesc);
-        unlock_transceiver();
+        lock_transceiver(false);
 
         if(eores_OK != eores)
         {
             char nvinfo[128];
-            eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
             yWarning() << "HostTransceiver::addSetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "unsuccessful at attempt num " << i+1 <<
                           "with id: " << nvinfo;
 
@@ -334,7 +342,7 @@ return true;
             if(i!=0)
             {
                 char nvinfo[128];
-                eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+                eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
                 yDebug() << "HostTransceiver::addSetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "successful ONLY at attempt num " << i+1 <<
                               "with id: " << nvinfo;                
             }
@@ -345,7 +353,7 @@ return true;
     if(!ret)
     {
         char nvinfo[128];
-        eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yError() << "HostTransceiver::addSetMessage__(): ERROR in eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring+1 << "after all attempts" <<
                     "with id: " << nvinfo;
     }
@@ -353,22 +361,26 @@ return true;
     return ret;
 }
 
-bool HostTransceiver::addSetMessage(eOprotID32_t protid, uint8_t* data)
+
+bool HostTransceiver::addSetMessage(eOprotID32_t id32, uint8_t* data)
 {
-   return(HostTransceiver::addSetMessage__(protid, data, eo_rop_SIGNATUREdummy, false));
+   return(HostTransceiver::addSetMessage__(id32, data, eo_rop_SIGNATUREdummy, false));
 }
 
-bool HostTransceiver::addSetMessageAndCacheLocally(eOprotID32_t protid, uint8_t* data)
+
+bool HostTransceiver::addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data)
 {
-   return(HostTransceiver::addSetMessage__(protid, data, eo_rop_SIGNATUREdummy, true));
+   return(HostTransceiver::addSetMessage__(id32, data, eo_rop_SIGNATUREdummy, true));
 }
 
-bool HostTransceiver::addSetMessageWithSignature(eOprotID32_t protid, uint8_t* data, uint32_t sig)
+
+bool HostTransceiver::addSetMessageWithSignature(eOprotID32_t id32, uint8_t* data, uint32_t sig)
 {
-    return(HostTransceiver::addSetMessage__(protid, data, sig, false));
+    return(HostTransceiver::addSetMessage__(id32, data, sig, false));
 }
 
-bool HostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
+
+bool HostTransceiver::addGetMessage__(eOprotID32_t id32, uint32_t signature)
 {
     eOresult_t eores = eores_NOK_generic;
     int32_t err = -1;
@@ -376,10 +388,10 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
     int32_t info1 = -1;
     int32_t info2 = -1;
 
-    if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
+    if(eobool_false == eoprot_id_isvalid(protboardnumber, id32))
     {
         char nvinfo[128];
-        eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yError() << "HostTransceiver::addGetMessage__() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
                     "with id: " << nvinfo;
         return false;
@@ -391,7 +403,7 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
     ropdesc.control.plustime    = 1;
     ropdesc.control.plussign    = (eo_rop_SIGNATUREdummy == signature) ? 0 : 1;
     ropdesc.ropcode             = eo_ropcode_ask;
-    ropdesc.id32                = protid;
+    ropdesc.id32                = id32;
     ropdesc.size                = 0;
     ropdesc.data                = NULL;
     ropdesc.signature           = signature;
@@ -401,14 +413,14 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
 
     for(int i=0; ( (i<maxNumberOfROPloadingAttempts) && (!ret) ); i++)
     {
-        lock_transceiver();
+        lock_transceiver(true);
         eores = eo_transceiver_OccasionalROP_Load(pc104txrx, &ropdesc);
-        unlock_transceiver();
+        lock_transceiver(false);
 
         if(eores_OK != eores)
         {
             char nvinfo[128];
-            eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
             yWarning() << "HostTransceiver::addGetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring<< "unsuccessfull at attempt num " << i+1 <<
                           "with id: " << nvinfo;
 
@@ -422,7 +434,7 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
             if(i!=0)
             {
                 char nvinfo[128];
-                eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+                eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
                 yDebug() << "HostTransceiver::addGetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "succesful ONLY at attempt num " << i+1 <<
                               "with id: " << nvinfo;
 
@@ -433,7 +445,7 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
     if(!ret)
     {
         char nvinfo[128];
-        eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yError() << "HostTransceiver::addGetMessage__(): ERROR in eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring << "after all attempts " <<
                     "with id: " << nvinfo;
     }
@@ -441,23 +453,24 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t protid, uint32_t signature)
 }
 
 
-bool HostTransceiver::addGetMessage(eOprotID32_t protid)
+bool HostTransceiver::addGetMessage(eOprotID32_t id32)
 {
-    return(HostTransceiver::addGetMessage__(protid, eo_rop_SIGNATUREdummy));
+    return(HostTransceiver::addGetMessage__(id32, eo_rop_SIGNATUREdummy));
 }
 
 
-bool HostTransceiver::addGetMessageWithSignature(eOprotID32_t protid, uint32_t signature)
+bool HostTransceiver::addGetMessageWithSignature(eOprotID32_t id32, uint32_t signature)
 {
-    return(HostTransceiver::addGetMessage__(protid, signature));
+    return(HostTransceiver::addGetMessage__(id32, signature));
 }
 
-bool HostTransceiver::readBufferedValue(eOprotID32_t protid,  uint8_t *data, uint16_t* size)
+
+bool HostTransceiver::readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size)
 {      
-    if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
+    if(eobool_false == eoprot_id_isvalid(protboardnumber, id32))
     {
         char nvinfo[128];
-        eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yError() << "HostTransceiver::readBufferedValue() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
                     "with id: " << nvinfo;
         return false;
@@ -470,12 +483,12 @@ bool HostTransceiver::readBufferedValue(eOprotID32_t protid,  uint8_t *data, uin
     }       
     
     EOnv nv;
-    EOnv *nv_ptr = getNVhandler(protid, &nv);
+    EOnv *nv_ptr = getNVhandler(id32, &nv);
 
     if(NULL == nv_ptr)
     {
         char nvinfo[128];
-        eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yError() << "readBufferedValue: Unable to get pointer to desired NV with: " << nvinfo;
         return false;
     }
@@ -488,18 +501,18 @@ bool HostTransceiver::readBufferedValue(eOprotID32_t protid,  uint8_t *data, uin
 }
 
 
-// use the readSentValue() to retrieve a value previously set into a EOnv with method ::addSetMessage__(protid, data, signature, bool writelocalcache = true).
+// use the readSentValue() to retrieve a value previously set into a EOnv with method ::addSetMessage__(id32, data, signature, bool writelocalcache = true).
 // take in mind however, that the opration is not clean.
 // the ram of EOnv is done to accept values coming from the network. if robot-interface writes data into a EOnv, then a received rop of type say<> or sig<> will
 // overwrite the same memory area. we need to re-think the mode with which someone wants to retrieve the last sent value of a EOnv.
 
-bool HostTransceiver::readSentValue(eOprotID32_t protid, uint8_t *data, uint16_t* size)
+bool HostTransceiver::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size)
 {
     bool ret = false;
-    if(eobool_false == eoprot_id_isvalid(protboardnumber, protid))
+    if(eobool_false == eoprot_id_isvalid(protboardnumber, id32))
     {
         char nvinfo[128];
-        eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yError() << "HostTransceiver::readSentValue() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
                     "with id: " << nvinfo;
         return false;
@@ -512,24 +525,26 @@ bool HostTransceiver::readSentValue(eOprotID32_t protid, uint8_t *data, uint16_t
     }    
     
     EOnv nv;
-    EOnv *nv_ptr = getNVhandler(protid, &nv);
+    EOnv *nv_ptr = getNVhandler(id32, &nv);
 
     if(NULL == nv_ptr)
     {
-        yError() << "readSentValue: Unable to get pointer to desired NV with id = " << protid;
+        yError() << "readSentValue: Unable to get pointer to desired NV with id = " << id32;
         return false;
     }
     // protection on reading data by yarp
-    lock_nvs();
+    lock_nvs(true);
     ret = (eores_OK == eo_nv_Get(nv_ptr, eo_nv_strg_volatile, data, size)) ? true : false;
-    unlock_nvs();
+    lock_nvs(false);
     return true;
 }
+
 
 int HostTransceiver::getCapacityOfRXpacket(void)
 {
     return pktsizerx;
 }
+
 
 // somebody passes the received packet - this is used just as an interface
 void HostTransceiver::onMsgReception(uint64_t *data, uint16_t size)
@@ -566,6 +581,7 @@ void HostTransceiver::onMsgReception(uint64_t *data, uint16_t size)
     eo_transceiver_Receive(pc104txrx, p_RxPkt, &numofrops, &txtime);
 }
 
+
 bool HostTransceiver::isSupported(eOprot_endpoint_t ep)
 {
     if(eobool_true == eoprot_endpoint_configured_is(get_protBRDnumber(), ep))
@@ -575,6 +591,7 @@ bool HostTransceiver::isSupported(eOprot_endpoint_t ep)
 
     return false;
 }
+
 
 /* This function just modify the pointer 'data', in order to point to transceiver's memory where a copy of the ropframe
  * to be sent is stored.
@@ -600,30 +617,29 @@ bool HostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numo
     *data = NULL;
     *size = 0;
     *numofrops = 0;
-#if defined(TEST_TX_HOSTTRANSCEIVER_OPTIMISATION)
-#if !defined(_ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_)
-    // marco.accame: if it is true that most of the time robotInterface does not have anything to tx, then this is a quick mode
-    // to evaluate that. robotInterface uses only occasionals, thus we dont need to pass arguments for replies and regulars
-    // moreover: if we passed those pointers we would do more computations because we would lock internal mutexes
+
+#if !defined(HOSTTRANSCEIVER_EmptyROPframesAreTransmitted)
+    // marco.accame: robotInterface uses only occasionals, thus we dont need to pass arguments for replies and regulars
+    // moreover: if we passed those pointers with non-NULL values,  we would lock/unlock internal mutex for them, thus we would spend more time
     uint16_t numofoccasionals = 0;
-    lock_transceiver();
+    lock_transceiver(true);
     eo_transceiver_NumberofOutROPs(pc104txrx, NULL, &numofoccasionals, NULL);
-    unlock_transceiver();
+    lock_transceiver(false);
     if(0 == numofoccasionals)
     {
         return false;
     }
 #endif
-#endif
+
 
     uint16_t tmpnumofrops = 0;
 
     // it must be protected vs concurrent use of other threads attempting to put rops inside the transceiver.
-    lock_transceiver();
+    lock_transceiver(true);
     res = eo_transceiver_outpacket_Prepare(pc104txrx, &tmpnumofrops, NULL);
-    unlock_transceiver();
+    lock_transceiver(false);
 
-#ifdef _ENABLE_TRASMISSION_OF_EMPTY_ROPFRAME_
+#if defined(HOSTTRANSCEIVER_EmptyROPframesAreTransmitted)
     if((eores_OK != res))
 #else
     if((eores_OK != res) || (0 == tmpnumofrops)) // transmit only if res is ok and there is at least one rop to send
@@ -651,14 +667,14 @@ bool HostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numo
 }
 
 
-EOnv* HostTransceiver::getNVhandler(eOprotID32_t protid, EOnv* nv)
+EOnv* HostTransceiver::getNVhandler(eOprotID32_t id32, EOnv* nv)
 {
     eOresult_t    res;
-    res = eo_nvset_NV_Get(nvset, protid, nv);
+    res = eo_nvset_NV_Get(nvset, id32, nv);
     if(eores_OK != res)
     {
         char nvinfo[128];
-        eoprot_ID2information(protid, nvinfo, sizeof(nvinfo));
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
         yError() << "HostTransceiver::getNVhandler() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
                     "with id: " << nvinfo;
         return NULL;
@@ -676,9 +692,9 @@ bool HostTransceiver::getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size)
         yError() << "HostTransceiver::getNVvalue() called w/ NULL nv value: BOARD w/ IP" << remoteipstring;
         return false;
     }
-    lock_nvs(); 
+    lock_nvs(true);
     (eores_OK == eo_nv_Get(nv, eo_nv_strg_volatile, data, size)) ? ret = true : ret = false;
-    unlock_nvs();
+    lock_nvs(false);
 
     if(false == ret)
     {
@@ -693,15 +709,17 @@ uint16_t HostTransceiver::getNVnumber(eOnvEP8_t ep)
     return(eoprot_endpoint_numberofvariables_get(protboardnumber, ep));
 }
 
-uint32_t HostTransceiver::translate_NVid2index(eOprotID32_t protid)
+uint32_t HostTransceiver::translate_NVid2index(eOprotID32_t id32)
 {
-    return(eoprot_endpoint_id2prognum(protboardnumber, protid));
+    return(eoprot_endpoint_id2prognum(protboardnumber, id32));
 }
+
 
 eOprotBRD_t HostTransceiver::get_protBRDnumber(void)
 {
     return(protboardnumber);
 }
+
 
 eOipv4addr_t HostTransceiver::get_remoteIPaddress(void)
 {
@@ -752,6 +770,9 @@ bool HostTransceiver::initProtocol()
 
 void HostTransceiver::eoprot_override_mn(void)
 {
+    // marco.accame on 22 mar 2016:
+    // i want to keep a minimum of callbacks, thus i have cleaned and put comments about what is needed and why
+
     static const eOprot_callbacks_endpoint_descriptor_t mn_callbacks_descriptor_endp =
     {
         EO_INIT(.endpoint)          eoprot_endpoint_management,
@@ -759,236 +780,117 @@ void HostTransceiver::eoprot_override_mn(void)
     };
 
     static const eOprot_callbacks_variable_descriptor_t mn_callbacks_descriptors_vars[] =
-    {
-        // management
-        {   // mn_appl_status
-            EO_INIT(.endpoint)      eoprot_endpoint_management,
-            EO_INIT(.entity)        eoprot_entity_mn_appl,
-            EO_INIT(.tag)           eoprot_tag_mn_appl_status,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mn_appl_status
-        },
-        {   // mn_info_status
+    {   // management
+        {   // mn_info_status: used for printing sig<> diagnostics ROPs which have strings
             EO_INIT(.endpoint)      eoprot_endpoint_management,
             EO_INIT(.entity)        eoprot_entity_mn_info,
             EO_INIT(.tag)           eoprot_tag_mn_info_status,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mn_info_status
         },
-        {   // mn_info_status_basic
+        {   // mn_info_status_basic: used for printing sig<> diagnostics ROPs which have compact form (the vast majority)
             EO_INIT(.endpoint)      eoprot_endpoint_management,
             EO_INIT(.entity)        eoprot_entity_mn_info,
             EO_INIT(.tag)           eoprot_tag_mn_info_status_basic,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mn_info_status_basic
         },
-        {   // mn_comm_status
-            EO_INIT(.endpoint)      eoprot_endpoint_management,
-            EO_INIT(.entity)        eoprot_entity_mn_comm,
-            EO_INIT(.tag)           eoprot_tag_mn_comm_status,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mn_comm_status
-        },
-        {   // mn_comm_cmmnds_command_replynumof
+        {   // mn_comm_cmmnds_command_replynumof: used for receiving reply of a command in the form of sig<> ROP
             EO_INIT(.endpoint)      eoprot_endpoint_management,
             EO_INIT(.entity)        eoprot_entity_mn_comm,
             EO_INIT(.tag)           eoprot_tag_mn_comm_cmmnds_command_replynumof,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof
         },
-        {   // mn_comm_cmmnds_command_replyarray
+        {   // mn_comm_cmmnds_command_replyarray: used for receiving reply of a command in the form of sig<> ROP
             EO_INIT(.endpoint)      eoprot_endpoint_management,
             EO_INIT(.entity)        eoprot_entity_mn_comm,
             EO_INIT(.tag)           eoprot_tag_mn_comm_cmmnds_command_replyarray,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray
         },
-        {   // mn_service_status_commandresult
+        {   // mn_service_status_commandresult: used for receiving reply of a command in the form of sig<> ROP
             EO_INIT(.endpoint)      eoprot_endpoint_management,
             EO_INIT(.entity)        eoprot_entity_mn_service,
             EO_INIT(.tag)           eoprot_tag_mn_service_status_commandresult,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mn_service_status_commandresult
         }
-
     };
 
 
-    // ------------------------------------------------------------------------------------------------------------------------------------
-    // -- general ram initialise of mn endpoint called by every board.
-
-    // we dont do any general initialisation, even if we could do it with a xxeoprot_fun_INITIALISE_mn() function
-    //eoprot_config_callbacks_endpoint_set(&mn_callbacks_descriptor_endp);
-
-
     // -----------------------------------------------------------------------------------------------------------------------------------
-    // -- initialisation of onsay() function common in mn endpoint for every board
+    // -- initialisation of onsay() function common in MN endpoint for every board
 
+    // function eoprot_fun_ONSAY_mn() is called by any say<> ROP which is received related to the MN endpoint
+    // it is used to unlock a waiting mutex
     eoprot_config_onsay_endpoint_set(eoprot_endpoint_management, eoprot_fun_ONSAY_mn);
 
 
     // ------------------------------------------------------------------------------------------------------------------------------------
-    // -- override of the callbacks of variables of mc. common to every board. we use the id, even if the eoprot_config_variable_callback()
-    //    operates on any index.
+    // -- override of the callbacks of variables of MN. common to every board. they perform an action or reception of a specific sig<> ROP.
 
-    uint32_t number = sizeof(mn_callbacks_descriptors_vars)/sizeof(mn_callbacks_descriptors_vars[0]);
-    uint32_t i = 0;
-
-    for(i=0; i<number; i++)
+    int number = sizeof(mn_callbacks_descriptors_vars)/sizeof(mn_callbacks_descriptors_vars[0]);
+    for(int i=0; i<number; i++)
     {
         eoprot_config_callbacks_variable_set(&mn_callbacks_descriptors_vars[i]);
     }
 
 }
 
+
 void HostTransceiver::eoprot_override_mc(void)
 {
+    // marco.accame on 22 mar 2016:
+    // i want to keep a minimum of callbacks, thus i have cleaned and put comments about what is needed and why
+
     static const eOprot_callbacks_endpoint_descriptor_t mc_callbacks_descriptor_endp = 
     { 
         EO_INIT(.endpoint)          eoprot_endpoint_motioncontrol, 
-        EO_INIT(.raminitialise)     NULL // or any xxeoprot_fun_INITIALISE_mc 
+        EO_INIT(.raminitialise)     NULL
     };
     
     static const eOprot_callbacks_variable_descriptor_t mc_callbacks_descriptors_vars[] = 
     { 
         // joint
-        {   // joint_config
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_joint,
-            EO_INIT(.tag)           eoprot_tag_mc_joint_config,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_config
-        },
-        {   // joint_config_pidposition
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_joint,
-            EO_INIT(.tag)           eoprot_tag_mc_joint_config_pidposition,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_config_pidposition
-        },
-        {   // joint_config_impedance
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_joint,
-            EO_INIT(.tag)           eoprot_tag_mc_joint_config_impedance,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_config_impedance
-        },
-        {   // joint_config_pidtorque
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_joint,
-            EO_INIT(.tag)           eoprot_tag_mc_joint_config_pidtorque,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_config_pidtorque
-        },
-        {   // joint_config_motor
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_joint,
-            EO_INIT(.tag)           eoprot_tag_mc_joint_config_motor_params,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_config_motor_params
-        },
-        {   // joint_status
+        {   // joint_status: used to inform the motioncontrol device that a sig<> ROP about joint status has arrived. for .. updating timestamps
             EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
             EO_INIT(.entity)        eoprot_entity_mc_joint,
             EO_INIT(.tag)           eoprot_tag_mc_joint_status,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_status
         },
-        {   // joint_status_basic
+        {   // joint_status_basic: used to inform the motioncontrol device that a sig<> ROP about joint status has arrived. for .. updating the same timestamps as above
             EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
             EO_INIT(.entity)        eoprot_entity_mc_joint,
             EO_INIT(.tag)           eoprot_tag_mc_joint_status_core,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_status_core
-        },
-//        {   // joint_cmmnds_setpoint
-//            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-//            EO_INIT(.entity)        eoprot_entity_mc_joint,
-//            EO_INIT(.tag)           eoprot_tag_mc_joint_cmmnds_setpoint,
-//            EO_INIT(.init)          NULL,
-//            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_cmmnds_setpoint
-//        },
-        {   // joint_config_limitsofjoint
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_joint,
-            EO_INIT(.tag)           eoprot_tag_mc_joint_config_limitsofjoint,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_config_limitsofjoint
-        },
-        {   // joint_status_interactionmodestatus
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_joint,
-            EO_INIT(.tag)           eoprot_tag_mc_joint_status_core_modes_interactionmodestatus,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_joint_status_core_modes_interactionmodestatus
-        },
-        // motor
-        {   // motor_config
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_motor,
-            EO_INIT(.tag)           eoprot_tag_mc_motor_config,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_motor_config
-        },        
-        {   // motor_config_maxcurrentofmotor
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_motor,
-            EO_INIT(.tag)           eoprot_tag_mc_motor_config_currentlimits,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        NULL, //eoprot_fun_UPDT_mc_motor_config_currentlimits
-        },
-        {   // motor_config_gearboxratio
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_motor,
-            EO_INIT(.tag)           eoprot_tag_mc_motor_config_gearboxratio,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_motor_config_gearboxratio
-        },
-        {   // motor_config_rotorencoder
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_motor,
-            EO_INIT(.tag)           eoprot_tag_mc_motor_config_rotorencoder,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_motor_config_rotorencoder
-        },
-        {   // motor_status_basic
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_motor,
-            EO_INIT(.tag)           eoprot_tag_mc_motor_status_basic,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_motor_status_basic
-        },
-        {   // controller_config_jointcoupling
-            EO_INIT(.endpoint)      eoprot_endpoint_motioncontrol,
-            EO_INIT(.entity)        eoprot_entity_mc_controller,
-            EO_INIT(.tag)           eoprot_tag_mc_controller_config_jointcoupling,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_mc_controller_config_jointcoupling
         }
+        // motor
+        // nothing so far
+
+        // comment: the functions eoprot_fun_UPDT_mc_joint_status_core() and eoprot_fun_UPDT_mc_joint_status() update the same _encodersStamp[]
+        // variables. only one of those two id32 variables are regularly sig<>-led.
+        // on the other hand, the same _encodersStamp[] is used for motor encoders ... thus maybe we miss something.
     };
 
 
-    // ------------------------------------------------------------------------------------------------------------------------------------
-    // -- general ram initialise of mc endpoint called by every board.
-    
-    // we dont do any general initialisation, even if we could do it with a xxeoprot_fun_INITIALISE_mc() function
-    //eoprot_config_callbacks_endpoint_set(&mc_callbacks_descriptor_endp);
-
 
     // -----------------------------------------------------------------------------------------------------------------------------------
-    // -- initialisation of onsay() function common in mc endpoint for every board
+    // -- initialisation of onsay() function common in MC endpoint for every board
+
+    // function eoprot_fun_ONSAY_mc() is called by any say<> ROP which is received related to the MC endpoint
+    // it is used to unlock a waiting mutex
 
     eoprot_config_onsay_endpoint_set(eoprot_endpoint_motioncontrol, eoprot_fun_ONSAY_mc);
 
 
     // ------------------------------------------------------------------------------------------------------------------------------------
-    // -- override of the callbacks of variables of mc. common to every board. we use the id, even if the eoprot_config_variable_callback()
-    //    operates on any index.
+    // -- override of the callbacks of variables of MC. common to every board. they perform an action or reception of a specific sig<> ROP.
     
-    uint32_t number = sizeof(mc_callbacks_descriptors_vars)/sizeof(mc_callbacks_descriptors_vars[0]);
-    uint32_t i = 0;
-    
-    for(i=0; i<number; i++)
+    int number = sizeof(mc_callbacks_descriptors_vars)/sizeof(mc_callbacks_descriptors_vars[0]);
+    for(int i=0; i<number; i++)
     {
         eoprot_config_callbacks_variable_set(&mc_callbacks_descriptors_vars[i]);
     }
@@ -997,37 +899,26 @@ void HostTransceiver::eoprot_override_mc(void)
 
 void HostTransceiver::eoprot_override_as(void)
 {
+    // marco.accame on 22 mar 2016:
+    // i want to keep a minimum of callbacks, thus i have cleaned and put comments about what is needed and why
+
     static const eOprot_callbacks_endpoint_descriptor_t as_callbacks_descriptor_endp = 
     { 
         EO_INIT(.endpoint)          eoprot_endpoint_analogsensors, 
-        EO_INIT(.raminitialise)     NULL // or any xxeoprot_fun_INITIALISE_as 
+        EO_INIT(.raminitialise)     NULL
     };
     
     static const eOprot_callbacks_variable_descriptor_t as_callbacks_descriptors_vars[] = 
     { 
         // strain
-        {   // eoprot_tag_as_strain_config
-            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
-            EO_INIT(.entity)        eoprot_entity_as_strain,
-            EO_INIT(.tag)           eoprot_tag_as_strain_config,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_as_strain_config
-        },
-        {   // eoprot_tag_as_strain_status_fullscale
-            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
-            EO_INIT(.entity)        eoprot_entity_as_strain,
-            EO_INIT(.tag)           eoprot_tag_as_strain_status_fullscale,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_as_strain_status_fullscale
-        },
-        {   // strain_status_calibratedvalues
+        {   // strain_status_calibratedvalues: it gives data from strain to the device, so that it writes it in the relevant yarp port
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
             EO_INIT(.entity)        eoprot_entity_as_strain,
             EO_INIT(.tag)           eoprot_tag_as_strain_status_calibratedvalues,
             EO_INIT(.init)          NULL,
             EO_INIT(.update)        eoprot_fun_UPDT_as_strain_status_calibratedvalues
         },
-        {   // strain_status_uncalibratedvalues
+        {   // strain_status_uncalibratedvalues: it gives data from strain to the device, so that it writes it in the relevant yarp port
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
             EO_INIT(.entity)        eoprot_entity_as_strain,
             EO_INIT(.tag)           eoprot_tag_as_strain_status_uncalibratedvalues,
@@ -1035,28 +926,7 @@ void HostTransceiver::eoprot_override_as(void)
             EO_INIT(.update)        eoprot_fun_UPDT_as_strain_status_uncalibratedvalues
         },
         // mais        
-        {   // mais_config
-            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
-            EO_INIT(.entity)        eoprot_entity_as_mais,
-            EO_INIT(.tag)           eoprot_tag_as_mais_config,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_as_mais_config
-        },
-        {   // mais_config_datarate
-            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
-            EO_INIT(.entity)        eoprot_entity_as_mais,
-            EO_INIT(.tag)           eoprot_tag_as_mais_config_datarate,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_as_mais_config_datarate
-        },
-        {   // mais_config_mode
-            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
-            EO_INIT(.entity)        eoprot_entity_as_mais,
-            EO_INIT(.tag)           eoprot_tag_as_mais_config_mode,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_as_mais_config_mode
-        },
-        {   // mais_status_the15values
+        {   // mais_status_the15values: it gives data from mais to the device, so that it writes it in the relevant yarp port
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
             EO_INIT(.entity)        eoprot_entity_as_mais,
             EO_INIT(.tag)           eoprot_tag_as_mais_status_the15values,
@@ -1064,14 +934,7 @@ void HostTransceiver::eoprot_override_as(void)
             EO_INIT(.update)        eoprot_fun_UPDT_as_mais_status_the15values
         },
         // inertial
-        {   // eoprot_tag_as_inertial_config
-            EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
-            EO_INIT(.entity)        eoprot_entity_as_inertial,
-            EO_INIT(.tag)           eoprot_tag_as_inertial_config,
-            EO_INIT(.init)          NULL,
-            EO_INIT(.update)        eoprot_fun_UPDT_as_inertial_config
-        },
-        {   // eoprot_tag_as_inertial_status
+        {   // eoprot_tag_as_inertial_status: it gives data from mtb to the device, so that it writes it in the relevant yarp port
             EO_INIT(.endpoint)      eoprot_endpoint_analogsensors,
             EO_INIT(.entity)        eoprot_entity_as_inertial,
             EO_INIT(.tag)           eoprot_tag_as_inertial_status,
@@ -1097,27 +960,20 @@ void HostTransceiver::eoprot_override_as(void)
     };
 
 
-    // ------------------------------------------------------------------------------------------------------------------------------------
-    // -- general ram initialise of as endpoint called by every board.
-    
-    // we dont do any general initialisation, even if we could do it with a xxeoprot_fun_INITIALISE_as() function
-    //eoprot_config_callbacks_endpoint_set(&as_callbacks_descriptor_endp);
-
-
     // -----------------------------------------------------------------------------------------------------------------------------------
-    // -- initialisation of onsay() function common in as endpoint for every board
+    // -- initialisation of onsay() function common in AS endpoint for every board
+
+    // function eoprot_fun_ONSAY_mc() is called by any say<> ROP which is received related to the AS endpoint
+    // it is used to unlock a waiting mutex
 
     eoprot_config_onsay_endpoint_set(eoprot_endpoint_analogsensors, eoprot_fun_ONSAY_as);
 
 
     // ------------------------------------------------------------------------------------------------------------------------------------
-    // -- override of the callbacks of variables of as. common to every board. we use the id, even if the eoprot_config_variable_callback()
-    //    operates on any index.
+    // -- override of the callbacks of variables of AS. common to every board. they perform an action or reception of a specific sig<> ROP.
     
-    uint32_t number = sizeof(as_callbacks_descriptors_vars)/sizeof(as_callbacks_descriptors_vars[0]);
-    uint32_t i = 0;
-    
-    for(i=0; i<number; i++)
+    int number = sizeof(as_callbacks_descriptors_vars)/sizeof(as_callbacks_descriptors_vars[0]);
+    for(int i=0; i<number; i++)
     {
         eoprot_config_callbacks_variable_set(&as_callbacks_descriptors_vars[i]);
     }
@@ -1127,17 +983,19 @@ void HostTransceiver::eoprot_override_as(void)
 
 void HostTransceiver::eoprot_override_sk(void)
 {
+    // marco.accame on 22 mar 2016:
+    // i want to keep a minimum of callbacks, thus i have cleaned and put comments about what is needed and why
 
     static const eOprot_callbacks_endpoint_descriptor_t sk_callbacks_descriptor_endp = 
     { 
         EO_INIT(.endpoint)          eoprot_endpoint_skin, 
-        EO_INIT(.raminitialise)     NULL // or any xxeoprot_fun_INITIALISE_sk 
+        EO_INIT(.raminitialise)     NULL
     };
     
     static const eOprot_callbacks_variable_descriptor_t sk_callbacks_descriptors_vars[] = 
     { 
         // skin
-        {   // skin_status_arrayof10canframes
+        {   // skin_status_arrayof10canframes: it gives data from mtb to the device, so that it writes it in the relevant yarp port
             EO_INIT(.endpoint)      eoprot_endpoint_skin,
             EO_INIT(.entity)        eoprot_entity_sk_skin,
             EO_INIT(.tag)           eoprot_tag_sk_skin_status_arrayofcandata,
@@ -1147,34 +1005,27 @@ void HostTransceiver::eoprot_override_sk(void)
     };
 
 
-    // ------------------------------------------------------------------------------------------------------------------------------------
-    // -- general ram initialise of sk endpoint called by every board.
-    
-    // we dont do any general initialisation, even if we could do it with a xxeoprot_fun_INITIALISE_sk() function
-    //eoprot_config_callbacks_endpoint_set(&sk_callbacks_descriptor_endp);
-
-
     // -----------------------------------------------------------------------------------------------------------------------------------
-    // -- initialisation of onsay() function common in sk endpoint for every board
+    // -- initialisation of onsay() function common in SK endpoint for every board
+
+    // function eoprot_fun_ONSAY_mc() is called by any say<> ROP which is received related to the SK endpoint
+    // it is used to unlock a waiting mutex
 
     eoprot_config_onsay_endpoint_set(eoprot_endpoint_skin, eoprot_fun_ONSAY_sk);
 
 
     // ------------------------------------------------------------------------------------------------------------------------------------
-    // -- override of the callbacks of variables of mc. common to every board. we use the id, even if the eoprot_config_variable_callback()
-    //    operates on any index.
+    // -- override of the callbacks of variables of SK. common to every board. they perform an action or reception of a specific sig<> ROP.
     
-    uint32_t number = sizeof(sk_callbacks_descriptors_vars)/sizeof(sk_callbacks_descriptors_vars[0]);
-    uint32_t i = 0;
-    
-    for(i=0; i<number; i++)
+    int number = sizeof(sk_callbacks_descriptors_vars)/sizeof(sk_callbacks_descriptors_vars[0]);
+    for(int i=0; i<number; i++)
     {
         eoprot_config_callbacks_variable_set(&sk_callbacks_descriptors_vars[i]);
     }
 
 }
 
-//uint32_t remipv4addr, uint64_t rec_seqnum, uint64_t expected_seqnum
+
 void cpp_protocol_callback_incaseoferror_in_sequencenumberReceived(EOreceiver *r)
 {  
     const eOreceiver_seqnum_error_t * err = eo_receiver_GetSequenceNumberError(r);
@@ -1222,15 +1073,8 @@ void cpp_protocol_callback_incaseoferror_invalidFrame(EOreceiver *r)
 }
 
 
-
 bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoard)
 {
-    // hosttxrxcfg is a class member ...
-
-    // marco.accame on 10 apr 2014:
-    // eo_hosttransceiver_cfg_default contains the EOK_HOSTTRANSCEIVER_* values which are good for reception of a suitable EOframe
-    // in here we init hosttxrxcfg with these default values. however, later on we shall change them properly according to what is in the xml file
-    // which is copied into variable remoteTransceiverProperties.
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
     hosttxrxcfg.remoteboardipv4addr     = remoteipaddr;
     hosttxrxcfg.remoteboardipv4port     = ipport;
@@ -1313,6 +1157,10 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
             brdcf2use = &eonvset_BRDcfgStd;
         }
         yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected protocolToUse =" << protocol2use << "and will prepare protocol for" << jomos << "jomos for BOARD w/ IP" << remoteipstring;
+    }
+    else
+    {
+        yWarning() << "HostTransceiver::prepareTransceiverConfig2() could not detected group protocolToUse, thus will prepare protocol for" << jomos << "jomos for BOARD w/ IP" << remoteipstring;
     }
 
     memcpy(&nvsetbrdconfig, brdcf2use, sizeof(eOnvset_BRDcfg_t));

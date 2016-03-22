@@ -19,24 +19,11 @@ if(board_tranceiver)
 #find_package(icub_firmware_shared 0.0.1 COMPONENTS canProtocolLib embobj)
 #find_package(yarp)
 
-# defined in porting.h  -- update: now seems that the porting file doen not exists anymore....
 
-# marco.accame: to activate new mode of eoprot configuration: 
-# 1. define USE_EOPROT_XML and EOPROT_CFG_OVERRIDE_CALLBACKS_IN_RUNTIME 
-# 2. remove eOprot_b0x.c from compilation
-# you can do taht by setting ICUB_EOPROT_DEFINED_BY_XML ON (or OFF to deactivate and stay w/ old mode)
-
-set(ICUB_EOPROT_DEFINED_BY_XML ON)
-
-if(ICUB_EOPROT_DEFINED_BY_XML)
 
 add_definitions(-D_ICUB_CALLBACK_ -DUSE_EOPROT_XML -DEOPROT_CFG_OVERRIDE_CALLBACKS_IN_RUNTIME)
 
-else(ICUB_EOPROT_DEFINED_BY_XML)
 
-add_definitions( -D_ICUB_CALLBACK_)
-
-endif(ICUB_EOPROT_DEFINED_BY_XML)
 
 
 

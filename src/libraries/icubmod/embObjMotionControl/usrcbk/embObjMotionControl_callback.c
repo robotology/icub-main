@@ -114,62 +114,6 @@ extern void eoprot_fun_UPDT_mc_joint_status(const EOnv* nv, const eOropdescripto
     feat_manage_motioncontrol_data(eo_nv_GetIP(nv), rd->id32, (void *)rd->data);
 }
 
-extern void eoprot_fun_UPDT_mc_joint_config(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-extern void eoprot_fun_UPDT_mc_motor_config(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-
-
-extern void eoprot_fun_UPDT_mc_joint_config_limitsofjoint(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-extern void eoprot_fun_UPDT_mc_motor_config_currentLimits(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-extern void eoprot_fun_UPDT_mc_motor_config_gearboxratio(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-extern void eoprot_fun_UPDT_mc_motor_config_rotorencoder(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-extern void eoprot_fun_UPDT_mc_joint_config_pidposition(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-extern void eoprot_fun_UPDT_mc_joint_config_pidtorque(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-
-
-extern void eoprot_fun_UPDT_mc_joint_config_impedance(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-
-extern void eoprot_fun_UPDT_mc_joint_status_core_modes_interactionmodestatus(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-
-
-extern void eoprot_fun_UPDT_mc_joint_config_motor_params(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-
-extern void eoprot_fun_UPDT_mc_controller_config_jointcoupling(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of static functions
