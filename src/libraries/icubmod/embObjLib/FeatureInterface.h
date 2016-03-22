@@ -29,10 +29,7 @@ extern "C" {
 
 
 // - declaration of public user-defined types -------------------------------------------------------------------------
-
-//typedef uint8_t FEAT_boardnumber_t;     // boards are numbered in range [1, maxnum]. moreover 0xff is the invalid value.
-//enum { FEAT_boardnumber_dummy = 0xff};
-
+// empty-section
 
 // - declaration of extern public functions ---------------------------------------------------------------------------
 
@@ -41,28 +38,15 @@ void feat_Initialise(void *handleOfTheEthManager);
 
 void feat_DeInitialise();
 
-//extern const eOnvset_BRDcfg_t * feat_get_fullBRDcfg(void);
-
-//extern const EOconstvector*  feat_get_vectorofOtherEPcfgs_MAXcapabilities(void);
-
-
-//eObool_t feat_addEncoderTimeStamp(eOipv4addr_t ipv4, eOprotID32_t id32);
-
 eObool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, void* rxdata);
 
 eObool_t feat_manage_skin_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *arrayofcandata);
 
 eObool_t feat_manage_analogsensors_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *data);
 
-// requires boardnum in range [1, max] as used by cpp objects
 void * feat_MC_handler_get(eOipv4addr_t ipv4, eOprotID32_t id32);
 
 eObool_t feat_MC_mutex_post(void * mchandler, uint32_t prognum);
-
-// it converts the protocol board number with range [0, max-1] into the range used by cpp object [1, max]
-//FEAT_boardnumber_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum);
-
-//eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum);
 
 double feat_yarp_time_now(void);
 
@@ -71,7 +55,6 @@ eObool_t feat_signal_network_reply(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_
 eObool_t feat_CANprint(eOipv4addr_t ipv4, eOmn_info_basic_t* infobasic);
 
 const char * feat_GetBoardName(eOipv4addr_t ipv4);
-
 
 void feat_PrintTrace(char *string);
 

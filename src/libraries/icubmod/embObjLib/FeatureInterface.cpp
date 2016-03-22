@@ -68,32 +68,6 @@
 
 static TheEthManager *_interface2ethManager = NULL;
 
-//static const eOprot_EPcfg_t s_eo_theservices_theEPcfgsOthersMAX[] =
-//{
-//    {
-//        EO_INIT(endpoint)           eoprot_endpoint_motioncontrol,
-//        EO_INIT(numberofentities)   {12, 12, 1, 0, 0, 0, 0}
-//    },
-//    {
-//        EO_INIT(endpoint)           eoprot_endpoint_analogsensors,
-//        EO_INIT(numberofentities)   {1, 1, 1, 1, 0, 0, 0}
-//    },
-//    {
-//        EO_INIT(endpoint)           eoprot_endpoint_skin,
-//        EO_INIT(numberofentities)   {2, 0, 0, 0, 0, 0, 0}
-//    }
-//};
-
-//static const EOconstvector s_eo_theservices_vectorof_EPcfg_max =
-//{
-//    EO_INIT(capacity)       sizeof(s_eo_theservices_theEPcfgsOthersMAX)/sizeof(eOprot_EPcfg_t),
-//    EO_INIT(size)           sizeof(s_eo_theservices_theEPcfgsOthersMAX)/sizeof(eOprot_EPcfg_t),
-//    EO_INIT(item_size)      sizeof(eOprot_EPcfg_t),
-//    EO_INIT(dummy)          0,
-//    EO_INIT(stored_items)   (void*)s_eo_theservices_theEPcfgsOthersMAX,
-//    EO_INIT(functions)      NULL
-//};
-
 
 // --------------------------------------------------------------------------------------------------------------------
 // - definition of extern public functions
@@ -113,47 +87,6 @@ void feat_DeInitialise()
 {
     _interface2ethManager = NULL;
 }
-
-
-
-//const EOconstvector*  feat_get_vectorofOtherEPcfgs_MAXcapabilities(void)
-//{
-//    return(&s_eo_theservices_vectorof_EPcfg_max);
-//}
-
-
-//eObool_t feat_addEncoderTimeStamp(eOipv4addr_t ipv4, eOprotID32_t id32)
-//{
-//    IethResource* mc = NULL;
-
-//    if(NULL == _interface2ethManager)
-//    {
-//        return eobool_false;
-//    }
-
-//    bool ret = _interface2ethManager->getHandle(ipv4, id32, &mc);
-
-//    if((false == ret) || (NULL == mc))
-//    {
-//        char ipinfo[20];
-//        char nvinfo[128];
-//        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
-//        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-//        yDebug("feat_addEncoderTimeStamp() fails to get a handle of embObjMotionControl for IP = %s and NV = %s", ipinfo, nvinfo);
-//        return eobool_false;
-//    }
-
-//    if(false == mc->initialised())
-//    {
-//        return eobool_false;
-//    }
-//    else
-//    {
-//        mc->update(id32, yarp::os::Time::now(), NULL);
-//    }
-
-//    return eobool_true;
-//}
 
 
 eObool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, void* rxdata)
@@ -188,6 +121,7 @@ eObool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, vo
 
     return eobool_true;
 }
+
 
 eObool_t feat_manage_skin_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *arrayofcandata)
 {   
@@ -271,6 +205,7 @@ void* feat_MC_handler_get(eOipv4addr_t ipv4, eOprotID32_t id32)
     return (void*) h;
 }
 
+
 eObool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
 {
     eoThreadEntry *th = NULL;
@@ -306,27 +241,6 @@ eObool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
 
     return eobool_false;
 }
-
-
-//FEAT_boardnumber_t nvBoardNum2FeatIdBoardNum(eOprotBRD_t nvboardnum)
-//{
-//    if(eo_prot_BRDdummy == nvboardnum)
-//    {
-//        return(FEAT_boardnumber_dummy);
-//    }
-    
-//    return(nvboardnum+1);
-//}
-
-//eOprotBRD_t featIdBoardNum2nvBoardNum(FEAT_boardnumber_t fid_boardnum)
-//{
-//    if(FEAT_boardnumber_dummy == fid_boardnum)
-//    {
-//        return(eo_prot_BRDdummy);
-//    }
-
-//    return(fid_boardnum-1);
-//}
 
 
 double feat_yarp_time_now(void)
@@ -385,31 +299,35 @@ void feat_PrintTrace(char *string)
     yTrace("%s", string);
 }
 
+
 void feat_PrintDebug(char *string)
 {
     yDebug("%s", string);
 }
+
 
 void feat_PrintInfo(char *string)
 {
     yInfo("%s", string);
 }
 
+
 void feat_PrintWarning(char *string)
 {
     yWarning("%s", string);
 }
+
 
 void feat_PrintError(char *string)
 {
     yError("%s", string);
 }
 
+
 void feat_PrintFatal(char *string)
 {
     yError("EMS received the following FATAL error: %s", string);
 }
-
 
 
 // returns a void pointer to the allocated ACE_Recursive_Thread_Mutex
@@ -418,6 +336,7 @@ void* ace_mutex_new(void)
     ACE_Recursive_Thread_Mutex* mtx = new ACE_Recursive_Thread_Mutex();
     return((void*)mtx);
 }
+
 
 // returns 0 on success to take mutex, -3 on failure upon timeout, -2 on failure upon null pointer. m is pointer obtained w/ ace_mutex_new(), tout_usec is in microsec (no timeout is 0xffffffff).
 int8_t ace_mutex_take(void* m, uint32_t tout_usec)
@@ -433,6 +352,7 @@ int8_t ace_mutex_take(void* m, uint32_t tout_usec)
     return(0);
 }
 
+
 // returns 0 on success to take mutex, -1 on genric failure of releasing mutex, -2 on failure upon null pointer. m is pointer obtained w/ ace_mutex_new(),
 int8_t ace_mutex_release(void* m)
 {
@@ -446,6 +366,7 @@ int8_t ace_mutex_release(void* m)
 
     return(0);
 }
+
 
 void ace_mutex_delete(void* m)
 {
