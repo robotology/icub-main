@@ -16,10 +16,11 @@
  * Public License for more details
 */
 
-/* @file       eOcfg_nvsEP_mngmnt_usr_ebx.c
-    @brief      This file keeps the user-defined local ...
+
+/*  @file       EOProtocolMN_fun_userdef.c
+    @brief      This file keeps callbacks used for MN protocol in icub-main
     @author     marco.accame@iit.it
-    @date       04/16/2014
+    @date       22 mar 2016
 **/
 
 

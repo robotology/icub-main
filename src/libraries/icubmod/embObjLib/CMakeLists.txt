@@ -80,10 +80,10 @@ set(NVS_SKIN_SOURCE         ${NVS_SKIN_SRC_FOLDER}EoProtocolSK_fun.c
 
 
 
-set(NVS_CBK_SOURCE          ${NVS_MNGMNT_CBK_FOLDER}embObjLib_mngmnt_callback.c
-                            ${NVS_MC_CBK_FOLDER}embObjMotionControl_callback.c
-                            ${NVS_SENSORS_CBK_FOLDER}embObjAnalogSensor_callback.c
-                            ${NVS_SKIN_CBK_FOLDER}/eOcfg_nvsEP_sk_usrcbk_ebx.c 
+set(NVS_CBK_SOURCE          ${NVS_CBK_FOLDER}EoProtocolMN_fun_userdef.c
+                            ${NVS_CBK_FOLDER}EoProtocolMC_fun_userdef.c
+                            ${NVS_CBK_FOLDER}EoProtocolAS_fun_userdef.c
+                            ${NVS_CBK_FOLDER}EoProtocolSK_fun_userdef.c
                             )
 
 

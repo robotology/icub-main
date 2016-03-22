@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2011 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
- * Author:  Marco Accame
- * email:   marco.accame@iit.it
+ * Author:  Valentina Gaggero
+ * email:   valentina.gaggero@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -14,33 +14,34 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
-*/
+ */
 
-/* @file       embObjAnaloSensor_callback.c
-    @brief     This file keeps examples for ems / pc104 of the user-defined functions used for all endpoints in as
+
+/*  @file       EOProtocolSK_fun_userdef.c
+    @brief      This file keeps callbacks used for SK protocol in icub-main
     @author     marco.accame@iit.it
-    @date       05/02/2012
+    @date       22 mar 2016
 **/
+
 
 
 // --------------------------------------------------------------------------------------------------------------------
 // - external dependencies
 // --------------------------------------------------------------------------------------------------------------------
 
-
+#include "EoCommon.h"
 #include "EoCommon.h"
 #include "EoProtocol.h"
 #include "EOnv.h"
-#include "EOarray.h"
 
 #include "FeatureInterface.h"
+
 
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of extern public interface
 // --------------------------------------------------------------------------------------------------------------------
 
-#include "EoProtocolAS.h"
-
+#include "EoProtocolSK.h"
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -48,28 +49,23 @@
 // --------------------------------------------------------------------------------------------------------------------
 // empty-section
 
+// --------------------------------------------------------------------------------------------------------------------
+// - definition (and initialisation) of static variables
+// --------------------------------------------------------------------------------------------------------------------
+// empty-section
+
 
 // --------------------------------------------------------------------------------------------------------------------
 // - declaration of static functions
 // --------------------------------------------------------------------------------------------------------------------
-
-static void handle_data_analogarray(const EOnv* nv, const eOropdescriptor_t* rd);
-
-static void handle_data_inertial(const EOnv* nv, const eOropdescriptor_t* rd);
-
-// --------------------------------------------------------------------------------------------------------------------
-// - definition (and initialisation) of static variables
-// --------------------------------------------------------------------------------------------------------------------
-// empty section
-
+// empty-section
 
 
 // --------------------------------------------------------------------------------------------------------------------
-// - definition of extern public functions
+// - declaration of extern functions
 // --------------------------------------------------------------------------------------------------------------------
 
-
-extern void eoprot_fun_ONSAY_as(const EOnv* nv, const eOropdescriptor_t* rd)
+extern void eoprot_fun_ONSAY_sk(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     // marco.accame on 18 mar 2014: this function is called when a say<id32, data> rop is received
     // and the id32 is about the analog sensors endpoint. this function is common to every board.
@@ -78,7 +74,7 @@ extern void eoprot_fun_ONSAY_as(const EOnv* nv, const eOropdescriptor_t* rd)
 
     // the aim of this function is to wake up a thread which is blocked because it has sent an ask<id32>
     // the wake up funtionality is implemented in one mode only:
-    // a. in initialisation, embObjAnalogSensor sets some values and then reads them back.
+    // a. in initialisation, embObjSkin sets some values and then reads them back.
     //    the read back sends an ask<id32, signature=0xaa000000>. in such a case the board sends back
     //    a say<id32, data, signature = 0xaa000000>. thus, if the received signature is 0xaa000000, then
     //    we must unblock using feat_signal_network_reply().
@@ -89,8 +85,10 @@ extern void eoprot_fun_ONSAY_as(const EOnv* nv, const eOropdescriptor_t* rd)
         {
             char str[256] = {0};
             char nvinfo[128];
+            char ipinfo[2];
             eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
-            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_as() received an unexpected message w/ 0xaa000000 signature for %s", nvinfo);
+            eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
+            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_sk() received an unexpected message w/ 0xaa000000 signature for IP %s and NV %s", ipinfo, nvinfo);
             feat_PrintWarning(str);
             return;
         }
@@ -98,67 +96,25 @@ extern void eoprot_fun_ONSAY_as(const EOnv* nv, const eOropdescriptor_t* rd)
 }
 
 
-extern void eoprot_fun_UPDT_as_strain_status_calibratedvalues(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    handle_data_analogarray(nv, rd);
-}
 
-
-extern void eoprot_fun_UPDT_as_strain_status_uncalibratedvalues(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    handle_data_analogarray(nv, rd);
-}
-
-
-extern void eoprot_fun_UPDT_as_mais_status_the15values(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    handle_data_analogarray(nv, rd);
-}
-
-
-extern void eoprot_fun_UPDT_as_inertial_status(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    handle_data_inertial(nv, rd);
-}
-
-//extern void eoprot_fun_UPDT_as_inertial_status_accelerometer(const EOnv* nv, const eOropdescriptor_t* rd)
-//{
-//    handle_data_inertial_acc(nv, rd);
-//}
-
-//extern void eoprot_fun_UPDT_as_inertial_status_gyroscope(const EOnv* nv, const eOropdescriptor_t* rd)
-//{
-//    handle_data_inertial_gyr(nv, rd);
-//}
-
-
-
-
-// --------------------------------------------------------------------------------------------------------------------
-// - definition of static functions 
-// --------------------------------------------------------------------------------------------------------------------
-
-static void handle_data_analogarray(const EOnv* nv, const eOropdescriptor_t* rd)
+extern void eoprot_fun_UPDT_sk_skin_status_arrayofcandata(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     EOarray* arrayof = (EOarray*)rd->data;
     uint8_t sizeofarray = eo_array_Size(arrayof);
     if(0 != sizeofarray)
     {
-        feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)arrayof);
+        feat_manage_skin_data(eo_nv_GetIP(nv), rd->id32, (void *)arrayof);
     }
 }
-
-static void handle_data_inertial(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-    eOas_inertial_status_t *inertialstatus  = (eOas_inertial_status_t*)rd->data;
-    feat_manage_analogsensors_data(eo_nv_GetIP(nv), rd->id32, (void *)inertialstatus);
-}
-
 
 
 // --------------------------------------------------------------------------------------------------------------------
 // - end-of-file (leave a blank line after)
 // --------------------------------------------------------------------------------------------------------------------
+
+
+
+
 
 
 
