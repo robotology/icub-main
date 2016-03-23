@@ -16,9 +16,6 @@ if (ENABLE_${PROJECTNAME})
     elseif(WIN32)
         MESSAGE(SEND_ERROR "${PROJECTNAME}: device not available yet on Windows platform, please turn off the device")
         return()
-    else()
-        MESSAGE(SEND_ERROR "${PROJECTNAME}: OS not supported, please turn off the device")
-        return()
   endif()
 
 
