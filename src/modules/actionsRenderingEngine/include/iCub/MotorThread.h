@@ -240,7 +240,7 @@ private:
     bool loadKinematicOffsets();
     bool saveKinematicOffsets();
     bool getArmOptions(Bottle &b, const int &arm);
-    void goHomeHelper(ActionPrimitives *action, const Vector &xin, const Vector &oin);
+    void goWithTorsoUpright(ActionPrimitives *action, const Vector &xin, const Vector &oin);
     void close();
     
     bool avoidTable(bool avoid);

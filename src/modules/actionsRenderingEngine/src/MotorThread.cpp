@@ -2103,7 +2103,8 @@ bool MotorThread::changeExecTime(const double execTime)
 }
 
 
-void MotorThread::goHomeHelper(ActionPrimitives *action, const Vector &xin, const Vector &oin)
+void MotorThread::goWithTorsoUpright(ActionPrimitives *action, 
+                                     const Vector &xin, const Vector &oin)
 {
     ICartesianControl *ctrl;
     action->getCartesianIF(ctrl);
@@ -2159,7 +2160,7 @@ bool MotorThread::goHome(Bottle &options)
             if(hand_home)
                 action[LEFT]->pushAction("open_hand");
 
-            goHomeHelper(action[LEFT],homePos[LEFT],homeOrient[LEFT]);
+            goWithTorsoUpright(action[LEFT],homePos[LEFT],homeOrient[LEFT]);
             bool f; action[LEFT]->checkActionsDone(f,true);
         }
 
@@ -2168,7 +2169,7 @@ bool MotorThread::goHome(Bottle &options)
             if(hand_home)
                 action[RIGHT]->pushAction("open_hand");
 
-            goHomeHelper(action[RIGHT],homePos[RIGHT],homeOrient[RIGHT]);
+            goWithTorsoUpright(action[RIGHT],homePos[RIGHT],homeOrient[RIGHT]);
             bool f; action[RIGHT]->checkActionsDone(f,true);
         }
 
@@ -2280,12 +2281,11 @@ bool MotorThread::deploy(Bottle &options)
 bool MotorThread::drawNear(Bottle &options)
 {
     int arm=ARM_IN_USE;
-    if(checkOptions(options,"left") || checkOptions(options,"right"))
+    if (checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
     
     arm=checkArm(arm);
-    action[arm]->pushAction(drawNearPos[arm],drawNearOrient[arm]);    
-    bool f; action[arm]->checkActionsDone(f,true);
+    goWithTorsoUpright(action[arm],drawNearPos[arm],drawNearOrient[arm]);
 
     Bottle look_options;
     Bottle &target=look_options.addList();
