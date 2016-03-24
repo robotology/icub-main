@@ -662,7 +662,8 @@ public:
             if (pBroadcastPort->getOutputCount()>0)
             {
                 LockGuard lg(mutex);
-                Bottle bottle;
+                Bottle &bottle=pBroadcastPort->prepare();
+                bottle.clear();
 
                 bottle.addString(type.c_str());
                 if (itemsMap.empty())
@@ -676,7 +677,6 @@ public:
                     item.read(*it->second.prop);
                 }
 
-                pBroadcastPort->prepare()=bottle;
                 pBroadcastPort->writeStrict();
             }
         }
@@ -1083,12 +1083,11 @@ public:
             if (pProp->check(PROP_LIFETIMER))
             {
                 double lifeTimer=pProp->find(PROP_LIFETIMER).asDouble()-dt;
-                if (lifeTimer<0.0)
+                if (lifeTimer<=0.0)
                 {
                     eraseItem(it);
                     erased=true;
-
-                    break;  // to avoid seg-fault
+                    break;
                 }
                 else
                 {
