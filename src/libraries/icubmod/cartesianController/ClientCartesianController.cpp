@@ -444,7 +444,8 @@ bool ClientCartesianController::getPose(const int axis, Vector &x, Vector &o,
 
 
 /************************************************************************/
-bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od, const double t)
+bool ClientCartesianController::goToPose(const Vector &xd, const Vector &od,
+                                         const double t)
 {
     if (!connected || (xd.length()<3) || (od.length()<4))
         return false;
@@ -493,7 +494,8 @@ bool ClientCartesianController::goToPosition(const Vector &xd, const double t)
 
 
 /************************************************************************/
-bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od, const double t)
+bool ClientCartesianController::goToPoseSync(const Vector &xd, const Vector &od,
+                                             const double t)
 {
     if (!connected || (xd.length()<3) || (od.length()<4))
         return false;
@@ -546,7 +548,8 @@ bool ClientCartesianController::goToPositionSync(const Vector &xd, const double 
 
 
 /************************************************************************/
-bool ClientCartesianController::getDesired(Vector &xdhat, Vector &odhat, Vector &qdhat)
+bool ClientCartesianController::getDesired(Vector &xdhat, Vector &odhat,
+                                           Vector &qdhat)
 {
     if (!connected)
         return false;
@@ -567,7 +570,8 @@ bool ClientCartesianController::getDesired(Vector &xdhat, Vector &odhat, Vector 
 
 /************************************************************************/
 bool ClientCartesianController::askForPose(const Vector &xd, const Vector &od,
-                                           Vector &xdhat, Vector &odhat, Vector &qdhat)
+                                           Vector &xdhat, Vector &odhat,
+                                           Vector &qdhat)
 {
     if (!connected)
         return false;
@@ -649,7 +653,8 @@ bool ClientCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
 
 /************************************************************************/
 bool ClientCartesianController::askForPosition(const Vector &q0, const Vector &xd,
-                                               Vector &xdhat, Vector &odhat, Vector &qdhat)
+                                               Vector &xdhat, Vector &odhat,
+                                               Vector &qdhat)
 {
     if (!connected)
         return false;
@@ -774,7 +779,8 @@ bool ClientCartesianController::getRestPos(Vector &curRestPos)
 
 
 /************************************************************************/
-bool ClientCartesianController::setRestPos(const Vector &newRestPos, Vector &curRestPos)
+bool ClientCartesianController::setRestPos(const Vector &newRestPos,
+                                           Vector &curRestPos)
 {
     if (!connected)
         return false;
@@ -782,10 +788,7 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
     Bottle command, reply;
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_POS);
-    Bottle &restPart=command.addList();
-
-    for (size_t i=0; i<newRestPos.length(); i++)
-        restPart.addDouble(newRestPos[i]);
+    command.addList().read(const_cast<Vector&>(newRestPos));
 
     if (!portRpc.write(command,reply))
     {
@@ -798,10 +801,8 @@ bool ClientCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
         if (Bottle *restPart=reply.get(1).asList())
         {                        
             curRestPos.resize(restPart->size());
-
             for (size_t i=0; i<curRestPos.length(); i++)
                 curRestPos[i]=restPart->get(i).asDouble();
-
             return true;
         }
     }
@@ -853,10 +854,7 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
     Bottle command, reply;
     command.addVocab(IKINCARTCTRL_VOCAB_CMD_SET);
     command.addVocab(IKINCARTCTRL_VOCAB_OPT_REST_WEIGHTS);
-    Bottle &restPart=command.addList();
-
-    for (size_t i=0; i<newRestWeights.length(); i++)
-        restPart.addDouble(newRestWeights[i]);
+    command.addList().read(const_cast<Vector&>(newRestWeights));
 
     if (!portRpc.write(command,reply))
     {
@@ -869,10 +867,8 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
         if (Bottle *restPart=reply.get(1).asList())
         {                        
             curRestWeights.resize(restPart->size());
-
             for (size_t i=0; i<curRestWeights.length(); i++)
                 curRestWeights[i]=restPart->get(i).asDouble();
-
             return true;
         }
     }
@@ -882,7 +878,8 @@ bool ClientCartesianController::setRestWeights(const Vector &newRestWeights,
 
 
 /************************************************************************/
-bool ClientCartesianController::getLimits(const int axis, double *min, double *max)
+bool ClientCartesianController::getLimits(const int axis, double *min,
+                                          double *max)
 {
     if (!connected || (min==NULL) || (max==NULL))
         return false;
@@ -1107,7 +1104,8 @@ bool ClientCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
 
 
 /************************************************************************/
-bool ClientCartesianController::setTaskVelocities(const Vector &xdot, const Vector &odot)
+bool ClientCartesianController::setTaskVelocities(const Vector &xdot,
+                                                  const Vector &odot)
 {
     if (!connected || (xdot.length()<3) || (odot.length()<4))
         return false;
@@ -1250,7 +1248,8 @@ bool ClientCartesianController::checkMotionDone(bool *f)
 
 
 /************************************************************************/
-bool ClientCartesianController::waitMotionDone(const double period, const double timeout)
+bool ClientCartesianController::waitMotionDone(const double period,
+                                               const double timeout)
 {
     bool done=false;
     double t0=Time::now();

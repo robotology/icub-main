@@ -1326,10 +1326,7 @@ public:
                             if (ctrl->getDesired(des))
                             {
                                 reply.addVocab(ack);
-                                Bottle &bDes=reply.addList();
-                                for (size_t i=0; i<des.length(); i++)
-                                    bDes.addDouble(des[i]);
-
+                                reply.addList().read(des);
                                 return true;
                             }
                         }
@@ -1339,10 +1336,7 @@ public:
                             if (ctrl->getVelocity(vel))
                             {
                                 reply.addVocab(ack);
-                                Bottle &bVel=reply.addList();
-                                for (size_t i=0; i<vel.length(); i++)
-                                    bVel.addDouble(vel[i]);
-
+                                reply.addList().read(vel);
                                 return true;
                             }
                         }
@@ -1355,9 +1349,7 @@ public:
                             if (ctrl->getPose(poseSel,x,stamp))
                             {
                                 reply.addVocab(ack);
-                                Bottle &bPose=reply.addList();
-                                for (size_t i=0; i<x.length(); i++)
-                                    bPose.addDouble(x[i]);
+                                reply.addList().read(x);
 
                                 Bottle &bStamp=reply.addList();
                                 bStamp.addInt(stamp.getCount());
@@ -1382,10 +1374,7 @@ public:
                                     if (loc->projectPoint(eye,x,px))
                                     {
                                         reply.addVocab(ack);
-                                        Bottle &bPixel=reply.addList();
-                                        for (size_t i=0; i<px.length(); i++)
-                                            bPixel.addDouble(px[i]);
-
+                                        reply.addList().read(px);
                                         return true;
                                     }
                                 }
@@ -1409,10 +1398,7 @@ public:
                                         if (loc->projectPoint(eye,u,v,z,x))
                                         {
                                             reply.addVocab(ack);
-                                            Bottle &bPoint=reply.addList();
-                                            for (size_t i=0; i<x.length(); i++)
-                                                bPoint.addDouble(x[i]);
-                                            
+                                            reply.addList().read(x);
                                             return true;
                                         }
                                     }
@@ -1434,10 +1420,7 @@ public:
                                         if (loc->triangulatePoint(pxl,pxr,x))
                                         {
                                             reply.addVocab(ack);
-                                            Bottle &bPoint=reply.addList();
-                                            for (size_t i=0; i<x.length(); i++)
-                                                bPoint.addDouble(x[i]);
-
+                                            reply.addList().read(x);
                                             return true;
                                         }
                                     }
@@ -1462,10 +1445,7 @@ public:
                                         if (loc->projectPoint(eye,u,v,plane,x))
                                         {
                                             reply.addVocab(ack);
-                                            Bottle &bPoint=reply.addList();
-                                            for (size_t i=0; i<x.length(); i++)
-                                                bPoint.addDouble(x[i]);
-
+                                            reply.addList().read(x);
                                             return true;
                                         }
                                     }
@@ -1485,10 +1465,7 @@ public:
 
                                         Vector x=loc->get3DPoint(type,ang);
                                         reply.addVocab(ack);
-                                        Bottle &bPoint=reply.addList();
-                                        for (size_t i=0; i<x.length(); i++)
-                                            bPoint.addDouble(x[i]);
-
+                                        reply.addList().read(x);
                                         return true;
                                     }
                                 }
@@ -1507,10 +1484,7 @@ public:
 
                                     Vector ang=CTRL_RAD2DEG*loc->getAbsAngles(x);
                                     reply.addVocab(ack);
-                                    Bottle &bAng=reply.addList();
-                                    for (size_t i=0; i<ang.length(); i++)
-                                        bAng.addDouble(ang[i]);
-
+                                    reply.addList().read(ang);
                                     return true;
                                 }
                             }

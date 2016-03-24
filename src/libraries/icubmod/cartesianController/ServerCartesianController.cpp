@@ -539,10 +539,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             if (getRestPos(curRestPos))
                             {
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
-                                Bottle &restPart=reply.addList();
-    
-                                for (size_t i=0; i<curRestPos.length(); i++)
-                                    restPart.addDouble(curRestPos[i]);
+                                reply.addList().read(curRestPos);
                             }
                             else
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
@@ -557,10 +554,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             if (getRestWeights(curRestWeights))
                             {
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
-                                Bottle &restPart=reply.addList();
-    
-                                for (size_t i=0; i<curRestWeights.length(); i++)
-                                    restPart.addDouble(curRestWeights[i]);
+                                reply.addList().read(curRestWeights);
                             }
                             else
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
@@ -597,10 +591,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                             if (getJointsVelocities(qdot))
                             {
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
-                                Bottle &qdotPart=reply.addList();
-    
-                                for (size_t i=0; i<qdot.length(); i++)
-                                    qdotPart.addDouble(qdot[i]);
+                                reply.addList().read(qdot);
                             }
                             else
                                 reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
@@ -863,10 +854,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 if (setRestPos(newRestPos,curRestPos))
                                 {                                                                        
                                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
-                                    Bottle &restPart=reply.addList();
-    
-                                    for (size_t i=0; i<curRestPos.length(); i++)
-                                        restPart.addDouble(curRestPos[i]);
+                                    reply.addList().read(curRestPos);
                                 }
                                 else
                                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
@@ -891,10 +879,7 @@ bool ServerCartesianController::respond(const Bottle &command, Bottle &reply)
                                 if (setRestWeights(newRestWeights,curRestWeights))
                                 {                                                                        
                                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_ACK);
-                                    Bottle &restPart=reply.addList();
-    
-                                    for (size_t i=0; i<curRestWeights.length(); i++)
-                                        restPart.addDouble(curRestWeights[i]);
+                                    reply.addList().read(curRestWeights);
                                 }
                                 else
                                     reply.addVocab(IKINCARTCTRL_VOCAB_REP_NACK);
@@ -2738,7 +2723,8 @@ bool ServerCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
 
 /************************************************************************/
 bool ServerCartesianController::askForPosition(const Vector &q0, const Vector &xd,
-                                               Vector &xdhat, Vector &odhat, Vector &qdhat)
+                                               Vector &xdhat, Vector &odhat,
+                                               Vector &qdhat)
 {
     if (!connected)
         return false;
@@ -2868,7 +2854,8 @@ bool ServerCartesianController::getRestPos(Vector &curRestPos)
 
 
 /************************************************************************/
-bool ServerCartesianController::setRestPos(const Vector &newRestPos, Vector &curRestPos)
+bool ServerCartesianController::setRestPos(const Vector &newRestPos,
+                                           Vector &curRestPos)
 {
     if (connected)
     {
@@ -2877,9 +2864,7 @@ bool ServerCartesianController::setRestPos(const Vector &newRestPos, Vector &cur
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_REST_POS);
-        Bottle &txRestPart=command.addList();
-        for (size_t i=0; i<newRestPos.length(); i++)
-            txRestPart.addDouble(newRestPos[i]);
+        command.addList().read(const_cast<Vector&>(newRestPos));
     
         // send command to solver and wait for reply
         bool ret=false;
@@ -2947,9 +2932,7 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
         command.addVocab(IKINSLV_VOCAB_OPT_REST_WEIGHTS);
-        Bottle &txRestPart=command.addList();
-        for (size_t i=0; i<newRestWeights.length(); i++)
-            txRestPart.addDouble(newRestWeights[i]);
+        command.addList().read(const_cast<Vector&>(newRestWeights));
     
         // send command to solver and wait for reply
         bool ret=false;
@@ -2974,7 +2957,8 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
 
 
 /************************************************************************/
-bool ServerCartesianController::getLimits(const int axis, double *min, double *max)
+bool ServerCartesianController::getLimits(const int axis, double *min,
+                                          double *max)
 {
     bool ret=false;
     if (connected && (min!=NULL) && (max!=NULL))
