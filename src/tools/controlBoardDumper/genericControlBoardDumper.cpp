@@ -406,3 +406,24 @@ bool GetMotAccs::getData(double *e)
       return 0;
     }
 }
+
+
+void GetMotPwm::setInterface(IAmplifierControl* i)
+{
+    iamp = i;
+}
+
+bool GetMotPwm::getData(double *e)
+{
+    if (!iamp)
+    {
+        return 0;
+    }
+    
+    bool ret = true;
+    for(int j=0; j<n_joint_part; j++)
+    {
+        ret &=iamp->getPWM(j, &e[j]);
+    }
+    return ret;
+}

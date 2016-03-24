@@ -195,7 +195,7 @@
 #include "dumperThread.h"
 #include <string>
 
-#define NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP 16
+#define NUMBER_OF_AVAILABLE_STANDARD_DATA_TO_DUMP 17
 #define NUMBER_OF_AVAILABLE_DEBUG_DATA_TO_DUMP 3
 
 
@@ -319,7 +319,7 @@ int getDataToDump(ResourceFinder &rf, std::string *listOfData, int n, bool *need
     availableDataToDump[13] = ConstString("getMotorSpeeds");
     availableDataToDump[14] = ConstString("getMotorAccelerations");
     availableDataToDump[15] = ConstString("getTemperatures");
-
+    availableDataToDump[16] = ConstString("getMotorsPwm");
     // debug
     availableDebugDataToDump[0] = ConstString("getRotorPositions");
     availableDebugDataToDump[1] = ConstString("getRotorSpeeds");
@@ -418,6 +418,7 @@ private:
     //amp
     IAmplifierControl *iamp;
     GetCurrs myGetCurrs;
+    GetMotPwm myGetMotPwm;
     //torques
     ITorqueControl  *itrq;
     GetTrqs    myGetTrqs;
@@ -942,6 +943,30 @@ public:
                             myDumper[i].setGetter(&myGetMotorAccs);
                         }
                 }
+                else if (dataToDump[i] == "getMotorsPwm")
+                 {
+                     if (ddBoard.view(iamp))
+                        {
+                            yInfo("Initializing a getMotPwm thread\n");
+                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
+                            myDumper[i].setThetaMap(thetaMap, nJoints);
+                            myGetMotPwm.setInterface(iamp);
+                            if(ienc == 0)
+                            {
+                                if(!ddBoard.view(ienc))
+                                    return false;
+                            }
+                            ienc->getAxes(&myGetMotPwm.n_joint_part);
+                            if (ddBoard.view(istmp))
+                            {
+                                yInfo("getMotorsPwm::The time stamp initalization interfaces was successfull! \n");
+                                myGetMotPwm.setStamp(istmp);
+                            }
+                            else
+                                yError("Problems getting the time stamp interfaces \n");
+                            myDumper[i].setGetter(&myGetMotPwm);
+                        }
+                }
             }
         Time::delay(1);
         for (int i = 0; i < nData; i++)
@@ -1009,7 +1034,7 @@ int main(int argc, char *argv[])
         printf (" getEncoderAccelerations (joint acceleration)\n");
         printf (" getPositionErrors       (difference between desired and actual position)\n");
         printf (" getTorqueErrors         (difference between desired and measured torque, if available)\n");
-        printf (" getOutputs              (voltage (PWM) given to the motor)\n");
+        printf (" getOutputs              (Position Pid output)\n");
         printf (" getCurrents             (current given to the motor)\n");
         printf (" getTorques              (joint torques, if available)\n");
         printf (" getPosPidReferences     (last position referenece)\n");
@@ -1017,6 +1042,7 @@ int main(int argc, char *argv[])
         printf (" getMotorEncoders              (motor encoder position)\n");
         printf (" getMotorEncoderSpeeds         (motor encoder velocity)\n");
         printf (" getMotorEncoderAccelerations  (motor encoder acceleration\n");
+        printf (" getMotorsPwm             (voltage (PWM) given to the motor)\n");
         printf (" getControlModes         (joint control mode)\n");
         printf (" getInteractionModes     (joint interaction mode)\n");
         printf (" getTemperatures         (motor temperatures)\n");
