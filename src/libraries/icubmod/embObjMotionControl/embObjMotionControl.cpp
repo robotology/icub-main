@@ -2368,9 +2368,8 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         break;
 
         // muove
-    case eomc_calibration_type5_hard_stops_mc4plus:
+    case eomc_calibration_type5_hard_stops:
         calib.params.type5.pwmlimit   = (int32_t) S_32(params.param1);
-        calib.params.type5.final_pos  = (int32_t) S_32(params.param2);
         calib.params.type5.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
         break;
 
@@ -2395,12 +2394,16 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         break;
 
         //muove
-    case eomc_calibration_type8_adc_and_incr_mc4plus:
+    case eomc_calibration_type8_tripod_internal_hard_stop:
         calib.params.type8.pwmlimit   = (int32_t) S_32(params.param1);
         calib.params.type8.final_pos  = (int32_t) S_32(params.param2);
         calib.params.type8.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
         break;
-
+        
+    case eomc_calibration_type9_tripod_external_hard_stop:
+        calib.params.type8.pwmlimit   = (int32_t) S_32(params.param1);
+        calib.params.type8.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
+        break;
     default:
         yError() << "Calibration type unknown!! (embObjMotionControl)\n";
         return false;
