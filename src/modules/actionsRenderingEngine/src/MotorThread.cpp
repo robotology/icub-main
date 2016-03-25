@@ -2989,6 +2989,11 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
 
     arm_mode=ARM_MODE_LEARN_KINOFF;
 
+    Bottle look_options;
+    look_options.addString("hand");
+    look_options.addString(dragger.arm==LEFT?"left":"right");    
+    look(look_options);
+
     return true;
 }
 
@@ -3039,6 +3044,8 @@ bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
 
     //reset the previous control mode
     setTorque(false);
+
+    setGazeIdle();
 
     return true;
 }
