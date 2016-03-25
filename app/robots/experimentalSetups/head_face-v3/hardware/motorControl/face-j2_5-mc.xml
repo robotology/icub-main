@@ -31,7 +31,7 @@
             <param name="motorNominalCurrents">  0          0           0           0         </param>
             <param name="motorPeakCurrents">    0           0           0           0        </param>
             <param name="jntVelMax">             1000        1000        1000        1000        </param>
-            <param name="motorPwmLimit">        3300        3300        3300        3300        </param>
+            <param name="motorPwmLimit">        1300        1300        1300        1300        </param>
 
         </group>
    
