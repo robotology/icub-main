@@ -1868,7 +1868,10 @@ bool MotorThread::look(Bottle &options)
         
     ctrl_gaze->lookAtFixationPoint(xd);
     if (checkOptions(options,"wait"))
+    {
         ctrl_gaze->waitMotionDone();
+        Time::delay(1.0);
+    }
 
     return true;
 }
