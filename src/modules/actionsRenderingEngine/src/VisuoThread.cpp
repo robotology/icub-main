@@ -495,7 +495,6 @@ bool VisuoThread::getTarget(Value &type, Bottle &options)
                 bStereo.addDouble(0.0);
                 bStereo.addDouble(list->get(1).asDouble());
                 bStereo.addDouble(list->get(2).asDouble());
-                
             }
             else if(list->get(0).asString()=="left")
             {

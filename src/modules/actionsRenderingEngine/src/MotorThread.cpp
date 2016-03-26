@@ -530,8 +530,7 @@ bool MotorThread::loadKinematicOffsets()
     }
 
     table_height=bKinOffsets.find("table_height").asDouble();
-    table.resize(4);
-    table=0.0;
+    table.resize(4,0.0);
     table[2]=1.0;
     table[3]=-table_height;
 
@@ -2208,72 +2207,67 @@ bool MotorThread::goHome(Bottle &options)
 bool MotorThread::deploy(Bottle &options)
 {
     int arm=ARM_IN_USE;
-    if(checkOptions(options,"left") || checkOptions(options,"right"))
+    if (checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
     arm=checkArm(arm);
 
     Vector x,o;
-    action[arm]->getPose(x,o);
-
-    Vector deployZone;
+    action[arm]->getPose(x,o);    
 
     Bottle *bTarget=options.find("target").asList();
 
-    if(!targetToCartesian(bTarget,deployZone))
+    Vector deployZone;
+    if (!targetToCartesian(bTarget,deployZone))
     {
         deployZone=deployPos[arm];
-
-        if(checkOptions(options,"away"))
+        if (checkOptions(options,"away"))
         {
             deployZone[0]=-0.15;
             deployZone[1]=(arm==LEFT)?deployZone[1]=-0.35:deployZone[1]=0.35;
         }
 
         deployZone=deployZone+randomDeployOffset();
-
         deployZone[2]=table_height;
     }
     else
     {
         arm=checkArm(arm,deployZone);
-        if(checkOptions(options,"gently"))
+        if (checkOptions(options,"gently") && !checkOptions(options,"over"))
             deployZone[2]=table_height;
     }
 
-    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
-        Vector deployFixZone=deployZone;
-        deployFixZone[2]=table_height;
         setGazeIdle();
         keepFixation(options);
-        ctrl_gaze->lookAtFixationPoint(deployFixZone);
+        ctrl_gaze->lookAtFixationPoint(deployZone);
     }
 
     Vector tmpOrient=(grasp_state==GRASP_STATE_SIDE?reachSideOrient[arm]:deployOrient[arm]);
 
-    Vector preDeployZone=deployZone;
-    preDeployZone[2]+=reachAboveDisp[2];
+    Vector deployOffs(deployZone.length(),0.0);
+    deployOffs[2]=reachAboveDisp[2];
 
-    // prepare hand for deployment
-    action[arm]->pushAction(preDeployZone,tmpOrient);
     bool f;
+    action[arm]->pushAction(deployZone+deployOffs,tmpOrient);
     action[arm]->checkActionsDone(f,true);
 
     wbdRecalibration();
     action[arm]->enableContactDetection();
 
+    deployOffs*=0.5;
+    action[arm]->pushAction(deployZone+deployOffs,tmpOrient);
     action[arm]->pushAction(deployZone,tmpOrient);
     action[arm]->checkActionsDone(f,true);
 
     action[arm]->getPose(x,o);
     action[arm]->disableContactDetection();
 
-    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         ctrl_gaze->lookAtFixationPoint(x);
 
     release(options);
-
     return true;
 }
 
@@ -3132,8 +3126,7 @@ void MotorThread::update()
     {
         opcPort.getTableHeight(table_height);
 
-        table.resize(4);
-        table=0.0;
+        table.resize(4,0.0);
         table[2]=1.0;
         table[3]=-table_height;
         
