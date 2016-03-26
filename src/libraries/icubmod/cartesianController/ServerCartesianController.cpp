@@ -1040,7 +1040,7 @@ bool ServerCartesianController::alignJointsBounds()
         {
             if (!lLim[i]->getLimits(lRmp[i][j],&min,&max))
             {
-                yError("joint #%d: failed getting limits!");
+                yError("joint #%d: failed getting limits!",cnt);
                 return false;
             }
 
