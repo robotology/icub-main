@@ -2256,11 +2256,17 @@ bool MotorThread::deploy(Bottle &options)
     wbdRecalibration();
     action[arm]->enableContactDetection();
 
+    ActionPrimitivesWayPoint wp;
     deployOffs*=0.5;
-    action[arm]->pushAction(deployZone+deployOffs,tmpOrient);
-    action[arm]->pushAction(deployZone,tmpOrient);
-    action[arm]->checkActionsDone(f,true);
+    wp.x=deployZone+deployOffs; wp.o=tmpOrient; wp.oEnabled=true;
+    deque<ActionPrimitivesWayPoint> wpList;
+    wpList.push_back(wp);
+    wp.x=deployZone;
+    wpList.push_back(wp);
+    action[arm]->enableReachingTimeout(3.0*reachingTimeout);
+    action[arm]->pushAction(wpList);
 
+    action[arm]->checkActionsDone(f,true);
     action[arm]->getPose(x,o);
     action[arm]->disableContactDetection();
 
