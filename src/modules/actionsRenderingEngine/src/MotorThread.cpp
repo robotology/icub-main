@@ -1737,38 +1737,32 @@ bool MotorThread::powerGrasp(Bottle &options)
 bool MotorThread::push(Bottle &options)
 {
     int arm=ARM_MOST_SUITED;
-    if(checkOptions(options,"left") || checkOptions(options,"right"))
+    if (checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
-    Bottle *bTarget=options.find("target").asList();
-
     Vector xd;
-    if(!targetToCartesian(bTarget,xd))
+    if (!targetToCartesian(options.find("target").asList(),xd))
         return false;
+    arm=checkArm(arm,xd);    
 
-    arm=checkArm(arm,xd);
-
-    xd=xd+pushAboveRelief;
-
-    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
         keepFixation(options);
         look(options);
     }
 
-    ctrl_gaze->waitMotionDone(0.1,2.0);
-
+    xd[2]=table_height;
+    xd+=pushAboveRelief;
     double push_direction=checkOptions(options,"away")?-1.0:1.0;
     Vector tmpDisp=push_direction*reachSideDisp[arm];
     Vector tmpOrient=reachSideOrient[arm];
 
-    action[arm]->pushAction(xd+tmpDisp,tmpOrient);
     bool f;
-
+    action[arm]->pushAction(xd+tmpDisp,tmpOrient);
     action[arm]->checkActionsDone(f,true);
 
-    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
         keepFixation(options);
@@ -1776,13 +1770,12 @@ bool MotorThread::push(Bottle &options)
     }
 
     wbdRecalibration();
-    action[arm]->enableContactDetection();
-    
+    action[arm]->enableContactDetection();    
     action[arm]->pushAction(xd-3*push_direction*reachSideDisp[arm],reachSideOrient[arm]);
     action[arm]->checkActionsDone(f,true);
     action[arm]->disableContactDetection();
 
-    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
         setGazeIdle();
 
     return true;
