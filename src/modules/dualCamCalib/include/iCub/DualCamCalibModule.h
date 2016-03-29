@@ -35,6 +35,13 @@ private:
       ALIGN_HEIGHT=1
     } align;
 
+    // dualImage_mode: if true, the input port will read a single image with both frames together, left one
+    // on the left side, right one on the right side. In this case imageInLeft port will read the frame and the right
+    // port will be inactive.
+    bool dualImage_mode;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb>* leftImage;
+    yarp::sig::ImageOf<yarp::sig::PixelRgb>* rightImage;
+
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageInLeft;
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageInRight;
     yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> > imageOut;
