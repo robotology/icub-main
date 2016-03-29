@@ -274,6 +274,7 @@ public:
             Bottle cmd,reply;
             cmd.addInt(0);
             wbdPort.write(cmd,reply);
+            Time::delay(0.3);
             return true;
         }
         else

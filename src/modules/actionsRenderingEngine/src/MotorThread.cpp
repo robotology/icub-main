@@ -1863,7 +1863,7 @@ bool MotorThread::look(Bottle &options)
     if (checkOptions(options,"wait"))
     {
         ctrl_gaze->waitMotionDone();
-        Time::delay(1.0);
+        Time::delay(1.5);
     }
 
     return true;
@@ -1978,8 +1978,11 @@ bool MotorThread::give(Bottle &options)
 
     bool contact_detected=false;
     double t=Time::now();
-    while(!contact_detected && Time::now()-t<5.0)
-        action[arm]->checkContact(contact_detected); 
+    while (!contact_detected && (Time::now()-t<5.0))
+    {
+        action[arm]->checkContact(contact_detected);
+        Time::delay(0.1);
+    }
 
     action[arm]->disableContactDetection();
 
