@@ -3393,9 +3393,10 @@ bool embObjMotionControl::getMaxCurrentRaw(int j, double *val)
     uint16_t size;
     eOmc_current_limits_params_t currentlimits = {0};
     *val = 0;
-    if(!res->readBufferedValue(protid, (uint8_t *)&currentlimits, &size))
+
+    if(!askRemoteValue(protid, (uint8_t *)&currentlimits, size))
     {
-        yError() << "embObjMotionControl::getMaxCurrentRaw() can't read current limits  for BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j;
+        yError() << "embObjMotionControl::getMaxCurrentRaw() could not read max current for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
         return false;
     }
 
