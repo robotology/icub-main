@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubGenova02" build="1">
+    <device name="left_lower_leg_strain1" type="embObjStrain">
+    
+        <params file="general.xml"/>
+        <params file="hardware/electronics/left_lower_leg-ems7-eln.xml" />
+    
+        <group name="SERVICE">
+            
+            <param name="type"> STRAIN </param>
+        
+            <group name="PROPERTIES">
+  
+                <group name="CANBOARD_VERSION">
+                    <param name="useGlobal">        false   </param>
+                    <group name="CANFIRMWARE">
+                        <param name="major">        0       </param>    
+                        <param name="minor">        0       </param> 
+                        <param name="build">        0       </param>
+                    </group>
+                    <group name="CANPROTOCOL">
+                        <param name="major">        1       </param>    
+                        <param name="minor">        0       </param>     
+                    </group>
+                </group>
+            
+                <group name="CANBOARD_LOCATION">
+                    <param name="location">         CAN2-1  </param>    
+                </group>
+            
+            </group>
+
+            <group name="SETTINGS">        
+                <param name="acquisitionRate">      1       </param>
+                <param name="useCalibration">       1       </param>
+            </group>
+            
+        </group>
+    
+  </device>
+  
+</devices>
+
+
