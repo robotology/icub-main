@@ -2,6 +2,7 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
 <devices robot="iCubGenova02" build="1">
+
     <device name="left_hand_mais1" type="embObjMais">
     
         <params file="general.xml" />
@@ -9,31 +10,35 @@
         
         <group name="SERVICE">
         
-            <param name="type"> MAIS </param>
+            <param name="type"> enumServiceMAIS </param>
         
             <group name="PROPERTIES">
             
-                <group name="CANBOARD_VERSION">
-                    <param name="useGlobal">        false   </param>
-                    <group name="CANFIRMWARE">
-                        <param name="major">        0       </param>    
-                        <param name="minor">        0       </param> 
-                        <param name="build">        0       </param>
-                    </group>
-                    <group name="CANPROTOCOL">
-                        <param name="major">        1       </param>    
-                        <param name="minor">        0       </param>     
+                <group name="CANBOARDS">
+                    <param name="type">                 enumCanBrdMAIS      </param>
+                    <param name="useGlobalParams">      false               </param>
+                    <group name="PROTOCOL">
+                        <param name="major">            1                   </param>    
+                        <param name="minor">            0                   </param>     
+                    </group>                    
+                    <group name="FIRMWARE">
+                        <param name="major">            0                   </param>    
+                        <param name="minor">            0                   </param> 
+                        <param name="build">            0                   </param>
                     </group>
                 </group>
             
-                <group name="CANBOARD_LOCATION">
-                    <param name="location">         CAN1-14 </param>
+                <group name="SENSORS">
+                    <param name="id">                   l_hand_mais         </param>
+                    <param name="type">                 enumSnsrMAIS        </param>
+                    <param name="location">             CAN1-14             </param>
                 </group>
             
             </group>        
             
             <group name="SETTINGS"> 
-                <param name="acquisitionRate">      10      </param>
+                <param name="acquisitionRate">          10                  </param>
+                <param name="enabledSensors">           l_hand_mais         </param>
             </group>
             
         </group>
@@ -41,3 +46,7 @@
     </device> 
     
 </devices>
+
+
+
+

@@ -1,65 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<!-- 
-    marco.accame: on 29 mar 2016 (after a chat with silvio.traversaro on 24 mar 2106)
-    
-    this is a tentative xml file for configuration of inertial sensors managed by a given ETH board.
-    
-    the configuration should be general enough to allow future extensions and at the same time easy enough for managing code in three environment:
-    1. the C++ code inside the device embObjInertials.cpp ... parsing xml, build relevant data structures, publishing data in streaming, in rpc etc.
-    2. the code of those using the published data ... reading xyz plus timestamp, to be able to associate them to a given sensor ID which can be directly linked to the CAD.
-    3. the C code in the ETH board ... we need compact messaging from icub-main to the board, such as a list of can sensors, a list of sensors directly managed by the board 
-       plus their properties, etc ...
-    
-    in here, i write some comments about the xml tags, their content, and how they can be used in the above three environments.
-    
-    disclaimer: this is a "direction" not yet a decision. as such, it is subject to requests of changes before start of implementation 
-    and to modifications during the implementation required to make things easier.
-
-    
-
-  -->
-  
-<!--
-    NOTES:
-    
-    (01)    the place of this xml file could be elsewhere. i would say: iCubGenova02/hardware/inertials
-    
-    (02)    the device is called embObjInertials and manages N xyz sensors all associated to a given ETH board. The name can be changed.
-    
-    (04)    The idea is that the device publishes data related to the N sensors in three formats:
-
-            a. a vector of N string identifiers for the sensor (id) which are unique in the robot and allow to associate the sensor to the CAD. 
-               the size of the vector gives also the number of sensors.
-            b. a vector of N timestamps (t), where the timestamp is expressed in micro-sec and is related to the acquisition time of the ETH board of a given triple (x, y, z).
-            c. a vector of N floating point triples (x, y, z), where a triple contains measures from an inertial sensor. the sensor can be an accel or gyros or 
-               whatever other 3-axis sensor one may want to use.
-
-            Data in vector<(id)> are invariant for the lifetime of the wrapper, thus can be read by rcp only once.
-            
-            Data in vector<(x, y, z)> and vector<(t)> are time-variant and are streamed with the period of the wrapper. Silvio said something about data and metadata
-            and also that (x, y, z) are data and (t) can be expressed as metadata.
-            Data that is published is guaranteed to be the most recent. however, dat is refreshed with a rate assigned to the sensor which can be different from that
-            of the wrapper. For instance, teh period of the wrapper is typically 10 ms, but in SETTINGS/acquisitionRate we may use 50 ms, which is the rate at which each MTB CAN board
-            sends its readings.            
-            
-    (05)    We need to put careful attention to make (x, y, z) consistent with (t). 
-            
-            The device receives (x, y, z) and (t) one at a time at reception of a UDP packet, hence the vectors are refreshed by function embObjInertials::update() in a given
-            position pos. The device publishes the vectors with a different function embObjInertials::read() which is called asynchronously with respect to embObjInertials::update().
-            In order to maintain consistency, we must use one mutex which gives mutual exclusion to update() and read().
-            Moreover, the function read() must have two arguments and be embObjInertials::read(vector<t>& v1, vector<xyz>& v2), where vector v1 will be put in metadata, vector v2 in data.
-                                
-            
-            
- -->
-
-  
 <devices robot="iCubGenova02" build="1">
-
-    <!-- we use the left leg as an example. we have 13 MTB can boards with internal accelerometer plus gyro and accel on board of the EMS.
-      -->    
+   
     <device name="right_leg_inertials" type="embObjInertials">
     
         <params file="general.xml" />     
@@ -67,80 +10,40 @@
         
         <group name="SERVICE">
         
-            <param name="type"> INERTIALS </param>                
+            <param name="type"> enumServiceINERTIALS </param>                
         
             <group name="PROPERTIES">
             
-                <!--    in SUPPORTEDSENSORS we put all the sensors which the ETH board described by left_lower_arm-ems2-eln.xml supports. 
-                        we have the following parameters:
-                        ID:         keeps a unique name in string format which is published in rpc (see note 04.a) and is used as search key for the CAD
-                        type:       keeps a string which describes the nature of the sensor. this info is used by the device for sending config data to the eth board.
-                                    so far we have: accelMTBint, accelMTBext, gyrosMTBext, gyrosSTl3g4200d, accelSTlis3x. 
-                                    they are: the accelerometer on board of the MTB, the accelerometer and the gyroscope externally attached to the MTB, the STMicro L3G4200D and the STMicro LIS3X MEMS on board of the EMS4.
-                        location:   keeps an address which can be on CAN1, CAN2 or LOCAL.  it is in string form and must be parsed. 
-                                    first part is ("CAN1", "CAN2", "LOCAL"), then the separator is a '-', and finally there is a number. 
-                                    In case of CAN1/CAN2 the number is the address. In case of LOCAL it is always 0 or in the future some local identifier.                                            
-                  --> 
-                <group name="SUPPORTEDSENSORS">
-                    <!-- in case one wants to test also an external gyro on foot, he/she must add a new column with: (r_foot_3_just4test, gyrosMTBexternal, CAN2-12)  
-                      -->
-                    <param name="ID">       on_ems11_accel  on_ems11_gyros  l_upper_leg_1_10B1  l_upper_leg_2_10B2  l_upper_leg_3_10B3  l_upper_leg_4_10B4  l_upper_leg_5_10B5  l_upper_leg_6_10B6  l_upper_leg_7_10B7  l_lower_leg_1_10B8  l_lower_leg_2_10B9  l_lower_leg_3_10B10 l_lower_leg_4_10B11 l_foot_1_10B12  l_foot_2_10B13      </param>
-                    <param name="type">     accelSTlis3x    gyrosSTl3g4200d accelMTBint         accelMTBint         accelMTBint         accelMTBint         accelMTBint         accelMTBint         accelMTBint         accelMTBint         accelMTBint         accelMTBint         accelMTBint         accelMTBint     accelMTBint         </param>
-                    <param name="location"> LOCAL-0         LOCAL-0         CAN1-1              CAN1-2              CAN1-3              CAN1-4              CAN1-5              CAN1-6              CAN1-7              CAN2-8              CAN2-9              CAN2-10             CAN2-11             CAN2-13         CAN2-12             </param>            
-                </group>
-            
-                <!--    from the above group SENSORS we can extract a list of Nsupp supported sensors. Each of them has a type and some properties which must be satisfied.
-                        we put these properties in the following. 
-                        if any MTB sensor is present in the list, then we need a MTB_VERSION group with required firmware and protocol versions.
-                        the MTB_VERSION group is of type canBoardProperties and has a common format with fixed fields:  useGlobal, CANFIRMWARE, CANPROTOCOL.
-                        here is description of how to use canBoardProperties.
-                        if useGlobal is true, then the following CANFIRMWARE and CANPROTOCOL group are not parsed and the global values common to all MTB boards are used.
-                        if useGlobal is false, then CANFIRMWARE and CANPROTOCOL they are parsed and CANFIRMWARE(major, minor, build) and CANPROTOCOL(major, minor) are evaluated.
-                        if at least one between them is not zero, then the ETH board will ask get-firmware-version() to all the MTB boards. 
-                        if CANFIRMWARE is (0, 0, 0) then the ETH board does not check vs it. if CANPROTOCOL is (0, 0) then the ETH board does not check vs it.
-                        if instead both of them are zero, then the ETH board will not even search for the CAN boards.
-                 -->
-                     
-                    <group name="MTB_VERSION">
-                        <param name="useGlobal">        false   </param>
-                        <group name="CANFIRMWARE">
-                            <param name="major">        0       </param>    
-                            <param name="minor">        0       </param> 
-                            <param name="build">        0       </param>
-                        </group>
-                        <group name="CANPROTOCOL">
-                            <param name="major">        0       </param>    
-                            <param name="minor">        0       </param>     
-                        </group>
+                <group name="CANBOARDS">
+                    <param name="type">                 enumCanBrdMTB       </param>
+                    <param name="useGlobalParams">      false               </param>
+                    <group name="PROTOCOL">
+                        <param name="major">            0                   </param>    
+                        <param name="minor">            0                   </param>     
+                    </group>                    
+                    <group name="FIRMWARE">
+                        <param name="major">            0                   </param>    
+                        <param name="minor">            0                   </param> 
+                        <param name="build">            0                   </param>
                     </group>
+                </group>
 
+                <group name="SENSORS">
+                    <param name="id">       on_ems11_accel      on_ems11_gyros          l_upper_leg_1_10B1  l_upper_leg_2_10B2  l_upper_leg_3_10B3  l_upper_leg_4_10B4  l_upper_leg_5_10B5  l_upper_leg_6_10B6  l_upper_leg_7_10B7  l_lower_leg_1_10B8  l_lower_leg_2_10B9  l_lower_leg_3_10B10 l_lower_leg_4_10B11 l_foot_1_10B12      l_foot_2_10B13      </param>
+                    <param name="type">     enumSnsrAccSTlis3x  enumSnsrGyrSTl3g4200d   enumSnsrAccMTBint   enumSnsrAccMTBint   enumSnsrAccMTBint   enumSnsrAccMTBint   enumSnsrAccMTBint   enumSnsrAccMTBint   enumSnsrAccMTBint   enumSnsrAccMTBint   enumSnsrAccMTBint   enumSnsrAccMTBint   enumSnsrAccMTBint   enumSnsrAccMTBint   enumSnsrAccMTBint   </param>
+                    <param name="location"> LOC-0               LOC-0                   CAN1-1              CAN1-2              CAN1-3              CAN1-4              CAN1-5              CAN1-6              CAN1-7              CAN2-8              CAN2-9              CAN2-10             CAN2-11             CAN2-13             CAN2-12             </param>            
+                </group>
+                                            
             </group>
             
             <group name="SETTINGS"> 
-                <!-- legenda:
-                    acquisitionRate:        a number in range [10, 100] which gives the acquisition rate of all the sensors. 
-                                            It is not the refresh rate of the YARP port, but the rate at which the sensor is programmed to acquire and emit data. 
-                    enabledSensorIDs:       a list strings amongst those in SUPPORTEDSENSORS/inertialID which tells what sensors are enabled.
-                                            This is the list of strings published in rpc (see note 04.a).  
-                -->
-                
-                <!-- comment:
-                    the parser reads the variables enabledSensorIDs and the device does the following:
-                    1. sets N as enabledSensorIDs.size(),
-                    2. allocates three vectors of size N: a vector of strings with what is inside enabledSensorIDs, a vector of triples (x, y, z) and vector of timestamps.
-                       these are the vectors wich will be published in yarp ports.
-                    3. it prepares the vector of N strings with what inside enabledSensorIDs.
-                    4. it searches for in SUPPORTEDSENSORS for each ID and prepares the data structure to be sent to the eth board.
-                    5. it programs the sensors to transmit at rate specified by acquisitionRate.
-                    6. as soon as it receives data from a given sensor it puts (x, y, z) and (t) in the correct position of the relevant vector.
-                -->
                 <param name="acquisitionRate">      50      </param>
-                <param name="enabledSensorIDs">     l_upper_leg_1_10B1 l_upper_leg_2_10B2 l_upper_leg_3_10B3  </param>
-                
+                <param name="enabledSensors">       l_upper_leg_1_10B1 l_upper_leg_2_10B2 l_upper_leg_3_10B3  </param>                
             </group>
             
         </group>        
         
     </device>
+    
 </devices>
 
