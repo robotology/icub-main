@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2013 iCub Facility - Istituto Italiano di Tecnologia
  * Author: Ugo Pattacini
  * email:  ugo.pattacini@iit.it
@@ -15,23 +15,23 @@
  * Public License for more details
 */
 
-/** 
+/**
 \defgroup icub_fingersTuner Fingers PID Tuner
 @ingroup icub_tools
- 
-A module that provides tuning capabilities of the low-level PID 
+
+A module that provides tuning capabilities of the low-level PID
 controllers for the robot's fingers.
- 
-\section intro_sec Description 
+
+\section intro_sec Description
 At start-up, the module performs a synchronization among the PID
-values stored aboard the robot and the ones available locally in 
-the configuration file. At run-time, user can ask the module to 
-carry out an online tuning of the PID parameters in order to 
-improve the performance. 
- 
-\section lib_sec Libraries 
+values stored aboard the robot and the ones available locally in
+the configuration file. At run-time, user can ask the module to
+carry out an online tuning of the PID parameters in order to
+improve the performance.
+
+\section lib_sec Libraries
 - YARP.
-- ctrlLib. 
+- ctrlLib.
 
 \section parameters_sec Parameters
 The configuration parameter looks like the following:
@@ -50,36 +50,38 @@ alias_1           (tag all)    (joints (9 10 11 12 13 14 15))
 
 [left_hand]
 device            left_arm
-joint_8           (encs_ratio 17.50) (status download)
-joint_9           (encs_ratio -2.10) (status download)
+joint_8           (encs_ratio 17.50) (status download) (idling (9 10))
+joint_9           (encs_ratio -2.10) (status download) (idling (10))
 joint_10          (encs_ratio -2.36) (status download)
-joint_11          (encs_ratio -2.58) (status download)
+joint_11          (encs_ratio -2.58) (status download) (idling (12))
 joint_12          (encs_ratio -2.32) (status download)
-joint_13          (encs_ratio -2.10) (status download)
+joint_13          (encs_ratio -2.10) (status download) (idling (14))
 joint_14          (encs_ratio -2.57) (status download)
 joint_15          (encs_ratio -1.70) (status download)
 \endcode
 
-Most of the options are self-explaining, whereas the <b>status</b>
-deserves an explanation. Its value can be either <i>download</i> or
-<i>upload</i>: in the first case it is asked the module at startup to
-store locally the PIDs values available onboard the robot, while in
-the second case the local configuration values will be uploaded 
-to the robot. 
- 
-\section portsif_sec Ports Interface 
-The interface to this module is implemented through 
-\ref fingersTuner_IDL . \n 
+Most of the options are self-explaining, whereas the <b>status</b> and
+<b>idling</b> deserve an explanation. \n
+Values of <b>status</b> option can be either <i>download</i> or <i>upload</i>:
+in the first case it is asked the module at startup to store locally the PIDs
+values available onboard the robot, while in the second case the local
+configuration values will be uploaded to the robot. \n
+The option <b>idling</b> allows putting in idle specific coupled joints that
+should be not controlled in position during the tuning of the joint under subject.
+
+\section portsif_sec Ports Interface
+The interface to this module is implemented through
+\ref fingersTuner_IDL . \n
 Be careful that from the console a yarp::os::Value must be typed
-by the user enclosed between parentheses, so that typical 
-commands are <i>tune left_hand (12)</i> or <i>tune left_hand 
-(index)</i>. 
+by the user enclosed between parentheses, so that typical
+commands are <i>tune left_hand (12)</i> or <i>tune left_hand
+(index)</i>.
 
 \section tested_os_sec Tested OS
 Windows, Linux
- 
+
 \author Ugo Pattacini
-*/ 
+*/
 
 #include <cmath>
 #include <string>
@@ -89,6 +91,7 @@ Windows, Linux
 
 #include <yarp/os/all.h>
 #include <yarp/dev/all.h>
+#include <yarp/sig/Vector.h>
 #include <iCub/ctrl/tuning.h>
 
 #include "fingersTuner_IDL.h"
@@ -96,6 +99,7 @@ Windows, Linux
 using namespace std;
 using namespace yarp::os;
 using namespace yarp::dev;
+using namespace yarp::sig;
 using namespace iCub::ctrl;
 
 
@@ -114,6 +118,7 @@ protected:
         double st_down;
         double encs_ratio;
         pidStatus status;
+        VectorOf<int> idling_joints;
         PidData() : Kp(0.0), Ki(0.0), Kd(0.0), scale(0.0),
                     st_up(0.0), st_down(0.0), encs_ratio(1.0),
                     status(download) { }
@@ -144,7 +149,7 @@ protected:
 
     Bottle rJoints;
     map<int,PidData> pids;
-    map<string,Bottle> alias;    
+    map<string,Bottle> alias;
 
     /************************************************************************/
     PolyDriver *waitPart(const Property &partOpt, const double ping_robot_tmo)
@@ -159,7 +164,7 @@ protected:
 
             pDrv=new PolyDriver(const_cast<Property&>(partOpt));
             bool ok=pDrv->isValid();
-            
+
             if (ok)
             {
                 yInfo("Checking if %s is active ... yes",device.c_str());
@@ -199,9 +204,45 @@ protected:
         pid.st_up=bJoint.check("st_up",Value(0.0)).asDouble();
         pid.st_down=bJoint.check("st_down",Value(0.0)).asDouble();
         pid.encs_ratio=bJoint.check("encs_ratio",Value(1.0)).asDouble();
-        pid.status=bJoint.check("status",Value("download")).asString()=="download"?download:upload;
+        pid.status=(bJoint.check("status",Value("download")).asString()=="download"?download:upload);
+        if (bJoint.check("idling"))
+        {
+            if (Bottle *bIdlingJoints=bJoint.find("idling").asList())
+            {
+                pid.idling_joints.clear();
+                for (int j=0; j<bIdlingJoints->size(); j++)
+                {
+                    int k=bIdlingJoints->get(j).asInt();
+
+                    int l;
+                    for (l=0; l<rJoints.size(); l++)
+                    {
+                        if (rJoints.get(l).asInt()==k)
+                        {
+                            pid.idling_joints.push_back(k);
+                            break;
+                        }
+                    }
+
+                    if (l>=rJoints.size())
+                        yError("unrecognized joint %d to put in idle",k);
+                }
+            }
+        }
 
         return pid;
+    }
+
+    /************************************************************************/
+    void idlingCoupledJoints(const int i, const bool sw)
+    {
+        IControlMode2 *imod;
+        driver->view(imod);
+
+        PidData &pid=pids[i];
+        for (size_t j=0; j<pid.idling_joints.size(); j++)
+            imod->setControlMode(pid.idling_joints[j],
+                                 sw?VOCAB_CM_IDLE:VOCAB_CM_POSITION);
     }
 
     /************************************************************************/
@@ -232,6 +273,8 @@ protected:
             return false;
         }
 
+        idlingCoupledJoints(i,true);
+
         Property pPlantEstimation;
         pPlantEstimation.put("max_time",20.0);
         pPlantEstimation.put("switch_timeout",2.0);
@@ -246,7 +289,10 @@ protected:
             yInfo("elapsed %d [s]",(int)(Time::now()-t0));
             Time::delay(1.0);
             if (interrupting)
+            {
+                idlingCoupledJoints(i,false);
                 return false;
+            }
         }
 
         Property pResults;
@@ -297,7 +343,10 @@ protected:
             yInfo("elapsed %d [s]",(int)(Time::now()-t0));
             Time::delay(1.0);
             if (interrupting)
+            {
+                idlingCoupledJoints(i,false);
                 return false;
+            }
         }
 
         designer.getResults(pResults);
@@ -324,12 +373,16 @@ protected:
                 break;
 
             if (interrupting)
+            {
+                idlingCoupledJoints(i,false);
                 return false;
+            }
 
             Time::delay(0.2);
         }
         yInfo("done!");
 
+        idlingCoupledJoints(i,false);
         return true;
     }
 
@@ -440,7 +493,7 @@ public:
             map<int,PidData>::iterator it=pids.find(j);
             if (it==pids.end())
                 continue;
-            
+
             IPidControl *ipid;
             driver->view(ipid);
             Pid _pid;
@@ -576,10 +629,10 @@ public:
 
         string name=bGeneral.check("name",Value("fingersTuner")).asString().c_str();
         setName(name.c_str());
-        
+
         if (Bottle *bParts=bGeneral.find("relevantParts").asList())
-        {            
-            for (int i=0; (i<bParts->size()) && !interrupting; i++) 
+        {
+            for (int i=0; (i<bParts->size()) && !interrupting; i++)
             {
                 string part=bParts->get(i).asString().c_str();
                 tuners[part]=new Tuner;
@@ -724,6 +777,3 @@ int main(int argc, char *argv[])
     TunerModule mod;
     return mod.runModule(rf);
 }
-
-
-
