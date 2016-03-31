@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<devices robot="iCubGenova04" build="1">
+<devices robot="iCubTwente01" build="1">
 	<device name="left_leg_calibrator" type="parametricCalibratorEth">
                 <params file="general.xml" />
 
@@ -9,10 +9,9 @@
 		    <param name="joints">  6  </param> <!-- the number of joints of the robot part -->
 		    <param name="deviceName"> Left_Leg_Calibrator </param>
 		</group>
-
-
+		
 <group name="HOME">
-<param name="positionHome">                       0.00           0.00       0.00         0.00        0.00      0.00        </param>
+<param name="positionHome">                       0.00           10.00       0.00         0.00        0.00      0.00        </param>
 <param name="velocityHome">                       10.00          10.00      10.00        10.00       10.00     10.00       </param>
 </group>
 
@@ -20,15 +19,15 @@
 
 <group name="CALIBRATION">
 <param name="calibrationType">                    3              3          3            3           3         3           </param>
-<param name="calibration1">                       32767.9        32767.9    32767.9      32767.9     32767.9   32767.9     </param>
-<param name="calibration2">                       10.0           10.0       10.0         10.0        10.0      10.0        </param>
-<param name="calibration3">                       48187.9        22816.1    6288.1       26492.1     32127.1   64415.9     </param>
+<param name="calibration1">                      32767.9	32767.9	32767.9	32767.9	32767.9	32767.9             </param>
+<param name="calibration2">                      10.0	10.0	10.0	10.0	10.0	10.0                        </param>
+<param name="calibration3">                      48094.9	22911.1	1103.1	42142.9	45646.9	35326.9             </param>
 <param name="calibration4">                       0.0            0.0        0.0          0.0         0.0       0.0         </param>
 <param name="calibration5">                       0.0            0.0        0.0          0.0         0.0       0.0         </param>
-<param name="calibrationZero">                    180.00         180.00     180.00       180.00      180.00    180.00      </param>
-<param name="calibrationDelta">                   0.0            0.0        0.0          0.0         0.0       0.0         </param>
+<param name="calibrationZero">                    180.00         180.00     180.00       -180.00     -180.00   180.00      </param>
+<param name="calibrationDelta">                   -1.1           0.0       4.2          0.0        0.0      0.0         </param>
 
-<param name="startupPosition">                    0.0            0.0        0.0          0.0         0.0       0.0         </param>
+<param name="startupPosition">                    0              0          0            0           0         0           </param>
 <param name="startupVelocity">                    10.0           10.0       10.0         10.0        10.0      10.0        </param>
 <param name="startupMaxPwm">                      1200           1200       1200         1200        1200      1200        </param>
 <param name="startupPosThreshold">                2              2          2            2           2         2           </param>

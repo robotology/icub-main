@@ -4,6 +4,7 @@
 <devices robot="iCubGenova04" build="1">
 	<device name="left_leg_VFTserver" type="virtualAnalogServer">
 		<param name="period">       10  				</param>
+		<param name="name">       /icub/left_leg/analog:o		</param>
 		<param name="deviceId">     left_leg				</param>
 		
 		 <paramlist name="networks">
@@ -13,7 +14,7 @@
 		    </paramlist>
 
 		<param name="channels">       6  				</param>
-		<param name="name"> 	     /left_leg				</param>
+		
 
 		<action phase="startup" level="5" type="attach">
 		    <paramlist name="networks">
