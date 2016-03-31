@@ -4,6 +4,7 @@
 <devices robot="iCubGenova05" build="1">
 	<device name="left_arm_as_wrapper" type="analogServer">
 		<param name="period">       10  				</param>
+		<param name="name">       /icub/right_arm/analog:o		</param>
 		<param name="deviceId">     right_arm				</param>
 		
 		<action phase="startup" level="5" type="attach">

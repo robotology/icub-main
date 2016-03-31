@@ -10,7 +10,7 @@
         <param name="Format">           16      </param>
         <param name="Channels">         6       </param>
         <param name="Period">           1       </param>
-        <param name="UseCalibration">       1       </param>
+        <param name="UseCalibration">   1       </param>
     </group>
   </device>
 </devices>
