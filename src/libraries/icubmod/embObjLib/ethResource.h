@@ -61,26 +61,6 @@
 #include <ace/SOCK_Dgram_Bcast.h>
 
 
-//typedef struct
-//{
-//    uint16_t    port;
-//    int         ip1;
-//    int         ip2;
-//    int         ip3;
-//    int         ip4;
-//    char        string[64];
-//} ethFeatIPaddress_t;
-
-
-//typedef struct
-//{
-//    ethFeatIPaddress_t  pc104IPaddr;
-//    ethFeatIPaddress_t  boardIPaddr;
-//    iethresType_t       type;
-//    IethResource*       interface;
-//} ethFeature_t;
-
-
 
 class can_string_eth;
 

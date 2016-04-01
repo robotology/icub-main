@@ -13,16 +13,6 @@ set(ICUB_COMPILE_EMBOBJ_LIBRARY OFF CACHE INTERNAL "use the embObjLib lib" FORCE
 
 project(icubmod)
 
-option (ICUB_EOPROT_MN_VERSION_1_0 "use OFF unless you want test old mode" OFF)
-mark_as_advanced (ICUB_EOPROT_MN_VERSION_1_0)
-
-
-if(ICUB_EOPROT_MN_VERSION_1_0)
-add_definitions(-DEOPROT_USE_MN_VERSION_1_0)
-else(ICUB_EOPROT_MN_VERSION_1_0)
-add_definitions(-DEOPROT_USE_MN_VERSION_2_0)
-endif(ICUB_EOPROT_MN_VERSION_1_0)
-
 
 option (WIP_FEATURE_CHECK_PROTOCOL_VERSION "use OFF until this feature is tested well enough" OFF)
 mark_as_advanced (WIP_FEATURE_CHECK_PROTOCOL_VERSION)
@@ -64,6 +54,9 @@ yarp_begin_plugin_library(icubmod)
   add_subdirectory(embObjMotionControl)
   add_subdirectory(embObjSkin)
   add_subdirectory(embObjAnalog)
+  add_subdirectory(embObjStrain)
+  add_subdirectory(embObjMais)
+  add_subdirectory(embObjInertials)
   add_subdirectory(embObjVirtualAnalogSensor)
   add_subdirectory(usbCamera)
   add_subdirectory(imuST_M1)

@@ -16,12 +16,12 @@
  * Public License for more details
 */
 
-/* @file       embObjAnaloSensor_callback.c
-    @brief     This file keeps examples for ems / pc104 of the user-defined functions used for all endpoints in as
-    @author     marco.accame@iit.it
-    @date       05/02/2012
-**/
 
+/*  @file       EOProtocolAS_fun_userdef.c
+    @brief      This file keeps callbacks used for AS protocol in icub-main
+    @author     marco.accame@iit.it
+    @date       22 mar 2016
+**/
 
 // --------------------------------------------------------------------------------------------------------------------
 // - external dependencies
@@ -53,7 +53,7 @@
 // - declaration of static functions
 // --------------------------------------------------------------------------------------------------------------------
 
-static void handle_data(const EOnv* nv, const eOropdescriptor_t* rd);
+static void handle_data_analogarray(const EOnv* nv, const eOropdescriptor_t* rd);
 
 static void handle_data_inertial(const EOnv* nv, const eOropdescriptor_t* rd);
 
@@ -98,72 +98,23 @@ extern void eoprot_fun_ONSAY_as(const EOnv* nv, const eOropdescriptor_t* rd)
 }
 
 
-extern void eoprot_fun_UPDT_as_strain_config(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-
-extern void eoprot_fun_UPDT_as_strain_status_fullscale(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-#if 0
-    // marco.accame: this code has been used for debug, to verify the reception of the sig<fullscale> sent by the ems
-    // now it is of no use. 
-    EOarray *array = (EOarray*)rd->data;
-    uint8_t size = eo_array_Size(array);
-
-
-    printf("eoprot_fun_UPDT_as_strain_status_fullscale() has received array of size %d and values: [",
-           size
-           );
-
-    int i=0;
-    for(i=0; i<6; i++)
-    {
-        uint16_t *a0 = (uint16_t *) eo_array_At(array, i);
-        uint16_t a00 = (NULL == a0) ? 0xffff : (*a0);
-        printf(" %d,", a00);
-    }
-    printf(" ]\n");
-
-#endif
-}
-
-
 extern void eoprot_fun_UPDT_as_strain_status_calibratedvalues(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    handle_data(nv, rd);
+    handle_data_analogarray(nv, rd);
 }
+
 
 extern void eoprot_fun_UPDT_as_strain_status_uncalibratedvalues(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    handle_data(nv, rd);
+    handle_data_analogarray(nv, rd);
 }
 
 
 extern void eoprot_fun_UPDT_as_mais_status_the15values(const EOnv* nv, const eOropdescriptor_t* rd)
 {
-    handle_data(nv, rd);
+    handle_data_analogarray(nv, rd);
 }
 
-extern void eoprot_fun_UPDT_as_mais_config(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-extern void eoprot_fun_UPDT_as_mais_config_datarate(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-extern void eoprot_fun_UPDT_as_mais_config_mode(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
-
-
-
-// - inertial
-
-extern void eoprot_fun_UPDT_as_inertial_config(const EOnv* nv, const eOropdescriptor_t* rd)
-{
-}
 
 extern void eoprot_fun_UPDT_as_inertial_status(const EOnv* nv, const eOropdescriptor_t* rd)
 {
@@ -187,7 +138,7 @@ extern void eoprot_fun_UPDT_as_inertial_status(const EOnv* nv, const eOropdescri
 // - definition of static functions 
 // --------------------------------------------------------------------------------------------------------------------
 
-static void handle_data(const EOnv* nv, const eOropdescriptor_t* rd)
+static void handle_data_analogarray(const EOnv* nv, const eOropdescriptor_t* rd)
 {
     EOarray* arrayof = (EOarray*)rd->data;
     uint8_t sizeofarray = eo_array_Size(arrayof);
