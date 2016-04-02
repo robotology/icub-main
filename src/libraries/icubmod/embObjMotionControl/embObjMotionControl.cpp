@@ -2405,6 +2405,12 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         calib.params.type9.max_delta  = (int32_t) S_32(params.param2);
         calib.params.type9.calibrationZero = (int32_t)S_32(params.paramZero /* * _angleToEncoder[j] */);
         break;
+        
+    case eomc_calibration_type10_abs_hard_stop:
+        calib.params.type10.pwmlimit   = (int32_t) S_32(params.param1);
+        calib.params.type10.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
+        break;
+        
     default:
         yError() << "Calibration type unknown!! (embObjMotionControl)\n";
         return false;
