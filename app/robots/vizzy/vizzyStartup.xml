@@ -5,7 +5,7 @@
 	</dependencies>
 
 	<module>
-		<name>robotInterface</name>
+		<name>yarprobotinterface</name>
 		<node>vizzy-desktop</node>
 		<tag>robotInterface</tag>
 	</module>
