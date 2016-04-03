@@ -423,8 +423,8 @@ public:
     bool setImpedance(bool turn_on);
     bool setTorque(bool turn_on, int arm=ARM_IN_USE);
 
-    int setStereoToCartesianMode(const int &mode, Bottle &reply);
-    int setStereoToCartesianMode(const int &mode);
+    int setStereoToCartesianMode(const int mode, Bottle &reply);
+    int setStereoToCartesianMode(const int mode);
 
     void setGraspState(bool side)
     {

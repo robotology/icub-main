@@ -140,7 +140,6 @@ bool MotorThread::setImpedance(bool turn_on)
 }
 
 
-
 bool MotorThread::setTorque(bool turn_on, int arm)
 {
     if(action[arm]==NULL)
@@ -164,13 +163,14 @@ bool MotorThread::setTorque(bool turn_on, int arm)
 }
 
 
-int MotorThread::setStereoToCartesianMode(const int &mode)
+int MotorThread::setStereoToCartesianMode(const int mode)
 {
     Bottle reply;
     return setStereoToCartesianMode(mode,reply);
 }
 
-int MotorThread::setStereoToCartesianMode(const int &mode, Bottle &reply)
+
+int MotorThread::setStereoToCartesianMode(const int mode, Bottle &reply)
 {
     switch(mode)
     {
@@ -180,14 +180,14 @@ int MotorThread::setStereoToCartesianMode(const int &mode, Bottle &reply)
             {
                 modeS2C=S2C_DISPARITY;
                 string tmp="[Stereo -> Cartesian]: Disparity";
-                yInfo(tmp.c_str());
+                yInfo("%s",tmp.c_str());
                 reply.addString(tmp.c_str());
             }
             else
             {
                 modeS2C=S2C_HOMOGRAPHY;
                 string tmp="[Stereo -> Cartesian]: Homography";
-                yInfo(tmp.c_str());
+                yInfo("%s",tmp.c_str());
                 reply.addString(tmp.c_str());
             }
             break;
@@ -199,14 +199,14 @@ int MotorThread::setStereoToCartesianMode(const int &mode, Bottle &reply)
             {
                 modeS2C=S2C_NETWORK;
                 string tmp="[Stereo -> Cartesian]: Neural Net";
-                yInfo(tmp.c_str());
+                yInfo("%s",tmp.c_str());
                 reply.addString(tmp.c_str());
             }
             else
             {
                 modeS2C=S2C_HOMOGRAPHY;
                 string tmp="[Stereo -> Cartesian]: Homography";
-                yInfo(tmp.c_str());
+                yInfo("%s",tmp.c_str());
                 reply.addString(tmp.c_str());
             }
             break;
@@ -216,17 +216,15 @@ int MotorThread::setStereoToCartesianMode(const int &mode, Bottle &reply)
         {
             modeS2C=S2C_HOMOGRAPHY;
             string tmp="[Stereo -> Cartesian]: Homography";
-            yInfo(tmp.c_str());
+            yInfo("%s",tmp.c_str());
             reply.addString(tmp.c_str());
             break;
         }
     }
     
-
     //get left offsets
     if(!bKinOffsets.find("left").asList()->check(Vocab::decode(modeS2C).c_str()))
     {
-
         Bottle &bKinMode=bKinOffsets.find("left").asList()->addList();
         bKinMode.addString(Vocab::decode(modeS2C).c_str());
         Bottle &bKinVec=bKinMode.addList();
@@ -238,11 +236,9 @@ int MotorThread::setStereoToCartesianMode(const int &mode, Bottle &reply)
     for(int i=0; i<3; i++)
         defaultKinematicOffset[LEFT][i]=bKinLeft->get(i).asDouble();
 
-    
     //get left offsets
     if(!bKinOffsets.find("right").asList()->check(Vocab::decode(modeS2C).c_str()))
     {
-
         Bottle &bKinMode=bKinOffsets.find("right").asList()->addList();
         bKinMode.addString(Vocab::decode(modeS2C).c_str());
         Bottle &bKinVec=bKinMode.addList();
@@ -453,7 +449,6 @@ bool MotorThread::stereoToCartesianDisparity(const Vector &stereo, Vector &xd)
     bEye.addDouble(stereo[1]);
 
     Bottle bX;
-
     do
     {
         disparityPort.write(bEye,bX);
@@ -2980,10 +2975,20 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
     if (!dragger.using_impedance)
         yWarning("Impedance control not available. Using admittance control!");
 
-    Vector x(3),o(4);
-    dragger.ctrl->getPose(x,o);
-    dragger.x0=x;
+    Vector x(3,0.0);
+    if (Bottle *b=options.find("target").asList())
+    {
+        size_t n=std::min(x.length(),(size_t)b->size());
+        for (size_t i=0; i<n; i++)
+            x[i]=b->get(i).asDouble();
+    }
+    else
+    {
+        Vector o;
+        dragger.ctrl->getPose(x,o);
+    }
 
+    dragger.x0=x;
     dragger.t0=Time::now();
 
     arm_mode=ARM_MODE_LEARN_KINOFF;
@@ -3014,10 +3019,6 @@ bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
             opcPort.getKinematicOffsets(options.get(3).asString().c_str(),currentKinematicOffset);
 
         currentKinematicOffset[dragger.arm]=(x-dragger.x0) + currentKinematicOffset[dragger.arm];
-
-        //for homography, the z coordinate does not have offset
-        if(modeS2C==S2C_HOMOGRAPHY)
-            currentKinematicOffset[dragger.arm][2]=0.0;
 
         //if no object with specified name is present in the database, then update the default kinematic offsets
         if(options.size()<4 || !opcPort.setKinematicOffset(options.get(3).asString().c_str(),currentKinematicOffset))

@@ -610,7 +610,6 @@ public:
             case RPC_S2C_MODE:
             {
                 motorThr->setStereoToCartesianMode(command.get(1).asVocab(),reply);
-
                 break;
             }
 
@@ -942,7 +941,10 @@ public:
                             {
                                 if(command.get(2).asString()=="start")
                                 {
-                                    if(motorThr->startLearningModeKinOffset(command))
+                                    if (command.size()>=4)
+                                        if (command.get(3).isList())
+                                            visuoThr->getTarget(command.get(3),command);
+                                    if (motorThr->startLearningModeKinOffset(command))
                                     {
                                         reply.addVocab(ACK);
                                         reply.addString("learn kinematic offset mode: on");
