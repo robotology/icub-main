@@ -2130,7 +2130,7 @@ bool MotorThread::goHome(Bottle &options)
     bool hand_home=checkOptions(options,"fingers") || checkOptions(options,"hands") || checkOptions(options,"hand");
 
     //if none is specified then assume all are going home
-    if(!head_home && !arms_home && !hand_home)
+    if (!head_home && !arms_home && !hand_home)
         head_home=arms_home=hand_home=true;
 
     //workaround
@@ -2140,50 +2140,56 @@ bool MotorThread::goHome(Bottle &options)
     bool right_arm=checkOptions(options,"right") || checkOptions(options,"both");
 
     //if none is specified the assume both arms (or hands) are going home
-    if(!left_arm && !right_arm)
+    if (!left_arm && !right_arm)
         left_arm=right_arm=true;
 
-    if(head_home)
+    if (head_home)
         head_mode=HEAD_MODE_GO_HOME;
 
-    if(arms_home)
+    if (arms_home)
     {
-        if(left_arm && action[LEFT]!=NULL)
-        {          
-            if(hand_home)
-                action[LEFT]->pushAction("open_hand");
+        // first off, LEFT
+        bool exec_arm[2];
+        exec_arm[0]=left_arm;
+        exec_arm[1]=right_arm;
+        int which_arm[2]={ LEFT, RIGHT };
 
-            goWithTorsoUpright(action[LEFT],homePos[LEFT],homeOrient[LEFT]);
-            bool f; action[LEFT]->checkActionsDone(f,true);
-        }
-
-        if(right_arm && action[RIGHT]!=NULL)
+        // in case we're asked to deal with both
+        // first off, take home the arm in use
+        if (exec_arm[0] && exec_arm[1])
         {
-            if(hand_home)
-                action[RIGHT]->pushAction("open_hand");
-
-            goWithTorsoUpright(action[RIGHT],homePos[RIGHT],homeOrient[RIGHT]);
-            bool f; action[RIGHT]->checkActionsDone(f,true);
+            if (armInUse==RIGHT)
+            {
+                which_arm[0]=RIGHT;
+                which_arm[1]=LEFT;
+            }
         }
 
-        if(right_arm && action[RIGHT]!=NULL)
+        for (size_t i=0; i<2; i++)
         {
-            if(waveing)
-                action[RIGHT]->enableArmWaving(homePos[RIGHT]);
+            bool f;
+            if (exec_arm[i] && (action[which_arm[i]]!=NULL))
+            {
+                if (hand_home)
+                    action[which_arm[i]]->pushAction("open_hand");
+
+                goWithTorsoUpright(action[which_arm[i]],homePos[which_arm[i]],homeOrient[which_arm[i]]);
+                action[which_arm[i]]->checkActionsDone(f,true);
+            }
         }
 
-        if(left_arm && action[LEFT]!=NULL)
-        {
-            if(waveing)
-                action[LEFT]->enableArmWaving(homePos[LEFT]);
-        }
+        if (waveing && right_arm && (action[RIGHT]!=NULL))
+            action[RIGHT]->enableArmWaving(homePos[RIGHT]);
+
+        if (waveing && left_arm && (action[LEFT]!=NULL))
+            action[LEFT]->enableArmWaving(homePos[LEFT]);
     }
-    else if(hand_home)
+    else if (hand_home)
     {
-        if(left_arm)
+        if (left_arm)
             action[LEFT]->pushAction("open_hand");
 
-        if(right_arm)
+        if (right_arm)
             action[RIGHT]->pushAction("open_hand");
     }
 
