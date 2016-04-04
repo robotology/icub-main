@@ -1539,21 +1539,18 @@ void MotorThread::onStop()
 bool MotorThread::preTakeHand(Bottle &options)
 {
     int arm=ARM_MOST_SUITED;
-    if(checkOptions(options,"left") || checkOptions(options,"right"))
+    if (checkOptions(options,"left") || checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
     Bottle *bTarget=options.find("target").asList();
 
     Vector xd;
-    if(!targetToCartesian(bTarget,xd))
+    if (!targetToCartesian(bTarget,xd))
         return false;
 
     arm=checkArm(arm,xd);
 
-    bool f;
     action[arm]->pushAction("pretake_hand");
-    action[arm]->checkActionsDone(f,true);
-
     return true;
 }
 
