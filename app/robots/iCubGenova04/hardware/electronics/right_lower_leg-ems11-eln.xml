@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubGenova04" build="1">
+
+    <params file="hardware/electronics/pc104.xml" />
+    
+    <group name="ETH_BOARD">
+
+        <group name="ETH_BOARD_PROPERTIES">
+            <param name="IpAddress">                10.0.1.11       </param>
+            <param name="IpPort">                   12345           </param>
+            <param name="Type">                     EMS4            </param>
+            <param name="maxSizeRXpacket">          768             </param>
+            <param name="maxSizeROP">               256             </param>
+            <param name="maxNumberRegularROPs">     32              </param>    
+            <param name="protocolCapability">       MAXIMUM         </param>   
+        </group>
+
+        <group name="ETH_BOARD_SETTINGS">
+            <param name="Name">                     "EB11"          </param> 
+            <param name="regularsTXrate">           3               </param> 
+            <param name="protocolToUse">            STANDARD        </param> 
+        </group>
+
+    </group>  
+
+ 
+    <group name="SERVICES">
+
+        <group name="INERTIALS">
+            <param name="InertialsCAN1mapping"> 
+                none 
+                r_upper_leg_1   r_upper_leg_2   r_upper_leg_3   r_upper_leg_4   r_upper_leg_5   r_upper_leg_6   r_upper_leg_7 
+                none            none            none            none            none            none            none               
+            </param>
+
+            <param name="InertialsCAN2mapping">
+                none    
+                none            none            none            none            none            none            none
+                r_lower_leg_1   r_lower_leg_2   r_lower_leg_3   r_lower_leg_4   r_foot_2        r_foot_1        none                
+            </param>
+        </group>
+
+    </group>
+   
+</params>
+
+
