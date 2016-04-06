@@ -18,9 +18,7 @@ DC1394Slider::DC1394Slider(QWidget *parent) :
 
 DC1394Slider::~DC1394Slider()
 {
-
     disconnectWidgets();
-
     delete ui;
 }
 
@@ -39,7 +37,6 @@ void DC1394Slider::resizeEvent(QResizeEvent* event)
    QWidget::resizeEvent(event);
 
    updateSliders();
-
 }
 
 bool DC1394Slider::init(cameraFeature_id_t feature, char* label, DC1394Thread *controlThread)
@@ -119,7 +116,6 @@ void DC1394Slider::disconnectWidgets()
     disconnect(ui->pRBa,SIGNAL(toggled(bool)),this,SLOT(onRadioAuto(bool)));
     //disconnect(ui->pRBm,SIGNAL(toggled(bool)),this,SLOT(onRadioManual(bool)));
     disconnect(ui->pPwr,SIGNAL(toggled(bool)),this,SLOT(onPower(bool)));
-
 }
 
 
@@ -128,7 +124,6 @@ void DC1394Slider::Refresh()
     if (m_bInactive){
         return;
     }
-
 
     int f = (int)m_Feature;
     QVariantList list;
@@ -139,14 +134,12 @@ void DC1394Slider::Refresh()
 
 void DC1394Slider::onRefreshDone(QObject *slider,bool bON,bool bAuto,bool bHasOnOff,bool bHasAuto,bool bHasManual,bool bHasOnePush,double val)
 {
-
     if(slider != this){
         return;
     }
     disconnectWidgets();
 
     ui->pPwr->setChecked(bON);
-
     ui->pPwr->setEnabled(bHasOnOff || bON);
     ui->pRBa->setEnabled(bON && bHasAuto);
     ui->pRBm->setEnabled(bON && bHasManual);
@@ -169,7 +162,6 @@ void DC1394Slider::onRefreshDone(QObject *slider,bool bON,bool bAuto,bool bHasOn
     }
 
     connectWidgets();
-
 }
 
 void DC1394Slider::Propagate()
@@ -185,12 +177,13 @@ void DC1394Slider::Propagate()
     list.append(QVariant(ui->pPwr->isChecked()));
 
     controlThread->doTask(_sliderPropagate,list);
-
 }
+
 void DC1394Slider::onSliderPressed()
 {
     pressed = true;
 }
+
 void DC1394Slider::onSliderReleased()
 {
 
@@ -206,7 +199,6 @@ void DC1394Slider::onSliderReleased()
 
 void DC1394Slider::onSliderValueChanged(int value)
 {
-    LOG("++++++++++++++\n");
     double val = (double)value/1000;
     int w = ui->m_Slider->width() - 30;
     double newX = ((double)w/(double)1000) * (double)value;
@@ -246,8 +238,6 @@ void DC1394Slider::onOnePushDone(QObject *slider, double val)
     connectWidgets();
 
     controlThread->doTask(_reload);
-
-
 }
 
 void DC1394Slider::onRadioAuto(bool toggled)
@@ -259,8 +249,6 @@ void DC1394Slider::onRadioAuto(bool toggled)
     list.append(QVariant((int)m_Feature));
     list.append(QVariant(bAuto));
     controlThread->doTask(_sliderRadioAuto,list);
-
-
 }
 
 void DC1394Slider::onRadioAutoDone(QObject *slider,bool bON, bool bAuto)
@@ -268,11 +256,9 @@ void DC1394Slider::onRadioAutoDone(QObject *slider,bool bON, bool bAuto)
     if(slider != this){
         return;
     }
-    std::cout << "slider enable is " << ui->m_Slider->isEnabled() << std::endl;
 
     ui->m_Slider->setEnabled(bON && !bAuto);
     ui->lblValue->setEnabled(bON && !bAuto);
-
     LOG("%s\n",ui->pRBa->isChecked() ? "auto":"man");
 
     controlThread->doTask(_reload);
@@ -295,15 +281,12 @@ void DC1394Slider::onPowerDone(QObject *slider, bool bON,bool hasAuto, bool hasM
         return;
     }
 
-    std::cout << "slider enable is " << ui->m_Slider->isEnabled() << std::endl;
-
     ui->pRBa->setEnabled(bON && hasAuto);
     ui->pRBm->setEnabled(bON && hasManual);
     ui->m_Slider->setEnabled(bON && ui->pRBm->isChecked());
     ui->lblValue->setEnabled(bON && ui->pRBm->isChecked());
     ui->m_OnePush->setEnabled(bON && hasOnePush);    // why setEnabled(false) is different from setDisable(true)?
     LOG("power %s\n",ui->pPwr->isChecked()?"on":"off");
-
 
     controlThread->doTask(_reload);
 }

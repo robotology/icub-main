@@ -20,10 +20,8 @@ bool DC1394Thread::getCameraDescription(CameraDescriptor *camera)
     return false;
 }
 
-
 void DC1394Thread::run()
 {
-
     // create firewire thread
     //DC1394Control = new yarp::dev::RemoteFrameGrabberControlsDC1394();
 
@@ -241,8 +239,6 @@ void DC1394Thread::doTask(threadFunction func)
     mutex1.unlock();
 }
 
-
-
 void DC1394Thread::initFormatTab()
 {
     uint videoModeMaskDC1394 = DC1394Control->getVideoModeMaskDC1394();
@@ -255,12 +251,6 @@ void DC1394Thread::initFormatTab()
         stopLoading();
     }
 }
-
-
-//DC1394Thread::initDC1394()
-//{
-
-//}
 
 void DC1394Thread::init()
 {
@@ -344,7 +334,6 @@ void DC1394Thread::reload()
     if(opCounter == 0){
         stopLoading();
     }
-
 }
 
 void DC1394Thread::loadDefualt()
@@ -385,7 +374,6 @@ void DC1394Thread::reset()
 
 void DC1394Thread::setTransmissionDC1394(QVariantList arg)
 {
-    qDebug() << "setTransmissionDC1394";
     bool value = arg.at(0).toBool();
     DC1394Control->setTransmissionDC1394(value);
     setTransmissionDC1394Done();
@@ -397,7 +385,6 @@ void DC1394Thread::setTransmissionDC1394(QVariantList arg)
 
 void DC1394Thread::setPowerDC1394(QVariantList arg)
 {
-    qDebug() << "setPowerDC1394";
     bool value = arg.at(0).toBool();
     DC1394Control->setPowerDC1394(value);
     setPowerDC1394Done();
@@ -408,7 +395,6 @@ void DC1394Thread::setPowerDC1394(QVariantList arg)
 }
 void DC1394Thread::setFormat7WindowDC1394(QVariantList arg)
 {
-    qDebug() << "setFormat7WindowDC1394";
     unsigned int xdim=arg.at(0).toUInt();
     unsigned int ydim=arg.at(1).toUInt();
     int x0=arg.at(2).toInt();
@@ -424,7 +410,6 @@ void DC1394Thread::setFormat7WindowDC1394(QVariantList arg)
 
 void DC1394Thread::setVideoModeDC1394(QVariantList arg)
 {
-    qDebug() << "setVideoModeDC1394";
     unsigned int video_mode=arg.at(0).toUInt();
     DC1394Control->setVideoModeDC1394(video_mode);
     setVideoModeDC1394Done();
@@ -436,8 +421,6 @@ void DC1394Thread::setVideoModeDC1394(QVariantList arg)
 
 void DC1394Thread::setColorCodingDC1394(QVariantList arg)
 {
-    qDebug() << "setColorCodingDC1394";
-
     int value =arg.at(0).toInt();
     DC1394Control->setColorCodingDC1394(value);
 
@@ -450,7 +433,6 @@ void DC1394Thread::setColorCodingDC1394(QVariantList arg)
 
 void DC1394Thread::setFPSDC1394(QVariantList arg)
 {
-    qDebug() << "setFPSDC1394";
     int value = arg.at(0).toInt();
     DC1394Control->setFPSDC1394(value);
 
@@ -464,7 +446,6 @@ void DC1394Thread::setFPSDC1394(QVariantList arg)
 
 void DC1394Thread::setISOSpeedDC1394(QVariantList arg)
 {
-    qDebug() << "setISOSpeedDC1394";
     int value = arg.at(0).toInt();
     DC1394Control->setISOSpeedDC1394(value);
 
@@ -477,7 +458,6 @@ void DC1394Thread::setISOSpeedDC1394(QVariantList arg)
 
 void DC1394Thread::setBytesPerPacketDC1394(QVariantList arg)
 {
-    qDebug() << "setBytesPerPacketDC1394";
     int value = arg.at(0).toUInt();
     DC1394Control->setBytesPerPacketDC1394(value);
 
@@ -490,7 +470,6 @@ void DC1394Thread::setBytesPerPacketDC1394(QVariantList arg)
 
 void DC1394Thread::setOperationModeDC1394(QVariantList arg)
 {
-    qDebug() << "setOperationModeDC1394";
     int value = arg.at(0).toInt();
     DC1394Control->setOperationModeDC1394(value);
 
@@ -503,12 +482,12 @@ void DC1394Thread::setOperationModeDC1394(QVariantList arg)
 
 void DC1394Thread::sliderRefresh(QVariantList arg)
 {
-    qDebug() << "sliderRefresh";
     cameraFeature_id_t feature;
 
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
     feature = (cameraFeature_id_t)value;
+
 
     FeatureMode mode;
     bool bON, bAuto, bHasAuto, bHasManual, bHasOnePush, bHasOnOff;
@@ -538,12 +517,10 @@ void DC1394Thread::sliderRefresh(QVariantList arg)
     if(opCounter == 0){
         stopLoading();
     }
-
 }
 
 void DC1394Thread::sliderWBRefresh(QVariantList arg)
 {
-    qDebug() << "sliderWBRefresh";
     cameraFeature_id_t feature;
 
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
@@ -577,13 +554,10 @@ void DC1394Thread::sliderWBRefresh(QVariantList arg)
     if(opCounter == 0){
         stopLoading();
     }
-
 }
 
 void DC1394Thread::sliderPropagate(QVariantList arg)
 {
-    qDebug() << "sliderPropagate";
-
     cameraFeature_id_t feature;
     int value = arg.at(0).toInt();
     feature = (cameraFeature_id_t)value;
@@ -605,13 +579,10 @@ void DC1394Thread::sliderPropagate(QVariantList arg)
     if(opCounter == 0){
         stopLoading();
     }
-
 }
 
 void DC1394Thread::sliderWBPropagate(QVariantList arg)
 {
-    qDebug() << "sliderWBPropagate";
-
     cameraFeature_id_t feature;
     int value = arg.at(0).toInt();
     feature = (cameraFeature_id_t)value;
@@ -635,14 +606,11 @@ void DC1394Thread::sliderWBPropagate(QVariantList arg)
     if(opCounter == 0){
         stopLoading();
     }
-
 }
 
 
 void DC1394Thread::sliderSetFeatureDC1394(QVariantList arg)
 {
-    qDebug() << "sliderSetFeatureDC1394";
-
     cameraFeature_id_t feature;
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
@@ -662,8 +630,6 @@ void DC1394Thread::sliderSetFeatureDC1394(QVariantList arg)
 
 void DC1394Thread::sliderWBSetFeatureDC1394(QVariantList arg)
 {
-    qDebug() << "sliderWBSetFeatureDC1394";
-
     cameraFeature_id_t feature;
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
@@ -684,8 +650,6 @@ void DC1394Thread::sliderWBSetFeatureDC1394(QVariantList arg)
 
 void DC1394Thread::sliderOnePush(QVariantList arg)
 {
-    qDebug() << "sliderOnePush";
-
     cameraFeature_id_t feature;
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
@@ -702,13 +666,10 @@ void DC1394Thread::sliderOnePush(QVariantList arg)
     if(opCounter == 0){
         stopLoading();
     }
-
 }
 
 void DC1394Thread::sliderWBOnePush(QVariantList arg)
 {
-    qDebug() << "sliderWBOnePush";
-
     cameraFeature_id_t feature;
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
@@ -726,14 +687,11 @@ void DC1394Thread::sliderWBOnePush(QVariantList arg)
     if(opCounter == 0){
         stopLoading();
     }
-
 }
 
 
 void DC1394Thread::sliderRadioAuto(QVariantList arg)
 {
-    qDebug() << "sliderRadioAuto";
-
     cameraFeature_id_t feature;
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
@@ -751,7 +709,6 @@ void DC1394Thread::sliderRadioAuto(QVariantList arg)
     if(opCounter == 0){
         stopLoading();
     }
-
 }
 
 void DC1394Thread::sliderPower(QVariantList arg)
@@ -768,8 +725,8 @@ void DC1394Thread::sliderPower(QVariantList arg)
 
     bool hasAuto, hasManual, hasOnePush;
     fgControl2->hasAuto(feature, &hasAuto);
-    /*bool hasManual  = */ fgControl2->hasManual(feature, &hasManual);
-    /*bool hasOnePush = */ fgControl2->hasOnePush(feature, &hasOnePush);
+    fgControl2->hasManual(feature, &hasManual);
+    fgControl2->hasOnePush(feature, &hasOnePush);
     sliderPowerDone(ptr,bON,hasAuto,hasManual,hasOnePush);
 
     opCounter--;
@@ -781,8 +738,6 @@ void DC1394Thread::sliderPower(QVariantList arg)
 
 void DC1394Thread::sliderHasFeature(QVariantList arg)
 {
-    qDebug() << "sliderHasFeature";
-
     cameraFeature_id_t feature;
     QObject *ptr = (QObject*)arg.at(0).value<void*>();
     int value = arg.at(1).toInt();
@@ -790,7 +745,6 @@ void DC1394Thread::sliderHasFeature(QVariantList arg)
 
     bool hasFeature;
     fgControl2->hasFeature(feature, &hasFeature);
-//     hasFeature = true;// fgControl2->hasFeature(feature);
 
     opCounter--;
     if(opCounter == 0){
@@ -798,5 +752,4 @@ void DC1394Thread::sliderHasFeature(QVariantList arg)
     }
 
     sliderHasFeatureDone(ptr,hasFeature);
-
 }
