@@ -381,13 +381,13 @@ void ActionPrimitives::printMessage(const int logtype, const char *format, ...) 
         switch (logtype)
         {
         case log::error:
-            yError(str.c_str());
+            yError()<<str;
             break;
         case log::warning:
-            yWarning(str.c_str());
+            yWarning()<<str;
             break;
         case log::info:
-            yInfo(str.c_str());
+            yInfo()<<str;
             break;
         default:
             printf("%s\n",str.c_str());
