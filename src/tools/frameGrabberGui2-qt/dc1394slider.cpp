@@ -147,11 +147,12 @@ void DC1394Slider::onRefreshDone(QObject *slider,bool bON,bool bAuto,bool bHasOn
 
     ui->pPwr->setChecked(bON);
 
-    ui->pPwr->setEnabled(bHasOnOff);
+    ui->pPwr->setEnabled(bHasOnOff || bON);
     ui->pRBa->setEnabled(bON && bHasAuto);
     ui->pRBm->setEnabled(bON && bHasManual);
-    ui->m_Slider->setEnabled(bON && !bAuto);
-    ui->lblValue->setEnabled(bON && !bAuto);
+
+    ui->m_Slider->setEnabled(bHasManual && !bAuto);
+    ui->lblValue->setEnabled(bHasManual && !bAuto);
     ui->m_OnePush->setEnabled(bON && bHasOnePush);    // why setEnabled(false) is different from setDisable(true)?
 
     if (bAuto) {
