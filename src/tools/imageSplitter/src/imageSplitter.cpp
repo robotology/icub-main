@@ -56,7 +56,7 @@ bool ImageSplitter::configure(yarp::os::ResourceFinder &rf)
 
     if(rf.check("nameRight"))
     {
-        outLeftPortName = rf.find("nameRight").asString();
+        outRightPortName = rf.find("nameRight").asString();
     }
 
     if(!rf.check("remote"))
