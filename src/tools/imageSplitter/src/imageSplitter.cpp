@@ -133,6 +133,9 @@ bool ImageSplitter::close()
 bool ImageSplitter::updateModule()
 {
     ImageOf<PixelRgb> *inputImage    = inputPort.read();
+    yarp::os::Stamp stamp;
+    inputPort.getEnvelope(stamp);
+
     ImageOf<PixelRgb> &outLeftImage  = outLeftPort.prepare();
     ImageOf<PixelRgb> &outRightImage = outRightPort.prepare();
 
@@ -307,6 +310,9 @@ bool ImageSplitter::updateModule()
         yInfo() << "Elapsed time: " << elapsed;
         elapsed = 0;
     }
+
+    outLeftPort.setEnvelope(stamp);
+    outRightPort.setEnvelope(stamp);
 
     outLeftPort.write();
     outRightPort.write();
