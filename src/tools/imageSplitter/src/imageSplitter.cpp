@@ -322,6 +322,6 @@ bool ImageSplitter::updateModule()
 
 double ImageSplitter::getPeriod()
 {    
-   return 0.1;
+   return 0.01;
 }
 
