@@ -226,7 +226,6 @@ bool V4L_camera::threadInit()
 
 void V4L_camera::run()
 {
-//     yTrace();
     if(full_FrameRead())
         frameCounter++;
     else
@@ -599,7 +598,7 @@ bool V4L_camera::enumerate_controls()
             if (queryctrl.flags & V4L2_CTRL_FLAG_DISABLED)
                 continue;
 
-            printf ("Control %s\n", queryctrl.name);
+            printf ("Control %s (id %d)\n", queryctrl.name, queryctrl.id);
 
             if (queryctrl.type == V4L2_CTRL_TYPE_MENU)
                 enumerate_menu ();
@@ -766,7 +765,7 @@ void* V4L_camera::frameRead()
                 
 
                 mutex.wait();
-                memcpy(param.raw_image, param.buffers[buf.index].start, param.image_size);
+                memcpy(param.raw_image, param.buffers[buf.index].start, param.buffers[0].length); //param.image_size);
 //                 param.raw_image = param.buffers[buf.index].start;
 //                 imageProcess(param.raw_image);
                 mutex.post();
@@ -1121,7 +1120,7 @@ bool V4L_camera::userptrInit(unsigned int buffer_size)
     return true;
 }
 
-bool V4L_camera::set_V4L2_control(uint32_t id, double value)
+bool V4L_camera::set_V4L2_control(uint32_t id, double value, bool verbatim)
 {
     yTrace();
     struct v4l2_queryctrl queryctrl;
@@ -1138,7 +1137,7 @@ bool V4L_camera::set_V4L2_control(uint32_t id, double value)
         }
         else
         {
-            printf ("Control <%s> is not supported (id %d)\n", queryctrl.name, queryctrl.id);
+            yError("Cannot set control <%s> (id %d) is not supported \n", queryctrl.name, queryctrl.id);
         }
         return false;
     }
@@ -1152,16 +1151,19 @@ bool V4L_camera::set_V4L2_control(uint32_t id, double value)
     {
         memset (&control, 0, sizeof (control));
         control.id = id;
-        control.value = (int32_t) (value * (queryctrl.maximum - queryctrl.minimum) + queryctrl.minimum);
+        if(verbatim)
+            control.value = value;
+        else
+            control.value = (int32_t) (value * (queryctrl.maximum - queryctrl.minimum) + queryctrl.minimum);
 
         if (-1 == ioctl(param.fd, VIDIOC_S_CTRL, &control))
         {
             perror ("VIDIOC_S_CTRL");
+            if(errno == ERANGE)
+            {
+                printf("Normalized input value %f ( equivalent to raw value of %d) was out of range for control %s: Min and Max are: %d - %d \n", value, control.value, queryctrl.name, queryctrl.minimum, queryctrl.maximum);
+            }
             return false;
-        }
-        if(errno == ERANGE)
-        {
-            printf("Normalized input value %f ( equivalent to raw value of %d) was out of range for control %s: Min and Max are: %d - %d \n", value, control.value, queryctrl.name, queryctrl.minimum, queryctrl.maximum);
         }
         printf("set control %s to %d done!\n", queryctrl.name, control.value);
     }
@@ -1170,7 +1172,7 @@ bool V4L_camera::set_V4L2_control(uint32_t id, double value)
 
 bool V4L_camera::check_V4L2_control(uint32_t id)
 {
-    yTrace();
+//     yTrace();
     struct v4l2_queryctrl queryctrl;
     struct v4l2_control control;
 
@@ -1186,18 +1188,17 @@ bool V4L_camera::check_V4L2_control(uint32_t id)
         {
             perror ("VIDIOC_QUERYCTRL");
         }
-        else
-        {
-            printf ("Control %s is not supported\n", queryctrl.name);
-        }
+//         else
+//         {
+//             printf ("Control %s (id %d) is not supported\n", queryctrl.name, id);
+//         }
         return false;
     }
     return true;
 }
 
-double V4L_camera::get_V4L2_control(uint32_t id)
+double V4L_camera::get_V4L2_control(uint32_t id, bool verbatim)
 {
-    yTrace();
     struct v4l2_queryctrl queryctrl;
     struct v4l2_control control;
 
@@ -1213,10 +1214,10 @@ double V4L_camera::get_V4L2_control(uint32_t id)
         {
             perror ("VIDIOC_QUERYCTRL");
         }
-        else
-        {
-            printf ("Control %s is not supported\n", queryctrl.name);
-        }
+//         else
+//         {
+//             printf ("Control %s is not supported\n", queryctrl.name);
+//         }
         return -1.0;
     }
 
@@ -1233,69 +1234,62 @@ double V4L_camera::get_V4L2_control(uint32_t id)
         }
 //         printf("Control %s got value %d!\n", queryctrl.name, control.value);
     }
+    if(verbatim)
+        return control.value;
+
     return (double) (control.value - queryctrl.minimum) /  (queryctrl.maximum - queryctrl.minimum);
 }
 
 
-    // GET CONTROLS!!
+// GET CONTROLS!!
 double V4L_camera::getBrightness()
 {
-    yTrace();
     return get_V4L2_control(V4L2_CID_BRIGHTNESS);
 }
 
 double V4L_camera::getExposure()
 {
-    yTrace();
     return get_V4L2_control(V4L2_CID_EXPOSURE);
 }
 
 double V4L_camera::getGain()
 {
-    yTrace();
     return get_V4L2_control(V4L2_CID_GAIN);
 }
 
 double V4L_camera::getGamma()
 {
-    yTrace();
     return get_V4L2_control(V4L2_CID_GAMMA);
 }
 
 double V4L_camera::getHue()
 {
-    yTrace();
     return get_V4L2_control(V4L2_CID_HUE);
 }
 
 double V4L_camera::getIris()
 {
-    yTrace();
     return get_V4L2_control(V4L2_CID_IRIS_ABSOLUTE);
 }
 
 double V4L_camera::getSaturation()
 {
-    yTrace();
     return get_V4L2_control(V4L2_CID_SATURATION);
 }
 
 double V4L_camera::getSharpness()
 {
-    yTrace();
     return get_V4L2_control(V4L2_CID_SHARPNESS);
 }
 
 double V4L_camera::getShutter()
 {
-    yTrace();
     printf("Don't know how to map it :-&\n");
     return false;
 }
 
 bool V4L_camera::getWhiteBalance(double &blue, double &red)
 {
-    yTrace();
     blue = get_V4L2_control(V4L2_CID_RED_BALANCE);
     red  = get_V4L2_control(V4L2_CID_BLUE_BALANCE);
     if( (red == -1) || (blue == -1) )
@@ -1308,63 +1302,53 @@ bool V4L_camera::getWhiteBalance(double &blue, double &red)
     // SET CONTROLS!!
 bool V4L_camera::setBrightness(double v)
 {
-    yTrace();
     return set_V4L2_control(V4L2_CID_BRIGHTNESS, v);
 }
 
 bool V4L_camera::setExposure(double v)
 {
-    yTrace();
     return set_V4L2_control(V4L2_CID_EXPOSURE, v);
 }
 
 bool V4L_camera::setGain(double v)
 {
-    yTrace();
     return set_V4L2_control(V4L2_CID_GAIN, v);
 }
 
 bool V4L_camera::setGamma(double v)
 {
-    yTrace();
     return set_V4L2_control(V4L2_CID_GAMMA, v);
 }
 
 bool V4L_camera::setHue(double v)
 {
-    yTrace();
     return set_V4L2_control(V4L2_CID_HUE, v);
 }
 
 bool V4L_camera::setIris(double v)
 {
-    yTrace();
     return set_V4L2_control(V4L2_CID_IRIS_ABSOLUTE, v);
 }
 
 bool V4L_camera::setSaturation(double v)
 {
-    yTrace();
     return set_V4L2_control(V4L2_CID_SATURATION, v);
 }
 
 bool V4L_camera::setSharpness(double v)
 {
-    yTrace();
     return set_V4L2_control(V4L2_CID_SHARPNESS, v);
 }
 
 bool V4L_camera::setShutter(double v)
 {
-    yTrace();
 //     return set_V4L2_control(V4L2_CID_BRIGHTNESS, v);
-    printf("Don't know how to map it :-&\n");
+    printf("No known function on V4L2 for shutter :-&\n");
     return false;
 }
 
 bool V4L_camera::setWhiteBalance(double blue, double red)
 {
-    yTrace();
     bool ret = true;
     ret &= set_V4L2_control(V4L2_CID_AUTO_WHITE_BALANCE, false);
     ret &= set_V4L2_control(V4L2_CID_AUTO_N_PRESET_WHITE_BALANCE, V4L2_WHITE_BALANCE_MANUAL);
@@ -1376,7 +1360,6 @@ bool V4L_camera::setWhiteBalance(double blue, double red)
 
 bool V4L_camera::getCameraDescription(CameraDescriptor* camera)
 {
-    yTrace();
     camera->busType = BUS_USB;
     camera->deviceDescription = "USB3 camera";
     return true;
@@ -1391,27 +1374,14 @@ bool V4L_camera::hasFeature(int feature, bool *_hasFeature)
         case YARP_FEATURE_WHITE_BALANCE:
         {
             tmpMan = check_V4L2_control(V4L2_CID_RED_BALANCE) && check_V4L2_control(V4L2_CID_BLUE_BALANCE);
-            if(!tmpMan)
-                yError() << "No manual white_balance!!";
-
             tmpOnce = check_V4L2_control(V4L2_CID_DO_WHITE_BALANCE);
-            if(!tmpOnce)
-                yInfo() << "No one shot white_balance!!";
-
             tmpAuto = check_V4L2_control(V4L2_CID_AUTO_WHITE_BALANCE);
-            if(!tmpAuto)
-                yInfo() << "No auto white_balance!!";
         } break;
 
         case YARP_FEATURE_EXPOSURE:
         {
             tmpMan = check_V4L2_control(V4L2_CID_EXPOSURE);
-            if(!tmpMan)
-                yError() << "No manual exposure!!";
-
             tmpAuto = check_V4L2_control(V4L2_CID_EXPOSURE_AUTO);
-            if(!tmpAuto)
-                yInfo() << "No auto exposure!!";
         } break;
 
         default:
@@ -1463,7 +1433,9 @@ bool V4L_camera::hasOnOff(int feature, bool *_hasOnOff)
     // I can't find any meaning of setting a feature to off on V4l ... what it is supposed to do????
     switch(feature)
     {
+        // The following do have a way to set them auto/manual
         case YARP_FEATURE_WHITE_BALANCE:
+        case YARP_FEATURE_EXPOSURE:
         {
             if(hasAuto(feature, &_hasAuto) )
                 *_hasOnOff = true;
@@ -1471,11 +1443,7 @@ bool V4L_camera::hasOnOff(int feature, bool *_hasOnOff)
                 *_hasOnOff = false;
         } break;
 
-        case YARP_FEATURE_EXPOSURE:
-        {
-
-        } // break;
-
+        // try it out
         default:
         {
             hasAuto(feature, &_hasAuto);
@@ -1518,7 +1486,13 @@ bool V4L_camera::setActive(int feature, bool onoff)
             }
             else
             {
-                set_V4L2_control(V4L2_CID_EXPOSURE_AUTO, V4L2_EXPOSURE_MANUAL);
+                bool man = set_V4L2_control(V4L2_CID_EXPOSURE_AUTO, V4L2_EXPOSURE_MANUAL);
+                if(!man)
+                {
+                    man = set_V4L2_control(V4L2_CID_EXPOSURE_AUTO, V4L2_EXPOSURE_SHUTTER_PRIORITY, true);
+                    if(!man)
+                        yError() << "Cannot set manual exposure";
+                }
                 set_V4L2_control(V4L2_LOCK_EXPOSURE, true);
                 isActive_vector[feature] = onoff;
             }
@@ -1543,8 +1517,6 @@ bool V4L_camera::setActive(int feature, bool onoff)
 bool V4L_camera::getActive(int feature, bool *_isActive)
 {
     // I can't find any meaning of setting a feature to off on V4l ... what it is supposed to do????
-    *_isActive = isActive_vector[feature];
-    return true;
 
     switch(feature)
     {
@@ -1562,8 +1534,11 @@ bool V4L_camera::getActive(int feature, bool *_isActive)
 
         case YARP_FEATURE_EXPOSURE:
         {
-            *_isActive = get_V4L2_control(V4L2_CID_EXPOSURE_AUTO);
-            yInfo() << "get active V4L2_CID_EXPOSURE_AUTO is " <<  get_V4L2_control(V4L2_CID_EXPOSURE_AUTO);
+            bool _hasMan;
+            hasFeature(V4L2_CID_EXPOSURE, &_hasMan);                // check manual version
+            double _hasAuto =  get_V4L2_control(V4L2_CID_EXPOSURE_AUTO, true); // check auto version
+
+            *_isActive = (_hasAuto == V4L2_EXPOSURE_AUTO)|| _hasMan;
         } break;
 
         default:
@@ -1582,31 +1557,26 @@ bool V4L_camera::hasAuto(int feature, bool* _hasAuto)
         case YARP_FEATURE_WHITE_BALANCE:
         {
             *_hasAuto = check_V4L2_control(V4L2_CID_AUTO_WHITE_BALANCE);
-            yWarning() << "_hasAuto for white balance is " << *_hasAuto;
         } break;
 
         case YARP_FEATURE_BRIGHTNESS:
         {
             *_hasAuto = check_V4L2_control(V4L2_CID_AUTOBRIGHTNESS);
-            yWarning() << "_hasAuto for brightness is " << *_hasAuto;
         } break;
 
         case YARP_FEATURE_GAIN:
         {
             *_hasAuto = check_V4L2_control(V4L2_CID_AUTOGAIN);
-            yWarning() << "_hasAuto for gain is " << *_hasAuto;
         } break;
 
         case YARP_FEATURE_EXPOSURE:
         {
             *_hasAuto = check_V4L2_control(V4L2_CID_EXPOSURE_AUTO);
-            yWarning() << "_hasAuto for exposure is " << *_hasAuto;
         } break;
 
         case YARP_FEATURE_HUE:
         {
             *_hasAuto = check_V4L2_control(V4L2_CID_HUE_AUTO);
-            yWarning() << "_hasAuto for HUE is " << *_hasAuto;
         } break;
 
         default:
@@ -1625,19 +1595,22 @@ bool V4L_camera::hasManual(int feature, bool* _hasManual)
         return true;
     }
 
+    if(feature == YARP_FEATURE_EXPOSURE)
+    {
+        *_hasManual = check_V4L2_control(V4L2_CID_EXPOSURE);
+        return true;
+    }
     return hasFeature(feature, _hasManual);
 }
 
 bool V4L_camera::hasOnePush(int feature, bool *_hasOnePush)
 {
     // I'm not able to map a 'onePush' request on V4L api
-    yTrace();
     switch(feature)
     {
         case YARP_FEATURE_WHITE_BALANCE:
         {
             *_hasOnePush = check_V4L2_control(V4L2_CID_DO_WHITE_BALANCE);
-            yInfo() << "one push for white balance is " << *_hasOnePush;
             return true;
         } break;
 
@@ -1651,21 +1624,71 @@ bool V4L_camera::hasOnePush(int feature, bool *_hasOnePush)
 
 bool V4L_camera::setMode(int feature, FeatureMode mode)
 {
-    if(mode == MODE_MANUAL)
-        return true;
-    else
-        return false;
+    switch(feature)
+    {
+        case YARP_FEATURE_WHITE_BALANCE:
+        {
+            if(mode == MODE_AUTO)
+                set_V4L2_control(V4L2_CID_AUTO_WHITE_BALANCE, true);
+            else
+                set_V4L2_control(V4L2_CID_AUTO_WHITE_BALANCE, false);
+        } break;
+
+        case YARP_FEATURE_EXPOSURE:
+        {
+            if(mode == MODE_AUTO)
+                set_V4L2_control(V4L2_CID_EXPOSURE_AUTO, true);
+            else
+                set_V4L2_control(V4L2_CID_EXPOSURE_AUTO, false);
+        } break;
+
+        case YARP_FEATURE_GAIN:
+        {
+            if(mode == MODE_AUTO)
+            {
+                yInfo() << "GAIN: set mode auto";
+                set_V4L2_control(V4L2_CID_AUTOGAIN, true);
+            }
+            else
+            {
+                yInfo() << "GAIN: set mode manual";
+                set_V4L2_control(V4L2_CID_AUTOGAIN, false);
+            }
+        } break;
+
+        case YARP_FEATURE_BRIGHTNESS:
+        {
+            if(mode == MODE_AUTO)
+                set_V4L2_control(V4L2_CID_AUTOBRIGHTNESS, true);
+            else
+                set_V4L2_control(V4L2_CID_AUTOBRIGHTNESS, false);
+        } break;
+
+        case YARP_FEATURE_HUE:
+        {
+            if(mode == MODE_AUTO)
+                set_V4L2_control(V4L2_CID_HUE_AUTO, true);
+            else
+                set_V4L2_control(V4L2_CID_HUE_AUTO, false);
+        } break;
+
+        default:
+        {
+            yError() << "Feature " << feature << " does not support auto mode";
+        } break;
+    }
+    return true;
 }
 
 bool V4L_camera::getMode(int feature, FeatureMode *mode)
 {
+    bool _tmpAuto;
     switch(feature)
     {
         case YARP_FEATURE_WHITE_BALANCE:
         {
             double ret  = get_V4L2_control(V4L2_CID_AUTO_WHITE_BALANCE);
             *mode = toFeatureMode(ret);
-            yInfo() << "auto mode for white balance is " << *mode;
         } break;
 
         case YARP_FEATURE_EXPOSURE:
@@ -1675,8 +1698,47 @@ bool V4L_camera::getMode(int feature, FeatureMode *mode)
                 *mode = MODE_MANUAL;
             else
                 *mode = MODE_AUTO;
+        } break;
 
-            yInfo() << "auto mode for exposure is " << *mode;
+        case YARP_FEATURE_BRIGHTNESS:
+        {
+            hasAuto(YARP_FEATURE_BRIGHTNESS, &_tmpAuto);
+            *mode = toFeatureMode(_tmpAuto);
+            if(!_tmpAuto)
+                *mode = MODE_MANUAL;
+            else
+            {
+                double ret  = get_V4L2_control(V4L2_CID_AUTOBRIGHTNESS);
+                *mode = toFeatureMode(ret);
+            }
+        } break;
+
+        case YARP_FEATURE_GAIN:
+        {
+            hasAuto(YARP_FEATURE_GAIN, &_tmpAuto);
+            *mode = toFeatureMode(_tmpAuto);
+            if(!_tmpAuto)
+            {
+                *mode = MODE_MANUAL;
+            }
+            else
+            {
+                double ret  = get_V4L2_control(V4L2_CID_AUTOGAIN);
+                *mode = toFeatureMode(ret);
+            }
+        } break;
+
+        case YARP_FEATURE_HUE:
+        {
+            hasAuto(YARP_FEATURE_HUE, &_tmpAuto);
+            *mode = toFeatureMode(_tmpAuto);
+            if(!_tmpAuto)
+                *mode = MODE_MANUAL;
+            else
+            {
+                double ret  = get_V4L2_control(V4L2_CID_HUE_AUTO);
+                *mode = toFeatureMode(ret);
+            }
         } break;
 
         default:

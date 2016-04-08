@@ -34,10 +34,6 @@ MainWindow::MainWindow(char *loc, char *rem, QWidget *parent) :
 
 }
 
-
-
-
-
 MainWindow::~MainWindow()
 {
     disconnectWidgets();
@@ -237,7 +233,7 @@ void MainWindow::initFormatTab(unsigned int videoModeMaskDC1394,
 
     //disconnectWidgets();
     unsigned int mask=videoModeMaskDC1394;
-    LOG("VIDEO MODE MASK %x\n",mask);
+
     for (int i=0,e=0; i<32; ++i){
         if ((1<<i) & mask){
             m_VideoModeLut[e]=i;
@@ -295,8 +291,6 @@ void MainWindow::Init(uint videoModeDC1394, uint fPSDC1394, uint iSOSpeedDC1394,
     disconnectWidgets();
 
     ui->m_MenuMode->setCurrentText(video_mode_labels.at(videoModeDC1394));
-
-    LOG("video mode %s\n",video_mode_labels[videoModeDC1394].toLatin1().data());
 
     bool bFormat7=videoModeDC1394>=24;
 
@@ -389,7 +383,6 @@ void MainWindow::Reload(uint videoModeDC1394, uint colorCodingMaskDC1394,
 
     unsigned int video_mode=videoModeDC1394;
     ui->m_MenuMode->setCurrentText(video_mode_labels.at(video_mode));
-    LOG("video mode %s %d\n",video_mode_labels[video_mode].toLatin1().data(),video_mode);
 
     ui->m_MenuColorCoding->clear();
 

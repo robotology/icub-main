@@ -132,7 +132,6 @@ void DC1394SliderWB::disconnectWidgets()
     disconnect(ui->m_OnePush,SIGNAL(clicked()),this,SLOT(onOnePushClicked()));
     disconnect(ui->pRBa,SIGNAL(toggled(bool)),this,SLOT(onRadioAuto(bool)));
     disconnect(ui->pPwr,SIGNAL(toggled(bool)),this,SLOT(onPower(bool)));
-
 }
 
 
@@ -147,18 +146,14 @@ void DC1394SliderWB::Refresh()
     list.append(qVariantFromValue((void*)this));
     list.append(QVariant(f));
     controlThread->doTask(_sliderWBRefresh,list);
-
-
 }
 
 void DC1394SliderWB::onRefreshDone(QObject *slider,bool bON,bool bAuto,bool bHasOnOff,bool bHasAuto,bool bHasManual,bool bHasOnePush,double redVal, double blueVal)
 {
-
     if(slider != this){
         return;
     }
     disconnectWidgets();
-
 
     if (bAuto) {
         ui->pRBa->setChecked(true);
@@ -168,11 +163,11 @@ void DC1394SliderWB::onRefreshDone(QObject *slider,bool bON,bool bAuto,bool bHas
 
     ui->pPwr->setChecked(bON);
 
-    ui->pPwr->setEnabled(bHasOnOff);
+    ui->pPwr->setEnabled(bHasOnOff || bON || bAuto);
     ui->pRBa->setEnabled(bON && bHasAuto);
     ui->pRBm->setEnabled(bON && bHasManual);
-    ui->m_SliderRed->setEnabled(bON && !bAuto);
-    ui->m_SliderBlue->setEnabled(bON && !bAuto);
+    ui->m_SliderRed->setEnabled(bHasManual && !bAuto);
+    ui->m_SliderBlue->setEnabled(bHasManual && !bAuto);
     ui->m_OnePush->setEnabled(bON && bHasOnePush);
 
     m_new_blu = blueVal;
@@ -231,19 +226,15 @@ void DC1394SliderWB::onSliderRedReleased()
     list.append(QVariant(val));
     list.append(QVariant((double)ui->m_SliderBlue->value()/1000));
     controlThread->doTask(_sliderWBSetFeature,list);
-
 }
 
 void DC1394SliderWB::onSliderRedValueChanged(int value)
 {
-//    LOG("************\n");
     double val = (double)value/1000;
     int w = ui->m_SliderRed->width() - 30;
     double newX = ((double)w/(double)1000) * (double)value;
     ui->lblValueRed->setGeometry(newX,0,30,20);
     ui->lblValueRed->setText(QString("%L1").arg(val,0,'f',3));
-
-
 
     //pFG->setWhiteBalanceDC1394(ui->m_SliderBlue->value()/1000,value/1000);
     //LOG("white balance %f %f\n",ui->m_SliderBlue->value()/1000,ui->m_SliderRed->value()/1000);
@@ -262,15 +253,11 @@ void DC1394SliderWB::onSliderBlueReleased()
 
 void DC1394SliderWB::onSliderBlueValueChanged(int value)
 {
-//    LOG("************\n");
-
     double val = (double)value/1000;
     int w = ui->m_SliderBlue->width() - 30;
     double newX = ((double)w/(double)1000) * (double)value;
     ui->lblValueBlue->setGeometry(newX,0,30,20);
     ui->lblValueBlue->setText(QString("%L1").arg(val,0,'f',3));
-
-
 
     //pFG->setWhiteBalanceDC1394(value/1000,ui->m_SliderRed->value()/1000);
     //LOG("white balance %f %f\n",ui->m_SliderBlue->value()/1000,ui->m_SliderRed->value()/1000);
@@ -281,14 +268,11 @@ void DC1394SliderWB::onSliderWBSetFeatureDone(QObject *slider,double redVal,doub
     if(slider != this){
         return;
     }
-
     LOG("white balance %f %f\n",blueVal,redVal);
-
 }
 
 void DC1394SliderWB::onOnePushClicked()
 {
-
     QVariantList list;
     list.append(qVariantFromValue((void*)this));
     list.append(QVariant((int)YARP_FEATURE_WHITE_BALANCE));
@@ -344,8 +328,6 @@ void DC1394SliderWB::onOnePushDone(QObject *slider, double redVal, double blueVa
     connectWidgets();
 
     controlThread->doTask(_reload);
-
-
 }
 
 
@@ -424,5 +406,4 @@ void DC1394SliderWB::set_value(double blue,double red)
 
     onSliderBlueReleased();
     onSliderRedReleased();
-
 }
