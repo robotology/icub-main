@@ -13,7 +13,7 @@
         <param name="HasRotorEncoder">       1             1             1             1             1             1    </param>
         <param name="HasRotorEncoderIndex">  0             0             0             0             0             0    </param>
 <param name="Encoder">                            11.375     -11.375 11.375  11.375     568.880   284.440      </param>
-<param name="Zeros">                              180.00     -180.00 180.00  180.00     -45.00    0.00         </param>
+<param name="Zeros">                              182.20     -180.57 180.00  180.00     -45.00    0.00         </param>
 
         <param name="TorqueId">  	0             0             0             0             0             0             </param>
         <param name="TorqueChan">	0             0             0             0             0             0             </param>
