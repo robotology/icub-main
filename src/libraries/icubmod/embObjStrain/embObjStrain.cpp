@@ -80,7 +80,22 @@ bool embObjStrain::extractGroup(Bottle &input, Bottle &out, const std::string &k
 
 bool embObjStrain::fromConfig(yarp::os::Searchable &_config)
 {
+#if defined(EMBOBJSTRAIN_USESERVICEPARSER)
+
+
+    if(false == parser->parseService(_config, serviceConfig))
+    {
+        return false;
+    }
+
+    return true;
+
+#else
+
     Bottle xtmp;
+
+    int _period = 0;
+    int _useCalibration = 0;
 
     // Analog Sensor stuff
     Bottle config = _config.findGroup("GENERAL");
@@ -106,13 +121,19 @@ bool embObjStrain::fromConfig(yarp::os::Searchable &_config)
     }
 
     return true;
+
+    serviceConfig.acquisitionrate = _period;
+    serviceConfig.useCalibration = (0 == _useCalibration) ? false : true;
+
+#endif
 }
 
 
 embObjStrain::embObjStrain()
 {
-    _period = 0;
-    _useCalibration = 0;
+    serviceConfig.useCalibration = false;
+    serviceConfig.acquisitionrate = 0;
+    memset(&serviceConfig.ethservice, 0, sizeof(serviceConfig.ethservice));
 
     timeStamp = 0;
 
@@ -139,6 +160,9 @@ embObjStrain::embObjStrain()
         verbosewhenok = false;
     }
 
+    parser = NULL;
+    res = NULL;
+
 }
 
 
@@ -146,6 +170,12 @@ embObjStrain::~embObjStrain()
 {
     analogdata.resize(0);
     scaleFactor.resize(0);
+
+    if(NULL != parser)
+    {
+        delete parser;
+        parser = NULL;
+    }
 }
 
 
@@ -189,6 +219,12 @@ bool embObjStrain::open(yarp::os::Searchable &config)
 //        str="\n";
 //    yTrace() << str;
 
+
+    if(NULL == parser)
+    {
+        parser = new ServiceParser;
+    }
+
     // read stuff from config file
     if(!fromConfig(config))
     {
@@ -217,6 +253,7 @@ bool embObjStrain::open(yarp::os::Searchable &config)
         return false;
     }
 
+    printServiceConfig();
 
     if(!res->verifyEPprotocol(eoprot_endpoint_analogsensors))
     {
@@ -224,12 +261,22 @@ bool embObjStrain::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if(false == res->serviceVerifyActivate(eomn_serv_category_strain, NULL))
+
+#if defined(EMBOBJSTRAIN_USESERVICEPARSER)
+    const eOmn_serv_parameter_t* servparam = &serviceConfig.ethservice;
+#else
+    const eOmn_serv_parameter_t* servparam = NULL;
+#endif
+
+    if(false == res->serviceVerifyActivate(eomn_serv_category_strain, servparam, 5.0))
     {
         yError() << "embObjStrain::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getName() << "IP" << res->getIPv4string();
+        printServiceConfig();
         cleanup();
         return false;
     }
+
+    printServiceConfig();
 
     // we always prepare the fullscales.
     if(false == fillScaleFactor())
@@ -280,9 +327,9 @@ bool embObjStrain::sendConfig2Strain(void)
 {
     eOas_strain_config_t strainConfig = {0};
 
-    strainConfig.datarate = _period;
+    strainConfig.datarate = serviceConfig.acquisitionrate;
     strainConfig.signaloncefullscale = eobool_false;
-    strainConfig.mode = (true == _useCalibration) ? (eoas_strainmode_txcalibrateddatacontinuously) : (eoas_strainmode_txuncalibrateddatacontinuously);
+    strainConfig.mode = (true == serviceConfig.useCalibration) ? (eoas_strainmode_txcalibrateddatacontinuously) : (eoas_strainmode_txuncalibrateddatacontinuously);
 
     // version with read-back
 
@@ -329,7 +376,7 @@ bool embObjStrain::fillScaleFactor()
     }
 
     // if we dont need calibration we are done
-    if(false == _useCalibration)
+    if(false == serviceConfig.useCalibration)
     {
         if(verbosewhenok)
         {
@@ -388,7 +435,7 @@ bool embObjStrain::fillScaleFactor()
         
     // Prepare analog sensor
     eOas_strain_config_t strainConfig = {0};
-    strainConfig.datarate               = _period;
+    strainConfig.datarate               = serviceConfig.acquisitionrate;
     strainConfig.mode                   = eoas_strainmode_acquirebutdonttx;
     strainConfig.signaloncefullscale    = eobool_true;
 
@@ -475,7 +522,7 @@ bool embObjStrain::initRegulars()
 
     // we need to choose the id32 to put inside the vector
 
-    if(_useCalibration)
+    if(true == serviceConfig.useCalibration)
     {
         id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_status_calibratedvalues);
     }
@@ -667,7 +714,7 @@ bool embObjStrain::update(eOprotID32_t id32, double timestamp, void* rxdata)
             // Got from canBusMotionControl
             analogdata[k] = (short)( ( (((unsigned short)(msg[1]))<<8)+msg[0]) - (unsigned short) (0x8000) );
 
-            if (_useCalibration == 1)
+            if(true == serviceConfig.useCalibration)
             {
                 analogdata[k] = analogdata[k]*scaleFactor[k]/float(0x8000);
             }
@@ -689,6 +736,26 @@ bool embObjStrain::close()
     cleanup();
     return true;
 }
+
+
+void embObjStrain::printServiceConfig(void)
+{
+    char loc[20] = {0};
+    char fir[20] = {0};
+    char pro[20] = {0};
+    const char * boardname = (NULL != res) ? (res->getName()) : ("NOT-ASSIGNED-YET");
+    const char * ipv4 = (NULL != res) ? (res->getIPv4string()) : ("NOT-ASSIGNED-YET");
+
+    parser->convert(serviceConfig.ethservice.configuration.data.as.strain.canloc, loc, sizeof(loc));
+    parser->convert(serviceConfig.ethservice.configuration.data.as.strain.version.firmware, fir, sizeof(fir));
+    parser->convert(serviceConfig.ethservice.configuration.data.as.strain.version.protocol, pro, sizeof(pro));
+
+    yInfo() << "The embObjStrain device using BOARD" << boardname << " w/ IP" << ipv4 << "has the following service config:";
+    yInfo() << "- acquisitionrate =" << serviceConfig.acquisitionrate;
+    yInfo() << "- useCalibration =" << serviceConfig.useCalibration;
+    yInfo() << "- STRAIN named" << serviceConfig.nameOfStrain << "@" << loc << "with required protocol version =" << pro << "and required firmware version =" << fir;
+}
+
 
 void embObjStrain::cleanup(void)
 {

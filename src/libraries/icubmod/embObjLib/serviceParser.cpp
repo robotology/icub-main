@@ -94,6 +94,50 @@ bool ServiceParser::convert(ConstString const &fromstring, eOmn_serv_type_t& tos
 }
 
 
+bool ServiceParser::convert(ConstString const &fromstring, eOas_sensor_t &tosensortype, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+
+    if(0 == strcmp(t, "enumSnsrSTRAIN"))
+    {
+        tosensortype = eoas_strain;
+    }
+    else if(0 == strcmp(t, "enumSnsrMAIS"))
+    {
+        tosensortype = eoas_mais;
+    }
+    else if(0 == strcmp(t, "enumSnsrAccMTBint"))
+    {
+        tosensortype = eoas_accel_mtb_int;
+    }
+    else if(0 == strcmp(t, "enumSnsrAccMTBext"))
+    {
+        tosensortype = eoas_accel_mtb_ext;
+    }
+    else if(0 == strcmp(t, "enumSnsrGyrMTBext"))
+    {
+        tosensortype = eoas_gyros_mtb_ext;
+    }
+    else if(0 == strcmp(t, "enumSnsrAccSTlis3x"))
+    {
+        tosensortype = eoas_accel_st_lis3x;
+    }
+    else if(0 == strcmp(t, "enumSnsrGyrSTl3g4200d"))
+    {
+        tosensortype = eoas_gyros_st_l3g4200d;
+    }
+    else
+    {
+        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOas_sensor_t";
+        tosensortype = eoas_unknown;
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+
 bool ServiceParser::convert(ConstString const &fromstring, eObrd_cantype_t& tobrdcantype, bool& formaterror)
 {
     const char *t = fromstring.c_str();
@@ -260,7 +304,14 @@ bool ServiceParser::convert(ConstString const &fromstring, const uint8_t strsize
 {
     const char *t = fromstring.c_str();
 
-    if(strsize <= strlen(t))
+    if((NULL == str) || (0 == strsize))
+    {
+        yWarning() << "ServiceParser::convert(): there is an attempt to convert string" << t << "into a NULL or zero-sized char *str: len = " << strsize;
+        formaterror = true;
+        return false;
+    }
+
+    if(strsize >= strlen(t))
     {
         snprintf(str, strsize, "%s", t);
     }
@@ -369,6 +420,68 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_location_t &loc
     return true;
 }
 
+bool ServiceParser::convert(eObrd_location_t const &loc, char *str, int len)
+{
+    if((NULL == str) || (0 == len))
+    {
+        return false;
+    }
+
+    if(eobrd_place_can == loc.place)
+    {
+        convert(loc.address.oncan, str, len);
+    }
+    else
+    {   // it must be eobrd_place_loc
+        snprintf(str, len, "LOC-%d", loc.address.local);
+    }
+
+    return true;
+}
+
+
+bool ServiceParser::convert(eOmn_serv_canlocation_t const &canloc, char *str, int len)
+{
+    if((NULL == str) || (0 == len))
+    {
+        return false;
+    }
+
+    if(eomn_serv_caninsideindex_none == canloc.insideindex)
+    {
+        snprintf(str, len, "CAN%d-%d", (eOcanport1 == canloc.port) ? 1 : 2, canloc.addr);
+    }
+    else
+    {
+        snprintf(str, len, "MC4CAN%d-%d-%d", (eOcanport1 == canloc.port) ? 1 : 2, canloc.addr, canloc.insideindex);
+    }
+
+    return true;
+}
+
+bool ServiceParser::convert(eOmn_canfirmwareversion_t const &firm, char *str, int len)
+{
+    if((NULL == str) || (0 == len))
+    {
+        return false;
+    }
+
+    snprintf(str, len, "(%d, %d, %d)", firm.major, firm.minor, firm.build);
+
+    return true;
+}
+
+bool ServiceParser::convert(eOmn_canprotocolversion_t const &prot, char *str, int len)
+{
+    if((NULL == str) || (0 == len))
+    {
+        return false;
+    }
+
+    snprintf(str, len, "(%d, %d)", prot.major, prot.minor);
+
+    return true;
+}
 
 bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 {
@@ -382,17 +495,24 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
     // format is SERVICE{ type, PROPERTIES{ CANBOARDS, SENSORS }, SETTINGS }
 
-    // check whether we#include "EOnv_hid.h" have the proper type
+    Bottle b_SERVICE(config.findGroup("SERVICE"));
+    if(b_SERVICE.isNull())
+    {
+        yError() << "ServiceParser::check() cannot find SERVICE group";
+        return false;
+    }
 
-    if(false == config.check("type"))
+    // check whether we have the proper type
+
+    if(false == b_SERVICE.check("type"))
     {
         yError() << "ServiceParser::check() cannot find SERVICE.type";
         return false;
     }
     else
     {
-        Bottle b_type(config.find("type").asString());
-        if(false == convert(b_type.get(1).asString(), as_service.type, formaterror))
+        Bottle b_type(b_SERVICE.find("type").asString());
+        if(false == convert(b_type.toString(), as_service.type, formaterror))
         {
             yError() << "ServiceParser::check() has found unknown SERVICE.type = " << b_type.toString();
             return false;
@@ -406,7 +526,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
     // check whether we have the proper groups
 
-    Bottle b_PROPERTIES = Bottle(config.findGroup("PROPERTIES"));
+    Bottle b_PROPERTIES = Bottle(b_SERVICE.findGroup("PROPERTIES"));
     if(b_PROPERTIES.isNull())
     {
         yError() << "ServiceParser::check() cannot find PROPERTIES";
@@ -497,12 +617,13 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             }
 
 
-            as_service.properties.canboards.resize(numboards);
+            as_service.properties.canboards.resize(0);
 
             formaterror = false;
-            for(int i=0; i<as_service.properties.canboards.size(); i++)
+            for(int i=0; i<numboards; i++)
             {
-                servCanBoard_t item = as_service.properties.canboards.at(i);
+                servCanBoard_t item = { .type = eobrd_cantype_none, .useglobalparams = false, .protocol = {0}, .firmware = {0} };
+
 
                 convert(b_PROPERTIES_CANBOARDS_type.get(i+1).asString(), item.type, formaterror);
                 convert(b_PROPERTIES_CANBOARDS_useGlobalParams.get(i+1).asString(), item.useglobalparams, formaterror);
@@ -514,6 +635,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(i+1).asInt(), item.firmware.minor, formaterror);
                 convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(i+1).asInt(), item.firmware.build, formaterror);
 
+                as_service.properties.canboards.push_back(item);
             }
 
             // in here we could decide to return false if any previous conversion function has returned error
@@ -567,22 +689,19 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             }
 
 
-            as_service.properties.sensors.resize(numsensors);
+            as_service.properties.sensors.resize(0);
 
             formaterror = false;
-            for(int i=0; i<as_service.properties.sensors.size(); i++)
+            for(int i=0; i<numsensors; i++)
             {
-                servAnalogSensor_t item = as_service.properties.sensors.at(i);
-
-                //ConstString s_id = b_PROPERTIES_SENSORS_id.get(i+1).asString();
-                //ConstString s_type = b_PROPERTIES_SENSORS_type.get(i+1).asString();
-                //ConstString s_location = b_PROPERTIES_SENSORS_location.get(i+1).asString();
-
-                //snprintf(item.id, sizeof(item.id), "%s", s_id.c_str()); // todo: function which fills a string into a string and verifies its length.
+                servAnalogSensor_t item;
+                item.type = eoas_none;
 
                 convert(b_PROPERTIES_SENSORS_id.get(i+1).asString(), sizeof(item.id), item.id, formaterror);
                 convert(b_PROPERTIES_SENSORS_type.get(i+1).asString(), item.type, formaterror);
                 convert(b_PROPERTIES_SENSORS_location.get(i+1).asString(), item.location, formaterror);
+
+                as_service.properties.sensors.push_back(item);
             }
 
             // in here we could decide to return false if any previous conversion function has returned error
@@ -598,7 +717,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
     }
 
-    Bottle b_SETTINGS = Bottle(config.findGroup("SETTINGS"));
+    Bottle b_SETTINGS = Bottle(b_SERVICE.findGroup("SETTINGS"));
     if(b_SETTINGS.isNull())
     {
         yError() << "ServiceParser::check() cannot find SETTINGS";
@@ -620,7 +739,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             return false;
         }
 
-        int numenabledsensors = b_SETTINGS_enabledSensors.size();    // first position of bottle contains the tag "enabledSensors"
+        int numenabledsensors = b_SETTINGS_enabledSensors.size() - 1;    // first position of bottle contains the tag "enabledSensors"
 
         // the enabled must be <= the sensors.
         if( numenabledsensors > as_service.properties.sensors.size() )
@@ -630,7 +749,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         }
 
         convert(b_SETTINGS_acquisitionRate.get(1).asInt(), as_service.settings.acquisitionrate, formaterror);
-        //as_service.settings.acquisitionrate = b_SETTINGS_acquisitionRate.get(1).asInt();
+
 
         as_service.settings.enabledsensors.resize(0);
 
@@ -652,6 +771,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 if(0 == strcmp(item.id, str))
                 {
                     found = true;
+                    founditem = item;
                     break;
                 }
             }
@@ -679,7 +799,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
     if(eomn_serv_AS_strain == type)
     {
-        Bottle b_STRAIN_SETTINGS = Bottle(config.findGroup("STRAIN_SETTINGS"));
+        Bottle b_STRAIN_SETTINGS = Bottle(b_SERVICE.findGroup("STRAIN_SETTINGS"));
         if(b_STRAIN_SETTINGS.isNull())
         {
             yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS";
@@ -726,9 +846,11 @@ bool ServiceParser::parseService(Searchable &config, servConfigMais_t &maisconfi
 
     // now we extract values ... so far we dont make many checks ... we just assume the vector<> are of size 1.
     servCanBoard_t themais_props = as_service.properties.canboards.at(0);
-    servAnalogSensor_t themais_sensor = as_service.properties.sensors.at(0);
+    servAnalogSensor_t themais_sensor = as_service.settings.enabledsensors.at(0);
 
     maisconfig.acquisitionrate = as_service.settings.acquisitionrate;
+
+    maisconfig.nameOfMais = themais_sensor.id;
 
     memset(&maisconfig.ethservice.configuration, 0, sizeof(maisconfig.ethservice.configuration));
 
@@ -742,6 +864,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMais_t &maisconfi
     return true;
 }
 
+
 bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainconfig)
 {
     if(false == check_analog(config, eomn_serv_AS_strain))
@@ -752,11 +875,11 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
 
     // now we extract values ... so far we dont make many checks ... we just assume the vector<> are of size 1.
     servCanBoard_t thestrain_props = as_service.properties.canboards.at(0);
-    servAnalogSensor_t thestrain_sensor = as_service.properties.sensors.at(0);
+    servAnalogSensor_t thestrain_sensor = as_service.settings.enabledsensors.at(0);
 
     strainconfig.acquisitionrate = as_service.settings.acquisitionrate;
     strainconfig.useCalibration = as_strain_settings.useCalibration;
-
+    strainconfig.nameOfStrain = thestrain_sensor.id;
 
     memset(&strainconfig.ethservice.configuration, 0, sizeof(strainconfig.ethservice.configuration));
 

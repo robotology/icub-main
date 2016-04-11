@@ -51,6 +51,7 @@ typedef struct
 {
     eOmn_serv_parameter_t   ethservice;
     int                     acquisitionrate;
+    string                  nameOfMais;
 } servConfigMais_t;
 
 
@@ -59,6 +60,7 @@ typedef struct
     eOmn_serv_parameter_t   ethservice;
     int                     acquisitionrate;
     bool                    useCalibration;
+    string                  nameOfStrain;
 } servConfigStrain_t;
 
 
@@ -71,6 +73,39 @@ typedef struct
     uint8_t         filler[3];
 } eOas_inertial_mtbsensorsconfig_t;
 
+typedef enum
+{
+    eoas_mtb_none       = 0,
+    eoas_mtb_accel_int  = 1,
+    eoas_mtb_accel_ext  = 2,
+    eoas_mtb_gyros_ext  = 3,
+    eoas_mtb_tbd01_ext  = 4,
+    eoas_mtb_tbd02_ext  = 5,
+    eoas_mtb_tbd03_ext  = 6,
+    eoas_mtb_tbd04_ext  = 7
+} eOas_inertial_mtb_type_t;
+
+typedef struct
+{
+    uint8_t port : 1;               /**< use eOcanport_t */
+    uint8_t addr : 4;               /**< use 0->14 */
+    uint8_t type : 3;               /**< use 0 -> 7 or eOas_inertial_mtb_type_t */
+} eOas_inertial_oncan_t;
+
+//typedef struct
+//{
+//    uint8_t port : 1;               /**< use eOcanport_t */
+//    uint8_t addr : 4;               /**< use 0->14 */
+//    uint8_t type : 3;               /**< use 0 -> 7 or eOas_inertial_mtb_type_t */
+//} eOas_inertial_oncan_t;
+
+// the idea is to allow up to 32 inertial sensors on can using an array of eOas_inertial_oncan_t items (or a EOarray of them)
+// and up to 4 sensors local to the eth board using an array of eOas_inertial_local_t items.
+// we build it with the supported list in xml files and we use for verifying the service.
+// then we just send activation with a period.
+
+// for now, we just keep the same
+
 
 typedef struct
 {
@@ -78,6 +113,7 @@ typedef struct
     int                                 acquisitionrate;
     eOas_inertial_mtbsensorsconfig_t    mtbconfig;
 } servConfigInertials_t;
+
 
 typedef struct
 {
@@ -170,6 +206,12 @@ public:
     bool convert(ConstString const &fromstring, eOas_sensor_t &tosensortype, bool &formaterror);
     bool convert(ConstString const &fromstring, const uint8_t strsize, char *str, bool &formaterror);
     bool convert(ConstString const &fromstring, eObrd_location_t &location, bool &formaterror);
+
+    bool convert(eObrd_location_t const &loc, char *str, int len);
+    bool convert(eOmn_serv_canlocation_t const &canloc, char *str, int len);
+
+    bool convert(eOmn_canprotocolversion_t const &prot, char *str, int len);
+    bool convert(eOmn_canfirmwareversion_t const &firm, char *str, int len);
 
 public:
 

@@ -32,6 +32,7 @@
 
 #include <yarp/os/LogStream.h>
 
+#include "serviceParser.h"
 
 namespace yarp {
     namespace dev {
@@ -40,6 +41,8 @@ namespace yarp {
     }
 }
 
+
+#define EMBOBJMAIS_USESERVICEPARSER
 
 
 // -- class embObjMais
@@ -82,6 +85,7 @@ private:
 
     TheEthManager* ethManager;
     EthResource* res;
+    ServiceParser* parser;
 
     bool opened;
     bool verbosewhenok;
@@ -92,7 +96,7 @@ private:
 
     ////////////////////
     // parameters
-    int _period;
+    servConfigMais_t serviceConfig;
 
     yarp::os::Semaphore mutex;
 
@@ -108,6 +112,7 @@ private:
     bool fromConfig(yarp::os::Searchable &config);
     bool initRegulars();
     void cleanup(void);
+    void printServiceConfig(void);
     // not used ...
     bool isEpManagedByBoard();
 

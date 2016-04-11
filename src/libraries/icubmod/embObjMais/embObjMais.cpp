@@ -80,7 +80,21 @@ bool embObjMais::extractGroup(Bottle &input, Bottle &out, const std::string &key
 
 bool embObjMais::fromConfig(yarp::os::Searchable &_config)
 {
+#if defined(EMBOBJMAIS_USESERVICEPARSER)
+
+
+    if(false == parser->parseService(_config, serviceConfig))
+    {
+        return false;
+    }
+
+    return true;
+
+#else
+
     Bottle xtmp;
+
+    int _period = 0;
 
     // Analog Sensor stuff
     Bottle config = _config.findGroup("GENERAL");
@@ -96,14 +110,17 @@ bool embObjMais::fromConfig(yarp::os::Searchable &_config)
         yDebug() << "embObjMais::fromConfig() detects embObjMais Using value of" << _period;
     }
 
+    serviceConfig.acquisitionrate = _period;
 
     return true;
+#endif
 }
 
 
 embObjMais::embObjMais()
 {
-    _period = 0;
+    serviceConfig.acquisitionrate = 0;
+    memset(&serviceConfig.ethservice, 0, sizeof(serviceConfig.ethservice));
 
     timeStamp = 0;
 
@@ -128,12 +145,22 @@ embObjMais::embObjMais()
     {
         verbosewhenok = false;
     }
+
+    parser = NULL;
+    res = NULL;
 }
 
 
 embObjMais::~embObjMais()
 {   
     analogdata.resize(0);
+
+    if(NULL != parser)
+    {
+        delete parser;
+        parser = NULL;
+    }
+
 }
 
 
@@ -173,6 +200,12 @@ bool embObjMais::open(yarp::os::Searchable &config)
 //        str="\n";
 //    yTrace() << str;
 
+
+    if(NULL == parser)
+    {
+        parser = new ServiceParser;
+    }
+
     // read stuff from config file
     if(!fromConfig(config))
     {
@@ -197,6 +230,8 @@ bool embObjMais::open(yarp::os::Searchable &config)
         return false;
     }
 
+    printServiceConfig();
+
 
     if(!res->verifyEPprotocol(eoprot_endpoint_analogsensors))
     {
@@ -204,12 +239,21 @@ bool embObjMais::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if(false == res->serviceVerifyActivate(eomn_serv_category_mais, NULL))
+#if defined(EMBOBJMAIS_USESERVICEPARSER)
+    const eOmn_serv_parameter_t* servparam = &serviceConfig.ethservice;
+#else
+    const eOmn_serv_parameter_t* servparam = NULL;
+#endif
+
+    if(false == res->serviceVerifyActivate(eomn_serv_category_mais, servparam, 5.0))
     {
         yError() << "embObjMais::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getName() << "IP" << res->getIPv4string();
+        printServiceConfig();
         cleanup();
         return false;
     }
+
+    printServiceConfig();
 
 
     // configure the service: aka, send to the remote board information about the whereabouts of the can boards mais, strain, mtb which offers the service.
@@ -267,7 +311,7 @@ bool embObjMais::sendConfig2Mais(void)
 
     // -- mais datarate
 
-    uint8_t datarate  = _period;
+    uint8_t datarate  = serviceConfig.acquisitionrate;
     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 
     if(false == res->setRemoteValueUntilVerified(id32, &datarate, sizeof(datarate), 10, 0.010, 0.050, 2))
@@ -372,19 +416,19 @@ int embObjMais::read(yarp::sig::Vector &out)
         {
             case IAnalogSensor::AS_OVF:
             {
-              counterSat++;
+                counterSat++;
             }  break;
             case IAnalogSensor::AS_ERROR:
             {
-              counterError++;
+                counterError++;
             } break;
             case IAnalogSensor::AS_TIMEOUT:
             {
-             counterTimeout++;
+                counterTimeout++;
             } break;
             default:
             {
-              counterError++;
+                counterError++;
             } break;
         }
         mutex.post();
@@ -514,6 +558,25 @@ bool embObjMais::close()
 
     cleanup();
     return true;
+}
+
+
+void embObjMais::printServiceConfig(void)
+{
+    char loc[20] = {0};
+    char fir[20] = {0};
+    char pro[20] = {0};
+
+    const char * boardname = (NULL != res) ? (res->getName()) : ("NOT-ASSIGNED-YET");
+    const char * ipv4 = (NULL != res) ? (res->getIPv4string()) : ("NOT-ASSIGNED-YET");
+
+    parser->convert(serviceConfig.ethservice.configuration.data.as.mais.canloc, loc, sizeof(loc));
+    parser->convert(serviceConfig.ethservice.configuration.data.as.mais.version.firmware, fir, sizeof(fir));
+    parser->convert(serviceConfig.ethservice.configuration.data.as.mais.version.protocol, pro, sizeof(pro));
+
+    yInfo() << "The embObjMais device using BOARD" << boardname << "w/ IP" << ipv4 << "has the following service config:";
+    yInfo() << "- acquisitionrate =" << serviceConfig.acquisitionrate;
+    yInfo() << "- MAIS named" << serviceConfig.nameOfMais << "@" << loc << "with required protocol version =" << pro << "and required firmware version =" << fir;
 }
 
 
