@@ -482,7 +482,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     {
         // start the configured sensors
 
-        eOmc_inertial_commands_t startCommand = {0};
+        eOas_inertial_commands_t startCommand = {0};
         startCommand.enable = 1;
 
         uint32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_cmmnds_enable);
