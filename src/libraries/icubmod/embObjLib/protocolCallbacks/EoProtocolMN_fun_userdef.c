@@ -417,25 +417,27 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
         case eoerror_value_CFG_candiscovery_ok:
         {
             uint8_t num = infobasic->properties.par16 & 0x000f;
-            const char *canboardname = eoboard_get_name(infobasic->properties.par16 >> 8);
+            uint64_t brdnum =     (infobasic->properties.par64 & 0x0000ff0000000000) >> 40;
+            const char *canboardname = eoboard_get_name(brdnum);
             uint64_t searchtime = (infobasic->properties.par64 & 0xffff000000000000) >> 48;
-            eOmn_version_t prot = {0};
-            eOmn_version_t appl = {0};
-            uint64_t reqpr = (infobasic->properties.par64 & 0x00000000ffff0000) >> 16;
-            uint64_t reqfw = (infobasic->properties.par64 & 0x000000000000ffff);
+            eOmn_canprotocolversion_t prot = {0};
+            eOmn_canfirmwareversion_t appl = {0};
+            uint64_t reqpr =      (infobasic->properties.par64 & 0x000000ffff000000) >> 24;
+            uint64_t reqfw =      (infobasic->properties.par64 & 0x0000000000ffffff);
             prot.major = reqpr >> 8;
             prot.minor = reqpr & 0xff;
-            appl.major = reqfw >> 8;
-            appl.minor = reqfw & 0xff;
+            appl.major = (reqfw >> 16) & 0xff;
+            appl.minor = (reqfw >> 8)  & 0xff;
+            appl.build = reqfw & 0xff;
 
-            snprintf(str, sizeof(str), " from BOARD %s (%s) @ %ds %dm %du: successful CAN discovery of %d %s boards with target can protocol ver %d.%d and application ver %d.%d. Search time was %d ms",
+            snprintf(str, sizeof(str), " from BOARD %s (%s) @ %ds %dm %du: successful CAN discovery of %d %s boards with target can protocol ver %d.%d and application ver %d.%d.%d. Search time was %d ms",
                                         ipinfo,
                                         ethboardname,
                                         tom.sec, tom.msec, tom.usec,
 
                                         num, canboardname,
                                         prot.major, prot.minor,
-                                        appl.major, appl.minor,
+                                        appl.major, appl.minor, appl.build,
                                         (int)searchtime
                                         );
 
@@ -445,21 +447,23 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
 
         case eoerror_value_CFG_candiscovery_detectedboard:
         {
-            const char *canboardname = eoboard_get_name(infobasic->properties.par16 >> 8);
+            uint64_t brdnum =     (infobasic->properties.par64 & 0x0000ff0000000000) >> 40;
+            const char *canboardname = eoboard_get_name(brdnum);
             uint64_t searchtime = (infobasic->properties.par64 & 0xffff000000000000) >> 48;
-            eOmn_version_t prot = {0};
-            eOmn_version_t appl = {0};
-            uint64_t reqpr = (infobasic->properties.par64 & 0x00000000ffff0000) >> 16;
-            uint64_t reqfw = (infobasic->properties.par64 & 0x000000000000ffff);
+            eOmn_canprotocolversion_t prot = {0};
+            eOmn_canfirmwareversion_t appl = {0};
+            uint64_t reqpr =      (infobasic->properties.par64 & 0x000000ffff000000) >> 24;
+            uint64_t reqfw =      (infobasic->properties.par64 & 0x0000000000ffffff);
             prot.major = reqpr >> 8;
             prot.minor = reqpr & 0xff;
-            appl.major = reqfw >> 8;
-            appl.minor = reqfw & 0xff;
+            appl.major = (reqfw >> 16) & 0xff;
+            appl.minor = (reqfw >> 8)  & 0xff;
+            appl.build = reqfw & 0xff;
             uint8_t address = infobasic->properties.par16 & 0x000f;
             const char *source = s_get_sourceofmessage(infobasic, NULL);
 
 
-            snprintf(str, sizeof(str), " from BOARD %s (%s) @ %ds %dm %du: CAN discovery has detected a %s board in %s addr %d with can protocol ver %d.%d and application ver %d.%d. Search time was %d ms",
+            snprintf(str, sizeof(str), " from BOARD %s (%s) @ %ds %dm %du: CAN discovery has detected a %s board in %s addr %d with can protocol ver %d.%d and application ver %d.%d.%d Search time was %d ms",
                                         ipinfo,
                                         ethboardname,
                                         tom.sec, tom.msec, tom.usec,
@@ -467,7 +471,7 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
                                         canboardname,
                                         source, address,
                                         prot.major, prot.minor,
-                                        appl.major, appl.minor,
+                                        appl.major, appl.minor, appl.build,
                                         (int)searchtime
                                         );
             s_print_string(str, type);
