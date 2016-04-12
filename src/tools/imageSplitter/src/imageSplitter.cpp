@@ -80,10 +80,13 @@ bool ImageSplitter::configure(yarp::os::ResourceFinder &rf)
     }
 
     // Connections
-    if(! yarp::os::Network::connect(remotePortName, inputPortName))
-    {
-        yError() << "Cannot connect to remote port " << remotePortName;
-        return false;
+    if (rf.check("autoconnect")) {
+        yInfo("'autoconnect' option enabled.\n");
+        if(! yarp::os::Network::connect(remotePortName, inputPortName))
+        {
+            yError() << "Cannot connect to remote port " << remotePortName;
+            return false;
+        }
     }
 
     // choose filling method
