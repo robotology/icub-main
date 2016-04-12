@@ -1536,25 +1536,6 @@ void MotorThread::onStop()
 }
 
 
-bool MotorThread::preTakeHand(Bottle &options)
-{
-    int arm=ARM_MOST_SUITED;
-    if (checkOptions(options,"left") || checkOptions(options,"right"))
-        arm=checkOptions(options,"left")?LEFT:RIGHT;
-
-    Bottle *bTarget=options.find("target").asList();
-
-    Vector xd;
-    if (!targetToCartesian(bTarget,xd))
-        return false;
-
-    arm=checkArm(arm,xd);
-
-    action[arm]->pushAction("pretake_hand");
-    return true;
-}
-
-
 bool MotorThread::goUp(Bottle &options, const double h)
 {
     int arm=ARM_MOST_SUITED;
@@ -1622,7 +1603,11 @@ bool MotorThread::reach(Bottle &options)
     wp.x=xd;
     wpList.push_back(wp);
     action[arm]->enableReachingTimeout(3.0*reachingTimeout);
-    action[arm]->pushAction(wpList);
+
+    if (checkOptions(options,"pretake_hand"))
+        action[arm]->pushAction(wpList,"pretake_hand");
+    else
+        action[arm]->pushAction(wpList);
 
     bool f;
     action[arm]->checkActionsDone(f,true);

@@ -539,7 +539,7 @@ public:
     * @param wayPoints the list of waypoints that will be used to 
     *                  generate the trajectory.
     * @note The first waypoint will act as the end-point of the path
-    *       whose stating point is the current position of robot
+    *       whose starting point is the current position of robot
     *       end-effector.
     * @param clb action callback that is executed when the action 
     *            ends; none by default. 
@@ -555,7 +555,7 @@ public:
     * @param wayPoints the list of waypoints that will be used to 
     *                  generate the trajectory.
     * @note The first waypoint will act as the end-point of the path
-    *       whose stating point is the current position of robot
+    *       whose starting point is the current position of robot
     *       end-effector. 
     * @param handSeqKey the hand sequence key.  
     * @param clb action callback that is executed when the action 

@@ -1178,8 +1178,8 @@ public:
                         }
 
                         visuoThr->getTarget(command.get(1),command);
-                        motorThr->preTakeHand(command);
 
+                        command.addString("pretake_hand");
                         if(!motorThr->reach(command))
                         {
                             reply.addVocab(NACK);
