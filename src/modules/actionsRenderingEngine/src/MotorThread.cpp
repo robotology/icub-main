@@ -506,7 +506,7 @@ Vector MotorThread::randomDeployOffset()
 bool MotorThread::loadKinematicOffsets()
 {
     ifstream kin_fin(rf.findFile(kinematics_file.c_str()).c_str());
-    if(!kin_fin.is_open())
+    if (!kin_fin.is_open())
     {
         yError("Kinematics file not found!");
         return false;
@@ -517,11 +517,11 @@ bool MotorThread::loadKinematicOffsets()
 
     bKinOffsets.fromString(strstr.str().c_str());
 
-    if(!bKinOffsets.check("table_height"))
+    if (!bKinOffsets.check("table_height"))
     {
         Bottle &bKinList=bKinOffsets.addList();
         bKinList.addString("table_height");
-        bKinList.addDouble(0.2);
+        bKinList.addDouble(-0.1);
     }
 
     table_height=bKinOffsets.find("table_height").asDouble();
@@ -532,7 +532,7 @@ bool MotorThread::loadKinematicOffsets()
     //adjust the table height accordingly to a specified tolerance
     table_height+=table_height_tolerance;
 
-    if(!bKinOffsets.check("left"))
+    if (!bKinOffsets.check("left"))
     {
         Bottle &bKinList=bKinOffsets.addList();
         bKinList.addString("left");
@@ -540,7 +540,7 @@ bool MotorThread::loadKinematicOffsets()
         bKinList.addList();
     }
     
-    if(!bKinOffsets.check("right"))
+    if (!bKinOffsets.check("right"))
     {
         Bottle &bKinList=bKinOffsets.addList();
         bKinList.addString("right");
@@ -1559,7 +1559,8 @@ bool MotorThread::goUp(Bottle &options, const double h)
 bool MotorThread::reach(Bottle &options)
 {
     int arm=ARM_MOST_SUITED;
-    if (checkOptions(options,"left") || checkOptions(options,"right"))
+    if (checkOptions(options,"left") ||
+        checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
     Bottle *bTarget=options.find("target").asList();
@@ -1570,7 +1571,8 @@ bool MotorThread::reach(Bottle &options)
 
     arm=checkArm(arm,xd);
 
-    if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    if (!checkOptions(options,"no_head") &&
+        !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
         keepFixation(options);
@@ -1591,6 +1593,9 @@ bool MotorThread::reach(Bottle &options)
                    reachAboveOrient[arm]:
                    reachAboveCata[arm]);
         tmpDisp=reachAboveDisp;
+
+        if (checkOptions(options,"touch"))
+            xd[2]=std::min(xd[2],table_height-table_height_tolerance);
     }
     
     wbdRecalibration();
@@ -1630,7 +1635,8 @@ bool MotorThread::reach(Bottle &options)
 
     setGraspState(side);
 
-    if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    if (!checkOptions(options,"no_head") &&
+        !checkOptions(options,"no_gaze"))
         setGazeIdle();
 
     return true;
@@ -2030,7 +2036,8 @@ bool MotorThread::release(const Bottle &options)
     return true;
 }
 
-bool MotorThread::changeElbowHeight(const int arm, const double height, const double weight)
+bool MotorThread::changeElbowHeight(const int arm, const double height,
+                                    const double weight)
 {
     if (action[arm]!=NULL)
     {
@@ -2108,8 +2115,9 @@ void MotorThread::goWithTorsoUpright(ActionPrimitives *action,
 bool MotorThread::goHome(Bottle &options)
 {
     bool head_home=(checkOptions(options,"head") || checkOptions(options,"gaze"));
-    bool arms_home=checkOptions(options,"arms") || checkOptions(options,"arm");
-    bool hand_home=checkOptions(options,"fingers") || checkOptions(options,"hands") || checkOptions(options,"hand");
+    bool arms_home=(checkOptions(options,"arms") || checkOptions(options,"arm"));
+    bool hand_home=(checkOptions(options,"fingers") || checkOptions(options,"hands") ||
+                    checkOptions(options,"hand"));
 
     //if none is specified then assume all are going home
     if (!head_home && !arms_home && !hand_home)
@@ -2189,7 +2197,8 @@ bool MotorThread::goHome(Bottle &options)
 bool MotorThread::deploy(Bottle &options)
 {
     int arm=ARM_IN_USE;
-    if (checkOptions(options,"left") || checkOptions(options,"right"))
+    if (checkOptions(options,"left") ||
+        checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
     arm=checkArm(arm);
@@ -2215,11 +2224,13 @@ bool MotorThread::deploy(Bottle &options)
     else
     {
         arm=checkArm(arm,deployZone);
-        if (checkOptions(options,"gently") && !checkOptions(options,"over"))
+        if (checkOptions(options,"gently") &&
+            !checkOptions(options,"over"))
             deployZone[2]=table_height;
     }
 
-    if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
+    if (!checkOptions(options,"no_head") &&
+        !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
         keepFixation(options);
@@ -2263,7 +2274,8 @@ bool MotorThread::deploy(Bottle &options)
 bool MotorThread::drawNear(Bottle &options)
 {
     int arm=ARM_IN_USE;
-    if (checkOptions(options,"left") || checkOptions(options,"right"))
+    if (checkOptions(options,"left") ||
+        checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
     
     arm=checkArm(arm);
@@ -2284,7 +2296,8 @@ bool MotorThread::drawNear(Bottle &options)
 bool MotorThread::shiftAndGrasp(Bottle &options)
 {
     int arm=ARM_IN_USE;
-    if(checkOptions(options,"left") || checkOptions(options,"right"))
+    if (checkOptions(options,"left") ||
+       checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
     arm=checkArm(arm);
@@ -2326,7 +2339,8 @@ bool MotorThread::getHandImagePosition(Bottle &hand_image_pos)
 bool MotorThread::isHolding(const Bottle &options)
 {
     int arm=ARM_IN_USE;
-    if(checkOptions(options,"left") || checkOptions(options,"right"))
+    if (checkOptions(options,"left") ||
+       checkOptions(options,"right"))
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
     arm=checkArm(arm);

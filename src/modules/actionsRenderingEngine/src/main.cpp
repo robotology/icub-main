@@ -1276,6 +1276,7 @@ public:
 
                         visuoThr->getTarget(command.get(1),command);
 
+                        command.addString("touch");
                         if(!motorThr->reach(command))
                         {
                             reply.addVocab(NACK);
