@@ -536,7 +536,7 @@ void MainWindow::printLog(QString text)
     QString msg = text + "\n";
     //ui->logPanel->appendPlainText(msg);
     //qDebug() << msg;
-    yDebug(msg.toLatin1().data());
+    yDebug("%s", msg.toLatin1().data());
 }
 
 double MainWindow::round(double value, int decimalDigit){
