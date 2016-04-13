@@ -1,9 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-
-<devices robot="iCubGenova04" build="1">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><devices build="1" robot="iCubVillersLesNancy01">
 	<device name="head_calibrator" type="parametricCalibratorEth">
-                <params file="general.xml" />
+                <params file="general.xml"/>
 
 		<group name="GENERAL">
 		  <param name="joints"> 6 </param> <!-- the number of joints of the robot part  in the canbus version which one is read? check how parameters are spead-->
@@ -36,15 +33,15 @@
  <!-- check old calibrator for the correct sequence, then ask to Randazz -->
         <param name="CALIB_ORDER"> (0 1 2) (3) (4) (5) </param>
 
-		<action phase="startup" level="10" type="calibrate">
+		<action level="10" phase="startup" type="calibrate">
 		    <param name="target">head_mc_wrapper</param>
 		</action>
 
-		<action phase="interrupt1" level="1" type="park">
+		<action level="1" phase="interrupt1" type="park">
 		    <param name="target">head_mc_wrapper</param>
 		</action>
 
-		<action phase="interrupt3" level="1" type="abort" />
+		<action level="1" phase="interrupt3" type="abort"/>
 
 	</device>
 </devices>

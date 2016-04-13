@@ -1,4 +1,4 @@
-set(appname iCubGenova04)
+set(appname iCubVillersLesNancy01)
 
 set(scripts icub_all.xml robotInterface.ini general.xml iKinGazeCtrl.ini icubEyes.ini pf3dTracker.ini cartesianSolver.ini)
 

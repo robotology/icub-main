@@ -1,7 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-
-<params robot="iCubGenova04" build="1">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><params build="1" robot="iCubVillersLesNancy01">
     <group name="GENERAL">
         <param name="MotioncontrolVersion">  2 </param>
         <param name="Joints"> 3 </param> 
@@ -27,7 +24,7 @@
         <param name="Verbose">		0	</param>
     </group>
 
-    <group name ="JOINTS_COUPLING">
+    <group name="JOINTS_COUPLING">
         <param name="kinematic_mj">   0.55    0.275   0.275   0.00
                                       0.00    0.50    0.50    0.00
                                       0.00    -0.5    0.50    0.00

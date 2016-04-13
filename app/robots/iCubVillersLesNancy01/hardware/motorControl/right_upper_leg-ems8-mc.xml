@@ -1,13 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-
- <!-- Initialization file for EMS 8 - Right Upper Leg, 4 dof -->
-
-<devices robot="iCubGenova04" build="1">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><!-- Initialization file for EMS 8 - Right Upper Leg, 4 dof --><devices build="1" robot="iCubVillersLesNancy01">
   <device name="right_upper_leg_mc" type="embObjMotionControl">
-      <params file="general.xml" />
-      <params file="hardware/electronics/right_upper_leg-ems8-eln.xml" />
-      <params file="hardware/mechanicals/right_upper_leg-ems8-mec.xml" />
+      <params file="general.xml"/>
+      <params file="hardware/electronics/right_upper_leg-ems8-eln.xml"/>
+      <params file="hardware/mechanicals/right_upper_leg-ems8-mec.xml"/>
 
     <group name="LIMITS">
         <!--                                    0             	1            2          3          -->
@@ -62,7 +57,3 @@
 	
   </device>
 </devices>
-
-
-
-

@@ -1,10 +1,7 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-
-<devices robot="iCubGenova04" build="1">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><devices build="1" robot="iCubVillersLesNancy01">
   <device name="left_upper_arm_strain" type="embObjAnalogSensor">
     <params file="general.xml"/>
-    <params file="hardware/electronics/left_upper_arm-ems1-eln.xml" />
+    <params file="hardware/electronics/left_upper_arm-ems1-eln.xml"/>
 	<group name="GENERAL"> 
        <param name="CanAddress">     0x0D  </param> <!-- currently embedded in EMS firmware, kept for future use -->
        <param name="Format">           16  </param>
@@ -14,5 +11,3 @@
     </group>
   </device>
 </devices>
-
-

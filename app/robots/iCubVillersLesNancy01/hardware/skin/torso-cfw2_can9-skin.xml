@@ -1,20 +1,13 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-
- <!-- Initialization file for cfw002  motor contol for the head - 6 joints -->
-<devices robot="iCubGenova04" build="1"> 
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><!-- Initialization file for cfw002  motor contol for the head - 6 joints --><devices build="1" robot="iCubVillersLesNancy01"> 
   <device name="torso_skin" type="canBusSkin">
-      <params file="general.xml" />
+      <params file="general.xml"/>
 
-	  <params robot="iCubGenova04" build="1">
+	  <params build="1" robot="iCubGenova04">
         <param name="canDeviceNum"> 9         </param>
         <param name="skinCanIds">   7 8 9 10  </param>
         <param name="period"> 10              </param>
         <param name="canbusDevice"> cfw2can   </param>
       </params>
-    <params file="hardware/skin/torso-cfw2_can9-skinSpec.xml" />
+    <params file="hardware/skin/torso-cfw2_can9-skinSpec.xml"/>
   </device>
 </devices>
-
-
-

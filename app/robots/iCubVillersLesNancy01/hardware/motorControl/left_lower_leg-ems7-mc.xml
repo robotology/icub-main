@@ -1,13 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-
- <!-- Initialization file for EMS 7 - Left Lower Leg, 2 dof -->
-
-<devices robot="iCubGenova04" build="1">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><!-- Initialization file for EMS 7 - Left Lower Leg, 2 dof --><devices build="1" robot="iCubVillersLesNancy01">
   <device name="left_lower_leg_mc" type="embObjMotionControl">
-      <params file="general.xml" />
-      <params file="hardware/electronics/left_lower_leg-ems7-eln.xml" />
-      <params file="hardware/mechanicals/left_lower_leg-ems7-mec.xml" />
+      <params file="general.xml"/>
+      <params file="hardware/electronics/left_lower_leg-ems7-eln.xml"/>
+      <params file="hardware/mechanicals/left_lower_leg-ems7-mec.xml"/>
 
     <group name="LIMITS">
         <param name="jntPosMax">                      30.00         20.00       </param>

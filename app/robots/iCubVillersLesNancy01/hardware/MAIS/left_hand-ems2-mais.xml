@@ -1,11 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-
-<devices robot="iCubGenova04" build="1">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><devices build="1" robot="iCubVillersLesNancy01">
   <device name="left_hand_mais" type="embObjAnalogSensor">
-     <params file="general.xml" />
-     <params file="hardware/electronics/pc104.xml" />
-     <params file="hardware/electronics/left_lower_arm-ems2-eln.xml" />
+     <params file="general.xml"/>
+     <params file="hardware/electronics/pc104.xml"/>
+     <params file="hardware/electronics/left_lower_arm-ems2-eln.xml"/>
      <group name="GENERAL"> 
         <param name="CanAddress">     0x0E	</param>
         <param name="Format">		8	</param>

@@ -1,12 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
- <!-- Initialization file for EMS 1 - Left Upper Arm, 4 dof -->
-
-<devices robot="iCubGenova04" build="1">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><!-- Initialization file for EMS 1 - Left Upper Arm, 4 dof --><devices build="1" robot="iCubVillersLesNancy01">
   <device name="left_upper_arm_mc" type="embObjMotionControl">
       <params file="general.xml"/>
-      <params file="hardware/electronics/left_upper_arm-ems1-eln.xml" />
-      <params file="hardware/mechanicals/left_upper_arm-ems1-mec.xml" />
+      <params file="hardware/electronics/left_upper_arm-ems1-eln.xml"/>
+      <params file="hardware/mechanicals/left_upper_arm-ems1-mec.xml"/>
 
     <group name="LIMITS">
         <param name="jntPosMax">                      10              160.8            80           106       </param>
@@ -81,5 +77,3 @@
     
   </device>
 </devices>
-
-

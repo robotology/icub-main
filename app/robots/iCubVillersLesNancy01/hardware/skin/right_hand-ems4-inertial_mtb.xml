@@ -1,11 +1,8 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
-
-<devices robot="iCubGenova04" build="1">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><devices build="1" robot="iCubVillersLesNancy01">
     <device name="right_hand_inertialMTB" type="embObjAnalogSensor">
-        <params file="general.xml" />
-        <params file="hardware/electronics/pc104.xml" />
-        <params file="hardware/electronics/right_lower_arm-ems4-eln.xml" />
+        <params file="general.xml"/>
+        <params file="hardware/electronics/pc104.xml"/>
+        <params file="hardware/electronics/right_lower_arm-ems4-eln.xml"/>
 
         <!-- 
             enabledAccelerometers is a list of strings taken from enum eOas_inertial_position_t where the prefix eOas_inertial_pos_ is removed.
