@@ -3,7 +3,7 @@
 
  <!-- Initialization file for EMS 8 - Right Upper Leg, 4 dof -->
 
-<devices robot="iCubTwente01" build="1">
+<devices robot="iCubGenova04" build="1">
   <device name="right_upper_leg_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/right_upper_leg-ems8-eln.xml" />
@@ -11,7 +11,7 @@
 
     <group name="LIMITS">
         <!--                                    0             	1            2          3          -->
-        <param name="jntPosMax">                      85            85            70          0        </param>
+        <param name="jntPosMax">                      85            80            70          0        </param>
         <param name="jntPosMin">                      -30           0           -70         -100     </param>
         <param name="rotorPosMin">                 0             0             0           0        </param> 
         <param name="rotorPosMax">                 0             0             0           0        </param>
@@ -25,16 +25,16 @@
 	<group name="POSITION_CONTROL">
 	    <param name="controlLaw">    joint_pid_v1 </param> 
         <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">            -910.22    910.22     711.11   1066.66 </param>       
-        <param name="kd">               0.00      0.00       0.00       0.00 </param>       
-        <param name="ki">           -4444.43   4444.43    -7111.09   1066.64 </param>         
-        <param name="maxOutput">           8000      8000    8000       8000 </param>          
-        <param name="maxInt">            750       750        750       1000 </param>       
-        <param name="shift">               0         0          0          0 </param>       
-        <param name="ko">                  0         0          0          0 </param>       
-        <param name="stictionUp">          0         0          0          0 </param>       
-        <param name="stictionDwn">         0         0          0          0 </param>     
-        <param name="kff">                 0         0          0          0 </param>   
+        <param name="kp">           -1280      1280         711.11   1066.66 </param>       
+        <param name="kd">              0         250        0.00       0.00 </param>       
+        <param name="ki">           -6250      25000        7111.09   1066.64 </param>         
+        <param name="maxOutput">     8000      8000         8000       8000 </param>          
+        <param name="maxInt">        2000       2500        750       1000 </param>       
+        <param name="shift">            0         0          0          0 </param>       
+        <param name="ko">               0         0          0          0 </param>       
+        <param name="stictionUp">       0         0          0          0 </param>       
+        <param name="stictionDwn">      0         0          0          0 </param>     
+        <param name="kff">              0         0          0          0 </param>   
     </group>
 
     <group name="IMPEDANCE">
@@ -45,19 +45,19 @@
     <group name="TORQUE_CONTROL">
         <param name="controlLaw">    motor_pid_with_friction_v1               </param> 
         <param name="controlUnits">  metric_units                             </param>         
-        <param name="kp">            200       -200          0       -300     </param>      <!--      200       -300        300       -300    -->
+        <param name="kp">            -200       200          0       -300     </param>      <!--      200       -300        300       -300    -->
         <param name="kd">              0          0          0          0     </param>       
         <param name="ki">              0          0          0          0     </param>     
         <param name="maxOutput">    8000       8000       8000       8000     </param>       
         <param name="maxInt">        500        500        500        500     </param>       
         <param name="shift">           0          0          0          0     </param>       
         <param name="ko">              0          0          0          0     </param>       
-        <param name="stictionUp">      2.3       -1.79       1.8        1.2   </param>       
-        <param name="stictionDwn">    -3.3        1.76      -1.4       -1.7   </param>       
+        <param name="stictionUp">      0          0          1.8        1.2   </param>       
+        <param name="stictionDwn">     0          0         -1.4       -1.7   </param>       
         <param name="kff">             1          1          1          1     </param>  
         <param name="kbemf">           0          0          0          0     </param>            
         <param name="filterType">      0          0          0          0     </param>     
-        <param name="ktau">          147       -180        217       -282     </param>          
+        <param name="ktau">            0          0        217       -282     </param>          
     </group>
 	
   </device>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<params robot="iCubTwente01" build="1">
+<params robot="iCubGenova04" build="1">
     <group name="GENERAL">
         <param name="MotioncontrolVersion">  2 </param>
         <param name="Joints"> 4 </param> 
@@ -22,7 +22,7 @@
         <param name="JointEncoderRes">   -4096         -4096        -4096          4096         </param>
         <param name="RotorEncoderRes">   0             0           -14400         -14400       </param>
         <param name="RotorIndexOffset">  0             0            0              0            </param>
-        <param name="Gearbox">           100.00        -100.00       100.00        100.00       </param>
+        <param name="Gearbox">           100.00       -100.00       100.00        100.00       </param>
         <param name="MotorType">       "BLL_KOLLM"     "BLL_KOLLM"   "BLL_MOOG"    "BLL_MOOG"    </param>
         <param name="MotorPoles">        8             8            8             8             </param>
         <param name="Verbose">		0    	</param>

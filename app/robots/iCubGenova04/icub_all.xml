@@ -66,8 +66,6 @@
     <!-- INERTIAL SENSOR -->
     <devices file="hardware/inertial.xml" />
     
-  
-
     <!--  SKINS -->
     <devices file="wrappers/skin/left_arm-skin_wrapper.xml" />
     <devices file="hardware/skin/left_arm-ems2-skin.xml" />

@@ -4,7 +4,6 @@
 <devices robot="iCubGenova04" build="1">
 	<device name="torso_VFTserver" type="virtualAnalogServer">
 		<param name="period">       10  				</param>
-		<param name="name">       /icub/torso/analog:o			</param>
 		<param name="deviceId">     torso				</param>
 		
 		 <paramlist name="networks">
@@ -13,7 +12,7 @@
 		    </paramlist>
 
 		<param name="channels">       3  				</param>
-		
+		<param name="name"> 	     /torso				</param>
 
 		<action phase="startup" level="5" type="attach">
 		    <paramlist name="networks">
