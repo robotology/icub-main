@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><devices build="1" robot="iCubVillersLesNancy01">
+	<device name="right_arm_calibrator" type="parametricCalibratorEth">
+                <params file="general.xml"/>
+
+		<group name="GENERAL">
+		    <param name="joints">16</param> <!-- the number of joints of the robot part -->
+		    <param name="deviceName"> Right_Arm_Calibrator </param>
+		</group>
+
+<group name="HOME">
+<param name="positionHome">                       -30       30        0         45        0         0         40        15        30        0         0         0         0         0         0         0         </param>
+<param name="velocityHome">                       10        10        10        10        30        30        30        100       10        10        10        10        10        10        10        10        </param>
+</group>
+
+
+<group name="CALIBRATION">
+<param name="calibrationType">                    3         3         3         3         0         2         2         7         7         6         6         6         6         6         6         6         </param>
+<param name="calibration1">                       27306.6   13653.3   44740.2   40959.9   500.0     750.0     750.0     1245.0    3041.1     0.0      0.0      0.0        0.0       0.0      0.0        0.0       </param>
+<param name="calibration2">                       10.0      10.0      10.0      10.0      -20.0     10.0      10.0      100.0     10.0      10.0      30.0      10.0      10.0      10.0      10.0      10.0      </param>
+<param name="calibration3">                       20432.1   23328.0   58247.9   11472.1   0.0       0.0       0.0       0.0        0.0      -1         1        -1        1         -1        1         -1        </param>
+<param name="calibration4">                       0         0          0          0       0          0          0       1380      2660      233        455       251       462      238       466        708      </param>
+<param name="calibration5">                       0         0          0          0       0          0          0       1520      2038       10         43       0          35        0        6         110      </param>
+<param name="calibrationZero">                    180.00    30.00     229.77     180.00   90.00    -20.00    -52.00      0.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0      </param>
+<param name="calibrationDelta">                   1.5      10.0       -3.0      -6.0      0.0       0.0        0.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0       0.0      </param>
+
+<param name="startupPosition">                    -30.0     30.0      0.0       45.0      0.0       0.0       0.0       15.0      30.0      0.0       0.0       0.0       0.0       0.0       0.0       0.0       </param>
+<param name="startupVelocity">                    10.0      10.0      10.0      10.0      30.0      30.0      30.0      100.0     100.0     100.0     100.0     100.0     100.0     100.0     100.0     100.0     </param>
+<param name="startupMaxPwm">                      2000      2000      2000      2000      0         0         0         0         0         0         0         0         0         0         0         0         </param>
+<param name="startupPosThreshold">                2         2         2         2         2         2         90        90        1000      1000      1000      1000      1000      1000      1000      1000      </param>
+</group>
+
+        <param name="CALIB_ORDER">(0 1 2 3) (4 6 7) (5) (8 9 11 13) (10 12 14 15) </param>
+
+		<action level="10" phase="startup" type="calibrate">
+		    <param name="target">right_arm_mc_wrapper</param>
+		</action>
+
+		<action level="1" phase="interrupt1" type="park">
+		    <param name="target">right_arm_mc_wrapper</param>
+		</action>
+
+		<action level="1" phase="interrupt3" type="abort"/>
+
+	</device>
+</devices>

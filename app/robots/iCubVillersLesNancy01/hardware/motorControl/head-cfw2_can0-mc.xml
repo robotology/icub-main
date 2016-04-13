@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><!-- Initialization file for cfw002  motor contol for the head - 6 joints --><devices build="1" robot="iCubVillersLesNancy01">
+  <device name="head_mc" type="canmotioncontrol">
+      <params file="general.xml"/>
+      <params file="hardware/electronics/head-cfw2_can0-eln.xml"/>
+      <params file="hardware/mechanicals/head-cfw2_can0-mec.xml"/>
+  </device>
+</devices>
