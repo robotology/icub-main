@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><devices build="1" robot="iCubLesVillersLesNancy01">
+  <device name="right_upper_arm_strain" type="embObjAnalogSensor">
+    <params file="general.xml"/>
+    <params file="hardware/electronics/right_upper_arm-ems3-eln.xml"/>
+    <group name="GENERAL"> 
+        <param name="CanAddress">     0x0D  </param>  <!-- currently embedded in EMS firmware, kept for future use -->
+        <param name="Format">           16  </param>
+        <param name="Channels">          6  </param>
+        <param name="Period">            1  </param>
+        <param name="UseCalibration">    1  </param>
+    </group>
+  </device>
+</devices>
