@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><devices build="1" robot="iCubNancy01">
+  <device name="torso_mc" type="embObjMotionControl">
+      <params file="general.xml"/>
+      <params file="hardware/electronics/torso-ems5-eln.xml"/>
+      <params file="hardware/mechanicals/torso-ems5-mec.xml"/>
+  
+    <group name="LIMITS">
+        <param name="jntPosMax">                      50            30            70          </param>
+        <param name="jntPosMin">                      -50           -30           -20         </param>
+        <param name="rotorPosMin">                 0             0             0           </param> 
+        <param name="rotorPosMax">                 0             0             0           </param>
+        <param name="motorOverloadCurrents">    5000          5000          5000        </param>
+        <param name="motorNominalCurrents">     0             0             0           </param>
+        <param name="motorPeakCurrents">        0             0             0           </param>
+        <param name="motorPwmLimit">            10000         10000         10000       </param>
+        <param name="jntVelMax">                 1000          1000          1000        </param>   
+    </group>
+	
+	<group name="POSITION_CONTROL">
+	    <param name="controlLaw">    joint_pid_v1         </param> 
+        <param name="controlUnits">  metric_units        </param> 
+        <param name="kp">           1274.30  1820.44  1820.44  </param>       
+        <param name="kd">              0.00     0.00     0.00  </param>       
+        <param name="ki">           4444.43  4444.43  4444.43  </param>        
+        <param name="maxOutput">       8000     8000    16000  </param>  
+        <param name="maxInt">           750      750     1500  </param>       
+        <param name="shift">              0        0        0  </param>       
+        <param name="ko">                 0        0        0  </param>       
+        <param name="stictionUp">         0        0        0  </param>       
+        <param name="stictionDwn">        0        0        0  </param>       
+        <param name="kff">                0        0        0  </param>     
+    </group>
+	
+	<group name="TORQUE_CONTROL">
+	    <param name="controlLaw">    motor_pid_with_friction_v1       </param> 
+        <param name="controlUnits">  metric_units                     </param>
+        <param name="kp">            100     100     100 </param>       
+        <param name="kd">              0       0       0 </param>       
+        <param name="ki">              0       0       0 </param>       
+        <param name="maxOutput">    8000    8000    8000 </param>       
+        <param name="maxInt">          0       0       0 </param>       
+        <param name="shift">           0       0       0 </param>       
+        <param name="ko">              0       0       0 </param>       
+        <param name="stictionUp">      0       0       0 </param>       
+        <param name="stictionDwn">     0       0       0 </param>      
+        <param name="kff">             1       1       1 </param>      
+        <param name="kbemf">           0       0       0 </param>           
+        <param name="filterType">      0       0       0 </param>   
+        <param name="ktau">          100     100     100 </param>  
+    </group>
+    
+    <group name="IMPEDANCE">
+        <param name="stiffness">       0      0      0     </param>    
+        <param name="damping">         0      0      0     </param>    
+    </group>
+	
+  </device>
+</devices>

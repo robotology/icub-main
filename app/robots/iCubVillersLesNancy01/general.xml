@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?><params build="1" robot="iCubVillersLesNancy01">
-  
-  <group name="GENERAL">
-      <param name="skipCalibration">    false  </param>
-      <param name="useRawEncoderData">  false  </param>
-      <param name="useLimitedPWM">      false  </param>
-      <param name="verbose">            false  </param>
-  </group>
-</params>

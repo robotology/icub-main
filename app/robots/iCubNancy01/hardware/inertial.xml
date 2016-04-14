@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><devices build="1" robot="iCubNancy01">
+  <device name="inertial" type="inertial">
+      <param name="name"> /icub/inertial </param>
+      <params file="general.xml"/>
+      <param name="subdevice">  xsensmtx  </param>
+      <param name="serial">  /dev/ttyS0   </param>
+  </device>
+</devices>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><devices build="1" robot="iCubNancy01">
+	<device name="right_hand_as_wrapper" type="analogServer">
+        <param name="period">       10                  </param>
+	<param name="name">       /icub/right_hand/analog:o		</param>
+        <param name="deviceId">     right_hand           </param>
+
+        <action level="5" phase="startup" type="attach">
+            <paramlist name="networks">
+                <elem name="rightMais">  right_hand_mais </elem>
+            </paramlist>
+        </action>
+
+        <action level="5" phase="shutdown" type="detach"/>
+        </device>
+</devices>

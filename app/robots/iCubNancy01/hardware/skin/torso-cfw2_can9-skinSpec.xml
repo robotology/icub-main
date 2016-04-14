@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><params build="1" robot="iCubNancy01">
+
+       <group name="defaultCfgBoard">
+            <param name="period">        50  </param> 
+            <param name="skinType">      0  </param> <!-- 0 ==> new skin
+                                                              1 ==> palm and fingertips skin
+                                                              2 ==> old skin without temperature compensation -->
+            <param name="noLoad">         0xf0  </param>
+            <param name="diagnostic">    false  </param>     <!-- used to config high level -->
+        </group>
+
+
+       <group name="defaultCfgTriangle">
+            <param name="enabled">         false    </param> 
+            <param name="shift">           2        </param>
+            <param name="cdcOffset">       0x2200   </param>
+        </group>
+
+		<group name="specialCfgTriangles">
+        <param name="numOfSets">         7  </param> <!-- id starts from 1 for triangleSetCfg-->
+        <!--                                 patch       boardAddr    idStart       idEnd        enabled          shift       cdcOffset      -->
+           <param name="triangleSetCfg1">      9            7         5             11              1              2           0x2200       </param>                        
+
+		   <param name="triangleSetCfg2">      9            8         1             3               1              2           0x2200       </param>		   
+		   <param name="triangleSetCfg3">      9            8         6             13              1              2           0x2200       </param>
+
+		   <param name="triangleSetCfg4">      9            9         0             15              1              2           0x2200       </param>
+
+		   <param name="triangleSetCfg5">      9            10        1             2               1              2           0x2200       </param>
+		   <param name="triangleSetCfg6">      9            10        4             4               1              2           0x2200       </param>
+		   <param name="triangleSetCfg7">      9            10        8             14              1              2           0x2200       </param>
+    </group>        
+</params>
