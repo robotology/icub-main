@@ -667,7 +667,7 @@ bool parametricCalibratorEth::calibrate()
 
 bool parametricCalibratorEth::calibrateJoint(int joint)
 {
-    yDebug() << deviceName << ": Calling calibrateJoint on joint " << joint << " with params: " << calibParams[joint].type << calibParams[joint].param1 << calibParams[joint].param2 << calibParams[joint].param3 << calibParams[joint].param4;
+    yDebug() << deviceName << ": Calling calibrateJoint on joint " << joint << ": type "<< calibParams[joint].type << " with params: " << calibParams[joint].param1 << calibParams[joint].param2 << calibParams[joint].param3 << calibParams[joint].param4 << calibParams[joint].param5;
     bool b = iCalibrate->setCalibrationParameters(joint, calibParams[joint]);
     return b;
 }
