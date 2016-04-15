@@ -751,6 +751,8 @@ public:
     {
         double t=Time::now();
         static char buff [1000];
+        buff[0] = 0;
+
         if (t-t0>=PRINT_STATUS_PER)
         {
             //for (int i=0;i <numButtons; i++)
@@ -758,14 +760,13 @@ public:
 
             for (int i=0;i <numAxes; i++)
             {
-                sprintf ( buff, "%+9.1f", rawAxes[i] );
+                sprintf(buff + strlen(buff), "%+9.1f", rawAxes[i]);
             }
-            fprintf ( stderr, " ---> " );
+            sprintf(buff + strlen(buff), " ---> ");
             for (int i=0;i <num_outputs; i++)
             {
-                sprintf ( buff, "%+9.1f", outAxes[i] );
+                sprintf(buff + strlen(buff), "%+9.1f", outAxes[i]);
             }
-            sprintf (buff, "\n");
             yDebug() << buff;
             t0=t;
         }
