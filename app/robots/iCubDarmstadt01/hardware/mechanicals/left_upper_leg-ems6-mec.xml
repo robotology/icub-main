@@ -13,9 +13,9 @@
         <param name="HasRotorEncoder">       1             1             1             1       </param>
         <param name="HasRotorEncoderIndex">  0             0             0             0       </param>
         <param name="Encoder">         182.044       182.044       182.044       182.044       </param>
-        <param name="TorqueId">             0x0B          0x0B          0x0B          0x0B 		</param>
-        <param name="TorqueChan">           0             1             2             3		</param>
-        <param name="TorqueMax">            24            24            24            24		</param>
+        <param name="TorqueId">             0x0B          0x0B          0x0B          0x0B     </param>
+        <param name="TorqueChan">           0             1             2             3	       </param>
+        <param name="TorqueMax">            60            60            60            60       </param>
         <param name="JointEncoderType">     "AEA"          "AEA"        "AEA"         "AEA"    </param>
         <param name="RotorEncoderType">     "ROIE"         "ROIE"       "ROIE"        "ROIE"   </param>
         <param name="JointEncoderRes">       4096          4096          4096          -4096   </param>
