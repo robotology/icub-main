@@ -17,7 +17,7 @@
         </paramlist>
 
         <param name="period"> 10                        </param>
-        <param name="name">   /iCubExpArmV3/left_arm    </param>
+        <param name="name">   /icub/left_arm    </param>
         <param name="ports">  left_arm                  </param>
         <param name="joints"> 12                        </param> 
  
@@ -27,6 +27,7 @@
                 <elem name="FirstSetOfJoints">  left_lower_arm-j4_7-mc </elem>
                 <elem name="SecondSetOfJoints"> left_lower_arm-j8_11-mc </elem> 
                 <elem name="ThirdSetOfJoints">  left_lower_arm-j12_15-mc </elem> 
+                <elem name="Calibrator">  left_arm_calibrator </elem>
             </paramlist>
         </action>
 

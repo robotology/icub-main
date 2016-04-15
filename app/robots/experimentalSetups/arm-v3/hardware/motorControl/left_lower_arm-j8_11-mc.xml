@@ -9,8 +9,8 @@
         <params file="hardware/electronics/left_lower_arm-j8_11-eln.xml" />
         <params file="hardware/mechanicals/left_lower_arm-j8_11-mec.xml" />
 
-        <!-- joint number in sub-part           0              1               2                3                 -->
-        <!-- joint name                    "l_thumb_oppose" "l_thumb_proximal" "l_thumb_distal" "l_index_proximal" -->     
+        <!-- joint number in sub-part             0              1               2                3        -->
+        <!-- joint name               "l_thumb_oppose" "l_thumb_proximal" "l_thumb_distal" "l_index_proximal" -->
         <group name="LIMITS">
             <param name="jntPosMax">                90          90             180              90           </param>
             <param name="jntPosMin">                10          0              0                0            </param>

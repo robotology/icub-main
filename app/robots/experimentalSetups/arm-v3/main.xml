@@ -17,8 +17,8 @@
     <devices file="hardware/MAIS/left_hand-mais.xml" /> 
     
     <!-- CALIBRATORS --> 
-    <!-- left-arm calibrator
-    <devices file="./calibrators/left_arm-calib.xml" /> -->
+    <!-- left-arm calibrator-->
+    <devices file="./calibrators/left_arm-calib.xml" />
     
 </robot> 
 
