@@ -1468,12 +1468,13 @@ protected:
     bool read(ConnectionReader &connection)
     {
         LockGuard lg(mutex);
+        Bottle command;
+        if (!command.read(connection) || (pDataBase==NULL))
+            return false;
+
         if (enabled)
         {
-            Bottle command, reply; 
-            if (!command.read(connection) || (pDataBase==NULL))
-                return false;
-
+            Bottle reply;
             double t0=Time::now();
             pDataBase->respond(connection,command,reply);
             cumTime+=Time::now()-t0;
@@ -1493,7 +1494,7 @@ public:
         pDataBase=NULL;
         enabled=true;
         nCalls=0;
-        cumTime=0.0;        
+        cumTime=0.0;
     }
 
     /************************************************************************/
@@ -1587,10 +1588,14 @@ public:
 
     /************************************************************************/
     bool close()
-    {        
+    {
         rpcProcessor.disable();
         modifyPort.disableCallback();
         dataBase.stop();
+
+        rpcPort.interrupt();
+        bcPort.interrupt();
+        modifyPort.interrupt();
 
         rpcPort.close();
         bcPort.close();
