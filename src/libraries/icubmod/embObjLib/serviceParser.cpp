@@ -326,6 +326,26 @@ bool ServiceParser::convert(ConstString const &fromstring, const uint8_t strsize
 }
 
 
+bool ServiceParser::convert(ConstString const &fromstring, string &str, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+
+    if(0 != strlen(t))
+    {
+        str = t;
+    }
+    else
+    {
+        yWarning() << "ServiceParser::convert():" << t << "is not a legal string";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+
+
 bool ServiceParser::convert(ConstString const &fromstring, eObrd_location_t &location, bool &formaterror)
 {
     // it is actually a micro-parser: PRE-num
@@ -347,8 +367,8 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_location_t &loc
     {
         int adr = 0;
         sscanf(t, "%3c-%d", prefix, &adr);
-        location.place = eobrd_place_loc;
-        location.address.local = adr;
+        location.any.place = eobrd_place_loc;
+        location.loc.id = adr;
     }
     else if(0 == strcmp(prefix, "CAN"))
     {
@@ -368,10 +388,9 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_location_t &loc
             formaterror = true;
             return false;
         }
-        location.place = eobrd_place_can;
-        location.address.oncan.port = (1 == bus) ? (eOcanport1) : (eOcanport2);
-        location.address.oncan.addr = adr;
-        location.address.oncan.insideindex = eomn_serv_caninsideindex_none;
+        location.any.place = eobrd_place_can;
+        location.can.port = (1 == bus) ? (eOcanport1) : (eOcanport2);
+        location.can.addr = adr;
     }
     else if(0 == strcmp(prefix, "MC4"))
     {
@@ -405,10 +424,10 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_location_t &loc
             formaterror = true;
             return false;
         }
-        location.place = eobrd_place_can;
-        location.address.oncan.port = (1 == bus) ? (eOcanport1) : (eOcanport2);
-        location.address.oncan.addr = adr;
-        location.address.oncan.insideindex = (0 == sub) ? (eomn_serv_caninsideindex_first) : (eomn_serv_caninsideindex_second);
+        location.any.place = eobrd_place_extcan;
+        location.extcan.port = (1 == bus) ? (eOcanport1) : (eOcanport2);
+        location.extcan.addr = adr;
+        location.extcan.index = (0 == sub) ? (eomn_serv_caninsideindex_first) : (eomn_serv_caninsideindex_second);
     }
     else
     {
@@ -427,13 +446,21 @@ bool ServiceParser::convert(eObrd_location_t const &loc, char *str, int len)
         return false;
     }
 
-    if(eobrd_place_can == loc.place)
+    if(eobrd_place_can == loc.any.place)
     {
-        convert(loc.address.oncan, str, len);
+        snprintf(str, len, "CAN%d-%d", (eOcanport1 == loc.can.port) ? 1 : 2, loc.can.addr);
+    }
+    else if(eobrd_place_can == loc.any.place)
+    {
+        snprintf(str, len, "MC4CAN%d-%d-%d", (eOcanport1 == loc.extcan.port) ? 1 : 2, loc.extcan.addr, loc.extcan.index);
+    }
+    else if(eobrd_place_loc == loc.any.place)
+    {   // it must be eobrd_place_loc
+        snprintf(str, len, "LOC-%d", loc.loc.id);
     }
     else
-    {   // it must be eobrd_place_loc
-        snprintf(str, len, "LOC-%d", loc.address.local);
+    {
+        return false;
     }
 
     return true;
@@ -697,7 +724,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 servAnalogSensor_t item;
                 item.type = eoas_none;
 
-                convert(b_PROPERTIES_SENSORS_id.get(i+1).asString(), sizeof(item.id), item.id, formaterror);
+                convert(b_PROPERTIES_SENSORS_id.get(i+1).asString(), item.id, formaterror);
                 convert(b_PROPERTIES_SENSORS_type.get(i+1).asString(), item.type, formaterror);
                 convert(b_PROPERTIES_SENSORS_location.get(i+1).asString(), item.location, formaterror);
 
@@ -755,10 +782,11 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 
         for(int i=0; i<numenabledsensors; i++)
         {
-            servAnalogSensor_t founditem = {0};
+            servAnalogSensor_t founditem;
 
             ConstString s_enabled_id = b_SETTINGS_enabledSensors.get(i+1).asString();
-            const char *str = s_enabled_id.c_str();
+//            const char *str = s_enabled_id.c_str();
+//            std::string cpp_str = str;
 
             // we must now search inside the whole vector<> as_service.properties.sensors if we find an id which matches s_enabled_id ....
             // if we dont, ... we issue a warning.
@@ -768,7 +796,8 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             for(int n=0; n<as_service.properties.sensors.size(); n++)
             {
                 servAnalogSensor_t item = as_service.properties.sensors.at(n);
-                if(0 == strcmp(item.id, str))
+                //if(item.id == cpp_str)
+                if(item.id == s_enabled_id)
                 {
                     found = true;
                     founditem = item;
@@ -858,7 +887,9 @@ bool ServiceParser::parseService(Searchable &config, servConfigMais_t &maisconfi
     memcpy(&maisconfig.ethservice.configuration.data.as.mais.version.protocol, &themais_props.protocol, sizeof(eOmn_canprotocolversion_t));
     memcpy(&maisconfig.ethservice.configuration.data.as.mais.version.firmware, &themais_props.firmware, sizeof(eOmn_canfirmwareversion_t));
 
-    memcpy(&maisconfig.ethservice.configuration.data.as.mais.canloc, &themais_sensor.location.address.oncan, sizeof(eOmn_serv_canlocation_t));
+    maisconfig.ethservice.configuration.data.as.mais.canloc.port = themais_sensor.location.can.port;
+    maisconfig.ethservice.configuration.data.as.mais.canloc.addr = themais_sensor.location.can.addr;
+    maisconfig.ethservice.configuration.data.as.mais.canloc.insideindex = eomn_serv_caninsideindex_none;
 
 
     return true;
@@ -887,7 +918,10 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
     memcpy(&strainconfig.ethservice.configuration.data.as.strain.version.protocol, &thestrain_props.protocol, sizeof(eOmn_canprotocolversion_t));
     memcpy(&strainconfig.ethservice.configuration.data.as.strain.version.firmware, &thestrain_props.firmware, sizeof(eOmn_canfirmwareversion_t));
 
-    memcpy(&strainconfig.ethservice.configuration.data.as.strain.canloc, &thestrain_sensor.location.address.oncan, sizeof(eOmn_serv_canlocation_t));
+    strainconfig.ethservice.configuration.data.as.strain.canloc.port = thestrain_sensor.location.can.port;
+    strainconfig.ethservice.configuration.data.as.strain.canloc.addr = thestrain_sensor.location.can.addr;
+    strainconfig.ethservice.configuration.data.as.strain.canloc.insideindex = eomn_serv_caninsideindex_none;
+
 
 
     return true;
@@ -907,61 +941,40 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
 
     inertialsconfig.acquisitionrate = as_service.settings.acquisitionrate;
 
-    inertialsconfig.mtbconfig.datarate = as_service.settings.acquisitionrate;
-
-
     memset(&inertialsconfig.ethservice.configuration, 0, sizeof(inertialsconfig.ethservice.configuration));
 
-    memset(&inertialsconfig.mtbconfig, 0, sizeof(inertialsconfig.mtbconfig));
-
     inertialsconfig.ethservice.configuration.type = eomn_serv_AS_inertial;
-    memcpy(&inertialsconfig.ethservice.configuration.data.as.inertial.version.protocol, &themtb_props.protocol, sizeof(eOmn_canprotocolversion_t));
-    memcpy(&inertialsconfig.ethservice.configuration.data.as.inertial.version.firmware, &themtb_props.firmware, sizeof(eOmn_canfirmwareversion_t));
+    memcpy(&inertialsconfig.ethservice.configuration.data.as.inertial.mtbversion.protocol, &themtb_props.protocol, sizeof(eOmn_canprotocolversion_t));
+    memcpy(&inertialsconfig.ethservice.configuration.data.as.inertial.mtbversion.firmware, &themtb_props.firmware, sizeof(eOmn_canfirmwareversion_t));
 
     // now, for all the sensors we must fill:
-    // - inertialsconfig.ethservice.configuration.data.as.inertial.canmap[2] with mask of location of mtb boards
-    // - inertialsconfig.mtbconfig.internal_accel[2], external_accel[2], external_gyros[2].
+    // - inertialsconfig.ethservice.configuration.data.as.inertial.canmap[2] with mask of location of mtb boards... no, i dont do it
+    // - the vector of ...
 
 
+    inertialsconfig.inertials.resize(0);
 
+    EOarray* array = eo_array_New(eOas_inertials_maxnumber, sizeof(eOas_inertial_descriptor_t), &inertialsconfig.ethservice.configuration.data.as.inertial.arrayofsensors);
     for(int i=0; i<as_service.settings.enabledsensors.size(); i++)
     {
         servAnalogSensor_t sensor = as_service.settings.enabledsensors.at(i);
         eOas_sensor_t type = sensor.type;
-        uint8_t port = sensor.location.address.oncan.port;
-        uint8_t addr = sensor.location.address.oncan.addr;
-        // set bit in position addr of canmap[port]
-        eo_common_hlfword_bitset(&inertialsconfig.ethservice.configuration.data.as.inertial.canmap[port], addr);
-        // we also set the bit in position addr of a halfword but ... the halfword depends on the type.
-        uint16_t *hword = NULL;
-        switch(type)
+
+        if((eoas_accel_mtb_int != type) && (eoas_accel_mtb_ext != type) && (eoas_gyros_mtb_ext != type))
         {
-            case eoas_accel_mtb_int:
-            {
-                hword = &inertialsconfig.mtbconfig.internal_accel[port];
-            } break;
-            case eoas_accel_mtb_ext:
-            {
-                hword = &inertialsconfig.mtbconfig.external_accel[port];
-            } break;
-            case eoas_gyros_mtb_ext:
-            {
-                hword = &inertialsconfig.mtbconfig.external_gyros[port];
-            } break;
-            default:
-            {
-                yError() << "ServiceParser::parseService() has detected a wrong type of inertials: only eoas_accel_mtb_int, eoas_accel_mtb_ext, and eoas_gyros_mtb_ext are supported";
-                hword = NULL;
-            } break;
+            // we should convert snsor type to string ....
+            yWarning() << "ServiceParser::parseService() has detected a wrong inertial sensor = " << type << " ...  we drop it";
+            continue;
         }
+        // if ok, i copy it inside ...
 
-        if(NULL == hword)
-        {
-            return false;
-        }
+        eOas_inertial_descriptor_t des = {0};
+        des.type = type;
+        memcpy(&des.on, &sensor.location, sizeof(eObrd_location_t));
 
-        eo_common_hlfword_bitset(hword, addr);
-
+        eo_array_PushBack(array, &des);
+        inertialsconfig.inertials.push_back(des);
+        inertialsconfig.id.push_back(sensor.id);
     }
 
 
