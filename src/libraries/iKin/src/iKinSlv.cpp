@@ -877,10 +877,8 @@ void CartesianSolver::respond(const Bottle &command, Bottle &reply)
                                         o[i]=tipPart->get(i+x.length()).asDouble();
             
                                     Matrix HN=axis2dcm(o);
-                                    HN(0,3)=x[0];
-                                    HN(1,3)=x[1];
-                                    HN(2,3)=x[2];
-            
+                                    HN.setSubcol(x,0,3);
+
                                     lock();
                                     prt->chn->setHN(HN);
                                     unlock();

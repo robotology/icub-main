@@ -397,9 +397,7 @@ Vector MotorThread::eye2root(const Vector &out, bool forehead)
         ctrl_gaze->getLeftEyePose(eyePos,eyeOrient);
 
     Matrix T=axis2dcm(eyeOrient);
-    T(0,3)=eyePos[0];
-    T(1,3)=eyePos[1];
-    T(2,3)=eyePos[2];
+    T.setSubcol(eyePos,0,3);
 
     Vector root=T*out_hom;
 

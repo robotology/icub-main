@@ -1432,15 +1432,11 @@ Property CalibModule::calibrate(const bool rm_outliers)
             Vector x,o;
             igaze->getLeftEyePose(x,o);
             Matrix TL=axis2dcm(o);
-            TL(0,3)=x[0];
-            TL(1,3)=x[1];
-            TL(2,3)=x[2];
+            TL.setSubcol(x,0,3);
 
             igaze->getRightEyePose(x,o);
             Matrix TR=axis2dcm(o);
-            TR(0,3)=x[0];
-            TR(1,3)=x[1];
-            TR(2,3)=x[2];
+            TR.setSubcol(x,0,3);
 
             HL=HL*H;
             HR=SE3inv(TR)*(TL*HL*HLR);
