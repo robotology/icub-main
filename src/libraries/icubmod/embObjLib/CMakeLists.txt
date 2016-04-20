@@ -59,6 +59,9 @@ set(ICUB_INTERFACE_SOURCE   ${EXTRA_FOLDER}/FeatureInterface.cpp)
 set(NVS_SOURCE              ${NVS_MC_SRC_FOLDER}/EoProtocol.c
                             ${NVS_MC_SRC_FOLDER}/EoProtocolEPs.c
                             ${PROT_FOLDER}/icub/EoError.c
+                            ${PROT_FOLDER}/icub/EoBoards.c
+                            ${PROT_FOLDER}/icub/EoAnalogSensors.c
+                            ${PROT_FOLDER}/icub/EoManagement.c
                             )
  
     

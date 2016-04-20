@@ -1466,7 +1466,7 @@ bool EthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
 }
 
 
-bool EthResource::serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times)
+bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times)
 {
 #if defined(ETHRES_DEBUG_DONTREADBACK)
         yWarning() << "EthResource::serviceCommand() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not send the command";

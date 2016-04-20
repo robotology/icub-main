@@ -964,13 +964,13 @@ void embObjInertials::printServiceConfig(void)
     {
         eOas_inertial_descriptor_t des = serviceConfig.inertials.at(i);
         string id = serviceConfig.id.at(i);
-        string strtype = "tobefilled"; // from sensor type to string
+        string strtype = string(eoas_sensor2string((eOas_sensor_t)des.type)); // from sensor type to string
 
         parser->convert(des.on, loc, sizeof(loc));
         parser->convert(serviceConfig.ethservice.configuration.data.as.inertial.mtbversion.firmware, fir, sizeof(fir));
         parser->convert(serviceConfig.ethservice.configuration.data.as.inertial.mtbversion.protocol, pro, sizeof(pro));
 
-        yInfo() << "  - id =" << id << "type =" << strtype << " on MTB w/ loc =" << loc << "with required protocol version =" << pro << "and required firmware version =" << fir;
+        yInfo() << "  - id =" << id << "type =" << strtype << "on MTB w/ loc =" << loc << "with required protocol version =" << pro << "and required firmware version =" << fir;
     }
 }
 

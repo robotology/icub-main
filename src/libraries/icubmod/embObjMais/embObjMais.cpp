@@ -171,6 +171,7 @@ bool embObjMais::initialised()
 
 //#define TEST_MAIS_PLUS_MC
 
+
 bool embObjMais::open(yarp::os::Searchable &config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
@@ -244,7 +245,9 @@ bool embObjMais::open(yarp::os::Searchable &config)
 
    // sarebbe bene chiamare requestResource2(ptr2fakemccontroller, config) ma pazienza
 
-    if(false == res->serviceVerifyActivate(eomn_serv_category_mc, NULL, 5.0))
+    const eOmn_serv_parameter_t* mcservparam = NULL;
+
+    if(false == res->serviceVerifyActivate(eomn_serv_category_mc, mcservparam, 5.0))
     {
         yError() << "embObjMais::open() has an error in call of ethResources::serviceVerifyActivate(MC) for BOARD" << res->getName() << "IP" << res->getIPv4string();
         cleanup();

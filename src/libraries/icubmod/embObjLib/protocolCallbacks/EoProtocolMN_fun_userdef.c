@@ -360,37 +360,6 @@ static void s_process_CANPRINT(eOmn_info_basic_t* infobasic, uint8_t * extra, co
     feat_CANprint(eo_nv_GetIP(nv), infobasic);
 }
 
-//#warning --> do a proper function in EoBoards.c
-const char * eoboard_get_name(eObrd_cantype_t type)
-{
-    static const char * names[] =
-    {
-        "UNKNOWN", "UNKNOWN", "UNKNOWN",
-        "MC4",
-        "UNKNOWN",
-        "MTB",
-        "STRAIN",
-        "MAIS",
-        "FOC",
-        "ERROR09", "ERROR10"
-    };
-    static const char *none = "NONE";
-
-
-    if(type <= eobrd_cantype_1foc)
-    {
-        return(names[type]);
-    }
-    else if(eobrd_cantype_none == type)
-    {
-        return(none);
-    }
-    else
-    {
-        return(names[0]);
-    }
-
-}
 
 static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
 {
@@ -419,10 +388,10 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
         {
             uint16_t maskcan2 = infobasic->properties.par16;
             uint64_t brdnum =     (infobasic->properties.par64 & 0x0000ff0000000000) >> 40;
-            const char *canboardname = eoboard_get_name(brdnum);
+            const char *canboardname = eoboards_type2string(brdnum);
             uint16_t maskcan1 = (infobasic->properties.par64 & 0xffff000000000000) >> 48;
-            eOmn_canprotocolversion_t prot = {0};
-            eOmn_canfirmwareversion_t appl = {0};
+            eObrd_protocolversion_t prot = {0};
+            eObrd_firmwareversion_t appl = {0};
             uint64_t reqpr =      (infobasic->properties.par64 & 0x000000ffff000000) >> 24;
             uint64_t reqfw =      (infobasic->properties.par64 & 0x0000000000ffffff);
             prot.major = reqpr >> 8;
@@ -453,10 +422,10 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             uint8_t num = infobasic->properties.par16 & 0x00ff;
             eObool_t fakesearch = (0x0000 == (infobasic->properties.par16 & 0xf000)) ? (eobool_false) : (eobool_true);
             uint64_t brdnum =     (infobasic->properties.par64 & 0x0000ff0000000000) >> 40;
-            const char *canboardname = eoboard_get_name(brdnum);
+            const char *canboardname = eoboards_type2string(brdnum);
             uint64_t searchtime = (infobasic->properties.par64 & 0xffff000000000000) >> 48;
-            eOmn_canprotocolversion_t prot = {0};
-            eOmn_canfirmwareversion_t appl = {0};
+            eObrd_protocolversion_t prot = {0};
+            eObrd_firmwareversion_t appl = {0};
             uint64_t reqpr =      (infobasic->properties.par64 & 0x000000ffff000000) >> 24;
             uint64_t reqfw =      (infobasic->properties.par64 & 0x0000000000ffffff);
             prot.major = reqpr >> 8;
@@ -489,10 +458,10 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
         case eoerror_value_CFG_candiscovery_detectedboard:
         {
             uint64_t brdnum =     (infobasic->properties.par64 & 0x0000ff0000000000) >> 40;
-            const char *canboardname = eoboard_get_name(brdnum);
+            const char *canboardname = eoboards_type2string(brdnum);
             uint64_t searchtime = (infobasic->properties.par64 & 0xffff000000000000) >> 48;
-            eOmn_canprotocolversion_t prot = {0};
-            eOmn_canfirmwareversion_t appl = {0};
+            eObrd_protocolversion_t prot = {0};
+            eObrd_firmwareversion_t appl = {0};
             uint64_t reqpr =      (infobasic->properties.par64 & 0x000000ffff000000) >> 24;
             uint64_t reqfw =      (infobasic->properties.par64 & 0x0000000000ffffff);
             prot.major = reqpr >> 8;
@@ -522,7 +491,7 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
         case eoerror_value_CFG_candiscovery_boardsmissing:
         {
             uint8_t numofmissing = infobasic->properties.par16 & 0x00ff;
-            const char *canboardname = eoboard_get_name(infobasic->properties.par16 >> 8);
+            const char *canboardname = eoboards_type2string(infobasic->properties.par16 >> 8);
             uint64_t searchtime = (infobasic->properties.par64 & 0xffff000000000000) >> 48;
             uint16_t maskofmissing = infobasic->properties.par64 & 0x000000000000ffff;
             const char *source = s_get_sourceofmessage(infobasic, NULL);
@@ -562,7 +531,7 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
         case eoerror_value_CFG_candiscovery_boardsinvalid:
         {
             uint8_t numofinvalid = infobasic->properties.par16 & 0x00ff;
-            const char *canboardname = eoboard_get_name(infobasic->properties.par16 >> 8);
+            const char *canboardname = eoboards_type2string(infobasic->properties.par16 >> 8);
             uint64_t invalidmask = infobasic->properties.par64;
             const char *source = s_get_sourceofmessage(infobasic, NULL);
 

@@ -47,6 +47,7 @@ using namespace yarp;
 using namespace yarp::os;
 using namespace yarp::dev;
 
+
 ServiceParser::ServiceParser()
 {
     // how do i reset variable as_service?
@@ -60,37 +61,48 @@ ServiceParser::ServiceParser()
     as_service.settings.enabledsensors.resize(0);
 }
 
-// marco.accame: localize the strings used inside the xml files in a single place. and then use a ....
+
 
 bool ServiceParser::convert(ConstString const &fromstring, eOmn_serv_type_t& toservicetype, bool& formaterror)
 {
     const char *t = fromstring.c_str();
 
-    if(0 == strcmp(t, "enumServiceSTRAIN"))
-    {
-        toservicetype = eomn_serv_AS_strain;
-    }
-    else if(0 == strcmp(t, "enumServiceMAIS"))
-    {
-        toservicetype = eomn_serv_AS_mais;
-    }
-    else if(0 == strcmp(t, "enumServiceINERTIALS"))
-    {
-        toservicetype = eomn_serv_AS_inertial;
-    }
-    else if(0 == strcmp(t, "enumServiceNONE"))
-    {
-        toservicetype = eomn_serv_NONE;
-    }
-    else
+    toservicetype = eomn_string2servicetype(t);
+
+    if(eomn_serv_UNKNOWN == toservicetype)
     {
         yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOmn_serv_type_t";
-        toservicetype = eomn_serv_NONE;
         formaterror = true;
         return false;
     }
 
     return true;
+
+//    if(0 == strcmp(t, "enumServiceSTRAIN"))
+//    {
+//        toservicetype = eomn_serv_AS_strain;
+//    }
+//    else if(0 == strcmp(t, "enumServiceMAIS"))
+//    {
+//        toservicetype = eomn_serv_AS_mais;
+//    }
+//    else if(0 == strcmp(t, "enumServiceINERTIALS"))
+//    {
+//        toservicetype = eomn_serv_AS_inertials;
+//    }
+//    else if(0 == strcmp(t, "enumServiceNONE"))
+//    {
+//        toservicetype = eomn_serv_NONE;
+//    }
+//    else
+//    {
+//        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOmn_serv_type_t";
+//        toservicetype = eomn_serv_NONE;
+//        formaterror = true;
+//        return false;
+//    }
+
+//    return true;
 }
 
 
@@ -98,43 +110,54 @@ bool ServiceParser::convert(ConstString const &fromstring, eOas_sensor_t &tosens
 {
     const char *t = fromstring.c_str();
 
-    if(0 == strcmp(t, "enumSnsrSTRAIN"))
-    {
-        tosensortype = eoas_strain;
-    }
-    else if(0 == strcmp(t, "enumSnsrMAIS"))
-    {
-        tosensortype = eoas_mais;
-    }
-    else if(0 == strcmp(t, "enumSnsrAccMTBint"))
-    {
-        tosensortype = eoas_accel_mtb_int;
-    }
-    else if(0 == strcmp(t, "enumSnsrAccMTBext"))
-    {
-        tosensortype = eoas_accel_mtb_ext;
-    }
-    else if(0 == strcmp(t, "enumSnsrGyrMTBext"))
-    {
-        tosensortype = eoas_gyros_mtb_ext;
-    }
-    else if(0 == strcmp(t, "enumSnsrAccSTlis3x"))
-    {
-        tosensortype = eoas_accel_st_lis3x;
-    }
-    else if(0 == strcmp(t, "enumSnsrGyrSTl3g4200d"))
-    {
-        tosensortype = eoas_gyros_st_l3g4200d;
-    }
-    else
+    tosensortype = eoas_string2sensor(t);
+
+    if(eoas_unknown == tosensortype)
     {
         yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOas_sensor_t";
-        tosensortype = eoas_unknown;
         formaterror = true;
         return false;
     }
 
     return true;
+
+//    if(0 == strcmp(t, "enumSnsrSTRAIN"))
+//    {
+//        tosensortype = eoas_strain;
+//    }
+//    else if(0 == strcmp(t, "enumSnsrMAIS"))
+//    {
+//        tosensortype = eoas_mais;
+//    }
+//    else if(0 == strcmp(t, "enumSnsrAccMTBint"))
+//    {
+//        tosensortype = eoas_accel_mtb_int;
+//    }
+//    else if(0 == strcmp(t, "enumSnsrAccMTBext"))
+//    {
+//        tosensortype = eoas_accel_mtb_ext;
+//    }
+//    else if(0 == strcmp(t, "enumSnsrGyrMTBext"))
+//    {
+//        tosensortype = eoas_gyros_mtb_ext;
+//    }
+//    else if(0 == strcmp(t, "enumSnsrAccSTlis3x"))
+//    {
+//        tosensortype = eoas_accel_st_lis3x;
+//    }
+//    else if(0 == strcmp(t, "enumSnsrGyrSTl3g4200d"))
+//    {
+//        tosensortype = eoas_gyros_st_l3g4200d;
+//    }
+//    else
+//    {
+//        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOas_sensor_t";
+//        tosensortype = eoas_unknown;
+//        formaterror = true;
+//        return false;
+//    }
+
+//    return true;
 }
 
 
@@ -142,39 +165,57 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_cantype_t& tobr
 {
     const char *t = fromstring.c_str();
 
-    if(0 == strcmp(t, "enumCanBrdMC4"))
+    eObrd_type_t type = eoboards_string2type(t);
+    if(eobrd_unknown == type)
     {
-        tobrdcantype = eobrd_cantype_mc4;
+        yWarning() << "ServiceParser::convert(): string" << t << "cannot be converted into a proper eObrd_type_t";
+        formaterror = true;
+        return false;
     }
-    else if(0 == strcmp(t, "enumCanBrdSTRAIN"))
-    {
-        tobrdcantype = eobrd_cantype_strain;
-    }
-    else if(0 == strcmp(t, "enumCanBrdMAIS"))
-    {
-        tobrdcantype = eobrd_cantype_mais;
-    }
-    else if(0 == strcmp(t, "enumCanBrdMTB"))
-    {
-        tobrdcantype = eobrd_cantype_mtb;
-    }
-    else if(0 == strcmp(t, "enumCanBrdFOC"))
-    {
-        tobrdcantype = eobrd_cantype_foc;
-    }
-    else if(0 == strcmp(t, "enumCanBrdNONE"))
-    {
-        tobrdcantype = eobrd_cantype_none;
-    }
-    else
+
+    tobrdcantype = eoboards_type2cantype(type);
+    if(eobrd_cantype_unknown == tobrdcantype)
     {
         yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eObrd_cantype_t";
-        tobrdcantype = eobrd_cantype_unknown;
         formaterror = true;
         return false;
     }
 
     return true;
+
+//    if(0 == strcmp(t, "enumCanBrdMC4"))
+//    {
+//        tobrdcantype = eobrd_cantype_mc4;
+//    }
+//    else if(0 == strcmp(t, "enumCanBrdSTRAIN"))
+//    {
+//        tobrdcantype = eobrd_cantype_strain;
+//    }
+//    else if(0 == strcmp(t, "enumCanBrdMAIS"))
+//    {
+//        tobrdcantype = eobrd_cantype_mais;
+//    }
+//    else if(0 == strcmp(t, "enumCanBrdMTB"))
+//    {
+//        tobrdcantype = eobrd_cantype_mtb;
+//    }
+//    else if(0 == strcmp(t, "enumCanBrdFOC"))
+//    {
+//        tobrdcantype = eobrd_cantype_foc;
+//    }
+//    else if(0 == strcmp(t, "enumCanBrdNONE"))
+//    {
+//        tobrdcantype = eobrd_cantype_none;
+//    }
+//    else
+//    {
+//        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eObrd_cantype_t";
+//        tobrdcantype = eobrd_cantype_unknown;
+//        formaterror = true;
+//        return false;
+//    }
+//
+//    return true;
 }
 
 bool ServiceParser::convert(ConstString const &fromstring, bool& tobool, bool& formaterror)
@@ -252,52 +293,54 @@ bool ServiceParser::convert(const int number, uint16_t& tou16, bool& formaterror
 }
 
 
-bool convert(ConstString const &fromstring, eOas_sensor_t& tosensortype, bool& formaterror)
-{
-    const char *t = fromstring.c_str();
+//bool convert(ConstString const &fromstring, eOas_sensor_t& tosensortype, bool& formaterror)
+//{
+//    const char *t = fromstring.c_str();
+//
+//    tosensortype = eoas_string2sensor(t);
+//
+////    if(0 == strcmp(t, "enumSnsrSTRAIN"))
+////    {
+////        tosensortype = eoas_strain;
+////    }
+////    else if(0 == strcmp(t, "enumSnsrMAIS"))
+////    {
+////        tosensortype = eoas_mais;
+////    }
+////    else if(0 == strcmp(t, "enumSnsrAccMTBint"))
+////    {
+////        tosensortype = eoas_accel_mtb_int;
+////    }
+////    else if(0 == strcmp(t, "enumSnsrAccMTBext"))
+////    {
+////        tosensortype = eoas_accel_mtb_ext;
+////    }
+////    else if(0 == strcmp(t, "enumSnsrGyrMTBext"))
+////    {
+////        tosensortype = eoas_gyros_mtb_ext;
+////    }
+////    else if(0 == strcmp(t, "enumSnsrAccSTlis3x"))
+////    {
+////        tosensortype = eoas_accel_st_lis3x;
+////    }
+////    else if(0 == strcmp(t, "enumSnsrGyrSTl3g4200d"))
+////    {
+////        tosensortype = eoas_gyros_st_l3g4200d;
+////    }
+////    else if(0 == strcmp(t, "enumSnsrNONE"))
+////    {
+////        tosensortype = eoas_none;
+////    }
+////    else
+////    {
+////        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOas_sensor_t";
+////        tosensortype = eoas_unknown;
+////        formaterror = true;
+////        return false;
+////    }
 
-    if(0 == strcmp(t, "enumSnsrSTRAIN"))
-    {
-        tosensortype = eoas_strain;
-    }
-    else if(0 == strcmp(t, "enumSnsrMAIS"))
-    {
-        tosensortype = eoas_mais;
-    }
-    else if(0 == strcmp(t, "enumSnsrAccMTBint"))
-    {
-        tosensortype = eoas_accel_mtb_int;
-    }
-    else if(0 == strcmp(t, "enumSnsrAccMTBext"))
-    {
-        tosensortype = eoas_accel_mtb_ext;
-    }
-    else if(0 == strcmp(t, "enumSnsrGyrMTBext"))
-    {
-        tosensortype = eoas_gyros_mtb_ext;
-    }
-    else if(0 == strcmp(t, "enumSnsrAccSTlis3x"))
-    {
-        tosensortype = eoas_accel_st_lis3x;
-    }
-    else if(0 == strcmp(t, "enumSnsrGyrSTl3g4200d"))
-    {
-        tosensortype = eoas_gyros_st_l3g4200d;
-    }
-    else if(0 == strcmp(t, "enumSnsrNONE"))
-    {
-        tosensortype = eoas_none;
-    }
-    else
-    {
-        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOas_sensor_t";
-        tosensortype = eoas_unknown;
-        formaterror = true;
-        return false;
-    }
-
-    return true;
-}
+////    return true;
+//}
 
 
 bool ServiceParser::convert(ConstString const &fromstring, const uint8_t strsize, char *str, bool &formaterror)
@@ -363,18 +406,28 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_location_t &loc
 
     char prefix[16] = {0};
     sscanf(t, "%3c", prefix);
-    if(0 == strcmp(prefix, "LOC"))
+    if(0 == strcmp(prefix, "ETH"))
     {
         int adr = 0;
-        sscanf(t, "%3c-%d", prefix, &adr);
-        location.any.place = eobrd_place_loc;
-        location.loc.id = adr;
+        sscanf(t, "%3c:%d", prefix, &adr);
+        location.any.place = eobrd_place_eth;
+        location.eth.id = adr;
     }
     else if(0 == strcmp(prefix, "CAN"))
     {
         int bus = 0;
         int adr = 0;
-        sscanf(t, "%3c%d-%d", prefix, &bus, &adr);
+        char cc = 'x';
+        int sub = 9;
+        int numberofreaditems = sscanf(t, "%3c%d:%d%c%d", prefix, &bus, &adr, &cc, &sub);
+
+        if((3 != numberofreaditems) && (5 != numberofreaditems))
+        {
+            yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a eObrd_location_t because we dont have correct number of sections separated by :";
+            formaterror = true;
+            return false;
+        }
+
         // verify bus being eitehr 1 or 2, and adr being 1 ----- 14
         if((1 != bus) && (2 != bus))
         {
@@ -388,50 +441,31 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_location_t &loc
             formaterror = true;
             return false;
         }
-        location.any.place = eobrd_place_can;
-        location.can.port = (1 == bus) ? (eOcanport1) : (eOcanport2);
-        location.can.addr = adr;
-    }
-    else if(0 == strcmp(prefix, "MC4"))
-    {
-        char mc4can[8] = {0};
-        int bus = 0;
-        int adr = 0;
-        int sub = 0;
-        sscanf(t, "%6c%d-%d-%d", mc4can, &bus, &adr, &sub);
-        if(0 != strcmp(mc4can, "MC4CAN"))
+
+        location.any.place = (3 == numberofreaditems) ? (eobrd_place_can) : (eobrd_place_extcan);
+        if(eobrd_place_can == location.any.place)
         {
-            yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a eObrd_location_t because if it begins with MC4 then CAN should follow";
-            formaterror = true;
-            return false;
+            location.can.port = (1 == bus) ? (eOcanport1) : (eOcanport2);
+            location.can.addr = adr;
+            location.can.ffu = 0;
         }
-        // verify bus being eitehr 1 or 2, and adr being 1 ----- 14, and sub 0, 1
-        if((1 != bus) && (2 != bus))
+        else
         {
-            yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a eObrd_location_t because we can have either CAN1 or CAN2";
-            formaterror = true;
-            return false;
+            location.extcan.port = (1 == bus) ? (eOcanport1) : (eOcanport2);
+            location.extcan.addr = adr;
+            if((0 != sub) && (1 != sub))
+            {
+                yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a eObrd_location_t because in CANx:adr:SUB, SUB address must be in range [0, 1]";
+                formaterror = true;
+                return false;
+            }
+            location.extcan.index = (0 == sub) ? (eobrd_caninsideindex_first) : (eobrd_caninsideindex_second);
         }
-        if((0 == adr) || (adr > 14))
-        {
-            yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a eObrd_location_t because CAN address is in range [1, 14]";
-            formaterror = true;
-            return false;
-        }
-        if((0 != sub) && (1 != sub))
-        {
-            yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a eObrd_location_t because in MC4CNx-adr-SUB, SUB address is in range [0, 1]";
-            formaterror = true;
-            return false;
-        }
-        location.any.place = eobrd_place_extcan;
-        location.extcan.port = (1 == bus) ? (eOcanport1) : (eOcanport2);
-        location.extcan.addr = adr;
-        location.extcan.index = (0 == sub) ? (eomn_serv_caninsideindex_first) : (eomn_serv_caninsideindex_second);
+
     }
     else
     {
-        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a eObrd_location_t because it does not begin with LOC or CAN";
+        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a eObrd_location_t because it does not begin with ETH or CAN";
         formaterror = true;
         return false;
     }
@@ -448,15 +482,15 @@ bool ServiceParser::convert(eObrd_location_t const &loc, char *str, int len)
 
     if(eobrd_place_can == loc.any.place)
     {
-        snprintf(str, len, "CAN%d-%d", (eOcanport1 == loc.can.port) ? 1 : 2, loc.can.addr);
+        snprintf(str, len, "CAN%d:%d", (eOcanport1 == loc.can.port) ? 1 : 2, loc.can.addr);
     }
-    else if(eobrd_place_can == loc.any.place)
+    else if(eobrd_place_extcan == loc.any.place)
     {
-        snprintf(str, len, "MC4CAN%d-%d-%d", (eOcanport1 == loc.extcan.port) ? 1 : 2, loc.extcan.addr, loc.extcan.index);
+        snprintf(str, len, "CAN%d:%d:%d", (eOcanport1 == loc.extcan.port) ? 1 : 2, loc.extcan.addr, loc.extcan.index);
     }
-    else if(eobrd_place_loc == loc.any.place)
-    {   // it must be eobrd_place_loc
-        snprintf(str, len, "LOC-%d", loc.loc.id);
+    else if(eobrd_place_eth == loc.any.place)
+    {   // it must be eobrd_place_eth
+        snprintf(str, len, "ETH:%d", loc.eth.id);
     }
     else
     {
@@ -467,26 +501,26 @@ bool ServiceParser::convert(eObrd_location_t const &loc, char *str, int len)
 }
 
 
-bool ServiceParser::convert(eOmn_serv_canlocation_t const &canloc, char *str, int len)
+bool ServiceParser::convert(eObrd_canlocation_t const &canloc, char *str, int len)
 {
     if((NULL == str) || (0 == len))
     {
         return false;
     }
 
-    if(eomn_serv_caninsideindex_none == canloc.insideindex)
+    if(eobrd_caninsideindex_none == canloc.insideindex)
     {
-        snprintf(str, len, "CAN%d-%d", (eOcanport1 == canloc.port) ? 1 : 2, canloc.addr);
+        snprintf(str, len, "CAN%d:%d", (eOcanport1 == canloc.port) ? 1 : 2, canloc.addr);
     }
     else
     {
-        snprintf(str, len, "MC4CAN%d-%d-%d", (eOcanport1 == canloc.port) ? 1 : 2, canloc.addr, canloc.insideindex);
+        snprintf(str, len, "CAN%d:%d:%d", (eOcanport1 == canloc.port) ? 1 : 2, canloc.addr, canloc.insideindex);
     }
 
     return true;
 }
 
-bool ServiceParser::convert(eOmn_canfirmwareversion_t const &firm, char *str, int len)
+bool ServiceParser::convert(eObrd_firmwareversion_t const &firm, char *str, int len)
 {
     if((NULL == str) || (0 == len))
     {
@@ -498,7 +532,7 @@ bool ServiceParser::convert(eOmn_canfirmwareversion_t const &firm, char *str, in
     return true;
 }
 
-bool ServiceParser::convert(eOmn_canprotocolversion_t const &prot, char *str, int len)
+bool ServiceParser::convert(eObrd_protocolversion_t const &prot, char *str, int len)
 {
     if((NULL == str) || (0 == len))
     {
@@ -514,7 +548,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
 {
     bool formaterror = false;
     // so far we check for eomn_serv_AS_mais / strain / inertial only
-    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertial != type))
+    if((eomn_serv_AS_mais != type) && (eomn_serv_AS_strain != type) && (eomn_serv_AS_inertials != type))
     {
         yError() << "ServiceParser::check() is called with wrong type";
         return false;
@@ -723,6 +757,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             {
                 servAnalogSensor_t item;
                 item.type = eoas_none;
+                item.location.any.place = eobrd_place_none;
 
                 convert(b_PROPERTIES_SENSORS_id.get(i+1).asString(), item.id, formaterror);
                 convert(b_PROPERTIES_SENSORS_type.get(i+1).asString(), item.type, formaterror);
@@ -877,6 +912,14 @@ bool ServiceParser::parseService(Searchable &config, servConfigMais_t &maisconfi
     servCanBoard_t themais_props = as_service.properties.canboards.at(0);
     servAnalogSensor_t themais_sensor = as_service.settings.enabledsensors.at(0);
 
+
+    // first check we do is about themais_props.type
+    if(eobrd_cantype_mais != themais_props.type)
+    {
+        yError() << "ServiceParser::parseService() has detected an invalid type of board. it should be a eobrd_mais but is a:" << eoboards_type2string(eoboards_cantype2type(themais_props.type));
+        return false;
+    }
+
     maisconfig.acquisitionrate = as_service.settings.acquisitionrate;
 
     maisconfig.nameOfMais = themais_sensor.id;
@@ -884,12 +927,18 @@ bool ServiceParser::parseService(Searchable &config, servConfigMais_t &maisconfi
     memset(&maisconfig.ethservice.configuration, 0, sizeof(maisconfig.ethservice.configuration));
 
     maisconfig.ethservice.configuration.type = eomn_serv_AS_mais;
-    memcpy(&maisconfig.ethservice.configuration.data.as.mais.version.protocol, &themais_props.protocol, sizeof(eOmn_canprotocolversion_t));
-    memcpy(&maisconfig.ethservice.configuration.data.as.mais.version.firmware, &themais_props.firmware, sizeof(eOmn_canfirmwareversion_t));
+    memcpy(&maisconfig.ethservice.configuration.data.as.mais.version.protocol, &themais_props.protocol, sizeof(eObrd_protocolversion_t));
+    memcpy(&maisconfig.ethservice.configuration.data.as.mais.version.firmware, &themais_props.firmware, sizeof(eObrd_firmwareversion_t));
 
+    // second check we do is about themais_sensor.location
+    if(eobrd_place_can != themais_sensor.location.any.place)
+    {
+        yError() << "ServiceParser::parseService() has received an invalid location for its mais. it is not a CANx:adr location";
+        return false;
+    }
     maisconfig.ethservice.configuration.data.as.mais.canloc.port = themais_sensor.location.can.port;
     maisconfig.ethservice.configuration.data.as.mais.canloc.addr = themais_sensor.location.can.addr;
-    maisconfig.ethservice.configuration.data.as.mais.canloc.insideindex = eomn_serv_caninsideindex_none;
+    maisconfig.ethservice.configuration.data.as.mais.canloc.insideindex = eobrd_caninsideindex_none;
 
 
     return true;
@@ -908,6 +957,14 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
     servCanBoard_t thestrain_props = as_service.properties.canboards.at(0);
     servAnalogSensor_t thestrain_sensor = as_service.settings.enabledsensors.at(0);
 
+
+    // first check we do is about thestrain_props.type
+    if(eobrd_cantype_strain != thestrain_props.type)
+    {
+        yError() << "ServiceParser::parseService() has detected an invalid type of board. it should be a eobrd_strain but is a:" << eoboards_type2string(eoboards_cantype2type(thestrain_props.type));
+        return false;
+    }
+
     strainconfig.acquisitionrate = as_service.settings.acquisitionrate;
     strainconfig.useCalibration = as_strain_settings.useCalibration;
     strainconfig.nameOfStrain = thestrain_sensor.id;
@@ -915,12 +972,18 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
     memset(&strainconfig.ethservice.configuration, 0, sizeof(strainconfig.ethservice.configuration));
 
     strainconfig.ethservice.configuration.type = eomn_serv_AS_strain;
-    memcpy(&strainconfig.ethservice.configuration.data.as.strain.version.protocol, &thestrain_props.protocol, sizeof(eOmn_canprotocolversion_t));
-    memcpy(&strainconfig.ethservice.configuration.data.as.strain.version.firmware, &thestrain_props.firmware, sizeof(eOmn_canfirmwareversion_t));
+    memcpy(&strainconfig.ethservice.configuration.data.as.strain.version.protocol, &thestrain_props.protocol, sizeof(eObrd_protocolversion_t));
+    memcpy(&strainconfig.ethservice.configuration.data.as.strain.version.firmware, &thestrain_props.firmware, sizeof(eObrd_firmwareversion_t));
 
+    // second check we do is about thestrain_sensor.location
+    if(eobrd_place_can != thestrain_sensor.location.any.place)
+    {
+        yError() << "ServiceParser::parseService() has received an invalid location for strain. it is not a CANx:adr location";
+        return false;
+    }
     strainconfig.ethservice.configuration.data.as.strain.canloc.port = thestrain_sensor.location.can.port;
     strainconfig.ethservice.configuration.data.as.strain.canloc.addr = thestrain_sensor.location.can.addr;
-    strainconfig.ethservice.configuration.data.as.strain.canloc.insideindex = eomn_serv_caninsideindex_none;
+    strainconfig.ethservice.configuration.data.as.strain.canloc.insideindex = eobrd_caninsideindex_none;
 
 
 
@@ -930,7 +993,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
 
 bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &inertialsconfig)
 {
-    if(false == check_analog(config, eomn_serv_AS_inertial))
+    if(false == check_analog(config, eomn_serv_AS_inertials))
     {
         yError() << "ServiceParser::parseService() has received an invalid SERVICE group for inertials";
         return false;
@@ -939,13 +1002,20 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
     // now we extract values ... so far we dont make many checks ... we just assume the vector<> are of size 1.
     servCanBoard_t themtb_props = as_service.properties.canboards.at(0);
 
+    // it must be an mtb
+    if(eobrd_cantype_mtb != themtb_props.type)
+    {
+        yError() << "ServiceParser::parseService() has detected an invalid type of board. it should be a eobrd_mtb but is a:" << eoboards_type2string(eoboards_cantype2type(themtb_props.type));
+        return false;
+    }
+
     inertialsconfig.acquisitionrate = as_service.settings.acquisitionrate;
 
     memset(&inertialsconfig.ethservice.configuration, 0, sizeof(inertialsconfig.ethservice.configuration));
 
-    inertialsconfig.ethservice.configuration.type = eomn_serv_AS_inertial;
-    memcpy(&inertialsconfig.ethservice.configuration.data.as.inertial.mtbversion.protocol, &themtb_props.protocol, sizeof(eOmn_canprotocolversion_t));
-    memcpy(&inertialsconfig.ethservice.configuration.data.as.inertial.mtbversion.firmware, &themtb_props.firmware, sizeof(eOmn_canfirmwareversion_t));
+    inertialsconfig.ethservice.configuration.type = eomn_serv_AS_inertials;
+    memcpy(&inertialsconfig.ethservice.configuration.data.as.inertial.mtbversion.protocol, &themtb_props.protocol, sizeof(eObrd_protocolversion_t));
+    memcpy(&inertialsconfig.ethservice.configuration.data.as.inertial.mtbversion.firmware, &themtb_props.firmware, sizeof(eObrd_firmwareversion_t));
 
     // now, for all the sensors we must fill:
     // - inertialsconfig.ethservice.configuration.data.as.inertial.canmap[2] with mask of location of mtb boards... no, i dont do it
@@ -962,8 +1032,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
 
         if((eoas_accel_mtb_int != type) && (eoas_accel_mtb_ext != type) && (eoas_gyros_mtb_ext != type))
         {
-            // we should convert snsor type to string ....
-            yWarning() << "ServiceParser::parseService() has detected a wrong inertial sensor = " << type << " ...  we drop it";
+            yWarning() << "ServiceParser::parseService() has detected a wrong inertial sensor:" << eoas_sensor2string(type) << " ...  we drop it";
             continue;
         }
         // if ok, i copy it inside ...
