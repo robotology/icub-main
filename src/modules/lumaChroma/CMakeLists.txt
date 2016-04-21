@@ -5,6 +5,9 @@ set(PROJECTNAME lumaChroma)
 project(${PROJECTNAME})
 
 # Search for source code.
+set(doc_files ${PROJECTNAME}.xml)
+source_group("DOC Files"    FILES ${doc_files})
+
 file(GLOB folder_source src/*.cpp src/*.cc src/*.c)
 file(GLOB folder_header include/iCub/*.h)
 source_group("Source Files" FILES ${folder_source})
@@ -17,4 +20,6 @@ include_directories(${PROJECT_SOURCE_DIR}/include
 add_executable(${PROJECTNAME} ${folder_header} ${folder_source})
 target_link_libraries(${PROJECTNAME} ${YARP_LIBRARIES} ${OpenCV_LIBRARIES})
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
+
+yarp_install(FILES ${doc_files} DESTINATION ${ICUB_MODULES_INSTALL_DIR})
 

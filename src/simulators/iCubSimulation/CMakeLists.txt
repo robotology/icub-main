@@ -102,7 +102,11 @@ ENDIF ()
 
 TARGET_LINK_LIBRARIES(${PROJECTNAME} skinDynLib)
 
+set(doc_files iCubSimulation.xml)
+source_group("DOC Files"    FILES ${doc_files})
+
 INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin COMPONENT Core)
+yarp_install(FILES ${doc_files} DESTINATION ${ICUB_MODULES_INSTALL_DIR})
 
 # added files, touching CMakeLists.txt so GLOB is rerun
 # touch 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15
