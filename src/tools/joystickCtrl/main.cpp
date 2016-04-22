@@ -132,6 +132,9 @@ protected:
     //button actions;
     string button_actions [20];
 
+    //hats actions;
+    string hat_actions [20];
+
     //variables read from the joystick
     int*    rawButtons;
     int*    rawButtonsOld;
@@ -352,6 +355,37 @@ public:
         {
             yInfo ( "no actions specified for the joystick buttons. \n");
         }
+
+
+        //get the list of the commands to be executed with the hats
+        Bottle& hats_exec_bottle = rf.findGroup("HATS_EXECUTE");
+        int hats_actions_count = 0;
+        if (!hats_exec_bottle.isNull())
+        {
+            yInfo ( "associating the following actions to the hats: \n");
+            do
+            {
+                char tmp[80];
+                sprintf(tmp, "hat%d", hats_actions_count);
+                if (hats_exec_bottle.check(tmp))
+                {
+                    hat_actions[hats_actions_count] = hats_exec_bottle.find(tmp).toString();
+                    printf ("%s %s\n", tmp, hat_actions[hats_actions_count].c_str());
+                }
+                else
+                {
+                    break;
+                }
+                hats_actions_count++;
+            }
+            while (hats_actions_count<20);
+            printf ("\n");
+        }
+        if (joystick_actions_count==0)
+        {
+            yInfo ( "no actions specified for the joystick hats. \n");
+        }
+
 
         // start SDL subsystem
         //SDL_Init(SDL_INIT_VIDEO);
@@ -597,6 +631,54 @@ public:
                 {
                     yInfo ("executing script %d: %s\n", i, button_actions[i].c_str());
                     int ret = system(button_actions[i].c_str());
+                }
+                else
+                {
+                    yWarning ("no scripts associated to button %d\n", i);
+                }
+            }
+        }
+
+        //execute button actions
+        for (int i=0;i<numHats;i++)
+        {
+            if (rawHats[i] != SDL_HAT_CENTERED)
+            {
+                //execute script
+                if (!hat_actions[i].empty())
+                {
+                    string action(hat_actions[i]);
+                    action += " ";
+                    switch(rawHats[i]) {
+                    case SDL_HAT_UP:
+                        action += "up";
+                        break;
+                    case SDL_HAT_RIGHT:
+                        action += "right";
+                        break;
+                    case SDL_HAT_DOWN:
+                        action += "down";
+                        break;
+                    case SDL_HAT_LEFT:
+                        action += "left";
+                        break;
+                    case SDL_HAT_RIGHTUP:
+                        action += "rightup";
+                        break;
+                    case SDL_HAT_RIGHTDOWN:
+                        action += "rightdown";
+                        break;
+                    case SDL_HAT_LEFTUP:
+                        action += "leftup";
+                        break;
+                    case SDL_HAT_LEFTDOWN:
+                        action += "leftdown";
+                        break;
+                    default:
+                        break;
+                    }
+                    yInfo ("executing script %d: %s\n", i, action.c_str());
+                    int ret = system(action.c_str());
                 }
                 else
                 {
