@@ -18,7 +18,7 @@
                     <param name="type">                 eobrd_mtb           </param>
                     <param name="useGlobalParams">      false               </param>
                     <group name="PROTOCOL">
-                        <param name="major">            1                   </param>    
+                        <param name="major">            0                   </param>    
                         <param name="minor">            0                   </param>     
                     </group>                    
                     <group name="FIRMWARE">
@@ -36,7 +36,7 @@
 
                     <param name="type">     eoas_accel_st_lis3x     eoas_gyros_st_l3g4200d       
                                             eoas_accel_mtb_int      eoas_accel_mtb_int      eoas_accel_mtb_int      eoas_accel_mtb_int   
-                                            eoas_accel_mtb_int      eoas_accel_mtb_int      eoas_accel_mtb_ext      eoas_gyros_mtb_ext        
+                                            eoas_accel_mtb_int      eoas_accel_mtb_int      eoas_accel_mtb_int      eoas_gyros_mtb_ext        
                     </param>
 
                     <param name="location"> ETH:0                   ETH:0                     
