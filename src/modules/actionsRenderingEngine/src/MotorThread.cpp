@@ -2975,14 +2975,23 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
     if (!dragger.using_impedance)
         yWarning("Impedance control not available. Using admittance control!");
 
+    bool ok=false;
     Vector x(3,0.0);
-    if (Bottle *b=options.find("target").asList())
+    if (Bottle *b0=options.find("target").asList())
     {
-        size_t n=std::min(x.length(),(size_t)b->size());
-        for (size_t i=0; i<n; i++)
-            x[i]=b->get(i).asDouble();
+        if (Bottle *b1=b0->get(0).asList())
+        {
+            if (Bottle *b2=b1->find("cartesian").asList())
+            {
+                size_t n=std::min(x.length(),(size_t)b2->size());
+                for (size_t i=0; i<n; i++)
+                    x[i]=b2->get(i).asDouble();
+                ok=true;
+            }
+        }
     }
-    else
+    
+    if (!ok)
     {
         Vector o;
         dragger.ctrl->getPose(x,o);
@@ -2990,6 +2999,8 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
 
     dragger.x0=x;
     dragger.t0=Time::now();
+    yInfo("Learning kinematic offset against (%s)",
+          dragger.x0.toString(3,3).c_str());
 
     arm_mode=ARM_MODE_LEARN_KINOFF;
 
@@ -3015,10 +3026,7 @@ bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
         Vector x(3),o(4);
         dragger.ctrl->getPose(x,o);
         
-        if(options.size()>3)
-            opcPort.getKinematicOffsets(options.get(3).asString().c_str(),currentKinematicOffset);
-
-        currentKinematicOffset[dragger.arm]=(x-dragger.x0) + currentKinematicOffset[dragger.arm];
+        currentKinematicOffset[dragger.arm]=x-dragger.x0;
 
         //if no object with specified name is present in the database, then update the default kinematic offsets
         if(options.size()<4 || !opcPort.setKinematicOffset(options.get(3).asString().c_str(),currentKinematicOffset))
