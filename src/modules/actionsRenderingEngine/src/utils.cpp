@@ -190,7 +190,7 @@ bool ObjectPropertiesCollectorPort::getKinematicOffsets(const string &obj_name, 
 }
 
 
-bool ObjectPropertiesCollectorPort::setKinematicOffset(const string &obj_name, const Vector *kinematic_offset)
+bool ObjectPropertiesCollectorPort::setKinematicOffsets(const string &obj_name, const Vector *kinematic_offset)
 {
     //if the object property collector port is connected use it to obtain the object 2D position
     if(this->getOutputCount()==0)

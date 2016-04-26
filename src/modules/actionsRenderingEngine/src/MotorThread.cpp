@@ -1263,6 +1263,7 @@ bool MotorThread::threadInit()
 
     closed=false;
     interrupted=false;
+    learnKinOffsSpecifiedTarget=false;
 
     this->setWaveing(bMotor.check("waveing",Value("off")).asString()=="on");
 
@@ -2975,7 +2976,7 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
         yWarning("Impedance control not available. Using admittance control!");
 
     Vector x(3,0.0);
-    bool specifiedTarget=false;
+    learnKinOffsSpecifiedTarget=false;
     if (Bottle *b0=options.find("target").asList())
     {
         if (Bottle *b1=b0->find("cartesian").asList())
@@ -2983,11 +2984,11 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
             size_t n=std::min(x.length(),(size_t)b1->size());
             for (size_t i=0; i<n; i++)
                 x[i]=b1->get(i).asDouble();
-            specifiedTarget=true;
+            learnKinOffsSpecifiedTarget=true;
         }
     }
 
-    if (!specifiedTarget)
+    if (!learnKinOffsSpecifiedTarget)
     {
         Vector o;
         dragger.ctrl->getPose(x,o);
@@ -2996,7 +2997,7 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
     dragger.x0=x;
     dragger.t0=Time::now();
     yInfo("Learning kinematic offset against %s target (%s)",
-          specifiedTarget?"specified":"retrieved",
+          learnKinOffsSpecifiedTarget?"specified":"retrieved",
           dragger.x0.toString(3,3).c_str());
 
     arm_mode=ARM_MODE_LEARN_KINOFF;
@@ -3021,11 +3022,19 @@ bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
     {
         //compute the offset
         Vector x,o;
-        dragger.ctrl->getPose(x,o);        
-        currentKinematicOffset[dragger.arm]=x-dragger.x0;
+        dragger.ctrl->getPose(x,o);
+
+        if (learnKinOffsSpecifiedTarget)
+            currentKinematicOffset[dragger.arm]=x-dragger.x0;
+        else
+        {
+            if (options.size()>=4)
+                opcPort.getKinematicOffsets(options.get(3).asString().c_str(),currentKinematicOffset);
+            currentKinematicOffset[dragger.arm]=x-(dragger.x0-currentKinematicOffset[dragger.arm]);
+        }
 
         //if no object with specified name is present in the database, then update the default kinematic offsets
-        if(options.size()<4 || !opcPort.setKinematicOffset(options.get(3).asString().c_str(),currentKinematicOffset))
+        if(options.size()<4 || !opcPort.setKinematicOffsets(options.get(3).asString().c_str(),currentKinematicOffset))
         {
             defaultKinematicOffset[dragger.arm]=currentKinematicOffset[dragger.arm];
 

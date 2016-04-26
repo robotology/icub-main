@@ -182,8 +182,6 @@ private:
     iCub::perception::Model             *graspModel[2];
     string                              graspPath[2];
 
-
-
     //stereo 2 cartesian mode
     int                                 modeS2C;
     bool                                neuralNetworkAvailable;
@@ -225,7 +223,7 @@ private:
     double                              avoid_table_height[2];
 
     double                              random_pos_y;
-
+    bool                                learnKinOffsSpecifiedTarget;
 
     bool loadExplorationPoses(const string &file_name);
     int checkArm(int arm);

@@ -65,7 +65,7 @@ public:
     bool getStereoPosition(const string &obj_name, Vector &stereo);
     bool getCartesianPosition(const string &obj_name, Vector &x);
     bool getKinematicOffsets(const string &obj_name, Vector *kinematic_offset);
-    bool setKinematicOffset(const string &obj_name, const Vector *kinematic_offset);
+    bool setKinematicOffsets(const string &obj_name, const Vector *kinematic_offset);
     bool getTableHeight(double &table_height);
     bool setTableHeight(const double table_height);
     bool setAction(const string &act_name, const Bottle *trajectory);
