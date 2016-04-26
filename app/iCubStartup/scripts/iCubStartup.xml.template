@@ -12,7 +12,7 @@
 
 
         <module>
-                <name>robotInterface</name>
+                <name>yarprobotinterface</name>
                 <node>pc104</node>
         </module>
 
