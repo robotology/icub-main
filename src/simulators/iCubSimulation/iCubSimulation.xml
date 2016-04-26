@@ -79,7 +79,7 @@
 
         <input port_type="service">
 			<type>*</type>
-			<port carrier="udp">/icubSim/left_arm/rpc:i</port>
+			<port carrier="tcp">/icubSim/left_arm/rpc:i</port>
 			<required>no</required>
 			<priority>no</priority>
 			<description>Left arm rpc</description>
@@ -87,7 +87,7 @@
         
         <input port_type="service">
 			<type>*</type>
-			<port carrier="udp">/icubSim/right_arm/rpc:i</port>
+			<port carrier="tcp">/icubSim/right_arm/rpc:i</port>
 			<required>no</required>
 			<priority>no</priority>
 			<description>Right arm rpc</description>
@@ -95,7 +95,7 @@
 
         <input port_type="service">
 			<type>*</type>
-			<port carrier="udp">/icubSim/head/rpc:i</port>
+			<port carrier="tcp">/icubSim/head/rpc:i</port>
 			<required>no</required>
 			<priority>no</priority>
 			<description>Head rpc</description>
@@ -103,12 +103,20 @@
         
         <input port_type="service">
 			<type>*</type>
-			<port carrier="udp">/icubSim/torso/rpc:i</port>
+			<port carrier="tcp">/icubSim/torso/rpc:i</port>
 			<required>no</required>
 			<priority>no</priority>
 			<description>Torso rpc</description>
 		</input>	
    
+        <input port_type="service">
+			<type>*</type>
+			<port carrier="tcp">/icubSim/world</port>
+			<required>no</required>
+			<priority>no</priority>
+			<description>Torso rpc</description>
+		</input>	
+        
 	</data>		
 
     <dependencies>
