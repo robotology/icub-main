@@ -54,6 +54,8 @@ private:
     yarp::os::Bottle t_encs;
     yarp::os::Bottle imu;
     bool useIMU;
+    bool useTorso;
+    bool useEyes;
 
     bool updatePose(double time);
     bool selectBottleFromMap(double time,
@@ -85,6 +87,8 @@ public:
     void setHeadEncoders(double time, const yarp::os::Bottle &h_encs) { m.lock(); h_encs_map[time] = h_encs; m.unlock(); }
     void setImuData(double time, const yarp::os::Bottle &imu) { m.lock(); imu_map[time] = imu; m.unlock(); }
     void setUseIMU(bool useIMU) { this->useIMU = useIMU; }
+    void setUseTorso(bool useTorso) { this->useTorso = useTorso; }
+    void setUseEyes(bool useEyes) { this->useEyes = useEyes; }
 
     yarp::os::BufferedPort<yarp::os::Bottle> rpyPort;
 };

@@ -28,7 +28,9 @@ CamCalibPort::CamCalibPort() :
     cf1(10.514),
     cf2(0.809),
     t0(Time::now()),
-    useIMU(false)
+    useIMU(false),
+    useTorso(false),
+    useEyes(false)
 {
     r_xv[0]=r_xv[1]=0;
     p_xv[0]=p_xv[1]=0;
@@ -302,10 +304,16 @@ bool CamCalibPort::selectBottleFromMap(double time,
 
 bool CamCalibPort::updatePose(double time)
 {
-    // update encoders bottles
-    if (!selectBottleFromMap(time, &t_encs_map, &t_encs, verbose && !useIMU) ||
-        !selectBottleFromMap(time, &h_encs_map, &h_encs, verbose && !useIMU)) {
+    // update head encoders bottle
+    if (!selectBottleFromMap(time, &h_encs_map, &h_encs, verbose && !useIMU)) {
         if (!useIMU) {
+            return false;
+        }
+    }
+
+    // update torso encoders bottle
+    if (!selectBottleFromMap(time, &t_encs_map, &t_encs, verbose && !useIMU)) {
+        if (!useIMU && useTorso) {
             return false;
         }
     }
@@ -317,23 +325,21 @@ bool CamCalibPort::updatePose(double time)
         }
     }
 
-
-    double tix = t_encs.get(1).asDouble()/180.0*M_PI;  // torso roll
-    double tiy = -t_encs.get(2).asDouble()/180.0*M_PI; // torso pitch
-    double tiz = -t_encs.get(0).asDouble()/180.0*M_PI; // torso yaw
+    double tix = useTorso ? t_encs.get(1).asDouble()/180.0*M_PI  : 0; // torso roll
+    double tiy = useTorso ? -t_encs.get(2).asDouble()/180.0*M_PI : 0; // torso pitch
+    double tiz = useTorso ? -t_encs.get(0).asDouble()/180.0*M_PI : 0; // torso yaw
 
     double nix = -h_encs.get(1).asDouble()/180.0*M_PI; // neck roll
     double niy = h_encs.get(0).asDouble()/180.0*M_PI;  // neck pitch
     double niz = h_encs.get(2).asDouble()/180.0*M_PI;  // neck yaw
 
-    double t =  h_encs.get(3).asDouble()/180.0*M_PI;   // eye tilt
-    double vs = h_encs.get(4).asDouble()/180.0*M_PI;   // eye version
-    double vg = h_encs.get(5).asDouble()/180.0*M_PI;   // eye vergence
-    yDebug() << "eye tilt" << t << "version" << vs << "vergence" << vg;
+    double t =  useEyes ? h_encs.get(3).asDouble()/180.0*M_PI : 0; // eye tilt
+    double vs = useEyes ? h_encs.get(4).asDouble()/180.0*M_PI : 0; // eye version
+    double vg = useEyes ? h_encs.get(5).asDouble()/180.0*M_PI : 0; // eye vergence
 
-    double imu_x = imu.get(0).asDouble()/180.0*M_PI;   // imu roll
-    double imu_y = imu.get(1).asDouble()/180.0*M_PI;   // imu pitch
-    double imu_z = imu.get(2).asDouble()/180.0*M_PI;   // imu yaw
+    double imu_x = useIMU ? imu.get(0).asDouble()/180.0*M_PI : 0; // imu roll
+    double imu_y = useIMU ? imu.get(1).asDouble()/180.0*M_PI : 0; // imu pitch
+    double imu_z = useIMU ? imu.get(2).asDouble()/180.0*M_PI : 0; // imu yaw
 
 
     // Torso rotation matrix
@@ -543,6 +549,8 @@ bool CamCalibModule::configure(yarp::os::ResourceFinder &rf)
     _prtImgIn.setLeftEye((strGroup == "CAMERA_CALIBRATION_LEFT") ? true : false);
     _prtImgIn.setMaxDelay(maxDelay);
     _prtImgIn.setUseIMU(rf.check("useIMU"));
+    _prtImgIn.setUseIMU(rf.check("useTorso"));
+    _prtImgIn.setUseIMU(rf.check("useEyes"));
     _prtImgIn.useCallback();
     _prtImgOut.open(getName("/out"));
     _configPort.open(getName("/conf"));
