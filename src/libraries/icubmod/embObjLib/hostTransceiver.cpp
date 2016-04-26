@@ -1167,6 +1167,8 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
     nvsetbrdconfig.boardnum = get_protBRDnumber();
 
     hosttxrxcfg.nvsetbrdcfg = &nvsetbrdconfig;
+    hosttxrxcfg.extfn.onerrorseqnumber = cpp_protocol_callback_incaseoferror_in_sequencenumberReceived;
+    hosttxrxcfg.extfn.onerrorinvalidframe = cpp_protocol_callback_incaseoferror_invalidFrame;
 
 
 #if !defined(HOSTTRANSCEIVER_USE_INTERNAL_MUTEXES)
