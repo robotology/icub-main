@@ -1385,8 +1385,7 @@ void MotorThread::run()
             force[1]=wrench[1];
             force[2]=wrench[2];
 
-            Vector x(3),o(4);
-        
+            Vector x,o;        
             dragger.ctrl->getPose(x,o);
 
             if(Time::now()-dragger.t0 > dragger.samplingRate)
@@ -2808,7 +2807,7 @@ bool MotorThread::startLearningModeAction(Bottle &options)
 
     dragger.arm=arm;
 
-    Vector x(3),o(4);
+    Vector x,o;
     dragger.ctrl->getPose(x,o);
     dragger.x0=x;
 
@@ -2914,7 +2913,7 @@ bool MotorThread::imitateAction(Bottle &options)
 
     ctrl->setInTargetTol(0.01);
 
-    Vector init_x(3),init_o(4);
+    Vector init_x,init_o;
     ctrl->getPose(init_x,init_o);
 
     for(int i=0; i<actions.size(); i++)
@@ -3021,9 +3020,8 @@ bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
     if(!skip)
     {
         //compute the offset
-        Vector x(3),o(4);
-        dragger.ctrl->getPose(x,o);
-        
+        Vector x,o;
+        dragger.ctrl->getPose(x,o);        
         currentKinematicOffset[dragger.arm]=x-dragger.x0;
 
         //if no object with specified name is present in the database, then update the default kinematic offsets
