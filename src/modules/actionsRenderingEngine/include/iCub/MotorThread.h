@@ -223,7 +223,6 @@ private:
     double                              avoid_table_height[2];
 
     double                              random_pos_y;
-    bool                                learnKinOffsSpecifiedTarget;
 
     bool loadExplorationPoses(const string &file_name);
     int checkArm(int arm);
