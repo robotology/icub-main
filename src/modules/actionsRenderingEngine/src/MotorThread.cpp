@@ -2979,15 +2979,12 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
     bool specifiedTarget=false;
     if (Bottle *b0=options.find("target").asList())
     {
-        if (Bottle *b1=b0->get(0).asList())
+        if (Bottle *b1=b0->find("cartesian").asList())
         {
-            if (Bottle *b2=b1->find("cartesian").asList())
-            {
-                size_t n=std::min(x.length(),(size_t)b2->size());
-                for (size_t i=0; i<n; i++)
-                    x[i]=b2->get(i).asDouble();
-                specifiedTarget=true;
-            }
+            size_t n=std::min(x.length(),(size_t)b1->size());
+            for (size_t i=0; i<n; i++)
+                x[i]=b1->get(i).asDouble();
+            specifiedTarget=true;
         }
     }
 
