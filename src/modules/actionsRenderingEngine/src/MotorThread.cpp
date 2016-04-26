@@ -2975,8 +2975,8 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
     if (!dragger.using_impedance)
         yWarning("Impedance control not available. Using admittance control!");
 
-    bool ok=false;
-    Vector x(3,0.0);
+    Vector x,o;
+    dragger.ctrl->getPose(x,o);
     if (Bottle *b0=options.find("target").asList())
     {
         if (Bottle *b1=b0->get(0).asList())
@@ -2986,17 +2986,10 @@ bool MotorThread::startLearningModeKinOffset(Bottle &options)
                 size_t n=std::min(x.length(),(size_t)b2->size());
                 for (size_t i=0; i<n; i++)
                     x[i]=b2->get(i).asDouble();
-                ok=true;
             }
         }
     }
     
-    if (!ok)
-    {
-        Vector o;
-        dragger.ctrl->getPose(x,o);
-    }
-
     dragger.x0=x;
     dragger.t0=Time::now();
     yInfo("Learning kinematic offset against (%s)",
