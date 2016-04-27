@@ -69,6 +69,13 @@ typedef struct
     eObrd_firmwareversion_t     firmware;
 } servCanBoard_t;
 
+typedef struct
+{
+    eObrd_type_t                type;
+    eObrd_protocolversion_t     protocol;
+    eObrd_firmwareversion_t     firmware;
+} servBoard_t;
+
 
 typedef struct
 {
@@ -120,12 +127,15 @@ public:
 
 public:
 
+    bool parseBoardVersions(Searchable &config);
+
     bool parseService(yarp::os::Searchable &config, servConfigMais_t& maisconfig);
     bool parseService(Searchable &config, servConfigStrain_t &strainconfig);
     bool parseService(Searchable &config, servConfigInertials_t &inertialsconfig);
 
 
     bool convert(ConstString const &fromstring, eOmn_serv_type_t &toservicetype, bool &formaterror);
+    bool convert(ConstString const &fromstring, eObrd_type_t& tobrdtype, bool& formaterror);
     bool convert(ConstString const &fromstring, eObrd_cantype_t &tobrdcantype, bool &formaterror);
     bool convert(ConstString const &fromstring, bool &tobool, bool &formaterror);
     bool convert(const int number, uint8_t &tou8, bool &formaterror);
@@ -143,6 +153,7 @@ public:
 
 public:
 
+    vector<servBoard_t>         boards;
     servAScollector_t           as_service;
     servASstrainSettings_t      as_strain_settings;
 
