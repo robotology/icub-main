@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
 <params robot="iCubGenova02" build="1">
 
-    <group name="BOARD_VERSIONS">
+    <group name="BOARDVERSIONS">
     
         <param name="type">             eobrd_mc4       eobrd_mtb       eobrd_strain    eobrd_mais      eobrd_foc       </param>
         <group name="PROTOCOL">
@@ -11,8 +11,8 @@
             <param name="minor">        0               0               0               0               3               </param>     
         </group>                    
         <group name="FIRMWARE">
-            <param name="major">        0               0               0               0               0               </param>    
-            <param name="minor">        0               0               0               0               0               </param> 
+            <param name="major">        0               2               0               0               0               </param>    
+            <param name="minor">        0               17              0               0               0               </param> 
             <param name="build">        0               0               0               0               0               </param>
         </group>
 
