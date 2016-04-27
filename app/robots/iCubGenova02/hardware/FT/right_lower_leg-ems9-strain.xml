@@ -16,16 +16,16 @@
             <group name="PROPERTIES">
   
                 <group name="CANBOARDS">
-                    <param name="type">                 eobrd_strain        </param>
-                    <param name="useGlobalParams">      false               </param>
+                    <param name="type">                 eobrd_strain            </param>
+                    <param name="useGlobalParams">      false                   </param>
                     <group name="PROTOCOL">
-                        <param name="major">            1                   </param>    
-                        <param name="minor">            0                   </param>     
+                        <param name="major">            1                       </param>    
+                        <param name="minor">            0                       </param>     
                     </group>                    
                     <group name="FIRMWARE">
-                        <param name="major">            0                   </param>    
-                        <param name="minor">            0                   </param> 
-                        <param name="build">            0                   </param>
+                        <param name="major">            0                       </param>    
+                        <param name="minor">            0                       </param> 
+                        <param name="build">            0                       </param>
                     </group>
                 </group>
                 
