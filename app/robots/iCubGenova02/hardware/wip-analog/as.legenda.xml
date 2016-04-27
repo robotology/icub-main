@@ -12,7 +12,7 @@
 
     The group SERVICE contains three sections:
     
-    - type              enum param with values [enumServiceINERTIALS, enumServiceMAIS, enumServiceSTRAIN]. it tells what service we are describing
+    - type              string with values from eOmn_serv_type_t [eomn_serv_AS_mais, eomn_serv_AS_strain, eomn_serv_AS_inertials]. it tells what service we are describing
     < PROPERTIES >      it is a group which contains the invariant characteristics of the service. its content depends on the type.
     < SETTINGS >        it is a group which tells what inside PROPERTIES the device wants to use and how.
     
@@ -23,7 +23,7 @@
       < CANBOARDS        
         it is a group which describes the can boards (typically only one kind) used in the service. see its fields.
         
-        - type                  enum param which tells which board it is [enumCanBrdMAIS, enumCanBrdSTRAIN, enumCanBrdMTB]. 
+        - type                  string with values from eObrd_type_t [eobrd_mais, eobrd_strain, eobrd_mtb, ...]. 
         
         - useGlobalParams       FOR FUTURE USE. boolean param [true, false] which tells if for the following we must use global params defined elsewhere (if defined) or to
                                 parse and use the following ... PROTOCOL and FIRMWARE
@@ -49,7 +49,8 @@
           FIRMWARE >  
 
         important: if both PROTOCOL and FIRMWARE are zero, then the ETH board shall not even search for the CAN board presence. that is a trick to avoid
-        that the remote ETH board complains about a missing board.        
+        that the remote ETH board complains about a missing board.    
+        note: think of how manage eobrd_mc4 boards, where the minor number can be different ... and the important is the build number      
           
         CANBOARDS >
         
@@ -59,14 +60,15 @@
         - id                    string which uniquely identifies the sensor in the robot.
                                 The use of this variable is for high level identification. For instance, it is the string published by embObjInertials to allow a match of the sensor with the CAD. 
                                 
-        - type                  enum which tells the type of sensor [enumSnsrMAIS, enumSnsrSTRAIN, enumSnsrAccSTlis3x, enumSnsrGyrSTl3g4200d, enumSnsrAccMTBint, enumSnsrAccMTBext, enumSnsrGyrMTBext, .... ]
+        - type                  string with values from eOas_sensor_t [eoas_strain, eoas_mais, eoas_accel_mtb_int, eoas_accel_mtb_ext, eoas_gyros_mtb_ext, ... ]
                                 The use of this variable is for initialisation inside the ETH board. 
-                                If SERVICE.type is enumServiceMAIS / enumServiceSTRAIN, it is clear that SENSORS.type must be enumSnsrMAIS / enumSnsrSTRAIN. 
-                                However, for SERVICE.type = enumServiceINERTIALS there can be multiple sensors of different types (enumSnsrAccMTBint etc.)  
+                                If SERVICE.type is eomn_serv_AS_mais or eomn_serv_AS_strain, it is clear that SENSORS.type must be eoas_strain or eoas_mais. 
+                                However, for SERVICE.type = eomn_serv_AS_inertials there can be multiple sensors of different types (eoas_accel_mtb_int, ...).  
                                 
-        - location              string which contains the address of the sensor. the string has the format PREFIX-number, where PREFIX = [CAN1, CAN2, LOC]
-                                and number is 0, 1, 2, 3, etc. Example: if we want to tell that the sensor is on CAN1 at address 12 we use CAN1-12
+        - location              string which contains the address of the sensor. the string has the format PREFIX:number, where PREFIX = [CAN1, CAN2, ETH]
+                                and number is 0, 1, 2, 3, etc. Example: if we want to tell that the sensor is on CAN1 at address 12 we use CAN1:12
                                 The use of this variable is for initialisation inside the ETH board. 
+                                Some CAN boards as the eobrd_mc4 may also have a sub-index 0/1, hence their extended location is for instance CAN1:6:1 or CAN1:6:0 
                                 
         SENSORS >        
         
