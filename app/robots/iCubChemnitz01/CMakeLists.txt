@@ -1,6 +1,6 @@
 set(appname iCubChemnitz01)
 
-set(scripts icub_all.xml firmwareUpdate.txt robotInterface.ini)
+set(scripts icub_all.xml firmwareUpdate.txt yarprobotinterface.ini)
 
 yarp_install(FILES ${scripts}   DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})
 yarp_install(FILES ${dragonFly} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})

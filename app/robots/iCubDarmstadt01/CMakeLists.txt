@@ -1,6 +1,6 @@
 set(appname iCubDarmstadt01)
 
-set(scripts icub_all.xml robotInterface.ini general.xml)
+set(scripts icub_all.xml yarprobotinterface.ini general.xml)
 
 yarp_install(FILES ${scripts} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})
 yarp_install(DIRECTORY calibrators DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname} PATTERN .svn EXCLUDE)  

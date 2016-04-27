@@ -1,6 +1,6 @@
 set(appname iCubNancy01)
 
-set(scripts icub_all.xml robotInterface.ini general.xml iKinGazeCtrl.ini icubEyes.ini pf3dTracker.ini cartesianSolver.ini)
+set(scripts icub_all.xml yarprobotinterface.ini general.xml iKinGazeCtrl.ini icubEyes.ini pf3dTracker.ini cartesianSolver.ini)
 
 yarp_install(FILES ${scripts} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})
 yarp_install(FILES ${dragonFly} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})
