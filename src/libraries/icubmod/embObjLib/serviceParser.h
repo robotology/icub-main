@@ -127,7 +127,9 @@ public:
 
 public:
 
-    bool parseBoardVersions(Searchable &config);
+    bool parseGlobalBoardVersions(Searchable &config);
+
+    bool getGlobalBoardVersion(const eObrd_type_t type, servBoard_t &board);
 
     bool parseService(yarp::os::Searchable &config, servConfigMais_t& maisconfig);
     bool parseService(Searchable &config, servConfigStrain_t &strainconfig);

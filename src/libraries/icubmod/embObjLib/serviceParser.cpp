@@ -63,15 +63,37 @@ ServiceParser::ServiceParser()
     as_service.settings.enabledsensors.resize(0);
 }
 
+bool ServiceParser::getGlobalBoardVersion(const eObrd_type_t type, servBoard_t &board)
+{
+    servBoard_t dummy = {.type = eobrd_none, .protocol = {0}, .firmware = {0} };
 
-bool ServiceParser::parseBoardVersions(Searchable &config)
+    if(0 != boards.size())
+    {
+        for(int i=0; i<boards.size(); i++)
+        {
+            servBoard_t cur = boards.at(i);
+            if(type == cur.type)
+            {
+                board = cur;
+                return true;
+            }
+        }
+    }
+
+    board = dummy;
+
+    return false;
+}
+
+
+bool ServiceParser::parseGlobalBoardVersions(Searchable &config)
 {
     // format is BOARDVERSIONS{ type, PROTOCOL{ major, minor }, FIRMWARE{ major, minor, build } }
 
     Bottle b_BOARDVERSIONS(config.findGroup("BOARDVERSIONS"));
     if(b_BOARDVERSIONS.isNull())
     {
-        yWarning() << "ServiceParser::parseBoardVersions() cannot find BOARDVERSIONS group. must use locally defined PROTOCOL and FIRMWARE";
+        yWarning() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS group. must use locally defined PROTOCOL and FIRMWARE";
         boards.resize(0);
         return false;
     }
@@ -83,49 +105,49 @@ bool ServiceParser::parseBoardVersions(Searchable &config)
     Bottle b_BOARDVERSIONS_type = b_BOARDVERSIONS.findGroup("type");
     if(b_BOARDVERSIONS_type.isNull())
     {
-        yError() << "ServiceParser::parseBoardVersions() cannot find BOARDVERSIONS.type";
+        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.type";
         return false;
     }
     Bottle b_BOARDVERSIONS_PROTOCOL = Bottle(b_BOARDVERSIONS.findGroup("PROTOCOL"));
     if(b_BOARDVERSIONS_PROTOCOL.isNull())
     {
-        yError() << "ServiceParser::parseBoardVersions() cannot find BOARDVERSIONS.PROTOCOL";
+        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.PROTOCOL";
         return false;
     }
     Bottle b_BOARDVERSIONS_PROTOCOL_major = Bottle(b_BOARDVERSIONS_PROTOCOL.findGroup("major"));
     if(b_BOARDVERSIONS_PROTOCOL_major.isNull())
     {
-        yError() << "ServiceParser::parseBoardVersions() cannot find BOARDVERSIONS.PROTOCOL.major";
+        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.PROTOCOL.major";
         return false;
     }
     Bottle b_BOARDVERSIONS_PROTOCOL_minor = Bottle(b_BOARDVERSIONS_PROTOCOL.findGroup("minor"));
     if(b_BOARDVERSIONS_PROTOCOL_minor.isNull())
     {
-        yError() << "ServiceParser::parseBoardVersions() cannot find BOARDVERSIONS.PROTOCOL.minor";
+        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.PROTOCOL.minor";
         return false;
     }
     Bottle b_BOARDVERSIONS_FIRMWARE = Bottle(b_BOARDVERSIONS.findGroup("FIRMWARE"));
     if(b_BOARDVERSIONS_FIRMWARE.isNull())
     {
-        yError() << "ServiceParser::parseBoardVersions() cannot find BOARDVERSIONS.FIRMWARE";
+        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.FIRMWARE";
         return false;
     }
     Bottle b_BOARDVERSIONS_FIRMWARE_major = Bottle(b_BOARDVERSIONS_FIRMWARE.findGroup("major"));
     if(b_BOARDVERSIONS_FIRMWARE_major.isNull())
     {
-        yError() << "ServiceParser::parseBoardVersions() cannot find BOARDVERSIONS.FIRMWARE.major";
+        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.FIRMWARE.major";
         return false;
     }
     Bottle b_BOARDVERSIONS_FIRMWARE_minor = Bottle(b_BOARDVERSIONS_FIRMWARE.findGroup("minor"));
     if(b_BOARDVERSIONS_FIRMWARE_minor.isNull())
     {
-        yError() << "ServiceParser::parseBoardVersions() cannot find BOARDVERSIONS.FIRMWARE.minor";
+        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.FIRMWARE.minor";
         return false;
     }
     Bottle b_BOARDVERSIONS_FIRMWARE_build = Bottle(b_BOARDVERSIONS_FIRMWARE.findGroup("build"));
     if(b_BOARDVERSIONS_FIRMWARE_build.isNull())
     {
-        yError() << "ServiceParser::parseBoardVersions() cannot find BOARDVERSIONS.FIRMWARE.build";
+        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.FIRMWARE.build";
         return false;
     }
 
@@ -140,7 +162,7 @@ bool ServiceParser::parseBoardVersions(Searchable &config)
         (tmp != b_BOARDVERSIONS_FIRMWARE_build.size())
       )
     {
-        yError() << "ServiceParser::parseBoardVersions() in BOARDVERSIONS some param has inconsistent length";
+        yError() << "ServiceParser::parseGlobalBoardVersions() in BOARDVERSIONS some param has inconsistent length";
         return false;
     }
 
@@ -170,7 +192,7 @@ bool ServiceParser::parseBoardVersions(Searchable &config)
 
     if(true == formaterror)
     {
-        yError() << "ServiceParser::parseBoardVersions() has detected an illegal format for some of the params of BOARDVERSIONS some param has inconsistent length";
+        yError() << "ServiceParser::parseGlobalBoardVersions() has detected an illegal format for some of the params of BOARDVERSIONS some param has inconsistent length";
         boards.resize(0);
         return false;
     }
@@ -543,7 +565,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
     }
 
     // i parse the global board versions. if section is not found we can safely continue but we have boards.size() equal to zero.
-    parseBoardVersions(config);
+    parseGlobalBoardVersions(config);
 
     // format is SERVICE{ type, PROPERTIES{ CANBOARDS, SENSORS }, SETTINGS }
 
