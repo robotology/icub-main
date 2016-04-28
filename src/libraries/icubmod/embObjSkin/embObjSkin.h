@@ -36,11 +36,11 @@
 // embObjLib includes
 #include <ethManager.h>
 #include <ethResource.h>
-#include "EoUtilities.h"
 #include "FeatureInterface.h"
 #include "IethResource.h"
 #include "SkinConfigReader.h"
 #include <SkinDiagnostics.h>
+#include "serviceParser.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -66,6 +66,9 @@ class SkinConfig
    uint8_t                         numOfPatches;
 };
 
+
+// -- class EmbObjSkin
+
 class EmbObjSkin :  public yarp::dev::IAnalogSensor,
                     public DeviceDriver,
                     public IethResource
@@ -90,7 +93,7 @@ protected:
     //int             totalCardsNum;
     //std::vector<SkinPatchInfo> patchInfoList;
     size_t          sensorsNum;
-    Vector          data;
+    Vector          skindata;
     //uint8_t         numOfPatches; //currently one patch is made up by all skin boards connected to one can port of ems.
     SkinBoardCfgParam _brdCfg;
     SkinTriangleCfgParam _triangCfg;
@@ -115,21 +118,23 @@ protected:
     }
 
 private:
+
+    ServiceParser *parser;
+    eOmn_serv_parameter_t ethservice;
+
     bool verbosewhenok;
+
     /****************** diagnostic********************************/
     bool _isDiagnosticPresent;       // is the diagnostic available from the firmware
     /*************************************************************/
 
     /** The detected skin errors. These are used for diagnostics purposes. */
     yarp::sig::VectorOf<iCub::skin::diagnostics::DetectedError> errors;
-//    bool diagnoseSkin();  // for more fancy handling of errors
 
 public:
 
     EmbObjSkin();
     ~EmbObjSkin();
-
-    char            info[EMBSK_SIZE_INFO];
 
     virtual bool    open(yarp::os::Searchable& config);
 
@@ -144,10 +149,6 @@ public:
 
     virtual int     calibrateSensor(const yarp::sig::Vector& v);
     virtual int     calibrateChannel(int ch);
-
-#if 0
-    virtual void    setId(ethFeature_t &id);
-#endif
 
     virtual bool    initialised();
     virtual iethresType_t type();
