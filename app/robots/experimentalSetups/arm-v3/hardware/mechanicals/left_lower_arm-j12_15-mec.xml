@@ -21,12 +21,12 @@
         <param name="TorqueMax">                24               24                  24                 24              </param>
         <param name="RotorEncoderType">         "OPTICAL_QUAD"  "OPTICAL_QUAD"       "OPTICAL_QUAD"     "OPTICAL_QUAD"  </param>
        <!-- <param name="RotorEncoderRes">          -14400           -14400              -14400             -14400          </param> --><!-- written by Davide -->
-        <param name="RotorEncoderRes">          65535                65535              65535            65535             </param>
+        <param name="RotorEncoderRes">          -40                65535              65535            65535             </param>
         <!-- <param name="RotorEncoderRes">     40               40                  40                 40          </param> -->
         <param name="JointEncoderType">         "MAIS"           "MAIS"              "MAIS"             "MAIS"          </param>
         <param name="JointEncoderRes">          65535            65535               65535              65535            </param> <!-- 65535:this value will change by fw during calibration (type 6) -->
         <param name="RotorIndexOffset">         0                0                   0                  0               </param>
-        <param name="Gearbox">                  256              256                 256                256             </param>
+        <param name="Gearbox">                  -256              256                 256                256             </param>
         <param name="MotorPoles">               1                1                   1                  1               </param>
         <param name="Verbose">                  0                                                                       </param>
     </group>
