@@ -1,9 +1,0 @@
-diff a/src/modules/actionsRenderingEngine/src/MotorThread.cpp b/src/modules/actionsRenderingEngine/src/MotorThread.cpp	(rejected hunks)
-@@ -3026,7 +3026,6 @@
-         Vector x(3),o(4);
-         dragger.ctrl->getPose(x,o);
-         
--        if(options.size()>3)
-         currentKinematicOffset[dragger.arm]=x-dragger.x0;
- 
-         //if no object with specified name is present in the database, then update the default kinematic offsets
