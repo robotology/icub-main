@@ -6,7 +6,7 @@
     <device name="right_upper_leg_strain" type="embObjStrain">
     
         <params file="general.xml"/>
-
+        <params file="hardware/electronics/board-versions.xml" />
         <params file="hardware/electronics/right_upper_leg-ems8-eln.xml" />
     
         <group name="SERVICE">

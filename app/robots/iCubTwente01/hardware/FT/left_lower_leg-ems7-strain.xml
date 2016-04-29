@@ -6,7 +6,7 @@
     <device name="left_lower_leg_strain" type="embObjStrain">
     
         <params file="general.xml"/>
-
+        <params file="hardware/electronics/board-versions.xml" />
         <params file="hardware/electronics/left_lower_leg-ems7-eln.xml" />
     
         <group name="SERVICE">

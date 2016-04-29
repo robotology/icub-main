@@ -6,7 +6,7 @@
     <device name="left_hand_mais" type="embObjMais">
     
         <params file="general.xml" />
-
+        <params file="hardware/electronics/board-versions.xml" />
         <params file="hardware/electronics/left_lower_arm-ems2-eln.xml" />
         
         <group name="SERVICE">

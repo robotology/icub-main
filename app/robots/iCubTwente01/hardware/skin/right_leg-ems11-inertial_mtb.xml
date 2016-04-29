@@ -6,6 +6,7 @@
     <device name="right_leg_inertialMTB" type="embObjInertials">
     
         <params file="general.xml" />     
+        <params file="hardware/electronics/board-versions.xml" />
         <params file="hardware/electronics/right_lower_leg-ems11-eln.xml" />
         
         <group name="SERVICE">
