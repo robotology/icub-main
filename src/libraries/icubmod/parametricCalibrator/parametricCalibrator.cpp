@@ -185,13 +185,11 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     for (i = 1; i < xtmp.size(); i++) type[i - 1] = (unsigned char)xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupPosition");
-    if (xtmp.isNull())  { xtmp = p.findGroup("CALIBRATION").findGroup("positionZero"); yWarning() << deviceName << ": unable to find 'startupPosition' paramter, using old 'positionZero'"; }
-    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of PositionZero/startupPosition params"; return false; }
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of startupPosition params"; return false; }
     for (i = 1; i < xtmp.size(); i++) zeroPos[i - 1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupVelocity");
-    if (xtmp.isNull()) { xtmp = p.findGroup("CALIBRATION").findGroup("velocityZero"); yWarning() << deviceName << ": unable to find 'startupVelocity' paramter, using old 'velocityZero'";}
-    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of VelocityZero/startupVelocity params"; return false; }
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of startupVelocity params"; return false; }
     for (i = 1; i < xtmp.size(); i++) zeroVel[i - 1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("HOME").findGroup("positionHome");
@@ -203,13 +201,11 @@ bool parametricCalibrator::open(yarp::os::Searchable& config)
     for (i = 1; i < xtmp.size(); i++) homeVel[i - 1] = xtmp.get(i).asDouble();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupMaxPwm");
-    if (xtmp.isNull()) { xtmp = p.findGroup("CALIBRATION").findGroup("maxPwm"); yWarning() << deviceName << ": unable to find 'startupMaxPwm' paramter, using old 'maxPwm'"; }
-    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of MaxPwm/startupMaxPwm params"; return false; }
+    if (xtmp.size() - 1 != nj) { yError() << deviceName << ": invalid number of startupMaxPwm params"; return false; }
     for (i = 1; i < xtmp.size(); i++) maxPWM[i - 1] = xtmp.get(i).asInt();
 
     xtmp = p.findGroup("CALIBRATION").findGroup("startupPosThreshold");
-    if (xtmp.isNull()) { xtmp = p.findGroup("CALIBRATION").findGroup("posZeroThreshold"); yWarning() << deviceName << ": unable to find 'startupPosThreshold' paramter, using old 'posZeroThreshold'"; }
-    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of PosZeroThreshold/startupPosThreshold params"; return false;}
+    if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupPosThreshold params"; return false;}
     for (i = 1; i < xtmp.size(); i++) zeroPosThreshold[i-1] =  xtmp.get(i).asDouble();
  
     xtmp = p.findGroup("CALIB_ORDER");
