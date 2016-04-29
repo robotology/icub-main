@@ -23,10 +23,10 @@
 <param name="calibration1">                       2047.5     2047.5  2047.5  2047.5     900.0     900.0        </param>
 <param name="calibration2">                       10.0       10.0    10.0    10.0       20.0      20.0         </param>
 <param name="calibration3">                       3697.5     2103.5  1891.5  3617.5     0.0       0.0          </param>
-<param name="positionZero">                       0.0        0.0     0.0     0.0        0.0       0.0          </param>
-<param name="velocityZero">                       10.0       10.0    10.0    10.0       10.0      10.0         </param>
-<param name="maxPwm">                             130        130     0       0          0         0            </param>
-<param name="posZeroThreshold">                   2          2       2       2          2         2            </param>
+<param name="startupPosition">                       0.0        0.0     0.0     0.0        0.0       0.0          </param>
+<param name="startupVelocity">                       10.0       10.0    10.0    10.0       10.0      10.0         </param>
+<param name="startupMaxPwm">                             130        130     0       0          0         0            </param>
+<param name="startupPosThreshold">                   2          2       2       2          2         2            </param>
 </group> 
  
         <param name="CALIB_ORDER"> (0 1 2) (3) (4) (5) </param>          

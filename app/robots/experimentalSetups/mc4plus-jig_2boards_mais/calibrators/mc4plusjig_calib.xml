@@ -15,10 +15,10 @@
 		<param name="calibration1">                       250             </param> <!-- used pwm  -->
 		<param name="calibration2">                       37319.02        </param> <!-- pos of reached hw limit in icubdeg (205 deg) -->
 		<param name="calibration3">                       0.0             </param> 
-		<param name="positionZero">                       0.0             </param> <!-- target position in deg after high level calib is terminated --> 
-		<param name="velocityZero">                       20.0            </param> <!-- and its velocity in deg/sec -->
-		<param name="maxPwm">                             500             </param> <!-- max pwm used in calib (it is a pid param)-->
-		<param name="posZeroThreshold">                   2               </param> <!-- tolerance of position in deg relative to positionZero param -->
+		<param name="startupPosition">                       0.0             </param> <!-- target position in deg after high level calib is terminated --> 
+		<param name="startupVelocity">                       20.0            </param> <!-- and its velocity in deg/sec -->
+		<param name="startupMaxPwm">                             500             </param> <!-- max pwm used in calib (it is a pid param)-->
+		<param name="startupPosThreshold">                   2               </param> <!-- tolerance of position in deg relative to positionZero param -->
 		</group>
 
 		<group name="HOME">

@@ -15,10 +15,10 @@
 <param name="calibration1">               2388.75       3241.875      -275.933      1535.625      800           750           750           1955          </param>       
 <param name="calibration2">               10            10            10            10            20            -10           -10           100           </param>       
 <param name="calibration3">               894.5         1768.875      2302.625      1962.5        0             0             0             0             </param>       
-<param name="positionZero">               -30           30            0             45            0             0             0             15            </param>       
-<param name="velocityZero">               10            10            10            10            30            30            30            100           </param>       
-<param name="maxPwm">                     120           120           120           120           0             0             0             0             </param>       
-<param name="posZeroThreshold">           2             2             2             2             2             2             90            90            </param>       
+<param name="startupPosition">               -30           30            0             45            0             0             0             15            </param>       
+<param name="startupVelocity">               10            10            10            10            30            30            30            100           </param>       
+<param name="startupMaxPwm">                     120           120           120           120           0             0             0             0             </param>       
+<param name="startupPosThreshold">           2             2             2             2             2             2             90            90            </param>       
 </group>       
  
 <group name="HOME">          

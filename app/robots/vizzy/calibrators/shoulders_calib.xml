@@ -12,10 +12,10 @@
 		<param name="calibration1"> 300.0 -500.0 400.0 -300.0 500.0 -400.0 </param>
 		<param name="calibration2"> 10.0 10.0 10.0 10.0 10.0 10.0  </param>
 		<param name="calibration3"> 0.0 0.0 0.0 0.0 0.0 0.0 </param>
-		<param name="positionZero"> 0.0 0.0 40.0 0.0 0.0 40.0 </param>
-		<param name="velocityZero"> 10.0 10.0 10.0 10.0 10.0 10.0 </param>
-		<param name="maxPwm"> 0.0 0.0 0.0 0.0 0.0 0.0 </param>
-		<param name="posZeroThreshold"> 1 1 1 1 1 1 </param>
+		<param name="startupPosition"> 0.0 0.0 40.0 0.0 0.0 40.0 </param>
+		<param name="startupVelocity"> 10.0 10.0 10.0 10.0 10.0 10.0 </param>
+		<param name="startupMaxPwm"> 0.0 0.0 0.0 0.0 0.0 0.0 </param>
+		<param name="startupPosThreshold"> 1 1 1 1 1 1 </param>
 	</group>
 	<group name="HOME">
 		<param name="positionHome"> 0 0 20 0 0 20 </param>
