@@ -9,6 +9,8 @@
     <!-- motor controllers wrappers -->
     <devices file="wrappers/motorControl/left_arm_mc_wrapper.xml" />
     <devices file="wrappers/motorControl/right_arm_mc_wrapper.xml" />
+    <devices file="wrappers/motorControl/left_leg_mc_wrapper.xml" />
+    <devices file="wrappers/motorControl/right_leg_mc_wrapper.xml" />
     <devices file="wrappers/motorControl/head_mc_wrapper.xml" />
     <devices file="wrappers/motorControl/torso_mc_wrapper.xml" />
     <devices file="hardware/motorControl/icub_left_arm.xml" />
@@ -48,10 +50,12 @@
     <devices file="hardware/MAIS/right_hand_mais.xml" />
 
     <!-- SKIN -->
-    <!-- <devices file="wrappers/skin/left_arm_skin_wrapper.xml" />
+    <devices file="wrappers/skin/left_arm_skin_wrapper.xml" />
     <devices file="wrappers/skin/right_arm_skin_wrapper.xml" />
+    <devices file="wrappers/skin/torso_skin_wrapper.xml" />  
     <devices file="hardware/skin/left_arm.xml" />
-    <devices file="hardware/skin/right_arm.xml" />  -->
+    <devices file="hardware/skin/right_arm.xml" />  
+    <devices file="hardware/skin/torso.xml" />  
 
     <!-- MTX INERTIAL SENSOR & SKIN INERTIAL SENSOR-->
     <devices file="hardware/inertial.xml" />

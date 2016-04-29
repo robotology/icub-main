@@ -16,6 +16,7 @@
       <paramlist name="networks">
 	      <elem name="left_arm_joints">  left_arm_mc </elem>
 	      <elem name="left_hand_joints"> left_hand_mc </elem>
+	      <elem name="Calibrator"> left_arm_calibrator </elem>
         </paramlist>
     </action>
 

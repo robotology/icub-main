@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<devices>
+<devices robot="iCubMunich01" build="1">
     <device name="right_leg_VFTserver" type="virtualAnalogServer">
         <param name="period">       10                  </param>
         <param name="deviceId">     right_leg                </param>

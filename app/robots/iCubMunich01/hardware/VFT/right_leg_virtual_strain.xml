@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<devices>
+<devices robot="iCubMunich01" build="1">
 	<device type="canBusVirtualAnalogSensor" name="right_leg_virtual_strain">
 		<param name="canbusDevice"> "sharedcan" </param>
         <param name="physDevice"> "cfw2can" </param>

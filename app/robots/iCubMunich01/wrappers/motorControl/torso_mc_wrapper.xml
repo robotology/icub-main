@@ -15,6 +15,7 @@
       <action phase="startup" level="5" type="attach">
       <paramlist name="networks">
          <elem name="torso_joints">  torso_mc </elem>
+	 <elem name="Calibrator"> torso_calibrator </elem>
       </paramlist>
       </action>
 
