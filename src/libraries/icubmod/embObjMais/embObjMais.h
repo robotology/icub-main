@@ -27,6 +27,7 @@
 
 
 #include "FeatureInterface.h"  
+#include "EoAnalogSensors.h"
 
 #include "IethResource.h"
 

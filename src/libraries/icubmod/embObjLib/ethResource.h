@@ -294,7 +294,7 @@ private:
     // lock of the object: on / off
     bool lock(bool on);
 
-    bool serviceCommand(eOmn_service_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times);
+    bool serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times);
 
     bool verbosewhenok;
 };

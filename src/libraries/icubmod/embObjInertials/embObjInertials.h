@@ -27,6 +27,7 @@
 
 
 #include "FeatureInterface.h"  
+#include "EoAnalogSensors.h"
 
 #include "IethResource.h"
 
@@ -40,12 +41,12 @@ namespace yarp {
     }
 }
 
+#include "serviceParser.h"
 
 
-typedef int AnalogDataFormat;
-/*! class yarp::dev::embObjInertials
- * 
- */
+#define EMBOBJINERTIALS_USESERVICEPARSER
+
+// -- class embObjInertials
 class yarp::dev::embObjInertials:       public yarp::dev::IAnalogSensor,
                                         public yarp::dev::DeviceDriver,
                                         public IethResource
@@ -53,7 +54,9 @@ class yarp::dev::embObjInertials:       public yarp::dev::IAnalogSensor,
 
 public:
 
-    enum { inertials_Channels = 6, inertials_FormatData = 16, inertials_maxNumber = eoas_inertial_pos_max_numberof+1 };
+    // 4 channels because we have (t, x, y, z)
+//    enum { inertials_Channels = 4, inertials_FormatData = 16, inertials_maxNumber = eoas_inertial1_pos_max_numberof+1 };
+    enum { inertials_Channels = 4, inertials_FormatData = 16, inertials_maxNumber = eOas_inertials_maxnumber };
 
 public:
 
@@ -84,6 +87,7 @@ private:
 
     TheEthManager* ethManager;
     EthResource* res;
+    ServiceParser* parser;
 
     bool opened;
     bool verbosewhenok;
@@ -94,15 +98,14 @@ private:
 
     ////////////////////
     // parameters
-    int _period;
-    int _numofsensors;
+    servConfigInertials_t serviceConfig;
 
     yarp::os::Semaphore mutex;
 
     vector<double> analogdata;
 
-    uint8_t _fromInertialPos2DataIndexAccelerometers[eoas_inertial_pos_max_numberof];
-    uint8_t _fromInertialPos2DataIndexGyroscopes[eoas_inertial_pos_max_numberof];
+//    uint8_t _fromInertialPos2DataIndexAccelerometers[eoas_inertial1_pos_max_numberof];
+//    uint8_t _fromInertialPos2DataIndexGyroscopes[eoas_inertial1_pos_max_numberof];
 
     short status;
     double timeStamp;
@@ -114,14 +117,15 @@ private:
     bool fromConfig(yarp::os::Searchable &config);
     bool initRegulars();
     void cleanup(void);
+    void printServiceConfig(void);
     // not used ...
     bool isEpManagedByBoard();
 
 
     // for inertials
-    bool configServiceInertials(Searchable& globalConfig);
+    //bool configServiceInertials(Searchable& globalConfig);
     bool sendConfig2MTBboards(yarp::os::Searchable &config);
-    eOas_inertial_position_t getLocationOfInertialSensor(yarp::os::ConstString &strpos);
+//    eOas_inertial1_position_t getLocationOfInertialSensor(yarp::os::ConstString &strpos);
 
 
     // for ??

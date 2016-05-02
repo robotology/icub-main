@@ -237,8 +237,8 @@ embObjAnalogSensor::embObjAnalogSensor(): analogdata(0)
     //_format=ANALOG_FORMAT_NONE;
 
 
-    memset(_fromInertialPos2DataIndexAccelerometers, 255, sizeof(_fromInertialPos2DataIndexAccelerometers));
-    memset(_fromInertialPos2DataIndexGyroscopes, 255, sizeof(_fromInertialPos2DataIndexGyroscopes));
+//    memset(_fromInertialPos2DataIndexAccelerometers, 255, sizeof(_fromInertialPos2DataIndexAccelerometers));
+//    memset(_fromInertialPos2DataIndexGyroscopes, 255, sizeof(_fromInertialPos2DataIndexGyroscopes));
 
     scaleFactor=0;
 
@@ -637,11 +637,13 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
 
 bool embObjAnalogSensor::configServiceInertials(Searchable& globalConfig)
 {
+#if 1
+    return false;
+#else
     // find SERVICES-INERTIALS. if not found, exit mildly from function. in a first stage the remote eth board will already be configured.
 
     Bottle tmp = globalConfig.findGroup("SERVICES");
     Bottle config = tmp.findGroup("INERTIALS");
-
 
     // prepare the config of the inertial sensors: datarate and the mask of the enabled ones.
 
@@ -698,12 +700,19 @@ bool embObjAnalogSensor::configServiceInertials(Searchable& globalConfig)
         }
     }
 
+
     return true;
+#endif
 }
 
 
 bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
 {
+#if 1
+
+    return false;
+
+#else
     eOprotID32_t id32 = eo_prot_ID32dummy;
 
     // configuration specific for skin-inertial device
@@ -792,185 +801,187 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
 //    }
 
     return true;
+#endif
 }
 
 
-
-eOas_inertial_position_t embObjAnalogSensor::getLocationOfInertialSensor(yarp::os::ConstString &strpos)
+#if 0
+eOas_inertial1_position_t embObjAnalogSensor::getLocationOfInertialSensor(yarp::os::ConstString &strpos)
 {
-    eOas_inertial_position_t ret = eoas_inertial_pos_none;
+    eOas_inertial1_position_t ret = eoas_inertial1_pos_none;
 
     if(strpos == "none")
     {
-        ret = eoas_inertial_pos_none;
+        ret = eoas_inertial1_pos_none;
     }
 
     else if(strpos == "l_hand")
     {
-        ret = eoas_inertial_pos_l_hand;
+        ret = eoas_inertial1_pos_l_hand;
     }
     else if(strpos == "l_forearm_1")
     {
-        ret = eoas_inertial_pos_l_forearm_1;
+        ret = eoas_inertial1_pos_l_forearm_1;
     }
     else if(strpos == "l_forearm_2")
     {
-        ret = eoas_inertial_pos_l_forearm_2;
+        ret = eoas_inertial1_pos_l_forearm_2;
     }
     else if(strpos == "l_upper_arm_1")
     {
-        ret = eoas_inertial_pos_l_upper_arm_1;
+        ret = eoas_inertial1_pos_l_upper_arm_1;
     }
     else if(strpos == "l_upper_arm_2")
     {
-        ret = eoas_inertial_pos_l_upper_arm_2;
+        ret = eoas_inertial1_pos_l_upper_arm_2;
     }
     else if(strpos == "l_upper_arm_3")
     {
-        ret = eoas_inertial_pos_l_upper_arm_3;
+        ret = eoas_inertial1_pos_l_upper_arm_3;
     }
     else if(strpos == "l_upper_arm_4")
     {
-        ret = eoas_inertial_pos_l_upper_arm_4;
+        ret = eoas_inertial1_pos_l_upper_arm_4;
     }
     else if(strpos == "l_foot_1")
     {
-        ret = eoas_inertial_pos_l_foot_1;
+        ret = eoas_inertial1_pos_l_foot_1;
     }
     else if(strpos == "l_foot_2")
     {
-        ret = eoas_inertial_pos_l_foot_2;
+        ret = eoas_inertial1_pos_l_foot_2;
     }
     else if(strpos == "l_lower_leg_1")
     {
-        ret = eoas_inertial_pos_l_lower_leg_1;
+        ret = eoas_inertial1_pos_l_lower_leg_1;
     }
     else if(strpos == "l_lower_leg_2")
     {
-        ret = eoas_inertial_pos_l_lower_leg_2;
+        ret = eoas_inertial1_pos_l_lower_leg_2;
     }
     else if(strpos == "l_lower_leg_3")
     {
-        ret = eoas_inertial_pos_l_lower_leg_3;
+        ret = eoas_inertial1_pos_l_lower_leg_3;
     }
     else if(strpos == "l_lower_leg_4")
     {
-        ret = eoas_inertial_pos_l_lower_leg_4;
+        ret = eoas_inertial1_pos_l_lower_leg_4;
     }
     else if(strpos == "l_upper_leg_1")
     {
-        ret = eoas_inertial_pos_l_upper_leg_1;
+        ret = eoas_inertial1_pos_l_upper_leg_1;
     }
     else if(strpos == "l_upper_leg_2")
     {
-        ret = eoas_inertial_pos_l_upper_leg_2;
+        ret = eoas_inertial1_pos_l_upper_leg_2;
     }
     else if(strpos == "l_upper_leg_3")
     {
-        ret = eoas_inertial_pos_l_upper_leg_3;
+        ret = eoas_inertial1_pos_l_upper_leg_3;
     }
     else if(strpos == "l_upper_leg_4")
     {
-        ret = eoas_inertial_pos_l_upper_leg_4;
+        ret = eoas_inertial1_pos_l_upper_leg_4;
     }
     else if(strpos == "l_upper_leg_5")
     {
-        ret = eoas_inertial_pos_l_upper_leg_5;
+        ret = eoas_inertial1_pos_l_upper_leg_5;
     }
     else if(strpos == "l_upper_leg_6")
     {
-        ret = eoas_inertial_pos_l_upper_leg_6;
+        ret = eoas_inertial1_pos_l_upper_leg_6;
     }
     else if(strpos == "l_upper_leg_7")
     {
-        ret = eoas_inertial_pos_l_upper_leg_7;
+        ret = eoas_inertial1_pos_l_upper_leg_7;
     }
 
     else if(strpos == "r_hand")
     {
-        ret = eoas_inertial_pos_r_hand;
+        ret = eoas_inertial1_pos_r_hand;
     }
     else if(strpos == "r_forearm_1")
     {
-        ret = eoas_inertial_pos_r_forearm_1;
+        ret = eoas_inertial1_pos_r_forearm_1;
     }
     else if(strpos == "r_forearm_2")
     {
-        ret = eoas_inertial_pos_r_forearm_2;
+        ret = eoas_inertial1_pos_r_forearm_2;
     }
     else if(strpos == "r_upper_arm_1")
     {
-        ret = eoas_inertial_pos_r_upper_arm_1;
+        ret = eoas_inertial1_pos_r_upper_arm_1;
     }
     else if(strpos == "r_upper_arm_2")
     {
-        ret = eoas_inertial_pos_r_upper_arm_2;
+        ret = eoas_inertial1_pos_r_upper_arm_2;
     }
     else if(strpos == "r_upper_arm_3")
     {
-        ret = eoas_inertial_pos_r_upper_arm_3;
+        ret = eoas_inertial1_pos_r_upper_arm_3;
     }
     else if(strpos == "r_upper_arm_4")
     {
-        ret = eoas_inertial_pos_r_upper_arm_4;
+        ret = eoas_inertial1_pos_r_upper_arm_4;
     }
     else if(strpos == "r_foot_1")
     {
-        ret = eoas_inertial_pos_r_foot_1;
+        ret = eoas_inertial1_pos_r_foot_1;
     }
     else if(strpos == "r_foot_2")
     {
-        ret = eoas_inertial_pos_r_foot_2;
+        ret = eoas_inertial1_pos_r_foot_2;
     }
     else if(strpos == "r_lower_leg_1")
     {
-        ret = eoas_inertial_pos_r_lower_leg_1;
+        ret = eoas_inertial1_pos_r_lower_leg_1;
     }
     else if(strpos == "r_lower_leg_2")
     {
-        ret = eoas_inertial_pos_r_lower_leg_2;
+        ret = eoas_inertial1_pos_r_lower_leg_2;
     }
     else if(strpos == "r_lower_leg_3")
     {
-        ret = eoas_inertial_pos_r_lower_leg_3;
+        ret = eoas_inertial1_pos_r_lower_leg_3;
     }
     else if(strpos == "r_lower_leg_4")
     {
-        ret = eoas_inertial_pos_r_lower_leg_4;
+        ret = eoas_inertial1_pos_r_lower_leg_4;
     }
     else if(strpos == "r_upper_leg_1")
     {
-        ret = eoas_inertial_pos_r_upper_leg_1;
+        ret = eoas_inertial1_pos_r_upper_leg_1;
     }
     else if(strpos == "r_upper_leg_2")
     {
-        ret = eoas_inertial_pos_r_upper_leg_2;
+        ret = eoas_inertial1_pos_r_upper_leg_2;
     }
     else if(strpos == "r_upper_leg_3")
     {
-        ret = eoas_inertial_pos_r_upper_leg_3;
+        ret = eoas_inertial1_pos_r_upper_leg_3;
     }
     else if(strpos == "r_upper_leg_4")
     {
-        ret = eoas_inertial_pos_r_upper_leg_4;
+        ret = eoas_inertial1_pos_r_upper_leg_4;
     }
     else if(strpos == "r_upper_leg_5")
     {
-        ret = eoas_inertial_pos_r_upper_leg_5;
+        ret = eoas_inertial1_pos_r_upper_leg_5;
     }
     else if(strpos == "r_upper_leg_6")
     {
-        ret = eoas_inertial_pos_r_upper_leg_6;
+        ret = eoas_inertial1_pos_r_upper_leg_6;
     }
     else if(strpos == "r_upper_leg_7")
     {
-        ret = eoas_inertial_pos_r_upper_leg_7;
+        ret = eoas_inertial1_pos_r_upper_leg_7;
     }
 
 
     return(ret);
 
 }
+#endif
 
 //#warning --> marco.accame: review function embObjAnalogSensor::getFullscaleValues() as in comment below
 // it is better to change the behaviour of the function so that: 1. we send the request, 2. we wait for the sig<> and unblock a mutex
@@ -1438,6 +1449,10 @@ bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
 {
     eOas_inertial_status_t *status = (eOas_inertial_status_t*) inertialdata;
 
+    return true;
+
+#if 0
+
     if((eoas_inertial_pos_none == status->data.position) || (status->data.position >= eoas_inertial_pos_max_numberof))
     {   // we dont have any info to manage or the received position is WRONG
         return(true);
@@ -1485,6 +1500,7 @@ bool embObjAnalogSensor::fillDatOfInertial(void *inertialdata)
     mutex.post();
 
     return true;
+#endif
 }
 
 bool embObjAnalogSensor::close()

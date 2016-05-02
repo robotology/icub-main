@@ -31,6 +31,7 @@
 
 #include <yarp/os/NetType.h>
 
+#include "EoCommon.h"
 
 using namespace std;
 using namespace iCub::skin::diagnostics;
@@ -54,7 +55,6 @@ EmbObjSkin::EmbObjSkin() :  mutex(1), _isDiagnosticPresent(false)
     sensorsNum  = 0;
     _skCfg.numOfPatches = 0;
     _skCfg.totalCardsNum = 0;
-    memset(info, 0x00, sizeof(info));
 
     ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
@@ -65,10 +65,22 @@ EmbObjSkin::EmbObjSkin() :  mutex(1), _isDiagnosticPresent(false)
     {
         verbosewhenok = false;
     }
+
+    parser = NULL;
+
+    memset(&ethservice.configuration, 0, sizeof(ethservice.configuration));
+    ethservice.configuration.type = eomn_serv_NONE;
 }
 
 
-EmbObjSkin::~EmbObjSkin() { }
+EmbObjSkin::~EmbObjSkin()
+{
+    if(NULL != parser)
+    {
+        delete parser;
+        parser = NULL;
+    }
+}
 
 
 bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
@@ -141,9 +153,11 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
             for(int k = 0; k < 12; k++)
             {
 //                yDebug() << "readNewSpecialConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << boardCfgList[j].cfg.noLoad;
-                if((index+k) >= data.size())
+                if((index+k) >= skindata.size())
+                {
                     yError() << "readNewSpecialConfiguration: index too big";
-                data[index + k] = boardCfgList[j].cfg.noLoad;
+                }
+                skindata[index + k] = boardCfgList[j].cfg.noLoad;
             }
         }
 //        //uncomment for debug only
@@ -270,13 +284,6 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         _skCfg.patchInfoList[j-1].indexNv = convertIdPatch2IndexNv(id);
     }
 
-//    //uncomment for debug only
-//    yError() << "numOfPatches=" << _skCfg.numOfPatches;
-//    for(int j=0; j<_skCfg.numOfPatches; j++ )
-//    {
-//        yError() << " patchInfoList[" << j << "]: patch=" << _skCfg.patchInfoList[j].idPatch << "indexNv=" << _skCfg.patchInfoList[j].indexNv;
-//    }
-
 
     for(int i=0; i<_skCfg.numOfPatches; i++)
     {
@@ -297,23 +304,82 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
         {
             int addr = xtmp.get(j).asInt();
             _skCfg.totalCardsNum++;
-            _skCfg. patchInfoList[i].cardAddrList[j-1] = addr;
+            _skCfg.patchInfoList[i].cardAddrList[j-1] = addr;
         }
     }
 
-    // resize data vector with number of triangles found in config file
+    // impose the number of sensors (triangles found in config file)
     sensorsNum = 16*12*_skCfg.totalCardsNum;     // max num of card
 
+    // resize the skindata holder
     mutex.wait();
 
-    this->data.resize(sensorsNum);
-    int ttt = this->data.size();
+    this->skindata.resize(sensorsNum);
+    int ttt = this->skindata.size();
     for (int i=0; i < ttt; i++)
     {
-        this->data[i]=(double)240;
+        this->skindata[i]=(double)240;
     }
 
     mutex.post();
+
+    // fill the ethservice ...
+
+    ethservice.configuration.type = eomn_serv_SK_skin;
+#if 0
+    // it is verified and it works
+    parser->parseGlobalBoardVersions(config);
+
+    servBoard_t mtb;
+    parser->getGlobalBoardVersion(eobrd_mtb, mtb);
+
+    ethservice.configuration.data.sk.skin.version.protocol.major = mtb.protocol.major;
+    ethservice.configuration.data.sk.skin.version.protocol.minor = mtb.protocol.minor;
+
+    ethservice.configuration.data.sk.skin.version.firmware.major = mtb.firmware.major;
+    ethservice.configuration.data.sk.skin.version.firmware.minor = mtb.firmware.minor;
+    ethservice.configuration.data.sk.skin.version.firmware.build = mtb.firmware.build;
+#else
+    // so far we dont verify presence of mtb and we use (0, 0), (0, 0, 0)
+    ethservice.configuration.data.sk.skin.version.protocol.major = 0;
+    ethservice.configuration.data.sk.skin.version.protocol.minor = 0;
+
+    ethservice.configuration.data.sk.skin.version.firmware.major = 0;
+    ethservice.configuration.data.sk.skin.version.firmware.minor = 0;
+    ethservice.configuration.data.sk.skin.version.firmware.build = 0;
+#endif
+    ethservice.configuration.data.sk.skin.numofpatches = _skCfg.numOfPatches;
+    if(ethservice.configuration.data.sk.skin.numofpatches > eomn_serv_skin_maxpatches)
+    {
+        yError() << "cannot have so many skin patches. detected" << ethservice.configuration.data.sk.skin.numofpatches << "max is" << eomn_serv_skin_maxpatches;
+        return false;
+    }
+    // tagliato e cucito per le schede eb2 eb4 eb10 ed eb11. da migliorare sia i file xml che il parser.
+    for(int np=0; np<ethservice.configuration.data.sk.skin.numofpatches; np++)
+    {
+        // patch np-th, can1 ... for each address put a bit using eo_common_hlfword_bitset
+        ethservice.configuration.data.sk.skin.canmapskin[np][0] = 0;
+        //eo_common_hlfword_bitset(&ethservice.configuration.data.sk.skin.canmapskin[np][0], 3);
+
+        // patch np-th, can2 ... for each address put a bit using
+        ethservice.configuration.data.sk.skin.canmapskin[np][1] = 0;
+
+        int canport = eOcanport2; // it is can2 unless ... we have two patches and np is 0.
+        if((0 == np) && (2 == ethservice.configuration.data.sk.skin.numofpatches))
+        {
+            canport = eOcanport1;
+        }
+
+        int max = _skCfg.patchInfoList[np].cardAddrList.size();
+        for(int n=0; n<max; n++)
+        {
+            int adr = _skCfg.patchInfoList[np].cardAddrList.at(n);
+            adr = adr;
+            eo_common_hlfword_bitset(&ethservice.configuration.data.sk.skin.canmapskin[np][canport], adr);
+        }
+    }
+
+
 
 //    //uncomment for debug only
 //    yError() << "totalCardsNum=" << _skCfg.totalCardsNum;
@@ -352,9 +418,9 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
             {
 //                yDebug() << "EO readNewConfiguration (default) size is: " << data.size()
 //                         << " index is " << (index+k) << " value is: " << _brdCfg.noLoad;
-                if((index+k) >= data.size())
+                if((index+k) >= skindata.size())
                     yError() << "readNewConfiguration: index too big";
-                data[index + k] = _brdCfg.noLoad;
+                skindata[index + k] = _brdCfg.noLoad;
             }
         }
     }
@@ -391,13 +457,18 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     // - now all other things
 
-    std::string str;
-    if(config.findGroup("GENERAL").find("verbose").asBool())
-        str=config.toString().c_str();
-    else
-        str="\n";
-    yTrace() << str;
+    if(NULL == parser)
+    {
+        parser = new ServiceParser;
+    }
 
+    // read config file
+    if(false == fromConfig(config))
+    {
+        yError() << "embObjSkin::init() fails in function fromConfig() for BOARD" << res->getName() << "IP" << res->getIPv4string() << ": CANNOT PROCEED ANY FURTHER";
+        cleanup();
+        return false;
+    }
 
 
 
@@ -410,6 +481,11 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
+    // now we have an ip address, thus we can set the name in object SkinConfigReader
+    char name[80];
+    snprintf(name, sizeof(name), "embObjSkin on BOARD %s IP %s", res->getName(), res->getIPv4string());
+    _cfgReader.setName(name);
+
 
     if(!res->verifyEPprotocol(eoprot_endpoint_skin))
     {
@@ -417,7 +493,10 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    if(false == res->serviceVerifyActivate(eomn_serv_category_skin, NULL))
+
+    const eOmn_serv_parameter_t* servparam = &ethservice;
+
+    if(false == res->serviceVerifyActivate(eomn_serv_category_skin, servparam, 5.0))
     {
         yError() << "embObjSkin::open() has an error in call of ethResources::serviceVerifyActivate() for board" << res->getName() << "IP" << res->getIPv4string();
         cleanup();
@@ -426,24 +505,11 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
 
 
-    if(false == fromConfig(config))
-    {
-        yError() << "embObjSkin::init() fails in function fromConfig() for BOARD" << res->getName() << "IP" << res->getIPv4string() << ": CANNOT PROCEED ANY FURTHER";
-        cleanup();
-        return false;
-    }
-
-    char name[80];
-    snprintf(name, sizeof(name), "embObjSkin on BOARD %s IP %s", res->getName(), res->getIPv4string());
-    _cfgReader.setName(name);
-
-
-
     if(!init())
         return false;
 
     /* Following delay is necessary in order to give enough time to skin boards to configure all its triangles */
-    Time::delay(0.5);
+    Time::delay(0.500);
 
     if(!initWithSpecialConfig(config))
     {
@@ -509,7 +575,7 @@ bool EmbObjSkin::close()
 int EmbObjSkin::read(yarp::sig::Vector &out)
 {
     mutex.wait();
-    out = this->data;  //old - this needs the running thread
+    out = this->skindata;  //old - this needs the running thread
     mutex.post();
 
     return yarp::dev::IAnalogSensor::AS_OK;
@@ -784,7 +850,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
 
             int index=16*12*mtbId + triangle*12;
 
-            // marco.accame: added lock to avoid cincurrent access to this->data. i lock at triangle resolution ...
+            // marco.accame: added lock to avoid concurrent access to this->skindata. i lock at triangle resolution ...
             mutex.wait();
 
             if (msgtype == 0x40)
@@ -792,7 +858,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
                 // Message head
                 for(int k = 0; k < 7; k++)
                 {
-                    data[index + k] = canframedata[k + 1];
+                    skindata[index + k] = canframedata[k + 1];
                 }
             }
             else if (msgtype == 0xC0)
@@ -800,7 +866,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
                 // Message tail
                 for(int k = 0; k < 5; k++)
                 {
-                    data[index + k + 7] = canframedata[k + 1];
+                    skindata[index + k + 7] = canframedata[k + 1];
                 }
 
                 // Skin diagnostics

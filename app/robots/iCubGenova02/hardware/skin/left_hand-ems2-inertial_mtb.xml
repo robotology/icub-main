@@ -2,21 +2,62 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
 <devices robot="iCubGenova02" build="1">
-    <device name="left_hand_inertialMTB" type="embObjAnalogSensor">
-        <params file="general.xml" />
-        <params file="hardware/electronics/pc104.xml" />
+   
+    <device name="left_hand_inertialMTB" type="embObjInertials">
+    
+        <params file="general.xml" />  
+        <params file="hardware/electronics/board-versions.xml" />
         <params file="hardware/electronics/left_lower_arm-ems2-eln.xml" />
+        
+        <group name="SERVICE">
+        
+            <param name="type"> eomn_serv_AS_inertials </param>                
+        
+            <group name="PROPERTIES">
+            
+                <group name="CANBOARDS">
+                    <param name="type">                 eobrd_mtb           </param>
+                    <param name="useGlobalParams">      false               </param>
+                    <group name="PROTOCOL">
+                        <param name="major">            0                   </param>    
+                        <param name="minor">            0                   </param>     
+                    </group>                    
+                    <group name="FIRMWARE">
+                        <param name="major">            0                   </param>    
+                        <param name="minor">            0                   </param> 
+                        <param name="build">            0                   </param>
+                    </group>
+                </group>
 
-        <!-- 
-            enabledAccelerometers is a list of strings taken from enum eOas_inertial_position_t where the prefix eOas_inertial_pos_ is removed.
-            for instance we have none, l_hand, r_hand etc.
-        -->
-        <group name="GENERAL">
-            <param name="Type">                     "inertial"      </param>
-            <param name="Channels">                 6               </param>
-            <param name="enabledAccelerometers">    l_hand  l_forearm_1  l_forearm_2 </param>
-            <param name="enabledGyroscopes">        l_hand </param>
-            <param name="Period">                   50              </param>
-        </group>
+                <group name="SENSORS">
+                    <param name="id">       on_ems2_accel           on_ems2_gyros               
+                                            l_upper_arm_4           l_upper_arm_1           l_upper_arm_3           l_upper_arm_2 
+                                            l_forearm_1             l_forearm_2             l_hand                  l_hand_gyro
+                    </param>
+
+                    <param name="type">     eoas_accel_st_lis3x     eoas_gyros_st_l3g4200d       
+                                            eoas_accel_mtb_int      eoas_accel_mtb_int      eoas_accel_mtb_int      eoas_accel_mtb_int   
+                                            eoas_accel_mtb_int      eoas_accel_mtb_int      eoas_accel_mtb_int      eoas_gyros_mtb_ext        
+                    </param>
+
+                    <param name="location"> ETH:0                   ETH:0                     
+                                            CAN2:8                  CAN2:9                  CAN2:10                 CAN2:11              
+                                            CAN2:12                 CAN2:13                 CAN2:14                 CAN2:14
+                    </param>            
+                </group>
+                                            
+            </group>
+            
+            <group name="SETTINGS"> 
+                <param name="acquisitionRate">      50      </param>
+                <param name="enabledSensors">       l_hand l_forearm_1 l_forearm_2 l_hand_gyro </param>                
+            </group>
+            
+        </group>        
+        
     </device>
+    
 </devices>
+
+
+

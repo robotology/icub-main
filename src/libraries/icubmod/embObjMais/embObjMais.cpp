@@ -169,6 +169,8 @@ bool embObjMais::initialised()
     return opened;
 }
 
+//#define TEST_MAIS_PLUS_MC
+
 
 bool embObjMais::open(yarp::os::Searchable &config)
 {
@@ -239,21 +241,58 @@ bool embObjMais::open(yarp::os::Searchable &config)
         return false;
     }
 
+#if     defined(TEST_MAIS_PLUS_MC)
+
+   // sarebbe bene chiamare requestResource2(ptr2fakemccontroller, config) ma pazienza
+
+    const eOmn_serv_parameter_t* mcservparam = NULL;
+
+    if(false == res->serviceVerifyActivate(eomn_serv_category_mc, mcservparam, 5.0))
+    {
+        yError() << "embObjMais::open() has an error in call of ethResources::serviceVerifyActivate(MC) for BOARD" << res->getName() << "IP" << res->getIPv4string();
+        cleanup();
+        return false;
+    }
+    if(false == res->serviceStart(eomn_serv_category_mc))
+    {
+        yError() << "embObjMais::open() fails to start MC service for BOARD" << res->getName() << "IP" << res->getIPv4string() << ": cannot continue";
+        cleanup();
+        return false;
+    }
+    else
+    {
+        if(verbosewhenok)
+        {
+            yDebug() << "embObjMais::open() correctly starts MC service of BOARD" << res->getName() << "IP" << res->getIPv4string();
+        }
+    }
+
+
+#endif
+
+
+
+
+
+
 #if defined(EMBOBJMAIS_USESERVICEPARSER)
     const eOmn_serv_parameter_t* servparam = &serviceConfig.ethservice;
 #else
     const eOmn_serv_parameter_t* servparam = NULL;
 #endif
 
+    //servparam = NULL;
+
     if(false == res->serviceVerifyActivate(eomn_serv_category_mais, servparam, 5.0))
     {
+        sleep(1);
         yError() << "embObjMais::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getName() << "IP" << res->getIPv4string();
-        printServiceConfig();
+        //printServiceConfig();
         cleanup();
         return false;
     }
 
-    printServiceConfig();
+    //printServiceConfig();
 
 
     // configure the service: aka, send to the remote board information about the whereabouts of the can boards mais, strain, mtb which offers the service.

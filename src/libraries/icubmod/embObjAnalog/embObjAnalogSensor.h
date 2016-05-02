@@ -28,6 +28,8 @@
 
 #include "FeatureInterface.h"  
 
+#include "EoAnalogSensors.h"
+
 #include "IethResource.h"
 
 #include <yarp/os/LogStream.h>
@@ -139,8 +141,8 @@ private:
     short               _useCalibration;
     AnalogSensorType    _as_type;
 
-    uint8_t _fromInertialPos2DataIndexAccelerometers[eoas_inertial_pos_max_numberof];
-    uint8_t _fromInertialPos2DataIndexGyroscopes[eoas_inertial_pos_max_numberof];
+//    uint8_t _fromInertialPos2DataIndexAccelerometers[eoas_inertial1_pos_max_numberof];
+//    uint8_t _fromInertialPos2DataIndexGyroscopes[eoas_inertial1_pos_max_numberof];
 
     AnalogData *analogdata;
     short status;
@@ -175,7 +177,7 @@ private:
     bool fillDatOfInertial(void *inertialdata);
     bool configServiceInertials(Searchable& globalConfig);
     bool sendConfig2SkinInertial(yarp::os::Searchable &config);
-    eOas_inertial_position_t getLocationOfInertialSensor(yarp::os::ConstString &strpos);
+    //eOas_inertial1_position_t getLocationOfInertialSensor(yarp::os::ConstString &strpos);
 
 
     // for ??
