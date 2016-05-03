@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<!--
-    NOTE: (m.a.) 
-    on 23jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_head.xml). 
-    - i must review ... maybe nothing
-    - in Encoder i used 182.044 because we have an AEA and 284.444 because .... we have an INC-ENC with 4x512x50 = 102400, where 4 is given by hal which samples 4 time 
-      each line of the encoder, 512 are the lines per revolution, and 50 is a motor reduction. then we have 102400/360 = 284.444. then i kept the same sign (+, +) as in grenoble.
-    
-    on 22jul15 i worked on calib of eyes-tilt with degrees. i have changed the Zeros from 0 to 180 because ... grenoble file had it and i forgot
-    and ... also joint 0 neck-yaw must have it.
- -->
+<!-- note (vale): Rotor encoder resolution has been calculated as following :
+ encoder-resolution x motor-reduction(if present) x 4,  where 4 is given by hal which samples 4 time 
+      each line of the encoder -->
+
  
 <params robot="iCubExpHeadV3" build="1">
     <group name="GENERAL">
@@ -26,18 +20,17 @@
         <param name="HasTempSensor">            0              0               0               0                   </param>
         <param name="HasRotorEncoder">          1              1               1               1                   </param>
         <param name="HasRotorEncoderIndex">     0              0               0               0                   </param>
-        <param name="Encoder">                  182.044        182.044         182.044         182.044             </param>    <!-- m.a.: encoderconversionfactor -->
-        <!-- memo: Encoder = x [ticks/deg], joint->config.encoderconversionfactor = x / 182.044 [ticks/icubdeg] -->
+        <param name="Encoder">                  182.044        182.044         182.044         182.044             </param>   
         <param name="TorqueId">                 0x0C           0x0C            0x0C            0x0C                </param>    <!-- torque params: still to be checked -->
         <param name="TorqueChan">               0              0               0               0                   </param>
         <param name="TorqueMax">                24             24              24              24                  </param>
-        <param name="RotorEncoderRes">          2048           2048            2048            2048               </param> <!--j yaw and tilt: 512(ppr)* 4= 2048 hal raed VALE: updated values but not signs-->
+        <param name="RotorEncoderRes">          2048           2048            2048            2048               </param>
         <param name="JointEncoderType">         "AEA"          "AEA"          "OPTICAL_QUAD"  "OPTICAL_QUAD"       </param>
         <param name="RotorEncoderType">         "OPTICAL_QUAD" "OPTICAL_QUAD" "OPTICAL_QUAD"  "OPTICAL_QUAD"       </param>
         <param name="JointEncoderRes">          4096            4096           102400          102400              </param>
         <param name="RotorIndexOffset">         0               0              0               0                   </param>
-        <param name="Gearbox">                  100             -141            50              50                  </param> <!-- VALE: updated values but not signs -->
-        <param name="MotorPoles">               0               0              0               0                   </param>   <!-- ??? -->
+        <param name="Gearbox">                  100             -141            50              50                  </param>
+        <param name="MotorPoles">               0               0              0               0                   </param>   
         <param name="Verbose">  0   </param>
     </group>
 

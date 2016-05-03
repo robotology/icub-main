@@ -1,26 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-
-<!--
-    NOTE: (m.a.) 
-    on 23jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble. 
-    - on maxPwm field for j0 and j1 there was 500. now there is 0 as in grenoble. is it used?  
-    - values 666 and 999 mean that the value is not used.
-    - i must review the calib parameters
-    
-    
-    the value 54431 is obtained from the xml file with some changes ...
-    when i did it again by positioning the joint roughly at zero pos, i have obtained 53011 ... which is about the same value.
-    
-    on 22jul15 i also tested the calib parameters for calib type3. i worked on joint 3 eyes-tilt. i used the xml file but some changes are required in 
-    its formulas. for instance the conversion factor is to be changed into 182.044 etc...    
-
-    on 30jul15: the value 8191 (45 deg in icubdegrees) for eyes is used to tell the calibrator that the hw limit is at 45 deg.
-    it is a value given by the mechanics.
-
- -->
-
 <devices robot="iCubExpHeadV3" build="1">
     <device name="head_calibrator" type="parametricCalibratorEth">
     
@@ -35,13 +15,10 @@
             <param name="positionHome">     0         0           0           0           0           0          </param>
             <param name="velocityHome">     10          10          10          10          10          10         </param>
         </group>
-       
-        <!-- README: the calibration to be used for joints [4, 5] is not type4, but a new type5. we temporarily use 4 in here because it has three params as type 5  -->
+
         <!-- joint logical number               0           1           2           3           4           5           -->
         <!-- joint name                         neck-pitch  neck-roll   neck-yaw    eyes-tilt   eyes-vers   eyes-verg   -->  <!-- j4 is right-eye, j5 is left-eye -->
         <group name="CALIBRATION">
-            <!-- memo: parameters of calib type 4 (5 actually): c1 = used pwm (int32_t); c2 = velocity of come back expressed in icubdeg/sec (int32_t); c3 = position in icubdeg of the reached hw limit (int32_t). -->
-            <!-- memo: parameters of calib type 4: c1 = NOT USED pos; c2 = NOT USED vel; c3 = offset in icubdeg with which to correct the encoder reading (int32_t) -->   
         <param name="calibrationType">      3           3           3           3           5           5           </param>
         <param name="calibration1">         666         666         666         666         2000        2000        </param>        
         <param name="calibration2">         999         999         999         999         8191        8191     </param>        

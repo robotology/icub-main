@@ -1,17 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<!--
-    NOTE: (m.a.) 
-    on 22jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_face.xml). 
-    - in Encoder i used 293.333 because ... we have an INC-ENC with 4x400x66 = 105600, where 4 is given by hal which samples 4 time 
-      each line of the encoder, 400 are the lines per revolution, and 66 is an internal reduction. then we have 105600/360 = 293.333.
-      then i kept the same sign (+, +, -, -) as in grenoble. 
-    - i must review ... maybe nothing
-    
-    on 22jul15 i tested calib of lips with degrees. i had to invert the sign of Encoder in lip-left
-    
- -->
+<!-- note (vale): Rotor encoder resolution has been calculated as following :
+ encoder-resolution x motor-reduction(if present) x 4,  where 4 is given by hal which samples 4 time 
+      each line of the encoder -->
 
 <params robot="iCubExpHeadV3" build="1">
 
@@ -37,7 +29,7 @@
         <param name="RotorEncoderType">         "OPTICAL_QUAD" "OPTICAL_QUAD"  "OPTICAL_QUAD"   "OPTICAL_QUAD"  </param>
         <param name="JointEncoderRes">          -105600        105600          105600           -105600         </param>
         <param name="RotorIndexOffset">         0              0               0                0               </param>
-        <param name="Gearbox">                  -66            66              66               -66              </param> <!-- VALE: updated values but not signs -->
+        <param name="Gearbox">                  -66            66              66               -66              </param> 
         <param name="MotorPoles">               0              0               0                0               </param>   
         
        <param name="Verbose">     0  </param>

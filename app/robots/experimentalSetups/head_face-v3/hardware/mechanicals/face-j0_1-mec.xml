@@ -1,23 +1,17 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-
-<!--
-    NOTE: (m.a.) 
-    on 23jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_face.xml). 
-    - i must review ... maybe nothing
-    - in Encoder i used 182.044 because ... we have an AEA. i have kept the same sign (+, +) as in grenoble. we dont however apply (for now) the 100:42 reduction 
-      factor because on grenoble it was not applied. i will try it later on but i  must also change the LIMITS etc.
-    
- -->
+<!-- note (vale): Rotor encoder resolution has been calculated as following :
+ encoder-resolution x motor-reduction(if present) x 4,  where 4 is given by hal which samples 4 time 
+      each line of the encoder -->
 
 <params robot="iCubExpHeadV3" build="1">
 
     <group name="GENERAL">
         <param name="MotioncontrolVersion">  2 </param>
         <param name="Joints"> 2 </param> <!-- the number of joints of the robot part -->
-                                      <!--   0               1               logical axis number (ControlBoardWrapper) -->
-        <param name="AxisMap">               0               1          </param>    <!-- hardware axis number  (EMS) -->
+                                      <!--   0               1  logical axis number (wrapper) -->
+        <param name="AxisMap">               0               1          </param> <!--hw axis num (EMS) -->
         <param name="AxisName">              "jaw"           "eyelids"  </param>
         <param name="AxisType">              "revolute"    "revolute"   </param>
         <param name="HasHallSensor">         0               0          </param>

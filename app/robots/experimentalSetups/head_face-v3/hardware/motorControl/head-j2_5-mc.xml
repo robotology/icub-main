@@ -1,13 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<!--
-    NOTE: (m.a.) 
-    on 23jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_head.xml). 
-    - in LIMITS i use the same as in grenoble which do not consider the position at joint but at the encoder. 
-    - i must review ... PID values, then what is "Currents"?
-    
- -->
  
 <devices robot="iCubExpHeadV3" build="1">
     
@@ -19,8 +12,7 @@
         
         <!-- joint logical number               0           1           2           3           -->
         <!-- joint name                         neck-yaw    eyes-tilt   eyes-vers   eyes-verg   -->         <!-- j2 is right-eye, j3 is left-eye -->
-        <group name="LIMITS">
-<!-- use these limits for version-vergence -->        
+        <group name="LIMITS">       
             <param name="jntPosMin">                  -45         -30         -45         0           </param> 
             <param name="jntPosMax">                  +45         +30         +45         +45         </param>
             <param name="rotorPosMin">             0           0           0           0           </param> 
@@ -30,13 +22,7 @@
             <param name="motorPeakCurrents">    0           0           0           0           </param>
             <param name="jntVelMax">             1000        1000        1000        1000        </param>
             <param name="motorPwmLimit">        3300        3300        3300        3300        </param>
-<!-- -->  
-
-<!-- use these limits for independent movement of eyes        
-            <param name="jntPosMin">                  -45         -30         -45         -45         </param> 
-            <param name="jntPosMax">                  +45         +30         +45         +45         </param>
-            <param name="motorOverloadCurrents">             600         600         600         600         </param>
- -->            
+        
         </group>
     
         <group name="IMPEDANCE">
@@ -44,7 +30,6 @@
             <param name="damping">              0.0         0.0         0.0         0.0         </param>
         </group>
     
-        <!-- TBD: marco.accame: vedere come tradurre i valori in iCubGrenoble01 in metrics units ... -->
         <group name="POSITION_CONTROL">
             <param name="controlLaw">       joint_pid_v1                                        </param>    
             <param name="controlUnits">     metric_units                                        </param> 

@@ -1,14 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-
-<!--
-    NOTE: (m.a.) 
-    on 22jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble (see file icub_head.xml). 
-    - i must review ... maybe the Zeros
-    - in Encoder i used 182.044 because ... we have an AEA. i have kept the same sign (+, -) as in grenoble. 
-    
- -->
  
 <params robot="iCubExpHeadV3" build="1">
 
@@ -19,8 +11,7 @@
         <!-- joint number in sub-part           0              1           -->
         <!-- joint name                         neck-pitch     neck-roll   -->         
 
-        <param name="AxisMap">                  0               1               </param>    <!-- joint as effectively mapped onto the hw of the board -->
-        <!-- memo: Encoder = x [ticks/deg], joint->config.encoderconversionfactor = x / 182.044 [ticks/icubdeg] -->
+        <param name="AxisMap">                  0               1               </param>    
         <param name="AxisName">              "neck-pitch"       "neck-roll"     </param>
         <param name="AxisType">                "revolute"    "revolute"         </param>
         <param name="HasHallSensor">            0               0               </param>
@@ -28,7 +19,7 @@
         <param name="HasRotorEncoder">          1               1               </param>
         <param name="HasRotorEncoderIndex">     0               0               </param>
         <param name="Encoder">                  182.044         182.044         </param>    
-        <param name="TorqueId">                 0x0C            0x0C            </param>    <!-- vale: torque param to be checked -->
+        <param name="TorqueId">                 0x0C            0x0C            </param>    <!-- torque param to be checked -->
         <param name="TorqueChan">               0               0               </param>
         <param name="TorqueMax">                24              24              </param>
         <param name="RotorEncoderRes">          2048            2048           </param>

@@ -1,28 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<!--
-    NOTE: (m.a.) 
-    on 22jul15 i revised and formatted the file and aligned it as much as i could with values from grenoble. 
-    - on maxPwm field for j0 and j1 there was 500. now there is 0 as in grenoble. is it used?  
-    - values 666 and 999 mean that the value is not used.
-    - i must review the calib parameters
-    
-    on 22jul15 i tested the calib parameters for calib type4 (it is type 5 actually). it seems that calib4 must be 0. i was expecting that
-    it would have been the value of the hw limit. in previous tests it was like that. however now there is something changed, for instance the TOBEFOUNDWHAT
-    which moves the readings of an offset. .... find out the rule.
-    as a matter of fact, the param calibration3 is found by trial and error.
-    i havent changed yet the value in joint 3 lip-high because it is not bound to a hw limit. must wait the cover is mounted.
-    
-    on 22jul15 i also tested the calib parameters for calib type3. i worked on joint 1 eyelids. i have computed the value 19000 with trial and error.  
-    i should also use the xml file but some changes are required in its formulas. for instance the conversion factor is to be changed into 182.044 etc... 
-    in file xml the formulas are:
-    val is reading of encoder
-    valdeg = val / 182.044
-    x = (abs(valdeg) - abs(Zero)), if(x>=0) { calib3 = x*182.044 } else { calib3 = (360+x)*182.044 }
-    by this procedure we read val = 51868, hence valdeg = 285 deg, hence ... param3 = 19100
-    
- -->
 
 <devices robot="iCubExpHeadV3" build="1">
     <device name="face_calibrator" type="parametricCalibratorEth">
@@ -39,16 +17,13 @@
             <param name="velocityHome">          10         10            10            10          10            10        </param>
         </group>
         
-        <!-- README: the calibration to be used for joints [2, 5] is not type4, but a new type5. we temporarily use 4 in here because it has three params as type 5  -->
         <!-- joint logical number               0           1           2           3           4           5           -->
         <!-- joint name                         jaw         eyelids     lip-left    lip-high    lip-right   lip-bottom  -->        
         <group name="CALIBRATION">
-         <!-- memo: parameters of calib type 4 (5 actually): c1 = used pwm (int32_t); c2 = velocity of come back expressed in icubdeg/sec (int32_t); c3 = position in icubdeg of the reached hw limit (int32_t). -->
-         <!-- memo: parameters of calib type 4: c1 = NOT USED pos; c2 = NOT USED vel; c3 = offset in icubdeg with which to correct the encoder reading (int32_t) -->
             <param name="calibrationType">      3           3           5           5            5          5         </param>
-            <param name="calibration1">         666         666         500.0       500.0        500.0      900.0       </param> <!-- calib3: none; calib5: pwm  -->
-            <param name="calibration2">         999         999         -6371.54    5097.23      6371.54    0.0     </param> <!-- calib3: none; calib5: pos (j2->133deg, j3->30deg, j4->133deg, j5->51deg) -->
-            <param name="calibration3">         3332.1      50142.9     0.0         0.0          0.0        0.0         </param> <!-- calib3: offset (j0->, j1->) -->
+            <param name="calibration1">         666         666         500.0       500.0        500.0      900.0       </param> 
+            <param name="calibration2">         999         999         -6371.54    5097.23      6371.54    0.0     </param> 
+            <param name="calibration3">         3332.1      50142.9     0.0         0.0          0.0        0.0         </param>
             <param name="calibration4">         0           0           0           0            0          0         </param>
             <param name="calibration5">         0           0           0           0            0          0         </param>
             
