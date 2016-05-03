@@ -53,7 +53,9 @@ if(ICUB_INSTALL_ALL_ROBOTS) # Install all robot-specific files
 else()
 
   if (ROBOT_NAME)
-    add_subdirectory(${ROBOT_NAME})
+    if(IS_DIRECTORY ${ROBOT_DIR})
+      add_subdirectory(${ROBOT_NAME})
+    endif()
   endif()
 endif()
 
@@ -63,7 +65,6 @@ if ("${ROBOT_NAME}" STREQUAL "")
   message(STATUS "No robot name")
 else ("${ROBOT_NAME}" STREQUAL "")
   if (EXISTS ${ROBOT_DIR})
-    
     if(UNIX)
       message(STATUS "Setting up symbolic link for ${ROBOT_NAME}")
       install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_INSTALL_PREFIX}/${ICUB_ROBOTS_INSTALL_DIR}/${ROBOT_NAME})\n
