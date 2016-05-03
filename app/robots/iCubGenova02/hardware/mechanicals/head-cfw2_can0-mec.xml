@@ -41,6 +41,7 @@
         <param name="rotorPosMin">         0             0             0             0             0             0     </param> 
         <param name="rotorPosMax">         0             0             0             0             0             0     </param>
         <param name="motorOverloadCurrents">  2000          2000          1200          620           600           600	</param>
+        <param name="motorPwmLimit">          1333          1333          1333          1333          1333         1333 </param> 
     </group>
 
     <group name="POS_PIDS">      
