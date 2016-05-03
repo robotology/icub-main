@@ -2,7 +2,6 @@
 	<device name="left_arm_as_wrapper" type="analogServer">
 		<param name="period">       10  				</param>
 		<param name="name">       /icub/left_arm/analog:o		</param>
-		<param name="deviceId">     left_arm				</param>
 		
 		<action level="5" phase="startup" type="attach">
 		    <paramlist name="networks">
