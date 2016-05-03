@@ -39,7 +39,7 @@ using namespace iCub::skin::diagnostics;
 
 int SkinPatchInfo::checkCardAddrIsInList(int cardAddr)
 {
-    for(int i=0; i< cardAddrList.size(); i++)
+    for (size_t i = 0; i< cardAddrList.size(); i++)
     {
         if(cardAddrList[i] == cardAddr)
             return i;
@@ -86,11 +86,11 @@ EmbObjSkin::~EmbObjSkin()
 bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 {
     Bottle          bNumOfset;
-    int             numOfSets;
+    unsigned int    numOfSets;
     eOprotID32_t    protoid;
-    int             p, j;
+    unsigned int    p, j;
     SpecialSkinBoardCfgParam* boardCfgList = new SpecialSkinBoardCfgParam[_skCfg.totalCardsNum]; //please add cleanup!
-    int             numofcfg;
+    unsigned int    numofcfg;
 
     if(!_newCfg)
     {
@@ -145,9 +145,9 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
         // Init the data vector with special config values from "noLoad" param in config file.
         // This is to have a correct initilization for the data sent through yarp port
-        for (int sensorId = 0; sensorId < 16; sensorId++)
+        for (size_t sensorId = 0; sensorId < 16; sensorId++)
         {
-            int index = 16*12*boardIdx + sensorId*12;
+            size_t index = 16 * 12 * boardIdx + sensorId * 12;
 
             // Message head
             for(int k = 0; k < 12; k++)
@@ -414,7 +414,7 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
             int index = 16*12*board_idx + triangleId*12;
 
             // Message head
-            for(int k = 0; k < 12; k++)
+            for (size_t k = 0; k < 12; k++)
             {
 //                yDebug() << "EO readNewConfiguration (default) size is: " << data.size()
 //                         << " index is " << (index+k) << " value is: " << _brdCfg.noLoad;
@@ -672,7 +672,7 @@ bool EmbObjSkin::configPeriodicMessage(void)
         {
             yDebug() << "embObjSkin::configPeriodicMessage() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
             char nvinfo[128];
-            for(int r=0; r<id32v.size(); r++)
+            for (size_t r = 0; r<id32v.size(); r++)
             {
                 uint32_t id32 = id32v.at(r);
                 eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
@@ -699,7 +699,7 @@ bool EmbObjSkin::init()
     // send default board and triangle configuration (new configuration style)
     eOsk_cmd_boardsCfg_t  defBoardCfg = {0};
     eOsk_cmd_trianglesCfg_t defTriangleCfg = {0};
-    int                     i,k;
+    size_t                  i, k;
 
     defBoardCfg.cfg.skintype    = _brdCfg.skinType;
     defBoardCfg.cfg.period      = _brdCfg.period;
@@ -827,7 +827,7 @@ bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)
         {
             cardAddr = (canframeid11 & 0x00f0) >> 4;
             //get index of start of data of board with addr cardId.
-            for(int cId_index = 0; cId_index< _skCfg.patchInfoList[p].cardAddrList.size(); cId_index++)
+            for (size_t cId_index = 0; cId_index< _skCfg.patchInfoList[p].cardAddrList.size(); cId_index++)
             {
                 if(_skCfg.patchInfoList[p].cardAddrList[cId_index] == cardAddr)
                 {

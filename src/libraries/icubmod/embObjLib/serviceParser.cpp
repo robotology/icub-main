@@ -65,7 +65,7 @@ ServiceParser::ServiceParser()
 
 bool ServiceParser::getGlobalBoardVersion(const eObrd_type_t type, servBoard_t &board)
 {
-    servBoard_t dummy = {.type = eobrd_none, .protocol = {0}, .firmware = {0} };
+    servBoard_t dummy;
 
     if(0 != boards.size())
     {
@@ -172,8 +172,7 @@ bool ServiceParser::parseGlobalBoardVersions(Searchable &config)
     bool formaterror = false;
     for(int i=0; i<numboards; i++)
     {
-        servBoard_t item = { .type = eobrd_none, .protocol = {0}, .firmware = {0} };
-
+        servBoard_t item;
 
         convert(b_BOARDVERSIONS_type.get(i+1).asString(), item.type, formaterror);
 
@@ -696,7 +695,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             formaterror = false;
             for(int i=0; i<numboards; i++)
             {
-                servCanBoard_t item = { .type = eobrd_cantype_none, .useglobalparams = false, .protocol = {0}, .firmware = {0} };
+                servCanBoard_t item;
 
                 convert(b_PROPERTIES_CANBOARDS_type.get(i+1).asString(), item.type, formaterror);
                 convert(b_PROPERTIES_CANBOARDS_useGlobalParams.get(i+1).asString(), item.useglobalparams, formaterror);
@@ -705,7 +704,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 {
                     // must search boards an entry which matches eObrd_type_t tt;
                     eObrd_type_t tt = eobrd_none;
-                    servBoard_t brd = {.type = eobrd_none, .protocol = {0}, .firmware = {0} };
+                    servBoard_t brd;
                     convert(b_PROPERTIES_CANBOARDS_type.get(i+1).asString(), tt, formaterror);
 
                     if(0 == boards.size())

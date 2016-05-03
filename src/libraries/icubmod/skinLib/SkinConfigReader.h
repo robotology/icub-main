@@ -136,8 +136,8 @@ public:
     bool readDefaultBoardCfg(yarp::os::Searchable& config, SkinBoardCfgParam *boardCfg);
     bool isDefaultTriangleCfgPresent(yarp::os::Searchable& config);
     bool readDefaultTriangleCfg(yarp::os::Searchable& config, SkinTriangleCfgParam *triangCfg);
-    bool readSpecialBoardCfg(yarp::os::Searchable& config, SpecialSkinBoardCfgParam *boardCfg, int *numofcfg);
-    bool readSpecialTriangleCfg(yarp::os::Searchable& config, SpecialSkinTriangleCfgParam *triangleCfg, int *numofcfg);
+    bool readSpecialBoardCfg(yarp::os::Searchable& config, SpecialSkinBoardCfgParam *boardCfg, unsigned int *numofcfg);
+    bool readSpecialTriangleCfg(yarp::os::Searchable& config, SpecialSkinTriangleCfgParam *triangleCfg, unsigned int *numofcfg);
 };
 
 #endif

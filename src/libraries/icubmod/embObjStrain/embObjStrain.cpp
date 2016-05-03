@@ -370,7 +370,7 @@ bool embObjStrain::fillScaleFactor()
     }
 
     // at first we set the scale factors to 1, so that we are sure they have a safe value. it redundant, as we already set it to 1.0
-    for(int i=0; i<scaleFactor.size(); i++)
+    for (size_t i = 0; i<scaleFactor.size(); i++)
     {
         scaleFactor[i] = 1.0f;
     }
@@ -488,7 +488,7 @@ bool embObjStrain::fillScaleFactor()
             yDebug()   << "embObjStrain::fillScaleFactor(): Fullscale values for BOARD" << res->getName() << "IP" << res->getIPv4string() << "are: size=" <<  eo_array_Size((EOarray *)&fullscale_values) << "  numchannel=" <<  strain_Channels;
         }
 
-        for(int i=0; i<scaleFactor.size(); i++)
+        for (size_t i = 0; i<scaleFactor.size(); i++)
         {
             // Get the k-th element of the array as a 2 bytes msg
             uint8_t *msg = (uint8_t *) eo_array_At((EOarray *) &fullscale_values, i);
@@ -550,7 +550,7 @@ bool embObjStrain::initRegulars()
         {
             yDebug() << "embObjStrain::initRegulars() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
             char nvinfo[128];
-            for(int r=0; r<id32v.size(); r++)
+            for (size_t r = 0; r<id32v.size(); r++)
             {
                 uint32_t item = id32v.at(r);
                 eoprot_ID2information(item, nvinfo, sizeof(nvinfo));
@@ -606,7 +606,7 @@ int embObjStrain::read(yarp::sig::Vector &out)
     }
 
     out.resize(analogdata.size());
-    for(int k=0; k<analogdata.size(); k++)
+    for (size_t k = 0; k<analogdata.size(); k++)
     {
         out[k] = analogdata[k];
     }
@@ -701,7 +701,7 @@ bool embObjStrain::update(eOprotID32_t id32, double timestamp, void* rxdata)
     // lock analogdata
     mutex.wait();
 
-    for(int k=0; k<analogdata.size(); k++)
+    for (size_t k = 0; k<analogdata.size(); k++)
     {
         // Get the kth element of the array as a 2 bytes msg
         char* tmp = (char*) eo_array_At(array, k);

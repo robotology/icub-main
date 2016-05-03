@@ -281,8 +281,8 @@ bool CanBusSkin::sendCANMessage(uint8_t destAddr, uint8_t command, void *data)
 
 bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
 {
-    int             j;
-    int             numofcfg;
+    unsigned int             j;
+    unsigned int             numofcfg;
 
     /* Read special board configuration */
     numofcfg = cardId.size();   //set size of my vector boardCfgList;
@@ -328,12 +328,12 @@ bool CanBusSkin::readNewSpecialConfiguration(yarp::os::Searchable& config)
 
             // Init the data vector with special config values from "noLoad" param in config file.
             // This is to have a correct initilization for the data sent through yarp port
-            for (int triangleId = 0; triangleId < 16; triangleId++)
+            for (unsigned int triangleId = 0; triangleId < 16; triangleId++)
             {
-                int index = 16*12*boardIdx + triangleId*12;
+                unsigned int index = 16*12*boardIdx + triangleId*12;
 
                 // Message head
-                for(int k = 0; k < 12; k++)
+                for(unsigned int k = 0; k < 12; k++)
                 {
 //                    yDebug() << "readNewSpecialConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << boardCfgList[j].cfg.noLoad;
                     if((index+k) >= data.size())
@@ -396,14 +396,14 @@ bool CanBusSkin::readNewConfiguration(yarp::os::Searchable& config)
         return false;
 
     // Fill the data vector with default values from "noLoad" param in config file.
-    for (int board_idx = 0; board_idx < cardId.size(); board_idx++)
+    for (size_t board_idx = 0; board_idx < cardId.size(); board_idx++)
     {
-        for (int triangleId = 0; triangleId < 16; triangleId++)
+        for (unsigned int triangleId = 0; triangleId < 16; triangleId++)
         {
             int index = 16*12*board_idx + triangleId*12;
 
             // Message head
-            for(int k = 0; k < 12; k++)
+            for(unsigned int k = 0; k < 12; k++)
             {
 //                yDebug() << "readNewConfiguration (default) size is: " << data.size() << " index is " << (index+k) << " value is: " << _brdCfg.noLoad;
                 if((index+k) >= data.size())
@@ -492,17 +492,17 @@ bool CanBusSkin::readOldConfiguration(yarp::os::Searchable& config)
 
 
     // Fill the data vector with default values from "noLoad" param in config file.
-    for (int idx=0; idx < cardId.size(); idx++)
+    for (size_t idx=0; idx < cardId.size(); idx++)
     {
         int board_idx = idx;
         int baseLine = msg4E_NoLoad.get(idx).asInt();
 
-        for (int triangleId = 0; triangleId < 16; triangleId++)
+        for (unsigned int triangleId = 0; triangleId < 16; triangleId++)
         {
-            int index = 16*12*board_idx + triangleId*12;
+            unsigned int index = 16*12*board_idx + triangleId*12;
 
             // Message head
-            for(int k = 0; k < 12; k++)
+            for(unsigned int k = 0; k < 12; k++)
             {
 //                yDebug() << "readOldConfiguration size is: " << data.size() << " index is " << (index+k) << " value is: " << baseLine;
                 if((index+k) >= data.size())
@@ -634,7 +634,7 @@ void CanBusSkin::run() {
             cout << "\n" << std::nouppercase << std::noshowbase << std::dec;
 #endif
 
-            for (int j = 0; j < cardId.size(); j++) {
+            for (size_t j = 0; j < cardId.size(); j++) {
                 if (id == cardId[j]) {
                     int index = 16*12*j + sensorId*12;
                     
@@ -745,7 +745,7 @@ void CanBusSkin::checkParameterListLength(const string &i_paramName, Bottle &i_p
         yWarning() << "CanBusSkin: Using default values for " << i_paramName << " parameters.";
 
         size_t i;
-        for (i= i_paramList.size() ; i <= i_length; ++i) {
+        for (i= i_paramList.size() ; i <= (unsigned int) i_length; ++i) {
             i_paramList.add(i_defaultValue);
         }
     }
@@ -901,7 +901,7 @@ bool CanBusSkin::checkFirmwareVersion(void)
             if (read_messages==0)
             {
                 yError ("No answers\n");
-                return -1;
+                return false;
             }
 
             //One (or more) answers received

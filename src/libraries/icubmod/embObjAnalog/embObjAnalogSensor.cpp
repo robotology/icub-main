@@ -1170,7 +1170,7 @@ bool embObjAnalogSensor::init()
         {
             yDebug() << "embObjAnalogSensor::init() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
             char nvinfo[128];
-            for(int r=0; r<id32v.size(); r++)
+            for (size_t r = 0; r<id32v.size(); r++)
             {
                 uint32_t id32 = id32v.at(r);
                 eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));

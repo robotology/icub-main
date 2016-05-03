@@ -285,7 +285,7 @@ bool embObjMais::open(yarp::os::Searchable &config)
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_mais, servparam, 5.0))
     {
-        sleep(1);
+        yarp::os::Time::delay(1);
         yError() << "embObjMais::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getName() << "IP" << res->getIPv4string();
         //printServiceConfig();
         cleanup();
@@ -418,7 +418,7 @@ bool embObjMais::initRegulars()
         {
             yDebug() << "embObjMais::initRegulars() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
             char nvinfo[128];
-            for(int r=0; r<id32v.size(); r++)
+            for (size_t r = 0; r<id32v.size(); r++)
             {
                 uint32_t item = id32v.at(r);
                 eoprot_ID2information(item, nvinfo, sizeof(nvinfo));
@@ -475,7 +475,7 @@ int embObjMais::read(yarp::sig::Vector &out)
     }
 
     out.resize(analogdata.size());
-    for(int k=0; k<analogdata.size(); k++)
+    for (size_t k = 0; k<analogdata.size(); k++)
     {
         out[k] = analogdata[k];
     }
@@ -572,7 +572,7 @@ bool embObjMais::update(eOprotID32_t id32, double timestamp, void* rxdata)
 
     mutex.wait();
 
-    for(int k=0; k<analogdata.size(); k++)
+    for (size_t k = 0; k<analogdata.size(); k++)
     {
         uint8_t* tmp = (uint8_t*) eo_array_At(array, k);
         if(NULL != tmp)

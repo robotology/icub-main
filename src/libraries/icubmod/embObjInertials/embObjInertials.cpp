@@ -445,7 +445,7 @@ bool embObjInertials::sendConfig2MTBboards(Searchable& globalConfig)
     }
 
     config.enabled=0;
-    for(int i=0; i<serviceConfig.inertials.size(); i++)
+    for(size_t i=0; i<serviceConfig.inertials.size(); i++)
     {
         eo_common_dword_bitset(&config.enabled, i);
     }
@@ -767,7 +767,7 @@ bool embObjInertials::initRegulars()
         {
             yDebug() << "embObjInertials::initRegulars() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
             char nvinfo[128];
-            for(int r=0; r<id32v.size(); r++)
+            for (size_t r = 0; r<id32v.size(); r++)
             {
                 uint32_t item = id32v.at(r);
                 eoprot_ID2information(item, nvinfo, sizeof(nvinfo));
@@ -823,7 +823,7 @@ int embObjInertials::read(yarp::sig::Vector &out)
     }
 
     out.resize(analogdata.size());
-    for(int k=0; k<analogdata.size(); k++)
+    for (size_t k = 0; k<analogdata.size(); k++)
     {
         out[k] = analogdata[k];
     }
@@ -960,7 +960,7 @@ void embObjInertials::printServiceConfig(void)
     yInfo() << "The embObjInertials device using BOARD" << boardname << "w/ IP" << ipv4 << "has the following service config:";
     yInfo() << "- acquisitionrate =" << serviceConfig.acquisitionrate;
     yInfo() << "- number of sensors =" << serviceConfig.inertials.size() << "defined as follows:";
-    for(int i=0; i<serviceConfig.inertials.size(); i++)
+    for (size_t i = 0; i<serviceConfig.inertials.size(); i++)
     {
         eOas_inertial_descriptor_t des = serviceConfig.inertials.at(i);
         string id = serviceConfig.id.at(i);

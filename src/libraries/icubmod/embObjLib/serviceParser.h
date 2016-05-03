@@ -61,20 +61,22 @@ typedef struct
 } servConfigInertials_t;
 
 
-typedef struct
+struct servCanBoard_t
 {
     eObrd_cantype_t             type;
     bool                        useglobalparams;
     eObrd_protocolversion_t     protocol;
     eObrd_firmwareversion_t     firmware;
-} servCanBoard_t;
+    servCanBoard_t() { type = eobrd_cantype_none; protocol.major = 0; protocol.minor = 0; firmware.major = 0; firmware.minor = 0; firmware.build = 0; useglobalparams = false; }
+};
 
-typedef struct
+struct servBoard_t
 {
     eObrd_type_t                type;
     eObrd_protocolversion_t     protocol;
     eObrd_firmwareversion_t     firmware;
-} servBoard_t;
+    servBoard_t() { type = eobrd_none; protocol.major = 0; protocol.minor = 0; firmware.major = 0; firmware.minor = 0; firmware.build = 0; }
+};
 
 
 typedef struct

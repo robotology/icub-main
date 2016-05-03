@@ -218,10 +218,10 @@ bool SkinConfigReader::readDefaultTriangleCfg(yarp::os::Searchable& config, Skin
     return true;
 }
 
-bool SkinConfigReader::readSpecialBoardCfg(yarp::os::Searchable& config, SpecialSkinBoardCfgParam *boardCfg, int *numofcfg)
+bool SkinConfigReader::readSpecialBoardCfg(yarp::os::Searchable& config, SpecialSkinBoardCfgParam *boardCfg, unsigned int *numofcfg)
 {
     Bottle          bNumOfset;
-    int             numOfSets;
+    unsigned int    numOfSets;
 
     
     if((NULL == boardCfg) || (NULL == numofcfg))
@@ -252,7 +252,7 @@ bool SkinConfigReader::readSpecialBoardCfg(yarp::os::Searchable& config, Special
         *numofcfg = numOfSets;
     }
 
-    for(int j=1;j<=*numofcfg;j++)
+    for(unsigned int j=1;j<=*numofcfg;j++)
     {
         char tmp[80];
         sprintf(tmp, "boardSetCfg%d", j);
@@ -275,10 +275,10 @@ bool SkinConfigReader::readSpecialBoardCfg(yarp::os::Searchable& config, Special
 }
 
 
-bool SkinConfigReader::readSpecialTriangleCfg(yarp::os::Searchable& config, SpecialSkinTriangleCfgParam *triangleCfg, int *numofcfg)
+bool SkinConfigReader::readSpecialTriangleCfg(yarp::os::Searchable& config, SpecialSkinTriangleCfgParam *triangleCfg, unsigned int *numofcfg)
 {
     Bottle          bNumOfset;
-    int             numOfSets;
+    unsigned int    numOfSets;
     
    if((NULL == triangleCfg) || (NULL == numofcfg))
        return false;
@@ -307,7 +307,7 @@ bool SkinConfigReader::readSpecialTriangleCfg(yarp::os::Searchable& config, Spec
         *numofcfg = numOfSets;
     }
 
-    for(int j=1;j<=*numofcfg;j++)
+    for(unsigned int j=1;j<=*numofcfg;j++)
     {
         char tmp[80];
         sprintf(tmp, "triangleSetCfg%d", j);
@@ -323,7 +323,7 @@ bool SkinConfigReader::readSpecialTriangleCfg(yarp::os::Searchable& config, Spec
         triangleCfg[j-1].boardAddr      = xtmp.get(2).asInt();
         triangleCfg[j-1].triangleStart  = xtmp.get(3).asInt();
         triangleCfg[j-1].triangleEnd    = xtmp.get(4).asInt();
-        triangleCfg[j-1].cfg.enabled    = xtmp.get(5).asInt();
+        triangleCfg[j-1].cfg.enabled    = xtmp.get(5).asInt()==1;
         triangleCfg[j-1].cfg.shift      = xtmp.get(6).asInt();
         triangleCfg[j-1].cfg.cdcOffset  = xtmp.get(7).asInt();
 
