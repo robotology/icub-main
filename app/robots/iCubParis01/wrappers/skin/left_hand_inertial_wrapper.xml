@@ -2,7 +2,7 @@
 <devices>
 	<device name="left_hand_mtb_wrapper" type="analogServer">
 		<param name="period">       10  				</param>
-		<param name="deviceId">     left_hand_inertial			</param>
+		<param name="name">     /icub/left_hand/inertial:o			</param>
 		
 		<action phase="startup" level="6" type="attach">
 		    <paramlist name="networks">
