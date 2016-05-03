@@ -2084,29 +2084,29 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
    //however, with errors in the position, we need an extra margin, so the contact falls onto some taxels
     switch (skin_part){
         case SKIN_LEFT_HAND:
-            if ((geo_center_link_FoR[0]<0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.026-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-1.5*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<-0.0055)){
+            if ((geo_center_link_FoR[0]<=0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>=-0.014) && (geo_center_link_FoR[1]>=-0.026-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-1.5*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<=-0.0055)){
                 list_of_taxels.push_back(121);list_of_taxels.push_back(122);list_of_taxels.push_back(123);
                 list_of_taxels.push_back(124);list_of_taxels.push_back(125);list_of_taxels.push_back(126);
                 list_of_taxels.push_back(127);list_of_taxels.push_back(128);
                 //list_of_taxels.push_back();list_of_taxels.push_back();list_of_taxels.push_back();
             }
-            else if ((geo_center_link_FoR[0]<0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.0055) && (geo_center_link_FoR[1]<0.01)){
+            else if ((geo_center_link_FoR[0]<=0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>=-0.014) && (geo_center_link_FoR[1]>=-0.0055) && (geo_center_link_FoR[1]<=0.01)){
                 list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98); 
                 list_of_taxels.push_back(99);list_of_taxels.push_back(102);list_of_taxels.push_back(103);
                 list_of_taxels.push_back(120);list_of_taxels.push_back(129);list_of_taxels.push_back(130);
             }
-            else if ((geo_center_link_FoR[0]<0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>0.01) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
+            else if ((geo_center_link_FoR[0]<=0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>=-0.014) && (geo_center_link_FoR[1]>=0.01) && (geo_center_link_FoR[1]<=0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(104);  
                     list_of_taxels.push_back(105);list_of_taxels.push_back(106);list_of_taxels.push_back(113);  
                     list_of_taxels.push_back(116);list_of_taxels.push_back(117);  
             }
-            else if ((geo_center_link_FoR[0]<-0.014) && (geo_center_link_FoR[0]>-0.024) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
+            else if ((geo_center_link_FoR[0]<=-0.014) && (geo_center_link_FoR[0]>=-0.024) && (geo_center_link_FoR[1]>=0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<=0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(110);  
                     list_of_taxels.push_back(111);list_of_taxels.push_back(112);list_of_taxels.push_back(114);  
                     list_of_taxels.push_back(115);list_of_taxels.push_back(118); list_of_taxels.push_back(142); 
                     list_of_taxels.push_back(143);
             }   
-            else if ((geo_center_link_FoR[0]<-0.024) && (geo_center_link_FoR[0]>-0.04-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2.0*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
+            else if ((geo_center_link_FoR[0]<=-0.024) && (geo_center_link_FoR[0]>=-0.04-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2.0*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]>=0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<=0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);  
                     list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);  
                     list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);                   
@@ -2116,29 +2116,29 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
             }
             break;
          case SKIN_RIGHT_HAND:
-            if ((geo_center_link_FoR[0]<0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.026-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-1.5*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<-0.0055)){
+            if ((geo_center_link_FoR[0]<=0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>=-0.014) && (geo_center_link_FoR[1]>=-0.026-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-1.5*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<=-0.0055)){
                 list_of_taxels.push_back(120);list_of_taxels.push_back(121);list_of_taxels.push_back(122);
                 list_of_taxels.push_back(123);list_of_taxels.push_back(124);list_of_taxels.push_back(125);
                 list_of_taxels.push_back(126);list_of_taxels.push_back(128);
                 //list_of_taxels.push_back();list_of_taxels.push_back();list_of_taxels.push_back();
             }
-            else if ((geo_center_link_FoR[0]<0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>-0.0055) && (geo_center_link_FoR[1]<0.01)){
+            else if ((geo_center_link_FoR[0]<=0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>=-0.014) && (geo_center_link_FoR[1]>=-0.0055) && (geo_center_link_FoR[1]<=0.01)){
                 list_of_taxels.push_back(99);list_of_taxels.push_back(102);list_of_taxels.push_back(103); 
                 list_of_taxels.push_back(104);list_of_taxels.push_back(105);list_of_taxels.push_back(106);
                 list_of_taxels.push_back(127);list_of_taxels.push_back(129);list_of_taxels.push_back(130);
             }
-            else if ((geo_center_link_FoR[0]<0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>-0.014) && (geo_center_link_FoR[1]>0.01) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
+            else if ((geo_center_link_FoR[0]<=0.003+MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[0]>=-0.014) && (geo_center_link_FoR[1]>=0.01) && (geo_center_link_FoR[1]<=0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(96);list_of_taxels.push_back(97);list_of_taxels.push_back(98);  
                     list_of_taxels.push_back(100);list_of_taxels.push_back(101);list_of_taxels.push_back(110);  
                     list_of_taxels.push_back(111);list_of_taxels.push_back(112);  
             }
-            else if ((geo_center_link_FoR[0]<-0.014) && (geo_center_link_FoR[0]>-0.024) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
+            else if ((geo_center_link_FoR[0]<=-0.014) && (geo_center_link_FoR[0]>=-0.024) && (geo_center_link_FoR[1]>=0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<=0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(108);list_of_taxels.push_back(109);list_of_taxels.push_back(113);  
                     list_of_taxels.push_back(114);list_of_taxels.push_back(115);list_of_taxels.push_back(116);  
                     list_of_taxels.push_back(117);list_of_taxels.push_back(118); list_of_taxels.push_back(142); 
                     list_of_taxels.push_back(143);
             }   
-            else if ((geo_center_link_FoR[0]<-0.024) && (geo_center_link_FoR[0]>-0.040-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2.0*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]>0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
+            else if ((geo_center_link_FoR[0]<=-0.024) && (geo_center_link_FoR[0]>=-0.040-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2.0*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]>=0.0-EXTRA_MARGIN_FOR_TAXEL_POSITION_M-2*MORE_EXTRA_MARGIN_FOR_TAXEL_POSITION_M) && (geo_center_link_FoR[1]<=0.03+EXTRA_MARGIN_FOR_TAXEL_POSITION_M) ){
                     list_of_taxels.push_back(132);list_of_taxels.push_back(133);list_of_taxels.push_back(134);  
                     list_of_taxels.push_back(135);list_of_taxels.push_back(136);list_of_taxels.push_back(137);  
                     list_of_taxels.push_back(138);list_of_taxels.push_back(140); list_of_taxels.push_back(141);                   
@@ -2148,22 +2148,22 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
             }
             break;
           case SKIN_LEFT_FOREARM:
-             //upper small patch (7 triangles)
-             if((geo_center_link_FoR[0]>-0.0326) && (geo_center_link_FoR[0]<0.0326) && (geo_center_link_FoR[1]>-0.0328) && (geo_center_link_FoR[1]<0.0039) && (geo_center_link_FoR[2]>-0.0338) && (geo_center_link_FoR[2]<0)){
+             //upper small patch (7 triangles in V1 skin)
+             if((geo_center_link_FoR[0]>=-0.0326) && (geo_center_link_FoR[0]<=0.0326) && (geo_center_link_FoR[1]>=-0.0528) && (geo_center_link_FoR[1]<=0.0039) && (geo_center_link_FoR[2]>=-0.0538) && (geo_center_link_FoR[2]<=0.0)){
                 //triangle taxel IDs 288-299
-                pushTriangleToTaxelList(288,list_of_taxels);
+                pushTriangleToTaxelList(288,list_of_taxels); //pushes taxel IDs of whole triangle into list_of_taxels, starting from startingTaxelID and skipping 7th and 11th taxels (thermal pads)
                 //triangle 300-311
                 pushTriangleToTaxelList(300,list_of_taxels);
                 //triangle 348-359 
                 pushTriangleToTaxelList(348,list_of_taxels);
              }
-             else if((geo_center_link_FoR[0]>-0.0345) && (geo_center_link_FoR[0]<0) && (geo_center_link_FoR[1]>-0.0687) && (geo_center_link_FoR[1]<-0.0328) && (geo_center_link_FoR[2]>-0.0369) && (geo_center_link_FoR[2]<0)){
+             else if((geo_center_link_FoR[0]>=-0.0545) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=-0.1288) && (geo_center_link_FoR[1]<=-0.0528) && (geo_center_link_FoR[2]>=-0.0569) && (geo_center_link_FoR[2]<=0.0)){
                 //triangle 204:215
                 pushTriangleToTaxelList(204,list_of_taxels);
                 //triangle 336:347
                 pushTriangleToTaxelList(336,list_of_taxels);              
              }
-             else if((geo_center_link_FoR[0]>0) && (geo_center_link_FoR[0]<0.0345) && (geo_center_link_FoR[1]>-0.0687) && (geo_center_link_FoR[1]<0.0345) && (geo_center_link_FoR[2]>-0.0328) && (geo_center_link_FoR[2]<0)){
+             else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0545) && (geo_center_link_FoR[1]>=-0.1288) && (geo_center_link_FoR[1]<=-0.0528) && (geo_center_link_FoR[2]>=-0.0569) && (geo_center_link_FoR[2]<=0.0)){
                 //triangle 252:263
                 pushTriangleToTaxelList(252,list_of_taxels);
                 //triangle 312:323
@@ -2173,49 +2173,49 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
               ///////////////////////////////////////////////////////////////////////
              
              //lower patch - big (16 triangles)
-             else if((geo_center_link_FoR[0]>-0.0375) && (geo_center_link_FoR[0]<0) && (geo_center_link_FoR[1]>-0.0716) && (geo_center_link_FoR[1]<-0.0298) && (geo_center_link_FoR[2]>0.0281) && (geo_center_link_FoR[2]<0.0484)){
+             else if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=-0.0716) && (geo_center_link_FoR[1]<=0.0) && (geo_center_link_FoR[2]>=0.0281) && (geo_center_link_FoR[2]<=0.0484)){
                 //triangle nr. 12 in CAD, taxel IDs 132:143
                 pushTriangleToTaxelList(132,list_of_taxels);
                 //triangle 16 168:179
                 pushTriangleToTaxelList(168,list_of_taxels);
              }
-             else  if((geo_center_link_FoR[0]>-0.0375) && (geo_center_link_FoR[0]<0) && (geo_center_link_FoR[1]>-0.1081) && (geo_center_link_FoR[1]<-0.0716) && (geo_center_link_FoR[2]>0.0343) && (geo_center_link_FoR[2]<0.0526)){
+             else  if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=-0.1281) && (geo_center_link_FoR[1]<=-0.0716) && (geo_center_link_FoR[2]>=0.0343) && (geo_center_link_FoR[2]<=0.0526)){
                 //triangle 3, 156:167
                 pushTriangleToTaxelList(156,list_of_taxels);
                 //triangle 8, 144:155
                 pushTriangleToTaxelList(144,list_of_taxels);                
              }
-             else if((geo_center_link_FoR[0]>-0.0375) && (geo_center_link_FoR[0]<0) && (geo_center_link_FoR[1]>-0.1133) && (geo_center_link_FoR[1]<-0.0716) && (geo_center_link_FoR[2]>0) && (geo_center_link_FoR[2]<0.0343)){
+             else if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=-0.1333) && (geo_center_link_FoR[1]<=-0.0716) && (geo_center_link_FoR[2]>=0.0) && (geo_center_link_FoR[2]<=0.0343)){
                 //triangle 4, 24:35
                 pushTriangleToTaxelList(24,list_of_taxels);
                 //triangle 6, 12:23
                 pushTriangleToTaxelList(12,list_of_taxels);             
              }    
-             else if((geo_center_link_FoR[0]>-0.0375) && (geo_center_link_FoR[0]<0) && (geo_center_link_FoR[1]>-0.0716) && (geo_center_link_FoR[1]<-0.0318) && (geo_center_link_FoR[2]>0) && (geo_center_link_FoR[2]<0.0281)){
+             else if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=-0.0716) && (geo_center_link_FoR[1]<=0.0) && (geo_center_link_FoR[2]>=0.0) && (geo_center_link_FoR[2]<=0.0281)){
                 //triangle 10, 0:11
                 pushTriangleToTaxelList(0,list_of_taxels);
                 //triangle 14, 180:191
                 pushTriangleToTaxelList(180,list_of_taxels);
              }    
-             else if((geo_center_link_FoR[0]>0) && (geo_center_link_FoR[0]<0.0375) && (geo_center_link_FoR[1]>-0.0716) && (geo_center_link_FoR[1]<-0.0298) && (geo_center_link_FoR[2]>0.0281) && (geo_center_link_FoR[2]<0.0484)){
+             else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0375) && (geo_center_link_FoR[1]>=-0.0716) && (geo_center_link_FoR[1]<=0.0) && (geo_center_link_FoR[2]>=0.0281) && (geo_center_link_FoR[2]<=0.0484)){
                 //triangle 11, 120:131
                 pushTriangleToTaxelList(120,list_of_taxels);
                 //triangle 15, 60:71
                 pushTriangleToTaxelList(60,list_of_taxels);
              }
-             else if((geo_center_link_FoR[0]>0) && (geo_center_link_FoR[0]<0.0375) && (geo_center_link_FoR[1]>-0.1081) && (geo_center_link_FoR[1]<-0.0716) && (geo_center_link_FoR[2]>0.0343) && (geo_center_link_FoR[2]<0.0526)){
+             else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0375) && (geo_center_link_FoR[1]>=-0.1281) && (geo_center_link_FoR[1]<=-0.0716) && (geo_center_link_FoR[2]>=0.0343) && (geo_center_link_FoR[2]<=0.0526)){
                 //triangle 2, 96:107
                 pushTriangleToTaxelList(96,list_of_taxels);
                 //triangle 7, 108:119
                 pushTriangleToTaxelList(108,list_of_taxels);              
              }
-             else if((geo_center_link_FoR[0]>0) && (geo_center_link_FoR[0]<0.0375) && (geo_center_link_FoR[1]>-0.1133) && (geo_center_link_FoR[1]<-0.0716) && (geo_center_link_FoR[2]>0) && (geo_center_link_FoR[2]<0.0343)){
+             else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0375) && (geo_center_link_FoR[1]>=-0.1333) && (geo_center_link_FoR[1]<=-0.0716) && (geo_center_link_FoR[2]>=0.0) && (geo_center_link_FoR[2]<=0.0343)){
                 //triangle 1, 84:95
                 pushTriangleToTaxelList(84,list_of_taxels);
                 //triangle 5, 72:83
                 pushTriangleToTaxelList(72,list_of_taxels);
              }
-             else if((geo_center_link_FoR[0]>0) && (geo_center_link_FoR[0]<0.0375) && (geo_center_link_FoR[1]>-0.0716) && (geo_center_link_FoR[1]<-0.0318) && (geo_center_link_FoR[2]>0) && (geo_center_link_FoR[2]<0.0281)){
+             else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0375) && (geo_center_link_FoR[1]>=-0.0716) && (geo_center_link_FoR[1]<=0.0) && (geo_center_link_FoR[2]>=0.0) && (geo_center_link_FoR[2]<=0.0281)){
                 //triangle 9, 36:47
                 pushTriangleToTaxelList(36,list_of_taxels);
                 //triangle 13, 48:59
@@ -2225,93 +2225,84 @@ void OdeSdlSimulation::mapPositionIntoTaxelList(const SkinPart skin_part,const V
                 yWarning("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, coordinates: %f %f %f, but no taxels asigned to this position. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]); 
              }
              break;
-         case SKIN_RIGHT_FOREARM:
-            //upper small patch (7 triangles)
-             if((geo_center_link_FoR[0]>-0.0326) && (geo_center_link_FoR[0]<0.0326) && (geo_center_link_FoR[1]<0.0328) && (geo_center_link_FoR[1]>-0.0039) && (geo_center_link_FoR[2]<0.0338) && (geo_center_link_FoR[2]>0)){
+        case SKIN_RIGHT_FOREARM: //the y and z axes have opposite directions between left and right forearm FoR
+             //upper small patch (7 triangles in V1 skin)
+             if((geo_center_link_FoR[0]>=-0.0326) && (geo_center_link_FoR[0]<=0.0326) && (geo_center_link_FoR[1]>=-0.0039) && (geo_center_link_FoR[1]<=0.0528) && (geo_center_link_FoR[2]>=0.0) && (geo_center_link_FoR[2]<=0.0538)){
                 //triangle taxel IDs 288-299
-                pushTriangleToTaxelList(288,list_of_taxels);
+                pushTriangleToTaxelList(288,list_of_taxels); //pushes taxel IDs of whole triangle into list_of_taxels, starting from startingTaxelID and skipping 7th and 11th taxels (thermal pads)
                 //triangle 300-311
                 pushTriangleToTaxelList(300,list_of_taxels);
                 //triangle 348-359 
                 pushTriangleToTaxelList(348,list_of_taxels);
              }
-             else if((geo_center_link_FoR[0]>-0.0345) && (geo_center_link_FoR[0]<0) && (geo_center_link_FoR[1]<0.0687) && (geo_center_link_FoR[1]>0.0328) && (geo_center_link_FoR[2]<0.0369) && (geo_center_link_FoR[2]>0)){
-                 //triangle 204:215
+             else if((geo_center_link_FoR[0]>=-0.0545) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=0.0528) && (geo_center_link_FoR[1]<=0.1288) && (geo_center_link_FoR[2]>=0.0) && (geo_center_link_FoR[2]<=0.0569)){
+                //triangle 204:215
                 pushTriangleToTaxelList(204,list_of_taxels);
                 //triangle 336:347
-                pushTriangleToTaxelList(336,list_of_taxels);
+                pushTriangleToTaxelList(336,list_of_taxels);              
              }
-             else if((geo_center_link_FoR[0]>0) && (geo_center_link_FoR[0]<0.0345) && (geo_center_link_FoR[1]<0.0687) && (geo_center_link_FoR[1]>0.0345) && (geo_center_link_FoR[2]<0.0328) && (geo_center_link_FoR[2]>0)){
+             else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0545) && (geo_center_link_FoR[1]>=0.0528) && (geo_center_link_FoR[1]<=0.1288) && (geo_center_link_FoR[2]>=0.0) && (geo_center_link_FoR[2]<=0.0569)){
                 //triangle 252:263
                 pushTriangleToTaxelList(252,list_of_taxels);
                 //triangle 312:323
                 pushTriangleToTaxelList(312,list_of_taxels);
              }
-
+             
               ///////////////////////////////////////////////////////////////////////
-
-              ///lower patch - big (16 triangles)
-
-            else if((geo_center_link_FoR[0]>-0.0375) && (geo_center_link_FoR[0]<0) && (geo_center_link_FoR[1]<0.0716) && (geo_center_link_FoR[1]<0.0298) && (geo_center_link_FoR[2]<-0.0281) && (geo_center_link_FoR[2]>-0.0484)){
-                 //triangle nr. 12 in CAD, taxel IDs 132:143
+             
+             //lower patch - big (16 triangles)
+             else if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=0.0) && (geo_center_link_FoR[1]<=0.0716) && (geo_center_link_FoR[2]>=-0.0484) && (geo_center_link_FoR[2]<=-0.0281)){
+                //triangle nr. 12 in CAD, taxel IDs 132:143
                 pushTriangleToTaxelList(132,list_of_taxels);
                 //triangle 16 168:179
                 pushTriangleToTaxelList(168,list_of_taxels);
-            }
-
-            else if((geo_center_link_FoR[0]>-0.0375) && (geo_center_link_FoR[0]<0) && (geo_center_link_FoR[1]<0.1081) && (geo_center_link_FoR[1]>0.0716) && (geo_center_link_FoR[2]<-0.0343) && (geo_center_link_FoR[2]>-0.0526)){
+             }
+             else  if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=0.0716) && (geo_center_link_FoR[1]<=0.1281) && (geo_center_link_FoR[2]>=-0.0526) && (geo_center_link_FoR[2]<=-0.0343)){
                 //triangle 3, 156:167
                 pushTriangleToTaxelList(156,list_of_taxels);
                 //triangle 8, 144:155
-                pushTriangleToTaxelList(144,list_of_taxels);
-            }
-            
-            else if((geo_center_link_FoR[0]>-0.0375) && (geo_center_link_FoR[0]<0) && (geo_center_link_FoR[1]<0.1133) && (geo_center_link_FoR[1]>0.0716) && (geo_center_link_FoR[2]<-0) && (geo_center_link_FoR[2]>-0.0343)){
+                pushTriangleToTaxelList(144,list_of_taxels);                
+             }
+             else if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=0.0716) && (geo_center_link_FoR[1]<=0.1333) && (geo_center_link_FoR[2]>=-0.0343) && (geo_center_link_FoR[2]<=0.0)){
                 //triangle 4, 24:35
                 pushTriangleToTaxelList(24,list_of_taxels);
                 //triangle 6, 12:23
-                pushTriangleToTaxelList(12,list_of_taxels); 
-            }    
-
-            else if((geo_center_link_FoR[0]>-0.0375) && (geo_center_link_FoR[0]<0) && (geo_center_link_FoR[1]<0.0716) && (geo_center_link_FoR[1]>0.0318) && (geo_center_link_FoR[2]<0) && (geo_center_link_FoR[2]>-0.0281)){
+                pushTriangleToTaxelList(12,list_of_taxels);             
+             }    
+             else if((geo_center_link_FoR[0]>=-0.0375) && (geo_center_link_FoR[0]<=0.0) && (geo_center_link_FoR[1]>=0.0) && (geo_center_link_FoR[1]<=0.0716) && (geo_center_link_FoR[2]>=-0.0281) && (geo_center_link_FoR[2]<=0.0)){
                 //triangle 10, 0:11
                 pushTriangleToTaxelList(0,list_of_taxels);
                 //triangle 14, 180:191
                 pushTriangleToTaxelList(180,list_of_taxels);
-            }    
-
-            else if((geo_center_link_FoR[0]>0) && (geo_center_link_FoR[0]<0.0375) && (geo_center_link_FoR[1]<0.0716) && (geo_center_link_FoR[1]>0.0298) && (geo_center_link_FoR[2]<-0.0281) && (geo_center_link_FoR[2]>-0.0484)){
+             }    
+             else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0375) && (geo_center_link_FoR[1]>=0.0) && (geo_center_link_FoR[1]<=0.0716) && (geo_center_link_FoR[2]>=-0.0484) && (geo_center_link_FoR[2]<=-0.0281)){
                 //triangle 11, 120:131
                 pushTriangleToTaxelList(120,list_of_taxels);
                 //triangle 15, 60:71
                 pushTriangleToTaxelList(60,list_of_taxels);
-            }
-
-            else if((geo_center_link_FoR[0]>0) && (geo_center_link_FoR[0]<0.0375) && (geo_center_link_FoR[1]<0.1081) && (geo_center_link_FoR[1]>0.0716) && (geo_center_link_FoR[2]<-0.0343) && (geo_center_link_FoR[2]>-0.0526)){
+             }
+             else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0375) && (geo_center_link_FoR[1]>=0.0716) && (geo_center_link_FoR[1]<=0.1281) && (geo_center_link_FoR[2]>=-0.0526) && (geo_center_link_FoR[2]<=-0.0343)){
                 //triangle 2, 96:107
                 pushTriangleToTaxelList(96,list_of_taxels);
                 //triangle 7, 108:119
-                pushTriangleToTaxelList(108,list_of_taxels);
-            }
-            
-            else if((geo_center_link_FoR[0]>0) && (geo_center_link_FoR[0]<0.0375) && (geo_center_link_FoR[1]<0.1133) && (geo_center_link_FoR[1]>0.0716) && (geo_center_link_FoR[2]<0) && (geo_center_link_FoR[2]>-0.0343)){
+                pushTriangleToTaxelList(108,list_of_taxels);              
+             }
+             else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0375) && (geo_center_link_FoR[1]>=0.0716) && (geo_center_link_FoR[1]<=0.1333) && (geo_center_link_FoR[2]>=-0.0343) && (geo_center_link_FoR[2]<=0.0)){
                 //triangle 1, 84:95
                 pushTriangleToTaxelList(84,list_of_taxels);
                 //triangle 5, 72:83
                 pushTriangleToTaxelList(72,list_of_taxels);
-            }
-
-            else if((geo_center_link_FoR[0]>0) && (geo_center_link_FoR[0]<0.0375) && (geo_center_link_FoR[1]<0.0716) && (geo_center_link_FoR[1]>0.0318) && (geo_center_link_FoR[2]<0) && (geo_center_link_FoR[2]>-0.0281)){
+             }
+             else if((geo_center_link_FoR[0]>=0.0) && (geo_center_link_FoR[0]<=0.0375) && (geo_center_link_FoR[1]>=0.0) && (geo_center_link_FoR[1]<=0.0716) && (geo_center_link_FoR[2]>=-0.0281) && (geo_center_link_FoR[2]<=0.0)){
                 //triangle 9, 36:47
                 pushTriangleToTaxelList(36,list_of_taxels);
                 //triangle 13, 48:59
                 pushTriangleToTaxelList(48,list_of_taxels);
-            }
-            else{
+             }
+             else{
                 yWarning("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, coordinates: %f %f %f, but no taxels asigned to this position. \n",skin_part,geo_center_link_FoR[0],geo_center_link_FoR[1],geo_center_link_FoR[2]); 
-            }
-            break;
-            
+             }
+             break;     
              
           default:  
             yWarning("OdeSdlSimulation::mapPositionIntoTaxelList: WARNING: contact at part: %d, but no taxel resolution implemented for this skin part. \n",skin_part); 
