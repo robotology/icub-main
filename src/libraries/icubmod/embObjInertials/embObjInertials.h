@@ -13,7 +13,6 @@
 
 #include <yarp/dev/DeviceDriver.h>
 #include <yarp/dev/IAnalogSensor.h>
-#include <iCub/DebugInterfaces.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
 #include <string>

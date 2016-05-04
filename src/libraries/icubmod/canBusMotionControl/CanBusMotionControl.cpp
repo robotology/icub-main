@@ -2374,7 +2374,6 @@ ImplementTorqueControl(this),
 ImplementImpedanceControl(this),
 ImplementOpenLoopControl(this),
 ImplementControlMode2(this),
-ImplementDebugInterface(this),
 ImplementPositionDirect(this),
 ImplementInteractionMode(this),
 ImplementMotorEncoders(this),
@@ -2520,7 +2519,6 @@ bool CanBusMotionControl::open (Searchable &config)
     _axisImpedanceHelper = new axisImpedanceHelper(p._njoints, p._impedance_limits);
     ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
     ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
-    ImplementDebugInterface::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._rotToEncoder);
     ImplementPositionDirect::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
     ImplementInteractionMode::initialize(p._njoints, p._axisMap);
     _axisPositionDirectHelper = new axisPositionDirectHelper(p._njoints, p._axisMap, p._angleToEncoder, p._maxStep);
@@ -2580,15 +2578,6 @@ bool CanBusMotionControl::open (Searchable &config)
         this->setTorqueSource(j,p._torqueSensorId[j],p._torqueSensorChan[j]);
     }
     #endif
-
-    // debug parameters
-    for (int j=0; j<p._njoints; j++)
-        if (p._debug_params[j].enabled==true)
-        {
-            yarp::os::Time::delay(0.001);
-            for (int param_num=0; param_num<8; param_num++)
-                setDebugParameter(j,param_num,p._debug_params[j].data[param_num]);
-        }
 
     // intial value !=0 for velocity reference during trajectory generation
     for (int j = 0; j<p._njoints; j++)

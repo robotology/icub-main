@@ -18,6 +18,7 @@
  * Public License for more details
 */
 #include "dumperThread.h"
+#include <cstring>
 
 /*
  * Copyright (C) 2006 Francesco Nori
@@ -46,9 +47,6 @@ void boardDumperThread::setDevice(PolyDriver *board_d, PolyDriver *debug_d, int 
     ok &= board_d->view(imod);
     ok &= board_d->view(imot);
     ok &= board_d->view(imotenc);
-
-    if(debug_d->isValid())
-        ok &= debug_d->view(idbg);
 
     if (!ok)
     printf("Problems acquiring interfaces\n");
@@ -132,7 +130,6 @@ boardDumperThread::boardDumperThread():RateThread(500)
     trq      = 0;
     cmod     = 0;
     imod     = 0;
-    idbg     = 0;
     logFile  = 0;
     imot     = 0;
     logToFile = false;

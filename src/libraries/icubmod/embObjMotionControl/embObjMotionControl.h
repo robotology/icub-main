@@ -63,8 +63,6 @@ using namespace std;
 #include <iCub/FactoryInterface.h>
 
 
-// debug interface
-#include <iCub/DebugInterfaces.h>
 
 // ACE udp socket
 #include <ace/ACE.h>
@@ -84,8 +82,6 @@ using namespace std;
 
 
 // - public #define  --------------------------------------------------------------------------------------------------
-
-#define IMPLEMENT_DEBUG_INTERFACE
 
 #undef  VERIFY_ROP_SETIMPEDANCE     // this macro let you send setimpedence rop with signature.
                                     // if you want use this feature, you should compiled ems firmware with same macro.
@@ -253,8 +249,6 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementInteractionMode,
     public IOpenLoopControlRaw,
     public ImplementOpenLoopControl,
-    public IDebugInterfaceRaw,
-    public ImplementDebugInterface,
     public IRemoteVariablesRaw,
     public ImplementRemoteVariables,
     public IAxisInfoRaw,
