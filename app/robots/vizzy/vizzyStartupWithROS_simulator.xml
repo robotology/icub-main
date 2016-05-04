@@ -6,47 +6,40 @@
     </dependencies>
 
     <module>
-         <name>yarpidl_rosmsg</name>
-          <parameters>--name /typ@/yarpidl</parameters>
-          <node>localhost</node>
-         <tag>yarpidl_rosmsg</tag>
+        <name>yarpidl_rosmsg</name>
+        <parameters>--name /typ@/yarpidl</parameters>
+        <node>localhost</node>
     </module>
     <module>
-		<name>vizzyUpperBodyJointsSim</name>
-		<parameters></parameters>
-		<node>localhost</node>
-	<tag>upper_body_joint_state_ros_bridge</tag>
-	</module>
-	<module>
-		<name>cartesianControllerServer</name>
-		<parameters>--from server_left_arm_sim.ini</parameters>
-		<node>localhost</node>
-		<tag>cart_serv_left</tag>
-	</module>
-	<module>
-		<name>cartesianControllerServer</name>
-		<parameters>--from server_right_arm_sim.ini</parameters>
-		<node>localhost</node>
-		<tag>cart_serv_right</tag>
-	</module>
-	<module>
-		<name>cartesianSolver</name>
-		<parameters>--from solver_left_arm_sim.ini</parameters>
-		<node>localhost</node>
-		<tag>cart_solv_left</tag>
-	</module>
-	<module>
-		<name>cartesianSolver</name>
-		<parameters>--from solver_right_arm_sim.ini</parameters>
-		<node>localhost</node>
-		<tag>cart_solv_right</tag>
-	</module>
-	<module>
-		<name>vizzy_iKinGazeCtrl</name>
-		<parameters>--from config_640X480_Sim.ini</parameters>
-		<node>localhost</node>
-		<tag>cart_gaze_ctrl</tag>
-	</module>
+	<name>vizzyUpperBodyJointsSim</name>
+	<parameters></parameters>
+	<node>localhost</node>
+    </module>
+    <module>
+	<name>cartesianControllerServer</name>
+	<parameters>--from server_left_arm_sim.ini</parameters>
+	<node>localhost</node>
+    </module>
+    <module>
+	<name>cartesianControllerServer</name>
+	<parameters>--from server_right_arm_sim.ini</parameters>
+	<node>localhost</node>
+    </module>
+    <module>
+	<name>cartesianSolver</name>
+	<parameters>--from solver_left_arm_sim.ini</parameters>
+	<node>localhost</node>
+    </module>
+    <module>
+	<name>cartesianSolver</name>
+	<parameters>--from solver_right_arm_sim.ini</parameters>
+	<node>localhost</node>
+    </module>
+    <module>
+	<name>vizzy_iKinGazeCtrl</name>
+	<parameters>--from config_640X480_Sim.ini</parameters>
+	<node>localhost</node>
+    </module>
 
     <module>
         <name>fixationPointStatusBridge</name>
