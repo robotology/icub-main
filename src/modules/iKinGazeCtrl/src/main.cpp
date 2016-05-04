@@ -84,8 +84,8 @@ Read more on <a
 href="http://wiki.icub.org/wiki/ControlBoard_configuration_file#Shifts">Shifts
 Factors</a>. 
 
-\note A video on iCub gazing at a target can be seen <a 
-      href="http://www.youtube.com/watch?v=ZF3LOlg4fuA">here</a>.
+\note A video on iCub gazing can be seen <a 
+      href="https://youtu.be/I4ZKfAvs1y0">here</a>.
 
 \section lib_sec Libraries 
 - YARP libraries. 
