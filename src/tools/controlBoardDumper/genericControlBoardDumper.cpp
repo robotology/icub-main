@@ -272,60 +272,6 @@ bool GetTrqRefs::getData(double *e)
     return 0;
 }
 
-void GetRotorPosition::setInterface(IDebugInterface *i)
-{
-    idbg = i;
-}
-
-bool GetRotorPosition::getData(double *e)
-{
-  //fprintf(stderr, "Entering getTrqs\n");
-  if (idbg)
-    {
-//      for (int i=0; i<6; i++) idbg->getRotorPosition(i,&(e[i]));
-   //   idbg->getRotorPositions(e);
-      return 1;
-    }
-  else
-    return 0;
-}
-
-void GetRotorSpeed::setInterface(IDebugInterface *i)
-{
-    idbg = i;
-}
-
-bool GetRotorSpeed::getData(double *e)
-{
-  //fprintf(stderr, "Entering getTrqErrs\n");
-  if (idbg)
-    {
-//      for (int i=0; i<6; i++) idbg->getRotorSpeed(i,&(e[i]));
- //     idbg->getRotorSpeeds(e);
-      return 1;
-    }
-  else
-    return 0;
-}
-
-void GetRotorAcceleration::setInterface(IDebugInterface *i)
-{
-    idbg = i;
-}
-
-bool GetRotorAcceleration::getData(double *e)
-{
-  //fprintf(stderr, "Entering getTrqs\n");
-  if (idbg)
-    {
-//      for (int i=0; i<6; i++) idbg->getRotorAcceleration(i,&(e[i]));
- //     idbg->getRotorAccelerations(e);
-      return 1;
-    }
-  else
-    return 0;
-}
-
 void GetMotEncs::setInterface(IMotorEncoders *i)
 {
     imotencs = i;

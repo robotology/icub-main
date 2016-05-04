@@ -424,11 +424,6 @@ private:
     GetTrqs    myGetTrqs;
     GetTrqRefs myGetTrqRefs;
     GetTrqErrs myGetTrqErrs;
-    //debug
-    IDebugInterface *idbg;
-    GetRotorPosition     myGetRotorPoss;
-    GetRotorSpeed        myGetRotorVels;
-    GetRotorAcceleration myGetRotorAccs;
     //modes
     IControlMode2       *icmod;
     IInteractionMode    *iimod;
@@ -444,7 +439,6 @@ public:
         ipid=0;
         iamp=0;
         itrq=0;
-        idbg=0;
         icmod=0;
         iimod=0;
     }
@@ -794,83 +788,6 @@ public:
                             myDumper[i].setGetter(&myGetTrqErrs);
                         }
                 }
-                else if (dataToDump[i] == "getRotorPositions")
-                {
-                    {
-                        if (idbg==0 && ddDebug.isValid()) ddDebug.view(idbg);
-                        if (idbg!=0)
-                        {
-                            yInfo("Initializing a getRotorPosition thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
-                            myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetRotorPoss.setInterface(idbg);
-                            if (ddDebug.view(istmp))
-                            {
-                                yInfo("getRotorPositions::The time stamp initalization interfaces was successfull! \n");
-                                myGetRotorPoss.setStamp(istmp);
-                            }
-                            else
-                                yError("Problems getting the time stamp interfaces \n");
-                               
-                            myDumper[i].setGetter(&myGetRotorPoss);
-                        }
-                        else
-                        {
-                            yError("Debug Interface not available, cannot dump %s.\n", dataToDump[i].c_str());
-                            return false;
-                        }
-                    }
-                }
-                else if (dataToDump[i] == "getRotorSpeeds")
-                    {
-                        if (idbg==0 && ddDebug.isValid()) ddDebug.view(idbg);
-                        if (idbg!=0)
-                        {
-                            yInfo("Initializing a getRotorSpeed thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
-                            myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetRotorVels.setInterface(idbg);
-                            if (ddDebug.view(istmp))
-                            {
-                                yInfo("getRotorSpeeds::The time stamp initalization interfaces was successfull! \n");
-                                myGetRotorVels.setStamp(istmp);
-                            }
-                            else
-                                yError("Problems getting the time stamp interfaces \n");
-                               
-                            myDumper[i].setGetter(&myGetRotorVels);
-                        }
-                        else
-                        {
-                            printf("Debug Interface not available, cannot dump %s.\n", dataToDump[i].c_str());
-                            return false;
-                        }
-                    }
-                else if (dataToDump[i] == "getRotorAccelerations")
-                    {
-                        if (idbg==0 && ddDebug.isValid()) ddDebug.view(idbg);
-                        if (idbg!=0)
-                        {
-                            yInfo("Initializing a getRotorAcceleration thread\n");
-                            myDumper[i].setDevice(&ddBoard, &ddDebug, rate, portPrefix, dataToDump[i], logToFile);
-                            myDumper[i].setThetaMap(thetaMap, nJoints);
-                            myGetRotorAccs.setInterface(idbg);
-                            if (ddDebug.view(istmp))
-                            {
-                                yInfo("getRotorAccelerations::The time stamp initalization interfaces was successfull! \n");
-                                myGetRotorAccs.setStamp(istmp);
-                            }
-                            else
-                                yError("Problems getting the time stamp interfaces \n");
-                               
-                            myDumper[i].setGetter(&myGetRotorAccs);
-                        }
-                        else
-                        {
-                            printf("Debug Interface not available, cannot dump %s.\n", dataToDump[i].c_str());
-                            return false;
-                        }
-                    }
                 else if (dataToDump[i] == "getTemperatures")
                 {
                     if (ddBoard.view(imotenc))

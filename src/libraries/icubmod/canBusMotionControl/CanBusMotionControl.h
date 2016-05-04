@@ -36,7 +36,6 @@
 #include <yarp/dev/IAnalogSensor.h>
 #include <yarp/dev/CanBusInterface.h>
 #include <yarp/dev/PreciselyTimed.h>
-#include <iCub/DebugInterfaces.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
 #include <string>
@@ -659,7 +658,6 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public IVelocityControl2Raw,
             public IAmplifierControlRaw,
             public IControlCalibrationRaw,
-            public IDebugInterfaceRaw,
             public IControlLimits2Raw,
             public ITorqueControlRaw,
             public IImpedanceControlRaw,
@@ -684,7 +682,6 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementImpedanceControl,
             public ImplementOpenLoopControl,
             public ImplementControlMode2,
-            public ImplementDebugInterface,
             public IInteractionModeRaw,
             public ImplementInteractionMode,
             public IRemoteVariablesRaw,

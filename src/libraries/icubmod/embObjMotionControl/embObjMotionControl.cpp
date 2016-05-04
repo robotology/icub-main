@@ -808,9 +808,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementControlMode2::initialize(_njoints, _axisMap);
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
     ImplementVelocityControl2::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-#ifdef IMPLEMENT_DEBUG_INTERFACE
-    ImplementDebugInterface::initialize(_njoints, _axisMap, _angleToEncoder, NULL, NULL); //to deprecate!
-#endif
     ImplementControlLimits2::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
     ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, NULL, _newtonsToSensor);
     ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, NULL, _newtonsToSensor);

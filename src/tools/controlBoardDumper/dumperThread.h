@@ -64,7 +64,6 @@ private:
   IControlMode2  *cmod;
   IInteractionMode *imod;
   IMotor          *imot;
-  IDebugInterface *idbg;
 
   int numberOfJoints;
   double *data;
