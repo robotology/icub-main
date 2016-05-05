@@ -61,9 +61,12 @@ include_directories(${GLUT_INCLUDE_DIRS}
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
-# Set defines
+# qt definitions
+add_definitions(${QT_DEFINITIONS})
 # import math symbols from standard cmath
-add_definitions(${QT_DEFINITIONS} -D_USE_MATH_DEFINES)
+add_definitions(-D_USE_MATH_DEFINES)
+# disable linking pragmas from glut.h
+add_definitions(-DGLUT_NO_LIB_PRAGMA)
 
 # Compile and link
 add_executable(iCubGui WIN32 ${iCubGui_HDRS}

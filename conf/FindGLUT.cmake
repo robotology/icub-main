@@ -42,14 +42,20 @@ set(CMAKE_MODULE_PATH "")
 set(GLUT_DIR $ENV{GLUT_DIR})
 
 #message(${GLUT_DIR})
-	
-if (WIN32)
-    FIND_PATH(GLUT_INCLUDE_DIR NAMES GL/glut.h 
-    PATHS ${GLUT_DIR})
-  FIND_LIBRARY(GLUT_LIBRARIES NAMES glut glut32
-    PATHS
-    ${GLUT_DIR}
-	)
+
+if(WIN32)
+    find_path(GLUT_INCLUDE_DIR NAMES GL/glut.h
+              PATHS ${GLUT_DIR})
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        find_library(GLUT_LIBRARIES
+                     NAMES glut glut64
+                     PATHS ${GLUT_DIR})
+    else()
+        find_library(GLUT_LIBRARIES
+                     NAMES glut glut32
+                     PATHS ${GLUT_DIR})
+    endif()
+
 	#message(${GLUT_LIBRARIES})
 	if (GLUT_INCLUDE_DIR AND GLUT_LIBRARIES)
 		set(GLUT_FOUND TRUE CACHE BOOL "GLUT found?") 
