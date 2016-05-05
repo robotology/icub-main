@@ -11,6 +11,7 @@
 <param name="NetworkId">                  TORSO         </param>       
 <param name="CanMyAddress"> 0             </param>       
 <param name="CanPollingInterval">         10            </param>       
+<param name="sharedCanPeriod"> 10 </param>
 <param name="CanTimeout">   500           </param>       
 <param name="CanTxTimeout"> 500           </param>       
 <param name="CanRxTimeout"> 500           </param>       
@@ -55,7 +56,9 @@
 <param name="jntPosMax">          50            30            70            0             </param>       
 <param name="motorOverloadCurrents">     7000          7000          7000          0             </param>       
 <param name="motorPwmLimit">             1333          1333          1333          0      </param>
-</group>       
+<param name="jntVelMax">                 100           100           100           0      </param>
+<param name="maxPosStep">                10            10            10            0      </param>
+</group>
  
 <group name="POS_PIDS">      
 <param name="kp">           23547         23547         23547         0             </param>
