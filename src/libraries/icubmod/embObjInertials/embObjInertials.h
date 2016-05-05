@@ -43,7 +43,8 @@ namespace yarp {
 #include "serviceParser.h"
 
 
-#define EMBOBJINERTIALS_USESERVICEPARSER
+#define EMBOBJINERTIALS_PUBLISH_OLDSTYLE
+
 
 // -- class embObjInertials
 class yarp::dev::embObjInertials:       public yarp::dev::IAnalogSensor,
@@ -53,9 +54,14 @@ class yarp::dev::embObjInertials:       public yarp::dev::IAnalogSensor,
 
 public:
 
+
+#if defined(EMBOBJINERTIALS_PUBLISH_OLDSTYLE)
+    // 6 channels because we have (pos, type, t, x, y, z)
+    enum { inertials_Channels = 6, inertials_FormatData = 16, inertials_maxNumber = eOas_inertials_maxnumber };
+#else
     // 4 channels because we have (t, x, y, z)
-//    enum { inertials_Channels = 4, inertials_FormatData = 16, inertials_maxNumber = eoas_inertial1_pos_max_numberof+1 };
     enum { inertials_Channels = 4, inertials_FormatData = 16, inertials_maxNumber = eOas_inertials_maxnumber };
+#endif
 
 public:
 
@@ -83,6 +89,7 @@ public:
 private:
 
     char boardIPstring[20];
+    eOipv4addr_t ipv4addr;
 
     TheEthManager* ethManager;
     EthResource* res;
@@ -103,16 +110,12 @@ private:
 
     vector<double> analogdata;
 
-//    uint8_t _fromInertialPos2DataIndexAccelerometers[eoas_inertial1_pos_max_numberof];
-//    uint8_t _fromInertialPos2DataIndexGyroscopes[eoas_inertial1_pos_max_numberof];
-
     short status;
     double timeStamp;
 
 private:
 
     // for all
-    bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
     bool fromConfig(yarp::os::Searchable &config);
     bool initRegulars();
     void cleanup(void);
@@ -120,16 +123,14 @@ private:
     // not used ...
     bool isEpManagedByBoard();
 
-
     // for inertials
-    //bool configServiceInertials(Searchable& globalConfig);
     bool sendConfig2MTBboards(yarp::os::Searchable &config);
-//    eOas_inertial1_position_t getLocationOfInertialSensor(yarp::os::ConstString &strpos);
 
 
     // for ??
     void resetCounters();
     void getCounters(unsigned int &saturations, unsigned int &errors, unsigned int &timeouts);
+
 };
 
 
