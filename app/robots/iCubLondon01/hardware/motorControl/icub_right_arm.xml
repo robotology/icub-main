@@ -11,6 +11,7 @@
 <param name="NetworkId">                  RIGHT_ARM     </param>       
 <param name="CanMyAddress"> 0             </param>       
 <param name="CanPollingInterval">         10            </param>       
+<param name="sharedCanPeriod"> 10 </param>
 <param name="CanTimeout">   500           </param>       
 <param name="CanTxTimeout"> 500           </param>       
 <param name="CanRxTimeout"> 500           </param>       
@@ -55,6 +56,8 @@
 <param name="jntPosMax">          10            161           75            106           90            25            25            60            </param>       
 <param name="motorOverloadCurrents">     7000          7000          7000          7000          500           800           800           800    </param>
 <param name="motorPwmLimit">             1333          1333          1333          1333         1333          1333          1333          1333    </param>
+<param name="jntVelMax">                 100           100           100           100          100           100           100           100     </param>
+<param name="maxPosStep">                10            10            10           10            10            10            10            10      </param>
 </group>       
  
 <group name="POS_PIDS">      

@@ -2,7 +2,7 @@
 <devices>
 	<device name="left_foot_as_wrapper" type="analogServer">
 		<param name="period">       10  				</param>
-		<param name="deviceId">     left_foot			</param>
+		<param name="name">     /icub/left_foot/analog:o			</param>
 		
 		<action phase="startup" level="5" type="attach">
 		    <paramlist name="networks">
