@@ -13,6 +13,7 @@
       <action phase="startup" level="5" type="attach">
          <paramlist name="networks">
             <elem name="left_leg_joints">  left_leg_mc </elem>
+            <elem name="Calibrator">  left_leg_calibrator </elem>
          </paramlist>
       </action>
 

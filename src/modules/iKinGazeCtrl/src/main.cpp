@@ -1,4 +1,4 @@
-/* 
+/*
  * Copyright (C) 2010 RobotCub Consortium, European Commission FP6 Project IST-004370
  * Author: Ugo Pattacini, Alessandro Roncone
  * email:  ugo.pattacini@iit.it, alessandro.roncone@iit.it
@@ -16,240 +16,240 @@
  * Public License for more details
 */
 
-/** 
-\defgroup iKinGazeCtrl iKinGazeCtrl 
- 
+/**
+\defgroup iKinGazeCtrl iKinGazeCtrl
+
 @ingroup icub_module
- 
+
 Gaze controller based on iKin.
 
 Copyright (C) 2010 RobotCub Consortium
- 
+
 Authors: Ugo Pattacini, Alessandro Roncone
 
 CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 \section intro_sec Description
 
-This module provides a controller for the iCub gaze capable of 
-steering the neck and the eyes independently performing 
-saccades, pursuit, vergence, OCR (oculo-collic reflex) and VOR 
-(vestibulo-ocular reflex relying on inertial data). 
- 
-The controller can be seen as cartesian gaze controller since it
-receives as input a 3D position in the task space. Nonetheless, 
-further command modalities are available: 1) the coordinates
-(u,v) of just one pixel in the image plane along with a guessed 
-component z in the eye's reference frame can be provided, or 
-alternatively the vergence angle; 2) the position of the target 
-within the two image planes can be converted in the 3D task 
-space using the monocular approach coupled with a pid on the 
-component z; 3) the head-centered azimuth and elevation angles 
-along with the vergence angle can be given to the module both in 
-absolute and relative mode. 
+This module provides a controller for the iCub gaze capable of
+steering the neck and the eyes independently performing
+saccades, pursuit, vergence, OCR (oculo-collic reflex) and VOR
+(vestibulo-ocular reflex relying on inertial data).
 
-Moreover, this module also implements the server part of the <a 
+The controller can be seen as cartesian gaze controller since it
+receives as input a 3D position in the task space. Nonetheless,
+further command modalities are available: 1) the coordinates
+(u,v) of just one pixel in the image plane along with a guessed
+component z in the eye's reference frame can be provided, or
+alternatively the vergence angle; 2) the position of the target
+within the two image planes can be converted in the 3D task
+space using the monocular approach coupled with a pid on the
+component z; 3) the head-centered azimuth and elevation angles
+along with the vergence angle can be given to the module both in
+absolute and relative mode.
+
+Moreover, this module also implements the server part of the <a
 href="http://wiki.icub.org/yarpdoc/classyarp_1_1dev_1_1IGazeControl.html">Gaze
-Control Interface</a>. For a tutorial on how to use the 
-interface, please go \ref icub_gaze_interface "here". 
- 
-\note If the torso is not detected alive then the module will 
+Control Interface</a>. For a tutorial on how to use the
+interface, please go \ref icub_gaze_interface "here".
+
+\note If the torso is not detected alive then the module will
       try to keep on working with just the head part.
- 
-\note <b>If you're going to use this controller for your work, 
+
+\note <b>If you're going to use this controller for your work,
       please quote it within any resulting publication</b>:
       Roncone A., Pattacini U., Metta G. & Natale L.,
       "A Cartesian 6-DoF Gaze Controller for Humanoid Robots",
       <i>Proceedings of Robotics: Science and Systems</i>,
-      Ann Arbor, USA (MI), June 18-22, 2016.
- 
-<b>Reminder</b> \n 
-If you experience a slow speed motion, please check the shift 
-factors settings within your low-level configuration file of the 
-head part: they should be properly tuned. Usually a value of 8 
-is enough. 
- 
+      Ann Arbor, MI, June 18-22, 2016.
+
+<b>Reminder</b> \n
+If you experience a slow speed motion, please check the shift
+factors settings within your low-level configuration file of the
+head part: they should be properly tuned. Usually a value of 8
+is enough.
+
 Rule: a lower shift factor allows to yield an higher joint speed
 and at the same time it increases the value of minimum speed
-that can be executed. 
- 
+that can be executed.
+
 Example: look in the file <i>icub_head_torso.ini</i> of your
-robot setup; you should find something similar to: 
-\code 
-[VELOCITY] 
+robot setup; you should find something similar to:
+\code
+[VELOCITY]
 Shifts 8 8 8 8 8 8 ...
-\endcode 
- 
-Read more on <a 
+\endcode
+
+Read more on <a
 href="http://wiki.icub.org/wiki/ControlBoard_configuration_file#Shifts">Shifts
-Factors</a>. 
+Factors</a>.
 
-\note A video on iCub gazing at a target can be seen <a 
-      href="http://www.youtube.com/watch?v=ZF3LOlg4fuA">here</a>.
+\note A video on iCub gazing can be seen <a
+      href="https://youtu.be/I4ZKfAvs1y0">here</a>.
 
-\section lib_sec Libraries 
-- YARP libraries. 
-- \ref iKin "iKin" library (it requires IPOPT lib: see the <a 
+\section lib_sec Libraries
+- YARP libraries.
+- \ref iKin "iKin" library (it requires IPOPT lib: see the <a
   href="http://wiki.icub.org/wiki/Installing_IPOPT">wiki</a>).
 
 \section parameters_sec Parameters
 --context \e dir
-- Resource finder default searching directory for configuration 
+- Resource finder default searching directory for configuration
   files; if not specified, \e iKinGazeCtrl is assumed.
- 
+
 --from \e file
-- Resource finder default configuration file; if not specified, 
+- Resource finder default configuration file; if not specified,
   \e config.ini is assumed.
- 
---name \e ctrlName 
-- The parameter \e ctrlName identifies the controller's name; 
+
+--name \e ctrlName
+- The parameter \e ctrlName identifies the controller's name;
   all the open ports will be tagged with the prefix
   /<ctrlName>. If not specified, \e iKinGazeCtrl is assumed.
- 
---robot \e name 
+
+--robot \e name
 - The parameter \e name selects the robot name to connect to; if
   not specified, \e icub is assumed.
- 
---head \e name 
+
+--head \e name
 - The parameter \e name selects the robot's head port to connect
   to; if not specified, \e head is assumed.
 
---torso \e name 
-- The parameter \e name selects the robot's torso port to 
+--torso \e name
+- The parameter \e name selects the robot's torso port to
   connect to; if not specified, \e torso is assumed. The special
   string \e disabled can be used to skip opening the torso
   device.
- 
+
 --trajectory_time::neck \e time
-- Specify the neck trajectory execution time in point-to-point 
+- Specify the neck trajectory execution time in point-to-point
   movements [expressed in seconds]; by default \e time is 0.75
   seconds. (Tneck cannot be set equal or lower than Teyes).
- 
+
 --trajectory_time::eyes \e time
-- Specify the eyes trajectory execution time in point-to-point 
+- Specify the eyes trajectory execution time in point-to-point
   movements [expressed in seconds]; by default \e time is 0.25
   seconds.
- 
---cameras::context \e dir 
-- The parameter \e dir specifies the context used to locate the 
+
+--cameras::context \e dir
+- The parameter \e dir specifies the context used to locate the
   cameras parameters file (see below).
- 
---cameras::file \e file 
-- The parameter \e file specifies the file name used to read  
+
+--cameras::file \e file
+- The parameter \e file specifies the file name used to read
   cameras parameters.
- 
---saccades \e switch 
+
+--saccades \e switch
 - Enable/disable saccadic movements; the parameter \e switch can
   be therefore ["on"|"off"], being "on" by default.
- 
+
 --neck_position_control \e switch
-- Enable/disable low-level position control of the neck; the 
+- Enable/disable low-level position control of the neck; the
   parameter \e switch can be therefore ["on"|"off"], being "on"
   by default.
- 
+
 --imu::mode \e switch
 - Enable/disable stabilization using IMU data; the parameter
   \e switch can be therefore ["on"|"off"], being "on"
   by default.
- 
+
 --imu::source_port_name \e name
 - Allow specifying a different source port for the IMU data
-  (see IMU filtering tools such as e.g. \ref imuFilter). 
- 
+  (see IMU filtering tools such as e.g. \ref imuFilter).
+
 --imu::stabilization_gain \e gain
-- Specify the integral gain (in [1/s]) used for gaze  
+- Specify the integral gain (in [1/s]) used for gaze
   stabilization; the \e gain is 11.0 [1/s] by default.
- 
+
 --imu::gyro_noise_threshold \e thres
-- Specify a different threshold \e thres given in [deg/s] to  
+- Specify a different threshold \e thres given in [deg/s] to
   filter out the residual bias in gyro readouts.
- 
+
 --imu::vor \e gain
 - Specify the contribution of the vestibulo-ocular reflex (VOR)
   in computing the final counter-rotation of the eyes due to
   neck rotation. To turn off the VOR just set the \e gain equal
   to 0.0. By default \e gain is 1.0, that means <i>"full
   contribution"</i>. If <i>imu::mode</i> is "off", then the gain
-  is 0.0 by default. Values of the gain greater than 1.0 mean  
+  is 0.0 by default. Values of the gain greater than 1.0 mean
   <i>"contribution amplified"</i>.
- 
+
 --ocr \e gain
-- Specify the contribution of the oculo-collic reflex (OCR) in 
+- Specify the contribution of the oculo-collic reflex (OCR) in
   computing the counter-rotation of the eyes due to neck
   rotation. To turn off the OCR just set the \e gain equal to
-  0.0. Default values are 0.0 if <i>imu::mode</i> is "off", 1.0 
-  otherwise.  
- 
---ping_robot_tmo \e tmo 
+  0.0. Default values are 0.0 if <i>imu::mode</i> is "off", 1.0
+  otherwise.
+
+--ping_robot_tmo \e tmo
 - The parameter \e tmo is the timeout (in seconds) that allows
-  starting up the robot before connecting to it; by default we  
+  starting up the robot before connecting to it; by default we
   have a timeout of 40.0 [s].
- 
+
 --eye_tilt::min \e min
-- The parameter \e min specifies the minimum eye tilt angle 
+- The parameter \e min specifies the minimum eye tilt angle
   [deg] in order to prevent the eye from being covered by the
   eyelid (when they're wide open) while moving; default value is
-  -12 [deg].  
- 
+  -12 [deg].
+
 --eye_tilt::max \e max
-- The parameter \e max specifies the maximum eye tilt angle 
+- The parameter \e max specifies the maximum eye tilt angle
   [deg] in order to prevent the eye from being covered by the
   eyelid (when they're wide open) while moving; default value is
-  15 [deg].  
- 
+  15 [deg].
+
 --min_abs_vel \e vel
-- The parameter \e vel specifies the minimum absolute velocity 
+- The parameter \e vel specifies the minimum absolute velocity
   that can be achieved by the robot [deg/s] due to the
   approximation performed while delivering data over the
   network. By default this value is 0.0 having no result on the
   controller's operations. In case it is different from 0.0, the
   controller will implement a bang-bang approach whenever the
   velocity to be delivered goes under the minimum threshold.
- 
---headV2 
+
+--headV2
 - When this options is specified then the kinematic structure of
   the hardware v2 of the head is referred.
- 
+
 --verbose
 - Enable some output print-out.
- 
---tweak::file \e file 
-- The parameter \e file specifies the file name (located in 
+
+--tweak::file \e file
+- The parameter \e file specifies the file name (located in
   module context) used to read/write options that are tweakable
   by the user; if not provided, \e tweak.ini is assumed.
- 
---tweak::overwrite \e switch 
-- If "on", at startup default values and cameras values 
+
+--tweak::overwrite \e switch
+- If "on", at startup default values and cameras values
   retrieved from file will be overwritten by those values
   contained in the tweak file. The \e switch is "on" by default.
- 
-\section portsa_sec Ports Accessed
- 
-The ports the module is connected to: e.g. 
-/icub/head/command:i and so on. 
 
-\section portsc_sec Ports Created 
- 
+\section portsa_sec Ports Accessed
+
+The ports the module is connected to: e.g.
+/icub/head/command:i and so on.
+
+\section portsc_sec Ports Created
+
 There are different ways of commanding a new target fixation
-point: 
- 
-- by sending the absolute 3D position to gaze at in the task 
+point:
+
+- by sending the absolute 3D position to gaze at in the task
   space through /<ctrlName>/xd:i port.
-- by localizing the target in just one image plane and then 
+- by localizing the target in just one image plane and then
   sending its coordinates together with a guessed component z
   in the eye's reference frame to the /<ctrlName>/mono:i port.
   Alternatively, the z component can be replaced by the vergence
   angle.
   <b>In this mode the cameras intrinsic parameters are
   required</b>.
-- by localizing the target in the two image planes and thus 
+- by localizing the target in the two image planes and thus
   sending its coordinates to the /<ctrlName>/stereo:i port. This
   strategy employs the monocular approach along with a pid that
   varies the component z incrementally according to the actual
   error; to achieve that it's required to feed continuosly the
   port with new feedback while converging to the target. <b>In
   this mode the cameras intrinsic parameters are required</b>.
-- by sending the head-centered azimuth/elevation couple in 
+- by sending the head-centered azimuth/elevation couple in
   degrees wrt either to the current head position or to the
   absolute head position (computed with the robot looking
   straight ahead and all neck and eyes encoders zeroed).
@@ -262,16 +262,16 @@ point:
   instance as delta wrt the current one may differ from what
   expected beacuse what is actually achieved is the
   corresponding 3D point.
- 
-The module creates the usual ports required for the 
-communication with the robot (through interfaces) and the 
-following ports: 
- 
-- \e /<ctrlName>/xd:i receives the target fixation point. 
+
+The module creates the usual ports required for the
+communication with the robot (through interfaces) and the
+following ports:
+
+- \e /<ctrlName>/xd:i receives the target fixation point.
   It accepts 3 double (also as a Bottle object) for xyz
   coordinates.
 
-- \e /<ctrlName>/mono:i receives the current target position 
+- \e /<ctrlName>/mono:i receives the current target position
   expressed in one image plane. The input data format is the
   Bottle [type u v z], where \e type can be "left" or "right",
   <i> (u,v) </i> is the pixel coordinates and \e z is the
@@ -279,32 +279,32 @@ following ports:
   alternative command modality employs the vergence given in
   degrees in place of the z-component and its format is: [type u
   v "ver" ver].
- 
-- \e /<ctrlName>/stereo:i receives the current target position 
+
+- \e /<ctrlName>/stereo:i receives the current target position
   expressed in image planes. It accepts 4 double (also as a
   Bottle object) in this order: [ul vl ur vr].
- 
-- \e /<ctrlName>/angles:i receives the current target position 
+
+- \e /<ctrlName>/angles:i receives the current target position
   expressed as azimuth/elevation/vergence triplet in degrees. It
   accepts 1 string and 3 doubles (also as a Bottle object) in
   this order: [mode azi ele ver], where \e mode can be \e rel or
   \e abs. A positive azimuth will turn the gaze to the right,
   whereas a positive elevation will move the gaze upward.
- 
-- \e /<ctrlName>/x:o returns the actual fixation point (Vector 
+
+- \e /<ctrlName>/x:o returns the actual fixation point (Vector
   of 3 double). Units in meters.
- 
-- \e /<ctrlName>/q:o returns the actual joints configuration 
+
+- \e /<ctrlName>/q:o returns the actual joints configuration
   during movement (Vector of 9 double). The order for torso
   angles is the one defined by kinematic chain (reversed order).
   Useful in conjunction with the \ref iKinGazeView "viewer".
   Units in degrees.
 
-- \e /<ctrlName>/angles:o returns the current azimuth/elevation 
+- \e /<ctrlName>/angles:o returns the current azimuth/elevation
   couple wrt to the absolute head position, together with the
   current vergence (Vector of 3 double). Units in degrees.
- 
-- \e /<ctrlName>/events:o streams out the event associated to 
+
+- \e /<ctrlName>/events:o streams out the event associated to
   the controller's state. \n Available events are:
    - "motion-onset" <time>: sent out at the beginning of the
      motion; comprise the time instant of the source when the
@@ -325,7 +325,7 @@ following ports:
    - "stabilization-on" <time>: notify that gaze stabilization
      has been turned on; comprise the time instant of the source
      when the event took place.
-   - "stabilization-off" <time>: notify that gaze stabilization 
+   - "stabilization-off" <time>: notify that gaze stabilization
      has been turned off; comprise the time instant of the
      source when the event took place.
    - "closing" <time>: sent out when the controller is being
@@ -337,11 +337,11 @@ following ports:
    - "resumed" <time>: sent out when the controller is resumed;
      comprise the time instant of the source when the event took
      place.
-   - "comm-timeout" <time>: sent out when the controller gets 
+   - "comm-timeout" <time>: sent out when the controller gets
      suspended because of a communication timeout; comprise the
      time instant of the source when the event took place.
- 
-- \e /<ctrlName>/rpc remote procedure call. \n 
+
+- \e /<ctrlName>/rpc remote procedure call. \n
     Recognized remote commands (be careful, <b>commands dealing
     with geometric projections will only work if the cameras
     intrinsic parameters are provided</b>):
@@ -480,42 +480,42 @@ following ports:
     - [run]: resume the module.
     - [status]: returns "running" or "suspended".
     - [quit]: quit the module.
- 
-\note When the tracking mode is active and the controller has 
+
+\note When the tracking mode is active and the controller has
       reached the target, it keeps on sending velocities to the
       head in order to compensate for any movements induced by
       the torso. If tracking mode is switched off, the
       controller automatically disconnects once the target is
       attained and reconnects at the next requested target. The
       controller starts by default in non-tracking mode.
- 
-\section coor_sys_sec Coordinate System 
+
+\section coor_sys_sec Coordinate System
 Positions (meters) refer to the root reference frame attached to
-the waist as in the <a 
+the waist as in the <a
 href="http://wiki.icub.org/wiki/ICubForwardKinematics">wiki</a>.
 
 \section in_files_sec Input Data Files
 None.
 
-\section out_data_sec Output Data Files 
-None. 
- 
+\section out_data_sec Output Data Files
+None.
+
 \section conf_file_sec Camera Configuration File
 A configuration file passed through \e --cameras::file contains
-the fields required to specify the cameras intrinsic parameters 
-along with a roto-translation matrix appended to the eye 
+the fields required to specify the cameras intrinsic parameters
+along with a roto-translation matrix appended to the eye
 kinematic (see the iKinChain::setHN method) in order to achieve
-the alignment with the optical axes compensating for possible 
-unknown offsets. 
- 
-The final roto-translation matrix is meaningful only as result 
-of the calibration of the cameras extrinsic parameters that can 
-be obtained for instance through the \ref icub_stereoCalib 
-module. 
- 
-Example: 
- 
-\code 
+the alignment with the optical axes compensating for possible
+unknown offsets.
+
+The final roto-translation matrix is meaningful only as result
+of the calibration of the cameras extrinsic parameters that can
+be obtained for instance through the \ref icub_stereoCalib
+module.
+
+Example:
+
+\code
 [CAMERA_CALIBRATION_RIGHT]
 fx 225.904
 fy 227.041
@@ -528,18 +528,18 @@ fy 219.028
 cx 174.742
 cy 102.874
 
-[ALIGN_KIN_LEFT] 
-HN (0.0 1.0 2.0 ... 15.0)  // list of 4x4 doubles (per rows) 
+[ALIGN_KIN_LEFT]
+HN (0.0 1.0 2.0 ... 15.0)  // list of 4x4 doubles (per rows)
 
 [ALIGN_KIN_RIGHT]
-HN (0.0 1.0 2.0 ... 15.0)  // list of 4x4 doubles (per rows)  
-\endcode 
- 
+HN (0.0 1.0 2.0 ... 15.0)  // list of 4x4 doubles (per rows)
+\endcode
+
 \section tested_os_sec Tested OS
 Windows, Linux
 
 \author Ugo Pattacini, Alessandro Roncone
-*/ 
+*/
 
 #include <fstream>
 #include <iomanip>
@@ -571,13 +571,13 @@ protected:
     Solver         *slv;
     Controller     *ctrl;
     PolyDriver     *drvTorso, *drvHead;
-    ExchangeData    commData;    
+    ExchangeData    commData;
     bool            interrupting;
     bool            doSaveTweakFile;
     Mutex           mutexContext;
     Mutex           mutexTweak;
-    
-    IMUPort   imuPort;    
+
+    IMUPort   imuPort;
     RpcServer rpcPort;
 
     struct Context
@@ -592,7 +592,7 @@ protected:
         double neckAngleUserTolerance;
         double eyesBoundVer;
         Vector counterRotGain;
-        bool   saccadesOn;        
+        bool   saccadesOn;
         double saccadesInhibitionPeriod;
         double saccadesActivationAngle;
 
@@ -611,7 +611,7 @@ protected:
 
     /************************************************************************/
     PolyDriver *waitPart(const Property &partOpt, const double ping_robot_tmo)
-    {    
+    {
         string partName=partOpt.find("part").asString().c_str();
         PolyDriver *pDrv=NULL;
 
@@ -652,7 +652,7 @@ protected:
     {
         LockGuard guard(mutexContext);
         Context &context=contextMap[contextIdCnt];
-        
+
         // solver part
         slv->getCurNeckPitchRange(context.neckPitchMin,context.neckPitchMax);
         slv->getCurNeckRollRange(context.neckRollMin,context.neckRollMax);
@@ -725,7 +725,7 @@ protected:
                 if (itr!=contextMap.end())
                     contextMap.erase(itr);
             }
-    
+
             return true;
         }
         else
@@ -747,7 +747,7 @@ protected:
 
         Bottle &minVer=info.addList();
         minVer.addString("min_allowed_vergence");
-        minVer.addDouble(CTRL_RAD2DEG*commData.minAllowedVergence);        
+        minVer.addDouble(CTRL_RAD2DEG*commData.minAllowedVergence);
 
         Bottle &events=info.addList();
         events.addString("events");
@@ -952,7 +952,7 @@ protected:
         if (fout.is_open())
         {
             if (validIntrinsicsL)
-            {                
+            {
                 fout<<"[CAMERA_CALIBRATION_LEFT]"<<endl;
                 fout<<"fx "<<PrjL(0,0)<<endl;
                 fout<<"fy "<<PrjL(1,1)<<endl;
@@ -962,7 +962,7 @@ protected:
             }
 
             if (validIntrinsicsR)
-            {                
+            {
                 fout<<"[CAMERA_CALIBRATION_RIGHT]"<<endl;
                 fout<<"fx "<<PrjR(0,0)<<endl;
                 fout<<"fy "<<PrjR(1,1)<<endl;
@@ -970,7 +970,7 @@ protected:
                 fout<<"cy "<<PrjR(1,2)<<endl;
                 fout<<endl;
             }
-            
+
             fout.precision(16);
             fout<<"[ALIGN_KIN_LEFT]"<<endl;
             fout<<"HN (";
@@ -979,7 +979,7 @@ protected:
                     fout<<HNL(r,c)<<((r==HNL.rows()-1)&&(c==HNL.cols()-1)?"":" ");
             fout<<")"<<endl;
             fout<<endl;
-            
+
             fout<<"[ALIGN_KIN_RIGHT]"<<endl;
             fout<<"HN (";
             for (int r=0; r<HNR.rows(); r++)
@@ -1017,7 +1017,7 @@ public:
         double eyesTime;
         double min_abs_vel;
         double ping_robot_tmo;
-        Vector counterRotGain(2);        
+        Vector counterRotGain(2);
 
         // request high resolution scheduling
         Time::turboBoost();
@@ -1033,19 +1033,19 @@ public:
         Bottle &tweakGroup=rf.findGroup("tweak");
 
         // get params from the command-line
-        ctrlName=rf.check("name",Value("iKinGazeCtrl")).asString().c_str();        
+        ctrlName=rf.check("name",Value("iKinGazeCtrl")).asString().c_str();
         headName=rf.check("head",Value("head")).asString().c_str();
         torsoName=rf.check("torso",Value("torso")).asString().c_str();
         neckTime=trajTimeGroup.check("neck",Value(0.75)).asDouble();
         eyesTime=trajTimeGroup.check("eyes",Value(0.25)).asDouble();
         min_abs_vel=CTRL_DEG2RAD*rf.check("min_abs_vel",Value(0.0)).asDouble();
-        ping_robot_tmo=rf.check("ping_robot_tmo",Value(40.0)).asDouble();        
+        ping_robot_tmo=rf.check("ping_robot_tmo",Value(40.0)).asDouble();
 
         commData.robotName=rf.check("robot",Value("icub")).asString().c_str();
         commData.eyeTiltLim[0]=eyeTiltGroup.check("min",Value(-12.0)).asDouble();
-        commData.eyeTiltLim[1]=eyeTiltGroup.check("max",Value(15.0)).asDouble();        
+        commData.eyeTiltLim[1]=eyeTiltGroup.check("max",Value(15.0)).asDouble();
         commData.head_version=rf.check("headV2")?2.0:1.0;
-        commData.verbose=rf.check("verbose");        
+        commData.verbose=rf.check("verbose");
         commData.saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
         commData.neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
         commData.stabilizationOn=(imuGroup.check("mode",Value("on")).asString()=="on");
@@ -1055,12 +1055,12 @@ public:
 
         if (commData.stabilizationOn)
         {
-            counterRotGain[0]=imuGroup.check("vor",Value(1.0)).asDouble(); 
+            counterRotGain[0]=imuGroup.check("vor",Value(1.0)).asDouble();
             counterRotGain[1]=rf.check("ocr",Value(0.0)).asDouble();
         }
         else
         {
-            counterRotGain[0]=imuGroup.check("vor",Value(0.0)).asDouble(); 
+            counterRotGain[0]=imuGroup.check("vor",Value(0.0)).asDouble();
             counterRotGain[1]=rf.check("ocr",Value(1.0)).asDouble();
         }
 
@@ -1075,7 +1075,7 @@ public:
             camerasGroup.check("context")?
             commData.rf_cameras.setDefaultContext(camerasGroup.find("context").asString().c_str()):
             commData.rf_cameras.setDefaultContext(rf.getContext().c_str());
-            commData.rf_cameras.setDefaultConfigFile(camerasGroup.find("file").asString().c_str());            
+            commData.rf_cameras.setDefaultConfigFile(camerasGroup.find("file").asString().c_str());
             commData.rf_cameras.configure(0,NULL);
         }
 
@@ -1147,7 +1147,7 @@ public:
         imuPort.setExchangeData(&commData);
         if (commData.stabilizationOn)
         {
-            imuPort.open((commData.localStemName+"/inertial:i").c_str());        
+            imuPort.open((commData.localStemName+"/inertial:i").c_str());
             if (Network::connect(remoteInertialName.c_str(),imuPort.getName().c_str()))
                 yInfo("Receiving IMU data from %s",remoteInertialName.c_str());
             else
@@ -1633,7 +1633,7 @@ public:
                 case VOCAB4('s','t','o','r'):
                 {
                     int id;
-                    storeContext(&id);                    
+                    storeContext(&id);
                     reply.addVocab(ack);
                     reply.addInt(id);
                     return true;
@@ -1839,7 +1839,7 @@ public:
                         reply.addString("suspended");
                     else
                         reply.addString("running");
-                    return true; 
+                    return true;
                 }
 
                 //-----------------
@@ -1857,8 +1857,8 @@ public:
     {
         if (loc!=NULL)
             loc->stop();
-        
-        if (eyesRefGen!=NULL)  
+
+        if (eyesRefGen!=NULL)
             eyesRefGen->stop();
 
         if (slv!=NULL)
@@ -1875,14 +1875,14 @@ public:
 
         if (commData.port_xd!=NULL)
             if (!commData.port_xd->isClosed())
-                commData.port_xd->close(); 
+                commData.port_xd->close();
 
         if (!imuPort.isClosed())
-            imuPort.close(); 
+            imuPort.close();
 
         if (rpcPort.asPort().isOpen())
             rpcPort.close();
-        
+
         delete loc;
         delete eyesRefGen;
         delete slv;
@@ -1955,6 +1955,3 @@ int main(int argc, char *argv[])
     GazeModule mod;
     return mod.runModule(rf);
 }
-
-
-

@@ -42,6 +42,161 @@
 #endif
 
 
+#if defined(EMBOBJINERTIALS_PUBLISH_OLDSTYLE)
+
+typedef enum
+{
+    eoas_inertial1_type_none          = 0,
+    eoas_inertial1_type_accelerometer = 1,
+    eoas_inertial1_type_gyroscope     = 2
+} eOas_inertial1_type_t;
+
+enum { eoas_inertial1_pos_max_numberof = 63 };
+
+enum { eoas_inertial1_pos_offsetleft = 0, eoas_inertial1_pos_offsetright = 24, eoas_inertial1_pos_offsetcentral = 48 };
+
+typedef enum
+{
+    eoas_inertial1_pos_none                  = 0,
+
+    // left arm
+    eoas_inertial1_pos_l_hand                = 1+eoas_inertial1_pos_offsetleft,       // label 1B7    canloc = (CAN2, 14)
+    eoas_inertial1_pos_l_forearm_1           = 2+eoas_inertial1_pos_offsetleft,       // label 1B8    canloc = (CAN2, 12)
+    eoas_inertial1_pos_l_forearm_2           = 3+eoas_inertial1_pos_offsetleft,       // label 1B9    canloc = (CAN2, 13)
+    eoas_inertial1_pos_l_upper_arm_1         = 4+eoas_inertial1_pos_offsetleft,       // label 1B10   canloc = (CAN2,  9)
+    eoas_inertial1_pos_l_upper_arm_2         = 5+eoas_inertial1_pos_offsetleft,       // label 1B11   canloc = (CAN2, 11)
+    eoas_inertial1_pos_l_upper_arm_3         = 6+eoas_inertial1_pos_offsetleft,       // label 1B12   canloc = (CAN2, 10)
+    eoas_inertial1_pos_l_upper_arm_4         = 7+eoas_inertial1_pos_offsetleft,       // label 1B13   canloc = (CAN2,  8)
+    // left leg
+    eoas_inertial1_pos_l_foot_1              = 8+eoas_inertial1_pos_offsetleft,       // label 10B12  canloc = (CAN2, 13)
+    eoas_inertial1_pos_l_foot_2              = 9+eoas_inertial1_pos_offsetleft,       // label 10B13  canloc = (CAN2, 12)
+    eoas_inertial1_pos_l_lower_leg_1         = 10+eoas_inertial1_pos_offsetleft,      // label 10B8   canloc = (CAN2,  8)
+    eoas_inertial1_pos_l_lower_leg_2         = 11+eoas_inertial1_pos_offsetleft,      // label 10B9   canloc = (CAN2,  9)
+    eoas_inertial1_pos_l_lower_leg_3         = 12+eoas_inertial1_pos_offsetleft,      // label 10B10  canloc = (CAN2, 10)
+    eoas_inertial1_pos_l_lower_leg_4         = 13+eoas_inertial1_pos_offsetleft,      // label 10B11  canloc = (CAN2, 11)
+    eoas_inertial1_pos_l_upper_leg_1         = 14+eoas_inertial1_pos_offsetleft,      // label 10B1   canloc = (CAN1,  1)
+    eoas_inertial1_pos_l_upper_leg_2         = 15+eoas_inertial1_pos_offsetleft,      // label 10B2   canloc = (CAN1,  2)
+    eoas_inertial1_pos_l_upper_leg_3         = 16+eoas_inertial1_pos_offsetleft,      // label 10B3   canloc = (CAN1,  3)
+    eoas_inertial1_pos_l_upper_leg_4         = 17+eoas_inertial1_pos_offsetleft,      // label 10B4   canloc = (CAN1,  4)
+    eoas_inertial1_pos_l_upper_leg_5         = 18+eoas_inertial1_pos_offsetleft,      // label 10B5   canloc = (CAN1,  5)
+    eoas_inertial1_pos_l_upper_leg_6         = 19+eoas_inertial1_pos_offsetleft,      // label 10B6   canloc = (CAN1,  6)
+    eoas_inertial1_pos_l_upper_leg_7         = 20+eoas_inertial1_pos_offsetleft,      // label 10B7   canloc = (CAN1,  7)
+
+    // right arm
+    eoas_inertial1_pos_r_hand                = 1+eoas_inertial1_pos_offsetright,      // label 2B7    canloc = (CAN2, 14)
+    eoas_inertial1_pos_r_forearm_1           = 2+eoas_inertial1_pos_offsetright,      // label 2B8    canloc = (CAN2, 12)
+    eoas_inertial1_pos_r_forearm_2           = 3+eoas_inertial1_pos_offsetright,      // label 2B9    canloc = (CAN2, 13)
+    eoas_inertial1_pos_r_upper_arm_1         = 4+eoas_inertial1_pos_offsetright,      // label 2B10   canloc = (CAN2,  9)
+    eoas_inertial1_pos_r_upper_arm_2         = 5+eoas_inertial1_pos_offsetright,      // label 2B11   canloc = (CAN2, 11)
+    eoas_inertial1_pos_r_upper_arm_3         = 6+eoas_inertial1_pos_offsetright,      // label 2B12   canloc = (CAN2, 10)
+    eoas_inertial1_pos_r_upper_arm_4         = 7+eoas_inertial1_pos_offsetright,      // label 2B13   canloc = (CAN2,  8)
+    // right leg
+    eoas_inertial1_pos_r_foot_1              = 8+eoas_inertial1_pos_offsetright,      // label 11B12  canloc = (CAN2, 13)
+    eoas_inertial1_pos_r_foot_2              = 9+eoas_inertial1_pos_offsetright,      // label 11B13  canloc = (CAN2, 12)
+    eoas_inertial1_pos_r_lower_leg_1         = 10+eoas_inertial1_pos_offsetright,     // label 11B8   canloc = (CAN2,  8)
+    eoas_inertial1_pos_r_lower_leg_2         = 11+eoas_inertial1_pos_offsetright,     // label 11B9   canloc = (CAN2,  9)
+    eoas_inertial1_pos_r_lower_leg_3         = 12+eoas_inertial1_pos_offsetright,     // label 11B10  canloc = (CAN2, 10)
+    eoas_inertial1_pos_r_lower_leg_4         = 13+eoas_inertial1_pos_offsetright,     // label 11B11  canloc = (CAN2, 11)
+    eoas_inertial1_pos_r_upper_leg_1         = 14+eoas_inertial1_pos_offsetright,     // label 11B1   canloc = (CAN1,  1)
+    eoas_inertial1_pos_r_upper_leg_2         = 15+eoas_inertial1_pos_offsetright,     // label 11B2   canloc = (CAN1,  2)
+    eoas_inertial1_pos_r_upper_leg_3         = 16+eoas_inertial1_pos_offsetright,     // label 11B3   canloc = (CAN1,  3)
+    eoas_inertial1_pos_r_upper_leg_4         = 17+eoas_inertial1_pos_offsetright,     // label 11B5   canloc = (CAN1,  5)
+    eoas_inertial1_pos_r_upper_leg_5         = 18+eoas_inertial1_pos_offsetright,     // label 11B4   canloc = (CAN1,  4)
+    eoas_inertial1_pos_r_upper_leg_6         = 19+eoas_inertial1_pos_offsetright,     // label 11B6   canloc = (CAN1,  6)
+    eoas_inertial1_pos_r_upper_leg_7         = 20+eoas_inertial1_pos_offsetright,     // label 11B7   canloc = (CAN1,  7)
+
+    // central parts
+    eoas_inertial1_pos_chest_1               = 1+eoas_inertial1_pos_offsetcentral,    // 9B7
+    eoas_inertial1_pos_chest_2               = 2+eoas_inertial1_pos_offsetcentral,    // 9B8
+    eoas_inertial1_pos_chest_3               = 3+eoas_inertial1_pos_offsetcentral,    // 9B9
+    eoas_inertial1_pos_chest_4               = 4+eoas_inertial1_pos_offsetcentral,    // 9B10
+
+    eOas_inertial1_pos_jolly_1               = 60,
+    eOas_inertial1_pos_jolly_2               = 61,
+    eOas_inertial1_pos_jolly_3               = 62,
+    eOas_inertial1_pos_jolly_4               = 63
+
+} eOas_inertial1_position_t;
+
+const uint8_t fromip2indexof_thepositions[12] = { 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 3, 4 };
+
+const eOas_inertial1_position_t thepositions[5][2][16] =
+{
+    {   // none
+        {   // can1
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none
+        },
+        {   // can2
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none
+        }
+    },
+    {   // eb2
+        {   // can1
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none
+        },
+        {   // can2
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_l_upper_arm_4,   eoas_inertial1_pos_l_upper_arm_1,   eoas_inertial1_pos_l_upper_arm_3,   eoas_inertial1_pos_l_upper_arm_2,
+            eoas_inertial1_pos_l_forearm_1,     eoas_inertial1_pos_l_forearm_2,     eoas_inertial1_pos_l_hand,          eoas_inertial1_pos_none
+        }
+    },
+    {   // eb4
+        {   // can1
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none
+        },
+        {   // can2
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_r_upper_arm_4,   eoas_inertial1_pos_r_upper_arm_1,   eoas_inertial1_pos_r_upper_arm_3,   eoas_inertial1_pos_r_upper_arm_2,
+            eoas_inertial1_pos_r_forearm_1,     eoas_inertial1_pos_r_forearm_2,     eoas_inertial1_pos_r_hand,          eoas_inertial1_pos_none
+        }
+    },
+    {   // eb10
+        {   // can1
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_l_upper_leg_1,   eoas_inertial1_pos_l_upper_leg_2,   eoas_inertial1_pos_l_upper_leg_3,
+            eoas_inertial1_pos_l_upper_leg_4,   eoas_inertial1_pos_l_upper_leg_5,   eoas_inertial1_pos_l_upper_leg_6,   eoas_inertial1_pos_l_upper_leg_7,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none
+        },
+        {   // can2
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_l_lower_leg_1,   eoas_inertial1_pos_l_lower_leg_2,   eoas_inertial1_pos_l_lower_leg_3,   eoas_inertial1_pos_l_lower_leg_4,
+            eoas_inertial1_pos_l_foot_2,        eoas_inertial1_pos_l_foot_1,        eoas_inertial1_pos_none,            eoas_inertial1_pos_none
+        }
+    },
+    {   // eb11
+        {   // can1
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_r_upper_leg_1,   eoas_inertial1_pos_r_upper_leg_2,   eoas_inertial1_pos_r_upper_leg_3,
+            eoas_inertial1_pos_r_upper_leg_5,   eoas_inertial1_pos_r_upper_leg_4,   eoas_inertial1_pos_r_upper_leg_6,   eoas_inertial1_pos_r_upper_leg_7,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none
+        },
+        {   // can2
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_r_lower_leg_1,   eoas_inertial1_pos_r_lower_leg_2,   eoas_inertial1_pos_r_lower_leg_3,   eoas_inertial1_pos_r_lower_leg_4,
+            eoas_inertial1_pos_r_foot_2,        eoas_inertial1_pos_r_foot_1,        eoas_inertial1_pos_none,            eoas_inertial1_pos_none
+        }
+    }
+};
+
+#endif
+
+
 
 using namespace yarp;
 using namespace yarp::os;
@@ -54,113 +209,103 @@ inline bool NOT_YET_IMPLEMENTED(const char *txt)
     return false;
 }
 
-// generic function that checks is key1 is present in input bottle and that the result has size elements
-// return true/false
-bool embObjInertials::extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
-{
-    size++;  // size includes also the name of the parameter
-    Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
-    if (tmp.isNull())
-    {
-        yError ("%s not found\n", key1.c_str());
-        return false;
-    }
-
-    if(tmp.size()!=size)
-    {
-        yError("%s incorrect number of entries\n", key1.c_str());
-        return false;
-    }
-
-    out=tmp;
-
-    return true;
-}
-
 
 bool embObjInertials::fromConfig(yarp::os::Searchable &_config)
 {
-#if defined(EMBOBJINERTIALS_USESERVICEPARSER)
 
     if(false == parser->parseService(_config, serviceConfig))
     {
         return false;
     }
 
-    return true;
+#if defined(EMBOBJINERTIALS_PUBLISH_OLDSTYLE)
+
+    vector<eOas_inertial1_position_t> positions;
+    vector<eOas_inertial1_type_t> types;
+
+    int size = serviceConfig.inertials.size();
+    positions.resize(size, eoas_inertial1_pos_none);
+    types.resize(size, eoas_inertial1_type_none);
+
+    uint8_t ip4 = 10;
+    eo_common_ipv4addr_to_decimal(ipv4addr, NULL, NULL, NULL, &ip4);
+    if(ip4 > sizeof(fromip2indexof_thepositions))
+    {
+        yError() << "embObjInertials::fromConfig() is using a non supported IP address:" << boardIPstring;
+        return false;
+    }
+    uint8_t index = fromip2indexof_thepositions[ip4];
+
+    for(int i=0; i<size; i++)
+    {
+        eOas_inertial1_type_t type = eoas_inertial1_type_none;
+        switch(serviceConfig.inertials.at(i).type)
+        {
+            case eoas_inertial_accel_mtb_int:
+            case eoas_inertial_accel_mtb_ext:
+            {
+                type = eoas_inertial1_type_accelerometer;
+            } break;
+
+            case eoas_inertial_gyros_mtb_ext:
+            {
+                type = eoas_inertial1_type_gyroscope;
+            } break;
+
+            default:
+            {
+                type = eoas_inertial1_type_none;
+            } break;
+        }
+
+        types[i] = type;
+
+        eObrd_location_t on = serviceConfig.inertials.at(i).on;
+
+        eOas_inertial1_position_t pos = eoas_inertial1_pos_none;
+        pos = thepositions[index][on.can.port][on.can.addr];
+
+        positions[i] = pos;
+    }
+
+    // prepare analogdata
+    {
+        // must be of size: 2+ inertials_Channels*erviceConfig.inertials.size(), and 0.0-initted
+        analogdata.resize(2 + inertials_Channels*serviceConfig.inertials.size(), -1.0);
+        // format is (n, 6) { (pos, type), (t, x, y, z) }_n
+        // now: (t, x, y, z) stay -1 if nothing comes up.
+        // the others must be initted now because they dont change
+        analogdata[0] = serviceConfig.inertials.size();
+        analogdata[1] = inertials_Channels;
+        for(int i=0; i<serviceConfig.inertials.size(); i++)
+        {
+            int indexpos = 2 + i*inertials_Channels;
+            int indextype = 2 + i*inertials_Channels + 1;
+            analogdata[indexpos] = positions[i];
+            analogdata[indextype] = types[i];
+        }
+
+    }
 
 #else
 
-    Bottle xtmp;
-
-    // Analog Sensor stuff
-    Bottle config = _config.findGroup("GENERAL");
-    if (!extractGroup(config, xtmp, "Period","transmitting period of the sensors", 1))
+    // prepare analogdata
     {
-        yError() << "embObjInertials Using default value = 0 (disabled)";
-        _period = 0;
-    }
-    else
-    {
-        _period = xtmp.get(1).asInt();
-        yDebug() << "embObjInertials::fromConfig() detects embObjInertials Using value of" << _period;
+        // must be of size:  inertials_Channels*erviceConfig.inertials.size(), and -1.0-initted
+        // format is { (t, x, y, z) }_n
+        // now: (t, x, y, z) stay -1 if nothing comes up.
+        analogdata.resize(inertials_Channels*serviceConfig.inertials.size(), -1.0);
     }
 
-
-#if 0
-    if (!extractGroup(config, xtmp, "NumberOfSensors","Number of sensors managed", 1))
-    {
-        yWarning("embObjInertials: Using default value = 1 for _numofsensors\n");
-        _numofsensors = 1;
-    }
-    else
-    {
-        _numofsensors = xtmp.get(1).asInt();
-    }
 #endif
-
-
-    _numofsensors = 1;
-
-    // if we have a AS_Type_INERTIAL_MTB, then we may have more than one. for sure not zero.
-
-    {
-        Bottle tmp;
-        _numofsensors = 0;
-
-        tmp = config.findGroup("enabledAccelerometers");
-        _numofsensors += (tmp.size()-1); // sensors holds strings "enabledAccelerometers" and then all the others, thus i need a -1
-
-        tmp = config.findGroup("enabledGyroscopes");
-        _numofsensors += (tmp.size()-1); // sensors holds strings "enabledGyroscopes" and then all the others, thus i need a -1
-
-#if 0
-        if (!extractGroup(config, xtmp, "enabledAccelerometers", "Position of managed sensors expressed as strings", 1))
-        {
-            yWarning("embObjInertials: cannot find enabledAccelerometers\n");
-            _numofsensors = 1;
-        }
-        else
-        {
-            _numofsensors = xtmp.size();
-        }
-#endif
-
-    }
-
 
     return true;
-#endif
 }
 
 
 embObjInertials::embObjInertials()
 {
     analogdata.resize(0);
-
-//    memset(_fromInertialPos2DataIndexAccelerometers, 255, sizeof(_fromInertialPos2DataIndexAccelerometers));
-//    memset(_fromInertialPos2DataIndexGyroscopes, 255, sizeof(_fromInertialPos2DataIndexGyroscopes));
-
 
     timeStamp = 0;
     counterSat = 0;
@@ -214,27 +359,15 @@ bool embObjInertials::open(yarp::os::Searchable &config)
     }
 
 
-    if(false == ethManager->verifyEthBoardInfo(config, NULL, boardIPstring, sizeof(boardIPstring)))
+    if(false == ethManager->verifyEthBoardInfo(config, &ipv4addr, boardIPstring, sizeof(boardIPstring)))
     {
         yError() << "embObjInertials::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
     }
     // add specific info about this device ...
 
-    // when we split this device in three ones ... _as_type will be lost and we can move code tagged with tag__XXX0123_ in here
-
 
     // - now all other things
-
-
-//    bool ret = false;
-
-//    std::string str;
-//    if(config.findGroup("GENERAL").find("verbose").asBool())
-//        str=config.toString().c_str();
-//    else
-//        str="\n";
-//    yTrace() << str;
 
     if(NULL == parser)
     {
@@ -260,11 +393,6 @@ bool embObjInertials::open(yarp::os::Searchable &config)
 
     printServiceConfig();
 
-#if defined(EMBOBJINERTIALS_USESERVICEPARSER)
-    const eOmn_serv_parameter_t* servparam = &serviceConfig.ethservice;
-#else
-    const eOmn_serv_parameter_t* servparam = NULL;
-#endif
 
     if(!res->verifyEPprotocol(eoprot_endpoint_analogsensors))
     {
@@ -272,6 +400,7 @@ bool embObjInertials::open(yarp::os::Searchable &config)
         return false;
     }
 
+    const eOmn_serv_parameter_t* servparam = &serviceConfig.ethservice;
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_inertials, servparam, 5.0))
     {
@@ -281,21 +410,6 @@ bool embObjInertials::open(yarp::os::Searchable &config)
         return false;
     }
 
-    // prepare analogdata
-    {
-        // must be of size: inertials_Channels*erviceConfig.inertials.size(), and 0.0-initted
-        analogdata.resize(inertials_Channels*serviceConfig.inertials.size(), 0.0);
-    }
-
-
-
-//    // configure the service: aka, send to the remote board information about the whereabouts of the can boards mais, strain, mtb which offers the service.
-
-//    if(false == configServiceInertials(config))
-//    {
-//        cleanup();
-//        return false;
-//    }
 
     // configure the sensor(s)
 
@@ -328,7 +442,6 @@ bool embObjInertials::open(yarp::os::Searchable &config)
     }
 
 
-
     {   // start the configured sensors. so far, we must keep it in here. later on we can remove this command
 
         eOas_inertial_commands_t startCommand = {0};
@@ -355,80 +468,8 @@ bool embObjInertials::isEpManagedByBoard()
 
 
 
-
-
-//bool embObjInertials::configServiceInertials(Searchable& globalConfig)
-//{
-//    // find SERVICES-INERTIALS. if not found, exit mildly from function. in a first stage the remote eth board will already be configured.
-
-//    Bottle tmp = globalConfig.findGroup("SERVICES");
-//    Bottle config = tmp.findGroup("INERTIALS");
-
-
-//    // prepare the config of the inertial sensors: datarate and the mask of the enabled ones.
-
-//    eOas_inertial_serviceconfig_t inertialServiceConfig = {0}; // by this initialisation, there is no sensor at all in the two can buses
-
-
-
-//    // meglio sarebbe mettere un controllo sul fatto che ho trovato InertialsCAN1mapping e che ha size coerente
-
-//    Bottle canmap;
-//    int numofentries = 0;
-
-//    // CAN1
-//    canmap = config.findGroup("InertialsCAN1mapping");
-//    numofentries = canmap.size()-1;
-
-//    for(int i=0; i<numofentries; i++)
-//    {
-//        eOas_inertial_position_t pos = eoas_inertial_pos_none;
-
-//        yarp::os::ConstString strpos = canmap.get(i+1).asString();
-
-//        pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
-//        inertialServiceConfig.canmapofsupportedsensors[0][i] = pos;
-//    }
-
-//    // CAN2
-//    canmap = config.findGroup("InertialsCAN2mapping");
-//    numofentries = canmap.size()-1;
-
-//    for(int i=0; i<numofentries; i++)
-//    {
-//        eOas_inertial_position_t pos = eoas_inertial_pos_none;
-
-//        yarp::os::ConstString strpos = canmap.get(i+1).asString();
-
-//        pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
-//        inertialServiceConfig.canmapofsupportedsensors[1][i] = pos;
-//    }
-
-//    // configure the service
-
-//    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config_service);
-//    if(false == res->setRemoteValueUntilVerified(id32, &inertialServiceConfig, sizeof(inertialServiceConfig), 10, 0.010, 0.050, 2))
-//    {
-//        yError() << "FATAL: embObjInertials::configServiceInertials() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
-//        return false;
-//    }
-//    else
-//    {
-//        if(verbosewhenok)
-//        {
-//            yDebug() << "embObjInertials::configServiceInertials() correctly configured the service in BOARD" << res->getName() << "with IP" << res->getIPv4string();
-//        }
-//    }
-
-//    return true;
-//}
-
-
 bool embObjInertials::sendConfig2MTBboards(Searchable& globalConfig)
 {
-
-#if 1
-
     eOas_inertial_config_t config = {0};
     config.datarate = serviceConfig.acquisitionrate;
     if(config.datarate > 200)
@@ -465,279 +506,8 @@ bool embObjInertials::sendConfig2MTBboards(Searchable& globalConfig)
     }
 
     return true;
-
-
-#else
-
-    eOprotID32_t id32 = eo_prot_ID32dummy;
-
-    // configuration specific for skin-inertial device
-
-    Bottle config = globalConfig.findGroup("GENERAL");
-
-
-    // prepare the config of the inertial sensors: datarate and the mask of the enabled ones.
-
-    eOas_inertial_sensorsconfig_t inertialSensorsConfig = {0};
-
-    inertialSensorsConfig.accelerometers = 0;
-    inertialSensorsConfig.gyroscopes = 0;
-    inertialSensorsConfig.datarate = _period;
-
-
-    // meglio sarebbe mettere un controllo sul fatto che ho trovato enabledAccelerometers e che ha size coerente
-
-    Bottle sensors;
-
-    sensors = config.findGroup("enabledAccelerometers");
-
-    int numofaccelerometers = sensors.size()-1;    // sensors holds strings "enabledAccelerometers" and then all the others, thus i need a -1
-
-    for(int i=0; i<numofaccelerometers; i++)
-    {
-        eOas_inertial_position_t pos = eoas_inertial_pos_none;
-
-        yarp::os::ConstString strpos = sensors.get(i+1).asString();
-
-        pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
-
-        if(eoas_inertial_pos_none != pos)
-        {
-            _fromInertialPos2DataIndexAccelerometers[pos] = i;
-            inertialSensorsConfig.accelerometers   |= EOAS_ENABLEPOS(pos);
-        }
-    }
-
-    sensors = config.findGroup("enabledGyroscopes");
-
-    int numofgyroscopess = sensors.size()-1;    // sensors holds strings "enabledGyroscopes" and then all the others, thus i need a -1
-
-    for(int i=0; i<numofgyroscopess; i++)
-    {
-        eOas_inertial_position_t pos = eoas_inertial_pos_none;
-
-        yarp::os::ConstString strpos = sensors.get(i+1).asString();
-
-        pos = getLocationOfInertialSensor(strpos);  // prendi la posizione dalla stringa strpos: fai una funzione apposita
-
-        if(eoas_inertial_pos_none != pos)
-        {
-            _fromInertialPos2DataIndexGyroscopes[pos] = numofaccelerometers+i;
-            inertialSensorsConfig.gyroscopes   |= EOAS_ENABLEPOS(pos);
-        }
-    }
-
-    // configure the sensors (datarate and position)
-
-    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config_sensors);
-    if(false == res->setRemoteValueUntilVerified(id32, &inertialSensorsConfig, sizeof(inertialSensorsConfig), 10, 0.010, 0.050, 2))
-    {
-        yError() << "FATAL: embObjInertials::sendConfig2MTBboards() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
-        return false;
-    }
-    else
-    {
-        if(verbosewhenok)
-        {
-            yDebug() << "embObjInertials::sendConfig2MTBboards() correctly configured enabled sensors with period" << _period << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
-        }
-    }
-
-
-//    // start the configured sensors
-
-//    eOmc_inertial_commands_t startCommand = {0};
-//    startCommand.enable = 1;
-
-//    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_cmmnds_enable);
-//    if(!res->addSetMessage(id32, (uint8_t*) &startCommand))
-//    {
-//        yError() << "ethResources::sendConfig2MTBboards() fails to command the start transmission of the inertials";
-//        return false;
-//    }
-
-    return true;
-#endif
 }
 
-
-#if 0
-eOas_inertial1_position_t embObjInertials::getLocationOfInertialSensor(yarp::os::ConstString &strpos)
-{
-    eOas_inertial1_position_t ret = eoas_inertial1_pos_none;
-
-    if(strpos == "none")
-    {
-        ret = eoas_inertial1_pos_none;
-    }
-
-    else if(strpos == "l_hand")
-    {
-        ret = eoas_inertial1_pos_l_hand;
-    }
-    else if(strpos == "l_forearm_1")
-    {
-        ret = eoas_inertial1_pos_l_forearm_1;
-    }
-    else if(strpos == "l_forearm_2")
-    {
-        ret = eoas_inertial1_pos_l_forearm_2;
-    }
-    else if(strpos == "l_upper_arm_1")
-    {
-        ret = eoas_inertial1_pos_l_upper_arm_1;
-    }
-    else if(strpos == "l_upper_arm_2")
-    {
-        ret = eoas_inertial1_pos_l_upper_arm_2;
-    }
-    else if(strpos == "l_upper_arm_3")
-    {
-        ret = eoas_inertial1_pos_l_upper_arm_3;
-    }
-    else if(strpos == "l_upper_arm_4")
-    {
-        ret = eoas_inertial1_pos_l_upper_arm_4;
-    }
-    else if(strpos == "l_foot_1")
-    {
-        ret = eoas_inertial1_pos_l_foot_1;
-    }
-    else if(strpos == "l_foot_2")
-    {
-        ret = eoas_inertial1_pos_l_foot_2;
-    }
-    else if(strpos == "l_lower_leg_1")
-    {
-        ret = eoas_inertial1_pos_l_lower_leg_1;
-    }
-    else if(strpos == "l_lower_leg_2")
-    {
-        ret = eoas_inertial1_pos_l_lower_leg_2;
-    }
-    else if(strpos == "l_lower_leg_3")
-    {
-        ret = eoas_inertial1_pos_l_lower_leg_3;
-    }
-    else if(strpos == "l_lower_leg_4")
-    {
-        ret = eoas_inertial1_pos_l_lower_leg_4;
-    }
-    else if(strpos == "l_upper_leg_1")
-    {
-        ret = eoas_inertial1_pos_l_upper_leg_1;
-    }
-    else if(strpos == "l_upper_leg_2")
-    {
-        ret = eoas_inertial1_pos_l_upper_leg_2;
-    }
-    else if(strpos == "l_upper_leg_3")
-    {
-        ret = eoas_inertial1_pos_l_upper_leg_3;
-    }
-    else if(strpos == "l_upper_leg_4")
-    {
-        ret = eoas_inertial1_pos_l_upper_leg_4;
-    }
-    else if(strpos == "l_upper_leg_5")
-    {
-        ret = eoas_inertial1_pos_l_upper_leg_5;
-    }
-    else if(strpos == "l_upper_leg_6")
-    {
-        ret = eoas_inertial1_pos_l_upper_leg_6;
-    }
-    else if(strpos == "l_upper_leg_7")
-    {
-        ret = eoas_inertial1_pos_l_upper_leg_7;
-    }
-
-    else if(strpos == "r_hand")
-    {
-        ret = eoas_inertial1_pos_r_hand;
-    }
-    else if(strpos == "r_forearm_1")
-    {
-        ret = eoas_inertial1_pos_r_forearm_1;
-    }
-    else if(strpos == "r_forearm_2")
-    {
-        ret = eoas_inertial1_pos_r_forearm_2;
-    }
-    else if(strpos == "r_upper_arm_1")
-    {
-        ret = eoas_inertial1_pos_r_upper_arm_1;
-    }
-    else if(strpos == "r_upper_arm_2")
-    {
-        ret = eoas_inertial1_pos_r_upper_arm_2;
-    }
-    else if(strpos == "r_upper_arm_3")
-    {
-        ret = eoas_inertial1_pos_r_upper_arm_3;
-    }
-    else if(strpos == "r_upper_arm_4")
-    {
-        ret = eoas_inertial1_pos_r_upper_arm_4;
-    }
-    else if(strpos == "r_foot_1")
-    {
-        ret = eoas_inertial1_pos_r_foot_1;
-    }
-    else if(strpos == "r_foot_2")
-    {
-        ret = eoas_inertial1_pos_r_foot_2;
-    }
-    else if(strpos == "r_lower_leg_1")
-    {
-        ret = eoas_inertial1_pos_r_lower_leg_1;
-    }
-    else if(strpos == "r_lower_leg_2")
-    {
-        ret = eoas_inertial1_pos_r_lower_leg_2;
-    }
-    else if(strpos == "r_lower_leg_3")
-    {
-        ret = eoas_inertial1_pos_r_lower_leg_3;
-    }
-    else if(strpos == "r_lower_leg_4")
-    {
-        ret = eoas_inertial1_pos_r_lower_leg_4;
-    }
-    else if(strpos == "r_upper_leg_1")
-    {
-        ret = eoas_inertial1_pos_r_upper_leg_1;
-    }
-    else if(strpos == "r_upper_leg_2")
-    {
-        ret = eoas_inertial1_pos_r_upper_leg_2;
-    }
-    else if(strpos == "r_upper_leg_3")
-    {
-        ret = eoas_inertial1_pos_r_upper_leg_3;
-    }
-    else if(strpos == "r_upper_leg_4")
-    {
-        ret = eoas_inertial1_pos_r_upper_leg_4;
-    }
-    else if(strpos == "r_upper_leg_5")
-    {
-        ret = eoas_inertial1_pos_r_upper_leg_5;
-    }
-    else if(strpos == "r_upper_leg_6")
-    {
-        ret = eoas_inertial1_pos_r_upper_leg_6;
-    }
-    else if(strpos == "r_upper_leg_7")
-    {
-        ret = eoas_inertial1_pos_r_upper_leg_7;
-    }
-
-
-    return(ret);
-
-}
-#endif
 
 
 bool embObjInertials::initRegulars()
@@ -897,7 +667,7 @@ bool embObjInertials::update(eOprotID32_t id32, double timestamp, void* rxdata)
 {
     id32 = id32;
     timestamp = timestamp;
-    // timestamp is the time of reception inside EthReceiver, whereas status->data.timestamp it is the time of the remote ETH board
+    // timestamp is the time of reception inside EthReceiver, whereas status->data.timestamp is the time of the remote ETH board
 
     if(false == opened)
     {
@@ -913,7 +683,20 @@ bool embObjInertials::update(eOprotID32_t id32, double timestamp, void* rxdata)
 
     mutex.wait();
 
-    int firstpos = 4*status->data.id;
+#if defined(EMBOBJINERTIALS_PUBLISH_OLDSTYLE)
+
+    int firstpos = 2 + inertials_Channels*status->data.id;
+    // firstpos+0 is pos, firstpos+1 is type. they dont change over time
+
+    analogdata[firstpos+2] = (double) status->data.timestamp;
+
+    analogdata[firstpos+3] = (double) status->data.x;
+    analogdata[firstpos+4] = (double) status->data.y;
+    analogdata[firstpos+5] = (double) status->data.z;
+
+#else
+
+    int firstpos = inertials_Channels*status->data.id;
 
     analogdata[firstpos+0] = (double) status->data.timestamp;
 
@@ -921,6 +704,7 @@ bool embObjInertials::update(eOprotID32_t id32, double timestamp, void* rxdata)
     analogdata[firstpos+2] = (double) status->data.y;
     analogdata[firstpos+3] = (double) status->data.z;
 
+#endif
 
     mutex.post();
 
