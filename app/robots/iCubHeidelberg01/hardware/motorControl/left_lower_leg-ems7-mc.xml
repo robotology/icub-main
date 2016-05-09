@@ -22,9 +22,9 @@
 	<group name="POSITION_CONTROL">
 	    <param name="controlLaw">    joint_pid_v1 </param> 
         <param name="controlUnits">  metric_units              </param> 
-        <param name="kp">          711.11       711.11         </param>       
+        <param name="kp">            2300         2200         </param>       
         <param name="kd">            0.00         0.00         </param>       
-        <param name="ki">         7111.09      7111.09         </param>            
+        <param name="ki">               0            0         </param>       
         <param name="maxOutput">     8000         8000         </param>       
         <param name="maxInt">         750          750         </param>       
         <param name="shift">            0            0         </param>       
@@ -44,7 +44,7 @@
         <param name="controlUnits">  metric_units               </param> 
         <param name="kp">         100          150              </param>       
         <param name="kd">           0            0              </param>       
-        <param name="ki">           0            0              </param>      
+        <param name="ki">           0            0              </param>    
         <param name="maxOutput">    8000         8000              </param>       
         <param name="maxInt">     500          500              </param>       
         <param name="shift">        0            0              </param>       

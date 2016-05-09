@@ -15,7 +15,7 @@
         <param name="Encoder">         182.044       182.044   </param>
         <param name="TorqueId">  	    0x0C            0x0C    </param>
         <param name="TorqueChan">	    4               5       </param>
-        <param name="TorqueMax"> 	    24             24       </param>
+        <param name="TorqueMax"> 	    25             25       </param>
         <param name="RotorEncoderRes">   -14400       -14400   </param>
         <param name="JointEncoderRes">    -4096         4096   </param>
         <param name="JointEncoderType">    "AEA"       "AEA"   </param>
