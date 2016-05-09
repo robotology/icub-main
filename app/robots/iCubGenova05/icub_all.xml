@@ -66,7 +66,7 @@
     <!-- INERTIAL SENSOR -->
     <devices file="hardware/inertial.xml" />
 
-    <!--  SKINS 
+    <!--  SKINS -->
 
     <devices file="wrappers/skin/left_arm-skin_wrapper.xml" />
     <devices file="hardware/skin/left_arm-ems2-skin.xml" />
@@ -77,7 +77,7 @@
     <devices file="wrappers/skin/left_leg-skin_wrapper.xml" />
     <devices file="wrappers/skin/right_leg-skin_wrapper.xml" />
     <devices file="hardware/skin/left_leg-ems10-skin.xml" />
-    <devices file="hardware/skin/right_leg-ems11-skin.xml" /> -->
+    <devices file="hardware/skin/right_leg-ems11-skin.xml" />
 
 	
     <!--  CALIBRATORS -->

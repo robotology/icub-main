@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+    <robot name="iCubPlymouth02" build="1" portprefix="icub">
+
+   
+    <!-- motor controllers wrappers -->
+    <devices file="wrappers/motorControl/head_mc_wrapper.xml" />
+    <devices file="hardware/motorControl/icub_head.xml" />
+
+    <!-- MTX INERTIAL SENSOR & SKIN INERTIAL SENSOR-->
+    <devices file="hardware/inertial.xml" />
+   
+    <!-- CALIBRATORS -->
+    <devices file="calibrators/head_calib.xml" /> 
+
+</robot> 
+
