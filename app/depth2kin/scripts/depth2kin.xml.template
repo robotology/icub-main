@@ -13,27 +13,23 @@
                 <name>SFM</name>
                 <parameters>--elas_ipol_gap_width 20</parameters>
                 <node>gpu-node</node>
-                <tag>structFromMotion</tag>
         </module>
 
         <module>
                 <name>depth2kin</name>
                 <node>console</node>
-                <tag>calibrator</tag>
         </module>
            
         <module>
                 <name>yarpview</name>
                 <parameters>--name /calib_viewer --x 0 --y 0 --p 33</parameters>
                 <node>console</node>
-                <tag>calib_viewer</tag>
         </module>
 
         <module>
                 <name>yarpview</name>
                 <parameters>--name /touch_viewer --x 400 --y 0 --out /touch_viewer/out --p 33</parameters>
                 <node>console</node>
-                <tag>touch_viewer</tag>
         </module>
   
         <connection>
