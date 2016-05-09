@@ -52,8 +52,8 @@ parametricCalibrator::parametricCalibrator() :
     param1(NULL),
     param2(NULL),
     param3(NULL),
-    original_pid(NULL),
-    limited_pid(NULL),
+    original_max_pwm(NULL),
+    limited_max_pwm(NULL),
     maxPWM(NULL),
     currPos(NULL),
     currVel(NULL),
@@ -253,13 +253,13 @@ bool parametricCalibrator::close ()
         delete[] maxPWM;
         maxPWM = NULL;
     }
-    if (original_pid != NULL) {
-        delete[] original_pid;
-        original_pid = NULL;
+    if (original_max_pwm != NULL) {
+        delete[] original_max_pwm;
+        original_max_pwm = NULL;
     }
-    if (limited_pid != NULL) {
-        delete[] limited_pid;
-        limited_pid = NULL;
+    if (limited_max_pwm != NULL) {
+        delete[] limited_max_pwm;
+        limited_max_pwm = NULL;
     }
 
     if (currPos != NULL) {
@@ -314,6 +314,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *device)
         p->view(iPosition);
         p->view(iPids);
         p->view(iControlMode);
+        p->view(iAmp);
     }
     else
     {
@@ -327,6 +328,7 @@ bool parametricCalibrator::calibrate(DeviceDriver *device)
         device->view(iPosition);
         device->view(iPids);
         device->view(iControlMode);
+        device->view(iAmp);
     }
 
     if (!(iCalibrate && iEncoders && iPosition && iPids && iControlMode)) {
@@ -393,8 +395,8 @@ bool parametricCalibrator::calibrate()
         return false;
     }
 
-    original_pid=new Pid[n_joints];
-    limited_pid =new Pid[n_joints];
+    original_max_pwm = new double[n_joints];
+    limited_max_pwm = new double[n_joints];
 
     if(skipCalibration)
         yWarning() << deviceName << ": skipCalibration flag is on! Setting safe pid but skipping calibration.";
@@ -418,31 +420,30 @@ bool parametricCalibrator::calibrate()
                 break;
             }
 
-            if(!iPids->getPid((*lit), &original_pid[(*lit)]) )
+            if(!iAmp->getPWMLimit((*lit), &original_max_pwm[(*lit)]) )
             {
-                yError() << deviceName << ": getPid joint " << (*lit) << "failed... aborting calibration";
+                yError() << deviceName << ": getPWMLimit joint " << (*lit) << "failed... aborting calibration";
                 abortCalib = true;
                 break;
             }
 
-            limited_pid[(*lit)]=original_pid[(*lit)];
+            limited_max_pwm[(*lit)] = original_max_pwm[(*lit)];
             
             if (maxPWM[(*lit)]==0)
             {
                 yDebug() << deviceName << ": skipping maxPwm=0 of joint " << (*lit);
-                iPids->setPid((*lit),original_pid[(*lit)]);
+                iAmp->setPWMLimit((*lit), original_max_pwm[(*lit)]);
             }
             else
             {
-                if (maxPWM[(*lit)]<limited_pid[(*lit)].max_output)
+                if (maxPWM[(*lit)]<limited_max_pwm[(*lit)])
                 {
-                    limited_pid[(*lit)].max_int=maxPWM[(*lit)];
-                    limited_pid[(*lit)].max_output=maxPWM[(*lit)];
-                    iPids->setPid((*lit),limited_pid[(*lit)]);
+                    limited_max_pwm[(*lit)] = maxPWM[(*lit)];
+                    iAmp->setPWMLimit((*lit), limited_max_pwm[(*lit)]);
                 }
                 else
                 {
-                    yDebug() << deviceName << ": joint " << (*lit) << " has max_output already limited to a safe value: " << limited_pid[(*lit)].max_output;
+                    yDebug() << deviceName << ": joint " << (*lit) << " has max_output already limited to a safe value: " << limited_max_pwm[(*lit)];
                 }
             }
         }
@@ -566,7 +567,7 @@ bool parametricCalibrator::calibrate()
             yDebug() <<  deviceName  << ": set" << setOfJoint_idx  << ": Reached zero position!\n";
             for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
             {
-                iPids->setPid((*lit),original_pid[(*lit)]);
+                iAmp->setPWMLimit((*lit),original_max_pwm[(*lit)]);
             }
         }
         else          // keep pid safe and go on
