@@ -483,6 +483,11 @@ if __name__ == '__main__':
        print "Could not find file " + configFileName + " in context " + contextName + ", exiting."
        sys.exit(1)
 
+    if(sys.hexversion < 0x02070000):
+        iconFilePath=check_output(["yarp",  "resource",  "--find", "icub-cluster-icon.png", "--context", contextName])
+    else:
+        iconFilePath=subprocess.check_output(["yarp",  "resource",  "--find", "icub-cluster-icon.png", "--context", contextName])
+
     config = xml.dom.minidom.parse(configFilePath[1:-2])
 
     clusters=config.getElementsByTagName("cluster")
@@ -524,6 +529,10 @@ if __name__ == '__main__':
     root = Tk()
     app = App(root)
     root.title("Cluster manager for:"+cl.name)
+    if iconFilePath[1:-2] :
+        print "Use icon " + iconFilePath
+        img = PhotoImage(file=iconFilePath[1:-2])
+        root.tk.call('wm', 'iconphoto', root._w, img)
 
     app.setCluster(cl)
 #   dont check when start, nameserver could be off
