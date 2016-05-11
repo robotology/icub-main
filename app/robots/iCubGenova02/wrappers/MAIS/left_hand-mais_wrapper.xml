@@ -4,7 +4,7 @@
 <devices>
     <device name="left_arm_as_wrapperMais" type="analogServer">
         <param name="period">       10                  </param>
-        <param name="deviceId">     left_hand           </param>
+<param name="name">     /icub/left_hand/analog:o </param>
 
         <action phase="startup" level="5" type="attach">
             <paramlist name="networks">
