@@ -40,7 +40,7 @@ Sensor::Sensor()
 
 
 /************************************************************************/
-bool SensorInterface::configure(void *source, const Property &options)
+bool SensorEncoders::configure(void *source, const Property &options)
 {
     if ((source==NULL) || !options.check("name") ||
         !options.check("size") || !options.check("index"))
@@ -56,7 +56,7 @@ bool SensorInterface::configure(void *source, const Property &options)
 
 
 /************************************************************************/
-bool SensorInterface::getOutput(Value &in) const
+bool SensorEncoders::getOutput(Value &in) const
 {
     if (!configured)
         return false;    

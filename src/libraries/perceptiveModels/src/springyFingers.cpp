@@ -317,12 +317,12 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     Property propLittle=propGen; propLittle.put("index",15);
 
     bool sensors_ok=true;
-    void *pIF=static_cast<void*>(ienc);
-    sensors_ok&=sensIF[0].configure(pIF,propThumb);
-    sensors_ok&=sensIF[1].configure(pIF,propIndex);
-    sensors_ok&=sensIF[2].configure(pIF,propMiddle);
-    sensors_ok&=sensIF[3].configure(pIF,propRing);
-    sensors_ok&=sensIF[4].configure(pIF,propLittle);
+    void *pEncs=static_cast<void*>(ienc);
+    sensors_ok&=sensEncs[0].configure(pEncs,propThumb);
+    sensors_ok&=sensEncs[1].configure(pEncs,propIndex);
+    sensors_ok&=sensEncs[2].configure(pEncs,propMiddle);
+    sensors_ok&=sensEncs[3].configure(pEncs,propRing);
+    sensors_ok&=sensEncs[4].configure(pEncs,propLittle);
 
     printMessage(log::info,1,"configuring port-based sensors ...");
     Property thumb_mp(  "(name Out_0) (index 1)" );
@@ -381,24 +381,24 @@ bool SpringyFingersModel::fromProperty(const Property &options)
     }
 
     printMessage(log::info,1,"attaching sensors to fingers ...");
-    fingers[0].attachSensor(sensIF[0]);
+    fingers[0].attachSensor(sensEncs[0]);
     fingers[0].attachSensor(sensPort[0]);
     fingers[0].attachSensor(sensPort[1]);
 
-    fingers[1].attachSensor(sensIF[1]);
+    fingers[1].attachSensor(sensEncs[1]);
     fingers[1].attachSensor(sensPort[2]);
     fingers[1].attachSensor(sensPort[3]);
 
-    fingers[2].attachSensor(sensIF[2]);
+    fingers[2].attachSensor(sensEncs[2]);
     fingers[2].attachSensor(sensPort[4]);
     fingers[2].attachSensor(sensPort[5]);
 
-    fingers[3].attachSensor(sensIF[3]);
+    fingers[3].attachSensor(sensEncs[3]);
     fingers[3].attachSensor(sensPort[6]);
     fingers[3].attachSensor(sensPort[7]);
     fingers[3].attachSensor(sensPort[8]);
 
-    fingers[4].attachSensor(sensIF[4]);
+    fingers[4].attachSensor(sensEncs[4]);
     fingers[4].attachSensor(sensPort[9]);
     fingers[4].attachSensor(sensPort[10]);
     fingers[4].attachSensor(sensPort[11]);

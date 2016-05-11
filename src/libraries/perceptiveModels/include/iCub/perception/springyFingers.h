@@ -206,7 +206,7 @@ private:
     std::string robot;
     std::string carrier;    
 
-    SensorInterface sensIF[5];
+    SensorEncoders  sensEncs[5];
     SensorPort      sensPort[12];
     SpringyFinger   fingers[5];
     bool configured;

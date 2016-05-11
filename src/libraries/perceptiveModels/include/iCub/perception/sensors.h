@@ -163,7 +163,7 @@ public:
 *  
 * This class implements the reading of motor joints encoders. 
 */
-class SensorInterface : public Sensor
+class SensorEncoders : public Sensor
 {
 protected:
     int size;
