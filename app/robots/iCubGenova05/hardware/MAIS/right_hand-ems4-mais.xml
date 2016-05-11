@@ -6,7 +6,7 @@
     <device name="right_hand_mais" type="embObjMais">
     
         <params file="general.xml" />
-        <params file="hardware/electronics/board-versions.xml" />
+
         <params file="hardware/electronics/right_lower_arm-ems4-eln.xml" />
         
         <group name="SERVICE">
@@ -17,7 +17,7 @@
             
                 <group name="CANBOARDS">
                     <param name="type">                 eobrd_mais          </param>
-                    <param name="useGlobalParams">      false               </param>
+
                     <group name="PROTOCOL">
                         <param name="major">            1                   </param>    
                         <param name="minor">            0                   </param>     

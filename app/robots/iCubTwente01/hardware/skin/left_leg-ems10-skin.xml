@@ -4,7 +4,7 @@
 <devices robot="iCubTwente01" build="1">
     <device name="left_leg_skin" type="embObjSkin">
         <params file="general.xml" />
-        <params file="hardware/electronics/board-versions.xml" /> 
+ 
         <params file="hardware/electronics/left_lower_leg-ems10-eln.xml" />
         <group name="patches">
             <param name="skinCanAddrsPatch1"> 1 2 3 4 5 6 7 </param> 

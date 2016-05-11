@@ -6,7 +6,7 @@
     <device name="left_hand_inertialMTB" type="embObjInertials">
     
         <params file="general.xml" />  
-        <params file="hardware/electronics/board-versions.xml" />
+
         <params file="hardware/electronics/left_lower_arm-ems2-eln.xml" />
         
         <group name="SERVICE">
@@ -17,7 +17,7 @@
             
                 <group name="CANBOARDS">
                     <param name="type">                 eobrd_mtb           </param>
-                    <param name="useGlobalParams">      false               </param>
+
                     <group name="PROTOCOL">
                         <param name="major">            0                   </param>    
                         <param name="minor">            0                   </param>     

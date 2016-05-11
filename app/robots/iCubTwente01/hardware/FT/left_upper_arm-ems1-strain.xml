@@ -6,7 +6,7 @@
     <device name="left_upper_arm_strain" type="embObjStrain">
     
         <params file="general.xml"/>
-        <params file="hardware/electronics/board-versions.xml" />
+
         <params file="hardware/electronics/left_upper_arm-ems1-eln.xml" />
     
         <group name="SERVICE">
@@ -17,7 +17,7 @@
   
                 <group name="CANBOARDS">
                     <param name="type">                 eobrd_strain            </param>
-                    <param name="useGlobalParams">      false                   </param>
+
                     <group name="PROTOCOL">
                         <param name="major">            1                       </param>    
                         <param name="minor">            0                       </param>     

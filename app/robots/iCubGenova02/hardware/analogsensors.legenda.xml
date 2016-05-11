@@ -24,10 +24,7 @@
         it is a group which describes the can boards (typically only one kind) used in the service. see its fields.
         
         - type                  string with values from eObrd_type_t [eobrd_mais, eobrd_strain, eobrd_mtb, ...]. 
-        
-        - useGlobalParams       FOR FUTURE USE. boolean param [true, false] which tells if for the following we must use global params defined elsewhere (if defined) or to
-                                parse and use the following ... PROTOCOL and FIRMWARE
-                                
+                                      
         < PROTOCOL              
           if its value is (0, 0) it means that the ETH board shall not complain about can protocol version of the attached can boards.
           otherwise it uses the rule of ... major must be equal, detected minor must be equal or higher.
