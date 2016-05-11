@@ -4,7 +4,7 @@
 <devices robot="iCubHeidelberg01" build="1">
 	<device name="torso_VFTserver" type="virtualAnalogServer">
 		<param name="period">       10  				</param>
-		<param name="deviceId">     torso				</param>
+		
 		
 		 <paramlist name="networks">
 		      <!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
@@ -12,7 +12,7 @@
 		    </paramlist>
 
 		<param name="channels">       3  				</param>
-		<param name="name"> 	     /torso				</param>
+		<param name="name"> /icub/joint_vsens/torso:i </param>
 
 		<action phase="startup" level="5" type="attach">
 		    <paramlist name="networks">

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><devices build="1" robot="iCubNancy01">
 	<device name="left_arm_VFTserver" type="virtualAnalogServer">
 		<param name="period">       10  				</param>
-		<param name="deviceId">     left_arm				</param>
+		
 		
 		 <paramlist name="networks">
 		      <!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
@@ -10,7 +10,7 @@
 		    </paramlist>
 
 		<param name="channels">       7  				</param>
-		<param name="name"> 	     /left_arm				</param>
+		<param name="name"> /icub/joint_vsens/left_arm:i </param>
 
 		<action level="5" phase="startup" type="attach">
 		    <paramlist name="networks">

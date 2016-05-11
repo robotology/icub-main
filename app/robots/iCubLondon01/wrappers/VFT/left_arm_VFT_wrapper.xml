@@ -3,13 +3,13 @@
 <devices robot="iCubLondon01" build="1">
     <device name="left_arm_VFTserver" type="virtualAnalogServer">
         <param name="period">       10                  </param>
-        <param name="deviceId">     left_arm                </param>
+        
         
         <paramlist name="networks">
             <elem name="net_VFT_LA">  0  5  0  5 </elem> 
         </paramlist>
 
-        <param name="name">          /left_arm                </param>
+        <param name="name"> /icub/joint_vsens/left_arm:i </param>
 
         <action phase="startup" level="5" type="attach">
             <paramlist name="networks">

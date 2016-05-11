@@ -4,7 +4,7 @@
 <devices robot="iCubDarmstadt01" build="1">
 	<device name="left_arm_VFTserver" type="virtualAnalogServer">
 		<param name="period">       10  				</param>
-		<param name="deviceId">     left_arm				</param>
+		
 		
 		 <paramlist name="networks">
 		      <!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
@@ -13,7 +13,7 @@
 		    </paramlist>
 
 		<param name="channels">       7  				</param>
-		<param name="name"> 	     /left_arm				</param>
+		<param name="name"> /icub/joint_vsens/left_arm:i </param>
 
 		<action phase="startup" level="5" type="attach">
 		    <paramlist name="networks">
