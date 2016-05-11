@@ -2,7 +2,7 @@
 <devices>
 	<device name="right_lower_leg_sg_wrapper" type="analogServer">
 		<param name="period">       10  				</param>
-		<param name="deviceId">     joint_torque_sensor/right_lower_leg				</param>
+		<param name="name">     /icub/joint_torque_sensor/right_lower_leg/analog:o				</param>
 		
 		<action phase="startup" level="5" type="attach">
 		    <paramlist name="networks">
