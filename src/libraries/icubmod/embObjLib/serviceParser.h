@@ -62,10 +62,9 @@ typedef struct
 struct servCanBoard_t
 {
     eObrd_cantype_t             type;
-    bool                        useglobalparams;
     eObrd_protocolversion_t     protocol;
     eObrd_firmwareversion_t     firmware;
-    servCanBoard_t() { type = eobrd_cantype_none; protocol.major = 0; protocol.minor = 0; firmware.major = 0; firmware.minor = 0; firmware.build = 0; useglobalparams = false; }
+    servCanBoard_t() { type = eobrd_cantype_none; protocol.major = 0; protocol.minor = 0; firmware.major = 0; firmware.minor = 0; firmware.build = 0; }
 };
 
 struct servBoard_t
@@ -127,10 +126,6 @@ public:
 
 public:
 
-    bool parseGlobalBoardVersions(Searchable &config);
-
-    bool getGlobalBoardVersion(const eObrd_type_t type, servBoard_t &board);
-
     bool parseService(yarp::os::Searchable &config, servConfigMais_t& maisconfig);
     bool parseService(Searchable &config, servConfigStrain_t &strainconfig);
     bool parseService(Searchable &config, servConfigInertials_t &inertialsconfig);
@@ -155,7 +150,6 @@ public:
 
 public:
 
-    vector<servBoard_t>         boards;
     servAScollector_t           as_service;
     servASstrainSettings_t      as_strain_settings;
 

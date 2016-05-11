@@ -52,7 +52,6 @@ ServiceParser::ServiceParser()
 {
     // how do i reset variable as_service?
 
-    boards.resize(0);
 
     as_service.type = eomn_serv_NONE;
 
@@ -62,144 +61,6 @@ ServiceParser::ServiceParser()
     as_service.settings.acquisitionrate = 0;
     as_service.settings.enabledsensors.resize(0);
 }
-
-bool ServiceParser::getGlobalBoardVersion(const eObrd_type_t type, servBoard_t &board)
-{
-    servBoard_t dummy;
-
-    if(0 != boards.size())
-    {
-        for(int i=0; i<boards.size(); i++)
-        {
-            servBoard_t cur = boards.at(i);
-            if(type == cur.type)
-            {
-                board = cur;
-                return true;
-            }
-        }
-    }
-
-    board = dummy;
-
-    return false;
-}
-
-
-bool ServiceParser::parseGlobalBoardVersions(Searchable &config)
-{
-    // format is BOARDVERSIONS{ type, PROTOCOL{ major, minor }, FIRMWARE{ major, minor, build } }
-
-    Bottle b_BOARDVERSIONS(config.findGroup("BOARDVERSIONS"));
-    if(b_BOARDVERSIONS.isNull())
-    {
-        yWarning() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS group. must use locally defined PROTOCOL and FIRMWARE";
-        boards.resize(0);
-        return false;
-    }
-
-
-    // now get type, PROTOCOL.major/minor, FIRMWARE.major/minor/build and see their sizes. the must be all equal.
-    // for mais and strain and so far for intertials it must be numboards = 1.
-
-    Bottle b_BOARDVERSIONS_type = b_BOARDVERSIONS.findGroup("type");
-    if(b_BOARDVERSIONS_type.isNull())
-    {
-        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.type";
-        return false;
-    }
-    Bottle b_BOARDVERSIONS_PROTOCOL = Bottle(b_BOARDVERSIONS.findGroup("PROTOCOL"));
-    if(b_BOARDVERSIONS_PROTOCOL.isNull())
-    {
-        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.PROTOCOL";
-        return false;
-    }
-    Bottle b_BOARDVERSIONS_PROTOCOL_major = Bottle(b_BOARDVERSIONS_PROTOCOL.findGroup("major"));
-    if(b_BOARDVERSIONS_PROTOCOL_major.isNull())
-    {
-        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.PROTOCOL.major";
-        return false;
-    }
-    Bottle b_BOARDVERSIONS_PROTOCOL_minor = Bottle(b_BOARDVERSIONS_PROTOCOL.findGroup("minor"));
-    if(b_BOARDVERSIONS_PROTOCOL_minor.isNull())
-    {
-        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.PROTOCOL.minor";
-        return false;
-    }
-    Bottle b_BOARDVERSIONS_FIRMWARE = Bottle(b_BOARDVERSIONS.findGroup("FIRMWARE"));
-    if(b_BOARDVERSIONS_FIRMWARE.isNull())
-    {
-        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.FIRMWARE";
-        return false;
-    }
-    Bottle b_BOARDVERSIONS_FIRMWARE_major = Bottle(b_BOARDVERSIONS_FIRMWARE.findGroup("major"));
-    if(b_BOARDVERSIONS_FIRMWARE_major.isNull())
-    {
-        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.FIRMWARE.major";
-        return false;
-    }
-    Bottle b_BOARDVERSIONS_FIRMWARE_minor = Bottle(b_BOARDVERSIONS_FIRMWARE.findGroup("minor"));
-    if(b_BOARDVERSIONS_FIRMWARE_minor.isNull())
-    {
-        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.FIRMWARE.minor";
-        return false;
-    }
-    Bottle b_BOARDVERSIONS_FIRMWARE_build = Bottle(b_BOARDVERSIONS_FIRMWARE.findGroup("build"));
-    if(b_BOARDVERSIONS_FIRMWARE_build.isNull())
-    {
-        yError() << "ServiceParser::parseGlobalBoardVersions() cannot find BOARDVERSIONS.FIRMWARE.build";
-        return false;
-    }
-
-    int tmp = b_BOARDVERSIONS_type.size();
-    int numboards = tmp - 1;    // first position of bottle contains the tag "type"
-
-    // check if all other fields have the same size.
-    if( (tmp != b_BOARDVERSIONS_PROTOCOL_major.size()) ||
-        (tmp != b_BOARDVERSIONS_PROTOCOL_minor.size()) ||
-        (tmp != b_BOARDVERSIONS_FIRMWARE_major.size()) ||
-        (tmp != b_BOARDVERSIONS_FIRMWARE_minor.size()) ||
-        (tmp != b_BOARDVERSIONS_FIRMWARE_build.size())
-      )
-    {
-        yError() << "ServiceParser::parseGlobalBoardVersions() in BOARDVERSIONS some param has inconsistent length";
-        return false;
-    }
-
-
-    boards.resize(0);
-
-    bool formaterror = false;
-    for(int i=0; i<numboards; i++)
-    {
-        servBoard_t item;
-
-        convert(b_BOARDVERSIONS_type.get(i+1).asString(), item.type, formaterror);
-
-        convert(b_BOARDVERSIONS_PROTOCOL_major.get(i+1).asInt(), item.protocol.major, formaterror);
-        convert(b_BOARDVERSIONS_PROTOCOL_minor.get(i+1).asInt(), item.protocol.minor, formaterror);
-
-        convert(b_BOARDVERSIONS_FIRMWARE_major.get(i+1).asInt(), item.firmware.major, formaterror);
-        convert(b_BOARDVERSIONS_FIRMWARE_minor.get(i+1).asInt(), item.firmware.minor, formaterror);
-        convert(b_BOARDVERSIONS_FIRMWARE_build.get(i+1).asInt(), item.firmware.build, formaterror);
-
-        boards.push_back(item);
-    }
-
-    // in here we could decide to return false if any previous conversion function has returned error
-    // bool fromStringToBoolean(string str, bool &anyerror); // inside: if error then .... be sure to set error = true. dont set it to false.
-
-    if(true == formaterror)
-    {
-        yError() << "ServiceParser::parseGlobalBoardVersions() has detected an illegal format for some of the params of BOARDVERSIONS some param has inconsistent length";
-        boards.resize(0);
-        return false;
-    }
-
-
-    return true;
-}
-
 
 bool ServiceParser::convert(ConstString const &fromstring, eOmn_serv_type_t& toservicetype, bool& formaterror)
 {
@@ -564,7 +425,6 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
     }
 
     // i parse the global board versions. if section is not found we can safely continue but we have boards.size() equal to zero.
-    parseGlobalBoardVersions(config);
 
     // format is SERVICE{ type, PROPERTIES{ CANBOARDS, SENSORS }, SETTINGS }
 
@@ -615,19 +475,13 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
         }
         else
         {
-            // now get type, useGlobalParams, PROTOCOL.major/minor, FIRMWARE.major/minor/build and see their sizes. the must be all equal.
+            // now get type, PROTOCOL.major/minor, FIRMWARE.major/minor/build and see their sizes. the must be all equal.
             // for mais and strain and so far for intertials it must be numboards = 1.
 
             Bottle b_PROPERTIES_CANBOARDS_type = b_PROPERTIES_CANBOARDS.findGroup("type");
             if(b_PROPERTIES_CANBOARDS_type.isNull())
             {
                 yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.type";
-                return false;
-            }
-            Bottle b_PROPERTIES_CANBOARDS_useGlobalParams = b_PROPERTIES_CANBOARDS.findGroup("useGlobalParams");
-            if(b_PROPERTIES_CANBOARDS_useGlobalParams.isNull())
-            {
-                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.useGlobalParams";
                 return false;
             }
             Bottle b_PROPERTIES_CANBOARDS_PROTOCOL = Bottle(b_PROPERTIES_CANBOARDS.findGroup("PROTOCOL"));
@@ -677,8 +531,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             int numboards = tmp - 1;    // first position of bottle contains the tag "type"
 
             // check if all other fields have the same size.
-            if( (tmp != b_PROPERTIES_CANBOARDS_useGlobalParams.size()) ||
-                (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_major.size()) ||
+            if( (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_major.size()) ||
                 (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_minor.size()) ||
                 (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_major.size()) ||
                 (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_minor.size()) ||
@@ -698,54 +551,12 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
                 servCanBoard_t item;
 
                 convert(b_PROPERTIES_CANBOARDS_type.get(i+1).asString(), item.type, formaterror);
-                convert(b_PROPERTIES_CANBOARDS_useGlobalParams.get(i+1).asString(), item.useglobalparams, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(i+1).asInt(), item.protocol.major, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(i+1).asInt(), item.protocol.minor, formaterror);
 
-                if(true == item.useglobalparams)
-                {
-                    // must search boards an entry which matches eObrd_type_t tt;
-                    eObrd_type_t tt = eobrd_none;
-                    servBoard_t brd;
-                    convert(b_PROPERTIES_CANBOARDS_type.get(i+1).asString(), tt, formaterror);
-
-                    if(0 == boards.size())
-                    {
-                        yWarning() << "ServiceParser::check() in PROPERTIES.CANBOARDS: useGlobalParams is true for board" << eoboards_type2string(tt) << "but we dont have global params for boards. we shall use prot = (0,0) and firm = (0, 0, 0) ";
-                    }
-                    else
-                    {
-                        for(int i=0; i<boards.size(); i++)
-                        {
-                            servBoard_t cur = boards.at(i);
-                            if(tt == cur.type)
-                            {
-                                brd = cur;
-                                break;
-                            }
-                        }
-
-                        if(eobrd_none == brd.type)
-                        {
-                            yWarning() << "ServiceParser::check() in PROPERTIES.CANBOARDS: useGlobalParams is true for board" << eoboards_type2string(tt) << "but we cannot find its global params. we shall use prot = (0,0) and firm = (0, 0, 0) ";
-                        }
-                    }
-
-                    item.protocol.major = brd.protocol.major;
-                    item.protocol.minor = brd.protocol.minor;
-
-                    item.firmware.major = brd.firmware.major;
-                    item.firmware.minor = brd.firmware.minor;
-                    item.firmware.build = brd.firmware.build;
-
-                }
-                else
-                {
-                    convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(i+1).asInt(), item.protocol.major, formaterror);
-                    convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(i+1).asInt(), item.protocol.minor, formaterror);
-
-                    convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(i+1).asInt(), item.firmware.major, formaterror);
-                    convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(i+1).asInt(), item.firmware.minor, formaterror);
-                    convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(i+1).asInt(), item.firmware.build, formaterror);
-                }
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(i+1).asInt(), item.firmware.major, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(i+1).asInt(), item.firmware.minor, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(i+1).asInt(), item.firmware.build, formaterror);
 
                 as_service.properties.canboards.push_back(item);
             }
