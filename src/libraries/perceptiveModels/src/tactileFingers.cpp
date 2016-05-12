@@ -395,10 +395,7 @@ void TactileFingersModel::close()
     printMessage(log::info,1,"closing ...");
 
     if (!port->isClosed())
-    {
-        port->interrupt();
         port->close();
-    }
 
     nodes.clear();
 

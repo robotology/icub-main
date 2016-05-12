@@ -37,7 +37,6 @@ protected:
     yarp::os::Bottle bottle;
 
     void onRead(yarp::os::Bottle &bottle);
-    void interrupt();
 
 public:
     Port();

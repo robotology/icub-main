@@ -816,10 +816,7 @@ void SpringyFingersModel::close()
         driver.close();
 
     if (!port->isClosed())
-    {
-        port->interrupt();
         port->close();
-    }
 
     nodes.clear();
 

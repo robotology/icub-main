@@ -15,6 +15,7 @@
  * Public License for more details
 */
 
+#include <yarp/os/LockGuard.h>
 #include <iCub/perception/private/ports.h>
 
 using namespace yarp::os;
@@ -31,31 +32,19 @@ iCub::perception::Port::Port()
 /************************************************************************/
 void iCub::perception::Port::onRead(Bottle &bottle)
 {
-    mutex.lock();
+    LockGuard lg(mutex);
     this->bottle=bottle;
-    mutex.unlock();
-}
-
-
-/************************************************************************/
-void iCub::perception::Port::interrupt()
-{
-    disableCallback();
-    mutex.unlock();
-    BufferedPort<Bottle>::interrupt();
 }
 
 
 /************************************************************************/
 Value iCub::perception::Port::getValue(const int index)
 {
-    Value ret;
+    LockGuard lg(mutex);
 
-    mutex.lock();
+    Value ret;
     if (index<bottle.size())
         ret=Value(bottle.get(index).asDouble());
-    mutex.unlock();
-
     return ret;
 }
 
