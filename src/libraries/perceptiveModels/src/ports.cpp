@@ -43,7 +43,7 @@ Value iCub::perception::Port::getValue(const int index)
     LockGuard lg(mutex);
 
     Value ret;
-    if (index<bottle.size())
+    if ((index>=0) && (index<bottle.size()))
         ret=Value(bottle.get(index).asDouble());
     return ret;
 }
