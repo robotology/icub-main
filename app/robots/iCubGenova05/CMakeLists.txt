@@ -1,6 +1,6 @@
 set(appname iCubGenova05)
 
-set(scripts icub_all.xml robotInterface.ini general.xml iKinGazeCtrl.ini icubEyes.ini)
+set(scripts icub_all.xml yarprobotinterface.ini general.xml iKinGazeCtrl.ini icubEyes.ini)
 
 yarp_install(FILES ${scripts} DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname})
 yarp_install(DIRECTORY calibrators DESTINATION ${ICUB_ROBOTS_INSTALL_DIR}/${appname} PATTERN .svn EXCLUDE)  
