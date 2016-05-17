@@ -1,6 +1,6 @@
 == Instructions for release == 
 
-0) tag YARP and icub-firmware-shared
+0) tag YARP then icub-firmware-shared, icub-firmware by applying steps from 7 to 10 (steps 7 and 9 only if there are modifications)
 
 
 1) Checkout latest master and make sure that there are no local modifications
