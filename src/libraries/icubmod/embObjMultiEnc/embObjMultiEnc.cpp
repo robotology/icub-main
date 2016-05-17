@@ -370,6 +370,7 @@ bool embObjMultiEnc::initRegulars()
     vector<eOprotID32_t> id32v(0);
     eOprotID32_t id32 = eo_prot_ID32dummy;
 
+    id32v.clear();
     for(int j=0; j<numofjoints; j++)
     {
         // we need to choose the id32 to put inside the vector
@@ -378,7 +379,7 @@ bool embObjMultiEnc::initRegulars()
         // and put it inside vector
 
         id32v.push_back(id32);
-
+    }
         // now we send the vector
 
         if(false == res->serviceSetRegulars(eomn_serv_category_mc, id32v))
@@ -400,7 +401,6 @@ bool embObjMultiEnc::initRegulars()
                 }
             }
         }
-    }
    
     return true;
 }
