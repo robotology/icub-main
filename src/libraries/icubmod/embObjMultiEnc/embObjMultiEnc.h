@@ -107,6 +107,7 @@ private:
 
     short status;
     double timeStamp;
+    vector<int> listofjoints;
 
 private:
 

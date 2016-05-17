@@ -7,7 +7,10 @@
     
         <params file="general.xml" />
         <params file="hardware/electronics/left_lower_arm-j4_7-eln.xml" />
-        
+<!-- <params name="listofjoints"> 0 1 2 3 </params> -->
+        <group name="PIPPO">
+            <param name="listofjoints"> 0 1 2 3 </param>
+        </group>
     </device> 
     
 </devices>

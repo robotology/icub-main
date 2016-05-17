@@ -83,6 +83,35 @@ bool embObjMultiEnc::extractGroup(Bottle &input, Bottle &out, const std::string 
 
 bool embObjMultiEnc::fromConfig(yarp::os::Searchable &_config)
 {
+    yDebug()<< "configurazione: ";;
+    yDebug() << _config.toString();
+
+    Bottle general = _config.findGroup("PIPPO");
+    if(general.isNull())
+    {
+        yError() << "embObjMultiEnc cannot find general group";
+        return false;
+    }
+    
+    Bottle jointsbottle = general.findGroup("listofjoints");
+    if (jointsbottle.isNull())
+    {
+        yError() << "embObjMultiEnc cannot find listofjoints param";
+        return false;
+    }
+    
+    yDebug()<< "lista giunti: ";;
+    yDebug() << jointsbottle.toString();
+    
+    //jointsbottle contains: "listofjoints 0 1 2 3. So the num of joints is jointsbottle->size() -1 " 
+    numofjoints = jointsbottle.size() -1;  
+    
+    listofjoints.clear();
+    for (int i = 1; i < jointsbottle.size(); i++)  listofjoints.push_back(jointsbottle.get(i).asInt());
+
+    yDebug()<< " embObjMultiEnc List of joints: " << numofjoints;
+    for(int i=0; i<numofjoints; i++) yDebug() << "pos="<< i << "val="<<  listofjoints[i];
+    
     return true;
 }
 
@@ -341,32 +370,34 @@ bool embObjMultiEnc::initRegulars()
     vector<eOprotID32_t> id32v(0);
     eOprotID32_t id32 = eo_prot_ID32dummy;
 
-    // we need to choose the id32 to put inside the vector
-
-    id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, 0, eoprot_tag_mc_joint_status_addinfo_multienc);
-
-    // and put it inside vector
-
-    id32v.push_back(id32);
-
-    // now we send the vector
-
-    if(false == res->serviceSetRegulars(eomn_serv_category_mc, id32v))
+    for(int j=0; j<numofjoints; j++)
     {
-        yError() << "embObjMultiEnc::initRegulars() fails to add its variables to regulars: cannot proceed any further";
-        return false;
-    }
-    else
-    {
-        if(verbosewhenok)
+        // we need to choose the id32 to put inside the vector
+        id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, listofjoints[j], eoprot_tag_mc_joint_status_addinfo_multienc);
+
+        // and put it inside vector
+
+        id32v.push_back(id32);
+
+        // now we send the vector
+
+        if(false == res->serviceSetRegulars(eomn_serv_category_mc, id32v))
         {
-            yDebug() << "embObjMultiEnc::initRegulars() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
-            char nvinfo[128];
-            for (size_t r = 0; r<id32v.size(); r++)
+            yError() << "embObjMultiEnc::initRegulars() fails to add its variables to regulars: cannot proceed any further";
+            return false;
+        }
+        else
+        {
+            if(verbosewhenok)
             {
-                uint32_t item = id32v.at(r);
-                eoprot_ID2information(item, nvinfo, sizeof(nvinfo));
-                yDebug() << "\t it added regular rop for" << nvinfo;
+                yDebug() << "embObjMultiEnc::initRegulars() added" << id32v.size() << "regular rops to BOARD" << res->getName() << "with IP" << res->getIPv4string();
+                char nvinfo[128];
+                for (size_t r = 0; r<id32v.size(); r++)
+                {
+                    uint32_t item = id32v.at(r);
+                    eoprot_ID2information(item, nvinfo, sizeof(nvinfo));
+                    yDebug() << "\t it added regular rop for" << nvinfo;
+                }
             }
         }
     }

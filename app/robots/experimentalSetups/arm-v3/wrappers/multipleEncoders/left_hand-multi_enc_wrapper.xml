@@ -7,7 +7,7 @@
 
         <action phase="startup" level="5" type="attach">
             <paramlist name="networks">
-                <elem name="leftMais">  left_hand_multienc </elem>
+                <elem name="leftMultiEnc">  left_hand_multienc </elem>
             </paramlist>
         </action>
 

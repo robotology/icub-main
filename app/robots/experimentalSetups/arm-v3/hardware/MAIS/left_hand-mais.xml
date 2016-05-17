@@ -19,7 +19,7 @@
                     <param name="type">                 eobrd_mais          </param>
 
                     <group name="PROTOCOL">
-                        <param name="major">            1                   </param>    
+                        <param name="major">            0                   </param>    
                         <param name="minor">            0                   </param>     
                     </group>                    
                     <group name="FIRMWARE">
