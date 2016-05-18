@@ -451,6 +451,7 @@ bool embObjMotionControl::alloc(int nj)
     _rotorlimits_min = allocAndCheck<double>(nj);
 
     _pids=allocAndCheck<Pid>(nj);
+    _vpids=allocAndCheck<Pid>(nj);
     _tpids=allocAndCheck<Pid>(nj);
     _cpids = allocAndCheck<Pid>(nj);
 
@@ -512,6 +513,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_maxMotorVelocity);
     checkAndDestroy(_newtonsToSensor);
     checkAndDestroy(_pids);
+    checkAndDestroy(_vpids);
     checkAndDestroy(_tpids);
     checkAndDestroy(_cpids);
     checkAndDestroy(_impedance_params);
@@ -580,6 +582,7 @@ embObjMotionControl::embObjMotionControl() :
     _gearbox       = 0;
     opened        = 0;
     _pids         = NULL;
+    _vpids        = NULL;
     _tpids        = NULL;
     _cpids        = NULL;
     res           = NULL;
@@ -894,6 +897,39 @@ bool embObjMotionControl::parseImpedanceGroup_NewFormat(Bottle& pidsGroup, Imped
 }
 
 bool embObjMotionControl::parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[])
+{
+    int j=0;
+    Bottle xtmp;
+    if (!extractGroup(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "maxOutput", "Pid maxOutput parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp, "kff", "Pid kff parameter", _njoints))         return false; for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+
+    //conversion from metric to machine units (if applicable)
+    if (_positionControlUnits==P_METRIC_UNITS)
+    {
+        for (j=0; j<_njoints; j++)
+        {
+            myPid[j].kp = myPid[j].kp / _angleToEncoder[j];  //[PWM/deg]
+            myPid[j].ki = myPid[j].ki / _angleToEncoder[j];  //[PWM/deg]
+            myPid[j].kd = myPid[j].kd / _angleToEncoder[j];  //[PWM/deg]
+        }
+    }
+    else
+    {
+        //do nothing
+    }
+
+    return true;
+}
+
+bool embObjMotionControl::parseVelocityPidsGroup(Bottle& pidsGroup, Pid myPid[])
 {
     int j=0;
     Bottle xtmp;
@@ -1316,6 +1352,66 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
 
 
+    ////// VELOCITY PIDS
+    {
+        Bottle velPidsGroup;
+        velPidsGroup=config.findGroup("VELOCITY_CONTROL", "VelocityPid parameters new format");
+        if (velPidsGroup.isNull()==false)
+        {
+           Value &controlUnits=velPidsGroup.find("controlUnits");
+           if  (controlUnits.isNull() == false && controlUnits.isString() == true)
+           {
+                if      (controlUnits.toString()==string("metric_units"))  {yDebug("VELOCITY_CONTROL: using metric_units");  _velocityControlUnits=P_METRIC_UNITS;}
+                else if (controlUnits.toString()==string("machine_units")) {yDebug("VELOCITY_CONTROL: using machine_units"); _velocityControlUnits=P_MACHINE_UNITS;}
+                else    {yError() << "embObjMotionControl::fromConfig(): VELOCITY_CONTROL section: invalid controlUnits value";
+                         return false;}
+           }
+           else
+           {
+                yError() << "embObjMotionControl::fromConfig(): VELOCITY_CONTROL section: missing controlUnits parameter. Assuming machine_units. Please fix your configuration file.";
+                _velocityControlUnits=P_MACHINE_UNITS;
+           }
+
+           Value &controlLaw=velPidsGroup.find("controlLaw");
+           if (controlLaw.isNull() == false && controlLaw.isString() == true)
+           {
+               string s_controlaw = controlLaw.toString();
+               if (s_controlaw==string("joint_pid_v1"))
+               {
+                   if (!parseVelocityPidsGroup (velPidsGroup, _vpids))
+                   {
+                       yError() << "embObjMotionControl::fromConfig(): VELOCITY_CONTROL section: error detected in parameters syntax";
+                       return false;
+                   }
+                   else
+                   {
+                        yDebug("VELOCITY_CONTROL: using control law joint_pid_v1");
+                   }
+               }
+               else if (s_controlaw==string("not_implemented"))
+               {
+                   yDebug() << "found 'not_impelemented' in velocity control_law. This will terminate robotInterface execution.";
+                   return false;
+               }
+               else if (s_controlaw==string("disabled"))
+               {
+                   yDebug() << "found 'disabled' in velocity control_law. This will terminat robotInterface execution.";
+                   return false;
+               }
+               else
+               {
+                   yError() << "Unable to use control law " << s_controlaw << " por velocity control. Quitting.";
+                   return false;
+               }
+           }
+        }
+        else
+        {
+            yError() <<"embObjMotionControl::fromConfig(): Error: no VEL_PIDS group found in config file, returning";
+            return false;
+        }
+    }
+
     ////// TORQUE PIDS
     {
         Bottle trqPidsGroup;
@@ -1715,6 +1811,7 @@ bool embObjMotionControl::init()
         eOmc_joint_config_t jconfig = {0};
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
         copyPid_iCub2eo(&_pids[logico],  &jconfig.pidposition);
+        copyPid_iCub2eo(&_vpids[logico], &jconfig.pidvelocity);
         copyPid_iCub2eo(&_tpids[logico], &jconfig.pidtorque);
 
         jconfig.impedance.damping   = (eOmeas_damping_t)   U_32(_impedance_params[logico].damping * 1000);

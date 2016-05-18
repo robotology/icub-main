@@ -290,6 +290,7 @@ private:
     double *_rotorlimits_max;                   /** */
     double *_rotorlimits_min;                   /** */
     Pid *_pids;                                 /** initial gains */
+    Pid *_vpids;                                /** initial velocity gains */
     Pid *_tpids;                                /** initial torque gains */
     Pid *_cpids;                                /** initial current gains */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
@@ -332,7 +333,9 @@ private:
 
     enum       positionControlUnitsType {P_MACHINE_UNITS=0, P_METRIC_UNITS=1};
     positionControlUnitsType _positionControlUnits;
-    
+
+    enum       velocityControlUnitsType {P_MACHINE_UNITS=0, P_METRIC_UNITS=1};
+    velocityControlUnitsType _velocityControlUnits;
 
     // debug purpose
       
@@ -377,6 +380,7 @@ private:
     bool dealloc();
     bool isEpManagedByBoard();
     bool parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[]);
+    bool parseVelocityPidsGroup(Bottle& pidsGroup, Pid myPid[]);
     bool parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], double kbemf[], double ktau[], int filterType[]);
     bool parseImpedanceGroup_NewFormat(Bottle& pidsGroup, ImpedanceParameters vals[]);
     bool parseCurrentPidsGroup(Bottle& pidsGroup, Pid myPid[]);
