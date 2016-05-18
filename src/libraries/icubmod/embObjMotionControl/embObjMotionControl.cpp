@@ -1361,15 +1361,15 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
            Value &controlUnits=velPidsGroup.find("controlUnits");
            if  (controlUnits.isNull() == false && controlUnits.isString() == true)
            {
-                if      (controlUnits.toString()==string("metric_units"))  {yDebug("VELOCITY_CONTROL: using metric_units");  _velocityControlUnits=P_METRIC_UNITS;}
-                else if (controlUnits.toString()==string("machine_units")) {yDebug("VELOCITY_CONTROL: using machine_units"); _velocityControlUnits=P_MACHINE_UNITS;}
+                if      (controlUnits.toString()==string("metric_units"))  {yDebug("VELOCITY_CONTROL: using metric_units");  _velocityControlUnits=V_METRIC_UNITS;}
+                else if (controlUnits.toString()==string("machine_units")) {yDebug("VELOCITY_CONTROL: using machine_units"); _velocityControlUnits=V_MACHINE_UNITS;}
                 else    {yError() << "embObjMotionControl::fromConfig(): VELOCITY_CONTROL section: invalid controlUnits value";
                          return false;}
            }
            else
            {
                 yError() << "embObjMotionControl::fromConfig(): VELOCITY_CONTROL section: missing controlUnits parameter. Assuming machine_units. Please fix your configuration file.";
-                _velocityControlUnits=P_MACHINE_UNITS;
+                _velocityControlUnits=V_MACHINE_UNITS;
            }
 
            Value &controlLaw=velPidsGroup.find("controlLaw");

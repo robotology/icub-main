@@ -334,7 +334,7 @@ private:
     enum       positionControlUnitsType {P_MACHINE_UNITS=0, P_METRIC_UNITS=1};
     positionControlUnitsType _positionControlUnits;
 
-    enum       velocityControlUnitsType {P_MACHINE_UNITS=0, P_METRIC_UNITS=1};
+    enum       velocityControlUnitsType {V_MACHINE_UNITS=0, V_METRIC_UNITS=1};
     velocityControlUnitsType _velocityControlUnits;
 
     // debug purpose
