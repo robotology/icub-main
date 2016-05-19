@@ -3,8 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
-set(PROJECTNAME iKinGazeCtrl)
-project(${PROJECTNAME})
+project(iKinGazeCtrl)
 
 set(folder_header include/iCub/gazeNlp.h
                   include/iCub/utils.h
@@ -19,9 +18,6 @@ set(folder_source src/gazeNlp.cpp
                   src/localizer.cpp
                   src/main.cpp)
 
-source_group("Header Files" FILES ${folder_header})
-source_group("Source Files" FILES ${folder_source})
-
 include_directories(${PROJECT_SOURCE_DIR}/include
                     ${ctrlLib_INCLUDE_DIRS}
                     ${iKin_INCLUDE_DIRS}
@@ -29,9 +25,9 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${YARP_INCLUDE_DIRS})
 
 # import math symbols from standard cmath
-add_definitions(-D_USE_MATH_DEFINES)
-add_executable(${PROJECTNAME} ${folder_header} ${folder_source})
-target_link_libraries(${PROJECTNAME} ctrlLib iKin ${YARP_LIBRARIES})
-install(TARGETS ${PROJECTNAME} DESTINATION bin)
-
+add_definitions(${IPOPT_DEFINITIONS} -D_USE_MATH_DEFINES)
+add_executable(${PROJECT_NAME} ${folder_header} ${folder_source})
+target_link_libraries(${PROJECT_NAME} ctrlLib iKin ${IPOPT_LIBRARIES} ${YARP_LIBRARIES})
+set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " ${IPOPT_LINK_FLAGS}")
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
