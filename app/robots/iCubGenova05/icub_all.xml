@@ -12,9 +12,9 @@
     <devices file="hardware/motorControl/head-cfw2_can0-mc.xml" />
     <devices file="wrappers/motorControl/head-mc_wrapper.xml" />
 
-    <!-- TORSO 
+    <!-- TORSO --> 
     <devices file="hardware/motorControl/torso-ems5-mc.xml" />
-    <devices file="wrappers/motorControl/torso-mc_wrapper.xml" /> --> 
+    <devices file="wrappers/motorControl/torso-mc_wrapper.xml" /> 
 
     <!-- LEFT ARM -->
     <devices file="hardware/motorControl/left_upper_arm-ems1-mc.xml" />
@@ -45,7 +45,7 @@
     <devices file="wrappers/VFT/right_leg-VFT_wrapper.xml" /> 
     <devices file="wrappers/VFT/left_leg-VFT_wrapper.xml" />     
     <devices file="wrappers/VFT/right_arm-VFT_wrapper.xml" /> 
- <!--   <devices file="wrappers/VFT/torso-VFT_wrapper.xml" /> -->
+    <devices file="wrappers/VFT/torso-VFT_wrapper.xml" />
 
     <!-- ANALOG SENSOR MAIS -->
     <devices file="wrappers/MAIS/left_hand-mais_wrapper.xml" /> 
@@ -71,8 +71,8 @@
     <devices file="wrappers/skin/left_arm-skin_wrapper.xml" />
     <devices file="hardware/skin/left_arm-ems2-skin.xml" />
     <devices file="wrappers/skin/right_arm-skin_wrapper.xml" />  
-<!--     <devices file="wrappers/skin/torso-skin_wrapper.xml" /> 
-    <devices file="hardware/skin/torso-cfw2_can9-skin.xml" /> -->
+    <devices file="wrappers/skin/torso-skin_wrapper.xml" /> 
+    <devices file="hardware/skin/torso-cfw2_can9-skin.xml" />
     <devices file="hardware/skin/right_arm-ems4-skin.xml" /> 
     <devices file="wrappers/skin/left_leg-skin_wrapper.xml" />
     <devices file="wrappers/skin/right_leg-skin_wrapper.xml" />
@@ -85,6 +85,6 @@
     <devices file="calibrators/right_arm-calib.xml" /> 
     <devices file="calibrators/left_leg-calib.xml" />
     <devices file="calibrators/right_leg-calib.xml" />
- <!--    <devices file="calibrators/torso-calib.xml" /> -->
+    <devices file="calibrators/torso-calib.xml" />
     <devices file="calibrators/head-calib.xml" /> 
     </robot> 
