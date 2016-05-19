@@ -29,7 +29,7 @@ include_directories(${PROJECT_SOURCE_DIR}/include
                     ${YARP_INCLUDE_DIRS})
 
 # import math symbols from standard cmath
-add_definitions(-D_USE_MATH_DEFINES)
+add_definitions(-D_USE_MATH_DEFINES ${IPOPT_DEFINITIONS})
 add_executable(${PROJECTNAME} ${folder_header} ${folder_source})
 target_link_libraries(${PROJECTNAME} ctrlLib iKin ${YARP_LIBRARIES})
 install(TARGETS ${PROJECTNAME} DESTINATION bin)
