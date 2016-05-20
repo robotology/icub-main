@@ -4,9 +4,9 @@
     <robot name="iCubGenova05" build="1" portprefix="icub">
     <params file="hardware/electronics/pc104.xml" />
 
-    <!-- CARTESIANS 
+    <!-- CARTESIANS --> 
     <devices file="cartesian/left_arm-cartesian.xml" />
-    <devices file="cartesian/right_arm-cartesian.xml" /> --> 
+    <devices file="cartesian/right_arm-cartesian.xml" /> 
     
     <!-- HEAD -->	
     <devices file="hardware/motorControl/head-cfw2_can0-mc.xml" />
