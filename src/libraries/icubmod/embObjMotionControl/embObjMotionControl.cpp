@@ -1407,7 +1407,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         }
         else
         {
-            yError() <<"embObjMotionControl::fromConfig(): Error: no VEL_PIDS group found in config file, returning";
+            yWarning() <<"embObjMotionControl::fromConfig(): Warning: no VEL_PIDS group found in config file, skipping";
             //return false; // not mandatory by now
         }
     }
