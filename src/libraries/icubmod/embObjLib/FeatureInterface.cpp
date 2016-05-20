@@ -123,6 +123,40 @@ eObool_t feat_manage_motioncontrol_data(eOipv4addr_t ipv4, eOprotID32_t id32, vo
 }
 
 
+eObool_t feat_manage_motioncontrol_addinfo_multienc(eOipv4addr_t ipv4, eOprotID32_t id32, void* rxdata)
+{
+    IethResource* multienc = NULL;
+
+    if(NULL == _interface2ethManager)
+    {
+        return eobool_false;
+    }
+
+    multienc = _interface2ethManager->ethBoards->get_interface(ipv4, iethres_analogmultienc);
+    
+    if(NULL == multienc)
+    {
+        char ipinfo[20];
+        char nvinfo[128];
+        eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        yDebug("feat_manage_motioncontrol_addinfo_multienc() fails to get a handle of embObjMotionControl for IP = %s and NV = %s", ipinfo, nvinfo);
+        return eobool_false;
+    }
+
+    if(false == multienc->initialised())
+    {
+        return eobool_false;
+    }
+    else
+    {
+        multienc->update(id32, yarp::os::Time::now(), rxdata);
+    }
+
+    return eobool_true;
+}
+
+
 eObool_t feat_manage_skin_data(eOipv4addr_t ipv4, eOprotID32_t id32, void *arrayofcandata)
 {   
     IethResource* skin;

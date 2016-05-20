@@ -42,7 +42,7 @@ yarp::os::Semaphore TheEthManager::txSem = 1;
 const char * IethResource::names[iethresType_numberof+1] =
 {
     "resManagement", "resAnalogMais", "resAnalogStrain", "resMotionControl",
-    "resSkin", "resAnalogVirtual", "resAnalogInertial", "resNONE"
+    "resSkin", "resAnalogVirtual", "resAnalogInertial", "resAnalogmultienc", "resNONE"
 };
 
 const char * IethResource::stringOfType()
@@ -292,6 +292,45 @@ EthResource* EthBoards::get_resource(eOipv4addr_t ipv4)
     }
 
     return(ret);
+}
+
+bool EthBoards::get_LUTindex(eOipv4addr_t ipv4, uint8_t &index)
+{
+    index = 0;
+    eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
+    index --;
+    
+    if(index>=maxEthBoards)
+    {
+        return false;
+    }
+
+    if(NULL == LUT[index].resource)
+    {
+        return false;
+    }
+    return true;
+}
+
+IethResource* EthBoards::get_interface(eOipv4addr_t ipv4, iethresType_t type)
+{
+    IethResource *dev = NULL;
+    uint8_t index;
+    
+    if(!get_LUTindex(ipv4, index))
+    {
+        return NULL;
+    }
+    
+    if(iethres_none == type)
+    {
+        return NULL;
+    }
+
+    dev = LUT[index].interfaces[type];
+
+    return dev;
+
 }
 
 

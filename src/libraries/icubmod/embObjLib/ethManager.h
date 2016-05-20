@@ -82,6 +82,11 @@ using namespace std;
 // -- it is responsibility of the object which owns EthBoards (it is ethManager) to protect the class EthBoards vs concurrent use.
 // -- examples of concurrent use are: transmit or receive using an ethresource and ... attempting to create or destroy a resource.
 
+typedef struct
+{
+    IethResource* interface;
+    iethresType_t type;
+} interfaceInfo_t;
 
 class EthBoards
 {
@@ -103,7 +108,9 @@ public:
     size_t number_of_interfaces(EthResource* res);
     bool add(EthResource* res, IethResource* interface);
     IethResource* get_interface(eOipv4addr_t ipv4, eOprotID32_t id32);
+    IethResource* get_interface(eOipv4addr_t ipv4, iethresType_t type);
     bool rem(EthResource* res, iethresType_t type);
+    
 
     // the name of the board
     const char * name(eOipv4addr_t ipv4);
@@ -141,6 +148,11 @@ private:
 
     int sizeofLUT;
     ethboardProperties_t LUT[EthBoards::maxEthBoards];
+
+private:
+
+    // private functions
+    bool get_LUTindex(eOipv4addr_t ipv4, uint8_t &index);
 };
 
 

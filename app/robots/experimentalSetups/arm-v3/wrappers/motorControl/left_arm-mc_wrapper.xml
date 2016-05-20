@@ -13,7 +13,7 @@
             <!-- sets of joints for lower arm used on bench test -->
             <elem name="FirstSetOfJoints">  0  3   0  3 </elem>
             <elem name="SecondSetOfJoints"> 4  7   0  3 </elem> 
-            <elem name="ThirdSetOfJoints">  8  12  0  3 </elem> 
+            <elem name="ThirdSetOfJoints">  8  11  0  3 </elem> 
         </paramlist>
 
         <param name="period"> 10                        </param>

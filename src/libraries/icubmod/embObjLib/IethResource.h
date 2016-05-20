@@ -71,10 +71,11 @@ typedef enum
     iethres_motioncontrol   = 3,
     iethres_skin            = 4,
     iethres_analogvirtual   = 5,
-    iethres_analoginertial  = 6
+    iethres_analoginertial  = 6,
+    iethres_analogmultienc  = 7,
 } iethresType_t;
 
-enum { iethresType_numberof = 7 };
+enum { iethresType_numberof = 8 };
 
 
 class IethResource
