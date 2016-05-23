@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<robot name="torsoSkinLaptop" portprefix="icub" build="1">
+    <!-- SKIN -->  
+    <devices file="hardware/skin/torso.xml" /> 
+  
+    <!-- WRAPPERS -->
+    <devices file="wrappers/skin/torso-skin_wrapper.xml" /> 
+ 
+</robot> 
+
