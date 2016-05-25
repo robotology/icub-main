@@ -10,8 +10,8 @@
       <params file="hardware/mechanicals/torso-ems5-mec.xml" />
 
     <group name="LIMITS">
-        <param name="jntPosMax">                      50            10            70        </param>
-        <param name="jntPosMin">                     -50           -10           -20        </param>
+        <param name="jntPosMax">                      50            30            70        </param>
+        <param name="jntPosMin">                     -50           -30           -20        </param>
         <param name="rotorPosMin">                     0             0             0        </param> 
         <param name="rotorPosMax">                     0             0             0        </param>
         <param name="motorOverloadCurrents">        5000          5000          5000        </param>
