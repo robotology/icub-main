@@ -54,5 +54,7 @@
 
 11) Build source packages:
   ./admin/scripts/icub-package.sh x.y.z
+  
+12) Update the changelog here http://wiki.icub.org/wiki/ChangeLog
 
 12) Upload the package to sourceforge
