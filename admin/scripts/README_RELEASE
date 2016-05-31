@@ -1,7 +1,6 @@
 == Instructions for release == 
 
-0) tag YARP then icub-firmware-shared, icub-firmware by applying steps from 7 to 10 (steps 7 and 9 only if there are modifications)
-
+0) tag YARP 
 
 1) Checkout latest master and make sure that there are no local modifications
 
@@ -52,9 +51,11 @@
   git push origin master
   git push origin v2.3.21
 
-11) Build source packages:
+11) icub-packaging, icub-firmware-shared, icub-firmware by applying steps from 7 to 10 (steps 7 and 9 only if there are modifications)
+
+12) Build source packages:
   ./admin/scripts/icub-package.sh x.y.z
   
-12) Update the changelog here http://wiki.icub.org/wiki/ChangeLog
+13) Update the changelog here http://wiki.icub.org/wiki/ChangeLog
 
-12) Upload the package to sourceforge
+14) Upload the packages to github
