@@ -6,39 +6,38 @@ The list of authors who contributed code to iCub main is:
 * Alessandro Scalzo (87 files)
 * Arjan Gijsberts (84 files)
 * Lorenzo Natale (72 files)
-* Alberto Cardellino (68 files)
+* Alberto Cardellino (69 files)
 * Marco Randazzo (67 files)
 * Vadim Tikhanoff (67 files)
 * Paul Fitzpatrick (42 files)
 * Marco Maggiali (35 files)
-* Valentina Gaggero (27 files)
+* Valentina Gaggero (29 files)
 * Andrea Del Prete (23 files)
 * Matteo Fumagalli (18 files)
-* Alessandro Roncone (15 files)
+* Alessandro Roncone (14 files)
 * Carlo Ciliberto (11 files)
 * Serena Ivaldi (9 files)
 * Alexander Schmitz (8 files)
+* Marco Accame (6 files)
 * Martin Peniak (6 files)
 * Francesco Nori (6 files)
-* Marco Accame (6 files)
-* Daniele E. Domenichelli (5 files)
-* Giorgio Metta (5 files)
 * Francesco Giovannini (5 files)
+* Giorgio Metta (5 files)
+* Daniele E. Domenichelli (5 files)
 * Sean Ryan Fanello (3 files)
 * Ronny André Reierstad (2 files)
-* Andrew Dankers (2 files)
 * Jonas Ruesch (2 files)
+* Andrew Dankers (2 files)
 * Andrea del Prete (2 files)
-* Alberto Parmiggiani (1 files)
-* Cardellino Alberto (1 files)
-* Alexis Maldonado (1 files)
-* Davide Pollarolo (1 files)
 * Radu Bogdan Rusu (1 files)
+* Alberto Parmiggiani (1 files)
+* Davide Pollarolo (1 files)
 * Alexandre Bernardino (1 files)
+* Alexis Maldonado (1 files)
 
 The list of copyright holders for iCub main is:
-* RobotCub Consortium (491 files)
-* Istituto Italiano di Tecnologia (IIT) (219 files)
+* RobotCub Consortium (493 files)
+* Istituto Italiano di Tecnologia (219 files)
 * Jonas Ruesch (28 files)
 * Alexandre Bernardino (10 files)
 * Paul Fitzpatrick (8 files)
@@ -47,9 +46,9 @@ The list of copyright holders for iCub main is:
 * Vadim Tikhanoff (4 files)
 * Giorgio Metta (3 files)
 * Francesco Giovannini (3 files)
+* Radu Bogdan Rusu (2 files)
 * Emanuel Eichhammer (2 files)
 * Alexis Maldonado (2 files)
-* Radu Bogdan Rusu (2 files)
 * Lorenzo Natale (1 files)
 
 The identifier "RobotCub Consortium" used in some copyright statements is 
@@ -71,8 +70,8 @@ equivalent to the following list of institutions:
     Uppsala - Sweden
   * University of Zurich - Artificial Intelligence Lab, Department of
     Information Technology - Zurich - Switzerland
-  * [2005-2008] University of Salford - Centre for Robotics and  Automation
+  * University of Salford - Centre for Robotics and  Automation
     Salford - United Kingdom
-  * [2009-2010] The University of Sheffield, Dept. of Automatic Control &
+  * The University of Sheffield, Dept. of Automatic Control &
     Systems Engineering, Sheffield, UK
 
