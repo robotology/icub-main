@@ -54,7 +54,7 @@ void EthUpdater::cmdScan1()
                 printf(" mask=%x\n",mask);
                 ACE_UINT64 mac=0;
 
-                for (int i=8; i<14; ++i)
+                for (int i=13; i>=8; --i)
                 {
                     mac=(mac<<8)|mRxBuffer[i];
                 }
@@ -169,7 +169,7 @@ void EthUpdater::cmdScan2()
 
                 memcpy(rxdata.info32, &mRxBuffer[40], 32);
 
-#warning -------------------> TODO.marco.accame: use eOboard_t values
+//#warning -------------------> TODO.marco.accame: use eOboard_t values
 
                 printf("\nBOARD found at address %x:", rxAddress);
                 printf("\n prot = %d, boardtype = %s, startup proc = %s, def2run proc = %s. it has %d processes:",
@@ -224,7 +224,7 @@ void EthUpdater::cmdScan2()
                 ACE_UINT8 minor = rxdata.procinfo[rxdata.runningproc].minor;
                 ACE_UINT64 mac    = rxdata.macaddress;
 
-                #warning -------------> TODO.marco.accame: change to add in BoardInfo new information
+//                #warning -------------> TODO.marco.accame: change to add in BoardInfo new information
 
                 //BoardInfo *pBoard = new BoardInfo(rxAddress, mask, mac, major, minor);
 
@@ -248,7 +248,7 @@ void EthUpdater::cmdScan2()
                 printf(" mask=%x\n",mask);
                 ACE_UINT64 mac=0;
 
-                for (int i=8; i<14; ++i)
+                for (int i=13; i>=8; --i)
                 {
                     mac=(mac<<8)|mRxBuffer[i];
                 }
