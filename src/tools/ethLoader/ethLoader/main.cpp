@@ -61,11 +61,12 @@ enum
 {
     COLUMN_SELECTED,
     COLUMN_IP_ADDR,
-    COLUMN_IP_MASK,
     COLUMN_MAC,
+    COLUMN_BOARD_TYPE,
+    COLUMN_RUNNING_PROCESS,
     COLUMN_VERSION,
-    COLUMN_RELEASE,
-    COLUMN_BUILD,
+    COLUMN_DATE,
+    COLUMN_INFO,
     NUM_COLUMNS
 };
 
@@ -104,7 +105,8 @@ static GtkTreeModel* refresh_board_list_model()
     store=gtk_list_store_new(NUM_COLUMNS,
         G_TYPE_BOOLEAN,
         G_TYPE_STRING,
-		G_TYPE_STRING,
+        G_TYPE_STRING,
+        G_TYPE_STRING,
         G_TYPE_STRING,
         G_TYPE_STRING,
         G_TYPE_STRING,
@@ -112,12 +114,13 @@ static GtkTreeModel* refresh_board_list_model()
 		);
 
     char board_ipaddr[16];
-    char board_ipmask[16];
-    char board_mac[16];
+    char board_mac[32];
 
     char board_version[16];
-    char board_release[16];
-    char board_build[16];
+    char board_date[24];
+    char board_type[24];
+    char running_process[24];
+    char board_info[32];
 
     // add data to the list store	 
     for (int i=0; i<gUpdater.getBoardList().size(); ++i)
@@ -125,29 +128,38 @@ static GtkTreeModel* refresh_board_list_model()
         ACE_UINT32 ip=gUpdater.getBoardList()[i].mAddress;
         sprintf(board_ipaddr,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
         
-        ACE_UINT32 mk=gUpdater.getBoardList()[i].mMask;
-        sprintf(board_ipmask,"%d.%d.%d.%d",(mk>>24)&0xFF,(mk>>16)&0xFF,(mk>>8)&0xFF,mk&0xFF);
-
         ACE_UINT64 mac=gUpdater.getBoardList()[i].mMac;
-        ACE_UINT32 macL=(ACE_UINT32)(mac&0xFFFFFFFF);
-        ACE_UINT32 macH=(ACE_UINT32)((mac>>32)&0xFFFF);
+        //ACE_UINT32 macL=(ACE_UINT32)(mac&0xFFFFFFFF);
+        //ACE_UINT32 macH=(ACE_UINT32)((mac>>32)&0xFFFF);
 
-        sprintf(board_mac,"%04X%08X",macH,macL);
+        //sprintf(board_mac,"%04X%08X",macH,macL);
 
-        sprintf(board_version,"%d",gUpdater.getBoardList()[i].mVersion);
-        sprintf(board_release,"%d",gUpdater.getBoardList()[i].mRelease);
-        sprintf(board_build,  "%d",gUpdater.getBoardList()[i].mBuild);
+        snprintf(board_mac, sizeof(board_mac), "%02X-%02X-%02X-%02X-%02X-%02X",
+                            (uint8_t)(mac >> 40) & 0xff,
+                            (uint8_t)(mac >> 32) & 0xff,
+                            (uint8_t)(mac >> 24) & 0xff,
+                            (uint8_t)(mac >> 16) & 0xff,
+                            (uint8_t)(mac >> 8 ) & 0xff,
+                            (uint8_t)(mac      ) & 0xff
+                );
+
+        snprintf(board_version, sizeof(board_version), "%d.%d", gUpdater.getBoardList()[i].mVersionMajor, gUpdater.getBoardList()[i].mVersionMinor);
+        snprintf(board_type, sizeof(board_type), "%s", gUpdater.getBoardList()[i].mBoardType.c_str());
+        snprintf(running_process, sizeof(running_process), "%s", gUpdater.getBoardList()[i].mRunningProcess.c_str());
+        snprintf(board_info, sizeof(board_info), "%s", gUpdater.getBoardList()[i].mInfo32.c_str());
+        snprintf(board_date, sizeof(board_date), "%s", gUpdater.getBoardList()[i].mBuiltOn.c_str());
 
         gtk_list_store_append(store,&iter);
 
         gtk_list_store_set(store,&iter,
             COLUMN_SELECTED,gUpdater.getBoardList()[i].mSelected,
             COLUMN_IP_ADDR,board_ipaddr,
-            COLUMN_IP_MASK,board_ipmask,
             COLUMN_MAC,board_mac,
-            COLUMN_VERSION,board_version,
-            COLUMN_RELEASE,board_release,
-            COLUMN_BUILD,"",
+            COLUMN_BOARD_TYPE,board_type,
+            COLUMN_RUNNING_PROCESS, running_process,
+            COLUMN_VERSION, board_version,
+            COLUMN_DATE, board_date,
+            COLUMN_INFO, board_info,
             -1);
     }
 
@@ -399,7 +411,7 @@ static void add_columns(GtkTreeView *treeview)
     g_signal_connect(renderer,"toggled",G_CALLBACK(fixed_toggled),NULL);
     column=gtk_tree_view_column_new_with_attributes("Selected",renderer,"active",COLUMN_SELECTED,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),60);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),70);
     gtk_tree_view_append_column(treeview,column);
 
     // column 2 IP_ADDR
@@ -408,51 +420,57 @@ static void add_columns(GtkTreeView *treeview)
     GTK_CELL_RENDERER_TEXT(renderer)->editable_set=true;
     renderer->mode=GTK_CELL_RENDERER_MODE_EDITABLE;
     g_signal_connect(renderer,"edited",G_CALLBACK(edited_ip_addr),NULL);
-    column=gtk_tree_view_column_new_with_attributes("IP addr",renderer,"text",COLUMN_IP_ADDR,NULL);
+    column=gtk_tree_view_column_new_with_attributes("IP address",renderer,"text",COLUMN_IP_ADDR,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
     gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),100);
     //gtk_tree_view_column_set_sort_column_id(column,COLUMN_IP_ADDR);
     gtk_tree_view_append_column(treeview,column);
 
-    //column 3 IP_MASK
 
-    renderer=gtk_cell_renderer_text_new();
-    GTK_CELL_RENDERER_TEXT(renderer)->editable=true;
-    GTK_CELL_RENDERER_TEXT(renderer)->editable_set=true;
-    renderer->mode=GTK_CELL_RENDERER_MODE_EDITABLE;
-    g_signal_connect(renderer,"edited",G_CALLBACK(edited_ip_mask),NULL);
-    column=gtk_tree_view_column_new_with_attributes("IP mask",renderer,"text",COLUMN_IP_MASK,NULL);
-    gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),100);
-    gtk_tree_view_append_column(treeview,column);
-
-    // column 4 MAC
+    // column 3 MAC
     renderer=gtk_cell_renderer_text_new();
     column=gtk_tree_view_column_new_with_attributes("MAC",renderer,"text",COLUMN_MAC,NULL);
+    gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),130);
+    gtk_tree_view_append_column(treeview,column);
+
+    // column 4 BOARD TYPE
+    renderer=gtk_cell_renderer_text_new();
+    column=gtk_tree_view_column_new_with_attributes ("Board Type",renderer,"text",COLUMN_BOARD_TYPE,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
     gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),120);
     gtk_tree_view_append_column(treeview,column);
 
-    // column 5 VERSION
+
+    // column 5 RUNNING PROCESS
+    renderer=gtk_cell_renderer_text_new();
+    column=gtk_tree_view_column_new_with_attributes ("Process",renderer,"text",COLUMN_RUNNING_PROCESS,NULL);
+    gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),120);
+    gtk_tree_view_append_column(treeview,column);
+
+    // column 6 VERSION
     renderer=gtk_cell_renderer_text_new();
     column=gtk_tree_view_column_new_with_attributes("Version",renderer,"text",COLUMN_VERSION,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
     gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),60);
     gtk_tree_view_append_column(treeview,column);
 
-    // column 6 RELEASE
+    // column 7 DATE
     renderer=gtk_cell_renderer_text_new();
-    column=gtk_tree_view_column_new_with_attributes("Release",renderer,"text",COLUMN_RELEASE,NULL);
+    column=gtk_tree_view_column_new_with_attributes("Built On",renderer,"text",COLUMN_DATE,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),60);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),140);
     gtk_tree_view_append_column(treeview,column);
 
-    // column 7 BUILD
+    // column 8 INFO
     renderer=gtk_cell_renderer_text_new();
-    column=gtk_tree_view_column_new_with_attributes ("Build",renderer,"text",COLUMN_BUILD,NULL);
+    column=gtk_tree_view_column_new_with_attributes("Info",renderer,"text",COLUMN_INFO,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),60);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),250);
     gtk_tree_view_append_column(treeview,column);
+
+
 }
 
 
@@ -578,7 +596,9 @@ static void reset_cbk(GtkButton *button,gpointer user_data)
 
 static void procs_cbk(GtkButton *button,gpointer user_data)
 {
-    std::string procs=gUpdater.cmdGetProcs();
+    //std::string procs=gUpdater.cmdGetProcs();
+
+    std::string procs=gUpdater.cmdGetProcs2();
 
     gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(info_text)),procs.c_str(),-1);
 }
@@ -588,9 +608,51 @@ static void blink_cbk(GtkButton *button,gpointer user_data)
 	gUpdater.cmdBlink();
 }
 
-static void eraseeprom_cbk(GtkButton *button,gpointer user_data)
+static void eraseeprom_cbk(GtkButton *button, gpointer user_data)
 {
+    // by definining this macro we test the set/clr/get of info32
+//#define TEST_INFO32
+
+#if defined(TEST_INFO32)
+
+    static int iter = 0;
+    const int clear_frequency = 3;
+
+    if(0 == iter)
+    {
+        gUpdater.cmdInfo32Clear();
+    }
+    else
+    {
+        //    const char str32[3][40] = {"ciao uomo come stai?", "ieri ero a parigi", "domani piove"};
+        //    static int index = 0;
+        //    cmd[2] = strlen(str32[index]);
+        //    snprintf((char*)&cmd[3], 32, str32[index]);
+        //    index ++;
+        //    index %= 3;
+        static int ii = 0;
+        std::string str32[4] = {"STRINGA CON PIU' DI 32 CARATTERI SICURAMENTE", "ciao come stai?", "ieri oggi domani", "la sciagurata rispose"};
+        gUpdater.cmdInfo32Set(str32[ii]);
+        printf("\nIn TEST_INFO32: wrnitte str32 = %s\n", str32[ii].c_str());
+        ii++;
+        ii %= 4;
+    }
+
+    std::vector<std::string> str32v = gUpdater.cmdInfo32Get();
+    for(int i=0; i<str32v.size(); i++)
+    {
+        printf("\nIn TEST_INFO32: read str32 = %s\n", str32v[i].c_str());
+    }
+
+    iter++;
+
+    iter %= clear_frequency;
+
+#else
+
     gUpdater.cmdEraseEprom();
+
+#endif
 }
 
 static void info_cls_cbk(GtkButton *button,gpointer user_data)

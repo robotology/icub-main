@@ -2,7 +2,7 @@
 
 /*
  * Copyright (C) 2008 RobotCub Consortium
- * Author: Marco Maggiali, Marco Randazzo, Alessandro Scalzo
+ * Author: Marco Maggiali, Marco Randazzo, Alessandro Scalzo, Marco Accame
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  */
@@ -131,7 +131,7 @@ This file can be edited at src/myModule/main.cpp.
 **/
 
 #include "downloader.h"
-#include "ethDriver.h"
+#include "driver.h"
 #include "calibrate_window.h"
 #include <gtk/gtk.h>
 #include <gtk/gtkmain.h>
@@ -200,12 +200,13 @@ bool prompt_version=false;
 enum
 {
     COLUMN_SELECTED,
+    COLUMN_BUS,
     COLUMN_ID,
     COLUMN_TYPE,
-    COLUMN_VERSION,
-    COLUMN_RELEASE,
-    COLUMN_BUILD,
+    COLUMN_PROCESS,
+    COLUMN_FIRMWARE_VERSION,
     COLUMN_SERIAL,
+    COLUMN_PROTOCOL,
     COLUMN_STATUS,
     COLUMN_ADD_INFO,
     COLUMN_EEPROM,
@@ -241,6 +242,7 @@ static GtkTreeModel * refresh_board_list_model (void)
     store = gtk_list_store_new ( NUM_COLUMNS,
         G_TYPE_BOOLEAN,
         G_TYPE_UINT,
+        G_TYPE_UINT,
         G_TYPE_STRING,
         G_TYPE_STRING,
         G_TYPE_STRING,
@@ -252,12 +254,15 @@ static GtkTreeModel * refresh_board_list_model (void)
         );
 
     char board_type        [50]; memset (board_type,0,50);
-    char board_status   [50]; memset (board_status,0,50);
+    char board_process     [50]; memset (board_process,0,50);
+    char board_status      [50]; memset (board_status,0,50);
     char board_add_info    [50]; memset (board_add_info,0,50);
-    char board_version    [10]; memset (board_version,0,10);
-    char board_release    [10]; memset (board_release,0,10);
-    char board_build    [10]; memset (board_build,0,10);
-    char board_serial   [10]; memset (board_serial,0,10);
+    char board_firmware_version  [10]; memset (board_firmware_version,0,10);
+    char board_appl_minor  [10]; memset (board_appl_minor,0,10);
+    char board_appl_build  [10]; memset (board_appl_build,0,10);
+    char board_serial      [10]; memset (board_serial,0,10);
+    char board_protocol    [10]; memset (board_protocol,0,10);
+
 
     // add data to the list store
     for (i = 0; i < downloader.board_list_size; i++)
@@ -329,21 +334,46 @@ static GtkTreeModel * refresh_board_list_model (void)
             break;
         }
 
+        if(true == downloader.board_list[i].applicationisrunning)
+        {
+            strcpy(board_process, "canApplication");
+        }
+        else
+        {
+            strcpy(board_process, "canBootloader");
+        }
+
         strncpy  (board_add_info, downloader.board_list[i].add_info,32);
-        sprintf (board_version,"%d",downloader.board_list[i].version);
-        sprintf (board_release,"%X",downloader.board_list[i].release);
-        sprintf (board_build,"%d",downloader.board_list[i].build);
+        if(-1 == downloader.board_list[i].appl_vers_build)
+        {
+            sprintf (board_firmware_version, "%d.%d", downloader.board_list[i].appl_vers_major, downloader.board_list[i].appl_vers_minor);
+        }
+        else
+        {
+            sprintf (board_firmware_version, "%d.%d.%d", downloader.board_list[i].appl_vers_major, downloader.board_list[i].appl_vers_minor, downloader.board_list[i].appl_vers_build);
+        }
+        sprintf (board_appl_minor,"%d",downloader.board_list[i].appl_vers_minor);
+        sprintf (board_appl_build,"%d",downloader.board_list[i].appl_vers_build);
         sprintf (board_serial,"%s",downloader.board_list[i].serial);
+        if((0 == downloader.board_list[i].prot_vers_major) && (0 == downloader.board_list[i].prot_vers_minor))
+        {
+            snprintf (board_protocol, sizeof(board_protocol), "");
+        }
+        else
+        {
+            snprintf (board_protocol, sizeof(board_protocol), "%d.%d", downloader.board_list[i].prot_vers_major, downloader.board_list[i].prot_vers_minor);
+        }
 
         gtk_list_store_append (store, &iter);
         gtk_list_store_set (store, &iter,
             COLUMN_SELECTED, downloader.board_list[i].selected,
+            COLUMN_BUS, downloader.board_list[i].bus,
             COLUMN_ID, downloader.board_list[i].pid,
             COLUMN_TYPE, board_type,
-            COLUMN_VERSION, board_version,
-            COLUMN_RELEASE, board_release,
-            COLUMN_BUILD, board_build,
+            COLUMN_PROCESS, board_process,
+            COLUMN_FIRMWARE_VERSION, board_firmware_version,
             COLUMN_SERIAL, board_serial,
+            COLUMN_PROTOCOL, board_protocol,
             COLUMN_STATUS, board_status,
             COLUMN_ADD_INFO, board_add_info,
             COLUMN_EEPROM, downloader.board_list[i].eeprom,
@@ -396,7 +426,7 @@ static GtkTreeModel * create_netType_model (void)
     gtk_list_store_append (store, &iter);
     gtk_list_store_set (store, &iter, 0, "socketcan",-1);
     gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, 0, "EMS",-1);
+    gtk_list_store_set (store, &iter, 0, "ETH",-1);
 
     return GTK_TREE_MODEL (store);
 }
@@ -412,10 +442,11 @@ static GtkTreeModel * create_canId_model (void)
 
     // add data to the list store
     gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, 0, "Can 1",-1);
+    gtk_list_store_set (store, &iter, 0, "CAN1",-1);
     gtk_list_store_append (store, &iter);
-    gtk_list_store_set (store, &iter, 0, "Can 2",-1);
-
+    gtk_list_store_set (store, &iter, 0, "CAN2",-1);
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter, 0, "CANx",-1);
     return GTK_TREE_MODEL (store);
 }
 
@@ -460,7 +491,7 @@ static void combo_nettype_changed (GtkComboBox *box,    gpointer   user_data)
             gtk_widget_set_sensitive (box_ipAddr, false);
             break;
 
-        case  4: networkType="EMS";
+        case  4: networkType="ETH";
             gtk_widget_set_sensitive (combo_netId, false);
             gtk_widget_set_sensitive (combo_canId, true);
             gtk_widget_set_sensitive (box_ipAddr, true);
@@ -473,8 +504,9 @@ static void combo_canid_changed (GtkComboBox *box,    gpointer   user_data)
     int net = gtk_combo_box_get_active (box);
     switch (net)
     {
-        case  0: canID = 1; break;
-        case  1: canID = 2; break;
+        case  0: canID = 1;     break;
+        case  1: canID = 2;     break;
+        case  2: canID = CanPacket::everyCANbus;   break;
     }
 }
 
@@ -549,10 +581,10 @@ void not_connected_status()
     gtk_widget_set_sensitive (download_button, false);
     gtk_widget_set_sensitive (treeview, false);
 
-    gtk_widget_set_sensitive (combo_netId, networkType!="EMS");
+    gtk_widget_set_sensitive (combo_netId, networkType!="ETH");
     gtk_widget_set_sensitive (combo_netType, true);
-    gtk_widget_set_sensitive (combo_canId, networkType=="EMS");
-    gtk_widget_set_sensitive (box_ipAddr, networkType=="EMS");
+    gtk_widget_set_sensitive (combo_canId, networkType=="ETH");
+    gtk_widget_set_sensitive (box_ipAddr, networkType=="ETH");
     if (calibration_enabled) { gtk_widget_set_sensitive (calibrate_button, false); }
     return;
 
@@ -755,7 +787,7 @@ static void start_end_click (GtkButton *button,    gpointer   user_data)
         yarp::os::Property params;
         params.put("device", networkType.c_str());
 
-        if (networkType=="EMS")
+        if (networkType=="ETH")
         {
             if (!prompt_version)
             {
@@ -841,10 +873,10 @@ bool load_calibration (char* filename)
         return false;
     }
 
-    if (calibration_load_v2 (filename,downloader.board_list[selected].pid))
+    if (calibration_load_v2 (filename, downloader.board_list[selected].bus, downloader.board_list[selected].pid))
     {
         //save to eeprom
-        downloader.strain_save_to_eeprom(downloader.board_list[selected].pid);
+        downloader.strain_save_to_eeprom(downloader.board_list[selected].bus, downloader.board_list[selected].pid);
     }
     return true;
 }
@@ -953,7 +985,7 @@ static int download_click (GtkButton *button,    gpointer   user_data)
         if (downloader.board_list[i].status==BOARD_RUNNING &&
             downloader.board_list[i].selected==true)
         {
-            if (downloader.startscheda(downloader.board_list[i].pid,downloader.board_list[i].eeprom,downloader.board_list[i].type)!=0)
+            if (downloader.startscheda(downloader.board_list[i].bus, downloader.board_list[i].pid, downloader.board_list[i].eeprom, downloader.board_list[i].type)!=0)
             {
                 dialog_message(GTK_MESSAGE_ERROR,"Unable to start the board","Unable to send message 'start' or no answer received");
                 return DOWNLOADERR_BOARD_NOT_START;
@@ -982,7 +1014,7 @@ static int download_click (GtkButton *button,    gpointer   user_data)
     // Start the download for the selected boards
     do
     {
-        ret = downloader.download_file(0x0F, download_type,download_eeprom);
+        ret = downloader.download_file(CanPacket::everyCANbus, 0x0F, download_type,download_eeprom);
         if (float(downloader.progress)/downloader.file_length >0.0  && print00==false)    {printf ("downloading %s, 1%% done\n",buffer); print00=true;}
         if (float(downloader.progress)/downloader.file_length >0.25 && print25==false)    {printf ("downloading %s, 25%% done\n",buffer); print25=true;}
         if (float(downloader.progress)/downloader.file_length >0.50 && print50==false)    {printf ("downloading %s, 50%% done\n",buffer); print50=true;}
@@ -1025,7 +1057,7 @@ static int download_click (GtkButton *button,    gpointer   user_data)
 
     // End the download for the selected boards
     int errors =0;
-    downloader.stopscheda(15);
+    downloader.stopscheda(CanPacket::everyCANbus, 15);
 /*
     ///@@@ CHECK THE FOLLOWING CODE THAT HAS BEEN REMOVED
     ///    IN ORDER TO STOP THE BOARD AFTER THE DOWNLOAD AN START IMMEDIATELY
@@ -1038,7 +1070,7 @@ static int download_click (GtkButton *button,    gpointer   user_data)
         {
             if (downloader.board_list[i].status==BOARD_DOWNLOADING)
             {
-                if (downloader.stopscheda(downloader.board_list[i].pid)==0)
+                if (downloader.stopscheda(downloader.board_list[selected].bus, downloader.board_list[i].pid)==0)
                 {
                     downloader.board_list[i].status=BOARD_OK;
                     printf("board %d stopped\n",downloader.board_list[i].pid);
@@ -1139,7 +1171,7 @@ edited_board_id (GtkCellRendererText *cell, gchar *path_str, gchar *new_text, gp
 
     if (dialog_question_can_address(*old_val,new_val))
     {
-        downloader.change_card_address(*old_val,new_val,downloader.board_list[index[0]].type);
+        downloader.change_card_address(downloader.board_list[index[0]].bus, *old_val,new_val,downloader.board_list[index[0]].type);
         delete (old_val);
     }
 
@@ -1160,15 +1192,18 @@ edited_additional_info (GtkCellRendererText *cell, gchar *path_str, gchar *new_t
 
     gchar* old_text;
     gint*  board_id = new gint;
+    gint*  bus_id = new gint;
     // get toggled iter
     gtk_tree_model_get_iter (model, &iter, path);
     gtk_tree_model_get (model, &iter, COLUMN_ADD_INFO, &old_text,-1);
     gtk_tree_model_get (model, &iter, COLUMN_ID, board_id,-1);
+    gtk_tree_model_get (model, &iter, COLUMN_BUS, bus_id,-1);
 
     if (strcmp (old_text, new_text) == 0)
     {
         g_free (old_text);
         delete (board_id);
+        delete (bus_id);
         return;
     }
 
@@ -1177,7 +1212,7 @@ edited_additional_info (GtkCellRendererText *cell, gchar *path_str, gchar *new_t
     strncpy (safe_buffer,new_text,32);
     if (dialog_question_additional_field())
     {
-        downloader.change_board_info(*board_id, safe_buffer);
+        downloader.change_board_info(*bus_id, *board_id, safe_buffer);
         g_free (old_text);
         delete (board_id);
         //      dialog_message(GTK_MESSAGE_ERROR,"operation failed!","Not Yet Implemented! :-)");
@@ -1399,6 +1434,20 @@ static void add_columns (GtkTreeView *treeview)
     gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 70);
     gtk_tree_view_append_column (treeview, column);
 
+
+    // column 1 bis bus
+    renderer = gtk_cell_renderer_text_new ();
+    column = gtk_tree_view_column_new_with_attributes ("CAN",
+        renderer,
+        "text",
+        COLUMN_BUS,
+        NULL);
+    gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),GTK_TREE_VIEW_COLUMN_FIXED);
+    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 40);
+    //gtk_tree_view_column_set_sort_column_id (column, COLUMN_VERSION);
+    gtk_tree_view_append_column (treeview, column);
+
+
     // column 2 PID
     renderer = gtk_cell_renderer_text_new ();
     GTK_CELL_RENDERER_TEXT(renderer)->editable=true;
@@ -1412,61 +1461,49 @@ static void add_columns (GtkTreeView *treeview)
         COLUMN_ID,
         NULL);
     gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 40);
+    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 30);
     //gtk_tree_view_column_set_sort_column_id (column, COLUMN_ID);
     gtk_tree_view_append_column (treeview, column);
 
     // column 3 BOARD TYPE
     renderer = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes ("Type",
+    column = gtk_tree_view_column_new_with_attributes ("Board Type",
         renderer,
         "text",
         COLUMN_TYPE,
         NULL);
     gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 90);
+    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 120);
     //gtk_tree_view_column_set_sort_column_id (column, COLUMN_TYPE);
     gtk_tree_view_append_column (treeview, column);
 
-    // column 4 VERSION
+    // column 3b BOARD PROCESS
     renderer = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes ("Release",
+    column = gtk_tree_view_column_new_with_attributes ("Process",
         renderer,
         "text",
-        COLUMN_VERSION,
+        COLUMN_PROCESS,
         NULL);
     gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 60);
-    //gtk_tree_view_column_set_sort_column_id (column, COLUMN_VERSION);
+    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 120);
     gtk_tree_view_append_column (treeview, column);
 
-    // column 5 REVISION
+    // column 4 FW VERSION
     renderer = gtk_cell_renderer_text_new ();
     column = gtk_tree_view_column_new_with_attributes ("Version",
         renderer,
         "text",
-        COLUMN_RELEASE,
+        COLUMN_FIRMWARE_VERSION,
         NULL);
     gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 60);
-    //gtk_tree_view_column_set_sort_column_id (column, COLUMN_RELEASE);
+    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 100);
+    //gtk_tree_view_column_set_sort_column_id (column, COLUMN_VERSION);
     gtk_tree_view_append_column (treeview, column);
 
-    // column 5b BUILD
-    renderer = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes ("Build",
-        renderer,
-        "text",
-        COLUMN_BUILD,
-        NULL);
-    gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 70);
-    //gtk_tree_view_column_set_sort_column_id (column, COLUMN_RELEASE);
-    gtk_tree_view_append_column (treeview, column);
 
     // column 5c SERIAL
     renderer = gtk_cell_renderer_text_new ();
-    column = gtk_tree_view_column_new_with_attributes ("Serial",
+    column = gtk_tree_view_column_new_with_attributes ("Serial No.",
         renderer,
         "text",
         COLUMN_SERIAL,
@@ -1475,6 +1512,19 @@ static void add_columns (GtkTreeView *treeview)
     gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 70);
     //gtk_tree_view_column_set_sort_column_id (column, COLUMN_RELEASE);
     gtk_tree_view_append_column (treeview, column);
+
+
+    // column 5d PROT-MAJ
+    renderer = gtk_cell_renderer_text_new ();
+    column = gtk_tree_view_column_new_with_attributes ("Protocol",
+        renderer,
+        "text",
+        COLUMN_PROTOCOL,
+        NULL);
+    gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),GTK_TREE_VIEW_COLUMN_FIXED);
+    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 110);
+    gtk_tree_view_append_column (treeview, column);
+
 
     // column 6 STATUS
     renderer = gtk_cell_renderer_text_new ();
@@ -1509,14 +1559,13 @@ static void add_columns (GtkTreeView *treeview)
     renderer = gtk_cell_renderer_toggle_new ();
     g_signal_connect (renderer, "toggled", G_CALLBACK (eeprom_toggled), NULL);
 
-    column = gtk_tree_view_column_new_with_attributes ("EEPROM",
+    column = gtk_tree_view_column_new_with_attributes ("Erase EEPROM",
         renderer,
         "active", COLUMN_EEPROM,
         NULL);
-
     // set this column to a fixed sizing
     gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 40);
+    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 110);
     gtk_tree_view_append_column (treeview, column);
 
 }
@@ -1644,7 +1693,7 @@ int myMain( int   argc, char *argv[] )
                     strcmp(argv[2],"pcan") !=0 &&
                     strcmp(argv[2],"cfw2can")!=0 &&
                     strcmp(argv[2],"socketcan")!=0 &&
-                    strcmp(argv[2],"EMS")!=0)
+                    strcmp(argv[2],"ETH")!=0)
                     {
                         fatal_error(INVALID_PARAM_CANTYPE);
                     }
@@ -1653,7 +1702,7 @@ int myMain( int   argc, char *argv[] )
                         networkType=argv[2];
                     }
 
-                if (networkType=="EMS")
+                if (networkType=="ETH")
                 {
                     if (argc!=11 || strcmp(argv[9],"--boardIPAddr")) fatal_error(INVALID_CMD_STRING);
 
@@ -1790,18 +1839,6 @@ int myMain( int   argc, char *argv[] )
     gtk_fixed_put                    (GTK_FIXED(inv1), combo_netType ,250, 0);
 
 
-    //can bus id selection
-    model = create_canId_model ();
-    combo_canId = gtk_combo_box_new_with_model (model);
-    g_object_unref (model);
-    gtk_cell_layout_pack_start        (GTK_CELL_LAYOUT (combo_canId), renderer, TRUE);
-    gtk_cell_layout_set_attributes  (GTK_CELL_LAYOUT (combo_canId), renderer,"text", 0, NULL);
-    gtk_widget_set_size_request     (combo_canId, 100, 30);
-    gtk_combo_box_set_active        (GTK_COMBO_BOX (combo_canId), 0);
-    g_signal_connect                (combo_canId, "changed", G_CALLBACK (combo_canid_changed), NULL);
-    gtk_fixed_put                    (GTK_FIXED(inv1), combo_canId ,400, 0);
-
-
     //net id selection
     model = create_net_model ();
     combo_netId = gtk_combo_box_new_with_model (model);
@@ -1819,7 +1856,22 @@ int myMain( int   argc, char *argv[] )
     gtk_widget_set_size_request     (box_ipAddr, 100, 20);
     gtk_widget_set_sensitive        (box_ipAddr, false);
     gtk_entry_set_text              (GTK_ENTRY(box_ipAddr), "10.0.1.1");
-    gtk_fixed_put                   (GTK_FIXED(inv1), box_ipAddr ,550, 5);
+    //gtk_fixed_put                   (GTK_FIXED(inv1),box_ipAddr , 550, 5);
+    gtk_fixed_put                   (GTK_FIXED(inv1),box_ipAddr , 400, 5);
+
+
+    //can bus id selection
+    model = create_canId_model ();
+    combo_canId = gtk_combo_box_new_with_model (model);
+    g_object_unref (model);
+    gtk_cell_layout_pack_start        (GTK_CELL_LAYOUT (combo_canId), renderer, TRUE);
+    gtk_cell_layout_set_attributes  (GTK_CELL_LAYOUT (combo_canId), renderer,"text", 0, NULL);
+    gtk_widget_set_size_request     (combo_canId, 100, 30);
+    gtk_combo_box_set_active        (GTK_COMBO_BOX (combo_canId), 0);
+    g_signal_connect                (combo_canId, "changed", G_CALLBACK (combo_canid_changed), NULL);
+    //gtk_fixed_put                    (GTK_FIXED(inv1), combo_canId, 400, 0);
+    gtk_fixed_put                    (GTK_FIXED(inv1), combo_canId, 550, 0);
+
 
     combo_nettype_changed            (GTK_COMBO_BOX (combo_netType),0);
     combo_canid_changed              (GTK_COMBO_BOX (combo_canId),0);
