@@ -9,6 +9,7 @@
 #define __ETHUPDATER_H__
 
 #define CMD_SCAN           0xFF
+#define CMD_SCAN2          0x7F
 
 #define CMD_START          0x01
 #define CMD_DATA           0x02
@@ -19,7 +20,12 @@
 #define CMD_CHADDR         0x07
 #define CMD_CHMASK         0x08
 #define CMD_PROCS          0x09
+#define CMD_PROCS2         0x79
 #define CMD_SYSEEPROMERASE 0x12
+
+#define CMD_INFO_CLR        0x30
+#define CMD_INFO_SET        0x31
+#define CMD_INFO_GET        0x32
 
 #define CMD_SHALS      0x0A
 #define CMD_BLINK      0x0B
@@ -31,6 +37,9 @@
 
 #include "DSocket.h"
 #include "BoardList.h"
+
+#include <vector>
+using namespace std;
 
 class EthUpdater
 {
@@ -90,17 +99,25 @@ public:
     BoardList& getBoardList(){ return mBoardList; }
 
     std::string cmdGetProcs();
-    std::string cmdProgram(FILE *programFile,int partition,void (*updateProgressBar)(float));
+    std::string cmdGetProcs2();
+    std::string cmdProgram(FILE *programFile, int partition, void (*updateProgressBar)(float));
 
     void cmdScan();
+    void cmdScan1();
+    void cmdScan2();
     void cmdBootSelect(unsigned char sector);
     void sendCommandSelected(unsigned char command);
+    void sendCommandSelected(uint8_t * cmd, uint16_t len);
     void cmdReset();
     void cmdJumpUpd();
     void cmdBlink();
     void cmdEraseEprom();
     void cmdChangeAddress(ACE_UINT32 oldAddr,ACE_UINT32 newAddr);
     void cmdChangeMask(ACE_UINT32 oldAddr,ACE_UINT32 newAddr);
+
+    void cmdInfo32Clear();
+    void cmdInfo32Set(const string &info32);
+    vector<string> cmdInfo32Get();
    
 protected:
     int sendDataBroadcast(unsigned char* data,int size,int answers,int retry);

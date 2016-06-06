@@ -10,12 +10,24 @@
 #include <ace/ACE.h>
 #include <yarp/os/Time.h>
 
+#include <yarp/os/Log.h>
+
+using namespace yarp::os;
+
 const int EthUpdater::PROGRAM_APP=0x5A;
 const int EthUpdater::PROGRAM_LOADER=0x55;
 const int EthUpdater::PROGRAM_UPDATER=0xAA;
 
 void EthUpdater::cmdScan()
 {
+    cmdScan2();
+}
+
+void EthUpdater::cmdScan1()
+{
+    // it sends a can command in the old format.
+    // it can be decoded by new boards as well.
+
     mBoardList.empty();
 
     mTxBuffer[0]=CMD_SCAN;
@@ -34,9 +46,9 @@ void EthUpdater::cmdScan()
                 printf("ADDRESS=%x",rxAddress);
                 fflush(stdout);
 
-                ACE_UINT8 version=mRxBuffer[1];
-                ACE_UINT8 release=mRxBuffer[2];
-                ACE_UINT8 build  =mRxBuffer[3];
+                ACE_UINT8 major = mRxBuffer[1];
+                ACE_UINT8 minor = mRxBuffer[2];
+                ACE_UINT8 typeofboard = mRxBuffer[3];
 
                 ACE_UINT32 mask=*(ACE_UINT32*)(mRxBuffer+4);
                 printf(" mask=%x\n",mask);
@@ -47,7 +59,201 @@ void EthUpdater::cmdScan()
                     mac=(mac<<8)|mRxBuffer[i];
                 }
 
-                BoardInfo *pBoard=new BoardInfo(rxAddress,mask,mac,version,release,build);
+                BoardInfo *pBoard=new BoardInfo(rxAddress, mask, mac, major, minor);
+
+                mBoardList.addBoard(pBoard);
+            }
+        }
+    }
+}
+
+//typedef struct
+//{
+//    uint32_t            year  : 12;    /**< the year a.d. upto 2047 */
+//    uint32_t            month : 4;     /**< the month, where Jan is 1, Dec is 12 */
+//    uint32_t            day   : 5;     /**< the day from 1 to 31 */
+//    uint32_t            hour  : 5;     /**< the hour from 0 to 23 */
+//    uint32_t            min   : 6;     /**< the minute from 0 to 59 */
+//} eO_E_date_t;
+
+void eo_E_common_date_to_string(eO_E_date_t date, char *str, uint8_t size)
+{
+    static const char * months[16] = {"ERR", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "ERR", "ERR", "ERR"};
+    if(NULL != str)
+    {
+        snprintf(str, size, "%d %s %.2d %d:%d", date.year, months[date.month], date.day, date.hour, date.min);
+    }
+}
+
+const char * eo_E_common_proc_to_string(uint8_t proc)
+{
+    static const char * procs[4] = {"eLoader", "eUpdater", "eApplication", "ERR"};
+    if(proc >= 3)
+    {
+        return(procs[3]);
+    }
+
+    return(procs[proc]);
+}
+
+//typedef struct
+//{
+//    uint8_t     type;
+//    uint8_t     major;
+//    uint8_t     minor;
+//    eO_E_date_t builddate;
+//} eO_E_procInfo_t;
+
+//typedef struct
+//{
+//    uint8_t         protversion;
+//    uint64_t        macaddress;
+//    uint8_t         boardtype;
+//    uint8_t         startup;
+//    uint8_t         def2run;
+//    uint8_t         nprocs;
+//    eO_E_procInfo_t procinfo[3];
+//    uint8_t         runningproc;
+//    uint8_t         info32[32];
+//} scan2rxdata_t;
+
+void EthUpdater::cmdScan2()
+{
+    // it sends the old scan command, ... but it is able to process replies form both old and new boards
+    // - the old boards send the old information
+    // - the new boards send additional information
+    // the receiver knows if we have an old or a new format on the basis of the received OPCODE
+
+    mBoardList.empty();
+
+    mTxBuffer[0]=CMD_SCAN;
+
+    mSocket.SendBroad(mTxBuffer,1,mPort);
+
+    ACE_UINT16 rxPort;
+    ACE_UINT32 rxAddress = mMyAddress;
+
+    while (mSocket.ReceiveFrom(mRxBuffer,1024,rxAddress,rxPort,1000)>0)
+    {
+        if (CMD_SCAN2 == mRxBuffer[0])
+        {
+            // new format
+
+            if (rxAddress!=mMyAddress)
+            {
+                //printf("ADDRESS=%x",rxAddress);
+                fflush(stdout);
+
+                scan2rxdata_t rxdata = {0};
+
+                rxdata.protversion = mRxBuffer[1];
+
+                memcpy(&rxdata.macaddress, &mRxBuffer[2], 6);
+                rxdata.boardtype = mRxBuffer[8];
+                rxdata.startup = mRxBuffer[9];
+                rxdata.def2run = mRxBuffer[10];
+                rxdata.nprocs = mRxBuffer[11];
+
+
+                for(int i=0; i<rxdata.nprocs; i++)
+                {
+                    rxdata.procinfo[i].type  = mRxBuffer[12+8*i];
+                    rxdata.procinfo[i].major = mRxBuffer[13+8*i];
+                    rxdata.procinfo[i].minor = mRxBuffer[14+8*i];
+                    memcpy(&rxdata.procinfo[i].builddate, &mRxBuffer[15+8*i], 4);
+                }
+
+                rxdata.runningproc = mRxBuffer[36];
+
+                // dont use mRxBuffer[37, 8, 9]
+
+                memcpy(rxdata.info32, &mRxBuffer[40], 32);
+
+#warning -------------------> TODO.marco.accame: use eOboard_t values
+
+                printf("\nBOARD found at address %x:", rxAddress);
+                printf("\n prot = %d, boardtype = %s, startup proc = %s, def2run proc = %s. it has %d processes:",
+                            rxdata.protversion,
+                            (32 == rxdata.boardtype)? "EMS" : "MC4PLUS",
+                            eo_E_common_proc_to_string(rxdata.startup),
+                            eo_E_common_proc_to_string(rxdata.def2run),
+                            rxdata.nprocs
+                       );
+                for(int n=0; n<rxdata.nprocs; n++)
+                {
+                    char strdate[24] = {0};
+                    eo_E_common_date_to_string(rxdata.procinfo[n].builddate, strdate, sizeof(strdate));
+                    printf("\n proc-%d: type %s w/ appl version = (%d, %d), built on %s",
+                           n,
+                           eo_E_common_proc_to_string(rxdata.procinfo[n].type),
+                           rxdata.procinfo[n].major, rxdata.procinfo[n].minor,
+                           strdate
+                           );
+
+                }
+
+                printf("\n now process %s is running", eo_E_common_proc_to_string(rxdata.runningproc));
+
+                if(0xff == rxdata.info32[0])
+                {
+                    printf("\n stored info32 is .. ");
+                    for(int m=0; m<32; m++)
+                    {
+                        printf("0x%x ", rxdata.info32[m]);
+                    }
+
+                }
+                else
+                {
+                    printf("\n stored info32 is .. ");
+                    printf("l = %d, string = %s \n", rxdata.info32[0], &rxdata.info32[1]);
+                }
+
+//                printf("\n stored info32 is .. ");
+//                for(int m=0; m<32; m++)
+//                {
+//                    printf("0x%x ", rxdata.info32[m]);
+//                }
+                printf("\n\n");
+
+
+                ACE_UINT32 mask = 0xFFFFFF00; // fixed
+
+
+                ACE_UINT8 major = rxdata.procinfo[rxdata.runningproc].major;
+                ACE_UINT8 minor = rxdata.procinfo[rxdata.runningproc].minor;
+                ACE_UINT64 mac    = rxdata.macaddress;
+
+                #warning -------------> TODO.marco.accame: change to add in BoardInfo new information
+
+                //BoardInfo *pBoard = new BoardInfo(rxAddress, mask, mac, major, minor);
+
+                BoardInfo *pBoard = new BoardInfo(rxAddress, rxdata);
+
+                mBoardList.addBoard(pBoard);
+            }
+        }
+        else if (mRxBuffer[0]==CMD_SCAN)
+        {
+            if (rxAddress!=mMyAddress)
+            {
+                printf("ADDRESS=%x",rxAddress);
+                fflush(stdout);
+
+                ACE_UINT8 major = mRxBuffer[1];
+                ACE_UINT8 minor = mRxBuffer[2];
+                ACE_UINT8 typeofboard  = mRxBuffer[3];
+
+                ACE_UINT32 mask=*(ACE_UINT32*)(mRxBuffer+4);
+                printf(" mask=%x\n",mask);
+                ACE_UINT64 mac=0;
+
+                for (int i=8; i<14; ++i)
+                {
+                    mac=(mac<<8)|mRxBuffer[i];
+                }
+
+                BoardInfo *pBoard = new BoardInfo(rxAddress, mask, mac, major, minor);
 
                 mBoardList.addBoard(pBoard);
             }
@@ -275,6 +481,115 @@ void EthUpdater::sendCommandSelected(unsigned char command)
     }
 }
 
+
+void EthUpdater::sendCommandSelected(uint8_t * cmd, uint16_t len)
+{
+    for (int i=0; i<mBoardList.size(); ++i)
+    {
+        if (mBoardList[i].mSelected)
+        {
+            mSocket.SendTo(cmd, len, mPort, mBoardList[i].mAddress);
+        }
+    }
+}
+
+
+void EthUpdater::cmdInfo32Clear()
+{
+    sendCommandSelected(CMD_INFO_CLR);
+}
+
+
+vector<string> EthUpdater::cmdInfo32Get()
+{
+    vector<string> thestrings(0);
+
+
+    uint8_t cmd[2] = { CMD_INFO_GET, 32};
+
+    sendCommandSelected(cmd, sizeof(cmd));
+
+    ACE_UINT16 rxPort;
+    ACE_UINT32 rxAddress;
+
+
+    while(mSocket.ReceiveFrom(mRxBuffer, 1024, rxAddress, rxPort, 500)>0)
+    {
+        if((CMD_INFO_GET == mRxBuffer[0]) && (32 == mRxBuffer[1]))
+        {
+
+            if(rxAddress != mMyAddress)
+            {
+                string readstring;
+
+                char ip32[20];
+                snprintf(ip32, sizeof(ip32), "%d.%d.%d.%d",(rxAddress>>24)&0xFF, (rxAddress>>16)&0xFF, (rxAddress>>8)&0xFF, rxAddress&0xFF);
+
+                printf("\n received info32 from board IP = %s: ", ip32);
+
+                if(0 != mRxBuffer[2])
+                {
+                    printf("failure w/ value %d", mRxBuffer[2]);
+                }
+                else
+                {
+                    if(0xff != mRxBuffer[3])
+                    {
+                        readstring = std::string((const char*)&mRxBuffer[4]);
+                    }
+
+                    uint8_t info32[32] = {0};
+                    memcpy(info32, &mRxBuffer[3], 32);
+
+                    if(0xff == info32[0])
+                    {
+                        printf("\n stored info32 is .. ");
+                        for(int m=0; m<32; m++)
+                        {
+                            printf("0x%x ", info32[m]);
+                        }
+
+                    }
+                    else
+                    {
+                        printf("l = %d, string = %s \n", info32[0], &info32[1]);
+                    }
+
+                }
+
+                thestrings.push_back(readstring);
+
+                fflush(stdout);
+
+            }
+        }
+    }
+
+    return thestrings;
+
+}
+
+
+void EthUpdater::cmdInfo32Set(const string &info32)
+{
+    uint8_t cmd[2+32] = {0};
+    cmd[0] = CMD_INFO_SET;
+    cmd[1] = 32;
+
+    const char * str32 = info32.c_str();
+
+    int len = strlen(str32);
+    if(len>30)
+    {
+        len = 30;
+    }
+    cmd[2] = len;
+    memcpy(&cmd[3], str32, len);
+
+    sendCommandSelected(cmd, sizeof(cmd));
+}
+
+
 void EthUpdater::cmdReset()
 {
     sendCommandSelected(CMD_RESET);
@@ -350,6 +665,149 @@ std::string EthUpdater::cmdGetProcs()
     return info;
 }
 
+
+std::string EthUpdater::cmdGetProcs2()
+{
+    // this method sends a PROCS request in such a way that:
+    // - if we have an old board, we receive just a string full of pre-formatted info
+    // - if we have a new board, we receive the new SCAN data structure and then the string (for backward compatibility).
+    // 
+
+    uint8_t cmd[2] = { CMD_PROCS, CMD_PROCS2};
+
+    sendCommandSelected(cmd, sizeof(cmd));
+
+    ACE_UINT16 rxPort;
+    ACE_UINT32 rxAddress;
+
+    std::string info;
+
+    while (mSocket.ReceiveFrom(mRxBuffer,1024,rxAddress,rxPort,500)>0)
+    {
+        if (mRxBuffer[0]== CMD_PROCS)
+        {   // old boards reply with CMD_PROCS
+
+            printf("\n received a CMD_PROCS\n");
+            fflush(stdout);
+
+            if (rxAddress != mMyAddress)
+            {
+                char buff[16];
+                sprintf(buff,"%d.%d.%d.%d",(rxAddress>>24)&0xFF,
+                    (rxAddress>>16)&0xFF,
+                    (rxAddress>>8)&0xFF,
+                    rxAddress&0xFF);
+
+                info+="------------------------------\r\n";
+                info+=std::string("Board\t")+std::string(buff);
+                info+="\r\n\r\n";
+                info+=std::string((char*)mRxBuffer+2);
+            }
+        }
+        else if(mRxBuffer[0] == CMD_PROCS2)
+        {   // new boards reply with CMD_PROCS2
+            // the format is the same as the reply to CMD_SCAN in the first 40+32 bytes. then we we have ...
+
+            printf("\n received a CMD_PROCS2\n");
+            fflush(stdout);
+
+            if (rxAddress != mMyAddress)
+            {
+                scan2rxdata_t rxdata = {0};
+                
+                // fill rxdata
+
+                rxdata.protversion = mRxBuffer[1];
+
+                memcpy(&rxdata.macaddress, &mRxBuffer[2], 6);
+                rxdata.boardtype = mRxBuffer[8];
+                rxdata.startup = mRxBuffer[9];
+                rxdata.def2run = mRxBuffer[10];
+                rxdata.nprocs = mRxBuffer[11];
+
+
+                for(int i=0; i<rxdata.nprocs; i++)
+                {
+                    rxdata.procinfo[i].type  = mRxBuffer[12+8*i];
+                    rxdata.procinfo[i].major = mRxBuffer[13+8*i];
+                    rxdata.procinfo[i].minor = mRxBuffer[14+8*i];
+                    memcpy(&rxdata.procinfo[i].builddate, &mRxBuffer[15+8*i], 4);
+                }
+
+                rxdata.runningproc = mRxBuffer[36];
+
+                // dont use mRxBuffer[37, 8, 9]
+
+                memcpy(rxdata.info32, &mRxBuffer[40], 32);
+
+#if 1
+                // print rxdata. 
+                // it would be much bettwer, however, store it somewhere and made it available
+                // through some method
+#warning --> TODO.marco.accame: store rxdata somewhere
+
+                printf("\nBOARD at address %x:", rxAddress);
+                printf("\n prot = %d, boardtype = %s, startup proc = %s, def2run proc = %s. it has %d processes:",
+                            rxdata.protversion,
+                            (32 == rxdata.boardtype)? "EMS" : "MC4PLUS",
+                            eo_E_common_proc_to_string(rxdata.startup),
+                            eo_E_common_proc_to_string(rxdata.def2run),
+                            rxdata.nprocs
+                       );
+                for(int n=0; n<rxdata.nprocs; n++)
+                {
+                    char strdate[24] = {0};
+                    eo_E_common_date_to_string(rxdata.procinfo[n].builddate, strdate, sizeof(strdate));
+                    printf("\n proc-%d: type %s w/ appl version = (%d, %d), built on %s",
+                           n,
+                           eo_E_common_proc_to_string(rxdata.procinfo[n].type),
+                           rxdata.procinfo[n].major, rxdata.procinfo[n].minor,
+                           strdate
+                           );
+
+                }
+
+                printf("\n now process %s is running", eo_E_common_proc_to_string(rxdata.runningproc));
+
+                if(0xff == rxdata.info32[0])
+                {
+                    printf("\n stored info32 is .. ");
+                    for(int m=0; m<32; m++)
+                    {
+                        printf("0x%x ", rxdata.info32[m]);
+                    }
+
+                }
+                else
+                {
+                    printf("\n stored info32 is .. ");
+                    printf("l = %d, string = %s \n", rxdata.info32[0], &rxdata.info32[1]);
+                }
+
+                printf("\n\n");
+
+#endif
+                // now we put into info all what is ..... in mRxBuffer[40+32] and beyond
+
+                {
+                    char buff[16];
+                    sprintf(buff,"%d.%d.%d.%d",(rxAddress>>24)&0xFF,
+                        (rxAddress>>16)&0xFF,
+                        (rxAddress>>8)&0xFF,
+                        rxAddress&0xFF);
+
+                    info+="------------------------------\r\n";
+                    info+=std::string("Board\t")+std::string(buff);
+                    info+="\r\n\r\n";
+                    info+=std::string((char*)&mRxBuffer[40+32]);
+                }
+            }
+        }
+    }
+
+    return info;
+}
+
 int EthUpdater::sendDataBroadcast(unsigned char* data,int size,int answers,int retry)
 {
     const int UPD_OK=0;
@@ -407,6 +865,8 @@ int EthUpdater::sendDataBroadcast(unsigned char* data,int size,int answers,int r
 
     return answers;
 }
+
+
 
 /*
 void EthUpdater::cmdGetShals()
