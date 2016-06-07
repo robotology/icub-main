@@ -126,9 +126,10 @@ void EthUpdater::cmdScan2()
 
     mBoardList.empty();
 
-    mTxBuffer[0]=CMD_SCAN;
+    mTxBuffer[0] = CMD_SCAN;
+    mTxBuffer[1] = CMD_SCAN2;
 
-    mSocket.SendBroad(mTxBuffer,1,mPort);
+    mSocket.SendBroad(mTxBuffer, 2, mPort);
 
     ACE_UINT16 rxPort;
     ACE_UINT32 rxAddress = mMyAddress;
