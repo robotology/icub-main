@@ -206,11 +206,11 @@ bool action_class::parseCommandLine(const char* command_line, int line, int n_jo
     action_struct tmp_action(n_joints);
     //use strtok for runtime-defined number of entries
     char command_line_format [1000];
-    sprintf(command_line_format, "%d %lf    ");
+    sprintf(command_line_format, "%%d %%lf    ");
     for (int i = 0; i < n_joints; i++)
     {
         size_t off = strlen(command_line_format);
-        sprintf(command_line_format+off, "%lf ");
+        sprintf(command_line_format+off, "%%lf ");
     }
 
     int ret = sscanf(command_line, "%d %lf    %lf %lf %lf %lf %lf %lf", 
