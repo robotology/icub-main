@@ -29,13 +29,11 @@ case "$1" in
 	        ;;
 	stop)
 		echo "Stopping yarp server"
-		killall yarpserver3
 		killall yarpserver
 		;;
 
 	kill)
 		echo "Killing yarp server"
-		killall -9 yarpserver3
 		killall -9 yarpserver
 		;;
 	*)
