@@ -138,7 +138,7 @@ public:
             yInfo("gyro     = %s",gyro.toString(3,3).c_str());
             yInfo("gyroBias = %s",gyroBias.toString(3,3).c_str());
             yInfo("dt       = %.0f [us]",dt*1e6);
-            yInfo("");
+            yInfo("\n");
         }
 
         return true;

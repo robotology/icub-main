@@ -234,7 +234,7 @@ void SkinMeshThreadPort::run()
         }
 
         yTrace("Virtual contacts: %s",skin_value_virtual.toString(3,3).c_str());
-        yTrace("");
+        yTrace("\n");
         yTrace("Virtual contacts color: %i %i %i",skin_color_virtual[0],skin_color_virtual[1],skin_color_virtual[2]);
     }
 

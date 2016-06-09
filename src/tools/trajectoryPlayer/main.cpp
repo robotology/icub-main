@@ -314,7 +314,7 @@ public:
                     //last_time = current_time;
                     actions.current_action++;
                     compute_and_send_command(actions.current_action);
-                    yDebug("Executing action: %4d/%4d", actions.current_action , last_action);
+                    yDebug("Executing action: %4zd/%4zd", actions.current_action , last_action);
                     //printf("EXECUTING %d, elapsed_time:%.5f requested_time:%.5f\n", actions.current_action, current_time-last_time, duration);
                 }
                 else

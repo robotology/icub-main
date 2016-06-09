@@ -54,13 +54,13 @@ void Model::printMessage(const int logtype, const int level,
         switch (logtype)
         {
         case log::error:
-            yError(str.c_str());
+            yError("%s", str.c_str());
             break;
         case log::warning:
-            yWarning(str.c_str());
+            yWarning("%s", str.c_str());
             break;
         case log::info:
-            yInfo(str.c_str());
+            yInfo("%s", str.c_str());
             break;
         default:
             printf("%s\n",str.c_str());

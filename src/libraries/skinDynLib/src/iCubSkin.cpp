@@ -92,7 +92,7 @@ using namespace iCub::skinDynLib;
 void iCubSkin::print(int verbosity)
 {
     yDebug("********************\n");
-    yDebug("iCubSkin size %i",skin.size());
+    yDebug("iCubSkin size %zi",skin.size());
     for (size_t i = 0; i < skin.size(); ++i)
     {
         skin[i].print(verbosity);
