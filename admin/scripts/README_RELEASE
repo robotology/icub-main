@@ -49,7 +49,7 @@
 
 10) Push your modifications
   git push origin master
-  git push origin v2.3.21
+  git push origin vx.y.z
 
 11) icub-packaging, icub-firmware-shared, icub-firmware by applying steps from 7 to 10 (steps 7 and 9 only if there are modifications)
 
@@ -59,3 +59,5 @@
 13) Update the changelog here http://wiki.icub.org/wiki/ChangeLog
 
 14) Upload the packages to github
+
+15) Update the binaries link in http://wiki.icub.org/wiki/Downloads
