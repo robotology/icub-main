@@ -6,31 +6,31 @@
                 <params file="general.xml" />
                 
 		<group name="GENERAL">
-		    <param name="joints"> 2 </param> <!-- the number of joints of the robot part -->
+		    <param name="joints"> 4 </param> <!-- the number of joints of the robot part -->
 		    <param name="deviceName"> MC4plusjig_Calibrator </param> <!-- forse non e' funzionale ma serve solo per debug -->
 		</group>
 
         <group name="HOME">
-		    <param name="positionHome">                       0          0   </param>
-		    <param name="velocityHome">                       20         20   </param>
+		    <param name="positionHome">           0         0      0     0</param>
+		    <param name="velocityHome">           20        20     20    20</param>
 		</group>
 
 		<group name="CALIBRATION">
-		    <param name="calibrationType">                    5         3      </param>
-		    <param name="calibration1">                       200       0      </param> <!-- used pwm  -->
-		    <param name="calibration2">                       65536     0      </param> 
-		    <param name="calibration3">                       0         0      </param> 
-            <param name="calibration4">                       0         0      </param> 
-            <param name="calibration5">                       0         0      </param> 
+		    <param name="calibrationType">        5         3      3     3</param>
+		    <param name="calibration1">           200       0      0     0</param> <!-- used pwm  -->
+		    <param name="calibration2">           65536     0      0     0      </param> 
+		    <param name="calibration3">           0         0      0     0      </param> 
+            <param name="calibration4">           0         0      0     0      </param> 
+            <param name="calibration5">           0         0      0     0      </param> 
 
 
-            <param name="calibrationZero">                    0.0        0     </param>
-            <param name="calibrationDelta">                   3.0        0     </param>
+            <param name="calibrationZero">         0.0      0      0     0     </param>
+            <param name="calibrationDelta">        3.0      0      0     0     </param>
 
-		    <param name="startupPosition">                    0.0        0     </param> <!-- target position in deg after high level calib is terminated --> 
-		    <param name="startupVelocity">                    20.0       20     </param> <!-- and its velocity in deg/sec -->
-		    <param name="startupMaxPwm">                      1500        1500    </param> <!-- max pwm used in calib (it is a pid param)-->
-		    <param name="startupPosThreshold">                1            1   </param> <!-- tolerance of position in deg relative to positionZero param -->  
+		    <param name="startupPosition">        0.0       0      0     0     </param> <!-- target position in deg after high level calib is terminated --> 
+		    <param name="startupVelocity">       20.0       20     20.0       20</param> <!-- and its velocity in deg/sec -->
+		    <param name="startupMaxPwm">         1500        1500    1500        1500</param> <!-- max pwm used in calib (it is a pid param)-->
+		    <param name="startupPosThreshold">     1          1       1            1</param> <!-- tolerance of position in deg relative to positionZero param -->  
 		</group>
 
 		

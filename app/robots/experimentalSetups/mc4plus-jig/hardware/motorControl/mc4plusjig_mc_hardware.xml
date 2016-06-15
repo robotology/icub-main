@@ -8,54 +8,54 @@
       <params file="hardware/mechanicals/devmc4plusjig-mc4plus01-mec.xml" />
 
     <group name="LIMITS">
-        <param name="jntPosMax">             360          360         </param>
-        <param name="jntPosMin">            -360           -360        </param>
-        <param name="rotorPosMax">             0           0          </param>
-        <param name="rotorPosMin">             0           0          </param>
-        <param name="motorOverloadCurrents"> 10000         10000         </param>
-        <param name="motorNominalCurrents">  10000         10000          </param>
-        <param name="motorPeakCurrents">     10000         10000           </param>
-        <param name="jntVelMax">              1000         1000        </param>
-        <param name="motorPwmLimit">         3300           3300       </param>
+        <param name="jntPosMax">             360          360         360          360</param>
+        <param name="jntPosMin">            -360         -360        -360         -360 </param>
+        <param name="rotorPosMax">             0           0            0           0    </param>
+        <param name="rotorPosMin">             0           0            0           0   </param>
+        <param name="motorOverloadCurrents"> 140     10000        10000         10000 </param>
+        <param name="motorNominalCurrents">  45     10000        10000         10000  </param>
+        <param name="motorPeakCurrents">     100     10000        10000         10000    </param>
+        <param name="jntVelMax">              1000      1000         1000          1000 </param>
+        <param name="motorPwmLimit">          3360      3360         3360          3360</param>
 
     </group>
     
     <group name="IMPEDANCE">
-        <param name="stiffness">         0.0         0.0           </param>
-        <param name="damping">           0.0	     0.0           </param>
+        <param name="stiffness">         0.0         0.0       0.0         0.0    </param>
+        <param name="damping">           0.0	     0.0        0.0         0.0   </param>
     </group>
     
 	<group name="POSITION_CONTROL">
-        <param name="controlLaw">    joint_pid_v1      joint_pid_v1          </param>    
-        <param name="controlUnits">  metric_units       metric_units        </param> 
-        <param name="kp">            568.00             500.00        </param>   
-        <param name="kd">                 0             0        </param>       
-        <param name="ki">             	  0             0        </param>          
-        <param name="maxOutput">          	3360        1000            </param>  
-        <param name="maxInt">           750            750         </param>       
-        <param name="shift">              0             0        </param>       
-        <param name="ko">                 0             0        </param>       
-        <param name="stictionUp">         0             0        </param>       
-        <param name="stictionDwn">        0             0        </param>       
-        <param name="kff">                0             0        </param>       
+        <param name="controlLaw">    joint_pid_v1   </param>    
+        <param name="controlUnits">  metric_units   </param> 
+        <param name="kp">            568.00        500.00      568.00        500.00   </param>   
+        <param name="kd">                 0          0           0             0     </param>       
+        <param name="ki">                 0          0           0             0     </param>          
+        <param name="maxOutput">       3360       1000        3360          1000     </param>  
+        <param name="maxInt">           750        750         750           750   </param>       
+        <param name="shift">              0          0           0             0  </param>       
+        <param name="ko">                 0          0           0             0  </param>       
+        <param name="stictionUp">         0          0           0             0  </param>       
+        <param name="stictionDwn">        0          0           0             0  </param>       
+        <param name="kff">                0          0           0             0  </param>       
     </group>
 	
 	<group name="TORQUE_CONTROL">
         <param name="controlLaw">    motor_pid_with_friction_v1 </param>    
         <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">              0                  0      </param>       
-        <param name="kd">              0                  0      </param>       
-        <param name="ki">              0                  0      </param>       
-        <param name="maxOutput">          0               0         </param>       
-        <param name="maxInt">          0                  0      </param>       
-        <param name="shift">           0                  0      </param>       
-        <param name="ko">              0                  0      </param>       
-        <param name="stictionUp">      0                  0      </param>       
-        <param name="stictionDwn">     0                  0      </param>       
-        <param name="kff">             0                  0      </param>   
-        <param name="kbemf">           0                  0      </param>    
-        <param name="filterType">      0                  0      </param>           
-        <param name="ktau">            0                  0      </param>  
+        <param name="kp">              0           0            0                  0  </param>       
+        <param name="kd">              0           0            0                  0 </param>       
+        <param name="ki">              0           0            0                  0 </param>       
+        <param name="maxOutput">       0           0           0                  0     </param>       
+        <param name="maxInt">          0           0           0                  0  </param>       
+        <param name="shift">           0           0           0                  0  </param>       
+        <param name="ko">              0           0           0                  0  </param>       
+        <param name="stictionUp">      0           0           0                  0  </param>       
+        <param name="stictionDwn">     0           0           0                  0  </param>       
+        <param name="kff">             0           0            0                  0 </param>   
+        <param name="kbemf">           0           0           0                  0  </param>    
+        <param name="filterType">      0           0            0                  0 </param>           
+        <param name="ktau">            0           0            0                  0 </param>  
     </group>
 	
 	

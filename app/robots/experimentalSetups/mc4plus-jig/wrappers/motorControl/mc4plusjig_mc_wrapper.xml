@@ -5,12 +5,12 @@
   <device name="devmc4plusjig_mc_wrapper" type="controlboardwrapper2">
       <paramlist name="networks">
 	<!-- elem name hereafter are custom names that live only in this file, they are used in the attach phase -->
-	  <elem name="FirstSetOfJoints">  0  1  0  1 </elem> <!-- the 4 numbers are: joint-start-user, jonit-end-user, joint-startboard, joint-end-board -->
+	  <elem name="FirstSetOfJoints">  0  3  0  3 </elem> <!-- the 4 numbers are: joint-start-user, jonit-end-user, joint-startboard, joint-end-board -->
       </paramlist>
 
         <param name="period"> 10                              </param>
         <param name="name">   /icub/mc4plusjig-joint          </param>
-        <param name="joints"> 2                               </param>
+        <param name="joints"> 4                               </param>
 
 
       <action phase="startup" level="5" type="attach">

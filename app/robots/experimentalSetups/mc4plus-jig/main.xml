@@ -8,6 +8,15 @@
     <devices file="./hardware/motorControl/mc4plusjig_mc_hardware.xml" /> 
     <devices file="./wrappers/motorControl/mc4plusjig_mc_wrapper.xml" /> 
 
+    <!--STRAIN 
+    <devices file="wrappers/FT/strain_wrapper.xml" />
+    <devices file="hardware/FT/strain.xml" />  -->
+
+    <!--MAIS 
+    <devices file="wrappers/MAIS/mais_wrapper.xml" />
+    <devices file="hardware/MAIS/mais.xml" /> -->
+
+
     <!-- CALIBRATORS -->
     <devices file="./calibrators/mc4plusjig_calib.xml" />
     
