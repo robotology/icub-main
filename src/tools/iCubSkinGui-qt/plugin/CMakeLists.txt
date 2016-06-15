@@ -1,7 +1,7 @@
 # Copyright (C) 2015  iCub Facility, Istituto Italiano di Tecnologia
 # Author: Daniele E. Domenichelli <daniele.domenichelli@iit.it>
 # CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
-
+ 
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
@@ -20,7 +20,8 @@ set(QtICubSkinGuiPlugin_SRCS Fingertip2Left.cpp
                              SkinMeshThreadPort.cpp
                              TouchSensor.cpp
                              Triangle_10pad.cpp
-                             Triangle.cpp)
+                             Triangle.cpp
+							 CER_SH_PDL.cpp)
 
 set(QtICubSkinGuiPlugin_HDRS qticubskinguiplugin.h
                              qticubskinguiplugin_plugin.h
@@ -34,7 +35,8 @@ set(QtICubSkinGuiPlugin_HDRS qticubskinguiplugin.h
                              include/SkinMeshThreadPort.h
                              include/TouchSensor.h
                              include/Triangle_10pad.h
-                             include/Triangle.h)
+                             include/Triangle.h
+							 include/CER_SH_PDL.h)
 
 source_group("Source Files" FILES ${QtICubSkinGuiPlugin_SRCS})
 source_group("Header Files" FILES ${QtICubSkinGuiPlugin_HDRS})
