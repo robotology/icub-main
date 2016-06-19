@@ -146,6 +146,7 @@ embObjStrain::embObjStrain()
     opened = false;
 
     analogdata.resize(0);
+    offset.resize(0);
     scaleFactor.resize(0);
 
     scaleFactorIsFilled = false;
@@ -169,6 +170,7 @@ embObjStrain::embObjStrain()
 embObjStrain::~embObjStrain()
 {
     analogdata.resize(0);
+    offset.resize(0);
     scaleFactor.resize(0);
 
     if(NULL != parser)
@@ -236,6 +238,7 @@ bool embObjStrain::open(yarp::os::Searchable &config)
     {
         // they must be of size: strain_Channels, and 0.0-initted / 1.0-initted
         analogdata.resize(strain_Channels, 0.0);
+        offset.resize(strain_Channels, 0.0);
         scaleFactor.resize(strain_Channels, 1.0);
     }
 
@@ -608,7 +611,7 @@ int embObjStrain::read(yarp::sig::Vector &out)
     out.resize(analogdata.size());
     for (size_t k = 0; k<analogdata.size(); k++)
     {
-        out[k] = analogdata[k];
+        out[k] = analogdata[k]+offset[k];
     }
 
 
@@ -649,6 +652,12 @@ int embObjStrain::getChannels()
 
 int embObjStrain::calibrateSensor()
 {
+    mutex.wait();
+    for (size_t i = 0; i < analogdata.size(); i++)
+    {
+        offset[i] = -analogdata[i];
+    }
+    mutex.post();
     return AS_OK;
 }
 

@@ -102,6 +102,7 @@ private:
     yarp::os::Semaphore mutex;
 
     vector<double> analogdata;
+    vector<double> offset;
     vector<double> scaleFactor;
 
     bool scaleFactorIsFilled;
