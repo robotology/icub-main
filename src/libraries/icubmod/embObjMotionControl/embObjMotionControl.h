@@ -285,6 +285,7 @@ private:
     bool   *_hasTempSensor;                     /** */
     bool   *_hasRotorEncoder;                   /** */
     bool   *_hasRotorEncoderIndex;              /** */
+    bool   *_hasSpeedEncoder;                   /** */
     int    *_rotorIndexOffset;                  /** */
     int    *_motorPoles;                        /** */
     double *_rotorlimits_max;                   /** */

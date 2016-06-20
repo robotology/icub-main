@@ -445,6 +445,7 @@ bool embObjMotionControl::alloc(int nj)
     _hasTempSensor = allocAndCheck<bool>(nj);
     _hasRotorEncoder = allocAndCheck<bool>(nj);
     _hasRotorEncoderIndex = allocAndCheck<bool>(nj);
+    _hasSpeedEncoder = allocAndCheck<bool>(nj);
     _rotorIndexOffset = allocAndCheck<int>(nj);
     _motorPoles = allocAndCheck<int>(nj);
     _rotorlimits_max = allocAndCheck<double>(nj);
@@ -542,6 +543,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_hasTempSensor);
     checkAndDestroy(_hasRotorEncoder);
     checkAndDestroy(_hasRotorEncoderIndex);
+    checkAndDestroy(_hasSpeedEncoder);
     checkAndDestroy(_rotorIndexOffset);
     checkAndDestroy(_motorPoles);
     checkAndDestroy(_axisName);
@@ -597,6 +599,7 @@ embObjMotionControl::embObjMotionControl() :
     _hasTempSensor = NULL;
     _hasRotorEncoder = NULL;
     _hasRotorEncoderIndex = NULL;
+    _hasSpeedEncoder = NULL;
     _rotorIndexOffset = NULL;
     _motorPoles       = NULL;
     _cacheImpedance   = NULL;
@@ -1161,7 +1164,18 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         for (i = 1; i < xtmp.size(); i++)
             _hasRotorEncoderIndex[i - 1] = xtmp.get(i).asInt();
     }
-
+    if (!extractGroup(general, xtmp, "HasSpeedEncoder", "HasSpeedEncoder 0/1 ", _njoints))
+    {
+        // optional by now
+        //return false;
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+            _hasSpeedEncoder[i - 1] = xtmp.get(i).asInt();
+    }
+    
     // Rotor encoder res
     if (!extractGroup(general, xtmp, "RotorEncoderRes", "a list of scales for the rotor encoders", _njoints))
     {
@@ -1887,6 +1901,7 @@ bool embObjMotionControl::init()
         motor_cfg.hasRotorEncoder = _hasRotorEncoder[logico];
         motor_cfg.hasTempSensor = _hasTempSensor[logico];
         motor_cfg.hasRotorEncoderIndex = _hasRotorEncoderIndex[logico];
+        motor_cfg.hasSpeedEncoder = _hasSpeedEncoder[logico];
         motor_cfg.motorPoles = _motorPoles[logico];
         motor_cfg.rotorIndexOffset = _rotorIndexOffset[logico];
         motor_cfg.rotorEncoderType = _rotorEncoderType[logico];
