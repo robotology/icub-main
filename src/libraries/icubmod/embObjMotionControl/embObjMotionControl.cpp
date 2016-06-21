@@ -2522,12 +2522,12 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         break;
         
     case eomc_calibration_type11_cer_hands:
-        calib.params.type11.pwm         = (int32_t)S_32(params.param1);
-        calib.params.type11.delta       = (int32_t)S_32(params.param2);
-        calib.params.type11.offset0     = (int32_t)S_32(params.param3);
-        calib.params.type11.offset1     = (int32_t)S_32(params.param4);
-        calib.params.type11.cable_range = (int32_t)S_32(params.param5);
-        calib.params.type11.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
+        calib.params.type11.offest0     = (int32_t)S_32(params.param1);
+        calib.params.type11.offset1     = (int32_t)S_32(params.param2);
+        calib.params.type11.offset2     = (int32_t)S_32(params.param3);
+        calib.params.type11.cable_range = (int32_t)S_32(params.param4);
+        calib.params.type11.pwm         = (int32_t)S_32(params.param5);
+        //calib.params.type11.calibrationZero = 32767;//(int32_t)S_32(params.paramZero * _angleToEncoder[j]);
         break;
         
     default:
