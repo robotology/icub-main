@@ -2522,7 +2522,7 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         break;
         
     case eomc_calibration_type11_cer_hands:
-        calib.params.type11.offest0     = (int32_t)S_32(params.param1);
+        calib.params.type11.offset0     = (int32_t)S_32(params.param1);
         calib.params.type11.offset1     = (int32_t)S_32(params.param2);
         calib.params.type11.offset2     = (int32_t)S_32(params.param3);
         calib.params.type11.cable_range = (int32_t)S_32(params.param4);
