@@ -267,47 +267,49 @@ static GtkTreeModel * refresh_board_list_model (void)
     // add data to the list store
     for (i = 0; i < downloader.board_list_size; i++)
     {
-        switch (downloader.board_list[i].type)
-        {
-        case icubCanProto_boardType__dsp:
-            strcpy(board_type, "RM OLD (DSP)");
-            break;
-        case icubCanProto_boardType__pic:
-            strcpy(board_type, "MPH (PIC)");
-            break;
-        case icubCanProto_boardType__2dc:
-            strcpy(board_type, "RM 2DC (DSP)");
-            break;
-        case icubCanProto_boardType__4dc:
-            strcpy(board_type, "RM 4DC (DSP)");
-            break;
-        case icubCanProto_boardType__bll:
-            strcpy(board_type, "RM BLL (DSP)");
-            break;
-        case icubCanProto_boardType__skin:
-            strcpy(board_type, "SKIN (DSPIC)");
-            break;
-        case icubCanProto_boardType__strain:
-            strcpy(board_type, "STRAIN (DSPIC)");
-            break;
-        case icubCanProto_boardType__mais:
-            strcpy(board_type, "MAIS (DSPIC)");
-            break;
-        case icubCanProto_boardType__2foc:
-            strcpy(board_type, "2FOC (DSPIC)");
-            break;
-        case icubCanProto_boardType__6sg:
-            strcpy(board_type, "6SG (DSPIC)");
-            break;
-        case icubCanProto_boardType__jog:
-            strcpy(board_type, "JOG (DSPIC)");
-            break;
-        case icubCanProto_boardType__unknown:
+//        switch (downloader.board_list[i].type)
+//        {
+//        case icubCanProto_boardType__dsp:
+//            strcpy(board_type, "RM OLD (DSP)");
+//            break;
+//        case icubCanProto_boardType__pic:
+//            strcpy(board_type, "MPH (PIC)");
+//            break;
+//        case icubCanProto_boardType__2dc:
+//            strcpy(board_type, "RM 2DC (DSP)");
+//            break;
+//        case icubCanProto_boardType__4dc:
+//            strcpy(board_type, "RM 4DC (DSP)");
+//            break;
+//        case icubCanProto_boardType__bll:
+//            strcpy(board_type, "RM BLL (DSP)");
+//            break;
+//        case icubCanProto_boardType__skin:
+//            strcpy(board_type, "SKIN (DSPIC)");
+//            break;
+//        case icubCanProto_boardType__strain:
+//            strcpy(board_type, "STRAIN (DSPIC)");
+//            break;
+//        case icubCanProto_boardType__mais:
+//            strcpy(board_type, "MAIS (DSPIC)");
+//            break;
+//        case icubCanProto_boardType__2foc:
+//            strcpy(board_type, "2FOC (DSPIC)");
+//            break;
+//        case icubCanProto_boardType__6sg:
+//            strcpy(board_type, "6SG (DSPIC)");
+//            break;
+//        case icubCanProto_boardType__jog:
+//            strcpy(board_type, "JOG (DSPIC)");
+//            break;
+//        case icubCanProto_boardType__unknown:
 
-        default:
-            strcpy(board_type, "UNKNOWN");
-            break;
-        }
+//        default:
+//            strcpy(board_type, "UNKNOWN");
+//            break;
+//        }
+
+        snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string((eObrd_type_t)downloader.board_list[i].type));
 
         switch (downloader.board_list[i].status)
         {
@@ -357,7 +359,7 @@ static GtkTreeModel * refresh_board_list_model (void)
         sprintf (board_serial,"%s",downloader.board_list[i].serial);
         if((0 == downloader.board_list[i].prot_vers_major) && (0 == downloader.board_list[i].prot_vers_minor))
         {
-            snprintf (board_protocol, sizeof(board_protocol), "");
+            snprintf (board_protocol, sizeof(board_protocol), " ");
         }
         else
         {

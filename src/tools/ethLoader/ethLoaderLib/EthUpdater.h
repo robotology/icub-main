@@ -8,32 +8,9 @@
 #ifndef __ETHUPDATER_H__
 #define __ETHUPDATER_H__
 
-#define CMD_SCAN           0xFF
-#define CMD_SCAN2          0x7F
 
-#define CMD_START          0x01
-#define CMD_DATA           0x02
-#define CMD_JUMP           0x03
-#define CMD_END            0x04
-#define CMD_BOOT           0x05
-#define CMD_RESET          0x06
-#define CMD_CHADDR         0x07
-#define CMD_CHMASK         0x08
-#define CMD_PROCS          0x09
-#define CMD_PROCS2         0x79
-#define CMD_SYSEEPROMERASE 0x12
+#include "EoUpdaterProtocol.h"
 
-#define CMD_INFO_CLR        0x30
-#define CMD_INFO_SET        0x31
-#define CMD_INFO_GET        0x32
-
-#define CMD_SHALS      0x0A
-#define CMD_BLINK      0x0B
-#define CMD_JUMP_UPD   0x0C
-
-#define PACKET_SIZE 512
-
-#define BOARD_TYPE_EMS 0x0A
 
 #include "DSocket.h"
 #include "BoardList.h"
@@ -52,8 +29,8 @@ protected:
 
     BoardInfo* mBoard2Prog[256];
 
-    unsigned char mRxBuffer[1024];
-    unsigned char mTxBuffer[1024];
+    unsigned char mRxBuffer[uprot_UDPmaxsize];
+    unsigned char mTxBuffer[uprot_UDPmaxsize];
 
     ACE_UINT16 mPort;
     ACE_UINT32 mBroadcast;
@@ -62,9 +39,9 @@ protected:
     DSocket mSocket;
 
 public:
-    static const int PROGRAM_APP;
-    static const int PROGRAM_LOADER;
-    static const int PROGRAM_UPDATER;
+    static const int partition_APPLICATION;
+    static const int partition_LOADER;
+    static const int partition_UPDATER;
 
     EthUpdater()
     {
@@ -98,29 +75,52 @@ public:
 
     BoardList& getBoardList(){ return mBoardList; }
 
-    std::string cmdGetProcs();
-    std::string cmdGetProcs2();
+    // used to discover all the available boards.
+    void cmdDiscover();
+
+    // used to refresh the info about a board (or request more)
+    std::string cmdGetMoreInfo(bool refreshInfo = false, ACE_UINT32 address = 0);
+
+    // used to manage the 32-bytes field which is stored in EEPROM of each board
+    void cmdInfo32Clear(ACE_UINT32 address = 0);
+    void cmdInfo32Set(const string &info32, ACE_UINT32 address = 0);
+    vector<string> cmdInfo32Get(ACE_UINT32 address = 0);
+
+    // it imposes the default to run process (the one after teh 5 seconds)
+    void cmdSetDEF2RUN(eOuprot_process_t process);
+
+    // forces a restart of selected boards
+    void cmdRestart();
+
+    // forces a jump to the eUpdater (only if the eApplication called eMaintainer is running)
+    void cmdJumpUpd();
+
+    // forces a series of blinks in the LEDs of selected boards
+    void cmdBlink();
+
+    // forces a full erase of the EEPROM
+    void cmdEraseEEPROM();
+
+    // changes the IP address of a given board
+    void cmdChangeAddress(ACE_UINT32 address, ACE_UINT32 newAddr);
+
+    // changes the IP mask of a given board
+    void cmdChangeMask(ACE_UINT32 address, ACE_UINT32 newMask);
+
+    // used to program a given partition of selected boards
     std::string cmdProgram(FILE *programFile, int partition, void (*updateProgressBar)(float));
 
-    void cmdScan();
-    void cmdScan1();
-    void cmdScan2();
-    void cmdBootSelect(unsigned char sector);
-    void sendCommandSelected(unsigned char command);
-    void sendCommandSelected(uint8_t * cmd, uint16_t len);
-    void cmdReset();
-    void cmdJumpUpd();
-    void cmdBlink();
-    void cmdEraseEprom();
-    void cmdChangeAddress(ACE_UINT32 oldAddr,ACE_UINT32 newAddr);
-    void cmdChangeMask(ACE_UINT32 oldAddr,ACE_UINT32 newAddr);
+    std::string cmdProgramOLD(FILE *programFile, int partition, void (*updateProgressBar)(float));
 
-    void cmdInfo32Clear();
-    void cmdInfo32Set(const string &info32);
-    vector<string> cmdInfo32Get();
+    //void sendCommandSelected(unsigned char command);
+    void sendCommandSelected(void * cmd, uint16_t len);
+
    
 protected:
-    int sendDataBroadcast(unsigned char* data,int size,int answers,int retry);
+    int sendPROG(const uint8_t opc, void * data, int size, int answers, int retry);
 };
 
 #endif
+
+// eof
+

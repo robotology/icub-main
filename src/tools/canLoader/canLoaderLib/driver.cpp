@@ -12,6 +12,8 @@
 #include <yarp/os/Time.h>
 #include <yarp/os/Bottle.h>
 
+#include "EoUpdaterProtocol.h"
+
 using namespace yarp::os;
 using namespace yarp::dev;
 
@@ -243,68 +245,77 @@ int eDriver2::init(yarp::os::Searchable &config)
     const uint8_t b_clear_can_buffers_on_start_gtw = 0;
     const uint8_t b_send_ack = 1;
 
-    unsigned char cmd_cangtw_start[8] =
-    {
-        0x20,
-        t_can_stabilisation & 0xff,
-        t_can_stabilisation >> 8,
-        b_send_ff_after_can_stabilisation,
-        t_wait_for_can_reply & 0xff,
-        t_wait_for_can_reply >> 8,
-        b_clear_can_buffers_on_start_gtw,
-        b_send_ack
-    };
+//    unsigned char cmd_cangtw_start[8] =
+//    {
+//        0x20,
+//        t_can_stabilisation & 0xff,
+//        t_can_stabilisation >> 8,
+//        b_send_ff_after_can_stabilisation,
+//        t_wait_for_can_reply & 0xff,
+//        t_wait_for_can_reply >> 8,
+//        b_clear_can_buffers_on_start_gtw,
+//        b_send_ack
+//    };
 
-    // if not already in gtw, then only last two values are meaningful.
+    eOuprot_cmd_CANGATEWAY_t command = {0};
+    command.opc = uprot_OPC_LEGACY_CANGATEWAY;
+    command.sendcanbroadcast = b_send_ff_after_can_stabilisation;
+    command.time4canstable = t_can_stabilisation;
+    command.time2waitcanreply = t_wait_for_can_reply;
+    command.rxcanbufferclear = b_clear_can_buffers_on_start_gtw;
+    command.ackrequired = b_send_ack;
 
-    mSocket->sendTo(cmd_cangtw_start, 8, 3333, mBoardAddr);
 
-    // marco.accame on 23 may 16: review this value. 250 ms is ok.
+    mSocket->sendTo(&command, sizeof(eOuprot_cmd_CANGATEWAY_t), 3333, mBoardAddr);
 
-    // version 2.2 of the eUpdater waits for 2 seconds after reception of GTW_START before forwarding udp packets to can.
-    // we wait for 1.5 sec so that max wait of the udp packet is 0.5 sec and the timeout is not triggered.
-    // for next versions of eUpdater we may reduce this time to 0.5 or even entirely remove the delay.
-    //yarp::os::Time::delay(1.0);
-    // wait for the reply for upto x ms.
-    uint8_t reply[2] = {0};
+
     ACE_UINT16 port;
     ACE_UINT32 address;
 
+    const double waitingTime = 1.5; // in seconds
+
+
     if(1 == b_send_ack)
     {
+        eOuprot_cmdREPLY_t cmdreply = {0};
 
         yDebug("waiting for an ack/nak from board");
 
-        int nrec = mSocket->receiveFrom(reply, 2, address, port, 1500);
+        // we wait at least waitingTime sec because if the remote board does not run the new protocol, then it will not send an ack back.
+        // and we must wait the rigth amout of time
+        int mswait = 1000.0f * waitingTime;
+        int nrec = mSocket->receiveFrom(&cmdreply, sizeof(cmdreply), address, port, mswait);
 
         if(-1 == nrec)
         {
             yWarning("remote board did not sent any ack to command 0x20. it may have a version of eUpdater older than 6.6");
         }
-        else if(2 == nrec)
+        else if(sizeof(cmdreply) == nrec)
         {
-            if((0x20 == reply[0]) && (1 == reply[1]))
+            if((uprot_OPC_CANGATEWAY == cmdreply.opc) && (uprot_RES_OK == cmdreply.res))
             {
                 yDebug("REMOTE BOARD is in CAN gateway now");
             }
-            else if((0x20 == reply[0]) && (0 == reply[1]))
+            else if((uprot_OPC_CANGATEWAY == cmdreply.opc) && (uprot_RES_OK != cmdreply.res))
             {
                 yWarning("REMOTE BOARD tells that it is not in CAN gateway mode... why?");
             }
             else
             {
-                yWarning("REMOTE BOARD sends an unknown reply[%d] = {%x, %x}.", nrec, reply[0], reply[1]);
+                uint8_t *bb = (uint8_t*) &cmdreply;
+                yWarning("REMOTE BOARD sends an unknown reply[%d] = {%x, %x, %x, %x}.", nrec, bb[0], bb[1], bb[2], bb[3]);
             }
         }
         else
         {
-            yWarning("REMOTE BOARD sends an unknown reply[%d] = {%x, %x}.", nrec, reply[0], reply[1]);
+            uint8_t *bb = (uint8_t*) &cmdreply;
+            yWarning("REMOTE BOARD sends an unknown reply[%d] = {%x, %x, %x, %x}.", nrec, bb[0], bb[1], bb[2], bb[3]);
         }
     }
     else
     {
-        // must wait the value specified by board to enter in GTW: 1 sec but we make 1.5
-        yarp::os::Time::delay(1.5);
+        // we must wait the value specified by board to enter in GTW: 1 sec but we make 1.5
+        yarp::os::Time::delay(waitingTime);
     }
 
 
@@ -318,9 +329,9 @@ int eDriver2::init(yarp::os::Searchable &config)
 
 int eDriver2::uninit()
 {
-    static char CMD_CANGTW_STOP = 0x21;
+//    static char CMD_CANGTW_STOP = 0x21;
 
-    mSocket->sendTo(&CMD_CANGTW_STOP,1,3334,mBoardAddr);
+//    mSocket->sendTo(&CMD_CANGTW_STOP,1,3334,mBoardAddr);
 
     mSocket->close();
 

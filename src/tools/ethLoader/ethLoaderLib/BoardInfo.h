@@ -14,36 +14,20 @@
 #include <string>
 using namespace std;
 
-// marco.accame.TODO: use what is inside EoCommon.h and .c ...... eO_date_t etc.
-typedef struct
-{
-    uint32_t            year  : 12;    /**< the year a.d. upto 2047 */
-    uint32_t            month : 4;     /**< the month, where Jan is 1, Dec is 12 */
-    uint32_t            day   : 5;     /**< the day from 1 to 31 */
-    uint32_t            hour  : 5;     /**< the hour from 0 to 23 */
-    uint32_t            min   : 6;     /**< the minute from 0 to 59 */
-} eO_E_date_t;
+#include "EoCommon.h"
+#include "EoUpdaterProtocol.h"
+#include "EoBoards.h"
+
 
 typedef struct
 {
-    uint8_t     type;
-    uint8_t     major;
-    uint8_t     minor;
-    eO_E_date_t builddate;
-} eO_E_procInfo_t;
-
-typedef struct
-{
-    uint8_t         protversion;
-    uint64_t        macaddress;
-    uint8_t         boardtype;
-    uint8_t         startup;
-    uint8_t         def2run;
-    uint8_t         nprocs;
-    eO_E_procInfo_t procinfo[3];
-    uint8_t         runningproc;
-    uint8_t         info32[32];
-} scan2rxdata_t;
+    uint8_t             protversion;
+    uint64_t            macaddress;
+    uint8_t             boardtype;
+    uint32_t            capabilities;       // very useful field. it allows to enable / disable some buttons of the GUI
+    eOuprot_proctable_t processes;
+    uint8_t             boardinfo32[32];
+} boardInfo_t;
 
 
 class BoardInfo
@@ -70,38 +54,49 @@ public:
 
         mInfo32 = string("??");
 
+        mReleasedOn = string("??");
         mBuiltOn = string("??");
 
         mSuccess=0; 
     }
 
-    BoardInfo(ACE_UINT32 address, scan2rxdata_t &data)
+
+    BoardInfo(ACE_UINT32 address, boardInfo_t &info)
     {
         mSelected = false;
 
         mAddress = address;
 
-        mData = data;
+
+        mInfo = info;
 
 
         mMask = 0xFFFFFF00;
-        mMac = data.macaddress;
+        mMac = info.macaddress;
 
-        mVersionMajor = mData.procinfo[mData.runningproc].major;
-        mVersionMinor = mData.procinfo[mData.runningproc].minor;
+        eOuprot_process_t runningnow = eouprot_raw2process(info.processes.runningnow);
+        mRunningProcess = from_process_to_string(runningnow);
+        mBoardType = from_boardtype_to_string(info.boardtype);
+        mInfo32 = (0xff == info.boardinfo32[0]) ? (string("N/A: PAGE32 IS UNFORMATTED")) : (string((const char*) &info.boardinfo32[1]));
 
-        mBoardType = from_boardtype_to_string(mData.boardtype);
-
-        mRunningProcess = from_process_to_string(mData.runningproc);
-
-        mInfo32 = (0xff == mData.info32[0]) ? (string("NOT PRESENT ON BOARD")) : (string((const char*) &mData.info32[1]));
-
-        mBuiltOn = from_date_to_string(mData.procinfo[mData.runningproc].builddate);
+        uint8_t index = eouprot_process2index(runningnow);
+        if(255 == index)
+        {   // error ...
+            mVersionMajor = 0;
+            mVersionMinor = 0;
+            mReleasedOn = string("??");
+            mBuiltOn = string("??");
+        }
+        else
+        {
+            mVersionMajor = info.processes.info[index].version.major;
+            mVersionMinor = info.processes.info[index].version.minor;
+            mReleasedOn = from_date_to_string(info.processes.info[index].date);
+            mBuiltOn = from_date_to_string(info.processes.info[index].compilationdate);
+        }
 
         mSuccess=0;
     }
-
-
 
     virtual ~BoardInfo(){}
 
@@ -120,85 +115,34 @@ public:
     string mRunningProcess;
     string mInfo32;
     string mBuiltOn;
+    string mReleasedOn;
 
-    scan2rxdata_t mData;
 
+    boardInfo_t mInfo;
 
 private:
 
     string from_boardtype_to_string(uint8_t type)
     {
         // marco.accame.TODO: use what in EoCommon.c .......
-
-        string ret("eobrd_unknown");
-
-        switch(type)
-        {
-            case 32:
-            {
-                ret = string("eobrd_ems4");
-            } break;
-            case 33:
-            {
-                ret = string("eobrd_mc4plus");
-            } break;
-            case 34:
-            {
-                ret = string("eobrd_mc2plus");
-            } break;
-            default:
-            {
-            } break;
-        }
-
+        string ret(eoboards_type2string((eObrd_type_t)type));
         return ret;
-
     }
 
-    string from_process_to_string(uint8_t type)
+    string from_process_to_string(eOuprot_process_t type)
     {
-        // marco.accame.TODO: use what in EoCommon.c .......
-
-        string ret("unknown");
-
-        switch(type)
-        {
-            case 0:
-            {
-                ret = string("eLoader");
-            } break;
-            case 1:
-            {
-                ret = string("eUpdater");
-            } break;
-            case 2:
-            {
-                ret = string("eApplication");
-            } break;
-            default:
-            {
-            } break;
-        }
-
+        string ret(eouprot_process2string(type));
         return ret;
-
     }
 
-    string from_date_to_string(eO_E_date_t date)
+    string from_date_to_string(eOdate_t date)
     {
-        // marco.accame.TODO: use what in EoCommon.c .......
-
-        string ret("unknown");
-
-        const char * months[16] = {"ERR", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "ERR", "ERR", "ERR"};
-        char str[32] = {0};
-        snprintf(str, sizeof(str), "%d %s %.2d %d:%d", date.year, months[date.month], date.day, date.hour, date.min);
-
-        ret = string(str);
-
+        char strtmp[64];
+        eo_common_date_to_string(date, strtmp, sizeof(strtmp));
+        string ret(strtmp);
         return ret;
-
     }
+
 };
 
 #endif

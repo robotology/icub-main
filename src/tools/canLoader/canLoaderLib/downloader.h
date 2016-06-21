@@ -74,6 +74,9 @@ void drv_sleep (double time);
 
 #include "driver.h"
 
+#include "EoBoards.h"
+#include "EoCommon.h"
+
 #include <canProtocolLib/iCubCanProto_types.h>
 
 // it forces the use of the new driver2 interface
@@ -89,6 +92,7 @@ void drv_sleep (double time);
 // this change has the advantage of providing a unique definition of board types, strings associated, etc.
 // whihc is is the same alredy used in diagnostics of ETH boards.
 
+#if 0
 typedef enum
 {
     eobrd_D_cantype_dsp               = ICUBCANPROTO_BOARDTYPE__DSP,      // 0, not used
@@ -129,6 +133,7 @@ typedef struct
     eObrd_D_protocolversion_t   protocol;
 } eObrd_D_info_t;
 
+#endif
 
 
 class cDownloader
@@ -183,7 +188,7 @@ int change_card_address	(int bus, int target_id, int new_id, int board_type);
 int change_board_info	(int bus, int target_id, char* board_info);
 int get_board_info		(int bus, int target_id, char* board_info);
 int get_serial_no		(int bus, int target_id, char* board_info);
-int get_firmware_version(int bus, int target_id, eObrd_D_cantype_t boardtype, eObrd_D_info_t *info, bool &noreply);
+int get_firmware_version(int bus, int target_id, eObrd_cantype_t boardtype, eObrd_info_t *info, bool &noreply);
 int get_canbus_id       ();
 void set_canbus_id      (int id);
 

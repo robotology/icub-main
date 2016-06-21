@@ -67,6 +67,26 @@ public:
         return true;
     }
 
+    bool replaceBoard(BoardInfo *pBoard)
+    {
+        // search for the board with the same mac
+
+        for(int i=0; i<mnBoards; i++)
+        {
+            if(mpBoards[i]->mMac == pBoard->mMac)
+            {
+                // found ...
+                delete mpBoards[i];
+                mpBoards[i] = pBoard;
+                return true;
+            }
+        }
+
+        delete pBoard;
+
+        return true;
+    }
+
     void selectAll(bool sel)
     {
         for (int i=0; i<mnBoards; ++i)

@@ -52,6 +52,7 @@ GtkWidget *reset_button    = NULL;
 GtkWidget *procs_button    = NULL;
 GtkWidget *eprom_button    = NULL;         
 GtkWidget *blink_button    = NULL;
+GtkWidget *einfo_button    = NULL;
 GtkWidget *progress_bar    = NULL;
 
 GtkWidget *message         = NULL;
@@ -66,6 +67,7 @@ enum
     COLUMN_RUNNING_PROCESS,
     COLUMN_VERSION,
     COLUMN_DATE,
+    COLUMN_BUILT,
     COLUMN_INFO,
     NUM_COLUMNS
 };
@@ -82,18 +84,21 @@ void activate_buttons()
     gtk_widget_set_sensitive(des_all_button,bHaveSelected);
         
     gtk_widget_set_sensitive(discover_button,true);
-    gtk_widget_set_sensitive(upload_button,true);
+    gtk_widget_set_sensitive(procs_button,bHaveSelected);
+
+//    gtk_widget_set_sensitive(upload_button,true);
+    gtk_widget_set_sensitive(upload_button,nsel>=1);
     gtk_widget_set_sensitive(upload_loader_button, nsel==1);
     gtk_widget_set_sensitive(upload_updater_button,nsel==1);
 
     gtk_widget_set_sensitive(boot_upd_button,bHaveSelected);
     gtk_widget_set_sensitive(boot_app_button,bHaveSelected);
-    gtk_widget_set_sensitive(jump_upd_button,bHaveSelected);
+    gtk_widget_set_sensitive(jump_upd_button,nsel==1);
         
     gtk_widget_set_sensitive(reset_button,bHaveSelected);
-    gtk_widget_set_sensitive(procs_button,bHaveSelected);
-    gtk_widget_set_sensitive(eprom_button,bHaveSelected);     
-    gtk_widget_set_sensitive(blink_button,bHaveSelected);
+    gtk_widget_set_sensitive(eprom_button,nsel==1);
+    gtk_widget_set_sensitive(blink_button,nsel==1);
+    gtk_widget_set_sensitive(einfo_button,nsel==1);
 }
 
 static GtkTreeModel* refresh_board_list_model()
@@ -110,6 +115,7 @@ static GtkTreeModel* refresh_board_list_model()
         G_TYPE_STRING,
         G_TYPE_STRING,
         G_TYPE_STRING,
+        G_TYPE_STRING,
         G_TYPE_STRING
 		);
 
@@ -118,6 +124,7 @@ static GtkTreeModel* refresh_board_list_model()
 
     char board_version[16];
     char board_date[24];
+    char board_built[24];
     char board_type[24];
     char running_process[24];
     char board_info[32];
@@ -147,7 +154,8 @@ static GtkTreeModel* refresh_board_list_model()
         snprintf(board_type, sizeof(board_type), "%s", gUpdater.getBoardList()[i].mBoardType.c_str());
         snprintf(running_process, sizeof(running_process), "%s", gUpdater.getBoardList()[i].mRunningProcess.c_str());
         snprintf(board_info, sizeof(board_info), "%s", gUpdater.getBoardList()[i].mInfo32.c_str());
-        snprintf(board_date, sizeof(board_date), "%s", gUpdater.getBoardList()[i].mBuiltOn.c_str());
+        snprintf(board_date, sizeof(board_date), "%s", gUpdater.getBoardList()[i].mReleasedOn.c_str());
+        snprintf(board_built, sizeof(board_date), "%s", gUpdater.getBoardList()[i].mBuiltOn.c_str());
 
         gtk_list_store_append(store,&iter);
 
@@ -159,6 +167,7 @@ static GtkTreeModel* refresh_board_list_model()
             COLUMN_RUNNING_PROCESS, running_process,
             COLUMN_VERSION, board_version,
             COLUMN_DATE, board_date,
+            COLUMN_BUILT, board_built,
             COLUMN_INFO, board_info,
             -1);
     }
@@ -305,6 +314,54 @@ bool dialog_question_ip_address(char* old_addr,char* new_addr,const char* ip_or_
     return response==GTK_RESPONSE_YES;
 }
 
+bool dialog_question_info(string &old_info, string &new_info)
+{
+    char text[256];
+    sprintf(text,"Do you really want to change the info of this board from %s to %s?\r\n\r\n", old_info.c_str(), new_info.c_str()) ;
+
+    message=dialog_message_generator(GTK_MESSAGE_QUESTION,text,NULL);
+    gtk_window_set_modal(GTK_WINDOW(message),true);
+
+    gint response=gtk_dialog_run(GTK_DIALOG(message));
+
+    gtk_widget_destroy(message);
+
+    return response==GTK_RESPONSE_YES;
+}
+
+
+bool dialog_eeprom_erase(void)
+{
+    char text[256];
+    sprintf(text,"Do you really want to erase the EEPROM of the selected boards?\r\n Their Info will be lost and after restart their IP addresses will become 10.0.1.99\r\n") ;
+
+    message=dialog_message_generator(GTK_MESSAGE_QUESTION,text,NULL);
+    gtk_window_set_modal(GTK_WINDOW(message),true);
+
+    gint response=gtk_dialog_run(GTK_DIALOG(message));
+
+    gtk_widget_destroy(message);
+
+    return response==GTK_RESPONSE_YES;
+}
+
+
+bool dialog_info_erase(void)
+{
+    char text[256];
+    sprintf(text,"Do you really want to erase the EEPROM of the selected boards?\r\n Their Info will be lost.\r\n") ;
+
+    message=dialog_message_generator(GTK_MESSAGE_QUESTION,text,NULL);
+    gtk_window_set_modal(GTK_WINDOW(message),true);
+
+    gint response=gtk_dialog_run(GTK_DIALOG(message));
+
+    gtk_widget_destroy(message);
+
+    return response==GTK_RESPONSE_YES;
+}
+
+
 void dialog_error_ip_address(char* new_addr)
 {
     char text[256];
@@ -397,6 +454,48 @@ static void edited_ip_mask(GtkCellRendererText *cell,gchar *path_str,gchar *new_
     gtk_tree_path_free(path);
 }
 
+
+static void edited_info(GtkCellRendererText *cell, gchar *path_str, gchar *newinfo, gpointer data)
+{
+    GtkTreeModel *model=gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
+    GtkTreePath *path=gtk_tree_path_new_from_string(path_str);
+    GtkTreeIter iter;
+    gtk_tree_model_get_iter(model,&iter,path);
+    int* index=gtk_tree_path_get_indices(path);
+
+    ACE_UINT32 address=gUpdater.getBoardList()[index[0]].mAddress;
+
+    string oldInfo = gUpdater.getBoardList()[index[0]].mInfo32;
+
+    string newInfo = string(newinfo);
+
+
+    bool strings_are_different = (newInfo != oldInfo);
+    // marco.accame.TODO: get the current info and check
+    if (strings_are_different)
+    {
+
+        if (dialog_question_info(oldInfo, newInfo))
+        {
+            gUpdater.cmdInfo32Set(newInfo, address);
+//            gUpdater.cmdGetMoreInfo(true, address);
+            vector<string> vv = gUpdater.cmdInfo32Get(address);
+            if(vv.size() > 0)
+            {
+                gUpdater.getBoardList()[index[0]].mInfo32 = vv[0];
+            }
+        }
+
+    }
+
+    gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
+    gtk_widget_draw(treeview, NULL);
+
+    // clean up
+    gtk_tree_path_free(path);
+}
+
+
 //*********************************************************************************
 
 
@@ -441,12 +540,11 @@ static void add_columns(GtkTreeView *treeview)
     gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),120);
     gtk_tree_view_append_column(treeview,column);
 
-
     // column 5 RUNNING PROCESS
     renderer=gtk_cell_renderer_text_new();
     column=gtk_tree_view_column_new_with_attributes ("Process",renderer,"text",COLUMN_RUNNING_PROCESS,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),120);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),140);
     gtk_tree_view_append_column(treeview,column);
 
     // column 6 VERSION
@@ -458,16 +556,29 @@ static void add_columns(GtkTreeView *treeview)
 
     // column 7 DATE
     renderer=gtk_cell_renderer_text_new();
-    column=gtk_tree_view_column_new_with_attributes("Built On",renderer,"text",COLUMN_DATE,NULL);
+    column=gtk_tree_view_column_new_with_attributes("Dated",renderer,"text",COLUMN_DATE,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
     gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),140);
     gtk_tree_view_append_column(treeview,column);
 
-    // column 8 INFO
+    // column 7 DATE
     renderer=gtk_cell_renderer_text_new();
+    column=gtk_tree_view_column_new_with_attributes("Built On",renderer,"text",COLUMN_BUILT,NULL);
+    gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),140);
+    gtk_tree_view_append_column(treeview,column);
+
+    // column 9 INFO
+    renderer=gtk_cell_renderer_text_new();
+
+    GTK_CELL_RENDERER_TEXT(renderer)->editable=true;
+    GTK_CELL_RENDERER_TEXT(renderer)->editable_set=true;
+    renderer->mode=GTK_CELL_RENDERER_MODE_EDITABLE;
+    g_signal_connect(renderer,"edited",G_CALLBACK(edited_info),NULL);
+
     column=gtk_tree_view_column_new_with_attributes("Info",renderer,"text",COLUMN_INFO,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),250);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),270);
     gtk_tree_view_append_column(treeview,column);
 
 
@@ -492,7 +603,8 @@ static void discover_cbk(GtkButton *button,gpointer user_data)
 {
     gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(info_text)),"",-1);
 
-    gUpdater.cmdScan();
+    gUpdater.cmdDiscover();
+
     gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
     gtk_widget_draw(treeview,NULL);
 
@@ -576,12 +688,12 @@ static void des_all_cbk(GtkButton *button,gpointer user_data)
 
 static void boot_upd_cbk(GtkButton *button,gpointer user_data)
 {
-    gUpdater.cmdBootSelect(1);
+    gUpdater.cmdSetDEF2RUN(eUpdater);
 }
 
 static void boot_app_cbk(GtkButton *button,gpointer user_data)
 {
-    gUpdater.cmdBootSelect(2);
+    gUpdater.cmdSetDEF2RUN(eApplication);
 }
 
 static void jump_upd_cbk(GtkButton *button,gpointer user_data)
@@ -591,14 +703,14 @@ static void jump_upd_cbk(GtkButton *button,gpointer user_data)
 
 static void reset_cbk(GtkButton *button,gpointer user_data)
 {
-    gUpdater.cmdReset();
+    gUpdater.cmdRestart();
 }
 
 static void procs_cbk(GtkButton *button,gpointer user_data)
 {
     //std::string procs=gUpdater.cmdGetProcs();
 
-    std::string procs=gUpdater.cmdGetProcs2();
+    std::string procs=gUpdater.cmdGetMoreInfo();
 
     gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(info_text)),procs.c_str(),-1);
 }
@@ -606,6 +718,14 @@ static void procs_cbk(GtkButton *button,gpointer user_data)
 static void blink_cbk(GtkButton *button,gpointer user_data)
 {
 	gUpdater.cmdBlink();
+}
+
+static void eraseinfo_cbk(GtkButton *button,gpointer user_data)
+{
+    if(dialog_info_erase())
+    {
+        gUpdater.cmdInfo32Clear();
+    }
 }
 
 static void eraseeprom_cbk(GtkButton *button, gpointer user_data)
@@ -650,7 +770,10 @@ static void eraseeprom_cbk(GtkButton *button, gpointer user_data)
 
 #else
 
-    gUpdater.cmdEraseEprom();
+    if(dialog_eeprom_erase())
+    {
+        gUpdater.cmdEraseEEPROM();
+    }
 
 #endif
 }
@@ -759,84 +882,96 @@ int myMain(int argc,char *argv[])
         discover_button=gtk_button_new_with_mnemonic("Discover");
         gtk_container_add(GTK_CONTAINER(buttons_box),discover_button);
         g_signal_connect(discover_button,"clicked",G_CALLBACK(discover_cbk),NULL);
-        gtk_widget_set_size_request(discover_button,100,30);
+        gtk_widget_set_size_request(discover_button,180,30);
+
+        //add_button("Show Procs",    procs_button,    procs_cbk,    buttons_box);
+        procs_button=gtk_button_new_with_mnemonic("More Details");
+        gtk_container_add(GTK_CONTAINER(buttons_box),procs_button);
+        g_signal_connect(procs_button,"clicked",G_CALLBACK(procs_cbk),NULL);
+        gtk_widget_set_size_request(procs_button,180,30);
 
         //add_button("Select All",    sel_all_button,  sel_all_cbk,  buttons_box);
         sel_all_button=gtk_button_new_with_mnemonic("Select All");
         gtk_container_add(GTK_CONTAINER(buttons_box),sel_all_button);
         g_signal_connect(sel_all_button,"clicked",G_CALLBACK(sel_all_cbk),NULL);
-        gtk_widget_set_size_request(sel_all_button,100,30);
+        gtk_widget_set_size_request(sel_all_button,180,30);
 
         //add_button("Deselect All",  des_all_button,  des_all_cbk,  buttons_box);
         des_all_button=gtk_button_new_with_mnemonic("Deselect All");
         gtk_container_add(GTK_CONTAINER(buttons_box),des_all_button);
         g_signal_connect(des_all_button,"clicked",G_CALLBACK(des_all_cbk),NULL);
-        gtk_widget_set_size_request(des_all_button,100,30);
+        gtk_widget_set_size_request(des_all_button,180,30);
         
         //add_button("Start Upload",  upload_button,   upload_cbk,   buttons_box);
-        upload_button=gtk_button_new_with_mnemonic("Upload App");
+        upload_button=gtk_button_new_with_mnemonic("Program eApplication");
         gtk_container_add(GTK_CONTAINER(buttons_box),upload_button);
-        g_signal_connect(upload_button,"clicked",G_CALLBACK(upload_cbk),(gpointer*)&EthUpdater::PROGRAM_APP);
-        gtk_widget_set_size_request(upload_button,100,30);
+        g_signal_connect(upload_button,"clicked",G_CALLBACK(upload_cbk),(gpointer*)&EthUpdater::partition_APPLICATION);
+        gtk_widget_set_size_request(upload_button,180,30);
 
         //add_button("Upload Updater",  upload_updtater_button,   upload_cbk,   buttons_box);
-        upload_updater_button=gtk_button_new_with_mnemonic("Upload Upd");
+        upload_updater_button=gtk_button_new_with_mnemonic("Program eUpdater");
         gtk_container_add(GTK_CONTAINER(buttons_box),upload_updater_button);
-        g_signal_connect(upload_updater_button,"clicked",G_CALLBACK(upload_cbk),(gpointer*)&EthUpdater::PROGRAM_UPDATER);
-        gtk_widget_set_size_request(upload_updater_button,100,22);
+        g_signal_connect(upload_updater_button,"clicked",G_CALLBACK(upload_cbk),(gpointer*)&EthUpdater::partition_UPDATER);
+        gtk_widget_set_size_request(upload_updater_button,180,30);
 
         //add_button("Upload Loader",  upload_loader_button,   upload_cbk,   buttons_box);
-        upload_loader_button=gtk_button_new_with_mnemonic("Upload Ldr");
+        upload_loader_button=gtk_button_new_with_mnemonic("Program eLoader");
         gtk_container_add(GTK_CONTAINER(buttons_box),upload_loader_button);
-        g_signal_connect(upload_loader_button,"clicked",G_CALLBACK(upload_cbk),(gpointer*)&EthUpdater::PROGRAM_LOADER);
-        gtk_widget_set_size_request(upload_loader_button,100,22);
+        g_signal_connect(upload_loader_button,"clicked",G_CALLBACK(upload_cbk),(gpointer*)&EthUpdater::partition_LOADER);
+        gtk_widget_set_size_request(upload_loader_button,180,30);
 
         progress_bar=gtk_progress_bar_new();
         gtk_container_add(GTK_CONTAINER(buttons_box),progress_bar);
-        gtk_widget_set_size_request(progress_bar,100,10);
+        gtk_widget_set_size_request(progress_bar,180,10);
 
 
         //add_button("Boot from Upd", boot_upd_button, boot_upd_cbk, buttons_box);
-        boot_upd_button=gtk_button_new_with_mnemonic("Boot from Upd");
+        boot_upd_button=gtk_button_new_with_mnemonic("DEF2RUN = eUpdater");
         gtk_container_add(GTK_CONTAINER(buttons_box),boot_upd_button);
         g_signal_connect(boot_upd_button,"clicked",G_CALLBACK(boot_upd_cbk),NULL);
-        gtk_widget_set_size_request(boot_upd_button,100,30);
+        gtk_widget_set_size_request(boot_upd_button,180,30);
 
         //add_button("Boot from App", boot_app_button, boot_app_cbk, buttons_box);
-        boot_app_button=gtk_button_new_with_mnemonic("Boot from App");
+        boot_app_button=gtk_button_new_with_mnemonic("DEF2RUN = eApplication");
         gtk_container_add(GTK_CONTAINER(buttons_box),boot_app_button);
         g_signal_connect(boot_app_button,"clicked",G_CALLBACK(boot_app_cbk),NULL);
-        gtk_widget_set_size_request(boot_app_button,100,30);
+        gtk_widget_set_size_request(boot_app_button,180,30);
 
         //add_button("Jump to Upd",   jump_upd_button, jump_upd_cbk, buttons_box);
-        jump_upd_button=gtk_button_new_with_mnemonic("Jump to Upd");
+        jump_upd_button=gtk_button_new_with_mnemonic("Jump to eUpdater");
         gtk_container_add(GTK_CONTAINER(buttons_box),jump_upd_button);
         g_signal_connect(jump_upd_button,"clicked",G_CALLBACK(jump_upd_cbk),NULL);
-        gtk_widget_set_size_request(jump_upd_button,100,30);
+        gtk_widget_set_size_request(jump_upd_button,180,30);
         
         //add_button("Reset",         reset_button,    reset_cbk,    buttons_box);
-        reset_button=gtk_button_new_with_mnemonic("Reset");
+        reset_button=gtk_button_new_with_mnemonic("Restart Board");
         gtk_container_add(GTK_CONTAINER(buttons_box),reset_button);
         g_signal_connect(reset_button,"clicked",G_CALLBACK(reset_cbk),NULL);
-        gtk_widget_set_size_request(reset_button,100,30);
+        gtk_widget_set_size_request(reset_button,180,30);
 
-        //add_button("Show Procs",    procs_button,    procs_cbk,    buttons_box);
-        procs_button=gtk_button_new_with_mnemonic("Procs");
-        gtk_container_add(GTK_CONTAINER(buttons_box),procs_button);
-        g_signal_connect(procs_button,"clicked",G_CALLBACK(procs_cbk),NULL);
-        gtk_widget_set_size_request(procs_button,100,30);
+//        //add_button("Show Procs",    procs_button,    procs_cbk,    buttons_box);
+//        procs_button=gtk_button_new_with_mnemonic("More Details");
+//        gtk_container_add(GTK_CONTAINER(buttons_box),procs_button);
+//        g_signal_connect(procs_button,"clicked",G_CALLBACK(procs_cbk),NULL);
+//        gtk_widget_set_size_request(procs_button,180,30);
          
         //add_button("Erase Eprom",    eeprom_button,    procs_cbk,    buttons_box);
-        eprom_button=gtk_button_new_with_mnemonic("Erase Eprom");
+        eprom_button=gtk_button_new_with_mnemonic("Erase EEPROM");
         gtk_container_add(GTK_CONTAINER(buttons_box),eprom_button);
         g_signal_connect(eprom_button,"clicked",G_CALLBACK(eraseeprom_cbk),NULL);
-        gtk_widget_set_size_request(eprom_button,100,30);
+        gtk_widget_set_size_request(eprom_button,180,30);
 
         //add_button("Blink",         blink_button,    blink_cbk,    buttons_box);
-        blink_button=gtk_button_new_with_mnemonic("Blink");
+        blink_button=gtk_button_new_with_mnemonic("Blink LEDs");
         gtk_container_add(GTK_CONTAINER(buttons_box),blink_button);
         g_signal_connect(blink_button,"clicked",G_CALLBACK(blink_cbk),NULL);
-        gtk_widget_set_size_request(blink_button,100,30);
+        gtk_widget_set_size_request(blink_button,180,30);
+
+        //add_button("Erase Eprom",    eeprom_button,    procs_cbk,    buttons_box);
+        einfo_button=gtk_button_new_with_mnemonic("Erase Info");
+        gtk_container_add(GTK_CONTAINER(buttons_box),einfo_button);
+        g_signal_connect(einfo_button,"clicked",G_CALLBACK(eraseinfo_cbk),NULL);
+        gtk_widget_set_size_request(einfo_button,180,30);
 
     ////
 
@@ -852,7 +987,7 @@ int myMain(int argc,char *argv[])
 
     info_text=gtk_text_view_new();
     gtk_container_add(GTK_CONTAINER(info_scroll),info_text);
-    gtk_widget_set_size_request(info_scroll,200,450);
+    gtk_widget_set_size_request(info_scroll,200,500);
 
     info_cls_button=gtk_button_new_with_mnemonic("Clear");
     g_signal_connect(info_cls_button,"clicked",G_CALLBACK(info_cls_cbk),NULL);

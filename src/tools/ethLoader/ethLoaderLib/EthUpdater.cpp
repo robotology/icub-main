@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2012 RobotCub Consortium
- * Author: Alessandro Scalzo alessandro.scalzo@iit.it
+ * Author: Alessandro Scalzo alessandro.scalzo@iit.it, Marco Accame marco.accame@iit.it
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  */
@@ -14,244 +14,84 @@
 
 using namespace yarp::os;
 
-const int EthUpdater::PROGRAM_APP=0x5A;
-const int EthUpdater::PROGRAM_LOADER=0x55;
-const int EthUpdater::PROGRAM_UPDATER=0xAA;
+const int EthUpdater::partition_APPLICATION = uprot_partitionAPPLICATION;
+const int EthUpdater::partition_LOADER = uprot_partitionLOADER;
+const int EthUpdater::partition_UPDATER = uprot_partitionUPDATER;
 
-void EthUpdater::cmdScan()
+
+#define PRINT_DEBUG_INFO_ON_TERMINAL
+
+
+void EthUpdater::cmdDiscover()
 {
-    cmdScan2();
-}
-
-void EthUpdater::cmdScan1()
-{
-    // it sends a can command in the old format.
-    // it can be decoded by new boards as well.
-
     mBoardList.empty();
 
-    mTxBuffer[0]=CMD_SCAN;
-    //mSocket.SendTo(mTxBuffer,1,mPort,0x0A000163);
-    mSocket.SendBroad(mTxBuffer,1,mPort);
+    eOuprot_cmd_DISCOVER_t * cmd = (eOuprot_cmd_DISCOVER_t*) mTxBuffer;
 
-    ACE_UINT16 rxPort;
-    ACE_UINT32 rxAddress=mMyAddress;
+    memset(cmd, EOUPROT_VALUE_OF_UNUSED_BYTE, sizeof(eOuprot_cmd_DISCOVER_t));
 
-    while (mSocket.ReceiveFrom(mRxBuffer,1024,rxAddress,rxPort,1000)>0)
-    {
-        if (mRxBuffer[0]==CMD_SCAN)
-        {
-            if (rxAddress!=mMyAddress)
-            {
-                printf("ADDRESS=%x",rxAddress);
-                fflush(stdout);
+    cmd->opc = uprot_OPC_LEGACY_SCAN;
+    cmd->opc2 = uprot_OPC_DISCOVER;
 
-                ACE_UINT8 major = mRxBuffer[1];
-                ACE_UINT8 minor = mRxBuffer[2];
-                ACE_UINT8 typeofboard = mRxBuffer[3];
 
-                ACE_UINT32 mask=*(ACE_UINT32*)(mRxBuffer+4);
-                printf(" mask=%x\n",mask);
-                ACE_UINT64 mac=0;
-
-                for (int i=13; i>=8; --i)
-                {
-                    mac=(mac<<8)|mRxBuffer[i];
-                }
-
-                BoardInfo *pBoard=new BoardInfo(rxAddress, mask, mac, major, minor);
-
-                mBoardList.addBoard(pBoard);
-            }
-        }
-    }
-}
-
-//typedef struct
-//{
-//    uint32_t            year  : 12;    /**< the year a.d. upto 2047 */
-//    uint32_t            month : 4;     /**< the month, where Jan is 1, Dec is 12 */
-//    uint32_t            day   : 5;     /**< the day from 1 to 31 */
-//    uint32_t            hour  : 5;     /**< the hour from 0 to 23 */
-//    uint32_t            min   : 6;     /**< the minute from 0 to 59 */
-//} eO_E_date_t;
-
-void eo_E_common_date_to_string(eO_E_date_t date, char *str, uint8_t size)
-{
-    static const char * months[16] = {"ERR", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "ERR", "ERR", "ERR"};
-    if(NULL != str)
-    {
-        snprintf(str, size, "%d %s %.2d %d:%d", date.year, months[date.month], date.day, date.hour, date.min);
-    }
-}
-
-const char * eo_E_common_proc_to_string(uint8_t proc)
-{
-    static const char * procs[4] = {"eLoader", "eUpdater", "eApplication", "ERR"};
-    if(proc >= 3)
-    {
-        return(procs[3]);
-    }
-
-    return(procs[proc]);
-}
-
-//typedef struct
-//{
-//    uint8_t     type;
-//    uint8_t     major;
-//    uint8_t     minor;
-//    eO_E_date_t builddate;
-//} eO_E_procInfo_t;
-
-//typedef struct
-//{
-//    uint8_t         protversion;
-//    uint64_t        macaddress;
-//    uint8_t         boardtype;
-//    uint8_t         startup;
-//    uint8_t         def2run;
-//    uint8_t         nprocs;
-//    eO_E_procInfo_t procinfo[3];
-//    uint8_t         runningproc;
-//    uint8_t         info32[32];
-//} scan2rxdata_t;
-
-void EthUpdater::cmdScan2()
-{
-    // it sends the old scan command, ... but it is able to process replies form both old and new boards
-    // - the old boards send the old information
-    // - the new boards send additional information
-    // the receiver knows if we have an old or a new format on the basis of the received OPCODE
-
-    mBoardList.empty();
-
-    mTxBuffer[0] = CMD_SCAN;
-    mTxBuffer[1] = CMD_SCAN2;
-
-    mSocket.SendBroad(mTxBuffer, 2, mPort);
+    mSocket.SendBroad(cmd, sizeof(eOuprot_cmd_DISCOVER_t), mPort);
 
     ACE_UINT16 rxPort;
     ACE_UINT32 rxAddress = mMyAddress;
 
-    while (mSocket.ReceiveFrom(mRxBuffer,1024,rxAddress,rxPort,1000)>0)
+    while (mSocket.ReceiveFrom(mRxBuffer, sizeof(mRxBuffer), rxAddress, rxPort, 1000)>0)
     {
-        if (CMD_SCAN2 == mRxBuffer[0])
+        eOuprot_cmd_DISCOVER_REPLY_t * disc = (eOuprot_cmd_DISCOVER_REPLY_t*) mRxBuffer;
+        eOuprot_cmd_LEGACY_SCAN_REPLY_t * scan = (eOuprot_cmd_LEGACY_SCAN_REPLY_t*) mRxBuffer;
+        char ipaddr[20];
+        sprintf(ipaddr,"%d.%d.%d.%d",(rxAddress>>24)&0xFF, (rxAddress>>16)&0xFF, (rxAddress>>8)&0xFF, rxAddress&0xFF);
+
+        if(uprot_OPC_DISCOVER == disc->reply.opc)
         {
-            // new format
+            // the board has replied with the new protocol.
 
-            if (rxAddress!=mMyAddress)
+            if (rxAddress != mMyAddress)
             {
-                //printf("ADDRESS=%x",rxAddress);
+#if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
+                printf("Discovered a board @ address %s\n", ipaddr);
                 fflush(stdout);
+#endif
+                boardInfo_t binfo = {0};
 
-                scan2rxdata_t rxdata = {0};
+                binfo.protversion = disc->reply.protversion;
+                memcpy(&binfo.macaddress, disc->mac48, 6);
+                binfo.boardtype = disc->boardtype;
+                binfo.capabilities = disc->capabilities;
+                memcpy(&binfo.processes, &disc->processes, sizeof(eOuprot_proctable_t));
+                memcpy(binfo.boardinfo32, disc->boardinfo32, sizeof(binfo.boardinfo32));
 
-                rxdata.protversion = mRxBuffer[1];
-
-                memcpy(&rxdata.macaddress, &mRxBuffer[2], 6);
-                rxdata.boardtype = mRxBuffer[8];
-                rxdata.startup = mRxBuffer[9];
-                rxdata.def2run = mRxBuffer[10];
-                rxdata.nprocs = mRxBuffer[11];
-
-
-                for(int i=0; i<rxdata.nprocs; i++)
-                {
-                    rxdata.procinfo[i].type  = mRxBuffer[12+8*i];
-                    rxdata.procinfo[i].major = mRxBuffer[13+8*i];
-                    rxdata.procinfo[i].minor = mRxBuffer[14+8*i];
-                    memcpy(&rxdata.procinfo[i].builddate, &mRxBuffer[15+8*i], 4);
-                }
-
-                rxdata.runningproc = mRxBuffer[36];
-
-                // dont use mRxBuffer[37, 8, 9]
-
-                memcpy(rxdata.info32, &mRxBuffer[40], 32);
-
-//#warning -------------------> TODO.marco.accame: use eOboard_t values
-
-                printf("\nBOARD found at address %x:", rxAddress);
-                printf("\n prot = %d, boardtype = %s, startup proc = %s, def2run proc = %s. it has %d processes:",
-                            rxdata.protversion,
-                            (32 == rxdata.boardtype)? "EMS" : "MC4PLUS",
-                            eo_E_common_proc_to_string(rxdata.startup),
-                            eo_E_common_proc_to_string(rxdata.def2run),
-                            rxdata.nprocs
-                       );
-                for(int n=0; n<rxdata.nprocs; n++)
-                {
-                    char strdate[24] = {0};
-                    eo_E_common_date_to_string(rxdata.procinfo[n].builddate, strdate, sizeof(strdate));
-                    printf("\n proc-%d: type %s w/ appl version = (%d, %d), built on %s",
-                           n,
-                           eo_E_common_proc_to_string(rxdata.procinfo[n].type),
-                           rxdata.procinfo[n].major, rxdata.procinfo[n].minor,
-                           strdate
-                           );
-
-                }
-
-                printf("\n now process %s is running", eo_E_common_proc_to_string(rxdata.runningproc));
-
-                if(0xff == rxdata.info32[0])
-                {
-                    printf("\n stored info32 is .. ");
-                    for(int m=0; m<32; m++)
-                    {
-                        printf("0x%x ", rxdata.info32[m]);
-                    }
-
-                }
-                else
-                {
-                    printf("\n stored info32 is .. ");
-                    printf("l = %d, string = %s \n", rxdata.info32[0], &rxdata.info32[1]);
-                }
-
-//                printf("\n stored info32 is .. ");
-//                for(int m=0; m<32; m++)
-//                {
-//                    printf("0x%x ", rxdata.info32[m]);
-//                }
-                printf("\n\n");
-
-
-                ACE_UINT32 mask = 0xFFFFFF00; // fixed
-
-
-                ACE_UINT8 major = rxdata.procinfo[rxdata.runningproc].major;
-                ACE_UINT8 minor = rxdata.procinfo[rxdata.runningproc].minor;
-                ACE_UINT64 mac    = rxdata.macaddress;
-
-//                #warning -------------> TODO.marco.accame: change to add in BoardInfo new information
-
-                //BoardInfo *pBoard = new BoardInfo(rxAddress, mask, mac, major, minor);
-
-                BoardInfo *pBoard = new BoardInfo(rxAddress, rxdata);
+                BoardInfo *pBoard = new BoardInfo(rxAddress, binfo);
 
                 mBoardList.addBoard(pBoard);
             }
+
         }
-        else if (mRxBuffer[0]==CMD_SCAN)
+        else if (uprot_OPC_LEGACY_SCAN == scan->opc)
         {
+            // we have an old board ... by definition it has protocol version 0.
+
             if (rxAddress!=mMyAddress)
             {
-                printf("ADDRESS=%x",rxAddress);
+#if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
+                printf("Discovered a board with legacy protocol @ address %s\n", ipaddr);
                 fflush(stdout);
+#endif
 
-                ACE_UINT8 major = mRxBuffer[1];
-                ACE_UINT8 minor = mRxBuffer[2];
-                ACE_UINT8 typeofboard  = mRxBuffer[3];
+                ACE_UINT8 major = scan->version.major;
+                ACE_UINT8 minor = scan->version.minor;
 
-                ACE_UINT32 mask=*(ACE_UINT32*)(mRxBuffer+4);
-                printf(" mask=%x\n",mask);
+
+                ACE_UINT32 mask=*(ACE_UINT32*)(scan->ipmask);
                 ACE_UINT64 mac=0;
 
-                for (int i=13; i>=8; --i)
+                for(int i=7; i>=0; --i)
                 {
-                    mac=(mac<<8)|mRxBuffer[i];
+                    mac=(mac<<8)|scan->mac48[i];
                 }
 
                 BoardInfo *pBoard = new BoardInfo(rxAddress, mask, mac, major, minor);
@@ -262,35 +102,56 @@ void EthUpdater::cmdScan2()
     }
 }
 
-std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*updateProgressBar)(float))
+
+std::string EthUpdater::cmdProgram(FILE *programFile, int partition, void (*updateProgressBar)(float))
 {
     updateProgressBar(0.0f);
 
-    const int UPD_OK=0;
-    const int HEAD_SIZE=7;
+    eOuprot_cmd_PROG_START_t * cmdStart = (eOuprot_cmd_PROG_START_t*) mTxBuffer;
+    eOuprot_cmd_PROG_DATA_t *  cmdData  = (eOuprot_cmd_PROG_DATA_t*)  mTxBuffer;
+    eOuprot_cmd_PROG_END_t *   cmdEnd   = (eOuprot_cmd_PROG_END_t*)   mTxBuffer;
+
+    const int sizeStart = sizeof(eOuprot_cmd_PROG_START_t);
+    const int sizeEnd = sizeof(eOuprot_cmd_PROG_END_t);
+
+
+    const int HEAD_SIZE = 7;
 
     fseek(programFile,0,SEEK_END);
     float fileSize=(float)(ftell(programFile)/3);
     fseek(programFile,0,SEEK_SET);
 
-    mTxBuffer[0]=CMD_START;
-    mTxBuffer[1]=(unsigned char)partition;
+    memset(cmdStart, EOUPROT_VALUE_OF_UNUSED_BYTE, sizeof(eOuprot_cmd_PROG_START_t));
+    cmdStart->opc = uprot_OPC_PROG_START;
+    cmdStart->partition = partition;
 
-    //mTxBuffer[1]=PROGRAM_APP;
-    //mTxBuffer[1]=PROGRAM_LOADER;
-    //mTxBuffer[1]=PROGRAM_UPDATER;
+    string partname("UNK");
+    if(uprot_partitionLOADER == partition)
+    {
+        partname = string("LDR");
+    }
+    else if(uprot_partitionUPDATER == partition)
+    {
+        partname = string("UPD");
+    }
+    else if(uprot_partitionAPPLICATION == partition)
+    {
+        partname = string("APP");
+    }
+
 
     mN2Prog=mNProgSteps=0;
 
     mNChunks=1;
 
+    // sending the start
     for (int i=0; i<mBoardList.size(); ++i)
     {
         if (mBoardList[i].mSelected)
         {
             mBoard2Prog[mN2Prog++]=&mBoardList[i];
             mBoardList[i].mSuccess=0;
-            mSocket.SendTo(mTxBuffer,2,mPort,mBoardList[i].mAddress);
+            mSocket.SendTo(cmdStart, sizeStart, mPort, mBoardList[i].mAddress);
             yarp::os::Time::delay(0.01);
         }
     }
@@ -302,11 +163,16 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
 
     int success=0;
 
+    int numberOfOKreplies = 0;
+
+    // waiting for reply of start
     for (int n=0; n<1000; ++n)
     {
-        while (mSocket.ReceiveFrom(mRxBuffer,1024,rxAddress,rxPort,10)>0)
+        while (mSocket.ReceiveFrom(mRxBuffer, sizeof(mRxBuffer), rxAddress, rxPort, 10)>0)
         {
-            if (mRxBuffer[0]==CMD_START)
+            eOuprot_cmdREPLY_t * reply = (eOuprot_cmdREPLY_t*) mRxBuffer;
+
+            if (uprot_OPC_PROG_START == reply->opc)
             {
                 if (rxAddress!=mMyAddress)
                 {
@@ -314,9 +180,10 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
                     {
                         if (rxAddress==mBoard2Prog[i]->mAddress)
                         {
-                            if (mRxBuffer[1]==UPD_OK)
+                            if (uprot_RES_OK == reply->res)
                             {
                                 ++(mBoard2Prog[i]->mSuccess);
+                                numberOfOKreplies++;
                             }
 
                             if (++success>=mN2Prog) n=1000;
@@ -325,6 +192,24 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
                 }
             }
         }
+    }
+
+
+    if(0 == numberOfOKreplies)
+    {
+        std::string earlyexit;
+        char addr[16];
+
+        for (int i=0; i<mN2Prog; ++i)
+        {
+            ACE_UINT32 ip=mBoard2Prog[i]->mAddress;
+            sprintf(addr,"%d.%d.%d.%d: ",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
+            earlyexit+=addr;
+            earlyexit+=partname;
+            earlyexit+=(mBoard2Prog[i]->mSuccess==mNProgSteps)?" OK\r\n":" CANT\r\n";
+        }
+
+        return earlyexit;
     }
 
     int addrH=0;
@@ -336,6 +221,7 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
 
     bool beof=false;
 
+    // sending data
     while (!beof && fgets(buffer,1024,programFile))
     {
         std::string line(buffer);
@@ -344,7 +230,7 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
 
         switch (cmd)
         {
-        case 0: //standard data record        
+        case 0: //standard data record
             {
                 int size =strtol(line.substr(1,2).c_str(),NULL,16);
                 int addrL=strtol(line.substr(3,4).c_str(),NULL,16);
@@ -353,13 +239,13 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
 
                 if (!baseAddress) baseAddress=address;
 
-                if (bytesToWrite+size>PACKET_SIZE || address!=baseAddress+bytesToWrite)
+                if (bytesToWrite+size>uprot_PROGmaxsize || address!=baseAddress+bytesToWrite)
                 {
                     if (bytesToWrite)
                     {
-                        mTxBuffer[5]= bytesToWrite    &0xFF;
-                        mTxBuffer[6]=(bytesToWrite>>8)&0xFF;
-                        sendDataBroadcast(mTxBuffer,HEAD_SIZE+bytesToWrite,mN2Prog,1000);
+                        cmdData->size[0]= bytesToWrite    &0xFF;
+                        cmdData->size[1]=(bytesToWrite>>8)&0xFF;
+                        sendPROG(uprot_OPC_PROG_DATA, cmdData, HEAD_SIZE+bytesToWrite, mN2Prog,1000);
                         updateProgressBar(float(bytesWritten+=bytesToWrite)/fileSize);
                         bytesToWrite=0;
                     }
@@ -368,16 +254,16 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
                 if (!bytesToWrite)
                 {
                     baseAddress=address;
-                    mTxBuffer[0]=CMD_DATA;
-                    mTxBuffer[1]=addrL&0xFF;
-                    mTxBuffer[2]=(addrL>>8)&0xFF;
-                    mTxBuffer[3]=addrH&0xFF;
-                    mTxBuffer[4]=(addrH>>8)&0xFF;
+                    cmdData->opc = uprot_OPC_PROG_DATA;
+                    cmdData->address[0] = addrL&0xFF;
+                    cmdData->address[1] = (addrL>>8)&0xFF;
+                    cmdData->address[2] = addrH&0xFF;
+                    cmdData->address[3] = (addrH>>8)&0xFF;
                 }
 
                 for (int i=0; i<size; ++i)
                 {
-                    mTxBuffer[HEAD_SIZE+bytesToWrite+i]=(unsigned char)strtol(line.substr(i*2+9,2).c_str(),NULL,16);
+                    cmdData->data[bytesToWrite+i]=(unsigned char)strtol(line.substr(i*2+9,2).c_str(),NULL,16);
                 }
 
                 bytesToWrite+=size;
@@ -388,9 +274,9 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
             if (bytesToWrite) // force write
             {
                 beof=true;
-                mTxBuffer[5]= bytesToWrite    &0xFF;
-                mTxBuffer[6]=(bytesToWrite>>8)&0xFF;
-                sendDataBroadcast(mTxBuffer,HEAD_SIZE+bytesToWrite,mN2Prog,1000);
+                cmdData->size[0] =  bytesToWrite    &0xFF;
+                cmdData->size[1] = (bytesToWrite>>8)&0xFF;
+                sendPROG(uprot_OPC_PROG_DATA, cmdData, HEAD_SIZE+bytesToWrite, mN2Prog, 1000);
                 updateProgressBar(1.0f);
                 bytesToWrite=0;
             }
@@ -403,9 +289,9 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
             {
                 if (bytesToWrite) // force write
                 {
-                    mTxBuffer[5]= bytesToWrite    &0xFF;
-                    mTxBuffer[6]=(bytesToWrite>>8)&0xFF;
-                    sendDataBroadcast(mTxBuffer,HEAD_SIZE+bytesToWrite,mN2Prog,1000);
+                    cmdData->size[0] =  bytesToWrite    &0xFF;
+                    cmdData->size[1] = (bytesToWrite>>8)&0xFF;
+                    sendPROG(uprot_OPC_PROG_DATA, cmdData, HEAD_SIZE+bytesToWrite, mN2Prog, 1000);
                     updateProgressBar(float(bytesWritten+=bytesToWrite)/fileSize);
                     bytesToWrite=0;
                 }
@@ -417,9 +303,9 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
         case 5: // jump
             if (bytesToWrite) // force write
             {
-                mTxBuffer[5]= bytesToWrite    &0xFF;
-                mTxBuffer[6]=(bytesToWrite>>8)&0xFF;
-                sendDataBroadcast(mTxBuffer,HEAD_SIZE+bytesToWrite,mN2Prog,1000);
+                cmdData->size[0]=  bytesToWrite    &0xFF;
+                cmdData->size[1]= (bytesToWrite>>8)&0xFF;
+                sendPROG(uprot_OPC_PROG_DATA, cmdData, HEAD_SIZE+bytesToWrite, mN2Prog,1000);
                 updateProgressBar(float(bytesWritten+=bytesToWrite)/fileSize);
                 bytesToWrite=0;
             }
@@ -428,10 +314,15 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
         }
     }
 
-    mTxBuffer[0]=CMD_END;
-    mTxBuffer[1]=mNChunks&0xFF;
-    mTxBuffer[2]=(mNChunks>>8)&0xFF;
-    sendDataBroadcast(mTxBuffer,3,mN2Prog,1000);
+
+    // now we send the end
+    memset(cmdEnd, EOUPROT_VALUE_OF_UNUSED_BYTE, sizeof(eOuprot_cmd_PROG_END_t));
+    cmdEnd->opc = uprot_OPC_PROG_END;
+    cmdEnd->numberofpkts[0] = mNChunks & 0xFF;
+    cmdEnd->numberofpkts[1] = (mNChunks>>8) & 0xFF;
+
+
+    sendPROG(uprot_OPC_PROG_END, cmdEnd, sizeEnd, mN2Prog, 1000);
 
     updateProgressBar(1.0f);
 
@@ -441,49 +332,33 @@ std::string EthUpdater::cmdProgram(FILE *programFile,int partition,void (*update
     for (int i=0; i<mN2Prog; ++i)
     {
         ACE_UINT32 ip=mBoard2Prog[i]->mAddress;
-        sprintf(addr,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
+        sprintf(addr,"%d.%d.%d.%d: ",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
         sOutput+=addr;
-        sOutput+=(mBoard2Prog[i]->mSuccess==mNProgSteps)?"\tsuccess\r\n":"\tFAILED\r\n";
+        sOutput+=partname;
+        sOutput+=(mBoard2Prog[i]->mSuccess==mNProgSteps)?" OK\r\n":" NOK\r\n";
     }
 
     return sOutput;
 }
 
-void EthUpdater::cmdBootSelect(unsigned char sector)
-{
-    mTxBuffer[0]=CMD_BOOT;
-    mTxBuffer[1]=sector;
 
-    for (int i=0; i<mBoardList.size(); ++i)
-    {
-        if (mBoardList[i].mSelected)
-        {
-            mSocket.SendTo(mTxBuffer,2,mPort,mBoardList[i].mAddress);
-        }
-    }
+
+void EthUpdater::cmdEraseEEPROM()
+{
+    eOuprot_cmd_EEPROM_ERASE_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+
+    command.opc = uprot_OPC_LEGACY_EEPROM_ERASE;
+    command.opc2 = uprot_OPC_EEPROM_ERASE;
+    command.sysrestart = 0;
+    command.address = 0;
+    command.size = 0;
+
+    sendCommandSelected(&command, sizeof(command));
 }
 
 
-void EthUpdater::cmdEraseEprom()
-{
-    sendCommandSelected(CMD_SYSEEPROMERASE);
-}
 
-void EthUpdater::sendCommandSelected(unsigned char command)
-{
-    mTxBuffer[0]=command;
-
-    for (int i=0; i<mBoardList.size(); ++i)
-    {
-        if (mBoardList[i].mSelected)
-        {
-            mSocket.SendTo(mTxBuffer,1,mPort,mBoardList[i].mAddress);
-        }
-    }
-}
-
-
-void EthUpdater::sendCommandSelected(uint8_t * cmd, uint16_t len)
+void EthUpdater::sendCommandSelected(void * cmd, uint16_t len)
 {
     for (int i=0; i<mBoardList.size(); ++i)
     {
@@ -495,52 +370,77 @@ void EthUpdater::sendCommandSelected(uint8_t * cmd, uint16_t len)
 }
 
 
-void EthUpdater::cmdInfo32Clear()
+void EthUpdater::cmdInfo32Clear(ACE_UINT32 address)
 {
-    sendCommandSelected(CMD_INFO_CLR);
+    eOuprot_cmd_PAGE_CLR_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_PAGE_CLR;
+    command.pagesize = 32;
+
+    if(0 == address)
+    {
+        sendCommandSelected(&command, sizeof(command));
+    }
+    else
+    {
+        mSocket.SendTo(&command, sizeof(command), mPort, address);
+    }
+
 }
 
 
-vector<string> EthUpdater::cmdInfo32Get()
+vector<string> EthUpdater::cmdInfo32Get(ACE_UINT32 address)
 {
     vector<string> thestrings(0);
 
+    eOuprot_cmd_PAGE_GET_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_PAGE_GET;
+    command.pagesize = 32;
 
-    uint8_t cmd[2] = { CMD_INFO_GET, 32};
-
-    sendCommandSelected(cmd, sizeof(cmd));
+    if(0 == address)
+    {
+        sendCommandSelected(&command, sizeof(command));
+    }
+    else
+    {
+        mSocket.SendTo(&command, sizeof(command), mPort, address);
+    }
 
     ACE_UINT16 rxPort;
     ACE_UINT32 rxAddress;
 
 
-    while(mSocket.ReceiveFrom(mRxBuffer, 1024, rxAddress, rxPort, 500)>0)
+    while(mSocket.ReceiveFrom(mRxBuffer, sizeof(mRxBuffer), rxAddress, rxPort, 500)>0)
     {
-        if((CMD_INFO_GET == mRxBuffer[0]) && (32 == mRxBuffer[1]))
+        eOuprot_cmd_PAGE_GET_REPLY_t * pageget = (eOuprot_cmd_PAGE_GET_REPLY_t*) mRxBuffer;
+
+        if(uprot_OPC_PAGE_GET == pageget->reply.opc)
         {
+            string readstring;
 
-            if(rxAddress != mMyAddress)
+            if((rxAddress != mMyAddress) && (uprot_RES_OK == pageget->reply.res) && (32 == pageget->pagesize) && (0xff != pageget->page[0]))
             {
-                string readstring;
+                readstring = string((const char*)&pageget->page[1]);
+                thestrings.push_back(readstring);
+            }
 
-                char ip32[20];
-                snprintf(ip32, sizeof(ip32), "%d.%d.%d.%d",(rxAddress>>24)&0xFF, (rxAddress>>16)&0xFF, (rxAddress>>8)&0xFF, rxAddress&0xFF);
+#if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
 
-                printf("\n received info32 from board IP = %s: ", ip32);
+            char ip32[20];
+            snprintf(ip32, sizeof(ip32), "%d.%d.%d.%d",(rxAddress>>24)&0xFF, (rxAddress>>16)&0xFF, (rxAddress>>8)&0xFF, rxAddress&0xFF);
 
-                if(0 != mRxBuffer[2])
-                {
-                    printf("failure w/ value %d", mRxBuffer[2]);
-                }
-                else
-                {
-                    if(0xff != mRxBuffer[3])
-                    {
-                        readstring = std::string((const char*)&mRxBuffer[4]);
-                    }
+            if(uprot_RES_OK != pageget->reply.res)
+            {              
+                printf("\n received a eOuprot_cmd_PAGE_GET_REPLY_t from IP %s with a failure result %d for size %d", ip32, pageget->reply.res, pageget->pagesize);
+            }
+            else if(rxAddress != mMyAddress)
+            {
+                printf("\n received a eOuprot_cmd_PAGE_GET_REPLY_t from IP %s with size %d: ", ip32, pageget->pagesize);
+
+                if(32 == pageget->pagesize)
+                {   // the page is formatted so that in position 0 there is 0xff if erased and never programmed or strlen(&page[1])
 
                     uint8_t info32[32] = {0};
-                    memcpy(info32, &mRxBuffer[3], 32);
+                    memcpy(info32, pageget->page, 32);
 
                     if(0xff == info32[0])
                     {
@@ -558,24 +458,32 @@ vector<string> EthUpdater::cmdInfo32Get()
 
                 }
 
-                thestrings.push_back(readstring);
-
                 fflush(stdout);
 
             }
+#endif
+
         }
     }
 
     return thestrings;
-
 }
 
 
-void EthUpdater::cmdInfo32Set(const string &info32)
+void EthUpdater::cmdInfo32Set(const string &info32, ACE_UINT32 address)
 {
-    uint8_t cmd[2+32] = {0};
-    cmd[0] = CMD_INFO_SET;
-    cmd[1] = 32;
+
+    eOuprot_cmd_PAGE_SET_t *cmd = (eOuprot_cmd_PAGE_SET_t*) mTxBuffer;
+    uint16_t sizeofcmd = sizeof(eOuprot_cmd_PAGE_SET_t) - uprot_pagemaxsize + 32;
+    // think of the best way to specify the length of themessage in a proper way
+    // we could decide to send always a length of sizeof(eOuprot_cmd_PAGE_SET_t) which is 132, or ...
+
+    memset(cmd, EOUPROT_VALUE_OF_UNUSED_BYTE, sizeofcmd);
+
+    cmd->opc = uprot_OPC_PAGE_SET;
+    cmd->pagesize = 32;
+    memset(cmd->page, 0, 32);
+
 
     const char * str32 = info32.c_str();
 
@@ -584,223 +492,255 @@ void EthUpdater::cmdInfo32Set(const string &info32)
     {
         len = 30;
     }
-    cmd[2] = len;
-    memcpy(&cmd[3], str32, len);
+    cmd->page[0] = len;
+    memcpy(&cmd->page[1], str32, len);
 
-    sendCommandSelected(cmd, sizeof(cmd));
+    if(0 == address)
+    {
+        sendCommandSelected(cmd, sizeofcmd);
+    }
+    else
+    {
+        mSocket.SendTo(cmd, sizeofcmd, mPort, address);
+    }
 }
 
 
-void EthUpdater::cmdReset()
+
+void EthUpdater::cmdRestart()
 {
-    sendCommandSelected(CMD_RESET);
+    eOuprot_cmd_RESTART_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_RESTART;
+
+    sendCommandSelected(&command, sizeof(command));
 }
+
 
 void EthUpdater::cmdJumpUpd()
 {
-    sendCommandSelected(CMD_JUMP_UPD);
+    eOuprot_cmd_JUMP2UPDATER_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_JUMP2UPDATER;
+    sendCommandSelected(&command, sizeof(command));
 }
 
 void EthUpdater::cmdBlink()
 {
-    sendCommandSelected(CMD_BLINK);
+    eOuprot_cmd_BLINK_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_BLINK;
+    sendCommandSelected(&command, sizeof(command));
 }
 
-void EthUpdater::cmdChangeAddress(ACE_UINT32 address,ACE_UINT32 newAddr)
+void EthUpdater::cmdChangeAddress(ACE_UINT32 address, ACE_UINT32 newaddress)
 {
-    mTxBuffer[0]=CMD_CHADDR;
+    eOuprot_cmd_IP_ADDR_SET_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
 
-    mTxBuffer[1]=(newAddr>>24)&0xFF;
-    mTxBuffer[2]=(newAddr>>16)&0xFF;
-    mTxBuffer[3]=(newAddr>>8) &0xFF;
-    mTxBuffer[4]= newAddr     &0xFF;
+    command.opc = uprot_OPC_LEGACY_IP_ADDR_SET;
+    command.opc2 = uprot_OPC_IP_ADDR_SET;
+    command.sysrestart = 0;
 
-    printf("change unit %x address to %x\n",address,newAddr);
+    command.address[0] = (newaddress>>24) & 0xFF;
+    command.address[1] = (newaddress>>16) & 0xFF;
+    command.address[2] = (newaddress>>8 ) & 0xFF;
+    command.address[3] = (newaddress    ) & 0xFF;
 
-    mSocket.SendTo(mTxBuffer,5,mPort,address);
+#if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
+    char ipaddr[20];
+    sprintf(ipaddr,"%d.%d.%d.%d",(address>>24)&0xFF, (address>>16)&0xFF, (address>>8)&0xFF, address&0xFF);
+    char newipaddr[20];
+    sprintf(newipaddr,"%d.%d.%d.%d",(newaddress>>24)&0xFF, (newaddress>>16)&0xFF, (newaddress>>8)&0xFF, newaddress&0xFF);
+    printf("sent command uprot_OPC_IP_ADDR_SET to %s, new address is %s. w/%s sysrestart\n", ipaddr, newipaddr, (0 == command.sysrestart) ? "out" : "");
+#endif
+
+    mSocket.SendTo(&command, sizeof(command), mPort, address);
 }
 
-void EthUpdater::cmdChangeMask(ACE_UINT32 address,ACE_UINT32 newMask)
+
+void EthUpdater::cmdChangeMask(ACE_UINT32 address, ACE_UINT32 newMask)
 {
-    mTxBuffer[0]=CMD_CHMASK;
 
-    mTxBuffer[1]=(newMask>>24)&0xFF;
-    mTxBuffer[2]=(newMask>>16)&0xFF;
-    mTxBuffer[3]=(newMask>>8) &0xFF;
-    mTxBuffer[4]= newMask     &0xFF;
+    eOuprot_cmd_LEGACY_IP_MASK_SET_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
 
-    printf("change unit %x mask to %x\n",address,newMask);
+    command.opc = uprot_OPC_LEGACY_IP_MASK_SET;
 
-    mSocket.SendTo(mTxBuffer,5,mPort,address);
+    command.mask[0] = (newMask>>24)&0xFF;
+    command.mask[1] = (newMask>>16)&0xFF;
+    command.mask[2] = (newMask>>8) &0xFF;
+    command.mask[3] =  newMask     &0xFF;
+
+#if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
+    char ipaddr[20];
+    sprintf(ipaddr,"%d.%d.%d.%d",(address>>24)&0xFF, (address>>16)&0xFF, (address>>8)&0xFF, address&0xFF);
+    char newm[20];
+    sprintf(newm,"%d.%d.%d.%d",(newMask>>24)&0xFF, (newMask>>16)&0xFF, (newMask>>8)&0xFF, newMask&0xFF);
+    printf("send command eOuprot_cmd_LEGACY_IP_MASK_SET_t to %s, new mask is %s\n", ipaddr, newm);
+#endif
+
+    mSocket.SendTo(&command, sizeof(command), mPort, address);
 }
 
-std::string EthUpdater::cmdGetProcs()
+
+void EthUpdater::cmdSetDEF2RUN(eOuprot_process_t process)
 {
-    sendCommandSelected(CMD_PROCS);
+    eOuprot_cmd_DEF2RUN_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_DEF2RUN;
+    command.proc = process;
 
-    ACE_UINT16 rxPort;
-    ACE_UINT32 rxAddress;
-
-    std::string info;
-
-    while (mSocket.ReceiveFrom(mRxBuffer,1024,rxAddress,rxPort,500)>0)
+    for (int i=0; i<mBoardList.size(); ++i)
     {
-        if (mRxBuffer[0]==CMD_PROCS)
+        if(mBoardList[i].mSelected)
         {
-            if (rxAddress!=mMyAddress)
-            {
-                char buff[16];
-                sprintf(buff,"%d.%d.%d.%d",(rxAddress>>24)&0xFF,
-                    (rxAddress>>16)&0xFF,
-                    (rxAddress>>8)&0xFF,
-                    rxAddress&0xFF);
-
-                info+="------------------------------\r\n";
-                info+=std::string("Board\t")+std::string(buff);
-                info+="\r\n\r\n";
-                info+=std::string((char*)mRxBuffer+2);
-            }
+#if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
+            char ipaddr[20];
+            ACE_UINT32 address = mBoardList[i].mAddress;
+            sprintf(ipaddr,"%d.%d.%d.%d",(address>>24)&0xFF, (address>>16)&0xFF, (address>>8)&0xFF, address&0xFF);
+            printf("send command uprot_OPC_DEF2RUN w/ process = %s to %s\n", eouprot_process2string(process), ipaddr);
+#endif
+            mSocket.SendTo(&command, sizeof(command), mPort, mBoardList[i].mAddress);
         }
     }
-
-    return info;
 }
 
 
-std::string EthUpdater::cmdGetProcs2()
+
+std::string EthUpdater::cmdGetMoreInfo(bool refreshInfo, ACE_UINT32 address)
 {
-    // this method sends a PROCS request in such a way that:
-    // - if we have an old board, we receive just a string full of pre-formatted info
-    // - if we have a new board, we receive the new SCAN data structure and then the string (for backward compatibility).
-    // 
+    eOuprot_cmd_MOREINFO_t command;
 
-    uint8_t cmd[2] = { CMD_PROCS, CMD_PROCS2};
+    command.opc = uprot_OPC_LEGACY_PROCS;
+    command.opc2 = uprot_OPC_MOREINFO;
+    command.plusdescription = 1;
+    command.filler[0] = EOUPROT_VALUE_OF_UNUSED_BYTE;
 
-    sendCommandSelected(cmd, sizeof(cmd));
+    if(0 == address)
+    {
+        sendCommandSelected(&command, sizeof(command));
+    }
+    else
+    {
+        mSocket.SendTo(&command, sizeof(command), mPort, address);
+    }
 
     ACE_UINT16 rxPort;
     ACE_UINT32 rxAddress;
 
     std::string info;
 
-    while (mSocket.ReceiveFrom(mRxBuffer,1024,rxAddress,rxPort,500)>0)
+    while (mSocket.ReceiveFrom(mRxBuffer, sizeof(mRxBuffer), rxAddress, rxPort, 500)>0)
     {
-        if (mRxBuffer[0]== CMD_PROCS)
-        {   // old boards reply with CMD_PROCS
+        eOuprot_cmd_MOREINFO_REPLY_t *moreinfo = (eOuprot_cmd_MOREINFO_REPLY_t*) mRxBuffer;
+        eOuprot_cmd_LEGACY_PROCS_REPLY_t *procs = (eOuprot_cmd_LEGACY_PROCS_REPLY_t*) mRxBuffer;
 
-            printf("\n received a CMD_PROCS\n");
+        char ipaddr[20];
+        sprintf(ipaddr,"%d.%d.%d.%d",(rxAddress>>24)&0xFF, (rxAddress>>16)&0xFF, (rxAddress>>8)&0xFF, rxAddress&0xFF);
+
+        if(uprot_OPC_LEGACY_PROCS == procs->opc)
+        {
+            // old boards reply with uprot_OPC_LEGACY_PROCS
+
+#if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
+            printf("\n received a uprot_OPC_LEGACY_PROCS from IP %s \n", ipaddr);
             fflush(stdout);
-
+#endif
             if (rxAddress != mMyAddress)
             {
-                char buff[16];
-                sprintf(buff,"%d.%d.%d.%d",(rxAddress>>24)&0xFF,
-                    (rxAddress>>16)&0xFF,
-                    (rxAddress>>8)&0xFF,
-                    rxAddress&0xFF);
-
                 info+="------------------------------\r\n";
-                info+=std::string("Board\t")+std::string(buff);
+                info+=std::string("Board\t")+std::string(ipaddr);
                 info+="\r\n\r\n";
-                info+=std::string((char*)mRxBuffer+2);
+                info+=std::string((char*)procs->description);
             }
         }
-        else if(mRxBuffer[0] == CMD_PROCS2)
-        {   // new boards reply with CMD_PROCS2
-            // the format is the same as the reply to CMD_SCAN in the first 40+32 bytes. then we we have ...
+        else if(uprot_OPC_MOREINFO == moreinfo->discover.reply.opc)
+        {
+            // a new board has replied
 
-            printf("\n received a CMD_PROCS2\n");
+#if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
+            printf("\n received a uprot_OPC_MOREINFO with prot version %d from IP %s\n", moreinfo->discover.reply.protversion, ipaddr);
             fflush(stdout);
+#endif
 
             if (rxAddress != mMyAddress)
             {
-                scan2rxdata_t rxdata = {0};
-                
-                // fill rxdata
+                eOuprot_cmd_DISCOVER_REPLY_t * disc = &moreinfo->discover;
 
-                rxdata.protversion = mRxBuffer[1];
+                boardInfo_t binfo = {0};
 
-                memcpy(&rxdata.macaddress, &mRxBuffer[2], 6);
-                rxdata.boardtype = mRxBuffer[8];
-                rxdata.startup = mRxBuffer[9];
-                rxdata.def2run = mRxBuffer[10];
-                rxdata.nprocs = mRxBuffer[11];
+                binfo.protversion = disc->reply.protversion;
+                memcpy(&binfo.macaddress, disc->mac48, 6);
+                binfo.boardtype = disc->boardtype;
+                memcpy(&binfo.processes, &disc->processes, sizeof(eOuprot_proctable_t));
+                memcpy(binfo.boardinfo32, disc->boardinfo32, sizeof(binfo.boardinfo32));
+//#warning --> TODO.marco.accame: store binfo somewhere
 
-
-                for(int i=0; i<rxdata.nprocs; i++)
+                if(refreshInfo)
                 {
-                    rxdata.procinfo[i].type  = mRxBuffer[12+8*i];
-                    rxdata.procinfo[i].major = mRxBuffer[13+8*i];
-                    rxdata.procinfo[i].minor = mRxBuffer[14+8*i];
-                    memcpy(&rxdata.procinfo[i].builddate, &mRxBuffer[15+8*i], 4);
+                    BoardInfo *pBoard = new BoardInfo(rxAddress, binfo);
+                    mBoardList.replaceBoard(pBoard);
                 }
 
-                rxdata.runningproc = mRxBuffer[36];
+#if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
 
-                // dont use mRxBuffer[37, 8, 9]
-
-                memcpy(rxdata.info32, &mRxBuffer[40], 32);
-
-#if 1
-                // print rxdata. 
+                // print binfo.
                 // it would be much bettwer, however, store it somewhere and made it available
                 // through some method
-#warning --> TODO.marco.accame: store rxdata somewhere
 
-                printf("\nBOARD at address %x:", rxAddress);
+
+                printf("\nBOARD at address %s:", ipaddr);
                 printf("\n prot = %d, boardtype = %s, startup proc = %s, def2run proc = %s. it has %d processes:",
-                            rxdata.protversion,
-                            (32 == rxdata.boardtype)? "EMS" : "MC4PLUS",
-                            eo_E_common_proc_to_string(rxdata.startup),
-                            eo_E_common_proc_to_string(rxdata.def2run),
-                            rxdata.nprocs
+                            binfo.protversion,
+                            eoboards_type2string((eObrd_type_t)binfo.boardtype),
+                            eouprot_process2string((eOuprot_process_t)binfo.processes.startup),
+                            eouprot_process2string((eOuprot_process_t)binfo.processes.def2run),
+                            binfo.processes.numberofthem
                        );
-                for(int n=0; n<rxdata.nprocs; n++)
+                for(int n=0; n<binfo.processes.numberofthem; n++)
                 {
                     char strdate[24] = {0};
-                    eo_E_common_date_to_string(rxdata.procinfo[n].builddate, strdate, sizeof(strdate));
-                    printf("\n proc-%d: type %s w/ appl version = (%d, %d), built on %s",
+                    char builton[24] = {0};
+                    eo_common_date_to_string(binfo.processes.info[n].date, strdate, sizeof(strdate));
+                    eo_common_date_to_string(binfo.processes.info[n].compilationdate, builton, sizeof(builton));
+                    printf("\n proc-%d: type %s w/ appl version = (%d, %d), dated %s, built on %s",
                            n,
-                           eo_E_common_proc_to_string(rxdata.procinfo[n].type),
-                           rxdata.procinfo[n].major, rxdata.procinfo[n].minor,
-                           strdate
+                           eouprot_process2string((eOuprot_process_t)binfo.processes.info[n].type),
+                           binfo.processes.info[n].version.major, binfo.processes.info[n].version.minor,
+                           strdate,
+                           builton
                            );
 
                 }
 
-                printf("\n now process %s is running", eo_E_common_proc_to_string(rxdata.runningproc));
+                printf("\n now process %s is running", eouprot_process2string((eOuprot_process_t)binfo.processes.runningnow));
 
-                if(0xff == rxdata.info32[0])
+                if(0xff == binfo.boardinfo32[0])
                 {
                     printf("\n stored info32 is .. ");
                     for(int m=0; m<32; m++)
                     {
-                        printf("0x%x ", rxdata.info32[m]);
+                        printf("0x%x ", binfo.boardinfo32[m]);
                     }
 
                 }
                 else
                 {
                     printf("\n stored info32 is .. ");
-                    printf("l = %d, string = %s \n", rxdata.info32[0], &rxdata.info32[1]);
+                    printf("l = %d, string = %s \n", binfo.boardinfo32[0], &binfo.boardinfo32[1]);
                 }
 
                 printf("\n\n");
 
 #endif
-                // now we put into info all what is ..... in mRxBuffer[40+32] and beyond
-
+                // now we put into info all what is needed
                 {
-                    char buff[16];
-                    sprintf(buff,"%d.%d.%d.%d",(rxAddress>>24)&0xFF,
-                        (rxAddress>>16)&0xFF,
-                        (rxAddress>>8)&0xFF,
-                        rxAddress&0xFF);
-
                     info+="------------------------------\r\n";
-                    info+=std::string("Board\t")+std::string(buff);
+                    info+=std::string("Board\t")+std::string(ipaddr);
                     info+="\r\n\r\n";
-                    info+=std::string((char*)&mRxBuffer[40+32]);
+                    if(1 == moreinfo->hasdescription)
+                    {
+                        info+=std::string((char*)moreinfo->description);
+                    }
+                    else
+                    {
+                        info+=std::string("the message does not have a textual description");
+                    }
                 }
             }
         }
@@ -809,24 +749,21 @@ std::string EthUpdater::cmdGetProcs2()
     return info;
 }
 
-int EthUpdater::sendDataBroadcast(unsigned char* data,int size,int answers,int retry)
-{
-    const int UPD_OK=0;
 
-#if 0
-    //mSocket.SendTo(data,size,mPort,mBroadcast);
-    mSocket.SendBroad(data,size,mPort);
-#else
+int EthUpdater::sendPROG(const uint8_t opc, void * data, int size, int answers, int retry)
+{
+    // data can be either a eOuprot_cmd_PROG_DATA_t* or a eOuprot_cmd_PROG_END_t*
+    // both have the same layout of the opc in first position
+
+
     // use multicast to all selected boards
     for(int k=0;k<mN2Prog; k++)
     {
         mSocket.SendTo(data, size, mPort, mBoard2Prog[k]->mAddress);
     }
-#endif
+
     ACE_UINT16 rxPort;
     ACE_UINT32 rxAddress;
-
-    unsigned char cmd=data[0];
 
     ++mNChunks;
 
@@ -838,9 +775,11 @@ int EthUpdater::sendDataBroadcast(unsigned char* data,int size,int answers,int r
         {
             for (int a=0; a<answers; ++a)
             {
-                if (mSocket.ReceiveFrom(mRxBuffer,1024,rxAddress,rxPort,10)>0)
+                if (mSocket.ReceiveFrom(mRxBuffer, sizeof(mRxBuffer), rxAddress, rxPort, 10)>0)
                 {
-                    if (mRxBuffer[0]==cmd)
+                    eOuprot_cmdREPLY_t * reply = (eOuprot_cmdREPLY_t*) mRxBuffer;
+
+                    if (opc == reply->opc)
                     {
                         if (rxAddress!=mMyAddress)
                         {
@@ -848,7 +787,7 @@ int EthUpdater::sendDataBroadcast(unsigned char* data,int size,int answers,int r
                             {
                                 if (rxAddress==mBoard2Prog[i]->mAddress)
                                 {
-                                    if (mRxBuffer[1]==UPD_OK)
+                                    if (uprot_RES_OK == reply->res)
                                     {
                                         ++(mBoard2Prog[i]->mSuccess);
                                     }
@@ -867,54 +806,8 @@ int EthUpdater::sendDataBroadcast(unsigned char* data,int size,int answers,int r
     return answers;
 }
 
+// eof
 
 
-/*
-void EthUpdater::cmdGetShals()
-{
-POSITION pos=mListBoards.GetFirstSelectedItemPosition();
 
-if (pos==NULL)
-{
-AfxMessageBox("No board selected");
-return;
-}
 
-mTxBuffer[0]=CMD_SHALS;
-
-while (pos)
-{
-int nItem=mListBoards.GetNextSelectedItem(pos);  
-CString address=mListBoards.GetItemText(nItem,0);
-mSocket.SendTo(mTxBuffer,1,mPort,address);
-}
-
-UINT rxPort;
-CString rxAddress;
-
-Sleep(500);
-
-CString info;
-
-int ip1,ip2,ip3,ip4;
-
-while (mSocket.ReceiveFrom(mRxBuffer,1024,rxAddress,rxPort)>0)
-{
-if (mRxBuffer[0]==CMD_SHALS)
-{
-sscanf_s(rxAddress,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
-UINT addr=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
-
-if (addr!=mMyAddress)
-{
-mOutputBox+="------------------------------\r\n";
-mOutputBox+=CString("Board\t")+rxAddress;
-mOutputBox+="\r\n\r\n";
-mOutputBox+=CString(mRxBuffer+2);
-}
-}
-}
-
-UpdateData(FALSE);
-}
-*/

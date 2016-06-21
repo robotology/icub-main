@@ -1098,7 +1098,7 @@ int cDownloader::get_serial_no       (int bus, int target_id, char* serial_no)
 #define EOCANPROT_D_CREATE_CANID(clss, orig, dest)                ( (((clss)&0xF) << 8) | (((orig)&0xF) << 4) | ((dest)&0xF) )
 
 //#warning add controls vs sending it in broadcast or to all buses
-int cDownloader::get_firmware_version(int bus, int target_id, eObrd_D_cantype_t boardtype, eObrd_D_info_t *info, bool &noreply)
+int cDownloader::get_firmware_version(int bus, int target_id, eObrd_cantype_t boardtype, eObrd_info_t *info, bool &noreply)
 {
     noreply = true;
 
@@ -1125,28 +1125,28 @@ int cDownloader::get_firmware_version(int bus, int target_id, eObrd_D_cantype_t 
     txBuffer[0].getData()[1] = 0;
     txBuffer[0].getData()[2] = 0; // we send a (0, 0) prototocol version.
 
-    #warning -> check if sending a get-prot-version message with wrong prot version is OK or not (hopefully it will not send boards in hw fault).
+    //#warning -> check if sending a get-prot-version message with wrong prot version is OK or not (hopefully it will not send boards in hw fault).
 
     // prepare command. it depends on board type.
 
     bool boardisMC = false;
     switch(boardtype)
     {
-        case eobrd_D_cantype_dsp:
-        case eobrd_D_cantype_mc4:
-        case eobrd_D_cantype_2dc:
-        case eobrd_D_cantype_bll:
-        case eobrd_D_cantype_foc:
+        case eobrd_cantype_dsp:
+        case eobrd_cantype_mc4:
+        case eobrd_cantype_2dc:
+        case eobrd_cantype_bll:
+        case eobrd_cantype_foc:
         {
             boardisMC = true;
             txBuffer[0].setId(EOCANPROT_D_CREATE_CANID(ICUBCANPROTO_CLASS_POLLING_MOTORCONTROL, 0, target_id));
             txBuffer[0].getData()[0] = ICUBCANPROTO_POL_MC_CMD__GET_FIRMWARE_VERSION;
         } break;
 
-        case eobrd_D_cantype_mtb:
-        case eobrd_D_cantype_strain:
-        case eobrd_D_cantype_mais:
-        case eobrd_D_cantype_6sg:
+        case eobrd_cantype_mtb:
+        case eobrd_cantype_strain:
+        case eobrd_cantype_mais:
+        case eobrd_cantype_6sg:
         {
             boardisMC = false;
             txBuffer[0].setId(EOCANPROT_D_CREATE_CANID(ICUBCANPROTO_CLASS_POLLING_ANALOGSENSOR, 0, target_id));
@@ -1606,10 +1606,10 @@ int cDownloader::initschede()
         // this info is useful for the new fwUpdater. Moreover, it is a good way to further verify if we are in bootloader or not.
         // the bootloader does not reply to get-fw-version, whereas the applications replies.
         // The only known exception is the mtb application which replies o get-fw-version only after ... somewhere in early 2016.
-        eObrd_D_info_t info = {0};
+        eObrd_info_t info = {0};
         memset(&info, 0, sizeof(info));
         bool noreply = true;
-        int rr = get_firmware_version(board_list[i].bus, board_list[i].pid, (eObrd_D_cantype_t)board_list[i].type, &info, noreply);
+        int rr = get_firmware_version(board_list[i].bus, board_list[i].pid, (eObrd_cantype_t)board_list[i].type, &info, noreply);
         fprintf(stderr, "board %d: ret = %d, reply = %d, type = %d, f=(%d, %d, %d), pr=(%d, %d)\n", i, rr, !noreply,
                                     info.type,
                                     info.firmware.major, info.firmware.minor, info.firmware.build,
