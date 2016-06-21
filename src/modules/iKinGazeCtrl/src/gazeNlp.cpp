@@ -101,6 +101,7 @@ protected:
     }
 
 public:
+    /************************************************************************/
     HeadCenter_NLP(iKinChain &c, const Vector &_q0, Vector &_xd) :
                    chain(c), q0(_q0), xd(_xd)
     {
