@@ -89,7 +89,9 @@ public:
     // - uprot_canDO_reply2discover:    the board sends back full information
     // - uprot_canDO_LEGACY_scan:       the board sends back a limited subset of information
     // every board replies to this method.
-    void cmdDiscover();
+    // returns the number of discovered boards.
+
+    int cmdDiscover();
 
 
     // in all following methods: we send the commands in unicast but:
@@ -109,12 +111,12 @@ public:
     // used to clear the 32-bytes field which is stored in EEPROM of each board.
     // capability to be checked is:
     // - uprot_canDO_PAGE_clr
-    void cmdInfo32Clear(ACE_UINT32 address = 0);
+    bool cmdInfo32Clear(ACE_UINT32 address = 0);
 
     // used to set the 32-bytes field which is stored in EEPROM of each board.
     // capability to be checked is:
     // - uprot_canDO_PAGE_set
-    void cmdInfo32Set(const string &info32, ACE_UINT32 address = 0);
+    bool cmdInfo32Set(const string &info32, ACE_UINT32 address = 0);
 
     // used to get the 32-bytes field which is stored in EEPROM of each board.
     // capability to be checked is:
@@ -124,28 +126,28 @@ public:
     // used to force a restart
     // capability to be checked is:
     // - uprot_canDO_restart
-    void cmdRestart(ACE_UINT32 address = 0);
+    bool cmdRestart(ACE_UINT32 address = 0);
 
     // used to impose the default to run process (the one after the 5 seconds)
     // capability to be checked is:
     // - uprot_canDO_DEF2RUN_set
-    void cmdSetDEF2RUN(eOuprot_process_t process, ACE_UINT32 address = 0);
+    bool cmdSetDEF2RUN(eOuprot_process_t process, ACE_UINT32 address = 0);
 
     // used to force a jump to the eUpdater (only if the eApplication called eMaintainer is running)
     // capability to be checked is:
     // - uprot_canDO_JUMP2UPDATER
-    void cmdJumpUpd(ACE_UINT32 address = 0);
+    bool cmdJumpUpd(ACE_UINT32 address = 0);
 
     // forces a series of blinks in the LEDs of selected boards
     // capability to be checked is:
     // - uprot_canDO_blink
-    void cmdBlink(ACE_UINT32 address = 0);
+    bool cmdBlink(ACE_UINT32 address = 0);
 
     // forces a full erase of the EEPROM. VERY DANGEROUS to do it in multicast because it sets IP addresses to 10.0.1.99
     // capability to be checked is one or both of the following:
     // - uprot_canDO_LEGACY_EEPROM_erase:       it erase the whole eeprom
     // - uprot_canDO_EEPROM_erase:              it can erase the whole eeprom but also a subset.
-    void cmdEraseEEPROM(ACE_UINT32 address = 0);
+    bool cmdEraseEEPROM(ACE_UINT32 address = 0);
 
 
     // reads the EEPROM of a board. it must be used with care and towards one board at a time. the return value *eeprom is just
@@ -158,7 +160,7 @@ public:
     // capability to be checked is one or both of the following:
     // - uprot_canDO_LEGACY_IPaddr_set:         it just changes address.
     // - uprot_canDO_IPaddr_set:                it changes address and it also may force a restart (not requested for now)
-    void cmdChangeAddress(ACE_UINT32 newaddress, ACE_UINT32 address = 0);
+    bool cmdChangeAddress(ACE_UINT32 newaddress, ACE_UINT32 address = 0);
 
 
     // used to program a given partition of a given board
@@ -181,13 +183,13 @@ private:
     // capability to be checked is:
     // - uprot_canDO_LEGACY_IPmask_set
     // NOTE: it is very dangerous to change the IP mask. it is also very improbable that we want to do it. we keep the method however.
-    void cmdChangeMask(ACE_UINT32 newMask, ACE_UINT32 address = 0);
+    bool cmdChangeMask(ACE_UINT32 newMask, ACE_UINT32 address = 0);
 
     // changes the MAC of a given board
     // capability to be checked is:
     // - uprot_canDO_LEGACY_MAC_set
     // NOTE: we may change the MAC only if ... there are two equal mac addresses on two boards ...
-    void cmdChangeMAC(uint64_t newMAC48, ACE_UINT32 address);
+    bool cmdChangeMAC(uint64_t newMAC48, ACE_UINT32 address);
 
     bool cmdPageClr(eOuprot_pagesize_t pagesize, ACE_UINT32 address = 0);
     bool cmdPageSet(eOuprot_pagesize_t pagesize, uint8_t *data, ACE_UINT32 address = 0);

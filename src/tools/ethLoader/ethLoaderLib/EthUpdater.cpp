@@ -22,7 +22,7 @@ const int EthUpdater::partition_UPDATER = uprot_partitionUPDATER;
 #define PRINT_DEBUG_INFO_ON_TERMINAL
 
 
-void EthUpdater::cmdDiscover()
+int EthUpdater::cmdDiscover()
 {
     mBoardList.empty();
 
@@ -33,6 +33,7 @@ void EthUpdater::cmdDiscover()
     cmd->opc = uprot_OPC_LEGACY_SCAN;
     cmd->opc2 = uprot_OPC_DISCOVER;
 
+    int numberOfDiscovered = 0;
 
     mSocket.SendBroad(cmd, sizeof(eOuprot_cmd_DISCOVER_t), mPort);
 
@@ -67,6 +68,8 @@ void EthUpdater::cmdDiscover()
                 BoardInfo *pBoard = new BoardInfo(rxAddress, binfo);
 
                 mBoardList.addBoard(pBoard);
+
+                numberOfDiscovered++;
 
 #if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
                 uint8_t index = eouprot_process2index((eOuprot_process_t)disc->processes.runningnow);
@@ -117,6 +120,8 @@ void EthUpdater::cmdDiscover()
 
                 mBoardList.addBoard(pBoard);
 
+                numberOfDiscovered++;
+
 #if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
                 printf("Discovered a board @ %s: the running process is v %d.%d, uses legacy protocol, i assume protocol capabilities = 0x%x.\n",
                                                 ipaddr, procmajor, procminor, protocol_capabilities);
@@ -125,6 +130,8 @@ void EthUpdater::cmdDiscover()
             }
         }
     }
+
+    return numberOfDiscovered;
 }
 
 
@@ -300,8 +307,10 @@ std::string EthUpdater::cmdGetMoreInfo(bool refreshInfo, ACE_UINT32 address)
 }
 
 
-void EthUpdater::cmdInfo32Clear(ACE_UINT32 address)
+bool EthUpdater::cmdInfo32Clear(ACE_UINT32 address)
 {
+    bool ret = false;
+
     eOuprot_cmd_PAGE_CLR_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
     command.opc = uprot_OPC_PAGE_CLR;
     command.pagesize = 32;
@@ -314,10 +323,13 @@ void EthUpdater::cmdInfo32Clear(ACE_UINT32 address)
     {
         mSocket.SendTo(&command, sizeof(command), mPort, address);
     }
+
+    return ret;
 }
 
-void EthUpdater::cmdInfo32Set(const string &info32, ACE_UINT32 address)
+bool EthUpdater::cmdInfo32Set(const string &info32, ACE_UINT32 address)
 {
+    bool ret = false;
 
     eOuprot_cmd_PAGE_SET_t *cmd = (eOuprot_cmd_PAGE_SET_t*) mTxBuffer;
     uint16_t sizeofcmd = sizeof(eOuprot_cmd_PAGE_SET_t) - uprot_pagemaxsize + 32;
@@ -349,6 +361,8 @@ void EthUpdater::cmdInfo32Set(const string &info32, ACE_UINT32 address)
     {
         mSocket.SendTo(cmd, sizeofcmd, mPort, address);
     }
+
+    return ret;
 }
 
 
@@ -434,8 +448,10 @@ vector<string> EthUpdater::cmdInfo32Get(ACE_UINT32 address)
 }
 
 
-void EthUpdater::cmdRestart(ACE_UINT32 address)
+bool EthUpdater::cmdRestart(ACE_UINT32 address)
 {
+    bool ret = false;
+
     eOuprot_cmd_RESTART_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
     command.opc = uprot_OPC_RESTART;
 
@@ -447,11 +463,15 @@ void EthUpdater::cmdRestart(ACE_UINT32 address)
     {
         sendCommandSelected(&command, sizeof(command));
     }
+
+    return ret;
 }
 
 
-void EthUpdater::cmdSetDEF2RUN(eOuprot_process_t process, ACE_UINT32 address)
+bool EthUpdater::cmdSetDEF2RUN(eOuprot_process_t process, ACE_UINT32 address)
 {
+    bool ret = false;
+
     eOuprot_cmd_DEF2RUN_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
     command.opc = uprot_OPC_DEF2RUN;
     command.proc = process;
@@ -485,11 +505,15 @@ void EthUpdater::cmdSetDEF2RUN(eOuprot_process_t process, ACE_UINT32 address)
             }
         }
     }
+
+    return ret;
 }
 
 
-void EthUpdater::cmdJumpUpd(ACE_UINT32 address)
+bool EthUpdater::cmdJumpUpd(ACE_UINT32 address)
 {
+    bool ret = false;
+
     eOuprot_cmd_JUMP2UPDATER_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
     command.opc = uprot_OPC_JUMP2UPDATER;
 
@@ -501,11 +525,15 @@ void EthUpdater::cmdJumpUpd(ACE_UINT32 address)
     {
         sendCommandSelected(&command, sizeof(command));
     }
+
+    return ret;
 }
 
 
-void EthUpdater::cmdBlink(ACE_UINT32 address)
+bool EthUpdater::cmdBlink(ACE_UINT32 address)
 {
+    bool ret = false;
+
     eOuprot_cmd_BLINK_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
     command.opc = uprot_OPC_BLINK;
 
@@ -517,11 +545,15 @@ void EthUpdater::cmdBlink(ACE_UINT32 address)
     {
         sendCommandSelected(&command, sizeof(command));
     }
+
+    return ret;
 }
 
 
-void EthUpdater::cmdEraseEEPROM(ACE_UINT32 address)
+bool EthUpdater::cmdEraseEEPROM(ACE_UINT32 address)
 {
+    bool ret = false;
+
     eOuprot_cmd_EEPROM_ERASE_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
 
     command.opc = uprot_OPC_LEGACY_EEPROM_ERASE;
@@ -538,6 +570,8 @@ void EthUpdater::cmdEraseEEPROM(ACE_UINT32 address)
     {
         sendCommandSelected(&command, sizeof(command));
     }
+
+    return ret;
 }
 
 // TODO: at date 22 jun 16: yet to be tested
@@ -598,8 +632,10 @@ bool EthUpdater::cmdReadEEPROM(uint16_t from, uint16_t size, ACE_UINT32 address,
     return ret;
 }
 
-void EthUpdater::cmdChangeAddress(ACE_UINT32 newaddress, ACE_UINT32 address)
+bool EthUpdater::cmdChangeAddress(ACE_UINT32 newaddress, ACE_UINT32 address)
 {
+    bool ret = false;
+
     eOuprot_cmd_IP_ADDR_SET_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
 
     command.opc = uprot_OPC_LEGACY_IP_ADDR_SET;
@@ -641,7 +677,7 @@ void EthUpdater::cmdChangeAddress(ACE_UINT32 newaddress, ACE_UINT32 address)
 #if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
         printf("cannot send command uprot_OPC_IP_ADDR_SET to %s with new address %s because either one or both are not valid\n", ipaddr, newipaddr);
 #endif
-        return;
+        return ret;
     }
 
 
@@ -650,6 +686,8 @@ void EthUpdater::cmdChangeAddress(ACE_UINT32 newaddress, ACE_UINT32 address)
 #endif
 
     mSocket.SendTo(&command, sizeof(command), mPort, address);
+
+    return ret;
 }
 
 
@@ -1040,8 +1078,9 @@ int EthUpdater::sendPROG(const uint8_t opc, void * data, int size, int answers, 
 }
 
 
-void EthUpdater::cmdChangeMask(ACE_UINT32 newMask, ACE_UINT32 address)
+bool EthUpdater::cmdChangeMask(ACE_UINT32 newMask, ACE_UINT32 address)
 {
+    bool ret = false;
 
     eOuprot_cmd_LEGACY_IP_MASK_SET_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
 
@@ -1071,7 +1110,7 @@ void EthUpdater::cmdChangeMask(ACE_UINT32 newMask, ACE_UINT32 address)
 #if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
         printf("cannot send command uprot_OPC_LEGACY_IP_MASK_SET to %s with new mask %s because either one or both are not valid\n", ipaddr, newm);
 #endif
-        return;
+        return ret;
     }
 
 
@@ -1080,11 +1119,14 @@ void EthUpdater::cmdChangeMask(ACE_UINT32 newMask, ACE_UINT32 address)
 #endif
 
     mSocket.SendTo(&command, sizeof(command), mPort, address);
+
+    return ret;
 }
 
 // TODO: at date 22 jun 16: yet to be tested
-void EthUpdater::cmdChangeMAC(uint64_t newMAC48, ACE_UINT32 address)
+bool EthUpdater::cmdChangeMAC(uint64_t newMAC48, ACE_UINT32 address)
 {
+    bool ret = false;
 
     eOuprot_cmd_LEGACY_MAC_SET_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
 
@@ -1121,7 +1163,7 @@ void EthUpdater::cmdChangeMAC(uint64_t newMAC48, ACE_UINT32 address)
 #if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
         printf("cannot send command uprot_OPC_LEGACY_MAC_SET to %s with new mac %s because either one or both are not valid\n", ipaddr, newmac);
 #endif
-        return;
+        return ret;
     }
 
 
@@ -1131,6 +1173,7 @@ void EthUpdater::cmdChangeMAC(uint64_t newMAC48, ACE_UINT32 address)
 
     mSocket.SendTo(&command, sizeof(command), mPort, address);
 
+    return ret;
 }
 
 // TODO: at date 22 jun 16: yet to be tested
