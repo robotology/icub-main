@@ -1407,7 +1407,7 @@ void MotorThread::run()
             }
 
             if(norm(force)>dragger.extForceThresh)
-                x=x+0.1*(1.0/norm(force))*force;
+                x=x+0.1*force/norm(force);
 
             //dragger.ctrl->goToPositionSync(x,1.0);
 
