@@ -42,6 +42,11 @@ int cDriver2::init (Searchable &config)
     if (iFactory==0)
         return -1;
 
+    // creating once for all the buffers used to tx and rx can frames.
+    canTXbuffer = createCanBuffer(MAX_WRITE_MSG);
+    canRXbuffer = createCanBuffer(MAX_READ_MSG);
+
+
     int i;
     for (i = 0x700; i < 0x7FF; i++) iCanBus->canIdAdd (i);
     for (i = 0x200; i < 0x2FF; i++) iCanBus->canIdAdd (i); //for strain board (polling messages used for calibration)
@@ -56,6 +61,10 @@ int cDriver2::init (Searchable &config)
 
 int cDriver2::uninit ()
 {
+    // should destroy the can buffers ... however, at date of 22 jun 16, i have seen that application crashes.
+    // destroyCanBuffer(canRXbuffer);
+    // destroyCanBuffer(canTXbuffer);
+
     dd.close();
     return true;
 }
@@ -81,13 +90,11 @@ int cDriver2::receive_message(vector<CanPacket> &canpackets, int howMany, double
     double now=start;
     bool done=false;
 
-    // creating a temporary buffer just for this transaction .... hmm maybe better using a permanent class member.
-    CanBuffer tmpBuff=createCanBuffer(maxreadmsg);
 
     while(!done)
         {
 
-            ret=iCanBus->canRead(tmpBuff, maxreadmsg, &how_many_messages, false);
+            ret=iCanBus->canRead(canRXbuffer, maxreadmsg, &how_many_messages, false);
 
             if (read+how_many_messages>maxreadmsg)
                 {
@@ -97,7 +104,7 @@ int cDriver2::receive_message(vector<CanPacket> &canpackets, int howMany, double
             for(unsigned int k=0;k<how_many_messages;k++)
                 {
                     // convert a yarp::dev::CanMessage into a CanPacket. we use operator = of CanPacket.
-                    canpackets[read] = tmpBuff[k];
+                    canpackets[read] = canRXbuffer[k];
                     read++;
                 }
 
@@ -116,7 +123,6 @@ int cDriver2::receive_message(vector<CanPacket> &canpackets, int howMany, double
             //  Time::delay(0.0);
         }
 
-    destroyCanBuffer(tmpBuff);
     if(!ret)
         return 0;
 
@@ -133,21 +139,24 @@ int cDriver2::send_message(vector<CanPacket> &canpackets, int n)
         n = canpackets.size();
     }
 
-    CanBuffer tmpBuff=createCanBuffer(n);
+    if(n > MAX_WRITE_MSG)
+    {
+        n = MAX_WRITE_MSG;
+    }
+
 
     for(int i=0; i<n; i++)
     {
         // in here it would be nice having operator = in class yarp::dev::CanMessage or in class CanPacket so that we can just use following line
-        // tmpBuff[0] = canpackets[0];
-        tmpBuff[i].setId(canpackets[i].getId());
-        tmpBuff[i].setLen(canpackets[i].getLen());
-        tmpBuff[i].setBuffer(canpackets[i].getData());
-        // or ... memcpy(tmpBuff[0].getData(), canpackets[0].getData(), canpackets[0].getLen());
+        // canTXbuffer[0] = canpackets[0];
+        canTXbuffer[i].setId(canpackets[i].getId());
+        canTXbuffer[i].setLen(canpackets[i].getLen());
+        canTXbuffer[i].setBuffer(canpackets[i].getData());
+        // or ... memcpy(canTXbuffer[0].getData(), canpackets[0].getData(), canpackets[0].getLen());
     }
 
-    bool ret = iCanBus->canWrite(tmpBuff, n, &sent);
+    bool ret = iCanBus->canWrite(canTXbuffer, n, &sent);
 
-    destroyCanBuffer(tmpBuff);
 
     if(!ret)
         return 0;

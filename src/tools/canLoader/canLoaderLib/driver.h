@@ -1,3 +1,4 @@
+
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
@@ -37,7 +38,7 @@ using namespace std;
 
 
 #define MAX_READ_MSG 64
-
+#define MAX_WRITE_MSG 8
 
 // - class CanPacket contains a CAN packet as yarp::dev::CanMessage does but with additional info of the canbus.
 //   it is used by all interfaces. as such it needs conversion capabilities to/from formats which are specific
@@ -125,6 +126,10 @@ private:
     yarp::dev::PolyDriver dd;
     yarp::dev::ICanBus *iCanBus;
     yarp::dev::ICanBufferFactory *iFactory;
+
+    yarp::dev::CanBuffer canTXbuffer;
+    yarp::dev::CanBuffer canRXbuffer;
+
 
 private:
     // used to create buffers for tx/rx with YARP
