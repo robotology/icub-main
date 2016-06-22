@@ -1444,13 +1444,13 @@ void MotorThread::run()
                 
                 yDebug("force= %s",force.toString().c_str());
 
-                Vector b=(1.0/dragger.inertia)*force;
-                yDebug("(1.0/dragger.inertia)*force = %s",b.toString().c_str());
+                Vector b=force/dragger.inertia;
+                yDebug("force/dragger.inertia = %s",b.toString().c_str());
 
                 Vector c=D*dragger.I->get();
                 yDebug("D*dragger.I->get() = %s",c.toString().c_str());
 
-                Vector a=(1.0/dragger.inertia)*force-D*dragger.I->get();
+                Vector a=force/dragger.inertia-D*dragger.I->get();
                 Vector zeros4d(4);
                 zeros4d=0.0;
 
