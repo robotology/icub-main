@@ -857,12 +857,13 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
 {
     yTrace();
 
-    bool allPark = true;
+    bool allJointsCanParkSimultaneously = true;
     for (int i = 0; i < n_joints; i++)
     {
-        allPark &= disableHomeAndPark[i];
+        yWarning() << "Joints will be parked separately, since some of them have the disableHomeAndPark flag set";
+        if (disableHomeAndPark[i]) allJointsCanParkSimultaneously = false;
     }
-    if (allPark == false)
+    if (allJointsCanParkSimultaneously == false)
     {
         bool ret = true;
         for (int i = 0; i < n_joints; i++) { ret &= this->parkSingleJoint(i); }
