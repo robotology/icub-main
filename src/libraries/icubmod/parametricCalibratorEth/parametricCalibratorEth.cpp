@@ -62,7 +62,9 @@ parametricCalibratorEth::parametricCalibratorEth() :
     n_joints(0),
     timeout_park(NULL),
     timeout_goToZero(NULL),
-    timeout_calibration(NULL)
+    timeout_calibration(NULL),
+    disableHomeAndPark(NULL),
+    disableStartupPosCheck(NULL)
 {
 }
 
@@ -209,9 +211,14 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     timeout_park = new int[nj];
     timeout_goToZero = new int[nj];
     timeout_calibration = new int[nj];
+    disableHomeAndPark = new bool[nj];
+    disableStartupPosCheck = new bool[nj];
+
     for (int i = 0; i < nj; i++) timeout_park[i] = 30;
     for (int i = 0; i < nj; i++) timeout_goToZero[i] = 10;
     for (int i = 0; i < nj; i++) timeout_calibration[i] = 20;
+    for (int i = 0; i < nj; i++) disableHomeAndPark[i] = false;
+    for (int i = 0; i < nj; i++) disableStartupPosCheck[i] = false;
 
     int i=0;
 
@@ -275,6 +282,14 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupPosThreshold params"; return false;}
     for (i = 1; i < xtmp.size(); i++) startupPosThreshold[i-1] =  xtmp.get(i).asDouble();
  
+    xtmp = p.findGroup("CALIBRATION").findGroup("startupDisablePosCheck");
+    if (xtmp.size() - 1 != nj) { } //this parameter is optional
+    else { for (i = 1; i < xtmp.size(); i++) disableStartupPosCheck[i - 1] = (xtmp.get(i).asInt() == 1); }
+
+    xtmp = p.findGroup("CALIBRATION").findGroup("disableHomeAndPark");
+    if (xtmp.size() - 1 != nj) { } //this parameter is optional
+    else { for (i = 1; i < xtmp.size(); i++) disableHomeAndPark[i - 1] = (xtmp.get(i).asInt() == 1); }
+
     xtmp = p.findGroup("CALIB_ORDER");
     int calib_order_size = xtmp.size();
     if (calib_order_size <= 1) {yError() << deviceName << ": invalid number CALIB_ORDER params"; return false;}
@@ -355,6 +370,16 @@ bool parametricCalibratorEth::close ()
     if (homeVel != NULL) {
         delete[] homeVel;
         homeVel = NULL;
+    }
+
+    if (disableHomeAndPark != NULL) {
+        delete[] disableHomeAndPark;
+        disableHomeAndPark = NULL;
+    }
+
+    if (disableStartupPosCheck != NULL) {
+        delete[] disableStartupPosCheck;
+        disableStartupPosCheck = NULL;
     }
 
     return true;
@@ -755,6 +780,12 @@ bool parametricCalibratorEth::checkHwFault(int j)
 bool parametricCalibratorEth::goToZero(int j)
 {
     bool ret = true;
+    if (disableStartupPosCheck)
+    {
+        yWarning() << deviceName << ": goToZero is disabled on user request";
+        return true;
+    }
+
     if (abortCalib) return true;
     yDebug() <<  deviceName  << ": Sending positionMove to joint" << j << " (desired pos: " << startupPos[j] << "desired speed: " << startupVel[j] <<" )";
     ret = iPosition->setRefSpeed(j, startupVel[j]);
@@ -764,6 +795,11 @@ bool parametricCalibratorEth::goToZero(int j)
 
 bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
 {
+    if (disableStartupPosCheck)
+    {
+        yWarning() << deviceName << ": checkGoneToZeroThreshold is disabled on user request";
+        return true;
+    }
     if (skipCalibration) return false;
 
     // wait.
@@ -820,6 +856,11 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
 bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
 {
     yTrace();
+    if (disableHomeAndPark)
+    {
+        yWarning() << deviceName << ": park is disabled on user request";
+        return true;
+    }
     bool ret=false;
     abortParking=false;
 
@@ -967,12 +1008,22 @@ bool parametricCalibratorEth::calibrateWholePart()
 bool parametricCalibratorEth::homingSingleJoint(int j)
 {
     yTrace();
+    if (disableHomeAndPark)
+    {
+        yWarning() << deviceName << ": homingSingleJoint is disabled on user request";
+        return true;
+    }
     return goToZero(j);
 }
 
 bool parametricCalibratorEth::homingWholePart()
 {
     yTrace();
+    if (disableHomeAndPark)
+    {
+        yWarning() << deviceName << ": homingWholePart is disabled  on user request";
+        return true;
+    }
     bool ret = true;
     for(int j=0; j<n_joints; j++)
     {
@@ -984,6 +1035,11 @@ bool parametricCalibratorEth::homingWholePart()
 bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
 {
     yTrace();
+    if (disableHomeAndPark)
+    {
+        yWarning() << deviceName << ": parkSingleJoint is disabled on user request";
+        return true;
+    }
     int nj=0;
     abortParking=false;
 
@@ -1060,6 +1116,11 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
 bool parametricCalibratorEth::parkWholePart()
 {
     yTrace();
+    if (disableHomeAndPark)
+    {
+        yWarning() << deviceName << ": parkWholePart is disabled on user request";
+        return true;
+    }
     if(!isCalibrated)
     {
         yError() << "Device is not calibrated therefore cannot be parked";
