@@ -780,9 +780,9 @@ bool parametricCalibratorEth::checkHwFault(int j)
 bool parametricCalibratorEth::goToZero(int j)
 {
     bool ret = true;
-    if (disableStartupPosCheck)
+    if (disableStartupPosCheck[j])
     {
-        yWarning() << deviceName << ": goToZero is disabled on user request";
+        yWarning() << deviceName << ": goToZero, joint " << j << " is disabled on user request";
         return true;
     }
 
@@ -795,9 +795,9 @@ bool parametricCalibratorEth::goToZero(int j)
 
 bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
 {
-    if (disableStartupPosCheck)
+    if (disableStartupPosCheck[j])
     {
-        yWarning() << deviceName << ": checkGoneToZeroThreshold is disabled on user request";
+        yWarning() << deviceName << ": checkGoneToZeroThreshold, joint " << j << " is disabled on user request";
         return true;
     }
     if (skipCalibration) return false;
@@ -856,11 +856,19 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
 bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
 {
     yTrace();
-    if (disableHomeAndPark)
+
+    bool allPark = true;
+    for (int i = 0; i < n_joints; i++)
     {
-        yWarning() << deviceName << ": park is disabled on user request";
-        return true;
+        allPark &= disableHomeAndPark[i];
     }
+    if (allPark == false)
+    {
+        bool ret = true;
+        for (int i = 0; i < n_joints; i++) { ret &= this->parkSingleJoint(i); }
+        return ret;
+    }
+
     bool ret=false;
     abortParking=false;
 
@@ -1008,9 +1016,9 @@ bool parametricCalibratorEth::calibrateWholePart()
 bool parametricCalibratorEth::homingSingleJoint(int j)
 {
     yTrace();
-    if (disableHomeAndPark)
+    if (disableHomeAndPark[j])
     {
-        yWarning() << deviceName << ": homingSingleJoint is disabled on user request";
+        yWarning() << deviceName << ": homingSingleJoint, joint " << j << " is disabled on user request";
         return true;
     }
     return goToZero(j);
@@ -1019,11 +1027,6 @@ bool parametricCalibratorEth::homingSingleJoint(int j)
 bool parametricCalibratorEth::homingWholePart()
 {
     yTrace();
-    if (disableHomeAndPark)
-    {
-        yWarning() << deviceName << ": homingWholePart is disabled  on user request";
-        return true;
-    }
     bool ret = true;
     for(int j=0; j<n_joints; j++)
     {
@@ -1035,9 +1038,9 @@ bool parametricCalibratorEth::homingWholePart()
 bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
 {
     yTrace();
-    if (disableHomeAndPark)
+    if (disableHomeAndPark[j])
     {
-        yWarning() << deviceName << ": parkSingleJoint is disabled on user request";
+        yWarning() << deviceName << ": parkSingleJoint, joint " << j << " is disabled on user request";
         return true;
     }
     int nj=0;
@@ -1116,11 +1119,7 @@ bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
 bool parametricCalibratorEth::parkWholePart()
 {
     yTrace();
-    if (disableHomeAndPark)
-    {
-        yWarning() << deviceName << ": parkWholePart is disabled on user request";
-        return true;
-    }
+
     if(!isCalibrated)
     {
         yError() << "Device is not calibrated therefore cannot be parked";
