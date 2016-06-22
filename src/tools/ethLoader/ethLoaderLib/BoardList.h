@@ -10,6 +10,9 @@
 
 #include "BoardInfo.h"
 
+#include <vector>
+using namespace std;
+
 class BoardList
 {
 public:
@@ -66,6 +69,36 @@ public:
 
         return true;
     }
+
+    vector<BoardInfo *> getBoards(ACE_UINT32 address)
+    {
+        vector<BoardInfo *> ret;
+        ret.resize(0);
+
+        for(int i=0; i<mnBoards; i++)
+        {
+            bool found = false;
+            if(0 == address)
+            {   // searching for the selected boards
+                if(true == mpBoards[i]->mSelected)
+                {
+                    found = true;
+                }
+            }
+            else if(mpBoards[i]->mAddress == address)
+            {   // searching for a given ip address
+                found = true;
+            }
+
+            if(true == found)
+            {
+                ret.push_back(mpBoards[i]);
+            }
+        }
+
+        return ret;
+    }
+
 
     bool replaceBoard(BoardInfo *pBoard)
     {

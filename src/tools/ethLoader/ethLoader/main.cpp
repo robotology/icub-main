@@ -408,7 +408,7 @@ static void edited_ip_addr(GtkCellRendererText *cell,gchar *path_str,gchar *new_
         
         if (dialog_question_ip_address(old_addr,new_addr,"IP address"))
         {
-            gUpdater.cmdChangeAddress(address,iNewAddress);
+            gUpdater.cmdChangeAddress(iNewAddress, address);
         }
 
     }
@@ -420,39 +420,40 @@ static void edited_ip_addr(GtkCellRendererText *cell,gchar *path_str,gchar *new_
     gtk_tree_path_free(path);
 }
 
-static void edited_ip_mask(GtkCellRendererText *cell,gchar *path_str,gchar *new_mask)
-{
-    GtkTreeModel *model=gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
-    GtkTreePath *path=gtk_tree_path_new_from_string(path_str);
-    GtkTreeIter iter;
-    gtk_tree_model_get_iter(model,&iter,path);
-    int* index=gtk_tree_path_get_indices(path);
+// keep it as a hidden capability. it is dangerous and highly improbable to change the ip mask
+//static void edited_ip_mask(GtkCellRendererText *cell,gchar *path_str,gchar *new_mask)
+//{
+//    GtkTreeModel *model=gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
+//    GtkTreePath *path=gtk_tree_path_new_from_string(path_str);
+//    GtkTreeIter iter;
+//    gtk_tree_model_get_iter(model,&iter,path);
+//    int* index=gtk_tree_path_get_indices(path);
 
-    int ip1,ip2,ip3,ip4;
-    sscanf(new_mask,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
-    if (ip1<0 || ip1>255 || ip2<0 || ip2>255 || ip3<0 || ip3>255 || ip4<0 || ip4>255) return;
-    ACE_UINT32 iNewMask=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
-    ACE_UINT32 iOldMask=gUpdater.getBoardList()[index[0]].mMask;
+//    int ip1,ip2,ip3,ip4;
+//    sscanf(new_mask,"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
+//    if (ip1<0 || ip1>255 || ip2<0 || ip2>255 || ip3<0 || ip3>255 || ip4<0 || ip4>255) return;
+//    ACE_UINT32 iNewMask=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
+//    ACE_UINT32 iOldMask=gUpdater.getBoardList()[index[0]].mMask;
     
-    ACE_UINT32 address=gUpdater.getBoardList()[index[0]].mAddress;
+//    ACE_UINT32 address=gUpdater.getBoardList()[index[0]].mAddress;
 
-    if (iNewMask!=iOldMask)
-    {
-        char old_mask[16];
-        sprintf(old_mask,"%d.%d.%d.%d",(iOldMask>>24)&0xFF,(iOldMask>>16)&0xFF,(iOldMask>>8)&0xFF,iOldMask&0xFF);
+//    if (iNewMask!=iOldMask)
+//    {
+//        char old_mask[16];
+//        sprintf(old_mask,"%d.%d.%d.%d",(iOldMask>>24)&0xFF,(iOldMask>>16)&0xFF,(iOldMask>>8)&0xFF,iOldMask&0xFF);
         
-        if (dialog_question_ip_address(old_mask,new_mask,"IP mask"))
-        {
-            gUpdater.cmdChangeMask(address,iNewMask);
-        }
-    }
+//        if (dialog_question_ip_address(old_mask,new_mask,"IP mask"))
+//        {
+//            gUpdater.cmdChangeMask(iNewMask, address);
+//        }
+//    }
 
-    gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
-    gtk_widget_draw(treeview, NULL);
+//    gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
+//    gtk_widget_draw(treeview, NULL);
 
-    // clean up 
-    gtk_tree_path_free(path);
-}
+//    // clean up
+//    gtk_tree_path_free(path);
+//}
 
 
 static void edited_info(GtkCellRendererText *cell, gchar *path_str, gchar *newinfo, gpointer data)
@@ -521,7 +522,7 @@ static void add_columns(GtkTreeView *treeview)
     g_signal_connect(renderer,"edited",G_CALLBACK(edited_ip_addr),NULL);
     column=gtk_tree_view_column_new_with_attributes("IP address",renderer,"text",COLUMN_IP_ADDR,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),100);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),90);
     //gtk_tree_view_column_set_sort_column_id(column,COLUMN_IP_ADDR);
     gtk_tree_view_append_column(treeview,column);
 
@@ -530,7 +531,7 @@ static void add_columns(GtkTreeView *treeview)
     renderer=gtk_cell_renderer_text_new();
     column=gtk_tree_view_column_new_with_attributes("MAC",renderer,"text",COLUMN_MAC,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),130);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),140);
     gtk_tree_view_append_column(treeview,column);
 
     // column 4 BOARD TYPE
@@ -611,7 +612,7 @@ static void discover_cbk(GtkButton *button,gpointer user_data)
     activate_buttons();
 }
 
-static void upload_cbk(GtkButton *button,gpointer user_data)
+static void upload_cbk(GtkButton *button, gpointer user_data)
 {  
     if (!gUpdater.getBoardList().numSelected())
     {
@@ -658,8 +659,9 @@ static void upload_cbk(GtkButton *button,gpointer user_data)
         dialog_message(GTK_MESSAGE_ERROR,"Error opening the selected file!","");
         return;
     }
-    
-    std::string result=gUpdater.cmdProgram(programFile,*(int*)user_data,updateProgressBar);
+    uint32_t addr = 0; // all selected
+    //addr = (10 << 24) | (0 << 16) | (1 << 8) | (2); test only one board w/ address 10.0.1.2
+    std::string result=gUpdater.cmdProgram(programFile,*(int*)user_data,updateProgressBar, addr);
 
     fclose(programFile);
 

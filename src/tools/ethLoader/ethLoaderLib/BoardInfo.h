@@ -37,7 +37,9 @@ public:
               ACE_UINT32 mask,
               ACE_UINT64 mac,
               ACE_UINT8 version_major,
-              ACE_UINT8 version_minor)
+              ACE_UINT8 version_minor,
+              ACE_UINT8 protocol_version,
+              ACE_UINT32 protocol_capabilities)
     {
         mSelected=false;
 
@@ -45,6 +47,9 @@ public:
         mMask=mask;
         mMac=mac;
         
+        mProtocolVersion = protocol_version;
+        mProtocolCapabilities = protocol_capabilities;
+
         mVersionMajor=version_major;
         mVersionMinor=version_minor;
 
@@ -67,9 +72,10 @@ public:
 
         mAddress = address;
 
-
         mInfo = info;
 
+        mProtocolVersion = info.protversion;
+        mProtocolCapabilities = info.capabilities;
 
         mMask = 0xFFFFFF00;
         mMac = info.macaddress;
@@ -106,6 +112,8 @@ public:
     ACE_UINT32 mMask;
     ACE_UINT64 mMac;
 
+    ACE_UINT8 mProtocolVersion;
+    ACE_UINT32 mProtocolCapabilities;
     ACE_UINT8 mVersionMajor;
     ACE_UINT8 mVersionMinor;
 
