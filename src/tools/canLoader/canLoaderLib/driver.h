@@ -223,9 +223,10 @@ public:
 
     void sendTo(void* data,size_t len, ACE_UINT16 port, ACE_UINT32 address)
     {
-        CanPkt_t * pkt = (CanPkt_t*) data;
-        uint8_t * dd = (uint8_t*)data;
-        yDebug ("sending UDP pkt of %d bytes to port %d adr %d with data[0] = %d and opc = %x\n", (int) len, port, address, dd[0], pkt->frames[0].data[0]);
+        // uncomment until yDebug() for printing
+        //CanPkt_t * pkt = (CanPkt_t*) data;
+        //uint8_t * dd = (uint8_t*)data;
+        //yDebug ("sending UDP pkt of %d bytes to port %d adr %d with data[0] = %d and opc = %x\n", (int) len, port, address, dd[0], pkt->frames[0].data[0]);
         mSocket->send(data,len,ACE_INET_Addr(port,address));
     }
 
@@ -237,8 +238,9 @@ public:
 
         if (nrec>0)
         {
-            CanPkt_t * pkt = (CanPkt_t*) data;
-            yDebug ("received pkt w/ %d bytes. the pkt has opc = %x\n", (int) nrec, pkt->frames[0].data[0]);
+            // uncomment until yDebug() for printing
+            //CanPkt_t * pkt = (CanPkt_t*) data;
+            //yDebug ("received pkt w/ %d bytes. the pkt has opc = %x\n", (int) nrec, pkt->frames[0].data[0]);
             address=ace_addr.get_ip_address();
             port=ace_addr.get_port_number();
         }

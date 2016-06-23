@@ -531,7 +531,7 @@ static void add_columns(GtkTreeView *treeview)
     renderer=gtk_cell_renderer_text_new();
     column=gtk_tree_view_column_new_with_attributes("MAC",renderer,"text",COLUMN_MAC,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),140);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),160);
     gtk_tree_view_append_column(treeview,column);
 
     // column 4 BOARD TYPE

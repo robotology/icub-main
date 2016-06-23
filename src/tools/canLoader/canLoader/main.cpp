@@ -1511,7 +1511,7 @@ static void add_columns (GtkTreeView *treeview)
         COLUMN_SERIAL,
         NULL);
     gtk_tree_view_column_set_sizing (GTK_TREE_VIEW_COLUMN (column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 70);
+    gtk_tree_view_column_set_fixed_width (GTK_TREE_VIEW_COLUMN (column), 80);
     //gtk_tree_view_column_set_sort_column_id (column, COLUMN_RELEASE);
     gtk_tree_view_append_column (treeview, column);
 

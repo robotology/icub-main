@@ -370,7 +370,8 @@ int eDriver2::receive_message(vector<CanPacket> &canpackets, int howMany, double
 
         if (nrec==sizeof(CanPkt_t))
         {
-            printf(">> received a packet of size %d\n", nrec);
+            // uncomment for print
+            // printf(">> received a packet of size %d\n", nrec);
 
             if (address==mBoardAddr && port==3334)
             {
