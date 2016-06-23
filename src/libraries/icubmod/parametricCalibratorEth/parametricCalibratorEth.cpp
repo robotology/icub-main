@@ -211,8 +211,8 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     timeout_park = new int[nj];
     timeout_goToZero = new int[nj];
     timeout_calibration = new int[nj];
-    disableHomeAndPark = new bool[nj];
-    disableStartupPosCheck = new bool[nj];
+    disableHomeAndPark = new int[nj];
+    disableStartupPosCheck = new int[nj];
 
     for (int i = 0; i < nj; i++) timeout_park[i] = 30;
     for (int i = 0; i < nj; i++) timeout_goToZero[i] = 10;
@@ -274,6 +274,10 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of VelocityHome params"; return false;}
     for (i = 1; i < xtmp.size(); i++) homeVel[i-1] = xtmp.get(i).asDouble();
 
+    xtmp = p.findGroup("HOME").findGroup("disableHomeAndPark");
+    if (xtmp.size() - 1 != nj) { } //this parameter is optional
+    else { for (i = 1; i < xtmp.size(); i++) disableHomeAndPark[i - 1] = xtmp.get(i).asInt(); }
+
     xtmp = p.findGroup("CALIBRATION").findGroup("startupMaxPwm");
     if (xtmp.size()-1!=nj) {yError() <<  deviceName << ": invalid number of startupMaxPwm params"; return false;}
     for (i = 1; i < xtmp.size(); i++) startupMaxPWM[i-1] =  xtmp.get(i).asInt();
@@ -284,11 +288,8 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
  
     xtmp = p.findGroup("CALIBRATION").findGroup("startupDisablePosCheck");
     if (xtmp.size() - 1 != nj) { } //this parameter is optional
-    else { for (i = 1; i < xtmp.size(); i++) disableStartupPosCheck[i - 1] = (xtmp.get(i).asInt() == 1); }
-
-    xtmp = p.findGroup("CALIBRATION").findGroup("disableHomeAndPark");
-    if (xtmp.size() - 1 != nj) { } //this parameter is optional
-    else { for (i = 1; i < xtmp.size(); i++) disableHomeAndPark[i - 1] = (xtmp.get(i).asInt() == 1); }
+    else { for (i = 1; i < xtmp.size(); i++) disableStartupPosCheck[i - 1] = xtmp.get(i).asInt(); }
+   
 
     xtmp = p.findGroup("CALIB_ORDER");
     int calib_order_size = xtmp.size();
@@ -860,11 +861,11 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     bool allJointsCanParkSimultaneously = true;
     for (int i = 0; i < n_joints; i++)
     {
-        yWarning() << "Joints will be parked separately, since some of them have the disableHomeAndPark flag set";
         if (disableHomeAndPark[i]) allJointsCanParkSimultaneously = false;
     }
     if (allJointsCanParkSimultaneously == false)
     {
+        yWarning() << deviceName << "Joints will be parked separately, since some of them have the disableHomeAndPark flag set";
         bool ret = true;
         for (int i = 0; i < n_joints; i++) { ret &= this->parkSingleJoint(i); }
         return ret;

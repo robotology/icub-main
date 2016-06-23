@@ -138,8 +138,8 @@ private:
     bool    abortParking;
     bool    isCalibrated;
     bool    skipCalibration;
-    bool   *disableHomeAndPark;
-    bool   *disableStartupPosCheck;
+    int    *disableHomeAndPark;
+    int    *disableStartupPosCheck;
     bool    clearHwFault;
 
     int    *timeout_park;
