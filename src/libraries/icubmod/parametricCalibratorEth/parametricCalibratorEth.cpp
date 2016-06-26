@@ -290,6 +290,9 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     if (xtmp.size() - 1 != nj) { } //this parameter is optional
     else { for (i = 1; i < xtmp.size(); i++) disableStartupPosCheck[i - 1] = xtmp.get(i).asInt(); }
    
+    xtmp = p.findGroup("CALIBRATION").findGroup("startupTimeout");
+    if (xtmp.size() - 1 != nj) {} //this parameter is optional
+    else { for (i = 1; i < xtmp.size(); i++) timeout_goToZero[i - 1] = xtmp.get(i).asDouble(); }
 
     xtmp = p.findGroup("CALIB_ORDER");
     int calib_order_size = xtmp.size();
