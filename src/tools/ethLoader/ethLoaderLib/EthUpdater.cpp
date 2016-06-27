@@ -73,7 +73,7 @@ int EthUpdater::cmdDiscover()
 
 #if defined(PRINT_DEBUG_INFO_ON_TERMINAL)
                 uint8_t index = eouprot_process2index((eOuprot_process_t)disc->processes.runningnow);
-                printf("Discovered a board @ %s: %s w/ %s v %d.%d running protocol v %d w/ capabilities = 0x%x\n",
+                printf("Discovered a board @ %s: %s w/ %s v %d.%d running protocol v %d w/ capabilities = 0x%x.\n",
                         ipaddr,
                         eoboards_type2string((eObrd_type_t)disc->boardtype),
                         eouprot_process2string((eOuprot_process_t)disc->processes.runningnow),
@@ -255,12 +255,13 @@ std::string EthUpdater::cmdGetMoreInfo(bool refreshInfo, ACE_UINT32 address)
                     char builton[24] = {0};
                     eo_common_date_to_string(binfo.processes.info[n].date, strdate, sizeof(strdate));
                     eo_common_date_to_string(binfo.processes.info[n].compilationdate, builton, sizeof(builton));
-                    printf("\n proc-%d: type %s w/ appl version = (%d, %d), dated %s, built on %s",
+                    printf("\n proc-%d: type %s w/ appl version = (%d, %d), dated %s, built on %s, rom = [%d, %d) kb",
                            n,
                            eouprot_process2string((eOuprot_process_t)binfo.processes.info[n].type),
                            binfo.processes.info[n].version.major, binfo.processes.info[n].version.minor,
                            strdate,
-                           builton
+                           builton,
+                           binfo.processes.info[n].rom_addr_kb, binfo.processes.info[n].rom_addr_kb + binfo.processes.info[n].rom_size_kb
                            );
 
                 }
