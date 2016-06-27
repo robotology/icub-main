@@ -531,6 +531,27 @@ bool EthUpdater::cmdJumpUpd(ACE_UINT32 address)
 }
 
 
+bool EthUpdater::cmdJump2ROMaddress(uint32_t romaddress, ACE_UINT32 address)
+{
+    bool ret = false;
+
+    eOuprot_cmd_JUMP2ADDRESS_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_JUMP2ADDRESS;
+    command.address = romaddress;
+
+    if(0 != address)
+    {
+        mSocket.SendTo(&command, sizeof(command), mPort, address);
+    }
+    else
+    {
+        sendCommandSelected(&command, sizeof(command));
+    }
+
+    return ret;
+}
+
+
 bool EthUpdater::cmdBlink(ACE_UINT32 address)
 {
     bool ret = false;

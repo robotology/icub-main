@@ -138,6 +138,11 @@ public:
     // - uprot_canDO_JUMP2UPDATER
     bool cmdJumpUpd(ACE_UINT32 address = 0);
 
+    // used to force a jump to a given ROM address
+    // capability to be checked is:
+    // - uprot_canDO_JUMP2ADDRESS
+    bool cmdJump2ROMaddress(uint32_t romaddress, ACE_UINT32 address = 0);
+
     // forces a series of blinks in the LEDs of selected boards
     // capability to be checked is:
     // - uprot_canDO_blink
