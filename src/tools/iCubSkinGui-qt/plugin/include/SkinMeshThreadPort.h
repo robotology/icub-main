@@ -30,6 +30,7 @@
 #include "include/Fingertip2Left.h"
 #include "include/Fingertip2Right.h"
 #include "include/Triangle_10pad.h"
+#include "include/CER_SH_PDL.h"
 
 using namespace yarp::os;
 using namespace yarp::dev;

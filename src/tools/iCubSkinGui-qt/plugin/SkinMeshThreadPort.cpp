@@ -91,7 +91,7 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThre
         std::string type(sensorConfig.get(0).asString());
       
         if (type=="triangle"       || type=="fingertip" || type=="fingertip2L" || type=="fingertip2R" ||
-            type=="triangle_10pad" || type=="quad16"    || type=="palmR"       || type=="palmL")
+            type=="triangle_10pad" || type=="quad16"    || type=="palmR"       || type=="palmL" || type == "cer_sh_pdl")
         {
             int    id=sensorConfig.get(1).asInt();
             double xc=sensorConfig.get(2).asDouble();
@@ -134,6 +134,10 @@ SkinMeshThreadPort::SkinMeshThreadPort(Searchable& config,int period) : RateThre
                     else if (type=="quad16")
                     {
                         sensor[id]=new Quad16(xc,yc,th,gain,layoutNum,lrMirror);
+                    }
+                    else if (type == "cer_sh_pdl")
+                    {
+                        sensor[id] = new CER_SH_PDL(xc, yc, th, gain, layoutNum, lrMirror);
                     }
                     else if (type=="palmR")
                     {

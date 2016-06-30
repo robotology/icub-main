@@ -30,15 +30,15 @@ public:
         ilrMirror=lrMirror;
         ilayoutNum=layoutNum;
         nVerts=4;
-        nTaxels=48;
+        nTaxels=29;
         m_RadiusOrig=1.8;
 
   
 		
 		for (int i=0; i<nTaxels; ++i)
         {
-			dX[0]=15; //not used
-			dY[0]=15; //not used 
+			dX[i]=15; //not used
+			dY[i]=15; //not used 
 		}
 
 
@@ -72,7 +72,7 @@ public:
 		dX[26]=-11; dY[26]=9;
 		dX[27]=-8; dY[27]=14;
 		dX[28]=-5; dY[28]=9;
-		dX[35]=-5.83; dY[35]=11.9;
+	//	dX[35]=-5.83; dY[35]=11.9;
 
 		
         for (int i=0; i<nTaxels; ++i)
