@@ -1143,7 +1143,7 @@ public:
     * Constructor. 
     * @param _type is a string to discriminate between the finger's 
     *              type which has to be passed in the form
-    *              <hand>_<finger>_<version>, where
+    *              <hand>\_<finger>\_<version>, where
     *              <i>hand</i> accounts for "left"|"right",
     *              <i>finger</i> for
     *              "thumb"|"index"|"middle"|"ring"|"little", and
