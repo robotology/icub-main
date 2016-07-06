@@ -43,9 +43,12 @@
 #include <jpeglib.h>
 #include <libv4l2.h>
 
-#include <yarp/dev/FrameGrabberInterfaces.h>
-#include <yarp/os/RateThread.h>
+#include <cv.h>
+
 #include <yarp/os/Semaphore.h>
+#include <yarp/os/RateThread.h>
+#include <yarp/dev/PreciselyTimed.h>
+#include <yarp/dev/FrameGrabberInterfaces.h>
 
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
 
@@ -88,9 +91,15 @@ typedef struct
     io_method       io;
     int             fps;
     unsigned int    image_size;
+    unsigned int    rgb_src_image_size;
     unsigned int    dst_image_size;
     unsigned char   *dst_image;
+    unsigned char   *tmp_image;
+    unsigned char   *tmp_image2;
     void            *raw_image;
+    cv::Mat         outMat;
+    cv::Mat         img;
+
     unsigned int    n_buffers;
     struct buffer   *buffers;
     struct v4l2_format src_fmt;
@@ -111,6 +120,7 @@ class yarp::dev::V4L_camera :   public yarp::dev::DeviceDriver,
                                 public yarp::dev::IFrameGrabber,
                                 public yarp::dev::IFrameGrabberControls,
                                 public yarp::dev::IFrameGrabberControls2,
+                                public yarp::dev::IPreciselyTimed,
                                 public yarp::os::RateThread
 {
 public:
@@ -119,6 +129,8 @@ public:
     // DeviceDriver Interface
     bool open(yarp::os::Searchable& config);
     bool close();
+
+    yarp::os::Stamp getLastInputStamp();
 
     // IFrameGrabberRgb    Interface
     bool getRgbBuffer(unsigned char *buffer);
@@ -182,8 +194,11 @@ public:
 
 private:
 
-    yarp::os::Semaphore mutex;
+    yarp::os::Stamp timeStamp;
     Video_params param;
+    yarp::os::Semaphore mutex;
+    bool doCropping;
+    bool dual;
     bool isActive_vector[YARP_FEATURE_NUMEBR_OF];
     double timeStart, timeTot, timeNow, timeElapsed;
     int myCounter;
@@ -250,6 +265,8 @@ private:
     bool check_V4L2_control(uint32_t id);
     bool set_V4L2_control(u_int32_t id, double value, bool verbatim = false);
     double get_V4L2_control(uint32_t id, bool verbatim=false);   // verbatim = do not convert value, for enum types
+
+    double toEpochOffset;
 };
 
 #endif // _V4L_CAMERA_HPP_
