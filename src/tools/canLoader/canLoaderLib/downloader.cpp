@@ -119,6 +119,7 @@ int cDownloader::stopdriver()
 
 int cDownloader::initdriver(Searchable &config)
 {
+    int ret = 0; // 0 is ok, -1 is failure, -2 is retry ...
     if (m_idriver !=NULL)
         {
             delete m_idriver;
@@ -151,7 +152,7 @@ int cDownloader::initdriver(Searchable &config)
         tmp = config.check("canDeviceNum");
     }
 
-    if (m_idriver->init(config)==-1)
+    if (0 != (ret = m_idriver->init(config)))
         {
             if (m_idriver)
                 {
@@ -159,7 +160,7 @@ int cDownloader::initdriver(Searchable &config)
                     m_idriver=NULL;
                     connected = false;
                 }
-            return -1;
+            return ret;
         }
 
     set_canbus_id(tmp);
@@ -180,7 +181,7 @@ int cDownloader::initdriver(Searchable &config)
     connected = true;
 
 
-    return 0;
+    return ret;
 }
 
 //*****************************************************************/

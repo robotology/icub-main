@@ -204,6 +204,8 @@ int eDriver2::init(yarp::os::Searchable &config)
 {
     ACE_UINT32 local=(ACE_UINT32)config.find("local").asInt();
 
+    int ret = 0;
+
     if (!mSocket->create(3334,local))
     {
         yError("invalid address\n");
@@ -304,40 +306,47 @@ int eDriver2::init(yarp::os::Searchable &config)
         if(-1 == nrec)
         {
             yWarning("remote board did not sent any ack to command 0x20. it may have a version of eUpdater older than 6.6");
+            ret = 0;
         }
         else if(sizeof(cmdreply) == nrec)
         {
             if((uprot_OPC_CANGATEWAY == cmdreply.opc) && (uprot_RES_OK == cmdreply.res))
             {
                 yDebug("REMOTE BOARD is in CAN gateway now");
+                ret = 0;
             }
             else if((uprot_OPC_CANGATEWAY == cmdreply.opc) && (uprot_RES_OK != cmdreply.res))
             {
                 if(uprot_RES_ERR_TRYAGAIN == cmdreply.res)
                 {
                     yWarning("REMOTE BOARD tells that it cannot go to CAN gateway mode, BUT: The eApplication has jumped to eUpdater. Try connect again.");
+                    ret = -2;
                 }
                 else
                 {
                     yWarning("REMOTE BOARD tells that it cannot go to CAN gateway mode.");
+                    ret = -1;
                 }
             }
             else
             {
                 uint8_t *bb = (uint8_t*) &cmdreply;
                 yWarning("REMOTE BOARD sends an unknown reply[%d] = {%x, %x, %x, %x}.", nrec, bb[0], bb[1], bb[2], bb[3]);
+                ret = -1;
             }
         }
         else
         {
             uint8_t *bb = (uint8_t*) &cmdreply;
             yWarning("REMOTE BOARD sends an unknown reply[%d] = {%x, %x, %x, %x}.", nrec, bb[0], bb[1], bb[2], bb[3]);
+            ret = -1;
         }
     }
     else
     {
         // we must wait the value specified by board to enter in GTW: 1 sec but we make 1.5
         yarp::os::Time::delay(waitingTime);
+        ret = 0;
     }
 
 
@@ -345,7 +354,7 @@ int eDriver2::init(yarp::os::Searchable &config)
 
     //printf("@ %f sec from start: exit init phase\n", yarp::os::Time::now() - timestart);
 
-    return 0;
+    return ret;
 }
 
 

@@ -816,9 +816,16 @@ static void start_end_click (GtkButton *button,    gpointer   user_data)
         //try to connect to the driver
         ret = downloader.initdriver(params);
 
-        if (ret == -1)
+        if (0 != ret)
         {
-            dialog_message(GTK_MESSAGE_ERROR,"Init driver failed","Hardware busy or not connected?!");
+            if(-2 == ret)
+            {
+                dialog_message(GTK_MESSAGE_INFO,"Init ETH driver"," The ETH board has just jumped to eUpdater\n Connect again");
+            }
+            else
+            {
+                dialog_message(GTK_MESSAGE_ERROR,"Init driver failed","Hardware busy or not connected?!");
+            }
             return;
         }
 
