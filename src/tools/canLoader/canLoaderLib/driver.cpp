@@ -313,7 +313,14 @@ int eDriver2::init(yarp::os::Searchable &config)
             }
             else if((uprot_OPC_CANGATEWAY == cmdreply.opc) && (uprot_RES_OK != cmdreply.res))
             {
-                yWarning("REMOTE BOARD tells that it is not in CAN gateway mode... why?");
+                if(uprot_RES_ERR_TRYAGAIN == cmdreply.res)
+                {
+                    yWarning("REMOTE BOARD tells that it cannot go to CAN gateway mode, BUT: The eApplication has jumped to eUpdater. Try connect again.");
+                }
+                else
+                {
+                    yWarning("REMOTE BOARD tells that it cannot go to CAN gateway mode.");
+                }
             }
             else
             {
