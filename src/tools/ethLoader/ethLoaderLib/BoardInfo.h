@@ -53,14 +53,14 @@ public:
         mVersionMajor=version_major;
         mVersionMinor=version_minor;
 
-        mBoardType = string("??");
+        mBoardType = string("N/A");
 
-        mRunningProcess = string("??");
+        mRunningProcess = string("N/A");
 
-        mInfo32 = string("??");
+        mInfo32 = string("N/A");
 
-        mReleasedOn = string("??");
-        mBuiltOn = string("??");
+        mReleasedOn = string("N/A");
+        mBuiltOn = string("N/A");
 
         mSuccess=0; 
     }
@@ -90,8 +90,8 @@ public:
         {   // error ...
             mVersionMajor = 0;
             mVersionMinor = 0;
-            mReleasedOn = string("??");
-            mBuiltOn = string("??");
+            mReleasedOn = string("N/A");
+            mBuiltOn = string("N/A");
         }
         else
         {
