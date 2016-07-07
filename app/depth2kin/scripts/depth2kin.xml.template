@@ -11,7 +11,7 @@
       
         <module>
                 <name>SFM</name>
-                <parameters>--elas_ipol_gap_width 20</parameters>
+                <parameters>--use_sgbm</parameters>
                 <node>gpu-node</node>
         </module>
 
