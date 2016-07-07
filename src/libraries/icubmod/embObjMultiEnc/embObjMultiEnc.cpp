@@ -86,7 +86,7 @@ bool embObjMultiEnc::fromConfig(yarp::os::Searchable &_config)
     yDebug()<< "configurazione: ";;
     yDebug() << _config.toString();
 
-    Bottle general = _config.findGroup("PIPPO");
+    Bottle general = _config.findGroup("JOINTS");
     if(general.isNull())
     {
         yError() << "embObjMultiEnc cannot find general group";
