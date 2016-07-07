@@ -5,7 +5,7 @@
    
     <device name="left_leg_inertialMTB" type="embObjInertials">
     
-        <params file="general.xml" />  
+        <params file="general.xml" />     
 
         <params file="hardware/electronics/left_lower_leg-ems10-eln.xml" />
         

@@ -3,7 +3,7 @@
 
 <params robot="iCubGenova02" build="1">
 
- <!--  chissà se funge??? -->
+
     <param name="canbusdevice">  cfw2can </param>
     <group name="CAN">
         <param name="CanDeviceNum">         0       </param>

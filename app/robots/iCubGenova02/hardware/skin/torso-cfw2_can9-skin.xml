@@ -5,7 +5,7 @@
   <device name="torso_skin" type="canBusSkin">
       <params file="general.xml" />
 
-	  <params robot="iCubGenova02" build="1">
+	  <params robot="iCubGenova05" build="1">
         <param name="canDeviceNum"> 9         </param>  
         <param name="skinCanIds">   7 8 9 10  </param>   
         <param name="period"> 10              </param>

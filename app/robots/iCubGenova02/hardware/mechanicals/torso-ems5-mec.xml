@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
-<params robot="iCubGenova02" build="1">
+<params robot="iCubGenova05" build="1">
     <group name="GENERAL">
         <param name="MotioncontrolVersion">  2 </param>
         <param name="Joints"> 3 </param> 
