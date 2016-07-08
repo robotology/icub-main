@@ -1071,6 +1071,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, unsigned int 
 //*****************************************************************/
 int cDownloader::get_serial_no       (int bus, int target_id, char* serial_no)
 {
+    int ret = -1;
     int i;
     if (serial_no == NULL) return -1;
 
@@ -1089,10 +1090,11 @@ int cDownloader::get_serial_no       (int bus, int target_id, char* serial_no)
             board_list[i].type==icubCanProto_boardType__strain)
         {
             this->strain_get_serial_number(bus, target_id, serial_no);
+            ret = 0;
         }
     }
 
-    return 0;
+    return ret;
 }
 
 
@@ -1592,6 +1594,10 @@ int cDownloader::initschede()
         char serial_no [32];
         get_serial_no       (board_list[i].bus, board_list[i].pid, serial_no);
         strcpy (board_list[i].serial,  serial_no);
+        if(0 == strlen(board_list[i].serial))
+        {
+            snprintf(board_list[i].serial, sizeof(board_list[i].serial), "N/A");
+        }
         //pause
         drv_sleep(10);
     }

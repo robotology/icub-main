@@ -552,21 +552,21 @@ static void add_columns(GtkTreeView *treeview)
     renderer=gtk_cell_renderer_text_new();
     column=gtk_tree_view_column_new_with_attributes("Version",renderer,"text",COLUMN_VERSION,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),60);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),65);
     gtk_tree_view_append_column(treeview,column);
 
     // column 7 DATE
     renderer=gtk_cell_renderer_text_new();
     column=gtk_tree_view_column_new_with_attributes("Dated",renderer,"text",COLUMN_DATE,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),140);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),150);
     gtk_tree_view_append_column(treeview,column);
 
     // column 7 DATE
     renderer=gtk_cell_renderer_text_new();
     column=gtk_tree_view_column_new_with_attributes("Built On",renderer,"text",COLUMN_BUILT,NULL);
     gtk_tree_view_column_set_sizing(GTK_TREE_VIEW_COLUMN(column),GTK_TREE_VIEW_COLUMN_FIXED);
-    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),140);
+    gtk_tree_view_column_set_fixed_width(GTK_TREE_VIEW_COLUMN(column),150);
     gtk_tree_view_append_column(treeview,column);
 
     // column 9 INFO
