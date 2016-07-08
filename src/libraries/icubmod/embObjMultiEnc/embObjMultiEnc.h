@@ -104,6 +104,7 @@ private:
     yarp::os::Semaphore mutex;
 
     vector<double> analogdata;
+    vector<double> encoderConversionFactor;
 
     short status;
     double timeStamp;

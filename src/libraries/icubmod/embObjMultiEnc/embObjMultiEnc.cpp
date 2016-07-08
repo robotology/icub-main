@@ -99,10 +99,15 @@ bool embObjMultiEnc::fromConfig(yarp::os::Searchable &_config)
         yError() << "embObjMultiEnc cannot find listofjoints param";
         return false;
     }
-    
-    yDebug()<< "lista giunti: ";;
-    yDebug() << jointsbottle.toString();
-    
+          
+    Bottle encsbottle = general.findGroup("encoderConversionFactor");
+    if (encsbottle.isNull())
+    {
+        yError() << "embObjMultiEnc cannot find encoderConversionFactor param";
+        return false;
+    }
+     
+ 
     //jointsbottle contains: "listofjoints 0 1 2 3. So the num of joints is jointsbottle->size() -1 " 
     numofjoints = jointsbottle.size() -1;  
     
@@ -111,7 +116,20 @@ bool embObjMultiEnc::fromConfig(yarp::os::Searchable &_config)
 
     yDebug()<< " embObjMultiEnc List of joints: " << numofjoints;
     for(int i=0; i<numofjoints; i++) yDebug() << "pos="<< i << "val="<<  listofjoints[i];
-    
+   
+    analogdata.resize(numofencperjoint*numofjoints, 0.0);
+    encoderConversionFactor.resize(numofencperjoint*numofjoints, 1.0);
+
+    if (numofencperjoint*numofjoints!=encsbottle.size()-1)
+    {
+        yError() << "embObjMultiEnc invalid size of encoderConversionFactor param";
+        return false;
+	}
+	for (int i=0; i<encsbottle.size()-1; i++)
+	{
+		encoderConversionFactor[i]=encsbottle.get(i+1).asDouble();
+	}
+         
     return true;
 }
 
@@ -215,14 +233,6 @@ bool embObjMultiEnc::open(yarp::os::Searchable &config)
         yError() << "embObjMultiEnc missing some configuration parameter. Check logs and your config file.";
         return false;
     }
-
-    // and prepare analogdata
-    {
-        // must be of size: number of encoders per joint multiplied per num of joints
-        analogdata.resize(numofencperjoint*numofjoints, 0.0);
-    }
-
-
 
     // -- instantiate EthResource etc.
 
@@ -544,8 +554,7 @@ bool embObjMultiEnc::update(eOprotID32_t id32, double timestamp, void* rxdata)
     mutex.wait();
     for(int i=0; i< numofencperjoint; i++)
     {
-        //analogdata[startindex + i]=((double) multienc[i]/182.044);
-        analogdata[startindex + i]=((double) multienc[i]);
+        analogdata[startindex + i]=((double) multienc[i])/encoderConversionFactor[startindex + i];
     }
     mutex.post();
 
