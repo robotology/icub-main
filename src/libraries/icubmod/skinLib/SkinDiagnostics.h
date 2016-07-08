@@ -24,6 +24,8 @@
 
 #include <string>
 #include <stdint.h>
+#include <sstream>
+#include <yarp/sig/Image.h>
 
 
 namespace iCub {
@@ -82,7 +84,7 @@ namespace iCub {
                operator T () const;
             };
 
-            inline std::string printErrorCode(int code)
+ /*           inline std::string printErrorCode(int code)
             {
                 std::string s;
 
@@ -97,6 +99,67 @@ namespace iCub {
                     if (i%4==3 && i!=15) s+=".";
                 }
                 return s;
+            }
+            */
+            
+            inline std::string printErrorCode(int code)
+            {
+                std::string errortype_str;
+
+                uint8_t error_type = code & 0x000f;
+                uint16_t outofrange_error = (code & 0xfff0)>>4;
+                //printf("sono nella print error code %d", code);
+                switch(error_type)
+                {
+                    case 0: //no_ack see mtb code
+                    {
+                        errortype_str+="";
+                        break;
+                    }
+                    case 1: //no_ack see mtb code
+                    {
+                        errortype_str+="no ack";
+                        break;
+                    }
+                    case 2: //no_ack see mtb code
+                    {
+                        errortype_str+="not connected";
+                        break;
+                    }
+                    default:
+                    {
+                        errortype_str+="unknown error";
+                        break;
+                    }
+                }
+                
+                std::stringstream ss;
+                int numoftaxel_in_error = 0;
+                for(int i=0; i<12; i++)
+                {
+                    if(outofrange_error & (1<<i))
+                    {
+                        numoftaxel_in_error++;
+                        ss << i <<", ";
+                    }
+                }
+                
+                std::stringstream outs;
+                if(numoftaxel_in_error>0)
+                {
+                    outs << numoftaxel_in_error <<" taxels are out of range:"<< ss.str(); 
+                }
+                else
+                {
+                    outs << "None taxels are out of range";
+                }
+                
+                if(error_type!=0)
+                    outs << ". Triangle error is "<< errortype_str;
+                else
+                    outs << ". Triangle has not error ";
+                
+                return outs.str();
             }
         }
     }
