@@ -363,11 +363,8 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 
         // patch np-th, can2 ... for each address put a bit using
         ethservice.configuration.data.sk.skin.canmapskin[np][1] = 0;
-
-   
+  
         int canport = _skCfg.patchInfoList[np].idPatch-1;
-
-        yError() << "********* SKIN: uso la porta CAN "<< canport;
         
         int max = _skCfg.patchInfoList[np].cardAddrList.size();
         for(int n=0; n<max; n++)
