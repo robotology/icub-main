@@ -363,13 +363,9 @@ bool EmbObjSkin::fromConfig(yarp::os::Searchable& config)
 
         // patch np-th, can2 ... for each address put a bit using
         ethservice.configuration.data.sk.skin.canmapskin[np][1] = 0;
-
-        int canport = eOcanport2; // it is can2 unless ... we have two patches and np is 0.
-        if((0 == np) && (2 == ethservice.configuration.data.sk.skin.numofpatches))
-        {
-            canport = eOcanport1;
-        }
-
+  
+        int canport = _skCfg.patchInfoList[np].idPatch-1;
+        
         int max = _skCfg.patchInfoList[np].cardAddrList.size();
         for(int n=0; n<max; n++)
         {
