@@ -409,7 +409,6 @@ int main(int argc, char *argv[])
                         printf ("unavailable interface\n");
                         break;
                     }
-                    double ref;
                     bool ret = ipos2->getTargetPositions(tmp);
                     printf ("%s: (", Vocab::decode(VOCAB_POSITION_MOVES).c_str());
                     for(i = 0; i < jnts; i++)
