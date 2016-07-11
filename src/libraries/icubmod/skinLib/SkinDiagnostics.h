@@ -25,7 +25,6 @@
 #include <string>
 #include <stdint.h>
 #include <sstream>
-#include <yarp/sig/Image.h>
 
 
 namespace iCub {
