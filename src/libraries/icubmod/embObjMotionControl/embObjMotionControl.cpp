@@ -4261,6 +4261,11 @@ bool embObjMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const 
         for (int i = 0; i < _njoints; i++) _gearbox[i] = bval->get(i).asDouble(); 
         return true;
     }
+    else if (key == "PWMLimit")
+    {
+        for (int i = 0; i < _njoints; i++) setPWMLimitRaw(i, bval->get(i).asDouble());
+        return true;
+    }
     yWarning("setRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
 }
