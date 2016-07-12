@@ -348,11 +348,11 @@ static GtkTreeModel * refresh_board_list_model (void)
         strncpy  (board_add_info, downloader.board_list[i].add_info,32);
         if(-1 == downloader.board_list[i].appl_vers_build)
         {
-            sprintf (board_firmware_version, "%d.%d", downloader.board_list[i].appl_vers_major, downloader.board_list[i].appl_vers_minor);
+            sprintf (board_firmware_version, "%d.0x%x", downloader.board_list[i].appl_vers_major, downloader.board_list[i].appl_vers_minor);
         }
         else
         {
-            sprintf (board_firmware_version, "%d.%d.%d", downloader.board_list[i].appl_vers_major, downloader.board_list[i].appl_vers_minor, downloader.board_list[i].appl_vers_build);
+            sprintf (board_firmware_version, "%d.0x%x.%d", downloader.board_list[i].appl_vers_major, downloader.board_list[i].appl_vers_minor, downloader.board_list[i].appl_vers_build);
         }
         sprintf (board_appl_minor,"%d",downloader.board_list[i].appl_vers_minor);
         sprintf (board_appl_build,"%d",downloader.board_list[i].appl_vers_build);
