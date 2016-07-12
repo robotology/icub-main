@@ -2,7 +2,7 @@
 
 /*
  * Copyright (C) 2008 RobotCub Consortium
- * Author: Marco Maggiali, Marco Randazzo, Alessandro Scalzo
+ * Author: Marco Maggiali, Marco Randazzo, Alessandro Scalzo, Marco Accame
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
  */
@@ -25,7 +25,7 @@ The board types currently supported by the CanLoader application are:
 _ SKIN   (DSPIC 30f4011 Tactile Sensor board)
 In order to successfully transfer the firmware to the boards using the CanLoader application, the desired boards
 must be powered on and properly connected to the CAN Bus using either the 'ecan' or 'pcan' or 'cfw2can' or 'socketcan' CAN Bus driver,
-or, alternatively, canLoader can program the boards connected to a EMS board.
+or, alternatively, canLoader can program the boards connected to a ETH board.
 The CanLoader application can run in two different modalities:
 - Graphical User Interface (GUI) modality:
 This modality allows the user to examinate the status of the DSP boards detected on the specified CAN Bus, to download
@@ -48,13 +48,13 @@ executes the graphical version of the canLoader.
 
 To use the canLoader application by command line, without the graphical interface, use the following syntax:
 ./canLoader --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S
-./canLoader --canDeviceType EMS --canDeviceNum 1|2 --boardId y --firmware myFirmware.out.S --boardIPAddr aaa.aaa.aaa.aaa
+./canLoader --canDeviceType ETH --canDeviceNum 1|2 --boardId y --firmware myFirmware.out.S --boardIPAddr aaa.aaa.aaa.aaa
 All of the parameters are mandatory. A description of the parameters follows:
 --canDeviceType t: specifies the type of canBusDriver used. The parameter t can assume the values 'ecan' or 'pcan' or 'cfw2can' or 'socketcan'
 --canDeviceNum x: specifies the canBus identification number. The parameter x can be 0,1,2 or 3.
 --boardId y: specifies the can address of the board on which the firmware will be downloaded. The parameter y ranges from 1 to 15.
 --firmware myFirmware.out.S: specifies the file name containing the firmware (binary code) that will be downloaded.
---boardIPAddr aaa.aaa.aaa.aaa: it is the EMS board IP address.
+--boardIPAddr aaa.aaa.aaa.aaa: it is the ETH board IP address.
 
 \section portsa_sec Ports Accessed
 None
@@ -119,7 +119,7 @@ Linux and Windows.
 canLoader
 canLoader --help
 canLoader --canDeviceType esd --canDeviceNum 2 --boardId 1 --firmware myFirmware.out.S
-canLoader --canDeviceType EMS --canDeviceNum 1 --boardId 4 --firmware myFirmware.out.S --boardIPAddr 10.0.1.8
+canLoader --canDeviceType ETH --canDeviceNum 1 --boardId 4 --firmware myFirmware.out.S --boardIPAddr 10.0.1.8
 
 \author Marco Randazzo
 
@@ -131,7 +131,7 @@ This file can be edited at src/myModule/main.cpp.
 **/
 
 #include "downloader.h"
-#include "ethDriver.h"
+#include "driver.h"
 #include <yarp/os/Time.h>
 #include <yarp/os/Log.h>
 #include <yarp/dev/Drivers.h>
@@ -158,20 +158,20 @@ std::string networkType;
 bool calibration_enabled=false;
 bool prompt_version=false;
 
-enum
-{
-    COLUMN_SELECTED,
-    COLUMN_ID,
-    COLUMN_TYPE,
-    COLUMN_VERSION,
-    COLUMN_RELEASE,
-    COLUMN_BUILD,
-    COLUMN_SERIAL,
-    COLUMN_STATUS,
-    COLUMN_ADD_INFO,
-    COLUMN_EEPROM,
-    NUM_COLUMNS
-};
+//enum
+//{
+//    COLUMN_SELECTED,
+//    COLUMN_ID,
+//    COLUMN_TYPE,
+//    COLUMN_VERSION,
+//    COLUMN_RELEASE,
+//    COLUMN_BUILD,
+//    COLUMN_SERIAL,
+//    COLUMN_STATUS,
+//    COLUMN_ADD_INFO,
+//    COLUMN_EEPROM,
+//    NUM_COLUMNS
+//};
 
 #define ALL_OK                         0
 #define INVALID_CMD_STRING            -1
@@ -227,6 +227,7 @@ static bool compile_ip_addresses(const char* addr)
     return true;
 }
 
+
 static void start_end_click ()
 {
     int ret = 0;
@@ -236,9 +237,9 @@ static void start_end_click ()
         yarp::os::Property params;
         params.put("device", networkType.c_str());
 
-        if (networkType=="EMS")
+        if (networkType=="ETH")
         {
-            yError() << "EMS not supported yet" ;
+            yError() << "ETH not supported yet" ;
             /*if (!prompt_version)
             {
                 if (!compile_ip_addresses(gtk_entry_get_text(GTK_ENTRY(box_ipAddr))))
@@ -364,7 +365,7 @@ static int download_click (std::string* user_data)
         if (downloader.board_list[i].status==BOARD_RUNNING &&
             downloader.board_list[i].selected==true)
         {
-            if (downloader.startscheda(downloader.board_list[i].pid,downloader.board_list[i].eeprom,downloader.board_list[i].type)!=0)
+            if (downloader.startscheda(downloader.board_list[i].bus, downloader.board_list[i].pid, downloader.board_list[i].eeprom, downloader.board_list[i].type)!=0)
             {
                 yError() << "Unable to start the board" << "Unable to send message 'start' or no answer received";
                 return DOWNLOADERR_BOARD_NOT_START;
@@ -385,7 +386,7 @@ static int download_click (std::string* user_data)
     // Start the download for the selected boards
     do
     {
-        ret = downloader.download_file(0x0F, download_type,download_eeprom);
+        ret = downloader.download_file(CanPacket::everyCANbus, 0x0F, download_type, download_eeprom);
         if (float(downloader.progress)/downloader.file_length >0.0  && print00==false)        {yInfo ("downloading %s, 1%% done\n",buffer); print00=true;}
         if (float(downloader.progress) / downloader.file_length >0.25 && print25 == false)    { yInfo("downloading %s, 25%% done\n", buffer); print25 = true; }
         if (float(downloader.progress) / downloader.file_length >0.50 && print50 == false)    { yInfo("downloading %s, 50%% done\n", buffer); print50 = true; }
@@ -413,7 +414,7 @@ static int download_click (std::string* user_data)
 
     // End the download for the selected boards
     int errors =0;
-    downloader.stopscheda(15);
+    downloader.stopscheda(CanPacket::everyCANbus, 15);
 
     //Display result message
     if (errors==0)
@@ -503,7 +504,7 @@ void fatal_error(int err)
         case INVALID_CMD_STRING:
             yError("Unable to parse the command line. The correct format is:\n");
             yError("canLoader --canDeviceType t --canDeviceNum x --boardId y --firmware myFirmware.out.S\n");
-            yError("canLoader --canDeviceType EMS --canDeviceNum 1|2 --boardId y --firmware myFirmware.out.S --boardIPAddr aaa.aaa.aaa.aaa\n");
+            yError("canLoader --canDeviceType ETH --canDeviceNum 1|2 --boardId y --firmware myFirmware.out.S --boardIPAddr aaa.aaa.aaa.aaa\n");
             ::exit(err);
         break;
         case INVALID_PARAM_CANTYPE:
@@ -574,11 +575,11 @@ int myMain( int   argc, char *argv[] )
             yInfo("to execute the command line version of the canLoader:\n");
             yInfo("./canLoader --canDeviceType <t> --canDeviceNum <x> --discover\n");
             yInfo("./canLoader --canDeviceType <t> --canDeviceNum <x> --boardId <y> --firmware myFirmware.out.S\n");
-            yInfo("./canLoader --canDeviceType EMS --canDeviceNum 1|2 --boardId <y> --firmware myFirmware.out.S --boardIPAddr <aaa.aaa.aaa.aaa>\n");
+            yInfo("./canLoader --canDeviceType ETH --canDeviceNum 1|2 --boardId <y> --firmware myFirmware.out.S --boardIPAddr <aaa.aaa.aaa.aaa>\n");
             yInfo("parameter <t> is the name of the CAN bus driver. It can be 'ecan' or 'pcan' or 'cfw2can' or 'socketcan'\n");
             yInfo("parameter <x> is the number of the CAN bus (0-9)\n");
             yInfo("parameter <y> is the CAN address of the board (0-14)\n");
-            yInfo("parameter <aaa.aaa.aaa.aaa> IP address of the board (EMS ethernet boards only)\n");
+            yInfo("parameter <aaa.aaa.aaa.aaa> IP address of the board (ETH boards only)\n");
             ::exit(0);
         }
 
@@ -590,7 +591,7 @@ int myMain( int   argc, char *argv[] )
             strcmp(argv[2], "pcan") != 0 &&
             strcmp(argv[2], "cfw2can") != 0 &&
             strcmp(argv[2], "socketcan") != 0 &&
-            strcmp(argv[2], "EMS") != 0)
+            strcmp(argv[2], "ETH") != 0)
         {
             fatal_error(INVALID_PARAM_CANTYPE);
         }
@@ -625,7 +626,7 @@ int myMain( int   argc, char *argv[] )
                 std::string param_filename = "empty";
                 int temp_val=-1;
 
-                if (networkType=="EMS")
+                if (networkType=="ETH")
                 {
                     if (argc!=11 || strcmp(argv[9],"--boardIPAddr")) fatal_error(INVALID_CMD_STRING);
 
@@ -718,11 +719,11 @@ int myMain( int   argc, char *argv[] )
         yInfo("to execute the command line version of the canLoader:\n");
         yInfo("./canLoader --canDeviceType <t> --canDeviceNum <x> --discover\n");
         yInfo("./canLoader --canDeviceType <t> --canDeviceNum <x> --boardId <y> --firmware myFirmware.out.S\n");
-        yInfo("./canLoader --canDeviceType EMS --canDeviceNum 1|2 --boardId <y> --firmware myFirmware.out.S --boardIPAddr <aaa.aaa.aaa.aaa>\n");
+        yInfo("./canLoader --canDeviceType ETH --canDeviceNum 1|2 --boardId <y> --firmware myFirmware.out.S --boardIPAddr <aaa.aaa.aaa.aaa>\n");
         yInfo("parameter <t> is the name of the CAN bus driver. It can be 'ecan' or 'pcan' or 'cfw2can' or 'socketcan'\n");
         yInfo("parameter <x> is the number of the CAN bus (0-9)\n");
         yInfo("parameter <y> is the CAN address of the board (0-14)\n");
-        yInfo("parameter <aaa.aaa.aaa.aaa> IP address of the board (EMS ethernet boards only)\n");
+        yInfo("parameter <aaa.aaa.aaa.aaa> IP address of the board (ETH ethernet boards only)\n");
         ::exit(0);
     }
 

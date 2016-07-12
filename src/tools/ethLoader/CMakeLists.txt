@@ -4,11 +4,21 @@
 
 PROJECT(ethLoader)
 
-if(ICUB_USE_GTK2)
-	ADD_SUBDIRECTORY(ethLoader)
-else(ICUB_USE_GTK2)
-	message(STATUS "GTK2 not selected, skipping ethLoader")
-endif(ICUB_USE_GTK2)
+if(NOT ICUB_USE_icub_firmware_shared)
+  message(STATUS "icub-firmware-shared not selected, disabling ethLoader")
+  return()
+endif()
 
-ADD_SUBDIRECTORY(ethLoaderLib)
+message(STATUS " +++ tool compiling ethLoaderLib")
+add_subdirectory(ethLoaderLib)
+
+
+if(NOT ICUB_USE_GTK2)
+  message(STATUS "GTK2 not selected, skipping ethLoader")
+  return()
+endif()
+
+message(STATUS " +++ tool compiling ethLoader")
+add_subdirectory(ethLoader)
+
 

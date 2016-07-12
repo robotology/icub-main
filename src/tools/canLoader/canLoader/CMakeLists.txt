@@ -17,6 +17,10 @@ include_directories(${ACE_INCLUDE_DIRS})
 include_directories(${icub_firmware_shared_canProtocolLib_INCLUDE_DIR})
 
 
+include_directories(${icub_firmware_shared_canProtocolLib_INCLUDE_DIR}/canProtocolLib)
+include_directories(${icub_firmware_shared_embobj_INCLUDE_DIR}/embobj/plus/comm-v2/icub/)
+include_directories(${icub_firmware_shared_embobj_INCLUDE_DIR}/embobj/core/core)
+
 # libsigc++ 2.5.1 or later requires c++11. This is automatically
 # enabled with CMake 3.1 or later (using FindGTK2.cmake from CMake
 # 3.5). With older versions, we enable it here.

@@ -76,7 +76,7 @@ void save_click (GtkButton *button,    gpointer   user_data)
 {
     STOP_TIMER
     drv_sleep (1000);
-    downloader.strain_save_to_eeprom(downloader.board_list[selected].pid);
+    downloader.strain_save_to_eeprom(downloader.board_list[selected].bus, downloader.board_list[selected].pid);
     drv_sleep (1000);
     something_changed=false;
     START_TIMER
@@ -86,7 +86,7 @@ void save_click (GtkButton *button,    gpointer   user_data)
 void auto_click (GtkButton *button,    gpointer   user_data)
 {
     STOP_TIMER
-    downloader.strain_calibrate_offset(downloader.board_list[selected].pid,calibration_value);
+    downloader.strain_calibrate_offset(downloader.board_list[selected].bus, downloader.board_list[selected].pid, calibration_value);
     START_TIMER
 }
 /*
@@ -115,7 +115,7 @@ char *myitoa(int a, char *buff, int d)
 gboolean timer_func (gpointer data)
 {
     int ret=0;
-    ret =downloader.strain_get_eeprom_saved(downloader.board_list[selected].pid, &eeprom_saved_status);
+    ret =downloader.strain_get_eeprom_saved(downloader.board_list[selected].bus, downloader.board_list[selected].pid, &eeprom_saved_status);
     if (ret!=0) printf("debug: message 'strain_get_eeprom_saved' lost.\n");
 
     /*
@@ -128,21 +128,21 @@ gboolean timer_func (gpointer data)
     if (ret!=0) printf("debug: message 'sg6_get_amp_gain' lost.\n");
     */
 
-    ret =downloader.strain_get_offset (downloader.board_list[selected].pid, 0, offset[0]);
-    ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 1, offset[1]);
-    ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 2, offset[2]);
-    ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 3, offset[3]);
-    ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 4, offset[4]);
-    ret|=downloader.strain_get_offset (downloader.board_list[selected].pid, 5, offset[5]);
+    ret =downloader.strain_get_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, 0, offset[0]);
+    ret|=downloader.strain_get_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, 1, offset[1]);
+    ret|=downloader.strain_get_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, 2, offset[2]);
+    ret|=downloader.strain_get_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, 3, offset[3]);
+    ret|=downloader.strain_get_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, 4, offset[4]);
+    ret|=downloader.strain_get_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, 5, offset[5]);
     if (ret!=0) printf("debug: message 'strain_get_offset' lost.\n");
 
     int bool_raw= gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (check_raw_vals));
-    ret =downloader.strain_get_adc (downloader.board_list[selected].pid, 0, adc[0], bool_raw);
-    ret|=downloader.strain_get_adc (downloader.board_list[selected].pid, 1, adc[1], bool_raw);
-    ret|=downloader.strain_get_adc (downloader.board_list[selected].pid, 2, adc[2], bool_raw);
-    ret|=downloader.strain_get_adc (downloader.board_list[selected].pid, 3, adc[3], bool_raw);
-    ret|=downloader.strain_get_adc (downloader.board_list[selected].pid, 4, adc[4], bool_raw);
-    ret|=downloader.strain_get_adc (downloader.board_list[selected].pid, 5, adc[5], bool_raw);
+    ret =downloader.strain_get_adc (downloader.board_list[selected].bus, downloader.board_list[selected].pid, 0, adc[0], bool_raw);
+    ret|=downloader.strain_get_adc (downloader.board_list[selected].bus, downloader.board_list[selected].pid, 1, adc[1], bool_raw);
+    ret|=downloader.strain_get_adc (downloader.board_list[selected].bus, downloader.board_list[selected].pid, 2, adc[2], bool_raw);
+    ret|=downloader.strain_get_adc (downloader.board_list[selected].bus, downloader.board_list[selected].pid, 3, adc[3], bool_raw);
+    ret|=downloader.strain_get_adc (downloader.board_list[selected].bus, downloader.board_list[selected].pid, 4, adc[4], bool_raw);
+    ret|=downloader.strain_get_adc (downloader.board_list[selected].bus, downloader.board_list[selected].pid, 5, adc[5], bool_raw);
     if (ret!=0) printf("debug: message 'strain_get_adc' lost.\n");
 
     int ri,ci=0;
@@ -191,18 +191,18 @@ gboolean timer_func (gpointer data)
             for (ri=0;ri<6;ri++)
                 for (ci=0;ci<6;ci++)
                     {
-                        downloader.strain_get_matrix_rc(downloader.board_list[selected].pid,ri,ci,matrix[ri][ci]);
+                        downloader.strain_get_matrix_rc(downloader.board_list[selected].bus, downloader.board_list[selected].pid, ri, ci, matrix[ri][ci]);
                         sprintf(tempbuf,"%x",matrix[ri][ci]);
                         gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci]), tempbuf);
                         gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, NULL );
                     }
-            downloader.strain_get_matrix_gain(downloader.board_list[selected].pid,calib_const);
+            downloader.strain_get_matrix_gain(downloader.board_list[selected].bus, downloader.board_list[selected].pid, calib_const);
             sprintf(tempbuf,"%d",calib_const);
             gtk_label_set_text (GTK_LABEL(edit_matrix_gain), tempbuf);
 
             for (ri=0;ri<6;ri++)
             {
-                downloader.strain_get_full_scale(downloader.board_list[selected].pid,ri,full_scale_const[ri]);
+                downloader.strain_get_full_scale(downloader.board_list[selected].bus, downloader.board_list[selected].pid, ri, full_scale_const[ri]);
                 sprintf(tempbuf,"%d",full_scale_const[ri]);
                 gtk_label_set_text (GTK_LABEL(full_scale_label[ri]), tempbuf);
             }
@@ -231,11 +231,11 @@ gboolean timer_func (gpointer data)
 
     for (int i=0;i<6;i++)
     {
-        downloader.strain_get_calib_bias(downloader.board_list[selected].pid,i,calib_bias[i]);
+        downloader.strain_get_calib_bias(downloader.board_list[selected].bus, downloader.board_list[selected].pid, i, calib_bias[i]);
         sprintf(tempbuf,"%d",calib_bias[i]);
         gtk_label_set_text (GTK_LABEL(calib_bias_label[i]), tempbuf);
 
-        downloader.strain_get_curr_bias(downloader.board_list[selected].pid,i,curr_bias[i]);
+        downloader.strain_get_curr_bias(downloader.board_list[selected].bus, downloader.board_list[selected].pid, i, curr_bias[i]);
         sprintf(tempbuf,"%d",curr_bias[i]);
         gtk_label_set_text (GTK_LABEL(curr_bias_label[i]), tempbuf);
     }
@@ -421,18 +421,18 @@ void slider_changed (GtkButton *button,    gpointer ch_p)
     int chan = *(int*)ch_p;
     //printf("debug: moved slider chan:%d\n",chan);
     offset[chan] = (unsigned int) (gtk_range_get_value (GTK_RANGE(slider_gain[chan])));
-//    downloader.strain_get_offset (downloader.board_list[selected].pid, chan, curr_offset);
+//    downloader.strain_get_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, chan, curr_offset);
 
 //    if (offset[chan]!=curr_offset)
 /*        {
             something_changed=true;
-            downloader.strain_set_offset (downloader.board_list[selected].pid, chan, offset[chan]);
+            downloader.strain_set_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, chan, offset[chan]);
         }*/
 
     if (first_time[chan]!=true)
         {
             something_changed=true;
-            downloader.strain_set_offset (downloader.board_list[selected].pid, chan, offset[chan]);
+            downloader.strain_set_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, chan, offset[chan]);
         }
     first_time[chan]=false;
 }
@@ -522,28 +522,27 @@ void reset_matrix_click (GtkButton *button,    gpointer ch_p)
 //*********************************************************************************
 void set_curr_bias_click (GtkButton *button,    gpointer ch_p)
 {
-    downloader.strain_set_curr_bias(downloader.board_list[selected].pid);
+    downloader.strain_set_curr_bias(downloader.board_list[selected].bus, downloader.board_list[selected].pid);
 }
 //*********************************************************************************
 void reset_curr_bias_click (GtkButton *button,    gpointer ch_p)
 {
-    downloader.strain_reset_curr_bias(downloader.board_list[selected].pid);
+    downloader.strain_reset_curr_bias(downloader.board_list[selected].bus, downloader.board_list[selected].pid);
 }
 //*********************************************************************************
 void set_calib_bias_click (GtkButton *button,    gpointer ch_p)
 {
     something_changed=true;
-    downloader.strain_set_calib_bias(downloader.board_list[selected].pid);
+    downloader.strain_set_calib_bias(downloader.board_list[selected].bus, downloader.board_list[selected].pid);
 }
 //*********************************************************************************
 void reset_calib_bias_click (GtkButton *button,    gpointer ch_p)
 {
     something_changed=true;
-    downloader.strain_reset_calib_bias(downloader.board_list[selected].pid);
+    downloader.strain_reset_calib_bias(downloader.board_list[selected].bus, downloader.board_list[selected].pid);
 }
-
 //*********************************************************************************
-bool calibration_load_v2 (char* filename, int selected_id)
+bool calibration_load_v2 (char* filename, int selected_bus, int selected_id)
 {
     if (filename==NULL)
         {
@@ -582,7 +581,7 @@ bool calibration_load_v2 (char* filename, int selected_id)
     filestr.getline (buffer,256);
     filestr.getline (buffer,256);
     sprintf(serial_no,"%s", buffer);
-    downloader.strain_set_serial_number(selected_id,serial_no);
+    downloader.strain_set_serial_number(selected_bus, selected_id, serial_no);
 
     //offsets
     filestr.getline (buffer,256);
@@ -590,7 +589,8 @@ bool calibration_load_v2 (char* filename, int selected_id)
     {
         filestr.getline (buffer,256);
         sscanf  (buffer,"%d",&offset[i]);
-        downloader.strain_set_offset (downloader.board_list[selected].pid, i, offset[i]);
+        // downloader.strain_set_offset (downloader.board_list[selected].bus, downloader.board_list[selected].pid, i, offset[i]);
+        downloader.strain_set_offset (selected_bus, selected_id, i, offset[i]);
 		drv_sleep(200);
     }
 
@@ -603,7 +603,7 @@ bool calibration_load_v2 (char* filename, int selected_id)
         filestr.getline (buffer,256);
         sscanf (buffer,"%x",&calib_matrix[ri][ci]);
         printf("%d %x\n", calib_matrix[ri][ci],calib_matrix[ri][ci]);
-        downloader.strain_set_matrix_rc(selected_id,ri,ci,calib_matrix[ri][ci]);
+        downloader.strain_set_matrix_rc(selected_bus, selected_id, ri, ci, calib_matrix[ri][ci]);
     }
 
     //matrix gain
@@ -611,7 +611,7 @@ bool calibration_load_v2 (char* filename, int selected_id)
     filestr.getline (buffer,256);
     int cc=0;
     sscanf (buffer,"%d",&cc);
-    downloader.strain_set_matrix_gain(selected_id,cc);
+    downloader.strain_set_matrix_gain(selected_bus, selected_id, cc);
 
     //tare
     filestr.getline (buffer,256);
@@ -619,7 +619,7 @@ bool calibration_load_v2 (char* filename, int selected_id)
     {
         filestr.getline (buffer,256);
         sscanf  (buffer,"%d",&calib_bias[i]);
-        downloader.strain_set_calib_bias(selected_id,i,calib_bias[i]);
+        downloader.strain_set_calib_bias(selected_bus, selected_id, i, calib_bias[i]);
     }
 
     //full scale values
@@ -628,7 +628,7 @@ bool calibration_load_v2 (char* filename, int selected_id)
     {
         filestr.getline (buffer,256);
         sscanf  (buffer,"%d",&full_scale_const[i]);
-        downloader.strain_set_full_scale(selected_id,i,full_scale_const[i]);
+        downloader.strain_set_full_scale(selected_bus, selected_id, i, full_scale_const[i]);
     }
 
     filestr.close();
@@ -644,7 +644,8 @@ bool calibration_load_v2 (char* filename, int selected_id)
 //*********************************************************************************
 void file_load_click (GtkButton *button,    gpointer ch_p)
 {
-    int selected_id=downloader.board_list[selected].pid;
+    int selected_bus = downloader.board_list[selected].bus;
+    int selected_id = downloader.board_list[selected].pid;
 
     char* buff;
     buff = gtk_file_chooser_get_filename   (GTK_FILE_CHOOSER(picker_calib));
@@ -655,7 +656,7 @@ void file_load_click (GtkButton *button,    gpointer ch_p)
         }
 
     //load data file
-    calibration_load_v2 (buff, selected_id);
+    calibration_load_v2 (buff, selected_bus, selected_id);
 
     //update windows graphics
     int i=0;
@@ -664,7 +665,7 @@ void file_load_click (GtkButton *button,    gpointer ch_p)
     char buffer[256];
 
     drv_sleep (500);
-    downloader.strain_get_serial_number(selected_id, buffer);
+    downloader.strain_get_serial_number(selected_bus, selected_id, buffer);
     gtk_entry_set_text (GTK_ENTRY (edit_serial_number), buffer);
     serial_number_changed=false;
 
@@ -672,7 +673,7 @@ void file_load_click (GtkButton *button,    gpointer ch_p)
     for (ri=0;ri<6;ri++)
             for (ci=0;ci<6;ci++)
                 {
-                    downloader.strain_get_matrix_rc(selected_id,ri,ci,matrix[ri][ci]);
+                    downloader.strain_get_matrix_rc(selected_bus, selected_id, ri, ci, matrix[ri][ci]);
                     sprintf(buffer,"%x",matrix[ri][ci]);
                     gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci]), buffer);
                     gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, NULL );
@@ -734,17 +735,17 @@ void file_import_click (GtkButton *button,    gpointer ch_p)
         filestr.getline (buffer,256);
         sscanf (buffer,"%x",&calib_matrix[ri][ci]);
         printf("%d %x\n", calib_matrix[ri][ci],calib_matrix[ri][ci]);
-        downloader.strain_set_matrix_rc(downloader.board_list[selected].pid,ri,ci,calib_matrix[ri][ci]);
+        downloader.strain_set_matrix_rc(downloader.board_list[selected].bus, downloader.board_list[selected].pid,ri,ci,calib_matrix[ri][ci]);
     }
     filestr.getline (buffer,256);
     int cc=0;
     sscanf (buffer,"%d",&cc);
-    downloader.strain_set_matrix_gain(downloader.board_list[selected].pid,cc);
+    downloader.strain_set_matrix_gain(downloader.board_list[selected].bus, downloader.board_list[selected].pid,cc);
     for (i=0;i<6; i++)
     {
         filestr.getline (buffer,256);
         sscanf (buffer,"%d",&cc);
-        downloader.strain_set_full_scale(downloader.board_list[selected].pid,i,cc);
+        downloader.strain_set_full_scale(downloader.board_list[selected].bus, downloader.board_list[selected].pid,i,cc);
     }
     filestr.close();
 
@@ -760,7 +761,7 @@ void file_import_click (GtkButton *button,    gpointer ch_p)
         for (ri=0;ri<6;ri++)
                 for (ci=0;ci<6;ci++)
                     {
-                        downloader.strain_get_matrix_rc(downloader.board_list[selected].pid,ri,ci,matrix[ri][ci]);
+                        downloader.strain_get_matrix_rc(downloader.board_list[selected].bus, downloader.board_list[selected].pid,ri,ci,matrix[ri][ci]);
                         sprintf(buffer,"%x",matrix[ri][ci]);
                         gtk_entry_set_text (GTK_ENTRY (edit_matrix[ri][ci]), buffer);
                         gtk_widget_modify_base (edit_matrix[ri][ci],GTK_STATE_NORMAL, NULL );
@@ -819,7 +820,7 @@ void serial_number_send (GtkEntry *entry,    gpointer index)
     serial_number_changed=false;
     const gchar* temp2 = gtk_entry_get_text (GTK_ENTRY (edit_serial_number));
     sprintf(serial_no,"%s", temp2);
-    downloader.strain_set_serial_number(downloader.board_list[selected].pid,temp2);
+    downloader.strain_set_serial_number(downloader.board_list[selected].bus, downloader.board_list[selected].pid,temp2);
 }
 //*********************************************************************************
 void matrix_send (GtkEntry *entry,    gpointer index)
@@ -832,10 +833,10 @@ void matrix_send (GtkEntry *entry,    gpointer index)
             {
                 const gchar* temp2 = gtk_entry_get_text (GTK_ENTRY (edit_matrix[ri][ci]));
                 sscanf (temp2,"%x",&matrix[ri][ci]);
-                downloader.strain_set_matrix_rc(downloader.board_list[selected].pid,ri,ci,matrix[ri][ci]);
+                downloader.strain_set_matrix_rc(downloader.board_list[selected].bus, downloader.board_list[selected].pid,ri,ci,matrix[ri][ci]);
             }
 
-    downloader.strain_set_matrix_gain(downloader.board_list[selected].pid,calib_const);
+    downloader.strain_set_matrix_gain(downloader.board_list[selected].bus, downloader.board_list[selected].pid,calib_const);
     printf("Calibration matrix updated\n");
     matrix_changed=false;
 
@@ -894,7 +895,7 @@ void calibrate_click (GtkButton *button,    gpointer   user_data)
     calib_window = gtk_dialog_new ();
     gtk_window_resize (GTK_WINDOW(calib_window),300,480);
     char buff[255];
-    sprintf(buff, "Calibration of strain board ID: %d", downloader.board_list[selected].pid);
+    sprintf(buff, "Calibration of strain board CAN%d:%d", downloader.board_list[selected].bus, downloader.board_list[selected].pid);
     gtk_window_set_title    (GTK_WINDOW(calib_window),buff);
     gtk_dialog_set_has_separator (GTK_DIALOG(calib_window),false);
 
@@ -1154,10 +1155,10 @@ void calibrate_click (GtkButton *button,    gpointer   user_data)
 
     gtk_range_set_value (GTK_RANGE(slider_zero),calibration_value);
 
-    downloader.strain_get_serial_number(downloader.board_list[selected].pid,serial_no);
+    downloader.strain_get_serial_number(downloader.board_list[selected].bus, downloader.board_list[selected].pid, serial_no);
     gtk_entry_set_text (GTK_ENTRY (edit_serial_number), serial_no);
 
-    downloader.strain_start_sampling(downloader.board_list[selected].pid);
+    downloader.strain_start_sampling(downloader.board_list[selected].bus, downloader.board_list[selected].pid);
 
     STOP_TIMER
     START_TIMER

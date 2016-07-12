@@ -8,29 +8,15 @@
 #ifndef __ETHUPDATER_H__
 #define __ETHUPDATER_H__
 
-#define CMD_SCAN           0xFF
 
-#define CMD_START          0x01
-#define CMD_DATA           0x02
-#define CMD_JUMP           0x03
-#define CMD_END            0x04
-#define CMD_BOOT           0x05
-#define CMD_RESET          0x06
-#define CMD_CHADDR         0x07
-#define CMD_CHMASK         0x08
-#define CMD_PROCS          0x09
-#define CMD_SYSEEPROMERASE 0x12
+#include "EoUpdaterProtocol.h"
 
-#define CMD_SHALS      0x0A
-#define CMD_BLINK      0x0B
-#define CMD_JUMP_UPD   0x0C
-
-#define PACKET_SIZE 512
-
-#define BOARD_TYPE_EMS 0x0A
 
 #include "DSocket.h"
 #include "BoardList.h"
+
+#include <vector>
+using namespace std;
 
 class EthUpdater
 {
@@ -43,8 +29,8 @@ protected:
 
     BoardInfo* mBoard2Prog[256];
 
-    unsigned char mRxBuffer[1024];
-    unsigned char mTxBuffer[1024];
+    unsigned char mRxBuffer[uprot_UDPmaxsize];
+    unsigned char mTxBuffer[uprot_UDPmaxsize];
 
     ACE_UINT16 mPort;
     ACE_UINT32 mBroadcast;
@@ -53,9 +39,9 @@ protected:
     DSocket mSocket;
 
 public:
-    static const int PROGRAM_APP;
-    static const int PROGRAM_LOADER;
-    static const int PROGRAM_UPDATER;
+    static const int partition_APPLICATION;
+    static const int partition_LOADER;
+    static const int partition_UPDATER;
 
     EthUpdater()
     {
@@ -89,21 +75,134 @@ public:
 
     BoardList& getBoardList(){ return mBoardList; }
 
-    std::string cmdGetProcs();
-    std::string cmdProgram(FILE *programFile,int partition,void (*updateProgressBar)(float));
+    // - part related to messages sent to the board(s)
 
-    void cmdScan();
-    void cmdBootSelect(unsigned char sector);
-    void sendCommandSelected(unsigned char command);
-    void cmdReset();
-    void cmdJumpUpd();
-    void cmdBlink();
-    void cmdEraseEprom();
-    void cmdChangeAddress(ACE_UINT32 oldAddr,ACE_UINT32 newAddr);
-    void cmdChangeMask(ACE_UINT32 oldAddr,ACE_UINT32 newAddr);
-   
+
+    // used to see if a capability is supported by the process running on a board (or by all the selected boards if address is 0)
+    // we can use this method to check if a command button can be enabled.
+    bool isCmdSupported(eOuprot_proc_capabilities_t capability, ACE_UINT32 address = 0);
+
+
+    // used to discover all the available boards.
+    // we send the command in broadcast.
+    // capabilities to be verified are one or both of teh following:
+    // - uprot_canDO_reply2discover:    the board sends back full information
+    // - uprot_canDO_LEGACY_scan:       the board sends back a limited subset of information
+    // every board replies to this method.
+    // returns the number of discovered boards.
+
+    int cmdDiscover();
+
+
+    // in all following methods: we send the commands in unicast but:
+    // if address = 0 we send the command to every selected board, otherwise only to the specifeid address.
+
+
+    // used to refresh the info about a board (or about all the selected boards if address is 0)
+    // refreshInfo = true allows to update the boardinfo inside mBoardList
+    // capabilities to be verified are one or both of the following:
+    // - uprot_canDO_reply2moreinfo:    the board sends back full information (as with cmdDiscover()).
+    //                                  if plusString = true this methods also requests a string with info about the partition table as old boards do.
+    //                                  if refreshInfo = true this methods also updates the boardinfo inside mBoardList
+    // - uprot_canDO_LEGACY_procs:      the board sends back only a string with info about the partition table.
+    std::string cmdGetMoreInfo(bool refreshInfo = false, ACE_UINT32 address = 0);
+
+
+    // used to clear the 32-bytes field which is stored in EEPROM of each board.
+    // capability to be checked is:
+    // - uprot_canDO_PAGE_clr
+    bool cmdInfo32Clear(ACE_UINT32 address = 0);
+
+    // used to set the 32-bytes field which is stored in EEPROM of each board.
+    // capability to be checked is:
+    // - uprot_canDO_PAGE_set
+    bool cmdInfo32Set(const string &info32, ACE_UINT32 address = 0);
+
+    // used to get the 32-bytes field which is stored in EEPROM of each board.
+    // capability to be checked is:
+    // - uprot_canDO_PAGE_get
+    vector<string> cmdInfo32Get(ACE_UINT32 address = 0);
+
+    // used to force a restart
+    // capability to be checked is:
+    // - uprot_canDO_restart
+    bool cmdRestart(ACE_UINT32 address = 0);
+
+    // used to impose the default to run process (the one after the 5 seconds)
+    // capability to be checked is:
+    // - uprot_canDO_DEF2RUN_set
+    bool cmdSetDEF2RUN(eOuprot_process_t process, ACE_UINT32 address = 0);
+
+    // used to force a jump to the eUpdater (only if the eApplication called eMaintainer is running)
+    // capability to be checked is:
+    // - uprot_canDO_JUMP2UPDATER
+    bool cmdJumpUpd(ACE_UINT32 address = 0);
+
+    // used to force a jump to a given ROM address
+    // capability to be checked is:
+    // - uprot_canDO_JUMP2ADDRESS
+    bool cmdJump2ROMaddress(uint32_t romaddress, ACE_UINT32 address = 0);
+
+    // forces a series of blinks in the LEDs of selected boards
+    // capability to be checked is:
+    // - uprot_canDO_blink
+    bool cmdBlink(ACE_UINT32 address = 0);
+
+    // forces a full erase of the EEPROM. VERY DANGEROUS to do it in multicast because it sets IP addresses to 10.0.1.99
+    // capability to be checked is one or both of the following:
+    // - uprot_canDO_LEGACY_EEPROM_erase:       it erase the whole eeprom
+    // - uprot_canDO_EEPROM_erase:              it can erase the whole eeprom but also a subset.
+    bool cmdEraseEEPROM(ACE_UINT32 address = 0);
+
+
+    // reads the EEPROM of a board. it must be used with care and towards one board at a time. the return value *eeprom is just
+    // a pointer to the data stored in the internal reply packet, hence it must be copied elsewhere at reception.
+    // capability to be checked is:
+    // - uprot_canDO_EEPROM_read:           it reads a portion of eeprom contained in [from, from+size) with size <= uprot_EEPROMmaxsize (1024) bytes.
+    bool cmdReadEEPROM(uint16_t from, uint16_t size, ACE_UINT32 address, uint8_t **value);
+
+    // changes the IP address of a given board. despite default address 0, it does not support it
+    // capability to be checked is one or both of the following:
+    // - uprot_canDO_LEGACY_IPaddr_set:         it just changes address.
+    // - uprot_canDO_IPaddr_set:                it changes address and it also may force a restart (not requested for now)
+    bool cmdChangeAddress(ACE_UINT32 newaddress, ACE_UINT32 address = 0);
+
+
+    // used to program a given partition of a given board
+    // capability to be checked is:
+    // - uprot_canDO_PROG_loader:       for programming into the loader partition (the first)
+    // - uprot_canDO_PROG_updater:      for programming into the updater partition (the second)
+    // - uprot_canDO_PROG_application:  for programming into the application partition (the third)
+    std::string cmdProgram(FILE *programFile, int partition, void (*updateProgressBar)(float), ACE_UINT32 address = 0);
+
 protected:
-    int sendDataBroadcast(unsigned char* data,int size,int answers,int retry);
+
+    void sendCommandSelected(void * cmd, uint16_t len);
+    int sendPROG(const uint8_t opc, void * data, int size, int answers, int retry);
+
+private:
+
+    // in here are methods which we prefer not to be used, but which may be useful in special cases
+
+    // changes the IP mask of a given board, despite default address 0, it does not support it
+    // capability to be checked is:
+    // - uprot_canDO_LEGACY_IPmask_set
+    // NOTE: it is very dangerous to change the IP mask. it is also very improbable that we want to do it. we keep the method however.
+    bool cmdChangeMask(ACE_UINT32 newMask, ACE_UINT32 address = 0);
+
+    // changes the MAC of a given board
+    // capability to be checked is:
+    // - uprot_canDO_LEGACY_MAC_set
+    // NOTE: we may change the MAC only if ... there are two equal mac addresses on two boards ...
+    bool cmdChangeMAC(uint64_t newMAC48, ACE_UINT32 address);
+
+    bool cmdPageClr(eOuprot_pagesize_t pagesize, ACE_UINT32 address = 0);
+    bool cmdPageSet(eOuprot_pagesize_t pagesize, uint8_t *data, ACE_UINT32 address = 0);
+    bool cmdPageGet(eOuprot_pagesize_t pagesize, uint8_t **data, ACE_UINT32 address);
+
 };
 
 #endif
+
+// eof
+
