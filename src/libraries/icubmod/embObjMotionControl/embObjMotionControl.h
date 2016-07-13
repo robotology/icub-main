@@ -80,6 +80,7 @@ using namespace std;
 #include "eoRequestsQueue.hpp"
 #include "EoMotionControl.h"
 
+#include "serviceParser.h"
 
 // - public #define  --------------------------------------------------------------------------------------------------
 
@@ -94,6 +95,12 @@ using namespace std;
 //                  only embObjAnalog can override its behaviour
 
 #define     EMBOBJMC_DONT_USE_MAIS
+
+// marco.accame:
+// if the macro is disabled: the service parser which reads the runtime config parameters from the xml file is NOT called. everything is as it was before.
+// enable it only whan the service parser is full developed.
+
+//#define EMBOBJMC_USESERVICEPARSER
 
 //
 //   Help structure
@@ -257,18 +264,28 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IethResource
 {
 
-public:
-
-    enum { EMBMC_SIZE_INFO = 128 };
 
 private:
+
     char boardIPstring[20];
 
-    int           tot_packet_recv, errors;
+    TheEthManager* ethManager;
+    EthResource* res;
+    ServiceParser* parser;
 
     bool opened;
+    bool verbosewhenok;
 
-    yarp::os::Semaphore     _mutex;
+    ////////////////////
+    // parameters
+#if defined(EMBOBJMC_USESERVICEPARSER)
+    servConfigMC_t serviceConfig;
+#endif
+
+    int tot_packet_recv;
+    int errors;
+
+    yarp::os::Semaphore _mutex;
 
 
     int *_axisMap;                              /** axis remapping lookup-table */
@@ -323,11 +340,10 @@ private:
     ImpedanceParameters *_impedance_params;     /** impedance parameters */
     eOmc_impedance_t *_cacheImpedance;			/* cache impedance value to split up the 2 sets */
 
-    bool        verbosewhenok;
     bool        useRawEncoderData;
     bool        _pwmIsLimited;                         /** set to true if pwm is limited */
     bool        _torqueControlEnabled;                 /** set to true if the torque control parameters are successfully loaded. If false, boards cannot switch in torque mode */
-    
+
     enum       torqueControlUnitsType {T_MACHINE_UNITS=0, T_METRIC_UNITS=1};
     torqueControlUnitsType _torqueControlUnits;
     torqueControlHelper    *_torqueControlHelper;
@@ -339,8 +355,8 @@ private:
     velocityControlUnitsType _velocityControlUnits;
 
     // debug purpose
-      
-#ifdef VERIFY_ROP_SETIMPEDANCE 
+
+#ifdef VERIFY_ROP_SETIMPEDANCE
     uint32_t *impedanceSignature;
 #endif
 
@@ -348,7 +364,7 @@ private:
     uint32_t *refRawSignature;
     bool        *sendingDirects;
 #endif
-    
+
 
     // basic knowledge of my joints
     int   _njoints;                             // Number of joints handled by this EMS; this values will be extracted by the config file
@@ -370,6 +386,7 @@ private:
     double  *_ref_torques;      // for torque control.
 
     uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
+
 
 private:
 
@@ -458,18 +475,21 @@ private:
     }
 
 
+private:
+
+    int fromConfig_NumOfJoints(yarp::os::Searchable &config);
+    bool fromConfig_Step1(yarp::os::Searchable &config);
+    bool fromConfig_Step2(yarp::os::Searchable &config);
+    bool fromConfig_Step3(yarp::os::Searchable &config);
+
+
 public:
 
     embObjMotionControl();
     ~embObjMotionControl();
 
-    char                info[EMBMC_SIZE_INFO];
     Semaphore           semaphore;
     eoRequestsQueue     *requestQueue;      // it contains the list of requests done to the remote board
-
-    // embObjLib stuff
-    EthResource                *res;
-    yarp::dev::TheEthManager    *ethManager;
 
 
     void cleanup(void);
@@ -754,7 +774,7 @@ public:
     virtual bool setPeakCurrentRaw(int m, const double val);
     virtual bool getNominalCurrentRaw(int m, double *val);
     virtual bool setNominalCurrentRaw(int m, const double val);
-    
+
     // OPENLOOP interface
     virtual bool setRefOutputRaw(int j, double v);
     virtual bool setRefOutputsRaw(const double *v);
