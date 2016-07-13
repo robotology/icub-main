@@ -13,9 +13,9 @@
         <!-- joint name                    index-distal   middle-proximal   middle-distal   little-fingers -->     
         <group name="LIMITS">
             <param name="jntPosMax">              180          90              180             270          </param>
-            <param name="jntPosMin">                0           0               0               0           </param> 
-            <param name="rotorPosMin">              0           0               0               0           </param> 
-            <param name="rotorPosMax">              0           0               0               0           </param>
+            <param name="jntPosMin">                0           0                0               0           </param> 
+            <param name="rotorPosMin">           -250           0              -10             -210           </param> 
+            <param name="rotorPosMax">              8           0              230              8           </param>
             <param name="jntVelMax">                1000        1000            1000           1000         </param>
             <param name="motorOverloadCurrents">    2000        2000            2000           2000       </param>
             <param name="motorNominalCurrents">      600         600             600            600        </param>

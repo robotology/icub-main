@@ -14,7 +14,7 @@
         <param name="HasTempSensor">            0                0               0              0               </param>
         <param name="HasRotorEncoder">          1                1               1              0               </param>
         <param name="HasRotorEncoderIndex">     0                0               0              0               </param>
-        <param name="Encoder">                  182.044          182.044         182.044        182.044         </param>    
+        <param name="Encoder">                  182.044          182.044         182.044        182.044       </param>
         <param name="TorqueId">                 0x0C             0x0C            0x0C           0x0C            </param>
         <param name="TorqueChan">               0                0               0              0               </param>
         <param name="TorqueMax">                2                2               2              2            </param>
@@ -23,7 +23,7 @@
         <param name="JointEncoderType">         "OPTICAL_QUAD"   "AEA"           "AEA"          "HALL_ADC"      </param>
         <param name="JointEncoderRes">          204800           -4096            4096           65535          </param> <!-- 6535: this value will change by fw during calibration (type 6) -->
         <param name="RotorIndexOffset">         0                 0               0              0               </param>
-        <param name="Gearbox">                  100               159             159            1               </param>
+        <param name="Gearbox">                  100               159             159            256             </param>
         <param name="MotorPoles">               1                 1               1              1              </param>   <!-- to be checked -->
         <param name="Verbose">                  0                                                               </param>
     </group>
