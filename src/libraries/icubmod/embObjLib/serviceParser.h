@@ -1,7 +1,7 @@
 ﻿// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
- * @ingroup icub_hardware_modules 
+ * @ingroup icub_hardware_modules
  * \defgroup ServiceParser ServiceParser
  *
  * To Do: add description
@@ -18,7 +18,7 @@
 #include <list>
 #include <string>
 
-#include "FeatureInterface.h"  
+#include "FeatureInterface.h"
 
 
 #include <yarp/os/LogStream.h>
@@ -31,7 +31,7 @@ using namespace yarp::os;
 using namespace std;
 
 
-
+//#define SERVICE_PARSER_USE_MC
 
 typedef struct
 {
@@ -58,6 +58,14 @@ typedef struct
     vector<string>                      id;
 } servConfigInertials_t;
 
+
+#if defined(SERVICE_PARSER_USE_MC)
+typedef struct
+{
+    eOmn_serv_parameter_t               ethservice;
+    uint32_t                            id; // only for test: this param contains num of board
+} servConfigMC_t;
+#endif
 
 struct servCanBoard_t
 {
@@ -130,6 +138,9 @@ public:
     bool parseService(Searchable &config, servConfigStrain_t &strainconfig);
     bool parseService(Searchable &config, servConfigInertials_t &inertialsconfig);
 
+#if defined(SERVICE_PARSER_USE_MC)
+    bool parseService(Searchable &config, servConfigMC_t &mcconfig);
+#endif
 
     bool convert(ConstString const &fromstring, eOmn_serv_type_t &toservicetype, bool &formaterror);
     bool convert(ConstString const &fromstring, eObrd_type_t& tobrdtype, bool& formaterror);
