@@ -31,7 +31,7 @@ using namespace yarp::os;
 using namespace std;
 
 
-//#define SERVICE_PARSER_USE_MC
+#define SERVICE_PARSER_USE_MC
 
 typedef struct
 {
@@ -120,6 +120,41 @@ typedef struct
 } servASstrainSettings_t;
 
 
+
+#if defined(SERVICE_PARSER_USE_MC)
+
+typedef struct
+{
+    uint8_t                         type;
+    vector<double>                  matrixJ2M;    // 16 numbers
+    vector<double>                  matrixE2J;    // 16 numbers
+} servMCcontroller_t;
+
+typedef struct
+{
+    vector<servCanBoard_t>      canboards;
+    servMCcontroller_t          controller;
+    vector<int>                 whatever2;
+} servMCproperties_t;
+
+
+typedef struct
+{
+    uint16_t        tbd1;
+    vector<int>     tbd2;
+} servMCsettings_t;
+
+
+
+typedef struct
+{
+    eOmn_serv_type_t            type;
+    servMCproperties_t          properties;
+    servMCsettings_t            settings;
+} servMCcollector_t;
+
+#endif
+
 // todo: add definition of static const array of strings containing the names of boards, sensors, etc.
 
 
@@ -140,6 +175,7 @@ public:
 
 #if defined(SERVICE_PARSER_USE_MC)
     bool parseService(Searchable &config, servConfigMC_t &mcconfig);
+    bool parseService2(Searchable &config, servConfigMC_t &mcconfig); // the fixed one.
 #endif
 
     bool convert(ConstString const &fromstring, eOmn_serv_type_t &toservicetype, bool &formaterror);
@@ -164,9 +200,15 @@ public:
     servAScollector_t           as_service;
     servASstrainSettings_t      as_strain_settings;
 
+#if defined(SERVICE_PARSER_USE_MC)
+    servMCcollector_t           mc_service;
+#endif
+
 private:
 
     bool check_analog(yarp::os::Searchable &config, eOmn_serv_type_t type);
+
+    bool check_motion(yarp::os::Searchable &config, eOmn_serv_type_t type);
 
 };
 

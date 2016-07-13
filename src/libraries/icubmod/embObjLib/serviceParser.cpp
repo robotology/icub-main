@@ -916,6 +916,450 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
 
 #if defined(SERVICE_PARSER_USE_MC)
 
+bool ServiceParser::check_motion(Searchable &config, eOmn_serv_type_t type)
+{
+    // qui si deve modificare per avere i vari tipi di motion control
+
+    bool formaterror = false;
+    // so far we check for eomn_serv_MC_foc / strain / inertial only
+    if((eomn_serv_MC_foc != type) )
+    {
+        yError() << "ServiceParser::check() is called with wrong type";
+        return false;
+    }
+
+
+    // format is SERVICE{ type, PROPERTIES{ CANBOARDS, SENSORS }, SETTINGS }
+
+    Bottle b_SERVICE(config.findGroup("SERVICE"));
+    if(b_SERVICE.isNull())
+    {
+        yError() << "ServiceParser::check() cannot find SERVICE group";
+        return false;
+    }
+
+    // check whether we have the proper type
+
+    if(false == b_SERVICE.check("type"))
+    {
+        yError() << "ServiceParser::check() cannot find SERVICE.type";
+        return false;
+    }
+    else
+    {
+        Bottle b_type(b_SERVICE.find("type").asString());
+        if(false == convert(b_type.toString(), mc_service.type, formaterror))
+        {
+            yError() << "ServiceParser::check() has found unknown SERVICE.type = " << b_type.toString();
+            return false;
+        }
+        if(type != mc_service.type)
+        {
+            yError() << "ServiceParser::check() has found wrong SERVICE.type = " << mc_service.type << "it must be" << "TODO: tostring() function";
+            return false;
+        }
+    }
+
+
+    // check whether we have the proper groups
+
+    Bottle b_PROPERTIES = Bottle(b_SERVICE.findGroup("PROPERTIES"));
+    if(b_PROPERTIES.isNull())
+    {
+        yError() << "ServiceParser::check() cannot find PROPERTIES";
+        return false;
+    }
+    else
+    {
+        Bottle b_PROPERTIES_CANBOARDS = Bottle(b_PROPERTIES.findGroup("CANBOARDS"));
+        if(b_PROPERTIES_CANBOARDS.isNull())
+        {
+            yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS";
+            return false;
+        }
+        else
+        {
+            // now get type, PROTOCOL.major/minor, FIRMWARE.major/minor/build and see their sizes. the must be all equal.
+            // for mais and strain and so far for intertials it must be numboards = 1.
+
+            Bottle b_PROPERTIES_CANBOARDS_type = b_PROPERTIES_CANBOARDS.findGroup("type");
+            if(b_PROPERTIES_CANBOARDS_type.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.type";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_PROTOCOL = Bottle(b_PROPERTIES_CANBOARDS.findGroup("PROTOCOL"));
+            if(b_PROPERTIES_CANBOARDS_PROTOCOL.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_PROTOCOL_major = Bottle(b_PROPERTIES_CANBOARDS_PROTOCOL.findGroup("major"));
+            if(b_PROPERTIES_CANBOARDS_PROTOCOL_major.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL.major";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_PROTOCOL_minor = Bottle(b_PROPERTIES_CANBOARDS_PROTOCOL.findGroup("minor"));
+            if(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.PROTOCOL.minor";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE = Bottle(b_PROPERTIES_CANBOARDS.findGroup("FIRMWARE"));
+            if(b_PROPERTIES_CANBOARDS_FIRMWARE.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_major = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("major"));
+            if(b_PROPERTIES_CANBOARDS_FIRMWARE_major.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.major";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_minor = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("minor"));
+            if(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.minor";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_build = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("build"));
+            if(b_PROPERTIES_CANBOARDS_FIRMWARE_build.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find PROPERTIES.CANBOARDS.FIRMWARE.build";
+                return false;
+            }
+
+            int tmp = b_PROPERTIES_CANBOARDS_type.size();
+            int numboards = tmp - 1;    // first position of bottle contains the tag "type"
+
+            // check if all other fields have the same size.
+            if( (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_major.size()) ||
+                (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_minor.size()) ||
+                (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_major.size()) ||
+                (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_minor.size()) ||
+                (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_build.size())
+              )
+            {
+                yError() << "ServiceParser::check() in PROPERTIES.CANBOARDS some param has inconsistent length";
+                return false;
+            }
+
+
+            mc_service.properties.canboards.resize(0);
+
+            formaterror = false;
+            for(int i=0; i<numboards; i++)
+            {
+                servCanBoard_t item;
+
+                convert(b_PROPERTIES_CANBOARDS_type.get(i+1).asString(), item.type, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(i+1).asInt(), item.protocol.major, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(i+1).asInt(), item.protocol.minor, formaterror);
+
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(i+1).asInt(), item.firmware.major, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(i+1).asInt(), item.firmware.minor, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(i+1).asInt(), item.firmware.build, formaterror);
+
+                mc_service.properties.canboards.push_back(item);
+            }
+
+            // in here we could decide to return false if any previous conversion function has returned error
+            // bool fromStringToBoolean(string str, bool &anyerror); // inside: if error then .... be sure to set error = true. dont set it to false.
+
+            if(true == formaterror)
+            {
+                yError() << "ServiceParser::check() has detected an illegal format for some of the params of PROPERTIES.CANBOARDS some param has inconsistent length";
+                return false;
+            }
+        }
+
+
+        Bottle b_PROPERTIES_CONTROLLER = Bottle(b_PROPERTIES.findGroup("CONTROLLER"));
+        if(b_PROPERTIES_CONTROLLER.isNull())
+        {
+            yError() << "ServiceParser::check() cannot find PROPERTIES.CONTROLLER";
+            return false;
+        }
+        else
+        {
+
+            Bottle b_PROPERTIES_CONTROLLER_type(b_PROPERTIES_CONTROLLER.find("type").asString());
+
+            // devo convertire la stringa nel tipo enumertivo corrispondente. mi serve uan funzione apposita. si devono definire le stringhe per
+            // il tipo di controller. ne vale la pena? lo si usa?
+#warning marco.accame: si deve fare una funzione apposita per il tipo eOemscontroller_board_t che per ora non e' in icub-firmware-shared ...
+
+            mc_service.properties.controller.type = 0; // chiaramente non va bene cosi' .............
+
+            #warning marco.accame: si deve fare una funzione apposita per il tipo eOemscontroller_board_t che per ora non e' in icub-firmware-shared ...
+            // commento via perche' il compilatore si lamenta
+//            if(false == convert(b_PROPERTIES_CONTROLLER_type.toString(), mc_service.properties.controller.type, formaterror))
+            if(true)
+            {
+                yError() << "ServiceParser::check() has found unknown SERVICE.PROPERTIES.CONTROLLER.type = " << b_PROPERTIES_CONTROLLER_type.toString();
+                return false;
+            }
+
+
+            // matrice J2M
+
+            Bottle b_PROPERTIES_CONTROLLER_matrixJ2M = Bottle(b_PROPERTIES_CONTROLLER.findGroup("matrixJ2M"));
+            if(b_PROPERTIES_CONTROLLER_matrixJ2M.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find SERVICE.PROPERTIES.CONTROLLER.matrixJ2M";
+                return false;
+            }
+
+            int tmp = b_PROPERTIES_CONTROLLER_matrixJ2M.size();
+            int sizeofmatrixJ2M = tmp - 1;    // first position of bottle contains the tag "matrixJ2M"
+
+            // check if there are really 16 elements in matrix.
+            if( (16 != sizeofmatrixJ2M)
+              )
+            {
+                yError() << "ServiceParser::check() in SERVICE.PROPERTIES.CONTROLLER.matrixJ2M there are not 16 elements";
+                return false;
+            }
+
+
+            mc_service.properties.controller.matrixJ2M.resize(0);
+
+            formaterror = false;
+            for(int i=0; i<sizeofmatrixJ2M; i++)
+            {
+                double item;
+
+                // ok, i use the standard converter ... but what if it is not a double format? so far we dont check.
+                item = b_PROPERTIES_CONTROLLER_matrixJ2M.get(i+1).asDouble();
+
+                mc_service.properties.controller.matrixJ2M.push_back(item);
+            }
+
+            // in here we could decide to return false if any previous conversion function has returned error
+
+            if(true == formaterror)
+            {
+                yError() << "ServiceParser::check() has detected an illegal format for some of the values of SERVICE.PROPERTIES.CONTROLLER.matrixJ2M";
+                return false;
+            }
+
+
+            // matrice E2J
+
+            Bottle b_PROPERTIES_CONTROLLER_matrixE2J = Bottle(b_PROPERTIES_CONTROLLER.findGroup("matrixE2J"));
+            if(b_PROPERTIES_CONTROLLER_matrixE2J.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find SERVICE.PROPERTIES.CONTROLLER.matrixE2J";
+                return false;
+            }
+
+            int tmp1 = b_PROPERTIES_CONTROLLER_matrixE2J.size();
+            int sizeofmatrixE2J = tmp1 - 1;    // first position of bottle contains the tag "matrixE2J"
+
+            // check if there are really 16 elements in matrix.
+            if( (16 != sizeofmatrixE2J)
+              )
+            {
+                yError() << "ServiceParser::check() in SERVICE.PROPERTIES.CONTROLLER.matrixE2J there are not 16 elements";
+                return false;
+            }
+
+
+            mc_service.properties.controller.matrixE2J.resize(0);
+
+            formaterror = false;
+            for(int i=0; i<sizeofmatrixE2J; i++)
+            {
+                double item;
+
+                // ok, i use the standard converter ... but what if it is not a double format? so far we dont check.
+                item = b_PROPERTIES_CONTROLLER_matrixE2J.get(i+1).asDouble();
+
+                mc_service.properties.controller.matrixE2J.push_back(item);
+            }
+
+            // in here we could decide to return false if any previous conversion function has returned error
+
+            if(true == formaterror)
+            {
+                yError() << "ServiceParser::check() has detected an illegal format for some of the values of SERVICE.PROPERTIES.CONTROLLER.matrixE2J";
+                return false;
+            }
+
+        }
+
+    }
+
+    #warning --> marco: da verificare il gruppo SERVICE.PROPERTIES.CONTROLLER
+
+    #warning --> marco: da fare i gruppi JOINTMAPPING etc.
+
+    Bottle b_SETTINGS = Bottle(b_SERVICE.findGroup("SETTINGS"));
+    if(b_SETTINGS.isNull())
+    {
+        yError() << "ServiceParser::check() cannot find SETTINGS";
+        return false;
+    }
+    else
+    {
+
+        Bottle b_SETTINGS_acquisitionRate = Bottle(b_SETTINGS.findGroup("acquisitionRate"));
+        if(b_SETTINGS_acquisitionRate.isNull())
+        {
+            yError() << "ServiceParser::check() cannot find SETTINGS.acquisitionRate";
+            return false;
+        }
+        Bottle b_SETTINGS_enabledSensors = Bottle(b_SETTINGS.findGroup("enabledSensors"));
+        if(b_SETTINGS_enabledSensors.isNull())
+        {
+            yError() << "ServiceParser::check() cannot find SETTINGS.enabledSensors";
+            return false;
+        }
+
+        int numenabledsensors = b_SETTINGS_enabledSensors.size() - 1;    // first position of bottle contains the tag "enabledSensors"
+
+        // the enabled must be <= the sensors.
+        if( numenabledsensors > as_service.properties.sensors.size() )
+        {
+            yError() << "ServiceParser::check() in SETTINGS.enabledSensors there are too many items with respect to supported sensors:" << numenabledsensors << "vs." << as_service.properties.sensors.size();
+            return false;
+        }
+
+        convert(b_SETTINGS_acquisitionRate.get(1).asInt(), as_service.settings.acquisitionrate, formaterror);
+
+
+        as_service.settings.enabledsensors.resize(0);
+
+        for(int i=0; i<numenabledsensors; i++)
+        {
+            servAnalogSensor_t founditem;
+
+            ConstString s_enabled_id = b_SETTINGS_enabledSensors.get(i+1).asString();
+//            const char *str = s_enabled_id.c_str();
+//            std::string cpp_str = str;
+
+            // we must now search inside the whole vector<> as_service.properties.sensors if we find an id which matches s_enabled_id ....
+            // if we dont, ... we issue a warning.
+            // if we find, ... we do a pushback of it inside
+            bool found = false;
+            // i decide to use a brute force search ... for now
+            for(int n=0; n<as_service.properties.sensors.size(); n++)
+            {
+                servAnalogSensor_t item = as_service.properties.sensors.at(n);
+                //if(item.id == cpp_str)
+                if(item.id == s_enabled_id)
+                {
+                    found = true;
+                    founditem = item;
+                    break;
+                }
+            }
+
+            if(true == found)
+            {
+                as_service.settings.enabledsensors.push_back(founditem);
+            }
+
+        }
+
+        // in here we issue an error if we dont have at least one enabled sensor
+
+        if(0 == as_service.settings.enabledsensors.size())
+        {
+            yError() << "ServiceParser::check() could not find any item in SETTINGS.enabledSensors which matches what in PROPERTIES.SENSORS.id";
+            return false;
+        }
+
+    }
+
+    // now we may have one or more sections which are specific of the device ...
+
+    // only strain so far.
+
+    if(eomn_serv_AS_strain == type)
+    {
+        Bottle b_STRAIN_SETTINGS = Bottle(b_SERVICE.findGroup("STRAIN_SETTINGS"));
+        if(b_STRAIN_SETTINGS.isNull())
+        {
+            yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS";
+            return false;
+        }
+        else
+        {
+
+            Bottle b_STRAIN_SETTINGS_useCalibration = Bottle(b_STRAIN_SETTINGS.findGroup("useCalibration"));
+            if(b_STRAIN_SETTINGS_useCalibration.isNull())
+            {
+                yError() << "ServiceParser::check() cannot find STRAIN_SETTINGS.useCalibration";
+                return false;
+            }
+
+            formaterror = false;
+            convert(b_STRAIN_SETTINGS_useCalibration.get(1).asString(), as_strain_settings.useCalibration, formaterror);
+
+            if(true == formaterror)
+            {
+                yError() << "ServiceParser::check() has detected an illegal format for paramf STRAIN_SETTINGS.useCalibration";
+                return false;
+            }
+        }
+    }
+
+
+
+
+    // we we are in here we have the struct filled with all variables ... some validations are still due to the calling device.
+    // for instance, if embObjMais
+
+    return true;
+}
+
+bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
+{
+    if(false == check_motion(config, eomn_serv_MC_foc))
+    {
+        yError() << "ServiceParser::parseService() has received an invalid SERVICE group for motion control FOC";
+        return false;
+    }
+
+//    // now we extract values ... so far we dont make many checks ... we just assume the vector<> are of size 1.
+//    servCanBoard_t themais_props = as_service.properties.canboards.at(0);
+//    servAnalogSensor_t themais_sensor = as_service.settings.enabledsensors.at(0);
+
+
+//    // first check we do is about themais_props.type
+//    if(eobrd_cantype_mais != themais_props.type)
+//    {
+//        yError() << "ServiceParser::parseService() has detected an invalid type of board. it should be a eobrd_mais but is a:" << eoboards_type2string(eoboards_cantype2type(themais_props.type));
+//        return false;
+//    }
+
+//    maisconfig.acquisitionrate = as_service.settings.acquisitionrate;
+
+//    maisconfig.nameOfMais = themais_sensor.id;
+
+//    memset(&maisconfig.ethservice.configuration, 0, sizeof(maisconfig.ethservice.configuration));
+
+//    maisconfig.ethservice.configuration.type = eomn_serv_AS_mais;
+//    memcpy(&maisconfig.ethservice.configuration.data.as.mais.version.protocol, &themais_props.protocol, sizeof(eObrd_protocolversion_t));
+//    memcpy(&maisconfig.ethservice.configuration.data.as.mais.version.firmware, &themais_props.firmware, sizeof(eObrd_firmwareversion_t));
+
+//    // second check we do is about themais_sensor.location
+//    if(eobrd_place_can != themais_sensor.location.any.place)
+//    {
+//        yError() << "ServiceParser::parseService() has received an invalid location for its mais. it is not a CANx:adr location";
+//        return false;
+//    }
+//    maisconfig.ethservice.configuration.data.as.mais.canloc.port = themais_sensor.location.can.port;
+//    maisconfig.ethservice.configuration.data.as.mais.canloc.addr = themais_sensor.location.can.addr;
+//    maisconfig.ethservice.configuration.data.as.mais.canloc.insideindex = eobrd_caninsideindex_none;
+
+
+    return true;
+}
+
 static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B0;
 /*static const eOmn_serv_configuration_t s_serv_config_mc_v3_0B0 =
 {   // eb12 or 0B0
@@ -1407,7 +1851,7 @@ static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B7;
     &s_serv_config_mc_v3_0B1,       // board ip.3, 0b1, head neck yaw + 3 eyes
     &s_serv_config_mc_v3_0B0
 }*/
-bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
+bool ServiceParser::parseService2(Searchable &config, servConfigMC_t &mcconfig)
 {
     eOmn_serv_arrayof_4jomodescriptors_t *ja = &s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.arrayofjomodescriptors;
     eOmn_4jomo_coupling_t                *jc = &s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.jomocoupling;
