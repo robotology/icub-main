@@ -16,9 +16,9 @@
     <devices file="wrappers/MAIS/left_hand-mais_wrapper.xml" />  
     <devices file="hardware/MAIS/left_hand-mais.xml" /> 
 
-    <!-- MULTIPLE ENCODERS -->
+    <!-- MULTIPLE ENCODERS 
     <devices file="wrappers/multipleEncoders/left_hand-multi_enc_wrapper.xml" />  
-    <devices file="hardware/multipleEncoders/left_hand-multi_enc.xml" /> 
+    <devices file="hardware/multipleEncoders/left_hand-multi_enc.xml" />  -->
     
     <!-- CALIBRATORS --> 
     <!-- left-arm calibrator-->
