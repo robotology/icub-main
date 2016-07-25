@@ -132,97 +132,19 @@ typedef struct
     vector<double>                  matrixE2J;
 } servMC_controller_t;
 
-typedef enum
-{
-    servMC_actuator_place_local = 0,
-    servMC_actuator_place_can   = 1,
-    servMC_actuator_place_none  = 3
-} servMC_actuator_place_t;
-
-typedef enum
-{
-    servMC_board_connector_P0 = 0,
-    servMC_board_connector_P1 = 1,
-    servMC_board_connector_P2 = 2,
-    servMC_board_connector_P3 = 3,
-    servMC_board_connector_P4 = 4,
-    servMC_board_connector_P5 = 5,
-    servMC_board_connector_P6 = 6,
-    servMC_board_connector_P7 = 7,
-    servMC_board_connector_P8 = 8,
-    servMC_board_connector_P9 = 9,
-    servMC_board_connector_P10 = 10,
-    servMC_board_connector_P11 = 11,
-    servMC_board_connector_P12 = 12,
-    servMC_board_connector_PMAX = 13,
-    servMC_board_connector_NONE = 63
-} servMC_board_connector_t;
 
 
 typedef struct
 {
-    uint8_t place : 2;        //use servMC_actuator_place_t
-    uint8_t port  : 1;       /**< use eOcanport_t */
-    uint8_t addr  : 4;       /**< use 0->14 */   
-    uint8_t index : 1;       // use eobrd_caninsideindex_first or eobrd_caninsideindex_second 
-} servMC_actuator_location_on_can_t;
-
-typedef struct
-{
-    uint8_t place : 2;              // use servMC_actuator_place_t
-    uint8_t boardConnector : 6;    /**< use servMC_board_connector_t */
-} servMC_actuator_location_local_t;
-
-typedef union
-{
-   servMC_actuator_location_on_can_t oncan;
-   servMC_actuator_location_local_t  local;
-} servMC_actuator_location_t;
-
-
-
-#warning --> use ...
-typedef struct
-{
-    servMC_actuator_location_t      location;
     eOmc_actuator_t                 type;
+    eOmc_actuator_descriptor_t      desc;
 } servMC_actuator_t;
 
 
-typedef enum
-{
-    servMC_encoder_place_local  = 0,
-    servMC_actuator_place_mais = 1
-   // servMC_actuator_place_can  = 2, //maybe in future we can specify encoder on motor read by 2foc
-} servMC_encoder_place_t;
-
-
 
 typedef struct
 {
-    uint8_t place :2;        //use servMC_encoder_place_t
-    uint8_t index : 6;       /**< use eOmc_maisvalue_t */
-} servMC_encoder_location_on_mais_t;
-
-typedef struct
-{
-    uint8_t place : 2;        //use servMC_actuator_place_t
-    uint8_t boardConnector  : 6;       /**< use servMC_board_connector_t */
-} servMC_encoder_location_local_t;
-
-
-typedef union
-{
-   servMC_encoder_location_on_mais_t oncan;
-   servMC_encoder_location_local_t  local;
-} servMC_encoder_location_t;
-
-#warning --> use eOmc_encoder_descriptor_t ...
-typedef struct
-{
-    eOmc_encoder_t                  type;
-    servMC_encoder_location_t       location;
-    eOmc_position_t                 position;
+    eOmc_encoder_descriptor_t       desc;
 } servMC_encoder_t;
 
 typedef struct
@@ -282,9 +204,18 @@ public:
     bool convert(ConstString const &fromstring, eOmc_ctrlboard_t &controllerboard, bool &formaterror);
     bool convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, int targetsize);
     bool convert(ConstString const &fromstring, eOmc_actuator_t &toactuatortype, bool &formaterror);
-    bool convert(ConstString const &fromstring, servMC_actuator_location_t &location, bool &formaterror);
-    bool convert(ConstString const &fromstring, eOmc_position_t &tosensorposition, bool &formaterror);
-    bool convert(ConstString const &fromstring, eOmc_encoder_t &tosensortype, bool &formaterror);
+    bool convert(ConstString const &fromstring, eOmc_position_t &toposition, bool &formaterror);
+    bool convert(ConstString const &fromstring, eOmc_encoder_t &toencodertype, bool &formaterror);
+
+    bool parse_connector(const ConstString &fromstring, eObrd_connector_t &toconnector, bool &formaterror);
+    bool parse_mais(ConstString const &fromstring, eObrd_portmais_t &pmais, bool &formaterror);
+
+    bool parse_port_conn(ConstString const &fromstring, eObrd_ethtype_t const ethboard, uint8_t &toport, bool &formaterror);
+    bool parse_port_mais(ConstString const &fromstring, uint8_t &toport, bool &formaterror);
+
+    bool parse_actuator_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_actuator_t const type, eOmc_actuator_descriptor_t &todes, bool &formaterror);
+    bool parse_encoder_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t port, bool &formaterror);
+
 #endif
 
     bool convert(ConstString const &fromstring, eOmn_serv_type_t &toservicetype, bool &formaterror);

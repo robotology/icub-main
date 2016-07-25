@@ -995,104 +995,336 @@ bool ServiceParser::convert(Bottle &bottle, vector<double> &matrix, bool &format
     return true;        
 }
 
-
-
-bool ServiceParser::convert(ConstString const &fromstring, servMC_actuator_location_t &location, bool &formaterror)
+bool ServiceParser::parse_encoder_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t port, bool &formaterror)
 {
-    // it is actually a micro-parser: PRE-num
-    // at
-
     const char *t = fromstring.c_str();
-    int len = strlen(t);
 
-    if(len > 15)
+    bool ret = false;
+    switch(type)
     {
-        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a servMC_actuator_location_t because it is too long with size =" << len;
-        formaterror = true;
-        return false;
-    }
-
-    char prefix[16] = {0};
-    sscanf(t, "%3c", prefix);
-    if(0 == strcmp(prefix, "CAN")) //VALE: questa parte e'particamente uguale a quella nella funzione convert con parametro eObrd_location_t. Fai una funzioncina per evitare di replicare il codice.
-    {
-        int bus = 0;
-        int adr = 0;
-        char cc = 'x';
-        int sub = 9;
-        int numberofreaditems = sscanf(t, "%3c%d:%d%c%d", prefix, &bus, &adr, &cc, &sub);
-
-        if((3 != numberofreaditems) && (5 != numberofreaditems))
+        default:
+        case eomc_enc_unknown:
         {
-            yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a servMC_actuator_location_t because we dont have correct number of sections separated by :";
-            formaterror = true;
-            return false;
-        }
+            yWarning() << "ServiceParser::parse_encoder_port():" << t << "cannot be converted into a port because argument type is" << eomc_encoder2string(type, eobool_false);
+            port = eobrd_port_none;
+            ret = false;
+        } break;
 
-        // verify bus being eitehr 1 or 2, and adr being 1 ----- 14
-        if((1 != bus) && (2 != bus))
-        {
-            yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a servMC_actuator_location_t because we can have either CAN1 or CAN2";
-            formaterror = true;
-            return false;
-        }
-        if((0 == adr) || (adr > 14))
-        {
-            yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a servMC_actuator_location_t because CAN address is in range [1, 14]";
-            formaterror = true;
-            return false;
-        }
 
-        location.oncan.place = servMC_actuator_place_can;
-        location.oncan.port = (1 == bus) ? (eOcanport1) : (eOcanport2);
-        location.oncan.addr = adr;
-        location.oncan.index = eobrd_caninsideindex_first;
-        if(5 == numberofreaditems)//if user specified index (mc4 can case)
+        case eomc_enc_none:
         {
-            if((0 != sub) && (1 != sub))
+            port = eobrd_port_none;
+            ret = true;
+        } break;
+
+        case eomc_enc_aea:
+        case eomc_enc_amo:
+        case eomc_enc_qenc:
+        case eomc_enc_spichainof2:
+        case eomc_enc_absanalog:
+        case eomc_enc_spichainof3:
+        {
+            uint8_t toport = eobrd_port_unknown;
+            bool result = parse_port_conn(fromstring, ethboard, toport, formaterror);
+
+            if(false == result)
             {
-                yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a servMC_actuator_location_t because in CANx:adr:SUB, SUB address must be in range [0, 1]";
+                yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for an encoder connector port";
                 formaterror = true;
-                return false;
+                ret = false;
             }
-            location.oncan.index = (0 == sub) ? (eobrd_caninsideindex_first) : (eobrd_caninsideindex_second);
+            else
+            {
+                port = toport;
+                ret = true;
+            }
+
+        } break;
+
+
+    case eomc_enc_mais:
+    {
+        uint8_t toport = eobrd_port_unknown;
+        bool result = parse_port_mais(fromstring, toport, formaterror);
+
+        if(false == result)
+        {
+            yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for an encoder connector port";
+            formaterror = true;
+            ret = false;
         }
-        
+        else
+        {
+            port = toport;
+            ret = true;
+        }
+
+    } break;
+
+        case eomc_enc_onfoc:
+        {
+            // read it as a CAN address
+            eObrd_location_t loc;
+            bool result = convert(fromstring, loc, formaterror);
+
+            if(false == result)
+            {
+                yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for a eObrd_location_t";
+                formaterror = true;
+                ret = false;
+            }
+            else
+            {
+                // copy into .... nothing
+                if(eobrd_place_can == loc.any.place)
+                {
+                    port = eobrd_port_none;
+                    ret = true;
+                }
+                else
+                {
+                    port = eobrd_port_none;
+                    ret = true;
+                }
+            }
+
+        } break;
 
     }
-    else if(0 == strcmp(prefix, "LOC"))
+
+    return ret;
+}
+
+
+bool ServiceParser::parse_port_conn(ConstString const &fromstring, eObrd_ethtype_t const ethboard, uint8_t &toport, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+    bool ret = false;
+
+    // format of string is CONN:P4 or CONN:eobrd_conn_P4 ... the parse function verifies presence of CONN:
+    eObrd_connector_t conn = eobrd_conn_unknown;
+    bool result = parse_connector(fromstring, conn, formaterror);
+
+    if(false == result)
     {
-        //Add here parsing for local port (both PWM port (P7, P8, etc)
-        //in xml file we have: LOC:P7
-        int bus = 0;
-        int adr = 0;
-        char cc = 'x';
-        int port = 9;
-        int numberofreaditems = sscanf(t, "%3c:%c%d", prefix, &cc, &port);
-        if(0 != strcmp(&cc, "P"))
-        {
-             yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a servMC_actuator_location_t because in LOC:Px, because there is not P char";
-             formaterror = true;
-             return false;
-        }
-        if(port > servMC_board_connector_PMAX-1)
-        {
-             yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a servMC_actuator_location_t because in LOC:Px, because x is bigger then " << (servMC_board_connector_PMAX-1);
-             formaterror = true;
-             return false;
-        }
-        location.local.place = servMC_actuator_place_local;
-        location.local.boardConnector = (servMC_board_connector_t)port;    
-        
+        yWarning() << "ServiceParser::parse_port_conn():" << t << "is not a legal string for a eObrd_connector_t";
+        formaterror = true;
+        ret = false;
     }
     else
     {
-        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a servMC_actuator_location_t because it does not begin with ETH or CAN";
-        formaterror = true;
-        return false;
+        eObrd_port_t port = eoboards_connector2port(conn, eoboards_ethtype2type(ethboard));
+        if(eobrd_port_unknown == port)
+        {
+            yWarning() << "ServiceParser::parse_port_conn():" << t << "does not convert to a legal port for connector" << eoboards_connector2string(conn, eobool_false) << "and parsed board";
+            formaterror = true;
+            ret = false;
+        }
+        else
+        {
+            toport = port;
+            ret = true;
+        }
     }
 
-    return true;
+    return ret;
+}
+
+
+
+bool ServiceParser::parse_port_mais(ConstString const &fromstring, uint8_t &toport, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+    bool ret = false;
+
+    // format of string is MAIS:eobrd_portmais_thumbproximal or MAIS:thumbproximal
+    eObrd_portmais_t pmais = eobrd_portmais_unknown;
+    bool result = parse_mais(fromstring, pmais, formaterror);
+
+    if(false == result)
+    {
+        yWarning() << "ServiceParser::parse_port_mais():" << t << "is not a legal string for a port mais";
+        formaterror = true;
+        ret = false;
+    }
+    else
+    {
+        toport = pmais;
+        ret = true;
+    }
+
+    return ret;
+}
+
+//bool ServiceParser::parse_mais(ConstString const &fromstring, eObrd_portmais_t &pmais, bool &formaterror)
+//{
+//    // parses MAIS:eobrd_portmais_thumbproximal or MAIS:thumbproximal
+
+//    const char *tt = fromstring.c_str();
+//    char prefix[16] = {0};
+//    sscanf(tt, "%5c", prefix);
+
+//    if(0 != strcmp(prefix, "MAIS:"))
+//    {
+//        yWarning() << "ServiceParser::parse_mais():" << tt << "is not a legal string because it must begin with MAIS:";
+//        formaterror = true;
+//        return false;
+//    }
+
+//    // ok, now i remove the first 5 characters "MAIS:" and parse the second section .... it can be extended or compact
+//    const char *t = &tt[5];
+
+//    eObool_t usecompactstring = eobool_false;
+//    pmais = eoboards_string2portmais(t, usecompactstring);
+
+//    if(eobrd_portmais_unknown == pmais)
+//    {   // attempting to retrieve the compact form
+//        usecompactstring = eobool_true;
+//        pmais = eoboards_string2portmais(t, usecompactstring);
+//    }
+
+//    if(eobrd_portmais_unknown == pmais)
+//    {
+//        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eObrd_portmais_t";
+//        formaterror = true;
+//        return false;
+//    }
+
+//    return true;
+
+//}
+
+
+// we want to fill the des with relevant info:
+// we may have CAN1:1:0 if we have a act_foc or an act_mc4, or a CONN:P4 if we have a pwm.
+// hence, we need ... the string, the type of actuator, the ethboard (for transforming P4 into teh proper port value.
+bool ServiceParser::parse_actuator_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_actuator_t const type, eOmc_actuator_descriptor_t &todes, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+
+    bool ret = false;
+    switch(type)
+    {
+        default:
+        case eomc_act_unknown:
+        {
+            yWarning() << "ServiceParser::parse_actuator_port():" << t << "cannot be converted into a eObrd_location_t because argument type is" << eomc_actuator2string(type, eobool_false);
+            todes.none.port = eobrd_port_none;
+            ret = false;
+        } break;
+
+
+        case eomc_act_none:
+        {
+            //yWarning() << "ServiceParser::parse_actuator_port():" << t << "cannot be converted into a eObrd_location_t because argument type is" << eomc_actuator2string(type);
+            todes.none.port = eobrd_port_none;
+            ret = true;
+        } break;
+
+        case eomc_act_pwm:
+        {
+
+            uint8_t toport = eobrd_port_unknown;
+            bool result = parse_port_conn(fromstring, ethboard, toport, formaterror);
+
+            if(false == result)
+            {
+                yWarning() << "ServiceParser::parse_actuator_port():" << t << "is not a legal string for a pwm connector port";
+                formaterror = true;
+                ret = false;
+            }
+            else
+            {
+                todes.pwm.port = toport;
+                ret = true;
+            }
+
+        } break;
+
+        case eomc_act_foc:
+        case eomc_act_mc4:
+        {
+            // read it as a CAN address
+            eObrd_location_t loc;
+            bool result = convert(fromstring, loc, formaterror);
+
+            if(false == result)
+            {
+                yWarning() << "ServiceParser::parse_actuator_port():" << t << "is not a legal string for a eObrd_location_t";
+                formaterror = true;
+                ret = false;
+            }
+            else if((eomc_act_mc4 == type) && (eobrd_place_extcan != loc.any.place))
+            {
+                yWarning() << "ServiceParser::parse_actuator_port():" << t << "is not a legal string for a eomc_act_mc4 location because it is not a eobrd_place_extcan";
+                formaterror = true;
+                ret = false;
+            }
+            else if(eomc_act_foc == type)
+            {
+                if((eobrd_place_can != loc.any.place) && (eobrd_place_extcan != loc.any.place))
+                {
+                    yWarning() << "ServiceParser::parse_actuator_port():" << t << "is not a legal string for a eomc_act_foc location because it is not a eobrd_place_extcan or eobrd_place_can";
+                    formaterror = true;
+                    ret = false;
+                }
+            }
+
+            if(eomc_act_foc == type)
+            {
+                // copy into todes.foc
+                if(eobrd_place_can == loc.any.place)
+                {
+                    todes.foc.canloc.port = loc.can.port;
+                    todes.foc.canloc.addr = loc.can.addr;
+                    todes.foc.canloc.insideindex = eobrd_caninsideindex_first;
+
+                    ret = true;
+                }
+                else
+                {
+                    todes.foc.canloc.port = loc.extcan.port;
+                    todes.foc.canloc.addr = loc.extcan.addr;
+                    todes.foc.canloc.insideindex = loc.extcan.index;
+                    if(eobrd_caninsideindex_first != todes.foc.canloc.insideindex)
+                    {
+                        yWarning() << "ServiceParser::parse_actuator_port():" << "in eomc_act_foc the location has an index different from eobrd_caninsideindex_first. For now we force to it, but correct xml file.";
+                        todes.foc.canloc.insideindex = eobrd_caninsideindex_first;
+                        ret = true;
+                    }
+                    else
+                    {
+                        ret = true;
+                    }
+                }
+
+            }
+            else if(eomc_act_mc4 == type)
+            {
+                // copy into todes.mc4
+                todes.mc4.canloc.port = loc.extcan.port;
+                todes.mc4.canloc.addr = loc.extcan.addr;
+                todes.mc4.canloc.insideindex = loc.extcan.index;
+
+                if(eobrd_caninsideindex_none == todes.foc.canloc.insideindex)
+                {
+                    yWarning() << "ServiceParser::parse_actuator_port():" << "in eomc_act_mc4 the location has an eobrd_caninsideindex_none. Correct xml file.";
+                    formaterror = true;
+                    ret = false;
+                }
+                else
+                {
+                    ret = true;
+                }
+            }
+
+
+
+        } break;
+
+    }
+
+    return ret;
 }
 
 
@@ -1119,19 +1351,19 @@ bool ServiceParser::convert(ConstString const &fromstring, eOmc_actuator_t &toac
 }
 
 
-bool ServiceParser::convert(ConstString const &fromstring, eOmc_position_t &tosensorposition, bool &formaterror)
+bool ServiceParser::convert(ConstString const &fromstring, eOmc_position_t &toposition, bool &formaterror)
 {
     const char *t = fromstring.c_str();
     eObool_t usecompactstring = eobool_false;
-    tosensorposition = eomc_string2position(t, usecompactstring);
+    toposition = eomc_string2position(t, usecompactstring);
 
-    if(eomc_pos_unknown == tosensorposition)
+    if(eomc_pos_unknown == toposition)
     {   // attempting to retrieve the compact form
         usecompactstring = eobool_true;
-        tosensorposition = eomc_string2position(t, usecompactstring);
+        toposition = eomc_string2position(t, usecompactstring);
     }
 
-    if(eomc_pos_unknown == tosensorposition)
+    if(eomc_pos_unknown == toposition)
     {
         yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOmc_position_t";
         formaterror = true;
@@ -1141,20 +1373,94 @@ bool ServiceParser::convert(ConstString const &fromstring, eOmc_position_t &tose
     return true;
 }
 
+bool ServiceParser::parse_connector(const ConstString &fromstring, eObrd_connector_t &toconnector, bool &formaterror)
+{
+    // parses CONN:P4 or CONN:eobrd_conn_P4
 
-bool ServiceParser::convert(ConstString const &fromstring, eOmc_encoder_t &tosensortype, bool &formaterror)
+    const char *tt = fromstring.c_str();
+    char prefix[16] = {0};
+    sscanf(tt, "%5c", prefix);
+
+    if(0 != strcmp(prefix, "CONN:"))
+    {
+        yWarning() << "ServiceParser::convert():" << tt << "is not a legal string for eObrd_connector_t because it must begin with CONN:";
+        formaterror = true;
+        return false;
+    }
+
+    // ok, now i remove the first 5 characters "CONN:" and parse the second section .... it can be extended or compact
+    const char *t = &tt[5];
+
+    eObool_t usecompactstring = eobool_false;
+    toconnector = eoboards_string2connector(t, usecompactstring);
+
+    if(eobrd_conn_unknown == toconnector)
+    {   // attempting to retrieve the compact form
+        usecompactstring = eobool_true;
+        toconnector = eoboards_string2connector(t, usecompactstring);
+    }
+
+    if(eobrd_conn_unknown == toconnector)
+    {
+        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eObrd_connector_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+bool ServiceParser::parse_mais(const ConstString &fromstring, eObrd_portmais_t &toportmais, bool &formaterror)
+{
+    // parses MAIS:eobrd_portmais_thumbproximal or MAIS:thumbproximal
+
+    const char *tt = fromstring.c_str();
+    char prefix[16] = {0};
+    sscanf(tt, "%5c", prefix);
+
+    if(0 != strcmp(prefix, "MAIS:"))
+    {
+        yWarning() << "ServiceParser::parse_mais():" << tt << "is not a legal string for eObrd_portmais_t because it must begin with MAIS:";
+        formaterror = true;
+        return false;
+    }
+
+    // ok, now i remove the first 5 characters "MAIS:" and parse the second section .... it can be extended or compact
+    const char *t = &tt[5];
+
+    eObool_t usecompactstring = eobool_false;
+    toportmais = eoboards_string2portmais(t, usecompactstring);
+
+    if(eobrd_portmais_unknown == toportmais)
+    {   // attempting to retrieve the compact form
+        usecompactstring = eobool_true;
+        toportmais = eoboards_string2portmais(t, usecompactstring);
+    }
+
+    if(eobrd_portmais_unknown == toportmais)
+    {
+        yWarning() << "ServiceParser::parse_mais():" << t << "is not a legal string for eObrd_portmais_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+
+bool ServiceParser::convert(ConstString const &fromstring, eOmc_encoder_t &toencodertype, bool &formaterror)
 {
     const char *t = fromstring.c_str();
     eObool_t usecompactstring = eobool_false;
-    tosensortype = eomc_string2encoder(t, usecompactstring);
+    toencodertype = eomc_string2encoder(t, usecompactstring);
 
-    if(eomc_enc_unknown == tosensortype)
+    if(eomc_enc_unknown == toencodertype)
     {   // attempting to retrieve the compact form
         usecompactstring = eobool_true;
-        tosensortype = eomc_string2encoder(t, usecompactstring);
+        toencodertype = eomc_string2encoder(t, usecompactstring);
     }
 
-    if(eomc_enc_unknown == tosensortype)
+    if(eomc_enc_unknown == toencodertype)
     {
         yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOmc_encoder_t";
         formaterror = true;
@@ -1610,11 +1916,13 @@ bool ServiceParser::check_motion(Searchable &config)
                 servMC_encoder_t enc2;
                 bool formaterror = false;
 
-                // actuators ...
+                eOmc_encoder_t enctype = eomc_enc_unknown;
+                uint8_t encport = eobrd_port_unknown;
+                eOmc_position_t encposition = eomc_pos_unknown;
 
+                // actuators ..
                 act.type = eomc_act_unknown;
-                act.location.local.place = servMC_actuator_place_none;
-                act.location.local.boardConnector = servMC_board_connector_NONE;
+                act.desc.pwm.port = eobrd_port_unknown;
 
                 if(false == convert(b_PROPERTIES_JOINTMAPPING_ACTUATOR_type.get(i+1).asString(), act.type, formaterror))
                 {
@@ -1622,7 +1930,7 @@ bool ServiceParser::check_motion(Searchable &config)
                     return false;
                 }
 
-                if(false == convert(b_PROPERTIES_JOINTMAPPING_ACTUATOR_port.get(i+1).asString(), act.location, formaterror))
+                if(false == parse_actuator_port(b_PROPERTIES_JOINTMAPPING_ACTUATOR_port.get(i+1).asString(), mc_service.properties.ethboardtype, act.type, act.desc, formaterror))
                 {
                      yError() << "ServiceParser::check_motion() actuator port not valid";
                     return false;
@@ -1631,59 +1939,78 @@ bool ServiceParser::check_motion(Searchable &config)
 
                 // encoder1s ...
 
-                enc1.type = eomc_enc_none;
-                enc1.location = {0}; // change it ...
-                enc1.position = eomc_pos_none;
+                enc1.desc.type = eomc_enc_unknown;
+                enc1.desc.port = eobrd_port_unknown;
+                enc1.desc.pos = eomc_pos_unknown;
 
-                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER1_type.get(i+1).asString(), enc1.type, formaterror))
+                enctype = eomc_enc_unknown;
+                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER1_type.get(i+1).asString(), enctype, formaterror))
                 {
-                     yError() << "ServiceParser::check_motion() encoder type not valid";
+                    yError() << "ServiceParser::check_motion() encoder type not valid";
                     return false;
                 }
-#warning TODO: parse encoder b_PROPERTIES_JOINTMAPPING_ENCODER1_port
-                //VALE: commented in ordet to compile I have not enouth time to implement this function
-        //         if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER1_port.get(i+1).asString(), enc1.location, formaterror))
-        //         {
-        //              yError() << "ServiceParser::check_motion() encoder port not valid";
-        //             return false;
-        //         }
+                enc1.desc.type = enctype;
 
-                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER1_position.get(i+1).asString(), enc1.position, formaterror))
+                // depending on type, we ....
+
+
+
+                // dobbiamo fare un parser che riconosca CONN:P6 se aea, qenc etc, oppure MAIS:thumbproximal se mais
+
+                encport = eobrd_port_unknown;
+                if(false == parse_encoder_port(b_PROPERTIES_JOINTMAPPING_ENCODER1_port.get(i+1).asString(), mc_service.properties.ethboardtype, enctype, encport, formaterror))
+                {
+                    yError() << "ServiceParser::check_motion() encoder port not valid";
+                    return false;
+                }
+                enc1.desc.port = encport;
+
+                encposition = eomc_pos_unknown;
+                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER1_position.get(i+1).asString(), encposition, formaterror))
                 {
                      yError() << "ServiceParser::check_motion() encoder position not valid";
                     return false;
                 }
+                enc1.desc.pos = encposition;
+
 
 
                 // encoder2s ...
 
-                enc2.type = eomc_enc_none;
-                enc2.location = {0}; // change it ...
-                enc2.position = eomc_pos_none;
+                enc2.desc.type = eomc_enc_unknown;
+                enc2.desc.port = eobrd_port_unknown;
+                enc2.desc.pos = eomc_pos_unknown;
 
-                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER2_type.get(i+1).asString(), enc2.type, formaterror))
+                enctype = eomc_enc_unknown;
+                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER2_type.get(i+1).asString(), enctype, formaterror))
                 {
-                     yError() << "ServiceParser::check_motion() encoder type not valid";
+                    yError() << "ServiceParser::check_motion() encoder type not valid";
                     return false;
                 }
-#warning TODO: parse encoder b_PROPERTIES_JOINTMAPPING_ENCODER2_port
-                //VALE: commented in ordet to compile I have not enouth time to implement this function
-        //         if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER2_port.get(i+1).asString(), enc2.location, formaterror))
-        //         {
-        //              yError() << "ServiceParser::check_motion() encoder port not valid";
-        //             return false;
-        //         }
+                enc2.desc.type = enctype;
 
-                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER2_position.get(i+1).asString(), enc2.position, formaterror))
+                encport = eobrd_port_unknown;
+                if(false == parse_encoder_port(b_PROPERTIES_JOINTMAPPING_ENCODER2_port.get(i+1).asString(), mc_service.properties.ethboardtype, enctype, encport, formaterror))
+                {
+                    yError() << "ServiceParser::check_motion() encoder port not valid";
+                    return false;
+                }
+                enc2.desc.port = encport;
+
+                encposition = eomc_pos_unknown;
+                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER2_position.get(i+1).asString(), encposition, formaterror))
                 {
                      yError() << "ServiceParser::check_motion() encoder position not valid";
                     return false;
                 }
+                enc2.desc.pos = encposition;
+
+
+                // ok, we push act, enc1, enc2
 
                 mc_service.properties.actuators.push_back(act);
                 mc_service.properties.encoder1s.push_back(enc1);
                 mc_service.properties.encoder2s.push_back(enc2);
-
             }
 
 
@@ -1807,30 +2134,22 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             for(int i=0; i<numofjomos; i++)
             {
-                if(eomc_act_foc != mc_service.properties.actuators[i].type)
-                {
-                    //VALE: remove fallowing two rows if you want to test the parse on example xml, where actuators are of different type
-                    yError() << "ServiceParser::parseService() Actuator type  missmach with service type";
-                    return false;
-                }
-
                 eOmc_jomo_descriptor_t jomodes = {0};
 
                 // 1. actuator is on foc: we need the address
-                jomodes.actuator.foc.canloc.port = mc_service.properties.actuators[i].location.oncan.port;
-                jomodes.actuator.foc.canloc.addr = mc_service.properties.actuators[i].location.oncan.addr;
-                //jomodes.actuator.foc.canloc.insideindex = mc_service.properties.actuators[i].location.oncan.index;
+                jomodes.actuator.foc.canloc.port = mc_service.properties.actuators[i].desc.foc.canloc.port;
+                jomodes.actuator.foc.canloc.addr = mc_service.properties.actuators[i].desc.foc.canloc.addr;
                 jomodes.actuator.foc.canloc.insideindex = eobrd_caninsideindex_none;
             
                 // 2. encoder1 is ...
-                jomodes.encoder1.type = mc_service.properties.encoder1s[i].type;
-                jomodes.encoder1.port = eobrd_port_none; // must copy in here the port. attention: different boards have different port values
-                jomodes.encoder1.pos = eomc_pos_none; // must copy in here the pos.
+                jomodes.encoder1.type = mc_service.properties.encoder1s[i].desc.type;
+                jomodes.encoder1.port = mc_service.properties.encoder1s[i].desc.port;
+                jomodes.encoder1.pos = mc_service.properties.encoder1s[i].desc.pos;
 
                 // 3. encoder2 is ...
-                jomodes.encoder2.type = mc_service.properties.encoder2s[i].type;
-                jomodes.encoder2.port = eobrd_port_none; // must copy in here the port. attention: different boards have different port values
-                jomodes.encoder2.pos = eomc_pos_none; // must copy in here the pos.
+                jomodes.encoder2.type = mc_service.properties.encoder2s[i].desc.type;
+                jomodes.encoder2.port = mc_service.properties.encoder2s[i].desc.port;
+                jomodes.encoder2.pos = mc_service.properties.encoder2s[i].desc.pos;
 
                 eo_array_PushBack(arrayofjomos, &jomodes);
 
