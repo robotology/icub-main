@@ -148,22 +148,18 @@ void Localizer::afterStart(bool s)
 /************************************************************************/
 void Localizer::getPidOptions(Bottle &options)
 {
-    mutex.lock();
-
+    LockGuard lg(mutex);
     pid->getOptions(options);
     Bottle &bDominantEye=options.addList();
     bDominantEye.addString("dominantEye");
     bDominantEye.addString(dominantEye.c_str());
-
-    mutex.unlock();
 }
 
 
 /************************************************************************/
 void Localizer::setPidOptions(const Bottle &options)
 {
-    mutex.lock();
-
+    LockGuard lg(mutex);
     pid->setOptions(options);
     if (options.check("dominantEye"))
     {
@@ -171,8 +167,6 @@ void Localizer::setPidOptions(const Bottle &options)
         if ((domEye=="left") || (domEye=="right"))
             dominantEye=domEye;
     }
-
-    mutex.unlock();
 }
 
 
@@ -198,6 +192,7 @@ Vector Localizer::getAbsAngles(const Vector &x)
 /************************************************************************/
 Vector Localizer::get3DPoint(const string &type, const Vector &ang)
 {
+    LockGuard lg(mutex);
     double azi=ang[0];
     double ele=ang[1];
     double ver=ang[2];
@@ -221,9 +216,7 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
     }
     
     // impose vergence != 0.0
-    ver=std::max(ver,commData->minAllowedVergence);
-
-    mutex.lock();
+    ver=std::max(ver,commData->minAllowedVergence);    
 
     q[7]+=ver/2.0;
     eyeL->setAng(q);
@@ -235,8 +228,6 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
     Vector fp;
     CartesianHelper::computeFixationPointData(*(eyeL->asChain()),*(eyeR->asChain()),fp);
     fp.push_back(1.0);  // impose homogeneous coordinates    
-
-    mutex.unlock();
 
     // compute rotational matrix to
     // account for elevation and azimuth
@@ -268,6 +259,7 @@ Vector Localizer::get3DPoint(const string &type, const Vector &ang)
 /************************************************************************/
 bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
 {
+    LockGuard lg(mutex);
     if (x.length()<3)
     {
         yError("Not enough values given for the point!");
@@ -295,19 +287,22 @@ bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
         q[7]=head[4]+head[5]/(isLeft?2.0:-2.0);
         
         Vector xo=x;
+        // impose homogeneous coordinates
         if (xo.length()<4)
-            xo.push_back(1.0);  // impose homogeneous coordinates
+            xo.push_back(1.0);
+        else
+        {
+            xo=xo.subVector(0,3); 
+            xo[3]=1.0;
+        }
 
         // find position wrt the camera frame
-        mutex.lock();
         Vector xe=SE3inv(eye->getH(q))*xo;
-        mutex.unlock();
 
         // find the 2D projection
         px=*Prj*xe;
         px=px/px[2];
         px.pop_back();
-
         return true;
     }
     else
@@ -322,6 +317,7 @@ bool Localizer::projectPoint(const string &type, const Vector &x, Vector &px)
 bool Localizer::projectPoint(const string &type, const double u, const double v,
                              const double z, Vector &x)
 {
+    LockGuard lg(mutex);
     bool isLeft=(type=="left");
 
     Matrix  *invPrj=(isLeft?invPrjL:invPrjR);
@@ -352,11 +348,8 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
         Vector xe=*invPrj*p;
         xe[3]=1.0;  // impose homogeneous coordinates
 
-        // find position wrt the root frame
-        mutex.lock();
+        // find position wrt the root frame        
         x=eye->getH(q)*xe;
-        mutex.unlock();
-
         x.pop_back();
         return true;
     }
@@ -383,6 +376,8 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
 
     if (projectPoint(type,u,v,1.0,x))
     {
+        LockGuard lg(mutex);
+
         // pick up a point belonging to the plane
         Vector p0(3,0.0);
         if (plane[0]!=0.0)
@@ -403,11 +398,8 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
         n[1]=plane[1];
         n[2]=plane[2];
 
-        mutex.lock();
-        Vector e=eye->EndEffPose().subVector(0,2);
-        mutex.unlock();
-
         // compute the projection
+        Vector e=eye->EndEffPose().subVector(0,2);
         Vector v=x-e;
         x=e+(dot(p0-e,n)/dot(v,n))*v;
 
@@ -421,6 +413,7 @@ bool Localizer::projectPoint(const string &type, const double u, const double v,
 /************************************************************************/
 bool Localizer::triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x)
 {
+    LockGuard lg(mutex);
     if ((pxl.length()<2) || (pxr.length()<2))
     {
         yError("Not enough values given for the pixels!");
@@ -444,11 +437,9 @@ bool Localizer::triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x
 
         Vector qR=qL;
         qR[7]-=head[5];
-
-        mutex.lock();
+        
         Matrix HL=SE3inv(eyeL->getH(qL));
         Matrix HR=SE3inv(eyeR->getH(qR));
-        mutex.unlock();
 
         Matrix tmp=zeros(3,4); tmp(2,2)=1.0;
         tmp(0,2)=pxl[0]; tmp(1,2)=pxl[1];

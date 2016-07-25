@@ -124,7 +124,7 @@ EyePinvRefGen::EyePinvRefGen(PolyDriver *_drvTorso, PolyDriver *_drvHead,
 /************************************************************************/
 void EyePinvRefGen::minAllowedVergenceChanged()
 {
-    LockGuard guard(mutex);
+    LockGuard lg(mutex);
     lim(2,0)=commData->minAllowedVergence;
     I->setLim(lim);
     orig_lim=lim;
@@ -134,7 +134,7 @@ void EyePinvRefGen::minAllowedVergenceChanged()
 /************************************************************************/
 bool EyePinvRefGen::bindEyes(const double ver)
 {
-    LockGuard guard(mutex);
+    LockGuard lg(mutex);
     if (ver>=0.0)
     {
         double ver_rad=std::max(CTRL_DEG2RAD*ver,commData->minAllowedVergence);
@@ -165,7 +165,7 @@ bool EyePinvRefGen::bindEyes(const double ver)
 /************************************************************************/
 bool EyePinvRefGen::clearEyes()
 {
-    LockGuard guard(mutex);
+    LockGuard lg(mutex);
     if (commData->eyesBoundVer>=0.0)
     {        
         commData->eyesBoundVer=-1.0;
@@ -201,7 +201,7 @@ void EyePinvRefGen::manageBindEyes(const double ver)
 /************************************************************************/
 Vector EyePinvRefGen::getCounterRotGain()
 {
-    LockGuard guard(mutex);
+    LockGuard lg(mutex);
     return counterRotGain;
 }
 
@@ -209,7 +209,7 @@ Vector EyePinvRefGen::getCounterRotGain()
 /************************************************************************/
 void EyePinvRefGen::setCounterRotGain(const Vector &gain)
 {
-    LockGuard guard(mutex);
+    LockGuard lg(mutex);
     size_t len=std::min(counterRotGain.length(),gain.length());
     for (size_t i=0; i<len; i++)
         counterRotGain[i]=gain[i];
@@ -282,7 +282,7 @@ void EyePinvRefGen::run()
 {
     if (genOn)
     {
-        LockGuard guard(mutex);
+        LockGuard lg(mutex);
         double timeStamp;
 
         // read encoders
@@ -545,13 +545,12 @@ Solver::Solver(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData *_commD
 /************************************************************************/
 void Solver::bindNeckPitch(const double min_deg, const double max_deg)
 {
+    LockGuard lg(mutex);
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckPitchMin,neckPitchMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckPitchMin,neckPitchMax);
 
-    mutex.lock();
     (*chainNeck)(0).setMin(min_rad);
     (*chainNeck)(0).setMax(max_rad);    
-    mutex.unlock();
 
     yInfo("neck pitch constrained in [%g,%g] deg",min_deg,max_deg);
 }
@@ -560,13 +559,12 @@ void Solver::bindNeckPitch(const double min_deg, const double max_deg)
 /************************************************************************/
 void Solver::bindNeckRoll(const double min_deg, const double max_deg)
 {
+    LockGuard lg(mutex);
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckRollMin,neckRollMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckRollMin,neckRollMax);
 
-    mutex.lock();
     (*chainNeck)(1).setMin(min_rad);
     (*chainNeck)(1).setMax(max_rad);
-    mutex.unlock();
 
     yInfo("neck roll constrained in [%g,%g] deg",min_deg,max_deg);
 }
@@ -575,13 +573,12 @@ void Solver::bindNeckRoll(const double min_deg, const double max_deg)
 /************************************************************************/
 void Solver::bindNeckYaw(const double min_deg, const double max_deg)
 {
+    LockGuard lg(mutex);
     double min_rad=sat(CTRL_DEG2RAD*min_deg,neckYawMin,neckYawMax);
     double max_rad=sat(CTRL_DEG2RAD*max_deg,neckYawMin,neckYawMax);
 
-    mutex.lock();
     (*chainNeck)(2).setMin(min_rad);
     (*chainNeck)(2).setMax(max_rad);
-    mutex.unlock();
 
     yInfo("neck yaw constrained in [%g,%g] deg",min_deg,max_deg);
 }
@@ -590,40 +587,36 @@ void Solver::bindNeckYaw(const double min_deg, const double max_deg)
 /************************************************************************/
 void Solver::getCurNeckPitchRange(double &min_deg, double &max_deg)
 {
-    mutex.lock();
+    LockGuard lg(mutex);
     min_deg=CTRL_RAD2DEG*(*chainNeck)(0).getMin();
     max_deg=CTRL_RAD2DEG*(*chainNeck)(0).getMax();
-    mutex.unlock();
 }
 
 
 /************************************************************************/
 void Solver::getCurNeckRollRange(double &min_deg, double &max_deg)
 {
-    mutex.lock();
+    LockGuard lg(mutex);
     min_deg=CTRL_RAD2DEG*(*chainNeck)(1).getMin();
     max_deg=CTRL_RAD2DEG*(*chainNeck)(1).getMax();
-    mutex.unlock();
 }
 
 
 /************************************************************************/
 void Solver::getCurNeckYawRange(double &min_deg, double &max_deg)
 {
-    mutex.lock();
+    LockGuard lg(mutex);
     min_deg=CTRL_RAD2DEG*(*chainNeck)(2).getMin();
     max_deg=CTRL_RAD2DEG*(*chainNeck)(2).getMax();
-    mutex.unlock();
 }
 
 
 /************************************************************************/
 void Solver::clearNeckPitch()
 {
-    mutex.lock();
+    LockGuard lg(mutex);
     (*chainNeck)(0).setMin(neckPitchMin);
     (*chainNeck)(0).setMax(neckPitchMax);
-    mutex.unlock();
 
     yInfo("neck pitch cleared");
 }
@@ -632,10 +625,9 @@ void Solver::clearNeckPitch()
 /************************************************************************/
 void Solver::clearNeckRoll()
 {
-    mutex.lock();
+    LockGuard lg(mutex);
     (*chainNeck)(1).setMin(neckRollMin);
     (*chainNeck)(1).setMax(neckRollMax);
-    mutex.unlock();
 
     yInfo("neck roll cleared");
 }
@@ -644,10 +636,9 @@ void Solver::clearNeckRoll()
 /************************************************************************/
 void Solver::clearNeckYaw()
 {
-    mutex.lock();
+    LockGuard lg(mutex);
     (*chainNeck)(2).setMin(neckYawMin);
     (*chainNeck)(2).setMax(neckYawMax);
-    mutex.unlock();
 
     yInfo("neck yaw cleared");
 }
@@ -758,7 +749,7 @@ void Solver::run()
     typedef enum { ctrl_off, ctrl_wait, ctrl_on } cstate;
     static cstate state_=ctrl_off;
 
-    mutex.lock();
+    LockGuard lg(mutex);
 
     // get the current target
     Vector xd=commData->port_xd->get_xdDelayed();
@@ -852,8 +843,6 @@ void Solver::run()
     
     // latch quantities
     fbTorsoOld=fbTorso;
-
-    mutex.unlock();
 }
 
 
@@ -882,7 +871,7 @@ void Solver::suspend()
 /************************************************************************/
 void Solver::resume()
 {
-    mutex.lock();
+    LockGuard lg(mutex);
 
     // read encoders
     getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData);
@@ -901,8 +890,6 @@ void Solver::resume()
     // update latched quantities
     fbTorsoOld=fbTorso;
     
-    mutex.unlock();
-
     commData->port_xd->unlock();
     RateThread::resume();
     yInfo("Solver has been resumed!");

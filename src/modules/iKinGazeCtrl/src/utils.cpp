@@ -71,10 +71,10 @@ xdPort::~xdPort()
 /************************************************************************/
 void xdPort::onRead(Bottle &b)
 {
+    LockGuard lg(mutex_0);
     if (locked)
         return;
-
-    mutex_0.lock();
+        
     int n=std::min(b.size(),(int)xd.length());
     for (int i=0; i<n; i++)
         xd[i]=b.get(i).asDouble();
@@ -82,7 +82,6 @@ void xdPort::onRead(Bottle &b)
     isNew=true;
     rx++;
 
-    mutex_0.unlock();
     syncEvent.signal();
 }
 
@@ -90,14 +89,13 @@ void xdPort::onRead(Bottle &b)
 /************************************************************************/
 void xdPort::set_xd(const Vector &_xd)
 {
+    LockGuard lg(mutex_0);
     if (locked)
         return;
 
-    mutex_0.lock();
     xd=_xd;
     isNew=true;
     rx++;
-    mutex_0.unlock();
     syncEvent.signal();
 }
 
@@ -105,9 +103,8 @@ void xdPort::set_xd(const Vector &_xd)
 /************************************************************************/
 Vector xdPort::get_xd()
 {
-    mutex_0.lock();
+    LockGuard lg(mutex_0);
     Vector _xd=xd;
-    mutex_0.unlock();
     return _xd;
 }
 
@@ -115,9 +112,8 @@ Vector xdPort::get_xd()
 /************************************************************************/
 Vector xdPort::get_xdDelayed()
 {
-    mutex_1.lock();
+    LockGuard lg(mutex_1);
     Vector _xdDelayed=xdDelayed;
-    mutex_1.unlock();
     return _xdDelayed;
 }
 
@@ -137,12 +133,9 @@ void xdPort::run()
 
         Time::delay(timeDelay);
 
-        mutex_1.lock();
-
+        LockGuard lg(mutex_1);
         xdDelayed=xd;
         isNewDelayed=true;
-
-        mutex_1.unlock();
     }
 }
 
@@ -178,128 +171,113 @@ ExchangeData::ExchangeData()
 /************************************************************************/
 void ExchangeData::resize_v(const int sz, const double val)
 {
-    mutex[MUTEX_V].lock();
+    LockGuard lg(mutex[MUTEX_V]);
     v.resize(sz,val);
-    mutex[MUTEX_V].unlock();
 }
 
 
 /************************************************************************/
 void ExchangeData::resize_counterv(const int sz, const double val)
 {
-    mutex[MUTEX_COUNTERV].lock();
+    LockGuard lg(mutex[MUTEX_COUNTERV]);
     counterv.resize(sz,val);
-    mutex[MUTEX_COUNTERV].unlock();
 }
 
 
 /************************************************************************/
 void ExchangeData::set_xd(const Vector &_xd)
 {
-    mutex[MUTEX_XD].lock();
+    LockGuard lg(mutex[MUTEX_XD]);
     xd=_xd;
-    mutex[MUTEX_XD].unlock();
 }
 
 
 /************************************************************************/
 void ExchangeData::set_qd(const Vector &_qd)
 {
-    mutex[MUTEX_QD].lock();
+    LockGuard lg(mutex[MUTEX_QD]);
     qd=_qd;
-    mutex[MUTEX_QD].unlock();
 }
 
 
 /************************************************************************/
 void ExchangeData::set_qd(const int i, const double val)
 {
-    mutex[MUTEX_QD].lock();
+    LockGuard lg(mutex[MUTEX_QD]);
     qd[i]=val;
-    mutex[MUTEX_QD].unlock();
 }
 
 
 /************************************************************************/
 void ExchangeData::set_x(const Vector &_x)
 {
-    mutex[MUTEX_X].lock();
+    LockGuard lg(mutex[MUTEX_X]);
     x=_x;
-    mutex[MUTEX_X].unlock();
 }
 
 
 /************************************************************************/
 void ExchangeData::set_x(const Vector &_x, const double stamp)
 {
-    mutex[MUTEX_X].lock();
+    LockGuard lg(mutex[MUTEX_X]);
     x=_x;
     x_stamp=stamp;
-    mutex[MUTEX_X].unlock();
 }
 
 
 /************************************************************************/
 void ExchangeData::set_q(const Vector &_q)
 {
-    mutex[MUTEX_Q].lock();
+    LockGuard lg(mutex[MUTEX_Q]);
     q=_q;
-    mutex[MUTEX_Q].unlock();
 }
 
 
 /************************************************************************/
 void ExchangeData::set_torso(const Vector &_torso)
 {
-    mutex[MUTEX_TORSO].lock();
+    LockGuard lg(mutex[MUTEX_TORSO]);
     torso=_torso;
-    mutex[MUTEX_TORSO].unlock();
 }
 
 
 /************************************************************************/
 void ExchangeData::set_v(const Vector &_v)
 {
-    mutex[MUTEX_V].lock();
+    LockGuard lg(mutex[MUTEX_V]);
     v=_v;
-    mutex[MUTEX_V].unlock();
 }
 
 
 /************************************************************************/
 void ExchangeData::set_counterv(const Vector &_counterv)
 {
-    mutex[MUTEX_COUNTERV].lock();
+    LockGuard lg(mutex[MUTEX_COUNTERV]);
     counterv=_counterv;
-    mutex[MUTEX_COUNTERV].unlock();
 }
 
 
 /************************************************************************/
 void ExchangeData::set_fpFrame(const Matrix &_S)
 {
-    mutex[MUTEX_FPFRAME].lock();
+    LockGuard lg(mutex[MUTEX_FPFRAME]);
     S=_S;
-    mutex[MUTEX_FPFRAME].unlock();
 }
 
 
 /************************************************************************/
 void ExchangeData::set_imu(const Vector &_imu)
 {
-    mutex[MUTEX_IMU].lock();
+    LockGuard lg(mutex[MUTEX_IMU]);
     imu=_imu;
-    mutex[MUTEX_IMU].unlock();
 }
 
 
 /************************************************************************/
 Vector ExchangeData::get_xd()
 {
-    mutex[MUTEX_XD].lock();
+    LockGuard lg(mutex[MUTEX_XD]);
     Vector _xd=xd;
-    mutex[MUTEX_XD].unlock();
-
     return _xd;
 }
 
@@ -307,10 +285,8 @@ Vector ExchangeData::get_xd()
 /************************************************************************/
 Vector ExchangeData::get_qd()
 {
-    mutex[MUTEX_QD].lock();
+    LockGuard lg(mutex[MUTEX_QD]);
     Vector _qd=qd;
-    mutex[MUTEX_QD].unlock();
-
     return _qd;
 }
 
@@ -318,10 +294,8 @@ Vector ExchangeData::get_qd()
 /************************************************************************/
 Vector ExchangeData::get_x()
 {
-    mutex[MUTEX_X].lock();
+    LockGuard lg(mutex[MUTEX_X]);
     Vector _x=x;
-    mutex[MUTEX_X].unlock();
-
     return _x;
 }
 
@@ -329,11 +303,9 @@ Vector ExchangeData::get_x()
 /************************************************************************/
 Vector ExchangeData::get_x(double &stamp)
 {
-    mutex[MUTEX_X].lock();
+    LockGuard lg(mutex[MUTEX_X]);
     Vector _x=x;
     stamp=x_stamp;
-    mutex[MUTEX_X].unlock();
-
     return _x;
 }
 
@@ -341,10 +313,8 @@ Vector ExchangeData::get_x(double &stamp)
 /************************************************************************/
 Vector ExchangeData::get_q()
 {
-    mutex[MUTEX_Q].lock();
+    LockGuard lg(mutex[MUTEX_Q]);
     Vector _q=q;
-    mutex[MUTEX_Q].unlock();
-
     return _q;
 }
 
@@ -352,10 +322,8 @@ Vector ExchangeData::get_q()
 /************************************************************************/
 Vector ExchangeData::get_torso()
 {
-    mutex[MUTEX_TORSO].lock();
+    LockGuard lg(mutex[MUTEX_TORSO]);
     Vector _torso=torso;
-    mutex[MUTEX_TORSO].unlock();
-
     return _torso;
 }
 
@@ -363,10 +331,8 @@ Vector ExchangeData::get_torso()
 /************************************************************************/
 Vector ExchangeData::get_v()
 {
-    mutex[MUTEX_V].lock();
+    LockGuard lg(mutex[MUTEX_V]);
     Vector _v=v;
-    mutex[MUTEX_V].unlock();
-
     return _v;
 }
 
@@ -374,10 +340,8 @@ Vector ExchangeData::get_v()
 /************************************************************************/
 Vector ExchangeData::get_counterv()
 {
-    mutex[MUTEX_COUNTERV].lock();
+    LockGuard lg(mutex[MUTEX_COUNTERV]);
     Vector _counterv=counterv;
-    mutex[MUTEX_COUNTERV].unlock();
-
     return _counterv;
 }
 
@@ -385,10 +349,8 @@ Vector ExchangeData::get_counterv()
 /************************************************************************/
 Matrix ExchangeData::get_fpFrame()
 {
-    mutex[MUTEX_FPFRAME].lock();
+    LockGuard lg(mutex[MUTEX_FPFRAME]);
     Matrix _S=S;
-    mutex[MUTEX_FPFRAME].unlock();
-
     return _S;
 }
 
@@ -396,10 +358,8 @@ Matrix ExchangeData::get_fpFrame()
 /************************************************************************/
 Vector ExchangeData::get_imu()
 {
-    mutex[MUTEX_IMU].lock();
+    LockGuard lg(mutex[MUTEX_IMU]);
     Vector _imu=imu;
-    mutex[MUTEX_IMU].unlock();
-
     return _imu;
 }
 

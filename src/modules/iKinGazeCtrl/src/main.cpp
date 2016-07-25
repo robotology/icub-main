@@ -650,7 +650,7 @@ protected:
     /************************************************************************/
     void storeContext(int *id)
     {
-        LockGuard guard(mutexContext);
+        LockGuard lg(mutexContext);
         Context &context=contextMap[contextIdCnt];
 
         // solver part
@@ -680,7 +680,7 @@ protected:
     /************************************************************************/
     bool restoreContext(const int id)
     {
-        LockGuard guard(mutexContext);
+        LockGuard lg(mutexContext);
         map<int,Context>::iterator itr=contextMap.find(id);
         if (itr!=contextMap.end())
         {
@@ -717,7 +717,7 @@ protected:
     {
         if (contextIdList!=NULL)
         {
-            LockGuard guard(mutexContext);
+            LockGuard lg(mutexContext);
             for (int i=0; i<contextIdList->size(); i++)
             {
                 int id=contextIdList->get(i).asInt();
@@ -773,8 +773,7 @@ protected:
     /************************************************************************/
     bool tweakSet(const Bottle &options)
     {
-        LockGuard guard(mutexTweak);
-
+        LockGuard lg(mutexTweak);
         if (Bottle *pB=options.find("camera_intrinsics_left").asList())
         {
             Matrix Prj(3,4); Prj=0.0;
@@ -889,8 +888,7 @@ protected:
     /************************************************************************/
     bool tweakGet(Bottle &options)
     {
-        LockGuard guard(mutexTweak);
-
+        LockGuard lg(mutexTweak);
         Bottle &intrinsicsLeft=options.addList();
         intrinsicsLeft.addString("camera_intrinsics_left");
         Bottle &intrinsicsLeftValues=intrinsicsLeft.addList();
@@ -1926,7 +1924,7 @@ public:
     {
         if (doSaveTweakFile)
         {
-            LockGuard guard(mutexTweak);
+            LockGuard lg(mutexTweak);
             saveTweakFile();
             doSaveTweakFile=false;
         }
