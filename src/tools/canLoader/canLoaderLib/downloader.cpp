@@ -207,7 +207,29 @@ int cDownloader::strain_save_to_eeprom  (int bus, int target_id)
             return -1;
         }
 
-    return 0;
+    drv_sleep(5);
+
+    int read_messages = m_idriver->receive_message(rxBuffer,1);
+    for (int i=0; i<read_messages; i++)
+    {
+    if (rxBuffer[i].getData()[0]==0x09 &&
+        rxBuffer[i].getId()==(2 << 8) + (target_id<<4))
+        {
+            if(rxBuffer[i].getData()[1]!=0)
+            {
+                 yInfo ("Data has been saved in EEprom correctly\n");
+                return 1;
+            }
+            else
+            {
+                 yError ("Error in data saving in EEprom \n");
+                 return 0;
+            }
+        }
+    }
+    yError ("Save_to_eeprom didn't receive answer...maybe strain firmware is obsolete \n");
+    return -1;
+
 }
 
 //*****************************************************************/
