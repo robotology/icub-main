@@ -261,6 +261,15 @@ static void s_eoprot_print_mninfo_status(eOmn_info_basic_t* infobasic, uint8_t *
 static void s_process_category_Default(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
 {
     char str[512] = {0};
+    eOmn_info_type_t    type;
+    uint8_t address = 0;
+    eOmn_info_extraformat_t extraf;
+    const char * str_source = NULL;
+    const char * str_code = NULL;
+    const char * str_extra = NULL;
+    uint8_t *p64 = NULL;
+    char ipinfo[20] = {0};
+    const char *boardstr = feat_GetBoardName(eo_nv_GetIP(nv));
 
     static const char nullverbalextra[] = "no extra info despite we are in verbal mode";
     static const char emptyextra[] = ".";
@@ -268,15 +277,9 @@ static void s_process_category_Default(eOmn_info_basic_t* infobasic, uint8_t * e
     s_get_timeofmessage(infobasic, &tom);
 
 
-    eOmn_info_type_t    type        = EOMN_INFO_PROPERTIES_FLAGS_get_type(infobasic->properties.flags);
-    uint8_t address = 0;
-    eOmn_info_extraformat_t extraf  = EOMN_INFO_PROPERTIES_FLAGS_get_extraformat(infobasic->properties.flags);
+    type    = EOMN_INFO_PROPERTIES_FLAGS_get_type(infobasic->properties.flags);
+    extraf  = EOMN_INFO_PROPERTIES_FLAGS_get_extraformat(infobasic->properties.flags);
     //uint16_t forfutureuse           = EOMN_INFO_PROPERTIES_FLAGS_get_futureuse(infobasic->properties.flags);
-
-    const char * str_source = NULL;
-    const char * str_code = NULL;
-    const char * str_extra = NULL;
-    uint8_t *p64 = NULL;
 
     str_source         = s_get_sourceofmessage(infobasic, &address);
     str_code           = eoerror_code2string(infobasic->properties.code);
@@ -293,12 +296,10 @@ static void s_process_category_Default(eOmn_info_basic_t* infobasic, uint8_t * e
 
     p64 = (uint8_t*)&(infobasic->properties.par64);
 
-    char ipinfo[20] = {0};
+    
     eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
     //int boardnum = eo_nv_GetBRD(nv)+1;
-    const char *boardstr = feat_GetBoardName(eo_nv_GetIP(nv));
-
-
+    
     snprintf(str, sizeof(str), " from BOARD %s (%s), src %s, adr %d, time %ds %dm %du: (code 0x%.8x, par16 0x%.4x par64 0x%.2x%.2x%.2x%.2x%.2x%.2x%.2x%.2x) -> %s + %s",
                                 ipinfo,
                                 boardstr,
@@ -364,22 +365,22 @@ static void s_process_CANPRINT(eOmn_info_basic_t* infobasic, uint8_t * extra, co
 static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * extra, const EOnv* nv, const eOropdescriptor_t* rd)
 {
     char str[512] = {0};
-
-
+    eOmn_info_type_t type;
+    char ipinfo[20] = {0};
+    const char *ethboardname = feat_GetBoardName(eo_nv_GetIP(nv));
+    timeofmessage_t tom = {0};
+    eOerror_value_t value;
     // here is the basic oscure print
     //s_process_category_Default(infobasic, extra, nv, rd);
 
     // but now we do a better parsing
 
-    eOmn_info_type_t type = EOMN_INFO_PROPERTIES_FLAGS_get_type(infobasic->properties.flags);
+    type = EOMN_INFO_PROPERTIES_FLAGS_get_type(infobasic->properties.flags);
     //int ethboardnum = eo_nv_GetBRD(nv)+1;
-    char ipinfo[20] = {0};
     eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
-    const char *ethboardname = feat_GetBoardName(eo_nv_GetIP(nv));
-    timeofmessage_t tom = {0};
     s_get_timeofmessage(infobasic, &tom);
 
-    eOerror_value_t value = eoerror_code2value(infobasic->properties.code);
+    value = eoerror_code2value(infobasic->properties.code);
 
     switch(value)
     {
@@ -394,12 +395,12 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             eObrd_firmwareversion_t appl = {0};
             uint64_t reqpr =      (infobasic->properties.par64 & 0x000000ffff000000) >> 24;
             uint64_t reqfw =      (infobasic->properties.par64 & 0x0000000000ffffff);
+            uint8_t num =0;
             prot.major = reqpr >> 8;
             prot.minor = reqpr & 0xff;
             appl.major = (reqfw >> 16) & 0xff;
             appl.minor = (reqfw >> 8)  & 0xff;
             appl.build = reqfw & 0xff;
-            uint8_t num = 0;
             num = eo_common_hlfword_bitsetcount(maskcan1)+eo_common_hlfword_bitsetcount(maskcan2);
 
             snprintf(str, sizeof(str), " from BOARD %s (%s) @ %ds %dm %du: CAN discovery has started for %d %s boards on (can1map, can2map) = (0x%.4x, 0x%.4x) with target can protocol ver %d.%d and application ver %d.%d.%d.",
@@ -428,13 +429,15 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             eObrd_firmwareversion_t appl = {0};
             uint64_t reqpr =      (infobasic->properties.par64 & 0x000000ffff000000) >> 24;
             uint64_t reqfw =      (infobasic->properties.par64 & 0x0000000000ffffff);
+            char strOK[80] = "OK";
+
             prot.major = reqpr >> 8;
             prot.minor = reqpr & 0xff;
             appl.major = (reqfw >> 16) & 0xff;
             appl.minor = (reqfw >> 8)  & 0xff;
             appl.build = reqfw & 0xff;
 
-            char strOK[80] = "OK";
+           
             if(eobool_true == fakesearch)
             {
                 snprintf(strOK, sizeof(strOK), "OK but FAKE (without any control on CAN w/ get-fw-version<> message)");
@@ -464,13 +467,14 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             eObrd_firmwareversion_t appl = {0};
             uint64_t reqpr =      (infobasic->properties.par64 & 0x000000ffff000000) >> 24;
             uint64_t reqfw =      (infobasic->properties.par64 & 0x0000000000ffffff);
+            uint8_t address;
+            const char *source = s_get_sourceofmessage(infobasic, NULL);
             prot.major = reqpr >> 8;
             prot.minor = reqpr & 0xff;
             appl.major = (reqfw >> 16) & 0xff;
             appl.minor = (reqfw >> 8)  & 0xff;
             appl.build = reqfw & 0xff;
-            uint8_t address = infobasic->properties.par16 & 0x000f;
-            const char *source = s_get_sourceofmessage(infobasic, NULL);
+            address = infobasic->properties.par16 & 0x000f;
 
 
             snprintf(str, sizeof(str), " from BOARD %s (%s) @ %ds %dm %du: CAN discovery has detected a %s board in %s addr %d with can protocol ver %d.%d and application ver %d.%d.%d Search time was %d ms",
@@ -495,7 +499,8 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             uint64_t searchtime = (infobasic->properties.par64 & 0xffff000000000000) >> 48;
             uint16_t maskofmissing = infobasic->properties.par64 & 0x000000000000ffff;
             const char *source = s_get_sourceofmessage(infobasic, NULL);
-
+            uint8_t n = 1;
+            uint8_t i = 0;
 
             snprintf(str, sizeof(str), " from BOARD %s (%s) @ %ds %dm %du: CAN discovery after %d ms has detected %d missing %s boards in %s:",
                                         ipinfo,
@@ -509,9 +514,6 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
                                         );
             s_print_string(str, type);
 
-
-            uint8_t n = 1;
-            uint8_t i = 0;
             for(i=1; i<15; i++)
             {
                 if(eobool_true == eo_common_hlfword_bitcheck(maskofmissing, i))
@@ -534,7 +536,12 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             const char *canboardname = eoboards_type2string(infobasic->properties.par16 >> 8);
             uint64_t invalidmask = infobasic->properties.par64;
             const char *source = s_get_sourceofmessage(infobasic, NULL);
-
+            uint8_t n = 1;
+            uint8_t i = 0;
+            const char *empty = "";
+            const char *wrongtype = "WRONG BOARD TYPE";
+            const char *wrongprot = "WRONG PROTOCOL VERSION";
+            const char *wrongappl = "WRONG APPLICATION VERSION";
 
             snprintf(str, sizeof(str), " from BOARD %s (%s) @ %ds %dm %du: CAN discovery has detected %d invalid %s boards in %s:",
                                         ipinfo,
@@ -548,12 +555,7 @@ static void s_process_category_Config(eOmn_info_basic_t* infobasic, uint8_t * ex
             s_print_string(str, type);
 
 
-            uint8_t n = 1;
-            uint8_t i = 0;
-            const char *empty = "";
-            const char *wrongtype = "WRONG BOARD TYPE";
-            const char *wrongprot = "WRONG PROTOCOL VERSION";
-            const char *wrongappl = "WRONG APPLICATION VERSION";
+
             for(i=1; i<15; i++)
             {
                 uint64_t val = (invalidmask >> (4*i)) & 0x0f;
