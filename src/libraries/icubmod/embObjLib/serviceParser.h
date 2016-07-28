@@ -147,12 +147,20 @@ typedef struct
     eOmc_encoder_descriptor_t       desc;
 } servMC_encoder_t;
 
+
 typedef struct
 {
 
     int                                 numofjoints;
     eObrd_ethtype_t                     ethboardtype;
     vector<servCanBoard_t>              canboards;
+
+    eObrd_canlocation_t                 maislocation;
+
+    eOmc_mc4shifts_t                    mc4shifts;
+    vector<eOmc_mc4broadcast_t>         mc4broadcasts;
+    vector<eObrd_canlocation_t>         mc4joints;
+
     servMC_controller_t                 controller;
 
     vector<servMC_actuator_t>           actuators;
@@ -214,7 +222,7 @@ public:
     bool parse_port_mais(ConstString const &fromstring, uint8_t &toport, bool &formaterror);
 
     bool parse_actuator_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_actuator_t const type, eOmc_actuator_descriptor_t &todes, bool &formaterror);
-    bool parse_encoder_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t port, bool &formaterror);
+    bool parse_encoder_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t &toport, bool &formaterror);
 
 #endif
 
@@ -251,10 +259,8 @@ private:
     bool check_analog(yarp::os::Searchable &config, eOmn_serv_type_t type);
 
     bool check_motion(yarp::os::Searchable &config);
-//#if defined(SERVICE_PARSER_USE_MC)
-//    bool parseMCEncoderItem(Bottle &b_ENCODER,  vector<servMC_encoder_t> &encoders, char *encString);
-//#endif
     
+    // suggestion: split check_motion() in sub-methods which parse the groups ...
 };
 
 
