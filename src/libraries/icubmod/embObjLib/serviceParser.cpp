@@ -2732,7 +2732,9 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
         case eomn_serv_MC_generic:
         {
-            yError() << "ServiceParser::parseService() eomn_serv_MC_generic unused";
+            yWarning() << "ServiceParser::parseService() eomn_serv_MC_generic detected. set type = eomn_serv_NONE to let the remote board configure itself according to its IP address";
+            mcconfig.ethservice.configuration.type = eomn_serv_NONE;
+            ret =  true;
         } break;
 
         default:
