@@ -65,6 +65,7 @@
 
 // embobj includes
 #include "EoProtocol.h"
+#include "EoBoards.h"
 
 // others
 #include <yarp/os/LogStream.h>              // iCub debug class include
@@ -131,6 +132,8 @@ private:
     typedef struct
     {
         eOipv4addr_t        ipv4;
+        eObrd_ethtype_t     type;
+        const char *        nameoftype;
         char                name[EthBoards::ethboardNameMaxSize];
         uint8_t             numberofinterfaces;
         uint8_t             boardnumber;

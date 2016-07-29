@@ -109,6 +109,8 @@ EthResource::EthResource()
 
     ipv4addr = 0;
     eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
+    ethboardtype = eobrd_ethtype_unknown;
+    snprintf(boardTypeString, sizeof(boardTypeString), "unknown");
 
     ethManager                  = NULL;
     lastRecvMsgTimestamp        = -1.0;
@@ -201,6 +203,37 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
         yError() << "EthResource::open2() cannot find ETH_BOARD_PROPERTIES group in config files";
         return NULL;
     }
+
+    Bottle b_ETH_BOARD_PROPERTIES_Type = groupEthBoardProps.findGroup("Type");
+    ConstString Type = b_ETH_BOARD_PROPERTIES_Type.get(1).asString();
+    const char *strType = Type.c_str();
+    // 1. compare with the exceptions which may be in some old xml files ("EMS4", "MC4PLUS", "MC2PLUS"), and then then call proper functions
+    if(0 == strcmp(strType, "EMS4"))
+    {
+        ethboardtype = eobrd_ethtype_ems4;
+    }
+    else if(0 == strcmp(strType, "MC4PLUS"))
+    {
+        ethboardtype = eobrd_ethtype_mc4plus;
+    }
+    else if(0 == strcmp(strType, "MC2PLUS"))
+    {
+        ethboardtype = eobrd_ethtype_mc2plus;
+    }
+    else
+    {
+        eObrd_type_t brd = eobrd_unknown;
+        if(eobrd_unknown == (brd = eoboards_string2type2(strType, eobool_true)))
+        {
+            brd = eoboards_string2type2(strType, eobool_false);
+        }
+
+        // if not found in compact or extended string format, we accept that the board is unknown
+
+        ethboardtype = eoboards_type2ethtype(brd);
+    }
+
+    snprintf(boardTypeString, sizeof(boardTypeString), "%s", eoboards_type2string2(eoboards_ethtype2type(ethboardtype), eobool_true));
 
 // -- i dont use this code as long as i retrieve the remote ip address from the remIP argument .... however i may remove this argument and use the following code
 //    Bottle paramIPboard(groupEth.find("IpAddress").asString());
@@ -365,6 +398,16 @@ const char * EthResource::getName(void)
 const char * EthResource::getIPv4string(void)
 {
     return ipv4addrstring;
+}
+
+eObrd_ethtype_t EthResource::getBoardType(void)
+{
+    return ethboardtype;
+}
+
+const char * EthResource::getBoardTypeString(void)
+{
+    return boardTypeString;
 }
 
 //int EthResource::getNumberOfAttachedInterfaces(void)

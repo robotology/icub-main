@@ -208,6 +208,9 @@ public:
     const char *    getName(void);
     const char *    getIPv4string(void);
 
+    eObrd_ethtype_t getBoardType(void);
+    const char *    getBoardTypeString(void);
+
     // the function returns true if the packet can be transmitted. 
     // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
     bool            getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops);
@@ -256,6 +259,8 @@ private:
     eOipv4addr_t      ipv4addr;
     char              ipv4addrstring[20];
     char              boardName[32];
+    char              boardTypeString[32];
+    eObrd_ethtype_t   ethboardtype;
     ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
     bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
