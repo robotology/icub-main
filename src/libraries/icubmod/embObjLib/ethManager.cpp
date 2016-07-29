@@ -925,7 +925,7 @@ EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::
             return NULL;
         }
 
-        yDebug() << "TheEthManager::requestResource2(): has just succesfully created a new EthResource for IP = " << ipinfo;
+        yDebug() << "TheEthManager::requestResource2(): has just succesfully created a new EthResource for board of type" << rr->getBoardTypeString()<< "with IP = " << ipinfo;
     }
 
 
