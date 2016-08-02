@@ -115,8 +115,6 @@ Windows, Linux
 #include <string>
 #include <cstdio>
 
-#include <gsl/gsl_math.h>
-
 #include <yarp/os/Network.h>
 #include <yarp/os/RFModule.h>
 #include <yarp/os/RateThread.h>
