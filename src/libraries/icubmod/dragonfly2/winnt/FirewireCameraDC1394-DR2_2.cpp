@@ -394,7 +394,7 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
             }
             else
             {
-                yError("Feature %d not present\n");
+                yInfo("Feature %d not supported by this camera model.\n", f);
             }
         }
         else
