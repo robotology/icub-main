@@ -29,7 +29,7 @@
         <param name="kd">               0.00        0.00       0.00       0.00 </param>       
         <param name="ki">           10666.64   -14222.18    7111.09   -1066.64 </param>         
         <param name="maxOutput">        8000        8000       8000       8000 </param>          
-        <param name="maxInt">           1500        1500        750       1000 </param>       
+        <param name="maxInt">           1500        750        750       1000 </param>       
         <param name="shift">               0           0          0          0 </param>       
         <param name="ko">                  0           0          0          0 </param>       
         <param name="stictionUp">          0           0          0          0 </param>       
