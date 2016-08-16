@@ -4,8 +4,8 @@
 <params robot="iCubGenova02" build="1">
   
   <group name="GENERAL">
-      <param name="skipCalibration">    false  </param>
-      <param name="useRawEncoderData">  false  </param>
+      <param name="skipCalibration">    false	  </param>
+      <param name="useRawEncoderData">  false	  </param>
       <param name="useLimitedPWM">      false  </param>
       <param name="verbose">            false  </param>
   </group>

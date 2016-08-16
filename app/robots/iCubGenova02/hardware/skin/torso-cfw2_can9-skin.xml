@@ -6,7 +6,7 @@
       <params file="general.xml" />
 
 	  <params robot="iCubGenova05" build="1">
-        <param name="canDeviceNum"> 9         </param>  
+        <param name="canDeviceNum"> 8         </param>  
         <param name="skinCanIds">   7 8 9 10  </param>   
         <param name="period"> 10              </param>
         <param name="canbusDevice"> cfw2can   </param>

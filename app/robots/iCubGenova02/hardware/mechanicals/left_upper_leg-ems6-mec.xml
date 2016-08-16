@@ -23,7 +23,7 @@
         <param name="RotorEncoderRes">   -14400.0      -14400.0      -14400.0       -14400.0   </param>
         <param name="RotorIndexOffset">         0             0             0              0   </param>
         <param name="Gearbox">   	       -100.0         100.0        -100.0         -100.0   </param>
-        <param name="MotorType">       "BLL_MOOG"     "BLL_MOOG"   "BLL_MOOG"    "BLL_KOLLM"   </param>
+        <param name="MotorType">       "BLL_MOOG"     "BLL_MOOG"   "BLL_MOOG"    "BLL_MOOG"   </param>
         <param name="MotorPoles">               8             8            8               8   </param>
         <param name="Verbose">0</param>
     </group>
