@@ -2552,6 +2552,8 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
             memset(jomocoupling, 0, sizeof(eOmc_4jomo_coupling_t));
 
+            // very important: so far, the fw in Controller.c must find eomc_jointSetNum_none in un-used entries, even if we have less than 4 joints.
+            memset(jomocoupling->joint2set, eomc_jointSetNum_none, sizeof(jomocoupling->joint2set));
             for(int i=0; i<numofjomos; i++)
             {
                 jomocoupling->joint2set[i] = mc_service.properties.joint2set[i];
