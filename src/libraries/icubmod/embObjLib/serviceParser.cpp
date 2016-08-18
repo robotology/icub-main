@@ -2531,7 +2531,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
                 // 1. actuator is on foc: we need the address
                 jomodes.actuator.foc.canloc.port = mc_service.properties.actuators[i].desc.foc.canloc.port;
                 jomodes.actuator.foc.canloc.addr = mc_service.properties.actuators[i].desc.foc.canloc.addr;
-                jomodes.actuator.foc.canloc.insideindex = eobrd_caninsideindex_none;
+                jomodes.actuator.foc.canloc.insideindex = eobrd_caninsideindex_first;
             
                 // 2. encoder1 is ...
                 jomodes.encoder1.type = mc_service.properties.encoder1s[i].desc.type;
