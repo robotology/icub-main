@@ -17,7 +17,7 @@
                 <param name="type">                 foc         </param> 
                 <group name="PROTOCOL">
                     <param name="major">            1           </param>    
-                    <param name="minor">            4           </param>     
+                    <param name="minor">            5           </param>     
                 </group>                    
                 <group name="FIRMWARE">
                     <param name="major">            0           </param>    
@@ -31,16 +31,16 @@
                 <param name="type"> eomc_ctrlboard_ANKLE        </param> 
                                    
                 <param name ="matrixJ2M"> 
-                    1.0     0.0     0.0     0.00
-                    0.00    1.0     0.0     0.00
-                    0.00    0.0     1.0     0.00
+                    1.00    0.00    0.00    0.00
+                    0.00    1.00    0.00    0.00
+                    0.00    0.00    1.00    0.00
                     0.00    0.00    0.00    1.00   
                 </param>
                
                 <param name ="matrixE2J">  
-                    1.0     0.0     0.0     0.00
-                    0.00    1.0     0.0     0.00
-                    0.00    0.0     1.0     0.00
+                    1.00    0.00    0.00    0.00
+                    0.00    1.00    0.00    0.00
+                    0.00    0.00    1.00    0.00
                     0.00    0.00    0.00    1.00   
                 </param>
                 
