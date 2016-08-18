@@ -1509,19 +1509,40 @@ bool ServiceParser::check_motion(Searchable &config)
     // mc4plusmais: ETHBOARD, CANBOARDS, MAIS, CONTROLLER, JOINTMAPPING, JOINTSETS
 
 
+
+    const bool itisOKifwedontfindtheXMLgroup = true;
+
     Bottle b_SERVICE(config.findGroup("SERVICE"));
     if(b_SERVICE.isNull())
     {
-        yError() << "ServiceParser::check_motion() cannot find SERVICE group";
-        return false;
+        if(false == itisOKifwedontfindtheXMLgroup)
+        {
+            yError() << "ServiceParser::check_motion() cannot find SERVICE group";
+            return false;
+        }
+        else
+        {
+            yWarning() << "ServiceParser::check_motion() cannot find SERVICE group, but we are in permissive mode, hence we ask the ETH board to config itself according to its IP address";
+            mc_service.type = eomn_serv_MC_generic;
+            return true;
+        }
     }
 
     // check whether we have the proper type
 
     if(false == b_SERVICE.check("type"))
     {
-        yError() << "ServiceParser::check_motion() cannot find SERVICE.type";
-        return false;
+        if(false == itisOKifwedontfindtheXMLgroup)
+        {
+            yError() << "ServiceParser::check_motion() cannot find SERVICE.type";
+            return false;
+        }
+        else
+        {
+            yWarning() << "ServiceParser::check_motion() cannot find SERVICE.type, but we are in permissive mode, hence we ask the ETH board to config itself according to its IP address";
+            mc_service.type = eomn_serv_MC_generic;
+            return true;
+        }
     }
 
     Bottle b_type(b_SERVICE.find("type").asString());
@@ -1531,7 +1552,11 @@ bool ServiceParser::check_motion(Searchable &config)
         return false;
     }
 
-
+    if(eomn_serv_MC_generic == mc_service.type)
+    {
+        yWarning() << "ServiceParser::check_motion() detects SERVICE.type = eomn_serv_MC_generic.. hence we ask the ETH board to config itself according to its IP address";
+        return true;
+    }
 
     // check whether we have the proper groups at first level.
 
@@ -2473,6 +2498,10 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
         return ret;
     }
 
+    // if we dont find the xml file ... we just return true but mc_service.type is eomn_serv_MC_generic.
+    // in such a case we dont transmit the config and ask the eth board to config itself accoring to its ip address.
+    // ...
+
     mcconfig.ethservice.configuration.type = mc_service.type;
     
     switch(mc_service.type)
@@ -2732,8 +2761,8 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
         case eomn_serv_MC_generic:
         {
-            yWarning() << "ServiceParser::parseService() eomn_serv_MC_generic detected. set type = eomn_serv_NONE to let the remote board configure itself according to its IP address";
-            mcconfig.ethservice.configuration.type = eomn_serv_NONE;
+            yWarning() << "ServiceParser::parseService() eomn_serv_MC_generic detected. set type = eomn_serv_MC_generic to let the remote board configure itself according to its IP address";
+            mcconfig.ethservice.configuration.type = eomn_serv_MC_generic;
             ret =  true;
         } break;
 
