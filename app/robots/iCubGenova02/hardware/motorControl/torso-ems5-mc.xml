@@ -7,6 +7,7 @@
   <device name="torso_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/torso-ems5-eln.xml" />
+      <params file="hardware/electronics/torso-ems5-eln-mc.xml" />
       <params file="hardware/mechanicals/torso-ems5-mec.xml" />
 
     <group name="LIMITS">
