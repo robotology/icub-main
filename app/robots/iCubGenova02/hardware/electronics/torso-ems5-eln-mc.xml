@@ -5,7 +5,7 @@
 
     <group name="SERVICE">
         
-        <param name="type"> eomn_serv_MC_foc </param> 
+        <param name="type"> eomn_serv_MC_generic </param> 
     
         <group name="PROPERTIES">
         
