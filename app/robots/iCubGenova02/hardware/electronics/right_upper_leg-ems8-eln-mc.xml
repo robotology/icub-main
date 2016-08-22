@@ -28,11 +28,11 @@
             
             <group name="CONTROLLER"> 
             
-                <param name="type"> eomc_ctrlboard_WAIST        </param> 
-                                   
+                <param name="type"> eomc_ctrlboard_UPPERLEG     </param> 
+                                
                 <param name ="matrixJ2M"> 
-                    0.50   -0.50    0.00    0.00
-                    0.50    0.50    0.00    0.00
+                    1.00    0.00    0.00    0.00
+                    0.00    1.00    0.00    0.00
                     0.00    0.00    1.00    0.00
                     0.00    0.00    0.00    1.00   
                 </param>
@@ -49,27 +49,27 @@
             <group name="JOINTMAPPING">
 
                 <group name="ACTUATOR">                
-                    <param name="type">             eomc_act_foc        foc                 foc         </param>
-                    <param name="port">             CAN1:3:0            CAN1:4:0            CAN1:1:0    </param>
+                    <param name="type">             eomc_act_foc        foc                 foc             foc         </param>
+                    <param name="port">             CAN1:3:0            CAN1:4:0            CAN1:1:0        CAN1:2:0    </param>
                 </group>
                 
                 <group name="ENCODER1">  
-                    <param name="type">             eomc_enc_aea        aea                 aea         </param>  
-                    <param name="port">             CONN:P6             CONN:P7             CONN:P8     </param>
-                    <param name="position">         eomc_pos_atjoint    atjoint             atjoint     </param> 
+                    <param name="type">             eomc_enc_aea        aea                 aea             aea         </param>  
+                    <param name="port">             CONN:P6             CONN:P7             CONN:P8         CONN:P9     </param>
+                    <param name="position">         eomc_pos_atjoint    atjoint             atjoint         atjoint     </param> 
                 </group>        
                 
                 <group name="ENCODER2">
-                    <param name="type">             eomc_enc_none       none                none        </param>
-                    <param name="port">             CONN:none           CONN:none           CONN:none   </param>
-                    <param name="position">         eomc_pos_none       none                none        </param>
+                    <param name="type">             eomc_enc_none       none                none            none        </param>
+                    <param name="port">             CONN:none           CONN:none           CONN:none       CONN:none   </param>
+                    <param name="position">         eomc_pos_none       none                none            none        </param>
                 </group> 
  
             </group>    
             
             <group name="JOINTSETS">
 
-                <param name="list">                 0                   0                   0           </param> 
+                <param name="list">                 0                   1                   2               3           </param> 
 
             </group>
             

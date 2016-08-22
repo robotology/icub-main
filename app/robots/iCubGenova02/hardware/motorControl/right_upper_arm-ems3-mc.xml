@@ -5,6 +5,7 @@
   <device name="right_upper_arm_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/right_upper_arm-ems3-eln.xml" />
+      <params file="hardware/electronics/right_upper_arm-ems3-eln-mc.xml" />
       <params file="hardware/mechanicals/right_upper_arm-ems3-mec.xml" />
 
     <group name="LIMITS">

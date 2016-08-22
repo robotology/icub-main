@@ -7,6 +7,7 @@
   <device name="right_lower_leg_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/right_lower_leg-ems9-eln.xml" />
+      <params file="hardware/electronics/right_lower_leg-ems9-eln-mc.xml" />
       <params file="hardware/mechanicals/right_lower_leg-ems9-mec.xml" />
 
     <group name="LIMITS">
