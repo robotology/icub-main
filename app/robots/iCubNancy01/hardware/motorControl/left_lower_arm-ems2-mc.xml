@@ -2,7 +2,9 @@
   <device name="left_lower_arm_mc" type="embObjMotionControl">
       <params file="general.xml"/>
       <params file="hardware/electronics/left_lower_arm-ems2-eln.xml"/>
-      <params file="hardware/mechanicals/left_lower_arm-ems2-mec.xml"/>
+      <params file="hardware/mechanicals/left_lower_arm-ems2-mec.xml" />
+
+    <params file="hardware/motorControl/left_lower_arm-ems2-mc-service.xml" />
       
     <group name="LIMITS">
         <param name="jntPosMax">                      90            0             35            60            90            90            180           90            180           90            180           270 </param>

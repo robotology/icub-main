@@ -8,6 +8,8 @@
       <params file="general.xml" />
       <params file="hardware/electronics/left_lower_leg-ems7-eln.xml" />
       <params file="hardware/mechanicals/left_lower_leg-ems7-mec.xml" />
+      
+    <params file="hardware/motorControl/left_lower_leg-ems7-mc-service.xml" />
 
     <group name="LIMITS">
         <param name="jntPosMax">                      30.00         20.00       </param>

@@ -7,6 +7,8 @@
       <params file="general.xml"/>
       <params file="hardware/electronics/left_upper_arm-ems1-eln.xml" />
       <params file="hardware/mechanicals/left_upper_arm-ems1-mec.xml" />
+      
+    <params file="hardware/motorControl/left_upper_arm-ems1-mc-service.xml" />
 
     <group name="LIMITS">
         <!--                                    0               1               2             3 -->

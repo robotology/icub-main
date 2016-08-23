@@ -8,6 +8,8 @@
       <params file="general.xml" />
       <params file="hardware/electronics/right_upper_leg-ems8-eln.xml" />
       <params file="hardware/mechanicals/right_upper_leg-ems8-mec.xml" />
+      
+    <params file="hardware/motorControl/right_upper_leg-ems8-mc-service.xml" />
 
     <group name="LIMITS">
         <!--                                    0             	1            2          3         -->
