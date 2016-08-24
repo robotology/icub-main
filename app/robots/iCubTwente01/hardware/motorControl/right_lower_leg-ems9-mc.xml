@@ -10,14 +10,14 @@
       <params file="hardware/mechanicals/right_lower_leg-ems9-mec.xml" />
 
     <group name="LIMITS">
-        <param name="jntPosMax">                      30            20        </param>
-        <param name="jntPosMin">                     -30           -20        </param>
-        <param name="rotorPosMin">                 0             0         </param> 
-        <param name="rotorPosMax">                 0             0         </param>
-        <param name="motorOverloadCurrents">   10000         10000         </param>
-        <param name="motorNominalCurrents">     5000          5000         </param>
-        <param name="motorPeakCurrents">       10000         10000         </param>
-        <param name="jntVelMax">                 1000          1000      </param>
+        <param name="jntPosMax">                   30            20     </param>
+        <param name="jntPosMin">                  -30           -20     </param>
+        <param name="rotorPosMin">                  0             0     </param> 
+        <param name="rotorPosMax">                  0             0     </param>
+        <param name="motorNominalCurrents">      5000          5000     </param>
+        <param name="motorPeakCurrents">        10000         10000     </param>
+        <param name="motorOverloadCurrents">    15000         15000     </param>
+        <param name="jntVelMax">                 1000          1000     </param>
         <param name="motorPwmLimit">            10000         10000     </param>    
     </group>
 	

@@ -13,11 +13,11 @@
         <param name="jntPosMin">              -95.5             0             -37            15       </param>
         <param name="rotorPosMin">              0               0               0             0       </param> 
         <param name="rotorPosMax">              0               0               0             0       </param>
-        <param name="jntVelMax">             1000            1000            1000          1000       </param>
-        <param name="motorOverloadCurrents"> 5000            5000            5000          5000       </param>
-        <param name="motorNominalCurrents">  5000            5000            5000          5000       </param>
-        <param name="motorPeakCurrents">     5000            5000            5000          5000       </param>
-        <param name="motorPwmLimit">        10000           10000           10000         10000       </param>    
+        <param name="jntVelMax">              1000            1000            1000          1000       </param>
+        <param name="motorNominalCurrents">   4000            4000            4000          4000       </param>
+        <param name="motorPeakCurrents">      5000            5000            5000          5000       </param>
+        <param name="motorOverloadCurrents"> 15000           15000           15000         15000       </param>
+        <param name="motorPwmLimit">         10000           10000           10000         10000       </param>    
     </group>
 
     <group name="IMPEDANCE">
