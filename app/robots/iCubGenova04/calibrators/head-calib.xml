@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubGenova04" build="1">
+    <device name="head_calibrator" type="parametricCalibratorEth">
+    
+        <params file="general.xml" />
+        
+        <group name="GENERAL">
+            <param name="joints"> 6 </param> <!-- the number of joints of the robot part -->
+            <param name="deviceName"> HeadV3_Calibrator </param> <!-- this name is used for high-level debug -->
+        </group>
+
+        <group name="HOME">
+            <param name="positionHome">     0         0           0           0           0           0          </param>
+            <param name="velocityHome">     10          10          10          10          10          10         </param>
+        </group>
+
+        <!-- joint logical number               0           1           2           3           4           5           -->
+        <!-- joint name                         neck-pitch  neck-roll   neck-yaw    eyes-tilt   eyes-vers   eyes-verg   -->  <!-- j4 is right-eye, j5 is left-eye -->
+        <group name="CALIBRATION">
+        <param name="calibrationType">      3           3           3           3           5           5           </param>
+<param name="calibration1">   	0	0	0	0	8000	8000							</param>
+<param name="calibration2">    	0	0	0	0	3640.88	3640.88							</param>
+<param name="calibration3">      	14362.08	19967.08	63342.92	58462.92	8191.98	8191.98							</param>
+
+        <param name="calibration4">         0           0           0           0            0          0         </param>
+        <param name="calibration5">         0           0           0           0            0          0         </param>        
+        
+        <param name="calibrationZero">      180.0       -180.0      180.0       180.0       45.0        45.0         </param>
+        <param name="calibrationDelta">     0.0         0.0         0.0         0.0         0.0         0.0         </param>
+       
+        <param name="startupPosition">      0.0         0.0         0.0         0.0         0.0         0.0         </param>        
+        <param name="startupVelocity">      10          10          20.0        20.0        20.0        20.0        </param>        
+        <param name="startupMaxPwm">        1000        1000        1000        503         0           0           </param>        
+        <param name="startupPosThreshold">  90          90          2           2           2           2           </param>        
+        </group> 
+
+        <param name="CALIB_ORDER"> (0 1 2) (3) (4 5) </param> 
+
+        <action phase="startup" level="10" type="calibrate">
+            <param name="target">head_mc_wrapper</param>
+        </action>
+
+        <action phase="interrupt1" level="1" type="park">
+            <param name="target">head_mc_wrapper</param>
+        </action>
+
+        <action phase="interrupt3" level="1" type="abort" />
+
+    </device>
+</devices>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubGenova04" build="1">
+
+    <device name="right_hand_mais" type="embObjMais">
+    
+        <params file="general.xml" />
+
+        <params file="hardware/electronics/right_arm-j12_15-eln.xml" />
+        
+        <group name="SERVICE">
+        
+            <param name="type"> eomn_serv_AS_mais </param>
+        
+            <group name="PROPERTIES">
+            
+                <group name="CANBOARDS">
+                    <param name="type">                 eobrd_mais          </param>
+
+                    <group name="PROTOCOL">
+                        <param name="major">            0                   </param>    
+                        <param name="minor">            0                   </param>     
+                    </group>                    
+                    <group name="FIRMWARE">
+                        <param name="major">            0                   </param>    
+                        <param name="minor">            0                   </param> 
+                        <param name="build">            0                   </param>
+                    </group>
+                </group>
+            
+                <group name="SENSORS">
+                    <param name="id">                   id_x_hand_mais      </param>
+                    <param name="type">                 eoas_mais           </param>
+                    <param name="location">             CAN1:14             </param>
+                </group>
+            
+            </group>        
+            
+            <group name="SETTINGS"> 
+                <param name="acquisitionRate">          10                  </param>
+                <param name="enabledSensors">           id_x_hand_mais      </param>
+            </group>
+            
+        </group>
+        
+    </device> 
+    
+</devices>
+
+

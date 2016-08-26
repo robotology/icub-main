@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubGenova04" build="1">
+
+    <device name="right_lower_leg_strain" type="embObjStrain">
+    
+        <params file="general.xml"/>
+
+        <params file="hardware/electronics/right_lower_leg-ems9-eln.xml" />
+    
+        <group name="SERVICE">
+            
+            <param name="type"> eomn_serv_AS_strain </param>
+        
+            <group name="PROPERTIES">
+  
+                <group name="CANBOARDS">
+                    <param name="type">                 eobrd_strain            </param>
+
+                    <group name="PROTOCOL">
+                        <param name="major">            1                       </param>    
+                        <param name="minor">            0                       </param>     
+                    </group>                    
+                    <group name="FIRMWARE">
+                        <param name="major">            0                       </param>    
+                        <param name="minor">            0                       </param> 
+                        <param name="build">            0                       </param>
+                    </group>
+                </group>
+                
+                <group name="SENSORS">
+                    <param name="id">                   id_r_lower_leg_strain   </param>
+                    <param name="type">                 eoas_strain             </param>
+                    <param name="location">             CAN2:1                  </param>
+                </group>                
+            
+            </group>
+
+            <group name="SETTINGS">        
+                <param name="acquisitionRate">          10                      </param>
+                <param name="enabledSensors">           id_r_lower_leg_strain   </param>                
+            </group>
+            
+            <group name="STRAIN_SETTINGS">        
+                <param name="useCalibration">           true                    </param>          
+            </group>            
+            
+        </group>
+    
+  </device>
+  
+</devices>
+
+
+
+

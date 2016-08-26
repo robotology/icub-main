@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubGenova04" build="1">
+
+    <params file="hardware/electronics/pc104.xml" />
+
+    <group name="ETH_BOARD">
+
+        <group name="ETH_BOARD_PROPERTIES">
+            <param name="IpAddress">                10.0.1.9        </param>
+            <param name="IpPort">                   12345           </param>
+            <param name="Type">                     EMS4            </param>
+            <param name="maxSizeRXpacket">          768             </param>
+            <param name="maxSizeROP">               256             </param>
+            <param name="maxNumberRegularROPs">     32              </param>    
+            <param name="protocolCapability">       MAXIMUM         </param>   
+        </group>
+
+        <group name="ETH_BOARD_SETTINGS">
+            <param name="Name">                     "EB9"           </param> 
+            <param name="regularsTXrate">           5               </param> 
+            <param name="protocolToUse">            STANDARD        </param> 
+        </group>
+
+    </group>  
+
+</params>
+

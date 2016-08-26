@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubGenova04" build="1">
+ <device name="inertial" type="inertial">
+      <param name="name">  /icub/inertial  </param>
+      <param name="subdevice">  imuBosch_BNO055  </param>
+      <param name="comport">  /dev/ttyUSB0   </param>
+</device>
+</devices>
