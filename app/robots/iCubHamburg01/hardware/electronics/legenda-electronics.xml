@@ -1,0 +1,78 @@
+
+    <!--    LEGENDA
+            
+            this file contains description of the groups contained in files of this folder:            
+            - PC104
+            - ETH_BOARD
+    -->
+
+    <!--    PC104
+
+            The group PC104 contains whatever is required to init the singleton TheEthmanager which manages
+            the rx and tx threads plus the socket which the PC104 use to communicate with the Ethernet boards.
+            
+            This group is inside the file pc104.xml
+
+            PC104:
+            - PC104IpAddress        The IP address of the PC104 which is always 10.0.1.104
+            - PC104IpPort           The port used by the UDP socket which is always 12345
+            - PC104TXrate           [1, 10]. The TX rate in ms of the transmitting periodic thread. Good value is 1 (or 2). 
+            - PC104RXrate           [1, 10]. The RX rate in ms of the receiving periodic thread. Good value is 5.
+
+    -->
+
+
+    <!--    ETH_BOARD
+
+            The group ETH_BOARD contains whatever is required to init a EthResource (and below objects) to communicate
+            with an Ethernet board.
+
+            This group is inside files which describe the electronic ethernet boards.
+
+            There are two sub-groups: ETH_BOARD_PROPERTIES and ETH_BOARD_SETTINGS. 
+            The former contains fixed parameters which are proper of the remote board, whereas the latter contains
+            what can be changed by the user.
+
+            ETH_BOARD_PROPERTIES:
+            - IpAddress             The IP address of the ethernet board in range 10.0.1.x
+            - IpPort                IT MUST BE the same as PC104/PC104IpPort.
+            - Type                  [EMS4, MC4PLUS, MC2PLUS]
+            - maxSizeRXpacket       the board is able to accept UDP packets of this size at most, 
+                                    thus the EthResource shall NOT send bigger packets.
+            - maxSizeROP            the board is able to accept a ROP (command inside a UDP packet) of this size at most, 
+                                    thus the EthResource shall NOT send bigger ROPs. 
+            - maxNumberRegularROPs  the board can accomodate at most this number of regular ROPs. If EthResource attempts to 
+                                    configure more, than the board will reply w/ error
+            - protocolCapability    [STANDARD, MAXIMUM]. Both allow to manage all the entities in every endopoint. 
+                                    MAXIMUM means 12 joints/motors, STANDARD means only 4. More joints, more memory is used.
+                                    Only the EMS4 of forearm in mecV1 and mecV2 manage 12 joints, all the others manage at
+                                    most 4 joints. Moreover, the MC4PLUS can physically manage only 4 and the MC2PLUS only 2. 
+            ETH_BOARD_SETTINGS:
+            - Name                  [upto32chars]. It is the name assigned by the user to this board. This name is printed by robotInterface.
+            - regularsTXrate        [1, 20]. It is the rate in ms which is imposed by robotInterface to the board to send up UDP packets 
+                                    containing regular ROPs. Regular ROPs are sig<> ROPs programmed by robotInterface to be transmitted
+                                    regularly to inform about some status of the board. Keep this rate low in order to reduce CPU load
+                                    in the PC104. The say<> ROPs which reply to specific ask<> ROPs are instead transmitted straigth
+                                    away. The same for sig<> ROPs used for diagnostics or for confirmation of configuration commands.
+            - protocolToUse         [STANDARD, MAXIMUM]. It is the protocol used by EthResource. Use STANDARD except for boards where
+                                    we need 12 joints (left and rigth forearms in V1 and V2 mechanics).
+            
+    -->
+
+    <!--    SERVICES
+
+            The group SERVICES is a temporarily place inside the electronics folder, ethernet board files, and contains configurations
+            of some services. So far only of inertials. Later on (Q2-2016) the group will be moved elsewhere, maybe even renamed, and will
+            contain configuration of every service: motion-control, strain, mais, skin and inertials.
+
+            INERTIALS:
+            - InertialsCAN1mapping  [array of 15 tags] which contains at position i-th the type of inertial sensor mapped at that CAN1 address.
+                                    The possible tags are: none, l_upper_arm_4, etc.
+            - InertialsCAN2mapping  [array of 15 tags] which contains at position i-th the type of inertial sensor mapped at that CAN2 address.
+                                    The possible tags are: none, l_upper_arm_4, etc.
+
+    -->
+
+
+
+
