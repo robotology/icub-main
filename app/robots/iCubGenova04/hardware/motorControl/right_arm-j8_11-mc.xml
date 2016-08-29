@@ -8,6 +8,8 @@
         <params file="general.xml" />
         <params file="hardware/electronics/right_arm-j8_11-eln.xml" />
         <params file="hardware/mechanicals/right_arm-j8_11-mec.xml" />
+        
+        <params file="hardware/motorControl/right_arm-j8_11-mc-service.xml" />
 
         <!-- joint number in sub-part             0              1               2                3        -->
         <!-- joint name               "l_thumb_oppose" "l_thumb_proximal" "l_thumb_distal" "l_index_proximal" -->

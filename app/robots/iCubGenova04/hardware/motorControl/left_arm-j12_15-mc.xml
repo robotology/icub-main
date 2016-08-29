@@ -8,6 +8,8 @@
         <params file="general.xml" />
         <params file="hardware/electronics/left_arm-j12_15-eln.xml" />
         <params file="hardware/mechanicals/left_arm-j12_15-mec.xml" />
+        
+        <params file="hardware/motorControl/left_arm-j12_15-mc-service.xml" />
 
         <!-- joint number in sub-part           0               1               2               3          -->
         <!-- joint name                    index-distal   middle-proximal   middle-distal   little-fingers -->     

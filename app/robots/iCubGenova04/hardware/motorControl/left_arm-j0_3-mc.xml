@@ -7,6 +7,9 @@
       <params file="general.xml"/>
       <params file="hardware/electronics/left_arm-j0_3-eln.xml" />
       <params file="hardware/mechanicals/left_arm-j0_3-mec.xml" />
+      
+      
+    <params file="hardware/motorControl/left_arm-j0_3-mc-service.xml" />            
 
     <group name="LIMITS">
         <!--                                    0                1              2              3            -->
