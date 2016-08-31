@@ -3,7 +3,7 @@
 
  <!-- Initialization file for EMS 8 - Right Upper Leg, 4 dof -->
 
-<devices robot="iCubNottingham01" build="1">
+<devices robot="iCubGenova04" build="1">
   <device name="right_upper_leg_mc" type="embObjMotionControl">
       <params file="general.xml" />
       <params file="hardware/electronics/right_upper_leg-ems8-eln.xml" />

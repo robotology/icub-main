@@ -2,7 +2,7 @@
 <!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
 
  
-<devices robot="iCubExpHeadV3" build="1">
+<devices robot="iCubGenova04" build="1">
 
     <device name="head-j0_1-mc" type="embObjMotionControl">
     
