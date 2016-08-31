@@ -1,7 +1,7 @@
 <devices>
   <device name="inertial" type="inertial">
       <param name="name">  /icub/inertial  </param>
-      <param name="subdevice">  xsensmtx  </param>
-      <param name="serial">  /dev/ttyS4   </param>
+      <param name="subdevice">  imuBosch_BNO055  </param>
+      <param name="serial">  /dev/ttyUSB0   </param>
 </device>
 </devices>
