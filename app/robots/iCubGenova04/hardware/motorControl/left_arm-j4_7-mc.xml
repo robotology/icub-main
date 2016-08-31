@@ -9,6 +9,8 @@
         <params file="hardware/electronics/left_arm-j4_7-eln.xml" />
         <params file="hardware/mechanicals/left_arm-j4_7-mec.xml" />
 
+        <params file="hardware/motorControl/left_arm-j4_7-mc-service.xml" /> 
+        
         <!-- joint number in sub-part           0               1               2               3              -->
         <!-- joint name                         "l_wrist_prosup" "l_wrist_pitch" "l_wrist_yaw"  "l_hand_finger" -->     
         <group name="LIMITS">

@@ -9,6 +9,8 @@
       <params file="hardware/electronics/right_lower_arm-ems4-eln.xml" />
       <params file="hardware/mechanicals/right_lower_arm-ems4-mec.xml" />
 
+    <params file="hardware/motorControl/right_lower_arm-ems4-mc-service.xml" />
+
     <group name="LIMITS">
         <!--                                    0             1             2             3             4             5             6             7             8             9             10            11-->
         <param name="jntPosMax">                      60            25            25            60            90            90            180           90            180           90            180           270       </param>

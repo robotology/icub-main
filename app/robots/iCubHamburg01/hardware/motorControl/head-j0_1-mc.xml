@@ -9,6 +9,8 @@
         <params file="general.xml" />
         <params file="hardware/electronics/head-j0_1-eln.xml" />
         <params file="hardware/mechanicals/head-j0_1-mec.xml" />
+
+        <params file="hardware/motorControl/head-j0_1-mc-service.xml" />
         
         <!-- joint logical number               0           1           -->
         <!-- joint name                         neck-pitch  neck-roll   -->           

@@ -100,7 +100,7 @@ using namespace std;
 // if the macro is disabled: the service parser which reads the runtime config parameters from the xml file is NOT called. everything is as it was before.
 // enable it only whan the service parser is full developed.
 
-//#define EMBOBJMC_USESERVICEPARSER
+#define EMBOBJMC_USESERVICEPARSER
 
 //
 //   Help structure

@@ -109,6 +109,8 @@ EthResource::EthResource()
 
     ipv4addr = 0;
     eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
+    ethboardtype = detectedBoardType = eobrd_ethtype_unknown;
+    snprintf(boardTypeString, sizeof(boardTypeString), "unknown");
 
     ethManager                  = NULL;
     lastRecvMsgTimestamp        = -1.0;
@@ -117,9 +119,17 @@ EthResource::EthResource()
     objLock                     = new Semaphore(1);
 
     verifiedBoardPresence       = false;
+    askedBoardVersion           = false;
     verifiedBoardTransceiver    = false;
     txrateISset                 = false;
     cleanedBoardBehaviour       = false;
+
+    boardVersion.major = boardVersion.minor = 0;
+    boardDate.year = 1999;
+    boardDate.month = 9;
+    boardDate.day = 9;
+    boardDate.hour = 12;
+    boardDate.min = 12;
 
     memset(verifiedEPprotocol, 0, sizeof(verifiedEPprotocol));
 
@@ -201,6 +211,37 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
         yError() << "EthResource::open2() cannot find ETH_BOARD_PROPERTIES group in config files";
         return NULL;
     }
+
+    Bottle b_ETH_BOARD_PROPERTIES_Type = groupEthBoardProps.findGroup("Type");
+    ConstString Type = b_ETH_BOARD_PROPERTIES_Type.get(1).asString();
+    const char *strType = Type.c_str();
+    // 1. compare with the exceptions which may be in some old xml files ("EMS4", "MC4PLUS", "MC2PLUS"), and then then call proper functions
+    if(0 == strcmp(strType, "EMS4"))
+    {
+        ethboardtype = eobrd_ethtype_ems4;
+    }
+    else if(0 == strcmp(strType, "MC4PLUS"))
+    {
+        ethboardtype = eobrd_ethtype_mc4plus;
+    }
+    else if(0 == strcmp(strType, "MC2PLUS"))
+    {
+        ethboardtype = eobrd_ethtype_mc2plus;
+    }
+    else
+    {
+        eObrd_type_t brd = eobrd_unknown;
+        if(eobrd_unknown == (brd = eoboards_string2type2(strType, eobool_true)))
+        {
+            brd = eoboards_string2type2(strType, eobool_false);
+        }
+
+        // if not found in compact or extended string format, we accept that the board is unknown
+
+        ethboardtype = eoboards_type2ethtype(brd);
+    }
+
+    snprintf(boardTypeString, sizeof(boardTypeString), "%s", eoboards_type2string2(eoboards_ethtype2type(ethboardtype), eobool_true));
 
 // -- i dont use this code as long as i retrieve the remote ip address from the remIP argument .... however i may remove this argument and use the following code
 //    Bottle paramIPboard(groupEth.find("IpAddress").asString());
@@ -365,6 +406,22 @@ const char * EthResource::getName(void)
 const char * EthResource::getIPv4string(void)
 {
     return ipv4addrstring;
+}
+
+eObrd_ethtype_t EthResource::getBoardType(void)
+{
+    return ethboardtype;
+}
+
+const char * EthResource::getBoardTypeString(void)
+{
+    return boardTypeString;
+}
+
+void EthResource::getBoardInfo(eOdate_t &date, eOversion_t &version)
+{
+    date = boardDate;
+    version = boardVersion;
 }
 
 //int EthResource::getNumberOfAttachedInterfaces(void)
@@ -678,8 +735,8 @@ bool EthResource::verifyBoardTransceiver()
     {
         // must release the semaphore
         ethQuery->stop(sem);
-        yError() << "  FATAL: EthResource::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the comm status to BOARD" << getName() << "with IP" << getIPv4string() <<  ": cannot proceed any further";
-        yError() << "         EthResource::verifyEPprotocol() asks: can you ping the board? if so, is the MN protocol version of BOARD equal to (" << pc104versionMN->major << pc104versionMN->minor << ")? if not, perform FW upgrade. if so, was the ropframe transmitted in time?";
+        yError() << "  FATAL: EthResource::verifyBoardTransceiver() had a timeout of" << timeout << "secs when asking the comm status to BOARD" << getName() << "with IP" << getIPv4string() <<  ": cannot proceed any further";
+        yError() << "         EthResource::verifyBoardTransceiver() asks: can you ping the board? if so, is the MN protocol version of BOARD equal to (" << pc104versionMN->major << pc104versionMN->minor << ")? if not, perform FW upgrade. if so, was the ropframe transmitted in time?";
         return(false);
     }
 
@@ -819,6 +876,11 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
         return(false);
     }
 
+    if(false == askBoardVersion())
+    {
+        yError() << "EthResource::verifyEPprotocol() cannot ask the version to BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        return(false);
+    }
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
     verifiedEPprotocol[ep] =  true;
@@ -1057,7 +1119,125 @@ bool EthResource::verifyBoardPresence(void)
 
 }
 
+bool EthResource::askBoardVersion(void)
+{
 
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+    yWarning() << "EthResource::askBoardVersion() is in ETHRES_DEBUG_DONTREADBACK mode";
+    askedBoardVersion =  true;
+    return true;
+#endif
+
+    if(askedBoardVersion)
+    {
+        return(true);
+    }
+
+
+    const double timeout = 0.500;   // 500 ms is more than enough if board is present. if link is not on it is a good time to wait
+    const int retries = 20;         // the number of retries depends on the above timeout and on link-up time of the EMS.
+
+    uint32_t signature = 0xaa000000;
+    eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
+    eOprotID32_t id2wait = id2send;
+    eOmn_appl_status_t applstatus = {0};
+    uint16_t size = 0;
+    // the semaphore used for waiting for replies from the board
+    yarp::os::Semaphore* sem = ethQuery->start(id2wait, signature);
+
+    bool pinged = false;
+    int i; // kept in here because i want to see it also outside of the loop
+
+    double start_time = yarp::os::Time::now();
+
+    for(i=0; i<retries; i++)
+    {
+        // attempt the request until either a reply arrives or the max retries are reached
+
+        // send ask message
+        if(false == addGetMessageWithSignature(id2send, signature))
+        {
+            yWarning() << "EthResource::askBoardVersion() cannot transmit a request about the communication status to BOARD" << getName() << "with IP" << getIPv4string();
+        }
+
+        // wait for a say message arriving from the board. the eoprot_fun_UPDT_mn_xxx() function shall release the waiting semaphore
+        if(false == ethQuery->wait(sem, timeout))
+        {
+            //yWarning() << "EthResource::askBoardVersion() had a timeout of" << timeout << "secs when asking a variable to BOARD" << getName() << "with IP" << getIPv4string()1;
+            //yError() << "EthResource::askBoardVersion() asks: can you ping the board?";
+        }
+        else
+        {
+            // get the reply
+            if(false == readBufferedValue(id2wait, (uint8_t*)&applstatus, &size))
+            {
+                yWarning() << "EthResource::askBoardVersion() received a reply from BOARD" << getName() << "with IP" << getIPv4string() << "but cannot read it";
+            }
+            else
+            {
+                // ok: i have a reply: i just done read it ...
+                pinged = true;
+                // stop attempts
+                break;
+            }
+        }
+
+        if(!pinged)
+        {
+            yWarning() << "EthResource::askBoardVersion() cannot reach BOARD" << getName() << "with IP" << getIPv4string() << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
+        }
+
+    }
+
+    // must release the semaphore
+    ethQuery->stop(sem);
+
+    double end_time = yarp::os::Time::now();
+    if(pinged)
+    {
+        askedBoardVersion = true;
+        if(verbosewhenok)
+        {
+            yDebug() << "EthResource::askBoardVersion() found BOARD" << getName() << "with IP" << getIPv4string() << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";
+        }
+    }
+    else
+    {
+        yError() << "EthResource::askBoardVersion() DID NOT have replies from BOARD" << getName() << "with IP" << getIPv4string() << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+    }
+
+    if(askedBoardVersion)
+    {
+        // now i store the ....
+        boardVersion.major = applstatus.version.major;
+        boardVersion.minor = applstatus.version.minor;
+
+        boardDate.year = applstatus.buildate.year;
+        boardDate.month = applstatus.buildate.month;
+        boardDate.day = applstatus.buildate.day;
+        boardDate.hour = applstatus.buildate.hour;
+        boardDate.min = applstatus.buildate.min;
+
+        if(eobool_true == eoboards_is_eth((eObrd_type_t)applstatus.boardtype))
+        {
+            detectedBoardType =  (eObrd_ethtype_t) applstatus.boardtype;
+        }
+        else
+        {
+            detectedBoardType = eobrd_ethtype_unknown;
+        }
+
+
+        char datestr[32] = {0};
+        eo_common_date_to_string(boardDate, datestr, sizeof(datestr));
+
+        yInfo() << "EthResource::askBoardVersion() found BOARD" << getName() << "@ IP" << getIPv4string() << "of type" << eoboards_type2string2(eoboards_ethtype2type(detectedBoardType), eobool_true) << "with FW version = ("<< boardVersion.major << "," << boardVersion.minor << ") and build date" << datestr;
+
+    }
+
+
+    return(askedBoardVersion);
+}
 
 
 bool EthResource::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries, double waitbeforeverification, double verificationtimeout, int verificationretries)

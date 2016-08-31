@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubGenova04" build="1">
+
+    <group name="SERVICE">
+        
+        <param name="type"> eomn_serv_MC_mc4plus </param> 
+    
+        <group name="PROPERTIES">
+        
+            <group name="ETHBOARD">
+                <param name="type">             mc4plus             </param> 
+            </group>          
+
+            
+            <group name="CONTROLLER"> 
+            
+                <param name="type"> eomc_ctrlboard_HEAD_neckyaw_eyes  </param> 
+                    
+                
+                <param name ="matrixJ2M"> 
+                    1.000   0.000   0.000   0.000
+                    0.000   1.000   0.000   0.000
+                    0.000   0.000   1.000  -1.000
+                    0.000   0.000   1.000   1.000   
+                </param>
+               
+                <param name ="matrixE2J">  
+                    1.000   0.000   0.000   0.000
+                    0.000   1.000   0.000   0.000
+                    0.000   0.000   1.000   0.000
+                    0.000   0.000   0.000   1.000   
+                </param>
+
+                
+            </group>                
+
+            <group name="JOINTMAPPING">
+
+                <group name="ACTUATOR">                 
+                    <param name="type">             pwm                 pwm                 pwm                 pwm                     </param>
+                    <param name="port">             CONN:P3             CONN:P2             CONN:P5             CONN:P4                 </param>
+                </group>
+                
+                <group name="ENCODER1">  
+                    <param name="type">             aea                 aea                 qenc                qenc                    </param>  
+                    <param name="port">             CONN:P11            CONN:P10            CONN:P5             CONN:P4                 </param>
+                    <param name="position">         atjoint             atjoint             atjoint             atjoint                 </param> 
+                </group>        
+                
+                <group name="ENCODER2">
+                    <param name="type">             qenc                qenc                qenc                qenc                    </param>
+                    <param name="port">             CONN:P3             CONN:P2             CONN:P5             CONN:P4                 </param>
+                    <param name="position">         atmotor             atmotor             atmotor             atmotor                 </param>
+                </group>  
+            </group>    
+            
+            <group name="JOINTSETS">
+                <param name="list">                 0                   1                   2                   2                       </param> 
+            </group>
+            
+        </group>
+           
+    </group>
+    
+  
+</params>
+

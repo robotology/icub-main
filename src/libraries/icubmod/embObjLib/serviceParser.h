@@ -1,7 +1,7 @@
 ﻿// -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
- * @ingroup icub_hardware_modules 
+ * @ingroup icub_hardware_modules
  * \defgroup ServiceParser ServiceParser
  *
  * To Do: add description
@@ -18,7 +18,7 @@
 #include <list>
 #include <string>
 
-#include "FeatureInterface.h"  
+#include "FeatureInterface.h"
 
 
 #include <yarp/os/LogStream.h>
@@ -26,12 +26,13 @@
 #include "EoBoards.h"
 #include "EoManagement.h"
 #include "EoAnalogSensors.h"
+#include "EoMotionControl.h"
 
 using namespace yarp::os;
 using namespace std;
 
 
-
+#define SERVICE_PARSER_USE_MC
 
 typedef struct
 {
@@ -58,6 +59,14 @@ typedef struct
     vector<string>                      id;
 } servConfigInertials_t;
 
+
+#if defined(SERVICE_PARSER_USE_MC)
+typedef struct
+{
+    eOmn_serv_parameter_t               ethservice;
+    uint32_t                            id; // only for test: this param contains num of board
+} servConfigMC_t;
+#endif
 
 struct servCanBoard_t
 {
@@ -112,6 +121,73 @@ typedef struct
 } servASstrainSettings_t;
 
 
+
+#if defined(SERVICE_PARSER_USE_MC)
+
+typedef struct
+{
+    eOmc_ctrlboard_t                type;
+    vector<double>                  matrixJ2M;
+    vector<double>                  matrixM2J;
+    vector<double>                  matrixE2J;
+} servMC_controller_t;
+
+
+
+typedef struct
+{
+    eOmc_actuator_t                 type;
+    eOmc_actuator_descriptor_t      desc;
+} servMC_actuator_t;
+
+
+
+typedef struct
+{
+    eOmc_encoder_descriptor_t       desc;
+} servMC_encoder_t;
+
+
+typedef struct
+{
+
+    int                                 numofjoints;
+    eObrd_ethtype_t                     ethboardtype;
+    vector<servCanBoard_t>              canboards;
+
+    eObrd_canlocation_t                 maislocation;
+
+    eOmc_mc4shifts_t                    mc4shifts;
+    vector<eOmc_mc4broadcast_t>         mc4broadcasts;
+    vector<eObrd_canlocation_t>         mc4joints;
+
+    servMC_controller_t                 controller;
+
+    vector<servMC_actuator_t>           actuators;
+    vector<servMC_encoder_t>            encoder1s;
+    vector<servMC_encoder_t>            encoder2s;
+
+    vector<int>                         joint2set;
+} servMCproperties_t;
+
+
+typedef struct
+{
+    uint16_t        tbd1;
+    vector<int>     tbd2;
+} servMCsettings_t;
+
+
+
+typedef struct
+{
+    eOmn_serv_type_t            type;
+    servMCproperties_t          properties;
+    servMCsettings_t            settings;
+} servMCcollector_t;
+
+#endif
+
 // todo: add definition of static const array of strings containing the names of boards, sensors, etc.
 
 
@@ -130,10 +206,30 @@ public:
     bool parseService(Searchable &config, servConfigStrain_t &strainconfig);
     bool parseService(Searchable &config, servConfigInertials_t &inertialsconfig);
 
+#if defined(SERVICE_PARSER_USE_MC)
+    bool parseService(Searchable &config, servConfigMC_t &mcconfig);
+    bool parseService2(Searchable &config, servConfigMC_t &mcconfig); // the fixed one.
+    bool convert(ConstString const &fromstring, eOmc_ctrlboard_t &controllerboard, bool &formaterror);
+    bool convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, int targetsize);
+    bool convert(ConstString const &fromstring, eOmc_actuator_t &toactuatortype, bool &formaterror);
+    bool convert(ConstString const &fromstring, eOmc_position_t &toposition, bool &formaterror);
+    bool convert(ConstString const &fromstring, eOmc_encoder_t &toencodertype, bool &formaterror);
+
+    bool parse_connector(const ConstString &fromstring, eObrd_connector_t &toconnector, bool &formaterror);
+    bool parse_mais(ConstString const &fromstring, eObrd_portmais_t &pmais, bool &formaterror);
+
+    bool parse_port_conn(ConstString const &fromstring, eObrd_ethtype_t const ethboard, uint8_t &toport, bool &formaterror);
+    bool parse_port_mais(ConstString const &fromstring, uint8_t &toport, bool &formaterror);
+
+    bool parse_actuator_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_actuator_t const type, eOmc_actuator_descriptor_t &todes, bool &formaterror);
+    bool parse_encoder_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t &toport, bool &formaterror);
+
+#endif
 
     bool convert(ConstString const &fromstring, eOmn_serv_type_t &toservicetype, bool &formaterror);
     bool convert(ConstString const &fromstring, eObrd_type_t& tobrdtype, bool& formaterror);
     bool convert(ConstString const &fromstring, eObrd_cantype_t &tobrdcantype, bool &formaterror);
+    bool convert(ConstString const &fromstring, eObrd_ethtype_t& tobrdethtype, bool& formaterror);
     bool convert(ConstString const &fromstring, bool &tobool, bool &formaterror);
     bool convert(const int number, uint8_t &tou8, bool &formaterror);
     bool convert(const int number, uint16_t &tou16, bool &formaterror);
@@ -141,6 +237,7 @@ public:
     bool convert(ConstString const &fromstring, string &str, bool &formaterror);
     bool convert(ConstString const &fromstring, const uint8_t strsize, char *str, bool &formaterror);
     bool convert(ConstString const &fromstring, eObrd_location_t &location, bool &formaterror);
+
 
     bool convert(eObrd_location_t const &loc, char *str, int len);
     bool convert(eObrd_canlocation_t const &canloc, char *str, int len);
@@ -153,10 +250,17 @@ public:
     servAScollector_t           as_service;
     servASstrainSettings_t      as_strain_settings;
 
+#if defined(SERVICE_PARSER_USE_MC)
+    servMCcollector_t           mc_service;
+#endif
+
 private:
 
     bool check_analog(yarp::os::Searchable &config, eOmn_serv_type_t type);
 
+    bool check_motion(yarp::os::Searchable &config);
+    
+    // suggestion: split check_motion() in sub-methods which parse the groups ...
 };
 
 

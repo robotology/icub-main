@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubGenova04" build="1">
+
+    <group name="SERVICE">
+        
+        <param name="type"> eomn_serv_MC_foc </param> 
+    
+        <group name="PROPERTIES">
+        
+            <group name="ETHBOARD">
+                <param name="type">                 ems4        </param> 
+            </group>          
+
+            <group name="CANBOARDS"> 
+                <param name="type">                 foc         </param> 
+                <group name="PROTOCOL">
+                    <param name="major">            1           </param>    
+                    <param name="minor">            5           </param>     
+                </group>                    
+                <group name="FIRMWARE">
+                    <param name="major">            0           </param>    
+                    <param name="minor">            0           </param> 
+                    <param name="build">            0           </param>
+                </group>
+            </group>
+            
+            <group name="CONTROLLER"> 
+            
+                <param name="type"> eomc_ctrlboard_UPPERLEG     </param> 
+                                
+                <param name ="matrixJ2M"> 
+                    1.00    0.00    0.00    0.00
+                    0.00    1.00    0.00    0.00
+                    0.00    0.00    1.00    0.00
+                    0.00    0.00    0.00    1.00   
+                </param>
+               
+                <param name ="matrixE2J">  
+                    1.00    0.00    0.00    0.00
+                    0.00    1.00    0.00    0.00
+                    0.00    0.00    1.00    0.00
+                    0.00    0.00    0.00    1.00   
+                </param>
+                
+            </group>                
+
+            <group name="JOINTMAPPING">
+
+                <group name="ACTUATOR">                
+                    <param name="type">             eomc_act_foc        foc                 foc             foc         </param>
+                    <param name="port">             CAN1:3:0            CAN1:4:0            CAN1:1:0        CAN1:2:0    </param>
+                </group>
+                
+                <group name="ENCODER1">  
+                    <param name="type">             eomc_enc_aea        aea                 aea             aea         </param>  
+                    <param name="port">             CONN:P6             CONN:P7             CONN:P8         CONN:P9     </param>
+                    <param name="position">         eomc_pos_atjoint    atjoint             atjoint         atjoint     </param> 
+                </group>        
+                
+                <group name="ENCODER2">
+                    <param name="type">             eomc_enc_none       none                none            none        </param>
+                    <param name="port">             CONN:none           CONN:none           CONN:none       CONN:none   </param>
+                    <param name="position">         eomc_pos_none       none                none            none        </param>
+                </group> 
+ 
+            </group>    
+            
+            <group name="JOINTSETS">
+
+                <param name="list">                 0                   1                   2               3           </param> 
+
+            </group>
+            
+        </group>
+           
+    </group>
+    
+  
+</params>
+

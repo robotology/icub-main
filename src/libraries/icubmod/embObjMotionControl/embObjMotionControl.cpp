@@ -787,6 +787,10 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
 #if defined(EMBOBJMC_USESERVICEPARSER)
     const eOmn_serv_parameter_t* servparam = &serviceConfig.ethservice;
+    if(eomn_serv_MC_generic == serviceConfig.ethservice.configuration.type)
+    {
+        servparam = NULL;
+    }
 #else
     const eOmn_serv_parameter_t* servparam = NULL;
 #endif

@@ -1,0 +1,66 @@
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE params PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<params robot="iCubGenova04" build="1">
+
+    <group name="SERVICE">
+        
+        <param name="type"> eomn_serv_MC_mc4    </param> 
+    
+        <group name="PROPERTIES">
+        
+            <group name="ETHBOARD">
+                <param name="type">                 eobrd_ems4          </param> 
+            </group>          
+
+            <group name="CANBOARDS"> 
+                <param name="type">                 mc4         mais    </param> 
+                <group name="PROTOCOL">
+                    <param name="major">            1           1       </param>    
+                    <param name="minor">            0           0       </param>     
+                </group>                    
+                <group name="FIRMWARE">
+                    <param name="major">            0           0       </param>    
+                    <param name="minor">            0           0       </param> 
+                    <param name="build">            0           0       </param>
+                </group>
+            </group>
+
+            <group name="MC4">
+                <!-- so far, at date of 27 jul 16: data in SHIFTS and BROADCAST is NOT configured by the remote ETH board because: .... --> 
+                <group name="SHIFTS">
+                    <!-- 1. eOmn_serv_config_data_mc_mc4_t contains this field, but in FW the object EOtheMC4boards uses its own default values (8, 5, 5, 1, 1) -->                 
+                    <param name="velocity">                 8           </param>
+                    <param name="estimJointVelocity">       5           </param>
+                    <param name="estimJointAcceleration">   5           </param>
+                    <param name="estimMotorVelocity">       1           </param>
+                    <param name="estimMotorAcceleration">   1           </param>
+                </group>
+
+                <group name="BROADCASTPOLICY">
+                    <!-- 2. eOmn_serv_config_data_mc_mc4_t contains this field, but the object EOtheMC4boards uses its own default values (position status print pidvalues) -->              
+                    <param name="enable">    eomc_mc4broadcast_position    status  print   pidvalues     </param>
+                </group>
+
+                <group name="JOINT2BOARD">                 
+                    <param name="location">         CAN1:3:0            CAN1:3:1            CAN1:4:0            CAN1:4:1
+                                                    CAN1:5:0            CAN1:5:1            CAN1:6:0            CAN1:6:1
+                                                    CAN1:7:0            CAN1:7:1            CAN1:8:0            CAN1:8:1                </param>
+                </group>
+
+            </group>     
+
+            <group name="MAIS"> 
+                <param name="location">             CAN1:14             </param> 
+            </group>                 
+            
+        </group>
+           
+    </group>
+    
+  
+</params>
+
+
+

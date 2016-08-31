@@ -148,6 +148,8 @@ bool EthBoards::add(EthResource* res)
 
     LUT[index].resource = res;
     LUT[index].ipv4 = ipv4;
+    LUT[index].type = res->getBoardType();
+    LUT[index].nameoftype = res->getBoardTypeString();
     LUT[index].boardnumber = index;
     snprintf(LUT[index].name, sizeof(LUT[index].name), "%s", res->getName());
     if(0 == strlen(LUT[index].name))
@@ -923,7 +925,7 @@ EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::
             return NULL;
         }
 
-        yDebug() << "TheEthManager::requestResource2(): has just succesfully created a new EthResource for IP = " << ipinfo;
+        yDebug() << "TheEthManager::requestResource2(): has just succesfully created a new EthResource for board of type" << rr->getBoardTypeString()<< "with IP = " << ipinfo;
     }
 
 

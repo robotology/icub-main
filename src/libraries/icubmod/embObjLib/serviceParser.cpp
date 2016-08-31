@@ -80,6 +80,28 @@ bool ServiceParser::convert(ConstString const &fromstring, eOmn_serv_type_t& tos
 }
 
 
+bool ServiceParser::convert(ConstString const &fromstring, eOmc_ctrlboard_t &controllerboard, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+    eObool_t usecompactstring = eobool_false;
+    controllerboard = eomc_string2controllerboard(t, usecompactstring);
+
+    if(eomc_ctrlboard_unknown == controllerboard)
+    {   // attempting to retrieve the compact form
+        usecompactstring = eobool_true;
+        controllerboard = eomc_string2controllerboard(t, usecompactstring);
+    }
+
+    if(eomc_ctrlboard_unknown == controllerboard)
+    {
+        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOmc_ctrlboard_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
 bool ServiceParser::convert(ConstString const &fromstring, eOas_sensor_t &tosensortype, bool &formaterror)
 {
     const char *t = fromstring.c_str();
@@ -101,7 +123,15 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_type_t& tobrdty
 {
     const char *t = fromstring.c_str();
 
-    tobrdtype = eoboards_string2type(t);
+    eObool_t usecompactstring = eobool_false;
+    tobrdtype = eoboards_string2type2(t, usecompactstring);
+
+    if(eobrd_unknown == tobrdtype)
+    {
+        usecompactstring = eobool_true;
+        tobrdtype = eoboards_string2type2(t, usecompactstring);
+    }
+
     if(eobrd_unknown == tobrdtype)
     {
         yWarning() << "ServiceParser::convert(): string" << t << "cannot be converted into a proper eObrd_type_t";
@@ -118,7 +148,15 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_cantype_t& tobr
 {
     const char *t = fromstring.c_str();
 
-    eObrd_type_t type = eoboards_string2type(t);
+    eObool_t usecompactstring = eobool_false;
+    eObrd_type_t type = eoboards_string2type2(t, usecompactstring);
+
+    if(eobrd_unknown == type)
+    {
+        usecompactstring = eobool_true;
+        type = eoboards_string2type2(t, usecompactstring);
+    }
+
     if(eobrd_unknown == type)
     {
         yWarning() << "ServiceParser::convert(): string" << t << "cannot be converted into a proper eObrd_type_t";
@@ -136,6 +174,38 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_cantype_t& tobr
 
     return true;
 }
+
+bool ServiceParser::convert(ConstString const &fromstring, eObrd_ethtype_t& tobrdethtype, bool& formaterror)
+{
+    const char *t = fromstring.c_str();
+
+    eObool_t usecompactstring = eobool_false;
+    eObrd_type_t type = eoboards_string2type2(t, usecompactstring);
+
+    if(eobrd_unknown == type)
+    {
+        usecompactstring = eobool_true;
+        type = eoboards_string2type2(t, usecompactstring);
+    }
+
+    if(eobrd_unknown == type)
+    {
+        yWarning() << "ServiceParser::convert(): string" << t << "cannot be converted into a proper eObrd_type_t";
+        formaterror = true;
+        return false;
+    }
+
+    tobrdethtype = eoboards_type2ethtype(type);
+    if(eobrd_ethtype_unknown == tobrdethtype)
+    {
+        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eObrd_ethtype_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
 
 bool ServiceParser::convert(ConstString const &fromstring, bool& tobool, bool& formaterror)
 {
@@ -333,6 +403,12 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_location_t &loc
         }
 
     }
+    else if(0 == strcmp(prefix, "LOC"))
+    {
+        //Add here parsing for local port (both PWM port (P7, P8, etc and "index_proximal"for hand))
+        //in xml file we have: LOC:P7 or LOC:index_proximal
+        
+    }
     else
     {
         yWarning() << "ServiceParser::convert():" << t << "is not a legal string for a eObrd_location_t because it does not begin with ETH or CAN";
@@ -369,7 +445,6 @@ bool ServiceParser::convert(eObrd_location_t const &loc, char *str, int len)
 
     return true;
 }
-
 
 bool ServiceParser::convert(eObrd_canlocation_t const &canloc, char *str, int len)
 {
@@ -778,7 +853,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMais_t &maisconfi
     // first check we do is about themais_props.type
     if(eobrd_cantype_mais != themais_props.type)
     {
-        yError() << "ServiceParser::parseService() has detected an invalid type of board. it should be a eobrd_mais but is a:" << eoboards_type2string(eoboards_cantype2type(themais_props.type));
+        yError() << "ServiceParser::parseService() has detected an invalid type of board. it should be a eobrd_mais but is a:" << eoboards_type2string2(eoboards_cantype2type(themais_props.type), eobool_false);
         return false;
     }
 
@@ -823,7 +898,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
     // first check we do is about thestrain_props.type
     if(eobrd_cantype_strain != thestrain_props.type)
     {
-        yError() << "ServiceParser::parseService() has detected an invalid type of board. it should be a eobrd_strain but is a:" << eoboards_type2string(eoboards_cantype2type(thestrain_props.type));
+        yError() << "ServiceParser::parseService() has detected an invalid type of board. it should be a eobrd_strain but is a:" << eoboards_type2string2(eoboards_cantype2type(thestrain_props.type), eobool_false);
         return false;
     }
 
@@ -867,7 +942,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
     // it must be an mtb
     if(eobrd_cantype_mtb != themtb_props.type)
     {
-        yError() << "ServiceParser::parseService() has detected an invalid type of board. it should be a eobrd_mtb but is a:" << eoboards_type2string(eoboards_cantype2type(themtb_props.type));
+        yError() << "ServiceParser::parseService() has detected an invalid type of board. it should be a eobrd_mtb but is a:" << eoboards_type2string2(eoboards_cantype2type(themtb_props.type), eobool_false);
         return false;
     }
 
@@ -912,5 +987,2431 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
     return true;
 }
 
-// eof
 
+
+#if defined(SERVICE_PARSER_USE_MC)
+
+bool ServiceParser::convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, int targetsize)
+{
+    matrix.resize(0);
+    
+    int tmp = bottle.size();
+    int sizeofmatrix = tmp - 1;    // first position of bottle contains the tag "matrix"
+
+    // check if there are really the target number of elements in matrix.
+    if(targetsize != sizeofmatrix)
+    {
+        yError() << "ServiceParser::check() in a SERVICE.PROPERTIES.CONTROLLER.matrix there are not" << targetsize << "elements";
+        return false;
+    }
+
+    formaterror = false;
+    for(int i=0; i<sizeofmatrix; i++)
+    {
+        double item = 0;
+
+        // ok, i use the standard converter ... but what if it is not a double format? so far we dont check.
+        item = bottle.get(i+1).asDouble();
+        matrix.push_back(item);
+    }
+
+    // in here we could decide to return false if any previous conversion function has returned error
+    
+    return true;        
+}
+
+bool ServiceParser::parse_encoder_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t &toport, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+
+    bool ret = false;
+    switch(type)
+    {
+        default:
+        case eomc_enc_unknown:
+        {
+            yWarning() << "ServiceParser::parse_encoder_port():" << t << "cannot be converted into a port because argument type is" << eomc_encoder2string(type, eobool_false);
+            toport = eobrd_port_none;
+            ret = false;
+        } break;
+
+
+        case eomc_enc_none:
+        {
+            toport = eobrd_port_none;
+            ret = true;
+        } break;
+
+        case eomc_enc_aea:
+        case eomc_enc_amo:
+        case eomc_enc_qenc:
+        case eomc_enc_spichainof2:
+        case eomc_enc_absanalog:
+        case eomc_enc_spichainof3:
+        {
+            uint8_t toport1 = eobrd_port_unknown;
+            bool result = parse_port_conn(fromstring, ethboard, toport1, formaterror);
+
+            if(false == result)
+            {
+                yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for an encoder connector port";
+                formaterror = true;
+                ret = false;
+            }
+            else
+            {
+                toport = toport1;
+                ret = true;
+            }
+
+        } break;
+
+
+    case eomc_enc_mais:
+    {
+        uint8_t toport1 = eobrd_port_unknown;
+        bool result = parse_port_mais(fromstring, toport1, formaterror);
+
+        if(false == result)
+        {
+            yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for an encoder connector port";
+            formaterror = true;
+            ret = false;
+        }
+        else
+        {
+            toport = toport1;
+            ret = true;
+        }
+
+    } break;
+
+        case eomc_enc_onfoc:
+        {
+            // read it as a CAN address
+            eObrd_location_t loc;
+            bool result = convert(fromstring, loc, formaterror);
+
+            if(false == result)
+            {
+                yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for a eObrd_location_t";
+                formaterror = true;
+                ret = false;
+            }
+            else
+            {
+                // copy into .... nothing
+                if(eobrd_place_can == loc.any.place)
+                {
+                    toport = eobrd_port_none;
+                    ret = true;
+                }
+                else
+                {
+                    toport = eobrd_port_none;
+                    ret = true;
+                }
+            }
+
+        } break;
+
+    }
+
+    return ret;
+}
+
+
+bool ServiceParser::parse_port_conn(ConstString const &fromstring, eObrd_ethtype_t const ethboard, uint8_t &toport, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+    bool ret = false;
+
+    // format of string is CONN:P4 or CONN:eobrd_conn_P4 ... the parse function verifies presence of CONN:
+    eObrd_connector_t conn = eobrd_conn_unknown;
+    bool result = parse_connector(fromstring, conn, formaterror);
+
+    if(false == result)
+    {
+        yWarning() << "ServiceParser::parse_port_conn():" << t << "is not a legal string for a eObrd_connector_t";
+        formaterror = true;
+        ret = false;
+    }
+    else
+    {
+        eObrd_port_t port = eoboards_connector2port(conn, eoboards_ethtype2type(ethboard));
+        if(eobrd_port_unknown == port)
+        {
+            yWarning() << "ServiceParser::parse_port_conn():" << t << "does not convert to a legal port for connector" << eoboards_connector2string(conn, eobool_false) << "and parsed board";
+            formaterror = true;
+            ret = false;
+        }
+        else
+        {
+            toport = port;
+            ret = true;
+        }
+    }
+
+    return ret;
+}
+
+
+
+bool ServiceParser::parse_port_mais(ConstString const &fromstring, uint8_t &toport, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+    bool ret = false;
+
+    // format of string is MAIS:eobrd_portmais_thumbproximal or MAIS:thumbproximal
+    eObrd_portmais_t pmais = eobrd_portmais_unknown;
+    bool result = parse_mais(fromstring, pmais, formaterror);
+
+    if(false == result)
+    {
+        yWarning() << "ServiceParser::parse_port_mais():" << t << "is not a legal string for a port mais";
+        formaterror = true;
+        ret = false;
+    }
+    else
+    {
+        toport = pmais;
+        ret = true;
+    }
+
+    return ret;
+}
+
+//bool ServiceParser::parse_mais(ConstString const &fromstring, eObrd_portmais_t &pmais, bool &formaterror)
+//{
+//    // parses MAIS:eobrd_portmais_thumbproximal or MAIS:thumbproximal
+
+//    const char *tt = fromstring.c_str();
+//    char prefix[16] = {0};
+//    sscanf(tt, "%5c", prefix);
+
+//    if(0 != strcmp(prefix, "MAIS:"))
+//    {
+//        yWarning() << "ServiceParser::parse_mais():" << tt << "is not a legal string because it must begin with MAIS:";
+//        formaterror = true;
+//        return false;
+//    }
+
+//    // ok, now i remove the first 5 characters "MAIS:" and parse the second section .... it can be extended or compact
+//    const char *t = &tt[5];
+
+//    eObool_t usecompactstring = eobool_false;
+//    pmais = eoboards_string2portmais(t, usecompactstring);
+
+//    if(eobrd_portmais_unknown == pmais)
+//    {   // attempting to retrieve the compact form
+//        usecompactstring = eobool_true;
+//        pmais = eoboards_string2portmais(t, usecompactstring);
+//    }
+
+//    if(eobrd_portmais_unknown == pmais)
+//    {
+//        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eObrd_portmais_t";
+//        formaterror = true;
+//        return false;
+//    }
+
+//    return true;
+
+//}
+
+
+// we want to fill the des with relevant info:
+// we may have CAN1:1:0 if we have a act_foc or an act_mc4, or a CONN:P4 if we have a pwm.
+// hence, we need ... the string, the type of actuator, the ethboard (for transforming P4 into teh proper port value.
+bool ServiceParser::parse_actuator_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_actuator_t const type, eOmc_actuator_descriptor_t &todes, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+
+    bool ret = false;
+    switch(type)
+    {
+        default:
+        case eomc_act_unknown:
+        {
+            yWarning() << "ServiceParser::parse_actuator_port():" << t << "cannot be converted into a eObrd_location_t because argument type is" << eomc_actuator2string(type, eobool_false);
+            todes.none.port = eobrd_port_none;
+            ret = false;
+        } break;
+
+
+        case eomc_act_none:
+        {
+            //yWarning() << "ServiceParser::parse_actuator_port():" << t << "cannot be converted into a eObrd_location_t because argument type is" << eomc_actuator2string(type);
+            todes.none.port = eobrd_port_none;
+            ret = true;
+        } break;
+
+        case eomc_act_pwm:
+        {
+
+            uint8_t toport = eobrd_port_unknown;
+            bool result = parse_port_conn(fromstring, ethboard, toport, formaterror);
+
+            if(false == result)
+            {
+                yWarning() << "ServiceParser::parse_actuator_port():" << t << "is not a legal string for a pwm connector port";
+                formaterror = true;
+                ret = false;
+            }
+            else
+            {
+                todes.pwm.port = toport;
+                ret = true;
+            }
+
+        } break;
+
+        case eomc_act_foc:
+        case eomc_act_mc4:
+        {
+            // read it as a CAN address
+            eObrd_location_t loc;
+            bool result = convert(fromstring, loc, formaterror);
+
+            if(false == result)
+            {
+                yWarning() << "ServiceParser::parse_actuator_port():" << t << "is not a legal string for a eObrd_location_t";
+                formaterror = true;
+                ret = false;
+            }
+            else if((eomc_act_mc4 == type) && (eobrd_place_extcan != loc.any.place))
+            {
+                yWarning() << "ServiceParser::parse_actuator_port():" << t << "is not a legal string for a eomc_act_mc4 location because it is not a eobrd_place_extcan";
+                formaterror = true;
+                ret = false;
+            }
+            else if(eomc_act_foc == type)
+            {
+                if((eobrd_place_can != loc.any.place) && (eobrd_place_extcan != loc.any.place))
+                {
+                    yWarning() << "ServiceParser::parse_actuator_port():" << t << "is not a legal string for a eomc_act_foc location because it is not a eobrd_place_extcan or eobrd_place_can";
+                    formaterror = true;
+                    ret = false;
+                }
+            }
+
+            if(eomc_act_foc == type)
+            {
+                // copy into todes.foc
+                if(eobrd_place_can == loc.any.place)
+                {
+                    todes.foc.canloc.port = loc.can.port;
+                    todes.foc.canloc.addr = loc.can.addr;
+                    todes.foc.canloc.insideindex = eobrd_caninsideindex_first;
+
+                    ret = true;
+                }
+                else
+                {
+                    todes.foc.canloc.port = loc.extcan.port;
+                    todes.foc.canloc.addr = loc.extcan.addr;
+                    todes.foc.canloc.insideindex = loc.extcan.index;
+                    if(eobrd_caninsideindex_first != todes.foc.canloc.insideindex)
+                    {
+                        yWarning() << "ServiceParser::parse_actuator_port():" << "in eomc_act_foc the location has an index different from eobrd_caninsideindex_first. For now we force to it, but correct xml file.";
+                        todes.foc.canloc.insideindex = eobrd_caninsideindex_first;
+                        ret = true;
+                    }
+                    else
+                    {
+                        ret = true;
+                    }
+                }
+
+            }
+            else if(eomc_act_mc4 == type)
+            {
+                // copy into todes.mc4
+                todes.mc4.canloc.port = loc.extcan.port;
+                todes.mc4.canloc.addr = loc.extcan.addr;
+                todes.mc4.canloc.insideindex = loc.extcan.index;
+
+                if(eobrd_caninsideindex_none == todes.foc.canloc.insideindex)
+                {
+                    yWarning() << "ServiceParser::parse_actuator_port():" << "in eomc_act_mc4 the location has an eobrd_caninsideindex_none. Correct xml file.";
+                    formaterror = true;
+                    ret = false;
+                }
+                else
+                {
+                    ret = true;
+                }
+            }
+
+
+
+        } break;
+
+    }
+
+    return ret;
+}
+
+
+bool ServiceParser::convert(ConstString const &fromstring, eOmc_actuator_t &toactuatortype, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+    eObool_t usecompactstring = eobool_false;
+    toactuatortype = eomc_string2actuator(t, usecompactstring);
+
+    if(eomc_act_unknown == toactuatortype)
+    {   // attempting to retrieve the compact form
+        usecompactstring = eobool_true;
+        toactuatortype = eomc_string2actuator(t, usecompactstring);
+    }
+
+    if(eomc_act_unknown == toactuatortype)
+    {
+        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOmc_actuator_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+
+bool ServiceParser::convert(ConstString const &fromstring, eOmc_position_t &toposition, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+    eObool_t usecompactstring = eobool_false;
+    toposition = eomc_string2position(t, usecompactstring);
+
+    if(eomc_pos_unknown == toposition)
+    {   // attempting to retrieve the compact form
+        usecompactstring = eobool_true;
+        toposition = eomc_string2position(t, usecompactstring);
+    }
+
+    if(eomc_pos_unknown == toposition)
+    {
+        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOmc_position_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+bool ServiceParser::parse_connector(const ConstString &fromstring, eObrd_connector_t &toconnector, bool &formaterror)
+{
+    // parses CONN:P4 or CONN:eobrd_conn_P4
+
+    const char *tt = fromstring.c_str();
+    char prefix[16] = {0};
+    sscanf(tt, "%5c", prefix);
+
+    if(0 != strcmp(prefix, "CONN:"))
+    {
+        yWarning() << "ServiceParser::convert():" << tt << "is not a legal string for eObrd_connector_t because it must begin with CONN:";
+        formaterror = true;
+        return false;
+    }
+
+    // ok, now i remove the first 5 characters "CONN:" and parse the second section .... it can be extended or compact
+    const char *t = &tt[5];
+
+    eObool_t usecompactstring = eobool_false;
+    toconnector = eoboards_string2connector(t, usecompactstring);
+
+    if(eobrd_conn_unknown == toconnector)
+    {   // attempting to retrieve the compact form
+        usecompactstring = eobool_true;
+        toconnector = eoboards_string2connector(t, usecompactstring);
+    }
+
+    if(eobrd_conn_unknown == toconnector)
+    {
+        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eObrd_connector_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+bool ServiceParser::parse_mais(const ConstString &fromstring, eObrd_portmais_t &toportmais, bool &formaterror)
+{
+    // parses MAIS:eobrd_portmais_thumbproximal or MAIS:thumbproximal
+
+    const char *tt = fromstring.c_str();
+    char prefix[16] = {0};
+    sscanf(tt, "%5c", prefix);
+
+    if(0 != strcmp(prefix, "MAIS:"))
+    {
+        yWarning() << "ServiceParser::parse_mais():" << tt << "is not a legal string for eObrd_portmais_t because it must begin with MAIS:";
+        formaterror = true;
+        return false;
+    }
+
+    // ok, now i remove the first 5 characters "MAIS:" and parse the second section .... it can be extended or compact
+    const char *t = &tt[5];
+
+    eObool_t usecompactstring = eobool_false;
+    toportmais = eoboards_string2portmais(t, usecompactstring);
+
+    if(eobrd_portmais_unknown == toportmais)
+    {   // attempting to retrieve the compact form
+        usecompactstring = eobool_true;
+        toportmais = eoboards_string2portmais(t, usecompactstring);
+    }
+
+    if(eobrd_portmais_unknown == toportmais)
+    {
+        yWarning() << "ServiceParser::parse_mais():" << t << "is not a legal string for eObrd_portmais_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+
+bool ServiceParser::convert(ConstString const &fromstring, eOmc_encoder_t &toencodertype, bool &formaterror)
+{
+    const char *t = fromstring.c_str();
+    eObool_t usecompactstring = eobool_false;
+    toencodertype = eomc_string2encoder(t, usecompactstring);
+
+    if(eomc_enc_unknown == toencodertype)
+    {   // attempting to retrieve the compact form
+        usecompactstring = eobool_true;
+        toencodertype = eomc_string2encoder(t, usecompactstring);
+    }
+
+    if(eomc_enc_unknown == toencodertype)
+    {
+        yWarning() << "ServiceParser::convert():" << t << "is not a legal string for eOmc_encoder_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+
+bool ServiceParser::check_motion(Searchable &config)
+{
+    bool formaterror = false;
+    
+    // complete format is SERVICE{ type, PROPERTIES{ ETHBOARD, CANBOARDS, MC4, MAIS, CONTROLLER, JOINTMAPPING, JOINTSETS } }
+    // so far, there is no SETTINGS{}.
+    // then, some groups are not present for some kind of SERVICE.type
+    // mc4:         ETHBOARD, CANBOARDS, MC4, MAIS
+    // foc:         ETHBOARD, CANBOARDS, CONTROLLER, JOINTMAPPING, JOINTSETS
+    // mc4plus:     ETHBOARD, CONTROLLER, JOINTMAPPING, JOINTSETS
+    // mc4plusmais: ETHBOARD, CANBOARDS, MAIS, CONTROLLER, JOINTMAPPING, JOINTSETS
+
+
+
+    const bool itisOKifwedontfindtheXMLgroup = true;
+
+    Bottle b_SERVICE(config.findGroup("SERVICE"));
+    if(b_SERVICE.isNull())
+    {
+        if(false == itisOKifwedontfindtheXMLgroup)
+        {
+            yError() << "ServiceParser::check_motion() cannot find SERVICE group";
+            return false;
+        }
+        else
+        {
+            yWarning() << "ServiceParser::check_motion() cannot find SERVICE group, but we are in permissive mode, hence we ask the ETH board to config itself according to its IP address";
+            mc_service.type = eomn_serv_MC_generic;
+            return true;
+        }
+    }
+
+    // check whether we have the proper type
+
+    if(false == b_SERVICE.check("type"))
+    {
+        if(false == itisOKifwedontfindtheXMLgroup)
+        {
+            yError() << "ServiceParser::check_motion() cannot find SERVICE.type";
+            return false;
+        }
+        else
+        {
+            yWarning() << "ServiceParser::check_motion() cannot find SERVICE.type, but we are in permissive mode, hence we ask the ETH board to config itself according to its IP address";
+            mc_service.type = eomn_serv_MC_generic;
+            return true;
+        }
+    }
+
+    Bottle b_type(b_SERVICE.find("type").asString());
+    if(false == convert(b_type.toString(), mc_service.type, formaterror))
+    {
+        yError() << "ServiceParser::check_motion() has found unknown SERVICE.type = " << b_type.toString();
+        return false;
+    }
+
+    if(eomn_serv_MC_generic == mc_service.type)
+    {
+        yWarning() << "ServiceParser::check_motion() detects SERVICE.type = eomn_serv_MC_generic.. hence we ask the ETH board to config itself according to its IP address";
+        return true;
+    }
+
+    // check whether we have the proper groups at first level.
+
+    Bottle b_PROPERTIES = Bottle(b_SERVICE.findGroup("PROPERTIES"));
+    if(b_PROPERTIES.isNull())
+    {
+        yError() << "ServiceParser::check_motion() cannot find PROPERTIES";
+        return false;
+    }
+    else
+    {
+        //bool has_PROPERTIES = true;
+
+        // now, inside PROPERTIES there are groups which depend on mc_service.type.
+        // i prefer to check them all in here rather to go on and check them one after another.
+        Bottle b_PROPERTIES_ETHBOARD = Bottle(b_PROPERTIES.findGroup("ETHBOARD"));
+        bool has_PROPERTIES_ETHBOARD = !b_PROPERTIES_ETHBOARD.isNull();
+
+        Bottle b_PROPERTIES_MAIS = Bottle(b_PROPERTIES.findGroup("MAIS"));
+        bool has_PROPERTIES_MAIS = !b_PROPERTIES_MAIS.isNull();
+
+        Bottle b_PROPERTIES_MC4 = Bottle(b_PROPERTIES.findGroup("MC4"));
+        bool has_PROPERTIES_MC4 = !b_PROPERTIES_MC4.isNull();
+
+        Bottle b_PROPERTIES_CANBOARDS = Bottle(b_PROPERTIES.findGroup("CANBOARDS"));
+        bool has_PROPERTIES_CANBOARDS = !b_PROPERTIES_CANBOARDS.isNull();
+
+        Bottle b_PROPERTIES_CONTROLLER = Bottle(b_PROPERTIES.findGroup("CONTROLLER"));
+        bool has_PROPERTIES_CONTROLLER = !b_PROPERTIES_CONTROLLER.isNull();
+
+        Bottle b_PROPERTIES_JOINTMAPPING = Bottle(b_PROPERTIES.findGroup("JOINTMAPPING"));
+        bool has_PROPERTIES_JOINTMAPPING = !b_PROPERTIES_JOINTMAPPING.isNull();
+
+        Bottle b_PROPERTIES_JOINTSETS = Bottle(b_PROPERTIES.findGroup("JOINTSETS"));
+        bool has_PROPERTIES_JOINTSETS = !b_PROPERTIES_JOINTSETS.isNull();
+
+
+        bool itisoksofar = false;
+        switch(mc_service.type)
+        {
+            case eomn_serv_MC_foc:
+            {
+                // must have: ETHBOARD, CANBOARDS, CONTROLLER, JOINTMAPPING, JOINTSETS
+                itisoksofar = true;
+
+                if(false == has_PROPERTIES_ETHBOARD)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_CANBOARDS)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_CONTROLLER)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CONTROLLER for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_JOINTMAPPING)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_JOINTSETS)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+            } break;
+
+
+            case eomn_serv_MC_mc4plus:
+            {
+                // must have: ETHBOARD, CONTROLLER, JOINTMAPPING, JOINTSETS
+
+                itisoksofar = true;
+
+                if(false == has_PROPERTIES_ETHBOARD)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_CONTROLLER)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CONTROLLER for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_JOINTMAPPING)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_JOINTSETS)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+            } break;
+
+
+            case eomn_serv_MC_mc4plusmais:
+            {
+                // must have: ETHBOARD, CANBOARDS, MAIS, CONTROLLER, JOINTMAPPING, JOINTSETS
+
+                itisoksofar = true;
+
+                if(false == has_PROPERTIES_ETHBOARD)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_CANBOARDS)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_MAIS)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MAIS for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_CONTROLLER)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CONTROLLER for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_JOINTMAPPING)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_JOINTSETS)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+            } break;
+
+            case eomn_serv_MC_mc4:
+            {
+                // must have: ETHBOARD, CANBOARDS, MC4, MAIS
+
+                itisoksofar = true;
+
+                if(false == has_PROPERTIES_ETHBOARD)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_CANBOARDS)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_MC4)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4 for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_MAIS)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MAIS for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+            } break;
+
+            default:
+            {
+                yError() << "ServiceParser::check_motion() has found an unknown type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            } break;
+        }
+
+        if(false == itisoksofar)
+        {
+            yError() << "ServiceParser::check_motion() detected missing groups in PROPERTIES";
+            return false;
+        }
+
+        // now i parse the groups
+
+        if(true == has_PROPERTIES_ETHBOARD)
+        {
+            // i get type
+
+            Bottle b_PROPERTIES_ETHBOARD_type = b_PROPERTIES_ETHBOARD.findGroup("type");
+            if(b_PROPERTIES_ETHBOARD_type.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD.type";
+                return false;
+            }
+
+            // we must have only one board
+            int numofethboards = b_PROPERTIES_ETHBOARD_type.size() - 1;
+            if(1 != numofethboards)
+            {
+                yError() << "ServiceParser::check_motion() PROPERTIES.ETHBOARD.type must have one board only";
+                return false;
+            }
+            if(false == convert(b_PROPERTIES_ETHBOARD_type.get(1).asString(), mc_service.properties.ethboardtype, formaterror))
+            {
+                yError() << "ServiceParser::check_motion() has found unknown SERVICE.PROPERTIES.ETHBOARD.type = " << b_PROPERTIES_ETHBOARD_type.get(1).asString();
+                return false;
+            }
+
+        } // has_PROPERTIES_ETHBOARD
+
+
+        if(true == has_PROPERTIES_CANBOARDS)
+        {
+            // i get type, PROTOCOL.major/minor, FIRMWARE.major/minor/build and see their sizes. they must be all equal. i can have more than one board
+
+            Bottle b_PROPERTIES_CANBOARDS_type = b_PROPERTIES_CANBOARDS.findGroup("type");
+            if(b_PROPERTIES_CANBOARDS_type.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.type";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_PROTOCOL = Bottle(b_PROPERTIES_CANBOARDS.findGroup("PROTOCOL"));
+            if(b_PROPERTIES_CANBOARDS_PROTOCOL.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.PROTOCOL";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_PROTOCOL_major = Bottle(b_PROPERTIES_CANBOARDS_PROTOCOL.findGroup("major"));
+            if(b_PROPERTIES_CANBOARDS_PROTOCOL_major.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.PROTOCOL.major";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_PROTOCOL_minor = Bottle(b_PROPERTIES_CANBOARDS_PROTOCOL.findGroup("minor"));
+            if(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.PROTOCOL.minor";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE = Bottle(b_PROPERTIES_CANBOARDS.findGroup("FIRMWARE"));
+            if(b_PROPERTIES_CANBOARDS_FIRMWARE.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.FIRMWARE";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_major = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("major"));
+            if(b_PROPERTIES_CANBOARDS_FIRMWARE_major.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.FIRMWARE.major";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_minor = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("minor"));
+            if(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.FIRMWARE.minor";
+                return false;
+            }
+            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_build = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("build"));
+            if(b_PROPERTIES_CANBOARDS_FIRMWARE_build.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.FIRMWARE.build";
+                return false;
+            }
+
+            int tmp = b_PROPERTIES_CANBOARDS_type.size();
+            int numboards = tmp - 1;    // first position of bottle contains the tag "type"
+
+            // check if all other fields have the same size.
+            if( (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_major.size()) ||
+                (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_minor.size()) ||
+                (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_major.size()) ||
+                (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_minor.size()) ||
+                (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_build.size())
+                )
+            {
+                yError() << "ServiceParser::check_motion() in PROPERTIES.CANBOARDS some params have inconsistent lengths";
+                return false;
+            }
+
+
+            mc_service.properties.canboards.resize(0);
+
+            formaterror = false;
+            for(int i=0; i<numboards; i++)
+            {
+                servCanBoard_t item;
+
+                convert(b_PROPERTIES_CANBOARDS_type.get(i+1).asString(), item.type, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(i+1).asInt(), item.protocol.major, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(i+1).asInt(), item.protocol.minor, formaterror);
+
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(i+1).asInt(), item.firmware.major, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(i+1).asInt(), item.firmware.minor, formaterror);
+                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(i+1).asInt(), item.firmware.build, formaterror);
+
+                mc_service.properties.canboards.push_back(item);
+            }
+
+            // in here we could decide to return false if any previous conversion function has returned error
+            // bool fromStringToBoolean(string str, bool &anyerror); // inside: if error then .... be sure to set error = true. dont set it to false.
+
+            if(true == formaterror)
+            {
+                yError() << "ServiceParser::check_motion() has detected an illegal format for some of the params of PROPERTIES.CANBOARDS some param has inconsistent length";
+                return false;
+            }
+
+        } // has_PROPERTIES_CANBOARDS
+
+
+        if(true == has_PROPERTIES_MAIS)
+        {
+            // i get .location and nothing else
+
+            Bottle b_PROPERTIES_MAIS_location = b_PROPERTIES_MAIS.findGroup("location");
+            if(b_PROPERTIES_MAIS_location.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MAIS.location";
+                return false;
+            }
+
+            int tmp = b_PROPERTIES_MAIS_location.size();
+            int numboards = tmp - 1;    // first position of bottle contains the tag "location"
+
+            // check if numboards is 1.
+            if(1 != numboards)
+            {
+                yError() << "ServiceParser::check_motion() in PROPERTIES.MAIS.location must contain one item only and it has:" << numboards;
+                return false;
+            }
+
+            formaterror = false;
+            eObrd_location_t loc;
+            if(false == convert(b_PROPERTIES_MAIS_location.get(1).asString(), loc, formaterror))
+            {
+                yError() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.MAIS.location";
+                return false;
+            }
+
+            if(eobrd_place_can == loc.any.place)
+            {
+                mc_service.properties.maislocation.port = loc.can.port;
+                mc_service.properties.maislocation.addr = loc.can.addr;
+                mc_service.properties.maislocation.insideindex = eobrd_caninsideindex_none;
+            }
+            else if(eobrd_place_extcan == loc.any.place)
+            {
+                mc_service.properties.maislocation.port = loc.extcan.port;
+                mc_service.properties.maislocation.addr = loc.extcan.addr;
+                mc_service.properties.maislocation.insideindex = eobrd_caninsideindex_none;
+            }
+            else
+            {
+                yError() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.MAIS.location. it must be either can or extcan";
+                return false;
+            }
+
+        } // has_PROPERTIES_MAIS
+
+
+        if(true == has_PROPERTIES_MC4)
+        {
+            // i get:
+            // SHIFTS.velocity/estimJointVelocity/estimJointAcceleration/estimMotorVelocity/estimMotorAcceleration,
+            // BROADCASTPOLICY, JOINT2BOARD)
+
+            Bottle b_PROPERTIES_MC4_SHIFTS = Bottle(b_PROPERTIES_MC4.findGroup("SHIFTS"));
+            if(b_PROPERTIES_MC4_SHIFTS.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS";
+                return false;
+            }
+
+            Bottle b_PROPERTIES_MC4_SHIFTS_velocity = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("velocity"));
+            if(b_PROPERTIES_MC4_SHIFTS_velocity.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.velocity";
+                return false;
+            }
+            Bottle b_PROPERTIES_MC4_SHIFTS_estimJointVelocity = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("estimJointVelocity"));
+            if(b_PROPERTIES_MC4_SHIFTS_estimJointVelocity.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.estimJointVelocity";
+                return false;
+            }
+            Bottle b_PROPERTIES_MC4_SHIFTS_estimJointAcceleration = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("estimJointAcceleration"));
+            if(b_PROPERTIES_MC4_SHIFTS_estimJointAcceleration.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.estimJointAcceleration";
+                return false;
+            }
+            Bottle b_PROPERTIES_MC4_SHIFTS_estimMotorVelocity = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("estimMotorVelocity"));
+            if(b_PROPERTIES_MC4_SHIFTS_estimMotorVelocity.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.estimMotorVelocity";
+                return false;
+            }
+            Bottle b_PROPERTIES_MC4_SHIFTS_estimMotorAcceleration = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("estimMotorAcceleration"));
+            if(b_PROPERTIES_MC4_SHIFTS_estimMotorAcceleration.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.estimMotorAcceleration";
+                return false;
+            }
+
+            Bottle b_PROPERTIES_MC4_BROADCASTPOLICY = Bottle(b_PROPERTIES_MC4.findGroup("BROADCASTPOLICY"));
+            if(b_PROPERTIES_MC4_BROADCASTPOLICY.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.BROADCASTPOLICY";
+                return false;
+            }
+
+            Bottle b_PROPERTIES_MC4_BROADCASTPOLICY_enable = Bottle(b_PROPERTIES_MC4_BROADCASTPOLICY.findGroup("enable"));
+            if(b_PROPERTIES_MC4_BROADCASTPOLICY_enable.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.BROADCASTPOLICY.enable";
+                return false;
+            }
+
+            Bottle b_PROPERTIES_MC4_JOINT2BOARD = Bottle(b_PROPERTIES_MC4.findGroup("JOINT2BOARD"));
+            if(b_PROPERTIES_MC4_JOINT2BOARD.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.JOINT2BOARD";
+                return false;
+            }
+
+            Bottle b_PROPERTIES_MC4_JOINT2BOARD_location = Bottle(b_PROPERTIES_MC4_JOINT2BOARD.findGroup("location"));
+            if(b_PROPERTIES_MC4_JOINT2BOARD_location.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.JOINT2BOARD.location";
+                return false;
+            }
+
+            // 1. get values for SHIFTS
+
+            uint8_t value = 0;
+            if(true == convert(b_PROPERTIES_MC4_SHIFTS_velocity.get(1).asInt(), value, formaterror))
+            {
+                mc_service.properties.mc4shifts.velocity = value;
+            }
+            if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimJointVelocity.get(1).asInt(), value, formaterror))
+            {
+                if(value > 15)
+                {
+                    yError() << "ServiceParser::check_motion() manages values of PROPERTIES.MC4.SHIFTS.estim* only in range [0, 15]. read value =" << value;
+                    return false;
+                }
+                mc_service.properties.mc4shifts.estimJointVelocity = value;
+            }
+            if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimJointAcceleration.get(1).asInt(), value, formaterror))
+            {
+                if(value > 15)
+                {
+                    yError() << "ServiceParser::check_motion() manages values of PROPERTIES.MC4.SHIFTS.estim* only in range [0, 15]. read value =" << value;
+                    return false;
+                }
+                mc_service.properties.mc4shifts.estimJointAcceleration = value;
+            }
+            if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimMotorVelocity.get(1).asInt(), value, formaterror))
+            {
+                if(value > 15)
+                {
+                    yError() << "ServiceParser::check_motion() manages values of PROPERTIES.MC4.SHIFTS.estim* only in range [0, 15]. read value =" << value;
+                    return false;
+                }
+                mc_service.properties.mc4shifts.estimMotorVelocity = value;
+            }
+            if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimMotorAcceleration.get(1).asInt(), value, formaterror))
+            {
+                if(value > 15)
+                {
+                    yError() << "ServiceParser::check_motion() manages values of PROPERTIES.MC4.SHIFTS.estim* only in range [0, 15]. read value =" << value;
+                    return false;
+                }
+                mc_service.properties.mc4shifts.estimMotorAcceleration = value;
+            }
+
+            // 2. i get the values for b_PROPERTIES_MC4_BROADCASTPOLICY_enable
+
+            int tmp = b_PROPERTIES_MC4_BROADCASTPOLICY_enable.size();
+            int numofenables = tmp - 1;    // first position of bottle contains the tag "enable"
+
+            mc_service.properties.mc4broadcasts.resize(0);
+            for(int i=0; i<numofenables; i++)
+            {
+                // transform the string into a value.
+                eOmc_mc4broadcast_t item = eomc_mc4broadcast_unknown;
+                const char *str = b_PROPERTIES_MC4_BROADCASTPOLICY_enable.get(i+1).asString().c_str();
+
+                // check compact and then non-compact form
+                if(eomc_mc4broadcast_unknown == (item = eomc_string2mc4broadcast(str, eobool_true)))
+                {
+                    item = eomc_string2mc4broadcast(str, eobool_false);
+                }
+
+                if((eomc_mc4broadcast_unknown != item) && (eomc_mc4broadcast_none != item))
+                {   // if meaningful ...
+                    mc_service.properties.mc4broadcasts.push_back(item);
+                }
+            }
+
+
+
+            // 3. i get the values for b_PROPERTIES_MC4_JOINT2BOARD_location.... there must be 12 values
+
+            int tmp1 = b_PROPERTIES_MC4_JOINT2BOARD_location.size();
+            int numoflocations = tmp1 - 1;    // first position of bottle contains the tag "location"
+
+            if(12 != numoflocations)
+            {
+                yError() << "ServiceParser::check_motion() detects that PROPERTIES.MC4.JOINT2BOARD.location has not 12 items but" << numoflocations;
+                return false;
+            }
+
+            mc_service.properties.mc4joints.resize(0);
+            for(int i=0; i<numoflocations; i++)
+            {
+                // transform the string into a location
+
+                formaterror = false;
+                eObrd_location_t loc;
+                if(false == convert(b_PROPERTIES_MC4_JOINT2BOARD_location.get(i+1).asString(), loc, formaterror))
+                {
+                    yError() << "ServiceParser::check_motion() has detected an illegal format for PROPERTIES.MC4.JOINT2BOARD.location";
+                    return false;
+                }
+
+                eObrd_canlocation_t item;
+                if(eobrd_place_extcan == loc.any.place)
+                {
+                    item.port = loc.extcan.port;
+                    item.addr = loc.extcan.addr;
+                    item.insideindex = loc.extcan.index;
+                }
+                else
+                {
+                    yError() << "ServiceParser::check_motion() has detected an illegal format for PROPERTIES.MC4.JOINT2BOARD.location. it must be extcan";
+                    return false;
+                }
+
+                mc_service.properties.mc4joints.push_back(item);
+            }
+
+
+        } // has_PROPERTIES_MC4
+
+
+
+        if(true == has_PROPERTIES_CONTROLLER)
+        {
+            formaterror = false;
+
+            Bottle b_PROPERTIES_CONTROLLER_type = b_PROPERTIES_CONTROLLER.findGroup("type");
+            if(b_PROPERTIES_CONTROLLER_type.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CONTROLLER.type";
+                return false;
+            }
+
+            if(false == convert(b_PROPERTIES_CONTROLLER_type.get(1).asString(), mc_service.properties.controller.type, formaterror))
+            {
+                yError() << "ServiceParser::check_motion() has found unknown SERVICE.PROPERTIES.CONTROLLER.type = " << b_PROPERTIES_CONTROLLER_type.toString();
+                return false;
+            }
+
+            // matrix J2M
+
+            Bottle b_PROPERTIES_CONTROLLER_matrixJ2M = Bottle(b_PROPERTIES_CONTROLLER.findGroup("matrixJ2M"));
+            if(b_PROPERTIES_CONTROLLER_matrixJ2M.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find SERVICE.PROPERTIES.CONTROLLER.matrixJ2M";
+                return false;
+            }
+
+            formaterror = false;
+            if(false == convert(b_PROPERTIES_CONTROLLER_matrixJ2M, mc_service.properties.controller.matrixJ2M, formaterror, 16))
+            {
+                yError() << "ServiceParser::check_motion() has detected an illegal format for some of the values of SERVICE.PROPERTIES.CONTROLLER.matrixJ2M";
+                return false;
+            }
+
+
+            // matrix E2J
+
+            Bottle b_PROPERTIES_CONTROLLER_matrixE2J = Bottle(b_PROPERTIES_CONTROLLER.findGroup("matrixE2J"));
+            if(b_PROPERTIES_CONTROLLER_matrixE2J.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find SERVICE.PROPERTIES.CONTROLLER.matrixE2J";
+                return false;
+            }
+
+#warning TODO: if we need 6x6 matrixE2J, change 16 into 36 and then change mn data structure ....
+            formaterror = false;
+            if(false == convert(b_PROPERTIES_CONTROLLER_matrixE2J, mc_service.properties.controller.matrixE2J, formaterror, 16))
+            {
+                yError() << "ServiceParser::check_motion() has detected an illegal format for some of the values of SERVICE.PROPERTIES.CONTROLLER.matrixE2J";
+                return false;
+            }
+
+
+            // matrix M2J
+            mc_service.properties.controller.matrixM2J.resize(0);
+//            Bottle b_PROPERTIES_CONTROLLER_matrixM2J = Bottle(b_PROPERTIES_CONTROLLER.findGroup("matrixM2J"));
+//            if(b_PROPERTIES_CONTROLLER_matrixM2J.isNull())
+//            {
+//                yError() << "ServiceParser::check_motion() cannot find SERVICE.PROPERTIES.CONTROLLER.matrixM2J";
+//                return false;
+//            }
+//
+//            formaterror = false;
+//            if( false == convert(b_PROPERTIES_CONTROLLER_matrixM2J, mc_service.properties.controller.matrixM2J, formaterror, 16))
+//            {
+//                yError() << "ServiceParser::check_motion() has detected an illegal format for some of the values of SERVICE.PROPERTIES.CONTROLLER.matrixM2J";
+//                return false;
+//            }
+
+        } // has_PROPERTIES_CONTROLLER
+
+
+        if(true == has_PROPERTIES_JOINTMAPPING)
+        {
+
+            // actuator, encoder1, encoder2 must all be present. the params contained inside must be all of equal length and equal to numberofjoints
+
+            Bottle b_PROPERTIES_JOINTMAPPING_ACTUATOR = Bottle(b_PROPERTIES_JOINTMAPPING.findGroup("ACTUATOR"));
+            if(b_PROPERTIES_JOINTMAPPING_ACTUATOR.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ACTUATOR";
+                return false;
+            }
+
+            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1 = Bottle(b_PROPERTIES_JOINTMAPPING.findGroup("ENCODER1"));
+            if(b_PROPERTIES_JOINTMAPPING_ENCODER1.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1";
+                return false;
+            }
+
+            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2 = Bottle(b_PROPERTIES_JOINTMAPPING.findGroup("ENCODER2"));
+            if(b_PROPERTIES_JOINTMAPPING_ENCODER2.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2";
+                return false;
+            }
+
+            // now the vectors the above three contain ...
+
+            Bottle b_PROPERTIES_JOINTMAPPING_ACTUATOR_type = Bottle(b_PROPERTIES_JOINTMAPPING_ACTUATOR.findGroup("type"));
+            if(b_PROPERTIES_JOINTMAPPING_ACTUATOR_type.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ACTUATOR.type";
+                return false;
+            }
+            Bottle b_PROPERTIES_JOINTMAPPING_ACTUATOR_port = Bottle(b_PROPERTIES_JOINTMAPPING_ACTUATOR.findGroup("port"));
+            if(b_PROPERTIES_JOINTMAPPING_ACTUATOR_port.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ACTUATOR.port";
+                return false;
+            }
+
+            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_type = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("type"));
+            if(b_PROPERTIES_JOINTMAPPING_ENCODER1_type.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.type";
+                return false;
+            }
+            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_port = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("port"));
+            if(b_PROPERTIES_JOINTMAPPING_ENCODER1_port.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.port";
+                return false;
+            }
+            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_position = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("position"));
+            if(b_PROPERTIES_JOINTMAPPING_ENCODER1_position.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.position";
+                return false;
+            }
+
+            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_type = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("type"));
+            if(b_PROPERTIES_JOINTMAPPING_ENCODER2_type.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.type";
+                return false;
+            }
+            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_port = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("port"));
+            if(b_PROPERTIES_JOINTMAPPING_ENCODER2_port.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.port";
+                return false;
+            }
+            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_position = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("position"));
+            if(b_PROPERTIES_JOINTMAPPING_ENCODER2_position.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.position";
+                return false;
+            }
+
+            // now the size of the vectors must all be equal
+
+            int tmp = b_PROPERTIES_JOINTMAPPING_ACTUATOR_type.size();
+            if( (tmp != b_PROPERTIES_JOINTMAPPING_ACTUATOR_port.size()) ||
+                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_type.size()) ||
+                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_port.size()) ||
+                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_position.size()) ||
+                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_type.size()) ||
+                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_port.size()) ||
+                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_position.size())
+              )
+            {
+                yError() << "ServiceParser::check_motion() detected wrong number of columns somewhere inside PROPERTIES.JOINTMAPPING";
+                return false;
+            }
+
+            // ok, we have the number of joints .........
+            mc_service.properties.numofjoints = tmp-1;
+
+            // i attempt to parse the vectors inside actuators (type, port), encoder1 (type, port, position) and encoder2 (type, port, position).
+
+            mc_service.properties.actuators.resize(0);
+            mc_service.properties.encoder1s.resize(0);
+            mc_service.properties.encoder2s.resize(0);
+
+            for(int i=0; i<mc_service.properties.numofjoints; i++)
+            {
+                servMC_actuator_t act;
+                servMC_encoder_t enc1;
+                servMC_encoder_t enc2;
+                bool formaterror = false;
+
+                eOmc_encoder_t enctype = eomc_enc_unknown;
+                uint8_t encport = eobrd_port_unknown;
+                eOmc_position_t encposition = eomc_pos_unknown;
+
+                // actuators ..
+                act.type = eomc_act_unknown;
+                act.desc.pwm.port = eobrd_port_unknown;
+
+                if(false == convert(b_PROPERTIES_JOINTMAPPING_ACTUATOR_type.get(i+1).asString(), act.type, formaterror))
+                {
+                    yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.actuator.type not valid for item" << i;
+                    return false;
+                }
+
+                if(false == parse_actuator_port(b_PROPERTIES_JOINTMAPPING_ACTUATOR_port.get(i+1).asString(), mc_service.properties.ethboardtype, act.type, act.desc, formaterror))
+                {
+                     yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.actuator.port not valid for item" << i;
+                    return false;
+                }
+
+
+                // encoder1s ...
+
+                enc1.desc.type = eomc_enc_unknown;
+                enc1.desc.port = eobrd_port_unknown;
+                enc1.desc.pos = eomc_pos_unknown;
+
+                enctype = eomc_enc_unknown;
+                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER1_type.get(i+1).asString(), enctype, formaterror))
+                {
+                    yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder1.type not valid for item" << i;
+                    return false;
+                }
+                enc1.desc.type = enctype;
+
+                // depending on type, we ....
+
+
+
+                // dobbiamo fare un parser che riconosca CONN:P6 se aea, qenc etc, oppure MAIS:thumbproximal se mais
+
+                encport = eobrd_port_unknown;
+                if(false == parse_encoder_port(b_PROPERTIES_JOINTMAPPING_ENCODER1_port.get(i+1).asString(), mc_service.properties.ethboardtype, enctype, encport, formaterror))
+                {
+                    yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder1.port not valid for item" << i;
+                    return false;
+                }
+                enc1.desc.port = encport;
+
+                encposition = eomc_pos_unknown;
+                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER1_position.get(i+1).asString(), encposition, formaterror))
+                {
+                     yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder1.position not valid for item" << i;
+                    return false;
+                }
+                enc1.desc.pos = encposition;
+
+
+
+                // encoder2s ...
+
+                enc2.desc.type = eomc_enc_unknown;
+                enc2.desc.port = eobrd_port_unknown;
+                enc2.desc.pos = eomc_pos_unknown;
+
+                enctype = eomc_enc_unknown;
+                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER2_type.get(i+1).asString(), enctype, formaterror))
+                {
+                    yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.type not valid for item" << i;
+                    return false;
+                }
+                enc2.desc.type = enctype;
+
+                encport = eobrd_port_unknown;
+                if(false == parse_encoder_port(b_PROPERTIES_JOINTMAPPING_ENCODER2_port.get(i+1).asString(), mc_service.properties.ethboardtype, enctype, encport, formaterror))
+                {
+                    yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.port not valid for item" << i;
+                    return false;
+                }
+                enc2.desc.port = encport;
+
+                encposition = eomc_pos_unknown;
+                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER2_position.get(i+1).asString(), encposition, formaterror))
+                {
+                     yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.position not valid for item" << i;
+                    return false;
+                }
+                enc2.desc.pos = encposition;
+
+
+                // ok, we push act, enc1, enc2
+
+                mc_service.properties.actuators.push_back(act);
+                mc_service.properties.encoder1s.push_back(enc1);
+                mc_service.properties.encoder2s.push_back(enc2);
+            }
+
+
+        } // has_PROPERTIES_JOINTMAPPING
+
+
+
+
+        if(true == has_PROPERTIES_JOINTSETS)
+        {
+
+            Bottle b_PROPERTIES_JOINTSETS_list = Bottle(b_PROPERTIES_JOINTSETS.findGroup("list"));
+            if(b_PROPERTIES_JOINTSETS_list.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS.list";
+                return false;
+            }
+
+            if((b_PROPERTIES_JOINTSETS_list.size()-1) != mc_service.properties.numofjoints)
+            {
+                yError() << "ServiceParser::check_motion() detected a wrong size of PROPERTIES.JOINTSETS.list: it must be equal to the number of joints" << mc_service.properties.numofjoints;
+                return false;
+            }
+
+            mc_service.properties.joint2set.resize(0);
+
+            for(int i=0; i<mc_service.properties.numofjoints; i++)
+            {
+                mc_service.properties.joint2set.push_back(b_PROPERTIES_JOINTSETS_list.get(i+1).asInt());
+            }
+
+        } // has_PROPERTIES_JOINTSETS
+
+    }
+    
+    return true;
+}
+
+
+//bool ServiceParser::parseMCEncoderItem(Bottle &b_ENCODER,  vector<servMC_encoder_t> &encoders, char *encString)
+//{
+//#warning -> correct warnings on
+//
+//    Bottle b_ENCODER_TYPE(b_ENCODER.find("type").asString());
+//    if(b_ENCODER_TYPE.isNull())
+//    {
+//        yError() << "ServiceParser::parseMCEncoderItem() cannot find JOINTMAPPING."<< encString<< ".type";
+//        return false;
+//    }
+//
+//    Bottle b_ENCODER_PORT(b_ENCODER.find("port").asString());
+//    if(b_ENCODER_PORT.isNull())
+//    {
+//        yError() << "ServiceParser::parseMCEncoderItem() cannot find JOINTMAPPING"<< encString<< ".type";
+//        return false;
+//    }
+//
+//    encoders.resize(0);
+//    int numofenc = b_ENCODER_TYPE.size() -1;
+//
+//     //VALE: controlla che il numero di act sia uguale a quello di joint per embobjmotion control obj!!!
+//    for(int i = 0; i< numofenc; i++)
+//    {
+//        servMC_encoder_t item;
+//        bool formaterror = false;
+//        if(false == convert(b_ENCODER_TYPE.get(i+1).asString(), item.type, formaterror))
+//        {
+//             yError() << "ServiceParser::parseMCEncoderItem() encoder type not valid in " << encString;
+//            return false;
+//        }
+//        //VALE: commented in ordet to compile I have not enouth time to implement this function
+////         if(false == convert(b_ENCODER_TYPE.get(i+1).asString(), item.location, formaterror))
+////         {
+////              yError() << "ServiceParser::parseMCEncoderItem() encoder location not valid in " << encString;
+////             return false;
+////         }
+//
+//        if(false == convert(b_ENCODER_TYPE.get(i+1).asString(), item.position, formaterror))
+//        {
+//             yError() << "ServiceParser::parseMCEncoderItem() encoder location not valid in " << encString;
+//            return false;
+//        }
+//        encoders.push_back(item);
+//
+//    }
+//    return true;
+//}
+
+
+bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
+{
+    bool ret = false;
+
+    if(false == check_motion(config))
+    {
+        yError() << "ServiceParser::parseService() gets same errors parsing SERVICE MC group";
+        return ret;
+    }
+
+    // if we dont find the xml file ... we just return true but mc_service.type is eomn_serv_MC_generic.
+    // in such a case we dont transmit the config and ask the eth board to config itself accoring to its ip address.
+    // ...
+
+    mcconfig.ethservice.configuration.type = mc_service.type;
+    
+    switch(mc_service.type)
+    {
+        case eomn_serv_MC_foc:
+        {
+            eOmn_serv_config_data_mc_foc_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.foc_based);
+
+            // 1. ->boardtype4mccontroller
+            data_mc->boardtype4mccontroller = mc_service.properties.controller.type;
+
+            // 2. ->version (of foc board).
+            data_mc->version.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
+            data_mc->version.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
+            data_mc->version.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
+            data_mc->version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
+            data_mc->version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
+
+            // 3. ->arrayofjomodescriptors
+            EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
+            int numofjomos = mc_service.properties.numofjoints;
+
+            for(int i=0; i<numofjomos; i++)
+            {
+                eOmc_jomo_descriptor_t jomodes = {0};
+
+                // 1. actuator is on foc: we need the address
+                jomodes.actuator.foc.canloc.port = mc_service.properties.actuators[i].desc.foc.canloc.port;
+                jomodes.actuator.foc.canloc.addr = mc_service.properties.actuators[i].desc.foc.canloc.addr;
+                jomodes.actuator.foc.canloc.insideindex = eobrd_caninsideindex_first;
+            
+                // 2. encoder1 is ...
+                jomodes.encoder1.type = mc_service.properties.encoder1s[i].desc.type;
+                jomodes.encoder1.port = mc_service.properties.encoder1s[i].desc.port;
+                jomodes.encoder1.pos = mc_service.properties.encoder1s[i].desc.pos;
+
+                // 3. encoder2 is ...
+                jomodes.encoder2.type = mc_service.properties.encoder2s[i].desc.type;
+                jomodes.encoder2.port = mc_service.properties.encoder2s[i].desc.port;
+                jomodes.encoder2.pos = mc_service.properties.encoder2s[i].desc.pos;
+
+                eo_array_PushBack(arrayofjomos, &jomodes);
+
+            }
+
+
+            // 4. ->jomocoupling
+            eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
+            memset(jomocoupling, 0, sizeof(eOmc_4jomo_coupling_t));
+
+            // very important: so far, the fw in Controller.c must find eomc_jointSetNum_none in un-used entries, even if we have less than 4 joints.
+            memset(jomocoupling->joint2set, eomc_jointSetNum_none, sizeof(jomocoupling->joint2set));
+            for(int i=0; i<numofjomos; i++)
+            {
+                jomocoupling->joint2set[i] = mc_service.properties.joint2set[i];
+            }
+
+            for(int i=0; i<4; i++)
+            {
+                for(int j=0; j<4; j++)
+                {
+                    jomocoupling->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
+                    jomocoupling->encoder2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[4*i+j]);
+                }
+            }
+
+
+            // ok, everything is done
+            ret = true;
+
+        } break;
+        
+        case eomn_serv_MC_mc4:
+        {
+            eOmn_serv_config_data_mc_mc4_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4_based);
+
+            // 1. ->version (of mc4 board) + ->mais.version.
+            bool mc4boardFound = false;
+            bool maisboardFound = false;
+            for(int i=0; i<mc_service.properties.canboards.size(); i++)
+            {
+                if(eobrd_cantype_mc4 == mc_service.properties.canboards[i].type)
+                {
+                    data_mc->mc4version.protocol = mc_service.properties.canboards[i].protocol;
+                    data_mc->mc4version.firmware = mc_service.properties.canboards[i].firmware;
+                    mc4boardFound = true;
+                }
+                else if(eobrd_cantype_mais == mc_service.properties.canboards[i].type)
+                {
+                    data_mc->mais.version.protocol = mc_service.properties.canboards[i].protocol;
+                    data_mc->mais.version.firmware = mc_service.properties.canboards[i].firmware;
+                    maisboardFound = true;
+                }
+            }
+
+            if((false == maisboardFound) || (false == mc4boardFound))
+            {
+                yError() << "ServiceParser::parseService() gets same errors parsing SERVICE MC group for mc4: cannot find description of mc4 or mais board";
+            }
+
+//            data_mc->mc4version.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
+//            data_mc->mc4version.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
+//            data_mc->mc4version.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
+//            data_mc->mc4version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
+//            data_mc->mc4version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
+
+            // 2. ->mc4shifts
+            data_mc->mc4shifts = mc_service.properties.mc4shifts;
+
+            // 3. ->mc4joints
+            for(int i=0; i<12; i++)
+            {
+                data_mc->mc4joints[i] = mc_service.properties.mc4joints[i];
+            }
+
+
+            // 4. ->mais.canloc
+            data_mc->mais.canloc = mc_service.properties.maislocation;
+
+            // 5. ->broadcastflags
+            data_mc->broadcastflags = 0;
+            for(int i=0; i<mc_service.properties.mc4broadcasts.size(); i++)
+            {
+                eOmc_mc4broadcast_t item = mc_service.properties.mc4broadcasts[i];
+                if((eomc_mc4broadcast_none != item) && (eomc_mc4broadcast_unknown != item))
+                {
+                    eo_common_hlfword_bitset(&data_mc->broadcastflags, item);
+                }
+            }
+
+            // ok, everything is done
+            ret = true;
+
+        } break;
+        
+        case eomn_serv_MC_mc4plus:
+        {
+            eOmn_serv_config_data_mc_mc4plus_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4plus_based);
+
+            // 1. ->boardtype4mccontroller
+            data_mc->boardtype4mccontroller = mc_service.properties.controller.type;
+
+            // 3. ->arrayofjomodescriptors
+            EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
+            int numofjomos = mc_service.properties.numofjoints;
+
+            for(int i=0; i<numofjomos; i++)
+            {
+                eOmc_jomo_descriptor_t jomodes = {0};
+
+                // 1. actuator is on pwm: we need the port
+                jomodes.actuator.pwm.port = mc_service.properties.actuators[i].desc.pwm.port;
+
+                // 2. encoder1 is ...
+                jomodes.encoder1.type = mc_service.properties.encoder1s[i].desc.type;
+                jomodes.encoder1.port = mc_service.properties.encoder1s[i].desc.port;
+                jomodes.encoder1.pos = mc_service.properties.encoder1s[i].desc.pos;
+
+                // 3. encoder2 is ...
+                jomodes.encoder2.type = mc_service.properties.encoder2s[i].desc.type;
+                jomodes.encoder2.port = mc_service.properties.encoder2s[i].desc.port;
+                jomodes.encoder2.pos = mc_service.properties.encoder2s[i].desc.pos;
+
+                eo_array_PushBack(arrayofjomos, &jomodes);
+
+            }
+
+            // 4. ->jomocoupling
+            eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
+            memset(jomocoupling, 0, sizeof(eOmc_4jomo_coupling_t));
+
+            for(int i=0; i<numofjomos; i++)
+            {
+                jomocoupling->joint2set[i] = mc_service.properties.joint2set[i];
+            }
+
+            for(int i=0; i<4; i++)
+            {
+                for(int j=0; j<4; j++)
+                {
+                    jomocoupling->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
+                    jomocoupling->encoder2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[4*i+j]);
+                }
+            }
+
+
+            // ok, everything is done
+            ret = true;
+        } break;
+        
+        case eomn_serv_MC_mc4plusmais:
+        {
+            eOmn_serv_config_data_mc_mc4plusmais_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4plusmais_based);
+
+            // 1. ->boardtype4mccontroller
+            data_mc->boardtype4mccontroller = mc_service.properties.controller.type;
+
+            // 2. ->mais
+            eOmn_serv_config_data_as_mais_t *mais = &data_mc->mais;
+
+            mais->canloc.port = mc_service.properties.maislocation.port;
+            mais->canloc.addr = mc_service.properties.maislocation.addr;
+            mais->canloc.insideindex = mc_service.properties.maislocation.insideindex;
+
+            mais->version.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
+            mais->version.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
+            mais->version.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
+            mais->version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
+            mais->version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
+
+            // 3. ->arrayofjomodescriptors
+            EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
+            int numofjomos = mc_service.properties.numofjoints;
+
+            for(int i=0; i<numofjomos; i++)
+            {
+                eOmc_jomo_descriptor_t jomodes = {0};
+
+                // 1. actuator is on pwm: we need the port
+                jomodes.actuator.pwm.port = mc_service.properties.actuators[i].desc.pwm.port;
+
+                // 2. encoder1 is ...
+                jomodes.encoder1.type = mc_service.properties.encoder1s[i].desc.type;
+                jomodes.encoder1.port = mc_service.properties.encoder1s[i].desc.port;
+                jomodes.encoder1.pos = mc_service.properties.encoder1s[i].desc.pos;
+
+                // 3. encoder2 is ...
+                jomodes.encoder2.type = mc_service.properties.encoder2s[i].desc.type;
+                jomodes.encoder2.port = mc_service.properties.encoder2s[i].desc.port;
+                jomodes.encoder2.pos = mc_service.properties.encoder2s[i].desc.pos;
+
+                eo_array_PushBack(arrayofjomos, &jomodes);
+
+            }
+
+
+            // 4. ->jomocoupling
+            eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
+            memset(jomocoupling, 0, sizeof(eOmc_4jomo_coupling_t));
+
+            for(int i=0; i<numofjomos; i++)
+            {
+                jomocoupling->joint2set[i] = mc_service.properties.joint2set[i];
+            }
+
+            for(int i=0; i<4; i++)
+            {
+                for(int j=0; j<4; j++)
+                {
+                    jomocoupling->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
+                    jomocoupling->encoder2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[4*i+j]);
+                }
+            }
+
+
+            // ok, everything is done
+            ret = true;
+        } break;
+
+        case eomn_serv_MC_generic:
+        {
+            yWarning() << "ServiceParser::parseService() eomn_serv_MC_generic detected. set type = eomn_serv_MC_generic to let the remote board configure itself according to its IP address";
+            mcconfig.ethservice.configuration.type = eomn_serv_MC_generic;
+            ret =  true;
+        } break;
+
+        default:
+        {
+            yError() << "ServiceParser::parseService() unknown value in eOmn_serv_type_t field";
+        } break;
+    }
+    
+
+    return ret;
+}
+
+static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B0;
+/*static const eOmn_serv_configuration_t s_serv_config_mc_v3_0B0 =
+{   // eb12 or 0B0
+    .type       = eomn_serv_MC_mc4plus,
+    .filler     = {0},
+    .data.mc.mc4plus_based =
+    {
+        .boardtype4mccontroller = emscontroller_board_HEAD_neckpitch_neckroll,
+        .filler                 = {0},
+        .arrayofjomodescriptors =
+        {
+            .head   =
+            {
+                .capacity       = 4,
+                .itemsize       = sizeof(eOmn_serv_jomo_descriptor_t),
+                .size           = 2,
+                .internalmem    = 0
+            },
+            .data   =
+            {
+                { // joint 0: neck-pitch
+                    .actuator.pwm   =
+                    {
+                        .port   = 0  // eomn_serv_mc_port_mc4plus_pwmP3 is hal_motor1=0 ?? verify!
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomc_enc_aea,
+                        .port   = 1, // eomn_serv_mc_port_mc4plus_spiP11 ?? verify!
+                        .pos    = eomc_pos_atjoint
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 0,  // eomn_serv_mc_port_mc4plus_qencP3 ?? verify!
+                        .pos    = eomc_pos_atmotor
+                    }
+                },
+                { // joint 1: neck-roll
+                    .actuator.pwm   =
+                    {
+                        .port   = 2  // eomn_serv_mc_port_mc4plus_pwmP4 is hal_motor3=2 ?? verify!
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomc_enc_aea,
+                        .port   = 0, // eomn_serv_mc_port_mc4plus_spiP10 ?? verify!
+                        .pos    = eomc_pos_atjoint
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 2,  // eomn_serv_mc_port_mc4plus_qencP4 ?? verify!
+                        .pos    = eomc_pos_atmotor
+                    }
+                },
+                { // joint 2
+                    .actuator.pwm   =
+                    {
+                        .port   = eomn_serv_mc_port_none
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomn_serv_mc_sensor_none,
+                        .port   = eomn_serv_mc_port_none,
+                        .pos    = eomn_serv_mc_sensor_pos_none
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomn_serv_mc_sensor_none,
+                        .port   = eomn_serv_mc_port_none,
+                        .pos    = eomn_serv_mc_sensor_pos_none
+                    }
+                },
+                { // joint 3
+                    .actuator.pwm   =
+                    {
+                        .port   = eomn_serv_mc_port_none
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomn_serv_mc_sensor_none,
+                        .port   = eomn_serv_mc_port_none,
+                        .pos    = eomn_serv_mc_sensor_pos_none
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomn_serv_mc_sensor_none,
+                        .port   = eomn_serv_mc_port_none,
+                        .pos    = eomn_serv_mc_sensor_pos_none
+                    }
+                }
+            }
+        },
+        .jomocoupling       =
+        {
+            .joint2set      =
+            {
+                eomc_jointSetNum_zero, eomc_jointSetNum_zero, eomc_jointSetNum_none, eomc_jointSetNum_none
+            },
+            .joint2motor    =
+            {   // zero matrix: use matrix embedded in controller and seecetd by boardtype4mccontroller
+                { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(-1.0f),     EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
+            },
+            .encoder2joint  =
+            {   // identical matrix
+                { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
+            }
+        }
+    }
+};
+*/
+static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B9;
+/*static const eOmn_serv_configuration_t s_serv_config_mc_v3_0B9=
+{   // eb15 or 0B9
+    .type       = eomn_serv_MC_mc4plus,
+    .filler     = {0},
+    .data.mc.mc4plus_based =
+    {
+        .boardtype4mccontroller = emscontroller_board_4jointsNotCoupled,
+        .filler                 = {0},
+        .arrayofjomodescriptors =
+        {
+            .head   =
+            {
+                .capacity       = 4,
+                .itemsize       = sizeof(eOmn_serv_jomo_descriptor_t),
+                .size           = 4,
+                .internalmem    = 0
+            },
+            .data   =
+            {
+                { // joint 0: lip-left
+                    .actuator.pwm   =
+                    {
+                        .port   = 2  // eomn_serv_mc_port_mc4plus_pwmP4 is hal_motor2=1 ?? verify!
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 2, // eomn_serv_mc_port_mc4plus_qencP4 ?? verify!
+                        .pos    = eomc_pos_atjoint
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 2,  // eomn_serv_mc_port_mc4plus_qencP4 ?? verify!
+                        .pos    = eomc_pos_atmotor
+                    }
+                },
+                { // joint 1: lip-high
+                    .actuator.pwm   =
+                    {
+                        .port   = 1  // eomn_serv_mc_port_mc4plus_pwmP2 is hal_motor2=1 ?? verify!
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 1, // eomn_serv_mc_port_mc4plus_qencP2 ?? verify!
+                        .pos    = eomc_pos_atjoint
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 1,  // eomn_serv_mc_port_mc4plus_qencP2 ?? verify!
+                        .pos    = eomc_pos_atmotor
+                    }
+                },
+                { // joint 2: lip-right
+                    .actuator.pwm   =
+                    {
+                        .port   = 0  // eomn_serv_mc_port_mc4plus_pwmP3 is hal_motor4=3 ?? verify!
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 0, // eomn_serv_mc_port_mc4plus_qencP3 is hal_quad_enc1 = 0 ?? verify!
+                        .pos    = eomc_pos_atjoint
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 0, // eomn_serv_mc_port_mc4plus_qencP3 is hal_quad_enc1 = 0 ?? verify!
+                        .pos    = eomc_pos_atmotor
+                    }
+                },
+                { // joint 3: lip-bottom
+                    .actuator.pwm   =
+                    {
+                        .port   = 3  // eomn_serv_mc_port_mc4plus_pwmP5 is hal_motor3=2 ?? verify!
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 3, // eomn_serv_mc_port_mc4plus_qencP5 is hal_quad_enc4 = 3 ?? verify!
+                        .pos    = eomc_pos_atjoint
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 3, // eomn_serv_mc_port_mc4plus_qencP5 is hal_quad_enc4 = 3 ?? verify!
+                        .pos    = eomc_pos_atmotor
+                    }
+                }
+            }
+        },
+        .jomocoupling       =
+        {
+            .joint2set      =
+            {   // each joint is on a different set
+                0, 1, 2, 3
+            },
+            .joint2motor    =
+            {   // zero matrix: use matrix embedded in controller and seecetd by boardtype4mccontroller
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) }
+            },
+            .encoder2joint  =
+            {   // identical matrix
+                { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
+            }
+        }
+    }
+};*/
+
+
+
+
+static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B1;
+/*static const eOmn_serv_configuration_t s_serv_config_mc_v3_0B1 =
+{   // eb13 or 0B1
+    .type       = eomn_serv_MC_mc4plus,
+    .filler     = {0},
+    .data.mc.mc4plus_based =
+    {
+        .boardtype4mccontroller = emscontroller_board_HEAD_neckyaw_eyes,
+        .filler                 = {0},
+        .arrayofjomodescriptors =
+        {
+            .head   =
+            {
+                .capacity       = 4,
+                .itemsize       = sizeof(eOmn_serv_jomo_descriptor_t),
+                .size           = 4,
+                .internalmem    = 0
+            },
+            .data   =
+            {
+                { // joint 0: neck-yaw
+                    .actuator.pwm   =
+                    {
+                        .port   = 0  // eomn_serv_mc_port_mc4plus_pwmP3 is hal_motor1=0 ?? verify!
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomc_enc_aea,
+                        .port   = 1, // eomn_serv_mc_port_mc4plus_spiP11 ?? verify!
+                        .pos    = eomc_pos_atjoint
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 0,  // eomn_serv_mc_port_mc4plus_qencP3 ?? verify!
+                        .pos    = eomc_pos_atmotor
+                    }
+                },
+                { // joint 1: eyes-tilt
+                    .actuator.pwm   =
+                    {
+                        .port   = 1  // eomn_serv_mc_port_mc4plus_pwmP2 is hal_motor2=1 ?? verify!
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomc_enc_aea,
+                        .port   = 0, // eomn_serv_mc_port_mc4plus_spiP10 ?? verify!
+                        .pos    = eomc_pos_atjoint
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 1,  // eomn_serv_mc_port_mc4plus_qencP2 ?? verify!
+                        .pos    = eomc_pos_atmotor
+                    }
+                },
+                { // joint 2: right-eye
+                    .actuator.pwm   =
+                    {
+                        .port   = 3  // eomn_serv_mc_port_mc4plus_pwmP5 is hal_motor4=3 ?? verify!
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 3, // eomn_serv_mc_port_mc4plus_qencP5 is hal_quad_enc4 = 3 ?? verify!
+                        .pos    = eomc_pos_atjoint
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 3, // eomn_serv_mc_port_mc4plus_qencP5 is hal_quad_enc4 = 3 ?? verify!
+                        .pos    = eomc_pos_atmotor
+                    }
+                },
+                { // joint 3: left-eye
+                    .actuator.pwm   =
+                    {
+                        .port   = 2  // eomn_serv_mc_port_mc4plus_pwmP4 is hal_motor3=2 ?? verify!
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 2, // eomn_serv_mc_port_mc4plus_qencP4 is hal_quad_enc3 = 2 ?? verify!
+                        .pos    = eomc_pos_atjoint
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 2, // eomn_serv_mc_port_mc4plus_qencP4 is hal_quad_enc3 = 2 ?? verify!
+                        .pos    = eomc_pos_atmotor
+                    }
+                }
+            }
+        },
+        .jomocoupling       =
+        {
+            .joint2set      =
+            { //joint 2 and 3 are coupled
+                eomc_jointSetNum_zero, eomc_jointSetNum_one, eomc_jointSetNum_two, eomc_jointSetNum_two
+            },
+
+                    //inverted matrix: joint to motor
+                    // |m0|    | 1     0       0      0 |    |j0|
+                    // |m1|  = | 0     1       0      0 |  * |j1|
+                    // |m2|    | 0     0       1     -1 |    |j2|
+                    // |m3|    | 0     0       1      1 |    |j2|
+
+
+            .joint2motor    =
+            {   // zero matrix: use matrix embedded in controller and seecetd by boardtype4mccontroller
+                { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(-1.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
+            },
+            .encoder2joint  =
+            {   // identical matrix
+                { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
+            }
+        }
+    }
+};
+*/
+static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B7;
+/*static const eOmn_serv_configuration_t s_serv_config_mc_v3_0B7 =
+{   // eb14 or 0B7f
+    .type       = eomn_serv_MC_mc4plus,
+    .filler     = {0},
+    .data.mc.mc4plus_based =
+    {
+        .boardtype4mccontroller = emscontroller_board_FACE_eyelids_jaw,
+        .filler                 = {0},
+        .arrayofjomodescriptors =
+        {
+            .head   =
+            {
+                .capacity       = 4,
+                .itemsize       = sizeof(eOmn_serv_jomo_descriptor_t),
+                .size           = 2,
+                .internalmem    = 0
+            },
+            .data   =
+            {
+                { // joint 0: jaw
+                    .actuator.pwm   =
+                    {
+                        .port   = 0  // eomn_serv_mc_port_mc4plus_pwmP3 is hal_motor1=0 ?? verify!
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomc_enc_aea,
+                        .port   = 1, // eomn_serv_mc_port_mc4plus_spiP11 ?? verify!
+                        .pos    = eomc_pos_atjoint
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomn_serv_mc_sensor_none,
+                        .port   = eomn_serv_mc_port_none,
+                        .pos    = eomn_serv_mc_sensor_pos_none
+                    }
+                },
+                { // joint 1: eyelids
+                    .actuator.pwm   =
+                    {
+                        .port   = 1  // eomn_serv_mc_port_mc4plus_pwmP2 is hal_motor2=1 ?? verify!
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomc_enc_aea,
+                        .port   = 0, // eomn_serv_mc_port_mc4plus_spiP10 ?? verify!
+                        .pos    = eomc_pos_atjoint
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomc_enc_qenc,
+                        .port   = 1,  // eomn_serv_mc_port_mc4plus_qencP2 ?? verify!
+                        .pos    = eomc_pos_atmotor
+                    }
+                },
+                { // joint 2
+                    .actuator.pwm   =
+                    {
+                        .port   = eomn_serv_mc_port_none
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomn_serv_mc_sensor_none,
+                        .port   = eomn_serv_mc_port_none,
+                        .pos    = eomn_serv_mc_sensor_pos_none
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomn_serv_mc_sensor_none,
+                        .port   = eomn_serv_mc_port_none,
+                        .pos    = eomn_serv_mc_sensor_pos_none
+                    }
+                },
+                { // joint 3
+                    .actuator.pwm   =
+                    {
+                        .port   = eomn_serv_mc_port_none
+                    },
+                    .sensor         =
+                    {
+                        .type   = eomn_serv_mc_sensor_none,
+                        .port   = eomn_serv_mc_port_none,
+                        .pos    = eomn_serv_mc_sensor_pos_none
+                    },
+                    .encoder2    =
+                    {
+                        .type   = eomn_serv_mc_sensor_none,
+                        .port   = eomn_serv_mc_port_none,
+                        .pos    = eomn_serv_mc_sensor_pos_none
+                    }
+                }
+            }
+        },
+        .jomocoupling       =
+        {
+            .joint2set      =
+            {   // each joint is on a different set
+                eomc_jointSetNum_zero, eomc_jointSetNum_one, eomc_jointSetNum_none, eomc_jointSetNum_none
+            },
+            .joint2motor    =
+            {   // zero matrix: use matrix embedded in controller and seecetd by boardtype4mccontroller
+                { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
+            },
+            .encoder2joint  =
+            {   // identical matrix
+                { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
+            }
+        }
+    }
+};
+*/
+
+/*eOmn_serv_configuration_t*  arrayConf[4] =
+{
+    &s_serv_config_mc_v3_0B9,       // board ip.1, 0b9, face 4 lips
+    &s_serv_config_mc_v3_0B7,       // board ip.2, 0b7, face eyelids + jaw
+    &s_serv_config_mc_v3_0B1,       // board ip.3, 0b1, head neck yaw + 3 eyes
+    &s_serv_config_mc_v3_0B0
+}*/
+bool ServiceParser::parseService2(Searchable &config, servConfigMC_t &mcconfig)
+{
+    eOmc_arrayof_4jomodescriptors_t *ja = &s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.arrayofjomodescriptors;
+    eOmc_4jomo_coupling_t *jc = &s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.jomocoupling;
+
+
+eOq17_14_t m1[][4]    =
+    {   // zero matrix: use matrix embedded in controller and seecetd by boardtype4mccontroller
+        { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+        { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+        { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(-1.0f) },
+        { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
+    };
+
+eOq17_14_t  m2[][4]=
+            {   // identical matrix
+                { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
+            };
+
+
+
+
+
+
+
+
+
+
+    s_serv_config_mc_v3_0B1.type       = eomn_serv_MC_mc4plus;
+    //s_serv_config_mc_v3_0B1.filler     = {0, 0, 0};
+
+    s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.boardtype4mccontroller = 6; //emscontroller_board_HEAD_neckyaw_eyes;
+    //s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.filler = {0};
+
+    ja->head.capacity       = 4;
+    ja->head.itemsize       = sizeof(eOmc_jomo_descriptor_t);
+    ja->head.size           = 4;
+    ja->head.internalmem    = 0;
+
+    ja->data[0].actuator.pwm.port   = 0 ; // eomn_serv_mc_port_mc4plus_pwmP3 is hal_motor1=0 ?? verify!
+    ja->data[0].encoder1.type   = eomc_enc_aea;
+    ja->data[0].encoder1.port   = 1; // eomn_serv_mc_port_mc4plus_spiP11 ?? verify!
+    ja->data[0].encoder1.pos    = eomc_pos_atjoint;
+
+    ja->data[0].encoder2.type   = eomc_enc_qenc;
+    ja->data[0].encoder2.port   = 0;  // eomn_serv_mc_port_mc4plus_qencP3 ?? verify!
+    ja->data[0].encoder2.pos    = eomc_pos_atmotor;
+
+    ja->data[1].actuator.pwm.port   = 1;  // eomn_serv_mc_port_mc4plus_pwmP2 is hal_motor2=1 ?? verify!
+    ja->data[1].encoder1.type   = eomc_enc_aea;
+    ja->data[1].encoder1.port   = 0; // eomn_serv_mc_port_mc4plus_spiP10 ?? verify!
+    ja->data[1].encoder1.pos    = eomc_pos_atjoint;
+    ja->data[1].encoder2.type   = eomc_enc_qenc;
+    ja->data[1].encoder2.port   = 1;  // eomn_serv_mc_port_mc4plus_qencP2 ?? verify!
+    ja->data[1].encoder2.pos    = eomc_pos_atmotor;
+
+    ja->data[2].actuator.pwm.port   = 3;
+    ja->data[2].encoder1.type   = eomc_enc_qenc;
+    ja->data[2].encoder1.port   = 3; // eomn_serv_mc_port_mc4plus_qencP5 is hal_quad_enc4 = 3 ?? verify!
+    ja->data[2].encoder1.pos    = eomc_pos_atjoint;
+    ja->data[2].encoder2.type   = eomc_enc_qenc,
+    ja->data[2].encoder2.port   = 3, // eomn_serv_mc_port_mc4plus_qencP5 is hal_quad_enc4 = 3 ?? verify!
+    ja->data[2].encoder2.pos    = eomc_pos_atmotor;
+
+    ja->data[3].actuator.pwm.port   = 2;
+
+    ja->data[3].encoder1.type   = eomc_enc_qenc;
+    ja->data[3].encoder1.port   = 2; // eomn_serv_mc_port_mc4plus_qencP4 is hal_quad_enc3 = 2 ?? verify!
+    ja->data[3].encoder1.pos    = eomc_pos_atjoint;
+
+
+    ja->data[3].encoder2.type   = eomc_enc_qenc;
+    ja->data[3].encoder2.port   = 2; // eomn_serv_mc_port_mc4plus_qencP4 is hal_quad_enc3 = 2 ?? verify!
+    ja->data[3].encoder2.pos    = eomc_pos_atmotor;
+
+
+    jc->joint2set[0] =  eomc_jointSetNum_zero;
+    jc->joint2set[1] =  eomc_jointSetNum_one;
+    jc->joint2set[2] = eomc_jointSetNum_two;
+    jc->joint2set[3] = eomc_jointSetNum_two;
+
+
+/*
+    jc->joint2motor    =
+    {   // zero matrix: use matrix embedded in controller and seecetd by boardtype4mccontroller
+        { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+        { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+        { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(-1.0f) },
+        { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
+    };
+    jc->encoder2joint  =
+            {   // identical matrix
+                { EO_COMMON_FLOAT_TO_Q17_14(1.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f) },
+                { EO_COMMON_FLOAT_TO_Q17_14(0.0f),      EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(0.0f),    EO_COMMON_FLOAT_TO_Q17_14(1.0f) }
+            };
+
+
+
+*/
+
+
+
+
+
+
+memcpy(&jc->joint2motor, &m1, sizeof(m1));
+memcpy(&jc->encoder2joint, &m2, sizeof(m2));
+
+yError() << "print first m ";
+for(int r=0; r<4; r++)
+{
+    for(int c=0; c<4; c++)
+    {
+        yError() << "r=" <<r << "c=" << c << "val=" << m1[r][c];
+    }
+}
+
+yError() << "print second  m ";
+for(int r=0; r<4; r++)
+{
+    for(int c=0; c<4; c++)
+    {
+        yError() << "r=" <<r << "c=" << c << "val=" << m2[r][c];
+    }
+}
+
+
+
+    if(mcconfig.id > 3)
+    {
+        yError() << " id scheda sbagliato " << mcconfig.id;
+        return false;
+    }
+
+
+    memcpy(&mcconfig.ethservice, &s_serv_config_mc_v3_0B1, sizeof(eOmn_serv_configuration_t));
+    return true;
+}
+#endif
+
+// eof

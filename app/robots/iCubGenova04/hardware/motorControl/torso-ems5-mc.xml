@@ -8,6 +8,8 @@
       <params file="general.xml" />
       <params file="hardware/electronics/torso-ems5-eln.xml" />
       <params file="hardware/mechanicals/torso-ems5-mec.xml" />
+      
+    <params file="hardware/motorControl/torso-ems5-mc-service.xml" />
 
     <group name="LIMITS">
         <param name="jntPosMax">                      50            30            70        </param>
