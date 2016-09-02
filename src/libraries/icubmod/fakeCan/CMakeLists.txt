@@ -7,6 +7,7 @@ yarp_prepare_device(fakecan  TYPE yarp::dev::FakeCan
 
 
 IF (NOT SKIP_fakecan)
+    set(CMAKE_INCLUDE_CURRENT_DIR ON)
     include_directories(${YARP_INCLUDE_DIRS})
     yarp_add_plugin(fcan fakeCan.cpp fakeBoard.cpp fakeCan.h fakeBoard.h fbCanBusMessage.h msgList.h)
     target_link_libraries(fcan ${YARP_LIBRARIES})

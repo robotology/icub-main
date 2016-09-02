@@ -8,6 +8,7 @@ yarp_prepare_device(gazecontrollerclient TYPE ClientGazeController
                                     WRAPPER gazecontrollerclient)
 
 IF (NOT SKIP_gazecontrollerclient)
+   set(CMAKE_INCLUDE_CURRENT_DIR ON)
    SET(client_source ClientGazeController.cpp)
    SET(client_header ClientGazeController.h)
   

@@ -8,6 +8,7 @@ yarp_prepare_device(cartesiancontrollerserver TYPE ServerCartesianController
                                          WRAPPER cartesiancontrollerclient)
 
 if(NOT SKIP_cartesiancontrollerserver)
+   set(CMAKE_INCLUDE_CURRENT_DIR ON)
    set(server_source ServerCartesianController.cpp
                      SmithPredictor.cpp)
    set(server_header CommonCartesianController.h
@@ -26,6 +27,7 @@ yarp_prepare_device(cartesiancontrollerclient TYPE ClientCartesianController
                                          WRAPPER cartesiancontrollerclient)
 
 if(NOT SKIP_cartesiancontrollerclient)
+   set(CMAKE_INCLUDE_CURRENT_DIR ON)
    set(client_source ClientCartesianController.cpp)
    set(client_header CommonCartesianController.h
                      ClientCartesianController.h)

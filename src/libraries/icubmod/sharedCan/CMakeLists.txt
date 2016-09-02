@@ -7,6 +7,7 @@ yarp_prepare_device(sharedcan TYPE yarp::dev::CanBusAccessPoint
 
 
 IF (NOT SKIP_sharedcan)
+    set(CMAKE_INCLUDE_CURRENT_DIR ON)
     include_directories(${YARP_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/)
     yarp_add_plugin(shcan SharedCanBus.h SharedCanBus.cpp)
     target_link_libraries(shcan ${YARP_LIBRARIES})

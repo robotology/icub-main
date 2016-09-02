@@ -6,6 +6,7 @@ yarp_prepare_device(static_grabber TYPE yarp::dev::StaticGrabber INCLUDE StaticG
 				WRAPPER grabber)
 
 if (NOT SKIP_static_grabber)
+  set(CMAKE_INCLUDE_CURRENT_DIR ON)
   include_directories(${YARP_INCLUDE_DIRS})
 
   yarp_add_plugin(static_grabber StaticGrabber.h StaticGrabber.cpp)
