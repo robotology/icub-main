@@ -4,21 +4,21 @@
 # 
 
 yarp_prepare_device(gazecontrollerclient TYPE ClientGazeController
-                                    INCLUDE ClientGazeController.h
-                                    WRAPPER gazecontrollerclient)
+                                         INCLUDE ClientGazeController.h
+                                         WRAPPER gazecontrollerclient)
 
-IF (NOT SKIP_gazecontrollerclient)
+if(NOT SKIP_gazecontrollerclient)
    set(CMAKE_INCLUDE_CURRENT_DIR ON)
-   SET(client_source ClientGazeController.cpp)
-   SET(client_header ClientGazeController.h)
+   set(client_source ClientGazeController.cpp)
+   set(client_header ClientGazeController.h)
   
-   INCLUDE_DIRECTORIES(${YARP_INCLUDE_DIRS})
+   include_directories(${YARP_INCLUDE_DIRS})
 
    yarp_add_plugin(gazecontrollerclient ${client_source} ${client_header})
 
-   TARGET_LINK_LIBRARIES(gazecontrollerclient ${YARP_LIBRARIES})
+   target_link_libraries(gazecontrollerclient ${YARP_LIBRARIES})
 
    icub_export_plugin(gazecontrollerclient)
-   yarp_install(FILES gazecontrollerclient.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
-ENDIF (NOT SKIP_gazecontrollerclient)
+   yarp_install(FILES gazecontrollerclient.ini DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
+endif()
 
