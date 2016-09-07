@@ -31,9 +31,9 @@
 	<group name="POSITION_CONTROL">
 	    <param name="controlLaw">    joint_pid_v1 </param> 
         <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">           711.11    1066.66     711.11    1066.66 </param>       
+        <param name="kp">          -711.11   -1066.66    -711.11   -1066.66 </param>       
         <param name="kd">             0.00       0.00       0.00       0.00 </param>       
-        <param name="ki">          7111.09   10666.64    7111.09   10666.64 </param>         
+        <param name="ki">         -7111.09  -10666.64   -7111.09  -10666.64 </param>         
         <param name="maxOutput">      8000       8000       8000       8000 </param>    
         <param name="maxInt">          200        200        200       1000 </param>       
         <param name="shift">             0          0          0          0 </param>       
@@ -46,7 +46,7 @@
     <group name="TORQUE_CONTROL">
         <param name="controlLaw">    motor_pid_with_friction_v1 </param> 
         <param name="controlUnits">  metric_units               </param> 
-        <param name="kp">            200        200        250        300     </param>       
+        <param name="kp">            -50       -200       -250       -300     </param>       
         <param name="kd">              0          0          0          0     </param>       
         <param name="ki">              0          0          0          0     </param>    
         <param name="maxOutput">    8000       8000       8000       8000     </param>       
