@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE robot PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+    <robot name="iCubGenova04" build="1" portprefix="icub">
+    <params file="hardware/electronics/pc104.xml" />
+
+    <!--    test report (we use mc of torso + head to make the robot straight)
+            - on 07sep16 tested mc. ok right arm. left arms fails calibrating j3 because there is "MC: 2FOC quadrature encoder phase broken" on j3 of EB1. 
+      -->
+
+    <!-- HEAD -->	
+    <devices file="./hardware/motorControl/head-j0_1-mc.xml" />  
+    <devices file="./hardware/motorControl/head-j2_5-mc.xml" /> 
+    <devices file="./wrappers/motorControl/head_mc_wrapper.xml" /> 
+
+    <!-- TORSO -->
+    <devices file="hardware/motorControl/torso-ems5-mc.xml" />
+    <devices file="wrappers/motorControl/torso-mc_wrapper.xml" />  
+
+    <!-- LEFT SHOULDER -->
+    <devices file="./wrappers/motorControl/left_shoulder-mc_wrapper.xml" />
+    <devices file="hardware/motorControl/left_arm-j0_3-mc.xml" />
+    
+
+    <!-- RIGHT SHOULDER -->
+    <devices file="./wrappers/motorControl/right_shoulder-mc_wrapper.xml" />
+    <devices file="hardware/motorControl/right_arm-j0_3-mc.xml" />
+     
+
+
+    <!-- ANALOG SENSOR FT -->
+
+<!-- to be tested
+    <devices file="wrappers/FT/left_arm-FT_wrapper.xml" /> 
+    <devices file="wrappers/FT/right_arm-FT_wrapper.xml" />
+    <devices file="hardware/FT/left_upper_arm-ems1-strain.xml" /> 
+    <devices file="hardware/FT/right_upper_arm-ems3-strain.xml" />
+  -->
+	
+    <!-- VIRTUAL ANALOG SENSORS (WRAPPER ONLY) -->
+<!--  to be tested
+    <devices file="wrappers/VFT/left_arm-VFT_wrapper.xml" /> 
+    <devices file="wrappers/VFT/right_arm-VFT_wrapper.xml" /> 
+-->
+
+
+    <!--  SKINS -->
+
+
+	
+    <!--  CALIBRATORS -->
+
+    <devices file="calibrators/torso-calib.xml" /> 
+    <devices file="calibrators/head-calib.xml" /> 
+
+
+    <devices file="calibrators/left_shoulder-calib.xml" />
+    <devices file="calibrators/right_shoulder-calib.xml" />  
+
+    </robot> 
+
+

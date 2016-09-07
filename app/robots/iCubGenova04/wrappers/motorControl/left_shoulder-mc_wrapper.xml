@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE devices PUBLIC "-//YARP//DTD robotInterface 1.0//EN" "http://www.icub.org/DTD/robotInterfaceV1.0.dtd">
+
+<devices robot="iCubGenova04" build="1">
+
+    <device name="left_shoulder_mc_wrapper" type="controlboardwrapper2">
+        <paramlist name="networks">
+            <!-- when we'll use entire arm we should use following sets -->
+            <elem name="FirstSetOfJoints">  0  3   0  3 </elem>
+
+           
+            <!-- sets of joints for lower arm used on bench test 
+            <elem name="FirstSetOfJoints">  0  3   0  3 </elem>
+            <elem name="SecondSetOfJoints"> 4  7   0  3 </elem> 
+            <elem name="ThirdSetOfJoints">  8  11  0  3 </elem> --> 
+        </paramlist> 
+
+        <param name="period"> 10                        </param>
+        <param name="name">   /icub/left_arm    </param>
+        <param name="ports">  left_arm                  </param>
+        <param name="joints"> 4                        </param> 
+ 
+        <action phase="startup" level="5" type="attach">
+            <paramlist name="networks">
+                <!-- The param value must match the device name in the corresponding left_lower_arm-jx_y-mc.xml file -->
+                <elem name="FirstSetOfJoints">  left_arm-j0_3-mc </elem>
+
+                <elem name="Calibrator">  left_shoulder_calibrator </elem>
+            </paramlist>
+        </action>
+
+        <action phase="shutdown" level="5" type="detach" />
+
+    </device>
+  
+</devices>
