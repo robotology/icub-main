@@ -37,7 +37,7 @@
 
         <module>
                 <name>iKinGazeCtrl</name>
-                <parameters>--headV2 --from config_imu_filter.ini</parameters>
+                <parameters>--headV2 --from config_imu_filter.ini --eye_tilt::min -25.0</parameters>
                 <node>icubbrain1</node>
                 <dependencies>
                     <port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
