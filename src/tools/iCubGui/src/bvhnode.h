@@ -78,6 +78,13 @@ public:
                 fay= fx/a;
                 faz= 0.0;
             }
+			else if (fz<0.0)
+			{
+				fth=180.0;
+				fax=1.0;
+				fay=0.0;
+				faz=0.0;
+			}
         }
 
         mth=0.0;
@@ -109,6 +116,13 @@ public:
                 may= mx/a;
                 maz= 0.0;
             }
+			else if (mz<0.0)
+			{
+				mth=180.0;
+				max=1.0;
+				may=0.0;
+				maz=0.0;
+			}
         }
 
         gluQuadricDrawStyle(cyl=gluNewQuadric(),GLU_FILL);
