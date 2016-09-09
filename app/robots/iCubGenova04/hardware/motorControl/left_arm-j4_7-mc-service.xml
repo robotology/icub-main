@@ -40,18 +40,18 @@
 
                 <group name="ACTUATOR">                 
                     <param name="type">             pwm                 pwm                 pwm                 pwm                     </param>
-                    <param name="port">             CONN:P3             CONN:P2             CONN:P4             CONN:P5                 </param>
+                    <param name="port">             CONN:P5             CONN:P2             CONN:P4             CONN:P3                 </param>
                 </group>
                 
                 <group name="ENCODER1">  
                     <param name="type">             qenc                aea                 aea                 absanalog               </param>  
-                    <param name="port">             CONN:P3             CONN:P10            CONN:P11            CONN:P5                 </param>
+                    <param name="port">             CONN:P5             CONN:P10            CONN:P11            CONN:P3                 </param>
                     <param name="position">         atjoint             atjoint             atjoint             atjoint                 </param> 
                 </group>        
                 
                 <group name="ENCODER2">
                     <param name="type">             qenc                qenc                qenc                none                    </param>
-                    <param name="port">             CONN:P3             CONN:P2             CONN:P4             CONN:none               </param>
+                    <param name="port">             CONN:P5             CONN:P2             CONN:P4             CONN:none               </param>
                     <param name="position">         atmotor             atmotor             atmotor             none                    </param>
                 </group>  
             </group>    

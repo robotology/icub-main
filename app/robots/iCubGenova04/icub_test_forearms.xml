@@ -11,21 +11,26 @@
  
       -->
 
+    <!-- HEAD -->	
+
+    <devices file="./hardware/motorControl/head-j0_1-mc.xml" />  
+    <devices file="./hardware/motorControl/head-j2_5-mc.xml" /> 
+    <devices file="./wrappers/motorControl/head_mc_wrapper.xml" /> 
+
+
     <!--LEFT_FOREARM -->
-<!-- wip: uncomment when needed.
     <devices file="./hardware/motorControl/left_arm-j4_7-mc.xml" />
     <devices file="./hardware/motorControl/left_arm-j8_11-mc.xml" /> 
     <devices file="./hardware/motorControl/left_arm-j12_15-mc.xml" /> 
     <devices file="./wrappers/motorControl/left_forearm-mc_wrapper.xml" />
-  -->
 
     <!-- RIGHT_FOREARM -->
-<!-- not begun yet.
+
     <devices file="./hardware/motorControl/right_arm-j4_7-mc.xml" />
     <devices file="./hardware/motorControl/right_arm-j8_11-mc.xml" /> 
     <devices file="./hardware/motorControl/right_arm-j12_15-mc.xml" />
     <devices file="./wrappers/motorControl/right_forearm-mc_wrapper.xml" /> 
--->
+
 
 	
     <!-- ANALOG SENSOR MAIS -->
@@ -44,12 +49,11 @@
   -->
 	
     <!--  CALIBRATORS  -->
-<!-- wip: uncomment when needed.
     <devices file="calibrators/left_forearm-calib.xml" />
-  -->
-<!-- not begun yet.
+    <devices file="calibrators/head-calib.xml" />
+
     <devices file="calibrators/right_forearm-calib.xml" />
-  -->
+
 
     </robot> 
 
