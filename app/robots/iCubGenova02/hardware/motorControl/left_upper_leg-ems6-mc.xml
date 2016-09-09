@@ -13,7 +13,7 @@
       
     <group name="LIMITS">
         <param name="jntPosMax">                      85            85            70            0     </param>
-        <param name="jntPosMin">                     -30             0           -70         -100     </param>
+        <param name="jntPosMin">                     -30           -12           -70         -100     </param>
         <param name="rotorPosMin">                     0             0             0            0     </param> 
         <param name="rotorPosMax">                     0             0             0            0     </param>
         <param name="jntVelMax">                    1000          1000          1000         1000     </param>   
@@ -46,7 +46,7 @@
     <group name="TORQUE_CONTROL">
         <param name="controlLaw">    motor_pid_with_friction_v1               </param>
         <param name="controlUnits">  metric_units                             </param>         
-        <param name="kp">           -200        200          0          0     </param>       <!--        -200        200       -200        200      --> 
+        <param name="kp">           -200        200          0       -200     </param>       <!--        -200        200       -200        200      --> 
         <param name="kd">              0          0          0          0     </param>       
         <param name="ki">              0          0          0          0     </param>     
         <param name="maxOutput">    8000       8000       8000       8000     </param>       
@@ -58,7 +58,7 @@
         <param name="kff">             1          1          1          1     </param>      
         <param name="kbemf">           0          0          0          0     </param>     
         <param name="filterType">      0          0          0          0     </param>              
-        <param name="ktau">         -162        178       -197        167     </param>      
+        <param name="ktau">         -162        178       -197       -167     </param>      
     </group>
 	
     <group name="CURRENT_CONTROL">
