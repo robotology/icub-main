@@ -4,11 +4,11 @@
 
 <application>
  <name>iCubGui with Skin Contacts</name>
+
    <module>
     <name>iCubGui</name>
     <parameters>--xpos 1000 --ypos 100 --width 370</parameters> 
     <node>icub-laptop</node>
-    <tag>iCubGui</tag>
   </module>
 
   <connection>
