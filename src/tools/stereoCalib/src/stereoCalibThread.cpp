@@ -85,7 +85,10 @@ bool stereoCalibThread::threadInit()
     if (polyTorso.open(optTorso))
         polyTorso.view(posTorso);
     else
+    {
+        yWarning("Unable to connect to torso! Continuing without...");
         useTorso=false;
+    }
 
     yarp::sig::Vector head_angles(6,0.0);
     posHead->getEncoders(head_angles.data());
