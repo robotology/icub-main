@@ -1,9 +1,9 @@
 <!-- instantiation of
-     icub-main/app/demoGrasp/scripts/demoGrasp.xml.template
+     icub-basic-demos/demoRedBall/app/scripts/demoRedBall.xml.template
      for iCubLisboa01 -->
 
 <application>
-<name>Ball Tracking and Grasping</name>
+<name>Red-Ball Demo</name>
 
         <dependencies>
                 <port>/icub/camcalib/left/out</port>
@@ -20,7 +20,7 @@
         </module>
    
         <module>
-                <name>demoGraspManager</name>
+                <name>demoRedBall</name>
                 <node>icubbrain2</node>
         </module>
   
@@ -42,16 +42,16 @@
         </connection>
         <connection>
                 <from>/pf3dTracker/data:o</from>
-                <to>/demoGraspManager/trackTarget:i</to>
+                <to>/demoRedBall/trackTarget:i</to>
                 <protocol>udp</protocol>
         </connection>
         <connection>
-                <from>/demoGraspManager/cmdFace:rpc</from>
+                <from>/demoRedBall/cmdFace:rpc</from>
                 <to>/icub/face/emotions/in</to>
                 <protocol>tcp</protocol>
         </connection>
         <connection>
-                <from>/demoGraspManager/gui:o</from>
+                <from>/demoRedBall/gui:o</from>
                 <to>/iCubGui/objects</to>
                 <protocol>tcp</protocol>
         </connection>
