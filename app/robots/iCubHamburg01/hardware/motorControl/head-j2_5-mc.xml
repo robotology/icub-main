@@ -15,8 +15,8 @@
         <!-- joint logical number               0           1           2           3           -->
         <!-- joint name                         neck-yaw    eyes-tilt   eyes-vers   eyes-verg   -->         <!-- j2 is right-eye, j3 is left-eye -->
         <group name="LIMITS">       
-            <param name="jntPosMin">                  -45         -30         -45         0           </param> 
-            <param name="jntPosMax">                  +45         +30         +45         +45         </param>
+            <param name="jntPosMin">                  -45         -30         -30         0           </param> 
+            <param name="jntPosMax">                  +45         +30         +30         +45         </param>
             <param name="rotorPosMin">             0           0           0           0           </param> 
             <param name="rotorPosMax">             0           0           0           0           </param>
             <param name="motorOverloadCurrents"> 2000         2000         2500         2500        </param>
