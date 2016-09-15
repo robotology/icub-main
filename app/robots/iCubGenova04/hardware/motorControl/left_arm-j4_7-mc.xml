@@ -14,15 +14,15 @@
         <!-- joint number in sub-part           0               1               2               3              -->
         <!-- joint name                         "l_wrist_prosup" "l_wrist_pitch" "l_wrist_yaw"  "l_hand_finger" -->     
         <group name="LIMITS">
-            <param name="jntPosMax">                60          0              35              60          </param>
-            <param name="jntPosMin">                -60         -90            -15             10          </param> 
+            <param name="jntPosMax">                90          0              35              60          </param>
+            <param name="jntPosMin">                -90         -90            -15             10          </param> 
             <param name="rotorPosMax">              0           0               0              0           </param>
             <param name="rotorPosMin">              0           0               0              0           </param> 
             <param name="jntVelMax">                1000        1000            1000           1000        </param>
             <param name="motorOverloadCurrents">    5000        2000            2000           2000       </param>
             <param name="motorNominalCurrents">     3000         600             600            600        </param>
             <param name="motorPeakCurrents">        5000        1000            1000           1000        </param>
-            <param name="motorPwmLimit">            3360        3360            3360           3360        </param>
+            <param name="motorPwmLimit">            2060        3360            3360           3360        </param>
            </group>
     
 

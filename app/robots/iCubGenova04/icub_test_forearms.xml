@@ -6,16 +6,16 @@
 	
 
     <!-- test report
-        - test on mais only is ok.
-        - test on mc of left forearm is wip. so far (07sep16) it is ok except for j0.
+        - test on mais is ok.
+        - test on mc of left forearm is ok.
  
       -->
 
-    <!-- HEAD -->	
+    <!-- HEAD	-->
 
     <devices file="./hardware/motorControl/head-j0_1-mc.xml" />  
     <devices file="./hardware/motorControl/head-j2_5-mc.xml" /> 
-    <devices file="./wrappers/motorControl/head_mc_wrapper.xml" /> 
+    <devices file="./wrappers/motorControl/head_mc_wrapper.xml" />  
 
 
     <!--LEFT_FOREARM -->
@@ -24,12 +24,12 @@
     <devices file="./hardware/motorControl/left_arm-j12_15-mc.xml" /> 
     <devices file="./wrappers/motorControl/left_forearm-mc_wrapper.xml" />
 
-    <!-- RIGHT_FOREARM -->
+    <!-- RIGHT_FOREARM 
 
     <devices file="./hardware/motorControl/right_arm-j4_7-mc.xml" />
     <devices file="./hardware/motorControl/right_arm-j8_11-mc.xml" /> 
     <devices file="./hardware/motorControl/right_arm-j12_15-mc.xml" />
-    <devices file="./wrappers/motorControl/right_forearm-mc_wrapper.xml" /> 
+    <devices file="./wrappers/motorControl/right_forearm-mc_wrapper.xml" /> -->
 
 
 	
@@ -48,12 +48,13 @@
     <devices file="hardware/skin/right_arm-ems4-skin.xml" /> 
   -->
 	
-    <!--  CALIBRATORS  -->
+    <!--  CALIBRATORS  
+   
+    
+
+    <devices file="calibrators/right_forearm-calib.xml" /> -->
     <devices file="calibrators/left_forearm-calib.xml" />
     <devices file="calibrators/head-calib.xml" />
-
-    <devices file="calibrators/right_forearm-calib.xml" />
-
 
     </robot> 
 

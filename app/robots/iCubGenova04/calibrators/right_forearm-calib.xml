@@ -18,11 +18,11 @@
       <group name="CALIBRATION">
         <param name="calibrationType">   5     3      3     7     7     6     6     6     6      6      6     6</param>
         <param name="calibration1">   1500     0      0     0     0     0     0     0     0      0      0     0</param>
-        <param name="calibration2">  10922     0      0     0     0  9102  9102  9102  9102   9102   9102  3640</param>
+        <param name="calibration2">      0     0      0     0     0  9102  9102  9102  9102   9102   9102  3640</param>
         <param name="calibration3">      0  5635    351     0     0    -1     1    -1     1     -1     1     -1</param>
         <param name="calibration4">      0     0      0  2430   210   213   495   255   469    237    480   715 </param>
         <param name="calibration5">      0     0      0  2700  1550    14    7     16     8      0      0   196 </param>
-        <param name="calibrationZero">  60  -180    180     0     0     0     0     0     0      0      0     0  </param>
+        <param name="calibrationZero">  90  -180    180     0     0     0     0     0     0      0      0     0  </param>
         <param name="calibrationDelta">  0     0      0     0     0     0     0     0     0      0      0     0  </param>
        
         <param name="startupPosition">   0   -15      0    35    25     0     0     0     0      0      0     0  </param>
@@ -35,11 +35,11 @@
 	<param name="CALIB_ORDER"> (8)</param>
 
         <action phase="startup" level="10" type="calibrate">
-            <param name="target">left_arm_mc_wrapper</param>
+            <param name="target">right_arm_mc_wrapper</param>
         </action>
 
         <action phase="interrupt1" level="1" type="park">
-            <param name="target">left_arm_mc_wrapper</param>
+            <param name="target">right_arm_mc_wrapper</param>
         </action>
 
         <action phase="interrupt3" level="1" type="abort" />
