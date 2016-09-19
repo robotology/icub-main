@@ -1905,8 +1905,8 @@ bool embObjMotionControl::init()
         _cacheImpedance[logico].damping   = jconfig.impedance.damping;
         _cacheImpedance[logico].offset    = jconfig.impedance.offset;
 
-        jconfig.limitsofjoint.max = (eOmeas_position_t) S_32(convertA2I(_limitsMax[logico], 0.0, _angleToEncoder[logico]));
-        jconfig.limitsofjoint.min = (eOmeas_position_t) S_32(convertA2I(_limitsMin[logico], 0.0, _angleToEncoder[logico]));
+        jconfig.userlimits.max = (eOmeas_position_t) S_32(convertA2I(_limitsMax[logico], 0.0, _angleToEncoder[logico]));
+        jconfig.userlimits.min = (eOmeas_position_t) S_32(convertA2I(_limitsMin[logico], 0.0, _angleToEncoder[logico]));
         jconfig.maxvelocityofjoint = S_32(_maxJntCmdVelocity[logico] * _angleToEncoder[logico]); //icubdeg/s
         jconfig.velocitysetpointtimeout = (eOmeas_time_t) U_16(_velocityTimeout[logico]);
 
@@ -2009,36 +2009,7 @@ bool embObjMotionControl::init()
     // invia la configurazione del controller  //
     /////////////////////////////////////////////
 
-    {   // configuration of the joint coupling matrix inside the controller
-
-        eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_controller, 0, eoprot_tag_mc_controller_config_jointcoupling);
-
-        eOq17_14_t protmatrix[4][4] = {0};
-
-        for(int i=0; i<4; i++)
-        {
-            for(int j=0; j<4; j++)
-            {
-                int k=i*4+j;
-                protmatrix[i][j] = eo_common_float_to_Q17_14(_kinematic_mj[k]);
-                //printf("pos = %d %d: xml=%f, prot=%x, conv = %f\n", i, j, _kinematic_mj[k], protmatrix[i][j], eo_common_Q17_14_to_float(protmatrix[i][j]));
-            }
-        }
-
-        if(false == res->setRemoteValueUntilVerified(id32, protmatrix, sizeof(protmatrix), 10, 0.010, 0.050, 2))
-        {
-            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for mc controller config joint coupling matrix" << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
-            return false;
-        }
-        else
-        {
-            if(verbosewhenok)
-            {
-                yDebug() << "embObjMotionControl::init() correctly configured mc controller config joint coupling matrix" << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
-            }
-        }
-
-    }
+    //to be done
 
     yTrace() << "embObjMotionControl::init(): correctly instantiated for BOARD" << res->getName() << "with IP" << res->getIPv4string();
     return true;
@@ -3643,7 +3614,7 @@ bool embObjMotionControl::getDebugReferencePositionRaw(int j, double* value)    
 bool embObjMotionControl::setLimitsRaw(int j, double min, double max)
 {
     bool ret = true;
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_limitsofjoint);
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_userlimits);
 
     eOmeas_position_limits_t    limits;
     limits.max = (eOmeas_position_t) S_32(max);
@@ -3662,7 +3633,7 @@ bool embObjMotionControl::setLimitsRaw(int j, double min, double max)
 bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
 {
     eOmeas_position_limits_t limits;
-    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_limitsofjoint);
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_userlimits);
 
     // Sign up for waiting the reply
     eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout

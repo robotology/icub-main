@@ -1067,50 +1067,21 @@ bool ServiceParser::parse_encoder_port(ConstString const &fromstring, eObrd_etht
         } break;
 
 
-    case eomc_enc_mais:
-    {
-        uint8_t toport1 = eobrd_port_unknown;
-        bool result = parse_port_mais(fromstring, toport1, formaterror);
-
-        if(false == result)
+        case eomc_enc_mais:
         {
-            yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for an encoder connector port";
-            formaterror = true;
-            ret = false;
-        }
-        else
-        {
-            toport = toport1;
-            ret = true;
-        }
-
-    } break;
-
-        case eomc_enc_onfoc:
-        {
-            // read it as a CAN address
-            eObrd_location_t loc;
-            bool result = convert(fromstring, loc, formaterror);
+            uint8_t toport1 = eobrd_port_unknown;
+            bool result = parse_port_mais(fromstring, toport1, formaterror);
 
             if(false == result)
             {
-                yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for a eObrd_location_t";
+                yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for an encoder connector port";
                 formaterror = true;
                 ret = false;
             }
             else
             {
-                // copy into .... nothing
-                if(eobrd_place_can == loc.any.place)
-                {
-                    toport = eobrd_port_none;
-                    ret = true;
-                }
-                else
-                {
-                    toport = eobrd_port_none;
-                    ret = true;
-                }
+                toport = toport1;
+                ret = true;
             }
 
         } break;
@@ -2132,8 +2103,9 @@ bool ServiceParser::check_motion(Searchable &config)
                 yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CONTROLLER.type";
                 return false;
             }
-
-            if(false == convert(b_PROPERTIES_CONTROLLER_type.get(1).asString(), mc_service.properties.controller.type, formaterror))
+            //VALE: copy in a temp variableboard type. This info is no more usefull.
+            eOmc_ctrlboard_t boardtype;
+            if(false == convert(b_PROPERTIES_CONTROLLER_type.get(1).asString(), boardtype, formaterror))
             {
                 yError() << "ServiceParser::check_motion() has found unknown SERVICE.PROPERTIES.CONTROLLER.type = " << b_PROPERTIES_CONTROLLER_type.toString();
                 return false;
@@ -2510,17 +2482,14 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
         {
             eOmn_serv_config_data_mc_foc_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.foc_based);
 
-            // 1. ->boardtype4mccontroller
-            data_mc->boardtype4mccontroller = mc_service.properties.controller.type;
-
-            // 2. ->version (of foc board).
+            // 1. ->version (of foc board).
             data_mc->version.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
             data_mc->version.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
             data_mc->version.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
             data_mc->version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
             data_mc->version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
 
-            // 3. ->arrayofjomodescriptors
+            // 2. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
             int numofjomos = mc_service.properties.numofjoints;
 
@@ -2548,7 +2517,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             }
 
 
-            // 4. ->jomocoupling
+            // 3. ->jomocoupling
             eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
             memset(jomocoupling, 0, sizeof(eOmc_4jomo_coupling_t));
 
@@ -2641,10 +2610,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
         {
             eOmn_serv_config_data_mc_mc4plus_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4plus_based);
 
-            // 1. ->boardtype4mccontroller
-            data_mc->boardtype4mccontroller = mc_service.properties.controller.type;
-
-            // 3. ->arrayofjomodescriptors
+            // 1. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
             int numofjomos = mc_service.properties.numofjoints;
 
@@ -2669,7 +2635,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             }
 
-            // 4. ->jomocoupling
+            // 2. ->jomocoupling
             eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
             memset(jomocoupling, 0, sizeof(eOmc_4jomo_coupling_t));
 
@@ -2696,10 +2662,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
         {
             eOmn_serv_config_data_mc_mc4plusmais_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4plusmais_based);
 
-            // 1. ->boardtype4mccontroller
-            data_mc->boardtype4mccontroller = mc_service.properties.controller.type;
-
-            // 2. ->mais
+            // 1. ->mais
             eOmn_serv_config_data_as_mais_t *mais = &data_mc->mais;
 
             mais->canloc.port = mc_service.properties.maislocation.port;
@@ -2712,7 +2675,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             mais->version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
             mais->version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
 
-            // 3. ->arrayofjomodescriptors
+            // 2. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
             int numofjomos = mc_service.properties.numofjoints;
 
@@ -2738,7 +2701,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             }
 
 
-            // 4. ->jomocoupling
+            // 3. ->jomocoupling
             eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
             memset(jomocoupling, 0, sizeof(eOmc_4jomo_coupling_t));
 
@@ -3300,10 +3263,10 @@ eOq17_14_t  m2[][4]=
 
 
 
-    s_serv_config_mc_v3_0B1.type       = eomn_serv_MC_mc4plus;
+   // s_serv_config_mc_v3_0B1.type       = eomn_serv_MC_mc4plus;
     //s_serv_config_mc_v3_0B1.filler     = {0, 0, 0};
 
-    s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.boardtype4mccontroller = 6; //emscontroller_board_HEAD_neckyaw_eyes;
+    //s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.boardtype4mccontroller = 6; //emscontroller_board_HEAD_neckyaw_eyes;
     //s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.filler = {0};
 
     ja->head.capacity       = 4;

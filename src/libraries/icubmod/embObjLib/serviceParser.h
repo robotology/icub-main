@@ -126,7 +126,6 @@ typedef struct
 
 typedef struct
 {
-    eOmc_ctrlboard_t                type;
     vector<double>                  matrixJ2M;
     vector<double>                  matrixM2J;
     vector<double>                  matrixE2J;
