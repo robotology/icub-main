@@ -461,6 +461,8 @@ bool embObjMotionControl::alloc(int nj)
 
     _limitsMax=allocAndCheck<double>(nj);
     _limitsMin=allocAndCheck<double>(nj);
+    _hwLimitsMax=allocAndCheck<double>(nj);
+    _hwLimitsMin=allocAndCheck<double>(nj);
     _kinematic_mj=allocAndCheck<double>(16);
     _currentLimits=allocAndCheck<MotorCurrentLimits>(nj);
     _motorPwmLimits=allocAndCheck<double>(nj);
@@ -513,6 +515,8 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_impedance_limits);
     checkAndDestroy(_limitsMax);
     checkAndDestroy(_limitsMin);
+    checkAndDestroy(_hwLimitsMax);
+    checkAndDestroy(_hwLimitsMin);
     checkAndDestroy(_kinematic_mj);
     checkAndDestroy(_currentLimits);
     checkAndDestroy(_motorPwmLimits);
@@ -604,6 +608,8 @@ embObjMotionControl::embObjMotionControl() :
     _jointType        = NULL;
     _limitsMin        = NULL;
     _limitsMax        = NULL;
+    _hwLimitsMax      = NULL;
+    _hwLimitsMin      = NULL;
     _currentLimits    = NULL;
     _motorPwmLimits   = NULL;
     _velocityShifts   = NULL;
@@ -1692,17 +1698,59 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         for(i=1; i<xtmp.size(); i++) _currentLimits[i-1].peakCurrent=xtmp.get(i).asDouble();
 
     // max limit
-    if (!extractGroup(limits, xtmp, "jntPosMax","a list of maximum angles (in degrees)", _njoints))
+    if (!extractGroup(limits, xtmp, "jntPosMax","a list of user maximum angles (in degrees)", _njoints))
         return false;
     else
         for(i=1; i<xtmp.size(); i++) _limitsMax[i-1]=xtmp.get(i).asDouble();
 
     // min limit
-    if (!extractGroup(limits, xtmp, "jntPosMin","a list of minimum angles (in degrees)", _njoints))
+    if (!extractGroup(limits, xtmp, "jntPosMin","a list of user minimum angles (in degrees)", _njoints))
         return false;
     else
         for(i=1; i<xtmp.size(); i++) _limitsMin[i-1]=xtmp.get(i).asDouble();
 
+    // max hardware limit
+    if (!extractGroup(limits, xtmp, "hardwareJntPosMax","a list of hardware maximum angles (in degrees)", _njoints))
+    {
+         yWarning() << "embObjMotionControl: missing hardwareJntPosMax param. Values of jntPosMax param will be used like hardware limits ";
+         for(i=0; i<_njoints; i++) _hwLimitsMax[i]=_limitsMax[i];
+    }
+    else
+    {
+        for(i=1; i<xtmp.size(); i++) _hwLimitsMax[i-1]=xtmp.get(i).asDouble();
+
+        //check hardware limits are bigger then user limits
+        for(i=0; i<_njoints; i++)
+        {
+            if(_limitsMax[i] > _hwLimitsMax[i])
+            {
+                yError() << "embObjMotionControl: user has set a limit  bigger then hardware limit!. Please check jntPosMax.";
+                return false;
+            }
+        }
+    }
+
+     // min hardware limit
+    if (!extractGroup(limits, xtmp, "hardwareJntPosMin","a list of hardware minimum angles (in degrees)", _njoints))
+    {
+         yWarning() << "embObjMotionControl: missing hardwareJntPosMin param. Values of jntPosMin param will be used like hardware limits ";
+         for(i=0; i<_njoints; i++) _hwLimitsMin[i]=_limitsMin[i];
+    }
+    else
+    {
+        for(i=1; i<xtmp.size(); i++) _hwLimitsMin[i-1]=xtmp.get(i).asDouble();
+
+        //check hardware limits are bigger then user limits
+        for(i=0; i<_njoints; i++)
+        {
+            if(_limitsMin[i] < _hwLimitsMin[i])
+            {
+                yError() << "embObjMotionControl: user has set a limit  bigger then hardware limit!. Please check jntPosMin.";
+                return false;
+            }
+        }
+
+    }
     // Rotor max limit
     if (!extractGroup(limits, xtmp, "rotorPosMax","a list of maximum rotor angles (in degrees)", _njoints))
         return false;
@@ -1907,6 +1955,11 @@ bool embObjMotionControl::init()
 
         jconfig.userlimits.max = (eOmeas_position_t) S_32(convertA2I(_limitsMax[logico], 0.0, _angleToEncoder[logico]));
         jconfig.userlimits.min = (eOmeas_position_t) S_32(convertA2I(_limitsMin[logico], 0.0, _angleToEncoder[logico]));
+
+        jconfig.hardwarelimits.max = (eOmeas_position_t) S_32(convertA2I(_hwLimitsMax[logico], 0.0, _angleToEncoder[logico]));
+        jconfig.hardwarelimits.min = (eOmeas_position_t) S_32(convertA2I(_hwLimitsMin[logico], 0.0, _angleToEncoder[logico]));
+
+
         jconfig.maxvelocityofjoint = S_32(_maxJntCmdVelocity[logico] * _angleToEncoder[logico]); //icubdeg/s
         jconfig.velocitysetpointtimeout = (eOmeas_time_t) U_16(_velocityTimeout[logico]);
 

@@ -321,8 +321,10 @@ private:
     string *_axisName;                          /** axis name */
     JointTypeEnum *_jointType;                  /** axis type */
     ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
-    double *_limitsMin;                         /** joint limits, max*/
-    double *_limitsMax;                         /** joint limits, min*/
+    double *_limitsMin;                         /** user joint limits, max*/
+    double *_limitsMax;                         /** user joint limits, min*/
+    double *_hwLimitsMax;                       /** hardaware joint limits, max */
+    double *_hwLimitsMin;                       /** hardaware joint limits, min */
     double *_kinematic_mj;                      /** the kinematic coupling matrix from joints space to motor space */
     //double *_currentLimits;                     /** current limits */
     MotorCurrentLimits *_currentLimits;
