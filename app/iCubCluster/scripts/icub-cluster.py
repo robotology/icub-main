@@ -29,7 +29,7 @@ from Tkinter import *
 class Util:
     @staticmethod
     def getSshCmd(user, host):
-        cmd = ['ssh', '-f']
+        cmd = ['ssh', '-f', '-X']
         if user == "":
             return cmd + [host]
         else:
@@ -337,7 +337,7 @@ class App:
                     cmd.append('log')
                 #else:
                     #cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' start ']
-#                   cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
+                    #cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
 
                 print 'Running',
                 print " ".join(cmd)
