@@ -143,6 +143,51 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_type_t& tobrdty
 }
 
 
+bool ServiceParser::convert(ConstString const &fromstring, eOmc_pioutputtype_t& pidoutputtype, bool& formaterror)
+{
+    const char *t = fromstring.c_str();
+
+    eObool_t usecompactstring = eobool_false;
+    pidoutputtype = eomc_string2pidoutputtype(t, usecompactstring);
+
+    if(eomc_pidoutput_unknown == pidoutputtype)
+    {
+        usecompactstring = eobool_true;
+        pidoutputtype = eomc_string2pidoutputtype(t, usecompactstring);
+    }
+
+    if(eomc_pidoutput_unknown == pidoutputtype)
+    {
+        yWarning() << "ServiceParser::convert(): string" << t << "cannot be converted into a proper eOmc_pioutputtype_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+bool ServiceParser::convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror)
+{
+    const char *t = fromstring.c_str();
+
+    eObool_t usecompactstring = eobool_false;
+    jsetconstraint = eomc_string2jsetconstraint(t, usecompactstring);
+
+    if(eomc_jsetconstraint_unknown == jsetconstraint)
+    {
+        usecompactstring = eobool_true;
+        jsetconstraint = eomc_string2jsetconstraint(t, usecompactstring);
+    }
+
+    if(eomc_jsetconstraint_unknown == jsetconstraint)
+    {
+        yWarning() << "ServiceParser::convert(): string" << t << "cannot be converted into a proper eOmc_jsetconstraint_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
 
 bool ServiceParser::convert(ConstString const &fromstring, eObrd_cantype_t& tobrdcantype, bool& formaterror)
 {
@@ -1561,8 +1606,11 @@ bool ServiceParser::check_motion(Searchable &config)
         Bottle b_PROPERTIES_JOINTMAPPING = Bottle(b_PROPERTIES.findGroup("JOINTMAPPING"));
         bool has_PROPERTIES_JOINTMAPPING = !b_PROPERTIES_JOINTMAPPING.isNull();
 
-        Bottle b_PROPERTIES_JOINTSETS = Bottle(b_PROPERTIES.findGroup("JOINTSETS"));
-        bool has_PROPERTIES_JOINTSETS = !b_PROPERTIES_JOINTSETS.isNull();
+        Bottle b_PROPERTIES_JOINTSETS_CFG = Bottle(b_PROPERTIES.findGroup("JOINTSETS_CFG"));
+        bool has_PROPERTIES_JOINTSETS_CFG = !b_PROPERTIES_JOINTSETS_CFG.isNull();
+
+        Bottle b_PROPERTIES_JOINTSETS_CONSTRAINTS = Bottle(b_PROPERTIES.findGroup("JOINTSETS_CONSTRAINTS"));
+        bool has_PROPERTIES_JOINTSETS_CONSTRAINTS = !b_PROPERTIES_JOINTSETS_CONSTRAINTS.isNull();
 
 
         bool itisoksofar = false;
@@ -2139,7 +2187,7 @@ bool ServiceParser::check_motion(Searchable &config)
 
 #warning TODO: if we need 6x6 matrixE2J, change 16 into 36 and then change mn data structure ....
             formaterror = false;
-            if(false == convert(b_PROPERTIES_CONTROLLER_matrixE2J, mc_service.properties.controller.matrixE2J, formaterror, 16))
+            if(false == convert(b_PROPERTIES_CONTROLLER_matrixE2J, mc_service.properties.controller.matrixE2J, formaterror, 24))
             {
                 yError() << "ServiceParser::check_motion() has detected an illegal format for some of the values of SERVICE.PROPERTIES.CONTROLLER.matrixE2J";
                 return false;
@@ -2148,19 +2196,19 @@ bool ServiceParser::check_motion(Searchable &config)
 
             // matrix M2J
             mc_service.properties.controller.matrixM2J.resize(0);
-//            Bottle b_PROPERTIES_CONTROLLER_matrixM2J = Bottle(b_PROPERTIES_CONTROLLER.findGroup("matrixM2J"));
-//            if(b_PROPERTIES_CONTROLLER_matrixM2J.isNull())
-//            {
-//                yError() << "ServiceParser::check_motion() cannot find SERVICE.PROPERTIES.CONTROLLER.matrixM2J";
-//                return false;
-//            }
-//
-//            formaterror = false;
-//            if( false == convert(b_PROPERTIES_CONTROLLER_matrixM2J, mc_service.properties.controller.matrixM2J, formaterror, 16))
-//            {
-//                yError() << "ServiceParser::check_motion() has detected an illegal format for some of the values of SERVICE.PROPERTIES.CONTROLLER.matrixM2J";
-//                return false;
-//            }
+           Bottle b_PROPERTIES_CONTROLLER_matrixM2J = Bottle(b_PROPERTIES_CONTROLLER.findGroup("matrixM2J"));
+           if(b_PROPERTIES_CONTROLLER_matrixM2J.isNull())
+           {
+               yError() << "ServiceParser::check_motion() cannot find SERVICE.PROPERTIES.CONTROLLER.matrixM2J";
+               return false;
+           }
+
+           formaterror = false;
+           if( false == convert(b_PROPERTIES_CONTROLLER_matrixM2J, mc_service.properties.controller.matrixM2J, formaterror, 16))
+           {
+               yError() << "ServiceParser::check_motion() has detected an illegal format for some of the values of SERVICE.PROPERTIES.CONTROLLER.matrixM2J";
+               return false;
+           }
 
         } // has_PROPERTIES_CONTROLLER
 
@@ -2188,6 +2236,13 @@ bool ServiceParser::check_motion(Searchable &config)
             if(b_PROPERTIES_JOINTMAPPING_ENCODER2.isNull())
             {
                 yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2";
+                return false;
+            }
+
+            Bottle b_PROPERTIES_JOINTMAPPING_joint2set = Bottle(b_PROPERTIES_JOINTMAPPING.find("joint2set"));
+            if(b_PROPERTIES_JOINTMAPPING_joint2set.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.joint2set";
                 return false;
             }
 
@@ -2253,7 +2308,8 @@ bool ServiceParser::check_motion(Searchable &config)
                 (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_position.size()) ||
                 (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_type.size()) ||
                 (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_port.size()) ||
-                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_position.size())
+                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_position.size()) ||
+                (tmp != b_PROPERTIES_JOINTMAPPING_joint2set.size())
               )
             {
                 yError() << "ServiceParser::check_motion() detected wrong number of columns somewhere inside PROPERTIES.JOINTMAPPING";
@@ -2268,6 +2324,8 @@ bool ServiceParser::check_motion(Searchable &config)
             mc_service.properties.actuators.resize(0);
             mc_service.properties.encoder1s.resize(0);
             mc_service.properties.encoder2s.resize(0);
+            mc_service.properties.joint2set.resize(0);
+
 
             for(int i=0; i<mc_service.properties.numofjoints; i++)
             {
@@ -2371,42 +2429,174 @@ bool ServiceParser::check_motion(Searchable &config)
                 mc_service.properties.actuators.push_back(act);
                 mc_service.properties.encoder1s.push_back(enc1);
                 mc_service.properties.encoder2s.push_back(enc2);
+
+                mc_service.properties.joint2set.push_back(b_PROPERTIES_JOINTMAPPING_joint2set.get(i+1).asInt());
             }
+
 
 
         } // has_PROPERTIES_JOINTMAPPING
 
+        mc_service.properties.numofjointsets = getnumofjointsets();
 
 
-
-        if(true == has_PROPERTIES_JOINTSETS)
+        if(true == has_PROPERTIES_JOINTSETS_CFG)
         {
 
-            Bottle b_PROPERTIES_JOINTSETS_list = Bottle(b_PROPERTIES_JOINTSETS.findGroup("list"));
-            if(b_PROPERTIES_JOINTSETS_list.isNull())
+            Bottle b_PROPERTIES_JOINTSETS_CFG_trqCntrl = Bottle(b_PROPERTIES_JOINTSETS_CFG.findGroup("canDoTrqCntrl"));
+            if(b_PROPERTIES_JOINTSETS_CFG_trqCntrl.isNull())
             {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS.list";
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS_CFG.canDoTrqCntrl";
                 return false;
             }
 
-            if((b_PROPERTIES_JOINTSETS_list.size()-1) != mc_service.properties.numofjoints)
+            if((b_PROPERTIES_JOINTSETS_CFG_trqCntrl.size()-1) != mc_service.properties.numofjointsets)
             {
-                yError() << "ServiceParser::check_motion() detected a wrong size of PROPERTIES.JOINTSETS.list: it must be equal to the number of joints" << mc_service.properties.numofjoints;
+                yError() << "ServiceParser::check_motion() detected a wrong size of PROPERTIES.JOINTSETS_CFG.canDoTrqCntrl: it must be equal to the number of jointsets" << mc_service.properties.numofjointsets;
                 return false;
             }
 
-            mc_service.properties.joint2set.resize(0);
-
-            for(int i=0; i<mc_service.properties.numofjoints; i++)
+            Bottle b_PROPERTIES_JOINTSETS_CFG_useMotorFbk = Bottle(b_PROPERTIES_JOINTSETS_CFG.findGroup("useMotorSpeedFbk"));
+            if(b_PROPERTIES_JOINTSETS_CFG_useMotorFbk.isNull())
             {
-                mc_service.properties.joint2set.push_back(b_PROPERTIES_JOINTSETS_list.get(i+1).asInt());
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS_CFG.useMotorSpeedFbk";
+                return false;
             }
 
-        } // has_PROPERTIES_JOINTSETS
+            if((b_PROPERTIES_JOINTSETS_CFG_useMotorFbk.size()-1) != mc_service.properties.numofjointsets)
+            {
+                yError() << "ServiceParser::check_motion() detected a wrong size of PROPERTIES.JOINTSETS_CFG.useMotorSpeedFbk: it must be equal to the number of jointsets" << mc_service.properties.numofjointsets;
+                return false;
+            }
+
+             Bottle b_PROPERTIES_JOINTSETS_CFG_pidOutputType = Bottle(b_PROPERTIES_JOINTSETS_CFG.findGroup("pidOutputType"));
+            if(b_PROPERTIES_JOINTSETS_CFG_pidOutputType.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS_CFG.pidOutputType";
+                return false;
+            }
+
+            if((b_PROPERTIES_JOINTSETS_CFG_pidOutputType.size()-1) != mc_service.properties.numofjointsets)
+            {
+                yError() << "ServiceParser::check_motion() detected a wrong size of PROPERTIES.JOINTSETS_CFG.pidOutputType: it must be equal to the number of jointsets" << mc_service.properties.numofjointsets;
+                return false;
+            }
+
+            mc_service.properties.jointset_cfgs.resize(mc_service.properties.numofjointsets);
+
+            for(int i=0; i<mc_service.properties.numofjointsets; i++)
+            {
+                mc_service.properties.jointset_cfgs.at[i].candotorquecontrol = b_PROPERTIES_JOINTSETS_CFG_trqCntrl.get(i+1).asBool();
+                mc_service.properties.jointset_cfgs.at[i].usespeedfeedbackfrommotors = b_PROPERTIES_JOINTSETS_CFG_useMotorFbk.get(i+1).asBool();
+                if(!convert(b_PROPERTIES_JOINTSETS_CFG_pidOutputType.get(i+1).asString(), mc_service.properties.jointset_cfgs.at[i].pidoutputtype, formaterror))
+                {
+                    return false;
+                }
+
+            }
+
+        }
+        else
+        {
+            yError() << "ServiceParser::check_motion() didn't find PROPERTIES.JOINTSETS_CFG";
+            return false;
+
+        }// has_PROPERTIES_JOINTSETS_CFG
+
+
+
+
+        if(true == has_PROPERTIES_JOINTSETS_CONSTRAINTS)
+        {
+
+            Bottle b_PROPERTIES_JOINTSETS_CONSTRAINTS_type = Bottle(b_PROPERTIES_JOINTSETS_CONSTRAINTS.findGroup("type"));
+            if(b_PROPERTIES_JOINTSETS_CONSTRAINTS_type.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS_CONSTRAINTS.type";
+                return false;
+            }
+
+            if((b_PROPERTIES_JOINTSETS_CONSTRAINTS_type.size()-1) != mc_service.properties.numofjointsets)
+            {
+                yError() << "ServiceParser::check_motion() detected a wrong size of PROPERTIES.JOINTSETS_CONSTRAINTS.type: it must be equal to the number of jointsets" << mc_service.properties.numofjointsets;
+                return false;
+            }
+
+            Bottle b_PROPERTIES_JOINTSETS_CONSTRAINTS_param1 = Bottle(b_PROPERTIES_JOINTSETS_CONSTRAINTS.findGroup("param1"));
+            if(b_PROPERTIES_JOINTSETS_CONSTRAINTS_param1.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS_CONSTRAINTS.param1";
+                return false;
+            }
+
+            if((b_PROPERTIES_JOINTSETS_CONSTRAINTS_param1.size()-1) != mc_service.properties.numofjointsets)
+            {
+                yError() << "ServiceParser::check_motion() detected a wrong size of PROPERTIES.JOINTSETS_CONSTRAINTS.param1: it must be equal to the number of jointsets" << mc_service.properties.numofjointsets;
+                return false;
+            }
+
+             Bottle b_PROPERTIES_JOINTSETS_CONSTRAINTS_param2 = Bottle(b_PROPERTIES_JOINTSETS_CONSTRAINTS.findGroup("param2"));
+            if(b_PROPERTIES_JOINTSETS_CONSTRAINTS_param2.isNull())
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS_CONSTRAINTS.param2";
+                return false;
+            }
+
+            if((b_PROPERTIES_JOINTSETS_CONSTRAINTS_param2.size()-1) != mc_service.properties.numofjointsets)
+            {
+                yError() << "ServiceParser::check_motion() detected a wrong size of PROPERTIES.JOINTSETS_CONSTRAINTS.param2: it must be equal to the number of jointsets" << mc_service.properties.numofjointsets;
+                return false;
+            }
+
+
+            for(int i=0; i<mc_service.properties.numofjointsets; i++)
+            {
+                bool formaterror = false;
+                if(!convert(b_PROPERTIES_JOINTSETS_CONSTRAINTS_type.get(i+1).asString(), mc_service.properties.jointset_cfgs.at[i].constraints.type, formaterror))
+                {
+                    return false;
+                }
+                mc_service.properties.jointset_cfgs.at[i].constraints.param1 = b_PROPERTIES_JOINTSETS_CONSTRAINTS_param1.get(i+1).asDouble();
+                mc_service.properties.jointset_cfgs.at[i].constraints.param2 = b_PROPERTIES_JOINTSETS_CONSTRAINTS_param2.get(i+1).asDouble();
+            }
+
+        }
+        else
+        {
+            yError() << "ServiceParser::check_motion() didn't find PROPERTIES.JOINTSETS_CONSTRAINTS";
+            return false;
+
+        }// has_PROPERTIES_JOINTSETS_CONSTRAINTS
 
     }
     
     return true;
+}
+
+int ServiceParser::getnumofjointsets(void)
+{
+
+    int n=0;
+    int njointsinset[mc_service.properties.numofjoints]= {0}; //the max number of sets is equal to max number of joints.
+    for(int i=0; i<mc_service.properties.numofjoints;i++)
+    {
+        int set = mc_service.properties.joint2set[i];
+        if(set > mc_service.properties.numofjoints)
+        {
+            yError() << "ServiceParser::getnumofjointsets: error in joint2set param. The set number is too big. Remember: max number of set is equal to max num of joint.";
+            return false;
+        }
+
+       njointsinset[set]++;
+    }
+    int count =0;
+    for(int i=0; i<mc_service.properties.numofjoints;i++)
+    {
+        if(njointsinset[set] != 0)
+            count++;
+    }
+
+    return  count;
 }
 
 

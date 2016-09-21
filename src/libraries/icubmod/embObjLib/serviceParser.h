@@ -167,6 +167,8 @@ typedef struct
     vector<servMC_encoder_t>            encoder2s;
 
     vector<int>                         joint2set;
+    int                                 numofjointsets;
+    vector<eOmc_jointset_configuration_t> jointset_cfgs;
 } servMCproperties_t;
 
 
@@ -258,6 +260,8 @@ private:
     bool check_analog(yarp::os::Searchable &config, eOmn_serv_type_t type);
 
     bool check_motion(yarp::os::Searchable &config);
+
+    int getnumofjointsets(void);
     
     // suggestion: split check_motion() in sub-methods which parse the groups ...
 };
