@@ -12,6 +12,7 @@
 
 #include <ace/ACE.h>
 #include <ace/SOCK_Dgram_Bcast.h>
+#include "EoCommon.h"
 
 class DSocket
 {
@@ -21,6 +22,11 @@ public:
 
     bool Create(ACE_UINT16 port,std::string& address);
     bool Create(ACE_UINT16 port,ACE_UINT32 address);
+
+    bool Create(eOipv4addr_t ipv4, eOipv4port_t port);
+    void SendBroad(eOipv4port_t port, void* data, size_t len);
+    void SendTo(eOipv4addr_t ipv4, eOipv4port_t port, void* data, size_t len);
+    ssize_t ReceiveFrom(eOipv4addr_t &ipv4, eOipv4port_t &port, void* data, size_t len, int wait_msec);
 
     void SendTo(void* data,size_t len,ACE_UINT16 port,std::string& address);
     void SendTo(void* data,size_t len,ACE_UINT16 port,ACE_UINT32 address);
