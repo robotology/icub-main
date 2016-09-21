@@ -28,8 +28,11 @@ from Tkinter import *
 
 class Util:
     @staticmethod
-    def getSshCmd(user, host):
-        cmd = ['ssh', '-f', '-X']
+    def getSshCmd(user, host, ssh_options):
+        cmd = ['ssh', '-f']
+        if ssh_options != "":
+            cmd = cmd + [ssh_options]	
+
         if user == "":
             return cmd + [host]
         else:
@@ -37,11 +40,12 @@ class Util:
 
 
 class Node:
-    def __init__(self, name, display, dispValue, user):
+    def __init__(self, name, display, dispValue, user, ssh_options):
         self.name=name
         self.display=display
         self.displayValue=dispValue;
         self.user=user;
+        self.ssh_options=ssh_options;
 
 class RemoteExecWindow:
     def __init__(self, master, user, nodes):
@@ -64,7 +68,7 @@ class RemoteExecWindow:
             tmp.grid(row=r, column=1)
             v=IntVar()
             check=Checkbutton(tmpFrame, variable=v)
-#           check.config(foreground="#00A000")
+            #check.config(foreground="#00A000")
             self.nodesChk.append(v)
             check.grid(row=r, column=2)
 
@@ -105,17 +109,19 @@ class RemoteExecWindow:
             if (chk.get()):
                 node=self.nodes[i].name
                 user=self.nodes[i].user
-                cmd = Util.getSshCmd(user, node) + [remoteCmd]
+                ssh_options=self.nodes[i].ssh_options
+                cmd = Util.getSshCmd(user, node, ssh_options) + [remoteCmd]
                 print " ".join(cmd)
                 subprocess.Popen(cmd).wait()
             i=i+1
 
 class Cluster:
-    def __init__(self, name, user, namespace, nsNode, nodes):
+    def __init__(self, name, user, namespace, nsNode, ssh_options, nodes):
         self.name=name
         self.user=user
         self.namespace=namespace
         self.nsNode=nsNode
+        self.ssh_options=ssh_options
         self.nodes=nodes
 
     def display(self):
@@ -323,8 +329,7 @@ class App:
             logged=iSS.next().get()
 
             if running==0 and selected==1:
-                #cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
-                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' start ' , node.name]
+                cmd = Util.getSshCmd(node.user, node.name, node.ssh_options) + ['icub-cluster-run.sh', ' start ' , node.name]
 
                 if node.display:
                     if (node.displayValue == ""):
@@ -336,8 +341,7 @@ class App:
                 if logged==1:
                     cmd.append('log')
                 #else:
-                    #cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' start ']
-                    #cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh', ' start ']
+                    #cmd = Util.getSshCmd(node.user, node.name, node.ssh_options) + ['icub-cluster-run.sh', ' start ']
 
                 print 'Running',
                 print " ".join(cmd)
@@ -360,8 +364,7 @@ class App:
             running=i.next().get()
 
             if running==1 and selected==1 :
-                #cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh' ' stop']
-                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' stop']
+                cmd = Util.getSshCmd(node.user, node.name, node.ssh_options) + ['icub-cluster-run.sh', ' stop']
                 print 'Running',
                 print " ".join(cmd)
                 ret=subprocess.Popen(cmd).wait()
@@ -378,8 +381,7 @@ class App:
         for node in self.cluster.nodes:
             selected=iS.next().get()
             if (selected):
-                #cmd=['ssh', '-f', node.user+'@'+node.name, 'icub-cluster-run.sh' ' kill']
-                cmd = Util.getSshCmd(node.user, node.name) + ['icub-cluster-run.sh', ' kill']
+                cmd = Util.getSshCmd(node.user, node.name, node.ssh_options) + ['icub-cluster-run.sh', ' kill']
                 print " ".join(cmd)
                 ret=subprocess.Popen(cmd).wait()
 
@@ -401,7 +403,7 @@ class App:
         print 'Running nameserver'
         self.checkNs()
         if self.nsFlag.get()==0:
-            cmd = Util.getSshCmd(self.clusterUser.get(), self.clusterNsNode.get()) + ['icub-cluster-server.sh', ' start']
+            cmd = Util.getSshCmd(self.clusterUser.get(), self.clusterNsNode.get(), self.cluster.ssh_options) + ['icub-cluster-server.sh', ' start']
 
             if self.ROSoption.get()==1:
                 cmd.append('ros')
@@ -417,7 +419,7 @@ class App:
         print 'Stopping nameserver'
         self.checkNs()
         if self.nsFlag.get()==1:
-            cmd = Util.getSshCmd(self.clusterUser.get(), self.clusterNsNode.get()) + ['icub-cluster-server.sh', ' stop']
+            cmd = Util.getSshCmd(self.clusterUser.get(), self.clusterNsNode.get(), self.cluster.ssh_options) + ['icub-cluster-server.sh', ' stop']
             print 'Running',
             print " ".join(cmd)
             ret=subprocess.Popen(cmd).wait()
@@ -502,21 +504,32 @@ if __name__ == '__main__':
                     nodeuser=node.getAttribute("user");
                 else:
                     nodeuser=user;
+
+                if node.hasAttribute("ssh-options"):
+                    ssh_options=node.getAttribute("ssh-options");
+                else:
+                    ssh_options="";
+
                 if node.hasAttribute("display"):
                     a=node.getAttribute("display")
                     # handle default values for variable (for backward compatibility)
                     if ( a=="true" or a=="True" or a=="TRUE" or a=="yes" or a=="YES"):
-                        newNode=Node(node.firstChild.data, True, ":0.0", nodeuser)
+                        newNode=Node(node.firstChild.data, True, ":0.0", nodeuser, ssh_options)
                     else:
-                        newNode=Node(node.firstChild.data, True, a, nodeuser)
+                        newNode=Node(node.firstChild.data, True, a, nodeuser, ssh_options)
                 else:
-                    newNode=Node(node.firstChild.data, False, "", nodeuser)
+                    newNode=Node(node.firstChild.data, False, "", nodeuser, ssh_options)
             else:
-                newNode=Node(node.firstChild.data, False, "", user)
+                newNode=Node(node.firstChild.data, False, "", user, ssh_options)
 
             nodeList.append(newNode)
 
-    cl=Cluster(name, user, namespace, namespaceNode, nodeList)
+        if nameserver.hasAttribute("ssh-options"):
+            ssh_options=nameserver.getAttribute("ssh-options");
+        else:
+            ssh_options="";
+
+    cl=Cluster(name, user, namespace, namespaceNode, ssh_options, nodeList)
     cl.display()
 
     root = Tk()
