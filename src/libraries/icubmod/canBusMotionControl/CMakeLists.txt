@@ -27,7 +27,8 @@ if(ICUB_HAS_icub_firmware_shared)
 
    ADD_DEFINITIONS(-D_REENTRANT)
 
-   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}/../motionControlLib/
+   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} 
+                       ../motionControlLib/
                        ${ACE_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS}
                        ${FIRMWARE_SHARED_INC})
 
