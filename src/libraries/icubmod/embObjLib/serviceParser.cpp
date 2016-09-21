@@ -143,22 +143,22 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_type_t& tobrdty
 }
 
 
-bool ServiceParser::convert(ConstString const &fromstring, eOmc_pioutputtype_t& pidoutputtype, bool& formaterror)
+bool ServiceParser::convert(ConstString const &fromstring, eOmc_pidoutputtype_t& pidoutputtype, bool& formaterror)
 {
     const char *t = fromstring.c_str();
 
     eObool_t usecompactstring = eobool_false;
     pidoutputtype = eomc_string2pidoutputtype(t, usecompactstring);
 
-    if(eomc_pidoutput_unknown == pidoutputtype)
+    if(eomc_pidoutputtype_unknown == pidoutputtype)
     {
         usecompactstring = eobool_true;
         pidoutputtype = eomc_string2pidoutputtype(t, usecompactstring);
     }
 
-    if(eomc_pidoutput_unknown == pidoutputtype)
+    if(eomc_pidoutputtype_unknown == pidoutputtype)
     {
-        yWarning() << "ServiceParser::convert(): string" << t << "cannot be converted into a proper eOmc_pioutputtype_t";
+        yWarning() << "ServiceParser::convert(): string" << t << "cannot be converted into a proper eOmc_pidoutputtype_t";
         formaterror = true;
         return false;
     }
@@ -1645,9 +1645,15 @@ bool ServiceParser::check_motion(Searchable &config)
                     itisoksofar = false;
                 }
 
-                if(false == has_PROPERTIES_JOINTSETS)
+                if(false == has_PROPERTIES_JOINTSETS_CFG)
                 {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS for type" << eomn_servicetype2string(mc_service.type);
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS.CFG for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_JOINTSETS_CONSTRAINTS)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS.CONSTRAINTS for type" << eomn_servicetype2string(mc_service.type);
                     itisoksofar = false;
                 }
 
@@ -1678,9 +1684,15 @@ bool ServiceParser::check_motion(Searchable &config)
                     itisoksofar = false;
                 }
 
-                if(false == has_PROPERTIES_JOINTSETS)
+                if(false == has_PROPERTIES_JOINTSETS_CFG)
                 {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS for type" << eomn_servicetype2string(mc_service.type);
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS.CFG for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_JOINTSETS_CONSTRAINTS)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS.CONSTRAINTS for type" << eomn_servicetype2string(mc_service.type);
                     itisoksofar = false;
                 }
 
@@ -1723,9 +1735,15 @@ bool ServiceParser::check_motion(Searchable &config)
                     itisoksofar = false;
                 }
 
-                if(false == has_PROPERTIES_JOINTSETS)
+                if(false == has_PROPERTIES_JOINTSETS_CFG)
                 {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS for type" << eomn_servicetype2string(mc_service.type);
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS.CFG for type" << eomn_servicetype2string(mc_service.type);
+                    itisoksofar = false;
+                }
+
+                if(false == has_PROPERTIES_JOINTSETS_CONSTRAINTS)
+                {
+                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS.CONSTRAINTS for type" << eomn_servicetype2string(mc_service.type);
                     itisoksofar = false;
                 }
 
@@ -2239,7 +2257,7 @@ bool ServiceParser::check_motion(Searchable &config)
                 return false;
             }
 
-            Bottle b_PROPERTIES_JOINTMAPPING_joint2set = Bottle(b_PROPERTIES_JOINTMAPPING.find("joint2set"));
+            Bottle b_PROPERTIES_JOINTMAPPING_joint2set = Bottle(b_PROPERTIES_JOINTMAPPING.findGroup("joint2set"));
             if(b_PROPERTIES_JOINTMAPPING_joint2set.isNull())
             {
                 yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.joint2set";
@@ -2486,20 +2504,17 @@ bool ServiceParser::check_motion(Searchable &config)
 
             for(int i=0; i<mc_service.properties.numofjointsets; i++)
             {
-                mc_service.properties.jointset_cfgs.at[i].candotorquecontrol = b_PROPERTIES_JOINTSETS_CFG_trqCntrl.get(i+1).asBool();
-                mc_service.properties.jointset_cfgs.at[i].usespeedfeedbackfrommotors = b_PROPERTIES_JOINTSETS_CFG_useMotorFbk.get(i+1).asBool();
-                if(!convert(b_PROPERTIES_JOINTSETS_CFG_pidOutputType.get(i+1).asString(), mc_service.properties.jointset_cfgs.at[i].pidoutputtype, formaterror))
+                eOmc_pidoutputtype_t pidoutputtype;
+                if(!convert(b_PROPERTIES_JOINTSETS_CFG_pidOutputType.get(i+1).asString(),pidoutputtype , formaterror))
                 {
                     return false;
                 }
+                mc_service.properties.jointset_cfgs[i].pidoutputtype = pidoutputtype;
+                mc_service.properties.jointset_cfgs[i].candotorquecontrol = b_PROPERTIES_JOINTSETS_CFG_trqCntrl.get(i+1).asBool();
+                mc_service.properties.jointset_cfgs[i].usespeedfeedbackfrommotors = b_PROPERTIES_JOINTSETS_CFG_useMotorFbk.get(i+1).asBool();
+
 
             }
-
-        }
-        else
-        {
-            yError() << "ServiceParser::check_motion() didn't find PROPERTIES.JOINTSETS_CFG";
-            return false;
 
         }// has_PROPERTIES_JOINTSETS_CFG
 
@@ -2552,19 +2567,15 @@ bool ServiceParser::check_motion(Searchable &config)
             for(int i=0; i<mc_service.properties.numofjointsets; i++)
             {
                 bool formaterror = false;
-                if(!convert(b_PROPERTIES_JOINTSETS_CONSTRAINTS_type.get(i+1).asString(), mc_service.properties.jointset_cfgs.at[i].constraints.type, formaterror))
+                eOmc_jsetconstraint_t constraint;
+                if(!convert(b_PROPERTIES_JOINTSETS_CONSTRAINTS_type.get(i+1).asString(), constraint, formaterror))
                 {
                     return false;
                 }
-                mc_service.properties.jointset_cfgs.at[i].constraints.param1 = b_PROPERTIES_JOINTSETS_CONSTRAINTS_param1.get(i+1).asDouble();
-                mc_service.properties.jointset_cfgs.at[i].constraints.param2 = b_PROPERTIES_JOINTSETS_CONSTRAINTS_param2.get(i+1).asDouble();
+                mc_service.properties.jointset_cfgs[i].constraints.type = constraint;
+                mc_service.properties.jointset_cfgs[i].constraints.param1 = b_PROPERTIES_JOINTSETS_CONSTRAINTS_param1.get(i+1).asDouble();
+                mc_service.properties.jointset_cfgs[i].constraints.param2 = b_PROPERTIES_JOINTSETS_CONSTRAINTS_param2.get(i+1).asDouble();
             }
-
-        }
-        else
-        {
-            yError() << "ServiceParser::check_motion() didn't find PROPERTIES.JOINTSETS_CONSTRAINTS";
-            return false;
 
         }// has_PROPERTIES_JOINTSETS_CONSTRAINTS
 
@@ -2592,7 +2603,7 @@ int ServiceParser::getnumofjointsets(void)
     int count =0;
     for(int i=0; i<mc_service.properties.numofjoints;i++)
     {
-        if(njointsinset[set] != 0)
+        if(njointsinset[i] != 0)
             count++;
     }
 

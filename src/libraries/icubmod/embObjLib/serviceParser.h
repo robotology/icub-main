@@ -246,6 +246,9 @@ public:
     bool convert(eObrd_protocolversion_t const &prot, char *str, int len);
     bool convert(eObrd_firmwareversion_t const &firm, char *str, int len);
 
+    bool convert(ConstString const &fromstring, eOmc_pidoutputtype_t& pidoutputtype, bool& formaterror);
+    bool convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
+
 public:
 
     servAScollector_t           as_service;
