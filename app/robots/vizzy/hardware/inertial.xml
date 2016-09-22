@@ -1,7 +1,0 @@
-<devices>
-	<device name="inertial" type="inertial">
-		<param name="name"> /vizzy/inertial </param>
-		<param name="subdevice"> xsensmtx </param>
-		<param name="serial"> /dev/ttyS0 </param>
-	</device>
-</devices>

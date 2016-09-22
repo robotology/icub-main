@@ -1,1 +1,0 @@
-/home/icub/icub_world/icub-main/app/robots/experimentalSetups/arm-v3/

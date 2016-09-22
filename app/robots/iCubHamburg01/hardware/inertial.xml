@@ -1,7 +1,0 @@
-<devices>
-  <device name="inertial" type="inertial">
-      <param name="name">  /icub/inertial  </param>
-      <param name="subdevice">  imuBosch_BNO055  </param>
-      <param name="comport">  /dev/ttyUSB0   </param>
-</device>
-</devices>

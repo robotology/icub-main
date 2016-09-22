@@ -1,6 +1,0 @@
-This directory contains robot-specific files. Depending on the value of the YARP_ROBOT_NAME
-environment variable (or CMake variable) CMake will determine the name of the robot you use and generate code
-to setup the share/iCub/robots/default symlink so that the correct files will be picked up at runtime
-(mostly by yarprobotinterface but also from other modules).
-
-If the YARP_ROBOT_NAME variable does not exist, setup shall be performed manually.

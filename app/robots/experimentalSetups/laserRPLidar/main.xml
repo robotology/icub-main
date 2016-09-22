@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<robot name="icub">
-
-    <!-- laser -->
-    <devices file="./laser_hw.xml" /> 
-    <devices file="./laser_wrapper.xml" /> 
-    
-</robot> 
-

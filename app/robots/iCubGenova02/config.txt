@@ -1,1 +1,0 @@
-/usr/local/src/robot/icub-firmware-build/skin.hex
