@@ -2734,10 +2734,22 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
                 for(int j=0; j<4; j++)
                 {
                     jomocoupling->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
-                    jomocoupling->encoder2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[4*i+j]);
+                    jomocoupling->motor2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixM2J[4*i+j]);
                 }
             }
 
+            for(int r=0; r<4; r++)
+            {
+                for(int c=0; c<6; c++)
+                {
+                    jomocoupling->encoder2joint[r][c] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[6*r+c]);
+                }
+            }
+
+            for(int s=0; s< mc_service.properties.numofjointsets; s++)
+            {
+                memcpy(&jomocoupling->joint2set[s], &mc_service.properties.jointset_cfgs[s], sizeof(eOmc_jointset_configuration_t));
+            }
 
             // ok, everything is done
             ret = true;
@@ -2850,8 +2862,21 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
                 for(int j=0; j<4; j++)
                 {
                     jomocoupling->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
-                    jomocoupling->encoder2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[4*i+j]);
+                    jomocoupling->motor2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixM2J[4*i+j]);
                 }
+            }
+
+            for(int r=0; r<4; r++)
+            {
+                for(int c=0; c<6; c++)
+                {
+                    jomocoupling->encoder2joint[r][c] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[6*r+c]);
+                }
+            }
+
+            for(int s=0; s< mc_service.properties.numofjointsets; s++)
+            {
+                memcpy(&jomocoupling->joint2set[s], &mc_service.properties.jointset_cfgs[s], sizeof(eOmc_jointset_configuration_t));
             }
 
 
@@ -2916,8 +2941,21 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
                 for(int j=0; j<4; j++)
                 {
                     jomocoupling->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
-                    jomocoupling->encoder2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[4*i+j]);
+                    jomocoupling->motor2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixM2J[4*i+j]);
                 }
+            }
+
+            for(int r=0; r<4; r++)
+            {
+                for(int c=0; c<6; c++)
+                {
+                    jomocoupling->encoder2joint[r][c] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[6*r+c]);
+                }
+            }
+
+            for(int s=0; s< mc_service.properties.numofjointsets; s++)
+            {
+                memcpy(&jomocoupling->joint2set[s], &mc_service.properties.jointset_cfgs[s], sizeof(eOmc_jointset_configuration_t));
             }
 
 
