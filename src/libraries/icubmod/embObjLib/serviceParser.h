@@ -265,6 +265,8 @@ private:
     bool check_motion(yarp::os::Searchable &config);
 
     int getnumofjointsets(void);
+
+    bool copyjomocouplingInfo(eOmc_4jomo_coupling_t *jc_dest);
     
     // suggestion: split check_motion() in sub-methods which parse the groups ...
 };

@@ -2448,29 +2448,38 @@ bool ServiceParser::check_motion(Searchable &config)
                 mc_service.properties.encoder1s.push_back(enc1);
                 mc_service.properties.encoder2s.push_back(enc2);
 
+               // mc_service.properties.joint2set.push_back(b_PROPERTIES_JOINTMAPPING_joint2set_ptr->get(i+1).asInt());
+                yError() <<"**********" << b_PROPERTIES_JOINTMAPPING_joint2set.toString();
                 mc_service.properties.joint2set.push_back(b_PROPERTIES_JOINTMAPPING_joint2set.get(i+1).asInt());
             }
 
-
+        for (int xx=0; xx<mc_service.properties.numofjoints; xx++)
+            yError() << " JOINT SET MAP: J " << xx << "SET " << mc_service.properties.joint2set[xx];
 
         } // has_PROPERTIES_JOINTMAPPING
 
         mc_service.properties.numofjointsets = getnumofjointsets();
+        yError() << " NUM OF SETS = "<< mc_service.properties.numofjointsets;
 
+        if(has_PROPERTIES_JOINTSETS_CFG || has_PROPERTIES_JOINTSETS_CONSTRAINTS)
+        {
+            eOmc_jointset_configuration_t cfg_reset = {0};
+            mc_service.properties.jointset_cfgs.resize(mc_service.properties.numofjointsets, cfg_reset);
+        }
 
         if(true == has_PROPERTIES_JOINTSETS_CFG)
         {
 
-            Bottle b_PROPERTIES_JOINTSETS_CFG_trqCntrl = Bottle(b_PROPERTIES_JOINTSETS_CFG.findGroup("canDoTrqCntrl"));
+            Bottle b_PROPERTIES_JOINTSETS_CFG_trqCntrl = (b_PROPERTIES_JOINTSETS_CFG.findGroup("canDoTrqCtrl"));
             if(b_PROPERTIES_JOINTSETS_CFG_trqCntrl.isNull())
             {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS_CFG.canDoTrqCntrl";
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS_CFG.canDoTrqCtrl";
                 return false;
             }
 
             if((b_PROPERTIES_JOINTSETS_CFG_trqCntrl.size()-1) != mc_service.properties.numofjointsets)
             {
-                yError() << "ServiceParser::check_motion() detected a wrong size of PROPERTIES.JOINTSETS_CFG.canDoTrqCntrl: it must be equal to the number of jointsets" << mc_service.properties.numofjointsets;
+                yError() << "ServiceParser::check_motion() detected a wrong size of PROPERTIES.JOINTSETS_CFG.canDoTrqCtrl: it must be equal to the number of jointsets" << mc_service.properties.numofjointsets;
                 return false;
             }
 
@@ -2500,7 +2509,6 @@ bool ServiceParser::check_motion(Searchable &config)
                 return false;
             }
 
-            mc_service.properties.jointset_cfgs.resize(mc_service.properties.numofjointsets);
 
             for(int i=0; i<mc_service.properties.numofjointsets; i++)
             {
@@ -2523,8 +2531,9 @@ bool ServiceParser::check_motion(Searchable &config)
 
         if(true == has_PROPERTIES_JOINTSETS_CONSTRAINTS)
         {
+            yError() <<"**********" << b_PROPERTIES_JOINTSETS_CONSTRAINTS.toString();
 
-            Bottle b_PROPERTIES_JOINTSETS_CONSTRAINTS_type = Bottle(b_PROPERTIES_JOINTSETS_CONSTRAINTS.findGroup("type"));
+            Bottle b_PROPERTIES_JOINTSETS_CONSTRAINTS_type = Bottle(b_PROPERTIES_JOINTSETS_CONSTRAINTS.findGroup("name"));
             if(b_PROPERTIES_JOINTSETS_CONSTRAINTS_type.isNull())
             {
                 yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS_CONSTRAINTS.type";
@@ -2659,7 +2668,44 @@ int ServiceParser::getnumofjointsets(void)
 //    }
 //    return true;
 //}
+bool ServiceParser::copyjomocouplingInfo( eOmc_4jomo_coupling_t *jc_dest)
+{
 
+    memset(jc_dest, 0, sizeof(eOmc_4jomo_coupling_t));
+
+    // very important: so far, the fw in Controller.c must find eomc_jointSetNum_none in un-used entries, even if we have less than 4 joints.
+    memset(jc_dest->joint2set, eomc_jointSetNum_none, sizeof(jc_dest->joint2set));
+
+    for(int i=0; i<mc_service.properties.numofjoints; i++)
+    {
+        jc_dest->joint2set[i] = mc_service.properties.joint2set[i];
+    }
+
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+        {
+            jc_dest->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
+            jc_dest->motor2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixM2J[4*i+j]);
+        }
+    }
+    
+
+    for(int r=0; r<4; r++)
+    {
+        for(int c=0; c<6; c++)
+        {
+            jc_dest->encoder2joint[r][c] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[6*r+c]);
+        }
+    }
+
+    for(int s=0; s< mc_service.properties.numofjointsets; s++)
+    {
+        memcpy(&jc_dest->jsetcfg[s]  , &mc_service.properties.jointset_cfgs[s], sizeof(eOmc_jointset_configuration_t));
+    }
+
+    return true;
+}
 
 bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 {
@@ -2720,39 +2766,8 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             // 3. ->jomocoupling
             eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
-            memset(jomocoupling, 0, sizeof(eOmc_4jomo_coupling_t));
 
-            // very important: so far, the fw in Controller.c must find eomc_jointSetNum_none in un-used entries, even if we have less than 4 joints.
-            memset(jomocoupling->joint2set, eomc_jointSetNum_none, sizeof(jomocoupling->joint2set));
-            for(int i=0; i<numofjomos; i++)
-            {
-                jomocoupling->joint2set[i] = mc_service.properties.joint2set[i];
-            }
-
-            for(int i=0; i<4; i++)
-            {
-                for(int j=0; j<4; j++)
-                {
-                    jomocoupling->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
-                    jomocoupling->motor2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixM2J[4*i+j]);
-                }
-            }
-
-            for(int r=0; r<4; r++)
-            {
-                for(int c=0; c<6; c++)
-                {
-                    jomocoupling->encoder2joint[r][c] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[6*r+c]);
-                }
-            }
-
-            for(int s=0; s< mc_service.properties.numofjointsets; s++)
-            {
-                memcpy(&jomocoupling->joint2set[s], &mc_service.properties.jointset_cfgs[s], sizeof(eOmc_jointset_configuration_t));
-            }
-
-            // ok, everything is done
-            ret = true;
+            ret = copyjomocouplingInfo(jomocoupling);
 
         } break;
         
@@ -2823,7 +2838,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
         {
             eOmn_serv_config_data_mc_mc4plus_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4plus_based);
 
-            // 1. ->arrayofjomodescriptors
+            // 3. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
             int numofjomos = mc_service.properties.numofjoints;
 
@@ -2848,40 +2863,11 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             }
 
-            // 2. ->jomocoupling
+             // 3. ->jomocoupling
             eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
-            memset(jomocoupling, 0, sizeof(eOmc_4jomo_coupling_t));
 
-            for(int i=0; i<numofjomos; i++)
-            {
-                jomocoupling->joint2set[i] = mc_service.properties.joint2set[i];
-            }
+            ret = copyjomocouplingInfo(jomocoupling);
 
-            for(int i=0; i<4; i++)
-            {
-                for(int j=0; j<4; j++)
-                {
-                    jomocoupling->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
-                    jomocoupling->motor2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixM2J[4*i+j]);
-                }
-            }
-
-            for(int r=0; r<4; r++)
-            {
-                for(int c=0; c<6; c++)
-                {
-                    jomocoupling->encoder2joint[r][c] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[6*r+c]);
-                }
-            }
-
-            for(int s=0; s< mc_service.properties.numofjointsets; s++)
-            {
-                memcpy(&jomocoupling->joint2set[s], &mc_service.properties.jointset_cfgs[s], sizeof(eOmc_jointset_configuration_t));
-            }
-
-
-            // ok, everything is done
-            ret = true;
         } break;
         
         case eomn_serv_MC_mc4plusmais:
@@ -2929,38 +2915,9 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             // 3. ->jomocoupling
             eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
-            memset(jomocoupling, 0, sizeof(eOmc_4jomo_coupling_t));
 
-            for(int i=0; i<numofjomos; i++)
-            {
-                jomocoupling->joint2set[i] = mc_service.properties.joint2set[i];
-            }
+            ret = copyjomocouplingInfo(jomocoupling);
 
-            for(int i=0; i<4; i++)
-            {
-                for(int j=0; j<4; j++)
-                {
-                    jomocoupling->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
-                    jomocoupling->motor2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixM2J[4*i+j]);
-                }
-            }
-
-            for(int r=0; r<4; r++)
-            {
-                for(int c=0; c<6; c++)
-                {
-                    jomocoupling->encoder2joint[r][c] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[6*r+c]);
-                }
-            }
-
-            for(int s=0; s< mc_service.properties.numofjointsets; s++)
-            {
-                memcpy(&jomocoupling->joint2set[s], &mc_service.properties.jointset_cfgs[s], sizeof(eOmc_jointset_configuration_t));
-            }
-
-
-            // ok, everything is done
-            ret = true;
         } break;
 
         case eomn_serv_MC_generic:
