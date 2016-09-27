@@ -82,6 +82,11 @@ bool EthBoard::isInMaintenance()
     return _info2.maintenanceIsActive;
 }
 
+bool EthBoard::isInApplication()
+{
+   return !_info2.maintenanceIsActive;
+}
+
 void EthBoard::setMoreInfo(string &moreinfo)
 {
     _info2.moreinfostring = moreinfo;
@@ -159,6 +164,9 @@ string EthBoard::getCompilationDateOfRunning(void)
 
 // -- class EthBoardList
 
+const eOipv4addr_t EthBoardList::ipv4all = 0xffffffff;
+const eOipv4addr_t EthBoardList::ipv4selected = 0;
+
 EthBoardList::EthBoardList()
 {
     theboards.clear();
@@ -225,10 +233,22 @@ int EthBoardList::add(boardInfo2_t &info2, eOipv4addr_t ipv4, bool force)
 
 int EthBoardList::rem(eOipv4addr_t ipv4)
 {
+    if(ipv4all == ipv4)
+    {
+        return clear();
+    }
+
     // look for the same ipv4
     for(int i=0; i<theboards.size(); i++)
     {
-        if(ipv4 == theboards[i].getIPV4())
+        if(ipv4selected == ipv4)
+        {   // if selected
+            if(true == theboards[i].isSelected())
+            {
+                theboards.erase(theboards.begin()+i);
+            }
+        }
+        else if(ipv4 == theboards[i].getIPV4())
         {
             theboards.erase(theboards.begin()+i);
         }
@@ -253,10 +273,15 @@ int EthBoardList::size()
 
 int EthBoardList::numberof(eOipv4addr_t ipv4)
 {
+    if(ipv4all == ipv4)
+    {
+        return theboards.size();
+    }
+
     int number = 0;
     for(int i=0; i<theboards.size(); i++)
     {
-        if(0 == ipv4)
+        if(ipv4selected == ipv4)
         {   // all the selected
             if(true == theboards[i].isSelected())
             {
@@ -286,15 +311,19 @@ vector<EthBoard *> EthBoardList::get(eOipv4addr_t ipv4)
     {
         getit = false;
 
-        if(0 == ipv4)
+        if(EthBoardList::ipv4all == ipv4)
+        {   // all boards
+            getit = true;
+        }
+        else if(EthBoardList::ipv4selected == ipv4)
         {   // all the selected
             if(true == theboards[i].isSelected())
             {
-                getit =  true;
+                getit = true;
             }
         }
         else
-        {
+        {   // equal ipv4
             if(ipv4 == theboards[i].getIPV4())
             {
                 getit = true;
@@ -315,7 +344,7 @@ void EthBoardList::select(bool on, eOipv4addr_t ipv4)
     // look for the same ipv4
     for(int i=0; i<theboards.size(); i++)
     {
-        if(0 == ipv4)
+        if(EthBoardList::ipv4all == ipv4)
         {
             theboards[i].setSelected(on);
         }

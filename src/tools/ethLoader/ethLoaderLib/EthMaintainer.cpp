@@ -27,6 +27,39 @@
 
 using namespace yarp::os;
 
+string ipv4tostring(eOipv4addr_t ipv4)
+{
+    char ipv4text[20];
+    eo_common_ipv4addr_to_string(ipv4, ipv4text, sizeof(ipv4text));
+    string ret(ipv4text);
+    return ret;
+}
+
+bool string2ipv4(const string &ipv4string, eOipv4addr_t &ipv4)
+{
+    int ip1, ip2, ip3, ip4;
+    int n = sscanf(ipv4string.c_str(), "%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
+    if(4 != n)
+    {
+        return false;
+    }
+
+    ipv4 = EO_COMMON_IPV4ADDR(ip1, ip2, ip3, ip4);
+
+    return true;
+}
+
+
+eOipv4addr_t acetoipv4(ACE_UINT32 address)
+{
+    return htonl(address);
+}
+
+
+ACE_UINT32 ipv4toace(eOipv4addr_t ipv4)
+{
+    return ntohl(ipv4);
+}
 
 const eOipv4addr_t EthMaintainer::hostIPaddress = EO_COMMON_IPV4ADDR(10, 0, 1, 104);
 const eOipv4port_t EthMaintainer::mainIPport = 3333;
@@ -35,17 +68,16 @@ const eOipv4addr_t EthMaintainer::ipv4OfAllSelected = EO_COMMON_IPV4ADDR(0, 0, 0
 
 const eOipv4addr_t EthMaintainer::ipv4Broadcast = EO_COMMON_IPV4ADDR(255, 255, 255, 255);
 
-const int EthMaintainer::partition_APPLICATION = uprot_partitionAPPLICATION;
-const int EthMaintainer::partition_LOADER = uprot_partitionLOADER;
-const int EthMaintainer::partition_UPDATER = uprot_partitionUPDATER;
 
 
 
 EthMaintainer::EthMaintainer()
 {
     _opened = false;
-    _verbose = false;
-    _debugprint = true;
+    _verbose = true;
+    _debugprint = false;
+
+    _useofinternalboardlist = true;
 }
 
 EthMaintainer::~EthMaintainer()
@@ -80,396 +112,56 @@ bool EthMaintainer::close()
     if(_opened)
     {
         mSocket.Close();
-        mEthBoards.clear();
+        _internalboardlist.clear();
         _opened = false;
     }
 }
 
 
-void EthMaintainer::setVerbose(bool on)
+void EthMaintainer::verbose(bool on)
 {
     _verbose = on;
 }
 
 
-void EthMaintainer::setDebugPrint(bool on)
+void EthMaintainer::debugprint(bool on)
 {
     _debugprint = on;
 }
 
-EthBoardList& EthMaintainer::getBoards()
-{
-    return mEthBoards;
-}
+//EthBoardList& EthMaintainer::getBoards()
+//{
+//    return _internalboardlist;
+//}
 
 
-void EthMaintainer::clearBoards()
-{
-    mEthBoards.clear();
-}
+//void EthMaintainer::clearBoards()
+//{
+//    _internalboardlist.clear();
+//}
 
-int EthMaintainer::addBoard(eOipv4addr_t ipv4)
-{
-    boardInfo2_t info2;
+//int EthMaintainer::addBoard(eOipv4addr_t ipv4)
+//{
+//    boardInfo2_t info2;
 
-    bool force = true;
-    mEthBoards.add(info2, ipv4, force);
+//    bool force = true;
+//    _internalboardlist.add(info2, ipv4, force);
 
-    return mEthBoards.size();
-}
+//    return _internalboardlist.size();
+//}
 
-int EthMaintainer::remBoard(eOipv4addr_t ipv4)
-{
-    mEthBoards.rem(ipv4);
-    return mEthBoards.size();
-}
+//int EthMaintainer::remBoard(eOipv4addr_t ipv4)
+//{
+//    _internalboardlist.rem(ipv4);
+//    return _internalboardlist.size();
+//}
 
 
-eOipv4addr_t EthMaintainer::ACEtoIPV4(ACE_UINT32 address)
-{
-    return htonl(address);
-}
 
 
-ACE_UINT32 EthMaintainer::IPV4toACE(eOipv4addr_t ipv4)
-{
-    return ntohl(ipv4);
-}
 
 
-bool EthMaintainer::isCommandSupported(eOuprot_proc_capabilities_t capability, eOipv4addr_t ipv4)
-{
-    // search for the BoardInfo with a given address ... if we have a double address then we return a vector
-    // we also may return a vector if address is 0 because we search for the selected.
-    vector<EthBoard *> boards = mEthBoards.get(ipv4);
-
-    if(0 == boards.size())
-    {
-        return false;
-    }
-
-    // i assume it is true. i return true only if all the boards support it.
-    bool ret = true;
-    for(int i=0; i<boards.size(); i++)
-    {
-        uint32_t mask = boards[i]->getInfo().capabilities;
-        bool r = ((mask & capability) == capability) ? true : false;
-        ret = ret && r;
-    }
-
-    return ret;
-}
-
-
-int EthMaintainer::commandDiscover(bool clearboardsbeforediscovery, eOipv4addr_t ipv4)
-{
-
-    if(clearboardsbeforediscovery)
-    {
-        clearBoards();
-    }
-
-    const bool forceUpdatingMode = false;
-
-    eOuprot_cmd_DISCOVER_t * cmd = (eOuprot_cmd_DISCOVER_t*) mTxBuffer;
-
-    memset(cmd, EOUPROT_VALUE_OF_UNUSED_BYTE, sizeof(eOuprot_cmd_DISCOVER_t));
-
-    cmd->opc = uprot_OPC_LEGACY_SCAN;
-    cmd->opc2 = uprot_OPC_DISCOVER;
-
-    cmd->jump2updater = (true == forceUpdatingMode) ? (1) : (0);
-
-
-    // we send the discovery in ...
-    if(ipv4Broadcast == ipv4)
-    {
-        mSocket.SendBroad(myIPV4port, cmd, sizeof(eOuprot_cmd_DISCOVER_t));
-    }
-    else
-    {
-        sendCommand(ipv4, cmd, sizeof(eOuprot_cmd_DISCOVER_t));
-    }
-
-    processDiscoveryReplies();
-
-    return mEthBoards.size();
-}
-
-
-
-bool EthMaintainer::commandForceMaintenance(eOipv4addr_t ipv4, bool verify, int retries, double timegap)
-{
-    const bool forceUpdatingMode = true;
-
-    eOuprot_cmd_DISCOVER_t command;
-
-    memset(&command, EOUPROT_VALUE_OF_UNUSED_BYTE, sizeof(eOuprot_cmd_DISCOVER_t));
-
-    command.opc = uprot_OPC_LEGACY_SCAN;
-    command.opc2 = uprot_OPC_DISCOVER;
-
-    command.jump2updater = (true == forceUpdatingMode) ? (1) : (0);
-
-    // step 1. we send command and process replies a first time
-
-    sendCommand(ipv4, &command, sizeof(command));
-    processDiscoveryReplies();
-
-
-    // step 2. must verify that all boards to which we sent the command are in maintenance
-    if(true == verify)
-    {
-        for(int iter=0; iter<retries; iter++)
-        {
-            if(isInMaintenance(ipv4))
-            {
-                return true;
-            }
-
-            yarp::os::Time::delay(timegap);
-
-            // re-send the message and process replies
-            sendCommand(ipv4, &command, sizeof(command));
-            processDiscoveryReplies();
-        }
-
-    }
-
-    return isInMaintenance(ipv4);
-}
-
-
-
-
-std::string EthMaintainer::commandGetMoreInfo(eOipv4addr_t ipv4)
-{
-    eOuprot_cmd_MOREINFO_t command;
-
-    command.opc = uprot_OPC_LEGACY_PROCS;
-    command.opc2 = uprot_OPC_MOREINFO;
-    command.plusdescription = 1;
-    command.jump2updater = 0;
-
-    sendCommand(ipv4, &command, sizeof(command));
-
-    return processMoreInfoReplies();
-}
-
-
-
-std::string EthMaintainer::getTextualDescription(eOipv4addr_t ipv4)
-{
-    string info;
-
-    vector<EthBoard *> selected = mEthBoards.get(ipv4);
-    for(int i=0; i<selected.size(); i++)
-    {
-        info += selected[i]->getMoreInfo();
-    }
-
-    return info;
-}
-
-
-
-
-bool EthMaintainer::commandInfo32Clear(eOipv4addr_t ipv4)
-{
-    bool ret = true;
-
-    eOuprot_cmd_PAGE_CLR_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
-    command.opc = uprot_OPC_PAGE_CLR;
-    command.pagesize = 32;
-
-    sendCommand(ipv4, &command, sizeof(command));
-
-    return ret;
-}
-
-
-bool EthMaintainer::commandInfo32Set(const string &info32, eOipv4addr_t ipv4)
-{
-    bool ret = true;
-
-    eOuprot_cmd_PAGE_SET_t *cmd = (eOuprot_cmd_PAGE_SET_t*) mTxBuffer;
-    uint16_t sizeofcmd = sizeof(eOuprot_cmd_PAGE_SET_t) - uprot_pagemaxsize + 32;
-    // think of the best way to specify the length of themessage in a proper way
-    // we could decide to send always a length of sizeof(eOuprot_cmd_PAGE_SET_t) which is 132, or ...
-
-    memset(cmd, EOUPROT_VALUE_OF_UNUSED_BYTE, sizeofcmd);
-
-    cmd->opc = uprot_OPC_PAGE_SET;
-    cmd->pagesize = 32;
-    memset(cmd->page, 0, 32);
-
-
-    const char * str32 = info32.c_str();
-
-    int len = strlen(str32);
-    if(len>30)
-    {
-        len = 30;
-    }
-    cmd->page[0] = len;
-    memcpy(&cmd->page[1], str32, len);
-
-    sendCommand(ipv4, cmd, sizeofcmd);
-
-    return ret;
-}
-
-
-vector<string> EthMaintainer::commandInfo32Get(eOipv4addr_t ipv4)
-{
-    vector<string> thestrings(0);
-
-    eOuprot_cmd_PAGE_GET_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
-    command.opc = uprot_OPC_PAGE_GET;
-    command.pagesize = 32;
-
-    sendCommand(ipv4, &command, sizeof(command));
-
-    eOipv4addr_t rxipv4addr;
-    eOipv4port_t rxipv4port;
-
-    while(mSocket.ReceiveFrom(rxipv4addr, rxipv4port, mRxBuffer, sizeof(mRxBuffer), 500) > 0)
-    {
-        eOuprot_cmd_PAGE_GET_REPLY_t * pageget = (eOuprot_cmd_PAGE_GET_REPLY_t*) mRxBuffer;
-
-        char ipv4rxaddr_string[20];
-        eo_common_ipv4addr_to_string(rxipv4addr, ipv4rxaddr_string, sizeof(ipv4rxaddr_string));
-
-        if(uprot_OPC_PAGE_GET == pageget->reply.opc)
-        {
-            string readstring;
-
-            if((rxipv4addr != myIPV4addr) && (uprot_RES_OK == pageget->reply.res) && (32 == pageget->pagesize) && (0xff != pageget->page[0]))
-            {
-                readstring = string((const char*)&pageget->page[1]);
-                thestrings.push_back(readstring);
-                // and update what in boardinfo32
-                vector<EthBoard *> selected = mEthBoards.get(rxipv4addr);
-                for(int i=0; i<selected.size(); i++)
-                {
-                    boardInfo2_t binfo = selected[i]->getInfo();
-                    memcpy(binfo.boardinfo32, pageget->page, sizeof(binfo.boardinfo32));
-                }
-            }
-
-            if(_debugprint)
-            {
-                if(uprot_RES_OK != pageget->reply.res)
-                {
-                    printf("\n received a eOuprot_cmd_PAGE_GET_REPLY_t from IP %s with a failure result %d for size %d", ipv4rxaddr_string, pageget->reply.res, pageget->pagesize);
-                }
-                else if(rxipv4addr != myIPV4addr)
-                {
-                    printf("\n received a eOuprot_cmd_PAGE_GET_REPLY_t from IP %s with size %d: ", ipv4rxaddr_string, pageget->pagesize);
-
-                    if(32 == pageget->pagesize)
-                    {   // the page is formatted so that in position 0 there is 0xff if erased and never programmed or strlen(&page[1])
-
-                        uint8_t info32[32] = {0};
-                        memcpy(info32, pageget->page, 32);
-
-                        if(0xff == info32[0])
-                        {
-                            printf("\n stored info32 is .. ");
-                            for(int m=0; m<32; m++)
-                            {
-                                printf("0x%x ", info32[m]);
-                            }
-
-                        }
-                        else
-                        {
-                            printf("l = %d, string = %s \n", info32[0], &info32[1]);
-                        }
-
-                    }
-
-                    fflush(stdout);
-                }
-            }
-
-        }
-    }
-
-    return thestrings;
-}
-
-
-bool EthMaintainer::commandRestart(eOipv4addr_t ipv4)
-{
-    bool ret = true;
-
-    eOuprot_cmd_RESTART_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
-    command.opc = uprot_OPC_RESTART;
-
-    sendCommand(ipv4, &command, sizeof(command));
-
-    return ret;
-}
-
-
-bool EthMaintainer::commandSetDEF2RUN(eOuprot_process_t process, eOipv4addr_t ipv4)
-{
-    bool ret = true;
-
-    eOuprot_cmd_DEF2RUN_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
-    command.opc = uprot_OPC_DEF2RUN;
-    command.proc = process;
-
-    sendCommand(ipv4, &command, sizeof(command));
-
-
-    return ret;
-}
-
-
-bool EthMaintainer::commandJumpUpd(eOipv4addr_t ipv4)
-{
-    bool ret = true;
-
-    eOuprot_cmd_JUMP2UPDATER_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
-    command.opc = uprot_OPC_JUMP2UPDATER;
-
-    sendCommand(ipv4, &command, sizeof(command));
-
-    return ret;
-}
-
-
-
-bool EthMaintainer::commandJump2ROMaddress(uint32_t romaddress, eOipv4addr_t ipv4)
-{
-    bool ret = true;
-
-    eOuprot_cmd_JUMP2ADDRESS_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
-    command.opc = uprot_OPC_JUMP2ADDRESS;
-    command.address = romaddress;
-
-    sendCommand(ipv4, &command, sizeof(command));
-
-    return ret;
-}
-
-
-bool EthMaintainer::commandBlink(eOipv4addr_t ipv4)
-{
-    bool ret = true;
-
-    eOuprot_cmd_BLINK_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
-    command.opc = uprot_OPC_BLINK;
-
-    sendCommand(ipv4, &command, sizeof(command));
-
-    return ret;
-}
-
-
-bool EthMaintainer::commandEraseEEPROM(eOipv4addr_t ipv4)
+bool EthMaintainer::command_eeprom_erase(eOipv4addr_t ipv4)
 {
     bool ret = true;
 
@@ -487,7 +179,7 @@ bool EthMaintainer::commandEraseEEPROM(eOipv4addr_t ipv4)
 }
 
 
-bool EthMaintainer::commandReadEEPROM(uint16_t from, uint16_t size, eOipv4addr_t ipv4, uint8_t **value)
+bool EthMaintainer::command_eeprom_read(eOipv4addr_t ipv4, uint16_t from, uint16_t size, uint8_t **value)
 {
     bool ret = false;
 
@@ -523,9 +215,6 @@ bool EthMaintainer::commandReadEEPROM(uint16_t from, uint16_t size, eOipv4addr_t
     {
         eOuprot_cmd_EEPROM_READ_REPLY_t * eepromread = (eOuprot_cmd_EEPROM_READ_REPLY_t*) mRxBuffer;
 
-//        char ipv4rxaddr_string[20];
-//        eo_common_ipv4addr_to_string(rxipv4addr, ipv4rxaddr_string, sizeof(ipv4rxaddr_string));
-
         if(uprot_OPC_EEPROM_READ == eepromread->reply.opc)
         {
             // the board has replied.
@@ -545,154 +234,29 @@ bool EthMaintainer::commandReadEEPROM(uint16_t from, uint16_t size, eOipv4addr_t
 }
 
 
-bool EthMaintainer::commandChangeAddress(eOipv4addr_t ipv4, eOipv4addr_t ipv4new, bool restart, bool verify)
+
+bool EthMaintainer::command_program(eOipv4addr_t ipv4, FILE *programFile, eOuprot_partition2prog_t partition, void (*updateProgressBar)(float), EthBoardList *pboardlist, string &stringresult)
 {
-    bool ret = false;
 
-    eOuprot_cmd_IP_ADDR_SET_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
-
-    command.opc = uprot_OPC_LEGACY_IP_ADDR_SET;
-    command.opc2 = uprot_OPC_IP_ADDR_SET;
-    command.sysrestart = 0; //(restart) ? (1) : (0);
-
-    command.address[3] = (ipv4new>>24) & 0xFF;
-    command.address[2] = (ipv4new>>16) & 0xFF;
-    command.address[1] = (ipv4new>>8 ) & 0xFF;
-    command.address[0] = (ipv4new    ) & 0xFF;
-
-
-    char ipaddr[20];
-    char newipaddr[20];
-
-    if(_debugprint)
+    EthBoardList *boardlist2use = pboardlist;
+    if(NULL == boardlist2use)
     {
-        eo_common_ipv4addr_to_string(ipv4, ipaddr, sizeof(ipaddr));
-        eo_common_ipv4addr_to_string(ipv4new, newipaddr, sizeof(newipaddr));
+        boardlist2use = &_internalboardlist;
     }
-
-
-    bool stopit = false;
-
-    if(0 == ipv4)
-    {
-        stopit = true;
-    }
-
-    // we must have 10.0.1.x, where x is not 0 or 255
-    if((10 != command.address[0]) || (0 != command.address[1]) || (1 != command.address[2]))
-    {
-        stopit =  true;
-    }
-
-    if((0 == command.address[3]) || (255 == command.address[3]))
-    {
-        stopit = true;
-    }
-
-
-    if(true == stopit)
-    {
-        if(_debugprint)
-        {
-            printf("cannot send command uprot_OPC_IP_ADDR_SET to %s with new address %s because either one or both are not valid\n", ipaddr, newipaddr);
-        }
-
-        return ret;
-    }
-
-    // search for ipv4new
-    if(0 != mEthBoards.numberof(ipv4new))
-    {
-        if(_debugprint)
-        {
-            printf("cannot send command uprot_OPC_IP_ADDR_SET to %s with new address %s because the new address is already present\n", ipaddr, newipaddr);
-        }
-
-        return ret;
-    }
-
-
-    if(_debugprint)
-    {
-        printf("sent command uprot_OPC_IP_ADDR_SET to %s, new address is %s. w/%s sysrestart\n", ipaddr, newipaddr, (0 == command.sysrestart) ? "out" : "");
-    }
-
-    sendCommand(ipv4, &command, sizeof(command));
-
-    if(true == restart)
-    {
-        commandRestart(ipv4);
-        mEthBoards.rem(ipv4);
-        if(_debugprint)
-        {
-            printf("there are now %d boards in list\n", mEthBoards.size());
-        }
-    }
-
-    if(true == verify)
-    {   // cannot verify if we dont restart.
-        verify = restart;
-    }
-
-
-    if(false == verify)
-    {
-        return true;
-    }
-
-    // we verify ....
-
-    // must wait a tick ... maybe 500 ms and then i run a discovery on the new address.
-    yarp::os::Time::delay(1.000);
-
-
-    ret = commandForceMaintenance(ipv4new, true, 5, 0.5);
-
-    if(_debugprint)
-    {
-        printf("board w/ new address %s is in maintenance: %s\n", newipaddr, ret ? "YES" : "NO!");
-    }
-
-    if(false == ret)
-    {             
-        return false;
-    }
-
-    if(_debugprint)
-    {
-        printf("after commandForceMaintenance() there are now %d boards in list\n", mEthBoards.size());
-    }
-
-    if(0 == mEthBoards.numberof(ipv4new))
-    {
-        if(_debugprint)
-        {
-            printf("error: we dont have the new address %s ...\n", newipaddr);
-        }
-        return false;
-    }
-
-    if(_debugprint)
-    {
-        printf("commandChangeAddress(): OK\n");
-    }
-
-    return true;
-}
-
-
-bool EthMaintainer::commandProgram(FILE *programFile, int partition, void (*updateProgressBar)(float), string &stringresult, eOipv4addr_t ipv4)
-{
 
     progData_t progdata;
     progdata.mN2Prog = 0;
     progdata.mNProgSteps = 0;
     progdata.mNChunks = 0;
 
-    progdata.selected = mEthBoards.get(ipv4);
+    progdata.selected = boardlist2use->get(ipv4);
+
     progdata.steps.resize(progdata.selected.size(), 0);
 
-    updateProgressBar(0.0f);
+    if(NULL != updateProgressBar)
+    {
+        updateProgressBar(0.0f);
+    }
 
     eOuprot_cmd_PROG_START_t * cmdStart = (eOuprot_cmd_PROG_START_t*) mTxBuffer;
     eOuprot_cmd_PROG_DATA_t *  cmdData  = (eOuprot_cmd_PROG_DATA_t*)  mTxBuffer;
@@ -733,28 +297,26 @@ bool EthMaintainer::commandProgram(FILE *programFile, int partition, void (*upda
 
     // sending the start and preparing the list of boards to program
 
-    // send the start command to all selectde
-    sendCommand(ipv4, cmdStart, sizeStart);
+    // send the start command to all selected
+    sendCommand(ipv4, cmdStart, sizeStart, boardlist2use);
     // wait a tick
     yarp::os::Time::delay(0.01);
 
 
 
-    if(_debugprint)
+    if(_verbose)
     {
-
         printf("EthMaintainer::cmdProgram() is about to program the %s partition of %d boards:", partname.c_str(), (int)progdata.selected.size());
         for(int j=0; j< progdata.selected.size(); j++)
         {
-            char ipv4str[20];
             eOipv4addr_t ipv4 = progdata.selected[j]->getIPV4();
-            bool ok = isCommandSupported(capability, ipv4);
+//            bool ok = isCommandSupported(capability, ipv4);
+            bool ok = command_supported(ipv4, capability);
 
             printf(" %s (%s)", progdata.selected[j]->getIPV4string().c_str(), ok ? ("candoit") : ("CANTdoit"));
         }
         printf("\n");
         fflush(stdout);
-
     }
 
 
@@ -796,7 +358,7 @@ bool EthMaintainer::commandProgram(FILE *programFile, int partition, void (*upda
                             }
                             else
                             {
-                                if(_debugprint)
+                                if(_verbose)
                                 {
                                     // print that the board tells that we cannot program that partition
                                     printf("board %s tells that we cannot program the %s partition\n", progdata.selected[i]->getIPV4string().c_str(), partname.c_str());
@@ -824,13 +386,12 @@ bool EthMaintainer::commandProgram(FILE *programFile, int partition, void (*upda
         for(int i=0; i<progdata.selected.size(); ++i)
         {
             eOipv4addr_t ipv4adr = progdata.selected[i]->getIPV4();
-            char ipv4rxaddr_string[20];
-            eo_common_ipv4addr_to_string(ipv4adr, ipv4rxaddr_string, sizeof(ipv4rxaddr_string));
+            string ipv4adrstring = ipv4tostring(ipv4adr);
 
-            earlyexit += ipv4rxaddr_string;
+            earlyexit += ipv4adrstring;
             earlyexit += ": ";
             earlyexit += partname;
-            earlyexit += (progdata.steps[i] == progdata.mNProgSteps)?" OK\r\n":" CANT\r\n";
+            earlyexit += (progdata.steps[i] == progdata.mNProgSteps)?" OK\r\n":" CANT (early exit)\r\n";
         }
 
         stringresult = earlyexit;
@@ -877,8 +438,10 @@ bool EthMaintainer::commandProgram(FILE *programFile, int partition, void (*upda
                         progdata.answers = progdata.selected.size();
                         progdata.retries = 1000;
                         sendPROG2(uprot_OPC_PROG_DATA, progdata);
-
-                        updateProgressBar(float(bytesWritten+=bytesToWrite)/fileSize);
+                        if(NULL != updateProgressBar)
+                        {
+                            updateProgressBar(float(bytesWritten+=bytesToWrite)/fileSize);
+                        }
                         bytesToWrite=0;
                     }
                 }
@@ -914,8 +477,10 @@ bool EthMaintainer::commandProgram(FILE *programFile, int partition, void (*upda
                 progdata.answers = progdata.selected.size(); // mN2Prog
                 progdata.retries = 1000;
                 sendPROG2(uprot_OPC_PROG_DATA, progdata);
-
-                updateProgressBar(1.0f);
+                if(NULL != updateProgressBar)
+                {
+                    updateProgressBar(1.0f);
+                }
                 bytesToWrite=0;
             }
             break;
@@ -935,8 +500,10 @@ bool EthMaintainer::commandProgram(FILE *programFile, int partition, void (*upda
                     progdata.answers = progdata.selected.size(); // mN2Prog
                     progdata.retries = 1000;
                     sendPROG2(uprot_OPC_PROG_DATA, progdata);
-
-                    updateProgressBar(float(bytesWritten+=bytesToWrite)/fileSize);
+                    if(NULL != updateProgressBar)
+                    {
+                        updateProgressBar(float(bytesWritten+=bytesToWrite)/fileSize);
+                    }
                     bytesToWrite=0;
                 }
 
@@ -955,8 +522,10 @@ bool EthMaintainer::commandProgram(FILE *programFile, int partition, void (*upda
                 progdata.answers = progdata.selected.size(); // mN2Prog
                 progdata.retries = 1000;
                 sendPROG2(uprot_OPC_PROG_DATA, progdata);
-
-                updateProgressBar(float(bytesWritten+=bytesToWrite)/fileSize);
+                if(NULL != updateProgressBar)
+                {
+                    updateProgressBar(float(bytesWritten+=bytesToWrite)/fileSize);
+                }
                 bytesToWrite=0;
             }
 
@@ -977,7 +546,10 @@ bool EthMaintainer::commandProgram(FILE *programFile, int partition, void (*upda
     progdata.retries = 1000;
     sendPROG2(uprot_OPC_PROG_END, progdata);
 
-    updateProgressBar(1.0f);
+    if(NULL != updateProgressBar)
+    {
+        updateProgressBar(1.0f);
+    }
 
 
     std::string sOutput;
@@ -991,10 +563,9 @@ bool EthMaintainer::commandProgram(FILE *programFile, int partition, void (*upda
             result = false;
         }
         eOipv4addr_t ipv4adr = progdata.selected[i]->getIPV4();
-        char ipv4rxaddr_string[20];
-        eo_common_ipv4addr_to_string(ipv4adr, ipv4rxaddr_string, sizeof(ipv4rxaddr_string));
+        string ipv4adrstring = ipv4tostring(ipv4adr);
 
-        sOutput += ipv4rxaddr_string;
+        sOutput += ipv4adrstring;
         sOutput += ": ";
         sOutput += partname;
         sOutput += (ok)?" OK\r\n":" NOK\r\n";
@@ -1009,27 +580,40 @@ bool EthMaintainer::commandProgram(FILE *programFile, int partition, void (*upda
 // helper functions
 
 
-void EthMaintainer::sendCommand(eOipv4addr_t ipv4, void * cmd, uint16_t len)
+bool EthMaintainer::sendCommand(eOipv4addr_t ipv4, void * cmd, uint16_t len, EthBoardList *boardlist)
 {
-    if(0 != ipv4)
+    bool ret = false;
+    if(ipv4OfAllSelected == ipv4)
     {
-        mSocket.SendTo(ipv4, myIPV4port, cmd, len);
-    }
-    else
-    {
-        vector<EthBoard *> selected = mEthBoards.get(ipv4);
+        if(NULL == boardlist)
+        {
+            boardlist = &_internalboardlist;
+        }
+        vector<EthBoard *> selected = boardlist->get(ipv4);
         for(int i=0; i<selected.size(); i++)
         {
             mSocket.SendTo(selected[i]->getIPV4(), myIPV4port, cmd, len);
+            ret = true;
         }
     }
+    else if(ipv4Broadcast == ipv4)
+    {
+        mSocket.SendBroad(myIPV4port, cmd, len);
+        ret = true;
+    }
+    else
+    {
+        mSocket.SendTo(ipv4, myIPV4port, cmd, len);
+        ret = true;
+    }
+    return ret;
 }
 
 
 
-bool EthMaintainer::isInMaintenance(eOipv4addr_t ipv4)
+bool EthMaintainer::isInMaintenance(eOipv4addr_t ipv4, EthBoardList &boardlist)
 {
-    vector<EthBoard *> selected = mEthBoards.get(ipv4);
+    vector<EthBoard *> selected = boardlist.get(ipv4);
 
     if(selected.empty())
     {
@@ -1048,18 +632,40 @@ bool EthMaintainer::isInMaintenance(eOipv4addr_t ipv4)
 }
 
 
-void EthMaintainer::processDiscoveryReplies(void)
+bool EthMaintainer::isInApplication(eOipv4addr_t ipv4, EthBoardList &boardlist)
 {
+    vector<EthBoard *> selected = boardlist.get(ipv4);
+
+    if(selected.empty())
+    {
+        return false;
+    }
+
+    for(int i=0; i<selected.size(); i++)
+    {
+       if(false == selected[i]->isInApplication())
+       {
+           return false;
+       }
+    }
+
+    return true;
+}
+
+
+string EthMaintainer::processDiscoveryReplies2(EthBoardList &boardlist, double waittimeout)
+{
+    string info;
+
     eOipv4addr_t rxipv4addr;
     eOipv4port_t rxipv4port;
 
-    while(mSocket.ReceiveFrom(rxipv4addr, rxipv4port, mRxBuffer, sizeof(mRxBuffer), 1000) > 0)
+    while(mSocket.ReceiveFrom(rxipv4addr, rxipv4port, mRxBuffer, sizeof(mRxBuffer), waittimeout*1000.0) > 0)
     {
         eOuprot_cmd_DISCOVER_REPLY_t * disc = (eOuprot_cmd_DISCOVER_REPLY_t*) mRxBuffer;
         eOuprot_cmd_LEGACY_SCAN_REPLY_t * scan = (eOuprot_cmd_LEGACY_SCAN_REPLY_t*) mRxBuffer;
 
-        char ipv4rxaddr_string[20];
-        eo_common_ipv4addr_to_string(rxipv4addr, ipv4rxaddr_string, sizeof(ipv4rxaddr_string));
+        string ipv4rxstring = ipv4tostring(rxipv4addr);
 
         if(uprot_OPC_DISCOVER == disc->reply.opc)
         {
@@ -1085,19 +691,25 @@ void EthMaintainer::processDiscoveryReplies(void)
                     binfo.maintenanceIsActive = true;
                 }
 
-                binfo.versionOfRunning.major = binfo.processes.info[binfo.processes.runningnow].version.major;
-                binfo.versionOfRunning.minor = binfo.processes.info[binfo.processes.runningnow].version.minor;
+                uint8_t index = eouprot_process2index((eOuprot_process_t)disc->processes.runningnow);
 
-                binfo.moreinfostring = prepareMoreInfoText(disc, ipv4rxaddr_string);
+                binfo.versionOfRunning.major = binfo.processes.info[index].version.major;
+                binfo.versionOfRunning.minor = binfo.processes.info[index].version.minor;
 
-                mEthBoards.add(binfo, rxipv4addr);
+                binfo.moreinfostring = prepareMoreInfoText(disc, ipv4rxstring.c_str());
 
+                boardlist.add(binfo, rxipv4addr);
 
-                if(_debugprint)
+                // now we add into the string
                 {
-                    uint8_t index = eouprot_process2index((eOuprot_process_t)disc->processes.runningnow);
-                    printf("Attempt to send board @ %s in maintainance: %s w/ %s v %d.%d running protocol v %d w/ capabilities = 0x%x. mainteinance = %s\n",
-                            ipv4rxaddr_string,
+                    info += binfo.moreinfostring;
+                }
+
+
+                if(_verbose)
+                {
+                    printf("EthMaintainer::processDiscoveryReplies2() has found board @ %s: %s w/ %s v %d.%d running protocol v %d w/ capabilities = 0x%x. mainteinance = %s\n",
+                            ipv4rxstring.c_str(),
                             eoboards_type2string((eObrd_type_t)disc->boardtype),
                             eouprot_process2string((eOuprot_process_t)disc->processes.runningnow),
                             disc->processes.info[index].version.major,
@@ -1155,28 +767,39 @@ void EthMaintainer::processDiscoveryReplies(void)
                 binfo.boardtype = eobrd_ethtype_unknown;
 
                 // we decide that we are in maintenance, even if we dont really know ...
+                // because: if the applition replied with legacy protocol then it surely goes into updater.
+                //          if it was teh updater then ... ok.
+                //          we dont use an old maintainer anymore .
+                // moreover ... we decide that the running process is the updater.
                 binfo.maintenanceIsActive = true;
+                binfo.processes.runningnow = eUpdater;
+                binfo.processes.info[eUpdater].type = eUpdater;
+                binfo.processes.info[eUpdater].version.major = procmajor;
+                binfo.processes.info[eUpdater].version.minor = procminor;
 
                 binfo.versionOfRunning.major = procmajor;
                 binfo.versionOfRunning.minor = procminor;
 
-                mEthBoards.add(binfo, rxipv4addr);
+                boardlist.add(binfo, rxipv4addr);
 
 
-                if(_debugprint)
+                if(_verbose)
                 {
-                    printf("Attempt to send board @ %s in maintenance: the running process is v %d.%d, uses legacy protocol, i assume protocol capabilities = 0x%x.\n",
-                                                    ipv4rxaddr_string, procmajor, procminor, binfo.capabilities);
+                    printf("EthMaintainer::processDiscoveryReplies2() has found board @ %s in maintenance: the running process is v %d.%d, uses legacy protocol, i assume protocol capabilities = 0x%x.\n",
+                                                    ipv4rxstring.c_str(), procmajor, procminor, binfo.capabilities);
                     fflush(stdout);
                 }
             }
         }
     }
 
+    return info;
+
 }
 
 
-std::string EthMaintainer::processMoreInfoReplies(void)
+
+std::string EthMaintainer::processMoreInfoReplies(EthBoardList &boardlist)
 {
     std::string info;
 
@@ -1188,8 +811,7 @@ std::string EthMaintainer::processMoreInfoReplies(void)
         eOuprot_cmd_MOREINFO_REPLY_t *moreinfo = (eOuprot_cmd_MOREINFO_REPLY_t*) mRxBuffer;
         eOuprot_cmd_LEGACY_PROCS_REPLY_t *procs = (eOuprot_cmd_LEGACY_PROCS_REPLY_t*) mRxBuffer;
 
-        char ipv4rxaddr_string[20];
-        eo_common_ipv4addr_to_string(rxipv4addr, ipv4rxaddr_string, sizeof(ipv4rxaddr_string));
+        string ipv4rxstring = ipv4tostring(rxipv4addr);
 
         if(uprot_OPC_MOREINFO == moreinfo->discover.reply.opc)
         {
@@ -1220,9 +842,9 @@ std::string EthMaintainer::processMoreInfoReplies(void)
                 binfo.versionOfRunning.major = binfo.processes.info[binfo.processes.runningnow].version.major;
                 binfo.versionOfRunning.minor = binfo.processes.info[binfo.processes.runningnow].version.minor;
 
-                binfo.moreinfostring = prepareMoreInfoText(disc, ipv4rxaddr_string);
+                binfo.moreinfostring = prepareMoreInfoText(disc, ipv4rxstring.c_str());
 
-                mEthBoards.add(binfo, rxipv4addr);
+                boardlist.add(binfo, rxipv4addr);
 
                 // now we add into the string
                 {
@@ -1230,14 +852,14 @@ std::string EthMaintainer::processMoreInfoReplies(void)
                 }
 
 
-                if(_debugprint)
+                if(_verbose)
                 {
                     // print binfo.
                     // it would be much bettwer, however, store it somewhere and made it available
                     // through some method
 
 
-                    printf("\nBOARD at address %s:", ipv4rxaddr_string);
+                    printf("\nBOARD at address %s:", ipv4rxstring.c_str());
                     printf("\n prot = %d, boardtype = %s, startup proc = %s, def2run proc = %s. it has %d processes:",
                                 binfo.protversion,
                                 eoboards_type2string((eObrd_type_t)binfo.boardtype),
@@ -1300,13 +922,13 @@ std::string EthMaintainer::processMoreInfoReplies(void)
                 string moreinfostring;
 
                 moreinfostring += "------------------------------\r\n";
-                moreinfostring += std::string("Board\t")+std::string(ipv4rxaddr_string);
+                moreinfostring += std::string("Board\t")+ipv4rxstring;
                 moreinfostring += "\r\n\r\n";
                 moreinfostring += std::string((char*)procs->description);
 
 
                 // 2. i retrieve the boards
-                vector<EthBoard *> boards = mEthBoards.get(rxipv4addr);
+                vector<EthBoard *> boards = boardlist.get(rxipv4addr);
                 for(int i=0; i<boards.size(); i++)
                 {
                     boards[i]->setMoreInfo(moreinfostring);
@@ -1317,9 +939,9 @@ std::string EthMaintainer::processMoreInfoReplies(void)
                 info += moreinfostring;
 
 
-                if(_debugprint)
+                if(_verbose)
                 {
-                    printf("\n received a uprot_OPC_LEGACY_PROCS from IP %s \n", ipv4rxaddr_string);
+                    printf("\n received a uprot_OPC_LEGACY_PROCS from IP %s \n", ipv4rxstring.c_str());
                     fflush(stdout);
                 }
 
@@ -1334,7 +956,7 @@ std::string EthMaintainer::processMoreInfoReplies(void)
 }
 
 
-std::string EthMaintainer::prepareMoreInfoText(eOuprot_cmd_DISCOVER_REPLY_t * disc, char *ipv4rxaddr_string)
+std::string EthMaintainer::prepareMoreInfoText(eOuprot_cmd_DISCOVER_REPLY_t * disc, const char *ipv4rxaddr_string)
 {
     std::string info;
 
@@ -1516,7 +1138,1140 @@ int EthMaintainer::sendPROG2(const uint8_t opc, progData_t &progdata)
     return progdata.answers;
 }
 
+bool EthMaintainer::boards_useinternal(bool on)
+{
+    _useofinternalboardlist = on;
+    return true;
+}
+
+
+EthBoardList EthMaintainer::discover(bool clearbeforediscovery, int numberofdiscoveries, double waittimeout)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+    if(clearbeforediscovery)
+    {
+        list2use->clear();
+    }
+
+    const bool forceUpdatingMode = false;
+    eOuprot_cmd_DISCOVER_t * cmd = (eOuprot_cmd_DISCOVER_t*) mTxBuffer;
+    memset(cmd, EOUPROT_VALUE_OF_UNUSED_BYTE, sizeof(eOuprot_cmd_DISCOVER_t));
+    cmd->opc = uprot_OPC_LEGACY_SCAN;
+    cmd->opc2 = uprot_OPC_DISCOVER;
+    cmd->jump2updater = (true == forceUpdatingMode) ? (1) : (0);
+
+    for(int i=0; i<numberofdiscoveries; i++)
+    {
+        sendCommand(ipv4Broadcast, cmd, sizeof(eOuprot_cmd_DISCOVER_t), list2use);
+
+        processDiscoveryReplies2(*list2use, waittimeout);
+    }
+
+    return *list2use;
+}
+
+
+bool EthMaintainer::boards_set(EthBoardList &boards)
+{
+    _internalboardlist.theboards = boards.theboards;
+    return true;
+}
+
+
+EthBoardList& EthMaintainer::boards_get(void)
+{
+    return _internalboardlist;
+}
+
+
+bool EthMaintainer::boards_clr(void)
+{
+    _internalboardlist.clear();
+    return true;
+}
+
+bool EthMaintainer::boards_select(eOipv4addr_t ipv4, bool on)
+{
+    _internalboardlist.select(on, ipv4);
+    return true;
+}
+
+int EthMaintainer::boards_add(eOipv4addr_t ipv4, boardInfo2_t &info2, bool force)
+{
+    _internalboardlist.add(info2, ipv4, force);
+
+    return _internalboardlist.size();
+}
+
+int EthMaintainer::boards_rem(eOipv4addr_t ipv4)
+{
+    _internalboardlist.rem(ipv4);
+    return _internalboardlist.size();
+}
+
+
+bool EthMaintainer::command_supported(eOipv4addr_t ipv4, eOuprot_proc_capabilities_t capability, bool ask2board)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+    if(ask2board)
+    {
+        //boardlist = information(ipv4, true, false, 1, 1.0);
+    }
+
+    vector<EthBoard *> boards = list2use->get(ipv4);
+
+    if(0 == boards.size())
+    {
+        return false;
+    }
+
+    // i assume it is true. i return true only if all the boards support it.
+    bool ret = true;
+    for(int i=0; i<boards.size(); i++)
+    {
+        uint32_t mask = boards[i]->getInfo().capabilities;
+        bool r = ((mask & capability) == capability) ? true : false;
+        ret = ret && r;
+    }
+
+    return ret;
+}
+
+
+EthBoardList EthMaintainer::information(eOipv4addr_t ipv4, bool ask2board, bool forcemaintenance, int numberofrequests, double waittimeout)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+    if(true == ask2board)
+    {
+        // send the command
+
+        if(forcemaintenance)
+        {
+            go2maintenance(ipv4, true, 6, 1.0);
+        }
+
+        // now we send the info request. we use the uprot_OPC_DISCOVER w/out go2updater
+
+        const bool forceUpdatingMode = false;
+        eOuprot_cmd_DISCOVER_t * cmd = (eOuprot_cmd_DISCOVER_t*) mTxBuffer;
+        memset(cmd, EOUPROT_VALUE_OF_UNUSED_BYTE, sizeof(eOuprot_cmd_DISCOVER_t));
+        cmd->opc = uprot_OPC_LEGACY_SCAN;
+        cmd->opc2 = uprot_OPC_DISCOVER;
+        cmd->jump2updater = (true == forceUpdatingMode) ? (1) : (0);
+
+        for(int i=0; i<numberofrequests; i++)
+        {
+            sendCommand(ipv4Broadcast, cmd, sizeof(eOuprot_cmd_DISCOVER_t), list2use);
+
+            processDiscoveryReplies2(*list2use, waittimeout);
+        }
+    }
+
+    // extract from *list2use all the relevant ipv4 ....
+    EthBoardList ret;
+
+    vector<EthBoard *> bb = list2use->get(ipv4);
+
+    for(int i=0; i<bb.size(); i++)
+    {   // we add the info and we keep the selection ...
+        ret.add(bb.at(i)->getInfo(), bb.at(i)->getIPV4());
+        ret.select(bb.at(i)->isSelected(), bb.at(i)->getIPV4());
+    }
+
+    return ret;
+}
+
+
+std::string EthMaintainer::moreinformation(eOipv4addr_t ipv4, bool forcemaintenance)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+    const bool ask2board =  true;
+    const int numberofrequests = 1;
+    //double waittimeout = 1.0;
+    string ret;
+
+    if(true == ask2board)
+    {
+        // send the command
+
+        if(forcemaintenance)
+        {
+            go2maintenance(ipv4, true, 6, 1.0);
+        }
+
+        // now we send the info request. we use the uprot_OPC_DISCOVER w/out go2updater
+
+        eOuprot_cmd_MOREINFO_t command;
+
+        command.opc = uprot_OPC_LEGACY_PROCS;
+        command.opc2 = uprot_OPC_MOREINFO;
+        command.plusdescription = 1;
+        command.jump2updater = 0;
+
+        for(int i=0; i<numberofrequests; i++)
+        {
+            sendCommand(ipv4, &command, sizeof(command), list2use);
+
+            ret += processMoreInfoReplies(*list2use);
+        }
+    }
+
+    return ret;
+}
+
+bool EthMaintainer::go2maintenance(eOipv4addr_t ipv4, bool verify, int retries, double timegap)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+
+    const bool forceUpdatingMode = true;
+    eOuprot_cmd_DISCOVER_t command;
+    memset(&command, EOUPROT_VALUE_OF_UNUSED_BYTE, sizeof(eOuprot_cmd_DISCOVER_t));
+    command.opc = uprot_OPC_LEGACY_SCAN;
+    command.opc2 = uprot_OPC_DISCOVER;
+    command.jump2updater = (true == forceUpdatingMode) ? (1) : (0);
+
+    // step 1. we send command and process replies a first time
+    sendCommand(ipv4, &command, sizeof(command), list2use);
+    processDiscoveryReplies2(*list2use);
+
+
+    // step 2. must verify that all boards to which we sent the command are in maintenance
+    if(true == verify)
+    {
+        for(int iter=0; iter<retries; iter++)
+        {
+            if(isInMaintenance(ipv4, *list2use))
+            {
+                if(_verbose)
+                {
+                    printf("EthMaintainer::go2maintenance() succesfully sent in maintenance board %s after %d attempts\n", ipv4tostring(ipv4).c_str(), iter+1);
+                }
+                return true;
+            }
+
+            yarp::os::Time::delay(timegap);
+
+            if(_verbose)
+            {
+                printf("EthMaintainer::go2maintenance() resent command for the %d-th time to board %s after %f secs\n", iter+1, ipv4tostring(ipv4).c_str(), timegap);
+            }
+
+            // re-send the message and process replies
+            sendCommand(ipv4, &command, sizeof(command), list2use);
+            processDiscoveryReplies2(*list2use);
+        }
+
+    }
+
+    bool ret = isInMaintenance(ipv4, *list2use);
+
+    if(_verbose)
+    {
+        if(ret)
+        {
+            printf("EthMaintainer::go2maintenance() succesfully sent in maintenance board %s after %d retries\n", ipv4tostring(ipv4).c_str(), retries);
+        }
+        else
+        {
+            printf("EthMaintainer::go2maintenance() could not send in maintenance board %s even after %d retries\n", ipv4tostring(ipv4).c_str(), retries);
+        }
+    }
+
+    return ret;
+}
+
+
+bool EthMaintainer::go2application(eOipv4addr_t ipv4, bool checkdef2runapplication, double bootstraptime, bool verify)
+{    
+    bool ret = false;
+
+    EthBoardList boardlist = information(ipv4, true, false, 2, 1.0);
+    vector<EthBoard *> pboards;
+
+    // check if the application is running and ifde2run is application.
+    // if ok we do nothing.
+    // else ...
+
+    bool forcemaintainance = false;
+    bool forcedef2runapplication = false;
+
+    if(true == isInApplication(ipv4, boardlist))
+    {
+        if(checkdef2runapplication)
+        {
+            // must verify for all the boards
+            pboards = boardlist.get(ipv4);
+            for(int i=0; i<pboards.size(); i++)
+            {
+                boardInfo2_t info = pboards[i]->getInfo();
+                if(eApplication != info.processes.def2run)
+                {
+                    forcemaintainance = true;
+                    forcedef2runapplication = true;
+                    break;
+                }
+            }
+
+            if((false == forcemaintainance) && (false == forcedef2runapplication))
+            {
+                return true;
+            }
+        }
+    }
+
+    // if in here ... i send them all in maintenance anyway
+    if(false == go2maintenance(ipv4))
+    {
+        if(_verbose)
+        {
+            printf("EthMaintainer::go2application() has called go2maintenance() which has failed for board %s.\n", ipv4tostring(ipv4).c_str());
+            fflush(stdout);
+        }
+        return false;
+    }
+
+    // and i set the def2run anyway ...
+
+    if(false == command_def2run(ipv4, eApplication, false, true))
+    {
+        if(_verbose)
+        {
+            printf("EthMaintainer::go2application() has called command_def2run() which has failed for board %s.\n", ipv4tostring(ipv4).c_str());
+            fflush(stdout);
+        }
+        return false;
+    }
+
+
+    // now we are ok to send a restart, wait for some seconds, discover, check ...
+    command_restart(ipv4);
+
+    yarp::os::Time::delay(bootstraptime);
+
+    if(!verify)
+    {
+        return true;
+    }
+
+    boardlist = information(ipv4, true, false, 2, 1.0);
+
+    ret = isInApplication(ipv4, boardlist);
+
+    if(false == ret)
+    {
+        pboards = boardlist.get(ipv4);
+        if(pboards.empty())
+        {
+            if(_verbose)
+            {
+                printf("EthMaintainer::go2application(): could not find any board %s after restart and wait of %f seconds \n", ipv4tostring(ipv4).c_str(), bootstraptime);
+            }
+            return false;
+        }
+        else
+        {
+            if(_verbose)
+            {
+                printf("EthMaintainer::go2application(): some boards %s are not in eApplication after restart and wait of %f seconds:\n", ipv4tostring(ipv4).c_str(), bootstraptime);
+                for(int i=0; i<pboards.size(); i++)
+                {
+                    boardInfo2_t info = pboards[i]->getInfo();
+                    printf("- board %s is in %s\n", pboards[i]->getIPV4string().c_str(), eouprot_process2string((eOuprot_process_t)info.processes.runningnow));
+                }
+            }
+        }
+    }
+
+
+    return ret;
+}
+
+
+
+bool EthMaintainer::program(eOipv4addr_t ipv4, eObrd_ethtype_t type, eOuprot_process_t process, eOversion_t targetversion, FILE *fp, bool forcemaintenance, void progress(float), bool restart2application)
+{
+    bool ret = false;
+    string ipv4string = ipv4tostring(ipv4);
+    const char *targetboardtext = eoboards_type2string2(eoboards_ethtype2type(type), eobool_true);
+
+    bool checkversion = (0 == (targetversion.major+targetversion.minor)) ? false : true;
+    bool checktype = ((eobrd_ethtype_none == type) || (eobrd_ethtype_unknown == type)) ? false : true;
+
+    if(NULL == fp)
+    {
+        if(_verbose)
+        {
+            printf("ERROR: EthMaintainer::program() could not open the file with the binary code.\n");
+        }
+        return false;
+    }
+
+    EthBoardList boardlist;
+    vector<EthBoard *> pboards;
+
+
+    if(_verbose)
+    {
+        printf("\nEthMaintainer::program() is about to program the board @ %s of type %s with an %s.\n", ipv4string.c_str(), targetboardtext, eouprot_process2string(process));
+    }
+
+    if(eUpdater == process)
+    {
+        if(_verbose)
+        {
+            printf("EthMaintainer::program(): is forcing restart2application = false\n");
+        }
+        restart2application =  false;
+    }
+
+
+    // check the address
+    if(ipv4 == ipv4Broadcast)
+    {
+        if(_verbose)
+        {
+            printf("\nERROR: EthMaintainer::program() cannot program the board @ %s because address is invalid.\n", ipv4string.c_str());
+        }
+        return false;
+    }
+
+
+    if(forcemaintenance)
+    {
+        if(_verbose)
+        {
+            printf("\nEthMaintainer::program() is about to send the board @ %s in maintenance.\n", ipv4string.c_str());
+        }
+        // i send the board in maintenance.
+        const bool verify = true;
+        if(false == go2maintenance(ipv4, verify, 6, 1.0))
+        {
+            if(_verbose)
+            {
+                printf("ERROR: EthMaintainer::program() cannot send the board @ %s in maintenance.\n", ipv4string.c_str());
+            }
+            return false;
+        }
+    }
+
+    // i need its info ...
+    const bool forcemaintenance4information = false;
+    boardlist = information(ipv4, true, forcemaintenance4information, 2, 1.0);
+
+    pboards = boardlist.get(ipv4Broadcast); // i get all the boards ....
+
+    uint8_t nboards = pboards.size();
+
+    if(_verbose)
+    {
+        printf("WARNING: EthMaintainer::program() has found %d boards @ %s.\n", (int)nboards, ipv4string.c_str());
+    }
+
+
+    for(int i=0; i<nboards; i++)
+    {
+        boardInfo2_t boardinfo = pboards.at(i)->getInfo();
+
+        const char *found = eoboards_type2string2(eoboards_ethtype2type(boardinfo.boardtype), eobool_true);
+
+        if(_verbose)
+        {
+            printf("- board %d of %d: %s\n", i+1, nboards, pboards.at(i)->getIPV4string().c_str());
+        }
+
+        if(checktype)
+        {
+            // do the check
+            if((eobrd_ethtype_unknown == boardinfo.boardtype) || (eobrd_ethtype_none == boardinfo.boardtype))
+            {
+                if(_verbose)
+                    printf("WARNING: EthMaintainer::program() has found @ %s: type %s and not %s as wanted.\n", pboards.at(i)->getIPV4string().c_str(), found, targetboardtext);
+            }
+            else if(type != boardinfo.boardtype)
+            {
+                if(_verbose)
+                {
+                    printf("ERROR: EthMaintainer::program() has found @ %s: type %s and not %s as wanted.\n", pboards.at(i)->getIPV4string().c_str(), found, targetboardtext);
+                }
+                return false;
+            }
+        }
+
+        switch(process)
+        {
+            case eUpdater:
+            {
+                if(eApplPROGupdater == boardinfo.processes.runningnow)
+                {
+                }
+                else
+                {
+                    if(_verbose)
+                    {
+                        const char *runningprocess = eouprot_process2string((eOuprot_process_t)boardinfo.processes.runningnow);
+                        printf("ERROR: EthMaintainer::program() has found @ %s: %s is running and not the eApplPROGupdater as needed to program a %s.\n",
+                               pboards.at(i)->getIPV4string().c_str(), runningprocess, eouprot_process2string(process));
+                    }
+                    return false;
+                }
+            } break;
+
+            default:
+            {
+                if(eUpdater == boardinfo.processes.runningnow)
+                {
+                }
+                else
+                {
+                    if(_verbose)
+                    {
+                        const char *runningprocess = eouprot_process2string((eOuprot_process_t)boardinfo.processes.runningnow);
+                        printf("ERROR: EthMaintainer::program() has found @ %s: %s is running and not the eUpdater as needed to program a %s.\n",
+                               pboards.at(i)->getIPV4string().c_str(), runningprocess, eouprot_process2string(process));
+                    }
+                    return false;
+                }
+            } break;
+        }
+
+    }
+
+
+
+    string result;
+    eOuprot_partition2prog_t partition = uprot_partitionAPPLICATION;
+    switch(process)
+    {
+        case eLoader:
+        {
+            partition = uprot_partitionLOADER;
+        } break;
+
+        case eApplPROGupdater:
+        case eApplication:
+        {
+            partition = uprot_partitionAPPLICATION;
+        } break;
+
+        case eUpdater:
+        {
+            partition = uprot_partitionUPDATER;
+        } break;
+
+        default:
+        {
+            partition = uprot_partitionAPPLICATION;
+        } break;
+    };
+
+
+    // we program the boards .......
+    ret = command_program(ipv4, fp, partition, progress, &boardlist, result);
+
+
+    if(false == ret)
+    {
+        if(_verbose)
+        {
+            printf("ERROR: EthMaintainer::program() could not program board %s @ %s: %s.\n",
+                   targetboardtext, ipv4string.c_str(),
+                   result.c_str());
+        }
+        return false;
+    }
+
+
+    if(_verbose)
+    {
+        printf("OK: EthMaintainer::program() has succesfully programmed board %s @ %s.\n", targetboardtext, ipv4string.c_str());
+    }
+
+
+    if(checkversion)
+    {
+        //  i verify the version
+
+        if(_verbose)
+        {
+            printf("EthMaintainer::program() will now verify if target version matches w/ programmed version.\n");
+        }
+
+        boardlist = information(ipv4, true, false, 2, 1.0);
+        pboards = boardlist.get(ipv4Broadcast); // i get them all ...
+
+        if(nboards != pboards.size())
+        {
+            if(_verbose)
+            {
+                printf("WARNING: there were %d boards and there are %d now...\n", (int)nboards, (int)boardlist.size());
+            }
+        }
+
+        for(int i=0; i<pboards.size(); i++)
+        {
+
+            boardInfo2_t boardinfo = pboards.at(i)->getInfo();
+
+            uint8_t index = eouprot_process2index(process);
+            eOuprot_procinfo_t procinfo = boardinfo.processes.info[index];
+            char datestr[32];
+            eo_common_date_to_string(procinfo.date, datestr, sizeof(datestr));
+
+            if((procinfo.version.major != targetversion.major) || (procinfo.version.minor != targetversion.minor))
+            {
+                if(_verbose)
+                {
+                    printf("\nWARNING: EthMaintainer::program() found an unexpected version for board %s: instead of %d.%d, there is %d.%d dated %s:\n",
+                           pboards.at(i)->getIPV4string().c_str(),
+                           targetversion.major, targetversion.minor,
+                           procinfo.version.major, procinfo.version.minor,
+                           datestr
+                           );
+                }
+            }
+
+
+            if(_verbose)
+            {
+                printf("\nOK: EthMaintainer::program() has succesfully verified that board @ %s contains a %s w/ v = (%d.%d) dated %s\n",
+                            pboards.at(i)->getIPV4string().c_str(),
+                            eouprot_process2string(process),
+                            procinfo.version.major, procinfo.version.minor,
+                            datestr
+                            );
+                fflush(stdout);
+            }
+        }
+    }
+
+    ret = true;
+
+    if(restart2application)
+    {
+        ret = go2application(ipv4, true, 10, true);
+    }
+
+    return ret;
+}
+
+
+bool EthMaintainer::command_def2run(eOipv4addr_t ipv4, eOuprot_process_t process, bool forcemaintenance, bool verify)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+    if(forcemaintenance)
+    {
+        if(false == go2maintenance(ipv4, true, 6, 1.0))
+        {
+            if(_verbose)
+            {
+                printf("EthMaintainer::command_def2run(): cannot send the boards to maintenance.\n");
+            }
+            return false;
+        }
+    }
+
+    // send the command
+
+    eOuprot_cmd_DEF2RUN_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_DEF2RUN;
+    command.proc = process;
+
+    sendCommand(ipv4, &command, sizeof(command), list2use);
+
+    if(!verify)
+    {
+        return true;
+    }
+
+    // discover again and check
+
+    boardlist = information(ipv4, true, false, 2, 1.0);
+
+    vector<EthBoard *> boards = boardlist.get(ipv4);
+    if(0 == boards.size())
+    {
+        if(_verbose)
+        {
+            printf("EthMaintainer::command_def2run(): found no boards in verify step.\n");
+        }
+        return false;
+    }
+
+    bool ret = true;
+    for(int i=0; i< boards.size(); i++)
+    {
+        boardInfo2_t info = boards[i]->getInfo();
+        if(process != info.processes.def2run)
+        {
+            if(0 != info.protversion)
+            {
+                if(_verbose)
+                {
+                    printf("EthMaintainer::command_def2run(): could not set DEF2RUN = %s for board %s. detected value is %s",
+                           eouprot_process2string(process),
+                           boards[i]->getIPV4string().c_str(), eouprot_process2string((eOuprot_process_t)info.processes.def2run)
+                           );
+                }
+                ret = false;
+            }
+            else
+            {
+                printf("EthMaintainer::command_def2run(): could not check DEF2RUN = %s for board %s beacuse protocolversion is 0",
+                       eouprot_process2string(process),
+                       boards[i]->getIPV4string().c_str()
+                       );
+            }
+
+        }
+    }
+
+    return ret;
+}
+
+
+bool EthMaintainer::command_restart(eOipv4addr_t ipv4)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+    eOuprot_cmd_RESTART_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_RESTART;
+
+    bool ret = sendCommand(ipv4, &command, sizeof(command), list2use);
+
+    if(_verbose)
+    {
+        printf("EthMaintainer::command_restart(%s): %d\n", ipv4tostring(ipv4).c_str(), ret);
+    }
+
+    return ret;
+}
+
+
+
+bool EthMaintainer::command_changeaddress(eOipv4addr_t ipv4, eOipv4addr_t ipv4new, bool checkifnewispresent, bool forcemaintenance, bool restart, bool verify)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+    bool ret = false;
+
+    eOuprot_cmd_IP_ADDR_SET_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+
+    command.opc = uprot_OPC_LEGACY_IP_ADDR_SET;
+    command.opc2 = uprot_OPC_IP_ADDR_SET;
+    command.sysrestart = 0; //(restart) ? (1) : (0);
+
+    command.address[3] = (ipv4new>>24) & 0xFF;
+    command.address[2] = (ipv4new>>16) & 0xFF;
+    command.address[1] = (ipv4new>>8 ) & 0xFF;
+    command.address[0] = (ipv4new    ) & 0xFF;
+
+
+    string ipv4string = ipv4tostring(ipv4);
+    string ipv4newstring = ipv4tostring(ipv4new);
+
+
+    bool stopit = false;
+
+    if(0 == ipv4)
+    {
+        stopit = true;
+    }
+
+    // we must have 10.0.1.x, where x is not 0 or 255
+    if((10 != command.address[0]) || (0 != command.address[1]) || (1 != command.address[2]))
+    {
+        stopit =  true;
+    }
+
+    if((0 == command.address[3]) || (255 == command.address[3]))
+    {
+        stopit = true;
+    }
+
+
+    if(true == stopit)
+    {
+        if(_verbose)
+        {
+            printf("EthMaintainer::command_changeaddress(): cannot send command uprot_OPC_IP_ADDR_SET to %s with new address %s because either one or both are not valid\n", ipv4string.c_str(), ipv4newstring.c_str());
+        }
+
+        return ret;
+    }
+
+    if(checkifnewispresent)
+    {   // ipv4 cannot be 0 ...
+        boardlist = information(ipv4new, true, false, 1, 1.0);
+        if(0 != boardlist.numberof(ipv4new))
+        {
+            if(_verbose)
+            {
+                printf("EthMaintainer::command_changeaddress(): cannot send command uprot_OPC_IP_ADDR_SET to %s with new address %s because the new address is already present\n", ipv4string.c_str(), ipv4newstring.c_str());
+            }
+
+            return false;
+        }
+        else
+        {
+            if(_verbose)
+            {
+                printf("EthMaintainer::command_changeaddress(): new address %s is not present\n", ipv4newstring.c_str());
+            }
+        }
+    }
+
+    if(forcemaintenance)
+    {
+        bool r1 = go2maintenance(ipv4, true, 6, 1.0);
+
+        if(false == r1)
+        {
+            if(_verbose)
+            {
+                printf("EthMaintainer::command_changeaddress(): failed to send %s in maintenance\n", ipv4newstring.c_str());
+            }
+            return false;
+        }
+        else
+        {
+            if(_verbose)
+            {
+                printf("EthMaintainer::command_changeaddress(): succesfully sent %s in maintenance\n", ipv4newstring.c_str());
+            }
+        }
+
+    }
+
+
+    if(_verbose)
+    {
+        printf("EthMaintainer::command_changeaddress(): sent command uprot_OPC_IP_ADDR_SET to %s, new address is %s. w/%s sysrestart\n", ipv4string.c_str(), ipv4newstring.c_str(), (0 == command.sysrestart) ? "out" : "");
+    }
+
+    bool r = sendCommand(ipv4, &command, sizeof(command), list2use);
+
+    if(false == r)
+    {
+        if(_verbose)
+        {
+            printf("EthMaintainer::command_changeaddress(): could not send command\n");
+        }
+    }
+
+    if(true == restart)
+    {
+        bool rr = command_restart(ipv4);
+        if(_verbose)
+        {
+            printf("EthMaintainer::command_changeaddress(): called command_restart() w/ res %d\n", rr);
+        }
+    }
+
+    if(true == verify)
+    {   // cannot verify if we dont restart.
+        verify = restart;
+    }
+
+
+    if(false == verify)
+    {
+        return true;
+    }
+
+    // we verify ....
+
+    // must wait a tick ... maybe 500 ms and then i run a discovery on the new address.
+    yarp::os::Time::delay(1.000);
+
+
+    ret = go2maintenance(ipv4new, true, 5, 0.5);
+
+    if(_verbose)
+    {
+        printf("EthMaintainer::command_changeaddress(): board w/ new address %s is in maintenance: %s\n", ipv4newstring.c_str(), ret ? "YES" : "NO!");
+    }
+
+    if(false == ret)
+    {
+        return false;
+    }
+
+
+    boardlist = information(ipv4new, true, false, 1, 1.0);
+
+    if(0 == boardlist.numberof(ipv4new))
+    {
+        if(_verbose)
+        {
+            printf("EthMaintainer::command_changeaddress(): error: we dont have the new address %s ...\n", ipv4newstring.c_str());
+        }
+        return false;
+    }
+
+    if(_verbose)
+    {
+        printf("EthMaintainer::command_changeaddress(): OK\n");
+    }
+
+    return true;
+}
+
+
+bool EthMaintainer::command_info32_clr(eOipv4addr_t ipv4)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+    bool ret = true;
+
+    eOuprot_cmd_PAGE_CLR_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_PAGE_CLR;
+    command.pagesize = 32;
+
+    ret = sendCommand(ipv4, &command, sizeof(command), list2use);
+
+    return ret;
+}
+
+
+bool EthMaintainer::command_info32_set(eOipv4addr_t ipv4, const string &info32)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+    bool ret = true;
+
+    eOuprot_cmd_PAGE_SET_t *cmd = (eOuprot_cmd_PAGE_SET_t*) mTxBuffer;
+    uint16_t sizeofcmd = sizeof(eOuprot_cmd_PAGE_SET_t) - uprot_pagemaxsize + 32;
+    // think of the best way to specify the length of themessage in a proper way
+    // we could decide to send always a length of sizeof(eOuprot_cmd_PAGE_SET_t) which is 132, or ...
+
+    memset(cmd, EOUPROT_VALUE_OF_UNUSED_BYTE, sizeofcmd);
+
+    cmd->opc = uprot_OPC_PAGE_SET;
+    cmd->pagesize = 32;
+    memset(cmd->page, 0, 32);
+
+
+    const char * str32 = info32.c_str();
+
+    int len = strlen(str32);
+    if(len>30)
+    {
+        len = 30;
+    }
+    cmd->page[0] = len;
+    memcpy(&cmd->page[1], str32, len);
+
+    ret = sendCommand(ipv4, cmd, sizeofcmd, list2use);
+
+    return ret;
+}
+
+
+vector<string> EthMaintainer::command_info32_get(eOipv4addr_t ipv4)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+    vector<string> thestrings(0);
+
+    eOuprot_cmd_PAGE_GET_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_PAGE_GET;
+    command.pagesize = 32;
+
+    bool r = sendCommand(ipv4, &command, sizeof(command), list2use);
+
+    eOipv4addr_t rxipv4addr;
+    eOipv4port_t rxipv4port;
+
+    while(mSocket.ReceiveFrom(rxipv4addr, rxipv4port, mRxBuffer, sizeof(mRxBuffer), 500) > 0)
+    {
+        eOuprot_cmd_PAGE_GET_REPLY_t * pageget = (eOuprot_cmd_PAGE_GET_REPLY_t*) mRxBuffer;
+
+        string ipv4rxstring = ipv4tostring(rxipv4addr);
+
+        if(uprot_OPC_PAGE_GET == pageget->reply.opc)
+        {
+            string readstring;
+
+            if((rxipv4addr != myIPV4addr) && (uprot_RES_OK == pageget->reply.res) && (32 == pageget->pagesize) && (0xff != pageget->page[0]))
+            {
+                readstring = string((const char*)&pageget->page[1]);
+                thestrings.push_back(readstring);
+                // and update what in boardinfo32
+                vector<EthBoard *> selected = _internalboardlist.get(rxipv4addr);
+                for(int i=0; i<selected.size(); i++)
+                {
+                    boardInfo2_t binfo = selected[i]->getInfo();
+                    memcpy(binfo.boardinfo32, pageget->page, sizeof(binfo.boardinfo32));
+                }
+            }
+
+            if(_verbose)
+            {
+                if(uprot_RES_OK != pageget->reply.res)
+                {
+                    printf("\n received a eOuprot_cmd_PAGE_GET_REPLY_t from IP %s with a failure result %d for size %d", ipv4rxstring.c_str(), pageget->reply.res, pageget->pagesize);
+                }
+                else if(rxipv4addr != myIPV4addr)
+                {
+                    printf("\n received a eOuprot_cmd_PAGE_GET_REPLY_t from IP %s with size %d: ", ipv4rxstring.c_str(), pageget->pagesize);
+
+                    if(32 == pageget->pagesize)
+                    {   // the page is formatted so that in position 0 there is 0xff if erased and never programmed or strlen(&page[1])
+
+                        uint8_t info32[32] = {0};
+                        memcpy(info32, pageget->page, 32);
+
+                        if(0xff == info32[0])
+                        {
+                            printf("\n stored info32 is .. ");
+                            for(int m=0; m<32; m++)
+                            {
+                                printf("0x%x ", info32[m]);
+                            }
+
+                        }
+                        else
+                        {
+                            printf("l = %d, string = %s \n", info32[0], &info32[1]);
+                        }
+
+                    }
+
+                    fflush(stdout);
+                }
+            }
+
+        }
+    }
+
+    return thestrings;
+}
+
+
+bool EthMaintainer::command_jump2updater(eOipv4addr_t ipv4)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+    bool ret = true;
+
+    eOuprot_cmd_JUMP2UPDATER_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_JUMP2UPDATER;
+
+    ret = sendCommand(ipv4, &command, sizeof(command), list2use);
+
+    return ret;
+}
+
+
+
+bool EthMaintainer::command_jump2address(eOipv4addr_t ipv4, uint32_t romaddress)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+    bool ret = true;
+
+    eOuprot_cmd_JUMP2ADDRESS_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_JUMP2ADDRESS;
+    command.address = romaddress;
+
+    ret = sendCommand(ipv4, &command, sizeof(command), list2use);
+
+    return ret;
+}
+
+
+bool EthMaintainer::command_blink(eOipv4addr_t ipv4)
+{
+    EthBoardList boardlist;
+    EthBoardList *list2use = &boardlist;
+    if(_useofinternalboardlist)
+    {
+        list2use = &_internalboardlist;
+    }
+
+    bool ret = true;
+
+    eOuprot_cmd_BLINK_t command = {EOUPROT_VALUE_OF_UNUSED_BYTE};
+    command.opc = uprot_OPC_BLINK;
+
+    ret = sendCommand(ipv4, &command, sizeof(command), list2use);
+
+    return ret;
+}
+
 
 // eof
+
 
 
