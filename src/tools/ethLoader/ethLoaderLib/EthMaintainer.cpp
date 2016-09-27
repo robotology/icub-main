@@ -178,7 +178,7 @@ int EthMaintainer::commandDiscover(bool clearboardsbeforediscovery, eOipv4addr_t
     cmd->opc = uprot_OPC_LEGACY_SCAN;
     cmd->opc2 = uprot_OPC_DISCOVER;
 
-    cmd->filler[0] = (true == forceUpdatingMode) ? (1) : (0);
+    cmd->jump2updater = (true == forceUpdatingMode) ? (1) : (0);
 
 
     // we send the discovery in ...
@@ -209,7 +209,7 @@ bool EthMaintainer::commandForceMaintenance(eOipv4addr_t ipv4, bool verify, int 
     command.opc = uprot_OPC_LEGACY_SCAN;
     command.opc2 = uprot_OPC_DISCOVER;
 
-    command.filler[0] = (true == forceUpdatingMode) ? (1) : (0);
+    command.jump2updater = (true == forceUpdatingMode) ? (1) : (0);
 
     // step 1. we send command and process replies a first time
 
@@ -249,7 +249,7 @@ std::string EthMaintainer::commandGetMoreInfo(eOipv4addr_t ipv4)
     command.opc = uprot_OPC_LEGACY_PROCS;
     command.opc2 = uprot_OPC_MOREINFO;
     command.plusdescription = 1;
-    command.filler[0] = EOUPROT_VALUE_OF_UNUSED_BYTE;
+    command.jump2updater = 0;
 
     sendCommand(ipv4, &command, sizeof(command));
 
