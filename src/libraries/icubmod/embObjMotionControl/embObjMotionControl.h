@@ -303,6 +303,7 @@ private:
     int    *_rotorEncoderRes;                   /** rotor encoder resolution */
     uint8_t *_rotorEncoderType;                  /** rotor encoder type*/
     double *_gearbox;                           /** the gearbox ratio */
+    double *_gearbox2;                           /** the gearbox ratio */
     bool   *_hasHallSensor;                     /** */
     bool   *_hasTempSensor;                     /** */
     bool   *_hasRotorEncoder;                   /** */

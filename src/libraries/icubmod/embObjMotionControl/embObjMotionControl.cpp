@@ -436,6 +436,7 @@ bool embObjMotionControl::alloc(int nj)
     _jointEncoderRes = allocAndCheck<int>(nj);
     _rotorEncoderRes = allocAndCheck<int>(nj);
     _gearbox = allocAndCheck<double>(nj);
+    _gearbox2 = allocAndCheck<double>(nj);
     _maxJntCmdVelocity = allocAndCheck<double>(nj);
     _maxMotorVelocity = allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
@@ -504,6 +505,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_jointEncoderType);
     checkAndDestroy(_rotorEncoderType);
     checkAndDestroy(_gearbox);
+    checkAndDestroy(_gearbox2);
     checkAndDestroy(_maxJntCmdVelocity);
     checkAndDestroy(_maxMotorVelocity);
     checkAndDestroy(_newtonsToSensor);
@@ -578,6 +580,7 @@ embObjMotionControl::embObjMotionControl() :
     SAFETY_THRESHOLD(2.0)
 {
     _gearbox       = 0;
+    _gearbox2      = 0;
     opened        = 0;
     _pids         = NULL;
     _vpids        = NULL;
@@ -1310,9 +1313,29 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             if (_gearbox[i-1]==0) {yError() << "Using a gearbox value = 0 may cause problems! Check your configuration files"; return false;}
         }
     }
-    
+
+    //Gearbox2
+    if (!extractGroup(general, xtmp, "Gearbox2", "The gearbox reduction ratio", _njoints))
+    {
+        yWarning() << "Missing Gearbox2 param. I use default value (1) " ;
+        for(int i=0; i<_njoints; i++)
+        {
+            _gearbox2[i] = 1;
+        }
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+        {
+            _gearbox2[i-1] = xtmp.get(i).asDouble();
+            if (_gearbox2[i-1]==0) {yError() << "Using a gearbox value = 0 may cause problems! Check your configuration files"; return false;}
+        }
+    }
+
     //_newtonsToSensor not depends more on joint. Since now we use float number to change torque values with firmware, we can use micro Nm in order to have a good sensitivity.
     for (i = 0; i < _njoints; i++)
+
     {
         _newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
      
@@ -2018,6 +2041,7 @@ bool embObjMotionControl::init()
         motor_cfg.currentLimits.overloadCurrent = _currentLimits[logico].overloadCurrent;
         motor_cfg.currentLimits.peakCurrent = _currentLimits[logico].peakCurrent;
         motor_cfg.gearboxratio = _gearbox[logico];
+        motor_cfg.gearboxratio2 = _gearbox2[logico];
         motor_cfg.rotorEncoderResolution = _rotorEncoderRes[logico];
         motor_cfg.hasHallSensor = _hasHallSensor[logico];
         motor_cfg.hasRotorEncoder = _hasRotorEncoder[logico];
