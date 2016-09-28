@@ -2,9 +2,11 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(esdsniffer TYPE yarp::dev::EsdMessageSniffer
+yarp_prepare_plugin(esdsniffer
+    CATEGORY device
+    TYPE yarp::dev::EsdMessageSniffer
     INCLUDE EsdMessageSniffer.h 
-    WRAPPER "")
+    EXTRA_CONFIG WRAPPER="")
 
 IF(NOT SKIP_esdsniffer)
 

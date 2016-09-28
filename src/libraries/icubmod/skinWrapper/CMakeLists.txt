@@ -5,7 +5,7 @@
 SET(PROJECTNAME skinWrapper)
 PROJECT(${PROJECTNAME})
 
-yarp_prepare_device(${PROJECTNAME} TYPE skinWrapper INCLUDE ${PROJECTNAME}.h)
+yarp_prepare_plugin(${PROJECTNAME} CATEGORY device TYPE skinWrapper INCLUDE ${PROJECTNAME}.h)
 
 IF (NOT SKIP_${PROJECTNAME})
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/libraries/icubmod/analogServer)

@@ -2,7 +2,7 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(parametricCalibratorEth TYPE yarp::dev::parametricCalibratorEth INCLUDE parametricCalibratorEth.h)
+yarp_prepare_plugin(parametricCalibratorEth CATEGORY device TYPE yarp::dev::parametricCalibratorEth INCLUDE parametricCalibratorEth.h)
 
 if(ENABLE_parametricCalibratorEth)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}

@@ -2,9 +2,10 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(embObjInertials TYPE yarp::dev::embObjInertials
-                                       INCLUDE embObjInertials.h
-                                       WRAPPER AnalogServer)
+yarp_prepare_plugin(embObjInertials CATEGORY device
+                                    TYPE yarp::dev::embObjInertials
+                                    INCLUDE embObjInertials.h
+                                    EXTRA_CONFIG WRAPPER=AnalogServer)
 
 IF (NOT SKIP_embObjInertials)
 

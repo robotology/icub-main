@@ -2,8 +2,9 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(fakecan  TYPE yarp::dev::FakeCan
-                        INCLUDE fakeCan.h)
+yarp_prepare_plugin(fakecan CATEGORY device
+                            TYPE yarp::dev::FakeCan
+                            INCLUDE fakeCan.h)
 
 
 IF (NOT SKIP_fakecan)

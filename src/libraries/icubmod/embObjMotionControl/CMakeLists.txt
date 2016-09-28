@@ -2,9 +2,11 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(embObjMotionControl TYPE yarp::dev::embObjMotionControl
+yarp_prepare_plugin(embObjMotionControl
+    CATEGORY device
+    TYPE yarp::dev::embObjMotionControl
     INCLUDE embObjMotionControl.h
-    WRAPPER controlboardwrapper2)
+    EXTRA_CONFIG WRAPPER=controlboardwrapper2)
 
  IF (NOT SKIP_embObjMotionControl)
 

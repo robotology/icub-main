@@ -2,9 +2,11 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(cfw2can TYPE yarp::dev::Cfw2Can
+yarp_prepare_plugin(cfw2can
+    CATEGORY device
+    TYPE yarp::dev::Cfw2Can
     INCLUDE Cfw2Can.h 
-    WRAPPER "")
+    EXTRA_CONFIG WRAPPER="")
 
 IF (NOT SKIP_cfw2can)
   FIND_PACKAGE(CFW2CANAPI)
