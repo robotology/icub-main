@@ -311,6 +311,7 @@ private:
     Pid *_vpids;                                /** initial velocity gains */
     Pid *_tpids;                                /** initial torque gains */
     Pid *_cpids;                                /** initial current gains */
+    bool _currentPidsAvailables;                /** is true if _cpids contains current pids read in xml file. Current pids are not mandatory file */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
     string *_axisName;                          /** axis name */
     JointTypeEnum *_jointType;                  /** axis type */

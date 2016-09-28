@@ -655,6 +655,7 @@ embObjMotionControl::embObjMotionControl() :
 
     useRawEncoderData = false;
     _pwmIsLimited     = false;
+    _currentPidsAvailables = false;
 
     ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
@@ -1582,6 +1583,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         currentPidsGroup=config.findGroup("CURRENT_CONTROL", "Current control parameters");
         if (currentPidsGroup.isNull()==false)
         {
+            _currentPidsAvailables = true;
            Value &controlUnits=currentPidsGroup.find("controlUnits");
            if  (controlUnits.isNull() == false && controlUnits.isString() == true)
            {
@@ -1615,7 +1617,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
                string s_controlaw = controlLaw.toString();
                if (s_controlaw==string("2foc_feedback"))
                {
-                   yDebug("CORRENT_CONTROL: using control law motor 2foc_feedback");
+                   yDebug("CURRENT_CONTROL: using control law motor 2foc_feedback");
                    if (!parseCurrentPidsGroup (currentPidsGroup, _cpids))
                    {
                        yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: error detected in parameters syntax";
@@ -1644,6 +1646,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         {
             yDebug() <<"embObjMotionControl::fromConfig(): no CURRENT_CONTROL group found in config file";
             //return true; //current control group is not mandatory
+            _currentPidsAvailables = false;
         }
     }
 
@@ -2017,10 +2020,18 @@ bool embObjMotionControl::init()
         motor_cfg.pwmLimit =_motorPwmLimits[logico];
         motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_max[logico], 0.0, _angleToEncoder[logico]));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_min[logico], 0.0, _angleToEncoder[logico]));
-        copyPid_iCub2eo(&_cpids[logico],  &motor_cfg.pidcurrent);
-        motor_cfg.pidcurrent.kp = 8;
-        motor_cfg.pidcurrent.ki = 2;
-        motor_cfg.pidcurrent.scale = 10;
+        
+        if(_currentPidsAvailables)
+        {
+            copyPid_iCub2eo(&_cpids[logico],  &motor_cfg.pidcurrent);
+        }
+        else
+        {
+            motor_cfg.pidcurrent.kp = 8;
+            motor_cfg.pidcurrent.ki = 2;
+            motor_cfg.pidcurrent.scale = 10;
+        }
+        
         if (false == res->setRemoteValueUntilVerified(protid, &motor_cfg, sizeof(motor_cfg), 10, 0.010, 0.050, 2))
         {
             yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
