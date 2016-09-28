@@ -2,8 +2,9 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(static_grabber TYPE yarp::dev::StaticGrabber INCLUDE StaticGrabber.h
-				WRAPPER grabber)
+yarp_prepare_plugin(static_grabber CATEGORY device
+                                   TYPE yarp::dev::StaticGrabber INCLUDE StaticGrabber.h
+                                   EXTRA_CONFIG WRAPPER=grabber)
 
 if (NOT SKIP_static_grabber)
   set(CMAKE_INCLUDE_CURRENT_DIR ON)

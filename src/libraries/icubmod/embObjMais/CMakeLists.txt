@@ -2,9 +2,10 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(embObjMais TYPE yarp::dev::embObjMais
-                                       INCLUDE embObjMais.h
-                                       WRAPPER AnalogServer)
+yarp_prepare_plugin(embObjMais CATEGORY device
+                               TYPE yarp::dev::embObjMais
+                               INCLUDE embObjMais.h
+                               EXTRA_CONFIG WRAPPER=AnalogServer)
 
 IF (NOT SKIP_embObjMais)
 

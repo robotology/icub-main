@@ -2,7 +2,7 @@
 # Authors: Marco Randazzo and Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(canBusInertialMTB TYPE CanBusInertialMTB INCLUDE CanBusInertialMTB.h WRAPPER AnalogSensor)
+yarp_prepare_plugin(canBusInertialMTB CATEGORY device TYPE CanBusInertialMTB INCLUDE CanBusInertialMTB.h EXTRA_CONFIG WRAPPER=AnalogSensor)
 
 if (NOT SKIP_canBusInertialMTB)
 

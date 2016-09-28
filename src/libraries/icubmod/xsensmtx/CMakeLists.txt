@@ -4,7 +4,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 #
 
-yarp_prepare_device(xsensmtx TYPE yarp::dev::XSensMTx INCLUDE XSensMTx.h WRAPPER inertial)
+yarp_prepare_plugin(xsensmtx CATEGORY device TYPE yarp::dev::XSensMTx INCLUDE XSensMTx.h EXTRA_CONFIG WRAPPER=inertial)
 
 if (NOT SKIP_xsensmtx)
     INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR}

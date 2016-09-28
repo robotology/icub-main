@@ -3,9 +3,11 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 
-yarp_prepare_device(canmotioncontrol TYPE yarp::dev::CanBusMotionControl
+yarp_prepare_plugin(canmotioncontrol
+    CATEGORY device
+    TYPE yarp::dev::CanBusMotionControl
     INCLUDE CanBusMotionControl.h
-    WRAPPER controlboardwrapper2)
+    EXTRA_CONFIG WRAPPER=controlboardwrapper2)
 
 if (ENABLE_icubmod_canmotioncontrol)
 

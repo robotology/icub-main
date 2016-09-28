@@ -3,7 +3,7 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 
-yarp_prepare_device(parametricCalibrator TYPE yarp::dev::parametricCalibrator INCLUDE parametricCalibrator.h)
+yarp_prepare_plugin(parametricCalibrator CATEGORY device TYPE yarp::dev::parametricCalibrator INCLUDE parametricCalibrator.h)
 
 if(ENABLE_parametricCalibrator)
     include_directories(${CMAKE_CURRENT_SOURCE_DIR}

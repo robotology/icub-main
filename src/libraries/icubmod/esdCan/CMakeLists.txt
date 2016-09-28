@@ -2,9 +2,11 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(ecan TYPE yarp::dev::EsdCan
+yarp_prepare_plugin(ecan
+    CATEGORY device
+    TYPE yarp::dev::EsdCan
     INCLUDE EsdCan.h 
-    WRAPPER controlboard)
+    EXTRA_CONFIG WRAPPER=controlboard)
 
 IF (NOT SKIP_ecan)
   FIND_PACKAGE(ESDCANAPI)

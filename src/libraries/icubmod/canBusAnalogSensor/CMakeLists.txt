@@ -2,7 +2,7 @@
 # Authors: Marco Randazzo <marco.randazzo@iit.it>
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(canBusAnalogSensor TYPE CanBusAnalogSensor INCLUDE CanBusAnalogSensor.h WRAPPER AnalogServer)
+yarp_prepare_plugin(canBusAnalogSensor CATEGORY device TYPE CanBusAnalogSensor INCLUDE CanBusAnalogSensor.h EXTRA_CONFIG WRAPPER=AnalogServer)
 
 if(NOT SKIP_canBusAnalogSensor)
 

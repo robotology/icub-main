@@ -2,9 +2,10 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(embObjAnalogSensor TYPE yarp::dev::embObjAnalogSensor
+yarp_prepare_plugin(embObjAnalogSensor CATEGORY device
+                                       TYPE yarp::dev::embObjAnalogSensor
                                        INCLUDE embObjAnalogSensor.h
-                                       WRAPPER AnalogServer)
+                                       EXTRA_CONFIG WRAPPER=AnalogServer)
 
 IF (NOT SKIP_embObjAnalogSensor)
 

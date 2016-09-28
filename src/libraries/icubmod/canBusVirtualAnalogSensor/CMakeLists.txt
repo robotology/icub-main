@@ -2,7 +2,7 @@
 # Authors: Marco Randazzo <marco.randazzo@iit.it>
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(canBusVirtualAnalogSensor TYPE CanBusVirtualAnalogSensor INCLUDE CanBusVirtualAnalogSensor.h WRAPPER grabber)
+yarp_prepare_plugin(canBusVirtualAnalogSensor CATEGORY device TYPE CanBusVirtualAnalogSensor INCLUDE CanBusVirtualAnalogSensor.h EXTRA_CONFIG WRAPPER=grabber)
 
 if (NOT SKIP_canBusVirtualAnalogSensor)
 

@@ -2,7 +2,7 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(embObjSkin TYPE EmbObjSkin INCLUDE embObjSkin.h WRAPPER skinWrapper)
+yarp_prepare_plugin(embObjSkin CATEGORY device TYPE EmbObjSkin INCLUDE embObjSkin.h EXTRA_CONFIG WRAPPER=skinWrapper)
 
 if (NOT SKIP_embObjSkin)
     if(ETHRES_DEBUG_DONTREADBACK)
