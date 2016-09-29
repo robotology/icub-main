@@ -1306,7 +1306,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     }
     
     //_newtonsToSensor not depends more on joint. Since now we use float number to change torque values with firmware, we can use micro Nm in order to have a good sensitivity.
-    for (i = 0; i < _njoints(); i++)
+    for (i = 0; i < _njoints; i++)
     {
         _newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
      

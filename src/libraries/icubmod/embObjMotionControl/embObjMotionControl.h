@@ -214,7 +214,7 @@ class torqueControlHelper
     
     inline double convertImpN2S(int j, double nw)
     {
-        return nw * newtonsToSensor[j])/_angleToEncoder[j];
+        return nw * newtonsToSensor[j]/angleToEncoders[j];
     }
 };
 
