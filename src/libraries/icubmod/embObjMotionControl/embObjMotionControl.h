@@ -211,6 +211,11 @@ class torqueControlHelper
     {
         return jointsNum;
     }
+    
+    inline double convertImpN2S(int j, double nw)
+    {
+        return nw * newtonsToSensor[j])/_angleToEncoder[j];
+    }
 };
 
 namespace yarp {
@@ -328,9 +333,6 @@ private:
     double *_kbemf;                             /** back-emf compensation parameter */
     double *_ktau;                              /** motor torque constant */
     int * _filterType;                          /** the filter type (int value) used by the force control algorithm */
-    int *_torqueSensorId;                       /** Id of associated Joint Torque Sensor */
-    int *_torqueSensorChan;                     /** Channel of associated Joint Torque Sensor */
-    double *_maxTorque;                         /** Max torque of a joint */
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
     bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
     #define MAX_POSITION_MOVE_INTERVAL 0.080
