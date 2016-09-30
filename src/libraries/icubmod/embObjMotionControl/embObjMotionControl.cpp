@@ -4612,13 +4612,15 @@ bool embObjMotionControl::getRefTorquesRaw(double *t)
 
 bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
 {
-    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_target);
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     uint16_t size;
     eOmc_joint_status_core_t jcore = {0};
     *t =0 ;
-    if(!askRemoteValue(id32, (uint8_t *)&jcore, size))
+
+
+    if(!res->readBufferedValue(id32, (uint8_t *)&jcore, &size))
     {
-        yError() << "embObjMotionControl::getRefTorqueRaw() could not read reference pos for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
+        yError() << "embObjMotionControl::getRefTorqueRaw() could not read pid torque reference pos for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
         return false;
     }
 #if NEW_JSTATUS_STRUCT
