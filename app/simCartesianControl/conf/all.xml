@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<robot name="icubSim">
+
+    <device name="torso" type="remote_controlboard">
+        <param name="remote"> /icubSim/torso </param>
+        <param name="local"> /simCartesianControl/torso </param>
+        <param name="writeStrict"> on </param>
+    </device>
+
+    <device name="left_arm" type="remote_controlboard">
+        <param name="remote"> /icubSim/left_arm </param>
+        <param name="local"> /simCartesianControl/left_arm </param>
+        <param name="writeStrict"> on </param>
+    </device>
+
+    <device name="right_arm" type="remote_controlboard">
+        <param name="remote"> /icubSim/right_arm </param>
+        <param name="local"> /simCartesianControl/right_arm </param>
+        <param name="writeStrict"> on </param>
+    </device>
+
+    <device name="left_leg" type="remote_controlboard">
+        <param name="remote"> /icubSim/left_leg </param>
+        <param name="local"> /simCartesianControl/left_leg </param>
+        <param name="writeStrict"> on </param>
+    </device>
+
+    <device name="right_leg" type="remote_controlboard">
+        <param name="remote"> /icubSim/right_leg </param>
+        <param name="local"> /simCartesianControl/right_leg </param>
+        <param name="writeStrict"> on </param>
+    </device>
+
+    <devices file="cartesian/left_arm_cartesian.xml" />
+    <devices file="cartesian/right_arm_cartesian.xml" />
+    <devices file="cartesian/left_leg_cartesian.xml" />
+    <devices file="cartesian/right_leg_cartesian.xml" />
+</robot>

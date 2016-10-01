@@ -16,8 +16,8 @@
         </module>
 
         <module>
-                <name>simCartesianControl</name>
-                <parameters>--no_legs</parameters>
+                <name>yarprobotinterface</name>
+                <parameters>--context simCartesianControl --config no_legs.xml</parameters>
                 <node>localhost</node>
                 <dependencies>
                     <port timeout="40">/icubSim/left_arm/state:o</port>
