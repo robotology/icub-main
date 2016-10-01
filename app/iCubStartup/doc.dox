@@ -10,7 +10,7 @@ the iCub in a fully operative framework that embeds the cartesian control, the
 gaze control as well as the dynamics computed for the whole body.
 
 \section int_sec Instantiated Modules
-- \ref icub_iCubInterface
+- yarprobotinterface
 - \ref iKinCartesianSolver
 - \ref iKinGazeCtrl
 - \ref wholeBodyDynamics
@@ -23,5 +23,3 @@ Customize the file ./scripts/*.template for your specific platform.
 
 \author Ugo Pattacini
 **/
-
-

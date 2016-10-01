@@ -7,41 +7,35 @@
         <port>/icubSim/left_leg/state:o</port>
         <port>/icubSim/right_leg/state:o</port>
         </dependencies>
-      
+
         <module>
-                <name>simCartesianControl</name>
-                <node>pwrNode2</node>
-                <tag>limbsController</tag>
+                <name>yarprobotinterface</name>
+                <parameters>--context simCartesianControl</parameters>
+                <node>pwrNode1</node>
         </module>
 
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--context simCartesianControl --part right_arm</parameters>
-                <node>pwrNode3</node>
-                <tag>rightArmSolver</tag>
+                <node>pwrNode2</node>
         </module>
 
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--context simCartesianControl --part left_arm</parameters>
-                <node>pwrNode4</node>
-                <tag>leftArmSolver</tag>
+                <node>pwrNode2</node>
         </module>
 
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--context simCartesianControl --part right_leg</parameters>
                 <node>pwrNode3</node>
-                <tag>rightLegSolver</tag>
         </module>
 
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--context simCartesianControl --part left_leg</parameters>
-                <node>pwrNode4</node>
-                <tag>leftLegSolver</tag>
+                <node>pwrNode3</node>
         </module>
 
 </application>
-
-
