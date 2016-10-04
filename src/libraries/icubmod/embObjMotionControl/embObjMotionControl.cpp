@@ -193,6 +193,7 @@ static double convertA2I(double angle_in_degrees, double zero, double factor)
     return (angle_in_degrees + zero) * factor;
 }
 
+
 static inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
     yError() << txt << " is not yet implemented for embObjMotionControl";
@@ -435,9 +436,6 @@ bool embObjMotionControl::alloc(int nj)
     _jointEncoderRes = allocAndCheck<int>(nj);
     _rotorEncoderRes = allocAndCheck<int>(nj);
     _gearbox = allocAndCheck<double>(nj);
-    _torqueSensorId= allocAndCheck<int>(nj);
-    _torqueSensorChan= allocAndCheck<int>(nj);
-    _maxTorque=allocAndCheck<double>(nj);
     _maxJntCmdVelocity = allocAndCheck<double>(nj);
     _maxMotorVelocity = allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
@@ -504,9 +502,6 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_jointEncoderType);
     checkAndDestroy(_rotorEncoderType);
     checkAndDestroy(_gearbox);
-    checkAndDestroy(_torqueSensorId);
-    checkAndDestroy(_torqueSensorChan);
-    checkAndDestroy(_maxTorque);
     checkAndDestroy(_maxJntCmdVelocity);
     checkAndDestroy(_maxMotorVelocity);
     checkAndDestroy(_newtonsToSensor);
@@ -613,9 +608,6 @@ embObjMotionControl::embObjMotionControl() :
     _motorPwmLimits   = NULL;
     _velocityShifts   = NULL;
     _velocityTimeout  = NULL;
-    _torqueSensorId   = NULL;
-    _torqueSensorChan = NULL;
-    _maxTorque        = NULL;
     _maxJntCmdVelocity= NULL;
     _maxMotorVelocity = NULL;
     _newtonsToSensor  = NULL;
@@ -1312,50 +1304,14 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             if (_gearbox[i-1]==0) {yError() << "Using a gearbox value = 0 may cause problems! Check your configuration files"; return false;}
         }
     }
-
-    // Torque sensors stuff
-    if (!extractGroup(general, xtmp, "TorqueId","a list of associated joint torque sensor ids", _njoints))
+    
+    //_newtonsToSensor not depends more on joint. Since now we use float number to change torque values with firmware, we can use micro Nm in order to have a good sensitivity.
+    for (i = 0; i < _njoints; i++)
     {
-        fprintf(stderr, "Using default value = 0 (disabled)\n");
-        for(i=1; i<_njoints+1; i++)
-            _torqueSensorId[i-1] = 0;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++) _torqueSensorId[i-1] = xtmp.get(i).asInt();
+        _newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
+     
     }
 
-
-    if (!extractGroup(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", _njoints))
-    {
-        yWarning() <<  "embObjMotionControl::fromConfig() detected that TorqueChan is not present: using default value = 0 (disabled)";
-        for(i=1; i<_njoints+1; i++)
-            _torqueSensorChan[i-1] = 0;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
-    }
-
-
-    if (!extractGroup(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++)
-        {
-            _maxTorque[i-1] = xtmp.get(i).asInt();
-            _newtonsToSensor[i-1] = 1000.0f; // conversion from Nm into milliNm
-            //@@@RANDAZ: this is tempory fix to increase torque resolution on MC4-controlled joints (i.e. arm pronosupination)
-            //without this user may experience poor resolution of stiffness/damping values.
-            if (_maxTorque[i-1] < 10.0)
-            {
-               _newtonsToSensor[i-1] = 10000.0f;
-            }
-        }
-    }
 
 
     ////// POSITION PIDS
@@ -1940,13 +1896,14 @@ bool embObjMotionControl::init()
         copyPid_iCub2eo(&_vpids[logico], &jconfig.pidvelocity);
         copyPid_iCub2eo(&_tpids[logico], &jconfig.pidtorque);
 
-        jconfig.impedance.damping   = (eOmeas_damping_t)   U_32(_impedance_params[logico].damping * 1000);
-        jconfig.impedance.stiffness = (eOmeas_stiffness_t) U_32(_impedance_params[logico].stiffness * 1000);
+        //stiffness and damping read in xml file are in Nm/deg and Nm/(Deg/sec), so we need to convert before send to fw.
+        jconfig.impedance.damping   = (eOmeas_damping_t) _torqueControlHelper->convertImpN2S(logico, _impedance_params[logico].damping);
+        jconfig.impedance.stiffness = (eOmeas_stiffness_t) _torqueControlHelper->convertImpN2S(logico,  _impedance_params[logico].stiffness);
         jconfig.impedance.offset    = 0; //impedance_params[j];
 
         _cacheImpedance[logico].stiffness = jconfig.impedance.stiffness;
         _cacheImpedance[logico].damping   = jconfig.impedance.damping;
-        _cacheImpedance[logico].offset    = 0;
+        _cacheImpedance[logico].offset    = jconfig.impedance.offset;
 
         jconfig.limitsofjoint.max = (eOmeas_position_t) S_32(convertA2I(_limitsMax[logico], 0.0, _angleToEncoder[logico]));
         jconfig.limitsofjoint.min = (eOmeas_position_t) S_32(convertA2I(_limitsMin[logico], 0.0, _angleToEncoder[logico]));
@@ -4500,31 +4457,7 @@ bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorq
     static double curr_time = Time::now();
     static int    count_saturation=0;
 
-    if(0 != _maxTorque[j])
-    {
-        if(fTorque < (- _maxTorque[j] ))
-        {
-            if (Time::now() - curr_time > 2.0)
-            {
-                yWarning ("embObjMotionControl::updateMeasure() torque measure saturated from %+4.4f to %+4.4f on BOARD %s IP %s joint %d, count: %d", fTorque, _maxTorque[j], res->getName(), res->getIPv4string(), userLevel_jointNumber, count_saturation);
-                curr_time = Time::now();
-            }
-            fTorque = (- _maxTorque[j]);
-            count_saturation++;
-        }
-        if(fTorque > _maxTorque[j])
-        {
-            if (Time::now() - curr_time > 2.0)
-            {
-                yWarning ("embObjMotionControl::updateMeasure() torque measure saturated from %+4.4f to %+4.4f on BOARd %s IP %s joint %d, count: %d", fTorque, _maxTorque[j], res->getName(), res->getIPv4string(), userLevel_jointNumber, count_saturation);
-                curr_time = Time::now();
-            }
-            fTorque = _maxTorque[j];
-            count_saturation++;
-        }
-
-        meas_torque = (eOmeas_torque_t) S_32(_newtonsToSensor[j]*fTorque);
-    }
+    meas_torque = (eOmeas_torque_t) S_32(_newtonsToSensor[j]*fTorque);
 
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
     return res->addSetMessageAndCacheLocally(protoid, (uint8_t*) &meas_torque);
@@ -4783,8 +4716,8 @@ bool embObjMotionControl::getImpedanceRaw(int j, double *stiffness, double *damp
     if(!getWholeImpedanceRaw(j, val))
         return false;
 
-    *stiffness = (double) (val.stiffness * 0.001);
-    *damping = (double) (val.damping * 0.001);
+    *stiffness = (double) (val.stiffness);
+    *damping = (double) (val.damping);
     return true;
 }
 
@@ -4834,9 +4767,8 @@ bool embObjMotionControl::setImpedanceRaw(int j, double stiffness, double dampin
 //    if(!getWholeImpedanceRaw(j, val))
 //        return false;
 
-    // EMS will divide stiffness value by 1000 because the cycle is 1KHz. It is done on the EMS since it manage the cycle and knows the real Rate.
-    _cacheImpedance[j].stiffness = (eOmeas_stiffness_t) U_32(stiffness * 1000.0);
-    _cacheImpedance[j].damping   = (eOmeas_damping_t) U_32(damping * 1000.0);
+    _cacheImpedance[j].stiffness = (eOmeas_stiffness_t) stiffness;
+    _cacheImpedance[j].damping   = (eOmeas_damping_t) damping;
 
     val.stiffness   = _cacheImpedance[j].stiffness;
     val.damping     = _cacheImpedance[j].damping;
