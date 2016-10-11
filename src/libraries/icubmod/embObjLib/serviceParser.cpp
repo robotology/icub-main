@@ -2456,16 +2456,18 @@ bool ServiceParser::check_motion(Searchable &config)
         for (int xx=0; xx<mc_service.properties.numofjoints; xx++)
             yError() << " JOINT SET MAP: J " << xx << "SET " << mc_service.properties.joint2set[xx];
 
+            mc_service.properties.numofjointsets = getnumofjointsets();
+            yError() << " NUM OF SETS = "<< mc_service.properties.numofjointsets;
+
+            if(has_PROPERTIES_JOINTSETS_CFG || has_PROPERTIES_JOINTSETS_CONSTRAINTS)
+            {
+                eOmc_jointset_configuration_t cfg_reset = {0};
+                mc_service.properties.jointset_cfgs.resize(mc_service.properties.numofjointsets, cfg_reset);
+            }
+
         } // has_PROPERTIES_JOINTMAPPING
 
-        mc_service.properties.numofjointsets = getnumofjointsets();
-        yError() << " NUM OF SETS = "<< mc_service.properties.numofjointsets;
 
-        if(has_PROPERTIES_JOINTSETS_CFG || has_PROPERTIES_JOINTSETS_CONSTRAINTS)
-        {
-            eOmc_jointset_configuration_t cfg_reset = {0};
-            mc_service.properties.jointset_cfgs.resize(mc_service.properties.numofjointsets, cfg_reset);
-        }
 
         if(true == has_PROPERTIES_JOINTSETS_CFG)
         {
@@ -2597,10 +2599,16 @@ int ServiceParser::getnumofjointsets(void)
 {
 
     int n=0;
-    int njointsinset[mc_service.properties.numofjoints]= {0}; //the max number of sets is equal to max number of joints.
+    int njointsinset[mc_service.properties.numofjoints]; //the max number of sets is equal to max number of joints.
+    for(int i=0; i<mc_service.properties.numofjoints;i++)
+    {
+        njointsinset[i] = 0;
+    }
+
     for(int i=0; i<mc_service.properties.numofjoints;i++)
     {
         int set = mc_service.properties.joint2set[i];
+
         if(set > mc_service.properties.numofjoints)
         {
             yError() << "ServiceParser::getnumofjointsets: error in joint2set param. The set number is too big. Remember: max number of set is equal to max num of joint.";
