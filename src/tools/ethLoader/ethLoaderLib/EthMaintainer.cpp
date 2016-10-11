@@ -2161,7 +2161,7 @@ vector<string> EthMaintainer::command_info32_get(eOipv4addr_t ipv4)
                 vector<EthBoard *> selected = _internalboardlist.get(rxipv4addr);
                 for(int i=0; i<selected.size(); i++)
                 {
-                    boardInfo2_t binfo = selected[i]->getInfo();
+                    boardInfo2_t & binfo = selected[i]->getInfo();
                     memcpy(binfo.boardinfo32, pageget->page, sizeof(binfo.boardinfo32));
                 }
             }
