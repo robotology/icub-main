@@ -225,7 +225,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS TRUE)
 add_library(${PROJECTNAME} SHARED ${embobj_source} ${embobj_header})
 
-install(TARGET ${PROJECTNAME} DESTINATION lib)
+install(TARGETS ${PROJECTNAME} DESTINATION lib)
 
 #add_dependencies(${PROJECTNAME} eBcode-download)
 TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES} ${ACE_LIBRARIES} )
