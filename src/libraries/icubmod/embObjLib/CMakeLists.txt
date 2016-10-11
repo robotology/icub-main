@@ -2,7 +2,7 @@
 # Authors: Alberto Cardellino
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-# Name of the project must correspond to the class name that needs to be 
+# Name of the project must correspond to the class name that needs to be
 # instantiated by the factory - so embObjLib is not ok
 SET(PROJECTNAME ethResources)
 PROJECT(${PROJECTNAME})
@@ -47,7 +47,7 @@ include_directories (  ${PATH_TO_CALLBACK}/embObjAnalog/usrcbk/
 
 # Debug messages
 #  message(INFO " lib_cmake - embObj_includes: ${embObj_includes}")
-    
+
 # get all files needed, collected in different lists for better organization and handling
 
 # Common, architecture independent
@@ -64,8 +64,8 @@ set(NVS_SOURCE              ${NVS_MC_SRC_FOLDER}/EoProtocol.c
                             ${PROT_FOLDER}/icub/EoAnalogSensors.c
                             ${PROT_FOLDER}/icub/EoManagement.c
                             )
- 
-    
+
+
 set(NVS_MC_SOURCE           ${NVS_MC_SRC_FOLDER}EoProtocolMC_fun.c
                             ${NVS_MC_SRC_FOLDER}EoProtocolMC_rom.c
                             )
@@ -113,7 +113,7 @@ set(CORE_VEE_SOURCE         ${CORE_FOLDER}/EOVmutex.c
                             ${CORE_FOLDER}/EOVtask.c
                             ${CORE_FOLDER}/EOVtheSystem.c
                             )
-                        
+
 set(CORE_API_HEADER         ${CORE_FOLDER}/EOarray.h
                             ${CORE_FOLDER}/EoCommon.h
                             ${CORE_FOLDER}/EOconstarray.h
@@ -129,7 +129,7 @@ set(CORE_API_HEADER         ${CORE_FOLDER}/EOarray.h
                             ${CORE_YEE}/EOYtheSystem.h
                             ${CORE_FOLDER}/EOpacket.h
                             )
-                        
+
 set(CORE_FOLDER_HEADER      ${CORE_FOLDER}/EOarray_hid.h
                             ${CORE_FOLDER}/EoCommon_hid.h
                             ${CORE_FOLDER}/EOconstarray_hid.h
@@ -188,25 +188,25 @@ set(DEBUG_SOURCE            ${DEBUG_FOLDER}/eODeb_eoProtoParser.c
                             ${DEBUG_FOLDER}/eOtheEthLowLevelParser.c)
 
 
-set(embobj_source       
-                            ${CORE_FOLDER_SOURCE} 
-                            ${CORE_VEE_SOURCE}  
-                            ${PROT_SOURCE}  
+set(embobj_source
+                            ${CORE_FOLDER_SOURCE}
+                            ${CORE_VEE_SOURCE}
+                            ${PROT_SOURCE}
                             ${EXTRA_SOURCE}
                             ${PROT_FOLDER}
                             ${NVS_SOURCE}
-                            ${NVS_MC_SOURCE} 
-                            ${NVS_MNGMNT_SOURCE} 
-                            ${NVS_SENSORS_SOURCE} 
-                            ${NVS_SKIN_SOURCE} 
-                            ${NVS_USR_SOURCE} 
+                            ${NVS_MC_SOURCE}
+                            ${NVS_MNGMNT_SOURCE}
+                            ${NVS_SENSORS_SOURCE}
+                            ${NVS_SKIN_SOURCE}
+                            ${NVS_USR_SOURCE}
                             ${NVS_CBK_SOURCE}
                             ${ICUB_INTERFACE_SOURCE}
                             )
 
-set(embobj_header           ${BODY_COMMON_SOURCE} 
-                            ${CORE_API_HEADER} 
-                            ${PROT_HEADER} 
+set(embobj_header           ${BODY_COMMON_SOURCE}
+                            ${CORE_API_HEADER}
+                            ${PROT_HEADER}
                             ${NVS_EB_SRC_FOLDER}
                             )
 
