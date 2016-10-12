@@ -32,6 +32,7 @@ int EthUpdater::cmdDiscover()
 
     cmd->opc = uprot_OPC_LEGACY_SCAN;
     cmd->opc2 = uprot_OPC_DISCOVER;
+    cmd->jump2updater = 1;
 
     int numberOfDiscovered = 0;
 
