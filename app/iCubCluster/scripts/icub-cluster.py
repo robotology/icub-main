@@ -520,7 +520,7 @@ if __name__ == '__main__':
                 else:
                     newNode=Node(node.firstChild.data, False, "", nodeuser, ssh_options)
             else:
-                newNode=Node(node.firstChild.data, False, "", user, ssh_options)
+                newNode=Node(node.firstChild.data, False, "", user, "")
 
             nodeList.append(newNode)
 
