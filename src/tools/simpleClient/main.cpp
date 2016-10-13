@@ -1229,12 +1229,6 @@ void handleTorqueMsg(ITorqueControl *torque, const yarp::os::Bottle& cmd,
                         }
                         break;
 
-                    case VOCAB_TORQUE_MODE: 
-                        {
-                            *ok = torque->setTorqueMode();
-                        }
-                        break;
-
                     }
             }
             break;
