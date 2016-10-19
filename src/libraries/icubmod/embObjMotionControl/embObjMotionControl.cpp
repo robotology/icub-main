@@ -998,7 +998,7 @@ int embObjMotionControl::fromConfig_NumOfJoints(yarp::os::Searchable &config)
 }
 
 
-bool embObjMotionControl::fromConfig_Step1(yarp::os::Searchable &config)
+bool embObjMotionControl::fromConfig_getGeneralInfo(yarp::os::Searchable &config)
 {
     std::string str;
 
@@ -1079,16 +1079,11 @@ bool embObjMotionControl::fromConfig_Step1(yarp::os::Searchable &config)
 
     return true;
 }
-
-
-bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
+bool embObjMotionControl::parseGeneralMecGroup(Bottle &general)
 {
     Bottle xtmp;
-    int i,j;
+    int i;
 
-    Bottle general = config.findGroup("GENERAL");
-
-    // leggere i valori da file
     if (!extractGroup(general, xtmp, "AxisMap", "a list of reordered indices for the axes", _njoints))
         return false;
 
@@ -1333,375 +1328,275 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         }
     }
 
-    //_newtonsToSensor not depends more on joint. Since now we use float number to change torque values with firmware, we can use micro Nm in order to have a good sensitivity.
-    for (i = 0; i < _njoints; i++)
+    return true;
 
+}
+
+bool embObjMotionControl::parsePosPid(Bottle &posPidsGroup)
+{
+    Value &controlUnits=posPidsGroup.find("controlUnits");
+    if  (controlUnits.isNull() == false && controlUnits.isString() == true)
     {
-        _newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
-     
+        if      (controlUnits.toString()==string("metric_units"))  {yDebug("POSITION_CONTROL: using metric_units");  _positionControlUnits=P_METRIC_UNITS;}
+        else if (controlUnits.toString()==string("machine_units")) {yDebug("POSITION_CONTROL: using machine_units"); _positionControlUnits=P_MACHINE_UNITS;}
+        else    {yError() << "embObjMotionControl::fromConfig(): POSITION_CONTROL section: invalid controlUnits value";
+                    return false;}
+    }
+    else
+    {
+        yError() << "embObjMotionControl::fromConfig(): POSITION_CONTROL section: missing controlUnits parameter. Assuming machine_units. Please fix your configuration file.";
+        _positionControlUnits=P_MACHINE_UNITS;
     }
 
-
-
-    ////// POSITION PIDS
+    Value &controlLaw=posPidsGroup.find("controlLaw");
+    if (controlLaw.isNull() == false && controlLaw.isString() == true)
     {
-        Bottle posPidsGroup;
-        posPidsGroup=config.findGroup("POSITION_CONTROL", "Position Pid parameters new format");
-        if (posPidsGroup.isNull()==false)
+        string s_controlaw = controlLaw.toString();
+        if (s_controlaw==string("joint_pid_v1"))
         {
-           Value &controlUnits=posPidsGroup.find("controlUnits");
-           if  (controlUnits.isNull() == false && controlUnits.isString() == true)
-           {
-                if      (controlUnits.toString()==string("metric_units"))  {yDebug("POSITION_CONTROL: using metric_units");  _positionControlUnits=P_METRIC_UNITS;}
-                else if (controlUnits.toString()==string("machine_units")) {yDebug("POSITION_CONTROL: using machine_units"); _positionControlUnits=P_MACHINE_UNITS;}
-                else    {yError() << "embObjMotionControl::fromConfig(): POSITION_CONTROL section: invalid controlUnits value";
-                         return false;}
-           }
-           else
-           {
-                yError() << "embObjMotionControl::fromConfig(): POSITION_CONTROL section: missing controlUnits parameter. Assuming machine_units. Please fix your configuration file.";
-                _positionControlUnits=P_MACHINE_UNITS;
-           }
-
-           Value &controlLaw=posPidsGroup.find("controlLaw");
-           if (controlLaw.isNull() == false && controlLaw.isString() == true)
-           {
-               string s_controlaw = controlLaw.toString();
-               if (s_controlaw==string("joint_pid_v1"))
-               {
-                   if (!parsePositionPidsGroup (posPidsGroup, _pids))
-                   {
-                       yError() << "embObjMotionControl::fromConfig(): POSITION_CONTROL section: error detected in parameters syntax";
-                       return false;
-                   }
-                   else
-                   {
-                        yDebug("POSITION_CONTROL: using control law joint_pid_v1");
-                   }
-               }
-               else if (s_controlaw==string("not_implemented"))
-               {
-                   yDebug() << "found 'not_impelemented' in position control_law. This will terminate robotInterface execution.";
-                   return false;
-               }
-               else if (s_controlaw==string("disabled"))
-               {
-                   yDebug() << "found 'disabled' in position control_law. This will terminat robotInterface execution.";
-                   return false;
-               }
-               else
-               {
-                   yError() << "Unable to use control law " << s_controlaw << " por position control. Quitting.";
-                   return false;
-               }
-           }
-        }
-        else
-        {
-            yError() <<"embObjMotionControl::fromConfig(): Error: no POS_PIDS group found in config file, returning";
-            return false;
-        }
-    }
-
-
-    ////// VELOCITY PIDS
-    {
-        Bottle velPidsGroup;
-        velPidsGroup=config.findGroup("VELOCITY_CONTROL", "VelocityPid parameters new format");
-        if (velPidsGroup.isNull()==false)
-        {
-           Value &controlUnits=velPidsGroup.find("controlUnits");
-           if  (controlUnits.isNull() == false && controlUnits.isString() == true)
-           {
-                if      (controlUnits.toString()==string("metric_units"))  {yDebug("VELOCITY_CONTROL: using metric_units");  _velocityControlUnits=V_METRIC_UNITS;}
-                else if (controlUnits.toString()==string("machine_units")) {yDebug("VELOCITY_CONTROL: using machine_units"); _velocityControlUnits=V_MACHINE_UNITS;}
-                else    {yError() << "embObjMotionControl::fromConfig(): VELOCITY_CONTROL section: invalid controlUnits value";
-                         return false;}
-           }
-           else
-           {
-                yError() << "embObjMotionControl::fromConfig(): VELOCITY_CONTROL section: missing controlUnits parameter. Assuming machine_units. Please fix your configuration file.";
-                _velocityControlUnits=V_MACHINE_UNITS;
-           }
-
-           Value &controlLaw=velPidsGroup.find("controlLaw");
-           if (controlLaw.isNull() == false && controlLaw.isString() == true)
-           {
-               string s_controlaw = controlLaw.toString();
-               if (s_controlaw==string("joint_pid_v1"))
-               {
-                   if (!parseVelocityPidsGroup (velPidsGroup, _vpids))
-                   {
-                       yError() << "embObjMotionControl::fromConfig(): VELOCITY_CONTROL section: error detected in parameters syntax";
-                       return false;
-                   }
-                   else
-                   {
-                        yDebug("VELOCITY_CONTROL: using control law joint_pid_v1");
-                   }
-               }
-               else if (s_controlaw==string("not_implemented"))
-               {
-                   yDebug() << "found 'not_impelemented' in velocity control_law. This will terminate robotInterface execution.";
-                   return false;
-               }
-               else if (s_controlaw==string("disabled"))
-               {
-                   yDebug() << "found 'disabled' in velocity control_law. This will terminat robotInterface execution.";
-                   return false;
-               }
-               else
-               {
-                   yError() << "Unable to use control law " << s_controlaw << " por velocity control. Quitting.";
-                   return false;
-               }
-           }
-        }
-        else
-        {
-            yWarning() <<"embObjMotionControl::fromConfig(): Warning: no VEL_PIDS group found in config file, skipping";
-            //return false; // not mandatory by now
-        }
-    }
-
-    ////// TORQUE PIDS
-    {
-        Bottle trqPidsGroup;
-        trqPidsGroup=config.findGroup("TORQUE_CONTROL", "Torque control parameters new format");
-        if (trqPidsGroup.isNull()==false)
-        {
-           Value &controlUnits=trqPidsGroup.find("controlUnits");
-           if  (controlUnits.isNull() == false && controlUnits.isString() == true)
-           {
-                if      (controlUnits.toString()==string("metric_units"))  {yDebug("TORQUE_CONTROL: using metric_units"); _torqueControlUnits=T_METRIC_UNITS;}
-                else if (controlUnits.toString()==string("machine_units")) {yDebug("TORQUE_CONTROL: using metric_units"); _torqueControlUnits=T_MACHINE_UNITS;}
-                else    {yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: invalid controlUnits value";
-                         return false;}
-           }
-           else
-           {
-                yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: missing controlUnits parameter. Assuming machine_units. Please fix your configuration file.";
-                _torqueControlUnits=T_MACHINE_UNITS;
-           }
-
-            if(_torqueControlUnits==T_MACHINE_UNITS)
+            if (!parsePositionPidsGroup (posPidsGroup, _pids))
             {
-                yarp::sig::Vector tmpOnes; tmpOnes.resize(_njoints,1.0);
-                _torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes.data(), tmpOnes.data());
-            }
-            else if (_torqueControlUnits==T_METRIC_UNITS)
-            {
-                _torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);
+                yError() << "embObjMotionControl::fromConfig(): POSITION_CONTROL section: error detected in parameters syntax";
+                return false;
             }
             else
             {
-                yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: invalid controlUnits value (_torqueControlUnits=" << _torqueControlUnits << ")";
-                return false;
+                yDebug("POSITION_CONTROL: using control law joint_pid_v1");
             }
-
-           Value &controlLaw=trqPidsGroup.find("controlLaw");
-           if (controlLaw.isNull() == false && controlLaw.isString() == true)
-           {
-               string s_controlaw = controlLaw.toString();
-               if (s_controlaw==string("motor_pid_with_friction_v1"))
-               {
-                   yDebug("TORQUE_CONTROL: using control law motor_pid_with_friction_v1");
-                   if (!parseTorquePidsGroup (trqPidsGroup, _tpids, _kbemf, _ktau, _filterType))
-                   {
-                       yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: error detected in parameters syntax";
-                       _torqueControlEnabled = false;
-                       return false;
-                   }
-                   else
-                   {
-                       _torqueControlEnabled = true;
-                   }
-               }
-               else if (s_controlaw==string("joint_pid_v1"))
-               {
-                    yDebug("TORQUE_CONTROL: using control law joint_pid_v1");
-                    if (!parseTorquePidsGroup (trqPidsGroup, _tpids, _kbemf, _ktau, _filterType))
-                    {
-                       yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: error detected in parameters syntax";
-                       _torqueControlEnabled = false;
-                       return false;
-                    }
-                    else
-                    {
-                       _torqueControlEnabled = true;
-                    }
-               }
-               else if (s_controlaw==string("not_implemented"))
-               {
-                   yDebug() << "torque control not not_implemented on this robot part. Disabling.";
-                   _torqueControlEnabled = false;
-               }
-               else if (s_controlaw==string("disabled"))
-               {
-                   yDebug() << "torque control disabled on this robot part.";
-                   _torqueControlEnabled = false;
-               }
-               else
-               {
-                  yError() << "Unable to use control law " << s_controlaw << ". Disabling torque control";
-                  _torqueControlEnabled = false;
-               }
-           }
-           else
-           {
-                yError() << "Unable to find a valid control law parameter. Disabling torque control";
-               _torqueControlEnabled = false;
-           }
         }
-        else
+        else if (s_controlaw==string("not_implemented"))
         {
-            yError() <<"embObjMotionControl::fromConfig(): Error: no TORQUE_CONTROL group found in config file";
-            _torqueControlEnabled = false;
-            return false; //torque control group is mandatory
+            yDebug() << "found 'not_impelemented' in position control_law. This will terminate robotInterface execution.";
+            return false;
         }
-    }
-
-
-    ////// CURRENT PIDS
-    {
-        Bottle currentPidsGroup;
-        currentPidsGroup=config.findGroup("CURRENT_CONTROL", "Current control parameters");
-        if (currentPidsGroup.isNull()==false)
+        else if (s_controlaw==string("disabled"))
         {
-            _currentPidsAvailables = true;
-           Value &controlUnits=currentPidsGroup.find("controlUnits");
-           if  (controlUnits.isNull() == false && controlUnits.isString() == true)
-           {
-                if (controlUnits.toString()==string("metric_units"))
-                {
-                    yDebug("CURRENT_CONTROL: using metric_units");
-                }
-                else if (controlUnits.toString()==string("machine_units"))
-                {
-                    yError("embObjMotionControl::fromConfig(): CURRENT_CONTROL: is not possible to use machine_units");
-                    return false;
-
-                }
-                else
-                {
-                    yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: invalid controlUnits value";
-                    return false;
-
-                }
-           }
-           else
-           {
-                yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: missing controlUnits parameter. Assuming metric_units. Please fix your configuration file.";
-           }
-
-
-
-           Value &controlLaw=currentPidsGroup.find("controlLaw");
-           if (controlLaw.isNull() == false && controlLaw.isString() == true)
-           {
-               string s_controlaw = controlLaw.toString();
-               if (s_controlaw==string("2foc_feedback"))
-               {
-                   yDebug("CURRENT_CONTROL: using control law motor 2foc_feedback");
-                   if (!parseCurrentPidsGroup (currentPidsGroup, _cpids))
-                   {
-                       yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: error detected in parameters syntax";
-                       return false;
-                   }
-              }
-              else if (s_controlaw==string("not_implemented"))
-               {
-                   yDebug() << "current control not not_implemented on this robot part. Disabling.";
-               }
-               else if (s_controlaw==string("disabled"))
-               {
-                   yDebug() << "current control disabled on this robot part.";
-               }
-               else
-               {
-                  yError() << "Unable to use control law " << s_controlaw << ". Disabling current control";
-               }
-           }
-           else
-           {
-                yDebug() << "Unable to find a valid control law parameter. Disabling current control";
-           }
-        }
-        else
-        {
-            yDebug() <<"embObjMotionControl::fromConfig(): no CURRENT_CONTROL group found in config file";
-            //return true; //current control group is not mandatory
-            _currentPidsAvailables = false;
-        }
-    }
-
-    ////// IMPEDANCE PARAMETERS
-    Bottle impedanceGroup;
-    impedanceGroup=config.findGroup("IMPEDANCE","IMPEDANCE parameters");
-    if (impedanceGroup.isNull()==false)
-    {
-        if(verbosewhenok)
-        {
-            yDebug() << "embObjMotionControl::fromConfig() detected that IMPEDANCE parameters section is found";
-        }
-        if (!parseImpedanceGroup_NewFormat (impedanceGroup, _impedance_params))
-        {
-            yError("IMPEDANCE section: error detected in parameters syntax\n");
+            yDebug() << "found 'disabled' in position control_law. This will terminat robotInterface execution.";
             return false;
         }
         else
         {
-            yInfo("IMPEDANCE section: parameters successfully loaded\n");
+            yError() << "Unable to use control law " << s_controlaw << " por position control. Quitting.";
+            return false;
         }
+    }
+
+}
+
+bool embObjMotionControl::parseVelPid(Bottle &velPidsGroup)
+{
+    Value &controlUnits=velPidsGroup.find("controlUnits");
+    if  (controlUnits.isNull() == false && controlUnits.isString() == true)
+    {
+        if      (controlUnits.toString()==string("metric_units"))  {yDebug("VELOCITY_CONTROL: using metric_units");  _velocityControlUnits=V_METRIC_UNITS;}
+        else if (controlUnits.toString()==string("machine_units")) {yDebug("VELOCITY_CONTROL: using machine_units"); _velocityControlUnits=V_MACHINE_UNITS;}
+        else    {yError() << "embObjMotionControl::fromConfig(): VELOCITY_CONTROL section: invalid controlUnits value";
+                    return false;}
     }
     else
     {
-        yError() <<"embObjMotionControl::fromConfig(): Error: no IMPEDANCE group found in config file, returning";
-        return false;
+        yError() << "embObjMotionControl::fromConfig(): VELOCITY_CONTROL section: missing controlUnits parameter. Assuming machine_units. Please fix your configuration file.";
+        _velocityControlUnits=V_MACHINE_UNITS;
     }
 
-    ////// IMPEDANCE LIMITS DEFAULT VALUES (UNDER TESTING)
-    for(j=0; j<_njoints; j++)
+    Value &controlLaw=velPidsGroup.find("controlLaw");
+    if (controlLaw.isNull() == false && controlLaw.isString() == true)
     {
-        // got from canBusMotionControl, ask to Randazzo Marco
-        _impedance_limits[j].min_damp=  0.001;
-        _impedance_limits[j].max_damp=  9.888;
-        _impedance_limits[j].min_stiff= 0.002;
-        _impedance_limits[j].max_stiff= 9.889;
-        _impedance_limits[j].param_a=   0.011;
-        _impedance_limits[j].param_b=   0.012;
-        _impedance_limits[j].param_c=   0.013;
-    }
-
-    /////// JOINTS_COUPLING
-    if (_njoints<=4)
-    {
-        Bottle &coupling=config.findGroup("JOINTS_COUPLING");
-        if (coupling.isNull())
+        string s_controlaw = controlLaw.toString();
+        if (s_controlaw==string("joint_pid_v1"))
         {
-            yWarning() << "embObjMotionControl::fromConfig() detected that Group JOINTS_COUPLING is not found in configuration file";
-            //return false;
+            if (!parseVelocityPidsGroup (velPidsGroup, _vpids))
+            {
+                yError() << "embObjMotionControl::fromConfig(): VELOCITY_CONTROL section: error detected in parameters syntax";
+                return false;
+            }
+            else
+            {
+                yDebug("VELOCITY_CONTROL: using control law joint_pid_v1");
+            }
         }
-        // current limit
-        if (!extractGroup(coupling, xtmp, "kinematic_mj","the kinematic matrix 4x4 which tranforms from joint space to motor space", 16))
+        else if (s_controlaw==string("not_implemented"))
         {
-            for(i=1; i<xtmp.size(); i++) _kinematic_mj[i-1]=0.0;
+            yDebug() << "found 'not_impelemented' in velocity control_law. This will terminate robotInterface execution.";
+            return false;
+        }
+        else if (s_controlaw==string("disabled"))
+        {
+            yDebug() << "found 'disabled' in velocity control_law. This will terminat robotInterface execution.";
+            return false;
         }
         else
-            for(i=1; i<xtmp.size(); i++) _kinematic_mj[i-1]=xtmp.get(i).asDouble();
+        {
+            yError() << "Unable to use control law " << s_controlaw << " por velocity control. Quitting.";
+            return false;
+        }
+    }
+
+    return true;
+
+
+}
+
+bool embObjMotionControl::parseTrqPid(Bottle &trqPidsGroup)
+{
+    Value &controlUnits=trqPidsGroup.find("controlUnits");
+    if  (controlUnits.isNull() == false && controlUnits.isString() == true)
+    {
+        if      (controlUnits.toString()==string("metric_units"))  {yDebug("TORQUE_CONTROL: using metric_units"); _torqueControlUnits=T_METRIC_UNITS;}
+        else if (controlUnits.toString()==string("machine_units")) {yDebug("TORQUE_CONTROL: using metric_units"); _torqueControlUnits=T_MACHINE_UNITS;}
+        else    {yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: invalid controlUnits value";
+                    return false;}
     }
     else
     {
-        //we are skipping JOINTS_COUPLING for EMS boards which control MC4 boards (for now)
+        yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: missing controlUnits parameter. Assuming machine_units. Please fix your configuration file.";
+        _torqueControlUnits=T_MACHINE_UNITS;
     }
 
-    /////// LIMITS
-    Bottle &limits=config.findGroup("LIMITS");
-    if (limits.isNull())
+    if(_torqueControlUnits==T_MACHINE_UNITS)
     {
-        yWarning() << "embObjMotionControl::fromConfig() detected that Group LIMITS is not found in configuration file";
+        yarp::sig::Vector tmpOnes; tmpOnes.resize(_njoints,1.0);
+        _torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes.data(), tmpOnes.data());
+    }
+    else if (_torqueControlUnits==T_METRIC_UNITS)
+    {
+        _torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);
+    }
+    else
+    {
+        yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: invalid controlUnits value (_torqueControlUnits=" << _torqueControlUnits << ")";
         return false;
     }
+
+    Value &controlLaw=trqPidsGroup.find("controlLaw");
+    if (controlLaw.isNull() == false && controlLaw.isString() == true)
+    {
+        string s_controlaw = controlLaw.toString();
+        if (s_controlaw==string("motor_pid_with_friction_v1"))
+        {
+            yDebug("TORQUE_CONTROL: using control law motor_pid_with_friction_v1");
+            if (!parseTorquePidsGroup (trqPidsGroup, _tpids, _kbemf, _ktau, _filterType))
+            {
+                yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: error detected in parameters syntax";
+                _torqueControlEnabled = false;
+                return false;
+            }
+            else
+            {
+                _torqueControlEnabled = true;
+            }
+        }
+        else if (s_controlaw==string("joint_pid_v1"))
+        {
+            yDebug("TORQUE_CONTROL: using control law joint_pid_v1");
+            if (!parseTorquePidsGroup (trqPidsGroup, _tpids, _kbemf, _ktau, _filterType))
+            {
+                yError() << "embObjMotionControl::fromConfig(): TORQUE_CONTROL section: error detected in parameters syntax";
+                _torqueControlEnabled = false;
+                return false;
+            }
+            else
+            {
+                _torqueControlEnabled = true;
+            }
+        }
+        else if (s_controlaw==string("not_implemented"))
+        {
+            yDebug() << "torque control not not_implemented on this robot part. Disabling.";
+            _torqueControlEnabled = false;
+        }
+        else if (s_controlaw==string("disabled"))
+        {
+            yDebug() << "torque control disabled on this robot part.";
+            _torqueControlEnabled = false;
+        }
+        else
+        {
+            yError() << "Unable to use control law " << s_controlaw << ". Disabling torque control";
+            _torqueControlEnabled = false;
+        }
+    }
+    else
+    {
+        yError() << "Unable to find a valid control law parameter. Disabling torque control";
+        _torqueControlEnabled = false;
+    }
+
+    return true;
+
+}
+
+
+bool embObjMotionControl::parseCurrPid(Bottle &currentPidsGroup)
+{
+     _currentPidsAvailables = true;
+    Value &controlUnits=currentPidsGroup.find("controlUnits");
+    if  (controlUnits.isNull() == false && controlUnits.isString() == true)
+    {
+        if (controlUnits.toString()==string("metric_units"))
+        {
+            yDebug("CURRENT_CONTROL: using metric_units");
+        }
+        else if (controlUnits.toString()==string("machine_units"))
+        {
+            yError("embObjMotionControl::fromConfig(): CURRENT_CONTROL: is not possible to use machine_units");
+            return false;
+
+        }
+        else
+        {
+            yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: invalid controlUnits value";
+            return false;
+
+        }
+    }
+    else
+    {
+        yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: missing controlUnits parameter. Assuming metric_units. Please fix your configuration file.";
+    }
+
+
+
+    Value &controlLaw=currentPidsGroup.find("controlLaw");
+    if (controlLaw.isNull() == false && controlLaw.isString() == true)
+    {
+        string s_controlaw = controlLaw.toString();
+        if (s_controlaw==string("2foc_feedback"))
+        {
+            yDebug("CURRENT_CONTROL: using control law motor 2foc_feedback");
+            if (!parseCurrentPidsGroup (currentPidsGroup, _cpids))
+            {
+                yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: error detected in parameters syntax";
+                return false;
+            }
+        }
+        else if (s_controlaw==string("not_implemented"))
+        {
+            yDebug() << "current control not not_implemented on this robot part. Disabling.";
+        }
+        else if (s_controlaw==string("disabled"))
+        {
+            yDebug() << "current control disabled on this robot part.";
+        }
+        else
+        {
+            yError() << "Unable to use control law " << s_controlaw << ". Disabling current control";
+        }
+    }
+    else
+    {
+        yDebug() << "Unable to find a valid control law parameter. Disabling current control";
+    }
+
+    return true;
+
+}
+
+bool embObjMotionControl::parseLimitsGroup( Bottle &limits)
+{
+    int i;
+    Bottle xtmp;
+
     // current limit
     if (!extractGroup(limits, xtmp, "motorOverloadCurrents","a list of current limits", _njoints))
         return false;
@@ -1805,30 +1700,189 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
                 return false;
             }
         }
-    /////// [VELOCITY]
-    Bottle &velocityGroup=config.findGroup("VELOCITY");
-    if (!velocityGroup.isNull())
+    return true;
+
+}
+
+bool embObjMotionControl::parseTimeoutsGroup( Bottle &timeouts)
+{
+    Bottle xtmp;
+    int i;
+
+    xtmp.clear();
+    if (!extractGroup(timeouts, xtmp, "Velocity", "a list of timeout to be used in the vmo control", _njoints))
     {
-        /////// Timeout
-        xtmp.clear();
-        if (!extractGroup(velocityGroup, xtmp, "Timeout", "a list of timeout to be used in the vmo control", _njoints))
-        {
-            fprintf(stderr, "Using default Timeout=100, i.e 0.1s\n");
-            for(i=1; i<_njoints+1; i++)
-                _velocityTimeout[i-1] = 100;   //Default value
-        }
-        else
-        {
-            for(i=1; i<xtmp.size(); i++)
-                _velocityTimeout[i-1]=xtmp.get(i).asInt();
-        }
+        yWarning() << "Using default velocity Timeout=100, i.e 0.1s\n";
+        for(i=1; i<_njoints+1; i++)
+            _velocityTimeout[i-1] = 100;   //Default value
     }
     else
     {
-        fprintf(stderr, "A suitable value for [VELOCITY] Timeout was not found. Using default Timeout=1000, i.e 1s.\n");
-        for(i=1; i<_njoints+1; i++)
-            _velocityTimeout[i-1] = 1000;   //Default value
+        for(i=1; i<xtmp.size(); i++)
+            _velocityTimeout[i-1]=xtmp.get(i).asInt();
+    }
 
+    return true;
+}
+
+bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
+{
+    Bottle xtmp;
+    int i,j;
+
+    Bottle general = config.findGroup("GENERAL");
+    if (general.isNull())
+    {
+       yError() << "Missing General group";
+       return false;
+    }
+
+    if(!parseGeneralMecGroup(general))
+        return false;
+
+     //_newtonsToSensor not depends more on joint. Since now we use float number to change torque values with firmware, we can use micro Nm in order to have a good sensitivity.
+    for (i = 0; i < _njoints; i++)
+    {
+        _newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
+
+    }
+
+
+    ////// POSITION PIDS
+    {
+        Bottle posPidsGroup;
+        posPidsGroup=config.findGroup("POSITION_CONTROL", "Position Pid parameters new format");
+        if (posPidsGroup.isNull())
+        {
+            yError() <<"embObjMotionControl::fromConfig(): Error: no POS_PIDS group found in config file, returning";
+            return false;
+        }
+        if(!parsePosPid(posPidsGroup))
+            return false;
+    }
+
+
+    ////// VELOCITY PIDS
+    {
+        Bottle velPidsGroup;
+        velPidsGroup=config.findGroup("VELOCITY_CONTROL", "VelocityPid parameters new format");
+        if (velPidsGroup.isNull())
+        {
+            yWarning() <<"embObjMotionControl::fromConfig(): Warning: no VEL_PIDS group found in config file, skipping";
+            //return false; // not mandatory by now
+        }
+        else
+        {
+            if(!parseVelPid(velPidsGroup))
+                return false;
+        }
+    }
+
+    ////// TORQUE PIDS
+    {
+        Bottle trqPidsGroup;
+        trqPidsGroup=config.findGroup("TORQUE_CONTROL", "Torque control parameters new format");
+        if (trqPidsGroup.isNull())
+        {
+            yError() <<"embObjMotionControl::fromConfig(): Error: no TORQUE_CONTROL group found in config file";
+            _torqueControlEnabled = false;
+            return false; //torque control group is mandatory
+        }
+
+        if(!parseTrqPid(trqPidsGroup))
+            return false;
+
+    }
+
+
+    ////// CURRENT PIDS
+    {
+        Bottle currentPidsGroup;
+        currentPidsGroup=config.findGroup("CURRENT_CONTROL", "Current control parameters");
+        if(currentPidsGroup.isNull())
+        {
+             yDebug() <<"embObjMotionControl::fromConfig(): no CURRENT_CONTROL group found in config file";
+            //return true; //current control group is not mandatory
+            _currentPidsAvailables = false;
+        }
+        else
+        {
+            if(!parseCurrPid(currentPidsGroup))
+                return false;
+        }
+
+    }
+
+    ////// IMPEDANCE PARAMETERS
+    {
+        Bottle impedanceGroup;
+        impedanceGroup=config.findGroup("IMPEDANCE","IMPEDANCE parameters");
+        if (impedanceGroup.isNull()==false)
+        {
+            if(verbosewhenok)
+            {
+                yDebug() << "embObjMotionControl::fromConfig() detected that IMPEDANCE parameters section is found";
+            }
+            if (!parseImpedanceGroup_NewFormat (impedanceGroup, _impedance_params))
+            {
+                yError("IMPEDANCE section: error detected in parameters syntax\n");
+                return false;
+            }
+            else
+            {
+                yInfo("IMPEDANCE section: parameters successfully loaded\n");
+            }
+        }
+        else
+        {
+            yError() <<"embObjMotionControl::fromConfig(): Error: no IMPEDANCE group found in config file, returning";
+            return false;
+        }
+
+    }
+
+    ////// IMPEDANCE LIMITS DEFAULT VALUES (UNDER TESTING)
+    for(j=0; j<_njoints; j++)
+    {
+        // got from canBusMotionControl, ask to Randazzo Marco
+        _impedance_limits[j].min_damp=  0.001;
+        _impedance_limits[j].max_damp=  9.888;
+        _impedance_limits[j].min_stiff= 0.002;
+        _impedance_limits[j].max_stiff= 9.889;
+        _impedance_limits[j].param_a=   0.011;
+        _impedance_limits[j].param_b=   0.012;
+        _impedance_limits[j].param_c=   0.013;
+    }
+
+
+
+    /////// LIMITS
+    {
+    Bottle &limits=config.findGroup("LIMITS");
+    if (limits.isNull())
+    {
+        yWarning() << "embObjMotionControl::fromConfig() detected that Group LIMITS is not found in configuration file";
+        return false;
+    }
+    if(!parseLimitsGroup(limits))
+        return false;
+
+
+    }
+    /////// [TIMEOUTS]
+    {
+        Bottle timeoutsGroup =config.findGroup("TIMEOUTS");
+        if(timeoutsGroup.isNull())
+        {
+            yWarning() << "embObjMotionControl::fromConfig(): Warning: no TIMEOUTS group found in config file, default values will be used.";
+            for(i=1; i<_njoints+1; i++)
+                _velocityTimeout[i-1] = 1000;   //Default value
+        }
+        else
+        {
+            if(!parseTimeoutsGroup(timeoutsGroup))
+                return false;
+        }
     }
 
     return true;
@@ -1870,7 +1924,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
 
     // first step of configuration
-    if(false == fromConfig_Step1(config))
+    if(false == fromConfig_getGeneralInfo(config)) //get general info: useRawEncoderData, useLiitedPwm, etc....
     {
         return false;
     }

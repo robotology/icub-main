@@ -408,6 +408,13 @@ private:
     bool parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], double kbemf[], double ktau[], int filterType[]);
     bool parseImpedanceGroup_NewFormat(Bottle& pidsGroup, ImpedanceParameters vals[]);
     bool parseCurrentPidsGroup(Bottle& pidsGroup, Pid myPid[]);
+    bool parseGeneralMecGroup(Bottle& general);
+    bool parsePosPid(Bottle &posPidsGroup);
+    bool parseVelPid(Bottle &velPidsGroup);
+    bool parseTrqPid(Bottle &trqPidsGroup);
+    bool parseCurrPid(Bottle &currentPidsGroup);
+    bool parseLimitsGroup( Bottle &limits);
+    bool parseTimeoutsGroup( Bottle &timeouts);
 
 //    bool getStatusBasic_withWait(const int n_joint, const int *joints, eOmc_joint_status_basic_t *_statuslist);             // helper function
 //    bool getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);     // helper function
@@ -484,7 +491,7 @@ private:
 private:
 
     int fromConfig_NumOfJoints(yarp::os::Searchable &config);
-    bool fromConfig_Step1(yarp::os::Searchable &config);
+    bool fromConfig_getGeneralInfo(yarp::os::Searchable &config); //get general info: useRawEncoderData, useLiitedPwm, etc....
     bool fromConfig_Step2(yarp::os::Searchable &config);
     bool fromConfig_Step3(yarp::os::Searchable &config);
 
