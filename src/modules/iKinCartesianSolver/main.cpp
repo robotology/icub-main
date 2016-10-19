@@ -45,8 +45,10 @@ See \ref iKinSlv "Cartesian Solver" for documentation.
   configuration file (e.g. left_arm, right_arm, ...).
 
 --context \e directory [optional]
-- allow specifying a different path where to search the 
-  configuration file (beware of the context search policy).
+- allow specifying a different path where to search the
+  configuration file (beware of the  
+  <a href="http://www.yarp.it/yarp_data_dirs.html">context  
+  search policy</a>).  
  
 --from \e file [optional]
 - allow specifying a different configuration file from the 

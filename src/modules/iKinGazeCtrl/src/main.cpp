@@ -96,7 +96,8 @@ Factors</a>.
 --context \e dir
 - Resource finder default searching directory for configuration
   files; if not specified, \e iKinGazeCtrl is assumed. Beware of
-  the context search policy.  
+  the <a href="http://www.yarp.it/yarp_data_dirs.html">context  
+  search policy</a>.  
 
 --from \e file
 - Resource finder default configuration file; if not specified,
