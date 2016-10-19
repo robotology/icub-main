@@ -46,7 +46,7 @@ See \ref iKinSlv "Cartesian Solver" for documentation.
 
 --context \e directory [optional]
 - allow specifying a different path where to search the 
-  configuration file.
+  configuration file (beware of the context search policy).
  
 --from \e file [optional]
 - allow specifying a different configuration file from the 
