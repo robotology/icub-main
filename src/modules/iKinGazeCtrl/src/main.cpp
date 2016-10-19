@@ -95,7 +95,8 @@ Factors</a>.
 \section parameters_sec Parameters
 --context \e dir
 - Resource finder default searching directory for configuration
-  files; if not specified, \e iKinGazeCtrl is assumed.
+  files; if not specified, \e iKinGazeCtrl is assumed. Beware of
+  the context search policy.  
 
 --from \e file
 - Resource finder default configuration file; if not specified,
