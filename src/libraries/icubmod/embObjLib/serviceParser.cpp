@@ -967,7 +967,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
         servAnalogSensor_t sensor = as_service.settings.enabledsensors.at(i);
         eOas_sensor_t type = sensor.type;
 
-        if((eoas_accel_mtb_int != type) && (eoas_accel_mtb_ext != type) && (eoas_gyros_mtb_ext != type))
+        if((eoas_accel_mtb_int != type) && (eoas_accel_mtb_ext != type) && (eoas_gyros_mtb_ext != type) && (eoas_gyros_st_l3g4200d != type))
         {
             yWarning() << "ServiceParser::parseService() has detected a wrong inertial sensor:" << eoas_sensor2string(type) << " ...  we drop it";
             continue;
