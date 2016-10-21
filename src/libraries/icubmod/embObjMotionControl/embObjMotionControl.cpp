@@ -436,7 +436,7 @@ bool embObjMotionControl::alloc(int nj)
     _jointEncoderRes = allocAndCheck<int>(nj);
     _rotorEncoderRes = allocAndCheck<int>(nj);
     _gearbox = allocAndCheck<double>(nj);
-    _gearbox2 = allocAndCheck<double>(nj);
+    _gearboxE2J = allocAndCheck<double>(nj);
     _maxJntCmdVelocity = allocAndCheck<double>(nj);
     _maxMotorVelocity = allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
@@ -487,6 +487,9 @@ bool embObjMotionControl::alloc(int nj)
     _enabledPid = allocAndCheck<bool>(nj);
     _calibrated = allocAndCheck<bool>(nj);
     _cacheImpedance = allocAndCheck<eOmc_impedance_t>(nj);
+    _posistionControlLaw = allocAndCheck<string>(nj);
+    _velocityControlLaw = allocAndCheck<string>(nj);
+    _torqueControlLaw = allocAndCheck<string>(nj);
 
     //debug purpose
 
@@ -505,7 +508,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_jointEncoderType);
     checkAndDestroy(_rotorEncoderType);
     checkAndDestroy(_gearbox);
-    checkAndDestroy(_gearbox2);
+    checkAndDestroy(_gearboxE2J);
     checkAndDestroy(_maxJntCmdVelocity);
     checkAndDestroy(_maxMotorVelocity);
     checkAndDestroy(_newtonsToSensor);
@@ -580,7 +583,7 @@ embObjMotionControl::embObjMotionControl() :
     SAFETY_THRESHOLD(2.0)
 {
     _gearbox       = 0;
-    _gearbox2      = 0;
+    _gearboxE2J      = 0;
     opened        = 0;
     _pids         = NULL;
     _vpids        = NULL;
@@ -891,21 +894,57 @@ bool embObjMotionControl::parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[])
     return true;
 }
 
-bool embObjMotionControl::parseVelocityPidsGroup(Bottle& pidsGroup, Pid myPid[])
+// bool embObjMotionControl::parseVelocityPidsGroup(Bottle& pidsGroup, Pid myPid[])
+// {
+//     int j=0;
+//     Bottle xtmp;
+//     if (!extractGroup(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "maxOutput", "Pid maxOutput parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "kff", "Pid kff parameter", _njoints))         return false; for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+//
+//     //conversion from metric to machine units (if applicable)
+//     if (_positionControlUnits==P_METRIC_UNITS)
+//     {
+//         for (j=0; j<_njoints; j++)
+//         {
+//             myPid[j].kp = myPid[j].kp / _angleToEncoder[j];  //[PWM/deg]
+//             myPid[j].ki = myPid[j].ki / _angleToEncoder[j];  //[PWM/deg]
+//             myPid[j].kd = myPid[j].kd / _angleToEncoder[j];  //[PWM/deg]
+//         }
+//     }
+//     else
+//     {
+//         //do nothing
+//     }
+//
+//     return true;
+// }
+
+
+bool embObjMotionControl::parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix)
 {
     int j=0;
     Bottle xtmp;
-    if (!extractGroup(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "maxOutput", "Pid maxOutput parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "kff", "Pid kff parameter", _njoints))         return false; for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
 
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kp"), "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kd"), "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("ki"), "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxInt"), "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxOutput"), "Pid maxOutput parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("shift"), "Pid shift parameter", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("ko"), "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("stictionUp"), "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("stictionDwn"), "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kff"), "Pid kff parameter", _njoints))         return false; for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+
+#error VALE: metti in funzione separata ma conversione dep pid per il torque devo usare una conversione differente
     //conversion from metric to machine units (if applicable)
     if (_positionControlUnits==P_METRIC_UNITS)
     {
@@ -1118,204 +1157,47 @@ bool embObjMotionControl::parseGeneralMecGroup(Bottle &general)
     {
         return false;
     }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++)
-        {
-            tmp_A2E = xtmp.get(i).asDouble();
-            if (tmp_A2E<0)
-            {
-                yWarning("Encoder parameter should be positive!");
-            }
 
-            if (useRawEncoderData)
-            {
-                _angleToEncoder[i - 1] = 1;
-            }
-            else
-            {
-                _angleToEncoder[i - 1] = tmp_A2E;
-            }
+    for (i = 1; i < xtmp.size(); i++)
+    {
+        tmp_A2E = xtmp.get(i).asDouble();
+        if (tmp_A2E<0)
+        {
+            yWarning("Encoder parameter should be positive!");
+        }
+
+        if (useRawEncoderData)
+        {
+            _angleToEncoder[i - 1] = 1;
+        }
+        else
+        {
+            _angleToEncoder[i - 1] = tmp_A2E;
         }
     }
 
-    // Joint encoder resolution
-    if (!extractGroup(general, xtmp, "JointEncoderRes", "the resolution of the joint encoder", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-            _jointEncoderRes[i - 1] = xtmp.get(i).asInt();
-    }
-
-    // Joint encoder type
-    if (!extractGroup(general, xtmp, "JointEncoderType", "JointEncoderType", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-        {
-            uint8_t val;
-            string s = xtmp.get(i).asString();
-            bool b = EncoderType_iCub2eo(&s, &val);
-            if (b == false)
-            {
-                yError("Invalid JointEncoderType: %s!", s.c_str()); return false;
-            }
-            _jointEncoderType[i - 1] = val;
-        }
-    }
-
-    // Motor capabilities
-    if (!extractGroup(general, xtmp, "HasHallSensor", "HasHallSensor 0/1 ", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-            _hasHallSensor[i - 1] = xtmp.get(i).asInt();
-    }
-    if (!extractGroup(general, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-            _hasTempSensor[i - 1] = xtmp.get(i).asInt();
-    }
-    if (!extractGroup(general, xtmp, "HasRotorEncoder", "HasRotorEncoder 0/1 ", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-            _hasRotorEncoder[i - 1] = xtmp.get(i).asInt();
-    }
-    if (!extractGroup(general, xtmp, "HasRotorEncoderIndex", "HasRotorEncoderIndex 0/1 ", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-            _hasRotorEncoderIndex[i - 1] = xtmp.get(i).asInt();
-    }
-    if (!extractGroup(general, xtmp, "HasSpeedEncoder", "HasSpeedEncoder 0/1 ", _njoints))
-    {
-        // optional by now
-        //return false;
-    }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-            _hasSpeedEncoder[i - 1] = xtmp.get(i).asInt();
-    }
-
-    // Rotor encoder res
-    if (!extractGroup(general, xtmp, "RotorEncoderRes", "a list of scales for the rotor encoders", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-            _rotorEncoderRes[i - 1] = xtmp.get(i).asInt();
-    }
-
-    // joint encoder res
-    if (!extractGroup(general, xtmp, "JointEncoderRes", "a list of scales for the joint encoders", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-            _jointEncoderRes[i - 1] = xtmp.get(i).asInt();
-    }
-
-    // Number of motor poles
-    if (!extractGroup(general, xtmp, "MotorPoles", "MotorPoles", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-            _motorPoles[i - 1] = xtmp.get(i).asInt();
-    }
-
-    // Rotor encoder index
-    if (!extractGroup(general, xtmp, "RotorIndexOffset", "RotorIndexOffset", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-            _rotorIndexOffset[i - 1] = xtmp.get(i).asInt();
-    }
-
-    // Rotor encoder type
-    if (!extractGroup(general, xtmp, "RotorEncoderType", "RotorEncoderType", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-        {
-            uint8_t val;
-            string s = xtmp.get(i).asString();
-            bool b = EncoderType_iCub2eo(&s, &val);
-            if (b == false)
-            {
-                yError("Invalid RotorEncoderType: %s", s.c_str()); return false;
-            }
-            _rotorEncoderType[i - 1] = val;
-        }
-    }
 
     // Gearbox
-    if (!extractGroup(general, xtmp, "Gearbox", "The gearbox reduction ratio", _njoints))
+    if (!extractGroup(general, xtmp, "Gearbox_M2J", "The gearbox reduction ratio", _njoints))
     {
         return false;
     }
-    else
+
+    int test = xtmp.size();
+    for (i = 1; i < xtmp.size(); i++)
     {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-        {
-            _gearbox[i-1] = xtmp.get(i).asDouble();
-            if (_gearbox[i-1]==0) {yError() << "Using a gearbox value = 0 may cause problems! Check your configuration files"; return false;}
-        }
+        _gearbox[i-1] = xtmp.get(i).asDouble();
+        if (_gearbox[i-1]==0) {yError() << "Using a gearbox value = 0 may cause problems! Check your configuration files"; return false;}
     }
 
+
     //Gearbox2
-    if (!extractGroup(general, xtmp, "Gearbox2", "The gearbox reduction ratio", _njoints))
+    if (!extractGroup(general, xtmp, "Gearbox_E2J", "The gearbox reduction ratio between encoder and joint", _njoints))
     {
-        yWarning() << "Missing Gearbox2 param. I use default value (1) " ;
+        yWarning() << "Missing Gearbox_E2J param. I use default value (1) " ;
         for(int i=0; i<_njoints; i++)
         {
-            _gearbox2[i] = 1;
+            _gearboxE2J[i] = 1;
         }
     }
     else
@@ -1323,8 +1205,8 @@ bool embObjMotionControl::parseGeneralMecGroup(Bottle &general)
         int test = xtmp.size();
         for (i = 1; i < xtmp.size(); i++)
         {
-            _gearbox2[i-1] = xtmp.get(i).asDouble();
-            if (_gearbox2[i-1]==0) {yError() << "Using a gearbox value = 0 may cause problems! Check your configuration files"; return false;}
+            _gearboxE2J[i-1] = xtmp.get(i).asDouble();
+            if (_gearboxE2J[i-1]==0) {yError() << "Using a gearbox value = 0 may cause problems! Check your configuration files"; return false;}
         }
     }
 
@@ -1725,10 +1607,729 @@ bool embObjMotionControl::parseTimeoutsGroup( Bottle &timeouts)
     return true;
 }
 
+bool embObjMotionControl::parse2FocGroup(Bottle &focGroup)
+{
+    Bottle xtmp;
+    int i;
+
+    if (!extractGroup(focGroup, xtmp, "HasHallSensor", "HasHallSensor 0/1 ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            _hasHallSensor[i - 1] = xtmp.get(i).asInt();
+    }
+    if (!extractGroup(focGroup, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            _hasTempSensor[i - 1] = xtmp.get(i).asInt();
+    }
+    if (!extractGroup(focGroup, xtmp, "HasRotorEncoder", "HasRotorEncoder 0/1 ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+
+        for (i = 1; i < xtmp.size(); i++)
+            _hasRotorEncoder[i - 1] = xtmp.get(i).asInt();
+    }
+    if (!extractGroup(focGroup, xtmp, "HasRotorEncoderIndex", "HasRotorEncoderIndex 0/1 ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            _hasRotorEncoderIndex[i - 1] = xtmp.get(i).asInt();
+    }
+
+    if (!extractGroup(focGroup, xtmp, "RotorIndexOffset", "RotorIndexOffset", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            _rotorIndexOffset[i - 1] = xtmp.get(i).asInt();
+    }
+
+    // Number of motor poles
+    if (!extractGroup(focGroup, xtmp, "MotorPoles", "MotorPoles", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            _motorPoles[i - 1] = xtmp.get(i).asInt();
+    }
+
+    if (!extractGroup(focGroup, xtmp, "HasSpeedEncoder", "HasSpeedEncoder 0/1 ", _njoints))
+    {
+        yWarning () << "missing param HasSpeedEncoder";
+        // optional by now
+        //return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            _hasSpeedEncoder[i - 1] = xtmp.get(i).asInt();
+    }
+
+    return true;
+
+}
+
+
+bool embObjMotionControl::parseCouplingGroup(Bottle &coupling)
+{
+
+    Bottle xtmp;
+    int  fixedMatrix4X4Size = 16;
+    int  fixedMatrix4X6Size = 24;
+    bool formaterror =false;
+
+    // matrix J2M
+    if (!extractGroup(coupling, xtmp, "matrixJ2M", "matrixJ2M ", fixedMatrix4X4Size))
+    {
+        return false;
+    }
+
+    if(false == parser->convert(xtmp, controller.matrixJ2M, formaterror, fixedMatrix4X4Size))
+    {
+        yError() << "embObjMotionControl::parseCouplingGroup() has detected an illegal format for some of the values of CONTROLLER.matrixJ2M";
+        return false;
+    }
+
+
+    // matrix E2J
+    if (!extractGroup(coupling, xtmp, "matrixE2J", "matrixE2J ", fixedMatrix4X6Size))
+    {
+        return false;
+    }
+
+    formaterror = false;
+    if(false == parser->convert(xtmp, controller.matrixE2J, formaterror, fixedMatrix4X6Size))
+    {
+        yError() << "embObjMotionControl::parseCouplingGroup() has detected an illegal format for some of the values of CONTROLLER.matrixE2J";
+        return false;
+    }
+
+
+    // matrix M2J
+    if (!extractGroup(coupling, xtmp, "matrixM2J", "matrixM2J ", fixedMatrix4X4Size))
+    {
+        return false;
+    }
+
+    formaterror = false;
+    if( false == parser->convert(xtmp, controller.matrixM2J, formaterror, fixedMatrix4X4Size))
+    {
+        yError() << "embObjMotionControl::parseCouplingGroup() has detected an illegal format for some of the values of CONTROLLER.matrixM2J";
+        return false;
+    }
+
+    return true;
+
+}
+
+bool embObjMotionControl::parseJointsetCfgGroup(Bottle &jointsetcfg)
+{
+    Bottle xtmp;
+    int numofsets = 0;
+    vector<int> listofjoints;
+
+    if(!extractGroup(jointsetcfg, xtmp, "numberofsets", "number of sets ", 1))
+    {
+        return  false;
+    }
+
+    numofsets = xtmp.get(1).asInt();
+
+    if((0 == numofsets) || (numofsets > _njoints))
+    {
+        yError() << "Number of jointsets is not correct. it should belong to (1, " << _njoints << ")";
+        return false;
+    }
+
+    //reset joint2jointset map
+    jointsets_prop.numofjointsets = numofsets;
+    jointsets_prop.joint2set.resize(numofsets, eomc_jointSetNum_none);
+
+    //reset jointsets' cfg
+    eOmc_jointset_configuration_t cfg_reset = {0};
+    jointsets_prop.jointset_cfgs.resize(numofsets, cfg_reset);
+
+    set2joint.resize(numofsets);
+    for(unsigned int j=0;j<numofsets;j++)
+    {
+        char jointset_string[80];
+        sprintf(jointset_string, "JOINTSET_%d", j);
+        Bottle  js_cfg;
+        bool formaterror = false;
+
+        if(!extractGroup(jointsetcfg, js_cfg, jointset_string, jointset_string, 1))
+        {
+            return  false;
+        }
+
+        //list of joints
+        Bottle b_listofjoints=js_cfg.findGroup("listofjoints", "list of joints");
+        if (b_listofjoints.isNull())
+        {
+            yError () << "listofjoints parameter not found";
+            return false;
+        }
+
+        set2joint[j].resize(b_listofjoints.size()-1);
+
+
+        for (int k = 1; k < b_listofjoints.size(); k++)
+        {
+            int jointofthisset = b_listofjoints.get(k).asInt();
+            jointsets_prop.joint2set[jointofthisset] = j;
+            set2joint[j][k-1] = jointofthisset;
+        }
+
+        //constraints
+        if(!extractGroup(js_cfg, xtmp, "constraint", "type of jointset constraint ", 1))
+        {
+            return  false;
+        }
+
+        eOmc_jsetconstraint_t constraint;
+        if(!parser->convert(xtmp.get(1).asString(), constraint, formaterror))
+        {
+            return false;
+        }
+        jointsets_prop.jointset_cfgs[j].constraints.type = constraint;
+
+
+        //param1
+        if(!extractGroup(js_cfg, xtmp, "param1", "param1 of jointset constraint ", 1))
+        {
+            return  false;
+        }
+        jointsets_prop.jointset_cfgs[j].constraints.param1 = xtmp.get(1).asDouble();
+
+        //param2
+        if(!extractGroup(js_cfg, xtmp, "param2", "param2 of jointset constraint ", 1))
+        {
+            return  false;
+        }
+        jointsets_prop.jointset_cfgs[j].constraints.param2 = xtmp.get(1).asDouble();
+
+    }
+
+    //debug prints
+    for (int xx=0; xx<parser->mc_service.properties.numofjoints; xx++)
+        yError() << " JOINT SET MAP: J " << xx << "SET " << parser->mc_service.properties.joint2set[xx];
+}
+
+bool embObjMotionControl::verifyControlLawconsistencyinJointSet(string *controlLaw)
+{
+    for(int s=0; s<set2joint.size(); s++)
+    {
+        for(int k=1; k<set2joint[s].size(); k++)
+        {
+            int otherjoint = set2joint[set][k];
+            if(controlLaw[0] != controlLaw[k])
+            {
+                yError() << "Joints beloning to same set must be have same control law";
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool embObjMotionControl::parserControlsGroup(Bottle &controlsGroup)
+{
+    Bottle xtmp;
+    int i;
+
+    if (!extractGroup(controlsGroup, xtmp, "positionControl", "Position Control ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            _posistionControlLaw[i - 1] = xtmp.get(i).asString();
+
+        // verify that joint beloning to same jointset have same controlLaw
+        if(!verifyControlLawconsistencyinJointSet(_posistionControlLaw))
+        {
+             yError() << "Joints beloning to same set must be have same position control law";
+             return false;
+        }
+
+    }
+
+    if (!extractGroup(controlsGroup, xtmp, "velocityControl", "Velocity Control ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            _velocityControlLaw[i - 1] = xtmp.get(i).asString();
+
+        // verify that joint beloning to same jointset have same controlLaw
+        if(!verifyControlLawconsistencyinJointSet(_velocityControlLaw))
+        {
+             yError() << "Joints beloning to same set must be have same velocity control law";
+             return false;
+        }
+    }
+
+    if (!extractGroup(controlsGroup, xtmp, "torqueControl", "Torque Control ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            _torqueControlLaw[i - 1] = xtmp.get(i).asString();
+
+        if(!verifyControlLawconsistencyinJointSet(_torqueControlLaw))
+        {
+             yError() << "Joints beloning to same set must be have same torque control law";
+             return false;
+        }
+    }
+    return true;
+
+}
+
+bool embObjMotionControl::parsercontrolUnitsType(Bottle &bPid, GenericControlUnitsType_t &unitstype)
+{
+
+    Value &controlUnits=bPid.find("controlUnits");
+    if(controlUnits.isNull())
+    {
+        yError() << "embObjMotioncontrol: missing controlUnits parameter";
+        return false;
+    }
+    if(!controlUnits.isString())
+    {
+        yError() << "embObjMotioncontrol: controlUnits parameter is not a string";
+        return false;
+    }
+
+
+    if(controlUnits.toString()==string("metric_units"))
+    {
+        unitstype = METRIC_UNITS;
+        return true;
+    }
+    else if(controlUnits.toString()==string("machine_units"))
+    {
+        unitstype = MACHINE_UNITS;
+        return true;
+    }
+    else
+    {
+        yError() << "embObjMotionControl:invalid controlUnits value: " <<controlUnits.toString().c_str();
+        return false;
+    }
+
+}
+
+
+bool embObjMotionControl::parsePid_inPos_outPwm(Bottle &b_pid, string controlLaw)
+{
+    bool alreadyParsed = false;
+    map<string, Pid_Algorithm>::iterator it = posAlgoMap.find(controlLaw);
+    if(it != posAlgoMap.end())
+        alreadyParsed = true;
+
+    if(alreadyParsed)
+        return;
+
+    Pid_Algorithm_simple *pidSimple_ptr = new Pid_Algorithm_simple(_njoints);
+    pidSimple_ptr->type = PidAlgo_simple;
+
+    GenericControlUnitsType_t unitstype;
+    if(!parsercontrolUnitsType(b_pid, unitstype))
+        retrun false;
+    pidSimple_ptr->ctrlUnitsType = unitstype;
+
+    if(!parsePidsGroup(b_pid, pidSimple_ptr->pid, string("pos_")))
+        return false;
+
+    posAlgoMap[controlLaw] = pidSimple_ptr;
+}
+
+
+bool embObjMotionControl::parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw)
+{
+    bool alreadyParsed = false;
+    map<string, Pid_Algorithm>::iterator it = trqAlgoMap.find(controlLaw);
+    if(it != trqAlgoMap.end())
+        alreadyParsed = true;
+
+    if(alreadyParsed)
+        return true;
+
+    Pid_Algorithm_simple *pidSimple_ptr = new Pid_Algorithm_simple(_njoints);
+    pidSimple_ptr->type = PidAlgo_simple;
+
+    GenericControlUnitsType_t unitstype;
+    if(!parsercontrolUnitsType(b_pid, unitstype))
+        retrun false;
+    pidSimple_ptr->ctrlUnitsType = unitstype;
+
+    if(!parsePidsGroup(b_pid, pidSimple_ptr->pid, string("trq_")))
+        return false;
+
+    Bottle xtmp;
+    //torque specific params
+    if (!extractGroup(b_pid, xtmp, "kbemf", "kbemf parameter", _njoints))         return false; for (j=0; j<_njoints; j++) kbemf[j]      = xtmp.get(j+1).asDouble();
+    if (!extractGroup(b_pid, xtmp, "ktau", "ktau parameter", _njoints))           return false; for (j=0; j<_njoints; j++) ktau[j]       = xtmp.get(j+1).asDouble();
+    if (!extractGroup(b_pid, xtmp, "filterType", "filterType param", _njoints))   return false; for (j=0; j<_njoints; j++) filterType[j] = xtmp.get(j+1).asInt();
+
+    //conversion from metric to machine units (if applicable)
+    for (j=0; j<_njoints; j++)
+    {
+        pidSimple_ptr->pid[j].kp = pidSimple_ptr->pid[j].kp / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+        pidSimple_ptr->pid[j].ki = pidSimple_ptr->pid[j].ki / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+        pidSimple_ptr->pid[j].kd = pidSimple_ptr->pid[j].kd / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+        pidSimple_ptr->pid[j].stiction_up_val   = pidSimple_ptr->pid[j].stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
+        pidSimple_ptr->pid[j].stiction_down_val = pidSimple_ptr->pid[j].stiction_down_val * _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
+    }
+
+
+    trqAlgoMap[controlLaw] = pidSimple_ptr;
+
+    return true;
+}
+
+bool embObjMotionControl::parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw)
+{
+
+    bool alreadyParsed = false;
+    map<string, Pid_Algorithm>::iterator it = posAlgoMap.find(controlLaw);
+    if(it != posAlgoMap.end())
+        alreadyParsed = true;
+
+    if(alreadyParsed)
+        return;
+
+    PidAlgorithm_VelocityInnerLoop *pidInnerVel_ptr = new PidAlgorithm_VelocityInnerLoop(_njoints);
+    pidInnerVel_ptr->type = PIdAlgo_velocityInnerLoop;
+
+    GenericControlUnitsType_t unitstype;
+    if(!parsercontrolUnitsType(b_pid, unitstype))
+        return false;
+    pidSimple_ptr->ctrlUnitsType = unitstype;
+
+    if(!parsePidsGroup(b_pid, pidInnerVel_ptr->extPid, string("pos_")))
+        return false;
+    if(!parsePidsGroup(b_pid, pidInnerVel_ptr->innerVelPid, string("vel_")))
+        return false;
+
+    posAlgoMap[controlLaw] = *pidInnerVel_ptr;
+
+    return true;
+}
+
+
+
+bool embObjMotionControl::parseSelectedPositionControl(Bottle config)
+{
+    for(int i=0; i<_njoints; i++)
+    {
+        // 1) verify that selected control law is defined in file
+        Bottle posControlLaw = config.findGroup(_posistionControlLaw[i]);
+        if (posControlLaw.isNull())
+        {
+            yError() << "Missing " << _posistionControlLaw[i].c_str();
+            return false;
+        }
+
+        // 2) read control_law
+        Value &controlLaw=posControlLaw.find("controlLaw");
+        if( (controlLaw.isNull()) || (! controlLaw.isString()) )
+        {
+            yError() << "Unable read control law parameter for " << _posistionControlLaw[i].c_str() <<". Quitting.";
+            return false;
+        }
+
+        string s_controlaw = controlLaw.toString();
+        if (s_controlaw==string("Pid_inPos_outPwm"))
+        {
+            if (!parsePid_inPos_outPwm(posControlLaw, _posistionControlLaw[i]))
+            {
+                yError() << "embObjMotionControl::fromConfig(): format error in Pid_inPos_outPwm";
+                return false;
+            }
+
+        }
+        else if (s_controlaw==string("PidPos_withInnerVelPid"))
+        {
+            if (!parsePidPos_withInnerVelPid(posControlLaw))
+            {
+                yError() << "embObjMotionControl::fromConfig(): format error in PidPos_withInnerVelPid";
+                return false;
+            }
+
+        }
+        else
+        {
+            yError() << "Unable to use control law " << s_controlaw << " por position control. Quitting.";
+            return false;
+        }
+
+    }
+    return true;
+
+}
+
+
+bool embObjMotionControl::parseSelectedTorqueControl(Bottle config)
+{
+    int set;
+    for(int i=0; i<_njoints; i++)
+    {
+        if(_torqueControlLaw[i] == "none")
+        {
+            jointsets_prop.jointset_cfgs[set].candotorquecontrol = false;
+            continue;
+        }
+        // 1) verify that selected control law is defined in file
+        Bottle trqControlLaw = config.findGroup(_torqueControlLaw[i]);
+        if (trqControlLaw.isNull())
+        {
+            yError() << "Missing " << _torqueControlLaw[i].c_str();
+            return false;
+        }
+
+        set = jointsets_prop.joint2set[i];
+        jointsets_prop.jointset_cfgs[set].candotorquecontrol = true;
+
+        // 2) read control_law
+        Value &controlLaw=trqControlLaw.find("controlLaw");
+        if( (controlLaw.isNull()) || (! controlLaw.isString()) )
+        {
+            yError() << "Unable read control law parameter for " << _torqueControlLaw[i].c_str() <<". Quitting.";
+            return false;
+        }
+
+        string s_controlaw = controlLaw.toString();
+        if (s_controlaw==string("Pid_inPos_outPwm"))
+        {
+            if (!parsePid_inPos_outPwm(trqControlLaw, _torqueControlLaw[i]))
+            {
+                yError() << "embObjMotionControl::fromConfig(): format error in Pid_inPos_outPwm";
+                return false;
+            }
+
+        }
+        else if (s_controlaw==string("PidPos_withInnerVelPid"))
+        {
+            if (!parsePidPos_withInnerVelPid(trqControlLaw))
+            {
+                yError() << "embObjMotionControl::fromConfig(): format error in PidPos_withInnerVelPid";
+                return false;
+            }
+
+        }
+        else
+        {
+            yError() << "Unable to use control law " << s_controlaw << " por position control. Quitting.";
+            return false;
+        }
+
+    }
+    return true;
+
+}
+
+
+bool embObjMotionControl::getCorrectPidForEachJoint(void)
+{
+    Pid_Algorithm *pidAlgo_ptr;
+    Pid_Algorithm *vpidAlgo_ptr;
+    Pid_Algorithm *tpidAlgo_ptr;
+
+    map<string, Pid_Algorithm>::iterator it;
+
+    for(int j=0; j<_njoints; j++)
+    {
+        //get position pid
+        it = posAlgoMap.find(_posistionControlLaw[i]);
+        if(it == posAlgoMap.end())
+        {
+            yError() << "Enxpected error!";
+            return false;
+        }
+
+        Pid_Algorithm *pidAlgo_ptr = posAlgoMap[_posistionControlLaw[i]];
+
+        //get velocity pid
+        if(_velocityControlLaw[i] == "none")
+            Pid_Algorithm *vpidAlgo_ptr = NULL;
+        else
+        {
+            it = velAlgoMap.find(_velocityControlLaw[i]);
+            if(it == velAlgoMap.end())
+            {
+                yError() << "Enxpected error!";
+                return false;
+            }
+
+            vpidAlgo_ptr = velAlgoMap[_velocityControlLaw[i]];
+        }
+
+        //get torque pid
+        if(_torqueControlLaw[i] == "none")
+            Pid_Algorithm *tpidAlgo_ptr = NULL;
+        else
+        {
+            it = trqAlgoMap.find(_torqueControlLaw[i]);
+            if(it == trqAlgoMap.end())
+            {
+                yError() << "Enxpected error!";
+                return false;
+            }
+
+            tpidAlgo_ptr = trqAlgoMap[_torqueControlLaw[i]];
+        }
+
+        //verifico che i giunti abbiamo lo stesso algoritmo per pid posizione, velocita' e torque
+        bool allAlgoAreEqual = false;
+        if( (vpidAlgo_ptr) && (pidAlgo_ptr->type == vpidAlgo_ptr->type) &&
+            (tpidAlgo_ptr) && (pidAlgo_ptr->type == tpidAlgo_ptr->type)
+          )
+            allAlgoAreEqual = false;
+
+         if(!allAlgoAreEqual)
+         {
+             yError() << "Not all algo are equal!";
+             return false;
+         }
+
+
+ ///////////////// PID POSITION
+        switch(pidAlgo_ptr->type )
+        {
+            case(PidAlgo_simple):
+            {
+                Pid_Algorithm_simple *pidAlgo_simple_ptr = (Pid_Algorithm_simple*)pidAlgo_ptr;
+                _pids[j] = pidAlgo_simple_ptr->pid[j];
+
+                if(vpidAlgo_simple_ptr)
+                    _vpids[j] = vpidAlgo_simple_ptr->pid[j];
+                else
+                    _vpids[j] = 0;
+
+                if(tpidAlgo_simple_ptr)
+                    _tpids[j] = tpidAlgo_simple_ptr->pid[j];
+                else
+                    _tpids[j] = 0;
+
+
+            }break;
+
+            case(PIdAlgo_velocityInnerLoop):
+            {
+                if(!verifyAllVelocityPIdOfSameJointAreEqual())
+                    return false;
+                PidAlgorithm_VelocityInnerLoop *pidAlgo_innerVelLoop_ptr = (PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr;
+                _pids[j] = pidAlgo_innerVelLoop_ptr->extPid[j];
+                _vpids[j] = pidAlgo_simple_ptr->innerVelPid[j];
+                if(tpidAlgo_simple_ptr)
+                    _tpids[j] = tpidAlgo_simple_ptr->pid[j];
+                else
+                    _tpids[j] = 0;
+            }break;
+
+            default:
+                yError() << "Enxpected error!";
+                return false;
+        }
+    }
+
+
+}
+
+bool embObjMotionControl::saveCouplingsData(void)
+{
+    switch(serviceConfig.ethservice.configuration.type)
+    {
+        case eomn_serv_MC_foc:
+        {
+            eOmc_4jomo_coupling_t *jc_dest = &(serviceConfig.ethservice.configuration.data.mc.foc_based.jomocoupling);
+        } break;
+
+        case eomn_serv_MC_mc4plus:
+        {
+            eOmc_4jomo_coupling_t *jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc4plus_based.jomocoupling);
+        } break;
+
+        case eomn_serv_MC_mc4plusmais:
+        {
+            eOmc_4jomo_coupling_t *jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc4plusmais_based.jomocoupling);
+
+        } break;
+        default:
+        {
+            return false;
+        }
+    }
+
+    memset(jc_dest, 0, sizeof(eOmc_4jomo_coupling_t));
+
+    // very important: so far, the fw in Controller.c must find eomc_jointSetNum_none in un-used entries, even if we have less than 4 joints.
+    memset(jc_dest->joint2set, eomc_jointSetNum_none, sizeof(jc_dest->joint2set));
+
+    for(int i=0; i<jointsets_prop.joint2set.size(); i++)
+    {
+        jc_dest->joint2set[i] = jointsets_prop.joint2set[i];
+    }
+
+    for(int i=0; i<4; i++)
+    {
+        for(int j=0; j<4; j++)
+        {
+            jc_dest->joint2motor[i][j] = eo_common_float_to_Q17_14(controller.matrixJ2M[4*i+j]);
+            jc_dest->motor2joint[i][j] = eo_common_float_to_Q17_14(controller.matrixM2J[4*i+j]);
+        }
+    }
+
+
+    for(int r=0; r<4; r++)
+    {
+        for(int c=0; c<6; c++)
+        {
+            jc_dest->encoder2joint[r][c] = eo_common_float_to_Q17_14(controller.matrixE2J[6*r+c]);
+        }
+    }
+
+    for(int s=0; s< jointsets_prop.numofjointsets; s++)
+    {
+        memcpy(&jc_dest->jsetcfg[s]  , &jointsets_prop.jointset_cfgs[s], sizeof(eOmc_jointset_configuration_t));
+    }
+
+    return true;
+
+}
+
+
 bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 {
     Bottle xtmp;
     int i,j;
+
+#warning VALE: leggi valore  mc_service.properties.jointset_cfgs[i].pidoutputtype  e candotorquecontrol
 
     Bottle general = config.findGroup("GENERAL");
     if (general.isNull())
@@ -1747,6 +2348,67 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
     }
 
+    eOmn_serv_type_t mc_serv_type = serviceConfig.ethservice.configuration.type;
+    if( (mc_serv_type == eomn_serv_MC_foc) ||
+        (mc_serv_type == eomn_serv_MC_mc4plus) ||
+        (mc_serv_type == eomn_serv_MC_mc4plusmais)
+      )
+    {
+
+        ////// COUPLINGS
+        {
+            Bottle couplings = config.findGroup("COUPLINGS");
+            if (couplings.isNull())
+            {
+                yError() << "Missing Coupling group";
+                return false;
+            }
+
+            if(!parseCouplingGroup(couplings))
+                return false;
+
+        }
+
+        ////// JOINTSET_CFG
+        {
+            Bottle jointsetCfg = config.findGroup("JOINTSET_CFG");
+            if (jointsetCfg.isNull())
+            {
+                yError() << "Missing JOINTSET_CFG group";
+                return false;
+            }
+
+            if(!parseJointsetCfgGroup(jointsetCfg))
+                return false;
+
+        }
+
+        if(!saveCouplingsData())
+            return false;
+    }
+
+    ///// CONTROLS
+    {
+        Bottle controlsGroup = config.findGroup("CONTROLS", "Configuration of used control laws ");
+        if(controlsGroup.isNull())
+        {
+            yError() <<"embObjMotionControl::fromConfig(): Error: no CONTROLS group found in config file, returning";
+            return false;
+        }
+        if(!parserControlsGroup(controlsGroup))
+            return false;
+
+        if(!parseSelectedPositionControl(config))
+            return false;
+        if(!parseSelectedVelocityControl(config))
+            return false;
+        if(!parseSelectedTorqueControl(config))
+            return false;
+
+        //quando arrivo qui ho popolato tutte le mie mappe
+        if(!getCorrectPidForEachJoint())
+            return false;
+    }
 
     ////// POSITION PIDS
     {
@@ -1869,6 +2531,24 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
 
     }
+
+     /////// [2FOC]
+     {
+         bool mcservice_is_2foc = true;
+        #warning defnisci mcservice_is_2foc!!!
+        if(mcservice_is_2foc)
+        {
+            Bottle &focGroup=config.findGroup("2FOC");
+            if (focGroup.isNull() )
+            {
+                yWarning() << "embObjMotionControl::fromConfig() detected that Group 2FOC is not found in configuration file";
+                return false;
+            }
+            if(!parse2FocGroup(focGroup))
+                return false;
+        }
+     }
+
     /////// [TIMEOUTS]
     {
         Bottle timeoutsGroup =config.findGroup("TIMEOUTS");
@@ -1890,7 +2570,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
 
 // use this one for ... service configuration
-bool embObjMotionControl::fromConfig_Step3(yarp::os::Searchable &config)
+bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config)
 {
 
 #if defined(EMBOBJMC_USESERVICEPARSER)
@@ -1899,6 +2579,18 @@ bool embObjMotionControl::fromConfig_Step3(yarp::os::Searchable &config)
         yError("embObjMotionControl::fromConfig() cannot parse service");
         return false;
     }
+
+    //now parser read encoders' resolutions also.
+    //so here I save in embObMotioncontrol memory encoders's resolution
+
+    for(int i=0; i<_njoints; i++)
+    {
+        _jointEncoderRes[i]  = parser->mc_service.properties.encoder1s[i].resolution;
+        _jointEncoderType[i] = parser->mc_service.properties.encoder1s[i].desc.type;
+        _rotorEncoderRes[i]  = parser->mc_service.properties.encoder2s[i].resolution;
+        _rotorEncoderType[i] = parser->mc_service.properties.encoder2s[i].desc.type;
+    }
+
 #endif
 
     return true;
@@ -1924,6 +2616,11 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
 
     // first step of configuration
+    if(false == fromConfig_readServiceCfg(config))
+    {
+        return false;
+    }
+
     if(false == fromConfig_getGeneralInfo(config)) //get general info: useRawEncoderData, useLiitedPwm, etc....
     {
         return false;
@@ -1936,10 +2633,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
 
     // third step of configuration
-    if(false == fromConfig_Step3(config))
-    {
-        return false;
-    }
+
 
     return true;
 }
@@ -2095,7 +2789,7 @@ bool embObjMotionControl::init()
         motor_cfg.currentLimits.overloadCurrent = _currentLimits[logico].overloadCurrent;
         motor_cfg.currentLimits.peakCurrent = _currentLimits[logico].peakCurrent;
         motor_cfg.gearboxratio = _gearbox[logico];
-        motor_cfg.gearboxratio2 = _gearbox2[logico];
+        motor_cfg.gearboxratio2 = _gearboxE2J[logico];
         motor_cfg.rotorEncoderResolution = _rotorEncoderRes[logico];
         motor_cfg.hasHallSensor = _hasHallSensor[logico];
         motor_cfg.hasRotorEncoder = _hasRotorEncoder[logico];

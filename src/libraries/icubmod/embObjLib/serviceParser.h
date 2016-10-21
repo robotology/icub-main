@@ -144,6 +144,7 @@ typedef struct
 typedef struct
 {
     eOmc_encoder_descriptor_t       desc;
+    int32_t                         resolution;
 } servMC_encoder_t;
 
 

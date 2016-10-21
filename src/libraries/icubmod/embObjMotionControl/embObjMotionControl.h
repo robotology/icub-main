@@ -217,6 +217,77 @@ class torqueControlHelper
         return nw * newtonsToSensor[j]/angleToEncoders[j];
     }
 };
+typedef enum
+{
+    PidAlgo_simple = 0,
+    PIdAlgo_velocityInnerLoop = 1,
+    PidAlgo_currentInnerLoop =2
+} PidAlgorithmType_t;
+
+
+typedef enum
+{
+    ControlUnits_machine = 0,
+    ControlUnits_metric = 1
+} GenericControlUnitsType_t;
+
+class Pid_Algorithm
+{
+    PidAlgorithmType_t type;
+    GenericControlUnitsType_t ctrlUnitsType;
+
+};
+
+
+class Pid_Algorithm_simple: Pid_Algorithm
+{
+    Pid *pid;
+    Pid_Algorithm_simple(int nj)
+    {
+        pid = allocAndCheck<Pid>(nj);
+    };
+
+};
+
+class PidAlgorithm_VelocityInnerLoop: Pid_Algorithm
+{
+    Pid *extPid; //pos, trq, velocity
+    Pid *innerVelPid;
+    PidAlgorithm_VelocityInnerLoop(int nj)
+    {
+        extPid = allocAndCheck<Pid>(nj);
+        innerVelPid = allocAndCheck<Pid>(nj);
+    };
+};
+
+
+class PidAlgorithm_CurrentInnerLoop: Pid_Algorithm
+{
+    Pid *extPid;
+    Pid *innerCurrLoop;
+     PidAlgorithm_CurrentInnerLoop(int nj)
+    {
+        extPid = allocAndCheck<Pid>(nj);
+        innerCurrLoop = allocAndCheck<Pid>(nj);
+    };
+};
+
+
+
+
+
+class Pid_emsVel_2focPwm
+{
+    Pid emsPosVel;
+    Pid focVelPwm;
+};
+
+class jointsets_properties
+{
+    vector<int>                         joint2set;
+    int                                 numofjointsets;
+    vector<eOmc_jointset_configuration_t> jointset_cfgs;
+};
 
 namespace yarp {
     namespace dev  {
@@ -303,7 +374,7 @@ private:
     int    *_rotorEncoderRes;                   /** rotor encoder resolution */
     uint8_t *_rotorEncoderType;                  /** rotor encoder type*/
     double *_gearbox;                           /** the gearbox ratio */
-    double *_gearbox2;                           /** the gearbox ratio */
+    double *_gearboxE2J;                           /** the gearbox ratio */
     bool   *_hasHallSensor;                     /** */
     bool   *_hasTempSensor;                     /** */
     bool   *_hasRotorEncoder;                   /** */
@@ -360,6 +431,12 @@ private:
     enum       velocityControlUnitsType {V_MACHINE_UNITS=0, V_METRIC_UNITS=1};
     velocityControlUnitsType _velocityControlUnits;
 
+
+
+    enum posControlLawType {emsPwm_2focOpenloop = 0, emsVel_2focPwm = 2};
+
+
+
     // debug purpose
 
 #ifdef VERIFY_ROP_SETIMPEDANCE
@@ -392,6 +469,24 @@ private:
     double  *_ref_torques;      // for torque control.
 
     uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
+    string  *_posistionControlLaw;
+    string  *_velocityControlLaw;
+    string  *_torqueControlLaw;
+    vector <vector <int>> set2joint;
+    //NEW PIDS
+    Pid *_pidOfPosCtrl_outPwm; //ems compute PID: in input takes position and gets output pwm; 2
+
+
+    Pid_emsVel_2focPwm *_pidOfPosCtrl_emsVel_2focPwm;
+
+    map<string, *Pid_Algorithm> posAlgoMap;
+    map<string, *Pid_Algorithm> velAlgoMap;
+    map<string, *Pid_Algorithm> trqAlgoMap;
+
+
+    servMC_controller_t controller; //contains coupling matrix
+    jointsets_properties jointsets_prop;
+
 
 
 private:
@@ -415,6 +510,19 @@ private:
     bool parseCurrPid(Bottle &currentPidsGroup);
     bool parseLimitsGroup( Bottle &limits);
     bool parseTimeoutsGroup( Bottle &timeouts);
+    bool parse2FocGroup(Bottle &focGroup);
+    bool parseCouplingGroup(Bottle &coupling);
+    bool parseJointsetCfgGroup(Bottle &jointsetcfg);
+    bool parserControlsGroup(Bottle &controlsGroup);
+    bool parsercontrolUnitsType(Bottle &bPid, GenericControlUnitsType_t &unitstype);
+    bool parsePid_inPos_outPwm(Bottle &b_pid, string controlLaw);
+    bool parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw);
+    bool parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix);
+    bool parseSelectedPositionControl(Bottle config);
+    bool getCorrectPidForEachJoint(void);
+
+    bool verifyControlLawconsistencyinJointSet(string *controlLaw);
+    bool saveCouplingsData(void);
 
 //    bool getStatusBasic_withWait(const int n_joint, const int *joints, eOmc_joint_status_basic_t *_statuslist);             // helper function
 //    bool getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);     // helper function
@@ -493,7 +601,7 @@ private:
     int fromConfig_NumOfJoints(yarp::os::Searchable &config);
     bool fromConfig_getGeneralInfo(yarp::os::Searchable &config); //get general info: useRawEncoderData, useLiitedPwm, etc....
     bool fromConfig_Step2(yarp::os::Searchable &config);
-    bool fromConfig_Step3(yarp::os::Searchable &config);
+    bool fromConfig_readServiceCfg(yarp::os::Searchable &config);
 
 
 public:
