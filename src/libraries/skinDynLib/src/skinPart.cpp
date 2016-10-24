@@ -137,7 +137,7 @@ using namespace iCub::skinDynLib;
         else
         {
             yWarning("[skinPart::setTaxelPosesFromFile] no name field found. Using filename.");
-            // Assign the name of the skinPart according to the filename (hardcoded)
+            // Assign the name and version of the skinPart according to the filename (hardcoded)
             if      (filename == "left_forearm_mesh.txt")    { setName(SkinPart_s[SKIN_LEFT_FOREARM]);    setVersion("V1");   }
             else if (filename == "left_forearm_nomesh.txt")  { setName(SkinPart_s[SKIN_LEFT_FOREARM]);    setVersion("V1");   }
             else if (filename == "left_forearm_V2.txt")      { setName(SkinPart_s[SKIN_LEFT_FOREARM]);    setVersion("V2");   }
