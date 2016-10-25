@@ -108,7 +108,7 @@ class skinPartBase
      * Sets the version ("V1" / "V2" / "V2_1")
      * @param _version 
      */
-    void setVersion(const std::string &_name);
+    void setVersion(const std::string &_version);
 
     /**
      * Gets the version
