@@ -58,7 +58,7 @@ class skinPartBase
                         // and number of rows in the taxel positions .txt files in
                         // icub-main/app/skinGui/conf/positions in the [calibration] group 
                         // IMPORTANT: it may differ from taxels.size()
-    std::string version; // Version of the skin part - "V1", "V2", "V2_1" (or "unknown_version"). 
+    std::string version; // Version of the skin part - "V1", "V2", "V2.1" (or "unknown_version"). 
                          // Depending on the physical version of skin on the robot. For example,
                          // forearm V2 has one triangle more compared to V1 and also partly different taxel IDs. 
     yarp::os::RecursiveMutex recursive_mutex;
@@ -105,7 +105,7 @@ class skinPartBase
     int getSize();
 
     /**
-     * Sets the version ("V1" / "V2" / "V2_1")
+     * Sets the version ("V1" / "V2" / "V2.1")
      * @param _version 
      */
     void setVersion(const std::string &_version);

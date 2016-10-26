@@ -144,8 +144,8 @@ using namespace iCub::skinDynLib;
             else if (filename == "right_forearm_mesh.txt")   { setName(SkinPart_s[SKIN_RIGHT_FOREARM]);   setVersion("V1");   }
             else if (filename == "right_forearm_nomesh.txt") { setName(SkinPart_s[SKIN_RIGHT_FOREARM]);   setVersion("V1");   }
             else if (filename == "right_forearm_V2.txt")     { setName(SkinPart_s[SKIN_RIGHT_FOREARM]);   setVersion("V2");   }
-            else if (filename == "left_hand_V2_1.txt")       { setName(SkinPart_s[SKIN_LEFT_HAND]);       setVersion("V2_1"); }
-            else if (filename == "right_hand_V2_1.txt")      { setName(SkinPart_s[SKIN_RIGHT_HAND]);      setVersion("V2_1"); }
+            else if (filename == "left_hand_V2_1.txt")       { setName(SkinPart_s[SKIN_LEFT_HAND]);       setVersion("V2.1"); }
+            else if (filename == "right_hand_V2_1.txt")      { setName(SkinPart_s[SKIN_RIGHT_HAND]);      setVersion("V2.1"); }
             else if (filename == "left_arm_mesh.txt")        { setName(SkinPart_s[SKIN_LEFT_UPPER_ARM]);  setVersion("V1");   }
             else if (filename == "right_arm_mesh.txt")       { setName(SkinPart_s[SKIN_RIGHT_UPPER_ARM]); setVersion("V1");   }
             else if (filename == "torso.txt")                { setName(SkinPart_s[SKIN_FRONT_TORSO]);     setVersion("V1");   }
