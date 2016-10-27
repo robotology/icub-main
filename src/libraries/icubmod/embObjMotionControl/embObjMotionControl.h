@@ -217,6 +217,7 @@ class torqueControlHelper
         return nw * newtonsToSensor[j]/angleToEncoders[j];
     }
 };
+
 typedef enum
 {
     PidAlgo_simple = 0,
@@ -227,20 +228,22 @@ typedef enum
 
 typedef enum
 {
-    ControlUnits_machine = 0,
-    ControlUnits_metric = 1
+    controlUnits_machine = 0,
+    controlUnits_metric = 1
 } GenericControlUnitsType_t;
 
 class Pid_Algorithm
 {
+public:
     PidAlgorithmType_t type;
     GenericControlUnitsType_t ctrlUnitsType;
 
 };
 
 
-class Pid_Algorithm_simple: Pid_Algorithm
+class Pid_Algorithm_simple: public Pid_Algorithm
 {
+public:
     Pid *pid;
     Pid_Algorithm_simple(int nj)
     {
@@ -249,8 +252,9 @@ class Pid_Algorithm_simple: Pid_Algorithm
 
 };
 
-class PidAlgorithm_VelocityInnerLoop: Pid_Algorithm
+class PidAlgorithm_VelocityInnerLoop: public Pid_Algorithm
 {
+public:
     Pid *extPid; //pos, trq, velocity
     Pid *innerVelPid;
     PidAlgorithm_VelocityInnerLoop(int nj)
@@ -261,8 +265,9 @@ class PidAlgorithm_VelocityInnerLoop: Pid_Algorithm
 };
 
 
-class PidAlgorithm_CurrentInnerLoop: Pid_Algorithm
+class PidAlgorithm_CurrentInnerLoop: public Pid_Algorithm
 {
+public:
     Pid *extPid;
     Pid *innerCurrLoop;
      PidAlgorithm_CurrentInnerLoop(int nj)
@@ -278,12 +283,14 @@ class PidAlgorithm_CurrentInnerLoop: Pid_Algorithm
 
 class Pid_emsVel_2focPwm
 {
+public:
     Pid emsPosVel;
     Pid focVelPwm;
 };
 
 class jointsets_properties
 {
+public:
     vector<int>                         joint2set;
     int                                 numofjointsets;
     vector<eOmc_jointset_configuration_t> jointset_cfgs;
@@ -472,20 +479,20 @@ private:
     string  *_posistionControlLaw;
     string  *_velocityControlLaw;
     string  *_torqueControlLaw;
-    vector <vector <int>> set2joint;
+    vector <vector <int> > _set2joint;
     //NEW PIDS
     Pid *_pidOfPosCtrl_outPwm; //ems compute PID: in input takes position and gets output pwm; 2
 
 
     Pid_emsVel_2focPwm *_pidOfPosCtrl_emsVel_2focPwm;
 
-    map<string, *Pid_Algorithm> posAlgoMap;
-    map<string, *Pid_Algorithm> velAlgoMap;
-    map<string, *Pid_Algorithm> trqAlgoMap;
+    map<string, Pid_Algorithm*> posAlgoMap;
+    map<string, Pid_Algorithm*> velAlgoMap;
+    map<string, Pid_Algorithm*> trqAlgoMap;
 
 
     servMC_controller_t controller; //contains coupling matrix
-    jointsets_properties jointsets_prop;
+    jointsets_properties _jointsets_prop;
 
 
 
@@ -516,10 +523,17 @@ private:
     bool parserControlsGroup(Bottle &controlsGroup);
     bool parsercontrolUnitsType(Bottle &bPid, GenericControlUnitsType_t &unitstype);
     bool parsePid_inPos_outPwm(Bottle &b_pid, string controlLaw);
+    bool parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw);
+    bool parsePid_inVel_outPwm(Bottle &b_pid, string controlLaw);
     bool parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw);
+    bool parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw);
     bool parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix);
-    bool parseSelectedPositionControl(Bottle config);
+    bool parseSelectedPositionControl(Bottle &config);
+    bool parseSelectedVelocityControl(Bottle &config);
+    bool parseSelectedTorqueControl(Bottle &config);
     bool getCorrectPidForEachJoint(void);
+    bool convertPosPid(Pid myPid[]);
+    bool convertTrqPid(Pid myPid[]);
 
     bool verifyControlLawconsistencyinJointSet(string *controlLaw);
     bool saveCouplingsData(void);
@@ -537,6 +551,8 @@ private:
 
     void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
     void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
+
+    bool pidsAreEquals(Pid &pid1, Pid &pid2);
 
     bool EncoderType_iCub2eo(const string* in, uint8_t *out);
     bool EncoderType_eo2iCub(const uint8_t *in, string* out);

@@ -2205,7 +2205,7 @@ bool ServiceParser::check_motion(Searchable &config)
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_type.size())      ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_port.size())      ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_position.size())  ||
-            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_resolution.size())||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_resolution.size())
             )
         {
             yError() << "ServiceParser::check_motion() detected wrong number of columns somewhere inside PROPERTIES.JOINTMAPPING";
