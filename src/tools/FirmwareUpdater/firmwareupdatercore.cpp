@@ -561,7 +561,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
         // Start the download for the selected boards
         do
         {
-            ret = downloader.download_file(CanPacket::everyCANbus, 0x0F, download_type,download_eeprom);
+            ret = downloader.download_file(bus, 0x0F, download_type,download_eeprom);
             if (float(downloader.progress)/downloader.file_length/busCount >0.0  && print00==false)    {qDebug("downloading %s, 1%% done\n",filename.toLatin1().data()); print00=true;}
             if (float(downloader.progress)/downloader.file_length/busCount >0.25 && print25==false)    {qDebug("downloading %s, 25%% done\n",filename.toLatin1().data()); print25=true;}
             if (float(downloader.progress)/downloader.file_length/busCount >0.50 && print50==false)    {qDebug("downloading %s, 50%% done\n",filename.toLatin1().data()); print50=true;}
@@ -587,7 +587,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 
         // End the download for the selected boards
         int errors =0;
-        if(downloader.stopscheda(CanPacket::everyCANbus, 15) != 0){
+        if(downloader.stopscheda(bus, 15) != 0){
             qDebug() << "ERROR STOPPING SCHEDA";
         }else{
             qDebug() << "scheda stopped";

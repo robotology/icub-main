@@ -1422,31 +1422,31 @@ void MainWindow::onUpdateProgressBar(float fraction)
 void MainWindow::loading(bool load, bool disableAll)
 {
 
-    if(load/* && !isLoading*/){
-        loadingMutex.lock();
-        isLoading = true;
-        progress->setMaximum(0);
-        progress->setEnabled(true);
-        ui->advancedGroup->setEnabled(false);
-        ui->controlsGroup->setEnabled(false);
-        infoResult->setVisible(true);
-        if(disableAll){
-            ui->devicesTree->setEnabled(false);
-        }
-        infoResult->setText("Loading...");
-    }else /*if(!load && isLoading)*/{
-        progress->setMaximum(100);
-        progress->setEnabled(false);
-        ui->advancedGroup->setEnabled(true);
-        ui->controlsGroup->setEnabled(true);
-        if(!ui->devicesTree->isEnabled()){
-            ui->devicesTree->setEnabled(true);
-        }
-        infoResult->setVisible(true);
-        infoResult->setText("Operation Done");
-        isLoading = false;
-        loadingMutex.unlock();
-    }
+//    if(load/* && !isLoading*/){
+//        loadingMutex.lock();
+//        isLoading = true;
+//        progress->setMaximum(0);
+//        progress->setEnabled(true);
+//        ui->advancedGroup->setEnabled(false);
+//        ui->controlsGroup->setEnabled(false);
+//        infoResult->setVisible(true);
+//        if(disableAll){
+//            ui->devicesTree->setEnabled(false);
+//        }
+//        infoResult->setText("Loading...");
+//    }else /*if(!load && isLoading)*/{
+//        progress->setMaximum(100);
+//        progress->setEnabled(false);
+//        ui->advancedGroup->setEnabled(true);
+//        ui->controlsGroup->setEnabled(true);
+//        if(!ui->devicesTree->isEnabled()){
+//            ui->devicesTree->setEnabled(true);
+//        }
+//        infoResult->setVisible(true);
+//        infoResult->setText("Operation Done");
+//        isLoading = false;
+//        loadingMutex.unlock();
+//    }
 }
 
 
