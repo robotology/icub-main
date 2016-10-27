@@ -52,7 +52,7 @@ void SelectionCheckBox::onSelectionChanged(bool selected)
 
 void SelectionCheckBox::setSelected(bool selected)
 {
-    needLoading(true,selected);
+    //needLoading(true,selected);
     this->selected = selected;
 
     if(isEth){
@@ -70,7 +70,7 @@ void SelectionCheckBox::setSelected(bool selected)
 
 void SelectionCheckBox::onSelectEnded()
 {
-    needLoading(false,false);
+    //needLoading(false,false);
     selectedChanged(selected);
 }
 

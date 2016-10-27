@@ -189,7 +189,7 @@ void programThirdLevelDevice(FirmwareUpdaterCore *core,QString device,QString id
         if(device.contains("ETH")){
             char board_ipaddr[16];
             for(int i=0;i<core->getEthBoardList().size();i++){
-                ACE_UINT32 ip=core->getEthBoardList()[i].mAddress;
+                ACE_UINT32 ip;//=core->getEthBoardList()[i].mAddress;
                 sprintf(board_ipaddr,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
 
                 if(board.contains(board_ipaddr)){
@@ -223,7 +223,7 @@ void programSecondLevelDevice(FirmwareUpdaterCore *core,QString device,QString i
         if(device.contains("ETH")){
             char board_ipaddr[16];
             for(int i=0;i<core->getEthBoardList().size();i++){
-                ACE_UINT32 ip=core->getEthBoardList()[i].mAddress;
+                ACE_UINT32 ip;//=core->getEthBoardList()[i].mAddress;
                 sprintf(board_ipaddr,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
 
                 if(board.contains(board_ipaddr)){
@@ -261,10 +261,10 @@ void printSecondLevelDevices(FirmwareUpdaterCore *core,QString device,QString id
 
             qDebug() << "-------------------------------------------------------------";
             for(int i=0;i<core->getEthBoardList().size();i++){
-                ACE_UINT32 ip=core->getEthBoardList()[i].mAddress;
+                ACE_UINT32 ip;//=core->getEthBoardList()[i].mAddress;
                 sprintf(board_ipaddr,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
 
-                ACE_UINT64 mac=core->getEthBoardList()[i].mMac;
+                ACE_UINT64 mac;//=core->getEthBoardList()[i].mMac;
                 //ACE_UINT32 macL=(ACE_UINT32)(mac&0xFFFFFFFF);
                 //ACE_UINT32 macH=(ACE_UINT32)((mac>>32)&0xFFFF);
 
@@ -279,12 +279,12 @@ void printSecondLevelDevices(FirmwareUpdaterCore *core,QString device,QString id
                                     (uint8_t)(mac      ) & 0xff
                         );
 
-                snprintf(board_version, sizeof(board_version), "%d.%d", core->getEthBoardList()[i].mVersionMajor, core->getEthBoardList()[i].mVersionMinor);
-                snprintf(board_type, sizeof(board_type), "%s", core->getEthBoardList()[i].mBoardType.c_str());
-                snprintf(running_process, sizeof(running_process), "%s", core->getEthBoardList()[i].mRunningProcess.c_str());
-                snprintf(board_info, sizeof(board_info), "%s", core->getEthBoardList()[i].mInfo32.c_str());
-                snprintf(board_date, sizeof(board_date), "%s", core->getEthBoardList()[i].mReleasedOn.c_str());
-                snprintf(board_built, sizeof(board_date), "%s", core->getEthBoardList()[i].mBuiltOn.c_str());
+//                snprintf(board_version, sizeof(board_version), "%d.%d", core->getEthBoardList()[i].mVersionMajor, core->getEthBoardList()[i].mVersionMinor);
+//                snprintf(board_type, sizeof(board_type), "%s", core->getEthBoardList()[i].mBoardType.c_str());
+//                snprintf(running_process, sizeof(running_process), "%s", core->getEthBoardList()[i].mRunningProcess.c_str());
+//                snprintf(board_info, sizeof(board_info), "%s", core->getEthBoardList()[i].mInfo32.c_str());
+//                snprintf(board_date, sizeof(board_date), "%s", core->getEthBoardList()[i].mReleasedOn.c_str());
+//                snprintf(board_built, sizeof(board_date), "%s", core->getEthBoardList()[i].mBuiltOn.c_str());
 
                 qDebug() << "************** Device " << i << " ******************";
                 qDebug() << "Ip:        "<< board_ipaddr;

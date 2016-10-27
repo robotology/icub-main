@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
-<!-- Written by QtCreator 4.0.2, 2016-09-09T10:31:37. -->
+<!-- Written by QtCreator 4.0.2, 2016-10-12T10:09:00. -->
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -118,7 +118,10 @@
     </valuemap>
     <value type="int" key="ProjectExplorer.BuildConfiguration.BuildStepListCount">2</value>
     <value type="bool" key="ProjectExplorer.BuildConfiguration.ClearSystemEnvironment">false</value>
-    <valuelist type="QVariantList" key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges"/>
+    <valuelist type="QVariantList" key="ProjectExplorer.BuildConfiguration.UserEnvironmentChanges">
+     <value type="QString">ICUB_ROOT=/home/aitek/Desktop/IIT/icub-main</value>
+     <value type="QString">YARP_ROOT=/home/aitek/Desktop/IIT/yarp</value>
+    </valuelist>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">Debug</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4BuildConfiguration</value>
@@ -303,10 +306,10 @@
     <value type="int" key="PE.EnvironmentAspect.Base">2</value>
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">FirmwareUpdater</value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/home/aitek/Desktop/FirmwareUpdater/FirmwareUpdater.pro</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName">FirmwareUpdater2</value>
+    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/home/aitek/Desktop/IIT/icub-main/src/tools/FirmwareUpdater/FirmwareUpdater.pro</value>
     <value type="bool" key="QmakeProjectManager.QmakeRunConfiguration.UseLibrarySearchPath">true</value>
-    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">--from &quot;/home/aitek/Desktop/FirmwareUpdater/firmwareupdater.ini&quot; </value>
+    <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments">--from &quot;/home/aitek/Desktop/IIT/icub-main/src/tools/FirmwareUpdater/firmwareupdater.ini&quot; --admin</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">FirmwareUpdater.pro</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseDyldImageSuffix">false</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory"></value>

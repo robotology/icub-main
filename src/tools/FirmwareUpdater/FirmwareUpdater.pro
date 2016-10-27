@@ -72,12 +72,12 @@ win32-msvc2010{
 linux{
 
     INCLUDEPATH += $$(YARP_DIR)/include
-    INCLUDEPATH += /home/aitek/Desktop/IIT/icub-main/src/tools/ethLoader/ethLoaderLib
-    INCLUDEPATH += /home/aitek/Desktop/IIT/icub-main/src/tools/canLoader/canLoaderLib
-    INCLUDEPATH += /home/aitek/Desktop/IIT/icub-firmware-shared/eth/embobj/plus/comm-v2/icub
-    INCLUDEPATH += /home/aitek/Desktop/IIT/icub-firmware-shared/eth/embobj/core/core
-    INCLUDEPATH += /home/aitek/Desktop/IIT/icub-firmware-shared/can/canProtocolLib
-    INCLUDEPATH += /home/aitek/Desktop/IIT/icub-firmware-shared/can
+    INCLUDEPATH += $$(ICUB_ROOT)/src/tools/ethLoader/ethLoaderLib
+    INCLUDEPATH += $$(ICUB_ROOT)/src/tools/canLoader/canLoaderLib
+    INCLUDEPATH += $$(ICUB_ROOT)/../icub-firmware-shared/eth/embobj/plus/comm-v2/icub
+    INCLUDEPATH += $$(ICUB_ROOT)/../icub-firmware-shared/eth/embobj/core/core
+    INCLUDEPATH += $$(ICUB_ROOT)/../icub-firmware-shared/can/canProtocolLib
+    INCLUDEPATH += $$(ICUB_ROOT)/../icub-firmware-shared/can
 
     CONFIG(debug, debug|release) {
 
@@ -87,8 +87,8 @@ linux{
         DEFINES += UPDATER_RELEASE
     }
 
-    LIBS += -L/home/aitek/Desktop/IIT/yarp/build/lib
-    LIBS += -L/home/aitek/Desktop/IIT/icub-main/build/lib
+    LIBS += -L$$(YARP_ROOT)/build/lib
+    LIBS += -L$$(ICUB_ROOT)/build/lib
 
     LIBS += -lethLoaderLib
     LIBS += -lcanLoaderLib

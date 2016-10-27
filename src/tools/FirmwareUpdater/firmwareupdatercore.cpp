@@ -1,5 +1,6 @@
 #include "firmwareupdatercore.h"
 #include <qdebug.h>
+#include <EoUpdaterProtocol.h>
 
 FirmwareUpdaterCore *self = NULL;
 
@@ -17,8 +18,8 @@ FirmwareUpdaterCore::FirmwareUpdaterCore(QObject *parent) : QObject(parent)
 bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address)
 {
 
-    std::string addr(address.toLatin1().data());
-    if (!gUpdater.create((quint16)port,addr)){
+
+    if(!gMNT.open()){
         qDebug("Can't open socket, aborting.");
 
         return false;
@@ -57,9 +58,19 @@ QStringList FirmwareUpdaterCore::getDevicesName()
     return names;
 }
 
-void FirmwareUpdaterCore::jumpToUpdater()
+bool FirmwareUpdaterCore::goToMaintenance()
 {
-    gUpdater.cmdJumpUpd();
+    return gMNT.go2maintenance(EthMaintainer::ipv4OfAllSelected, true, 5, 1.0);
+}
+
+bool FirmwareUpdaterCore::goToApplication()
+{
+    return gMNT.go2application(EthMaintainer::ipv4OfAllSelected, true, 10, true);
+}
+
+bool FirmwareUpdaterCore::jumpToUpdater()
+{
+    return gMNT.command_jump2updater(EthMaintainer::ipv4OfAllSelected);
 }
 
 QList<QPair<QString,QVariant> > FirmwareUpdaterCore::getDevices()
@@ -69,17 +80,18 @@ QList<QPair<QString,QVariant> > FirmwareUpdaterCore::getDevices()
 
 void FirmwareUpdaterCore::disconnectFrom(QString device, QString id)
 {
-    if(!device.isEmpty() && !id.isEmpty() && device.contains("ETH")){
-        gUpdater.getBoardList().empty();
-        yDebug() << "empty eth devices";
-        qDebug() << "empty eth devices";
-    }
+    //    if(!device.isEmpty() && !id.isEmpty() && device.contains("ETH")){
+    //        gMNT.boards_get().clear();
+    //        yDebug() << "empty eth devices";
+    //        qDebug() << "empty eth devices";
+    //    }
+    //    //connectTo(device,id);
 }
 
 int FirmwareUpdaterCore::connectTo(QString device, QString id)
 {
     if(!device.isEmpty() && !id.isEmpty() && device.contains("ETH")){
-        int num = gUpdater.cmdDiscover();
+        int num = gMNT.discover(true, 2, 1.0).size();
         yDebug() << "Found " << num << " devices";
         qDebug() << "Found " << num << " devices";
         return num;
@@ -87,15 +99,16 @@ int FirmwareUpdaterCore::connectTo(QString device, QString id)
     return 0;
 }
 
-BoardList &FirmwareUpdaterCore::getEthBoardList()
+EthBoardList FirmwareUpdaterCore::getEthBoardList()
 {
-    return gUpdater.getBoardList();
+    return gMNT.boards_get();
 }
 
 void FirmwareUpdaterCore::setSelectedEthBoard(int index,bool selected)
 {
-    if(gUpdater.getBoardList().size() > index){
-        gUpdater.getBoardList()[index].mSelected = selected;
+
+    if(gMNT.boards_get().size() > index){
+        gMNT.boards_get()[index].setSelected(selected);
     }
     selectedEnded();
 }
@@ -116,9 +129,35 @@ void FirmwareUpdaterCore::setSelectedCanBoard(int index,bool selected,QString et
 }
 
 
-QString FirmwareUpdaterCore::getMoreDetails(ACE_UINT32 address)
+boardInfo2_t FirmwareUpdaterCore::getMoreDetails(int boardNum,QString *infoString,eOipv4addr_t *address)
 {
-    return QString("%1").arg(gUpdater.cmdGetMoreInfo(false,address).c_str());
+    boardInfo2_t info = gMNT.boards_get()[boardNum].getInfo();
+    if(address){
+        *address = gMNT.boards_get()[boardNum].getIPV4();
+        if(infoString && info.protversion == 0){
+            *infoString =  QString("%1").arg(gMNT.moreinformation(*address, false).c_str());
+        }
+    }
+
+    return info;
+
+}
+
+QString FirmwareUpdaterCore::getProcessFromUint(uint8_t id)
+{
+    switch (id) {
+    case uprot_proc_Loader:
+        return "Loader";
+    case uprot_proc_Updater:
+        return "Updater";
+    case uprot_proc_Application:
+        return "Application";
+    case uprot_proc_ApplPROGupdater:
+        return "Application Program Updater";
+    default:
+        return "None";
+        break;
+    }
 }
 
 QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString *retString, int canID)
@@ -226,29 +265,40 @@ bool FirmwareUpdaterCore::compile_ip_addresses(const char* addr,unsigned int *re
 
 void FirmwareUpdaterCore::blinkEthBoards()
 {
-    gUpdater.cmdBlink();
+    gMNT.command_blink(EthMaintainer::ipv4OfAllSelected);
 }
 
 QString FirmwareUpdaterCore::getEthBoardInfo(int index)
 {
-    return QString("%1").arg(gUpdater.getBoardList()[index].mInfo32.c_str());
+    return QString("%1").arg(gMNT.boards_get()[index].getInfoOnEEPROM().c_str());
 }
 
 QString FirmwareUpdaterCore::getEthBoardAddress(int index)
 {
     char board_ipaddr[16];
-    ACE_UINT32 ip = gUpdater.getBoardList()[index].mAddress;
+    ACE_UINT32 ip = ipv4toace(gMNT.boards_get()[index].getIPV4());
     sprintf(board_ipaddr,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
     return QString("%1").arg(board_ipaddr);
 }
 
 void FirmwareUpdaterCore::setEthBoardInfo(int index, QString newInfo)
 {
-    ACE_UINT32 address=gUpdater.getBoardList()[index].mAddress;
-    gUpdater.cmdInfo32Set(newInfo.toLatin1().data(), address);
-    vector<string> vv = gUpdater.cmdInfo32Get(address);
-    if(vv.size() > 0){
-        gUpdater.getBoardList()[index].mInfo32 = vv[0];
+    eOipv4addr_t address = gMNT.boards_get()[index].getIPV4();
+    bool ret = gMNT.command_info32_set(address, newInfo.toLatin1().data());
+    if(!ret){
+        qDebug() << "setEthBoardInfo failed";
+    }
+
+
+    vector<string> vv = gMNT.command_info32_get(address);
+    foreach (string v, vv) {
+        qDebug() << v.c_str();
+    }
+    // TODO chiedere
+    // it already sets it internally to commandInfo32Get()
+    if(vv.size() > 0)
+    {
+        qDebug() << gMNT.boards_get()[index].getInfoOnEEPROM().c_str();
     }
 }
 
@@ -301,8 +351,8 @@ bool FirmwareUpdaterCore::setEthBoardAddress(int index, QString newAddress)
     ACE_UINT32 iNewAddress=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
 
 
-    ACE_UINT32 address=gUpdater.getBoardList()[index].mAddress;
-    ACE_UINT32 mask=gUpdater.getBoardList()[index].mMask;
+    ACE_UINT32 address = ipv4toace(gMNT.boards_get()[index].getIPV4());
+    ACE_UINT32 mask = 0xFFFFFF00;
 
     if(iNewAddress == (iNewAddress & mask)){ // checks new ip address is not a network address . For example x.y.z.w/24 x.y.z.0
         qDebug() << "Error Setting address";
@@ -321,8 +371,8 @@ bool FirmwareUpdaterCore::setEthBoardAddress(int index, QString newAddress)
     char old_addr[16];
     sprintf(old_addr,"%d.%d.%d.%d",(address>>24)&0xFF,(address>>16)&0xFF,(address>>8)&0xFF,address&0xFF);
 
-    gUpdater.cmdChangeAddress(iNewAddress, address);
-    return true;
+    bool ret = gMNT.command_changeaddress(acetoipv4(address), acetoipv4(iNewAddress), true, true, true, true);
+    return ret;
 
 
 
@@ -337,13 +387,21 @@ bool FirmwareUpdaterCore::uploadLoader(QString filename,QString *resultString)
         qDebug() << "Error opening the selected file!";
         return false;
     }
-    uint32_t addr = 0; // all selected
-    //addr = (10 << 24) | (0 << 16) | (1 << 8) | (2); test only one board w/ address 10.0.1.2
-    std::string result=gUpdater.cmdProgram(programFile,*(int*)&EthUpdater::partition_LOADER,updateProgressCallback, addr);
+    eOipv4addr_t ipv4 = 0; // all selected
+    eObrd_ethtype_t type = eobrd_ethtype_none;
+    eOversion_t ver;
+    ver.major = 0;
+    ver.minor = 0;
+    std::string result;
+    bool ok = gMNT.program(ipv4, type, eLoader, ver, programFile, false, updateProgressCallback, false);
 
     fclose(programFile);
+
     *resultString = QString("%1").arg(result.c_str());
-    return true;
+    if(ok){
+        return true;
+    }
+    return false;
 }
 
 
@@ -355,13 +413,21 @@ bool FirmwareUpdaterCore::uploadUpdater(QString filename,QString *resultString)
         qDebug() << "Error opening the selected file!";
         return false;
     }
-    uint32_t addr = 0; // all selected
-    //addr = (10 << 24) | (0 << 16) | (1 << 8) | (2); test only one board w/ address 10.0.1.2
-    std::string result=gUpdater.cmdProgram(programFile,*(int*)&EthUpdater::partition_UPDATER,updateProgressCallback, addr);
+    eOipv4addr_t ipv4 = 0; // all selected
+    eObrd_ethtype_t type = eobrd_ethtype_none;
+    eOversion_t ver;
+    ver.major = 0;
+    ver.minor = 0;
+    std::string result;
+    bool ok = gMNT.program(ipv4, type, eUpdater, ver, programFile, false, updateProgressCallback, false);
 
     fclose(programFile);
+
     *resultString = QString("%1").arg(result.c_str());
-    return true;
+    if(ok){
+        return true;
+    }
+    return false;
 }
 
 
@@ -386,9 +452,8 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 
     //check if at least one board was selected
     bool at_least_one_board_selected = false;
-    int i = 0;
 
-    for (i=0; i<downloader.board_list_size; i++){
+    for (int i=0; i<downloader.board_list_size; i++){
         if (downloader.board_list[i].status==BOARD_RUNNING &&
                 downloader.board_list[i].selected==true)
             at_least_one_board_selected = true;
@@ -398,96 +463,146 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
         *resultString = "No Boards selected! - Select one or more boards to update the firmware";
         return false;
     }
-    if (downloader.open_file(filename.toLatin1().data())!=0){
-        *resultString = "Error opening the selected file!";
-        return false;
-    }
-    //TODO
-    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-    //        if (strstr (buffer, "calibrationDataSN") != 0)
-    //        {
-    //            load_calibration (buffer);
-    //            return ALL_OK;
-    //        }
-    //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 
-    // Get an identification of the firmware fot the file that you have selected
-    int firmware_board_type=0;
-    int firmware_version=0;
-    int firmware_revision=0;
-
-    //indentify download type from the type of the selected boards
-    int download_type = icubCanProto_boardType__unknown;
-    bool download_eeprom =false;
-    for (i=0; i<downloader.board_list_size; i++)
+    QMap<int,int> canDevices;
+    for (int i=0; i<downloader.board_list_size; i++)
     {
         if (downloader.board_list[i].selected==true)
         {
-            download_type = downloader.board_list[i].type;
-            download_eeprom = downloader.board_list[i].eeprom;
-        }
-
-    }
-
-    // Start the download for the selected boards
-    for (i=0; i<downloader.board_list_size; i++){
-        if (downloader.board_list[i].status==BOARD_RUNNING && downloader.board_list[i].selected==true){
-            if (downloader.startscheda(downloader.board_list[i].bus, downloader.board_list[i].pid, downloader.board_list[i].eeprom, downloader.board_list[i].type)!=0){
-                *resultString = "Unable to start the board - Unable to send message 'start' or no answer received";
-                return false;
-            } else {
-                downloader.board_list[i].status=BOARD_WAITING;
-            }
+            canDevices.insertMulti(downloader.board_list[i].bus,i);
+            downloader.board_list[i].selected = false;
+            qDebug() << "FOUND SELECTED SCHEDA " << i << " ON BUS " << downloader.board_list[i].bus;
         }
     }
 
     int ret      = 0;
     int finished = 0;
+    int busCount = canDevices.uniqueKeys().count();
+    for(int k=0;k<busCount;k++){
 
-    timer_start= yarp::os::Time::now();
+        int bus = canDevices.uniqueKeys().at(k);
 
-    bool print00 = false, print25 = false, print50 = false, print75 = false, print99 = false;
-    // Start the download for the selected boards
-    do
-    {
-        ret = downloader.download_file(CanPacket::everyCANbus, 0x0F, download_type,download_eeprom);
-        if (float(downloader.progress)/downloader.file_length >0.0  && print00==false)    {qDebug("downloading %s, 1%% done\n",filename.toLatin1().data()); print00=true;}
-        if (float(downloader.progress)/downloader.file_length >0.25 && print25==false)    {qDebug("downloading %s, 25%% done\n",filename.toLatin1().data()); print25=true;}
-        if (float(downloader.progress)/downloader.file_length >0.50 && print50==false)    {qDebug("downloading %s, 50%% done\n",filename.toLatin1().data()); print50=true;}
-        if (float(downloader.progress)/downloader.file_length >0.75 && print75==false)    {qDebug("downloading %s, 75%% done\n",filename.toLatin1().data()); print75=true;}
-        if (float(downloader.progress)/downloader.file_length >0.99 && print99==false)    {qDebug("downloading %s, finished!\n",filename.toLatin1().data()); print99=true;}
-
-        if (ret==1)
-        {
-            updateProgress(float(downloader.progress)/downloader.file_length);
-
+        if (downloader.open_file(filename.toLatin1().data())!=0){
+            *resultString = "Error opening the selected file!";
+            return false;
         }
-        if (ret==-1)
-        {
-            *resultString = "Fatal Error during download, terminate";
-            finished = 1;
-        }
-        if (ret==0)
-        {
-            *resultString = "Download terminated";
-            finished = 1;
-        }
-
-        //        // Update the progress bar
-        //        if (prompt_version==false && downloader.progress % 50 == 0)
+        qDebug() << "FILE " << filename << " OPENED";
+        //TODO
+        //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+        //        if (strstr (buffer, "calibrationDataSN") != 0)
         //        {
-        //            gtk_progress_bar_set_fraction ((GtkProgressBar*) progress_bar, 0);
-        //            gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), refresh_board_list_model());
-        //            gtk_widget_draw(treeview, NULL);
-        //            gtk_main_iteration_do (false);
+        //            load_calibration (buffer);
+        //            return ALL_OK;
         //        }
+        //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+        // Get an identification of the firmware fot the file that you have selected
+        //    int firmware_board_type=0;
+        //    int firmware_version=0;
+        //    int firmware_revision=0;
+
+        //indentify download type from the type of the selected boards
+        int download_type = icubCanProto_boardType__unknown;
+        bool download_eeprom =false;
+
+
+        QList<int> indexes = canDevices.values(bus);
+//        foreach (int index, indexes) {
+//            downloader.board_list[index].selected = true;
+//            qDebug() << "SELECTING BOARD " << index << " OF BUS " << k;
+//        }
+
+
+        for(int i=0;i<indexes.count();i++){
+            int index = indexes.at(i);
+            downloader.board_list[index].selected = true;
+            qDebug() << "SELECTING BOARD " << index << " OF BUS " << bus;
+            if (downloader.board_list[index].status==BOARD_RUNNING){
+                if (downloader.startscheda(bus,
+                                           downloader.board_list[index].pid,
+                                           downloader.board_list[index].eeprom,
+                                           downloader.board_list[index].type)!=0){
+                    *resultString = "Unable to start the board - Unable to send message 'start' or no answer received";
+                    return false;
+                } else {
+                    qDebug() << "START SCHEDA  " << index << " ON BUS " << bus << " OK";
+                    downloader.board_list[index].status=BOARD_WAITING;
+                }
+                download_type = downloader.board_list[index].type;
+                download_eeprom = downloader.board_list[index].eeprom;
+            }
+        }
+
+
+
+//        // Start the download for the selected boards
+//        for (int i=0; i<downloader.board_list_size; i++){
+//            if (downloader.board_list[i].status==BOARD_RUNNING && downloader.board_list[i].selected==true){
+//                if (downloader.startscheda(downloader.board_list[i].bus,
+//                                           downloader.board_list[i].pid,
+//                                           downloader.board_list[i].eeprom,
+//                                           downloader.board_list[i].type)!=0){
+//                    *resultString = "Unable to start the board - Unable to send message 'start' or no answer received";
+//                    return false;
+//                } else {
+//                    qDebug() << "START SCHEDA  " << i << " OK";
+//                    downloader.board_list[i].status=BOARD_WAITING;
+//                }
+//                download_type = downloader.board_list[i].type;
+//                download_eeprom = downloader.board_list[i].eeprom;
+//            }
+//        }
+
+
+
+        timer_start= yarp::os::Time::now();
+
+        bool print00 = false, print25 = false, print50 = false, print75 = false, print99 = false;
+        // Start the download for the selected boards
+        do
+        {
+            ret = downloader.download_file(CanPacket::everyCANbus, 0x0F, download_type,download_eeprom);
+            if (float(downloader.progress)/downloader.file_length/busCount >0.0  && print00==false)    {qDebug("downloading %s, 1%% done\n",filename.toLatin1().data()); print00=true;}
+            if (float(downloader.progress)/downloader.file_length/busCount >0.25 && print25==false)    {qDebug("downloading %s, 25%% done\n",filename.toLatin1().data()); print25=true;}
+            if (float(downloader.progress)/downloader.file_length/busCount >0.50 && print50==false)    {qDebug("downloading %s, 50%% done\n",filename.toLatin1().data()); print50=true;}
+            if (float(downloader.progress)/downloader.file_length/busCount >0.75 && print75==false)    {qDebug("downloading %s, 75%% done\n",filename.toLatin1().data()); print75=true;}
+            if (float(downloader.progress)/downloader.file_length/busCount >0.99 && print99==false)    {qDebug("downloading %s, finished!\n",filename.toLatin1().data()); print99=true;}
+
+            if (ret==1){
+                updateProgress(float(downloader.progress)/downloader.file_length/busCount);
+            }
+            if (ret==-1){
+                qDebug() << "Fatal Error during download, terminate";
+                *resultString = "Fatal Error during download, terminate";
+                finished = 1;
+            }
+            if (ret==0){
+                qDebug() << "Download terminated";
+                *resultString = "Download terminated";
+                finished = 1;
+            }
+
+        }
+        while (finished!=1);
+
+        // End the download for the selected boards
+        int errors =0;
+        if(downloader.stopscheda(CanPacket::everyCANbus, 15) != 0){
+            qDebug() << "ERROR STOPPING SCHEDA";
+        }else{
+            qDebug() << "scheda stopped";
+        }
+
+        foreach (int index, indexes) {
+            downloader.board_list[index].selected = false;
+            qDebug() << "DE-SELECTING BOARD " << index << " OF BUS " << bus;
+        }
+
+
+
     }
-    while (finished!=1);
     timer_end= yarp::os::Time::now();
 
-    // End the download for the selected boards
-    int errors =0;
-    downloader.stopscheda(CanPacket::everyCANbus, 15);
 
 
 
@@ -522,13 +637,21 @@ bool FirmwareUpdaterCore::uploadEthApplication(QString filename,QString *resultS
         qDebug() << "Error opening the selected file!";
         return false;
     }
-    uint32_t addr = 0; // all selected
-    //addr = (10 << 24) | (0 << 16) | (1 << 8) | (2); test only one board w/ address 10.0.1.2
-    std::string result=gUpdater.cmdProgram(programFile,*(int*)&EthUpdater::partition_APPLICATION,updateProgressCallback, addr);
+    eOipv4addr_t ipv4 = 0; // all selected
+    eObrd_ethtype_t type = eobrd_ethtype_none;
+    eOversion_t ver;
+    ver.major = 0;
+    ver.minor = 0;
+    std::string result;
+    bool ok = gMNT.program(ipv4, type, eApplication, ver, programFile, false, updateProgressCallback, false);
 
     fclose(programFile);
+
     *resultString = QString("%1").arg(result.c_str());
-    return true;
+    if(ok){
+        return true;
+    }
+    return false;
 }
 
 
@@ -538,26 +661,16 @@ bool FirmwareUpdaterCore::uploadEthApplication(QString filename,QString *resultS
 
 void FirmwareUpdaterCore::restartEthBoards()
 {
-    gUpdater.cmdRestart();
+    gMNT.command_restart(EthMaintainer::ipv4OfAllSelected);
 }
 
 
 void FirmwareUpdaterCore::bootFromApplication()
 {
-    qDebug() << "PRE bootFromApplication -- Actual Selected devices";
-    for(int i=0;i<gUpdater.getBoardList().size();i++){
-        qDebug() << " -" << i <<  " " << gUpdater.getBoardList()[i].mSelected;
-    }
-    gUpdater.cmdSetDEF2RUN(eApplication);
-
-    qDebug() << "POST bootFromApplication -- Actual Selected devices";
-    for(int i=0;i<gUpdater.getBoardList().size();i++){
-        qDebug() << " -" << i <<  " " << gUpdater.getBoardList()[i].mSelected;
-    }
-
+    gMNT.command_def2run(EthMaintainer::ipv4OfAllSelected, eApplication, false, false);
 }
 
 void FirmwareUpdaterCore::bootFromUpdater()
 {
-    gUpdater.cmdSetDEF2RUN(eUpdater);
+    gMNT.command_def2run(EthMaintainer::ipv4OfAllSelected, eUpdater, false, false);
 }

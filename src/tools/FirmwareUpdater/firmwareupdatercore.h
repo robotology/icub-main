@@ -4,7 +4,8 @@
 #include <QObject>
 #include <QVariantMap>
 #include <yarp/os/all.h>
-#include <EthUpdater.h>
+//#include <EthUpdater.h>
+#include <EthMaintainer.h>
 #include <downloader.h>
 #include <yarp/dev/all.h>
 #include <QMutex>
@@ -22,10 +23,10 @@ public:
     QList<QPair<QString,QVariant> > getDevices();
     int connectTo(QString device, QString id);
     void disconnectFrom(QString device, QString id);
-    BoardList &getEthBoardList();
+    EthBoardList getEthBoardList();
     void setSelectedEthBoard(int index,bool selected);
     void setSelectedCanBoard(int index, bool selected, QString ethAddress = "");
-    QString getMoreDetails(ACE_UINT32 address);
+    boardInfo2_t getMoreDetails(int boardNum = EthMaintainer::ipv4OfAllSelected, QString *infoString = NULL, eOipv4addr_t *address = NULL);
     QList<sBoard> getCanBoardsFromEth(QString address, QString *retString, int canID = CanPacket::everyCANbus);
     void blinkEthBoards();
     QString getEthBoardInfo(int index);
@@ -42,14 +43,18 @@ public:
     bool uploadLoader(QString filename, QString *resultString);
     bool uploadUpdater(QString filename, QString *resultString);
     //void updateProgressCallback(float);
-    void jumpToUpdater();
+    bool jumpToUpdater();
+    bool goToApplication();
+    bool goToMaintenance();
+    QString getProcessFromUint(uint8_t id);
 
 
 private:
     bool compile_ip_addresses(const char* addr,unsigned int *remoteAddr,unsigned int *localAddr);
 private:
     QList < QPair<QString,QVariant> > devices;
-    EthUpdater  gUpdater;
+    //EthUpdater  gUpdater;
+    EthMaintainer gMNT;
     cDownloader downloader;
     QMutex mutex;
     QString currentAddress;

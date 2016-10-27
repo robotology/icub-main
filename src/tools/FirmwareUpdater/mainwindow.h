@@ -53,8 +53,10 @@ private:
     QMutex mutex1;
     QList<SelectionCheckBox *> selectedNodes;
     bool isLoading;
+    QTreeWidget *infoTreeWidget;
 
 signals:
+    void appendInfo(boardInfo2_t,eOipv4addr_t);
     void appendInfo(QString = "");
     void canBoardsRetrieved(QTreeWidgetItem *it,QList <sBoard>, bool refresh);
     void refreshEthBoardsNode(QTreeWidgetItem*, bool refresh = false, bool refreshAll = false);
@@ -62,6 +64,7 @@ signals:
     void deviceSelectionChanged();
     void needSetRestartOnSelected();
     void refreshCanBoardsFromEth(QTreeWidgetItem*);
+    void needLoading(bool,bool);
 
 
 private slots:
@@ -73,12 +76,15 @@ private slots:
     void onUploadUpdater(bool);
     void onBootUpdater(bool);
     void onJumpToUpdater(bool click);
+    void onGoToMaintenance(bool click);
+    void onGoToApplication(bool click);
     void onBootApplication(bool);
     void onCalibrate(bool);
     void populateEthBoardsNode(QTreeWidgetItem*, bool refreshSingleNode = false, bool refreshAll = false);
     void onDeviceSelectionChanged();
     void onConnect();
     void onAppendInfo(QString);
+    void onAppendInfo(boardInfo2_t, eOipv4addr_t address);
     void onSelectionChanged(bool selected);
     void onDeviceExpanded(QTreeWidgetItem*);
     void onCanBoardsRetrieved(QTreeWidgetItem *it, QList <sBoard> canBoards, bool refresh);
@@ -87,7 +93,7 @@ private slots:
     void onSelectionCheckDestroy(QObject*);
     void onChangeAddress(bool);
     void onRestartBoards(bool click);
-    void onRestartBoards5Secs(bool click);
+    //void onRestartBoards5Secs(bool click);
     void onSetInfoRes(QString);
 };
 
