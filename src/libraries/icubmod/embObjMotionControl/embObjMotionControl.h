@@ -528,15 +528,16 @@ private:
     bool parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw);
     bool parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw);
     bool parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix);
-    bool parseSelectedPositionControl(Bottle &config);
-    bool parseSelectedVelocityControl(Bottle &config);
-    bool parseSelectedTorqueControl(Bottle &config);
+    bool parseSelectedPositionControl(yarp::os::Searchable &config);
+    bool parseSelectedVelocityControl(yarp::os::Searchable &config);
+    bool parseSelectedTorqueControl(yarp::os::Searchable &config);
     bool getCorrectPidForEachJoint(void);
     bool convertPosPid(Pid myPid[]);
     bool convertTrqPid(Pid myPid[]);
 
     bool verifyControlLawconsistencyinJointSet(string *controlLaw);
     bool saveCouplingsData(void);
+    bool updatedJointsetsCfg(int joint, eOmc_pidoutputtype_t pidoutputtype);
 
 //    bool getStatusBasic_withWait(const int n_joint, const int *joints, eOmc_joint_status_basic_t *_statuslist);             // helper function
 //    bool getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);     // helper function

@@ -1816,12 +1816,14 @@ bool embObjMotionControl::parseJointsetCfgGroup(Bottle &jointsetcfg)
             return false;
         }
 
+        yError() << "size of list of joints bottle for jointset " << j << " is "<<  b_listofjoints.size();
         _set2joint[j].resize(b_listofjoints.size()-1);
 
 
-        for (int k = 1; k <_set2joint[j].size(); k++)
+        for (int k = 1; k <=_set2joint[j].size(); k++)
         {
             int jointofthisset = b_listofjoints.get(k).asInt();
+            yError() << "try to set for joint " << jointofthisset << "the set " << j;
             _jointsets_prop.joint2set[jointofthisset] = j;
             _set2joint[j][k-1] = jointofthisset;
         }
@@ -2063,6 +2065,14 @@ bool embObjMotionControl::parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw
     GenericControlUnitsType_t unitstype;
     if(!parsercontrolUnitsType(b_pid, unitstype))
         return false;
+
+#warning VALE per semplificare ho tolto la possibilita di usare pid con machine units
+    if(unitstype == controlUnits_machine)
+    {
+        yError() << "Torque pids cannot be expressed in machine units!! Sorry for the inconvenience!!!";
+        return false;
+    }
+
     pidSimple_ptr->ctrlUnitsType = unitstype;
 
     if(!parsePidsGroup(b_pid, pidSimple_ptr->pid, string("trq_")))
@@ -2162,9 +2172,17 @@ bool embObjMotionControl::parsePidTrq_withInnerVelPid(Bottle &b_pid, string cont
 }
 
 
+bool embObjMotionControl::updatedJointsetsCfg(int joint, eOmc_pidoutputtype_t pidoutputtype)
+{
 
+    int set = _jointsets_prop.joint2set[joint];
+    _jointsets_prop.jointset_cfgs[set].pidoutputtype = pidoutputtype;
 
-bool embObjMotionControl::parseSelectedPositionControl(Bottle &config)
+#warning VALE here i must be sure joint beloning to same set has same pidoutputtype.
+
+    return true;
+}
+bool embObjMotionControl::parseSelectedPositionControl(yarp::os::Searchable &config)
 {
     for(int i=0; i<_njoints; i++)
     {
@@ -2192,6 +2210,7 @@ bool embObjMotionControl::parseSelectedPositionControl(Bottle &config)
                 yError() << "embObjMotionControl::fromConfig(): format error in Pid_inPos_outPwm";
                 return false;
             }
+            updatedJointsetsCfg(i,eomc_pidoutputtype_pwm);
 
         }
         else if (s_controlaw==string("PidPos_withInnerVelPid"))
@@ -2201,6 +2220,7 @@ bool embObjMotionControl::parseSelectedPositionControl(Bottle &config)
                 yError() << "embObjMotionControl::fromConfig(): format error in PidPos_withInnerVelPid";
                 return false;
             }
+            updatedJointsetsCfg(i,eomc_pidoutputtype_vel);
 
         }
         else
@@ -2215,7 +2235,7 @@ bool embObjMotionControl::parseSelectedPositionControl(Bottle &config)
 }
 
 
-bool embObjMotionControl::parseSelectedVelocityControl(Bottle &config)
+bool embObjMotionControl::parseSelectedVelocityControl(yarp::os::Searchable &config)
 {
     for(int i=0; i<_njoints; i++)
     {
@@ -2262,7 +2282,7 @@ bool embObjMotionControl::parseSelectedVelocityControl(Bottle &config)
 }
 
 
-bool embObjMotionControl::parseSelectedTorqueControl(Bottle &config)
+bool embObjMotionControl::parseSelectedTorqueControl(yarp::os::Searchable &config)
 {
     int set;
     for(int i=0; i<_njoints; i++)
@@ -2324,11 +2344,32 @@ bool embObjMotionControl::parseSelectedTorqueControl(Bottle &config)
 
 bool embObjMotionControl::getCorrectPidForEachJoint(void)
 {
-    Pid_Algorithm *pidAlgo_ptr;
-    Pid_Algorithm *vpidAlgo_ptr;
-    Pid_Algorithm *tpidAlgo_ptr;
+    Pid_Algorithm *pidAlgo_ptr = NULL;
+    Pid_Algorithm *vpidAlgo_ptr = NULL;
+    Pid_Algorithm *tpidAlgo_ptr = NULL;
 
     map<string, Pid_Algorithm*>::iterator it;
+
+    //////// debug prints
+    yError() << "position control law: ";
+    for(int x=0; x<_njoints; x++)
+    {
+        yError() << " - j " << x << _posistionControlLaw[x].c_str();
+    }
+
+    yError() << "velocity control law: ";
+    for(int x=0; x<_njoints; x++)
+    {
+        yError() << "- j " << x << _velocityControlLaw[x].c_str();
+    }
+
+
+    yError() << "torque control law: ";
+    for(int x=0; x<_njoints; x++)
+    {
+        yError() << " - j " << x << _torqueControlLaw[x].c_str();
+    }
+    //////end
 
     for(int i=0; i<_njoints; i++)
     {
@@ -2340,11 +2381,11 @@ bool embObjMotionControl::getCorrectPidForEachJoint(void)
             return false;
         }
 
-        Pid_Algorithm *pidAlgo_ptr = posAlgoMap[_posistionControlLaw[i]];
+        pidAlgo_ptr = posAlgoMap[_posistionControlLaw[i]];
 
         //get velocity pid
         if(_velocityControlLaw[i] == "none")
-            Pid_Algorithm *vpidAlgo_ptr = NULL;
+            vpidAlgo_ptr = NULL;
         else
         {
             it = velAlgoMap.find(_velocityControlLaw[i]);
@@ -2359,7 +2400,7 @@ bool embObjMotionControl::getCorrectPidForEachJoint(void)
 
         //get torque pid
         if(_torqueControlLaw[i] == "none")
-            Pid_Algorithm *tpidAlgo_ptr = NULL;
+           tpidAlgo_ptr = NULL;
         else
         {
             it = trqAlgoMap.find(_torqueControlLaw[i]);
@@ -2381,7 +2422,7 @@ bool embObjMotionControl::getCorrectPidForEachJoint(void)
 
         if((tpidAlgo_ptr) && (pidAlgo_ptr->type != tpidAlgo_ptr->type))
         {
-            yError() << "Position control law is not equal to velocity control law for joint " << i;
+            yError() << "Torque control law is not equal to velocity control law for joint " << i;
             return false;
         }
 
@@ -2591,6 +2632,8 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         _newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
     }
 
+    _torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);
+
     mc_serv_type = (eOmn_serv_type_t)serviceConfig.ethservice.configuration.type;
     if( (mc_serv_type == eomn_serv_MC_foc) ||
         (mc_serv_type == eomn_serv_MC_mc4plus) ||
@@ -2638,26 +2681,16 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         if(!parserControlsGroup(controlsGroup))
             return false;
 
-        if(!parseSelectedPositionControl(controlsGroup))
+        if(!parseSelectedPositionControl(config))
             return false;
-        if(!parseSelectedVelocityControl(controlsGroup))
+        if(!parseSelectedVelocityControl(config))
             return false;
-        if(!parseSelectedTorqueControl(controlsGroup))
+        if(!parseSelectedTorqueControl(config))
             return false;
 
         //quando arrivo qui ho popolato tutte le mie mappe
         if(!getCorrectPidForEachJoint())
             return false;
-        //save in mcservice type of output of external loop
-        for(int s=0; s<_jointsets_prop.jointset_cfgs.size(); s++)
-        {
-            //when I'm here i'm sure that each joint beloning to same set has same pid control laws
-            int j = _set2joint[s][0];
-            if(_posistionControlLaw[j] == "Pid_inPos_outPwm" )
-                _jointsets_prop.jointset_cfgs[s].pidoutputtype = eomc_pidoutputtype_pwm;
-            else
-                _jointsets_prop.jointset_cfgs[s].pidoutputtype = eomc_pidoutputtype_vel;
-        }
     }
 
     //Now save in data in structures EmbObj protocol compatible
