@@ -2061,35 +2061,77 @@ bool iCubFinger::alignJointsBounds(const deque<IControlLimits*> &lim)
 
 
 /************************************************************************/
-bool iCubFinger::getChainJoints(const Vector &robotEncoders, Vector &chainJoints)
+bool iCubFinger::getChainJoints(const Vector &motorEncoders,
+                                Vector &chainJoints)
 {
-    if ((robotEncoders.length()!=9) && (robotEncoders.length()!=16))
+    if ((motorEncoders.length()!=9) && (motorEncoders.length()!=16))
         return false;
 
-    int offs=(robotEncoders.length()==16?7:0);
+    int offs=(motorEncoders.length()==16?7:0);
     
     if (finger=="thumb")
     {
         chainJoints.resize(4);
-        chainJoints[0]=robotEncoders[offs+1];
-        chainJoints[1]=robotEncoders[offs+2];
-        chainJoints[2]=robotEncoders[offs+3]/2.0;
+        chainJoints[0]=motorEncoders[offs+1];
+        chainJoints[1]=motorEncoders[offs+2];
+        chainJoints[2]=motorEncoders[offs+3]/2.0;
         chainJoints[3]=chainJoints[2];
     }
     else if (finger=="index")
     {
         chainJoints.resize(4);
-        chainJoints[0]=robotEncoders[offs+0]/3.0;
-        chainJoints[1]=robotEncoders[offs+4];
-        chainJoints[2]=robotEncoders[offs+5]/2.0;
+        chainJoints[0]=motorEncoders[offs+0]/3.0;
+        chainJoints[1]=motorEncoders[offs+4];
+        chainJoints[2]=motorEncoders[offs+5]/2.0;
         chainJoints[3]=chainJoints[2];
     }
     else if (finger=="middle")
     {
         chainJoints.resize(3);
-        chainJoints[0]=robotEncoders[offs+6];
-        chainJoints[1]=robotEncoders[offs+7]/2.0;
+        chainJoints[0]=motorEncoders[offs+6];
+        chainJoints[1]=motorEncoders[offs+7]/2.0;
         chainJoints[2]=chainJoints[1];
+    }
+    else
+        return false;
+
+    return true;
+}
+
+
+/************************************************************************/
+bool iCubFinger::getChainJoints(const Vector &motorEncoders,
+                                const Vector &jointEncoders,
+                                Vector &chainJoints)
+{
+    if (((motorEncoders.length()!=9) && (motorEncoders.length()!=16)) ||
+        (jointEncoders.length()<15))
+        return false;
+
+    int offs=(motorEncoders.length()==16?7:0);
+    
+    if (finger=="thumb")
+    {
+        chainJoints.resize(4);
+        chainJoints[0]=motorEncoders[offs+1];
+        for (int i=1; i<=3; i++)
+            chainJoints[i]=(jointEncoders[i-1]*((*this)[i].getMax()-(*this)[i].getMin())+
+                            (*this)[i].getMin())*(180.0/M_PI);
+    }
+    else if (finger=="index")
+    {
+        chainJoints.resize(4);
+        chainJoints[0]=motorEncoders[offs+0]/3.0;
+        for (int i=1; i<=3; i++)
+            chainJoints[i]=(jointEncoders[i+2]*((*this)[i].getMax()-(*this)[i].getMin())+
+                            (*this)[i].getMin())*(180.0/M_PI);
+    }
+    else if (finger=="middle")
+    {
+        chainJoints.resize(3);
+        for (int i=0; i<=2; i++)
+            chainJoints[i]=(jointEncoders[i+6]*((*this)[i].getMax()-(*this)[i].getMin())+
+                            (*this)[i].getMin())*(180.0/M_PI);
     }
     else
         return false;
