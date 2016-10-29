@@ -2116,7 +2116,7 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
         chainJoints[0]=motorEncoders[offs+1];
         for (unsigned int i=1; i<chainJoints.length(); i++)
             chainJoints[i]=(jointEncoders[i-1]*((*this)[i].getMax()-(*this)[i].getMin())+
-                            (*this)[i].getMin())*(180.0/M_PI);
+                            (*this)[i].getMin())*CTRL_RAD2DEG;
     }
     else if (finger=="index")
     {
@@ -2124,14 +2124,14 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
         chainJoints[0]=motorEncoders[offs+0]/3.0;
         for (unsigned int i=1; i<chainJoints.length(); i++)
             chainJoints[i]=(jointEncoders[i+2]*((*this)[i].getMax()-(*this)[i].getMin())+
-                            (*this)[i].getMin())*(180.0/M_PI);
+                            (*this)[i].getMin())*CTRL_RAD2DEG;
     }
     else if (finger=="middle")
     {
         chainJoints.resize(3);
         for (unsigned int i=0; i<chainJoints.length(); i++)
             chainJoints[i]=(jointEncoders[i+6]*((*this)[i].getMax()-(*this)[i].getMin())+
-                            (*this)[i].getMin())*(180.0/M_PI);
+                            (*this)[i].getMin())*CTRL_RAD2DEG;
     }
     else
         return false;
