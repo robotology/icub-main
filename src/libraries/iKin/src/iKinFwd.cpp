@@ -2115,23 +2115,23 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
         chainJoints.resize(4);
         chainJoints[0]=motorEncoders[offs+1];
         for (unsigned int i=1; i<chainJoints.length(); i++)
-            chainJoints[i]=((jointEncoders[i-1]/255.0)*((*this)[i].getMax()-(*this)[i].getMin())+
-                            (*this)[i].getMin())*CTRL_RAD2DEG;
+            chainJoints[i]=((1.0-std::min(1.0,std::max(0.0,jointEncoders[i-1]/255.0)))*
+                            ((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin())*CTRL_RAD2DEG;
     }
     else if (finger=="index")
     {
         chainJoints.resize(4);
         chainJoints[0]=motorEncoders[offs+0]/3.0;
         for (unsigned int i=1; i<chainJoints.length(); i++)
-            chainJoints[i]=((jointEncoders[i+2]/255.0)*((*this)[i].getMax()-(*this)[i].getMin())+
-                            (*this)[i].getMin())*CTRL_RAD2DEG;
+            chainJoints[i]=((1.0-std::min(1.0,std::max(0.0,jointEncoders[i+2]/255.0)))*
+                            ((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin())*CTRL_RAD2DEG;
     }
     else if (finger=="middle")
     {
         chainJoints.resize(3);
         for (unsigned int i=0; i<chainJoints.length(); i++)
-            chainJoints[i]=((jointEncoders[i+6]/255.0)*((*this)[i].getMax()-(*this)[i].getMin())+
-                            (*this)[i].getMin())*CTRL_RAD2DEG;
+            chainJoints[i]=((1.0-std::min(1.0,std::max(0.0,jointEncoders[i+6]/255.0)))*
+                            ((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin())*CTRL_RAD2DEG;
     }
     else
         return false;
