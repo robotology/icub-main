@@ -10,7 +10,7 @@ static void updateProgressCallback(float fraction)
     self->updateProgress(fraction);
 }
 
-FirmwareUpdaterCore::FirmwareUpdaterCore(QObject *parent) : QObject(parent)
+FirmwareUpdaterCore::FirmwareUpdaterCore(QObject *parent) : QObject(parent), mutex(QMutex::Recursive)
 {
     self = this;
 }
@@ -18,10 +18,10 @@ FirmwareUpdaterCore::FirmwareUpdaterCore(QObject *parent) : QObject(parent)
 bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address)
 {
 
-
+    mutex.lock();
     if(!gMNT.open()){
         qDebug("Can't open socket, aborting.");
-
+        mutex.unlock();
         return false;
     }
 
@@ -42,25 +42,29 @@ bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address)
             devices.append(QPair<QString,QVariant>(type,line));
         }
     }
-
+    mutex.unlock();
     return true;
 }
 
 QStringList FirmwareUpdaterCore::getDevicesName()
 {
+    mutex.lock();
     QStringList names;
     for(int i=0;i<devices.count();i++){
         QPair<QString,QVariant> p = devices.at(i);
         names.append(p.first);
     }
-
+    mutex.unlock();
 
     return names;
 }
 
 bool FirmwareUpdaterCore::goToMaintenance()
 {
-    return gMNT.go2maintenance(EthMaintainer::ipv4OfAllSelected, true, 5, 1.0);
+    mutex.lock();
+    bool ret = gMNT.go2maintenance(EthMaintainer::ipv4OfAllSelected, true, 5, 1.0);;
+    mutex.unlock();
+    return ret;
 }
 
 bool FirmwareUpdaterCore::goToApplication()
@@ -68,9 +72,19 @@ bool FirmwareUpdaterCore::goToApplication()
     return gMNT.go2application(EthMaintainer::ipv4OfAllSelected, true, 10, true);
 }
 
+bool FirmwareUpdaterCore::eraseEthEprom()
+{
+    return gMNT.command_eeprom_erase(EthMaintainer::ipv4OfAllSelected);
+}
+
+
+
 bool FirmwareUpdaterCore::jumpToUpdater()
 {
-    return gMNT.command_jump2updater(EthMaintainer::ipv4OfAllSelected);
+    mutex.lock();
+    bool ret = gMNT.command_jump2updater(EthMaintainer::ipv4OfAllSelected);
+    mutex.unlock();
+    return ret;
 }
 
 QList<QPair<QString,QVariant> > FirmwareUpdaterCore::getDevices()
@@ -90,12 +104,15 @@ void FirmwareUpdaterCore::disconnectFrom(QString device, QString id)
 
 int FirmwareUpdaterCore::connectTo(QString device, QString id)
 {
+    mutex.lock();
     if(!device.isEmpty() && !id.isEmpty() && device.contains("ETH")){
         int num = gMNT.discover(true, 2, 1.0).size();
         yDebug() << "Found " << num << " devices";
         qDebug() << "Found " << num << " devices";
+        mutex.unlock();
         return num;
     }
+    mutex.unlock();
     return 0;
 }
 
@@ -106,31 +123,69 @@ EthBoardList FirmwareUpdaterCore::getEthBoardList()
 
 void FirmwareUpdaterCore::setSelectedEthBoard(int index,bool selected)
 {
-
+    mutex.lock();
     if(gMNT.boards_get().size() > index){
         gMNT.boards_get()[index].setSelected(selected);
     }
+    mutex.unlock();
     selectedEnded();
 }
 
-void FirmwareUpdaterCore::setSelectedCanBoard(int index,bool selected,QString ethAddress)
+void FirmwareUpdaterCore::setSelectedCanBoards(QList <sBoard> canBoards,QString address, int deviceId)
 {
-    if(!ethAddress.isEmpty()){
-        if(currentAddress != ethAddress){
-            if(downloader.connected){
-                downloader.stopdriver();
+    mutex.lock();
+    QString res;
+    if(!address.isEmpty() && deviceId == -1){
+        getCanBoardsFromEth(address,&res);
+    }else{
+        getCanBoardsFromDriver(address,deviceId,&res);
+    }
+
+    foreach (sBoard b, canBoards) {
+        for(int i=0;i<downloader.board_list_size;i++){
+            if(downloader.board_list[i].bus == b.bus &&
+                    downloader.board_list[i].pid == b.pid){
+                downloader.board_list[i].selected = b.selected;
             }
-            QString res;
-            getCanBoardsFromEth(ethAddress,&res);
         }
     }
+
+    mutex.unlock();
+    selectedEnded();
+}
+
+void FirmwareUpdaterCore::eraseCanEprom()
+{
+
+}
+
+void FirmwareUpdaterCore::setSelectedCanBoard(int index,bool selected,QString address, int deviceId)
+{
+    mutex.lock();
+//    if(!ethAddress.isEmpty()){
+//        if(currentAddress != ethAddress){
+//            if(downloader.connected){
+//                downloader.stopdriver();
+//            }
+//            QString res;
+//            getCanBoardsFromEth(ethAddress,&res);
+//        }
+//    }
+    QString res;
+    if(!address.isEmpty() && deviceId == -1){
+        getCanBoardsFromEth(address,&res);
+    }else{
+        getCanBoardsFromDriver(address,deviceId,&res);
+    }
     downloader.board_list[index].selected=selected;
+    mutex.unlock();
     selectedEnded();
 }
 
 
 boardInfo2_t FirmwareUpdaterCore::getMoreDetails(int boardNum,QString *infoString,eOipv4addr_t *address)
 {
+    mutex.lock();
     boardInfo2_t info = gMNT.boards_get()[boardNum].getInfo();
     if(address){
         *address = gMNT.boards_get()[boardNum].getIPV4();
@@ -138,6 +193,7 @@ boardInfo2_t FirmwareUpdaterCore::getMoreDetails(int boardNum,QString *infoStrin
             *infoString =  QString("%1").arg(gMNT.moreinformation(*address, false).c_str());
         }
     }
+    mutex.unlock();
 
     return info;
 
@@ -160,14 +216,104 @@ QString FirmwareUpdaterCore::getProcessFromUint(uint8_t id)
     }
 }
 
-QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString *retString, int canID)
+QList<sBoard> FirmwareUpdaterCore::getCanBoardsFromDriver(QString driver, int networkId, QString *retString, bool force)
 {
     mutex.lock();
-    QList <sBoard> canBoards;
-    if(downloader.connected && address == currentAddress && !currentAddress.isEmpty()){
+
+    if(force){
         downloader.stopdriver();
+    }else{
+        if(downloader.connected && (!currentAddress.isEmpty() || (currentDriver != driver || currentId != networkId ))){
+            downloader.stopdriver();
+        }
+        if(currentDriver == driver && currentId == networkId){
+            mutex.unlock();
+            return canBoards;
+        }
     }
 
+    canBoards.clear();
+    yarp::os::Property params;
+    QString networkType;
+    if(driver.contains("CFW2",Qt::CaseInsensitive)){
+        networkType="cfw2can";
+    } else if(driver.contains("ECAN",Qt::CaseInsensitive)){
+        networkType = "ecan";
+    } else if(driver.contains("PCAN",Qt::CaseInsensitive)){
+        networkType = "pcan";
+    } else if(driver.contains("SOCKET",Qt::CaseInsensitive)){
+        networkType="socketcan";
+    }
+    params.put("device", networkType.toLatin1().data());
+    params.put("canDeviceNum", networkId);
+    params.put("canTxQueue", 64);
+    params.put("canRxQueue", 64);
+    params.put("canTxTimeout", 2000);
+    params.put("canRxTimeout", 2000);
+
+    //try to connect to the driver
+    int ret = downloader.initdriver(params);
+
+    if (0 != ret){
+        if(-2 == ret){
+            qDebug() << "Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
+            *retString = "Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
+            // TODO DIALOG
+        } else {
+            qDebug() << "Init driver failed - Hardware busy or not connected?!";
+            *retString = "Init driver failed - Hardware busy or not connected?!";
+            // TODO DIALOG
+        }
+        mutex.unlock();
+        return canBoards;
+    }
+
+
+    ret = downloader.initschede();
+
+    if (ret == -1)
+    {
+        qDebug()  << "Communication error - No answers received (no boards found).";
+        *retString = "Communication error - No answers received (no boards found).";
+        downloader.stopdriver();
+        currentAddress = "";
+        //not_connected_status();
+        mutex.unlock();
+        return canBoards;
+    }
+
+    for(int i=0; i<downloader.board_list_size;i++){
+        canBoards.append(downloader.board_list[i]);
+    }
+    currentAddress = "";
+    currentDriver = driver;
+    currentId = networkId;
+
+    //downloader.stopdriver();
+    mutex.unlock();
+    return canBoards;
+
+}
+
+QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString *retString, int canID, bool force)
+{
+    mutex.lock();
+
+    if(force){
+        downloader.stopdriver();
+    }else{
+        if(downloader.connected && address != currentAddress && !currentAddress.isEmpty() || (currentAddress.isEmpty() && !currentDriver.isEmpty())){
+            downloader.stopdriver();
+        }
+
+        if(currentAddress == address){
+            mutex.unlock();
+            return canBoards;
+        }
+    }
+
+
+    canBoards.clear();
     unsigned int remoteAddr;
     unsigned int localAddr;
     
@@ -246,6 +392,7 @@ bool FirmwareUpdaterCore::compile_ip_addresses(const char* addr,unsigned int *re
 
     if (ret || count<=0)
     {
+        mutex.unlock();
         return false;
     }
 
@@ -265,24 +412,32 @@ bool FirmwareUpdaterCore::compile_ip_addresses(const char* addr,unsigned int *re
 
 void FirmwareUpdaterCore::blinkEthBoards()
 {
+    mutex.lock();
     gMNT.command_blink(EthMaintainer::ipv4OfAllSelected);
+    mutex.unlock();
 }
 
 QString FirmwareUpdaterCore::getEthBoardInfo(int index)
 {
-    return QString("%1").arg(gMNT.boards_get()[index].getInfoOnEEPROM().c_str());
+    mutex.lock();
+    QString ret = QString("%1").arg(gMNT.boards_get()[index].getInfoOnEEPROM().c_str());
+    mutex.unlock();
+    return ret;
 }
 
 QString FirmwareUpdaterCore::getEthBoardAddress(int index)
 {
+    mutex.lock();
     char board_ipaddr[16];
     ACE_UINT32 ip = ipv4toace(gMNT.boards_get()[index].getIPV4());
     sprintf(board_ipaddr,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
+    mutex.unlock();
     return QString("%1").arg(board_ipaddr);
 }
 
-void FirmwareUpdaterCore::setEthBoardInfo(int index, QString newInfo)
+bool FirmwareUpdaterCore::setEthBoardInfo(int index, QString newInfo)
 {
+    mutex.lock();
     eOipv4addr_t address = gMNT.boards_get()[index].getIPV4();
     bool ret = gMNT.command_info32_set(address, newInfo.toLatin1().data());
     if(!ret){
@@ -296,56 +451,91 @@ void FirmwareUpdaterCore::setEthBoardInfo(int index, QString newInfo)
     }
     // TODO chiedere
     // it already sets it internally to commandInfo32Get()
-    if(vv.size() > 0)
-    {
+    if(vv.size() > 0){
         qDebug() << gMNT.boards_get()[index].getInfoOnEEPROM().c_str();
     }
+    mutex.unlock();
+    return true;
 }
 
-void FirmwareUpdaterCore::setCanBoardInfo(int bus, int id, QString newInfo,QString ethAddress,QString *resultString)
+void FirmwareUpdaterCore::setCanBoardInfo(int bus, int id, QString newInfo,QString address, int deviceId,QString *resultString)
 {
-    if(!ethAddress.isEmpty()){
-        if(currentAddress != ethAddress){
-            if(downloader.connected){
-                downloader.stopdriver();
-            }
-            getCanBoardsFromEth(ethAddress,resultString);
-        }
-        downloader.change_board_info(bus, id, newInfo.toLatin1().data());
+    mutex.lock();
+    QString res;
+    if(!address.isEmpty() && deviceId == -1){
+        getCanBoardsFromEth(address,&res);
+    }else{
+        getCanBoardsFromDriver(address,deviceId,&res);
     }
+    downloader.change_board_info(bus, id, newInfo.toLatin1().data());
+
+//    if(!ethAddress.isEmpty()){
+//        if(currentAddress != ethAddress){
+//            if(downloader.connected){
+//                downloader.stopdriver();
+//            }
+//            getCanBoardsFromEth(ethAddress,resultString);
+//        }
+//        downloader.change_board_info(bus, id, newInfo.toLatin1().data());
+//    }
+    mutex.unlock();
 }
 
-bool FirmwareUpdaterCore::setCanBoardAddress(int bus, int id, int canType,QString newAddress,QString ethAddress,QString *resultString)
+bool FirmwareUpdaterCore::setCanBoardAddress(int bus, int id, int canType,QString newAddress,QString address,int deviceId,QString *resultString)
 {
-    if(!ethAddress.isEmpty()){
-        if(currentAddress != ethAddress){
-            if(downloader.connected){
-                downloader.stopdriver();
-            }
-            getCanBoardsFromEth(ethAddress,resultString);
-        }
-
-        int new_val = newAddress.toInt();
-        if (new_val <=0 || new_val> 15){
-            qDebug() << "Error, new address out of range 0 - 15";
-            return false;
-        }
-
-        if (new_val == id){
-            qDebug() << "Error, same address set";
-            return false;
-        }
-
-        downloader.change_card_address(bus, id, new_val,canType);
+    mutex.lock();
+    QString res;
+    if(!address.isEmpty()){
+        getCanBoardsFromEth(address,&res);
+    }else{
+        getCanBoardsFromDriver(address,deviceId,&res);
     }
+
+    int new_val = newAddress.toInt();
+    if (new_val <=0 || new_val> 15){
+        qDebug() << "Error, new address out of range 0 - 15";
+        return false;
+    }
+
+    if (new_val == id){
+        qDebug() << "Error, same address set";
+        return false;
+    }
+
+    downloader.change_card_address(bus, id, new_val,canType);
+
+//    if(!ethAddress.isEmpty()){
+//        if(currentAddress != ethAddress){
+//            if(downloader.connected){
+//                downloader.stopdriver();
+//            }
+//            getCanBoardsFromEth(ethAddress,resultString);
+//        }
+
+//        int new_val = newAddress.toInt();
+//        if (new_val <=0 || new_val> 15){
+//            qDebug() << "Error, new address out of range 0 - 15";
+//            return false;
+//        }
+
+//        if (new_val == id){
+//            qDebug() << "Error, same address set";
+//            return false;
+//        }
+
+//        downloader.change_card_address(bus, id, new_val,canType);
+//    }
+    mutex.unlock();
 }
 
 bool FirmwareUpdaterCore::setEthBoardAddress(int index, QString newAddress)
 {
 
+    mutex.lock();
     int ip1,ip2,ip3,ip4;
     sscanf(newAddress.toLatin1().data(),"%d.%d.%d.%d",&ip1,&ip2,&ip3,&ip4);
     if (ip1<0 || ip1>255 || ip2<0 || ip2>255 || ip3<0 || ip3>255 || ip4<0 || ip4>255){
+        mutex.unlock();
         return false;
     }
     ACE_UINT32 iNewAddress=(ip1<<24)|(ip2<<16)|(ip3<<8)|ip4;
@@ -356,22 +546,26 @@ bool FirmwareUpdaterCore::setEthBoardAddress(int index, QString newAddress)
 
     if(iNewAddress == (iNewAddress & mask)){ // checks new ip address is not a network address . For example x.y.z.w/24 x.y.z.0
         qDebug() << "Error Setting address";
+        mutex.unlock();
         return false;
     }
 
     if((~mask) == (iNewAddress & (~mask))){ // checks new ip address is not a broadcast address . For example x.y.z.w/24 x.y.z.255
         qDebug() << "Error Setting address";
+        mutex.unlock();
         return false;
     }
 
     if (iNewAddress == address){
         qDebug() << "Error, same address set";
+        mutex.unlock();
         return false;
     }
     char old_addr[16];
     sprintf(old_addr,"%d.%d.%d.%d",(address>>24)&0xFF,(address>>16)&0xFF,(address>>8)&0xFF,address&0xFF);
 
     bool ret = gMNT.command_changeaddress(acetoipv4(address), acetoipv4(iNewAddress), true, true, true, true);
+    mutex.unlock();
     return ret;
 
 
@@ -381,10 +575,12 @@ bool FirmwareUpdaterCore::setEthBoardAddress(int index, QString newAddress)
 
 bool FirmwareUpdaterCore::uploadLoader(QString filename,QString *resultString)
 {
+    mutex.lock();
     FILE *programFile=fopen(filename.toLatin1().data(),"r");
     if (!programFile){
         //TODO ERROR
         qDebug() << "Error opening the selected file!";
+        mutex.unlock();
         return false;
     }
     eOipv4addr_t ipv4 = 0; // all selected
@@ -399,18 +595,22 @@ bool FirmwareUpdaterCore::uploadLoader(QString filename,QString *resultString)
 
     *resultString = QString("%1").arg(result.c_str());
     if(ok){
+        mutex.unlock();
         return true;
     }
+    mutex.unlock();
     return false;
 }
 
 
 bool FirmwareUpdaterCore::uploadUpdater(QString filename,QString *resultString)
 {
+    mutex.lock();
     FILE *programFile=fopen(filename.toLatin1().data(),"r");
     if (!programFile){
         //TODO ERROR
         qDebug() << "Error opening the selected file!";
+        mutex.unlock();
         return false;
     }
     eOipv4addr_t ipv4 = 0; // all selected
@@ -425,14 +625,18 @@ bool FirmwareUpdaterCore::uploadUpdater(QString filename,QString *resultString)
 
     *resultString = QString("%1").arg(result.c_str());
     if(ok){
+        mutex.unlock();
         return true;
     }
+    mutex.unlock();
     return false;
 }
 
 
+#ifdef SERIALMETHOD
 bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultString, QString ethAddress)
 {
+    mutex.lock();
     if(!ethAddress.isEmpty()){
         if(currentAddress != ethAddress){
             if(downloader.connected){
@@ -447,6 +651,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 
     if (downloader.connected == false){
         *resultString ="Driver not running";
+        mutex.unlock();
         return false;
     }
 
@@ -461,6 +666,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 
     if (!at_least_one_board_selected){
         *resultString = "No Boards selected! - Select one or more boards to update the firmware";
+        mutex.unlock();
         return false;
     }
 
@@ -484,6 +690,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 
         if (downloader.open_file(filename.toLatin1().data())!=0){
             *resultString = "Error opening the selected file!";
+            mutex.unlock();
             return false;
         }
         qDebug() << "FILE " << filename << " OPENED";
@@ -523,6 +730,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
                                            downloader.board_list[index].eeprom,
                                            downloader.board_list[index].type)!=0){
                     *resultString = "Unable to start the board - Unable to send message 'start' or no answer received";
+                    mutex.unlock();
                     return false;
                 } else {
                     qDebug() << "START SCHEDA  " << index << " ON BUS " << bus << " OK";
@@ -556,7 +764,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 
 
         timer_start= yarp::os::Time::now();
-
+        finished = 0;
         bool print00 = false, print25 = false, print50 = false, print75 = false, print99 = false;
         // Start the download for the selected boards
         do
@@ -586,7 +794,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
         while (finished!=1);
 
         // End the download for the selected boards
-        int errors =0;
+
         if(downloader.stopscheda(bus, 15) != 0){
             qDebug() << "ERROR STOPPING SCHEDA";
         }else{
@@ -616,6 +824,167 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
         *resultString = QString("Download Finished. %1").arg(time_text);
 
         updateProgress(1.0);
+        mutex.unlock();
+        return true;
+    }
+    else
+    {
+        //*resultString = "Error during file transfer";
+
+        updateProgress(1.0);
+        mutex.unlock();
+        return false;
+    }
+
+    mutex.unlock();
+    return true;
+}
+
+#else
+bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultString, QString address,int deviceId)
+{
+//    if(!address.isEmpty()){
+//        if(currentAddress != address){
+//            if(downloader.connected){
+//                downloader.stopdriver();
+//            }
+//            getCanBoardsFromEth(address,resultString);
+//        }
+
+//    }
+    QString res;
+    if(!address.isEmpty() && deviceId == -1){
+        getCanBoardsFromEth(address,&res);
+    }else{
+        getCanBoardsFromDriver(address,deviceId,&res);
+    }
+
+
+    double timer_start =0;
+    double timer_end   =0;
+
+    if (downloader.connected == false){
+        *resultString ="Driver not running";
+        return false;
+    }
+
+    //check if at least one board was selected
+    bool at_least_one_board_selected = false;
+    int i = 0;
+
+    for (i=0; i<downloader.board_list_size; i++){
+        if (downloader.board_list[i].status==BOARD_RUNNING &&
+                downloader.board_list[i].selected==true)
+            at_least_one_board_selected = true;
+    }
+
+    if (!at_least_one_board_selected){
+        *resultString = "No Boards selected! - Select one or more boards to update the firmware";
+        return false;
+    }
+    if (downloader.open_file(filename.toLatin1().data())!=0){
+        *resultString = "Error opening the selected file!";
+        return false;
+    }
+    //TODO
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+    //        if (strstr (buffer, "calibrationDataSN") != 0)
+    //        {
+    //            load_calibration (buffer);
+    //            return ALL_OK;
+    //        }
+//@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+
+    // Get an identification of the firmware fot the file that you have selected
+    int firmware_board_type=0;
+    int firmware_version=0;
+    int firmware_revision=0;
+
+    //indentify download type from the type of the selected boards
+    int download_type = icubCanProto_boardType__unknown;
+    bool download_eeprom =false;
+    for (i=0; i<downloader.board_list_size; i++)
+    {
+        if (downloader.board_list[i].selected==true)
+        {
+            download_type = downloader.board_list[i].type;
+            download_eeprom = downloader.board_list[i].eeprom;
+        }
+
+    }
+
+    // Start the download for the selected boards
+    for (i=0; i<downloader.board_list_size; i++){
+        if (downloader.board_list[i].status==BOARD_RUNNING && downloader.board_list[i].selected==true){
+            if (downloader.startscheda(downloader.board_list[i].bus, downloader.board_list[i].pid, downloader.board_list[i].eeprom, downloader.board_list[i].type)!=0){
+                *resultString = "Unable to start the board - Unable to send message 'start' or no answer received";
+                return false;
+            } else {
+                downloader.board_list[i].status=BOARD_WAITING;
+            }
+        }
+    }
+
+    int ret      = 0;
+    int finished = 0;
+
+    timer_start= yarp::os::Time::now();
+
+    bool print00 = false, print25 = false, print50 = false, print75 = false, print99 = false;
+    // Start the download for the selected boards
+    do
+    {
+        ret = downloader.download_file(CanPacket::everyCANbus, 0x0F, download_type,download_eeprom);
+        if (float(downloader.progress)/downloader.file_length >0.0  && print00==false)    {qDebug("downloading %s, 1%% done\n",filename.toLatin1().data()); print00=true;}
+        if (float(downloader.progress)/downloader.file_length >0.25 && print25==false)    {qDebug("downloading %s, 25%% done\n",filename.toLatin1().data()); print25=true;}
+        if (float(downloader.progress)/downloader.file_length >0.50 && print50==false)    {qDebug("downloading %s, 50%% done\n",filename.toLatin1().data()); print50=true;}
+        if (float(downloader.progress)/downloader.file_length >0.75 && print75==false)    {qDebug("downloading %s, 75%% done\n",filename.toLatin1().data()); print75=true;}
+        if (float(downloader.progress)/downloader.file_length >0.99 && print99==false)    {qDebug("downloading %s, finished!\n",filename.toLatin1().data()); print99=true;}
+
+        if (ret==1)
+        {
+updateProgress(float(downloader.progress)/downloader.file_length);
+
+        }
+        if (ret==-1)
+        {
+            *resultString = "Fatal Error during download, terminate";
+            finished = 1;
+        }
+        if (ret==0)
+        {
+            *resultString = "Download terminated";
+            finished = 1;
+        }
+
+        //        // Update the progress bar
+        //        if (prompt_version==false && downloader.progress % 50 == 0)
+        //        {
+        //            gtk_progress_bar_set_fraction ((GtkProgressBar*) progress_bar, 0);
+        //            gtk_tree_view_set_model (GTK_TREE_VIEW (treeview), refresh_board_list_model());
+        //            gtk_widget_draw(treeview, NULL);
+        //            gtk_main_iteration_do (false);
+        //        }
+    }
+    while (finished!=1);
+    timer_end= yarp::os::Time::now();
+
+    // End the download for the selected boards
+    int errors =0;
+    downloader.stopscheda(CanPacket::everyCANbus, 15);
+
+
+
+    //Display result message
+    if (ret == 0)
+    {
+        char time_text [50];
+        double download_time = (timer_end-timer_start) ;
+        sprintf (time_text, "All Board OK! Download Time (s): %.2f", download_time);
+
+        *resultString = QString("Download Finished. %1").arg(time_text);
+
+        updateProgress(1.0);
         return true;
     }
     else
@@ -628,13 +997,16 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 
     return true;
 }
+#endif
 
 bool FirmwareUpdaterCore::uploadEthApplication(QString filename,QString *resultString)
 {
+    mutex.lock();
     FILE *programFile=fopen(filename.toLatin1().data(),"r");
     if (!programFile){
         //TODO ERROR
         qDebug() << "Error opening the selected file!";
+        mutex.unlock();
         return false;
     }
     eOipv4addr_t ipv4 = 0; // all selected
@@ -649,8 +1021,10 @@ bool FirmwareUpdaterCore::uploadEthApplication(QString filename,QString *resultS
 
     *resultString = QString("%1").arg(result.c_str());
     if(ok){
+        mutex.unlock();
         return true;
     }
+    mutex.unlock();
     return false;
 }
 
@@ -661,16 +1035,22 @@ bool FirmwareUpdaterCore::uploadEthApplication(QString filename,QString *resultS
 
 void FirmwareUpdaterCore::restartEthBoards()
 {
+    mutex.lock();
     gMNT.command_restart(EthMaintainer::ipv4OfAllSelected);
+    mutex.unlock();
 }
 
 
 void FirmwareUpdaterCore::bootFromApplication()
 {
+    mutex.lock();
     gMNT.command_def2run(EthMaintainer::ipv4OfAllSelected, eApplication, false, false);
+    mutex.unlock();
 }
 
 void FirmwareUpdaterCore::bootFromUpdater()
 {
+    mutex.lock();
     gMNT.command_def2run(EthMaintainer::ipv4OfAllSelected, eUpdater, false, false);
+    mutex.unlock();
 }

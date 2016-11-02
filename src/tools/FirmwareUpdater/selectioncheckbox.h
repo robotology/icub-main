@@ -36,29 +36,32 @@ public:
     SelectionCheckBox(FirmwareUpdaterCore *core,QTreeWidgetItem *it,QWidget *parent=0);
     //~SelectionCheckBox();
     bool isSelected();
-    QTreeWidgetItem *getTreeNode();
-    QString getBoardType();
-    int getBoardIndex();
-    bool boardIsEth();
-    bool boardIsCan();
+//    QTreeWidgetItem *getTreeNode();
+//    QString getBoardType();
+//    int getBoardIndex();
+//    bool boardIsEth();
+//    bool boardIsCan();
     void setSelected(bool);
     
     
 
 private:
-    FirmwareUpdaterCore *core;
-    QTreeWidgetItem *treeNode;
-    int boardIndex;
+//    FirmwareUpdaterCore *core;
+//    QTreeWidgetItem *treeNode;
+//    int boardIndex;
     bool selected;
-    QString boardType;
-    bool isEth;
-    bool isCan;
+//    QString boardType;
+//    bool isEth;
+//    bool isCan;
+public slots:
+    void onSelectEnded();
 
 private slots:
     void onSelectionChanged(bool);
-    void onSelectEnded();
+
     
 signals:
+    void needChangeSelection(bool);
     void selectedChanged(bool);
     void needLoading(bool,bool);
 };

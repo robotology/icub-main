@@ -9,40 +9,40 @@ SelectionCheckBox::SelectionCheckBox(QWidget *parent) : QCheckBox(parent)
 SelectionCheckBox::SelectionCheckBox(FirmwareUpdaterCore *core, QTreeWidgetItem *it, QWidget *parent) : QCheckBox(parent)
 {
     this->selected = false;
-    this->core = core;
-    isEth = false;
-    isCan = false;
-    treeNode = it;
+    //this->core = core;
+//    isEth = false;
+//    isCan = false;
+//    treeNode = it;
 
 
 
-    if(treeNode->data(0,DEVICE_LEVEL).toInt() == 2){
-        if(treeNode->parent()->text(DEVICE) == "ETH"){
-            isEth = true;
-            isCan = false;
-        }else{
-            isEth = false;
-            isCan = true;
-        }
-    }else if(treeNode->data(0,DEVICE_LEVEL).toInt() == 3){
-        isEth = false;
-        isCan = true;
-    }
+//    if(treeNode->data(0,DEVICE_LEVEL).toInt() == 2){
+//        if(treeNode->parent()->text(DEVICE) == "ETH"){
+//            isEth = true;
+//            isCan = false;
+//        }else{
+//            isEth = false;
+//            isCan = true;
+//        }
+//    }else if(treeNode->data(0,DEVICE_LEVEL).toInt() == 3){
+//        isEth = false;
+//        isCan = true;
+//    }
 
     connect(this,SIGNAL(toggled(bool)),this,SLOT(onSelectionChanged(bool)));
-    connect(core,SIGNAL(selectedEnded()),this,SLOT(onSelectEnded()),Qt::QueuedConnection);
+
 }
 
 
-bool SelectionCheckBox::boardIsEth()
-{
-    return isEth && !isCan;
-}
+//bool SelectionCheckBox::boardIsEth()
+//{
+//    return isEth && !isCan;
+//}
 
-bool SelectionCheckBox::boardIsCan()
-{
-    return isCan && !isEth;
-}
+//bool SelectionCheckBox::boardIsCan()
+//{
+//    return isCan && !isEth;
+//}
 
 
 void SelectionCheckBox::onSelectionChanged(bool selected)
@@ -54,17 +54,20 @@ void SelectionCheckBox::setSelected(bool selected)
 {
     //needLoading(true,selected);
     this->selected = selected;
+    needChangeSelection(selected);
 
-    if(isEth){
-        core->setSelectedEthBoard(getBoardIndex(),selected);
-    }else{
-        QString ethAddress;
-        if(treeNode->data(0,DEVICE_LEVEL).toInt() == 3){
-            ethAddress = treeNode->parent()->text(ADDRESS);
-        }
-        QtConcurrent::run(core,&FirmwareUpdaterCore::setSelectedCanBoard,getBoardIndex(),selected,ethAddress);
-        //core->setSelectedCanBoard(getBoardIndex(),selected,ethAddress);
-    }
+
+
+//    if(isEth){
+//        core->setSelectedEthBoard(getBoardIndex(),selected);
+//    }else{
+//        QString ethAddress;
+//        if(treeNode->data(0,DEVICE_LEVEL).toInt() == 3){
+//            ethAddress = treeNode->parent()->text(ADDRESS);
+//        }
+//        QtConcurrent::run(core,&FirmwareUpdaterCore::setSelectedCanBoard,getBoardIndex(),selected,ethAddress);
+//        //core->setSelectedCanBoard(getBoardIndex(),selected,ethAddress);
+//    }
 
 }
 
@@ -81,18 +84,18 @@ bool SelectionCheckBox::isSelected()
 
 
 
-QTreeWidgetItem *SelectionCheckBox::getTreeNode()
-{
-    return treeNode;
-}
+//QTreeWidgetItem *SelectionCheckBox::getTreeNode()
+//{
+//    return treeNode;
+//}
 
 
-QString SelectionCheckBox::getBoardType()
-{
-    return treeNode->text(DEVICE);
-}
+//QString SelectionCheckBox::getBoardType()
+//{
+//    return treeNode->text(DEVICE);
+//}
 
-int SelectionCheckBox::getBoardIndex()
-{
-    return treeNode->data(0,INDEX_OF_BOARD).toInt();
-}
+//int SelectionCheckBox::getBoardIndex()
+//{
+//    return treeNode->data(0,INDEX_OF_BOARD).toInt();
+//}

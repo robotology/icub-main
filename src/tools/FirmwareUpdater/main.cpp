@@ -21,8 +21,8 @@ bool checkApplicationLock();
 void removeApplicationLock();
 void printSecondLevelDevices(FirmwareUpdaterCore*,QString device,QString id);
 void printThirdLevelDevices(FirmwareUpdaterCore*,QString device,QString id,QString board);
-void programSecondLevelDevice(FirmwareUpdaterCore*,QString device,QString id,QString board,QString file);
-void programThirdLevelDevice(FirmwareUpdaterCore*,QString device,QString id,QString board,QString canLine, QString canId,QString file);
+bool programSecondLevelDevice(FirmwareUpdaterCore*,QString device,QString id,QString board,QString file);
+bool programThirdLevelDevice(FirmwareUpdaterCore*,QString device,QString id,QString board,QString canLine, QString canId,QString file);
 
 int main(int argc, char *argv[])
 {
@@ -157,14 +157,14 @@ int main(int argc, char *argv[])
             }else if(file.isEmpty()){
                 qDebug() << "Need a file path to be set";
             }else if(canLine.isEmpty() && canId.isEmpty()){
-                programSecondLevelDevice(&core,device,id,board,file);
+                ret = programSecondLevelDevice(&core,device,id,board,file);
             }else{
                 if(canLine.isEmpty()){
                     qDebug() << "Need a can line to be set";
                 } else if(canId.isEmpty()){
                     qDebug() << "Need a can id to be set";
                 }else{
-                    programThirdLevelDevice(&core,device,id,board,canLine,canId,file);
+                    ret = programThirdLevelDevice(&core,device,id,board,canLine,canId,file);
                 }
             }
         }
@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
 
 
 /**************************************************/
-void programThirdLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file)
+bool programThirdLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file)
 {
     QString retString;
     int boards = core->connectTo(device,id);
@@ -200,13 +200,15 @@ void programThirdLevelDevice(FirmwareUpdaterCore *core,QString device,QString id
                             sBoard b = canBoards.at(j);
                             if(b.bus == canLine.toInt() && b.pid == canId.toInt()){
                                  core->setSelectedCanBoard(j,true,board);
-                                 core->uploadCanApplication(file,&retString,board);
+                                 bool ret = core->uploadCanApplication(file,&retString,board);
                                  qDebug() << retString;
-                                 break;
+                                 return ret ? 0 : 1;
+
                             }
                         }
                     }else{
                         qDebug() << retString;
+                        return -1;
                     }
 
                 }
@@ -216,7 +218,7 @@ void programThirdLevelDevice(FirmwareUpdaterCore *core,QString device,QString id
 }
 
 
-void programSecondLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString file)
+bool programSecondLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString file)
 {
     int boards = core->connectTo(device,id);
     if(boards > 0){
@@ -232,8 +234,10 @@ void programSecondLevelDevice(FirmwareUpdaterCore *core,QString device,QString i
                     bool b = core->uploadEthApplication(file,&resultString);
                     if(!b){
                         qDebug() << resultString;
+                        return -1;
                     }else{
                         qDebug() << "Update Done";
+                        return 0;
                     }
                     break;
                 }
