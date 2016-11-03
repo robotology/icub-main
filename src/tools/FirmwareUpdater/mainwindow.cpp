@@ -272,6 +272,9 @@ void MainWindow::onJumpToUpdater(bool click)
 void MainWindow::onGoToMaintenance(bool click)
 {
     loading(true,true);
+    foreach (CustomTreeWidgetItem *node, selectedNodes) {
+        node->setCheckSelected(false);
+    }
     QFuture<bool> future = QtConcurrent::run(core,&FirmwareUpdaterCore::goToMaintenance);
     watcher.setFuture(future);
 
@@ -282,6 +285,7 @@ void MainWindow::onGoToApplication(bool click)
     loading(true,true);
     foreach (CustomTreeWidgetItem *node, selectedNodes) {
         emptyNode(node);
+        node->setCheckSelected(false);
     }
     QFuture<bool> future = QtConcurrent::run(core,&FirmwareUpdaterCore::goToApplication);
     watcher.setFuture(future);
