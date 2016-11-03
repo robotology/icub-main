@@ -994,6 +994,7 @@ updateProgress(float(downloader.progress)/downloader.file_length);
         *resultString = QString("Download Finished. %1").arg(time_text);
 
         updateProgress(1.0);
+        downloader.initschede();
         return true;
     }
     else
@@ -1001,9 +1002,10 @@ updateProgress(float(downloader.progress)/downloader.file_length);
         //*resultString = "Error during file transfer";
 
         updateProgress(1.0);
+        downloader.initschede();
         return false;
     }
-
+    downloader.initschede();
     return true;
 }
 #endif
