@@ -117,7 +117,7 @@ private:
      //void loading(bool, bool disableAll = false);
      void setNodeRestartNeed(QTreeWidgetItem *refreshNode, bool need = true);
      void uploadEthApplication(QString);
-     void uploadCanApplication(QString filename, QString address = "", int deviceId = -1);
+     void uploadCanApplication(QString filename, QString address = "", int deviceId = -1, CustomTreeWidgetItem *node = NULL);
      void uploadLoader(QString);
      void uploadUpdater(QString);
 

@@ -183,11 +183,13 @@ void MainWindow::onUploadApplication(bool click)
         } else if(selectedNodes.first()->type() == CAN_TREE_NODE){
             if(selectedNodes.first()->getParentNode()->type() == ETH_TREE_NODE){
                 QString address = selectedNodes.first()->getParentNode()->text(ADDRESS);
-                QtConcurrent::run(this,&MainWindow::uploadCanApplication,filename,address,-1);
+                CustomTreeWidgetItem *parentNode = (CustomTreeWidgetItem*)selectedNodes.first()->getParentNode();
+                QtConcurrent::run(this,&MainWindow::uploadCanApplication,filename,address,-1,parentNode);
             }else if(selectedNodes.first()->getParentNode()->type() == CAN_TREE_ROOT_NODE){
                 QString driver = selectedNodes.first()->getParentNode()->text(DEVICE);
                 int deviceId = selectedNodes.first()->getParentNode()->text(ID).toInt();
-                QtConcurrent::run(this,&MainWindow::uploadCanApplication,filename,driver,deviceId);
+                CustomTreeWidgetItem *parentNode = (CustomTreeWidgetItem*)selectedNodes.first()->getParentNode();
+                QtConcurrent::run(this,&MainWindow::uploadCanApplication,filename,driver,deviceId,parentNode);
             }
         }
     }
@@ -221,9 +223,12 @@ void MainWindow::uploadEthApplication(QString filename)
     needSetRestartOnSelected();
 }
 
-void MainWindow::uploadCanApplication(QString filename,QString address,int deviceId)
+void MainWindow::uploadCanApplication(QString filename,QString address,int deviceId,CustomTreeWidgetItem *node)
 {
     QString result;
+    if(node){
+        core->setSelectedCanBoards(node->getCanBoards(),address,deviceId);
+    }
     core->uploadCanApplication(filename,&result,address,deviceId);
     setInfoRes(result);
 
