@@ -19,10 +19,11 @@ using namespace yarp::os;
 
 bool checkApplicationLock();
 void removeApplicationLock();
-void printSecondLevelDevices(FirmwareUpdaterCore*,QString device,QString id);
-void printThirdLevelDevices(FirmwareUpdaterCore*,QString device,QString id,QString board);
-bool programSecondLevelDevice(FirmwareUpdaterCore*,QString device,QString id,QString board,QString file);
-bool programThirdLevelDevice(FirmwareUpdaterCore*,QString device,QString id,QString board,QString canLine, QString canId,QString file);
+void printCanDevices(QList<sBoard> canBoards);
+int printSecondLevelDevices(FirmwareUpdaterCore*,QString device,QString id);
+int printThirdLevelDevices(FirmwareUpdaterCore*,QString device,QString id,QString board);
+int programSecondLevelDevice(FirmwareUpdaterCore*,QString device,QString id,QString board,QString file);
+int programThirdLevelDevice(FirmwareUpdaterCore*,QString device,QString id,QString board,QString canLine, QString canId,QString file);
 
 int main(int argc, char *argv[])
 {
@@ -50,13 +51,13 @@ int main(int argc, char *argv[])
     QCommandLineOption addressOption(QStringList() << "" << "address", "Override the default address","address",MY_ADDR);
     QCommandLineOption portOption(QStringList() << "" << "port", "Override the default port","port","3333");
     QCommandLineOption discoverOption(QStringList() << "" << "discover", "Discover devices");
-    QCommandLineOption deviceOption(QStringList() << "" << "device", "Choose Device (i.e. ETH)","device","ETH");
-    QCommandLineOption idOption(QStringList() << "" << "id", "Choose a device id (i.e. eth1)","id","eth1");
-    QCommandLineOption boardOption(QStringList() << "" << "board", "Choose a device board (i.e. 10.0.0.1)","board","");
+    QCommandLineOption deviceOption(QStringList() << "" << "device", "Choose Device (i.e. ETH or CFW2_CAN, ESD_CAN...)","device","");
+    QCommandLineOption idOption(QStringList() << "" << "id", "Choose a device id (i.e. eth1 or 1-2-3...)","id","");
+    QCommandLineOption boardOption(QStringList() << "" << "eth_board", "Choose a device board (i.e. 10.0.0.1)","eth_board","");
     QCommandLineOption programOption(QStringList() << "" << "program", "Program devices");
     QCommandLineOption fileOption(QStringList() << "" << "file", "Path to a firmware file","file","");
-    QCommandLineOption ethCanLineOption(QStringList() << "" << "eth_can_line", "Select a can line","eth_can_line","");
-    QCommandLineOption ethCanIdOption(QStringList() << "" << "eth_can_id", "Select a can id","eth_can_id","");
+    QCommandLineOption ethCanLineOption(QStringList() << "" << "can_line", "Select a can line","can_line","");
+    QCommandLineOption ethCanIdOption(QStringList() << "" << "can_id", "Select a can id","can_id","");
 
 
     parser.addOption(noGuiOption);
@@ -142,9 +143,9 @@ int main(int argc, char *argv[])
             }else{
 
                 if(board.isEmpty()){
-                    printSecondLevelDevices(&core,device,id);
+                    ret = printSecondLevelDevices(&core,device,id);
                 }else{
-                    printThirdLevelDevices(&core,device,id,board);
+                    ret = printThirdLevelDevices(&core,device,id,board);
                 }
             }
         }else if(program){
@@ -152,7 +153,7 @@ int main(int argc, char *argv[])
                 qDebug() << "Need a device to be set";
             }else if(id.isEmpty()){
                 qDebug() << "Need an id to be set";
-            }else if(board.isEmpty()){
+            }else if(board.isEmpty() && device.contains("ETH")){
                 qDebug() << "Need a board to be set";
             }else if(file.isEmpty()){
                 qDebug() << "Need a file path to be set";
@@ -181,30 +182,39 @@ int main(int argc, char *argv[])
 
 
 /**************************************************/
-bool programThirdLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file)
+int programThirdLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file)
 {
     QString retString;
-    int boards = core->connectTo(device,id);
-    if(boards > 0){
-        if(device.contains("ETH")){
+    if(device.contains("ETH")){
+        int boards = core->connectTo(device,id);
+        if(boards > 0){
             char board_ipaddr[16];
             for(int i=0;i<core->getEthBoardList().size();i++){
-                ACE_UINT32 ip;//=core->getEthBoardList()[i].mAddress;
-                sprintf(board_ipaddr,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
+                EthBoard ethBoard = core->getEthBoardList()[i];
+                snprintf(board_ipaddr, sizeof(board_ipaddr), "%s", ethBoard.getIPV4string().c_str());
 
                 if(board.contains(board_ipaddr)){
                     core->setSelectedEthBoard(i,true);
-                    QList <sBoard> canBoards = core->getCanBoardsFromEth(board,&retString,canLine.toInt());
+                    QList <sBoard> canBoards = core->getCanBoardsFromEth(board,&retString,canLine.toInt(),true);
                     if(canBoards.count() > 0){
+                        bool selectedCount = 0;
                         for(int j=0;j<canBoards.count();j++){
                             sBoard b = canBoards.at(j);
                             if(b.bus == canLine.toInt() && b.pid == canId.toInt()){
-                                 core->setSelectedCanBoard(j,true,board);
-                                 bool ret = core->uploadCanApplication(file,&retString,board);
-                                 qDebug() << retString;
-                                 return ret ? 0 : 1;
-
+                                b.selected = true;
+                                canBoards.replace(j,b);
+                                selectedCount++;
                             }
+
+                        }
+                        if(selectedCount > 0){
+                            core->setSelectedCanBoards(canBoards,board);
+                            bool ret = core->uploadCanApplication(file,&retString,board);
+                            qDebug() << retString;
+                            return ret ? 0 : -1;
+                        }else{
+                            qDebug() << "No board selected";
+                            return -1;
                         }
                     }else{
                         qDebug() << retString;
@@ -213,20 +223,47 @@ bool programThirdLevelDevice(FirmwareUpdaterCore *core,QString device,QString id
 
                 }
             }
+
+        }
+    }else{
+        QList <sBoard> canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
+        if(canBoards.count() > 0){
+            bool selectedCount = 0;
+            for(int j=0;j<canBoards.count();j++){
+                sBoard b = canBoards.at(j);
+                if(b.bus == canLine.toInt() && b.pid == canId.toInt()){
+                    b.selected = true;
+                    canBoards.replace(j,b);
+                    selectedCount++;
+                }
+            }
+            if(selectedCount > 0){
+                core->setSelectedCanBoards(canBoards,device,id.toInt());
+                bool ret = core->uploadCanApplication(file,&retString,board);
+                qDebug() << retString;
+                return ret ? 0 : -1;
+            }else{
+                qDebug() << "No board selected";
+                return -1;
+            }
+        }else{
+            qDebug() << retString;
+            return -1;
         }
     }
+    return -1;
 }
 
 
-bool programSecondLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString file)
+int programSecondLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString file)
 {
     int boards = core->connectTo(device,id);
     if(boards > 0){
         if(device.contains("ETH")){
             char board_ipaddr[16];
             for(int i=0;i<core->getEthBoardList().size();i++){
-                ACE_UINT32 ip;//=core->getEthBoardList()[i].mAddress;
-                sprintf(board_ipaddr,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
+                EthBoard ethBoard = core->getEthBoardList()[i];
+                snprintf(board_ipaddr, sizeof(board_ipaddr), "%s", ethBoard.getIPV4string().c_str());
 
                 if(board.contains(board_ipaddr)){
                     core->setSelectedEthBoard(i,true);
@@ -244,71 +281,91 @@ bool programSecondLevelDevice(FirmwareUpdaterCore *core,QString device,QString i
             }
         }
 
+    }else{
+        qDebug() << "No boards found";
     }
+    return -1;
 
 }
 
-void printSecondLevelDevices(FirmwareUpdaterCore *core,QString device,QString id)
+int printSecondLevelDevices(FirmwareUpdaterCore *core,QString device,QString id)
 {
-    int boards = core->connectTo(device,id);
-    if(boards > 0){
-        if(device.contains("ETH")){
-            char board_ipaddr[16];
-            char board_mac[32];
+    if(device.contains("ETH")){
+        int boards = core->connectTo(device,id);
+        if(boards > 0){
+                char board_ipaddr[16];
+                char board_mac[32];
 
-            char board_version[16];
-            char board_date[24];
-            char board_built[24];
-            char board_type[24];
-            char running_process[24];
-            char board_info[32];
+                char board_version[16];
+                char board_date[24];
+                char board_built[24];
+                char board_type[24];
+                char running_process[24];
+                char board_info[32];
 
-            qDebug() << "-------------------------------------------------------------";
-            for(int i=0;i<core->getEthBoardList().size();i++){
-                ACE_UINT32 ip;//=core->getEthBoardList()[i].mAddress;
-                sprintf(board_ipaddr,"%d.%d.%d.%d",(ip>>24)&0xFF,(ip>>16)&0xFF,(ip>>8)&0xFF,ip&0xFF);
+                memset(board_ipaddr,0,sizeof(board_ipaddr));
+                memset(board_mac,0,sizeof(board_mac));
+                memset(board_version,0,sizeof(board_version));
+                memset(board_date,0,sizeof(board_date));
+                memset(board_built,0,sizeof(board_built));
+                memset(board_type,0,sizeof(board_type));
+                memset(running_process,0,sizeof(running_process));
+                memset(board_info,0,sizeof(board_info));
 
-                ACE_UINT64 mac;//=core->getEthBoardList()[i].mMac;
-                //ACE_UINT32 macL=(ACE_UINT32)(mac&0xFFFFFFFF);
-                //ACE_UINT32 macH=(ACE_UINT32)((mac>>32)&0xFFFF);
 
-                //sprintf(board_mac,"%04X%08X",macH,macL);
+                qDebug() << "-------------------------------------------------------------";
+                for(int i=0;i<core->getEthBoardList().size();i++){
+                    EthBoard board = core->getEthBoardList()[i];
 
-                snprintf(board_mac, sizeof(board_mac), "%02X-%02X-%02X-%02X-%02X-%02X",
-                                    (uint8_t)(mac >> 40) & 0xff,
-                                    (uint8_t)(mac >> 32) & 0xff,
-                                    (uint8_t)(mac >> 24) & 0xff,
-                                    (uint8_t)(mac >> 16) & 0xff,
-                                    (uint8_t)(mac >> 8 ) & 0xff,
-                                    (uint8_t)(mac      ) & 0xff
-                        );
+                    snprintf(board_ipaddr, sizeof(board_ipaddr), "%s", board.getIPV4string().c_str());
 
-//                snprintf(board_version, sizeof(board_version), "%d.%d", core->getEthBoardList()[i].mVersionMajor, core->getEthBoardList()[i].mVersionMinor);
-//                snprintf(board_type, sizeof(board_type), "%s", core->getEthBoardList()[i].mBoardType.c_str());
-//                snprintf(running_process, sizeof(running_process), "%s", core->getEthBoardList()[i].mRunningProcess.c_str());
-//                snprintf(board_info, sizeof(board_info), "%s", core->getEthBoardList()[i].mInfo32.c_str());
-//                snprintf(board_date, sizeof(board_date), "%s", core->getEthBoardList()[i].mReleasedOn.c_str());
-//                snprintf(board_built, sizeof(board_date), "%s", core->getEthBoardList()[i].mBuiltOn.c_str());
+                    ACE_UINT64 mac = board.getInfo().macaddress;
 
-                qDebug() << "************** Device " << i << " ******************";
-                qDebug() << "Ip:        "<< board_ipaddr;
-                qDebug() << "Mac:       "<< board_mac;
-                qDebug() << "Version:   "<< board_version;
-                qDebug() << "Type:      "<< board_type;
-                qDebug() << "Process:   "<< running_process;
-                qDebug() << "Info:      "<< board_info;
-                qDebug() << "Date:      "<< board_date;
-                qDebug() << "Built:     "<< board_built;
-                qDebug() << "\n";
+                    snprintf(board_mac, sizeof(board_mac), "%02X-%02X-%02X-%02X-%02X-%02X",
+                                        (uint8_t)(mac >> 40) & 0xff,
+                                        (uint8_t)(mac >> 32) & 0xff,
+                                        (uint8_t)(mac >> 24) & 0xff,
+                                        (uint8_t)(mac >> 16) & 0xff,
+                                        (uint8_t)(mac >> 8 ) & 0xff,
+                                        (uint8_t)(mac      ) & 0xff
+                            );
 
-            }
-            qDebug() << "-------------------------------------------------------------";
+
+                    snprintf(board_version, sizeof(board_version), "%s", board.getVersionfRunning().c_str());
+                    snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string2(eoboards_ethtype2type(board.getInfo().boardtype), eobool_true));
+                    snprintf(running_process, sizeof(running_process), "%s", eouprot_process2string((eOuprot_process_t)board.getInfo().processes.runningnow));
+                    snprintf(board_info, sizeof(board_info), "%s", board.getInfoOnEEPROM().c_str());
+                    snprintf(board_date, sizeof(board_date), "%s", board.getDatefRunning().c_str());
+                    snprintf(board_built, sizeof(board_date), "%s", board.getCompilationDateOfRunning().c_str());
+
+                    qDebug() << "************** Device " << i << " ******************";
+                    qDebug() << "Ip:        "<< board_ipaddr;
+                    qDebug() << "Mac:       "<< board_mac;
+                    qDebug() << "Version:   "<< board_version;
+                    qDebug() << "Type:      "<< board_type;
+                    qDebug() << "Process:   "<< running_process;
+                    qDebug() << "Info:      "<< board_info;
+                    qDebug() << "Date:      "<< board_date;
+                    qDebug() << "Built:     "<< board_built;
+                    qDebug() << "\n";
+
+                }
+                qDebug() << "-------------------------------------------------------------";
+
+        }
+    }else{
+        QString retString;
+        QList <sBoard> canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
+        if(canBoards.count() <= 0){
+            qDebug() <<  retString;
+        }else{
+            printCanDevices(canBoards);
         }
     }
-    core->disconnectFrom(device,id);
+    return 0;
 }
 
-void printThirdLevelDevices(FirmwareUpdaterCore *core,QString device,QString id,QString board)
+int printThirdLevelDevices(FirmwareUpdaterCore *core,QString device,QString id,QString board)
 {
     int boards = core->connectTo(device,id);
     if(boards > 0){
@@ -318,94 +375,100 @@ void printThirdLevelDevices(FirmwareUpdaterCore *core,QString device,QString id,
             if(canBoards.count() <= 0){
                 qDebug() <<  retString;
             }else{
-                qDebug() << "-------------------------------------------------------------";
-                for(int i=0;i<canBoards.count();i++){
-                    sBoard board = canBoards.at(i);
-
-                    char board_type        [50]; memset (board_type,0,50);
-                    char board_process     [50]; memset (board_process,0,50);
-                    char board_status      [50]; memset (board_status,0,50);
-                    char board_add_info    [50]; memset (board_add_info,0,50);
-                    char board_firmware_version  [10]; memset (board_firmware_version,0,10);
-                    char board_appl_minor  [10]; memset (board_appl_minor,0,10);
-                    char board_appl_build  [10]; memset (board_appl_build,0,10);
-                    char board_serial      [10]; memset (board_serial,0,10);
-                    char board_protocol    [10]; memset (board_protocol,0,10);
-
-                    snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string((eObrd_type_t)board.type));
-
-                    switch (board.status)
-                    {
-                    case BOARD_RUNNING:
-                        strcpy(board_status, "RUNNING");
-                        break;
-                    case BOARD_WAITING:
-                        strcpy(board_status, "WAITING");
-                        break;
-                    case BOARD_WAITING_ACK:
-                        strcpy(board_status, "WAITING_ACK");
-                        break;
-                    case BOARD_DOWNLOADING:
-                        strcpy(board_status, "DOWNLOADING");
-                        break;
-                    case BOARD_OK :
-                        strcpy(board_status, "OK");
-                        break;
-                    case BOARD_ERR:
-                        strcpy(board_status, "ERR");
-                        break;
-                    default:
-                        strcpy(board_status, "UNKNOWN");
-                        break;
-                    }
-
-                    if(true == board.applicationisrunning){
-                        strcpy(board_process, "canApplication");
-                    } else {
-                        strcpy(board_process, "canBootloader");
-                    }
-
-                    strncpy  (board_add_info, board.add_info,32);
-
-                    if(-1 == board.appl_vers_build){
-                        sprintf (board_firmware_version, "%d.0x%x", board.appl_vers_major, board.appl_vers_minor);
-                    } else {
-                        sprintf (board_firmware_version, "%d.0x%x.%d", board.appl_vers_major, board.appl_vers_minor, board.appl_vers_build);
-                    }
-
-                    sprintf (board_appl_minor,"%d",board.appl_vers_minor);
-                    sprintf (board_appl_build,"%d",board.appl_vers_build);
-                    sprintf (board_serial,"%s",board.serial);
-
-                    if((0 == board.prot_vers_major) && (0 == board.prot_vers_minor))
-                    {
-                        snprintf (board_protocol, sizeof(board_protocol), "N/A");
-                    }
-                    else
-                    {
-                        snprintf (board_protocol, sizeof(board_protocol), "%d.%d", board.prot_vers_major, board.prot_vers_minor);
-                    }
-
-                    qDebug() << "************** Board " << i << " ******************";
-                    qDebug() << "Type:              " << board_type;
-                    qDebug() << "Id:                " << board.pid;
-                    qDebug() << "Address:           " << "CAN_" << board.bus;
-                    qDebug() << "Process:           " << board_process;
-                    qDebug() << "Status:            " << board_status;
-                    qDebug() << "Info:              " << board_add_info;
-                    qDebug() << "Firmware Version:  " << board_firmware_version;
-                    qDebug() << "Serial:            " << board_serial;
-                    qDebug() << "Protocol:          " << board_protocol;
-                    qDebug() << "\n";
-                }
-                qDebug() << "-------------------------------------------------------------";
+                printCanDevices(canBoards);
             }
 
         }
     }else{
         qDebug() << "No boards Found";
     }
-    core->disconnectFrom(device,id);
+
+    return 0;
+}
+
+void printCanDevices(QList<sBoard> canBoards)
+{
+    qDebug() << "-------------------------------------------------------------";
+    for(int i=0;i<canBoards.count();i++){
+        sBoard board = canBoards.at(i);
+
+        char board_type        [50]; memset (board_type,0,50);
+        char board_process     [50]; memset (board_process,0,50);
+        char board_status      [50]; memset (board_status,0,50);
+        char board_add_info    [50]; memset (board_add_info,0,50);
+        char board_firmware_version  [10]; memset (board_firmware_version,0,10);
+        char board_appl_minor  [10]; memset (board_appl_minor,0,10);
+        char board_appl_build  [10]; memset (board_appl_build,0,10);
+        char board_serial      [10]; memset (board_serial,0,10);
+        char board_protocol    [10]; memset (board_protocol,0,10);
+
+        snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string((eObrd_type_t)board.type));
+
+        switch (board.status)
+        {
+        case BOARD_RUNNING:
+            strcpy(board_status, "RUNNING");
+            break;
+        case BOARD_WAITING:
+            strcpy(board_status, "WAITING");
+            break;
+        case BOARD_WAITING_ACK:
+            strcpy(board_status, "WAITING_ACK");
+            break;
+        case BOARD_DOWNLOADING:
+            strcpy(board_status, "DOWNLOADING");
+            break;
+        case BOARD_OK :
+            strcpy(board_status, "OK");
+            break;
+        case BOARD_ERR:
+            strcpy(board_status, "ERR");
+            break;
+        default:
+            strcpy(board_status, "UNKNOWN");
+            break;
+        }
+
+        if(true == board.applicationisrunning){
+            strcpy(board_process, "canApplication");
+        } else {
+            strcpy(board_process, "canBootloader");
+        }
+
+        strncpy  (board_add_info, board.add_info,32);
+
+        if(-1 == board.appl_vers_build){
+            sprintf (board_firmware_version, "%d.0x%x", board.appl_vers_major, board.appl_vers_minor);
+        } else {
+            sprintf (board_firmware_version, "%d.0x%x.%d", board.appl_vers_major, board.appl_vers_minor, board.appl_vers_build);
+        }
+
+        sprintf (board_appl_minor,"%d",board.appl_vers_minor);
+        sprintf (board_appl_build,"%d",board.appl_vers_build);
+        sprintf (board_serial,"%s",board.serial);
+
+        if((0 == board.prot_vers_major) && (0 == board.prot_vers_minor))
+        {
+            snprintf (board_protocol, sizeof(board_protocol), "N/A");
+        }
+        else
+        {
+            snprintf (board_protocol, sizeof(board_protocol), "%d.%d", board.prot_vers_major, board.prot_vers_minor);
+        }
+
+        qDebug() << "************** Board " << i << " ******************";
+        qDebug() << "Type:              " << board_type;
+        qDebug() << "Id:                " << board.pid;
+        qDebug() << "Address:           " << "CAN_" << board.bus;
+        qDebug() << "Process:           " << board_process;
+        qDebug() << "Status:            " << board_status;
+        qDebug() << "Info:              " << board_add_info;
+        qDebug() << "Firmware Version:  " << board_firmware_version;
+        qDebug() << "Serial:            " << board_serial;
+        qDebug() << "Protocol:          " << board_protocol;
+        qDebug() << "\n";
+    }
+    qDebug() << "-------------------------------------------------------------";
 }
 
 bool checkApplicationLock()
