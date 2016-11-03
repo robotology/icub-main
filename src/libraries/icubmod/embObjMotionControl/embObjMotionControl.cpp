@@ -1231,6 +1231,21 @@ bool embObjMotionControl::parseGeneralMecGroup(Bottle &general)
         }
     }
 
+
+#warning VALE: commentato useMotorSpeedFbk! va fatto dopo la lettura del numero di set
+//     // useMotorSpeedFbk
+//     if (!extractGroup(general, xtmp, "useMotorSpeedFbk", "Use motor speed feedback", _njoints))
+//     {
+//         return false;
+//     }
+//
+//     for (i = 1; i < xtmp.size(); i++)
+//     {
+//         _jointsets_prop.jointset_cfgs[i-1].usespeedfeedbackfrommotors = xtmp.get(i).asBool();
+//         yError() << "useMotorSpeedFbk " << i-1 << " is " << _jointsets_prop.jointset_cfgs[i-1].usespeedfeedbackfrommotors;
+//     }
+
+
     return true;
 
 }
@@ -2006,7 +2021,7 @@ bool embObjMotionControl::parsePid_inPos_outPwm(Bottle &b_pid, string controlLaw
         return false;
 
     yError() << "VALE: _positionControlUnits=" << _positionControlUnits;
-    
+
     convertPosPid(pidSimple_ptr->pid);
 
     posAlgoMap[controlLaw] = pidSimple_ptr;
