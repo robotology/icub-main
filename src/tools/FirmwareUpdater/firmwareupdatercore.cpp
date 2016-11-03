@@ -105,12 +105,19 @@ void FirmwareUpdaterCore::disconnectFrom(QString device, QString id)
 int FirmwareUpdaterCore::connectTo(QString device, QString id)
 {
     mutex.lock();
-    if(!device.isEmpty() && !id.isEmpty() && device.contains("ETH")){
-        int num = gMNT.discover(true, 2, 1.0).size();
-        yDebug() << "Found " << num << " devices";
-        qDebug() << "Found " << num << " devices";
-        mutex.unlock();
-        return num;
+    if(!device.isEmpty() && !id.isEmpty()){
+        if(device.contains("ETH")){
+            int num = gMNT.discover(true, 2, 1.0).size();
+            yDebug() << "Found " << num << " devices";
+            qDebug() << "Found " << num << " devices";
+            mutex.unlock();
+            return num;
+        }else{
+            QString result;
+            QList<sBoard> s = getCanBoardsFromDriver(device,id.toInt(),&result,true);
+            mutex.unlock();
+            return s.count();
+        }
     }
     mutex.unlock();
     return 0;
@@ -131,7 +138,7 @@ void FirmwareUpdaterCore::setSelectedEthBoard(int index,bool selected)
     selectedEnded();
 }
 
-void FirmwareUpdaterCore::setSelectedCanBoards(QList <sBoard> canBoards,QString address, int deviceId)
+void FirmwareUpdaterCore::setSelectedCanBoards(QList <sBoard> selectedBoards,QString address, int deviceId)
 {
     mutex.lock();
     QString res;
@@ -141,7 +148,9 @@ void FirmwareUpdaterCore::setSelectedCanBoards(QList <sBoard> canBoards,QString 
         getCanBoardsFromDriver(address,deviceId,&res);
     }
 
-    foreach (sBoard b, canBoards) {
+    this->canBoards = selectedBoards;
+
+    foreach (sBoard b, selectedBoards) {
         for(int i=0;i<downloader.board_list_size;i++){
             if(downloader.board_list[i].bus == b.bus &&
                     downloader.board_list[i].pid == b.pid){

@@ -280,6 +280,9 @@ void MainWindow::onGoToMaintenance(bool click)
 void MainWindow::onGoToApplication(bool click)
 {
     loading(true,true);
+    foreach (CustomTreeWidgetItem *node, selectedNodes) {
+        emptyNode(node);
+    }
     QFuture<bool> future = QtConcurrent::run(core,&FirmwareUpdaterCore::goToApplication);
     watcher.setFuture(future);
 
@@ -950,6 +953,7 @@ void MainWindow::refreshDevices()
             CustomTreeWidgetItem *canRootNode = (CustomTreeWidgetItem*)it;
             ret = canRootNode->retrieveCanBoards();
             setInfoRes(ret);
+            canBoardsRetrieved(canRootNode,false);
         }
     }
     needLoading(false,false,ret);
@@ -1463,7 +1467,7 @@ QString CustomTreeWidgetItem::retrieveCanBoards()
     if(type() == ETH_TREE_NODE){
         canBoards = core->getCanBoardsFromEth(text(ADDRESS),&result,CanPacket::everyCANbus,true);
     } else if(type() == CAN_TREE_ROOT_NODE){
-        canBoards = core->getCanBoardsFromDriver(text(DEVICE),text(ID).toInt(),&result,true);
+        canBoards = core->getCanBoardsFromDriver(text(DEVICE),text(ID).toInt(),&result,false);
     }
 
     return result;
