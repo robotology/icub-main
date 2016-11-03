@@ -2121,13 +2121,6 @@ bool ServiceParser::check_motion(Searchable &config)
             return false;
         }
 
-        Bottle b_PROPERTIES_JOINTMAPPING_joint2set = Bottle(b_PROPERTIES_JOINTMAPPING.findGroup("joint2set"));
-        if(b_PROPERTIES_JOINTMAPPING_joint2set.isNull())
-        {
-            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.joint2set";
-            return false;
-        }
-
         // now the vectors the above three contain ...
 
         Bottle b_PROPERTIES_JOINTMAPPING_ACTUATOR_type = Bottle(b_PROPERTIES_JOINTMAPPING_ACTUATOR.findGroup("type"));

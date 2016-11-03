@@ -538,6 +538,8 @@ private:
     bool verifyControlLawconsistencyinJointSet(string *controlLaw);
     bool saveCouplingsData(void);
     bool updatedJointsetsCfg(int joint, eOmc_pidoutputtype_t pidoutputtype);
+    void debugUtil_printJointsetInfo(void);
+    void debugUtil_printControlLaws(void);
 
 //    bool getStatusBasic_withWait(const int n_joint, const int *joints, eOmc_joint_status_basic_t *_statuslist);             // helper function
 //    bool getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);     // helper function
