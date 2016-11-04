@@ -462,7 +462,6 @@ bool embObjMotionControl::alloc(int nj)
     _limitsMin=allocAndCheck<double>(nj);
     _hwLimitsMax=allocAndCheck<double>(nj);
     _hwLimitsMin=allocAndCheck<double>(nj);
-    _kinematic_mj=allocAndCheck<double>(16);
     _currentLimits=allocAndCheck<MotorCurrentLimits>(nj);
     _motorPwmLimits=allocAndCheck<double>(nj);
     checking_motiondone=allocAndCheck<bool>(nj);
@@ -518,7 +517,6 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_limitsMin);
     checkAndDestroy(_hwLimitsMax);
     checkAndDestroy(_hwLimitsMin);
-    checkAndDestroy(_kinematic_mj);
     checkAndDestroy(_currentLimits);
     checkAndDestroy(_motorPwmLimits);
     checkAndDestroy(checking_motiondone);
@@ -627,7 +625,6 @@ embObjMotionControl::embObjMotionControl() :
     _ref_positions    = NULL;
     _ref_speeds       = NULL;
     _ref_torques      = NULL;
-    _kinematic_mj     = NULL;
     _kbemf            = NULL;
     _ktau             = NULL;
     _filterType       = NULL;
@@ -5271,7 +5268,7 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     val.clear();
     if (key == "kinematic_mj")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<16; i++) { r.addDouble(_kinematic_mj[i]); }
+        Bottle& r = val.addList(); for (int i = 0; i<controller.matrixJ2M.size(); i++) { r.addDouble(controller.matrixJ2M[i]); }
         return true;
     }
     else if (key == "encoders")

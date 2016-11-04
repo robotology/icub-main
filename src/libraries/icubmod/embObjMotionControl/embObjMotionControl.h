@@ -402,7 +402,6 @@ private:
     double *_limitsMax;                         /** user joint limits, min*/
     double *_hwLimitsMax;                       /** hardaware joint limits, max */
     double *_hwLimitsMin;                       /** hardaware joint limits, min */
-    double *_kinematic_mj;                      /** the kinematic coupling matrix from joints space to motor space */
     //double *_currentLimits;                     /** current limits */
     MotorCurrentLimits *_currentLimits;
     double *_maxJntCmdVelocity;                 /** max joint commanded velocity */
