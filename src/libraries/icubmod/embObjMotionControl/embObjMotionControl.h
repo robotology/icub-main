@@ -374,8 +374,6 @@ private:
     int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
-    float *_DEPRECATED_encoderconversionfactor;            /** iCubDegrees to encoder conversion factors */
-    float *_DEPRECATED_encoderconversionoffset;            /** iCubDegrees offset */
     uint8_t *_jointEncoderType;                 /** joint encoder type*/
     int    *_jointEncoderRes;                   /** joint encoder resolution */
     int    *_rotorEncoderRes;                   /** rotor encoder resolution */

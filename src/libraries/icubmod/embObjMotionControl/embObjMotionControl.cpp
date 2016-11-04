@@ -429,8 +429,6 @@ bool embObjMotionControl::alloc(int nj)
     _axisMap = allocAndCheck<int>(nj);
     _angleToEncoder = allocAndCheck<double>(nj);
     _encodersStamp = allocAndCheck<double>(nj);
-    _DEPRECATED_encoderconversionoffset = allocAndCheck<float>(nj);
-    _DEPRECATED_encoderconversionfactor = allocAndCheck<float>(nj);
     _jointEncoderType = allocAndCheck<uint8_t>(nj);
     _rotorEncoderType = allocAndCheck<uint8_t>(nj);
     _jointEncoderRes = allocAndCheck<int>(nj);
@@ -501,8 +499,6 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_axisMap);
     checkAndDestroy(_angleToEncoder);
     checkAndDestroy(_encodersStamp);
-    checkAndDestroy(_DEPRECATED_encoderconversionoffset);
-    checkAndDestroy(_DEPRECATED_encoderconversionfactor);
     checkAndDestroy(_jointEncoderRes);
     checkAndDestroy(_rotorEncoderRes);
     checkAndDestroy(_jointEncoderType);
@@ -594,8 +590,6 @@ embObjMotionControl::embObjMotionControl() :
     _njoints      = 0;
     _axisMap      = NULL;
     _encodersStamp = NULL;
-    _DEPRECATED_encoderconversionfactor = NULL;
-    _DEPRECATED_encoderconversionoffset = NULL;
     _angleToEncoder = NULL;
     _hasHallSensor = NULL;
     _hasTempSensor = NULL;
