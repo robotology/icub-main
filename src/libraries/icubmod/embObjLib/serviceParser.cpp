@@ -2328,37 +2328,37 @@ bool ServiceParser::check_motion(Searchable &config)
     return true;
 }
 
-int ServiceParser::getnumofjointsets(void)
-{
-
-    int n=0;
-    int njointsinset[mc_service.properties.numofjoints]; //the max number of sets is equal to max number of joints.
-    for(int i=0; i<mc_service.properties.numofjoints;i++)
-    {
-        njointsinset[i] = 0;
-    }
-
-    for(int i=0; i<mc_service.properties.numofjoints;i++)
-    {
-        int set = mc_service.properties.joint2set[i];
-
-        if(set > mc_service.properties.numofjoints)
-        {
-            yError() << "ServiceParser::getnumofjointsets: error in joint2set param. The set number is too big. Remember: max number of set is equal to max num of joint.";
-            return false;
-        }
-
-       njointsinset[set]++;
-    }
-    int count =0;
-    for(int i=0; i<mc_service.properties.numofjoints;i++)
-    {
-        if(njointsinset[i] != 0)
-            count++;
-    }
-
-    return  count;
-}
+// int ServiceParser::getnumofjointsets(void)
+// {
+//
+//     int n=0;
+//     int njointsinset[mc_service.properties.numofjoints]; //the max number of sets is equal to max number of joints.
+//     for(int i=0; i<mc_service.properties.numofjoints;i++)
+//     {
+//         njointsinset[i] = 0;
+//     }
+//
+//     for(int i=0; i<mc_service.properties.numofjoints;i++)
+//     {
+//         int set = mc_service.properties.joint2set[i];
+//
+//         if(set > mc_service.properties.numofjoints)
+//         {
+//             yError() << "ServiceParser::getnumofjointsets: error in joint2set param. The set number is too big. Remember: max number of set is equal to max num of joint.";
+//             return false;
+//         }
+//
+//        njointsinset[set]++;
+//     }
+//     int count =0;
+//     for(int i=0; i<mc_service.properties.numofjoints;i++)
+//     {
+//         if(njointsinset[i] != 0)
+//             count++;
+//     }
+//
+//     return  count;
+// }
 
 
 //bool ServiceParser::parseMCEncoderItem(Bottle &b_ENCODER,  vector<servMC_encoder_t> &encoders, char *encString)
@@ -2409,44 +2409,48 @@ int ServiceParser::getnumofjointsets(void)
 //    }
 //    return true;
 //}
-bool ServiceParser::copyjomocouplingInfo( eOmc_4jomo_coupling_t *jc_dest)
-{
 
-    memset(jc_dest, 0, sizeof(eOmc_4jomo_coupling_t));
 
-    // very important: so far, the fw in Controller.c must find eomc_jointSetNum_none in un-used entries, even if we have less than 4 joints.
-    memset(jc_dest->joint2set, eomc_jointSetNum_none, sizeof(jc_dest->joint2set));
+// bool ServiceParser::copyjomocouplingInfo( eOmc_4jomo_coupling_t *jc_dest)
+// {
+//
+//     memset(jc_dest, 0, sizeof(eOmc_4jomo_coupling_t));
+//
+//     // very important: so far, the fw in Controller.c must find eomc_jointSetNum_none in un-used entries, even if we have less than 4 joints.
+//     memset(jc_dest->joint2set, eomc_jointSetNum_none, sizeof(jc_dest->joint2set));
+//
+//     for(int i=0; i<mc_service.properties.numofjoints; i++)
+//     {
+//         jc_dest->joint2set[i] = mc_service.properties.joint2set[i];
+//     }
+//
+//     for(int i=0; i<4; i++)
+//     {
+//         for(int j=0; j<4; j++)
+//         {
+//             jc_dest->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
+//             jc_dest->motor2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixM2J[4*i+j]);
+//         }
+//     }
+//
+//
+//     for(int r=0; r<4; r++)
+//     {
+//         for(int c=0; c<6; c++)
+//         {
+//             jc_dest->encoder2joint[r][c] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[6*r+c]);
+//         }
+//     }
+//
+//     for(int s=0; s< mc_service.properties.numofjointsets; s++)
+//     {
+//         memcpy(&jc_dest->jsetcfg[s]  , &mc_service.properties.jointset_cfgs[s], sizeof(eOmc_jointset_configuration_t));
+//     }
+//
+//     return true;
+// }
 
-    for(int i=0; i<mc_service.properties.numofjoints; i++)
-    {
-        jc_dest->joint2set[i] = mc_service.properties.joint2set[i];
-    }
 
-    for(int i=0; i<4; i++)
-    {
-        for(int j=0; j<4; j++)
-        {
-            jc_dest->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
-            jc_dest->motor2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixM2J[4*i+j]);
-        }
-    }
-    
-
-    for(int r=0; r<4; r++)
-    {
-        for(int c=0; c<6; c++)
-        {
-            jc_dest->encoder2joint[r][c] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[6*r+c]);
-        }
-    }
-
-    for(int s=0; s< mc_service.properties.numofjointsets; s++)
-    {
-        memcpy(&jc_dest->jsetcfg[s]  , &mc_service.properties.jointset_cfgs[s], sizeof(eOmc_jointset_configuration_t));
-    }
-
-    return true;
-}
 
 bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 {

@@ -124,12 +124,12 @@ typedef struct
 
 #if defined(SERVICE_PARSER_USE_MC)
 
-typedef struct
-{
-    vector<double>                  matrixJ2M;
-    vector<double>                  matrixM2J;
-    vector<double>                  matrixE2J;
-} servMC_controller_t;
+// typedef struct
+// {
+//     vector<double>                  matrixJ2M;
+//     vector<double>                  matrixM2J;
+//     vector<double>                  matrixE2J;
+// } servMC_controller_t;
 
 
 
@@ -161,15 +161,15 @@ typedef struct
     vector<eOmc_mc4broadcast_t>         mc4broadcasts;
     vector<eObrd_canlocation_t>         mc4joints;
 
-    servMC_controller_t                 controller;
+    //servMC_controller_t                 controller;
 
     vector<servMC_actuator_t>           actuators;
     vector<servMC_encoder_t>            encoder1s;
     vector<servMC_encoder_t>            encoder2s;
 
-    vector<int>                         joint2set;
-    int                                 numofjointsets;
-    vector<eOmc_jointset_configuration_t> jointset_cfgs;
+    //vector<int>                         joint2set;
+    //int                                 numofjointsets;
+    //vector<eOmc_jointset_configuration_t> jointset_cfgs;
 } servMCproperties_t;
 
 

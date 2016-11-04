@@ -81,6 +81,7 @@ using namespace std;
 #include "EoMotionControl.h"
 
 #include "serviceParser.h"
+#include "mcParser.h"
 
 // - public #define  --------------------------------------------------------------------------------------------------
 
@@ -218,83 +219,24 @@ class torqueControlHelper
     }
 };
 
-typedef enum
+
+
+typedef struct
 {
-    PidAlgo_simple = 0,
-    PIdAlgo_velocityInnerLoop = 1,
-    PidAlgo_currentInnerLoop =2
-} PidAlgorithmType_t;
-
-
-typedef enum
-{
-    controlUnits_machine = 0,
-    controlUnits_metric = 1
-} GenericControlUnitsType_t;
-
-class Pid_Algorithm
-{
-public:
-    PidAlgorithmType_t type;
-    GenericControlUnitsType_t ctrlUnitsType;
-
-};
-
-
-class Pid_Algorithm_simple: public Pid_Algorithm
-{
-public:
-    Pid *pid;
-    Pid_Algorithm_simple(int nj)
-    {
-        pid = allocAndCheck<Pid>(nj);
-    };
-
-};
-
-class PidAlgorithm_VelocityInnerLoop: public Pid_Algorithm
-{
-public:
-    Pid *extPid; //pos, trq, velocity
-    Pid *innerVelPid;
-    PidAlgorithm_VelocityInnerLoop(int nj)
-    {
-        extPid = allocAndCheck<Pid>(nj);
-        innerVelPid = allocAndCheck<Pid>(nj);
-    };
-};
-
-
-class PidAlgorithm_CurrentInnerLoop: public Pid_Algorithm
-{
-public:
-    Pid *extPid;
-    Pid *innerCurrLoop;
-     PidAlgorithm_CurrentInnerLoop(int nj)
-    {
-        extPid = allocAndCheck<Pid>(nj);
-        innerCurrLoop = allocAndCheck<Pid>(nj);
-    };
-};
-
-
-
-
-
-class Pid_emsVel_2focPwm
-{
-public:
-    Pid emsPosVel;
-    Pid focVelPwm;
-};
-
-class jointsets_properties
-{
-public:
     vector<int>                         joint2set;
+    vector <vector <int> >              set2joint;
     int                                 numofjointsets;
     vector<eOmc_jointset_configuration_t> jointset_cfgs;
-};
+} eomc_jointsetsInfo_t;
+
+
+
+typedef struct
+{
+    vector<double>                  matrixJ2M;
+    vector<double>                  matrixM2J;
+    vector<double>                  matrixE2J;
+} eomc_couplingInfo_t;
 
 namespace yarp {
     namespace dev  {
@@ -355,6 +297,7 @@ private:
     TheEthManager* ethManager;
     EthResource* res;
     ServiceParser* parser;
+    mcParser *_mcparser;
 
     bool opened;
     bool verbosewhenok;
@@ -389,9 +332,13 @@ private:
     int    *_motorPoles;                        /** */
     double *_rotorlimits_max;                   /** */
     double *_rotorlimits_min;                   /** */
-    Pid *_pids;                                 /** initial gains */
-    Pid *_vpids;                                /** initial velocity gains */
-    Pid *_tpids;                                /** initial torque gains */
+//     Pid *_pids;                                 /** initial gains */
+//     Pid *_vpids;                                /** initial velocity gains */
+//     Pid *_tpids;                                /** initial torque gains */
+
+    eomcParser_pidInfo *_ppids;
+    eomcParser_pidInfo *_vpids;
+    eomcParser_trqPidInfo *_tpids;
     Pid *_cpids;                                /** initial current gains */
     bool _currentPidsAvailables;                /** is true if _cpids contains current pids read in xml file. Current pids are not mandatory file */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
@@ -408,9 +355,9 @@ private:
     double *_maxMotorVelocity;                  /** max motor velocity */
     int *_velocityShifts;                       /** velocity shifts */
     int *_velocityTimeout;                      /** velocity shifts */
-    double *_kbemf;                             /** back-emf compensation parameter */
-    double *_ktau;                              /** motor torque constant */
-    int * _filterType;                          /** the filter type (int value) used by the force control algorithm */
+//     double *_kbemf;                             /** back-emf compensation parameter */
+//     double *_ktau;                              /** motor torque constant */
+//     int * _filterType;                          /** the filter type (int value) used by the force control algorithm */
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
     bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
     #define MAX_POSITION_MOVE_INTERVAL 0.080
@@ -473,23 +420,16 @@ private:
     double  *_ref_torques;      // for torque control.
 
     uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
-    string  *_posistionControlLaw;
-    string  *_velocityControlLaw;
-    string  *_torqueControlLaw;
-    vector <vector <int> > _set2joint;
+
+
     //NEW PIDS
-    Pid *_pidOfPosCtrl_outPwm; //ems compute PID: in input takes position and gets output pwm; 2
-
-
-    Pid_emsVel_2focPwm *_pidOfPosCtrl_emsVel_2focPwm;
-
     map<string, Pid_Algorithm*> posAlgoMap;
     map<string, Pid_Algorithm*> velAlgoMap;
     map<string, Pid_Algorithm*> trqAlgoMap;
 
 
-    servMC_controller_t controller; //contains coupling matrix
-    jointsets_properties _jointsets_prop;
+    eomc_couplingInfo_t _couplingInfo; //contains coupling matrix vecchio campo controller
+    eomc_jointsetsInfo_t _jointsets_info;
 
 
 
@@ -517,26 +457,24 @@ private:
     bool parse2FocGroup(Bottle &focGroup);
     bool parseCouplingGroup(Bottle &coupling);
     bool parseJointsetCfgGroup(Bottle &jointsetcfg);
-    bool parserControlsGroup(Bottle &controlsGroup);
-    bool parsercontrolUnitsType(Bottle &bPid, GenericControlUnitsType_t &unitstype);
-    bool parsePid_inPos_outPwm(Bottle &b_pid, string controlLaw);
-    bool parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw);
-    bool parsePid_inVel_outPwm(Bottle &b_pid, string controlLaw);
+
     bool parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw);
     bool parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw);
     bool parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix);
-    bool parseSelectedPositionControl(yarp::os::Searchable &config);
-    bool parseSelectedVelocityControl(yarp::os::Searchable &config);
-    bool parseSelectedTorqueControl(yarp::os::Searchable &config);
-    bool getCorrectPidForEachJoint(void);
-    bool convertPosPid(Pid myPid[]);
-    bool convertTrqPid(Pid myPid[]);
 
-    bool verifyControlLawconsistencyinJointSet(string *controlLaw);
+
+    bool convertPosPid(eomcParser_pidInfo myPidInfo[]);
+    bool convertTrqPid(eomcParser_trqPidInfo myPidInfo[]);
+
+    bool verifyUserControlLawConsistencyInJointSet(eomcParser_pidInfo *pidInfo);
+    bool updatedJointsetsCfgWithControlInfo(void);
     bool saveCouplingsData(void);
     bool updatedJointsetsCfg(int joint, eOmc_pidoutputtype_t pidoutputtype);
     void debugUtil_printJointsetInfo(void);
     void debugUtil_printControlLaws(void);
+
+    bool isTorqueControlEnabled(int joint);
+    bool isVelocityControlEnabled(int joint);
 
 //    bool getStatusBasic_withWait(const int n_joint, const int *joints, eOmc_joint_status_basic_t *_statuslist);             // helper function
 //    bool getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);     // helper function
@@ -548,6 +486,8 @@ private:
 
     bool controlModeStatusConvert_yarp2embObj(int vocabMode, eOmc_controlmode_t &embOut);
     int  controlModeStatusConvert_embObj2yarp(eOenum08_t embObjMode);
+
+    eOmc_pidoutputtype_t pidOutputTypeConver_eomc2fw(int joint); //maybe a day we convert from yarp to fw!
 
     void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
     void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
