@@ -272,9 +272,9 @@ void MainWindow::onJumpToUpdater(bool click)
 void MainWindow::onGoToMaintenance(bool click)
 {
     loading(true,true);
-    foreach (CustomTreeWidgetItem *node, selectedNodes) {
-        node->setCheckSelected(false);
-    }
+//    foreach (CustomTreeWidgetItem *node, selectedNodes) {
+//        node->setCheckSelected(false);
+//    }
     QFuture<bool> future = QtConcurrent::run(core,&FirmwareUpdaterCore::goToMaintenance);
     watcher.setFuture(future);
 
@@ -284,13 +284,13 @@ void MainWindow::onGoToApplication(bool click)
 {
     loading(true,true);
     foreach (CustomTreeWidgetItem *node, selectedNodes) {
-        emptyNode(node);
-        node->setCheckSelected(false);
+        emptyNode(node); 
     }
     QFuture<bool> future = QtConcurrent::run(core,&FirmwareUpdaterCore::goToApplication);
     watcher.setFuture(future);
 
 }
+
 
 void MainWindow::onEraseEprom(bool click)
 {
@@ -310,11 +310,13 @@ void MainWindow::onFutureFinished()
     if(watcher.result()){
         foreach (CustomTreeWidgetItem *it, selectedNodes) {
             it->refresh();
+            it->setCheckSelected(false);
         }
     }
     loading(false);
     checkEnableButtons();
 }
+
 
 void MainWindow::onBlinkPressed(bool click)
 {
@@ -1055,23 +1057,25 @@ void MainWindow::onSelectionCheckDestroy(QObject *obj)
 
 void MainWindow::onCanBoardsRetrieved(QTreeWidgetItem *it, bool refresh)
 {
+    CustomTreeWidgetItem *node = (CustomTreeWidgetItem*)it;
 
-    if(it->type() != ETH_TREE_NODE){
-        return;
+    int type = node->type();
+    if(type != ETH_TREE_NODE && type != CAN_TREE_ROOT_NODE){
+       return;
     }
 
-    EthTreeWidgetItem *ethNode = (EthTreeWidgetItem*)it;
-    ethNode->setExpanded(true);
 
-    if(!refresh && ethNode->getCanBoards().count() > 0){
+    node->setExpanded(true);
+
+    if(!refresh && node->getCanBoards().count() > 0){
         removeChildren(it);
         it->setData(0,EMPTY_NODE,false);
     }
 
     if(!refresh){
-        for(int i=0;i<ethNode->getCanBoards().count();i++){
+        for(int i=0;i<node->getCanBoards().count();i++){
 
-            CanTreeWidgetItem *canNode = new CanTreeWidgetItem(ethNode,core,i);
+            CanTreeWidgetItem *canNode = new CanTreeWidgetItem(node,core,i);
 
             connect(canNode,SIGNAL(selectedChanged(bool)),
                     this,SLOT(onSelectionChanged(bool)),Qt::QueuedConnection);
@@ -1090,8 +1094,8 @@ void MainWindow::onCanBoardsRetrieved(QTreeWidgetItem *it, bool refresh)
 
         }
     }else{
-        for(int i=0;i<ethNode->childCount();i++){
-            CanTreeWidgetItem *canNode = (CanTreeWidgetItem*)ethNode->child(i);
+        for(int i=0;i<node->childCount();i++){
+            CanTreeWidgetItem *canNode = (CanTreeWidgetItem*)node->child(i);
             canNode->refresh();
         }
     }
