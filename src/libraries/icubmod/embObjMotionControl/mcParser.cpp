@@ -274,6 +274,47 @@ bool mcParser::parseSelectedTorqueControl(yarp::os::Searchable &config)
 }
 
 
+bool mcParser::parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix)
+{
+    int j=0;
+    Bottle xtmp;
+
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kp"), "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kd"), "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("ki"), "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxInt"), "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxOutput"), "Pid maxOutput parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("shift"), "Pid shift parameter", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("ko"), "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("stictionUp"), "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("stictionDwn"), "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kff"), "Pid kff parameter", _njoints))         return false; for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+
+    return true;
+}
+
+bool mcParser::extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
+{
+    size++;
+    Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
+    if (tmp.isNull())
+    {
+        yError () << key1.c_str() << " parameter not found for board " << _boardname;
+        return false;
+    }
+
+    if(tmp.size()!=size)
+    {
+        yError () << key1.c_str() << " incorrect number of entries in BOARD " << _boardname;
+        return false;
+    }
+
+    out=tmp;
+    return true;
+}
+
+
+
 bool mcParser::parsePid_inPos_outPwm(Bottle &b_pid, string controlLaw)
 {
     bool alreadyParsed = false;
@@ -291,8 +332,6 @@ bool mcParser::parsePid_inPos_outPwm(Bottle &b_pid, string controlLaw)
     if(!parsePidUnitsType(b_pid, unitstype))
         return false;
     pidSimple_ptr->ctrlUnitsType = unitstype;
-
-    _positionControlUnits = (positionControlUnitsType)unitstype;
 
     if(!parsePidsGroup(b_pid, pidSimple_ptr->pid, string("pos_")))
         return false;
@@ -320,9 +359,6 @@ bool mcParser::parsePid_inVel_outPwm(Bottle &b_pid, string controlLaw)
     if(!parsePidUnitsType(b_pid, unitstype))
         return false;
     pidSimple_ptr->ctrlUnitsType = unitstype;
-
-    _positionControlUnits = (positionControlUnitsType)unitstype;
-    _velocityControlUnits = (velocityControlUnitsType)unitstype;
 
     if(!parsePidsGroup(b_pid, pidSimple_ptr->pid, string("vel_")))
         return false;
@@ -367,16 +403,6 @@ bool mcParser::parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw)
     if (!extractGroup(b_pid, xtmp, "ktau", "ktau parameter", _njoints))           return false; for (int j=0; j<_njoints; j++) _ktau[j]       = xtmp.get(j+1).asDouble();
     if (!extractGroup(b_pid, xtmp, "filterType", "filterType param", _njoints))   return false; for (int j=0; j<_njoints; j++) _filterType[j] = xtmp.get(j+1).asInt();
 
-    //conversion from metric to machine units (if applicable)
-    for (int j=0; j<_njoints; j++)
-    {
-        pidSimple_ptr->pid[j].kp = pidSimple_ptr->pid[j].kp / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
-        pidSimple_ptr->pid[j].ki = pidSimple_ptr->pid[j].ki / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
-        pidSimple_ptr->pid[j].kd = pidSimple_ptr->pid[j].kd / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
-        pidSimple_ptr->pid[j].stiction_up_val   = pidSimple_ptr->pid[j].stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
-        pidSimple_ptr->pid[j].stiction_down_val = pidSimple_ptr->pid[j].stiction_down_val * _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
-    }
-
     trqAlgoMap[controlLaw] = pidSimple_ptr;
 
     return true;
@@ -400,9 +426,6 @@ bool mcParser::parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw)
     if(!parsePidUnitsType(b_pid, unitstype))
         return false;
     pidInnerVel_ptr->ctrlUnitsType = unitstype;
-
-    _positionControlUnits = (positionControlUnitsType)unitstype;
-     _velocityControlUnits = (velocityControlUnitsType)unitstype;
 
     if(!parsePidsGroup(b_pid, pidInnerVel_ptr->extPid, string("pos_")))
         return false;
@@ -442,8 +465,6 @@ bool mcParser::parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw)
         return false;
     }
 
-    _torqueControlUnits = (torqueControlUnitsType)unitstype;
-
     if(!parsePidsGroup(b_pid, pidInnerVel_ptr->extPid, string("trq_")))
         return false;
 
@@ -479,7 +500,7 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
         if(it == posAlgoMap.end())
         {
            yError() << "embObjMC BOARD " << _boardname << "Cannot find " << _posistionControlLaw[i].c_str() << "in parsed pos pid";
-            return false;
+           return false;
         }
 
         pidAlgo_ptr = posAlgoMap[_posistionControlLaw[i]];
@@ -625,8 +646,8 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
                 {
                     PidAlgorithm_VelocityInnerLoop *tpidAlgo_innerVelLoop_ptr = (PidAlgorithm_VelocityInnerLoop*)tpidAlgo_ptr;
                     tpids[i].pid = tpidAlgo_innerVelLoop_ptr->extPid[i];
-                    tpids[i].ctrlUnitsType = tpidAlgo_simple_ptr->ctrlUnitsType;
-                    tpids[i].controlLaw =  tpidAlgo_simple_ptr->type;
+                    tpids[i].ctrlUnitsType = tpidAlgo_innerVelLoop_ptr->ctrlUnitsType;
+                    tpids[i].controlLaw =  tpidAlgo_innerVelLoop_ptr->type;
                     tpids[i].usernamePidSelected = _torqueControlLaw[i];
                     tpids[i].enabled = true;
                     tpids[i].kbemf = _kbemf[i];
@@ -751,5 +772,39 @@ void mcParser::debugUtil_printControlLaws(void)
         yError() << " - j " << x << _torqueControlLaw[x].c_str();
     }
     //////end
+
+}
+
+
+void eomcParser_pidInfo::dumpdata(void)
+{
+
+    cout <<  "Is enabled " << enabled;
+    cout <<  ". Username pid selected is " << usernamePidSelected;
+    switch(controlLaw)
+    {
+        case PidAlgo_simple:
+            cout <<  ". Control law is " << "PidAlgo_simple";
+            break;
+
+        case PIdAlgo_velocityInnerLoop:
+            cout <<  ". Control law is " << "PIdAlgo_velocityInnerLoop";
+            break;
+
+        case PidAlgo_currentInnerLoop:
+            cout <<  ". Control law is " << "PidAlgo_currentInnerLoop";
+            break;
+        default :
+            cout <<  ". Control law is " << "unknown";
+    }
+
+    if(ctrlUnitsType == controlUnits_machine)
+        cout << ". ctr Unit type is " << "controlUnits_machine.";
+    else if (ctrlUnitsType == controlUnits_metric)
+        cout << ". ctr Unit type is " << "controlUnits_metric.";
+    else
+        cout << ". ctr Unit type is " << "unknown.";
+
+    cout << endl;
 
 }

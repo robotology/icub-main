@@ -43,16 +43,18 @@
 
 
 
-
+#include <string>
+#include <map>
 
 //  Yarp stuff
 #include <yarp/os/Bottle.h>
-#include <yarp/os/Time.h>
+//#include <yarp/os/Time.h>
+#include <yarp/os/Bottle.h>
 #include <yarp/dev/ControlBoardPid.h>
-
+#include <yarp/dev/ControlBoardHelper.h>
 
 #include "EoMotionControl.h"
-#include <yarp/dev/ControlBoardHelper.h>
+
 
 
 // - public #define  --------------------------------------------------------------------------------------------------
@@ -125,14 +127,16 @@ public:
     yarp::dev::Pid pid;
     GenericControlUnitsType_t ctrlUnitsType;
     PidAlgorithmType_t controlLaw;
-    string usernamePidSelected;
+    std::string usernamePidSelected;
     bool enabled;
+
+    void dumpdata(void);
 
 };
 
 class eomcParser_trqPidInfo : public eomcParser_pidInfo
 {
-
+public:
     double kbemf;                             /** back-emf compensation parameter */
     double ktau;                              /** motor torque constant */
     int    filterType;
@@ -143,41 +147,46 @@ class mcParser
 
 private:
     int _njoints;
-    string _boardname;
+    std::string _boardname;
 
-    map<string, Pid_Algorithm*> posAlgoMap;
-    map<string, Pid_Algorithm*> velAlgoMap;
-    map<string, Pid_Algorithm*> trqAlgoMap;
+    std::map<std::string, Pid_Algorithm*> posAlgoMap;
+    std::map<std::string, Pid_Algorithm*> velAlgoMap;
+    std::map<std::string, Pid_Algorithm*> trqAlgoMap;
 
-    string  *_posistionControlLaw;
-    string  *_velocityControlLaw;
-    string  *_torqueControlLaw;
+    std::string  *_posistionControlLaw;
+    std::string  *_velocityControlLaw;
+    std::string  *_torqueControlLaw;
 
     double *_kbemf;                             /** back-emf compensation parameter */
     double *_ktau;                              /** motor torque constant */
     int * _filterType;
 
+    //PID parsing functions
+    bool parseControlsGroup(yarp::os::Searchable &config);
     bool parseSelectedPositionControl(yarp::os::Searchable &config);
     bool parseSelectedVelocityControl(yarp::os::Searchable &config);
     bool parseSelectedTorqueControl(yarp::os::Searchable &config);
-    bool parsePid_inPos_outPwm(Bottle &b_pid, string controlLaw);
-    bool parsePid_inVel_outPwm(Bottle &b_pid, string controlLaw);
-    bool parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw);
-    bool parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw);
-    bool parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw);
+    bool parsePid_inPos_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
+    bool parsePid_inVel_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
+    bool parsePid_inTrq_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
+    bool parsePidPos_withInnerVelPid(yarp::os::Bottle &b_pid, std::string controlLaw);
+    bool parsePidTrq_withInnerVelPid(yarp::os::Bottle &b_pid, std::string controlLaw);
+    bool parsePidsGroup(yarp::os::Bottle& pidsGroup, yarp::dev::Pid myPid[], std::string prefix);
     bool getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_pidInfo *vpids, eomcParser_trqPidInfo *tpids);
-    bool parsePidUnitsType(Bottle &bPid, GenericControlUnitsType_t &unitstype);
+    bool parsePidUnitsType(yarp::os::Bottle &bPid, GenericControlUnitsType_t &unitstype);
 
 
-    bool pidsAreEquals(Pid &pid1, Pid &pid2); //to move in yarp pid (override = operator)
+    bool pidsAreEquals(yarp::dev::Pid &pid1, yarp::dev::Pid &pid2); //to move in yarp pid (override = operator)
 
+    //general utils functions
+    bool extractGroup(yarp::os::Bottle &input, yarp::os::Bottle &out, const std::string &key1, const std::string &txt, int size);
 
     ///////// DEBUG FUNCTIONS
     void debugUtil_printControlLaws(void);
 
 
 public:
-    mcParser(int numofjoints, string boardname);
+    mcParser(int numofjoints, std::string boardname);
     ~mcParser();
     bool parsePids(yarp::os::Searchable &config, eomcParser_pidInfo *ppids, eomcParser_pidInfo *vpids, eomcParser_trqPidInfo *tpids);
 

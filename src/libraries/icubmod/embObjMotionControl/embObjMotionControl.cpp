@@ -396,6 +396,7 @@ bool embObjMotionControl::interactionModeStatusConvert_embObj2yarp(eOenum08_t em
 
 //generic function that check is key1 is present in input bottle and that the result has size elements
 // return true/false
+#warning VALE: remove extractGroup
 bool embObjMotionControl::extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
 {
     size++;
@@ -914,24 +915,6 @@ bool embObjMotionControl::parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[])
 // }
 
 
-bool embObjMotionControl::parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix)
-{
-    int j=0;
-    Bottle xtmp;
-
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kp"), "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kd"), "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("ki"), "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxInt"), "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("maxOutput"), "Pid maxOutput parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("shift"), "Pid shift parameter", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("ko"), "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("stictionUp"), "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("stictionDwn"), "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp,  prefix + string("kff"), "Pid kff parameter", _njoints))         return false; for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
-
-    return true;
-}
 
 bool embObjMotionControl::convertPosPid(eomcParser_pidInfo myPidInfo[])
 {
@@ -1880,6 +1863,7 @@ bool embObjMotionControl::parseJointsetCfgGroup(Bottle &jointsetcfg)
 
 bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_pidInfo *pidInfo)
 {
+
     for(int s=0; s<_jointsets_info.set2joint.size(); s++)
     {
        if(_jointsets_info.set2joint[s].size() == 0 )
@@ -1894,7 +1878,39 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_p
 
             if(pidInfo[firstjoint].usernamePidSelected != pidInfo[otherjoint].usernamePidSelected)
             {
-                yError() << "embObjMC BOARD " << boardIPstring << "Joints beloning to same set must be have same control law";
+                yError() << "embObjMC BOARD " << boardIPstring << "Joints beloning to same set must be have same control law. Joint " << otherjoint << " differs from " << firstjoint << "Set num " << s ;
+                yError() << pidInfo[firstjoint].usernamePidSelected << "***" << pidInfo[otherjoint].usernamePidSelected;
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+
+
+
+
+bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_trqPidInfo *pidInfo)
+{
+#warning VALE ho dovuto replicare la funz verifyUserControlLawConsistencyInJointSet per torque ==>metti type in pidinfo class
+
+    for(int s=0; s<_jointsets_info.set2joint.size(); s++)
+    {
+       if(_jointsets_info.set2joint[s].size() == 0 )
+       {
+            yError() << "embObjMC BOARD " << boardIPstring << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
+            return false;
+       }
+        int firstjoint = _jointsets_info.set2joint[s][0];
+        for(int k=1; k<_jointsets_info.set2joint[s].size(); k++)
+        {
+            int otherjoint = _jointsets_info.set2joint[s][k];
+
+            if(pidInfo[firstjoint].usernamePidSelected != pidInfo[otherjoint].usernamePidSelected)
+            {
+                yError() << "embObjMC BOARD " << boardIPstring << "Joints beloning to same set must be have same control law. Joint " << otherjoint << " differs from " << firstjoint << "Set num " << s ;
+                yError() << pidInfo[firstjoint].usernamePidSelected << "***" << pidInfo[otherjoint].usernamePidSelected;
                 return false;
             }
         }
@@ -2074,14 +2090,11 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
        if(!_mcparser->parsePids(config, _ppids, _vpids, _tpids))
             return false;
-
         // 1) verify joint beloning to same set has same control law
         if(!verifyUserControlLawConsistencyInJointSet(_ppids))
             return false;
-
         if(!verifyUserControlLawConsistencyInJointSet(_vpids))
             return false;
-
         if(!verifyUserControlLawConsistencyInJointSet(_tpids))
              return false;
 
@@ -2363,12 +2376,12 @@ bool embObjMotionControl::init()
 
 
 
-     ////////Debug prints
-    for(int i=0; i<_njoints; i++)
-    {
-        yError() << " ** J_RES=" << _jointEncoderRes[i] << "  M_RES=" <<  _rotorEncoderRes[i];
-        yError() << " ** J_TYPE=" << _jointEncoderType[i];
-    }
+//      ////////Debug prints
+//     for(int i=0; i<_njoints; i++)
+//     {
+//         yError() << " ** J_RES=" << _jointEncoderRes[i] << "  M_RES=" <<  _rotorEncoderRes[i];
+//         yError() << " ** J_TYPE=" << _jointEncoderType[i];
+//     }
 
     //////////////////////////////////////////
     // invia la configurazione dei GIUNTI   //
@@ -2381,8 +2394,8 @@ bool embObjMotionControl::init()
         eOmc_joint_config_t jconfig = {0};
         memset(&jconfig, 0, sizeof(eOmc_joint_config_t));
         copyPid_iCub2eo(&(_ppids[logico].pid),  &jconfig.pidposition);
-        copyPid_iCub2eo(&(_vpids[logico].pid, &jconfig.pidvelocity);
-        copyPid_iCub2eo(&(_tpids[logico].pid, &jconfig.pidtorque);
+        copyPid_iCub2eo(&(_vpids[logico].pid), &jconfig.pidvelocity);
+        copyPid_iCub2eo(&(_tpids[logico].pid), &jconfig.pidtorque);
 
         //stiffness and damping read in xml file are in Nm/deg and Nm/(Deg/sec), so we need to convert before send to fw.
         jconfig.impedance.damping   = (eOmeas_damping_t) _torqueControlHelper->convertImpN2S(logico, _impedance_params[logico].damping);

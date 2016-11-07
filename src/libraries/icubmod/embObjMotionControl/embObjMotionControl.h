@@ -460,13 +460,13 @@ private:
 
     bool parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw);
     bool parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw);
-    bool parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix);
 
 
     bool convertPosPid(eomcParser_pidInfo myPidInfo[]);
     bool convertTrqPid(eomcParser_trqPidInfo myPidInfo[]);
 
-    bool verifyUserControlLawConsistencyInJointSet(eomcParser_pidInfo *pidInfo);
+    bool verifyUserControlLawConsistencyInJointSet(eomcParser_pidInfo *ipdInfo);
+    bool verifyUserControlLawConsistencyInJointSet(eomcParser_trqPidInfo *pidInfo);
     bool updatedJointsetsCfgWithControlInfo(void);
     bool saveCouplingsData(void);
     bool updatedJointsetsCfg(int joint, eOmc_pidoutputtype_t pidoutputtype);
