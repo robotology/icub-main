@@ -675,6 +675,34 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
         }
     }
 
+
+    //Here i would check that all joints have same type units in order to create torquehelper with correct factor.
+
+    //get first joint with enabled torque
+    int firstjoint = -1;
+    for(int i=0; i<_njoints; i++)
+    {
+        if(tpids[i].enabled)
+            firstjoint = i;
+    }
+
+    if(firstjoint==-1)
+    {
+        // no joint has torque enabed
+        return true;
+    }
+
+    for(int i=firstjoint+1; i<_njoints; i++)
+    {
+        if(tpids[i].enabled)
+        {
+            if(tpids[firstjoint].ctrlUnitsType != tpids[i].ctrlUnitsType)
+            {
+                yError() << "embObjMC BOARD " << _boardname << "all joints with torque enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
+                return false;
+            }
+        }
+    }
     return true;
 
 
@@ -867,7 +895,7 @@ bool mcParser::parseCurrentPid(yarp::os::Searchable &config, eomcParser_pidInfo 
         cpids[i].controlLaw = PidAlgo_simple;
         cpids[i].pid = mycpids[i];
     }
-    
+
     checkAndDestroy(mycpids);
 
     return true;
