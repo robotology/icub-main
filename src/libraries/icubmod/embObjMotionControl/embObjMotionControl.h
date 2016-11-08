@@ -308,8 +308,8 @@ private:
     servConfigMC_t serviceConfig;
 #endif
 
-    int tot_packet_recv;
-    int errors;
+    //int tot_packet_recv;
+    //int errors;
 
     yarp::os::Semaphore _mutex;
 
@@ -370,21 +370,20 @@ private:
 
     bool        useRawEncoderData;
     bool        _pwmIsLimited;                         /** set to true if pwm is limited */
-    bool        _torqueControlEnabled;                 /** set to true if the torque control parameters are successfully loaded. If false, boards cannot switch in torque mode */
 
-    enum       torqueControlUnitsType {T_MACHINE_UNITS=0, T_METRIC_UNITS=1};
-    torqueControlUnitsType _torqueControlUnits;
-    torqueControlHelper    *_torqueControlHelper;
-
-    enum       positionControlUnitsType {P_MACHINE_UNITS=0, P_METRIC_UNITS=1};
-    positionControlUnitsType _positionControlUnits;
-
-    enum       velocityControlUnitsType {V_MACHINE_UNITS=0, V_METRIC_UNITS=1};
-    velocityControlUnitsType _velocityControlUnits;
-
+//     enum       torqueControlUnitsType {T_MACHINE_UNITS=0, T_METRIC_UNITS=1};
+//     torqueControlUnitsType _torqueControlUnits;
+     torqueControlHelper    *_torqueControlHelper;
+//
+//     enum       positionControlUnitsType {P_MACHINE_UNITS=0, P_METRIC_UNITS=1};
+//     positionControlUnitsType _positionControlUnits;
+//
+//     enum       velocityControlUnitsType {V_MACHINE_UNITS=0, V_METRIC_UNITS=1};
+//     velocityControlUnitsType _velocityControlUnits;
 
 
-    enum posControlLawType {emsPwm_2focOpenloop = 0, emsVel_2focPwm = 2};
+
+    //enum posControlLawType {emsPwm_2focOpenloop = 0, emsVel_2focPwm = 2};
 
 
 
@@ -405,8 +404,8 @@ private:
 
     double 		SAFETY_THRESHOLD;
     // debug
-    int     start;
-    int     end;
+    //int     start;
+    //int     end;
 
     // internal stuff
     bool    *_enabledAmp;       // Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
@@ -420,13 +419,6 @@ private:
     double  *_ref_torques;      // for torque control.
 
     uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
-
-
-    //NEW PIDS
-    map<string, Pid_Algorithm*> posAlgoMap;
-    map<string, Pid_Algorithm*> velAlgoMap;
-    map<string, Pid_Algorithm*> trqAlgoMap;
-
 
     eomc_couplingInfo_t _couplingInfo; //contains coupling matrix vecchio campo controller
     eomc_jointsetsInfo_t _jointsets_info;
@@ -496,6 +488,11 @@ private:
 
     bool EncoderType_iCub2eo(const string* in, uint8_t *out);
     bool EncoderType_eo2iCub(const uint8_t *in, string* out);
+
+    // eOmn_serv_type_t getMcServiceType(void);
+
+    bool iNeedCouplingsInfo(void); //the device needs coupling info if it manages joints controlled by 2foc and mc4plus.
+    bool iMange2focBoards(void);
 
     // saturation check and rounding for 16 bit unsigned integer
     int U_16(double x) const

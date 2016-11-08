@@ -617,17 +617,14 @@ embObjMotionControl::embObjMotionControl() :
     _ref_positions    = NULL;
     _ref_speeds       = NULL;
     _ref_torques      = NULL;
-    _positionControlUnits = P_MACHINE_UNITS;
-    _torqueControlUnits = T_MACHINE_UNITS;
-    _torqueControlEnabled = false;
     _torqueControlHelper = NULL;
 
     checking_motiondone = NULL;
     // debug connection
-    tot_packet_recv   = 0;
-    errors            = 0;
-    start             = 0;
-    end               = 0;
+    //tot_packet_recv   = 0;
+    //errors            = 0;
+    //start             = 0;
+    //end               = 0;
 
     // Check status of joints
     _enabledPid       = NULL;
@@ -848,38 +845,38 @@ bool embObjMotionControl::parseImpedanceGroup_NewFormat(Bottle& pidsGroup, Imped
 }
 
 
-bool embObjMotionControl::parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[])
-{
-    int j=0;
-    Bottle xtmp;
-    if (!extractGroup(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "maxOutput", "Pid maxOutput parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
-    if (!extractGroup(pidsGroup, xtmp, "kff", "Pid kff parameter", _njoints))         return false; for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
-
-    //conversion from metric to machine units (if applicable)
-    if (_positionControlUnits==P_METRIC_UNITS)
-    {
-        for (j=0; j<_njoints; j++)
-        {
-            myPid[j].kp = myPid[j].kp / _angleToEncoder[j];  //[PWM/deg]
-            myPid[j].ki = myPid[j].ki / _angleToEncoder[j];  //[PWM/deg]
-            myPid[j].kd = myPid[j].kd / _angleToEncoder[j];  //[PWM/deg]
-        }
-    }
-    else
-    {
-        //do nothing
-    }
-
-    return true;
-}
+// bool embObjMotionControl::parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[])
+// {
+//     int j=0;
+//     Bottle xtmp;
+//     if (!extractGroup(pidsGroup, xtmp, "kp", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kp = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "kd", "Pid kd parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].kd = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "ki", "Pid kp parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].ki = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "maxInt", "Pid maxInt parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_int = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "maxOutput", "Pid maxOutput parameter", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].max_output = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "shift", "Pid shift parameter", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].scale = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "ko", "Pid ko parameter", _njoints))           return false; for (j=0; j<_njoints; j++) myPid[j].offset = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "stictionUp", "Pid stictionUp", _njoints))     return false; for (j=0; j<_njoints; j++) myPid[j].stiction_up_val = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "stictionDwn", "Pid stictionDwn", _njoints))   return false; for (j=0; j<_njoints; j++) myPid[j].stiction_down_val = xtmp.get(j+1).asDouble();
+//     if (!extractGroup(pidsGroup, xtmp, "kff", "Pid kff parameter", _njoints))         return false; for (j=0; j<_njoints; j++) myPid[j].kff = xtmp.get(j+1).asDouble();
+//
+//     //conversion from metric to machine units (if applicable)
+//     if (_positionControlUnits==P_METRIC_UNITS)
+//     {
+//         for (j=0; j<_njoints; j++)
+//         {
+//             myPid[j].kp = myPid[j].kp / _angleToEncoder[j];  //[PWM/deg]
+//             myPid[j].ki = myPid[j].ki / _angleToEncoder[j];  //[PWM/deg]
+//             myPid[j].kd = myPid[j].kd / _angleToEncoder[j];  //[PWM/deg]
+//         }
+//     }
+//     else
+//     {
+//         //do nothing
+//     }
+//
+//     return true;
+// }
 
 // bool embObjMotionControl::parseVelocityPidsGroup(Bottle& pidsGroup, Pid myPid[])
 // {
@@ -2049,11 +2046,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
     _torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);
 
-    mc_serv_type = (eOmn_serv_type_t)serviceConfig.ethservice.configuration.type;
-    if( (mc_serv_type == eomn_serv_MC_foc) ||
-        (mc_serv_type == eomn_serv_MC_mc4plus) ||
-        (mc_serv_type == eomn_serv_MC_mc4plusmais)
-      )
+    if(iNeedCouplingsInfo())
     {
 
         ////// COUPLINGS
@@ -2188,7 +2181,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
      /////// [2FOC]
      {
-        if(mc_serv_type == eomn_serv_MC_foc)
+        if(iMange2focBoards())
         {
             Bottle &focGroup=config.findGroup("2FOC");
             if (focGroup.isNull() )
@@ -2635,13 +2628,13 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
     eOmc_PID_t  outPid;
     Pid hwPid = pid;
 
-    if (_positionControlUnits==P_METRIC_UNITS)
+    if(_ppids[j].ctrlUnitsType == controlUnits_metric)
     {
         hwPid.kp = hwPid.kp / _angleToEncoder[j];  //[PWM/deg]
         hwPid.ki = hwPid.ki / _angleToEncoder[j];  //[PWM/deg]
         hwPid.kd = hwPid.kd / _angleToEncoder[j];  //[PWM/deg]
     }
-    else if (_positionControlUnits==P_MACHINE_UNITS)
+    if(_ppids[j].ctrlUnitsType == controlUnits_machine)
     {
         hwPid.kp = hwPid.kp;  //[PWM/icubdegrees]
         hwPid.ki = hwPid.ki;  //[PWM/icubdegrees]
@@ -2801,13 +2794,13 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
 
     copyPid_eo2iCub(&eoPID, pid);
 
-    if (_positionControlUnits==P_METRIC_UNITS)
+    if(_ppids[j].ctrlUnitsType == controlUnits_metric)
     {
         pid->kp = pid->kp * _angleToEncoder[j];  //[PWM/deg]
         pid->ki = pid->ki * _angleToEncoder[j];  //[PWM/deg]
         pid->kd = pid->kd * _angleToEncoder[j];  //[PWM/deg]
     }
-    else if (_positionControlUnits==P_MACHINE_UNITS)
+    else if(_ppids[j].ctrlUnitsType == controlUnits_machine)
     {
         pid->kp = pid->kp;  //[PWM/icubdegrees]
         pid->ki = pid->ki;  //[PWM/icubdegrees]
@@ -3616,7 +3609,7 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
     bool ret = true;
     eOenum08_t controlmodecommand = 0;
 
-    if((_mode == VOCAB_CM_TORQUE) && (_torqueControlEnabled == false))
+    if((_mode == VOCAB_CM_TORQUE) && (_tpids[j].enabled  == false))
     {
         yError()<<"Torque control is disabled. Check your configuration parameters";
         return false;
@@ -3655,7 +3648,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
 
     for(int i=0; i<n_joint; i++)
     {
-        if ((modes[i] == VOCAB_CM_TORQUE) && (_torqueControlEnabled == false)) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+        if ((modes[i] == VOCAB_CM_TORQUE) && (_tpids[i].enabled  == false)) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
 
         if(!controlModeCommandConvert_yarp2embObj(modes[i], controlmodecommand) )
         {
@@ -3693,7 +3686,7 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
     for(int i=0; i<_njoints; i++)
     {
 
-        if ((modes[i] == VOCAB_CM_TORQUE) && (_torqueControlEnabled == false))
+        if ((modes[i] == VOCAB_CM_TORQUE) && (_tpids[i].enabled  == false))
         {
             yError()<<"Torque control is disabled. Check your configuration parameters";
             continue;
@@ -4088,6 +4081,7 @@ bool embObjMotionControl::getMaxCurrentRaw(int j, double *val)
 
 bool embObjMotionControl::getAmpStatusRaw(int j, int *st)
 {
+#warning VALE: can i set this func like deprecated? noone set _enabledAmp!!
     (_enabledAmp[j ]) ? *st = 1 : *st = 0;
     return true;
 }
@@ -4791,7 +4785,7 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         Bottle& r = val.addList();
         for(int i = 0; i<_njoints; i++)
         {
-            r.addInt((int)_torqueControlEnabled);
+            r.addInt((int)_tpids[i].enabled );
         }
         return true;
     }
@@ -5533,13 +5527,18 @@ bool embObjMotionControl::setVelPidRaw(int j, const Pid &pid)
     eOmc_PID_t  outPid;
     Pid hwPid = pid;
 
-    if (_positionControlUnits == P_METRIC_UNITS)
+    if(!_vpids[j].enabled)
+    {
+        yError() << "eoMc board " << boardIPstring << ": it is not possible set velocity pid for joint " << j <<", because velocity pid is enabled in xml files";
+        return false;
+    }
+    if(_vpids[j].ctrlUnitsType == controlUnits_metric)
     {
         hwPid.kp = hwPid.kp / _angleToEncoder[j];  //[PWM/deg]
         hwPid.ki = hwPid.ki / _angleToEncoder[j];  //[PWM/deg]
         hwPid.kd = hwPid.kd / _angleToEncoder[j];  //[PWM/deg]
     }
-    else if (_positionControlUnits == P_MACHINE_UNITS)
+    else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
     {
         hwPid.kp = hwPid.kp;  //[PWM/icubdegrees]
         hwPid.ki = hwPid.ki;  //[PWM/icubdegrees]
@@ -5547,7 +5546,7 @@ bool embObjMotionControl::setVelPidRaw(int j, const Pid &pid)
     }
     else
     {
-        yError() << "Unknown _positionControlUnits, needed by setVelPidRaw()";
+        yError() << "eoMc board " << boardIPstring << ": Unknown _positionControlUnits, needed by setVelPidRaw()";
     }
 
     copyPid_iCub2eo(&hwPid, &outPid);
@@ -5603,13 +5602,14 @@ bool embObjMotionControl::getVelPidRaw(int j, Pid *pid)
 
     copyPid_eo2iCub(&eoPID, pid);
 
-    if (_positionControlUnits == P_METRIC_UNITS)
+
+    if(_vpids[j].ctrlUnitsType == controlUnits_metric)
     {
         pid->kp = pid->kp * _angleToEncoder[j];  //[PWM/deg]
         pid->ki = pid->ki * _angleToEncoder[j];  //[PWM/deg]
         pid->kd = pid->kd * _angleToEncoder[j];  //[PWM/deg]
     }
-    else if (_positionControlUnits == P_MACHINE_UNITS)
+    else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
     {
         pid->kp = pid->kp;  //[PWM/icubdegrees]
         pid->ki = pid->ki;  //[PWM/icubdegrees]
@@ -5617,7 +5617,7 @@ bool embObjMotionControl::getVelPidRaw(int j, Pid *pid)
     }
     else
     {
-        yError() << "Unknown _positionControlUnits needed by getVelPid()";
+        yError() << "eoMc board " << boardIPstring << ":Unknown _positionControlUnits needed by getVelPid()";
     }
 
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
@@ -5866,7 +5866,7 @@ bool embObjMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionMod
 
 //    yDebug() << "received setInteractionModeRaw command (SINGLE) for BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j << " mode " << Vocab::decode(_mode);
 
-    if (_mode == VOCAB_IM_COMPLIANT && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
+    if (_mode == VOCAB_IM_COMPLIANT && _tpids[j].enabled  == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; return false;}
 
     if(!interactionModeCommandConvert_yarp2embObj(_mode, interactionmodecommand) )
     {
@@ -5907,7 +5907,7 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
 
     for(int j=0; j<n_joints; j++)
     {
-        if (modes[j] == VOCAB_IM_COMPLIANT && _torqueControlEnabled == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
+        if (modes[j] == VOCAB_IM_COMPLIANT && _tpids[j].enabled  == false) {yError()<<"Torque control is disabled. Check your configuration parameters"; continue;}
 
         if(!interactionModeCommandConvert_yarp2embObj(modes[j], interactionmodecommand) )
         {
@@ -5960,7 +5960,7 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 
     for(int j=0; j<_njoints; j++)
     {
-        if ((modes[j] == VOCAB_IM_COMPLIANT) && (_torqueControlEnabled == false))
+        if ((modes[j] == VOCAB_IM_COMPLIANT) && (_tpids[j].enabled  == false))
         {
             yError()<<"Torque control is disabled. Check your configuration parameters";
             continue;
@@ -6449,5 +6449,26 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
     return ret;
 }
 
+//the device needs coupling info if it manages joints controlled by 2foc and mc4plus.
+bool embObjMotionControl::iNeedCouplingsInfo(void)
+{
+#warning VALE: se 'e mc serice general???
+    eOmn_serv_type_t mc_serv_type = (eOmn_serv_type_t)serviceConfig.ethservice.configuration.type;
+    if( (mc_serv_type == eomn_serv_MC_foc) ||
+        (mc_serv_type == eomn_serv_MC_mc4plus) ||
+        (mc_serv_type == eomn_serv_MC_mc4plusmais)
+      )
+        return true;
+    else
+        return false;
+}
+
+bool embObjMotionControl::iMange2focBoards(void)
+{
+    if ((eOmn_serv_type_t)serviceConfig.ethservice.configuration.type == eomn_serv_MC_foc)
+        return true;
+    else
+        return false;
+}
 
 // eof
