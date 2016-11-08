@@ -92,6 +92,10 @@ public:
     {
         pid = allocAndCheck<yarp::dev::Pid>(nj);
     };
+    ~Pid_Algorithm_simple()
+    {
+        checkAndDestroy(pid);
+    };
 
 };
 
@@ -105,20 +109,30 @@ public:
         extPid = allocAndCheck<yarp::dev::Pid>(nj);
         innerVelPid = allocAndCheck<yarp::dev::Pid>(nj);
     };
-};
-
-
-class PidAlgorithm_CurrentInnerLoop: public Pid_Algorithm
-{
-public:
-    yarp::dev::Pid *extPid;
-    yarp::dev::Pid *innerCurrLoop;
-     PidAlgorithm_CurrentInnerLoop(int nj)
+    ~PidAlgorithm_VelocityInnerLoop()
     {
-        extPid = allocAndCheck<yarp::dev::Pid>(nj);
-        innerCurrLoop = allocAndCheck<yarp::dev::Pid>(nj);
-    };
+        checkAndDestroy(extPid);
+        checkAndDestroy(innerVelPid);
+    }
 };
+
+
+// class PidAlgorithm_CurrentInnerLoop: public Pid_Algorithm
+// {
+// public:
+//     yarp::dev::Pid *extPid;
+//     yarp::dev::Pid *innerCurrLoop;
+//     PidAlgorithm_CurrentInnerLoop(int nj)
+//     {
+//         extPid = allocAndCheck<yarp::dev::Pid>(nj);
+//         innerCurrLoop = allocAndCheck<yarp::dev::Pid>(nj);
+//     };
+//     ~PidAlgorithm_CurrentInnerLoop()
+//     {
+//         checkAndDestroy(extPid);
+//         checkAndDestroy(innerCurrLoop);
+//     }
+// };
 
 class eomcParser_pidInfo
 {
@@ -142,6 +156,20 @@ public:
     int    filterType;
 };
 
+
+
+typedef struct
+{
+    bool hasHallSensor;
+    bool hasTempSensor;
+    bool hasRotorEncoder;
+    bool hasRotorEncoderIndex;
+    int  rotorIndexOffset;
+    int  motorPoles;
+    bool hasSpeedEncoder ; //facoltativo
+} eomc_twofocSpecificInfo;
+
+
 class mcParser
 {
 
@@ -160,6 +188,9 @@ private:
     double *_kbemf;                             /** back-emf compensation parameter */
     double *_ktau;                              /** motor torque constant */
     int * _filterType;
+
+
+
 
     //PID parsing functions
     bool parseControlsGroup(yarp::os::Searchable &config);
@@ -189,6 +220,8 @@ public:
     mcParser(int numofjoints, std::string boardname);
     ~mcParser();
     bool parsePids(yarp::os::Searchable &config, eomcParser_pidInfo *ppids, eomcParser_pidInfo *vpids, eomcParser_trqPidInfo *tpids);
+    bool parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificInfo *twofocinfo);
+    bool parseCurrentPid(yarp::os::Searchable &config, eomcParser_pidInfo *cpids);
 
 };
 

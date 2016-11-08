@@ -746,6 +746,133 @@ bool mcParser::parsePidUnitsType(Bottle &bPid, GenericControlUnitsType_t &unitst
 }
 
 
+bool mcParser::parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificInfo *twofocinfo)
+{
+     Bottle &focGroup=config.findGroup("2FOC");
+     if (focGroup.isNull() )
+     {
+        yError() << "embObjMC BOARD " << _boardname << " detected that Group 2FOC is not found in configuration file";
+        return false;
+     }
+
+    Bottle xtmp;
+    int i;
+
+    if (!extractGroup(focGroup, xtmp, "HasHallSensor", "HasHallSensor 0/1 ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+           twofocinfo[i - 1].hasHallSensor = xtmp.get(i).asInt();
+    }
+    if (!extractGroup(focGroup, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            twofocinfo[i - 1].hasTempSensor = xtmp.get(i).asInt();
+    }
+    if (!extractGroup(focGroup, xtmp, "HasRotorEncoder", "HasRotorEncoder 0/1 ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+
+        for (i = 1; i < xtmp.size(); i++)
+            twofocinfo[i - 1].hasRotorEncoder = xtmp.get(i).asInt();
+    }
+    if (!extractGroup(focGroup, xtmp, "HasRotorEncoderIndex", "HasRotorEncoderIndex 0/1 ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            twofocinfo[i - 1].hasRotorEncoderIndex = xtmp.get(i).asInt();
+    }
+
+    if (!extractGroup(focGroup, xtmp, "RotorIndexOffset", "RotorIndexOffset", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            twofocinfo[i - 1].rotorIndexOffset = xtmp.get(i).asInt();
+    }
+
+    // Number of motor poles
+    if (!extractGroup(focGroup, xtmp, "MotorPoles", "MotorPoles", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            twofocinfo[i - 1].motorPoles = xtmp.get(i).asInt();
+    }
+
+    if (!extractGroup(focGroup, xtmp, "HasSpeedEncoder", "HasSpeedEncoder 0/1 ", _njoints))
+    {
+        yWarning () << "missing param HasSpeedEncoder";
+        // optional by now
+        //return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            twofocinfo[i - 1].hasSpeedEncoder = xtmp.get(i).asInt();
+    }
+
+    return true;
+
+}
+
+
+
+bool mcParser::parseCurrentPid(yarp::os::Searchable &config, eomcParser_pidInfo *cpids)
+{
+    Bottle currentPidsGroup;
+    currentPidsGroup=config.findGroup("CURRENT_CONTROL", "Current control parameters");
+    if(currentPidsGroup.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << " no CURRENT_CONTROL group found in config file";
+        return false;
+
+    }
+    yarp::dev::Pid *mycpids =  allocAndCheck<yarp::dev::Pid>(_njoints);
+
+    GenericControlUnitsType_t unitstype;
+    if(!parsePidUnitsType(currentPidsGroup, unitstype))
+        return false;
+
+    if(unitstype != controlUnits_metric)
+    {
+        yError() << "embObjMC BOARD " << _boardname << " current pids can use only metric units";
+        return false;
+    }
+
+    if(!parsePidsGroup(currentPidsGroup, mycpids, string("")))
+        return false;
+
+    for(int i=0; i<_njoints; i++)
+    {
+        cpids[i].enabled = true;
+        cpids[i].ctrlUnitsType = unitstype;
+        cpids[i].controlLaw = PidAlgo_simple;
+        cpids[i].pid = mycpids[i];
+    }
+    
+    checkAndDestroy(mycpids);
+
+    return true;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////
 /////////////////// DEBUG FUNCTIONS
@@ -808,3 +935,4 @@ void eomcParser_pidInfo::dumpdata(void)
     cout << endl;
 
 }
+

@@ -439,20 +439,14 @@ bool embObjMotionControl::alloc(int nj)
     _maxJntCmdVelocity = allocAndCheck<double>(nj);
     _maxMotorVelocity = allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
-    _hasHallSensor = allocAndCheck<bool>(nj);
-    _hasTempSensor = allocAndCheck<bool>(nj);
-    _hasRotorEncoder = allocAndCheck<bool>(nj);
-    _hasRotorEncoderIndex = allocAndCheck<bool>(nj);
-    _hasSpeedEncoder = allocAndCheck<bool>(nj);
-    _rotorIndexOffset = allocAndCheck<int>(nj);
-    _motorPoles = allocAndCheck<int>(nj);
+    _twofocinfo=allocAndCheck<eomc_twofocSpecificInfo>(nj);
     _rotorlimits_max = allocAndCheck<double>(nj);
     _rotorlimits_min = allocAndCheck<double>(nj);
 
     _ppids=allocAndCheck<eomcParser_pidInfo>(nj);
     _vpids=allocAndCheck<eomcParser_pidInfo>(nj);
     _tpids=allocAndCheck<eomcParser_trqPidInfo>(nj);
-    _cpids = allocAndCheck<Pid>(nj);
+    _cpids = allocAndCheck<eomcParser_pidInfo>(nj);
 
     _impedance_params=allocAndCheck<ImpedanceParameters>(nj);
     _impedance_limits=allocAndCheck<ImpedanceLimits>(nj);
@@ -526,13 +520,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_enabledAmp);
     checkAndDestroy(_enabledPid);
     checkAndDestroy(_calibrated);
-    checkAndDestroy(_hasHallSensor);
-    checkAndDestroy(_hasTempSensor);
-    checkAndDestroy(_hasRotorEncoder);
-    checkAndDestroy(_hasRotorEncoderIndex);
-    checkAndDestroy(_hasSpeedEncoder);
-    checkAndDestroy(_rotorIndexOffset);
-    checkAndDestroy(_motorPoles);
+    checkAndDestroy(_twofocinfo);
     checkAndDestroy(_axisName);
     checkAndDestroy(_jointType);
     checkAndDestroy(_rotorlimits_max);
@@ -581,13 +569,7 @@ embObjMotionControl::embObjMotionControl() :
     _axisMap      = NULL;
     _encodersStamp = NULL;
     _angleToEncoder = NULL;
-    _hasHallSensor = NULL;
-    _hasTempSensor = NULL;
-    _hasRotorEncoder = NULL;
-    _hasRotorEncoderIndex = NULL;
-    _hasSpeedEncoder = NULL;
-    _rotorIndexOffset = NULL;
-    _motorPoles       = NULL;
+    _twofocinfo = NULL;
     _cacheImpedance   = NULL;
     _impedance_params = NULL;
     _impedance_limits = NULL;
@@ -636,7 +618,6 @@ embObjMotionControl::embObjMotionControl() :
 
     useRawEncoderData = false;
     _pwmIsLimited     = false;
-    _currentPidsAvailables = false;
 
     ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
@@ -1415,70 +1396,70 @@ bool embObjMotionControl::parseGeneralMecGroup(Bottle &general)
 // }
 //
 
-bool embObjMotionControl::parseCurrPid(Bottle &currentPidsGroup)
-{
-     _currentPidsAvailables = true;
-    Value &controlUnits=currentPidsGroup.find("controlUnits");
-    if  (controlUnits.isNull() == false && controlUnits.isString() == true)
-    {
-        if (controlUnits.toString()==string("metric_units"))
-        {
-            yDebug("CURRENT_CONTROL: using metric_units");
-        }
-        else if (controlUnits.toString()==string("machine_units"))
-        {
-            yError("embObjMotionControl::fromConfig(): CURRENT_CONTROL: is not possible to use machine_units");
-            return false;
-
-        }
-        else
-        {
-            yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: invalid controlUnits value";
-            return false;
-
-        }
-    }
-    else
-    {
-        yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: missing controlUnits parameter. Assuming metric_units. Please fix your configuration file.";
-    }
-
-
-
-    Value &controlLaw=currentPidsGroup.find("controlLaw");
-    if (controlLaw.isNull() == false && controlLaw.isString() == true)
-    {
-        string s_controlaw = controlLaw.toString();
-        if (s_controlaw==string("2foc_feedback"))
-        {
-            yDebug("CURRENT_CONTROL: using control law motor 2foc_feedback");
-            if (!parseCurrentPidsGroup (currentPidsGroup, _cpids))
-            {
-                yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: error detected in parameters syntax";
-                return false;
-            }
-        }
-        else if (s_controlaw==string("not_implemented"))
-        {
-            yDebug() << "current control not not_implemented on this robot part. Disabling.";
-        }
-        else if (s_controlaw==string("disabled"))
-        {
-            yDebug() << "current control disabled on this robot part.";
-        }
-        else
-        {
-            yError() << "Unable to use control law " << s_controlaw << ". Disabling current control";
-        }
-    }
-    else
-    {
-        yDebug() << "Unable to find a valid control law parameter. Disabling current control";
-    }
-
-    return true;
-
-}
+// bool embObjMotionControl::parseCurrPid(Bottle &currentPidsGroup)
+// {
+//      _currentPidsAvailables = true;
+//     Value &controlUnits=currentPidsGroup.find("controlUnits");
+//     if  (controlUnits.isNull() == false && controlUnits.isString() == true)
+//     {
+//         if (controlUnits.toString()==string("metric_units"))
+//         {
+//             yDebug("CURRENT_CONTROL: using metric_units");
+//         }
+//         else if (controlUnits.toString()==string("machine_units"))
+//         {
+//             yError("embObjMotionControl::fromConfig(): CURRENT_CONTROL: is not possible to use machine_units");
+//             return false;
+//
+//         }
+//         else
+//         {
+//             yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: invalid controlUnits value";
+//             return false;
+//
+//         }
+//     }
+//     else
+//     {
+//         yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: missing controlUnits parameter. Assuming metric_units. Please fix your configuration file.";
+//     }
+//
+//
+//
+//     Value &controlLaw=currentPidsGroup.find("controlLaw");
+//     if (controlLaw.isNull() == false && controlLaw.isString() == true)
+//     {
+//         string s_controlaw = controlLaw.toString();
+//         if (s_controlaw==string("2foc_feedback"))
+//         {
+//             yDebug("CURRENT_CONTROL: using control law motor 2foc_feedback");
+//             if (!parseCurrentPidsGroup (currentPidsGroup, _cpids))
+//             {
+//                 yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: error detected in parameters syntax";
+//                 return false;
+//             }
+//         }
+//         else if (s_controlaw==string("not_implemented"))
+//         {
+//             yDebug() << "current control not not_implemented on this robot part. Disabling.";
+//         }
+//         else if (s_controlaw==string("disabled"))
+//         {
+//             yDebug() << "current control disabled on this robot part.";
+//         }
+//         else
+//         {
+//             yError() << "Unable to use control law " << s_controlaw << ". Disabling current control";
+//         }
+//     }
+//     else
+//     {
+//         yDebug() << "Unable to find a valid control law parameter. Disabling current control";
+//     }
+//
+//     return true;
+//
+// }
 
 bool embObjMotionControl::parseLimitsGroup( Bottle &limits)
 {
@@ -1613,85 +1594,85 @@ bool embObjMotionControl::parseTimeoutsGroup( Bottle &timeouts)
     return true;
 }
 
-bool embObjMotionControl::parse2FocGroup(Bottle &focGroup)
-{
-    Bottle xtmp;
-    int i;
-
-    if (!extractGroup(focGroup, xtmp, "HasHallSensor", "HasHallSensor 0/1 ", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++)
-            _hasHallSensor[i - 1] = xtmp.get(i).asInt();
-    }
-    if (!extractGroup(focGroup, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++)
-            _hasTempSensor[i - 1] = xtmp.get(i).asInt();
-    }
-    if (!extractGroup(focGroup, xtmp, "HasRotorEncoder", "HasRotorEncoder 0/1 ", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-
-        for (i = 1; i < xtmp.size(); i++)
-            _hasRotorEncoder[i - 1] = xtmp.get(i).asInt();
-    }
-    if (!extractGroup(focGroup, xtmp, "HasRotorEncoderIndex", "HasRotorEncoderIndex 0/1 ", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++)
-            _hasRotorEncoderIndex[i - 1] = xtmp.get(i).asInt();
-    }
-
-    if (!extractGroup(focGroup, xtmp, "RotorIndexOffset", "RotorIndexOffset", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++)
-            _rotorIndexOffset[i - 1] = xtmp.get(i).asInt();
-    }
-
-    // Number of motor poles
-    if (!extractGroup(focGroup, xtmp, "MotorPoles", "MotorPoles", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++)
-            _motorPoles[i - 1] = xtmp.get(i).asInt();
-    }
-
-    if (!extractGroup(focGroup, xtmp, "HasSpeedEncoder", "HasSpeedEncoder 0/1 ", _njoints))
-    {
-        yWarning () << "missing param HasSpeedEncoder";
-        // optional by now
-        //return false;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++)
-            _hasSpeedEncoder[i - 1] = xtmp.get(i).asInt();
-    }
-
-    return true;
-
-}
+// bool embObjMotionControl::parse2FocGroup(Bottle &focGroup)
+// {
+//     Bottle xtmp;
+//     int i;
+//
+//     if (!extractGroup(focGroup, xtmp, "HasHallSensor", "HasHallSensor 0/1 ", _njoints))
+//     {
+//         return false;
+//     }
+//     else
+//     {
+//         for (i = 1; i < xtmp.size(); i++)
+//             _hasHallSensor[i - 1] = xtmp.get(i).asInt();
+//     }
+//     if (!extractGroup(focGroup, xtmp, "HasTempSensor", "HasTempSensor 0/1 ", _njoints))
+//     {
+//         return false;
+//     }
+//     else
+//     {
+//         for (i = 1; i < xtmp.size(); i++)
+//             _hasTempSensor[i - 1] = xtmp.get(i).asInt();
+//     }
+//     if (!extractGroup(focGroup, xtmp, "HasRotorEncoder", "HasRotorEncoder 0/1 ", _njoints))
+//     {
+//         return false;
+//     }
+//     else
+//     {
+//
+//         for (i = 1; i < xtmp.size(); i++)
+//             _hasRotorEncoder[i - 1] = xtmp.get(i).asInt();
+//     }
+//     if (!extractGroup(focGroup, xtmp, "HasRotorEncoderIndex", "HasRotorEncoderIndex 0/1 ", _njoints))
+//     {
+//         return false;
+//     }
+//     else
+//     {
+//         for (i = 1; i < xtmp.size(); i++)
+//             _hasRotorEncoderIndex[i - 1] = xtmp.get(i).asInt();
+//     }
+//
+//     if (!extractGroup(focGroup, xtmp, "RotorIndexOffset", "RotorIndexOffset", _njoints))
+//     {
+//         return false;
+//     }
+//     else
+//     {
+//         for (i = 1; i < xtmp.size(); i++)
+//             _rotorIndexOffset[i - 1] = xtmp.get(i).asInt();
+//     }
+//
+//     // Number of motor poles
+//     if (!extractGroup(focGroup, xtmp, "MotorPoles", "MotorPoles", _njoints))
+//     {
+//         return false;
+//     }
+//     else
+//     {
+//         for (i = 1; i < xtmp.size(); i++)
+//             _motorPoles[i - 1] = xtmp.get(i).asInt();
+//     }
+//
+//     if (!extractGroup(focGroup, xtmp, "HasSpeedEncoder", "HasSpeedEncoder 0/1 ", _njoints))
+//     {
+//         yWarning () << "missing param HasSpeedEncoder";
+//         // optional by now
+//         //return false;
+//     }
+//     else
+//     {
+//         for (i = 1; i < xtmp.size(); i++)
+//             _hasSpeedEncoder[i - 1] = xtmp.get(i).asInt();
+//     }
+//
+//     return true;
+//
+// }
 
 
 bool embObjMotionControl::parseCouplingGroup(Bottle &coupling)
@@ -2105,23 +2086,23 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     if(!saveCouplingsData())
         return false;
 
-    ////// CURRENT PIDS
-    {
-        Bottle currentPidsGroup;
-        currentPidsGroup=config.findGroup("CURRENT_CONTROL", "Current control parameters");
-        if(currentPidsGroup.isNull())
-        {
-             yDebug() <<"embObjMotionControl::fromConfig(): no CURRENT_CONTROL group found in config file";
-            //return true; //current control group is not mandatory
-            _currentPidsAvailables = false;
-        }
-        else
-        {
-            if(!parseCurrPid(currentPidsGroup))
-                return false;
-        }
-
-    }
+//     ////// CURRENT PIDS
+//     {
+//         Bottle currentPidsGroup;
+//         currentPidsGroup=config.findGroup("CURRENT_CONTROL", "Current control parameters");
+//         if(currentPidsGroup.isNull())
+//         {
+//              yDebug() <<"embObjMotionControl::fromConfig(): no CURRENT_CONTROL group found in config file";
+//             //return true; //current control group is not mandatory
+//             _currentPidsAvailables = false;
+//         }
+//         else
+//         {
+//             if(!parseCurrPid(currentPidsGroup))
+//                 return false;
+//         }
+//
+//    }
 
     ////// IMPEDANCE PARAMETERS
     {
@@ -2179,17 +2160,14 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         return false;
     }
 
-     /////// [2FOC]
+     /////// [2FOC] and [CURRENT PIDS]
      {
         if(iMange2focBoards())
         {
-            Bottle &focGroup=config.findGroup("2FOC");
-            if (focGroup.isNull() )
-            {
-               yError() << "embObjMC BOARD " << boardIPstring << " detected that Group 2FOC is not found in configuration file";
+            if(!_mcparser->parse2FocGroup(config, _twofocinfo))
                 return false;
-            }
-            if(!parse2FocGroup(focGroup))
+
+            if(!_mcparser->parseCurrentPid(config, _cpids))
                 return false;
         }
      }
@@ -2466,21 +2444,21 @@ bool embObjMotionControl::init()
         motor_cfg.gearboxratio = _gearbox[logico];
         motor_cfg.gearboxratio2 = _gearboxE2J[logico];
         motor_cfg.rotorEncoderResolution = _rotorEncoderRes[logico];
-        motor_cfg.hasHallSensor = _hasHallSensor[logico];
-        motor_cfg.hasRotorEncoder = _hasRotorEncoder[logico];
-        motor_cfg.hasTempSensor = _hasTempSensor[logico];
-        motor_cfg.hasRotorEncoderIndex = _hasRotorEncoderIndex[logico];
-        motor_cfg.hasSpeedEncoder = _hasSpeedEncoder[logico];
-        motor_cfg.motorPoles = _motorPoles[logico];
-        motor_cfg.rotorIndexOffset = _rotorIndexOffset[logico];
+        motor_cfg.hasHallSensor = _twofocinfo[logico].hasHallSensor;
+        motor_cfg.hasRotorEncoder = _twofocinfo[logico].hasRotorEncoder;
+        motor_cfg.hasTempSensor = _twofocinfo[logico].hasTempSensor;
+        motor_cfg.hasRotorEncoderIndex = _twofocinfo[logico].hasRotorEncoderIndex;
+        motor_cfg.hasSpeedEncoder = _twofocinfo[logico].hasSpeedEncoder;
+        motor_cfg.motorPoles = _twofocinfo[logico].motorPoles;
+        motor_cfg.rotorIndexOffset = _twofocinfo[logico].rotorIndexOffset;
         motor_cfg.rotorEncoderType = _rotorEncoderType[logico];
         motor_cfg.pwmLimit =_motorPwmLimits[logico];
         motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_max[logico], 0.0, _angleToEncoder[logico]));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_min[logico], 0.0, _angleToEncoder[logico]));
         
-        if(_currentPidsAvailables)
+        if(_cpids[logico].enabled)
         {
-            copyPid_iCub2eo(&_cpids[logico],  &motor_cfg.pidcurrent);
+            copyPid_iCub2eo(&(_cpids[logico].pid),  &motor_cfg.pidcurrent);
         }
         else
         {

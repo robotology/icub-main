@@ -323,24 +323,26 @@ private:
     uint8_t *_rotorEncoderType;                  /** rotor encoder type*/
     double *_gearbox;                           /** the gearbox ratio */
     double *_gearboxE2J;                           /** the gearbox ratio */
-    bool   *_hasHallSensor;                     /** */
-    bool   *_hasTempSensor;                     /** */
-    bool   *_hasRotorEncoder;                   /** */
-    bool   *_hasRotorEncoderIndex;              /** */
-    bool   *_hasSpeedEncoder;                   /** */
-    int    *_rotorIndexOffset;                  /** */
-    int    *_motorPoles;                        /** */
+
+    eomc_twofocSpecificInfo *_twofocinfo;
+
+
+
     double *_rotorlimits_max;                   /** */
     double *_rotorlimits_min;                   /** */
 //     Pid *_pids;                                 /** initial gains */
 //     Pid *_vpids;                                /** initial velocity gains */
 //     Pid *_tpids;                                /** initial torque gains */
 
+
+
+
     eomcParser_pidInfo *_ppids;
     eomcParser_pidInfo *_vpids;
     eomcParser_trqPidInfo *_tpids;
-    Pid *_cpids;                                /** initial current gains */
-    bool _currentPidsAvailables;                /** is true if _cpids contains current pids read in xml file. Current pids are not mandatory file */
+    eomcParser_pidInfo *_cpids;
+   // Pid *_cpids;                                /** initial current gains */
+    //bool _currentPidsAvailables;                /** is true if _cpids contains current pids read in xml file. Current pids are not mandatory file */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
     string *_axisName;                          /** axis name */
     JointTypeEnum *_jointType;                  /** axis type */
