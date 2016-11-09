@@ -72,7 +72,8 @@ typedef enum
 typedef enum
 {
     controlUnits_machine = 0,
-    controlUnits_metric = 1
+    controlUnits_metric = 1,
+    controlUnits_unknown = 255
 } GenericControlUnitsType_t;
 
 class Pid_Algorithm

@@ -461,6 +461,7 @@ private:
 
     bool verifyUserControlLawConsistencyInJointSet(eomcParser_pidInfo *ipdInfo);
     bool verifyUserControlLawConsistencyInJointSet(eomcParser_trqPidInfo *pidInfo);
+    bool verifyTorquePidshasSameUnitTypes(GenericControlUnitsType_t &unittype);
     bool updatedJointsetsCfgWithControlInfo(void);
     bool saveCouplingsData(void);
     bool updatedJointsetsCfg(int joint, eOmc_pidoutputtype_t pidoutputtype);

@@ -1182,19 +1182,17 @@ bool embObjMotionControl::parseGeneralMecGroup(Bottle &general)
         }
     }
 
+    // useMotorSpeedFbk
+    if (!extractGroup(general, xtmp, "useMotorSpeedFbk", "Use motor speed feedback", _njoints))
+    {
+        return false;
+    }
 
-#warning VALE: commentato useMotorSpeedFbk! va fatto dopo la lettura del numero di set
-//     // useMotorSpeedFbk
-//     if (!extractGroup(general, xtmp, "useMotorSpeedFbk", "Use motor speed feedback", _njoints))
-//     {
-//         return false;
-//     }
-//
-//     for (i = 1; i < xtmp.size(); i++)
-//     {
-//         _jointsets_info.jointset_cfgs[i-1].usespeedfeedbackfrommotors = xtmp.get(i).asBool();
-//         yError() << "useMotorSpeedFbk " << i-1 << " is " << _jointsets_info.jointset_cfgs[i-1].usespeedfeedbackfrommotors;
-//     }
+    for (i = 1; i < xtmp.size(); i++)
+    {
+        _jointsets_info.jointset_cfgs[i-1].usespeedfeedbackfrommotors = xtmp.get(i).asBool();
+        yError() << "useMotorSpeedFbk " << i-1 << " is " << _jointsets_info.jointset_cfgs[i-1].usespeedfeedbackfrommotors;
+    }
 
 
     return true;
@@ -2009,24 +2007,6 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
     eOmn_serv_type_t mc_serv_type;
 
-    Bottle general = config.findGroup("GENERAL");
-    if (general.isNull())
-    {
-       yError() << "embObjMC BOARD " << boardIPstring << "Missing General group" ;
-       return false;
-    }
-
-    if(!parseGeneralMecGroup(general))
-        return false;
-
-     //_newtonsToSensor not depends more on joint. Since now we use float number to change torque values with firmware, we can use micro Nm in order to have a good sensitivity.
-    for (i = 0; i < _njoints; i++)
-    {
-        _newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
-    }
-
-    _torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);
-
     if(iNeedCouplingsInfo())
     {
 
@@ -2059,6 +2039,19 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         }
     }
 
+    //VALE: i have to call parseGeneralMecGroup after parsing jointsetcfg, because insed generalmec group there is useMotorSpeedFbk that needs jointset info.
+    Bottle general = config.findGroup("GENERAL");
+    if (general.isNull())
+    {
+       yError() << "embObjMC BOARD " << boardIPstring << "Missing General group" ;
+       return false;
+    }
+
+    if(!parseGeneralMecGroup(general))
+        return false;
+
+
+
     ///// CONTROLS AND PID GROUPS
     {
 
@@ -2070,7 +2063,35 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         if(!verifyUserControlLawConsistencyInJointSet(_vpids))
             return false;
         if(!verifyUserControlLawConsistencyInJointSet(_tpids))
-             return false;
+            return false;
+
+        GenericControlUnitsType_t trqunittype;
+        if(!verifyTorquePidshasSameUnitTypes(trqunittype))
+            return false;
+
+
+        //_newtonsToSensor not depends more on joint. Since now we use float number to change torque values with firmware, we can use micro Nm in order to have a good sensitivity.
+        for (i = 0; i < _njoints; i++)
+        {
+            _newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
+        }
+
+        //VALE: qui ho riportato lo stesso comportamento prima del refactory., ovevro se nel file xml non c'era il gruppo del torquecontrol, allora veniva scelto di usare machine units.
+        //va migliorato?se un giunto non puo' fare controllo di copia allora bisogna dare errore su invio di ogni parametro e comando riguardante la torque!
+        if (trqunittype==controlUnits_metric)
+        {
+            _torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);
+        }
+        else
+        {
+            //    controlUnits_machine or controlUnits_unknown(i.e. no joint can perform torque control)
+             yarp::sig::Vector tmpOnes; tmpOnes.resize(_njoints,1.0);
+            _torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes.data(), tmpOnes.data());
+        }
+
+
+
+
 
         // 2) convert pid values from metrics units to fw units(i.e. icubDegrees)
         convertPosPid(_ppids);
@@ -2086,23 +2107,6 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     if(!saveCouplingsData())
         return false;
 
-//     ////// CURRENT PIDS
-//     {
-//         Bottle currentPidsGroup;
-//         currentPidsGroup=config.findGroup("CURRENT_CONTROL", "Current control parameters");
-//         if(currentPidsGroup.isNull())
-//         {
-//              yDebug() <<"embObjMotionControl::fromConfig(): no CURRENT_CONTROL group found in config file";
-//             //return true; //current control group is not mandatory
-//             _currentPidsAvailables = false;
-//         }
-//         else
-//         {
-//             if(!parseCurrPid(currentPidsGroup))
-//                 return false;
-//         }
-//
-//    }
 
     ////// IMPEDANCE PARAMETERS
     {
@@ -2191,6 +2195,38 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     return true;
 }
 
+bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(GenericControlUnitsType_t &unittype)
+{
+    unittype = controlUnits_unknown;
+    //get first joint with enabled torque
+    int firstjoint = -1;
+    for(int i=0; i<_njoints; i++)
+    {
+        if(_tpids[i].enabled)
+            firstjoint = i;
+    }
+
+    if(firstjoint==-1)
+    {
+        // no joint has torque enabed
+        return true;
+    }
+
+    for(int i=firstjoint+1; i<_njoints; i++)
+    {
+        if(_tpids[i].enabled)
+        {
+            if(_tpids[firstjoint].ctrlUnitsType != _tpids[i].ctrlUnitsType)
+            {
+                yError() << "embObjMC BOARD " << boardIPstring << "all joints with torque enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
+                return false;
+            }
+        }
+    }
+
+    unittype = _tpids[firstjoint].ctrlUnitsType;
+    return true;
+}
 
 bool embObjMotionControl::isTorqueControlEnabled(int joint)
 {
@@ -2210,6 +2246,12 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
     if(false == parser->parseService(config, serviceConfig))
     {
         yError() << "embObjMC BOARD " << boardIPstring << "cannot parse service" ;
+        return false;
+    }
+
+    if(eomn_serv_MC_generic == serviceConfig.ethservice.configuration.type)
+    {
+        yError() << "embObjMC BOARD " << boardIPstring << "it is no longer possible use eomn_serv_MC_generic, because firmware cannot configure itself!" ;
         return false;
     }
 
@@ -6430,7 +6472,6 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
 //the device needs coupling info if it manages joints controlled by 2foc and mc4plus.
 bool embObjMotionControl::iNeedCouplingsInfo(void)
 {
-#warning VALE: se 'e mc serice general???
     eOmn_serv_type_t mc_serv_type = (eOmn_serv_type_t)serviceConfig.ethservice.configuration.type;
     if( (mc_serv_type == eomn_serv_MC_foc) ||
         (mc_serv_type == eomn_serv_MC_mc4plus) ||
