@@ -355,7 +355,6 @@ private:
     MotorCurrentLimits *_currentLimits;
     double *_maxJntCmdVelocity;                 /** max joint commanded velocity */
     double *_maxMotorVelocity;                  /** max motor velocity */
-    int *_velocityShifts;                       /** velocity shifts */
     int *_velocityTimeout;                      /** velocity shifts */
 //     double *_kbemf;                             /** back-emf compensation parameter */
 //     double *_ktau;                              /** motor torque constant */

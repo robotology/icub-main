@@ -461,7 +461,6 @@ bool embObjMotionControl::alloc(int nj)
     _motorPwmLimits=allocAndCheck<double>(nj);
     checking_motiondone=allocAndCheck<bool>(nj);
 
-    _velocityShifts=allocAndCheck<int>(nj);
     _velocityTimeout=allocAndCheck<int>(nj);
     _last_position_move_time=allocAndCheck<double>(nj);
 
@@ -509,7 +508,6 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_currentLimits);
     checkAndDestroy(_motorPwmLimits);
     checkAndDestroy(checking_motiondone);
-    checkAndDestroy(_velocityShifts);
     checkAndDestroy(_velocityTimeout);
     checkAndDestroy(_ref_command_positions);
     checkAndDestroy(_ref_positions);
@@ -584,7 +582,6 @@ embObjMotionControl::embObjMotionControl() :
     _hwLimitsMin      = NULL;
     _currentLimits    = NULL;
     _motorPwmLimits   = NULL;
-    _velocityShifts   = NULL;
     _velocityTimeout  = NULL;
     _maxJntCmdVelocity= NULL;
     _maxMotorVelocity = NULL;
