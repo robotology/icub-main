@@ -385,13 +385,6 @@ bool mcParser::parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw)
     if(!parsePidUnitsType(b_pid, unitstype))
         return false;
 
-#warning VALE per semplificare ho tolto la possibilita di usare pid con machine units
-    if(unitstype == controlUnits_machine)
-    {
-        yError() << "embObjMC BOARD " << _boardname << "Torque pids cannot be expressed in machine units!! Sorry for the inconvenience!!!";
-        return false;
-    }
-
     pidSimple_ptr->ctrlUnitsType = unitstype;
 
     if(!parsePidsGroup(b_pid, pidSimple_ptr->pid, string("trq_")))
@@ -457,13 +450,6 @@ bool mcParser::parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw)
         return false;
     pidInnerVel_ptr->ctrlUnitsType = unitstype;
 
-
-    #warning VALE per semplificare ho tolto la possibilita di usare pid con machine units
-    if(unitstype == controlUnits_machine)
-    {
-        yError() << "embObjMC BOARD " << _boardname << "Torque pids cannot be expressed in machine units!! Sorry for the inconvenience!!!";
-        return false;
-    }
 
     if(!parsePidsGroup(b_pid, pidInnerVel_ptr->extPid, string("trq_")))
         return false;
@@ -555,6 +541,8 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
             {
                 for(int x =0; x<_njoints; x++)
                 {
+#warning VALE: Do I need to check that pids have same control unit type?? 
+                    //if they have same values , they should have same unit type!
                     if( ! pidsAreEquals(((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->innerVelPid[x], ((Pid_Algorithm_simple*)vpidAlgo_ptr)->pid[x]))
                     {
                         yError() << "embObjMC BOARD " << _boardname << "velocity pid values of inner loop of position control are not equal to velocity control pid values";
@@ -640,9 +628,7 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
                 vpids[i].usernamePidSelected = _velocityControlLaw[i];
                 vpids[i].enabled = true;
 
-#warning VALE: il pid esterno e quello interno devono avere lo stessp control units type...oppure cambia struct data!
-
-                 if(tpidAlgo_ptr)
+                if(tpidAlgo_ptr)
                 {
                     PidAlgorithm_VelocityInnerLoop *tpidAlgo_innerVelLoop_ptr = (PidAlgorithm_VelocityInnerLoop*)tpidAlgo_ptr;
                     tpids[i].pid = tpidAlgo_innerVelLoop_ptr->extPid[i];
