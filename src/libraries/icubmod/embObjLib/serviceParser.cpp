@@ -2294,7 +2294,15 @@ bool ServiceParser::check_motion(Searchable &config)
                 yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.type not valid for item" << i;
                 return false;
             }
+            //VALE: workaround to solve problem of configuration of encoder connected to 2foc board.
+            if((eomn_serv_MC_foc == mc_service.type) &&  (eomc_enc_roie == enctype))
+            {
+                enctype = eomc_enc_none;
+            }
+
+
             enc2.desc.type = enctype;
+
 
             encport = eobrd_port_unknown;
             if(false == parse_encoder_port(b_PROPERTIES_JOINTMAPPING_ENCODER2_port.get(i+1).asString(), mc_service.properties.ethboardtype, enctype, encport, formaterror))
@@ -2310,7 +2318,15 @@ bool ServiceParser::check_motion(Searchable &config)
                     yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.position not valid for item" << i;
                 return false;
             }
-            enc2.desc.pos = encposition;
+             //VALE: workaround to solve problem of configuration of encoder connected to 2foc board.
+            if((eomn_serv_MC_foc == mc_service.type) &&  (eomc_enc_roie == enctype))
+            {
+                 enc2.desc.pos = eomc_pos_none;
+            }
+            else
+            {
+                 enc2.desc.pos = encposition;
+            }
 
             enc2.resolution = b_PROPERTIES_JOINTMAPPING_ENCODER2_resolution.get(i+1).asInt();
 
