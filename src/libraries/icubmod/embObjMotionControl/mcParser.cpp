@@ -248,7 +248,7 @@ bool mcParser::parseSelectedTorqueControl(yarp::os::Searchable &config)
         {
             if (!parsePid_inTrq_outPwm(trqControlLaw, _torqueControlLaw[i]))
             {
-                yError() << "embObjMC BOARD " << _boardname << " format error in Pid_inPos_outPwm";
+                yError() << "embObjMC BOARD " << _boardname << " format error in Pid_inTrq_outPwm";
                 return false;
             }
 
@@ -257,7 +257,7 @@ bool mcParser::parseSelectedTorqueControl(yarp::os::Searchable &config)
         {
             if (!parsePidPos_withInnerVelPid(trqControlLaw,_torqueControlLaw[i] ))
             {
-                yError() << "embObjMC BOARD " << _boardname << " format error in PidPos_withInnerVelPid";
+                yError() << "embObjMC BOARD " << _boardname << " format error in PidTrq_withInnerVelPid";
                 return false;
             }
 
@@ -392,9 +392,9 @@ bool mcParser::parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw)
 
     Bottle xtmp;
     //torque specific params
-    if (!extractGroup(b_pid, xtmp, "kbemf", "kbemf parameter", _njoints))         return false; for (int j=0; j<_njoints; j++) _kbemf[j]      = xtmp.get(j+1).asDouble();
-    if (!extractGroup(b_pid, xtmp, "ktau", "ktau parameter", _njoints))           return false; for (int j=0; j<_njoints; j++) _ktau[j]       = xtmp.get(j+1).asDouble();
-    if (!extractGroup(b_pid, xtmp, "filterType", "filterType param", _njoints))   return false; for (int j=0; j<_njoints; j++) _filterType[j] = xtmp.get(j+1).asInt();
+    if (!extractGroup(b_pid, xtmp, "trq_kbemf", "kbemf parameter", _njoints))        return false; for (int j=0; j<_njoints; j++) _kbemf[j]      = xtmp.get(j+1).asDouble();
+    if (!extractGroup(b_pid, xtmp, "trq_tau", "ktau parameter", _njoints))           return false; for (int j=0; j<_njoints; j++) _ktau[j]       = xtmp.get(j+1).asDouble();
+    if (!extractGroup(b_pid, xtmp, "trq_filterType", "filterType param", _njoints))  return false; for (int j=0; j<_njoints; j++) _filterType[j] = xtmp.get(j+1).asInt();
 
     trqAlgoMap[controlLaw] = pidSimple_ptr;
 
