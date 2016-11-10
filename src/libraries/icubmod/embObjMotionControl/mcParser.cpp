@@ -393,7 +393,7 @@ bool mcParser::parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw)
     Bottle xtmp;
     //torque specific params
     if (!extractGroup(b_pid, xtmp, "trq_kbemf", "kbemf parameter", _njoints))        return false; for (int j=0; j<_njoints; j++) _kbemf[j]      = xtmp.get(j+1).asDouble();
-    if (!extractGroup(b_pid, xtmp, "trq_tau", "ktau parameter", _njoints))           return false; for (int j=0; j<_njoints; j++) _ktau[j]       = xtmp.get(j+1).asDouble();
+    if (!extractGroup(b_pid, xtmp, "trq_ktau", "ktau parameter", _njoints))          return false; for (int j=0; j<_njoints; j++) _ktau[j]       = xtmp.get(j+1).asDouble();
     if (!extractGroup(b_pid, xtmp, "trq_filterType", "filterType param", _njoints))  return false; for (int j=0; j<_njoints; j++) _filterType[j] = xtmp.get(j+1).asInt();
 
     trqAlgoMap[controlLaw] = pidSimple_ptr;
