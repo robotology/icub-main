@@ -1574,7 +1574,7 @@ bool embObjMotionControl::parseTimeoutsGroup( Bottle &timeouts)
     int i;
 
     xtmp.clear();
-    if (!extractGroup(timeouts, xtmp, "Velocity", "a list of timeout to be used in the vmo control", _njoints))
+    if (!extractGroup(timeouts, xtmp, "velocity", "a list of timeout to be used in the vmo control", _njoints))
     {
         yWarning() << "Using default velocity Timeout=100, i.e 0.1s\n";
         for(i=1; i<_njoints+1; i++)
