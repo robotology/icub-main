@@ -203,24 +203,42 @@ void MainWindow::uploadLoader(QString filename)
 {
     QString result;
     core->uploadLoader(filename,&result);
+    if(selectedNodes.count() > 0){
+        CustomTreeWidgetItem *node = selectedNodes.first();
+        if(node->getParentNode()->type() == ETH_TREE_ROOT_NODE){
+            refreshEthBoardsNode(node->getParentNode());
+        }
+    }
     setInfoRes(result);
-    needSetRestartOnSelected();
+   // needSetRestartOnSelected();
 }
 
 void MainWindow::uploadUpdater(QString filename)
 {
     QString result;
     core->uploadUpdater(filename,&result);
+    if(selectedNodes.count() > 0){
+        CustomTreeWidgetItem *node = selectedNodes.first();
+        if(node->getParentNode()->type() == ETH_TREE_ROOT_NODE){
+            refreshEthBoardsNode(node->getParentNode());
+        }
+    }
     setInfoRes(result);
-    needSetRestartOnSelected();
+    //needSetRestartOnSelected();
 }
 
 void MainWindow::uploadEthApplication(QString filename)
 {
     QString result;
     core->uploadEthApplication(filename,&result);
+    if(selectedNodes.count() > 0){
+        CustomTreeWidgetItem *node = selectedNodes.first();
+        if(node->getParentNode()->type() == ETH_TREE_ROOT_NODE){
+            refreshEthBoardsNode(node->getParentNode());
+        }
+    }
     setInfoRes(result);
-    needSetRestartOnSelected();
+    //needSetRestartOnSelected();
 }
 
 void MainWindow::uploadCanApplication(QString filename,QString address,int deviceId,CustomTreeWidgetItem *node)
@@ -315,6 +333,7 @@ void MainWindow::onFutureFinished()
     }
     loading(false);
     checkEnableButtons();
+    onDeviceSelectionChanged();
 }
 
 
@@ -607,7 +626,7 @@ void MainWindow::onDeviceSelectionChanged()
 
 void MainWindow::populateInfo(int boardNum)
 {
-    loading(true);
+    needLoading(true,true);
     QString details;
     eOipv4addr_t address;
     boardInfo2_t info = core->getMoreDetails(boardNum,&details,&address);
@@ -616,7 +635,7 @@ void MainWindow::populateInfo(int boardNum)
     }else{
         appendInfo(info,address);
     }
-    loading(false);
+    needLoading(false,false);
 }
 
 void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
@@ -701,7 +720,7 @@ void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
         QTreeWidgetItem *processType = new QTreeWidgetItem(processNode, QStringList() << "Type" << core->getProcessFromUint(info.processes.info[i].type));
         processNode->addChild(processType);
 
-        QTreeWidgetItem *processVersion = new QTreeWidgetItem(processNode, QStringList() << "Version" << QString("%1,%2").arg(info.processes.info[i].version.major).arg(info.processes.info[i].version.minor));
+        QTreeWidgetItem *processVersion = new QTreeWidgetItem(processNode, QStringList() << "Version" << QString("%1.%2").arg(info.processes.info[i].version.major).arg(info.processes.info[i].version.minor));
         processNode->addChild(processVersion);
 
         QTreeWidgetItem *processDate = new QTreeWidgetItem(processNode, QStringList() << "Date" << QDateTime(QDate(info.processes.info[i].date.year,info.processes.info[i].date.month,info.processes.info[i].date.day),
@@ -742,7 +761,7 @@ void MainWindow::onConnect()
         if(it->data(0,DEVICE_LEVEL).toInt() == 0){
 
              if(it->data(0,CONNECTED).toBool() == true){
-                 emptyNode(it);
+                 //emptyNode(it);
                  it->setData(0,CONNECTED,false);
                  it->setTextColor(DEVICE,QColor(Qt::red));
              }
@@ -1000,6 +1019,9 @@ void MainWindow::populateEthBoardsNode(QTreeWidgetItem *it, bool refreshSingleNo
     if(!refreshAll && !refreshSingleNode && core->getEthBoardList().size() > 0){
         // Remove the first child node that has text "?"
         removeChildren(it);
+    }else{
+        emptyNode(it);
+        return;
     }
 
 
@@ -1070,6 +1092,9 @@ void MainWindow::onCanBoardsRetrieved(QTreeWidgetItem *it, bool refresh)
     if(!refresh && node->getCanBoards().count() > 0){
         removeChildren(it);
         it->setData(0,EMPTY_NODE,false);
+    }else{
+        emptyNode(it);
+        return;
     }
 
     if(!refresh){
@@ -1146,6 +1171,7 @@ void MainWindow::onSetInfoRes(QString result)
     mutex1.lock();
     infoResult->setVisible(true);
     infoResult->setText(result);
+    onDeviceSelectionChanged();
     mutex1.unlock();
 }
 
@@ -1566,7 +1592,7 @@ void EthTreeWidgetItem::refresh()
         setData(0,CAN_UPLOAD_UPDATER,false);
         setData(0,CAN_JUMP_UPDATER,false);
     } else if((eOuprot_process_t)board.getInfo().processes.runningnow == uprot_proc_ApplPROGupdater){
-        setData(0,CAN_UPLOAD_LOADER,true);
+        setData(0,CAN_UPLOAD_LOADER,false);
         setData(0,CAN_UPLOAD_APP,false);
         setData(0,CAN_UPLOAD_UPDATER,true);
         setData(0,CAN_JUMP_UPDATER,true);
