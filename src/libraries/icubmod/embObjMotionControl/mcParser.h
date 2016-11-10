@@ -185,6 +185,7 @@ private:
     std::string  *_posistionControlLaw;
     std::string  *_velocityControlLaw;
     std::string  *_torqueControlLaw;
+    std::string  *_currentControlLaw;
 
     double *_kbemf;                             /** back-emf compensation parameter */
     double *_ktau;                              /** motor torque constant */
@@ -198,6 +199,7 @@ private:
     bool parseSelectedPositionControl(yarp::os::Searchable &config);
     bool parseSelectedVelocityControl(yarp::os::Searchable &config);
     bool parseSelectedTorqueControl(yarp::os::Searchable &config);
+    bool parseSelectedCurrentPid(yarp::os::Searchable &config, bool currentPidisMandatory, eomcParser_pidInfo *cpids);
     bool parsePid_inPos_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
     bool parsePid_inVel_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
     bool parsePid_inTrq_outPwm(yarp::os::Bottle &b_pid, std::string controlLaw);
@@ -220,9 +222,10 @@ private:
 public:
     mcParser(int numofjoints, std::string boardname);
     ~mcParser();
-    bool parsePids(yarp::os::Searchable &config, eomcParser_pidInfo *ppids, eomcParser_pidInfo *vpids, eomcParser_trqPidInfo *tpids);
+
+    bool parsePids(yarp::os::Searchable &config, eomcParser_pidInfo *ppids, eomcParser_pidInfo *vpids, eomcParser_trqPidInfo *tpids, eomcParser_pidInfo *cpids, bool currentPidisMandatory);
     bool parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificInfo *twofocinfo);
-    bool parseCurrentPid(yarp::os::Searchable &config, eomcParser_pidInfo *cpids);
+    bool parseCurrentPid(yarp::os::Searchable &config, eomcParser_pidInfo *cpids);//deprecated
 
 };
 

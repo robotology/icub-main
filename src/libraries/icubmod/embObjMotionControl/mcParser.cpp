@@ -38,6 +38,7 @@ mcParser::mcParser(int numofjoints, string boardname)
     _posistionControlLaw = allocAndCheck<string>(_njoints);
     _velocityControlLaw = allocAndCheck<string>(_njoints);
     _torqueControlLaw = allocAndCheck<string>(_njoints);
+    _currentControlLaw = allocAndCheck<string>(_njoints);
 
     _kbemf=allocAndCheck<double>(_njoints);
     _ktau=allocAndCheck<double>(_njoints);
@@ -50,16 +51,19 @@ mcParser::~mcParser()
     checkAndDestroy(_posistionControlLaw);
     checkAndDestroy(_velocityControlLaw);
     checkAndDestroy(_torqueControlLaw);
+    checkAndDestroy(_currentControlLaw);
     checkAndDestroy(_kbemf);
     checkAndDestroy(_ktau);
     checkAndDestroy(_filterType);
 }
 
 
-bool mcParser::parsePids(yarp::os::Searchable &config, eomcParser_pidInfo *ppids, eomcParser_pidInfo *vpids, eomcParser_trqPidInfo *tpids)
+bool mcParser::parsePids(yarp::os::Searchable &config, eomcParser_pidInfo *ppids, eomcParser_pidInfo *vpids, eomcParser_trqPidInfo *tpids, eomcParser_pidInfo *cpids, bool currentPidisMandatory)
 {
 
     if(!parseControlsGroup(config))
+        return false;
+    if(!parseSelectedCurrentPid(config, currentPidisMandatory, cpids))
         return false;
     if(!parseSelectedPositionControl(config))
         return false;
@@ -117,11 +121,94 @@ bool mcParser::parseControlsGroup(yarp::os::Searchable &config)
             _torqueControlLaw[i - 1] = xtmp.get(i).asString();
     }
 
+    if (!extractGroup(controlsGroup, xtmp, "currentPid", "Current Pid ", _njoints))
+    {
+        return false;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            _currentControlLaw[i - 1] = xtmp.get(i).asString();
+    }
+
 
     return true;
 
 }
 
+bool mcParser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool currentPidisMandatory, eomcParser_pidInfo *cpids)
+{
+    //first of all verify current pid has been configured if it is mandatory
+    if(currentPidisMandatory)
+    {
+        for(int i=0; i<_njoints; i++)
+        {
+            if(_currentControlLaw[i] == "none")
+            {
+                yError() << "embObjMC BOARD " << _boardname << "CuuentPid is mandatory. It shlould be different from none ";
+                return false;
+            }
+            if(_currentControlLaw[i] != _currentControlLaw[0])
+            {
+                yError() << "embObjMC BOARD " << _boardname << "all joints should have same current law ";
+                return false;
+            }
+        }
+    }
+
+
+
+    // 1) verify that selected control law is defined in file
+    Bottle currControlLaw = config.findGroup(_currentControlLaw[0]);
+    if (currControlLaw.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Missing " << _currentControlLaw[0].c_str();
+        return false;
+    }
+
+    // 2) read control_law
+    Value &controlLaw=currControlLaw.find("controlLaw");
+    if( (controlLaw.isNull()) || (! controlLaw.isString()) )
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Unable read control law parameter for " << _currentControlLaw[0].c_str() <<". Quitting.";
+        return false;
+    }
+
+    string s_controlaw = controlLaw.toString();
+    if (s_controlaw != string("limitscurrent"))
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Unable to use control law " << s_controlaw << " for current pid. Quitting.";
+        return false;
+    }
+
+    yarp::dev::Pid *mycpids =  allocAndCheck<yarp::dev::Pid>(_njoints);
+
+    GenericControlUnitsType_t unitstype;
+    if(!parsePidUnitsType(currControlLaw, unitstype))
+        return false;
+
+    if(unitstype != controlUnits_metric)
+    {
+        yError() << "embObjMC BOARD " << _boardname << " current pids can use only metric units";
+        return false;
+    }
+
+    if(!parsePidsGroup(currControlLaw, mycpids, string("cur_")))
+        return false;
+
+    for(int i=0; i<_njoints; i++)
+    {
+        cpids[i].enabled = true;
+        cpids[i].ctrlUnitsType = unitstype;
+        cpids[i].controlLaw = PidAlgo_simple;
+        cpids[i].pid = mycpids[i];
+    }
+
+    checkAndDestroy(mycpids);
+
+    return true;
+
+}
 
 
 bool mcParser::parseSelectedPositionControl(yarp::os::Searchable &config)

@@ -2051,8 +2051,11 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
     ///// CONTROLS AND PID GROUPS
     {
+        bool currentPidisMandatory = false;
+        if(iMange2focBoards())
+            currentPidisMandatory = true;
 
-       if(!_mcparser->parsePids(config, _ppids, _vpids, _tpids))
+       if(!_mcparser->parsePids(config, _ppids, _vpids, _tpids, _cpids, currentPidisMandatory))
             return false;
         // 1) verify joint beloning to same set has same control law
         if(!verifyUserControlLawConsistencyInJointSet(_ppids))
@@ -2085,10 +2088,6 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
              yarp::sig::Vector tmpOnes; tmpOnes.resize(_njoints,1.0);
             _torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes.data(), tmpOnes.data());
         }
-
-
-
-
 
         // 2) convert pid values from metrics units to fw units(i.e. icubDegrees)
         convertPosPid(_ppids);
@@ -2161,14 +2160,11 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         return false;
     }
 
-     /////// [2FOC] and [CURRENT PIDS]
+     /////// [2FOC]
      {
         if(iMange2focBoards())
         {
             if(!_mcparser->parse2FocGroup(config, _twofocinfo))
-                return false;
-
-            if(!_mcparser->parseCurrentPid(config, _cpids))
                 return false;
         }
      }
