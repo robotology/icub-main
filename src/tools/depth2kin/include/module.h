@@ -63,12 +63,15 @@ protected:
     ResourceFinder    *rf;
     PolyDriver         drvArmL;
     PolyDriver         drvArmR;
+    PolyDriver         drvAnalogL;
+    PolyDriver         drvAnalogR;
     PolyDriver         drvCartL;
     PolyDriver         drvCartR;
     PolyDriver         drvGaze;
     IControlMode2     *imods;
     IEncoders         *iencs;
     IPositionControl  *iposs;
+    IAnalogSensor     *ianalog;
     ICartesianControl *iarm;
     IGazeControl      *igaze;
         
