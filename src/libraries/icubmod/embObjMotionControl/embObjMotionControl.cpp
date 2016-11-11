@@ -1018,7 +1018,7 @@ bool embObjMotionControl::fromConfig_getGeneralInfo(yarp::os::Searchable &config
     else
     {
         int mcv = config.findGroup("GENERAL").find("MotioncontrolVersion").asInt();
-        if (mcv != 2)
+        if (mcv != 3)
         {
             yError() << "Wrong MotioncontrolVersion parameter. RobotInterface cannot start. Please contact icub-support@iit.it";
             return false;
