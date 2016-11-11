@@ -35,7 +35,7 @@ public:
     void setCheckSelected(bool selected);
     bool isCheckSelected();
     QTreeWidgetItem *getParentNode();
-
+    void setCanBoards(QList <sBoard> boards);
     virtual void refresh();
     QString getBoardType();
 
@@ -143,12 +143,12 @@ signals:
     void deviceSelectionChanged();
     void needSetRestartOnSelected();
     void refreshCanBoardsFromEth(QTreeWidgetItem*);
-    void needLoading(bool,bool,QString = "");
+    void needLoading(bool,bool,QString = "",bool = true);
 
 
 private slots:
     void onFutureFinished();
-    void loading(bool, bool disableAll = false, QString msg = "");
+    void loading(bool, bool disableAll = false, QString msg = "", bool infiniteLoad = true);
     void onNeedSetRestartOnSelected();
     void onUpdateProgressBar(float fraction);
     void onUploadApplication(bool);

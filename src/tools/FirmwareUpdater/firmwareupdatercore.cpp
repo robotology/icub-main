@@ -850,7 +850,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 }
 
 #else
-bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultString, QString address,int deviceId)
+bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultString, QString address,int deviceId,QList <sBoard> *resultCanBoards)
 {
 //    if(!address.isEmpty()){
 //        if(currentAddress != address){
@@ -995,6 +995,12 @@ updateProgress(float(downloader.progress)/downloader.file_length);
 
         updateProgress(1.0);
         downloader.initschede();
+
+        canBoards.clear();
+        for(int i=0; i<downloader.board_list_size;i++){
+            canBoards.append(downloader.board_list[i]);
+        }
+        *resultCanBoards = canBoards;
         return true;
     }
     else
@@ -1006,6 +1012,12 @@ updateProgress(float(downloader.progress)/downloader.file_length);
         return false;
     }
     downloader.initschede();
+
+    canBoards.clear();
+    for(int i=0; i<downloader.board_list_size;i++){
+        canBoards.append(downloader.board_list[i]);
+    }
+    *resultCanBoards = canBoards;
     return true;
 }
 #endif

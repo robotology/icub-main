@@ -116,8 +116,8 @@ MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *paren
     connect(this,SIGNAL(needSetRestartOnSelected()),
             this,SLOT(onNeedSetRestartOnSelected()),Qt::QueuedConnection);
 
-    connect(this,SIGNAL(needLoading(bool,bool,QString)),
-                this,SLOT(loading(bool,bool,QString)),Qt::QueuedConnection);
+    connect(this,SIGNAL(needLoading(bool,bool,QString,bool)),
+                this,SLOT(loading(bool,bool,QString,bool)),Qt::QueuedConnection);
 
     connect(ui->btnBlink,SIGNAL(clicked(bool)),this,SLOT(onBlinkPressed(bool)));
     connect(ui->btnCahngeInfo,SIGNAL(clicked(bool)),this,SLOT(onChangeInfo(bool)));
@@ -243,16 +243,23 @@ void MainWindow::uploadEthApplication(QString filename)
 
 void MainWindow::uploadCanApplication(QString filename,QString address,int deviceId,CustomTreeWidgetItem *node)
 {
+    needLoading(true,true,"",false);
     QString result;
     if(node){
         core->setSelectedCanBoards(node->getCanBoards(),address,deviceId);
     }
-    core->uploadCanApplication(filename,&result,address,deviceId);
+    QList <sBoard> resultCanBoards;
+    core->uploadCanApplication(filename,&result,address,deviceId,&resultCanBoards);
+    needLoading(false,false,"",false);
+    needLoading(true,true);
+    node->setCanBoards(resultCanBoards);
     setInfoRes(result);
-
+    canBoardsRetrieved(node,true);
+    needLoading(false,false);
 //    if(!ethAddress.isEmpty()){
 //        refreshCanBoardsFromEth(selectedNodes.first()->getTreeNode()->parent());
 //    }
+
 }
 
 void MainWindow::onNeedSetRestartOnSelected()
@@ -1089,12 +1096,14 @@ void MainWindow::onCanBoardsRetrieved(QTreeWidgetItem *it, bool refresh)
 
     node->setExpanded(true);
 
-    if(!refresh && node->getCanBoards().count() > 0){
-        removeChildren(it);
-        it->setData(0,EMPTY_NODE,false);
-    }else{
-        emptyNode(it);
-        return;
+    if(!refresh){
+        if(node->getCanBoards().count() > 0){
+            removeChildren(it);
+            it->setData(0,EMPTY_NODE,false);
+        }else{
+            emptyNode(it);
+            return;
+        }
     }
 
     if(!refresh){
@@ -1195,31 +1204,34 @@ void MainWindow::onUpdateProgressBar(float fraction)
         if(!progress->isEnabled()){
             progress->setEnabled(true);
         }
-        ui->advancedGroup->setEnabled(false);
-        ui->controlsGroup->setEnabled(false);
+//        ui->advancedGroup->setEnabled(false);
+//        ui->controlsGroup->setEnabled(false);
         infoResult->setVisible(true);
         infoResult->setText("Updating...");
-        ui->devicesTree->setEnabled(false);
+//        ui->devicesTree->setEnabled(false);
     }else{
         progress->setEnabled(false);
-        ui->advancedGroup->setEnabled(true);
-        ui->controlsGroup->setEnabled(true);
+//        ui->advancedGroup->setEnabled(true);
+//        ui->controlsGroup->setEnabled(true);
         infoResult->setText("Update Done");
-        ui->devicesTree->setEnabled(true);
+//        ui->devicesTree->setEnabled(true);
     }
     progress->setValue(val);
     loadingMutex.unlock();
 
 }
 
-void MainWindow::loading(bool load, bool disableAll,QString msg)
+void MainWindow::loading(bool load, bool disableAll,QString msg,bool infiniteLoad)
 {
 
     if(load/* && !isLoading*/){
         loadCounter++;
         isLoading = true;
-        progress->setMaximum(0);
-        progress->setEnabled(true);
+        if(infiniteLoad){
+            progress->setMaximum(0);
+            progress->setEnabled(true);
+        }
+
         ui->advancedGroup->setEnabled(false);
         ui->controlsGroup->setEnabled(false);
         infoResult->setVisible(true);
@@ -1230,8 +1242,11 @@ void MainWindow::loading(bool load, bool disableAll,QString msg)
     }else /*if(!load && isLoading)*/{
         loadCounter--;
         if(loadCounter == 0){
-            progress->setMaximum(100);
-            progress->setEnabled(false);
+            if(infiniteLoad){
+                progress->setMaximum(100);
+                progress->setEnabled(false);
+            }
+
             ui->advancedGroup->setEnabled(true);
             ui->controlsGroup->setEnabled(true);
             if(!ui->devicesTree->isEnabled()){
@@ -1505,6 +1520,11 @@ QString CustomTreeWidgetItem::retrieveCanBoards()
     }
 
     return result;
+}
+
+void CustomTreeWidgetItem::setCanBoards(QList<sBoard> boards)
+{
+    canBoards = boards;
 }
 
 /***************************************************************************/
