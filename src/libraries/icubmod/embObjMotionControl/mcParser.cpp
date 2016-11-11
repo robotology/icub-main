@@ -139,24 +139,29 @@ bool mcParser::parseControlsGroup(yarp::os::Searchable &config)
 bool mcParser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool currentPidisMandatory, eomcParser_pidInfo *cpids)
 {
     //first of all verify current pid has been configured if it is mandatory
-    if(currentPidisMandatory)
+    for(int i=0; i<_njoints; i++)
     {
-        for(int i=0; i<_njoints; i++)
+        if(currentPidisMandatory)
         {
+    
             if(_currentControlLaw[i] == "none")
             {
                 yError() << "embObjMC BOARD " << _boardname << "CuuentPid is mandatory. It shlould be different from none ";
                 return false;
             }
-            if(_currentControlLaw[i] != _currentControlLaw[0])
-            {
-                yError() << "embObjMC BOARD " << _boardname << "all joints should have same current law ";
-                return false;
-            }
+        }
+        if(_currentControlLaw[i] != _currentControlLaw[0])
+        {
+            yError() << "embObjMC BOARD " << _boardname << "all joints should have same current law ";
+            return false;
         }
     }
 
-
+    if(_currentControlLaw[0]=="none")
+    {
+       yDebug() << "embObjMC BOARD " << _boardname << "No current control found "; 
+         return true;
+    }
 
     // 1) verify that selected control law is defined in file
     Bottle currControlLaw = config.findGroup(_currentControlLaw[0]);
