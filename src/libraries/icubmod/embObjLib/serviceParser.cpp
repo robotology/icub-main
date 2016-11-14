@@ -1072,7 +1072,6 @@ bool ServiceParser::parse_encoder_port(ConstString const &fromstring, eObrd_etht
     bool ret = false;
     switch(type)
     {
-        default:
         case eomc_enc_unknown:
         {
             yWarning() << "ServiceParser::parse_encoder_port():" << t << "cannot be converted into a port because argument type is" << eomc_encoder2string(type, eobool_false);
@@ -1130,9 +1129,33 @@ bool ServiceParser::parse_encoder_port(ConstString const &fromstring, eObrd_etht
             }
 
         } break;
+        default:
+        {
+            int len = strlen(t);
 
+            if(len > 15)
+            {
+                yWarning() << "SServiceParser::parse_encoder_port():" << t << "is not a legal string for a encoder port because it is too long with size =" << len;
+                formaterror = true;
+                return false;
+            }
+            char prefix[16] = {0};
+            sscanf(t, "%3c", prefix);
+            if(0 == strcmp(prefix, "CAN"))
+            {
+                toport = eobrd_port_nolocal;
+                yError() << "VALE: find encoder non locale!!!!!";
+                ret = true;
+            }
+            else
+            {
+                toport = eobrd_port_none;
+                yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for a encoder port!";
+                formaterror = true;
+                return false;
+            }
+        }break;
     }
-
     return ret;
 }
 
@@ -2294,11 +2317,11 @@ bool ServiceParser::check_motion(Searchable &config)
                 yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.type not valid for item" << i;
                 return false;
             }
-            //VALE: workaround to solve problem of configuration of encoder connected to 2foc board.
-            if((eomn_serv_MC_foc == mc_service.type) &&  (eomc_enc_roie == enctype))
-            {
-                enctype = eomc_enc_none;
-            }
+//             //VALE: workaround to solve problem of configuration of encoder connected to 2foc board.
+//             if((eomn_serv_MC_foc == mc_service.type) &&  (eomc_enc_roie == enctype))
+//             {
+//                 enctype = eomc_enc_none;
+//             }
 
 
             enc2.desc.type = enctype;
@@ -2318,15 +2341,17 @@ bool ServiceParser::check_motion(Searchable &config)
                     yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.position not valid for item" << i;
                 return false;
             }
-             //VALE: workaround to solve problem of configuration of encoder connected to 2foc board.
-            if((eomn_serv_MC_foc == mc_service.type) &&  (eomc_enc_roie == enctype))
-            {
-                 enc2.desc.pos = eomc_pos_none;
-            }
-            else
-            {
-                 enc2.desc.pos = encposition;
-            }
+//              //VALE: workaround to solve problem of configuration of encoder connected to 2foc board.
+//             if((eomn_serv_MC_foc == mc_service.type) &&  (eomc_enc_roie == enctype))
+//             {
+//                  enc2.desc.pos = eomc_pos_none;
+//             }
+//             else
+//             {
+//                  enc2.desc.pos = encposition;
+//             }
+
+            enc2.desc.pos = encposition;
 
             enc2.resolution = b_PROPERTIES_JOINTMAPPING_ENCODER2_resolution.get(i+1).asInt();
 
