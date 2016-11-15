@@ -981,8 +981,10 @@ std::string EthMaintainer::prepareMoreInfoText(eOuprot_cmd_DISCOVER_REPLY_t * di
         binfo.maintenanceIsActive = true;
     }
 
-    binfo.versionOfRunning.major = binfo.processes.info[binfo.processes.runningnow].version.major;
-    binfo.versionOfRunning.minor = binfo.processes.info[binfo.processes.runningnow].version.minor;
+    uint8_t index = eouprot_process2index((eOuprot_process_t)disc->processes.runningnow);
+
+    binfo.versionOfRunning.major = binfo.processes.info[index].version.major;
+    binfo.versionOfRunning.minor = binfo.processes.info[index].version.minor;
 
 
 

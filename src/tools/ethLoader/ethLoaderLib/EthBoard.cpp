@@ -123,7 +123,8 @@ string EthBoard::getVersionfRunning(void)
     }
     else
     {
-        snprintf(tmp, sizeof(tmp), "%d.%d", _info2.processes.info[_info2.processes.runningnow].version.major, _info2.processes.info[_info2.processes.runningnow].version.minor);
+        uint8_t index = eouprot_process2index((eOuprot_process_t)_info2.processes.runningnow);
+        snprintf(tmp, sizeof(tmp), "%d.%d", _info2.processes.info[index].version.major, _info2.processes.info[index].version.minor);
         ret = tmp;
     }
     return ret;
@@ -139,7 +140,8 @@ string EthBoard::getDatefRunning(void)
     else
     {
         char tmp[32];
-        eo_common_date_to_string(_info2.processes.info[_info2.processes.runningnow].date, tmp, sizeof(tmp));
+        uint8_t index = eouprot_process2index((eOuprot_process_t)_info2.processes.runningnow);
+        eo_common_date_to_string(_info2.processes.info[index].date, tmp, sizeof(tmp));
         ret = tmp;
     }
     return ret;
@@ -155,7 +157,8 @@ string EthBoard::getCompilationDateOfRunning(void)
     else
     {
         char tmp[32];
-        eo_common_date_to_string(_info2.processes.info[_info2.processes.runningnow].compilationdate, tmp, sizeof(tmp));
+        uint8_t index = eouprot_process2index((eOuprot_process_t)_info2.processes.runningnow);
+        eo_common_date_to_string(_info2.processes.info[index].compilationdate, tmp, sizeof(tmp));
         ret = tmp;
     }
     return ret;
