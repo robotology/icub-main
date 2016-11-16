@@ -149,7 +149,7 @@ int cDownloader::initdriver(Searchable &config)
 #else
         m_idriver = new cDriver;
 #endif
-        tmp = config.check("canDeviceNum");
+        tmp = config.check("canDeviceNum")?config.find("canDeviceNum").asInt():99;
     }
 
     if (0 != (ret = m_idriver->init(config)))
