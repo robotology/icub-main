@@ -49,6 +49,11 @@ bool ImageSplitter::configure(yarp::os::ResourceFinder &rf)
     yarp::os::ConstString outLeftPortName  = "/imageSplitter/left:o";
     yarp::os::ConstString outRightPortName = "/imageSplitter/right:o";
 
+    if (rf.check("nameInput"))
+    {
+        inputPortName = rf.find("nameInput").asString();
+    }
+
     if(rf.check("nameLeft"))
     {
         outLeftPortName = rf.find("nameLeft").asString();
