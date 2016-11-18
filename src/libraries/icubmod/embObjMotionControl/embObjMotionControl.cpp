@@ -2231,6 +2231,9 @@ bool embObjMotionControl::isVelocityControlEnabled(int joint)
     return (_vpids[joint].enabled);
 }
 
+
+
+
 // use this one for ... service configuration
 bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config)
 {
@@ -2250,13 +2253,37 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
 
     //now parser read encoders' resolutions also.
     //so here I save in embObMotioncontrol memory encoders's resolution
-
+    servMC_encoder_t * jointEncoder_ptr = NULL;
+    servMC_encoder_t * motorEncoder_ptr = NULL;
     for(int i=0; i<_njoints; i++)
     {
-        _jointEncoderRes[i]  = parser->mc_service.properties.encoder1s[i].resolution;
-        _jointEncoderType[i] = parser->mc_service.properties.encoder1s[i].desc.type;
-        _rotorEncoderRes[i]  = parser->mc_service.properties.encoder2s[i].resolution;
-        _rotorEncoderType[i] = parser->mc_service.properties.encoder2s[i].desc.type;
+        jointEncoder_ptr = parser->getEncoderAtJoint(i);
+        motorEncoder_ptr = parser->getEncoderAtMotor(i);
+#warning VALE: metti dei controlli per verificare la validita' delle configurazioni degli encoder
+        if(NULL == jointEncoder_ptr)
+        {
+            _jointEncoderRes[i]  = 0;
+            _jointEncoderType[i] = eomc_enc_none;
+        }
+        else
+        {
+            _jointEncoderRes[i]  = jointEncoder_ptr->resolution;
+            _jointEncoderType[i] = jointEncoder_ptr->desc.type;
+        }
+
+
+        if(NULL == motorEncoder_ptr)
+        {
+            _jointEncoderRes[i]  = 0;
+            _jointEncoderType[i] = eomc_enc_none;
+        }
+        else
+        {
+            _jointEncoderRes[i]  = motorEncoder_ptr->resolution;
+            _jointEncoderType[i] = motorEncoder_ptr->desc.type;
+        }
+
+
     }
 
 //     ////////Debug prints

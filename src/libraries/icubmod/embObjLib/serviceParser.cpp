@@ -2733,6 +2733,36 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
     return ret;
 }
 
+
+servMC_encoder_t * ServiceParser::getEncoderAtJoint(int index)
+{
+    if(mc_service.properties.encoder1s[index].desc.pos ==  eomc_pos_atjoint)
+    {
+        return(&mc_service.properties.encoder1s[index]);
+    }
+    else if(mc_service.properties.encoder2s[index].desc.pos ==  eomc_pos_atjoint)
+    {
+        return(&mc_service.properties.encoder2s[index]);
+    }
+    else
+        return NULL;
+}
+
+servMC_encoder_t * ServiceParser::getEncoderAtMotor(int index)
+{
+    if(mc_service.properties.encoder1s[index].desc.pos ==  eomc_pos_atmotor)
+    {
+        return(&mc_service.properties.encoder1s[index]);
+    }
+    else if(mc_service.properties.encoder2s[index].desc.pos ==  eomc_pos_atmotor)
+    {
+        return(&mc_service.properties.encoder2s[index]);
+    }
+    else
+        return NULL;
+
+}
+
 static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B0;
 /*static const eOmn_serv_configuration_t s_serv_config_mc_v3_0B0 =
 {   // eb12 or 0B0

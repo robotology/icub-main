@@ -249,7 +249,8 @@ public:
 
     bool convert(ConstString const &fromstring, eOmc_pidoutputtype_t& pidoutputtype, bool& formaterror);
     bool convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
-
+    servMC_encoder_t * getEncoderAtMotor(int index);
+    servMC_encoder_t * getEncoderAtJoint(int index);
 public:
 
     servAScollector_t           as_service;
@@ -268,6 +269,7 @@ private:
     int getnumofjointsets(void);
 
     bool copyjomocouplingInfo(eOmc_4jomo_coupling_t *jc_dest);
+
     
     // suggestion: split check_motion() in sub-methods which parse the groups ...
 };
