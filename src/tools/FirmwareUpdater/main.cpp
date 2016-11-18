@@ -4,6 +4,7 @@
 #include <QCommandLineOption>
 #include <QFileInfo>
 #include <qdebug.h>
+#include <QDir>
 
 #include "firmwareupdatercore.h"
 
@@ -475,9 +476,9 @@ bool checkApplicationLock()
 {
     QString tempFile;
 #ifdef Q_OS_WIN
-    tempFile = QApplication::applicationDirPath() + "/firmwareUpdater.singletone";
+    tempFile = QDir::homePath() + "/firmwareUpdater.singleton";
 #else
-    tempFile = QApplication::applicationDirPath() + "/.firmwareUpdater.singletone";
+    tempFile = QDir::homePath() + "/.firmwareUpdater.singleton";
 #endif
 
     QFileInfo fInfo(tempFile);
@@ -505,9 +506,9 @@ void removeApplicationLock()
 {
     QString tempFile;
 #ifdef Q_OS_WIN
-    tempFile = QApplication::applicationDirPath() + "/firmwareUpdater.singletone";
+    tempFile = QDir::homePath() + "/firmwareUpdater.singleton";
 #else
-    tempFile = QApplication::applicationDirPath() + "/.firmwareUpdater.singletone";
+    tempFile = QDir::homePath() + "/.firmwareUpdater.singleton";
 #endif
 
     QFileInfo fInfo(tempFile);
