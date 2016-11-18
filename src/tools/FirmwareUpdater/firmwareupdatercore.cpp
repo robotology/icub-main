@@ -939,6 +939,9 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 
     timer_start= yarp::os::Time::now();
 
+//    bool acemortest_notyetstopped = true;
+//    const float acemortest_progress = 0.10;
+
     bool print00 = false, print25 = false, print50 = false, print75 = false, print99 = false;
     // Start the download for the selected boards
     do
@@ -950,10 +953,15 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
         if (float(downloader.progress)/downloader.file_length >0.75 && print75==false)    {qDebug("downloading %s, 75%% done\n",filename.toLatin1().data()); print75=true;}
         if (float(downloader.progress)/downloader.file_length >0.99 && print99==false)    {qDebug("downloading %s, finished!\n",filename.toLatin1().data()); print99=true;}
 
+//        if ((float(downloader.progress)/downloader.file_length > acemortest_progress) && (acemortest_notyetstopped))
+//        {
+//            // place you breakpoint in here.
+//            acemortest_notyetstopped = false;
+//        }
+
         if (ret==1)
         {
-updateProgress(float(downloader.progress)/downloader.file_length);
-
+            updateProgress(float(downloader.progress)/downloader.file_length);
         }
         if (ret==-1)
         {
