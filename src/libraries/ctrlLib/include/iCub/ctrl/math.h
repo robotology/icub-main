@@ -119,12 +119,10 @@ double norm(const yarp::sig::Matrix &M, int col);
 * @param colA is the column for the first vector. 
 * @param B is the second input vector given as b=B(:,colB). 
 * @param colB is the column for the second vector. 
-* @param verbose sets some verbosity.  
 * @return axb.
 */
 yarp::sig::Vector cross(const yarp::sig::Matrix &A, int colA,
-                        const yarp::sig::Matrix &B, int colB,
-                        unsigned int verbose=0);
+                        const yarp::sig::Matrix &B, int colB);
 
 /**
 * \ingroup Maths
@@ -134,12 +132,10 @@ yarp::sig::Vector cross(const yarp::sig::Matrix &A, int colA,
 * @param Da is the derivative of first input vector.  
 * @param b is the second input vector. 
 * @param Db is the derivative of second input vector.  
-* @param verbose sets some verbosity. 
 * @return D(axb).
 */
 yarp::sig::Vector Dcross(const yarp::sig::Vector &a, const yarp::sig::Vector &Da,
-                         const yarp::sig::Vector &b, const yarp::sig::Vector &Db,
-                         unsigned int verbose=0);
+                         const yarp::sig::Vector &b, const yarp::sig::Vector &Db);
 
 /**
 * \ingroup Maths
@@ -152,12 +148,10 @@ yarp::sig::Vector Dcross(const yarp::sig::Vector &a, const yarp::sig::Vector &Da
 * @param B is the second input vector given as b=B(:,colB). 
 * @param DB is the derivative of second input vector.   
 * @param colB is the column for the second vector. 
-* @param verbose sets some verbosity.  
 * @return D(axb).
 */
 yarp::sig::Vector Dcross(const yarp::sig::Matrix &A, const yarp::sig::Matrix &DA, int colA,
-                         const yarp::sig::Matrix &B, const yarp::sig::Matrix &DB, int colB,
-                         unsigned int verbose=0);
+                         const yarp::sig::Matrix &B, const yarp::sig::Matrix &DB, int colB);
 
 }
  
