@@ -604,13 +604,7 @@ bool iKinChain::setHN(const Matrix &_HN)
 /************************************************************************/
 Vector iKinChain::setAng(const Vector &q)
 {
-    if (DOF==0)
-    {
-        if (verbose)
-            yError("setAng() failed since DOF==0");
-
-        return Vector(0);
-    }
+    yAssert(DOF>0);
 
     size_t sz=std::min(q.length(),(size_t)DOF);
     for (size_t i=0; i<sz; i++)
@@ -623,13 +617,7 @@ Vector iKinChain::setAng(const Vector &q)
 /************************************************************************/
 Vector iKinChain::getAng()
 {
-    if (DOF==0)
-    {
-        if (verbose)
-            yError("getAng() failed since DOF==0");
-
-        return Vector(0);
-    }
+    yAssert(DOF>0);
 
     for (unsigned int i=0; i<DOF; i++)
         curr_q[i]=quickList[hash_dof[i]]->getAng();
@@ -781,23 +769,15 @@ Matrix iKinChain::getH(const unsigned int i, const bool allLink)
             cumulHN=true;
     }
 
-    if (i<n)
-    {
-        for (unsigned int j=0; j<=_i; j++)
-            H*=((*l)[j]->getH(c_override));
+    yAssert(i<n);
 
-        if (cumulHN)
-            H*=HN;
+    for (unsigned int j=0; j<=_i; j++)
+        H*=((*l)[j]->getH(c_override));
 
-        return H;
-    }
-    else
-    {
-        if (verbose)
-            yError("getH() failed due to out of range index: %d>=%d",i,n);
+    if (cumulHN)
+        H*=HN;
 
-        return Matrix(0,0);
-    }    
+    return H;
 }
 
 
@@ -819,13 +799,7 @@ Matrix iKinChain::getH()
 /************************************************************************/
 Matrix iKinChain::getH(const Vector &q)
 {
-    if (DOF==0)
-    {
-        if (verbose)
-            yError("getH() failed since DOF==0");
-    
-        return Matrix(0,0);
-    }
+    yAssert(DOF>0);
 
     setAng(q);
     return getH();
@@ -874,14 +848,7 @@ Vector iKinChain::Pose(const unsigned int i, const bool axisRep)
 /************************************************************************/
 Vector iKinChain::Position(const unsigned int i)
 {
-    if (i>=N)
-    {
-        if (verbose)
-            yError("Position() failed due to out of range index: %d>=%d",i,N);
-
-        return Vector(0);
-    }
-
+    yAssert(i<N);
     return getH(i,true).subcol(0,3,3);
 }
 
@@ -923,13 +890,7 @@ Vector iKinChain::EndEffPose(const bool axisRep)
 /************************************************************************/
 Vector iKinChain::EndEffPose(const Vector &q, const bool axisRep)
 {
-    if (DOF==0)
-    {
-        if (verbose)
-            yError("EndEffPose() failed since DOF==0");
-    
-        return Vector(0);
-    }
+    yAssert(DOF>0);
 
     setAng(q);
     return EndEffPose(axisRep);
@@ -946,13 +907,7 @@ Vector iKinChain::EndEffPosition()
 /************************************************************************/
 Vector iKinChain::EndEffPosition(const Vector &q)
 {
-    if (DOF==0)
-    {
-        if (verbose)
-            yError("EndEffPosition() failed since DOF==0");
-    
-        return Vector(0);
-    }
+    yAssert(DOF>0);
 
     setAng(q);
     return EndEffPosition();
@@ -962,13 +917,7 @@ Vector iKinChain::EndEffPosition(const Vector &q)
 /************************************************************************/
 Matrix iKinChain::AnaJacobian(const unsigned int i, unsigned int col)
 {
-    if (i>=N)
-    {
-        if (verbose)
-            yError("AnaJacobian() failed due to out of range index: %d>=%d",i,N);
-
-        return Matrix(0,0);
-    }
+    yAssert(i<N);
 
     col=col>3 ? 3 : col;
 
@@ -1014,13 +963,7 @@ Matrix iKinChain::AnaJacobian(const unsigned int i, unsigned int col)
 /************************************************************************/
 Matrix iKinChain::AnaJacobian(unsigned int col)
 {
-    if (DOF==0)
-    {
-        if (verbose)
-            yError("AnaJacobian() failed since DOF==0");
-
-        return Matrix(0,0);
-    }
+    yAssert(DOF>0);
 
     col=col>3 ? 3 : col;
 
@@ -1065,13 +1008,7 @@ Matrix iKinChain::AnaJacobian(unsigned int col)
 /************************************************************************/
 Matrix iKinChain::AnaJacobian(const Vector &q, unsigned int col)
 {
-    if (DOF==0)
-    {
-        if (verbose)
-            yError("AnaJacobian() failed since DOF==0");
-    
-        return Matrix(0,0);
-    }
+    yAssert(DOF>0);
 
     setAng(q);
     return AnaJacobian(col);
@@ -1081,13 +1018,7 @@ Matrix iKinChain::AnaJacobian(const Vector &q, unsigned int col)
 /************************************************************************/
 Matrix iKinChain::GeoJacobian(const unsigned int i)
 {
-    if (i>=N)
-    {
-        if (verbose)
-            yError("GeoJacobian() failed due to out of range index: %d>=%d",i,N);
-
-        return Matrix(0,0);
-    }
+    yAssert(i<N);
 
     Matrix J(6,i+1);
     Matrix PN,Z;
@@ -1123,13 +1054,7 @@ Matrix iKinChain::GeoJacobian(const unsigned int i)
 /************************************************************************/
 Matrix iKinChain::GeoJacobian()
 {
-    if (DOF==0)
-    {
-        if (verbose)
-            yError("GeoJacobian() failed since DOF==0");
-
-        return Matrix(0,0);
-    }
+    yAssert(DOF>0);
 
     Matrix J(6,DOF);
     Matrix PN,Z;
@@ -1165,13 +1090,7 @@ Matrix iKinChain::GeoJacobian()
 /************************************************************************/
 Matrix iKinChain::GeoJacobian(const Vector &q)
 {
-    if (DOF==0)
-    {
-        if (verbose)
-            yError("GeoJacobian() failed since DOF==0");
-    
-        return Matrix(0,0);
-    }
+    yAssert(DOF>0);
 
     setAng(q);
     return GeoJacobian();
@@ -1204,13 +1123,7 @@ void iKinChain::prepareForHessian()
 /************************************************************************/
 Vector iKinChain::fastHessian_ij(const unsigned int i, const unsigned int j)
 {
-    if ((i>=DOF) || (j>=DOF))
-    {
-        if (verbose)
-            yError("fastHessian_ij() failed due to out of range index: %d>=%d || %d>=%d",i,DOF,j,DOF);
-
-        return Vector(0);
-    }
+    yAssert((i<DOF) && (j<DOF));
 
     // ref. E.D. Pohl, H. Lipkin, "A New Method of Robotic Motion Control Near Singularities",
     // Advanced Robotics, 1991
@@ -1267,13 +1180,7 @@ void iKinChain::prepareForHessian(const unsigned int lnk)
 Vector iKinChain::fastHessian_ij(const unsigned int lnk, const unsigned int i,
                                  const unsigned int j)
 {
-    if ((i>=lnk) || (j>=lnk))
-    {
-        if (verbose)
-            yError("fastHessian_ij() failed due to out of range index: %d>=%d || %d>=%d",i,lnk,j,lnk);
-
-        return Vector(0);
-    }
+    yAssert((i<lnk) && (j<lnk));
 
     Vector h(6,0.0);
     if (i<j)

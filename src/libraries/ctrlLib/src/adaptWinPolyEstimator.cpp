@@ -19,11 +19,13 @@
 #include <cmath>
 #include <algorithm>
 
+#include <yarp/os/Log.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 
 using namespace std;
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
@@ -106,8 +108,7 @@ void AWPolyEstimator::feedData(const AWPolyElement &el)
 /***************************************************************************/
 Vector AWPolyEstimator::estimate()
 {
-    if (elemList.size()==0)
-        return Vector(0);   // generate error
+    yAssert(elemList.size()>0);
 
     size_t dim=elemList[0].data.length();
     Vector esteem(dim);
