@@ -1522,7 +1522,7 @@ QString CustomTreeWidgetItem::retrieveCanBoards()
     if(type() == ETH_TREE_NODE){
         canBoards = core->getCanBoardsFromEth(text(ADDRESS),&result,CanPacket::everyCANbus,true);
     } else if(type() == CAN_TREE_ROOT_NODE){
-        canBoards = core->getCanBoardsFromDriver(text(DEVICE),text(ID).toInt(),&result,false);
+        canBoards = core->getCanBoardsFromDriver(text(DEVICE),text(ID).toInt(),&result,true);
     }
 
     return result;
@@ -1546,6 +1546,9 @@ EthTreeWidgetItem::EthTreeWidgetItem(QTreeWidgetItem *parent, FirmwareUpdaterCor
 
 void EthTreeWidgetItem::setSelectedBoard(bool selected, int index)
 {
+    if(index >= canBoards.count()){
+        return;
+    }
     sBoard b = canBoards.at(index);
     b.selected = selected;
     canBoards.replace(index,b);

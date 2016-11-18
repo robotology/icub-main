@@ -494,7 +494,7 @@ bool FirmwareUpdaterCore::setCanBoardAddress(int bus, int id, int canType,QStrin
 {
     mutex.lock();
     QString res;
-    if(!address.isEmpty()){
+    if(!address.isEmpty() && deviceId == -1){
         getCanBoardsFromEth(address,&res);
     }else{
         getCanBoardsFromDriver(address,deviceId,&res);
