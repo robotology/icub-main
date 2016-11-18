@@ -18,17 +18,20 @@ SOURCES += main.cpp\
     firmwareupdatercore.cpp \
     selectioncheckbox.cpp \
     changeinfodialog.cpp \
-    changeaddressdialog.cpp
+    changeaddressdialog.cpp \
+    calibrationwindow.cpp
 
 HEADERS  += mainwindow.h \
     firmwareupdatercore.h \
     selectioncheckbox.h \
     changeinfodialog.h \
-    changeaddressdialog.h
+    changeaddressdialog.h \
+    calibrationwindow.h
 
 FORMS    += mainwindow.ui \
     changeinfodialog.ui \
-    changeaddressdialog.ui
+    changeaddressdialog.ui \
+    calibrationwindow.ui
 
 
 win32-msvc2010{

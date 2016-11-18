@@ -1053,6 +1053,10 @@ bool FirmwareUpdaterCore::uploadEthApplication(QString filename,QString *resultS
 
 
 
+cDownloader *FirmwareUpdaterCore::getDownloader()
+{
+    return &downloader;
+}
 
 
 

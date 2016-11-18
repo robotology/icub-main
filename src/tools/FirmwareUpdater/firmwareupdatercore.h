@@ -51,6 +51,7 @@ public:
     bool eraseEthEprom();
     void eraseCanEprom();
     QString getProcessFromUint(uint8_t id);
+    cDownloader *getDownloader();
 
 
 private:

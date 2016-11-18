@@ -7,6 +7,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QFileDialog>
 #include <QMessageBox>
+#include "calibrationwindow.h"
 
 
 MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *parent) :
@@ -136,6 +137,7 @@ MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *paren
     connect(ui->btnGoToApplication,SIGNAL(clicked(bool)),this,SLOT(onGoToApplication(bool)));
     connect(ui->btnEraseEeprom,SIGNAL(clicked(bool)),this,SLOT(onEraseEprom(bool)));
     connect(&watcher, SIGNAL(finished()), this, SLOT(onFutureFinished()));
+
 
     ui->devicesTree->sortItems(ADDRESS,Qt::AscendingOrder);
 }
@@ -383,9 +385,9 @@ void MainWindow::onChangeAddress(bool click)
                 int bus = child->text(ADDRESS).remove("CAN_").toInt();
                 int id  = child->text(ID).toInt();
                 int canType = child->data(0,CAN_TYPE).toInt();
+                CustomTreeWidgetItem *parentNode = (CustomTreeWidgetItem*)child->getParentNode();
 
-
-                if(child->data(0,DEVICE_LEVEL).toInt() == 3){   
+                if(parentNode->type() == ETH_TREE_NODE){
 
                     QPair <QString,QString> addr;
                     addr.second = dlg.getNewAddress();
@@ -397,14 +399,14 @@ void MainWindow::onChangeAddress(bool click)
                                       canType,
                                       addr,
                                       -1,
-                                      child->getParentNode());
+                                      parentNode);
 
 
 
-                }else if(child->data(0,DEVICE_LEVEL).toInt() == 1){
+                }else if(parentNode->type() == CAN_TREE_ROOT_NODE){
 
-                    QString driver = child->getParentNode()->text(DEVICE);
-                    int networkId = child->getParentNode()->text(ID).toInt();
+                    QString driver = parentNode->text(DEVICE);
+                    int networkId = parentNode->text(ID).toInt();
 
                     QPair <QString,QString> addr;
                     addr.second = dlg.getNewAddress();
@@ -416,7 +418,7 @@ void MainWindow::onChangeAddress(bool click)
                                       canType,
                                       addr,
                                       networkId,
-                                      child->getParentNode());
+                                      parentNode);
                 }
 
 
@@ -450,23 +452,24 @@ void MainWindow::onChangeInfo(bool click)
             if(child->type() == ETH_TREE_NODE){
                 QtConcurrent::run(this,&MainWindow::setEthBoardInfo,child->getIndexOfBoard(),dlg.getNewInfo(),child);
             } else if(child->type() == CAN_TREE_NODE){
-                QString address = child->getParentNode()->text(ADDRESS);
+                CustomTreeWidgetItem *parentNode = (CustomTreeWidgetItem*)child->getParentNode();
+
 
                 for(int i=0;i<child->childCount();i++){
                     child->child(i)->setDisabled(true);
                 }
 
-                if(child->data(0,DEVICE_LEVEL).toInt() == 3){
-
+                if(parentNode->type() == ETH_TREE_NODE){
+                    QString address = parentNode->text(ADDRESS);
                     QtConcurrent::run(this,&MainWindow::setCanBoardInfo,
                                       QPair<int,int>(child->text(ADDRESS).remove("CAN_").toInt(),
                                       child->text(ID).toInt()),
                                       dlg.getNewInfo(),
                                       address,
                                       -1,
-                                      child->getParentNode());
+                                      parentNode);
 
-                } else if(child->data(0,DEVICE_LEVEL).toInt() == 1){
+                } else if(parentNode->type() == CAN_TREE_ROOT_NODE){
                     QString driver = child->getParentNode()->text(DEVICE);
                     int networkId = child->getParentNode()->text(ID).toInt();
 
@@ -476,7 +479,7 @@ void MainWindow::onChangeInfo(bool click)
                                       dlg.getNewInfo(),
                                       driver,
                                       networkId,
-                                      child->getParentNode());
+                                      parentNode);
 
                 }
 
@@ -490,7 +493,9 @@ void MainWindow::onChangeInfo(bool click)
 
 void MainWindow::onCalibrate(bool click)
 {
-
+    CalibrationWindow dlg(core,selectedNodes.first()->getIndexOfBoard());
+    dlg.setModal(true);
+    dlg.exec();
 }
 
 void MainWindow::setCanBoardInfo(QPair <int,int> canData, QString info, QString address, int deviceId,QTreeWidgetItem *refreshNode)
@@ -933,8 +938,9 @@ void MainWindow::checkEnableButtons()
         if(selectedNodes.count() == 1){
             ui->btnChangeCanAddr->setEnabled(true);
             ui->btnCahngeInfo->setEnabled(true);
-            int canType = selectedNodes.first()->data(0,CAN_TYPE).toInt();
-            if(canType == icubCanProto_boardType__strain || canType == icubCanProto_boardType__6sg){
+
+            sBoard canBoard = ((EthTreeWidgetItem*)selectedNodes.first()->getParentNode())->getCanBoard(selectedNodes.first()->getIndexOfBoard());
+            if(canBoard.type == icubCanProto_boardType__strain || canBoard.type == icubCanProto_boardType__6sg && canBoard.status == BOARD_RUNNING){
                 ui->btnCalibrate->setEnabled(true);
             }else{
                 ui->btnCalibrate->setEnabled(false);

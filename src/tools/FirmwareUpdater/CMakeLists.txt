@@ -25,15 +25,18 @@ set(FirmwareUpdater_qt_SRCS changeaddressdialog.cpp
                             firmwareupdatercore.cpp
                             main.cpp
                             mainwindow.cpp
+                            calibrationwindow.cpp
                             selectioncheckbox.cpp)
 set(FirmwareUpdater_qt_HDRS changeaddressdialog.h
                             changeinfodialog.h
                             firmwareupdatercore.h
                             mainwindow.h
+                            calibrationwindow.h
                             selectioncheckbox.h)
 set(FirmwareUpdater_qt_QRC_FILES res.qrc)
 set(FirmwareUpdater_qt_UI_FILES changeaddressdialog.ui
                             changeinfodialog.ui
+                            calibrationwindow.ui
                             mainwindow.ui)
 
 qt5_add_resources(FirmwareUpdater_qt_QRC_GEN_SRCS ${FirmwareUpdater_qt_QRC_FILES})
