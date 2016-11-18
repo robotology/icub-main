@@ -2274,25 +2274,25 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
 
         if(NULL == motorEncoder_ptr)
         {
-            _jointEncoderRes[i]  = 0;
-            _jointEncoderType[i] = eomc_enc_none;
+            _rotorEncoderRes[i]  = 0;
+            _rotorEncoderRes[i] = eomc_enc_none;
         }
         else
         {
-            _jointEncoderRes[i]  = motorEncoder_ptr->resolution;
-            _jointEncoderType[i] = motorEncoder_ptr->desc.type;
+            _rotorEncoderRes[i]  = motorEncoder_ptr->resolution;
+            _rotorEncoderType[i] = motorEncoder_ptr->desc.type;
         }
 
 
     }
 
-//     ////////Debug prints
-//     for(int i=0; i<_njoints; i++)
-//     {
-//         yError() << "J_RES=" << _jointEncoderRes[i] << "  M_RES=" <<  _rotorEncoderRes[i];
-//     }
-//
-//     //////end
+     ////////Debug prints
+     for(int i=0; i<_njoints; i++)
+     {
+         yError() << "J_RES=" << _jointEncoderRes[i] << "Jtype=" << _jointEncoderType[i] << "  M_RES=" <<  _rotorEncoderRes[i] << "Mtype=" << _rotorEncoderType[i];
+     }
+
+     //////end
 
 #endif
 
