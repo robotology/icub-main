@@ -145,6 +145,7 @@ typedef struct
 {
     eOmc_encoder_descriptor_t       desc;
     int32_t                         resolution;
+    uint8_t                         numofnoisebits;
 } servMC_encoder_t;
 
 

@@ -2183,6 +2183,13 @@ bool ServiceParser::check_motion(Searchable &config)
             yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.resolution";
             return false;
         }
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_numofnoisebits = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("numofnoisebits"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER1_numofnoisebits.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.numofnoisebits";
+            return false;
+        }
+
 
 
         Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_type = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("type"));
@@ -2209,7 +2216,12 @@ bool ServiceParser::check_motion(Searchable &config)
             yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.resolution";
             return false;
         }
-
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_numofnoisebits = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("numofnoisebits"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER2_numofnoisebits.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.numofnoisebits";
+            return false;
+        }
         // now the size of the vectors must all be equal
 
         int tmp = b_PROPERTIES_JOINTMAPPING_ACTUATOR_type.size();
@@ -2218,10 +2230,12 @@ bool ServiceParser::check_motion(Searchable &config)
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_port.size())      ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_position.size())  ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_resolution.size())||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_numofnoisebits.size()) ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_type.size())      ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_port.size())      ||
             (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_position.size())  ||
-            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_resolution.size())
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_resolution.size()) ||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_numofnoisebits.size())
             )
         {
             yError() << "ServiceParser::check_motion() detected wrong number of columns somewhere inside PROPERTIES.JOINTMAPPING";
@@ -2304,6 +2318,9 @@ bool ServiceParser::check_motion(Searchable &config)
 
             enc1.resolution = b_PROPERTIES_JOINTMAPPING_ENCODER1_resolution.get(i+1).asInt();
 
+            enc1.numofnoisebits = b_PROPERTIES_JOINTMAPPING_ENCODER1_numofnoisebits.get(i+1).asInt();
+
+
 
             // encoder2s ...
 
@@ -2354,6 +2371,7 @@ bool ServiceParser::check_motion(Searchable &config)
             enc2.desc.pos = encposition;
 
             enc2.resolution = b_PROPERTIES_JOINTMAPPING_ENCODER2_resolution.get(i+1).asInt();
+            enc2.numofnoisebits = b_PROPERTIES_JOINTMAPPING_ENCODER2_numofnoisebits.get(i+1).asInt();
 
 
             // ok, we push act, enc1, enc2

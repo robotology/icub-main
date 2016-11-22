@@ -318,8 +318,10 @@ private:
     double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
     uint8_t *_jointEncoderType;                 /** joint encoder type*/
+    uint8_t *_jointNumOfNoiseBits;              /** Num of error bits passable for joint encoder */
     int    *_jointEncoderRes;                   /** joint encoder resolution */
     int    *_rotorEncoderRes;                   /** rotor encoder resolution */
+    uint8_t *_rotorNumOfNoiseBits;              /** Num of error bits passable for joint encoder */
     uint8_t *_rotorEncoderType;                  /** rotor encoder type*/
     double *_gearbox;                           /** the gearbox ratio */
     double *_gearboxE2J;                           /** the gearbox ratio */
@@ -381,7 +383,6 @@ private:
 //
 //     enum       velocityControlUnitsType {V_MACHINE_UNITS=0, V_METRIC_UNITS=1};
 //     velocityControlUnitsType _velocityControlUnits;
-
 
 
     //enum posControlLawType {emsPwm_2focOpenloop = 0, emsVel_2focPwm = 2};

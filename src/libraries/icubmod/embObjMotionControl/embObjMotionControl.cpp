@@ -433,6 +433,8 @@ bool embObjMotionControl::alloc(int nj)
     _jointEncoderType = allocAndCheck<uint8_t>(nj);
     _rotorEncoderType = allocAndCheck<uint8_t>(nj);
     _jointEncoderRes = allocAndCheck<int>(nj);
+    _jointNumOfNoiseBits = allocAndCheck<uint8_t>(nj);
+    _rotorNumOfNoiseBits = allocAndCheck<uint8_t>(nj);
     _rotorEncoderRes = allocAndCheck<int>(nj);
     _gearbox = allocAndCheck<double>(nj);
     _gearboxE2J = allocAndCheck<double>(nj);
@@ -490,6 +492,8 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_rotorEncoderRes);
     checkAndDestroy(_jointEncoderType);
     checkAndDestroy(_rotorEncoderType);
+    checkAndDestroy(_jointNumOfNoiseBits);
+    checkAndDestroy(_rotorNumOfNoiseBits);
     checkAndDestroy(_gearbox);
     checkAndDestroy(_gearboxE2J);
     checkAndDestroy(_maxJntCmdVelocity);
@@ -590,6 +594,8 @@ embObjMotionControl::embObjMotionControl() :
     _jointEncoderType = NULL;
     _rotorEncoderRes  = NULL;
     _rotorEncoderType = NULL;
+    _jointNumOfNoiseBits = NULL;
+    _rotorNumOfNoiseBits = NULL;
     _ref_accs         = NULL;
     _ref_command_speeds   = NULL;
     _ref_command_positions= NULL;
@@ -2264,11 +2270,13 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
         {
             _jointEncoderRes[i]  = 0;
             _jointEncoderType[i] = eomc_enc_none;
+            _jointNumOfNoiseBits[i] = 0;
         }
         else
         {
             _jointEncoderRes[i]  = jointEncoder_ptr->resolution;
             _jointEncoderType[i] = jointEncoder_ptr->desc.type;
+            _jointNumOfNoiseBits[i] = jointEncoder_ptr->numofnoisebits;
         }
 
 
@@ -2276,11 +2284,13 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
         {
             _rotorEncoderRes[i]  = 0;
             _rotorEncoderRes[i] = eomc_enc_none;
+            _rotorNumOfNoiseBits[i] = 0;
         }
         else
         {
             _rotorEncoderRes[i]  = motorEncoder_ptr->resolution;
             _rotorEncoderType[i] = motorEncoder_ptr->desc.type;
+            _rotorNumOfNoiseBits[i] = motorEncoder_ptr->numofnoisebits;
         }
 
 
@@ -2289,7 +2299,7 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
      ////////Debug prints
      for(int i=0; i<_njoints; i++)
      {
-         yError() << "J_RES=" << _jointEncoderRes[i] << "Jtype=" << _jointEncoderType[i] << "  M_RES=" <<  _rotorEncoderRes[i] << "Mtype=" << _rotorEncoderType[i];
+         yError() << "J_RES=" << _jointEncoderRes[i] << "Jtype=" << _jointEncoderType[i]  <<"JErrbits=" << _jointNumOfNoiseBits[i]<< "  M_RES=" <<  _rotorEncoderRes[i] << "Mtype=" << _rotorEncoderType[i] <<"MErrbits=" << _rotorNumOfNoiseBits[i];
      }
 
      //////end
@@ -2451,6 +2461,7 @@ bool embObjMotionControl::init()
 
         jconfig.jntEncoderResolution = _jointEncoderRes[logico];
         jconfig.jntEncoderType = _jointEncoderType[logico];
+        jconfig.jntEncNumOfNoiseBits = _jointNumOfNoiseBits[logico];
         jconfig.motor_params.bemf_value = 0;
         jconfig.motor_params.bemf_scale = 0;
         jconfig.motor_params.ktau_value = 0;
@@ -2506,6 +2517,7 @@ bool embObjMotionControl::init()
         motor_cfg.gearboxratio = _gearbox[logico];
         motor_cfg.gearboxratio2 = _gearboxE2J[logico];
         motor_cfg.rotorEncoderResolution = _rotorEncoderRes[logico];
+        motor_cfg.rotEncNumOfNoiseBits = _rotorNumOfNoiseBits[logico];
         motor_cfg.hasHallSensor = _twofocinfo[logico].hasHallSensor;
         motor_cfg.hasRotorEncoder = _twofocinfo[logico].hasRotorEncoder;
         motor_cfg.hasTempSensor = _twofocinfo[logico].hasTempSensor;
