@@ -982,7 +982,7 @@ void MainWindow::refreshDevices()
     QString ret;
     for (int i = 0; i<ui->devicesTree->selectedItems().count(); i++) {
         QTreeWidgetItem *it = ui->devicesTree->selectedItems().at(i);
-        if(!it->parent() == NULL){
+        if(it->parent() != NULL){
             continue;
         }
 

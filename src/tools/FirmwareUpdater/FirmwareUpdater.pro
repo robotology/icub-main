@@ -19,14 +19,16 @@ SOURCES += main.cpp\
     selectioncheckbox.cpp \
     changeinfodialog.cpp \
     changeaddressdialog.cpp \
-    calibrationwindow.cpp
+    calibrationwindow.cpp \
+    customtreewidgetitem.cpp
 
 HEADERS  += mainwindow.h \
     firmwareupdatercore.h \
     selectioncheckbox.h \
     changeinfodialog.h \
     changeaddressdialog.h \
-    calibrationwindow.h
+    calibrationwindow.h \
+    customtreewidgetitem.h
 
 FORMS    += mainwindow.ui \
     changeinfodialog.ui \
