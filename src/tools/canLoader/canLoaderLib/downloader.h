@@ -211,11 +211,13 @@ int strain_get_curr_bias	 (int bus, int target_id, char channel, signed int& bia
 int strain_set_curr_bias	 (int bus, int target_id, string *errorstring = NULL);
 int strain_set_curr_bias	 (int bus, int target_id, char channel, signed int bias, string *errorstring = NULL);
 int strain_reset_curr_bias	 (int bus, int target_id, string *errorstring = NULL);
-int strain_set_full_scale	 (int bus, int target_id, unsigned char channel, unsigned int   full_scale, string *errorstring = NULL);
-int strain_get_full_scale	 (int bus, int target_id, unsigned char channel, unsigned int&  full_scale, string *errorstring = NULL);
+int strain_set_full_scale	 (int bus, int target_id, unsigned char channel, unsigned int   full_scale, int matrix = 0, string *errorstring = NULL);
+int strain_get_full_scale	 (int bus, int target_id, unsigned char channel, unsigned int&  full_scale, int matrix = 0, string *errorstring = NULL);
 int strain_get_serial_number (int bus, int target_id, char* serial_number, string *errorstring = NULL);
 int strain_set_serial_number (int bus, int target_id, const char* serial_number, string *errorstring = NULL);
 int strain_get_eeprom_saved  (int bus, int target_id, bool* status, string *errorstring = NULL);
+int strain_set_matrix        (int bus, int target_id, int matrix = 0, string *errorstring = NULL);
+int strain_get_matrix        (int bus, int target_id, int &matrix, string *errorstring = NULL);
 
 int sg6_get_amp_gain      (int bus, int target_id, char channel, unsigned int& gain1, unsigned int& gain2 );
 int sg6_set_amp_gain      (int bus, int target_id, char channel, unsigned int  gain1, unsigned int  gain2 );

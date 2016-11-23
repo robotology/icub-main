@@ -731,6 +731,30 @@ int cDownloader::strain_get_matrix_gain     (int bus, int target_id, unsigned in
 }
 
 //*****************************************************************/
+int cDownloader::strain_set_matrix(int bus, int target_id, int matrix, string *errorstring)
+{
+    if(0 == matrix)
+    {
+        return 0;
+    }
+
+    if(NULL != errorstring)
+    {
+        *errorstring += "cDownloader::strain_set_matrix() cannot set a non zero matrix number";
+        //*errorstring += std::to_string(matrix); // c++ 11 ...........
+    }
+    return -1;
+}
+
+//*****************************************************************/
+
+int cDownloader::strain_get_matrix(int bus, int target_id, int &matrix, string *errorstring)
+{
+    matrix = 0;
+    return 0;
+}
+
+//*****************************************************************/
 int cDownloader::strain_set_matrix_gain     (int bus, int target_id, unsigned int  gain, int matrix, string *errorstring)
 {
      // check if driver is running
@@ -754,7 +778,7 @@ int cDownloader::strain_set_matrix_gain     (int bus, int target_id, unsigned in
 }
 
 //*****************************************************************/
-int cDownloader::strain_get_full_scale     (int bus, int target_id, unsigned char channel, unsigned int&  full_scale, string *errorstring)
+int cDownloader::strain_get_full_scale      (int bus, int target_id, unsigned char channel, unsigned int&  full_scale, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -787,7 +811,7 @@ int cDownloader::strain_get_full_scale     (int bus, int target_id, unsigned cha
      return -1;
 }
 //*****************************************************************/
-int cDownloader::strain_set_full_scale     (int bus, int target_id, unsigned char channel,  unsigned int full_scale, string *errorstring)
+int cDownloader::strain_set_full_scale      (int bus, int target_id, unsigned char channel,  unsigned int full_scale, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)

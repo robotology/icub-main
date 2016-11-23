@@ -34,8 +34,14 @@ protected:
     void saveToEeprom();
     void setOffset(int chan, int value);
     void setCalibration();
+    void loadCalibrationFile(QString fileName);
+    void saveCalibrationFile(QString filePath);
+    void importCalibrationFile(QString fileName);
+    bool calibration_load_v2 (char* filename, int selected_bus, int selected_id);
+    void useMatrix(int);
 
 private:
+    int currentMatrixIndex;
     Ui::CalibrationWindow *ui;
     CustomTreeWidgetItem *item;
     FirmwareUpdaterCore *core;
@@ -51,19 +57,20 @@ private:
     int calib_bias[6];
     int curr_bias[6];
     unsigned int matrix[3][6][6];
-    unsigned int calib_matrix[6][6];
+    unsigned int calib_matrix[3][6][6];
     unsigned int calibration_value;
     unsigned int calib_const[3];
-    unsigned int full_scale_const[6];
+    unsigned int full_scale_const[3][6];
     char serial_no[8];
     int selected;
-    bool matrixA_changed;
-    bool matrixB_changed;
-    bool matrixC_changed;
+    bool matrix_changed[3];
     bool serial_number_changed;
     bool something_changed;
     bool eeprom_saved_status;
     QList<QSlider*>slider_gain;
+    QList<QLineEdit*>matrixGain;
+    QList<QTableWidget*>matrices;
+    QList<QTableWidget*>fullScales;
     QTimer *timer;
     int bus;
     int id;
@@ -75,9 +82,7 @@ private slots:
     void onTimeout();
     void onSliderZeroChanged(int);
     void onOffsetSliderValue(int);
-    void onMatrixAChanged(QTableWidgetItem*);
-    void onMatrixBChanged(QTableWidgetItem*);
-    void onMatrixCChanged(QTableWidgetItem*);
+    void onMatrixChanged(QTableWidgetItem*);
     void onSerialChanged(QString);
     void onLoading(bool);
     void onSetText(QLineEdit*,QString text);
@@ -95,10 +100,15 @@ private slots:
     void onSetMatrix(int index);
     void onSaveToEeprom(bool click);
     void onSetCalibration(bool click);
+    void onLoadCalibrationFile(bool click);
+    void onSaveCalibrationFile(bool click);
+    void onImportCalibrationFile(bool click);
     void resetMatricesState(int index = -1);
     void onUpdateTitle();
     void onSliderPressed();
     void onSliderReleased();
+    void onClearLog();
+    void onAppendLogMsg(QString);
 signals:
     void loading(bool = true);
     void setText(QLineEdit*,QString text);
@@ -108,6 +118,7 @@ signals:
     void setMatrix(int index);
     void resetMatrices(int index = -1);
     void updateTitle();
+    void appendLogMsg(QString);
 
 
 
