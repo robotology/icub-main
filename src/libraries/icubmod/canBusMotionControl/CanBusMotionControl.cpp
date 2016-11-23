@@ -4172,22 +4172,21 @@ bool CanBusMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
 
 bool CanBusMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val)
 {
+    CanBusResources& r = RES(system_resources);
+    size_t _njoints = r.getJoints();
+
     std::string s1 = val.toString();
-    Bottle* bval = val.get(0).asList();
-    if (bval == 0)
+    if (val.size() != _njoints)
     {
         yWarning("setRemoteVariable(): Protocol error %s", s1.c_str());
         return false;
     }
 
-    CanBusResources& r = RES(system_resources);
-    std::string s2 = bval->toString();
-
     if (key == "filterType")
     {
         for (int i = 0; i < r.getJoints(); i++)
         {
-            int filter_type = bval->get(i).asInt();
+            int filter_type = val.get(i).asInt();
             this->setFilterTypeRaw(i, filter_type);
         }
         return true;
@@ -4196,7 +4195,7 @@ bool CanBusMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const 
     {
         for (int i = 0; i < r.getJoints(); i++)
         {
-            double limit = bval->get(i).asDouble();
+            double limit = val.get(i).asDouble();
             this->setPWMLimitRaw(i, (int)(limit));
         }
         return true;

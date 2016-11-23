@@ -4315,32 +4315,29 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
 bool embObjMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val)
 {
     string s1 = val.toString();
-    Bottle* bval = val.get(0).asList();
-    if (bval == 0)
+    if (val.size() != _njoints)
     {
         yWarning("setRemoteVariable(): Protocol error %s", s1.c_str());
         return false;
     }
 
-    string s2 = bval->toString();
     if (key == "kinematic_mj")
     {
         return true;
     }
     else if (key == "rotor")
     {
-        for (int i = 0; i < _njoints; i++)
-            _rotorEncoderRes[i] = bval->get(i).asInt();
+        for (int i = 0; i < _njoints; i++) _rotorEncoderRes[i] = val.get(i).asInt();
         return true;
     }
     else if (key == "gearbox")
     {
-        for (int i = 0; i < _njoints; i++) _gearbox[i] = bval->get(i).asDouble();
+        for (int i = 0; i < _njoints; i++) _gearbox[i] = val.get(i).asDouble();
         return true;
     }
     else if (key == "PWMLimit")
     {
-        for (int i = 0; i < _njoints; i++) setPWMLimitRaw(i, bval->get(i).asDouble());
+        for (int i = 0; i < _njoints; i++) setPWMLimitRaw(i, val.get(i).asDouble());
         return true;
     }
     yWarning("setRemoteVariable(): Unknown variable %s", key.c_str());
