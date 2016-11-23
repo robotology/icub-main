@@ -1194,7 +1194,6 @@ bool embObjMotionControl::parseGeneralMecGroup(Bottle &general)
     for (i = 1; i < xtmp.size(); i++)
     {
         _jointsets_info.jointset_cfgs[i-1].usespeedfeedbackfrommotors = xtmp.get(i).asBool();
-        yError() << "useMotorSpeedFbk " << i-1 << " is " << _jointsets_info.jointset_cfgs[i-1].usespeedfeedbackfrommotors;
     }
 
 
@@ -2297,10 +2296,10 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
     }
 
      ////////Debug prints
-     for(int i=0; i<_njoints; i++)
-     {
-         yError() << "J_RES=" << _jointEncoderRes[i] << "Jtype=" << _jointEncoderType[i]  <<"JErrbits=" << _jointNumOfNoiseBits[i]<< "  M_RES=" <<  _rotorEncoderRes[i] << "Mtype=" << _rotorEncoderType[i] <<"MErrbits=" << _rotorNumOfNoiseBits[i];
-     }
+    // for(int i=0; i<_njoints; i++)
+    // {
+    //     yError() << "J_RES=" << _jointEncoderRes[i] << "Jtype=" << _jointEncoderType[i]  <<"JErrbits=" << _jointNumOfNoiseBits[i]<< "  M_RES=" <<  _rotorEncoderRes[i] << "Mtype=" << _rotorEncoderType[i] <<"MErrbits=" << _rotorNumOfNoiseBits[i];
+     //}
 
      //////end
 

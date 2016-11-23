@@ -1144,7 +1144,6 @@ bool ServiceParser::parse_encoder_port(ConstString const &fromstring, eObrd_etht
             if(0 == strcmp(prefix, "CAN"))
             {
                 toport = eobrd_port_nolocal;
-                yError() << "VALE: find encoder non locale!!!!!";
                 ret = true;
             }
             else
