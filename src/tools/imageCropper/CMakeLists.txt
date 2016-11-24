@@ -2,8 +2,8 @@
 # Authors: Marco Randazzo
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-project(imageBlender)
-set(PROJECTNAME imageBlender)
+project(imageCropper)
+set(PROJECTNAME imageCropper)
 
 file(GLOB folder_source *.cpp)
 file(GLOB folder_header *.h)
