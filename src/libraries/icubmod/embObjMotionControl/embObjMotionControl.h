@@ -658,6 +658,7 @@ public:
     virtual bool getRotorIndexOffsetRaw(int j, double& rotorOffset);
     virtual bool getCurrentPidRaw(int j, Pid *pid);
     virtual bool getTorqueControlFilterType(int j, int& type);
+    virtual bool getRotorLimitsRaw(int j, double *rotorMin, double *rotorMax);
 
     ////// Amplifier interface
     virtual bool enableAmpRaw(int j);

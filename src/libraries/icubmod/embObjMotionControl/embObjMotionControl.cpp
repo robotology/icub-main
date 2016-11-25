@@ -3727,6 +3727,40 @@ bool embObjMotionControl::getGearboxRatioRaw(int j, double *gearbox)
     return true;
 }
 
+bool embObjMotionControl::getRotorLimitsRaw(int j, double *rotorMin, double *rotorMax)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getGearbox() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_config_t    motor_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    *rotorMax = (double)motor_cfg.limitsofrotor.max;
+    *rotorMin = (double)motor_cfg.limitsofrotor.min;
+
+    return true;
+}
+
 bool embObjMotionControl::getTorqueControlFilterType(int j, int& type)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
@@ -4308,6 +4342,30 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getPowerSupplyVoltageRaw(i, &tmp);  r.addDouble(tmp); }
         return true;
     }
+    else if (key == "rotorMax")
+    {
+        double tmp1, tmp2;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorLimitsRaw(i, &tmp1, &tmp2);  r.addDouble(tmp2); }
+        return true;
+    }
+    else if (key == "rotorMin")
+    {
+        double tmp1, tmp2;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorLimitsRaw(i, &tmp1, &tmp2);  r.addDouble(tmp1); }
+        return true;
+    }
+    else if (key == "jointMax")
+    {
+        double tmp1, tmp2;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getLimitsRaw(i, &tmp1, &tmp2);  r.addDouble(tmp2); }
+        return true;
+    }
+    else if (key == "jointMin")
+    {
+        double tmp1, tmp2;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getLimitsRaw(i, &tmp1, &tmp2);  r.addDouble(tmp1); }
+        return true;
+    }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
 }
@@ -4340,6 +4398,28 @@ bool embObjMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const 
         for (int i = 0; i < _njoints; i++) setPWMLimitRaw(i, val.get(i).asDouble());
         return true;
     }
+    //disabled for used safety
+#if 0
+    else if (key == "jointMax")
+    {
+        double min, max;
+        for (int i = 0; i < _njoints; i++)
+        {
+            getLimitsRaw(i, &min, &max);
+            setLimitsRaw(i, min, val.get(i).asDouble());
+        }
+        return true;
+    }
+    else if (key == "jointMin")
+    {
+        double min, max;
+        for (int i = 0; i < _njoints; i++)
+        {
+            getLimitsRaw(i, &min, &max);
+            setLimitsRaw(i, val.get(i).asDouble(), max);
+        }
+    }
+#endif
     yWarning("setRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
 }
@@ -4371,7 +4451,10 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     listOfKeys->addString("motNominalCurr");
     listOfKeys->addString("motPeakCurr");
     listOfKeys->addString("PowerSuppVoltage");
-
+    listOfKeys->addString("rotorMax");
+    listOfKeys->addString("rotorMin");
+    listOfKeys->addString("jointMax");
+    listOfKeys->addString("jointMin");
     return true;
 }
 
