@@ -5,6 +5,7 @@
 #include <QHBoxLayout>
 #include <QtConcurrent/QtConcurrent>
 #include <QFileDialog>
+#include <QMessageBox>
 
 #define CHANNEL_COUNT   6
 #define HEX_VALC 0x8000
@@ -48,7 +49,7 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, CustomTreeWidget
     matrix_changed[1] = false;
     matrix_changed[2] = false;
 
-    eeprom_saved_status=false;
+    eeprom_saved_status=true;
     first_time = true;
     for(int i=0;i<CHANNEL_COUNT;i++){
         ch[i]               = i;
@@ -187,7 +188,7 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, CustomTreeWidget
 
     connect(ui->comboUseMatrix,SIGNAL(currentIndexChanged(int)),this,SLOT(onUseMatrixChanged(int)),Qt::QueuedConnection);
 
-
+    connect(ui->btnClose,SIGNAL(clicked(bool)),this,SLOT(close()));
     connect(ui->edit_serial,SIGNAL(textEdited(QString)),this,SLOT(onSerialChanged(QString)));
     connect(this,SIGNAL(loading(bool)),this,SLOT(onLoading(bool)),Qt::QueuedConnection);
     connect(this,SIGNAL(setText(QLineEdit*,QString)),this,SLOT(onSetText(QLineEdit*,QString)),Qt::QueuedConnection);
@@ -498,7 +499,7 @@ void CalibrationWindow::saveCalibrationFile(QString filePath)
     }
 
     //calibration matrix
-    if(currentMatrixIndex > 1){
+    if(currentMatrixIndex >= 1){
         filestr<<"Calibration matrix:"<<endl;
         for (i=0;i<36; i++){
             sprintf (buffer,"%x",matrix[currentMatrixIndex- 1][i/6][i%6]);
@@ -507,7 +508,7 @@ void CalibrationWindow::saveCalibrationFile(QString filePath)
     }
 
     //matrix gain
-    if(currentMatrixIndex > 1){
+    if(currentMatrixIndex >= 1){
         filestr<<"Matrix gain:"<<endl;
         sprintf (buffer,"%d",calib_const[currentMatrixIndex- 1]);
         filestr<<buffer<<endl;
@@ -521,7 +522,7 @@ void CalibrationWindow::saveCalibrationFile(QString filePath)
     }
 
     //full scale values
-    if(currentMatrixIndex > 1){
+    if(currentMatrixIndex >= 1){
         filestr<<"Full scale values:"<<endl;
         for (i=0;i<CHANNEL_COUNT; i++){
             sprintf (buffer,"%d",full_scale_const[currentMatrixIndex - 1][i]);
@@ -728,6 +729,13 @@ void CalibrationWindow::onUpdateTitle()
 void CalibrationWindow::closeEvent(QCloseEvent *e)
 {
     //timer->stop();
+    if(!eeprom_saved_status){
+        if(QMessageBox::warning(this,"The Calibration has not been saved","Do you want to save this calibration to eeprom?",QMessageBox::Yes,QMessageBox::No) == QMessageBox::Yes){
+            onSaveToEeprom(true);
+            e->ignore();
+            return;
+        }
+    }
     keepRunning = false;
     QMainWindow::closeEvent(e);
 }
