@@ -56,6 +56,11 @@
        </column>
        <column>
         <property name="text">
+         <string>Erase Eeprom</string>
+        </property>
+       </column>
+       <column>
+        <property name="text">
          <string>Info</string>
         </property>
        </column>

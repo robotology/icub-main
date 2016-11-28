@@ -283,17 +283,22 @@
             <widget class="QTableWidget" name="tableFullScaleA">
              <property name="geometry">
               <rect>
-               <x>210</x>
+               <x>200</x>
                <y>2</y>
-               <width>61</width>
+               <width>71</width>
                <height>201</height>
               </rect>
              </property>
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <attribute name="horizontalHeaderDefaultSectionSize">
-              <number>60</number>
+              <number>70</number>
              </attribute>
              <attribute name="horizontalHeaderMinimumSectionSize">
-              <number>60</number>
+              <number>70</number>
              </attribute>
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
@@ -340,7 +345,7 @@
             <widget class="QWidget" name="">
              <property name="geometry">
               <rect>
-               <x>20</x>
+               <x>10</x>
                <y>209</y>
                <width>182</width>
                <height>27</height>
@@ -366,7 +371,7 @@
             <widget class="QTableWidget" name="matrixA">
              <property name="geometry">
               <rect>
-               <x>20</x>
+               <x>10</x>
                <y>22</y>
                <width>182</width>
                <height>182</height>
@@ -383,6 +388,11 @@
                <width>182</width>
                <height>182</height>
               </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
              </property>
              <attribute name="horizontalHeaderVisible">
               <bool>false</bool>
@@ -471,17 +481,28 @@
             <widget class="QTableWidget" name="tableFullScaleB">
              <property name="geometry">
               <rect>
-               <x>210</x>
+               <x>200</x>
                <y>2</y>
-               <width>61</width>
+               <width>71</width>
                <height>201</height>
               </rect>
              </property>
+             <property name="minimumSize">
+              <size>
+               <width>71</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <attribute name="horizontalHeaderDefaultSectionSize">
-              <number>60</number>
+              <number>70</number>
              </attribute>
              <attribute name="horizontalHeaderMinimumSectionSize">
-              <number>60</number>
+              <number>70</number>
              </attribute>
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
@@ -528,7 +549,7 @@
             <widget class="QWidget" name="">
              <property name="geometry">
               <rect>
-               <x>20</x>
+               <x>10</x>
                <y>210</y>
                <width>181</width>
                <height>25</height>
@@ -554,7 +575,7 @@
             <widget class="QTableWidget" name="matrixB">
              <property name="geometry">
               <rect>
-               <x>20</x>
+               <x>10</x>
                <y>22</y>
                <width>182</width>
                <height>182</height>
@@ -571,6 +592,11 @@
                <width>182</width>
                <height>182</height>
               </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
              </property>
              <attribute name="horizontalHeaderVisible">
               <bool>false</bool>
@@ -661,17 +687,28 @@
             <widget class="QTableWidget" name="tableFullScaleC">
              <property name="geometry">
               <rect>
-               <x>210</x>
+               <x>200</x>
                <y>2</y>
-               <width>61</width>
+               <width>71</width>
                <height>201</height>
               </rect>
              </property>
+             <property name="minimumSize">
+              <size>
+               <width>71</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
+             </property>
              <attribute name="horizontalHeaderDefaultSectionSize">
-              <number>60</number>
+              <number>70</number>
              </attribute>
              <attribute name="horizontalHeaderMinimumSectionSize">
-              <number>60</number>
+              <number>70</number>
              </attribute>
              <attribute name="verticalHeaderVisible">
               <bool>false</bool>
@@ -718,7 +755,7 @@
             <widget class="QWidget" name="">
              <property name="geometry">
               <rect>
-               <x>20</x>
+               <x>10</x>
                <y>210</y>
                <width>181</width>
                <height>25</height>
@@ -744,7 +781,7 @@
             <widget class="QTableWidget" name="matrixC">
              <property name="geometry">
               <rect>
-               <x>20</x>
+               <x>10</x>
                <y>22</y>
                <width>182</width>
                <height>182</height>
@@ -761,6 +798,11 @@
                <width>182</width>
                <height>182</height>
               </size>
+             </property>
+             <property name="font">
+              <font>
+               <pointsize>8</pointsize>
+              </font>
              </property>
              <attribute name="horizontalHeaderVisible">
               <bool>false</bool>

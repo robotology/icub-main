@@ -326,7 +326,10 @@ void MainWindow::onEraseEprom(bool click)
             QFuture<bool> future = QtConcurrent::run(core,&FirmwareUpdaterCore::eraseEthEprom);
             watcher.setFuture(future);
         } else if(selectedNodes.first()->type() == CAN_TREE_NODE){
-            
+            foreach (CustomTreeWidgetItem *node, selectedNodes) {
+                ((CanTreeWidgetItem*)node)->erasEeprom(!node->data(0,CAN_ERASE_EEPROM).toBool());
+                node->refresh();
+            }
         }
     }
 }

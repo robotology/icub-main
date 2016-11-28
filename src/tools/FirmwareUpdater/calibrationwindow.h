@@ -39,6 +39,7 @@ protected:
     void importCalibrationFile(QString fileName);
     bool calibration_load_v2 (char* filename, int selected_bus, int selected_id);
     void useMatrix(int);
+    void resetCalibration();
 
 private:
     int currentMatrixIndex;

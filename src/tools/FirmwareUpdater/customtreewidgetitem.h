@@ -30,6 +30,7 @@ public:
     void setCanBoards(QList <sBoard> boards);
     virtual void refresh();
     QString getBoardType();
+    void replaceCanBoard(int , sBoard);
 
 
 
@@ -78,7 +79,7 @@ class CanTreeWidgetItem : public CustomTreeWidgetItem
 
 public:
     CanTreeWidgetItem(QTreeWidgetItem*,FirmwareUpdaterCore *core,int indexOfBoard);
-
+    void erasEeprom(bool);
     sBoard getBoard();
     void refresh();
 

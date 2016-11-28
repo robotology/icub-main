@@ -125,6 +125,11 @@ void CustomTreeWidgetItem::setCanBoards(QList<sBoard> boards)
     canBoards = boards;
 }
 
+void CustomTreeWidgetItem::replaceCanBoard(int index, sBoard board)
+{
+    canBoards.replace(index,board);
+}
+
 /***************************************************************************/
 
 EthTreeWidgetItem::EthTreeWidgetItem(QTreeWidgetItem *parent, FirmwareUpdaterCore *core, int indexOfBoard) : CustomTreeWidgetItem(parent,QStringList(),indexOfBoard,core,ETH_TREE_NODE)
@@ -198,6 +203,7 @@ void EthTreeWidgetItem::refresh()
     myFields.append(board_ipaddr);
     myFields.append(running_process);
     myFields.append(board_version);
+    myFields.append("");
     myFields.append(board_info);
 
     setData(0,INDEX_OF_BOARD,m_indexOfBoard);
@@ -240,6 +246,13 @@ CanTreeWidgetItem::CanTreeWidgetItem(QTreeWidgetItem *parent, FirmwareUpdaterCor
 sBoard CanTreeWidgetItem::getBoard()
 {
     return ((EthTreeWidgetItem*)parentNode)->getCanBoard(m_indexOfBoard);
+}
+void CanTreeWidgetItem::erasEeprom(bool erase)
+{
+    CustomTreeWidgetItem *p = ((CustomTreeWidgetItem*)parentNode);
+    sBoard b = p->getCanBoard(m_indexOfBoard);
+    b.eeprom = erase;
+    p->replaceCanBoard(m_indexOfBoard,b);
 }
 
 void CanTreeWidgetItem::refresh()
@@ -316,6 +329,7 @@ void CanTreeWidgetItem::refresh()
     myFields.append(QString("CAN_%1").arg(board.bus));
     myFields.append(board_process);
     myFields.append(board_firmware_version);
+    myFields.append("");
     myFields.append(board_add_info);
 
 
@@ -327,6 +341,12 @@ void CanTreeWidgetItem::refresh()
     setData(0,DEVICE_LEVEL,parentNode->type() == ETH_TREE_NODE ? 3 : 2);
     setData(0,EMPTY_NODE,false);
     setData(0,CAN_TYPE,board.type);
+    setData(0,CAN_ERASE_EEPROM,board.eeprom);
+    if(board.eeprom){
+        setIcon(ERASE_EEPROM,QIcon(":/images/remove-icon-md.png"));
+    }else{
+        setIcon(ERASE_EEPROM,QIcon());
+    }
 
     if(isCheckSelected() != board.selected){
         setCheckSelected(board.selected);
