@@ -1310,6 +1310,7 @@ bool ServiceParser::parse_actuator_port(ConstString const &fromstring, eObrd_eth
             // read it as a CAN address
             eObrd_location_t loc;
             bool result = convert(fromstring, loc, formaterror);
+            yError() << " convert strin of port for mc4 or foc actuator";
 
             if(false == result)
             {
@@ -1989,7 +1990,7 @@ bool ServiceParser::check_motion(Searchable &config)
             return false;
         }
 
-        Bottle b_PROPERTIES_MC4_JOINT2BOARD = Bottle(b_PROPERTIES_MC4.findGroup("JOINT2BOARD"));
+/*        Bottle b_PROPERTIES_MC4_JOINT2BOARD = Bottle(b_PROPERTIES_MC4.findGroup("JOINT2BOARD"));
         if(b_PROPERTIES_MC4_JOINT2BOARD.isNull())
         {
             yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.JOINT2BOARD";
@@ -2002,7 +2003,7 @@ bool ServiceParser::check_motion(Searchable &config)
             yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.JOINT2BOARD.location";
             return false;
         }
-
+*/
         // 1. get values for SHIFTS
 
         uint8_t value = 0;
@@ -2075,7 +2076,7 @@ bool ServiceParser::check_motion(Searchable &config)
 
         // 3. i get the values for b_PROPERTIES_MC4_JOINT2BOARD_location.... there must be 12 values
 
-        int tmp1 = b_PROPERTIES_MC4_JOINT2BOARD_location.size();
+/*        int tmp1 = b_PROPERTIES_MC4_JOINT2BOARD_location.size();
         int numoflocations = tmp1 - 1;    // first position of bottle contains the tag "location"
 
         if(12 != numoflocations)
@@ -2112,7 +2113,7 @@ bool ServiceParser::check_motion(Searchable &config)
 
             mc_service.properties.mc4joints.push_back(item);
         }
-
+*/
 
     } // has_PROPERTIES_MC4
 
@@ -2250,6 +2251,11 @@ bool ServiceParser::check_motion(Searchable &config)
         mc_service.properties.encoder1s.resize(0);
         mc_service.properties.encoder2s.resize(0);
 
+        if(eomn_serv_MC_mc4 == mc_service.type)
+        {
+            mc_service.properties.mc4joints.resize(0);
+        }
+
 
         for(int i=0; i<mc_service.properties.numofjoints; i++)
         {
@@ -2272,10 +2278,27 @@ bool ServiceParser::check_motion(Searchable &config)
                 return false;
             }
 
+            yError() << "Actuator type = " << act.type << " for j " << i;
+            if((eomn_serv_MC_mc4 == mc_service.type) && (eomc_act_mc4 != act.type))
+            {
+                yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.actuator.type should be mc4 with mc service of type eomn_serv_MC_mc4. Error in item" << i;
+                return false;
+            }
+
             if(false == parse_actuator_port(b_PROPERTIES_JOINTMAPPING_ACTUATOR_port.get(i+1).asString(), mc_service.properties.ethboardtype, act.type, act.desc, formaterror))
             {
                     yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.actuator.port not valid for item" << i;
                 return false;
+            }
+
+            if(eomn_serv_MC_mc4 == mc_service.type)
+            {
+                eObrd_canlocation_t item;
+                item.port = act.desc.mc4.canloc.port;
+                item.addr = act.desc.mc4.canloc.addr;
+                item.insideindex = act.desc.mc4.canloc.insideindex;
+
+                mc_service.properties.mc4joints.push_back(item);
             }
 
 

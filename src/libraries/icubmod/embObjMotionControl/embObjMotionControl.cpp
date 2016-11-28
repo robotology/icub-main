@@ -1186,14 +1186,36 @@ bool embObjMotionControl::parseGeneralMecGroup(Bottle &general)
     }
 
     // useMotorSpeedFbk
-    if (!extractGroup(general, xtmp, "useMotorSpeedFbk", "Use motor speed feedback", _njoints))
+    if(eomn_serv_MC_mc4 != (eOmn_serv_type_t)serviceConfig.ethservice.configuration.type)
     {
-        return false;
-    }
+        if (!extractGroup(general, xtmp, "useMotorSpeedFbk", "Use motor speed feedback", _njoints))
+        {
+            return false;
+        }
 
-    for (i = 1; i < xtmp.size(); i++)
-    {
-        _jointsets_info.jointset_cfgs[i-1].usespeedfeedbackfrommotors = xtmp.get(i).asBool();
+        bool useMotorSpeedFbk[_njoints];
+        for (i = 1; i < xtmp.size(); i++)
+        {
+            useMotorSpeedFbk[i-1] = xtmp.get(i).asBool();
+            //_jointsets_info.jointset_cfgs[i-1].usespeedfeedbackfrommotors =
+        }
+
+        //Note: currently in eth protocol this parameter belongs to jointset configuration. So
+        // i need to check that every joint belog to same set has the same value
+        for(int s=0; s<_jointsets_info.numofjointsets; s++)
+        {
+            bool firstjointval = useMotorSpeedFbk[_jointsets_info.set2joint[s][0]];
+            for(int j=1; j<_jointsets_info.set2joint[s].size(); j++)
+            {
+                int joint = _jointsets_info.set2joint[s][j];
+                if(firstjointval != useMotorSpeedFbk[joint])
+                {
+                    yError() << "In board " << boardIPstring << ". Param useMotorSpeedFbk should have same value for joints belong same set. See joint " << _jointsets_info.set2joint[s][0] << " and " << joint;
+                    return false;
+                }
+            }
+            _jointsets_info.jointset_cfgs[s].usespeedfeedbackfrommotors = useMotorSpeedFbk[firstjointval];
+        }
     }
 
 
@@ -1958,6 +1980,11 @@ bool embObjMotionControl::saveCouplingsData(void)
            jc_dest = &(serviceConfig.ethservice.configuration.data.mc.mc4plusmais_based.jomocoupling);
 
         } break;
+         case eomn_serv_MC_mc4:
+        {
+            return true;
+        } break;
+
         default:
         {
             return false;
@@ -2267,7 +2294,7 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
 #warning VALE: metti dei controlli per verificare la validita' delle configurazioni degli encoder
         if(NULL == jointEncoder_ptr)
         {
-            _jointEncoderRes[i]  = 0;
+            _jointEncoderRes[i]  = 1;
             _jointEncoderType[i] = eomc_enc_none;
             _jointNumOfNoiseBits[i] = 0;
         }
@@ -2281,7 +2308,7 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
 
         if(NULL == motorEncoder_ptr)
         {
-            _rotorEncoderRes[i]  = 0;
+            _rotorEncoderRes[i]  = 1;
             _rotorEncoderRes[i] = eomc_enc_none;
             _rotorNumOfNoiseBits[i] = 0;
         }
