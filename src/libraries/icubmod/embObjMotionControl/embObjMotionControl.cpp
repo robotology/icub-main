@@ -3755,8 +3755,8 @@ bool embObjMotionControl::getRotorLimitsRaw(int j, double *rotorMin, double *rot
     res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
 
     // refresh cached value when reading data from the EMS
-    *rotorMax = (double)motor_cfg.limitsofrotor.max;
-    *rotorMin = (double)motor_cfg.limitsofrotor.min;
+    *rotorMax = (double)motor_cfg.limitsofrotor.max/_angleToEncoder[j];
+    *rotorMin = (double)motor_cfg.limitsofrotor.min/_angleToEncoder[j];
 
     return true;
 }
