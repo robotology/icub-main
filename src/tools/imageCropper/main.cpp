@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
     if (rf.check("y_off"))  start_y = (size_t) rf.find("y_off").asDouble();
     if (rf.check("width"))  width    = (size_t)rf.find("width").asDouble();
     if (rf.check("height")) height  = (size_t)rf.find("height").asDouble();
-    yDebug("x_off %d, y_off %d, width %d, height %d", start_x, start_y, width, height);
+    yDebug("x_off %lu, y_off %lu, width %lu, height %lu", start_x, start_y, width, height);
     if (rf.check("help"))
     {
         yDebug() << "Available options:";

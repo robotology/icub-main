@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
     if (rf.check("ly")) start_ly = (size_t) rf.find("ly").asDouble();
     if (rf.check("alpha1")) alpha1 = rf.find("alpha1").asDouble();
     if (rf.check("alpha2")) alpha2 = rf.find("alpha2").asDouble();
-    yDebug("left offset:%d,%d right offset:%d,%d, alpha1:%f, alpha2:%f", start_lx, start_ly, start_rx, start_ry, alpha1, alpha2);
+    yDebug("left offset:%lu,%lu right offset:%lu,%lu, alpha1:%f, alpha2:%f", start_lx, start_ly, start_rx, start_ry, alpha1, alpha2);
     if (rf.check("help"))
     {
         yDebug() << "Available options:";
