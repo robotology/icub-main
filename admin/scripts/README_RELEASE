@@ -1,18 +1,18 @@
-== Instructions for release == 
+== Instructions for release ==
 
-0) tag YARP 
+0) tag YARP
 
 1) Checkout latest master and make sure that there are no local modifications
 
   git checkout -f master
   git fetch origin
   git reset --hard origin/master
-  git status 
+  git status
   (check that there are no uncommitted modifications or new files)
 
 2) Update conf/iCubVersion.cmake
 
-3) Update yarp version info inside admin/scripts/current_dependencies.txt 
+3) Update yarp version info inside admin/scripts/current_dependencies.txt
 
 4) Update licensing info
   rm -rf license_check
@@ -24,17 +24,17 @@
 
 5) Update ChangeLog with tag notice
 
-6) Make sure the YARP min required version in CMakeLists.txt matches the 
+6) Make sure the YARP min required version in CMakeLists.txt matches the
   the latest release of YARP (in pariticular if ICUB_REQYARP_VERSION_TWEAK is not 0).
   Update it if needed the following lines:
-	SET(ICUB_REQYARP_VERSION_MAJOR "x")
-	SET(ICUB_REQYARP_VERSION_MINOR "y")
-	SET(ICUB_REQYARP_VERSION_PATCH "z")
+    SET(ICUB_REQYARP_VERSION_MAJOR "x")
+    SET(ICUB_REQYARP_VERSION_MINOR "y")
+    SET(ICUB_REQYARP_VERSION_PATCH "z")
     set(ICUB_REQYARP_VERSION_TWEAK "twk")
-    
+
     (twk should be zero since we do not release YARP versions with twk != 0)
 
-7) Make sure that the ICUB-FIRMWARE-SHARED min required version in conf/iCubFindDependencies.cmake matches the 
+7) Make sure that the ICUB-FIRMWARE-SHARED min required version in conf/iCubFindDependencies.cmake matches the
   the latest release of icub-firmware-shared
 
 7) Commit :
@@ -55,7 +55,7 @@
 
 12) Build source packages:
   ./admin/scripts/icub-package.sh x.y.z
-  
+
 13) Update the changelog here http://wiki.icub.org/wiki/ChangeLog
 
 14) Upload the packages to github
