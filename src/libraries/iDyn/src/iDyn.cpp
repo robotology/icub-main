@@ -1349,7 +1349,7 @@ Matrix iDynChain::computeGeoJacobian(const unsigned int iLinkN, const Matrix &Pn
     {
         unsigned int j=hash[i];
         Z=intH[j];
-        w=cross(Z,2,Pn-Z,3,verbose);
+        w=cross(Z,2,Pn-Z,3);
         J(0,j)=w[0];
         J(1,j)=w[1];
         J(2,j)=w[2];
@@ -1387,7 +1387,7 @@ Matrix iDynChain::computeGeoJacobian(const unsigned int iLinkN, const Matrix &Pn
     {
         unsigned int j=hash[i];
         Z=intH[j];
-        w=cross(Z,2,Pn-Z,3,verbose);
+        w=cross(Z,2,Pn-Z,3);
         J(0,j)=w[0];
         J(1,j)=w[1];
         J(2,j)=w[2];
@@ -1420,7 +1420,7 @@ Matrix iDynChain::computeGeoJacobian(const Matrix &Pn)
     {
         unsigned int j=hash[i];
         Z=intH[j];
-        w=cross(Z,2,Pn-Z,3,verbose);
+        w=cross(Z,2,Pn-Z,3);
         J(0,i)=w[0];
         J(1,i)=w[1];
         J(2,i)=w[2];
@@ -1453,7 +1453,7 @@ Matrix iDynChain::computeGeoJacobian(const Matrix &Pn, const Matrix &_H0)
     {
         unsigned int j=hash[i];
         Z=intH[j];
-        w=cross(Z,2,Pn-Z,3,verbose);
+        w=cross(Z,2,Pn-Z,3);
         J(0,i)=w[0];
         J(1,i)=w[1];
         J(2,i)=w[2];
@@ -1501,7 +1501,7 @@ Matrix iDynChain::TESTING_computeCOMJacobian(const unsigned int iLink)
     for (unsigned int j=0; j<=iLink; j++)
     {
         Z=intH[j];
-        w=cross(Z,2,Pn-Z,3,verbose);
+        w=cross(Z,2,Pn-Z,3);
 
         J(0,j)=w[0];
         J(1,j)=w[1];
@@ -1535,7 +1535,7 @@ Matrix iDynChain::TESTING_computeCOMJacobian(const unsigned int iLink, const Mat
     for (unsigned int j=0; j<=iLink; j++)
     {
         Z=intH[j];
-        w=cross(Z,2,Pn-Z,3,verbose);
+        w=cross(Z,2,Pn-Z,3);
 
         J(0,j)=w[0];
         J(1,j)=w[1];
@@ -1569,7 +1569,7 @@ Matrix iDynChain::TESTING_computeCOMJacobian(const unsigned int iLink, const Mat
     for (unsigned int j=0; j<=iLink; j++)
     {
         Z=intH[j];
-        w=cross(Z,2,Pn-Z,3,verbose);
+        w=cross(Z,2,Pn-Z,3);
 
         J(0,j)=w[0];
         J(1,j)=w[1];

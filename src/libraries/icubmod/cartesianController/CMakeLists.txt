@@ -3,9 +3,10 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
-yarp_prepare_device(cartesiancontrollerserver TYPE ServerCartesianController
+yarp_prepare_plugin(cartesiancontrollerserver CATEGORY device
+                                              TYPE ServerCartesianController
                                               INCLUDE ServerCartesianController.h
-                                              WRAPPER cartesiancontrollerclient)
+                                              EXTRA_CONFIG WRAPPER=cartesiancontrollerclient)
 
 if(NOT SKIP_cartesiancontrollerserver)
    set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -22,9 +23,10 @@ if(NOT SKIP_cartesiancontrollerserver)
    yarp_install(FILES cartesiancontrollerserver.ini DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})
 endif()
 
-yarp_prepare_device(cartesiancontrollerclient TYPE ClientCartesianController
-                                         INCLUDE ClientCartesianController.h
-                                         WRAPPER cartesiancontrollerclient)
+yarp_prepare_plugin(cartesiancontrollerclient CATEGORY device
+                                              TYPE ClientCartesianController
+                                              INCLUDE ClientCartesianController.h
+                                              EXTRA_CONFIG WRAPPER=cartesiancontrollerclient)
 
 if(NOT SKIP_cartesiancontrollerclient)
    set(CMAKE_INCLUDE_CURRENT_DIR ON)

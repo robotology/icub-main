@@ -22,6 +22,8 @@
 
 #include <gsl/gsl_blas.h>
 
+#include <yarp/gsl/Gsl.h>
+
 #include "iCub/learningMachine/Math.h"
 
 namespace iCub {
@@ -133,13 +135,16 @@ void gsl_linalg_cholesky_update(gsl_matrix* R, gsl_vector* x, gsl_vector* c, gsl
 
 void cholupdate(yarp::sig::Matrix& R, const yarp::sig::Vector& x, yarp::sig::Vector& c, yarp::sig::Vector& s,
                 yarp::sig::Matrix& Z, const yarp::sig::Vector& y, yarp::sig::Vector& rho, bool rtrans, bool ztrans) {
-    gsl_matrix* Rgsl = (gsl_matrix*) R.getGslMatrix();
-    gsl_vector* xgsl = (gsl_vector*) x.getGslVector();
-    gsl_matrix* Zgsl = (gsl_matrix*) Z.getGslMatrix();
-    gsl_vector* ygsl = (gsl_vector*) y.getGslVector();
-    gsl_vector* rhogsl = (gsl_vector*) rho.getGslVector();
-    gsl_vector* cgsl = (gsl_vector*) c.getGslVector();
-    gsl_vector* sgsl = (gsl_vector*) s.getGslVector();
+    yarp::gsl::GslMatrix RGslMat(R), ZGslMat(Z);
+    yarp::gsl::GslVector xGslVec(x), yGslVec(y), rhoGslVec(rho), cGslVec(c), sGslVec(s);
+
+    gsl_matrix* Rgsl = (gsl_matrix*) RGslMat.getGslMatrix();
+    gsl_vector* xgsl = (gsl_vector*) xGslVec.getGslVector();
+    gsl_matrix* Zgsl = (gsl_matrix*) ZGslMat.getGslMatrix();
+    gsl_vector* ygsl = (gsl_vector*) yGslVec.getGslVector();
+    gsl_vector* rhogsl = (gsl_vector*) rhoGslVec.getGslVector();
+    gsl_vector* cgsl = (gsl_vector*) cGslVec.getGslVector();
+    gsl_vector* sgsl = (gsl_vector*) sGslVec.getGslVector();
 
     gsl_linalg_cholesky_update(Rgsl, xgsl, cgsl, sgsl, Zgsl, ygsl, rhogsl, (unsigned char) rtrans, (unsigned char) ztrans);
 }
@@ -148,10 +153,13 @@ void cholupdate(yarp::sig::Matrix& R, const yarp::sig::Vector& x, bool rtrans) {
     yarp::sig::Vector c(R.cols());
     yarp::sig::Vector s(R.cols());
 
-    gsl_matrix* Rgsl = (gsl_matrix*) R.getGslMatrix();
-    gsl_vector* xgsl = (gsl_vector*) x.getGslVector();
-    gsl_vector* cgsl = (gsl_vector*) c.getGslVector();
-    gsl_vector* sgsl = (gsl_vector*) s.getGslVector();
+    yarp::gsl::GslMatrix RGslMat(R);
+    yarp::gsl::GslVector xGslVec(x), cGslVec(c), sGslVec(s);
+
+    gsl_matrix* Rgsl = (gsl_matrix*) RGslMat.getGslMatrix();
+    gsl_vector* xgsl = (gsl_vector*) xGslVec.getGslVector();
+    gsl_vector* cgsl = (gsl_vector*) cGslVec.getGslVector();
+    gsl_vector* sgsl = (gsl_vector*) sGslVec.getGslVector();
 
     gsl_linalg_cholesky_update(Rgsl, xgsl, cgsl, sgsl, NULL, NULL, NULL, (unsigned char) rtrans, 0);
 }
@@ -183,9 +191,12 @@ yarp::sig::Matrix cholsolve(const yarp::sig::Matrix& R, const yarp::sig::Matrix&
 void cholsolve(const yarp::sig::Matrix& R, const yarp::sig::Vector& b, yarp::sig::Vector& x) {
     int info;
 
-    gsl_matrix* Rgsl = (gsl_matrix*) R.getGslMatrix();
-    gsl_vector* bgsl = (gsl_vector*) b.getGslVector();
-    gsl_vector* xgsl = (gsl_vector*) x.getGslVector();
+    yarp::gsl::GslMatrix RGslMat(R);
+    yarp::gsl::GslVector bGslVec(b), xGslVec(x);
+
+    gsl_matrix* Rgsl = (gsl_matrix*) RGslMat.getGslMatrix();
+    gsl_vector* bgsl = (gsl_vector*) bGslVec.getGslVector();
+    gsl_vector* xgsl = (gsl_vector*) xGslVec.getGslVector();
 
     info = gsl_linalg_cholesky_solve(Rgsl, bgsl, xgsl);
     if(info) {
@@ -217,9 +228,12 @@ yarp::sig::Vector& addvec(yarp::sig::Vector& v, double val) {
 }
 
 void trsolve(const yarp::sig::Matrix& A, const yarp::sig::Vector& b, yarp::sig::Vector& x, bool transa) {
-    gsl_matrix* Agsl = (gsl_matrix*) A.getGslMatrix();
-    gsl_vector* bgsl = (gsl_vector*) b.getGslVector();
-    gsl_vector* xgsl = (gsl_vector*) x.getGslVector();
+    yarp::gsl::GslMatrix AGslMat(A);
+    yarp::gsl::GslVector bGslVec(b), xGslVec(x);
+
+    gsl_matrix* Agsl = (gsl_matrix*) AGslMat.getGslMatrix();
+    gsl_vector* bgsl = (gsl_vector*) bGslVec.getGslVector();
+    gsl_vector* xgsl = (gsl_vector*) xGslVec.getGslVector();
 
     gsl_vector_memcpy(xgsl, bgsl);
     CBLAS_TRANSPOSE trans = transa ? CblasTrans : CblasNoTrans;

@@ -6,7 +6,7 @@ using namespace iCub::skinDynLib;
 /****************************************************************/
 /* SKINPARTBASE WRAPPER
 *****************************************************************/
-    skinPartBase::skinPartBase() : name("unknown_skin_part"), size(0) {}
+    skinPartBase::skinPartBase() : name("unknown_skin_part"), size(0), version("unknown_version") {}
 
     skinPartBase::skinPartBase(const skinPartBase &_spb)
     {
@@ -23,6 +23,7 @@ using namespace iCub::skinDynLib;
 
         name = _spb.name;
         size = _spb.size;
+        version = _spb.version;
         return *this;
     }
 
@@ -46,17 +47,29 @@ using namespace iCub::skinDynLib;
         return size;
     }
 
+    void skinPartBase::setVersion(const std::string &_version)
+    {
+        version = _version;
+    }
+
+    std::string skinPartBase::getVersion()
+    {
+        return version;
+    }
+
+    
     void skinPartBase::print(int verbosity)
     {
         yDebug("**********\n");
         yDebug("name: %s\t", name.c_str());
         yDebug("total number of taxels: %i\n", size);
+        yDebug("version: %s\n", version.c_str());
     }
 
     std::string skinPartBase::toString(int precision)
     {
         std::stringstream res;
-        res << "**********\n" << "Name: " << name << "\tSize: "<< size << std::endl;
+        res << "**********\n" << "Name: " << name << "\tSize: "<< size << "\tVersion: "<< version << std::endl;
         return res.str();
     }
 
@@ -65,7 +78,7 @@ using namespace iCub::skinDynLib;
 *****************************************************************/
     skinPart::skinPart()
     {
-        spatial_sampling = "taxel";
+        spatial_sampling = "taxel";        
     }
 
     skinPart::skinPart(const std::string &_filePath)
@@ -124,16 +137,18 @@ using namespace iCub::skinDynLib;
         else
         {
             yWarning("[skinPart::setTaxelPosesFromFile] no name field found. Using filename.");
-            // Assign the name of the skinPart according to the filename (hardcoded)
-            if      (filename == "left_forearm_mesh.txt")    { setName(SkinPart_s[SKIN_LEFT_FOREARM]);    }
-            else if (filename == "left_forearm_nomesh.txt")  { setName(SkinPart_s[SKIN_LEFT_FOREARM]);    }
-            else if (filename == "right_forearm_mesh.txt")   { setName(SkinPart_s[SKIN_RIGHT_FOREARM]);   }
-            else if (filename == "right_forearm_nomesh.txt") { setName(SkinPart_s[SKIN_RIGHT_FOREARM]);   }
-            else if (filename == "left_hand_V2_1.txt")       { setName(SkinPart_s[SKIN_LEFT_HAND]);       }
-            else if (filename == "right_hand_V2_1.txt")      { setName(SkinPart_s[SKIN_RIGHT_HAND]);      }
-            else if (filename == "left_arm_mesh.txt")        { setName(SkinPart_s[SKIN_LEFT_UPPER_ARM]);  }
-            else if (filename == "right_arm_mesh.txt")       { setName(SkinPart_s[SKIN_RIGHT_UPPER_ARM]); }
-            else if (filename == "torso.txt")                { setName(SkinPart_s[SKIN_FRONT_TORSO]);     }
+            // Assign the name and version of the skinPart according to the filename (hardcoded)
+            if      (filename == "left_forearm_mesh.txt")    { setName(SkinPart_s[SKIN_LEFT_FOREARM]);    setVersion("V1");   }
+            else if (filename == "left_forearm_nomesh.txt")  { setName(SkinPart_s[SKIN_LEFT_FOREARM]);    setVersion("V1");   }
+            else if (filename == "left_forearm_V2.txt")      { setName(SkinPart_s[SKIN_LEFT_FOREARM]);    setVersion("V2");   }
+            else if (filename == "right_forearm_mesh.txt")   { setName(SkinPart_s[SKIN_RIGHT_FOREARM]);   setVersion("V1");   }
+            else if (filename == "right_forearm_nomesh.txt") { setName(SkinPart_s[SKIN_RIGHT_FOREARM]);   setVersion("V1");   }
+            else if (filename == "right_forearm_V2.txt")     { setName(SkinPart_s[SKIN_RIGHT_FOREARM]);   setVersion("V2");   }
+            else if (filename == "left_hand_V2_1.txt")       { setName(SkinPart_s[SKIN_LEFT_HAND]);       setVersion("V2.1"); }
+            else if (filename == "right_hand_V2_1.txt")      { setName(SkinPart_s[SKIN_RIGHT_HAND]);      setVersion("V2.1"); }
+            else if (filename == "left_arm_mesh.txt")        { setName(SkinPart_s[SKIN_LEFT_UPPER_ARM]);  setVersion("V1");   }
+            else if (filename == "right_arm_mesh.txt")       { setName(SkinPart_s[SKIN_RIGHT_UPPER_ARM]); setVersion("V1");   }
+            else if (filename == "torso.txt")                { setName(SkinPart_s[SKIN_FRONT_TORSO]);     setVersion("V1");   }
             else
             {
                 yError("[skinPart::setTaxelPosesFromFile] Unexpected skin part file name: %s.\n",filename.c_str());
@@ -147,16 +162,16 @@ using namespace iCub::skinDynLib;
             std::string _ss=rf.find("spatial_sampling").asString();
 
             // This lets us override the field without touching the .ini file
-            if (_spatial_sampling=="default" && (_ss=="taxel" || _ss=="patch"))
+            if (_spatial_sampling=="default" && (_ss=="taxel" || _ss=="triangle"))
             {
                 spatial_sampling = _ss;
             }
-            else if (_spatial_sampling=="taxel" || _spatial_sampling=="patch")
+            else if (_spatial_sampling=="taxel" || _spatial_sampling=="triangle")
             {
                 spatial_sampling = _spatial_sampling;
             }
             else if ((_spatial_sampling!="default" && _spatial_sampling!="taxel" &&
-                      _spatial_sampling!="patch") && (_ss=="taxel" || _ss=="patch"))
+                      _spatial_sampling!="triangle") && (_ss=="taxel" || _ss=="triangle"))
             {
                 spatial_sampling = _ss;   
             }
@@ -194,7 +209,7 @@ using namespace iCub::skinDynLib;
             }
         }
 
-        // Let's read the mapping of the taxels onto the center of their patch
+        // Let's read the mapping of the taxels onto the center of their triangle
         // even if the spatial_sampling variable is "taxel"
         // (it might come useful later)
         if (rf.check("taxel2Repr"))
@@ -338,7 +353,7 @@ using namespace iCub::skinDynLib;
         skinPartBase::print(verbosity);
         yDebug("number of valid taxels: %i", getTaxelsSize());
         yDebug("spatial_sampling:       %s", spatial_sampling.c_str());
-        if ((verbosity>=1 && spatial_sampling == "patch") ||
+        if ((verbosity>=1 && spatial_sampling == "triangle") ||
             (verbosity>=3 && spatial_sampling == "taxel"))
         {
             yDebug("Taxel ID -> Representative ID:");

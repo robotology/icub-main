@@ -3,9 +3,10 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
-yarp_prepare_device(gazecontrollerclient TYPE ClientGazeController
+yarp_prepare_plugin(gazecontrollerclient CATEGORY device
+                                         TYPE ClientGazeController
                                          INCLUDE ClientGazeController.h
-                                         WRAPPER gazecontrollerclient)
+                                         EXTRA_CONFIG WRAPPER=gazecontrollerclient)
 
 if(NOT SKIP_gazecontrollerclient)
    set(CMAKE_INCLUDE_CURRENT_DIR ON)

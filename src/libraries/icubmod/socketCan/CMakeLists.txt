@@ -2,9 +2,11 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(socketcan TYPE yarp::dev::SocketCan
+yarp_prepare_plugin(socketcan
+    CATEGORY device
+    TYPE yarp::dev::SocketCan
     INCLUDE SocketCan.h 
-    WRAPPER controlboard)
+    EXTRA_CONFIG WRAPPER=controlboard)
 
 IF (NOT SKIP_socketcan)
  

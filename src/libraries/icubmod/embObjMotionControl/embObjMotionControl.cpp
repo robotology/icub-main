@@ -193,6 +193,7 @@ static double convertA2I(double angle_in_degrees, double zero, double factor)
     return (angle_in_degrees + zero) * factor;
 }
 
+
 static inline bool NOT_YET_IMPLEMENTED(const char *txt)
 {
     yError() << txt << " is not yet implemented for embObjMotionControl";
@@ -435,9 +436,6 @@ bool embObjMotionControl::alloc(int nj)
     _jointEncoderRes = allocAndCheck<int>(nj);
     _rotorEncoderRes = allocAndCheck<int>(nj);
     _gearbox = allocAndCheck<double>(nj);
-    _torqueSensorId= allocAndCheck<int>(nj);
-    _torqueSensorChan= allocAndCheck<int>(nj);
-    _maxTorque=allocAndCheck<double>(nj);
     _maxJntCmdVelocity = allocAndCheck<double>(nj);
     _maxMotorVelocity = allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
@@ -504,9 +502,6 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_jointEncoderType);
     checkAndDestroy(_rotorEncoderType);
     checkAndDestroy(_gearbox);
-    checkAndDestroy(_torqueSensorId);
-    checkAndDestroy(_torqueSensorChan);
-    checkAndDestroy(_maxTorque);
     checkAndDestroy(_maxJntCmdVelocity);
     checkAndDestroy(_maxMotorVelocity);
     checkAndDestroy(_newtonsToSensor);
@@ -613,9 +608,6 @@ embObjMotionControl::embObjMotionControl() :
     _motorPwmLimits   = NULL;
     _velocityShifts   = NULL;
     _velocityTimeout  = NULL;
-    _torqueSensorId   = NULL;
-    _torqueSensorChan = NULL;
-    _maxTorque        = NULL;
     _maxJntCmdVelocity= NULL;
     _maxMotorVelocity = NULL;
     _newtonsToSensor  = NULL;
@@ -655,6 +647,7 @@ embObjMotionControl::embObjMotionControl() :
 
     useRawEncoderData = false;
     _pwmIsLimited     = false;
+    _currentPidsAvailables = false;
 
     ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
@@ -1311,50 +1304,14 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             if (_gearbox[i-1]==0) {yError() << "Using a gearbox value = 0 may cause problems! Check your configuration files"; return false;}
         }
     }
-
-    // Torque sensors stuff
-    if (!extractGroup(general, xtmp, "TorqueId","a list of associated joint torque sensor ids", _njoints))
+    
+    //_newtonsToSensor not depends more on joint. Since now we use float number to change torque values with firmware, we can use micro Nm in order to have a good sensitivity.
+    for (i = 0; i < _njoints; i++)
     {
-        fprintf(stderr, "Using default value = 0 (disabled)\n");
-        for(i=1; i<_njoints+1; i++)
-            _torqueSensorId[i-1] = 0;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++) _torqueSensorId[i-1] = xtmp.get(i).asInt();
+        _newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
+     
     }
 
-
-    if (!extractGroup(general, xtmp, "TorqueChan","a list of associated joint torque sensor channels", _njoints))
-    {
-        yWarning() <<  "embObjMotionControl::fromConfig() detected that TorqueChan is not present: using default value = 0 (disabled)";
-        for(i=1; i<_njoints+1; i++)
-            _torqueSensorChan[i-1] = 0;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++) _torqueSensorChan[i-1] = xtmp.get(i).asInt();
-    }
-
-
-    if (!extractGroup(general, xtmp, "TorqueMax","full scale value for a joint torque sensor", _njoints))
-    {
-        return false;
-    }
-    else
-    {
-        for (i = 1; i < xtmp.size(); i++)
-        {
-            _maxTorque[i-1] = xtmp.get(i).asInt();
-            _newtonsToSensor[i-1] = 1000.0f; // conversion from Nm into milliNm
-            //@@@RANDAZ: this is tempory fix to increase torque resolution on MC4-controlled joints (i.e. arm pronosupination)
-            //without this user may experience poor resolution of stiffness/damping values.
-            if (_maxTorque[i-1] < 10.0)
-            {
-               _newtonsToSensor[i-1] = 10000.0f;
-            }
-        }
-    }
 
 
     ////// POSITION PIDS
@@ -1582,6 +1539,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         currentPidsGroup=config.findGroup("CURRENT_CONTROL", "Current control parameters");
         if (currentPidsGroup.isNull()==false)
         {
+            _currentPidsAvailables = true;
            Value &controlUnits=currentPidsGroup.find("controlUnits");
            if  (controlUnits.isNull() == false && controlUnits.isString() == true)
            {
@@ -1615,7 +1573,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
                string s_controlaw = controlLaw.toString();
                if (s_controlaw==string("2foc_feedback"))
                {
-                   yDebug("CORRENT_CONTROL: using control law motor 2foc_feedback");
+                   yDebug("CURRENT_CONTROL: using control law motor 2foc_feedback");
                    if (!parseCurrentPidsGroup (currentPidsGroup, _cpids))
                    {
                        yError() << "embObjMotionControl::fromConfig(): CURRENT_CONTROL section: error detected in parameters syntax";
@@ -1644,6 +1602,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         {
             yDebug() <<"embObjMotionControl::fromConfig(): no CURRENT_CONTROL group found in config file";
             //return true; //current control group is not mandatory
+            _currentPidsAvailables = false;
         }
     }
 
@@ -1937,13 +1896,14 @@ bool embObjMotionControl::init()
         copyPid_iCub2eo(&_vpids[logico], &jconfig.pidvelocity);
         copyPid_iCub2eo(&_tpids[logico], &jconfig.pidtorque);
 
-        jconfig.impedance.damping   = (eOmeas_damping_t)   U_32(_impedance_params[logico].damping * 1000);
-        jconfig.impedance.stiffness = (eOmeas_stiffness_t) U_32(_impedance_params[logico].stiffness * 1000);
+        //stiffness and damping read in xml file are in Nm/deg and Nm/(Deg/sec), so we need to convert before send to fw.
+        jconfig.impedance.damping   = (eOmeas_damping_t) _torqueControlHelper->convertImpN2S(logico, _impedance_params[logico].damping);
+        jconfig.impedance.stiffness = (eOmeas_stiffness_t) _torqueControlHelper->convertImpN2S(logico,  _impedance_params[logico].stiffness);
         jconfig.impedance.offset    = 0; //impedance_params[j];
 
         _cacheImpedance[logico].stiffness = jconfig.impedance.stiffness;
         _cacheImpedance[logico].damping   = jconfig.impedance.damping;
-        _cacheImpedance[logico].offset    = 0;
+        _cacheImpedance[logico].offset    = jconfig.impedance.offset;
 
         jconfig.limitsofjoint.max = (eOmeas_position_t) S_32(convertA2I(_limitsMax[logico], 0.0, _angleToEncoder[logico]));
         jconfig.limitsofjoint.min = (eOmeas_position_t) S_32(convertA2I(_limitsMin[logico], 0.0, _angleToEncoder[logico]));
@@ -2017,10 +1977,18 @@ bool embObjMotionControl::init()
         motor_cfg.pwmLimit =_motorPwmLimits[logico];
         motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_max[logico], 0.0, _angleToEncoder[logico]));
         motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(convertA2I(_rotorlimits_min[logico], 0.0, _angleToEncoder[logico]));
-        copyPid_iCub2eo(&_cpids[logico],  &motor_cfg.pidcurrent);
-        motor_cfg.pidcurrent.kp = 8;
-        motor_cfg.pidcurrent.ki = 2;
-        motor_cfg.pidcurrent.scale = 10;
+        
+        if(_currentPidsAvailables)
+        {
+            copyPid_iCub2eo(&_cpids[logico],  &motor_cfg.pidcurrent);
+        }
+        else
+        {
+            motor_cfg.pidcurrent.kp = 8;
+            motor_cfg.pidcurrent.ki = 2;
+            motor_cfg.pidcurrent.scale = 10;
+        }
+        
         if (false == res->setRemoteValueUntilVerified(protid, &motor_cfg, sizeof(motor_cfg), 10, 0.010, 0.050, 2))
         {
             yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
@@ -3759,6 +3727,40 @@ bool embObjMotionControl::getGearboxRatioRaw(int j, double *gearbox)
     return true;
 }
 
+bool embObjMotionControl::getRotorLimitsRaw(int j, double *rotorMin, double *rotorMax)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getGearbox() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_config_t    motor_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    *rotorMax = (double)motor_cfg.limitsofrotor.max/_angleToEncoder[j];
+    *rotorMin = (double)motor_cfg.limitsofrotor.min/_angleToEncoder[j];
+
+    return true;
+}
+
 bool embObjMotionControl::getTorqueControlFilterType(int j, int& type)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
@@ -4340,6 +4342,30 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         Bottle& r = val.addList(); for (int i = 0; i< _njoints; i++) { double tmp = 0; getPowerSupplyVoltageRaw(i, &tmp);  r.addDouble(tmp); }
         return true;
     }
+    else if (key == "rotorMax")
+    {
+        double tmp1, tmp2;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorLimitsRaw(i, &tmp1, &tmp2);  r.addDouble(tmp2); }
+        return true;
+    }
+    else if (key == "rotorMin")
+    {
+        double tmp1, tmp2;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getRotorLimitsRaw(i, &tmp1, &tmp2);  r.addDouble(tmp1); }
+        return true;
+    }
+    else if (key == "jointMax")
+    {
+        double tmp1, tmp2;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getLimitsRaw(i, &tmp1, &tmp2);  r.addDouble(tmp2); }
+        return true;
+    }
+    else if (key == "jointMin")
+    {
+        double tmp1, tmp2;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getLimitsRaw(i, &tmp1, &tmp2);  r.addDouble(tmp1); }
+        return true;
+    }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
 }
@@ -4347,34 +4373,53 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
 bool embObjMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const yarp::os::Bottle& val)
 {
     string s1 = val.toString();
-    Bottle* bval = val.get(0).asList();
-    if (bval == 0)
+    if (val.size() != _njoints)
     {
         yWarning("setRemoteVariable(): Protocol error %s", s1.c_str());
         return false;
     }
 
-    string s2 = bval->toString();
     if (key == "kinematic_mj")
     {
         return true;
     }
     else if (key == "rotor")
     {
-        for (int i = 0; i < _njoints; i++)
-            _rotorEncoderRes[i] = bval->get(i).asInt();
+        for (int i = 0; i < _njoints; i++) _rotorEncoderRes[i] = val.get(i).asInt();
         return true;
     }
     else if (key == "gearbox")
     {
-        for (int i = 0; i < _njoints; i++) _gearbox[i] = bval->get(i).asDouble();
+        for (int i = 0; i < _njoints; i++) _gearbox[i] = val.get(i).asDouble();
         return true;
     }
     else if (key == "PWMLimit")
     {
-        for (int i = 0; i < _njoints; i++) setPWMLimitRaw(i, bval->get(i).asDouble());
+        for (int i = 0; i < _njoints; i++) setPWMLimitRaw(i, val.get(i).asDouble());
         return true;
     }
+    //disabled for used safety
+#if 0
+    else if (key == "jointMax")
+    {
+        double min, max;
+        for (int i = 0; i < _njoints; i++)
+        {
+            getLimitsRaw(i, &min, &max);
+            setLimitsRaw(i, min, val.get(i).asDouble());
+        }
+        return true;
+    }
+    else if (key == "jointMin")
+    {
+        double min, max;
+        for (int i = 0; i < _njoints; i++)
+        {
+            getLimitsRaw(i, &min, &max);
+            setLimitsRaw(i, val.get(i).asDouble(), max);
+        }
+    }
+#endif
     yWarning("setRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
 }
@@ -4406,7 +4451,10 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     listOfKeys->addString("motNominalCurr");
     listOfKeys->addString("motPeakCurr");
     listOfKeys->addString("PowerSuppVoltage");
-
+    listOfKeys->addString("rotorMax");
+    listOfKeys->addString("rotorMin");
+    listOfKeys->addString("jointMax");
+    listOfKeys->addString("jointMin");
     return true;
 }
 
@@ -4489,31 +4537,7 @@ bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorq
     static double curr_time = Time::now();
     static int    count_saturation=0;
 
-    if(0 != _maxTorque[j])
-    {
-        if(fTorque < (- _maxTorque[j] ))
-        {
-            if (Time::now() - curr_time > 2.0)
-            {
-                yWarning ("embObjMotionControl::updateMeasure() torque measure saturated from %+4.4f to %+4.4f on BOARD %s IP %s joint %d, count: %d", fTorque, _maxTorque[j], res->getName(), res->getIPv4string(), userLevel_jointNumber, count_saturation);
-                curr_time = Time::now();
-            }
-            fTorque = (- _maxTorque[j]);
-            count_saturation++;
-        }
-        if(fTorque > _maxTorque[j])
-        {
-            if (Time::now() - curr_time > 2.0)
-            {
-                yWarning ("embObjMotionControl::updateMeasure() torque measure saturated from %+4.4f to %+4.4f on BOARd %s IP %s joint %d, count: %d", fTorque, _maxTorque[j], res->getName(), res->getIPv4string(), userLevel_jointNumber, count_saturation);
-                curr_time = Time::now();
-            }
-            fTorque = _maxTorque[j];
-            count_saturation++;
-        }
-
-        meas_torque = (eOmeas_torque_t) S_32(_newtonsToSensor[j]*fTorque);
-    }
+    meas_torque = (eOmeas_torque_t) S_32(_newtonsToSensor[j]*fTorque);
 
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
     return res->addSetMessageAndCacheLocally(protoid, (uint8_t*) &meas_torque);
@@ -4601,13 +4625,15 @@ bool embObjMotionControl::getRefTorquesRaw(double *t)
 
 bool embObjMotionControl::getRefTorqueRaw(int j, double *t)
 {
-    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_target);
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     uint16_t size;
     eOmc_joint_status_core_t jcore = {0};
     *t =0 ;
-    if(!askRemoteValue(id32, (uint8_t *)&jcore, size))
+
+
+    if(!res->readBufferedValue(id32, (uint8_t *)&jcore, &size))
     {
-        yError() << "embObjMotionControl::getRefTorqueRaw() could not read reference pos for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
+        yError() << "embObjMotionControl::getRefTorqueRaw() could not read pid torque reference pos for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
         return false;
     }
 #if NEW_JSTATUS_STRUCT
@@ -4770,8 +4796,8 @@ bool embObjMotionControl::getImpedanceRaw(int j, double *stiffness, double *damp
     if(!getWholeImpedanceRaw(j, val))
         return false;
 
-    *stiffness = (double) (val.stiffness * 0.001);
-    *damping = (double) (val.damping * 0.001);
+    *stiffness = (double) (val.stiffness);
+    *damping = (double) (val.damping);
     return true;
 }
 
@@ -4821,9 +4847,8 @@ bool embObjMotionControl::setImpedanceRaw(int j, double stiffness, double dampin
 //    if(!getWholeImpedanceRaw(j, val))
 //        return false;
 
-    // EMS will divide stiffness value by 1000 because the cycle is 1KHz. It is done on the EMS since it manage the cycle and knows the real Rate.
-    _cacheImpedance[j].stiffness = (eOmeas_stiffness_t) U_32(stiffness * 1000.0);
-    _cacheImpedance[j].damping   = (eOmeas_damping_t) U_32(damping * 1000.0);
+    _cacheImpedance[j].stiffness = (eOmeas_stiffness_t) stiffness;
+    _cacheImpedance[j].damping   = (eOmeas_damping_t) damping;
 
     val.stiffness   = _cacheImpedance[j].stiffness;
     val.damping     = _cacheImpedance[j].damping;

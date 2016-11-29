@@ -2,7 +2,9 @@
 # Authors: Lorenzo Natale, Alessandro Scalzo
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(sharedcan TYPE yarp::dev::CanBusAccessPoint
+yarp_prepare_plugin(sharedcan
+    CATEGORY device
+    TYPE yarp::dev::CanBusAccessPoint
     INCLUDE SharedCanBus.h)
 
 

@@ -62,18 +62,14 @@ double iCub::ctrl::norm(const Matrix &M, int col)
 
 
 /************************************************************************/
-Vector iCub::ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB,
-                         unsigned int verbose)
-{
+Vector iCub::ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB)
+{    
+    yAssert((A.rows()>=3) && (B.rows()>=3));
+
     Vector v(3);
-    if ((A.rows()>=3) && (B.rows()>=3))
-    {
-        v[0]=A(1,colA)*B(2,colB)-A(2,colA)*B(1,colB);
-        v[1]=A(2,colA)*B(0,colB)-A(0,colA)*B(2,colB);
-        v[2]=A(0,colA)*B(1,colB)-A(1,colA)*B(0,colB);
-    }
-    else if (verbose)
-        yError("cross() failed: not 3xn input matrixes");
+    v[0]=A(1,colA)*B(2,colB)-A(2,colA)*B(1,colB);
+    v[1]=A(2,colA)*B(0,colB)-A(0,colA)*B(2,colB);
+    v[2]=A(0,colA)*B(1,colB)-A(1,colA)*B(0,colB);
 
     return v;
 }
@@ -81,17 +77,15 @@ Vector iCub::ctrl::cross(const Matrix &A, int colA, const Matrix &B, int colB,
 
 /************************************************************************/
 Vector iCub::ctrl::Dcross(const Vector &a, const Vector &Da, const Vector &b,
-                          const Vector &Db, unsigned int verbose)
-{
+                          const Vector &Db)
+{    
+    yAssert((a.length()>=3) && (b.length()>=3) &&
+            (Da.length()>=3) && (Db.length()>=3));
+
     Vector Dv(3);
-    if ((a.length()>=3) && (b.length()>=3) && (Da.length()>=3) && (Db.length()>=3))
-    {
-        Dv[0]=Da[1]*b[2]+a[1]*Db[2]-Da[2]*b[1]-a[2]*Db[1];
-        Dv[1]=Da[2]*b[0]+a[2]*Db[0]-Da[0]*b[2]-a[0]*Db[2];
-        Dv[2]=Da[0]*b[1]+a[0]*Db[1]-Da[1]*b[0]-a[1]*Db[0];
-    }
-    else if (verbose)
-        yError("Dcross() failed: not 3x1 input vectors");
+    Dv[0]=Da[1]*b[2]+a[1]*Db[2]-Da[2]*b[1]-a[2]*Db[1];
+    Dv[1]=Da[2]*b[0]+a[2]*Db[0]-Da[0]*b[2]-a[0]*Db[2];
+    Dv[2]=Da[0]*b[1]+a[0]*Db[1]-Da[1]*b[0]-a[1]*Db[0];
 
     return Dv;
 }
@@ -99,18 +93,15 @@ Vector iCub::ctrl::Dcross(const Vector &a, const Vector &Da, const Vector &b,
 
 /************************************************************************/
 Vector iCub::ctrl::Dcross(const Matrix &A, const Matrix &DA, int colA,
-                          const Matrix &B, const Matrix &DB, int colB,
-                          unsigned int verbose)
-{
+                          const Matrix &B, const Matrix &DB, int colB)
+{    
+    yAssert((A.rows()>=3) && (B.rows()>=3) &&
+            (DA.rows()>=3) && (DB.rows()>=3));
+
     Vector Dv(3);
-    if ((A.rows()>=3) && (B.rows()>=3) && (DA.rows()>=3) && (DB.rows()>=3))
-    {
-        Dv[0]=DA(1,colA)*B(2,colB)+A(1,colA)*DB(2,colB)-DA(2,colA)*B(1,colB)-A(2,colA)*DB(1,colB);
-        Dv[1]=DA(2,colA)*B(0,colB)+A(2,colA)*DB(0,colB)-DA(0,colA)*B(2,colB)-A(0,colA)*DB(2,colB);
-        Dv[2]=DA(0,colA)*B(1,colB)+A(0,colA)*DB(1,colB)-DA(1,colA)*B(0,colB)-A(1,colA)*DB(0,colB);
-    }
-    else if (verbose)
-        yError("Dcross() failed: not 3xn input matrixes");
+    Dv[0]=DA(1,colA)*B(2,colB)+A(1,colA)*DB(2,colB)-DA(2,colA)*B(1,colB)-A(2,colA)*DB(1,colB);
+    Dv[1]=DA(2,colA)*B(0,colB)+A(2,colA)*DB(0,colB)-DA(0,colA)*B(2,colB)-A(0,colA)*DB(2,colB);
+    Dv[2]=DA(0,colA)*B(1,colB)+A(0,colA)*DB(1,colB)-DA(1,colA)*B(0,colB)-A(1,colA)*DB(0,colB);
 
     return Dv;
 }

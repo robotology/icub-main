@@ -211,6 +211,11 @@ class torqueControlHelper
     {
         return jointsNum;
     }
+    
+    inline double convertImpN2S(int j, double nw)
+    {
+        return nw * newtonsToSensor[j]/angleToEncoders[j];
+    }
 };
 
 namespace yarp {
@@ -311,6 +316,7 @@ private:
     Pid *_vpids;                                /** initial velocity gains */
     Pid *_tpids;                                /** initial torque gains */
     Pid *_cpids;                                /** initial current gains */
+    bool _currentPidsAvailables;                /** is true if _cpids contains current pids read in xml file. Current pids are not mandatory file */
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
     string *_axisName;                          /** axis name */
     JointTypeEnum *_jointType;                  /** axis type */
@@ -327,9 +333,6 @@ private:
     double *_kbemf;                             /** back-emf compensation parameter */
     double *_ktau;                              /** motor torque constant */
     int * _filterType;                          /** the filter type (int value) used by the force control algorithm */
-    int *_torqueSensorId;                       /** Id of associated Joint Torque Sensor */
-    int *_torqueSensorChan;                     /** Channel of associated Joint Torque Sensor */
-    double *_maxTorque;                         /** Max torque of a joint */
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
     bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
     #define MAX_POSITION_MOVE_INTERVAL 0.080
@@ -655,6 +658,7 @@ public:
     virtual bool getRotorIndexOffsetRaw(int j, double& rotorOffset);
     virtual bool getCurrentPidRaw(int j, Pid *pid);
     virtual bool getTorqueControlFilterType(int j, int& type);
+    virtual bool getRotorLimitsRaw(int j, double *rotorMin, double *rotorMax);
 
     ////// Amplifier interface
     virtual bool enableAmpRaw(int j);

@@ -1,7 +1,8 @@
 /**
  * Copyright (C) 2015 iCub Facility, Istituto Italiano di Tecnologia
  * Author: Alessandro Roncone
- * email:  alessandro.roncone@iit.it
+ * email:  alessandro.roncone@yale.edu
+ * Contribution: Matej Hoffmann, matej.hoffmann@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -54,9 +55,12 @@ class skinPartBase
     std::string name;
     int         size;   // theoretical maximum size of the skinPart
                         // it corresponds to the number of values on the respective port 
-                        // and number of rows in the .txt files in
-                        // icub-main/app/skinGui/conf/positions
+                        // and number of rows in the taxel positions .txt files in
+                        // icub-main/app/skinGui/conf/positions in the [calibration] group 
                         // IMPORTANT: it may differ from taxels.size()
+    std::string version; // Version of the skin part - "V1", "V2", "V2.1" (or "unknown_version"). 
+                         // Depending on the physical version of skin on the robot. For example,
+                         // forearm V2 has one triangle more compared to V1 and also partly different taxel IDs. 
     yarp::os::RecursiveMutex recursive_mutex;
   public:
     /**
@@ -101,6 +105,18 @@ class skinPartBase
     int getSize();
 
     /**
+     * Sets the version ("V1" / "V2" / "V2.1")
+     * @param _version 
+     */
+    void setVersion(const std::string &_version);
+
+    /**
+     * Gets the version
+     * @return string containing the version
+     */
+    std::string getVersion();
+    
+    /**
      * Populates the skinPartBase by reading from a file.
      * @param  _filePath   is the full absolute path of the file
      * @return true/false in case of success/failure
@@ -134,11 +150,11 @@ class skinPart : public skinPartBase
     * List of taxels that belong to the skinPart.
     **/
     std::vector<Taxel*> taxels;
-
+      
     /**
      * Spatial_sampling used in building up the skinPart class. 
-     * It can be either "full" or "patch", the latter of which remaps the taxels onto the center
-     * of their respective triangular patch
+     * It can be either full, i.e. "taxel", or "triangle", where the latter remaps the individual taxels onto the center taxels
+     * of their respective triangular module (composed of 10 taxels, but 12 values on the port - 2 are thermal pads)
      */
     std::string spatial_sampling;
 
@@ -166,7 +182,7 @@ class skinPart : public skinPartBase
     /**
      * Maps the taxels onto themselves, performing a 1:1 mapping. This has been
      * made in order for the "taxel" spatial_sampling modality to be consistent
-     * with the "patch" sampling, thus maintaining integrity into taxel2Repr and repr2TaxelList
+     * with the "triangle" sampling, thus maintaining integrity into taxel2Repr and repr2TaxelList
      * @return true/false in case of success/failure
      */
     bool mapTaxelsOntoThemselves();
@@ -200,7 +216,7 @@ class skinPart : public skinPartBase
      * @param  _filePath   is the full absolute path of the file
      * @param  _spatial_sampling is the type of spatial sampling to perform (default "default")
      *                           if "default", the spatial_sampling will be read from file
-     *                           if "taxel" or "patch", this will be the spatial_sampling performed 
+     *                           if "taxel" or "triangle", this will be the spatial_sampling performed 
      * @return true/false in case of success/failure
      */
     bool setTaxelPosesFromFile(const std::string &_filePath,

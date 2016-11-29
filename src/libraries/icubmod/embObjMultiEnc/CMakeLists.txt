@@ -2,9 +2,10 @@
 # Authors: Valentina Gaggero
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(embObjMultiEnc TYPE yarp::dev::embObjMultiEnc
-                                       INCLUDE embObjMultiEnc.h
-                                       WRAPPER AnalogServer)
+yarp_prepare_plugin(embObjMultiEnc CATEGORY device
+                                   TYPE yarp::dev::embObjMultiEnc
+                                   INCLUDE embObjMultiEnc.h
+                                   EXTRA_CONFIG WRAPPER=AnalogServer)
 
 IF (NOT SKIP_embObjMultiEnc)
 

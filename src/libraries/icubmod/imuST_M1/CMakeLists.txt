@@ -6,7 +6,7 @@
 
 SET(PROJECTNAME imuST_M1)
 
-yarp_prepare_device(${PROJECTNAME} TYPE yarp::dev::imuST_M1 INCLUDE ST_M1.h WRAPPER inertial)
+yarp_prepare_plugin(${PROJECTNAME} CATEGORY device TYPE yarp::dev::imuST_M1 INCLUDE ST_M1.h EXTRA_CONFIG WRAPPER=inertial)
 
 if (ENABLE_${PROJECTNAME})
 

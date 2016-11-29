@@ -48,7 +48,8 @@ typedef enum
 {
     eoas_inertial1_type_none          = 0,
     eoas_inertial1_type_accelerometer = 1,
-    eoas_inertial1_type_gyroscope     = 2
+    eoas_inertial1_type_gyroscope     = 2,
+    eoas_inertial1_type_emsgyro       = 3
 } eOas_inertial1_type_t;
 
 enum { eoas_inertial1_pos_max_numberof = 63 };
@@ -227,14 +228,6 @@ bool embObjInertials::fromConfig(yarp::os::Searchable &_config)
     positions.resize(size, eoas_inertial1_pos_none);
     types.resize(size, eoas_inertial1_type_none);
 
-    uint8_t ip4 = 10;
-    eo_common_ipv4addr_to_decimal(ipv4addr, NULL, NULL, NULL, &ip4);
-    if(ip4 > sizeof(fromip2indexof_thepositions))
-    {
-        yError() << "embObjInertials::fromConfig() is using a non supported IP address:" << boardIPstring;
-        return false;
-    }
-    uint8_t index = fromip2indexof_thepositions[ip4];
 
     for(int i=0; i<size; i++)
     {
@@ -252,6 +245,11 @@ bool embObjInertials::fromConfig(yarp::os::Searchable &_config)
                 type = eoas_inertial1_type_gyroscope;
             } break;
 
+            case eoas_gyros_st_l3g4200d:
+            {
+                type = eoas_inertial1_type_emsgyro;
+            } break;
+
             default:
             {
                 type = eoas_inertial1_type_none;
@@ -260,12 +258,30 @@ bool embObjInertials::fromConfig(yarp::os::Searchable &_config)
 
         types[i] = type;
 
-        eObrd_location_t on = serviceConfig.inertials.at(i).on;
+        if(eoas_inertial1_type_emsgyro == type)
+        {
+            positions[i] = eOas_inertial1_pos_jolly_1;
+        }
+        else
+        {
+            // i decide to repeat the code in here because it must give error only for mtb-based positions.
+            uint8_t ip4 = 10;
+            eo_common_ipv4addr_to_decimal(ipv4addr, NULL, NULL, NULL, &ip4);
+            if(ip4 > sizeof(fromip2indexof_thepositions))
+            {
+                yError() << "embObjInertials::fromConfig() is using a non supported IP address:" << boardIPstring;
+                return false;
+            }
+            uint8_t index = fromip2indexof_thepositions[ip4];
 
-        eOas_inertial1_position_t pos = eoas_inertial1_pos_none;
-        pos = thepositions[index][on.can.port][on.can.addr];
 
-        positions[i] = pos;
+            eObrd_location_t on = serviceConfig.inertials.at(i).on;
+
+            eOas_inertial1_position_t pos = eoas_inertial1_pos_none;
+            pos = thepositions[index][on.can.port][on.can.addr];
+
+            positions[i] = pos;
+        }
     }
 
     // prepare analogdata

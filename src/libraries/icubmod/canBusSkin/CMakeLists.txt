@@ -2,7 +2,7 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(canBusSkin TYPE CanBusSkin INCLUDE CanBusSkin.h WRAPPER grabber)
+yarp_prepare_plugin(canBusSkin CATEGORY device TYPE CanBusSkin INCLUDE CanBusSkin.h EXTRA_CONFIG WRAPPER=grabber)
 
 if (NOT SKIP_canBusSkin)
 if(ICUB_HAS_icub_firmware_shared)

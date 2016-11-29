@@ -32,6 +32,7 @@ int EthUpdater::cmdDiscover()
 
     cmd->opc = uprot_OPC_LEGACY_SCAN;
     cmd->opc2 = uprot_OPC_DISCOVER;
+    cmd->jump2updater = 1;
 
     int numberOfDiscovered = 0;
 
@@ -166,7 +167,8 @@ std::string EthUpdater::cmdGetMoreInfo(bool refreshInfo, ACE_UINT32 address)
     command.opc = uprot_OPC_LEGACY_PROCS;
     command.opc2 = uprot_OPC_MOREINFO;
     command.plusdescription = 1;
-    command.filler[0] = EOUPROT_VALUE_OF_UNUSED_BYTE;
+    command.jump2updater = 1;
+
 
     if(0 == address)
     {

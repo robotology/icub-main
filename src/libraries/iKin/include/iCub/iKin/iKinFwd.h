@@ -1182,8 +1182,8 @@ public:
     /**
     * Retrieves the vector of actual finger's joint values (to be 
     * used in conjuction with the iKinLimb methods) from the vector 
-    * of robot encoders. 
-    * @param robotEncoders the vector of robot encoders from which 
+    * of motor encoders. 
+    * @param motorEncoders the vector of motor encoders from which 
     *                  to extract the joint values of the finger. It
     *                  can be composed of 16 or 9 elements,
     *                  depending if it comprises the arm encoders as
@@ -1198,7 +1198,31 @@ public:
     *       one for the proximal movement and 2 coupled movements
     *       for the distal joint (equally partitioned).
     */
-    virtual bool getChainJoints(const yarp::sig::Vector &robotEncoders,
+    virtual bool getChainJoints(const yarp::sig::Vector &motorEncoders,
+                                yarp::sig::Vector &chainJoints);
+
+    /**
+    * Retrieves the vector of actual finger's joint values (to be 
+    * used in conjuction with the iKinLimb methods) from the vector 
+    * of motor encoders and joint encoders. 
+    * @param motorEncoders the vector of motor encoders from which 
+    *                  to extract the joint values of the finger. It
+    *                  can be composed of 16 or 9 elements,
+    *                  depending if it comprises the arm encoders as
+    *                  well or just the hand encoders.
+    * @param jointEncoders the vector of joint encoders from which 
+    *                  to extract the joint values of the finger. It
+    *                  contains 15 analog numbers accounting for in
+    *                  order the proximal and the two distal
+    *                  phalanxes of the thumb, index, middle, ring
+    *                  and little fingers.
+    * @param chainJoints the vector containing the joints values to 
+    *                    be used with the iKinLimb methods expressed
+    *                    in degrees.
+    * @return true/false on success/failure. 
+    */
+    virtual bool getChainJoints(const yarp::sig::Vector &motorEncoders,
+                                const yarp::sig::Vector &jointEncoders,
                                 yarp::sig::Vector &chainJoints);
 };
 

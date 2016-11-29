@@ -1,3 +1,6 @@
+2016-11-18 Ugo Pattacini <ugo.pattacini@iit.it>
+      * failure conditions streamlined via yAssert()
+
 2015-03-10 Ugo Pattacini <ugo.pattacini@iit.it>
       * moved math functions into yarp
 

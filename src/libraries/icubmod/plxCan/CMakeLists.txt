@@ -2,9 +2,10 @@
 # Authors: Lorenzo Natale
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
-yarp_prepare_device(pcan TYPE yarp::dev::PlxCan
+yarp_prepare_plugin(pcan TYPE yarp::dev::PlxCan
+    CATEGORY device
     INCLUDE PlxCan.h 
-    WRAPPER "")
+    EXTRA_CONFIG WRAPPER="")
 
 if (NOT SKIP_pcan)
   FIND_PACKAGE(PLXCANAPI)
