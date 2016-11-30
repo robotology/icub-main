@@ -535,6 +535,8 @@ bool FirmwareUpdaterCore::setCanBoardAddress(int bus, int id, int canType,QStrin
 //        downloader.change_card_address(bus, id, new_val,canType);
 //    }
     mutex.unlock();
+
+    return true;
 }
 
 bool FirmwareUpdaterCore::setEthBoardAddress(int index, QString newAddress)
