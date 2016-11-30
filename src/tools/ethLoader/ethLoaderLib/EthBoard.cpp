@@ -166,9 +166,11 @@ string EthBoard::getCompilationDateOfRunning(void)
 
 
 // -- class EthBoardList
-
-const eOipv4addr_t EthBoardList::ipv4all = 0xffffffff;
-const eOipv4addr_t EthBoardList::ipv4selected = 0;
+#if defined(WIN32)
+#else
+const eOipv4addr_t EthBoardList::ipv4all = EO_COMMON_IPV4ADDR(255, 255, 255, 255);
+const eOipv4addr_t EthBoardList::ipv4selected = EO_COMMON_IPV4ADDR(0, 0, 0, 0);
+#endif
 
 EthBoardList::EthBoardList()
 {

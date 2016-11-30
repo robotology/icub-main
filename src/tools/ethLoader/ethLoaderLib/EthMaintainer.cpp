@@ -60,14 +60,16 @@ ACE_UINT32 ipv4toace(eOipv4addr_t ipv4)
 {
     return ntohl(ipv4);
 }
+#if defined(WIN32)
 
+#else
 const eOipv4addr_t EthMaintainer::hostIPaddress = EO_COMMON_IPV4ADDR(10, 0, 1, 104);
 const eOipv4port_t EthMaintainer::mainIPport = 3333;
 
 const eOipv4addr_t EthMaintainer::ipv4OfAllSelected = EO_COMMON_IPV4ADDR(0, 0, 0, 0);
 
 const eOipv4addr_t EthMaintainer::ipv4Broadcast = EO_COMMON_IPV4ADDR(255, 255, 255, 255);
-
+#endif
 
 
 
@@ -115,6 +117,8 @@ bool EthMaintainer::close()
         _internalboardlist.clear();
         _opened = false;
     }
+
+    return true;
 }
 
 

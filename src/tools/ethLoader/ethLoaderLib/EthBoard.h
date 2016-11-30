@@ -128,8 +128,15 @@ class EthBoardList
 public:
     vector<EthBoard> theboards;
 
+#if defined(WIN32)
+    enum {
+        ipv4selected = EO_COMMON_IPV4ADDR(0, 0, 0, 0),
+        ipv4all = EO_COMMON_IPV4ADDR(255, 255, 255, 255)
+    };
+#else
     static const eOipv4addr_t ipv4all;
     static const eOipv4addr_t ipv4selected;
+#endif
 
 public:
     EthBoardList();

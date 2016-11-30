@@ -44,11 +44,21 @@ class EthMaintainer
 {
 public:
 
+#if defined(WIN32)
+
+enum { hostIPaddress = EO_COMMON_IPV4ADDR(10, 0, 1, 104),
+       mainIPport = 3333,
+       ipv4OfAllSelected = EO_COMMON_IPV4ADDR(0, 0, 0, 0),
+       ipv4Broadcast = EO_COMMON_IPV4ADDR(255, 255, 255, 255)
+};
+
+#else
     static const eOipv4addr_t hostIPaddress;        // 10.0.1.104
     static const eOipv4port_t mainIPport;           // 3333
 
     static const eOipv4addr_t ipv4OfAllSelected;    // 0
     static const eOipv4addr_t ipv4Broadcast;         // 255.255.255.255 ... but it broadcast only int its subnet
+#endif
 
 public:
 
