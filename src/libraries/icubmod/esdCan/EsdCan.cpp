@@ -34,7 +34,8 @@ EsdCan::~EsdCan()
 
 bool EsdCan::canSetBaudRate(unsigned int rate)
 { 
-#if WIN32
+// former #if WIN32
+#if 0
     DWORD baud=rate;
 #else
     uint32_t baud=rate;
@@ -50,7 +51,8 @@ bool EsdCan::canSetBaudRate(unsigned int rate)
 
 bool EsdCan::canGetBaudRate(unsigned int *rate)
 {
-#if WIN32
+// former #if WIN32
+#if 0
     DWORD baud;
 #else
     uint32_t baud;
@@ -89,7 +91,8 @@ bool EsdCan::canRead(CanBuffer &msgs,
                      bool wait)
 {
     int res;
-    #ifdef WIN32
+// former #ifdef WIN32
+    #if 0
         long lRead=size;
     #else
         int32_t lRead=size;
@@ -116,7 +119,8 @@ bool EsdCan::canWrite(const CanBuffer &msgs,
                       bool wait)
 {
     int res;
-    #ifdef WIN32
+// former #ifdef WIN32
+    #if 0
         long lRead=size;
     #else
         int32_t lRead=size;
