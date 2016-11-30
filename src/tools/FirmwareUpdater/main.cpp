@@ -198,7 +198,7 @@ int programThirdLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,
                     core->setSelectedEthBoard(i,true);
                     QList <sBoard> canBoards = core->getCanBoardsFromEth(board,&retString,canLine.toInt(),true);
                     if(canBoards.count() > 0){
-                        bool selectedCount = 0;
+                        int selectedCount = 0;
                         for(int j=0;j<canBoards.count();j++){
                             sBoard b = canBoards.at(j);
                             if(b.bus == canLine.toInt() && b.pid == canId.toInt()){
@@ -229,7 +229,7 @@ int programThirdLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,
     }else{
         QList <sBoard> canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
         if(canBoards.count() > 0){
-            bool selectedCount = 0;
+            int selectedCount = 0;
             for(int j=0;j<canBoards.count();j++){
                 sBoard b = canBoards.at(j);
                 if(b.bus == canLine.toInt() && b.pid == canId.toInt()){
@@ -493,7 +493,7 @@ bool checkApplicationLock()
     f.close();
 
 #ifdef Q_OS_WIN
-    LPCWSTR a = (const wchar_t*)fInfo.filePath().utf16();
+    LPCSTR a = (const char*)fInfo.filePath().utf16();
     BOOL b = SetFileAttributes(a,FILE_ATTRIBUTE_HIDDEN);
 #endif
 
