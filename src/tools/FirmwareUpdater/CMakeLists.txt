@@ -61,7 +61,7 @@ target_link_libraries(FirmwareUpdater-qt    YARP::YARP_OS
                                             YARP::YARP_math
                                             YARP::YARP_sig
                                             YARP::YARP_dev
-                                            ACE
+                                            ${ACE_LIBRARIES}
                                             ethLoaderLib
                                             canLoaderLib
                                             )
