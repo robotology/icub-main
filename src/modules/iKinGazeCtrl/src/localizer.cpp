@@ -28,9 +28,9 @@
 Localizer::Localizer(ExchangeData *_commData, const unsigned int _period) :
                      RateThread(_period), commData(_commData), period(_period)
 {
-    iCubHeadCenter eyeC(commData->head_version>1.0?"right_v2":"right");
-    eyeL=new iCubEye(commData->head_version>1.0?"left_v2":"left");
-    eyeR=new iCubEye(commData->head_version>1.0?"right_v2":"right");
+    iCubHeadCenter eyeC("right_"+commData->headVersion2String());
+    eyeL=new iCubEye("left_"+commData->headVersion2String());
+    eyeR=new iCubEye("right_"+commData->headVersion2String());
 
     // remove constraints on the links
     // we use the chains for logging purpose

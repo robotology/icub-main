@@ -2193,7 +2193,7 @@ void iCubEye::allocate(const string &_type)
         pushLink(new iKinLink(    0.0,  -0.034, -M_PI/2.0,       0.0, -35.0*CTRL_DEG2RAD, 15.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0,     0.0,  M_PI/2.0, -M_PI/2.0, -50.0*CTRL_DEG2RAD, 50.0*CTRL_DEG2RAD));
     }
-    else if (getType()=="right_v2")
+    else if ((getType()=="right_v2") || (getType()=="right_v2.5"))
     {
         pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
@@ -2206,7 +2206,9 @@ void iCubEye::allocate(const string &_type)
     }
     else
     {
-        type="left_v2";
+        if ((type!="left_v2") && (type!="left_v2.5"))
+            type="left_v2";
+
         pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0, -0.2233, -M_PI/2.0, -M_PI/2.0, -59.0*CTRL_DEG2RAD, 59.0*CTRL_DEG2RAD));
@@ -2338,7 +2340,7 @@ void iCubInertialSensor::allocate(const string &_type)
     H0(3,3)=1.0;
     setH0(H0);
 
-    if (getType()=="v2")
+    if ((getType()=="v2") || (getType()=="v2.5"))
     {
         pushLink(new iKinLink(  0.032,     0.0,  M_PI/2.0,       0.0, -22.0*CTRL_DEG2RAD, 84.0*CTRL_DEG2RAD));
         pushLink(new iKinLink(    0.0, -0.0055,  M_PI/2.0, -M_PI/2.0, -39.0*CTRL_DEG2RAD, 39.0*CTRL_DEG2RAD));
@@ -2358,11 +2360,24 @@ void iCubInertialSensor::allocate(const string &_type)
         pushLink(new iKinLink( 0.0225,  0.1005, -M_PI/2.0,  M_PI/2.0, -55.0*CTRL_DEG2RAD, 55.0*CTRL_DEG2RAD));
     }
 
-    // virtual link that describes T_nls (see http://wiki.icub.org/wiki/ICubInertiaSensorKinematics )
-    pushLink(new iKinLink(        0.0,  0.0066,  M_PI/2.0,       0.0,   0.0*CTRL_DEG2RAD,  0.0*CTRL_DEG2RAD));
+    // T_nls (see http://wiki.icub.org/wiki/ICubInertiaSensorKinematics )
+    Matrix HN(4,4);
+    HN.zero();
+    HN(0,0)=1.0;
+    HN(2,1)=1.0;
+    HN(1,2)=-1.0;
+    HN(2,3)=0.0066;
+    HN(3,3)=1.0;
+    setHN(HN);
 
-    // block virtual links
-    blockLink(6,0.0);
+    if (getType()=="v2.5")
+    {
+        Matrix HN=eye(4,4);
+        HN(0,3)=0.0087;
+        HN(1,3)=0.01795;
+        HN(2,3)=-0.0105;
+        setHN(getHN()*HN);
+    }
 }
 
 
