@@ -27,7 +27,7 @@ get_property(ICUB_TARGETS GLOBAL PROPERTY ICUB_TARGETS)
 #message(STATUS "Now exporting targets for installed builds: ${ICUB_TARGETS}")
 
 set(EXPORT_CONFIG_FILE icub-export-install.cmake)
-set(EXPORT_INCLUDE_FILE icub-export-install-includes.cmake)
+set(EXPORT_INCLUDE_FILE icub-export-inst-includes.cmake)
 
 set(INSTALL_CONFIG_FILE icub-config-for-install.cmake)
 set(INSTALL_CONFIG_TEMPLATE "conf/template/icub-config-install.cmake.in")
