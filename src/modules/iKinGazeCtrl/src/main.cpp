@@ -1005,7 +1005,7 @@ protected:
 
         double ver_out=d.begin()->second;
         if (ver_out!=ver_in)
-            yWarning("Unknown \"head_version\"=%g => used \"head_version\"=%g",
+            yWarning("Unknown \"head_version\" %g requested => used \"head_version\" %g instead",
                      ver_in,ver_out);
 
         return ver_out;
