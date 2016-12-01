@@ -1282,7 +1282,7 @@ public:
     * Constructor. 
     * @param _type is a string to discriminate between "left" and 
     *              "right" eye. Further available options are
-    *              "[left|right]_v[1|2]".
+    *              "[left|right]_v[1|2|2.5]".
     */
     iCubEye(const std::string &_type);
 
@@ -1318,7 +1318,7 @@ public:
     * Constructor. 
     * @param _type is a string to discriminate between "left" and 
     *              "right" eye. Further available options are
-    *              "left_v2" and "right_v2".
+    *              "[left|right]_v[1|2|2.5]".
     */
     iCubEyeNeckRef(const std::string &_type);
 };
@@ -1345,7 +1345,7 @@ public:
     * Constructor. 
     * @param _type is a string to discriminate between "left" and 
     *              "right" eye. Further available options are
-    *              "[left|right]_v[1|2]".
+    *              "[left|right]_v[1|2|2.5]".
     */
     iCubHeadCenter(const std::string &_type);
 };
@@ -1370,7 +1370,7 @@ public:
 
     /**
     * Constructor. 
-    * @param _type is a string to discriminate between "v1" and "v2" 
+    * @param _type is a string discriminating among "v[1|2|2.5]" 
     *              hardware versions.
     */
     iCubInertialSensor(const std::string &_type);

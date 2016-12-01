@@ -127,6 +127,8 @@ public:
     Matrix  get_fpFrame();
     Vector  get_imu();
 
+    string  headVersion2String();
+
     // data members that do not need protection
     xdPort         *port_xd;
     string          robotName;

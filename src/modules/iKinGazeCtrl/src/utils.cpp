@@ -19,6 +19,7 @@
 #include <cmath>
 #include <limits>
 #include <algorithm>
+#include <sstream>
 
 #include <iCub/utils.h>
 #include <iCub/solver.h>
@@ -361,6 +362,15 @@ Vector ExchangeData::get_imu()
     LockGuard lg(mutex[MUTEX_IMU]);
     Vector _imu=imu;
     return _imu;
+}
+
+
+/************************************************************************/
+string ExchangeData::headVersion2String()
+{
+    ostringstream str;
+    str<<"v"<<head_version;
+    return str.str();
 }
 
 

@@ -34,10 +34,10 @@ Controller::Controller(PolyDriver *_drvTorso, PolyDriver *_drvHead, ExchangeData
                        printAccTime(0.0)
 {
     // Instantiate objects
-    neck=new iCubHeadCenter(commData->head_version>1.0?"right_v2":"right");
-    eyeL=new iCubEye(commData->head_version>1.0?"left_v2":"left");
-    eyeR=new iCubEye(commData->head_version>1.0?"right_v2":"right");
-    imu=new iCubInertialSensor(commData->head_version>1.0?"v2":"v1");
+    neck=new iCubHeadCenter("right_"+commData->headVersion2String());
+    eyeL=new iCubEye("left_"+commData->headVersion2String());
+    eyeR=new iCubEye("right_"+commData->headVersion2String());
+    imu=new iCubInertialSensor(commData->headVersion2String());
 
     // remove constraints on the links: logging purpose
     imu->setAllConstraints(false);

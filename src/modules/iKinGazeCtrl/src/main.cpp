@@ -96,8 +96,8 @@ Factors</a>.
 --context \e dir
 - Resource finder default searching directory for configuration
   files; if not specified, \e iKinGazeCtrl is assumed. Beware of
-  the <a href="http://www.yarp.it/yarp_data_dirs.html">context  
-  search policy</a>.  
+  the <a href="http://www.yarp.it/yarp_data_dirs.html">context
+  search policy</a>.
 
 --from \e file
 - Resource finder default configuration file; if not specified,
@@ -208,9 +208,10 @@ Factors</a>.
   controller will implement a bang-bang approach whenever the
   velocity to be delivered goes under the minimum threshold.
 
---headV2
-- When this options is specified then the kinematic structure of
-  the hardware v2 of the head is referred.
+--head_version \e ver
+- This option specifies the kinematic structure of the head; the value
+  \e ver is a double in the set {1.0, 2.0, 2.5}, being 1.0 the default
+  version.
 
 --verbose
 - Enable some output print-out.
@@ -543,6 +544,8 @@ Windows, Linux
 \author Ugo Pattacini, Alessandro Roncone
 */
 
+#include <cmath>
+#include <algorithm>
 #include <fstream>
 #include <iomanip>
 #include <map>
@@ -992,6 +995,22 @@ protected:
         }
     }
 
+    /************************************************************************/
+    double constrainHeadVersion(const double ver_in)
+    {
+        map<double,double> d;
+        d[fabs(1.0-ver_in)]=1.0;
+        d[fabs(2.0-ver_in)]=2.0;
+        d[fabs(2.5-ver_in)]=2.5;
+
+        double ver_out=d.begin()->second;
+        if (ver_out!=ver_in)
+            yWarning("Unknown \"head_version\" %g requested => used \"head_version\" %g instead",
+                     ver_in,ver_out);
+
+        return ver_out;
+    }
+
 public:
     /************************************************************************/
     GazeModule()
@@ -1038,20 +1057,20 @@ public:
         torsoName=rf.check("torso",Value("torso")).asString().c_str();
         neckTime=trajTimeGroup.check("neck",Value(0.75)).asDouble();
         eyesTime=trajTimeGroup.check("eyes",Value(0.25)).asDouble();
-        min_abs_vel=CTRL_DEG2RAD*rf.check("min_abs_vel",Value(0.0)).asDouble();
+        min_abs_vel=CTRL_DEG2RAD*fabs(rf.check("min_abs_vel",Value(0.0)).asDouble());
         ping_robot_tmo=rf.check("ping_robot_tmo",Value(40.0)).asDouble();
 
         commData.robotName=rf.check("robot",Value("icub")).asString().c_str();
         commData.eyeTiltLim[0]=eyeTiltGroup.check("min",Value(-12.0)).asDouble();
         commData.eyeTiltLim[1]=eyeTiltGroup.check("max",Value(15.0)).asDouble();
-        commData.head_version=rf.check("headV2")?2.0:1.0;
+        commData.head_version=constrainHeadVersion(rf.check("head_version",Value(1.0)).asDouble());
         commData.verbose=rf.check("verbose");
         commData.saccadesOn=(rf.check("saccades",Value("on")).asString()=="on");
         commData.neckPosCtrlOn=(rf.check("neck_position_control",Value("on")).asString()=="on");
         commData.stabilizationOn=(imuGroup.check("mode",Value("on")).asString()=="on");
         commData.stabilizationGain=imuGroup.check("stabilization_gain",Value(11.0)).asDouble();
         commData.gyro_noise_threshold=CTRL_DEG2RAD*imuGroup.check("gyro_noise_threshold",Value(5.0)).asDouble();
-        commData.debugInfoEnabled=rf.check("debugInfo",Value("off")).asString()=="on";
+        commData.debugInfoEnabled=rf.check("debugInfo",Value("off")).asString()=="on";        
 
         if (commData.stabilizationOn)
         {
@@ -1063,11 +1082,6 @@ public:
             counterRotGain[0]=imuGroup.check("vor",Value(0.0)).asDouble();
             counterRotGain[1]=rf.check("ocr",Value(1.0)).asDouble();
         }
-
-        // min_abs_vel is given in absolute form
-        // hence it must be positive
-        if (min_abs_vel<0.0)
-            min_abs_vel=-min_abs_vel;
 
         if (camerasGroup.check("file"))
         {

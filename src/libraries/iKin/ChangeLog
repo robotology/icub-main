@@ -1,3 +1,6 @@
+2016-12-01 Ugo Pattacini <ugo.pattacini@iit.it>
+      * Added head version 2.5
+
 2016-11-18 Ugo Pattacini <ugo.pattacini@iit.it>
       * failure conditions streamlined via yAssert()
 
