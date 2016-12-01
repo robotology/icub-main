@@ -48,6 +48,7 @@ private:
      void uploadCanApplication(QString filename, QString address = "", int deviceId = -1, CustomTreeWidgetItem *node = NULL);
      void uploadLoader(QString);
      void uploadUpdater(QString);
+     void checkSelection(bool selected, CustomTreeWidgetItem *c);
 
 
 private:

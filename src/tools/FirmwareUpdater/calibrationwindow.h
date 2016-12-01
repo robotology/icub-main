@@ -37,7 +37,7 @@ protected:
     void loadCalibrationFile(QString fileName);
     void saveCalibrationFile(QString filePath);
     void importCalibrationFile(QString fileName);
-    bool calibration_load_v2 (char* filename, int selected_bus, int selected_id);
+    bool calibration_load_v2 (char* filename, int selected_bus, int selected_id, int index);
     void useMatrix(int);
     void resetCalibration();
 
@@ -80,6 +80,7 @@ private:
     QProgressBar *progress;
     bool keepRunning;
 private slots:
+    void onTabMatrixCahnged(int);
     void onTimeout();
     void onSliderZeroChanged(int);
     void onOffsetSliderValue(int);

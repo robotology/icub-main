@@ -255,7 +255,7 @@ void MainWindow::uploadCanApplication(QString filename,QString address,int devic
     needLoading(true,true);
     node->setCanBoards(resultCanBoards);
     setInfoRes(result);
-    canBoardsRetrieved(node,true);
+    canBoardsRetrieved(node,false);
     needLoading(false,false);
 //    if(!ethAddress.isEmpty()){
 //        refreshCanBoardsFromEth(selectedNodes.first()->getTreeNode()->parent());
@@ -326,10 +326,11 @@ void MainWindow::onEraseEprom(bool click)
             QFuture<bool> future = QtConcurrent::run(core,&FirmwareUpdaterCore::eraseEthEprom);
             watcher.setFuture(future);
         } else if(selectedNodes.first()->type() == CAN_TREE_NODE){
-            foreach (CustomTreeWidgetItem *node, selectedNodes) {
-                ((CanTreeWidgetItem*)node)->erasEeprom(!node->data(0,CAN_ERASE_EEPROM).toBool());
-                node->refresh();
-            }
+            CustomTreeWidgetItem *node = selectedNodes.first();
+            ((CanTreeWidgetItem*)node)->erasEeprom(!node->data(0,CAN_ERASE_EEPROM).toBool());
+            node->refresh();
+
+            checkSelection(true,node);
         }
     }
 }
@@ -947,18 +948,21 @@ void MainWindow::checkEnableButtons()
             ui->btnCahngeInfo->setEnabled(true);
 
             sBoard canBoard = ((EthTreeWidgetItem*)selectedNodes.first()->getParentNode())->getCanBoard(selectedNodes.first()->getIndexOfBoard());
-            if(canBoard.type == icubCanProto_boardType__strain || canBoard.type == icubCanProto_boardType__6sg && canBoard.status == BOARD_RUNNING){
+            if(canBoard.type == icubCanProto_boardType__strain || canBoard.type == icubCanProto_boardType__6sg && canBoard.status == BOARD_RUNNING ){
                 ui->btnCalibrate->setEnabled(true);
+                ui->btnEraseEeprom->setEnabled(true);
             }else{
                 ui->btnCalibrate->setEnabled(false);
+                ui->btnEraseEeprom->setEnabled(false);
             }
         }else{
             ui->btnChangeCanAddr->setEnabled(false);
             ui->btnCahngeInfo->setEnabled(false);
             ui->btnCalibrate->setEnabled(false);
+            ui->btnEraseEeprom->setEnabled(false);
         }
         ui->btnChangeIp->setEnabled(false);
-        ui->btnEraseEeprom->setEnabled(true);
+
         ui->btnJumpUpdater->setEnabled(false);
         ui->btnRestart->setEnabled(false);
         //ui->btnRestartSecs->setEnabled(false);
@@ -1277,21 +1281,9 @@ void MainWindow::loading(bool load, bool disableAll,QString msg,bool infiniteLoa
     }
 }
 
-
-
-void MainWindow::onSelectionChanged(bool selected)
+void MainWindow::checkSelection(bool selected,CustomTreeWidgetItem *c)
 {
-    loading(true);
-    CustomTreeWidgetItem *c = (CustomTreeWidgetItem*)sender();
-
     if(selected){
-        if(selectedNodes.contains(c)){
-            loading(false);
-            checkEnableButtons();
-            return;
-        }
-
-        selectedNodes.append(c);
 
         for(int i=0;i<ui->devicesTree->topLevelItemCount();i++){
             QTreeWidgetItem *topLevel = ui->devicesTree->topLevelItem(i);
@@ -1300,8 +1292,12 @@ void MainWindow::onSelectionChanged(bool selected)
                 QTreeWidgetItem *widgItem = topLevel->child(j);
                 if(widgItem->type() != QTreeWidgetItem::Type){
                     CustomTreeWidgetItem *child = (CustomTreeWidgetItem*)widgItem;
+                    if(child == c){
+                        continue;
+                    }
                     if(child->checkIsEnabled()){
-                        if(child->getBoardType() != c->getBoardType() || c->getParentNode() != child->getParentNode()){
+                        if(child->getBoardType() != c->getBoardType() || c->getParentNode() != child->getParentNode() ||
+                                (child->getBoardType() == c->getBoardType() && c->data(0,CAN_ERASE_EEPROM).toBool())){
                             child->setCheckEnabled(false);
                         }
                     }
@@ -1310,9 +1306,12 @@ void MainWindow::onSelectionChanged(bool selected)
                         QTreeWidgetItem *widgItem1 = topLevel->child(j)->child(k);
                         if(widgItem1->type() != QTreeWidgetItem::Type){
                             CustomTreeWidgetItem *child1 = (CustomTreeWidgetItem*)widgItem1;
-
+                            if(child1 == c){
+                                continue;
+                            }
                             if(child1->checkIsEnabled()){
-                                if(child1->getBoardType() != c->getBoardType() || c->getParentNode() != child1->getParentNode()){
+                                if(child1->getBoardType() != c->getBoardType() || c->getParentNode() != child1->getParentNode() ||
+                                        (child1->getBoardType() == c->getBoardType() && c->data(0,CAN_ERASE_EEPROM).toBool()) ){
                                     child1->setCheckEnabled(false);
                                 }
                             }
@@ -1321,19 +1320,12 @@ void MainWindow::onSelectionChanged(bool selected)
                     }
                 }
 
-
-
-
             }
 
         }
+
     }else{
-//        if(!selectedNodes.contains(c)){
-//            loading(false);
-//            checkEnableButtons();
-//            return;
-//        }
-        selectedNodes.removeOne(c);
+
         bool found = false;
         for(int i=0;i<ui->devicesTree->topLevelItemCount();i++){
             QTreeWidgetItem *topLevel = ui->devicesTree->topLevelItem(i);
@@ -1399,8 +1391,35 @@ void MainWindow::onSelectionChanged(bool selected)
 
             }
         }
+    }
+
+}
+
+void MainWindow::onSelectionChanged(bool selected)
+{
+    loading(true);
+    CustomTreeWidgetItem *c = (CustomTreeWidgetItem*)sender();
+
+    if(selected){
+        if(selectedNodes.contains(c)){
+            loading(false);
+            checkEnableButtons();
+            return;
+        }
+
+        selectedNodes.append(c);
+
+
+    }else{
+
+        selectedNodes.removeOne(c);
+
+
 
     }
+
+    checkSelection(selected,c);
+
     loading(false);
     checkEnableButtons();
 }

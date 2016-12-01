@@ -159,7 +159,7 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, CustomTreeWidget
 
     }
 
-    ui->tableParamters->setColumnWidth(COL_OFFSET,200);
+    ui->tableParamters->setColumnWidth(COL_OFFSET,150);
     ui->tableUseMatrix->hideColumn(COL_NEWTONMEASURE);
 
 
@@ -210,9 +210,10 @@ CalibrationWindow::CalibrationWindow(FirmwareUpdaterCore *core, CustomTreeWidget
     connect(this,SIGNAL(updateTitle()),this,SLOT(onUpdateTitle()),Qt::QueuedConnection);
     connect(this,SIGNAL(appendLogMsg(QString)),this,SLOT(onAppendLogMsg(QString)),Qt::QueuedConnection);
     connect(ui->btnClearLog,SIGNAL(clicked(bool)),this,SLOT(onClearLog()));
-    connect(ui->actionLoad_Calibration_File,SIGNAL(triggered(bool)),this,SLOT(onLoadCalibrationFile(bool)));
-    connect(ui->actionSave_Calibration_File,SIGNAL(triggered(bool)),this,SLOT(onSaveCalibrationFile(bool)));
-    connect(ui->actionImport_Calib_Matrix,SIGNAL(triggered(bool)),this,SLOT(onImportCalibrationFile(bool)));
+    connect(ui->tabWidget,SIGNAL(currentChanged(int)),this,SLOT(onTabMatrixCahnged(int)));
+    connect(ui->btnLoadCalibFile,SIGNAL(clicked(bool)),this,SLOT(onLoadCalibrationFile(bool)));
+    connect(ui->btnSaveCalibFile,SIGNAL(clicked(bool)),this,SLOT(onSaveCalibrationFile(bool)));
+    connect(ui->btnImportCalibMatrix,SIGNAL(clicked(bool)),this,SLOT(onImportCalibrationFile(bool)));
 
 
     ui->actionImport_Calib_Matrix->setEnabled(false);
@@ -237,6 +238,28 @@ CalibrationWindow::~CalibrationWindow()
     keepRunning = false;
     delete ui;
     mutex.unlock();
+}
+
+void CalibrationWindow::onTabMatrixCahnged(int index)
+{
+    // This will be removed in the future
+    switch (index) {
+    case 0:
+        ui->btnLoadCalibFile->setEnabled(true);
+        ui->btnSaveCalibFile->setEnabled(true);
+        ui->btnImportCalibMatrix->setEnabled(true);
+        ui->btnResetCalib->setEnabled(true);
+        ui->btnSetCalibration->setEnabled(true);
+        break;
+    default:
+        ui->btnLoadCalibFile->setEnabled(false);
+        ui->btnSaveCalibFile->setEnabled(false);
+        ui->btnImportCalibMatrix->setEnabled(false);
+        ui->btnResetCalib->setEnabled(false);
+        ui->btnSetCalibration->setEnabled(false);
+        break;
+    }
+
 }
 
 void CalibrationWindow::onSliderPressed()
@@ -391,9 +414,10 @@ void CalibrationWindow::setCalibration()
 void CalibrationWindow::loadCalibrationFile(QString fileName)
 {
     mutex.lock();
+    int index = ui->tabWidget->currentIndex();
     loading();
     //load data file
-    if(!calibration_load_v2 (fileName.toLatin1().data(), bus, id)){
+    if(!calibration_load_v2 (fileName.toLatin1().data(), bus, id,index)){
         loading(false);
         mutex.unlock();
     }
@@ -412,43 +436,41 @@ void CalibrationWindow::loadCalibrationFile(QString fileName)
     serial_number_changed=false;
 
     drv_sleep (500);
-    if(currentMatrixIndex >= 1){
-        for (ri=0;ri<CHANNEL_COUNT;ri++){
-            for (ci=0;ci<CHANNEL_COUNT;ci++){
-                core->getDownloader()->strain_get_matrix_rc(bus,id, ri, ci, matrix[currentMatrixIndex - 1][ri][ci],currentMatrixIndex - 1,&msg);
-                appendLogMsg(msg.c_str());
-                sprintf(buffer,"%x",matrix[currentMatrixIndex - 1][ri][ci]);
-                setMatrix(currentMatrixIndex - 1);
-                resetMatrices(currentMatrixIndex - 1);
-            }
+    for (ri=0;ri<CHANNEL_COUNT;ri++){
+        for (ci=0;ci<CHANNEL_COUNT;ci++){
+            core->getDownloader()->strain_get_matrix_rc(bus,id, ri, ci, matrix[index][ri][ci],index,&msg);
+            appendLogMsg(msg.c_str());
+            sprintf(buffer,"%x",matrix[index - 1][ri][ci]);
+            setMatrix(index);
+            resetMatrices(index);
         }
     }
+
 
     drv_sleep (500);
 
-    if(currentMatrixIndex >= 1){
-        int count_ok=0;
-        for (i=0;i<36; i++){
-            ri=i/6;
-            ci=i%6;
-            if (calib_matrix[currentMatrixIndex - 1][ri][ci]==matrix[currentMatrixIndex - 1][ri][ci]){
-                count_ok++;
-            } else {
-                QString s = QString("Found 1 error on element %1,%2 !!").arg(ri).arg(ci);
-                appendLogMsg(s);
-            }
-        }
-
-        if (count_ok==36){
-            QString s = QString("Calibration file applied with no errors");
-            appendLogMsg(s);
-            matrix_changed[currentMatrixIndex - 1]=false;
+    int count_ok=0;
+    for (i=0;i<36; i++){
+        ri=i/6;
+        ci=i%6;
+        if (calib_matrix[index][ri][ci]==matrix[index][ri][ci]){
+            count_ok++;
         } else {
-            QString s = QString("Found %1 errors applying the calibration file!!").arg(36-count_ok);
+            QString s = QString("Found 1 error on element %1,%2 !!").arg(ri).arg(ci);
             appendLogMsg(s);
         }
-
     }
+
+    if (count_ok==36){
+        QString s = QString("Calibration file applied with no errors");
+        appendLogMsg(s);
+        matrix_changed[index]=false;
+    } else {
+        QString s = QString("Found %1 errors applying the calibration file!!").arg(36-count_ok);
+        appendLogMsg(s);
+    }
+
+
 
 
 
@@ -472,6 +494,7 @@ void CalibrationWindow::saveCalibrationFile(QString filePath)
 {
     mutex.lock();
     loading();
+    int index = ui->tabWidget->currentIndex();
     char *c = filePath.toLatin1().data();
     std::string filename = c;
     filename += "/calibrationData";
@@ -499,20 +522,18 @@ void CalibrationWindow::saveCalibrationFile(QString filePath)
     }
 
     //calibration matrix
-    if(currentMatrixIndex >= 1){
-        filestr<<"Calibration matrix:"<<endl;
-        for (i=0;i<36; i++){
-            sprintf (buffer,"%x",matrix[currentMatrixIndex- 1][i/6][i%6]);
-            filestr<<buffer<<endl;
-        }
-    }
-
-    //matrix gain
-    if(currentMatrixIndex >= 1){
-        filestr<<"Matrix gain:"<<endl;
-        sprintf (buffer,"%d",calib_const[currentMatrixIndex- 1]);
+    filestr<<"Calibration matrix:"<<endl;
+    for (i=0;i<36; i++){
+        sprintf (buffer,"%x",matrix[index][i/6][i%6]);
         filestr<<buffer<<endl;
     }
+
+
+    //matrix gain
+    filestr<<"Matrix gain:"<<endl;
+    sprintf (buffer,"%d",calib_const[index]);
+    filestr<<buffer<<endl;
+
 
     //tare
     filestr<<"Tare:"<<endl;
@@ -522,13 +543,12 @@ void CalibrationWindow::saveCalibrationFile(QString filePath)
     }
 
     //full scale values
-    if(currentMatrixIndex >= 1){
-        filestr<<"Full scale values:"<<endl;
-        for (i=0;i<CHANNEL_COUNT; i++){
-            sprintf (buffer,"%d",full_scale_const[currentMatrixIndex - 1][i]);
-            filestr<<buffer<<endl;
-        }
+    filestr<<"Full scale values:"<<endl;
+    for (i=0;i<CHANNEL_COUNT; i++){
+        sprintf (buffer,"%d",full_scale_const[index][i]);
+        filestr<<buffer<<endl;
     }
+
 
 
     printf ("Calibration file saved!\n");
@@ -553,6 +573,7 @@ void CalibrationWindow::importCalibrationFile(QString fileName)
 {
     mutex.lock();
     loading();
+    int index = ui->tabWidget->currentIndex();
     char* buff = fileName.toLatin1().data();
     string msg;
 
@@ -576,17 +597,16 @@ void CalibrationWindow::importCalibrationFile(QString fileName)
 
     int i=0;
     char buffer[256];
-    if(currentMatrixIndex >= 1){
-        for (i=0;i<36; i++){
-            int ri=i/6;
-            int ci=i%6;
-            filestr.getline (buffer,256);
-            sscanf (buffer,"%x",&calib_matrix[currentMatrixIndex - 1][ri][ci]);
-            printf("%d %x\n", calib_matrix[currentMatrixIndex - 1][ri][ci],calib_matrix[currentMatrixIndex - 1][ri][ci]);
-            core->getDownloader()->strain_set_matrix_rc(bus,id,ri,ci,calib_matrix[currentMatrixIndex - 1][ri][ci],currentMatrixIndex - 1,&msg);
-            appendLogMsg(msg.c_str());
-        }
+    for (i=0;i<36; i++){
+        int ri=i/6;
+        int ci=i%6;
+        filestr.getline (buffer,256);
+        sscanf (buffer,"%x",&calib_matrix[index][ri][ci]);
+        printf("%d %x\n", calib_matrix[index][ri][ci],calib_matrix[index][ri][ci]);
+        core->getDownloader()->strain_set_matrix_rc(bus,id,ri,ci,calib_matrix[index][ri][ci],index,&msg);
+        appendLogMsg(msg.c_str());
     }
+
 
     filestr.getline (buffer,256);
     int cc=0;
@@ -594,14 +614,13 @@ void CalibrationWindow::importCalibrationFile(QString fileName)
     core->getDownloader()->strain_set_matrix_gain(bus,id,cc,0,&msg);
     appendLogMsg(msg.c_str());
 
-    if(currentMatrixIndex >= 1){
-        for (i=0;i<CHANNEL_COUNT; i++){
-            filestr.getline (buffer,256);
-            sscanf (buffer,"%d",&cc);
-            core->getDownloader()->strain_set_full_scale(bus,id,i,cc,currentMatrixIndex - 1,&msg);
-            appendLogMsg(msg.c_str());
-        }
+    for (i=0;i<CHANNEL_COUNT; i++){
+        filestr.getline (buffer,256);
+        sscanf (buffer,"%d",&cc);
+        core->getDownloader()->strain_set_full_scale(bus,id,i,cc,index,&msg);
+        appendLogMsg(msg.c_str());
     }
+
     filestr.close();
 
     something_changed=true;
@@ -611,39 +630,38 @@ void CalibrationWindow::importCalibrationFile(QString fileName)
     int ri=0;
     int ci=0;
 
-    if(currentMatrixIndex  >= 1){
-        drv_sleep (1000);
-        for (ri=0;ri<CHANNEL_COUNT;ri++){
-            for (ci=0;ci<CHANNEL_COUNT;ci++){
-                core->getDownloader()->strain_get_matrix_rc(bus,id,ri,ci,matrix[currentMatrixIndex - 1][ri][ci],0,&msg);
-                appendLogMsg(msg.c_str());
-            }
+    drv_sleep (1000);
+    for (ri=0;ri<CHANNEL_COUNT;ri++){
+        for (ci=0;ci<CHANNEL_COUNT;ci++){
+            core->getDownloader()->strain_get_matrix_rc(bus,id,ri,ci,matrix[index][ri][ci],0,&msg);
+            appendLogMsg(msg.c_str());
         }
-        setMatrix(currentMatrixIndex - 1);
-        resetMatrices(currentMatrixIndex - 1);
-
-        int count_ok=0;
-        for (i=0;i<36; i++){
-            ri=i/6;
-            ci=i%6;
-            if (calib_matrix[currentMatrixIndex - 1][ri][ci]==matrix[currentMatrixIndex - 1][ri][ci]) {
-                count_ok++;
-            } else {
-                printf ("Found 1 error on element %d,%d !!\n",ri, ci);
-                appendLogMsg("Found 1 error on element %d,%d !!");
-            }
-        }
-
-        if (count_ok==36){
-            printf ("Calibration file %s applied with no errors\n", buff);
-            appendLogMsg(QString("Calibration file %1 applied with no errors").arg(buff));
-            matrix_changed[0]=false;
-        } else {
-            printf ("Found %d errors applying the calibration file!!\n",36-count_ok);
-            appendLogMsg(QString("Found %1 errors applying the calibration file!!").arg(36-count_ok));
-        }
-
     }
+    setMatrix(index);
+    resetMatrices(index);
+
+    int count_ok=0;
+    for (i=0;i<36; i++){
+        ri=i/6;
+        ci=i%6;
+        if (calib_matrix[index][ri][ci]==matrix[index][ri][ci]) {
+            count_ok++;
+        } else {
+            printf ("Found 1 error on element %d,%d !!\n",ri, ci);
+            appendLogMsg("Found 1 error on element %d,%d !!");
+        }
+    }
+
+    if (count_ok==36){
+        printf ("Calibration file %s applied with no errors\n", buff);
+        appendLogMsg(QString("Calibration file %1 applied with no errors").arg(buff));
+        matrix_changed[0]=false;
+    } else {
+        printf ("Found %d errors applying the calibration file!!\n",36-count_ok);
+        appendLogMsg(QString("Found %1 errors applying the calibration file!!").arg(36-count_ok));
+    }
+
+
 
 
 
@@ -1163,7 +1181,7 @@ void CalibrationWindow::onTimeout()
 
 }
 
-bool CalibrationWindow::calibration_load_v2 (char* filename, int selected_bus, int selected_id)
+bool CalibrationWindow::calibration_load_v2 (char* filename, int selected_bus, int selected_id, int index)
 {
     if (filename==NULL){
         yError("File not found!\n");
@@ -1217,16 +1235,15 @@ bool CalibrationWindow::calibration_load_v2 (char* filename, int selected_bus, i
 
     //calibration matrix
     filestr.getline (buffer,256);
-    if(currentMatrixIndex >= 1){
-        for (i=0;i<36; i++){
-            int ri=i/6;
-            int ci=i%6;
-            filestr.getline (buffer,256);
-            sscanf (buffer,"%x",&calib_matrix[currentMatrixIndex - 1][ri][ci]);
-            printf("%d %x\n", calib_matrix[currentMatrixIndex - 1][ri][ci],calib_matrix[currentMatrixIndex - 1][ri][ci]);
-            core->getDownloader()->strain_set_matrix_rc(bus,id, ri, ci, calib_matrix[currentMatrixIndex - 1][ri][ci]);
-        }
+    for (i=0;i<36; i++){
+        int ri=i/6;
+        int ci=i%6;
+        filestr.getline (buffer,256);
+        sscanf (buffer,"%x",&calib_matrix[index][ri][ci]);
+        printf("%d %x\n", calib_matrix[index][ri][ci],calib_matrix[index][ri][ci]);
+        core->getDownloader()->strain_set_matrix_rc(bus,id, ri, ci, calib_matrix[index][ri][ci]);
     }
+
 
 
     //matrix gain
@@ -1246,13 +1263,12 @@ bool CalibrationWindow::calibration_load_v2 (char* filename, int selected_bus, i
 
     //full scale values
     filestr.getline (buffer,256);
-    if(currentMatrixIndex >= 1){
-        for (i=0;i<CHANNEL_COUNT; i++){
-            filestr.getline (buffer,256);
-            sscanf  (buffer,"%d",&full_scale_const[currentMatrixIndex- 1][i]);
-            core->getDownloader()->strain_set_full_scale(bus,id, i, full_scale_const[currentMatrixIndex- 1][i]);
-        }
+    for (i=0;i<CHANNEL_COUNT; i++){
+        filestr.getline (buffer,256);
+        sscanf  (buffer,"%d",&full_scale_const[index][i]);
+        core->getDownloader()->strain_set_full_scale(bus,id, i, full_scale_const[index][i]);
     }
+
 
 
     filestr.close();

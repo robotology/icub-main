@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>849</width>
-    <height>860</height>
+    <width>1140</width>
+    <height>774</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Calibration</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_4">
+   <layout class="QVBoxLayout" name="verticalLayout_7">
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_8">
       <item>
@@ -50,165 +50,130 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout">
-      <item>
-       <widget class="QGroupBox" name="groupBox">
-        <property name="minimumSize">
-         <size>
-          <width>140</width>
-          <height>273</height>
-         </size>
-        </property>
-        <property name="maximumSize">
-         <size>
-          <width>160</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="title">
-         <string>Current Values</string>
-        </property>
-        <layout class="QVBoxLayout" name="verticalLayout">
-         <item>
-          <widget class="QWidget" name="widget" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>27</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>27</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QTableWidget" name="tableCurr">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>231</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>231</height>
-            </size>
-           </property>
-           <attribute name="horizontalHeaderDefaultSectionSize">
-            <number>80</number>
-           </attribute>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="verticalHeaderDefaultSectionSize">
-            <number>35</number>
-           </attribute>
-           <attribute name="verticalHeaderMinimumSectionSize">
-            <number>35</number>
-           </attribute>
-           <row>
-            <property name="text">
-             <string>Ch: 0</string>
+     <widget class="QWidget" name="widget" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>356</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>356</height>
+       </size>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QGroupBox" name="groupBox">
+         <property name="minimumSize">
+          <size>
+           <width>140</width>
+           <height>273</height>
+          </size>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>160</width>
+           <height>16777215</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>Current Values</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QWidget" name="widget" native="true">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>27</height>
+             </size>
             </property>
-           </row>
-           <row>
-            <property name="text">
-             <string>Ch: 1</string>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>27</height>
+             </size>
             </property>
-           </row>
-           <row>
-            <property name="text">
-             <string>Ch: 2</string>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTableWidget" name="tableCurr">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>231</height>
+             </size>
             </property>
-           </row>
-           <row>
-            <property name="text">
-             <string>Ch: 3</string>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>231</height>
+             </size>
             </property>
-           </row>
-           <row>
-            <property name="text">
-             <string>Ch: 4</string>
-            </property>
-           </row>
-           <row>
-            <property name="text">
-             <string>Ch: 5</string>
-            </property>
-           </row>
-           <column>
-            <property name="text">
-             <string>Value</string>
-            </property>
-           </column>
-          </widget>
-         </item>
-         <item>
-          <widget class="QWidget" name="widget_2" native="true">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>52</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>52</height>
-            </size>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-      <item>
-       <widget class="QGroupBox" name="groupBox_4">
-        <property name="title">
-         <string>Calibration Matrix</string>
-        </property>
-        <layout class="QGridLayout" name="gridLayout">
-         <item row="0" column="0">
-          <widget class="QFrame" name="frame">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>27</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>27</height>
-            </size>
-           </property>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <property name="leftMargin">
-             <number>0</number>
-            </property>
-            <property name="topMargin">
-             <number>0</number>
-            </property>
-            <property name="rightMargin">
-             <number>0</number>
-            </property>
-            <property name="bottomMargin">
-             <number>0</number>
-            </property>
+            <attribute name="horizontalHeaderDefaultSectionSize">
+             <number>80</number>
+            </attribute>
+            <attribute name="horizontalHeaderStretchLastSection">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="verticalHeaderDefaultSectionSize">
+             <number>35</number>
+            </attribute>
+            <attribute name="verticalHeaderMinimumSectionSize">
+             <number>35</number>
+            </attribute>
+            <row>
+             <property name="text">
+              <string>Ch: 0</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Ch: 1</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Ch: 2</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Ch: 3</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Ch: 4</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Ch: 5</string>
+             </property>
+            </row>
+            <column>
+             <property name="text">
+              <string>Value</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>Calibration Matrix</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_13">
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_6">
             <item>
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>Use Calib Matrix</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QComboBox" name="comboUseMatrix">
+             <widget class="QFrame" name="frame">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -221,30 +186,1033 @@
                 <height>27</height>
                </size>
               </property>
-              <item>
-               <property name="text">
-                <string>None</string>
+              <layout class="QHBoxLayout" name="horizontalLayout_2">
+               <property name="leftMargin">
+                <number>0</number>
                </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Matrix A</string>
+               <property name="topMargin">
+                <number>0</number>
                </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Matrix B</string>
+               <property name="rightMargin">
+                <number>0</number>
                </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>Matrix C</string>
+               <property name="bottomMargin">
+                <number>0</number>
                </property>
-              </item>
+               <item>
+                <widget class="QLabel" name="label_5">
+                 <property name="text">
+                  <string>Use Calib Matrix</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QComboBox" name="comboUseMatrix">
+                 <property name="minimumSize">
+                  <size>
+                   <width>0</width>
+                   <height>27</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>16777215</width>
+                   <height>27</height>
+                  </size>
+                 </property>
+                 <item>
+                  <property name="text">
+                   <string>None</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Matrix A</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Matrix B</string>
+                  </property>
+                 </item>
+                 <item>
+                  <property name="text">
+                   <string>Matrix C</string>
+                  </property>
+                 </item>
+                </widget>
+               </item>
+               <item>
+                <spacer name="horizontalSpacer">
+                 <property name="orientation">
+                  <enum>Qt::Horizontal</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>40</width>
+                   <height>20</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
              </widget>
             </item>
             <item>
-             <spacer name="horizontalSpacer">
+             <widget class="QTableWidget" name="tableUseMatrix">
+              <property name="minimumSize">
+               <size>
+                <width>361</width>
+                <height>231</height>
+               </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>231</height>
+               </size>
+              </property>
+              <attribute name="horizontalHeaderStretchLastSection">
+               <bool>true</bool>
+              </attribute>
+              <attribute name="verticalHeaderDefaultSectionSize">
+               <number>35</number>
+              </attribute>
+              <attribute name="verticalHeaderMinimumSectionSize">
+               <number>35</number>
+              </attribute>
+              <row>
+               <property name="text">
+                <string>Ch: 0</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 1</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 2</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 3</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 4</string>
+               </property>
+              </row>
+              <row>
+               <property name="text">
+                <string>Ch: 5</string>
+               </property>
+              </row>
+              <column>
+               <property name="text">
+                <string>Max Meaure</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Min Measure</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Diff Measure</string>
+               </property>
+              </column>
+              <column>
+               <property name="text">
+                <string>Newton</string>
+               </property>
+              </column>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QGroupBox" name="groupBox_6">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>310</height>
+             </size>
+            </property>
+            <property name="title">
+             <string>Matrices</string>
+            </property>
+            <layout class="QHBoxLayout" name="horizontalLayout_12">
+             <item>
+              <widget class="QTabWidget" name="tabWidget">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="minimumSize">
+                <size>
+                 <width>401</width>
+                 <height>270</height>
+                </size>
+               </property>
+               <property name="maximumSize">
+                <size>
+                 <width>401</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="currentIndex">
+                <number>0</number>
+               </property>
+               <widget class="QWidget" name="tab">
+                <attribute name="title">
+                 <string>A</string>
+                </attribute>
+                <widget class="QTableWidget" name="tableFullScaleA">
+                 <property name="geometry">
+                  <rect>
+                   <x>320</x>
+                   <y>4</y>
+                   <width>71</width>
+                   <height>200</height>
+                  </rect>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>8</pointsize>
+                  </font>
+                 </property>
+                 <attribute name="horizontalHeaderDefaultSectionSize">
+                  <number>70</number>
+                 </attribute>
+                 <attribute name="horizontalHeaderMinimumSectionSize">
+                  <number>70</number>
+                 </attribute>
+                 <attribute name="verticalHeaderVisible">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="verticalHeaderMinimumSectionSize">
+                  <number>30</number>
+                 </attribute>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <column>
+                  <property name="text">
+                   <string>Full Scale</string>
+                  </property>
+                 </column>
+                </widget>
+                <widget class="QWidget" name="layoutWidget">
+                 <property name="geometry">
+                  <rect>
+                   <x>10</x>
+                   <y>209</y>
+                   <width>182</width>
+                   <height>27</height>
+                  </rect>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_3">
+                  <item>
+                   <widget class="QLabel" name="label">
+                    <property name="text">
+                     <string>Matrix Gain:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLineEdit" name="editMatrixGainA">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QTableWidget" name="matrixA">
+                 <property name="geometry">
+                  <rect>
+                   <x>10</x>
+                   <y>22</y>
+                   <width>302</width>
+                   <height>182</height>
+                  </rect>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>302</width>
+                   <height>182</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>302</width>
+                   <height>182</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>8</pointsize>
+                  </font>
+                 </property>
+                 <attribute name="horizontalHeaderVisible">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="horizontalHeaderDefaultSectionSize">
+                  <number>50</number>
+                 </attribute>
+                 <attribute name="horizontalHeaderMinimumSectionSize">
+                  <number>50</number>
+                 </attribute>
+                 <attribute name="verticalHeaderVisible">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="verticalHeaderDefaultSectionSize">
+                  <number>30</number>
+                 </attribute>
+                 <attribute name="verticalHeaderMinimumSectionSize">
+                  <number>30</number>
+                 </attribute>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                </widget>
+               </widget>
+               <widget class="QWidget" name="tab_2">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <attribute name="title">
+                 <string>B</string>
+                </attribute>
+                <widget class="QWidget" name="layoutWidget">
+                 <property name="geometry">
+                  <rect>
+                   <x>10</x>
+                   <y>210</y>
+                   <width>181</width>
+                   <height>25</height>
+                  </rect>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_4">
+                  <item>
+                   <widget class="QLabel" name="label_2">
+                    <property name="text">
+                     <string>Matrix Gain:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLineEdit" name="editMatrixGainB">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QTableWidget" name="tableFullScaleB">
+                 <property name="geometry">
+                  <rect>
+                   <x>320</x>
+                   <y>4</y>
+                   <width>71</width>
+                   <height>200</height>
+                  </rect>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>8</pointsize>
+                  </font>
+                 </property>
+                 <attribute name="horizontalHeaderDefaultSectionSize">
+                  <number>70</number>
+                 </attribute>
+                 <attribute name="horizontalHeaderMinimumSectionSize">
+                  <number>70</number>
+                 </attribute>
+                 <attribute name="verticalHeaderVisible">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="verticalHeaderMinimumSectionSize">
+                  <number>30</number>
+                 </attribute>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <column>
+                  <property name="text">
+                   <string>Full Scale</string>
+                  </property>
+                 </column>
+                </widget>
+                <widget class="QTableWidget" name="matrixB">
+                 <property name="geometry">
+                  <rect>
+                   <x>10</x>
+                   <y>22</y>
+                   <width>302</width>
+                   <height>182</height>
+                  </rect>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>302</width>
+                   <height>182</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>302</width>
+                   <height>182</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>8</pointsize>
+                  </font>
+                 </property>
+                 <attribute name="horizontalHeaderVisible">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="horizontalHeaderDefaultSectionSize">
+                  <number>50</number>
+                 </attribute>
+                 <attribute name="horizontalHeaderMinimumSectionSize">
+                  <number>50</number>
+                 </attribute>
+                 <attribute name="verticalHeaderVisible">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="verticalHeaderDefaultSectionSize">
+                  <number>30</number>
+                 </attribute>
+                 <attribute name="verticalHeaderMinimumSectionSize">
+                  <number>30</number>
+                 </attribute>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                </widget>
+               </widget>
+               <widget class="QWidget" name="tab_3">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <attribute name="title">
+                 <string>C</string>
+                </attribute>
+                <widget class="QWidget" name="layoutWidget">
+                 <property name="geometry">
+                  <rect>
+                   <x>10</x>
+                   <y>210</y>
+                   <width>181</width>
+                   <height>25</height>
+                  </rect>
+                 </property>
+                 <layout class="QHBoxLayout" name="horizontalLayout_5">
+                  <item>
+                   <widget class="QLabel" name="label_3">
+                    <property name="text">
+                     <string>Matrix Gain:</string>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QLineEdit" name="editMatrixGainC">
+                    <property name="readOnly">
+                     <bool>true</bool>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
+                </widget>
+                <widget class="QTableWidget" name="tableFullScaleC">
+                 <property name="geometry">
+                  <rect>
+                   <x>320</x>
+                   <y>4</y>
+                   <width>71</width>
+                   <height>200</height>
+                  </rect>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>8</pointsize>
+                  </font>
+                 </property>
+                 <attribute name="horizontalHeaderDefaultSectionSize">
+                  <number>70</number>
+                 </attribute>
+                 <attribute name="horizontalHeaderMinimumSectionSize">
+                  <number>70</number>
+                 </attribute>
+                 <attribute name="verticalHeaderVisible">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="verticalHeaderMinimumSectionSize">
+                  <number>30</number>
+                 </attribute>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <column>
+                  <property name="text">
+                   <string>Full Scale</string>
+                  </property>
+                 </column>
+                </widget>
+                <widget class="QTableWidget" name="matrixC">
+                 <property name="geometry">
+                  <rect>
+                   <x>10</x>
+                   <y>22</y>
+                   <width>302</width>
+                   <height>182</height>
+                  </rect>
+                 </property>
+                 <property name="minimumSize">
+                  <size>
+                   <width>302</width>
+                   <height>182</height>
+                  </size>
+                 </property>
+                 <property name="maximumSize">
+                  <size>
+                   <width>302</width>
+                   <height>182</height>
+                  </size>
+                 </property>
+                 <property name="font">
+                  <font>
+                   <pointsize>8</pointsize>
+                  </font>
+                 </property>
+                 <attribute name="horizontalHeaderVisible">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="horizontalHeaderDefaultSectionSize">
+                  <number>50</number>
+                 </attribute>
+                 <attribute name="horizontalHeaderMinimumSectionSize">
+                  <number>50</number>
+                 </attribute>
+                 <attribute name="verticalHeaderVisible">
+                  <bool>false</bool>
+                 </attribute>
+                 <attribute name="verticalHeaderDefaultSectionSize">
+                  <number>30</number>
+                 </attribute>
+                 <attribute name="verticalHeaderMinimumSectionSize">
+                  <number>30</number>
+                 </attribute>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <row>
+                  <property name="text">
+                   <string>New Row</string>
+                  </property>
+                 </row>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                 <column>
+                  <property name="text">
+                   <string>New Column</string>
+                  </property>
+                 </column>
+                </widget>
+               </widget>
+              </widget>
+             </item>
+             <item>
+              <layout class="QVBoxLayout" name="verticalLayout_5">
+               <item>
+                <spacer name="verticalSpacer_2">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnSetCalibration">
+                 <property name="text">
+                  <string>Set Calibration</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnResetCalib">
+                 <property name="text">
+                  <string>Reset Calibration</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnLoadCalibFile">
+                 <property name="text">
+                  <string>Load Calibration File</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnSaveCalibFile">
+                 <property name="text">
+                  <string>Save Calibration File</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <widget class="QPushButton" name="btnImportCalibMatrix">
+                 <property name="text">
+                  <string>Import Calib Matrix</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <spacer name="verticalSpacer">
+                 <property name="orientation">
+                  <enum>Qt::Vertical</enum>
+                 </property>
+                 <property name="sizeHint" stdset="0">
+                  <size>
+                   <width>20</width>
+                   <height>40</height>
+                  </size>
+                 </property>
+                </spacer>
+               </item>
+              </layout>
+             </item>
+            </layout>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item>
+     <widget class="QWidget" name="widget" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>290</height>
+       </size>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout_11" stretch="60,40">
+       <item>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>Parameters</string>
+         </property>
+         <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="90,10">
+          <item>
+           <widget class="QTableWidget" name="tableParamters">
+            <property name="minimumSize">
+             <size>
+              <width>0</width>
+              <height>231</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>231</height>
+             </size>
+            </property>
+            <attribute name="horizontalHeaderDefaultSectionSize">
+             <number>120</number>
+            </attribute>
+            <attribute name="horizontalHeaderStretchLastSection">
+             <bool>true</bool>
+            </attribute>
+            <attribute name="verticalHeaderDefaultSectionSize">
+             <number>35</number>
+            </attribute>
+            <attribute name="verticalHeaderMinimumSectionSize">
+             <number>35</number>
+            </attribute>
+            <row>
+             <property name="text">
+              <string>Ch: 0</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Ch: 1</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Ch: 2</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Ch: 3</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Ch: 4</string>
+             </property>
+            </row>
+            <row>
+             <property name="text">
+              <string>Ch: 5</string>
+             </property>
+            </row>
+            <column>
+             <property name="text">
+              <string>Offset</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Calib Bias</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Curr Bias</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_3">
+            <item>
+             <widget class="QGroupBox" name="groupBox_3">
+              <property name="title">
+               <string>Automatic Offset Adjustment</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_2">
+               <item>
+                <widget class="QPushButton" name="btnAutoAdjust">
+                 <property name="text">
+                  <string>Adjust</string>
+                 </property>
+                </widget>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_9">
+                 <item>
+                  <widget class="QSlider" name="slider_zero">
+                   <property name="orientation">
+                    <enum>Qt::Horizontal</enum>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QLabel" name="zeroLbl">
+                   <property name="text">
+                    <string>-</string>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnSetCalibBias">
+              <property name="text">
+               <string>Set Calibration Bias</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnResetCalibBias">
+              <property name="text">
+               <string>Reset Calibration Bias</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnSetCurrBias">
+              <property name="text">
+               <string>Set Current Bias</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btnResetCurrBias">
+              <property name="text">
+               <string>Reset Current Bias</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_5">
+         <property name="title">
+          <string>Log</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_4">
+          <item>
+           <widget class="QPlainTextEdit" name="logText"/>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <spacer name="horizontalSpacer_5">
               <property name="orientation">
                <enum>Qt::Horizontal</enum>
               </property>
@@ -256,906 +1224,16 @@
               </property>
              </spacer>
             </item>
-           </layout>
-          </widget>
-         </item>
-         <item row="0" column="1" rowspan="2">
-          <widget class="QTabWidget" name="tabWidget">
-           <property name="minimumSize">
-            <size>
-             <width>281</width>
-             <height>270</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>281</width>
-             <height>16777215</height>
-            </size>
-           </property>
-           <property name="currentIndex">
-            <number>0</number>
-           </property>
-           <widget class="QWidget" name="tab">
-            <attribute name="title">
-             <string>A</string>
-            </attribute>
-            <widget class="QTableWidget" name="tableFullScaleA">
-             <property name="geometry">
-              <rect>
-               <x>200</x>
-               <y>2</y>
-               <width>71</width>
-               <height>201</height>
-              </rect>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>8</pointsize>
-              </font>
-             </property>
-             <attribute name="horizontalHeaderDefaultSectionSize">
-              <number>70</number>
-             </attribute>
-             <attribute name="horizontalHeaderMinimumSectionSize">
-              <number>70</number>
-             </attribute>
-             <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
-             </attribute>
-             <attribute name="verticalHeaderMinimumSectionSize">
-              <number>30</number>
-             </attribute>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <column>
-              <property name="text">
-               <string>Full Scale</string>
-              </property>
-             </column>
-            </widget>
-            <widget class="QWidget" name="layoutWidget">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>209</y>
-               <width>182</width>
-               <height>27</height>
-              </rect>
-             </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_3">
-              <item>
-               <widget class="QLabel" name="label">
-                <property name="text">
-                 <string>Matrix Gain:</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="editMatrixGainA">
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QTableWidget" name="matrixA">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>22</y>
-               <width>182</width>
-               <height>182</height>
-              </rect>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>182</width>
-               <height>182</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>182</width>
-               <height>182</height>
-              </size>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>8</pointsize>
-              </font>
-             </property>
-             <attribute name="horizontalHeaderVisible">
-              <bool>false</bool>
-             </attribute>
-             <attribute name="horizontalHeaderDefaultSectionSize">
-              <number>30</number>
-             </attribute>
-             <attribute name="horizontalHeaderMinimumSectionSize">
-              <number>30</number>
-             </attribute>
-             <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
-             </attribute>
-             <attribute name="verticalHeaderDefaultSectionSize">
-              <number>30</number>
-             </attribute>
-             <attribute name="verticalHeaderMinimumSectionSize">
-              <number>30</number>
-             </attribute>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-            </widget>
-           </widget>
-           <widget class="QWidget" name="tab_2">
-            <attribute name="title">
-             <string>B</string>
-            </attribute>
-            <widget class="QTableWidget" name="tableFullScaleB">
-             <property name="geometry">
-              <rect>
-               <x>200</x>
-               <y>2</y>
-               <width>71</width>
-               <height>201</height>
-              </rect>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>71</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>8</pointsize>
-              </font>
-             </property>
-             <attribute name="horizontalHeaderDefaultSectionSize">
-              <number>70</number>
-             </attribute>
-             <attribute name="horizontalHeaderMinimumSectionSize">
-              <number>70</number>
-             </attribute>
-             <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
-             </attribute>
-             <attribute name="verticalHeaderMinimumSectionSize">
-              <number>30</number>
-             </attribute>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <column>
-              <property name="text">
-               <string>Full Scale</string>
-              </property>
-             </column>
-            </widget>
-            <widget class="QWidget" name="layoutWidget">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>210</y>
-               <width>181</width>
-               <height>25</height>
-              </rect>
-             </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_4">
-              <item>
-               <widget class="QLabel" name="label_2">
-                <property name="text">
-                 <string>Matrix Gain:</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="editMatrixGainB">
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QTableWidget" name="matrixB">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>22</y>
-               <width>182</width>
-               <height>182</height>
-              </rect>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>182</width>
-               <height>182</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>182</width>
-               <height>182</height>
-              </size>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>8</pointsize>
-              </font>
-             </property>
-             <attribute name="horizontalHeaderVisible">
-              <bool>false</bool>
-             </attribute>
-             <attribute name="horizontalHeaderDefaultSectionSize">
-              <number>30</number>
-             </attribute>
-             <attribute name="horizontalHeaderMinimumSectionSize">
-              <number>30</number>
-             </attribute>
-             <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
-             </attribute>
-             <attribute name="verticalHeaderDefaultSectionSize">
-              <number>30</number>
-             </attribute>
-             <attribute name="verticalHeaderMinimumSectionSize">
-              <number>30</number>
-             </attribute>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-            </widget>
-            <zorder>layoutWidget</zorder>
-            <zorder>matrixB</zorder>
-            <zorder>tableFullScaleB</zorder>
-           </widget>
-           <widget class="QWidget" name="tab_3">
-            <attribute name="title">
-             <string>C</string>
-            </attribute>
-            <widget class="QTableWidget" name="tableFullScaleC">
-             <property name="geometry">
-              <rect>
-               <x>200</x>
-               <y>2</y>
-               <width>71</width>
-               <height>201</height>
-              </rect>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>71</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>8</pointsize>
-              </font>
-             </property>
-             <attribute name="horizontalHeaderDefaultSectionSize">
-              <number>70</number>
-             </attribute>
-             <attribute name="horizontalHeaderMinimumSectionSize">
-              <number>70</number>
-             </attribute>
-             <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
-             </attribute>
-             <attribute name="verticalHeaderMinimumSectionSize">
-              <number>30</number>
-             </attribute>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <column>
-              <property name="text">
-               <string>Full Scale</string>
-              </property>
-             </column>
-            </widget>
-            <widget class="QWidget" name="layoutWidget">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>210</y>
-               <width>181</width>
-               <height>25</height>
-              </rect>
-             </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_5">
-              <item>
-               <widget class="QLabel" name="label_3">
-                <property name="text">
-                 <string>Matrix Gain:</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLineEdit" name="editMatrixGainC">
-                <property name="readOnly">
-                 <bool>true</bool>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </widget>
-            <widget class="QTableWidget" name="matrixC">
-             <property name="geometry">
-              <rect>
-               <x>10</x>
-               <y>22</y>
-               <width>182</width>
-               <height>182</height>
-              </rect>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>182</width>
-               <height>182</height>
-              </size>
-             </property>
-             <property name="maximumSize">
-              <size>
-               <width>182</width>
-               <height>182</height>
-              </size>
-             </property>
-             <property name="font">
-              <font>
-               <pointsize>8</pointsize>
-              </font>
-             </property>
-             <attribute name="horizontalHeaderVisible">
-              <bool>false</bool>
-             </attribute>
-             <attribute name="horizontalHeaderDefaultSectionSize">
-              <number>30</number>
-             </attribute>
-             <attribute name="horizontalHeaderMinimumSectionSize">
-              <number>30</number>
-             </attribute>
-             <attribute name="verticalHeaderVisible">
-              <bool>false</bool>
-             </attribute>
-             <attribute name="verticalHeaderDefaultSectionSize">
-              <number>30</number>
-             </attribute>
-             <attribute name="verticalHeaderMinimumSectionSize">
-              <number>30</number>
-             </attribute>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <row>
-              <property name="text">
-               <string>New Row</string>
-              </property>
-             </row>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-             <column>
-              <property name="text">
-               <string>New Column</string>
-              </property>
-             </column>
-            </widget>
-           </widget>
-          </widget>
-         </item>
-         <item row="1" column="0">
-          <widget class="QTableWidget" name="tableUseMatrix">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>231</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>16777215</width>
-             <height>231</height>
-            </size>
-           </property>
-           <attribute name="horizontalHeaderStretchLastSection">
-            <bool>true</bool>
-           </attribute>
-           <attribute name="verticalHeaderDefaultSectionSize">
-            <number>35</number>
-           </attribute>
-           <attribute name="verticalHeaderMinimumSectionSize">
-            <number>35</number>
-           </attribute>
-           <row>
-            <property name="text">
-             <string>Ch: 0</string>
-            </property>
-           </row>
-           <row>
-            <property name="text">
-             <string>Ch: 1</string>
-            </property>
-           </row>
-           <row>
-            <property name="text">
-             <string>Ch: 2</string>
-            </property>
-           </row>
-           <row>
-            <property name="text">
-             <string>Ch: 3</string>
-            </property>
-           </row>
-           <row>
-            <property name="text">
-             <string>Ch: 4</string>
-            </property>
-           </row>
-           <row>
-            <property name="text">
-             <string>Ch: 5</string>
-            </property>
-           </row>
-           <column>
-            <property name="text">
-             <string>Max Meaure</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Min Measure</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Diff Measure</string>
-            </property>
-           </column>
-           <column>
-            <property name="text">
-             <string>Newton</string>
-            </property>
-           </column>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QPushButton" name="btnSetCalibration">
-           <property name="text">
-            <string>Set Calibration</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <spacer name="horizontalSpacer_3">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>341</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
-         <item row="3" column="1">
-          <widget class="QPushButton" name="btnResetCalib">
-           <property name="text">
-            <string>Reset Calibration</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </widget>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="groupBox_2">
-      <property name="title">
-       <string>Parameters</string>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="90,10">
-       <item>
-        <widget class="QTableWidget" name="tableParamters">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>231</height>
-          </size>
-         </property>
-         <property name="maximumSize">
-          <size>
-           <width>16777215</width>
-           <height>231</height>
-          </size>
-         </property>
-         <attribute name="horizontalHeaderDefaultSectionSize">
-          <number>180</number>
-         </attribute>
-         <attribute name="horizontalHeaderStretchLastSection">
-          <bool>true</bool>
-         </attribute>
-         <attribute name="verticalHeaderDefaultSectionSize">
-          <number>35</number>
-         </attribute>
-         <attribute name="verticalHeaderMinimumSectionSize">
-          <number>35</number>
-         </attribute>
-         <row>
-          <property name="text">
-           <string>Ch: 0</string>
-          </property>
-         </row>
-         <row>
-          <property name="text">
-           <string>Ch: 1</string>
-          </property>
-         </row>
-         <row>
-          <property name="text">
-           <string>Ch: 2</string>
-          </property>
-         </row>
-         <row>
-          <property name="text">
-           <string>Ch: 3</string>
-          </property>
-         </row>
-         <row>
-          <property name="text">
-           <string>Ch: 4</string>
-          </property>
-         </row>
-         <row>
-          <property name="text">
-           <string>Ch: 5</string>
-          </property>
-         </row>
-         <column>
-          <property name="text">
-           <string>Offset</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>Calib Bias</string>
-          </property>
-         </column>
-         <column>
-          <property name="text">
-           <string>Curr Bias</string>
-          </property>
-         </column>
-        </widget>
-       </item>
-       <item>
-        <layout class="QVBoxLayout" name="verticalLayout_3">
-         <item>
-          <widget class="QGroupBox" name="groupBox_3">
-           <property name="title">
-            <string>Automatic Offset Adjustment</string>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
-             <widget class="QPushButton" name="btnAutoAdjust">
+             <widget class="QPushButton" name="btnClearLog">
               <property name="text">
-               <string>Adjust</string>
+               <string>Clear</string>
               </property>
              </widget>
             </item>
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_9">
-              <item>
-               <widget class="QSlider" name="slider_zero">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QLabel" name="zeroLbl">
-                <property name="text">
-                 <string>-</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
            </layout>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnSetCalibBias">
-           <property name="text">
-            <string>Set Calibration Bias</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnResetCalibBias">
-           <property name="text">
-            <string>Reset Calibration Bias</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnSetCurrBias">
-           <property name="text">
-            <string>Set Current Bias</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="btnResetCurrBias">
-           <property name="text">
-            <string>Reset Current Bias</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
-       </item>
-      </layout>
-     </widget>
-    </item>
-    <item>
-     <widget class="QGroupBox" name="groupBox_5">
-      <property name="title">
-       <string>Log</string>
-      </property>
-      <layout class="QHBoxLayout" name="horizontalLayout_7">
-       <item>
-        <widget class="QPlainTextEdit" name="logText"/>
-       </item>
-       <item>
-        <widget class="QPushButton" name="btnClearLog">
-         <property name="text">
-          <string>Clear</string>
-         </property>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
@@ -1192,7 +1270,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>849</width>
+     <width>1140</width>
      <height>20</height>
     </rect>
    </property>
@@ -1200,10 +1278,7 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionLoad_Calibration_File"/>
-    <addaction name="actionSave_Calibration_File"/>
     <addaction name="actionSave_To_Eproom"/>
-    <addaction name="actionImport_Calib_Matrix"/>
    </widget>
    <addaction name="menuFile"/>
   </widget>

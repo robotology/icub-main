@@ -155,6 +155,7 @@ void FirmwareUpdaterCore::setSelectedCanBoards(QList <sBoard> selectedBoards,QSt
             if(downloader.board_list[i].bus == b.bus &&
                     downloader.board_list[i].pid == b.pid){
                 downloader.board_list[i].selected = b.selected;
+                downloader.board_list[i].eeprom = b.eeprom;
             }
         }
     }
@@ -994,6 +995,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 
 
 
+    yarp::os::Time::delay(3.0);
     //Display result message
     if (ret == 0)
     {
