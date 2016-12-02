@@ -35,10 +35,10 @@ mcParser::mcParser(int numofjoints, string boardname)
 {
     _njoints = numofjoints;
     _boardname = boardname;
-    _posistionControlLaw = allocAndCheck<string>(_njoints);
-    _velocityControlLaw = allocAndCheck<string>(_njoints);
-    _torqueControlLaw = allocAndCheck<string>(_njoints);
-    _currentControlLaw = allocAndCheck<string>(_njoints);
+    _posistionControlLaw = new string[_njoints];
+    _velocityControlLaw = new string[_njoints];
+    _torqueControlLaw = new string[_njoints];
+    _currentControlLaw = new string[_njoints];
 
     _kbemf=allocAndCheck<double>(_njoints);
     _ktau=allocAndCheck<double>(_njoints);
@@ -48,10 +48,10 @@ mcParser::mcParser(int numofjoints, string boardname)
 
 mcParser::~mcParser()
 {
-    checkAndDestroy(_posistionControlLaw);
-    checkAndDestroy(_velocityControlLaw);
-    checkAndDestroy(_torqueControlLaw);
-    checkAndDestroy(_currentControlLaw);
+    delete(_posistionControlLaw);
+    delete(_velocityControlLaw);
+    delete(_torqueControlLaw);
+    delete(_currentControlLaw);
     checkAndDestroy(_kbemf);
     checkAndDestroy(_ktau);
     checkAndDestroy(_filterType);
