@@ -585,7 +585,7 @@ bool parametricCalibratorEth::calibrate()
 
         for(lit  = currentSetList.begin(); lit != currentSetList.end(); lit++)      //for each joint of set
         {
-            iEncoders->getEncoders(currPos);
+            iEncoders->getEncoder((*lit), &currPos[(*lit)]);
             yDebug() <<  deviceName  << ": set" << setOfJoint_idx << "j" << (*lit) << ": Calibrating... enc values AFTER calib: " << currPos[(*lit)];
         }
 
