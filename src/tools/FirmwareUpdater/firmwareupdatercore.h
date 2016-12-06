@@ -22,9 +22,11 @@ public:
     QStringList getDevicesName();
     QList<QPair<QString,QVariant> > getDevices();
     int connectTo(QString device, QString id);
+    bool isBoardInMaintenanceMode(QString ip);
     void disconnectFrom(QString device, QString id);
     EthBoardList getEthBoardList();
     void setSelectedEthBoard(int index,bool selected);
+    void setSelectedEthBoard(QString boardIp,bool selected);
     void setSelectedCanBoard(int index, bool selected, QString ethAddress = "", int deviceId = -1);
     void setSelectedCanBoards(QList <sBoard> selectedBoards, QString address, int deviceId = -1);
     boardInfo2_t getMoreDetails(int boardNum = EthMaintainer::ipv4OfAllSelected, QString *infoString = NULL, eOipv4addr_t *address = NULL);

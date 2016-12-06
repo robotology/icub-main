@@ -123,6 +123,17 @@ int FirmwareUpdaterCore::connectTo(QString device, QString id)
     return 0;
 }
 
+bool FirmwareUpdaterCore::isBoardInMaintenanceMode(QString ip)
+{
+    for(int i=0;i<gMNT.boards_get().size();i++){
+        QString boardIp = QString("%1").arg(gMNT.boards_get()[i].getIPV4string().c_str());
+        if(boardIp == ip){
+            return gMNT.boards_get()[i].isInMaintenance();
+        }
+    }
+    return false;
+}
+
 EthBoardList FirmwareUpdaterCore::getEthBoardList()
 {
     return gMNT.boards_get();
@@ -133,6 +144,19 @@ void FirmwareUpdaterCore::setSelectedEthBoard(int index,bool selected)
     mutex.lock();
     if(gMNT.boards_get().size() > index){
         gMNT.boards_get()[index].setSelected(selected);
+    }
+    mutex.unlock();
+    selectedEnded();
+}
+
+void FirmwareUpdaterCore::setSelectedEthBoard(QString boardIp,bool selected)
+{
+    mutex.lock();
+    for(int i=0;i<gMNT.boards_get().size();i++){
+        if(QString("%1").arg(gMNT.boards_get()[i].getIPV4string().c_str()) == boardIp){
+            gMNT.boards_get()[i].setSelected(selected);
+            break;
+        }
     }
     mutex.unlock();
     selectedEnded();
@@ -1012,7 +1036,9 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
         for(int i=0; i<downloader.board_list_size;i++){
             canBoards.append(downloader.board_list[i]);
         }
-        *resultCanBoards = canBoards;
+        if(resultCanBoards){
+            *resultCanBoards = canBoards;
+        }
         return true;
     }
     else
