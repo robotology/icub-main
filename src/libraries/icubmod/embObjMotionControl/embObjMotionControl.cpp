@@ -1193,11 +1193,10 @@ bool embObjMotionControl::parseGeneralMecGroup(Bottle &general)
             return false;
         }
 
-        bool useMotorSpeedFbk[_njoints];
+        int useMotorSpeedFbk[_njoints];
         for (i = 1; i < xtmp.size(); i++)
         {
-            useMotorSpeedFbk[i-1] = xtmp.get(i).asBool();
-            //_jointsets_info.jointset_cfgs[i-1].usespeedfeedbackfrommotors =
+            useMotorSpeedFbk[i-1] = xtmp.get(i).asInt();
         }
 
         //Note: currently in eth protocol this parameter belongs to jointset configuration. So
@@ -1214,7 +1213,7 @@ bool embObjMotionControl::parseGeneralMecGroup(Bottle &general)
                     return false;
                 }
             }
-            _jointsets_info.jointset_cfgs[s].usespeedfeedbackfrommotors = useMotorSpeedFbk[firstjointval];
+            _jointsets_info.jointset_cfgs[s].usespeedfeedbackfrommotors = firstjointval;
         }
     }
 

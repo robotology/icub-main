@@ -44,6 +44,7 @@
 
 
 #include <string>
+#include <vector>
 #include <map>
 
 //  Yarp stuff
@@ -182,10 +183,10 @@ private:
     std::map<std::string, Pid_Algorithm*> velAlgoMap;
     std::map<std::string, Pid_Algorithm*> trqAlgoMap;
 
-    std::string  *_posistionControlLaw;
-    std::string  *_velocityControlLaw;
-    std::string  *_torqueControlLaw;
-    std::string  *_currentControlLaw;
+    std::vector<std::string> _posistionControlLaw;
+    std::vector<std::string> _velocityControlLaw;
+    std::vector<std::string> _torqueControlLaw;
+    std::vector<std::string> _currentControlLaw;
 
     double *_kbemf;                             /** back-emf compensation parameter */
     double *_ktau;                              /** motor torque constant */

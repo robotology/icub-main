@@ -35,10 +35,10 @@ mcParser::mcParser(int numofjoints, string boardname)
 {
     _njoints = numofjoints;
     _boardname = boardname;
-    _posistionControlLaw = new string[_njoints];
-    _velocityControlLaw = new string[_njoints];
-    _torqueControlLaw = new string[_njoints];
-    _currentControlLaw = new string[_njoints];
+    _posistionControlLaw.resize(0);
+    _velocityControlLaw.resize(0);
+    _torqueControlLaw.resize(0);
+    _currentControlLaw.resize(0);
 
     _kbemf=allocAndCheck<double>(_njoints);
     _ktau=allocAndCheck<double>(_njoints);
@@ -48,10 +48,6 @@ mcParser::mcParser(int numofjoints, string boardname)
 
 mcParser::~mcParser()
 {
-    delete(_posistionControlLaw);
-    delete(_velocityControlLaw);
-    delete(_torqueControlLaw);
-    delete(_currentControlLaw);
     checkAndDestroy(_kbemf);
     checkAndDestroy(_ktau);
     checkAndDestroy(_filterType);
@@ -98,7 +94,8 @@ bool mcParser::parseControlsGroup(yarp::os::Searchable &config)
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            _posistionControlLaw[i - 1] = xtmp.get(i).asString();
+            //_posistionControlLaw[i - 1] = xtmp.get(i).asString();
+            _posistionControlLaw.push_back(xtmp.get(i).asString().c_str());
     }
 
     if (!extractGroup(controlsGroup, xtmp, "velocityControl", "Velocity Control ", _njoints))
@@ -108,7 +105,7 @@ bool mcParser::parseControlsGroup(yarp::os::Searchable &config)
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            _velocityControlLaw[i - 1] = xtmp.get(i).asString();
+            _velocityControlLaw.push_back(xtmp.get(i).asString().c_str());
     }
 
     if (!extractGroup(controlsGroup, xtmp, "torqueControl", "Torque Control ", _njoints))
@@ -118,7 +115,7 @@ bool mcParser::parseControlsGroup(yarp::os::Searchable &config)
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            _torqueControlLaw[i - 1] = xtmp.get(i).asString();
+            _torqueControlLaw.push_back(xtmp.get(i).asString().c_str());
     }
 
     if (!extractGroup(controlsGroup, xtmp, "currentPid", "Current Pid ", _njoints))
@@ -128,7 +125,7 @@ bool mcParser::parseControlsGroup(yarp::os::Searchable &config)
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            _currentControlLaw[i - 1] = xtmp.get(i).asString();
+            _currentControlLaw.push_back(xtmp.get(i).asString().c_str());
     }
 
 
