@@ -316,7 +316,7 @@ int programCanDevice(FirmwareUpdaterCore *core,QString device,QString id,QString
             }
             if(selectedCount > 0){
                 core->setSelectedCanBoards(canBoards,device,id.toInt());
-                bool ret = core->uploadCanApplication(file,&retString,board,id.toInt());
+                bool ret = core->uploadCanApplication(file,&retString,device,id.toInt());
                 qDebug() << retString;
                 return ret ? 0 : -1;
             }else{
