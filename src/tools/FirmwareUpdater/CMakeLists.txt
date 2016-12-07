@@ -2,6 +2,12 @@
 # Author: Daniele E. Domenichelli <daniele.domenichelli@iit.it>, Marco Acccame <marco.accame@iit.it>
 # CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
 
+
+if(NOT ICUB_USE_icub_firmware_shared)
+  message(STATUS "icub-firmware-shared not selected, disabling FirmwareUpdater")
+  return()
+endif()
+
 include(iCubUseQt5)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
