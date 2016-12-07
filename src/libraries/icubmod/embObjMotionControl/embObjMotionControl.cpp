@@ -2477,6 +2477,9 @@ bool embObjMotionControl::init()
         jconfig.userlimits.max = (eOmeas_position_t) S_32(convertA2I(_limitsMax[logico], 0.0, _angleToEncoder[logico]));
         jconfig.userlimits.min = (eOmeas_position_t) S_32(convertA2I(_limitsMin[logico], 0.0, _angleToEncoder[logico]));
 
+        yError() << "Limiti di " << res->getIPv4string() << "j " << logico << ":MAx" << _limitsMax[logico] << "("<< jconfig.userlimits.max << ")";
+        yError() << "Limiti di " << res->getIPv4string() << "j " << logico << ":min" << _limitsMin[logico] << "("<< jconfig.userlimits.min << ")";
+
         jconfig.hardwarelimits.max = (eOmeas_position_t) S_32(convertA2I(_hwLimitsMax[logico], 0.0, _angleToEncoder[logico]));
         jconfig.hardwarelimits.min = (eOmeas_position_t) S_32(convertA2I(_hwLimitsMin[logico], 0.0, _angleToEncoder[logico]));
 
