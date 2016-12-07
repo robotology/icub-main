@@ -1310,7 +1310,6 @@ bool ServiceParser::parse_actuator_port(ConstString const &fromstring, eObrd_eth
             // read it as a CAN address
             eObrd_location_t loc;
             bool result = convert(fromstring, loc, formaterror);
-            yError() << " convert strin of port for mc4 or foc actuator";
 
             if(false == result)
             {
@@ -2278,7 +2277,6 @@ bool ServiceParser::check_motion(Searchable &config)
                 return false;
             }
 
-            yError() << "Actuator type = " << act.type << " for j " << i;
             if((eomn_serv_MC_mc4 == mc_service.type) && (eomc_act_mc4 != act.type))
             {
                 yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.actuator.type should be mc4 with mc service of type eomn_serv_MC_mc4. Error in item" << i;
