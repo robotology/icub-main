@@ -82,6 +82,11 @@ bool EthBoard::isInMaintenance()
     return _info2.maintenanceIsActive;
 }
 
+bool EthBoard::isInApplication()
+{
+   return !_info2.maintenanceIsActive;
+}
+
 void EthBoard::setMoreInfo(string &moreinfo)
 {
     _info2.moreinfostring = moreinfo;
@@ -118,7 +123,8 @@ string EthBoard::getVersionfRunning(void)
     }
     else
     {
-        snprintf(tmp, sizeof(tmp), "%d.%d", _info2.processes.info[_info2.processes.runningnow].version.major, _info2.processes.info[_info2.processes.runningnow].version.minor);
+        uint8_t index = eouprot_process2index((eOuprot_process_t)_info2.processes.runningnow);
+        snprintf(tmp, sizeof(tmp), "%d.%d", _info2.processes.info[index].version.major, _info2.processes.info[index].version.minor);
         ret = tmp;
     }
     return ret;
@@ -134,7 +140,8 @@ string EthBoard::getDatefRunning(void)
     else
     {
         char tmp[32];
-        eo_common_date_to_string(_info2.processes.info[_info2.processes.runningnow].date, tmp, sizeof(tmp));
+        uint8_t index = eouprot_process2index((eOuprot_process_t)_info2.processes.runningnow);
+        eo_common_date_to_string(_info2.processes.info[index].date, tmp, sizeof(tmp));
         ret = tmp;
     }
     return ret;
@@ -150,7 +157,8 @@ string EthBoard::getCompilationDateOfRunning(void)
     else
     {
         char tmp[32];
-        eo_common_date_to_string(_info2.processes.info[_info2.processes.runningnow].compilationdate, tmp, sizeof(tmp));
+        uint8_t index = eouprot_process2index((eOuprot_process_t)_info2.processes.runningnow);
+        eo_common_date_to_string(_info2.processes.info[index].compilationdate, tmp, sizeof(tmp));
         ret = tmp;
     }
     return ret;
@@ -158,6 +166,11 @@ string EthBoard::getCompilationDateOfRunning(void)
 
 
 // -- class EthBoardList
+#if defined(WIN32)
+#else
+const eOipv4addr_t EthBoardList::ipv4all = EO_COMMON_IPV4ADDR(255, 255, 255, 255);
+const eOipv4addr_t EthBoardList::ipv4selected = EO_COMMON_IPV4ADDR(0, 0, 0, 0);
+#endif
 
 EthBoardList::EthBoardList()
 {
@@ -225,10 +238,22 @@ int EthBoardList::add(boardInfo2_t &info2, eOipv4addr_t ipv4, bool force)
 
 int EthBoardList::rem(eOipv4addr_t ipv4)
 {
+    if(ipv4all == ipv4)
+    {
+        return clear();
+    }
+
     // look for the same ipv4
     for(int i=0; i<theboards.size(); i++)
     {
-        if(ipv4 == theboards[i].getIPV4())
+        if(ipv4selected == ipv4)
+        {   // if selected
+            if(true == theboards[i].isSelected())
+            {
+                theboards.erase(theboards.begin()+i);
+            }
+        }
+        else if(ipv4 == theboards[i].getIPV4())
         {
             theboards.erase(theboards.begin()+i);
         }
@@ -253,10 +278,15 @@ int EthBoardList::size()
 
 int EthBoardList::numberof(eOipv4addr_t ipv4)
 {
+    if(ipv4all == ipv4)
+    {
+        return theboards.size();
+    }
+
     int number = 0;
     for(int i=0; i<theboards.size(); i++)
     {
-        if(0 == ipv4)
+        if(ipv4selected == ipv4)
         {   // all the selected
             if(true == theboards[i].isSelected())
             {
@@ -286,15 +316,19 @@ vector<EthBoard *> EthBoardList::get(eOipv4addr_t ipv4)
     {
         getit = false;
 
-        if(0 == ipv4)
+        if(EthBoardList::ipv4all == ipv4)
+        {   // all boards
+            getit = true;
+        }
+        else if(EthBoardList::ipv4selected == ipv4)
         {   // all the selected
             if(true == theboards[i].isSelected())
             {
-                getit =  true;
+                getit = true;
             }
         }
         else
-        {
+        {   // equal ipv4
             if(ipv4 == theboards[i].getIPV4())
             {
                 getit = true;
@@ -315,7 +349,7 @@ void EthBoardList::select(bool on, eOipv4addr_t ipv4)
     // look for the same ipv4
     for(int i=0; i<theboards.size(); i++)
     {
-        if(0 == ipv4)
+        if(EthBoardList::ipv4all == ipv4)
         {
             theboards[i].setSelected(on);
         }

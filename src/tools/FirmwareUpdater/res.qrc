@@ -1,0 +1,6 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/restart-needed.png</file>
+        <file>images/remove-icon-md.png</file>
+    </qresource>
+</RCC>

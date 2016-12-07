@@ -103,6 +103,8 @@ public:
 
     bool isInMaintenance();
 
+    bool isInApplication();
+
     void setMoreInfo(string &moreinfo);
 
     const string getMoreInfo(void);
@@ -125,6 +127,16 @@ class EthBoardList
 {
 public:
     vector<EthBoard> theboards;
+
+#if defined(WIN32)
+    enum {
+        ipv4selected = EO_COMMON_IPV4ADDR(0, 0, 0, 0),
+        ipv4all = EO_COMMON_IPV4ADDR(255, 255, 255, 255)
+    };
+#else
+    static const eOipv4addr_t ipv4all;
+    static const eOipv4addr_t ipv4selected;
+#endif
 
 public:
     EthBoardList();
@@ -151,7 +163,8 @@ public:
     int numberof(eOipv4addr_t ipv4);
 
     // retrieve a vector of pointers with a given ip address. if ipv4 is 0, then it retrieves all the selected
-    // we have a vector of pointer so that we can modify the boards (but dont delete them, use rem() or clear() instead).
+    // if 0xffffffff we retrieve them all
+    // we have a vector of pointer so that we can modify the boards (but dont delete them, use rem() or clear() instead).    
     vector<EthBoard *> get(eOipv4addr_t ipv4);
 
     EthBoard& operator[](int i);
