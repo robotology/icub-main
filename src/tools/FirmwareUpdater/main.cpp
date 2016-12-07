@@ -23,8 +23,8 @@ void removeApplicationLock();
 void printCanDevices(QList<sBoard> canBoards);
 int printSecondLevelDevices(FirmwareUpdaterCore*,QString device,QString id);
 int printThirdLevelDevices(FirmwareUpdaterCore*,QString device,QString id,QString board, bool forceMaintenance, bool forceApplication);
-int programSecondLevelDevice(FirmwareUpdaterCore*,QString device,QString id,QString board,QString file);
-int programThirdLevelDevice(FirmwareUpdaterCore*, QString device, QString id, QString board, QString canLine, QString canId, QString file, bool eraseEEprom);
+int programEthDevice(FirmwareUpdaterCore*,QString device,QString id,QString board,QString file);
+int programCanDevice(FirmwareUpdaterCore*, QString device, QString id, QString board, QString canLine, QString canId, QString file, bool eraseEEprom);
 int setBoardToApplication(FirmwareUpdaterCore *core,QString device,QString id,QString board);
 int setBoardToMaintenance(FirmwareUpdaterCore *core,QString device,QString id,QString board);
 int eraseEthEEprom(FirmwareUpdaterCore *core,QString device,QString id,QString board);
@@ -173,7 +173,7 @@ int main(int argc, char *argv[])
             }else if(file.isEmpty()){
                 qDebug() << "Need a file path to be set";
             }else if(canLine.isEmpty() && canId.isEmpty()){
-                ret = programSecondLevelDevice(&core,device,id,board,file);
+                ret = programEthDevice(&core,device,id,board,file);
                 if(eraseEEprom && ret == 0){
                     ret = eraseEthEEprom(&core,device,id,board);
                 }
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
                 } else if(canId.isEmpty()){
                     qDebug() << "Need a can id to be set";
                 }else{
-                    ret = programThirdLevelDevice(&core,device,id,board,canLine,canId,file,eraseEEprom);
+                    ret = programCanDevice(&core,device,id,board,canLine,canId,file,eraseEEprom);
                 }
             }
         }else if(forceApplication || forceMaintenance){
@@ -257,7 +257,7 @@ int setBoardToMaintenance(FirmwareUpdaterCore *core,QString device,QString id,QS
 }
 
 
-int programThirdLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file,bool eraseEEprom)
+int programCanDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString canLine,QString canId,QString file,bool eraseEEprom)
 {
     QString retString;
     if(device.contains("ETH")){
@@ -316,7 +316,7 @@ int programThirdLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,
             }
             if(selectedCount > 0){
                 core->setSelectedCanBoards(canBoards,device,id.toInt());
-                bool ret = core->uploadCanApplication(file,&retString,board);
+                bool ret = core->uploadCanApplication(file,&retString,board,id.toInt());
                 qDebug() << retString;
                 return ret ? 0 : -1;
             }else{
@@ -332,7 +332,7 @@ int programThirdLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,
 }
 
 
-int programSecondLevelDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString file)
+int programEthDevice(FirmwareUpdaterCore *core,QString device,QString id,QString board,QString file)
 {
     int boards = core->connectTo(device,id);
     if(boards > 0){
