@@ -928,14 +928,12 @@ bool iCubSimulationControl::checkMotionDoneRaw (bool *ret)
     _mutex.wait();
     bool fin = true;
     for(int axis = 0;axis<njoints;axis++)
-        {
-            if(! (fabs( current_jnt_pos[axis]-next_pos[axis])<error_tol[axis]))
-                {
-                    fin = false;
-                    // yDebug("axes %d unfinished\n");
-                }
-        }
-    //if(fin)
+    {
+        if(! (fabs( current_jnt_pos[axis]-next_pos[axis])<error_tol[axis]))
+            {
+                fin = false;
+            }
+    }
     if (verbosity)
         yDebug("motion finished error tol %f %f %f\n",error_tol[0],current_jnt_pos[0],next_pos[0]);
     *ret = fin;
@@ -1160,10 +1158,14 @@ bool iCubSimulationControl::relativeMoveRaw(int nj, const int * jnts, const doub
 bool iCubSimulationControl::checkMotionDoneRaw(int nj, const int * jnts, bool *done)
 {
     bool ret = true;
+    bool jDone(true), tmpDone(true);
+
     for (int i = 0; i<nj; i++)
     {
-        ret &= checkMotionDoneRaw(jnts[i], &done[i]);
+        ret &= checkMotionDoneRaw(jnts[i], &jDone);
+        tmpDone &= jDone;
     }
+    *done = tmpDone;
     return ret;
 }
 
