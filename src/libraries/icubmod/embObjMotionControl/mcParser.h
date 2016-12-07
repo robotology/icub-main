@@ -146,6 +146,17 @@ public:
     std::string usernamePidSelected;
     bool enabled;
 
+    eomcParser_pidInfo()//:usernamePidSelected("none")
+    {
+        enabled = false;
+        controlLaw = PidAlgo_simple;
+        ctrlUnitsType = controlUnits_machine;
+    }
+    ~eomcParser_pidInfo()
+    {
+        //delete (usernamePidSelected);
+    }
+
     void dumpdata(void);
 
 };

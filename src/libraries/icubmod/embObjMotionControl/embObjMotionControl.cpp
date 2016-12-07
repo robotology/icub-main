@@ -445,10 +445,10 @@ bool embObjMotionControl::alloc(int nj)
     _rotorlimits_max = allocAndCheck<double>(nj);
     _rotorlimits_min = allocAndCheck<double>(nj);
 
-    _ppids=allocAndCheck<eomcParser_pidInfo>(nj);
-    _vpids=allocAndCheck<eomcParser_pidInfo>(nj);
-    _tpids=allocAndCheck<eomcParser_trqPidInfo>(nj);
-    _cpids = allocAndCheck<eomcParser_pidInfo>(nj);
+    _ppids= new eomcParser_pidInfo[nj];
+    _vpids= new eomcParser_pidInfo[nj];
+    _tpids= new eomcParser_trqPidInfo [nj];
+    _cpids= new eomcParser_pidInfo[nj];
 
     _impedance_params=allocAndCheck<ImpedanceParameters>(nj);
     _impedance_limits=allocAndCheck<ImpedanceLimits>(nj);
