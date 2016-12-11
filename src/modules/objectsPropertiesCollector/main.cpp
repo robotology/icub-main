@@ -1456,33 +1456,26 @@ public:
 /************************************************************************/
 class RpcProcessor : public PortReader
 {
-protected:    
+protected:
     DataBase *pDataBase;
-    Mutex mutex;
-    bool enabled;
-
     unsigned int nCalls;
-    double cumTime;    
+    double cumTime;
 
     /************************************************************************/
     bool read(ConnectionReader &connection)
     {
-        LockGuard lg(mutex);
         Bottle command;
         if (!command.read(connection) || (pDataBase==NULL))
             return false;
 
-        if (enabled)
-        {
-            Bottle reply;
-            double t0=Time::now();
-            pDataBase->respond(connection,command,reply);
-            cumTime+=Time::now()-t0;
-            nCalls++;
+        Bottle reply;
+        double t0=Time::now();
+        pDataBase->respond(connection,command,reply);
+        cumTime+=Time::now()-t0;
+        nCalls++;
 
-            if (ConnectionWriter *writer=connection.getWriter())
-                reply.write(*writer);
-        }
+        if (ConnectionWriter *writer=connection.getWriter())
+            reply.write(*writer);
 
         return true;
     }
@@ -1492,7 +1485,6 @@ public:
     RpcProcessor()
     {
         pDataBase=NULL;
-        enabled=true;
         nCalls=0;
         cumTime=0.0;
     }
@@ -1508,13 +1500,6 @@ public:
     {
         nCalls=this->nCalls;
         cumTime=this->cumTime;
-    }
-
-    /************************************************************************/
-    void disable()
-    {
-        LockGuard lg(mutex);
-        enabled=false;
     }
 };
 
@@ -1589,7 +1574,6 @@ public:
     /************************************************************************/
     bool close()
     {
-        rpcProcessor.disable();
         modifyPort.disableCallback();
         dataBase.stop();
 
