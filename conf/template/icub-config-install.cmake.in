@@ -21,8 +21,13 @@ set(ICUB_APPLICATIONS_TEMPLATES_INSTALL_DIR "@ICUB_APPLICATIONS_TEMPLATES_INSTAL
 set(ICUB_MODULES_TEMPLATES_INSTALL_DIR "@ICUB_MODULES_TEMPLATES_INSTALL_DIR@")
 set(ICUB_CONTEXTS_INSTALL_DIR "@ICUB_CONTEXTS_INSTALL_DIR@")
 
+# Remove the old file if it exists. This is a temporary fix 
+if(EXISTS "@CMAKE_INSTALL_PREFIX@/lib/ICUB/icub-export-install-includes.cmake")
+  file(REMOVE "@CMAKE_INSTALL_PREFIX@/lib/ICUB/icub-export-install-includes.cmake")
+endif()
+
 include("@CMAKE_INSTALL_PREFIX@/lib/ICUB/icub-export-install.cmake")
-include("@CMAKE_INSTALL_PREFIX@/lib/ICUB/icub-export-install-includes.cmake")
+include("@CMAKE_INSTALL_PREFIX@/lib/ICUB/icub-export-inst-includes.cmake")
 
 # This is not ideal and should be removed. At the moment
 # only needed by OpenCV
