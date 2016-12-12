@@ -8,6 +8,8 @@
 
 #include "firmwareupdatercore.h"
 
+#define UPDATER_RELEASE
+
 #ifdef Q_OS_WIN
 #include <Windows.h>
 #endif
