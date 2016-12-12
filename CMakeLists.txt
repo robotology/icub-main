@@ -112,11 +112,11 @@ mark_as_advanced(LIBRARY_OUTPUT_PATH EXECUTABLE_OUTPUT_PATH)
 mark_as_advanced(CMAKE_BACKWARDS_COMPATIBILITY)
 
 # clean up:
-# icub-export-build.cmake, icub-export-build-includes.cmake and icub-export-install-includes.cmake
+# icub-export-build.cmake, icub-export-build-includes.cmake and icub-export-inst-includes.cmake
 # this is a required step because we will append data to these files during the build
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build.cmake "")
 file(WRITE ${CMAKE_BINARY_DIR}/icub-export-build-includes.cmake "")
-file(WRITE ${CMAKE_BINARY_DIR}/icub-export-install-includes.cmake "")
+file(WRITE ${CMAKE_BINARY_DIR}/icub-export-inst-includes.cmake "")
 
 # Some options: mostly cache variables
 file(TO_CMAKE_PATH "$ENV{ICUB_ROOT}" env_icub_root)
