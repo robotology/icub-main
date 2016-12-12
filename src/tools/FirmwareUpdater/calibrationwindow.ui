@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1140</width>
-    <height>774</height>
+    <width>1169</width>
+    <height>787</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -156,7 +156,7 @@
             </row>
             <column>
              <property name="text">
-              <string>Value</string>
+              <string>S.G.</string>
              </property>
             </column>
            </widget>
@@ -283,32 +283,32 @@
               </attribute>
               <row>
                <property name="text">
-                <string>Ch: 0</string>
+                <string>Fx</string>
                </property>
               </row>
               <row>
                <property name="text">
-                <string>Ch: 1</string>
+                <string>Fy</string>
                </property>
               </row>
               <row>
                <property name="text">
-                <string>Ch: 2</string>
+                <string>Fz</string>
                </property>
               </row>
               <row>
                <property name="text">
-                <string>Ch: 3</string>
+                <string>Mx</string>
                </property>
               </row>
               <row>
                <property name="text">
-                <string>Ch: 4</string>
+                <string>My</string>
                </property>
               </row>
               <row>
                <property name="text">
-                <string>Ch: 5</string>
+                <string>Mz</string>
                </property>
               </row>
               <column>
@@ -328,7 +328,7 @@
               </column>
               <column>
                <property name="text">
-                <string>Newton</string>
+                <string>Calib Measure</string>
                </property>
               </column>
              </widget>
@@ -439,7 +439,7 @@
                    <x>10</x>
                    <y>209</y>
                    <width>182</width>
-                   <height>27</height>
+                   <height>29</height>
                   </rect>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -578,7 +578,7 @@
                    <x>10</x>
                    <y>210</y>
                    <width>181</width>
-                   <height>25</height>
+                   <height>29</height>
                   </rect>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -779,7 +779,7 @@
                    <x>10</x>
                    <y>210</y>
                    <width>181</width>
-                   <height>25</height>
+                   <height>29</height>
                   </rect>
                  </property>
                  <layout class="QHBoxLayout" name="horizontalLayout_5">
@@ -987,14 +987,14 @@
                <item>
                 <widget class="QPushButton" name="btnSetCalibration">
                  <property name="text">
-                  <string>Set Calibration</string>
+                  <string>Send Matrix</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QPushButton" name="btnResetCalib">
                  <property name="text">
-                  <string>Reset Calibration</string>
+                  <string>Load Identity Matrix</string>
                  </property>
                 </widget>
                </item>
@@ -1270,8 +1270,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1140</width>
-     <height>20</height>
+     <width>1169</width>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">

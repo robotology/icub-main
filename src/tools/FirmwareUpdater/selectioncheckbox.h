@@ -17,16 +17,23 @@
 #define CAN_UPLOAD_APP          Qt::UserRole + 7
 #define CAN_UPLOAD_UPDATER      Qt::UserRole + 8
 #define CAN_JUMP_UPDATER        Qt::UserRole + 9
-#define CAN_ERASE_EEPROM        Qt::UserRole + 10
+//#define CAN_ERASE_EEPROM        Qt::UserRole + 10
 
 
-#define DEVICE          1
-#define ID              2
+//#define DEVICE          1
+//#define ID              2
+//#define ADDRESS         3
+//#define PROCESS         4
+//#define VERSION         5
+//#define ERASE_EEPROM    6
+//#define INFO            7
+
+#define DEVICEID        1
+#define BOARDT          2
 #define ADDRESS         3
 #define PROCESS         4
 #define VERSION         5
-#define ERASE_EEPROM    6
-#define INFO            7
+#define INFO            6
 
 
 class SelectionCheckBox : public QCheckBox

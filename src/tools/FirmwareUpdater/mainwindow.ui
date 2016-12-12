@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>857</width>
+    <width>1000</width>
     <height>630</height>
    </rect>
   </property>
@@ -36,7 +36,7 @@
        </column>
        <column>
         <property name="text">
-         <string>Id</string>
+         <string>Board</string>
         </property>
        </column>
        <column>
@@ -56,11 +56,6 @@
        </column>
        <column>
         <property name="text">
-         <string>Erase Eeprom</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
          <string>Info</string>
         </property>
        </column>
@@ -70,7 +65,7 @@
         <item>
          <widget class="QGroupBox" name="groupBox_2">
           <property name="title">
-           <string>Info</string>
+           <string>Board Properties</string>
           </property>
           <layout class="QVBoxLayout" name="verticalLayout">
            <item>
@@ -92,36 +87,6 @@
            <string>Controls</string>
           </property>
           <layout class="QGridLayout" name="gridLayout">
-           <item row="0" column="0">
-            <widget class="QPushButton" name="connectButton">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Discover</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="0">
-            <widget class="QPushButton" name="btnGoToMaintenance">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Go To Maintenance</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="2">
-            <widget class="QPushButton" name="btnGoToApplication">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Go To Application</string>
-             </property>
-            </widget>
-           </item>
            <item row="2" column="0">
             <widget class="QPushButton" name="btnCahngeInfo">
              <property name="enabled">
@@ -129,6 +94,26 @@
              </property>
              <property name="text">
               <string>Change Info</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QPushButton" name="btnGoToApplication">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Force ETH Application</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="0">
+            <widget class="QPushButton" name="connectButton">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Discover</string>
              </property>
             </widget>
            </item>
@@ -142,6 +127,16 @@
              </property>
             </widget>
            </item>
+           <item row="0" column="2">
+            <widget class="QPushButton" name="btnGoToMaintenance">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Force ETH Maintenance</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </widget>
         </item>
@@ -151,77 +146,7 @@
            <string>Advanced Controls</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_2">
-           <item row="2" column="0">
-            <widget class="QPushButton" name="btnUploadUpdater">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Upload Updater</string>
-             </property>
-            </widget>
-           </item>
-           <item row="2" column="1">
-            <widget class="QPushButton" name="btnUploadLoader">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Upload Loader</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="0">
-            <widget class="QPushButton" name="btnBootApp">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Boot from Application</string>
-             </property>
-            </widget>
-           </item>
-           <item row="3" column="1">
-            <widget class="QPushButton" name="btnEraseEeprom">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Erase EEPROM</string>
-             </property>
-            </widget>
-           </item>
-           <item row="4" column="0">
-            <widget class="QPushButton" name="btnBootUpdater">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Boot From Updater</string>
-             </property>
-            </widget>
-           </item>
-           <item row="5" column="0">
-            <widget class="QPushButton" name="btnCalibrate">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Calibrate</string>
-             </property>
-            </widget>
-           </item>
            <item row="0" column="0">
-            <widget class="QPushButton" name="btnChangeCanAddr">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="text">
-              <string>Change CAN address</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
             <widget class="QPushButton" name="btnChangeIp">
              <property name="enabled">
               <bool>false</bool>
@@ -231,33 +156,116 @@
              </property>
             </widget>
            </item>
-           <item row="1" column="0">
+           <item row="4" column="0">
+            <widget class="QPushButton" name="btnBootApp">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Boot from eApplication</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="3">
+            <widget class="QPushButton" name="btnEraseEeprom">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Erase ETH EEPROM</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="2">
             <widget class="QPushButton" name="btnRestart">
              <property name="enabled">
               <bool>false</bool>
              </property>
              <property name="text">
-              <string>Restart Board(s)</string>
+              <string>Restart ETH Board(s)</string>
              </property>
             </widget>
            </item>
-           <item row="1" column="1">
+           <item row="1" column="0">
+            <widget class="QPushButton" name="btnUploadLoader">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Upload eLoader</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="3">
             <widget class="QPushButton" name="btnJumpUpdater">
              <property name="enabled">
               <bool>false</bool>
              </property>
              <property name="text">
-              <string>Jump to Updater</string>
+              <string>Jump to eUpdater</string>
              </property>
             </widget>
            </item>
-           <item row="4" column="1">
+           <item row="1" column="2">
+            <widget class="QPushButton" name="btnUploadUpdater">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Upload eUpdater</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="2">
+            <widget class="QPushButton" name="btnBootUpdater">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Boot From eUpdater</string>
+             </property>
+            </widget>
+           </item>
+           <item row="4" column="3">
             <widget class="QPushButton" name="btnBlink">
              <property name="enabled">
               <bool>false</bool>
              </property>
              <property name="text">
-              <string>Blink</string>
+              <string>Blink ETH Board</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="3">
+            <widget class="QCheckBox" name="checkBoxEE">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="toolTip">
+              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Allows the EEPROM erase of the CAN board during the upload of the application firmware (so far only for STRAIN)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+             <property name="text">
+              <string>Erase STRAIN EEPROM</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="2">
+            <widget class="QPushButton" name="btnCalibrate">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Calibrate STRAIN</string>
+             </property>
+            </widget>
+           </item>
+           <item row="6" column="0">
+            <widget class="QPushButton" name="btnChangeCanAddr">
+             <property name="enabled">
+              <bool>false</bool>
+             </property>
+             <property name="text">
+              <string>Change CAN address</string>
              </property>
             </widget>
            </item>
@@ -275,11 +283,12 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>857</width>
-     <height>20</height>
+     <width>1000</width>
+     <height>25</height>
     </rect>
    </property>
   </widget>
+  <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
     <enum>TopToolBarArea</enum>
@@ -287,8 +296,31 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
+   <addaction name="actionSel"/>
+   <addaction name="actionDes"/>
   </widget>
-  <widget class="QStatusBar" name="statusBar"/>
+  <action name="actionSel">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Sel</string>
+   </property>
+   <property name="toolTip">
+    <string>Complete Selection To All </string>
+   </property>
+  </action>
+  <action name="actionDes">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="text">
+    <string>Des</string>
+   </property>
+   <property name="toolTip">
+    <string>Deselect All</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

@@ -285,7 +285,7 @@ int programCanDevice(FirmwareUpdaterCore *core,QString device,QString id,QString
                         }
                         if(selectedCount > 0){
                             core->setSelectedCanBoards(canBoards,board);
-                            bool ret = core->uploadCanApplication(file,&retString,board);
+                            bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, board);
                             qDebug() << retString;
                             return ret ? 0 : -1;
                         }else{
@@ -316,7 +316,7 @@ int programCanDevice(FirmwareUpdaterCore *core,QString device,QString id,QString
             }
             if(selectedCount > 0){
                 core->setSelectedCanBoards(canBoards,device,id.toInt());
-                bool ret = core->uploadCanApplication(file,&retString,device,id.toInt());
+                bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, device, id.toInt());
                 qDebug() << retString;
                 return ret ? 0 : -1;
             }else{

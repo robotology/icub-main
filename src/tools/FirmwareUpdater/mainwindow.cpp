@@ -7,6 +7,7 @@
 #include <QtConcurrent/QtConcurrent>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QToolButton>
 
 
 MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *parent) :
@@ -19,6 +20,7 @@ MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *paren
     qRegisterMetaType <QVector<int> > ("QVector<int>");
     qRegisterMetaType <boardInfo2_t> ("boardInfo2_t");
     qRegisterMetaType <eOipv4addr_t> ("eOipv4addr_t");
+    qRegisterMetaType <sBoard> ("sBoard");
     isLoading = false;
     loadCounter = 0;
     calibDlg = NULL;
@@ -52,12 +54,26 @@ MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *paren
     infoTreeWidget = new QTreeWidget(ui->groupBox_2);
     infoTreeWidget->setVisible(false);
     ui->groupBox_2->layout()->addWidget(infoTreeWidget);
+    ui->groupBox_2->setTitle("Board Properties");
     infoTreeWidget->setColumnCount(2);
     infoTreeWidget->setHeaderLabels(QStringList() << "Name" << "Value");
     infoTreeWidget->addTopLevelItem(new QTreeWidgetItem(infoTreeWidget,QStringList() << "Board"));
     infoTreeWidget->addTopLevelItem(new QTreeWidgetItem(infoTreeWidget,QStringList() << "Bootstrap Processes"));
     infoTreeWidget->addTopLevelItem(new QTreeWidgetItem(infoTreeWidget,QStringList() << "Properties of the Processes"));
 
+
+    ui->checkBoxEE->setCheckState(Qt::Unchecked); //(Qt::Checked); Qt::Unchecked
+    ui->checkBoxEE->setEnabled(false);
+    //Qt::CheckState eestate = ui->checkBoxEE->checkState();
+
+
+    ui->actionSel->setIcon(QIcon(":/images/sel-bw.png"));
+    ui->actionDes->setIcon(QIcon(":/images/des-bw.png"));
+
+    //ui->actionSel->setText("SS");
+
+    connect(ui->actionSel, SIGNAL(triggered()), this, SLOT(onSel()));
+    connect(ui->actionDes, SIGNAL(triggered()), this, SLOT(onDes()));
 
 
     this->core = core;
@@ -68,13 +84,15 @@ MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *paren
     for(int i=0;i<devices.count();i++){
         int type = devices.at(i).first.contains("ETH") ? ETH_TREE_ROOT_NODE : CAN_TREE_ROOT_NODE;
 
-        CustomTreeWidgetItem *item = new CustomTreeWidgetItem(NULL,QStringList() << "" << devices.at(i).first << devices.at(i).second.toString(),-1,core,type);
+        QString dev = devices.at(i).first + "<" + devices.at(i).second.toString() + ">";
+        //CustomTreeWidgetItem *item = new CustomTreeWidgetItem(NULL,QStringList() << "" << devices.at(i).first << devices.at(i).second.toString(),-1,core,type);
+        CustomTreeWidgetItem *item = new CustomTreeWidgetItem(NULL,QStringList() << "" << dev << "",-1,core,type);
         ui->devicesTree->addTopLevelItem(item);
 
         QTreeWidgetItem *empty = new QTreeWidgetItem(item,QStringList() << "" << "?");
         empty->setData(0,EMPTY_NODE,true);
 
-        item->setTextColor(DEVICE,QColor(Qt::red));
+        item->setTextColor(DEVICEID,QColor(Qt::red));
     }
 
     if(!adminMode){
@@ -98,6 +116,10 @@ MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *paren
 
     connect(ui->connectButton,SIGNAL(clicked(bool)),
             this,SLOT(onConnect()));
+
+    connect(this,SIGNAL(appendInfo(sBoard)),
+            this,SLOT(onAppendInfo(sBoard)),Qt::QueuedConnection);
+
 
     connect(this,SIGNAL(appendInfo(QString)),
             this,SLOT(onAppendInfo(QString)),Qt::QueuedConnection);
@@ -146,6 +168,168 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+void MainWindow::onSel(void)
+{
+
+    if(selectedNodes.isEmpty())
+    {
+        return;
+    }
+
+#if 0
+    test che mette tutti a sel
+    for(int i=0;i<ui->devicesTree->topLevelItemCount();i++){
+        QTreeWidgetItem *topLevel = ui->devicesTree->topLevelItem(i);
+        for(int j=0;j<topLevel->childCount();j++){
+
+            QTreeWidgetItem *widgItem = topLevel->child(j);
+
+            if((widgItem->type() != ETH_TREE_ROOT_NODE)  && (widgItem->type() != CAN_TREE_ROOT_NODE) && (widgItem->type() != QTreeWidgetItem::Type))
+            {
+                CustomTreeWidgetItem *child = (CustomTreeWidgetItem *)widgItem;
+                if(!child->isCheckSelected()){
+                    if(child->type() == ETH_TREE_NODE){
+                        child->setCheckSelected(true);
+                        printf("sel-eth\n");
+                    }
+                    if(child->type() == CAN_TREE_NODE)
+                    {
+                        child->setCheckSelected(true);
+                        printf("sel-can\n");
+                    }
+                }
+            }
+        }
+    }
+#else
+
+    CustomTreeWidgetItem *c = selectedNodes.first();
+
+    QString targetboard = c->getBoardType();
+
+    if(true){
+
+        for(int i=0;i<ui->devicesTree->topLevelItemCount();i++){
+            QTreeWidgetItem *topLevel = ui->devicesTree->topLevelItem(i);
+            int mmm = topLevel->childCount();
+            for(int j=0;j<topLevel->childCount();j++){
+
+                QTreeWidgetItem *widgItem = topLevel->child(j);
+                if(widgItem->type() != QTreeWidgetItem::Type){
+                    CustomTreeWidgetItem *child = (CustomTreeWidgetItem*)widgItem;
+                    QString brd = child->getBoardType();
+                    if(child->checkIsEnabled()){
+                        if((child->getBoardType() == c->getBoardType()) && (c->getParentNode() == child->getParentNode())){
+                            child->setCheckSelected(true);
+                        }
+                    }
+
+                    int nnn = topLevel->child(j)->childCount();
+                    for(int k=0; k<topLevel->child(j)->childCount();k++ ){
+                        QTreeWidgetItem *widgItem1 = topLevel->child(j)->child(k);
+                        if(widgItem1->type() != QTreeWidgetItem::Type){
+                            CustomTreeWidgetItem *child1 = (CustomTreeWidgetItem*)widgItem1;
+
+                            if(child1->checkIsEnabled()){
+                                if((child1->getBoardType() == c->getBoardType()) && (c->getParentNode() == child1->getParentNode())){
+                                    child1->setCheckSelected(true);
+                                }
+                            }
+                        }
+
+                    }
+                }
+
+
+
+
+            }
+
+        }
+    }
+
+
+
+#endif
+
+//    int size = selectedNodes.size();
+//    for(int i=0;i<size;i++){
+
+//                CustomTreeWidgetItem *child = selectedNodes[i];
+//                if(child->isCheckSelected()){
+//                    if(child->type() == ETH_TREE_NODE){
+//                        child->setCheckSelected(false);
+//                        printf("des-eth\n");
+//                    }
+//                    if(child->type() == CAN_TREE_NODE)
+//                    {
+//                        child->setCheckSelected(false);
+//                        printf("des-can\n");
+//                    }
+//                }
+//    }
+
+    checkEnableButtons();
+}
+
+
+void MainWindow::onDes(void)
+{
+
+    if(selectedNodes.isEmpty())
+    {
+        return;
+    }
+
+//    for(int i=0;i<ui->devicesTree->topLevelItemCount();i++){
+//        QTreeWidgetItem *topLevel = ui->devicesTree->topLevelItem(i);
+//        for(int j=0;j<topLevel->childCount();j++){
+
+//            QTreeWidgetItem *widgItem = topLevel->child(j);
+//            if(selectedNodes.first()->type() != widgItem->type())
+//            {
+//                continue;
+//            }
+
+//            if((widgItem->type() != ETH_TREE_ROOT_NODE)  && (widgItem->type() != CAN_TREE_ROOT_NODE) && (widgItem->type() != QTreeWidgetItem::Type))
+//            {
+//                CustomTreeWidgetItem *child = (CustomTreeWidgetItem *)widgItem;
+//                if(child->isCheckSelected()){
+//                    if(child->type() == ETH_TREE_NODE){
+//                        child->setCheckSelected(false);
+//                        printf("des-eth\n");
+//                    }
+//                    if(child->type() == CAN_TREE_NODE)
+//                    {
+//                        child->setCheckSelected(false);
+//                        printf("des-can\n");
+//                    }
+//                }
+//            }
+//        }
+//    }
+
+    int size = selectedNodes.size();
+    for(int i=0;i<size;i++){
+
+                CustomTreeWidgetItem *child = selectedNodes[i];
+                if(child->isCheckSelected()){
+                    if(child->type() == ETH_TREE_NODE){
+                        child->setCheckSelected(false);
+                        printf("des-eth\n");
+                    }
+                    if(child->type() == CAN_TREE_NODE)
+                    {
+                        child->setCheckSelected(false);
+                        printf("des-can\n");
+                    }
+                }
+    }
+
+    checkEnableButtons();
+
+}
+
 void MainWindow::onUploadLoader(bool click)
 {
     QString filename = QFileDialog::getOpenFileName(this,"Choose File",QDir::home().absolutePath());
@@ -187,8 +371,12 @@ void MainWindow::onUploadApplication(bool click)
                 CustomTreeWidgetItem *parentNode = (CustomTreeWidgetItem*)selectedNodes.first()->getParentNode();
                 QtConcurrent::run(this,&MainWindow::uploadCanApplication,filename,address,-1,parentNode);
             }else if(selectedNodes.first()->getParentNode()->type() == CAN_TREE_ROOT_NODE){
-                QString driver = selectedNodes.first()->getParentNode()->text(DEVICE);
-                int deviceId = selectedNodes.first()->getParentNode()->text(ID).toInt();
+//                QString driver = selectedNodes.first()->getParentNode()->text(DEVICE);
+//                int deviceId = selectedNodes.first()->getParentNode()->text(ID).toInt();
+                QString driver;
+                QString deviceIdstr;
+                getDeviceID(selectedNodes.first()->getParentNode(), deviceIdstr, driver);
+                int deviceId = deviceIdstr.toInt();
                 CustomTreeWidgetItem *parentNode = (CustomTreeWidgetItem*)selectedNodes.first()->getParentNode();
                 QtConcurrent::run(this,&MainWindow::uploadCanApplication,filename,driver,deviceId,parentNode);
             }
@@ -244,13 +432,20 @@ void MainWindow::uploadEthApplication(QString filename)
 
 void MainWindow::uploadCanApplication(QString filename,QString address,int deviceId,CustomTreeWidgetItem *node)
 {
+    bool bEraseEEPROM = false;
+    if(ui->checkBoxEE->isEnabled())
+    {
+        Qt::CheckState eestate = ui->checkBoxEE->checkState();
+        bEraseEEPROM = (Qt::Checked == eestate) ? true : false;
+    }
+
     needLoading(true,true,"",false);
     QString result;
     if(node){
         core->setSelectedCanBoards(node->getCanBoards(),address,deviceId);
     }
     QList <sBoard> resultCanBoards;
-    core->uploadCanApplication(filename,&result,address,deviceId,&resultCanBoards);
+    core->uploadCanApplication(filename, &result, bEraseEEPROM, address, deviceId, &resultCanBoards);
     needLoading(false,false,"",false);
     needLoading(true,true);
     node->setCanBoards(resultCanBoards);
@@ -274,7 +469,11 @@ void MainWindow::onNeedSetRestartOnSelected()
 void MainWindow::onBootApplication(bool click)
 {
     core->bootFromApplication();
-    if(ui->devicesTree->currentItem()->data(0,DEVICE_LEVEL).toInt() == 2 && ui->devicesTree->currentItem()->parent()->text(DEVICE) == "ETH"){
+    QString devicestr;
+    QString idstr;
+    getDeviceID(ui->devicesTree->currentItem()->parent()->text(DEVICEID), idstr, devicestr);
+    if(ui->devicesTree->currentItem()->data(0,DEVICE_LEVEL).toInt() == 2 && devicestr == "ETH"){
+//    if(ui->devicesTree->currentItem()->data(0,DEVICE_LEVEL).toInt() == 2 && ui->devicesTree->currentItem()->parent()->text(DEVICE) == "ETH"){
         QtConcurrent::run(this,&MainWindow::populateInfo,ui->devicesTree->currentItem()->data(0,INDEX_OF_BOARD).toInt());
     }
 
@@ -283,7 +482,11 @@ void MainWindow::onBootApplication(bool click)
 void MainWindow::onBootUpdater(bool click)
 {
     core->bootFromUpdater();
-    if(ui->devicesTree->currentItem()->data(0,DEVICE_LEVEL).toInt() == 2 && ui->devicesTree->currentItem()->parent()->text(DEVICE) == "ETH"){
+    QString devicestr;
+    QString idstr;
+    getDeviceID(ui->devicesTree->currentItem()->parent()->text(DEVICEID), idstr, devicestr);
+    if(ui->devicesTree->currentItem()->data(0,DEVICE_LEVEL).toInt() == 2 && devicestr == "ETH"){
+//    if(ui->devicesTree->currentItem()->data(0,DEVICE_LEVEL).toInt() == 2 && ui->devicesTree->currentItem()->parent()->text(DEVICE) == "ETH"){
         QtConcurrent::run(this,&MainWindow::populateInfo,ui->devicesTree->currentItem()->data(0,INDEX_OF_BOARD).toInt());
     }
 }
@@ -326,11 +529,11 @@ void MainWindow::onEraseEprom(bool click)
             QFuture<bool> future = QtConcurrent::run(core,&FirmwareUpdaterCore::eraseEthEprom);
             watcher.setFuture(future);
         } else if(selectedNodes.first()->type() == CAN_TREE_NODE){
-            CustomTreeWidgetItem *node = selectedNodes.first();
-            ((CanTreeWidgetItem*)node)->erasEeprom(!node->data(0,CAN_ERASE_EEPROM).toBool());
-            node->refresh();
+//            CustomTreeWidgetItem *node = selectedNodes.first();
+//            ((CanTreeWidgetItem*)node)->erasEeprom(!node->data(0,CAN_ERASE_EEPROM).toBool());
+//            node->refresh();
 
-            checkSelection(true,node);
+//            checkSelection(true,node);
         }
     }
 }
@@ -354,6 +557,58 @@ void MainWindow::onBlinkPressed(bool click)
     core->blinkEthBoards();
 }
 
+bool MainWindow::getDeviceID(QTreeWidgetItem *child, QString &idstr, QString &devicestr)
+{
+    QString tmp = child->text(DEVICEID);
+    QByteArray ba = tmp.toLatin1();
+    const char *c_str2 = ba.data();
+#if 0
+    char device_cstr[64] = {0};
+    char id_cstr[64] = {0};
+    sscanf(c_str2, "%s %s", device_cstr, id_cstr);
+    devicestr = device_cstr;
+    idstr = id_cstr;
+#else
+    string ttmp = string(c_str2);
+    std::size_t ff = ttmp.find("<");
+    std::size_t ll = ttmp.find(">");
+    string t1;
+    t1.assign(ttmp, 0, ff);
+    string t2;
+    t2.assign(ttmp, ff+1, ll-ff-1);
+    devicestr = t1.c_str();
+    idstr = t2.c_str();
+#endif
+
+    return true;
+}
+
+bool MainWindow::getDeviceID(QString devicefullstring, QString &idstr, QString &devicestr)
+{
+    QString tmp = devicefullstring;
+    QByteArray ba = tmp.toLatin1();
+    const char *c_str2 = ba.data();
+#if 0
+    char device_cstr[64] = {0};
+    char id_cstr[64] = {0};
+    sscanf(c_str2, "%s %s", device_cstr, id_cstr);
+    devicestr = device_cstr;
+    idstr = id_cstr;
+#else
+    string ttmp = string(c_str2);
+    std::size_t ff = ttmp.find("<");
+    std::size_t ll = ttmp.find(">");
+    string t1;
+    t1.assign(ttmp, 0, ff);
+    string t2;
+    t2.assign(ttmp, ff+1, ll-ff-1);
+    devicestr = t1.c_str();
+    idstr = t2.c_str();
+#endif
+    return true;
+}
+
+
 void MainWindow::onChangeAddress(bool click)
 {
     if(selectedNodes.count() != 1){
@@ -361,11 +616,15 @@ void MainWindow::onChangeAddress(bool click)
     }
     CustomTreeWidgetItem *child = selectedNodes.first();
 
+
+    int cbus = 0;
+    int cadr = 0;
     QString oldAddress;
     if(child->type() == ETH_TREE_NODE){
         oldAddress = core->getEthBoardAddress(child->getIndexOfBoard());
     } else if(child->type() == CAN_TREE_NODE){
-        oldAddress = child->text(ID);
+        QString canBus;
+        getCANaddress(child, cbus, cadr, canBus, oldAddress);
     }else{
         return;
     }
@@ -385,8 +644,6 @@ void MainWindow::onChangeAddress(bool click)
                 for(int i=0;i<child->childCount();i++){
                     child->child(i)->setDisabled(true);
                 }
-                int bus = child->text(ADDRESS).remove("CAN_").toInt();
-                int id  = child->text(ID).toInt();
                 int canType = child->data(0,CAN_TYPE).toInt();
                 CustomTreeWidgetItem *parentNode = (CustomTreeWidgetItem*)child->getParentNode();
 
@@ -397,8 +654,7 @@ void MainWindow::onChangeAddress(bool click)
                     addr.first = address;
 
                     QtConcurrent::run(this,&MainWindow::setCanBoardAddress,
-                                      QPair<int,int>(bus,
-                                      id),
+                                      QPair<int,int>(cbus, cadr),
                                       canType,
                                       addr,
                                       -1,
@@ -408,16 +664,19 @@ void MainWindow::onChangeAddress(bool click)
 
                 }else if(parentNode->type() == CAN_TREE_ROOT_NODE){
 
-                    QString driver = parentNode->text(DEVICE);
-                    int networkId = parentNode->text(ID).toInt();
+                    //QString driver = parentNode->text(DEVICE);
+                    //int networkId = parentNode->text(ID).toInt();
+                    QString driver;
+                    QString networkIdstr;
+                    getDeviceID(child->getParentNode(), networkIdstr, driver);
+                    int networkId = networkIdstr.toInt();
 
                     QPair <QString,QString> addr;
                     addr.second = dlg.getNewAddress();
                     addr.first = driver;
 
                     QtConcurrent::run(this,&MainWindow::setCanBoardAddress,
-                                      QPair<int,int>(bus,
-                                      id),
+                                      QPair<int,int>(cbus, cadr),
                                       canType,
                                       addr,
                                       networkId,
@@ -462,23 +721,31 @@ void MainWindow::onChangeInfo(bool click)
                     child->child(i)->setDisabled(true);
                 }
 
+                int cbus = 0;
+                int cadr = 0;
+                QString cbustring;
+                QString cadrstring;
+                getCANaddress(child, cbus, cadr, cbustring, cadrstring);
+
                 if(parentNode->type() == ETH_TREE_NODE){
                     QString address = parentNode->text(ADDRESS);
                     QtConcurrent::run(this,&MainWindow::setCanBoardInfo,
-                                      QPair<int,int>(child->text(ADDRESS).remove("CAN_").toInt(),
-                                      child->text(ID).toInt()),
+                                      QPair<int,int>(cbus, cadr),
                                       dlg.getNewInfo(),
                                       address,
                                       -1,
                                       parentNode);
 
                 } else if(parentNode->type() == CAN_TREE_ROOT_NODE){
-                    QString driver = child->getParentNode()->text(DEVICE);
-                    int networkId = child->getParentNode()->text(ID).toInt();
+                    //QString driver = child->getParentNode()->text(DEVICE);
+                    //int networkId = child->getParentNode()->text(ID).toInt();
+                    QString driver;
+                    QString networkIdstr;
+                    getDeviceID(child->getParentNode(), networkIdstr, driver);
+                    int networkId = networkIdstr.toInt();
 
                     QtConcurrent::run(this,&MainWindow::setCanBoardInfo,
-                                      QPair<int,int>(child->text(ADDRESS).remove("CAN_").toInt(),
-                                      child->text(ID).toInt()),
+                                      QPair<int,int>(cbus, cadr),
                                       dlg.getNewInfo(),
                                       driver,
                                       networkId,
@@ -571,9 +838,9 @@ void MainWindow::setEthBoardAddress(int index,QString address, QTreeWidgetItem *
 void MainWindow::setNodeRestartNeed(QTreeWidgetItem *refreshNode, bool need)
 {
     if(need){
-        refreshNode->setIcon(DEVICE,QIcon(":/images/restart-needed.png"));
+        refreshNode->setIcon(DEVICEID,QIcon(":/images/restart-needed.png"));
     }else{
-        refreshNode->setIcon(DEVICE,QIcon());
+        refreshNode->setIcon(DEVICEID,QIcon());
     }
 
     refreshNode->setData(0,REFRESH_NEED,need);
@@ -621,13 +888,32 @@ void MainWindow::onDeviceSelectionChanged()
         // If it is a child node
         if(ui->devicesTree->currentItem() && ui->devicesTree->currentItem()->parent()){
             appendInfo();
-            if(ui->devicesTree->currentItem()->parent()->text(DEVICE).contains("ETH")){
+            if(ui->devicesTree->currentItem()->parent()->text(DEVICEID).contains("ETH")){
                 for(int i=0; i < ui->devicesTree->currentItem()->parent()->childCount();i++){
                     if(ui->devicesTree->currentItem()->parent()->child(i)->isSelected() &&
                             ui->devicesTree->currentItem()->parent()->child(i)->data(0,EMPTY_NODE).toBool() == false){
                         int boardNum =  ui->devicesTree->currentItem()->parent()->child(i)->data(0,INDEX_OF_BOARD).toInt();
 
                         QtConcurrent::run(this,&MainWindow::populateInfo,boardNum);
+                    }
+                }
+            }
+            else
+            {
+//                printf("it is a can board many selected\n");
+
+                for(int i=0; i < ui->devicesTree->currentItem()->parent()->childCount();i++){
+                    if(ui->devicesTree->currentItem()->parent()->child(i)->isSelected() &&
+                            ui->devicesTree->currentItem()->parent()->child(i)->data(0,EMPTY_NODE).toBool() == false){
+                        int boardNum = 0;
+
+                        sBoard canBoard;
+                        // get the sBoard ... TBD
+                        canBoard.type = eobrd_mtb;
+                        canBoard.bus = 1;
+                        canBoard.pid = 7;
+
+                        QtConcurrent::run(this,&MainWindow::populateCANinfo,canBoard);
                     }
                 }
             }
@@ -638,6 +924,8 @@ void MainWindow::onDeviceSelectionChanged()
         }
     }else{
         ui->connectButton->setEnabled(false);
+        ui->actionSel->setEnabled(false);
+        ui->actionDes->setEnabled(false);
         appendInfo();
     }
     checkEnableButtons();
@@ -658,13 +946,20 @@ void MainWindow::populateInfo(int boardNum)
     needLoading(false,false);
 }
 
+void MainWindow::populateCANinfo(sBoard canboard)
+{
+    needLoading(true,true);
+    appendInfo(canboard);
+    needLoading(false,false);
+}
+
 void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
 {
     ui->detailsText->setVisible(false);
     infoTreeWidget->setVisible(true);
 
     infoTreeWidget->clear();
-    QTreeWidgetItem *boardNode = new QTreeWidgetItem(infoTreeWidget,QStringList() << "Board");
+    QTreeWidgetItem *boardNode = new QTreeWidgetItem(infoTreeWidget,QStringList() << "ETH board");
     QTreeWidgetItem *bootStrapNode = new QTreeWidgetItem(infoTreeWidget,QStringList() << "Bootstrap Processes");
     QTreeWidgetItem *propertiesNode = new QTreeWidgetItem(infoTreeWidget,QStringList() << "Properties of the Processes");
     infoTreeWidget->addTopLevelItem(boardNode);
@@ -674,19 +969,19 @@ void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
     QString type;
     switch (info.boardtype) {
     case eobrd_ethtype_ems4:
-        type = "EMS4";
+        type = "ems";
         break;
     case eobrd_ethtype_mc4plus:
-        type = "MC4PLUS";
+        type = "mc4plus";
         break;
     case eobrd_ethtype_mc2plus:
-        type = "MC2PLUS";
+        type = "mc2plus";
         break;
     case eobrd_ethtype_none:
-        type = "NONE";
+        type = "none";
         break;
     case eobrd_ethtype_unknown:
-        type = "UNKNOWN";
+        type = "unknown";
         break;
     default:
         break;
@@ -707,10 +1002,10 @@ void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
                         (uint8_t)(mac >> 8 ) & 0xff,
                         (uint8_t)(mac      ) & 0xff);
 
-    QTreeWidgetItem *macNode = new QTreeWidgetItem(boardNode, QStringList() << "Mac" << board_mac);
+    QTreeWidgetItem *macNode = new QTreeWidgetItem(boardNode, QStringList() << "MAC" << board_mac);
     boardNode->addChild(macNode);
 
-    QTreeWidgetItem *ipNode = new QTreeWidgetItem(boardNode, QStringList() << "Ip" << ipv4tostring(address).c_str());
+    QTreeWidgetItem *ipNode = new QTreeWidgetItem(boardNode, QStringList() << "IP" << ipv4tostring(address).c_str());
     boardNode->addChild(ipNode);
 
     QTreeWidgetItem *statusNode = new QTreeWidgetItem(boardNode, QStringList() << "Status" << (info.maintenanceIsActive ? "maintenance" : "application"));
@@ -747,11 +1042,11 @@ void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
                                                                                                              QTime(info.processes.info[i].date.hour,info.processes.info[i].date.min)).toString("yyyy/MM/dd - hh:mm"));
         processNode->addChild(processDate);
 
-        QTreeWidgetItem *processBuilt = new QTreeWidgetItem(processNode, QStringList() << "Date" << QDateTime(QDate(info.processes.info[i].compilationdate.year,info.processes.info[i].compilationdate.month,info.processes.info[i].compilationdate.day),
+        QTreeWidgetItem *processBuilt = new QTreeWidgetItem(processNode, QStringList() << "Built On" << QDateTime(QDate(info.processes.info[i].compilationdate.year,info.processes.info[i].compilationdate.month,info.processes.info[i].compilationdate.day),
                                                                                                       QTime(info.processes.info[i].compilationdate.hour,info.processes.info[i].compilationdate.min)).toString("yyyy/MM/dd - hh:mm"));
         processNode->addChild(processBuilt);
 
-        QTreeWidgetItem *processRom= new QTreeWidgetItem(processNode, QStringList() << "Rom" << QString("[%1 - %2] kb").arg(info.processes.info[i].rom_addr_kb).arg(info.processes.info[i].rom_size_kb));
+        QTreeWidgetItem *processRom= new QTreeWidgetItem(processNode, QStringList() << "ROM" << QString("[%1, %1+%2) kb").arg(info.processes.info[i].rom_addr_kb).arg(info.processes.info[i].rom_size_kb));
         processNode->addChild(processRom);
 
 
@@ -774,6 +1069,44 @@ void MainWindow::onAppendInfo(QString text)
     ui->detailsText->setVisible(true);
 }
 
+
+void MainWindow::onAppendInfo(sBoard canboard)
+{
+    ui->detailsText->setVisible(false);
+    infoTreeWidget->setVisible(true);
+
+    infoTreeWidget->clear();
+    QTreeWidgetItem *boardNode = new QTreeWidgetItem(infoTreeWidget,QStringList() << "CAN board");
+
+    infoTreeWidget->addTopLevelItem(boardNode);
+
+#if 0
+    QString type;
+    type = eoboards_type2string2((eObrd_type_t)canboard.type, eobool_true);
+
+    QTreeWidgetItem *typeNode = new QTreeWidgetItem(boardNode, QStringList() << "Type" << type);
+    boardNode->addChild(typeNode);
+
+
+    QString addr;
+    char aaa[16] = {0};
+    snprintf(aaa, sizeof(aaa), "CAN%d:%d", canboard.bus, canboard.pid);
+    addr = aaa;
+    QTreeWidgetItem *adrNode = new QTreeWidgetItem(boardNode, QStringList() << "Address" << addr);
+    boardNode->addChild(adrNode);
+#else
+
+    QTreeWidgetItem *basic = new QTreeWidgetItem(boardNode, QStringList() << "Details" << "See left panel");
+    boardNode->addChild(basic);
+
+#endif
+
+    boardNode->setExpanded(true);
+
+}
+
+
+
 void MainWindow::onConnect()
 {
     setInfoRes("");
@@ -783,27 +1116,31 @@ void MainWindow::onConnect()
              if(it->data(0,CONNECTED).toBool() == true){
                  //emptyNode(it);
                  it->setData(0,CONNECTED,false);
-                 it->setTextColor(DEVICE,QColor(Qt::red));
+                 it->setTextColor(DEVICEID,QColor(Qt::red));
              }
+             QString device;
+             QString deviceIdstr;
+             getDeviceID(it, deviceIdstr, device);
 
-             if(core->connectTo(it->text(DEVICE),it->text(ID)) > 0){
+             if(core->connectTo(device,deviceIdstr) > 0){
                  it->setData(0,CONNECTED,true);
                  it->setExpanded(true);
-                 it->setTextColor(DEVICE,QColor(Qt::green));
+                 it->setTextColor(DEVICEID,QColor(Qt::green));
              }else{
                  it->setData(0,CONNECTED,false);
-                 it->setTextColor(DEVICE,QColor(Qt::red));
+                 it->setTextColor(DEVICEID,QColor(Qt::red));
              }
 
              QtConcurrent::run(this,&MainWindow::refreshDevices);
         }
 
         if(it->data(0,DEVICE_LEVEL).toInt() == 2){
+            QString sss = it->text(PROCESS);
             if(it->text(PROCESS).contains("eUpdater" )){
                 QtConcurrent::run(this,&MainWindow::getCanBoards,it,false);
             }else{
                 QMessageBox msgBox;
-                msgBox.setText("You have to put the device in maintenace mode to perform this operation.");
+                msgBox.setText("You have to put the device in maintenace mode to perform this operation. Now it is running the " + sss);
                 msgBox.setStandardButtons(QMessageBox::Ok );
                 msgBox.setDefaultButton(QMessageBox::Ok);
                 msgBox.exec();
@@ -822,6 +1159,7 @@ void MainWindow::checkEnableButtons()
     bool needRestart = false;
     bool canUploadLoader = true;
     bool canUploadApp = true;
+    bool canChangeInfo =  true;
     bool canUploadUpdater = true;
     bool canJumpUpdater = true;
 
@@ -839,6 +1177,7 @@ void MainWindow::checkEnableButtons()
 
                         canUploadLoader &= child->data(0,CAN_UPLOAD_LOADER).toBool();
                         canUploadApp &= child->data(0,CAN_UPLOAD_APP).toBool();
+                        canChangeInfo &= child->data(0,CAN_UPLOAD_APP).toBool();
                         canUploadUpdater &= child->data(0,CAN_UPLOAD_UPDATER).toBool();
                         canJumpUpdater &= child->data(0,CAN_JUMP_UPDATER).toBool();
                     }
@@ -873,6 +1212,10 @@ void MainWindow::checkEnableButtons()
         ui->btnUploadApp->setEnabled(false);
         ui->btnUploadLoader->setEnabled(false);
         ui->btnUploadUpdater->setEnabled(false);
+        ui->actionSel->setEnabled(false);
+        ui->actionDes->setEnabled(false);
+        ui->checkBoxEE->setCheckState(Qt::Unchecked);
+        ui->checkBoxEE->setEnabled(false);
         return;
     }
 
@@ -897,6 +1240,10 @@ void MainWindow::checkEnableButtons()
             ui->btnUploadApp->setEnabled(false);
             ui->btnUploadLoader->setEnabled(false);
             ui->btnUploadUpdater->setEnabled(false);
+            ui->actionSel->setEnabled(false);
+            ui->actionDes->setEnabled(false);
+            ui->checkBoxEE->setCheckState(Qt::Unchecked);
+            ui->checkBoxEE->setEnabled(false);
         }else{
             ui->btnBlink->setEnabled(true);
             ui->btnBootApp->setEnabled(true);
@@ -906,7 +1253,11 @@ void MainWindow::checkEnableButtons()
             ui->btnChangeCanAddr->setEnabled(false);
             if(selectedNodes.count() == 1){
                 ui->btnChangeIp->setEnabled(true);
-                ui->btnCahngeInfo->setEnabled(true);
+                // only if we have the updater running
+                if(canChangeInfo)
+                {
+                    ui->btnCahngeInfo->setEnabled(true);
+                }
             }else{
                 ui->btnChangeIp->setEnabled(false);
                 ui->btnCahngeInfo->setEnabled(false);
@@ -936,6 +1287,10 @@ void MainWindow::checkEnableButtons()
             }else{
                 ui->btnUploadUpdater->setEnabled(false);
             }
+            ui->actionSel->setEnabled(true);
+            ui->actionDes->setEnabled(true);
+            ui->checkBoxEE->setCheckState(Qt::Unchecked);
+            ui->checkBoxEE->setEnabled(false);
         }
 
     }else{
@@ -945,21 +1300,29 @@ void MainWindow::checkEnableButtons()
 
         if(selectedNodes.count() == 1){
             ui->btnChangeCanAddr->setEnabled(true);
+            // ok, we enablke it also for bootloader ...
             ui->btnCahngeInfo->setEnabled(true);
 
             sBoard canBoard = ((EthTreeWidgetItem*)selectedNodes.first()->getParentNode())->getCanBoard(selectedNodes.first()->getIndexOfBoard());
             if(canBoard.type == icubCanProto_boardType__strain || canBoard.type == icubCanProto_boardType__6sg && canBoard.status == BOARD_RUNNING ){
                 ui->btnCalibrate->setEnabled(true);
-                ui->btnEraseEeprom->setEnabled(true);
+                //ui->btnEraseEeprom->setEnabled(true);
+                ui->btnEraseEeprom->setEnabled(false);
+                ui->checkBoxEE->setCheckState(Qt::Unchecked); //(Qt::Checked); Qt::Unchecked
+                ui->checkBoxEE->setEnabled(true);
             }else{
                 ui->btnCalibrate->setEnabled(false);
                 ui->btnEraseEeprom->setEnabled(false);
+                ui->checkBoxEE->setCheckState(Qt::Unchecked); //(Qt::Checked); Qt::Unchecked
+                ui->checkBoxEE->setEnabled(false);
             }
         }else{
             ui->btnChangeCanAddr->setEnabled(false);
             ui->btnCahngeInfo->setEnabled(false);
             ui->btnCalibrate->setEnabled(false);
             ui->btnEraseEeprom->setEnabled(false);
+            ui->checkBoxEE->setCheckState(Qt::Unchecked);
+            ui->checkBoxEE->setEnabled(false);
         }
         ui->btnChangeIp->setEnabled(false);
 
@@ -971,6 +1334,8 @@ void MainWindow::checkEnableButtons()
         ui->btnUploadApp->setEnabled(true);
         ui->btnUploadLoader->setEnabled(false);
         ui->btnUploadUpdater->setEnabled(false);
+        ui->actionSel->setEnabled(true);
+        ui->actionDes->setEnabled(true);
     }
 
 
@@ -1296,8 +1661,7 @@ void MainWindow::checkSelection(bool selected,CustomTreeWidgetItem *c)
                         continue;
                     }
                     if(child->checkIsEnabled()){
-                        if(child->getBoardType() != c->getBoardType() || c->getParentNode() != child->getParentNode() ||
-                                (child->getBoardType() == c->getBoardType() && c->data(0,CAN_ERASE_EEPROM).toBool())){
+                        if(child->getBoardType() != c->getBoardType() || c->getParentNode() != child->getParentNode() ){
                             child->setCheckEnabled(false);
                         }
                     }
@@ -1310,8 +1674,7 @@ void MainWindow::checkSelection(bool selected,CustomTreeWidgetItem *c)
                                 continue;
                             }
                             if(child1->checkIsEnabled()){
-                                if(child1->getBoardType() != c->getBoardType() || c->getParentNode() != child1->getParentNode() ||
-                                        (child1->getBoardType() == c->getBoardType() && c->data(0,CAN_ERASE_EEPROM).toBool()) ){
+                                if(child1->getBoardType() != c->getBoardType() || c->getParentNode() != child1->getParentNode() ){
                                     child1->setCheckEnabled(false);
                                 }
                             }
@@ -1425,7 +1788,52 @@ void MainWindow::onSelectionChanged(bool selected)
 }
 
 
+bool MainWindow::getCANaddress(CustomTreeWidgetItem *child, int &cbus, int &cadr, QString &cbustr, QString &cadrstr)
+{
+#if defined(_MAIN_WINDOW_SHOW_CAN_ADDRESS_IN_ADDRESS_COLUMN)
 
+    QString tmp = child->text(ADDRESS);
+    QByteArray ba = tmp.toLatin1();
+    const char *c_str2 = ba.data();
+
+    bool bIPprefix = false;
+#if defined(_MAIN_WINDOW_USE_IP_PREFIX_FOR_CAN_ADDRESS)
+    bIPprefix = (child->getParentNode()->type() == ETH_TREE_NODE) ? true : false;
+#endif
+
+    if(false == bIPprefix)
+    {   // e.g., CAN2:7
+        sscanf(c_str2, "CAN%d:%d", &cbus, &cadr);
+    }
+    else
+    {   // e.g., 10.0.1.21:CAN2:7
+        int ip1, ip2, ip3, ip4;
+        sscanf(c_str2, "%d.%d.%d.%d:CAN%d:%d", &ip1, &ip2, &ip3, &ip4, &cbus, &cadr);
+    }
+
+    char strtmp[8];
+    snprintf(strtmp, sizeof(strtmp), "%d", cadr);
+    cadrstr = strtmp;
+
+    snprintf(strtmp, sizeof(strtmp), "CAN%d", cbus);
+    cbustr = strtmp;
+
+#else
+
+    cbus = child->text(ADDRESS).remove("CAN").toInt();
+    cadr = child->text(ID).toInt();
+
+    char strtmp[8];
+    snprintf(strtmp, sizeof(strtmp), "%d", cadr);
+    cadrstr = strtmp;
+
+    snprintf(strtmp, sizeof(strtmp), "CAN%d", cbus);
+    cbustr = strtmp;
+
+#endif
+
+    return true;
+}
 
 
 

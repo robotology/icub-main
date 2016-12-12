@@ -6,6 +6,12 @@
 #include "selectioncheckbox.h"
 #include <QTreeWidgetItem>
 
+#define _MAIN_WINDOW_SHOW_CAN_ADDRESS_IN_ADDRESS_COLUMN
+
+#if defined(_MAIN_WINDOW_SHOW_CAN_ADDRESS_IN_ADDRESS_COLUMN)
+  //#define _MAIN_WINDOW_USE_IP_PREFIX_FOR_CAN_ADDRESS
+#endif
+
 #define ETH_TREE_NODE   QTreeWidgetItem::UserType + 1
 #define CAN_TREE_NODE   QTreeWidgetItem::UserType + 2
 
@@ -32,6 +38,7 @@ public:
     QString getBoardType();
     void replaceCanBoard(int , sBoard);
 
+    bool getDeviceID(QString devicefullstring, QString &idstr, QString &devicestr);
 
 
     QString retrieveCanBoards(bool force = true);

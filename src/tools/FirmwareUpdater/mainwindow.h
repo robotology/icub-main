@@ -17,8 +17,6 @@ class MainWindow;
 }
 
 
-
-
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -33,8 +31,10 @@ private:
      void removeChildren(QTreeWidgetItem *);
 
      void checkConnectionButton(QTreeWidgetItem*);
+     void checkSelButton(QTreeWidgetItem*);
      void emptyNode(QTreeWidgetItem *it);
      void populateInfo(int boardNum);
+     void populateCANinfo(sBoard canboard);
      void getCanBoards(QTreeWidgetItem *it, bool refresh = false);
      void checkEnableButtons();
      void setEthBoardInfo(int index,QString info, QTreeWidgetItem *refreshNode = NULL);
@@ -68,6 +68,7 @@ private:
 signals:
     void appendInfo(boardInfo2_t,eOipv4addr_t);
     void appendInfo(QString = "");
+    void appendInfo(sBoard canboard);
     void canBoardsRetrieved(QTreeWidgetItem *it, bool refresh);
     void refreshEthBoardsNode(QTreeWidgetItem*, bool refresh = false, bool refreshAll = false);
     void setInfoRes(QString);
@@ -96,6 +97,9 @@ private slots:
     void populateEthBoardsNode(QTreeWidgetItem*, bool refreshSingleNode = false, bool refreshAll = false);
     void onDeviceSelectionChanged();
     void onConnect();
+    void onSel(void);
+    void onDes(void);
+    void onAppendInfo(sBoard);
     void onAppendInfo(QString);
     void onAppendInfo(boardInfo2_t, eOipv4addr_t address);
     void onSelectionChanged(bool selected);
@@ -109,6 +113,9 @@ private slots:
 
     //void onRestartBoards5Secs(bool click);
     void onSetInfoRes(QString);
+    bool getCANaddress(CustomTreeWidgetItem *child, int &cbus, int &adr, QString &cbustr, QString &cadrstr);
+    bool getDeviceID(QTreeWidgetItem *child, QString &idstr, QString &devicestr);
+    bool getDeviceID(QString devicefullstring, QString &idstr, QString &devicestr);
 };
 
 #endif // MAINWINDOW_H

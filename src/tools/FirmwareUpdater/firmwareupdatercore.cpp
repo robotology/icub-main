@@ -237,13 +237,13 @@ QString FirmwareUpdaterCore::getProcessFromUint(uint8_t id)
 {
     switch (id) {
     case uprot_proc_Loader:
-        return "Loader";
+        return "eLoader";
     case uprot_proc_Updater:
-        return "Updater";
+        return "eUpdater";
     case uprot_proc_Application:
-        return "Application";
+        return "eApplication";
     case uprot_proc_ApplPROGupdater:
-        return "Application Program Updater";
+        return "eApplPROGupdater";
     default:
         return "None";
         break;
@@ -877,7 +877,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 }
 
 #else
-bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultString, QString address,int deviceId,QList <sBoard> *resultCanBoards)
+bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultString, bool ee, QString address,int deviceId,QList <sBoard> *resultCanBoards)
 {
 //    if(!address.isEmpty()){
 //        if(currentAddress != address){
@@ -948,11 +948,14 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
         }
 
     }
+    download_eeprom = ee;
 
     // Start the download for the selected boards
     for (i=0; i<downloader.board_list_size; i++){
         if (downloader.board_list[i].status==BOARD_RUNNING && downloader.board_list[i].selected==true){
-            if (downloader.startscheda(downloader.board_list[i].bus, downloader.board_list[i].pid, downloader.board_list[i].eeprom, downloader.board_list[i].type)!=0){
+            //bool EE = downloader.board_list[i].eeprom;
+            bool EE = ee;
+            if (downloader.startscheda(downloader.board_list[i].bus, downloader.board_list[i].pid, EE, downloader.board_list[i].type)!=0){
                 *resultString = "Unable to start the board - Unable to send message 'start' or no answer received";
                 return false;
             } else {
