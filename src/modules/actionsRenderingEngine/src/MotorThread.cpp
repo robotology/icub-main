@@ -2182,8 +2182,9 @@ bool MotorThread::goHome(Bottle &options)
     if (head_home)
     {
         double t0=Time::now();
-        while ((head_mode!=HEAD_MODE_IDLE) && (Time::now()-t0<5.0))
+        do
             Time::delay(0.1);
+        while ((head_mode!=HEAD_MODE_IDLE) && (Time::now()-t0<5.0));
     }
 
     return true;
