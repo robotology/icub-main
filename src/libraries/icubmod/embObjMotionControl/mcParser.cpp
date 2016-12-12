@@ -44,6 +44,11 @@ mcParser::mcParser(int numofjoints, string boardname)
     _ktau=allocAndCheck<double>(_njoints);
     _filterType=allocAndCheck<int>(_njoints);
 
+    posAlgoMap.clear();
+    velAlgoMap.clear();
+    trqAlgoMap.clear();
+
+
 };
 
 mcParser::~mcParser()
@@ -424,7 +429,8 @@ bool mcParser::parsePid_inPos_outPwm(Bottle &b_pid, string controlLaw)
     if(!parsePidsGroup(b_pid, pidSimple_ptr->pid, string("pos_")))
         return false;
 
-    posAlgoMap[controlLaw] = pidSimple_ptr;
+    //posAlgoMap[controlLaw] = pidSimple_ptr;
+    posAlgoMap.insert ( std::pair<std::string, Pid_Algorithm*>(controlLaw,pidSimple_ptr) );
 
     return true;
 }
@@ -451,7 +457,8 @@ bool mcParser::parsePid_inVel_outPwm(Bottle &b_pid, string controlLaw)
     if(!parsePidsGroup(b_pid, pidSimple_ptr->pid, string("vel_")))
         return false;
 
-    velAlgoMap[controlLaw] = pidSimple_ptr;
+    //velAlgoMap[controlLaw] = pidSimple_ptr;
+    velAlgoMap.insert ( std::pair<std::string, Pid_Algorithm*>(controlLaw,pidSimple_ptr) );
 
     return true;
 }
@@ -484,7 +491,8 @@ bool mcParser::parsePid_inTrq_outPwm(Bottle &b_pid, string controlLaw)
     if (!extractGroup(b_pid, xtmp, "trq_ktau", "ktau parameter", _njoints))          return false; for (int j=0; j<_njoints; j++) _ktau[j]       = xtmp.get(j+1).asDouble();
     if (!extractGroup(b_pid, xtmp, "trq_filterType", "filterType param", _njoints))  return false; for (int j=0; j<_njoints; j++) _filterType[j] = xtmp.get(j+1).asInt();
 
-    trqAlgoMap[controlLaw] = pidSimple_ptr;
+    //trqAlgoMap[controlLaw] = pidSimple_ptr;
+    trqAlgoMap.insert ( std::pair<std::string, Pid_Algorithm*>(controlLaw,pidSimple_ptr) );
 
     return true;
 }
@@ -513,7 +521,8 @@ bool mcParser::parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw)
     if(!parsePidsGroup(b_pid, pidInnerVel_ptr->innerVelPid, string("vel_")))
         return false;
 
-    posAlgoMap[controlLaw] = pidInnerVel_ptr;
+    //posAlgoMap[controlLaw] = pidInnerVel_ptr;
+    posAlgoMap.insert ( std::pair<std::string, Pid_Algorithm*>(controlLaw,pidInnerVel_ptr) );
 
     return true;
 }
@@ -551,7 +560,8 @@ bool mcParser::parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw)
     if(!parsePidsGroup(b_pid, pidInnerVel_ptr->innerVelPid, string("vel_")))
         return false;
 
-    trqAlgoMap[controlLaw] = pidInnerVel_ptr;
+    //trqAlgoMap[controlLaw] = pidInnerVel_ptr;
+    trqAlgoMap.insert ( std::pair<std::string, Pid_Algorithm*>(controlLaw,pidInnerVel_ptr) );
 
     return true;
 }
