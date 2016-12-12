@@ -530,6 +530,20 @@ bool embObjMotionControl::dealloc()
 
     if(requestQueue)
         delete requestQueue;
+
+    if(_ppids)
+        delete [] _ppids;
+
+    if(_vpids)
+        delete [] _vpids;
+
+    if(_tpids)
+        delete [] _tpids;
+
+    if(_cpids)
+        delete [] _cpids;
+
+
     return true;
 }
 
