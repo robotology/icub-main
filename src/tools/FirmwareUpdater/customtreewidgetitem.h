@@ -36,6 +36,7 @@ public:
     void setCanBoards(QList <sBoard> boards);
     virtual void refresh();
     QString getBoardType();
+    QString getBoardProcess();
     void replaceCanBoard(int , sBoard);
 
     bool getDeviceID(QString devicefullstring, QString &idstr, QString &devicestr);

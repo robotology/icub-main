@@ -88,6 +88,11 @@ QString CustomTreeWidgetItem::getBoardType()
     return text(BOARDT);
 }
 
+QString CustomTreeWidgetItem::getBoardProcess()
+{
+    return text(PROCESS);
+}
+
 EthBoard CustomTreeWidgetItem::getBoard()
 {
     return core->getEthBoardList()[m_indexOfBoard];
