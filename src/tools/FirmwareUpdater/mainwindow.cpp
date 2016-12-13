@@ -1008,7 +1008,33 @@ void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
     QTreeWidgetItem *ipNode = new QTreeWidgetItem(boardNode, QStringList() << "IP" << ipv4tostring(address).c_str());
     boardNode->addChild(ipNode);
 
-    QTreeWidgetItem *statusNode = new QTreeWidgetItem(boardNode, QStringList() << "Status" << (info.maintenanceIsActive ? "maintenance" : "application"));
+    QString mode = (info.maintenanceIsActive ? "maintenance" : "application");
+    if(eApplPROGupdater == info.processes.runningnow)
+    {
+        mode = "special application for programming the updater";
+    }
+
+    QTreeWidgetItem *statusNode = new QTreeWidgetItem(boardNode, QStringList() << "Status" << mode);
+    
+    {   // changing color to the mode 
+        QFont ff = statusNode->font(1);
+        ff.setBold(true);
+        statusNode->setFont(1, ff);
+
+        if(eApplPROGupdater == info.processes.runningnow)
+        {
+            statusNode->setForeground(1, Qt::magenta);
+        }
+        else if(eUpdater == info.processes.runningnow)
+        {
+            statusNode->setForeground(1, Qt::blue);
+        }
+        else
+        {
+            statusNode->setForeground(1, Qt::black);
+        }
+    } 
+    
     boardNode->addChild(statusNode);
 
     /*******************************************************************************/
@@ -1138,9 +1164,18 @@ void MainWindow::onConnect()
             QString sss = it->text(PROCESS);
             if(it->text(PROCESS).contains("eUpdater" )){
                 QtConcurrent::run(this,&MainWindow::getCanBoards,it,false);
-            }else{
+            }
+            else{
                 QMessageBox msgBox;
-                msgBox.setText("You have to put the device in maintenace mode to perform this operation. Now it is running the " + sss);
+                if(it->text(PROCESS).contains("eApplPROGupdater" ))
+                {
+                    msgBox.setText("The executing process is the " + sss + " which does not allow CAN discovery but only the programming of the eUpdater. You have to put the board in maintenance mode");
+                }
+                else
+                {
+                     msgBox.setText("You have to put the board in maintenance mode to perform this operation. Now it is running the " + sss);
+                }
+
                 msgBox.setStandardButtons(QMessageBox::Ok );
                 msgBox.setDefaultButton(QMessageBox::Ok);
                 msgBox.exec();
@@ -1162,6 +1197,8 @@ void MainWindow::checkEnableButtons()
     bool canChangeInfo =  true;
     bool canUploadUpdater = true;
     bool canJumpUpdater = true;
+    bool canEraseEthEEPROM =  true;
+    bool canChangeIP =  true;
 
     for(int i=0;i<ui->devicesTree->topLevelItemCount();i++){
         QTreeWidgetItem *topLevel = ui->devicesTree->topLevelItem(i);
@@ -1178,6 +1215,8 @@ void MainWindow::checkEnableButtons()
                         canUploadLoader &= child->data(0,CAN_UPLOAD_LOADER).toBool();
                         canUploadApp &= child->data(0,CAN_UPLOAD_APP).toBool();
                         canChangeInfo &= child->data(0,CAN_UPLOAD_APP).toBool();
+                        canEraseEthEEPROM &= child->data(0,CAN_UPLOAD_APP).toBool();
+                        canChangeIP &= child->data(0,CAN_UPLOAD_APP).toBool();
                         canUploadUpdater &= child->data(0,CAN_UPLOAD_UPDATER).toBool();
                         canJumpUpdater &= child->data(0,CAN_JUMP_UPDATER).toBool();
                     }
@@ -1252,17 +1291,16 @@ void MainWindow::checkEnableButtons()
             ui->btnCalibrate->setEnabled(false);
             ui->btnChangeCanAddr->setEnabled(false);
             if(selectedNodes.count() == 1){
-                ui->btnChangeIp->setEnabled(true);
                 // only if we have the updater running
-                if(canChangeInfo)
-                {
-                    ui->btnCahngeInfo->setEnabled(true);
-                }
+                ui->btnChangeIp->setEnabled(canChangeIP);
+                ui->btnCahngeInfo->setEnabled(canChangeInfo);
+                ui->btnEraseEeprom->setEnabled(canEraseEthEEPROM);
             }else{
                 ui->btnChangeIp->setEnabled(false);
                 ui->btnCahngeInfo->setEnabled(false);
+                ui->btnEraseEeprom->setEnabled(false);
             }
-            ui->btnEraseEeprom->setEnabled(true);
+
             if(canJumpUpdater){
                 ui->btnJumpUpdater->setEnabled(true);
             }else{
@@ -1776,8 +1814,6 @@ void MainWindow::onSelectionChanged(bool selected)
     }else{
 
         selectedNodes.removeOne(c);
-
-
 
     }
 
