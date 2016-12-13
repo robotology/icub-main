@@ -136,7 +136,6 @@ private:
     IInteractionMode                    *int_mode_arm[2];
     IImpedanceControl                   *ctrl_impedance_arm[2];
 
-    int                                 initial_gaze_context;
     int                                 default_gaze_context;
 
     bool                                gazeUnderControl;
@@ -323,7 +322,6 @@ public:
     {
         head_mode=HEAD_MODE_IDLE;
         ctrl_gaze->stopControl();
-        ctrl_gaze->restoreContext(initial_gaze_context);
         gazeUnderControl=false;
     }
 

@@ -832,8 +832,6 @@ void MotorThread::close()
 
     if(drv_ctrl_gaze!=NULL)
     {
-        if(ctrl_gaze!=NULL)
-            ctrl_gaze->restoreContext(initial_gaze_context);
         delete drv_ctrl_gaze;
         drv_ctrl_gaze=NULL;
     }
@@ -995,12 +993,12 @@ bool MotorThread::threadInit()
     // initialize the gaze controller
 
     //store the current context
+    int initial_gaze_context;
     ctrl_gaze->storeContext(&initial_gaze_context);
 
     ctrl_gaze->setTrackingMode(false);
     ctrl_gaze->setEyesTrajTime(eyesTrajTime);
     ctrl_gaze->setNeckTrajTime(neckTrajTime);
-
 
     // set the values for the stereo PID controller
     Bottle stereoOpt;
@@ -2164,7 +2162,6 @@ bool MotorThread::goHome(Bottle &options)
     if (head_home)
     {
         ctrl_gaze->waitMotionDone();
-        ctrl_gaze->restoreContext(initial_gaze_context);
         head_mode=HEAD_MODE_IDLE;
         gazeUnderControl=false;
     }
