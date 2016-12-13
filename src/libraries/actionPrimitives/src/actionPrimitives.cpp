@@ -200,7 +200,7 @@ class ArmWavingMonitor : public RateThread
 {
     ICartesianControl *cartCtrl;
     Vector restPos, restOrien;
-    int ctxt;
+    double trajTime;
 
 public:
     /************************************************************************/
@@ -220,6 +220,8 @@ public:
     /************************************************************************/
     void afterStart(bool success)
     {
+        cartCtrl->getTrajTime(&trajTime);
+
         // start in suspended mode
         disable();
     }
@@ -234,7 +236,7 @@ public:
             cartCtrl->getPose(xdhat,restOrien);
             cartCtrl->askForPose(restPos,restOrien,xdhat,restOrien,qdhat);
 
-            cartCtrl->storeContext(&ctxt);
+            cartCtrl->getTrajTime(&trajTime);
             cartCtrl->setTrajTime(ACTIONPRIM_BALANCEARM_PERIOD);
 
             resume();
@@ -250,9 +252,7 @@ public:
         if (!isSuspended())
         {
             suspend();
-            cartCtrl->restoreContext(ctxt);
-            cartCtrl->deleteContext(ctxt);
-
+            cartCtrl->setTrajTime(trajTime);
             return true;
         }
         else
