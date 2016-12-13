@@ -2162,6 +2162,8 @@ bool MotorThread::goHome(Bottle &options)
     if (head_home)
     {
         ctrl_gaze->waitMotionDone();
+        ctrl_gaze->stopControl();   // because we're on tracking
+        ctrl_gaze->setTrackingMode(false);
         head_mode=HEAD_MODE_IDLE;
         gazeUnderControl=false;
     }
