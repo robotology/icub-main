@@ -1276,22 +1276,6 @@ void MotorThread::run()
 
     switch(head_mode)
     {
-        case(HEAD_MODE_GO_HOME):
-        {
-            gazeUnderControl=true;
-            ctrl_gaze->stopControl();
-            ctrl_gaze->restoreContext(default_gaze_context);
-            ctrl_gaze->setTrackingMode(true);
-
-            if (homeFixCartType)
-                ctrl_gaze->lookAtFixationPoint(homeFix);
-            else
-                ctrl_gaze->lookAtAbsAngles(homeFix);
-
-            head_mode=HEAD_MODE_LOOK;
-            break;
-        }
-
         case(HEAD_MODE_TRACK_HAND):
         {
             if (!gazeUnderControl)
@@ -1353,20 +1337,6 @@ void MotorThread::run()
         {
             if (!gazeUnderControl)
                 gazeUnderControl=true;
-            break;
-        }
-
-        case(HEAD_MODE_LOOK):
-        {
-            bool done;
-            ctrl_gaze->checkMotionDone(&done);
-            if (done)
-            {
-                ctrl_gaze->stopControl();
-                ctrl_gaze->restoreContext(initial_gaze_context);
-                head_mode=HEAD_MODE_IDLE;
-                gazeUnderControl=false;
-            }
             break;
         }
     }
@@ -2130,7 +2100,19 @@ bool MotorThread::goHome(Bottle &options)
         left_arm=right_arm=true;
 
     if (head_home)
+    {
         head_mode=HEAD_MODE_GO_HOME;
+
+        gazeUnderControl=true;
+        ctrl_gaze->stopControl();
+        ctrl_gaze->restoreContext(default_gaze_context);
+        ctrl_gaze->setTrackingMode(true);
+
+        if (homeFixCartType)
+            ctrl_gaze->lookAtFixationPoint(homeFix);
+        else
+            ctrl_gaze->lookAtAbsAngles(homeFix);
+    }
 
     if (arms_home)
     {
@@ -2181,10 +2163,10 @@ bool MotorThread::goHome(Bottle &options)
 
     if (head_home)
     {
-        double t0=Time::now();
-        do
-            Time::delay(0.1);
-        while ((head_mode!=HEAD_MODE_IDLE) && (Time::now()-t0<5.0));
+        ctrl_gaze->waitMotionDone();
+        ctrl_gaze->restoreContext(initial_gaze_context);
+        head_mode=HEAD_MODE_IDLE;
+        gazeUnderControl=false;
     }
 
     return true;
@@ -2487,8 +2469,12 @@ bool MotorThread::calibFingers(Bottle &options)
         }
     }
 
-    if(!no_head)
-        head_mode=HEAD_MODE_GO_HOME;
+    if (!no_head)
+    {
+        Bottle options;
+        options.addString("head");
+        goHome(options);
+    }
 
     setArmInUse(currentArm);
 

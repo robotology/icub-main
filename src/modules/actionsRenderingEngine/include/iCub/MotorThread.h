@@ -41,7 +41,6 @@
 #define HEAD_MODE_TRACK_TEMP        3
 #define HEAD_MODE_TRACK_CART        4
 #define HEAD_MODE_TRACK_FIX         5
-#define HEAD_MODE_LOOK              6
 
 #define ARM_MODE_IDLE               0
 #define ARM_MODE_LEARN_ACTION       1
