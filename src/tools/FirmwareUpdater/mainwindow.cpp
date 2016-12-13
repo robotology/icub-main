@@ -89,7 +89,7 @@ MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *paren
         CustomTreeWidgetItem *item = new CustomTreeWidgetItem(NULL,QStringList() << "" << dev << "",-1,core,type);
         ui->devicesTree->addTopLevelItem(item);
 
-        QTreeWidgetItem *empty = new QTreeWidgetItem(item,QStringList() << "" << "?");
+        QTreeWidgetItem *empty = new QTreeWidgetItem(item,QStringList() << "" << "" << "?");
         empty->setData(0,EMPTY_NODE,true);
 
         item->setTextColor(DEVICEID,QColor(Qt::red));
@@ -1382,7 +1382,7 @@ void MainWindow::checkEnableButtons()
 void MainWindow::emptyNode(QTreeWidgetItem *it)
 {
     removeChildren(it);
-    QTreeWidgetItem *empty = new QTreeWidgetItem(it,QStringList() << "" << "?");
+    QTreeWidgetItem *empty = new QTreeWidgetItem(it,QStringList() << "" << "" << "?");
     empty->setData(0,EMPTY_NODE,true);
 }
 

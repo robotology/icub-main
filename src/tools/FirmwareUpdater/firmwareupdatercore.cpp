@@ -290,12 +290,12 @@ QList<sBoard> FirmwareUpdaterCore::getCanBoardsFromDriver(QString driver, int ne
 
     if (0 != ret){
         if(-2 == ret){
-            qDebug() << "Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
-            *retString = "Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
+            qDebug() << "FirmwareUpdaterCore::getCanBoardsFromDriver(): Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
+            *retString = "FirmwareUpdaterCore::getCanBoardsFromDriver(): Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
             // TODO DIALOG
         } else {
-            qDebug() << "Init driver failed - Hardware busy or not connected?!";
-            *retString = "Init driver failed - Hardware busy or not connected?!";
+            qDebug() << "FirmwareUpdaterCore::getCanBoardsFromDriver(): Init driver failed - Hardware busy or not connected?!";
+            *retString = "Cannot init driver " + driver + "<" +  QString::number(networkId) + "> ... HW is busy or not connected";
             // TODO DIALOG
         }
         mutex.unlock();
@@ -307,8 +307,8 @@ QList<sBoard> FirmwareUpdaterCore::getCanBoardsFromDriver(QString driver, int ne
 
     if (ret == -1)
     {
-        qDebug()  << "Communication error - No answers received (no boards found).";
-        *retString = "Communication error - No answers received (no boards found).";
+        qDebug()  << "FirmwareUpdaterCore::getCanBoardsFromDriver(): No answer received from CAN boards after a successful driver init.";
+        *retString = "No CAN boards found beneath " + driver + "<" + QString::number(networkId) + ">";
         downloader.stopdriver();
         currentAddress = "";
         //not_connected_status();
@@ -375,12 +375,12 @@ QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString
 
     if (0 != ret){
         if(-2 == ret){
-            qDebug() << "Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
-            *retString = "Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
+            qDebug() << "FirmwareUpdaterCore::getCanBoardsFromEth((): Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
+            *retString = "FirmwareUpdaterCore::getCanBoardsFromEth((): Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
             // TODO DIALOG
         } else {
-            qDebug() << "Init driver failed - Hardware busy or not connected?!";
-            *retString = "Init driver failed - Hardware busy or not connected?!";
+            qDebug() << "FirmwareUpdaterCore::getCanBoardsFromEth((): Init driver failed - Hardware busy or not connected?!";
+            *retString = "FirmwareUpdaterCore::getCanBoardsFromEth(): Init driver failed - Hardware busy or not connected?!";
             // TODO DIALOG
         }
         mutex.unlock();
@@ -392,8 +392,8 @@ QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString
 
     if (ret == -1)
     {
-        qDebug()  << "Communication error - No answers received (no boards found).";
-        *retString = "Communication error - No answers received (no boards found).";
+        qDebug()  << "FirmwareUpdaterCore::getCanBoardsFromEth(): No CAN boards found beneath " << address << " after a successful driver init.";
+        *retString = "No CAN boards found beneath " + address;
         downloader.stopdriver();
         address = "";
         //not_connected_status();

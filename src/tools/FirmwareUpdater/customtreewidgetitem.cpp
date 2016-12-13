@@ -146,7 +146,7 @@ void CustomTreeWidgetItem::replaceCanBoard(int index, sBoard board)
 EthTreeWidgetItem::EthTreeWidgetItem(QTreeWidgetItem *parent, FirmwareUpdaterCore *core, int indexOfBoard) : CustomTreeWidgetItem(parent,QStringList(),indexOfBoard,core,ETH_TREE_NODE)
 {
     refresh();
-    QTreeWidgetItem *empty = new QTreeWidgetItem(this,QStringList() << "" << "?");
+    QTreeWidgetItem *empty = new QTreeWidgetItem(this,QStringList() << "" << "" << "?");
     empty->setData(0,DEVICE_LEVEL,3);
     empty->setData(0,EMPTY_NODE,true);
 }
