@@ -494,7 +494,7 @@ void printCanDevices(QList<sBoard> canBoards)
         char board_serial      [10]; memset (board_serial,0,10);
         char board_protocol    [10]; memset (board_protocol,0,10);
 
-        snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string((eObrd_type_t)board.type));
+        snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string2((eObrd_type_t)board.type, eobool_true));
 
         switch (board.status)
         {

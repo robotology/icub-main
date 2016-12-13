@@ -281,7 +281,7 @@ void CanTreeWidgetItem::refresh()
 
     sBoard board = getBoard();
 
-    snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string((eObrd_type_t)board.type));
+    snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string2((eObrd_type_t)board.type, eobool_true));
     switch (board.status)
     {
     case BOARD_RUNNING:

@@ -714,7 +714,7 @@ string EthMaintainer::processDiscoveryReplies2(EthBoardList &boardlist, double w
                 {
                     printf("EthMaintainer::processDiscoveryReplies2() has found board @ %s: %s w/ %s v %d.%d running protocol v %d w/ capabilities = 0x%x. mainteinance = %s\n",
                             ipv4rxstring.c_str(),
-                            eoboards_type2string((eObrd_type_t)disc->boardtype),
+                            eoboards_type2string2((eObrd_type_t)disc->boardtype, eobool_true),
                             eouprot_process2string((eOuprot_process_t)disc->processes.runningnow),
                             disc->processes.info[index].version.major,
                             disc->processes.info[index].version.minor,
@@ -866,7 +866,7 @@ std::string EthMaintainer::processMoreInfoReplies(EthBoardList &boardlist)
                     printf("\nBOARD at address %s:", ipv4rxstring.c_str());
                     printf("\n prot = %d, boardtype = %s, startup proc = %s, def2run proc = %s. it has %d processes:",
                                 binfo.protversion,
-                                eoboards_type2string((eObrd_type_t)binfo.boardtype),
+                                eoboards_type2string2((eObrd_type_t)binfo.boardtype, eobool_true),
                                 eouprot_process2string((eOuprot_process_t)binfo.processes.startup),
                                 eouprot_process2string((eOuprot_process_t)binfo.processes.def2run),
                                 binfo.processes.numberofthem
