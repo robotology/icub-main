@@ -690,7 +690,7 @@ string EthMaintainer::processDiscoveryReplies2(EthBoardList &boardlist, double w
                 memcpy(binfo.boardinfo32, disc->boardinfo32, sizeof(binfo.boardinfo32));
 
                 binfo.maintenanceIsActive = false;
-                if((eApplPROGupdater == binfo.processes.runningnow) || (eUpdater == binfo.processes.runningnow))
+                if(eUpdater == binfo.processes.runningnow)
                 {
                     binfo.maintenanceIsActive = true;
                 }
@@ -838,7 +838,7 @@ std::string EthMaintainer::processMoreInfoReplies(EthBoardList &boardlist)
                 memcpy(binfo.boardinfo32, disc->boardinfo32, sizeof(binfo.boardinfo32));
 
                 binfo.maintenanceIsActive = false;
-                if((eApplPROGupdater == binfo.processes.runningnow) || (eUpdater == binfo.processes.runningnow))
+                if(eUpdater == binfo.processes.runningnow)
                 {
                     binfo.maintenanceIsActive = true;
                 }
@@ -980,7 +980,7 @@ std::string EthMaintainer::prepareMoreInfoText(eOuprot_cmd_DISCOVER_REPLY_t * di
     memcpy(binfo.boardinfo32, disc->boardinfo32, sizeof(binfo.boardinfo32));
 
     binfo.maintenanceIsActive = false;
-    if((eApplPROGupdater == binfo.processes.runningnow) || (eUpdater == binfo.processes.runningnow))
+    if(eUpdater == binfo.processes.runningnow)
     {
         binfo.maintenanceIsActive = true;
     }
