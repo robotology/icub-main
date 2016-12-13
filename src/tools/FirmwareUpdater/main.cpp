@@ -41,7 +41,7 @@ int main(int argc, char *argv[])
 #ifdef UPDATER_RELEASE
     if(!checkApplicationLock()){
         yDebug() << "The application is busy";
-        qDebug() << "The application is busy";
+        qDebug() << "The application is busy. Check if an instance is already running, or if it is in zombie state. If none of them ... remove the file .firmwareUpdater.singleton";
         return 0;
     }
 #endif
