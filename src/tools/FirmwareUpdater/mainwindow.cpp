@@ -316,12 +316,12 @@ void MainWindow::onDes(void)
                 if(child->isCheckSelected()){
                     if(child->type() == ETH_TREE_NODE){
                         child->setCheckSelected(false);
-                        printf("des-eth\n");
+                        //printf("des-eth\n");
                     }
                     if(child->type() == CAN_TREE_NODE)
                     {
                         child->setCheckSelected(false);
-                        printf("des-can\n");
+                        //printf("des-can\n");
                     }
                 }
     }
@@ -1757,9 +1757,10 @@ void MainWindow::checkSelection(bool selected,CustomTreeWidgetItem *c)
                 QTreeWidgetItem *widgItem = topLevel->child(j);
                 if(widgItem->type() != QTreeWidgetItem::Type){
                     CustomTreeWidgetItem *child = (CustomTreeWidgetItem*)widgItem;
-                    if(child == c){
-                        continue;
-                    }
+// marco.accame: must remove this code because otherwise, if i select an eth board w/ can beneath, the can boards are not check-deselectde
+//                    if(child == c){
+//                        continue;
+//                    }
                     if(child->checkIsEnabled()){
                         if(child->getBoardType() != c->getBoardType() || c->getParentNode() != child->getParentNode() ){
                             child->setCheckEnabled(false);
