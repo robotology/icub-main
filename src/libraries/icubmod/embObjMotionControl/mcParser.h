@@ -92,11 +92,14 @@ public:
     yarp::dev::Pid *pid;
     Pid_Algorithm_simple(int nj)
     {
-        pid = allocAndCheck<yarp::dev::Pid>(nj);
+        pid = new yarp::dev::Pid[nj];
     };
     ~Pid_Algorithm_simple()
     {
-        checkAndDestroy(pid);
+        if(pid)
+        {
+            delete[]pid;
+        }
     };
 
 };
@@ -108,13 +111,19 @@ public:
     yarp::dev::Pid *innerVelPid;
     PidAlgorithm_VelocityInnerLoop(int nj)
     {
-        extPid = allocAndCheck<yarp::dev::Pid>(nj);
-        innerVelPid = allocAndCheck<yarp::dev::Pid>(nj);
+        extPid = new yarp::dev::Pid[nj];
+        innerVelPid = new yarp::dev::Pid[nj];
     };
     ~PidAlgorithm_VelocityInnerLoop()
     {
-        checkAndDestroy(extPid);
-        checkAndDestroy(innerVelPid);
+        if(extPid)
+        {
+            delete[]extPid;
+        }
+         if(innerVelPid)
+        {
+            delete[]innerVelPid;
+        }
     }
 };
 

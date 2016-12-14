@@ -161,7 +161,7 @@ bool mcParser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool curren
     if(_currentControlLaw[0]=="none")
     {
        yDebug() << "embObjMC BOARD " << _boardname << "No current control found "; 
-         return true;
+       return true;
     }
 
     // 1) verify that selected control law is defined in file
@@ -187,7 +187,7 @@ bool mcParser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool curren
         return false;
     }
 
-    yarp::dev::Pid *mycpids =  allocAndCheck<yarp::dev::Pid>(_njoints);
+    yarp::dev::Pid *mycpids =  new yarp::dev::Pid[_njoints];
 
     GenericControlUnitsType_t unitstype;
     if(!parsePidUnitsType(currControlLaw, unitstype))
@@ -210,7 +210,7 @@ bool mcParser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool curren
         cpids[i].pid = mycpids[i];
     }
 
-    checkAndDestroy(mycpids);
+    delete[] mycpids;
 
     return true;
 
@@ -705,7 +705,6 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
                 }
                 else
                 {
-                    //_tpids[i] = 0; la allocAndCheck fa gia un memset a zero
                     tpids[i].enabled = false;
                     tpids[i].usernamePidSelected = "none";
                 }
@@ -737,9 +736,9 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
                     tpids[i].kbemf = _kbemf[i];
                     tpids[i].ktau = _ktau[i];
                     tpids[i].filterType = _filterType[i];
-                    vpids[i].pid = pidAlgo_innerVelLoop_ptr->innerVelPid[i];
-                    vpids[i].ctrlUnitsType = pidAlgo_innerVelLoop_ptr->ctrlUnitsType;
-                    vpids[i].controlLaw =  pidAlgo_innerVelLoop_ptr->type;
+                    vpids[i].pid = tpidAlgo_innerVelLoop_ptr->innerVelPid[i];
+                    vpids[i].ctrlUnitsType = tpidAlgo_innerVelLoop_ptr->ctrlUnitsType;
+                    vpids[i].controlLaw =  tpidAlgo_innerVelLoop_ptr->type;
                     vpids[i].usernamePidSelected = _velocityControlLaw[i];
                     vpids[i].enabled = true;
                 }

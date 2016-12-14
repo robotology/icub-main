@@ -1166,7 +1166,7 @@ bool embObjMotionControl::parseGeneralMecGroup(Bottle &general)
     }
 
 
-    // Gearbox
+    // Gearbox_M2J
     if (!extractGroup(general, xtmp, "Gearbox_M2J", "The gearbox reduction ratio", _njoints))
     {
         return false;
@@ -1180,7 +1180,7 @@ bool embObjMotionControl::parseGeneralMecGroup(Bottle &general)
     }
 
 
-    //Gearbox2
+    //Gearbox_E2J
     if (!extractGroup(general, xtmp, "Gearbox_E2J", "The gearbox reduction ratio between encoder and joint", _njoints))
     {
         yWarning() << "Missing Gearbox_E2J param. I use default value (1) " ;
@@ -1811,10 +1811,10 @@ bool embObjMotionControl::parseJointsetCfgGroup(Bottle &jointsetcfg)
     _jointsets_info.jointset_cfgs.resize(numofsets, cfg_reset);
 
     _jointsets_info.set2joint.resize(numofsets);
-    for(unsigned int j=0;j<numofsets;j++)
+    for(unsigned int s=0;s<numofsets;s++)
     {
         char jointset_string[80];
-        sprintf(jointset_string, "JOINTSET_%d", j);
+        sprintf(jointset_string, "JOINTSET_%d", s);
         bool formaterror = false;
 
 
@@ -1833,14 +1833,19 @@ bool embObjMotionControl::parseJointsetCfgGroup(Bottle &jointsetcfg)
             return false;
         }
 
-       _jointsets_info.set2joint[j].resize(b_listofjoints.size()-1);
+       _jointsets_info.set2joint[s].resize(b_listofjoints.size()-1);
 
 
-        for (int k = 1; k <=_jointsets_info.set2joint[j].size(); k++)
+        for (int k = 1; k <=_jointsets_info.set2joint[s].size(); k++)
         {
             int jointofthisset = b_listofjoints.get(k).asInt();
-            _jointsets_info.joint2set[jointofthisset] = j;
-            _jointsets_info.set2joint[j][k-1] = jointofthisset;
+            if((jointofthisset< 0) || (jointofthisset>_njoints))
+            {
+                yError() << "embObjMC BOARD " << boardIPstring << "invalid joint number for set " << s;
+                return false;
+            }
+            _jointsets_info.joint2set[jointofthisset] = s;
+            _jointsets_info.set2joint[s][k-1] = jointofthisset;
         }
 
         //constraints
@@ -1854,7 +1859,7 @@ bool embObjMotionControl::parseJointsetCfgGroup(Bottle &jointsetcfg)
         {
             return false;
         }
-        _jointsets_info.jointset_cfgs[j].constraints.type = constraint;
+        _jointsets_info.jointset_cfgs[s].constraints.type = constraint;
 
 
         //param1
@@ -1862,14 +1867,14 @@ bool embObjMotionControl::parseJointsetCfgGroup(Bottle &jointsetcfg)
         {
             return  false;
         }
-        _jointsets_info.jointset_cfgs[j].constraints.param1 = xtmp.get(1).asDouble();
+        _jointsets_info.jointset_cfgs[s].constraints.param1 = xtmp.get(1).asDouble();
 
         //param2
         if(!extractGroup(js_cfg, xtmp, "param2", "param2 of jointset constraint ", 1))
         {
             return  false;
         }
-        _jointsets_info.jointset_cfgs[j].constraints.param2 = xtmp.get(1).asDouble();
+        _jointsets_info.jointset_cfgs[s].constraints.param2 = xtmp.get(1).asDouble();
     }
     return true;
 }
@@ -2081,7 +2086,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         }
     }
 
-    //VALE: i have to call parseGeneralMecGroup after parsing jointsetcfg, because insed generalmec group there is useMotorSpeedFbk that needs jointset info.
+    //VALE: i have to call parseGeneralMecGroup after parsing jointsetcfg, because inside generalmec group there is useMotorSpeedFbk that needs jointset info.
     Bottle general = config.findGroup("GENERAL");
     if (general.isNull())
     {
