@@ -900,18 +900,33 @@ void MainWindow::onDeviceSelectionChanged()
             }
             else
             {
-//                printf("it is a can board many selected\n");
+                // it is a can board either under an ETH board or under a different device
+                // must be able to detect if it is can node under an ETH board or under CFW2...
+
+                int level = ui->devicesTree->currentItem()->data(0,DEVICE_LEVEL).toInt();
+                level = level;
 
                 for(int i=0; i < ui->devicesTree->currentItem()->parent()->childCount();i++){
                     if(ui->devicesTree->currentItem()->parent()->child(i)->isSelected() &&
                             ui->devicesTree->currentItem()->parent()->child(i)->data(0,EMPTY_NODE).toBool() == false){
-                        int boardNum = 0;
+                        //int boardNum = 0;
 
                         sBoard canBoard;
+                        if(3 == level)
+                        {
+                            canBoard = ((EthTreeWidgetItem*)ui->devicesTree->currentItem()->parent())->getCanBoard(i);
+                        }
+                        else
+                        {   // on cfw2 or others
+                            canBoard = ((CanTreeWidgetItem*)ui->devicesTree->currentItem())->getBoard();
+                        }
+
+                        //sBoard canBoard = ((EthTreeWidgetItem*)selectedNodes.first()->getParentNode())->getCanBoard(selectedNodes.first()->getIndexOfBoard());
                         // get the sBoard ... TBD
-                        canBoard.type = eobrd_mtb;
-                        canBoard.bus = 1;
-                        canBoard.pid = 7;
+                        // ciaouomo
+                        //canBoard.type = eobrd_mtb;
+                        //canBoard.bus = 1;
+                        //canBoard.pid = 7;
 
                         QtConcurrent::run(this,&MainWindow::populateCANinfo,canBoard);
                     }
@@ -1122,6 +1137,19 @@ void MainWindow::onAppendInfo(sBoard canboard)
     boardNode->addChild(adrNode);
 #else
 
+    printf("\ncan board address = %d\n", canboard.pid);
+
+    const char *name = eoboards_type2string2((eObrd_type_t)canboard.type, eobool_true);
+    QString nn = name;
+    if(eobrd_strain == canboard.type)
+    {
+        nn.append(" w/ SN = ");
+        nn.append(canboard.serial);
+        //nn.append(")");
+    }
+
+    QTreeWidgetItem *type = new QTreeWidgetItem(boardNode, QStringList() << "Type" << nn);
+    boardNode->addChild(type);
     QTreeWidgetItem *basic = new QTreeWidgetItem(boardNode, QStringList() << "Details" << "See left panel");
     boardNode->addChild(basic);
 
