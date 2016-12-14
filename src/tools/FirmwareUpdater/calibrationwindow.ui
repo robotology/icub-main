@@ -83,7 +83,7 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout">
           <item>
-           <widget class="QWidget" name="widget" native="true">
+           <widget class="QWidget" name="widget1" native="true">
             <property name="minimumSize">
              <size>
               <width>0</width>
@@ -572,7 +572,7 @@
                 <attribute name="title">
                  <string>B</string>
                 </attribute>
-                <widget class="QWidget" name="layoutWidget">
+                <widget class="QWidget" name="layoutWidget1">
                  <property name="geometry">
                   <rect>
                    <x>10</x>
@@ -773,7 +773,7 @@
                 <attribute name="title">
                  <string>C</string>
                 </attribute>
-                <widget class="QWidget" name="layoutWidget">
+                <widget class="QWidget" name="layoutWidget2">
                  <property name="geometry">
                   <rect>
                    <x>10</x>
@@ -1044,7 +1044,7 @@
      </widget>
     </item>
     <item>
-     <widget class="QWidget" name="widget" native="true">
+     <widget class="QWidget" name="widget2" native="true">
       <property name="minimumSize">
        <size>
         <width>0</width>
