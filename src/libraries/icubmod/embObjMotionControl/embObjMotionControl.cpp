@@ -2367,7 +2367,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
         return false;
     }
 
-    _mcparser = new mcParser(_njoints, boardIPstring);
+    _mcparser = new mcParser(_njoints, string(boardIPstring));
 
     // first step of configuration
     if(false == fromConfig_readServiceCfg(config))
