@@ -316,9 +316,9 @@ void CanTreeWidgetItem::refresh()
     strncpy  (board_add_info, board.add_info,32);
 
     if(-1 == board.appl_vers_build){
-        sprintf (board_firmware_version, "%d.0x%x", board.appl_vers_major, board.appl_vers_minor);
+        sprintf (board_firmware_version, "%d.%d", board.appl_vers_major, board.appl_vers_minor);
     } else {
-        sprintf (board_firmware_version, "%d.0x%x.%d", board.appl_vers_major, board.appl_vers_minor, board.appl_vers_build);
+        sprintf (board_firmware_version, "%d.%d.%d", board.appl_vers_major, board.appl_vers_minor, board.appl_vers_build);
     }
 
     sprintf (board_appl_minor,"%d",board.appl_vers_minor);
