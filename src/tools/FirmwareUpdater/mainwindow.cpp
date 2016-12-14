@@ -921,13 +921,6 @@ void MainWindow::onDeviceSelectionChanged()
                             canBoard = ((CanTreeWidgetItem*)ui->devicesTree->currentItem())->getBoard();
                         }
 
-                        //sBoard canBoard = ((EthTreeWidgetItem*)selectedNodes.first()->getParentNode())->getCanBoard(selectedNodes.first()->getIndexOfBoard());
-                        // get the sBoard ... TBD
-                        // ciaouomo
-                        //canBoard.type = eobrd_mtb;
-                        //canBoard.bus = 1;
-                        //canBoard.pid = 7;
-
                         QtConcurrent::run(this,&MainWindow::populateCANinfo,canBoard);
                     }
                 }
@@ -1137,21 +1130,62 @@ void MainWindow::onAppendInfo(sBoard canboard)
     boardNode->addChild(adrNode);
 #else
 
-    printf("\ncan board address = %d\n", canboard.pid);
+    char str[64] = {0};
 
     const char *name = eoboards_type2string2((eObrd_type_t)canboard.type, eobool_true);
-    QString nn = name;
+    QTreeWidgetItem *type = new QTreeWidgetItem(boardNode, QStringList() << "Type" << name);
+    boardNode->addChild(type);
+
+
+    snprintf(str, sizeof(str), "CAN%d:%d", canboard.bus, canboard.pid);
+    QTreeWidgetItem *adr = new QTreeWidgetItem(boardNode, QStringList() << "Address" << str);
+    boardNode->addChild(adr);
+
+    if(true == canboard.applicationisrunning)
+    {
+        snprintf(str, sizeof(str), "canApplication");
+    }
+    else
+    {
+        snprintf(str, sizeof(str), "canBootloader");
+    }
+    QTreeWidgetItem *pro = new QTreeWidgetItem(boardNode, QStringList() << "Running process" << str);
+    boardNode->addChild(pro);
+
+    if(-1 == canboard.appl_vers_build)
+    {
+        snprintf(str, sizeof(str), "%d.%d", canboard.appl_vers_major, canboard.appl_vers_minor);
+    }
+    else
+    {
+        snprintf(str, sizeof(str), "%d.%d.%d", canboard.appl_vers_major, canboard.appl_vers_minor, canboard.appl_vers_build);
+    }
+    QTreeWidgetItem *fwvers = new QTreeWidgetItem(boardNode, QStringList() << "Firmware version" << str);
+    boardNode->addChild(fwvers);
+
+    if((0 == canboard.prot_vers_major) && (0 == canboard.prot_vers_minor))
+    {
+        snprintf(str, sizeof(str), "N/A");
+    }
+    else
+    {
+        snprintf(str, sizeof(str), "%d.%d", canboard.prot_vers_major, canboard.prot_vers_minor);
+    }
+    QTreeWidgetItem *prvers = new QTreeWidgetItem(boardNode, QStringList() << "CAN protocol version" << str);
+    boardNode->addChild(prvers);
+
+    snprintf(str, sizeof(str), "%s", canboard.add_info);
+    QTreeWidgetItem *inf = new QTreeWidgetItem(boardNode, QStringList() << "Info" << str);
+    boardNode->addChild(inf);
+
     if(eobrd_strain == canboard.type)
     {
-        nn.append(" w/ SN = ");
-        nn.append(canboard.serial);
-        //nn.append(")");
+        QTreeWidgetItem *sn = new QTreeWidgetItem(boardNode, QStringList() << "Serial Number" << canboard.serial);
+        boardNode->addChild(sn);
     }
 
-    QTreeWidgetItem *type = new QTreeWidgetItem(boardNode, QStringList() << "Type" << nn);
-    boardNode->addChild(type);
-    QTreeWidgetItem *basic = new QTreeWidgetItem(boardNode, QStringList() << "Details" << "See left panel");
-    boardNode->addChild(basic);
+//    QTreeWidgetItem *basic = new QTreeWidgetItem(boardNode, QStringList() << "Details" << "See left panel");
+//    boardNode->addChild(basic);
 
 #endif
 
