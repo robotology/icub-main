@@ -8,6 +8,8 @@
 
 #include "firmwareupdatercore.h"
 
+#define UPDATER_RELEASE
+
 #ifdef Q_OS_WIN
 #include <Windows.h>
 #endif
@@ -39,7 +41,7 @@ int main(int argc, char *argv[])
 #ifdef UPDATER_RELEASE
     if(!checkApplicationLock()){
         yDebug() << "The application is busy";
-        qDebug() << "The application is busy";
+        qDebug() << "The application is busy. Check if an instance is already running, or if it is in zombie state. If none of them ... remove the file .firmwareUpdater.singleton";
         return 0;
     }
 #endif
@@ -285,7 +287,7 @@ int programCanDevice(FirmwareUpdaterCore *core,QString device,QString id,QString
                         }
                         if(selectedCount > 0){
                             core->setSelectedCanBoards(canBoards,board);
-                            bool ret = core->uploadCanApplication(file,&retString,board);
+                            bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, board);
                             qDebug() << retString;
                             return ret ? 0 : -1;
                         }else{
@@ -316,7 +318,7 @@ int programCanDevice(FirmwareUpdaterCore *core,QString device,QString id,QString
             }
             if(selectedCount > 0){
                 core->setSelectedCanBoards(canBoards,device,id.toInt());
-                bool ret = core->uploadCanApplication(file,&retString,device,id.toInt());
+                bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, device, id.toInt());
                 qDebug() << retString;
                 return ret ? 0 : -1;
             }else{
@@ -492,7 +494,7 @@ void printCanDevices(QList<sBoard> canBoards)
         char board_serial      [10]; memset (board_serial,0,10);
         char board_protocol    [10]; memset (board_protocol,0,10);
 
-        snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string((eObrd_type_t)board.type));
+        snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string2((eObrd_type_t)board.type, eobool_true));
 
         switch (board.status)
         {

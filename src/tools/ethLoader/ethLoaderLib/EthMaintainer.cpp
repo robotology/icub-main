@@ -690,7 +690,7 @@ string EthMaintainer::processDiscoveryReplies2(EthBoardList &boardlist, double w
                 memcpy(binfo.boardinfo32, disc->boardinfo32, sizeof(binfo.boardinfo32));
 
                 binfo.maintenanceIsActive = false;
-                if((eApplPROGupdater == binfo.processes.runningnow) || (eUpdater == binfo.processes.runningnow))
+                if(eUpdater == binfo.processes.runningnow)
                 {
                     binfo.maintenanceIsActive = true;
                 }
@@ -714,7 +714,7 @@ string EthMaintainer::processDiscoveryReplies2(EthBoardList &boardlist, double w
                 {
                     printf("EthMaintainer::processDiscoveryReplies2() has found board @ %s: %s w/ %s v %d.%d running protocol v %d w/ capabilities = 0x%x. mainteinance = %s\n",
                             ipv4rxstring.c_str(),
-                            eoboards_type2string((eObrd_type_t)disc->boardtype),
+                            eoboards_type2string2((eObrd_type_t)disc->boardtype, eobool_true),
                             eouprot_process2string((eOuprot_process_t)disc->processes.runningnow),
                             disc->processes.info[index].version.major,
                             disc->processes.info[index].version.minor,
@@ -838,7 +838,7 @@ std::string EthMaintainer::processMoreInfoReplies(EthBoardList &boardlist)
                 memcpy(binfo.boardinfo32, disc->boardinfo32, sizeof(binfo.boardinfo32));
 
                 binfo.maintenanceIsActive = false;
-                if((eApplPROGupdater == binfo.processes.runningnow) || (eUpdater == binfo.processes.runningnow))
+                if(eUpdater == binfo.processes.runningnow)
                 {
                     binfo.maintenanceIsActive = true;
                 }
@@ -866,7 +866,7 @@ std::string EthMaintainer::processMoreInfoReplies(EthBoardList &boardlist)
                     printf("\nBOARD at address %s:", ipv4rxstring.c_str());
                     printf("\n prot = %d, boardtype = %s, startup proc = %s, def2run proc = %s. it has %d processes:",
                                 binfo.protversion,
-                                eoboards_type2string((eObrd_type_t)binfo.boardtype),
+                                eoboards_type2string2((eObrd_type_t)binfo.boardtype, eobool_true),
                                 eouprot_process2string((eOuprot_process_t)binfo.processes.startup),
                                 eouprot_process2string((eOuprot_process_t)binfo.processes.def2run),
                                 binfo.processes.numberofthem
@@ -980,7 +980,7 @@ std::string EthMaintainer::prepareMoreInfoText(eOuprot_cmd_DISCOVER_REPLY_t * di
     memcpy(binfo.boardinfo32, disc->boardinfo32, sizeof(binfo.boardinfo32));
 
     binfo.maintenanceIsActive = false;
-    if((eApplPROGupdater == binfo.processes.runningnow) || (eUpdater == binfo.processes.runningnow))
+    if(eUpdater == binfo.processes.runningnow)
     {
         binfo.maintenanceIsActive = true;
     }

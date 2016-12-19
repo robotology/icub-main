@@ -1129,7 +1129,7 @@ void CalibrationWindow::onTimeout()
                     if(i<=2){
                         sprintf(tempbuf,"%+.3f N",(int(adc[i])-HEX_VALC)/float(HEX_VALC)*full_scale_const[currentMatrixIndex - 1][i]);
                     }else{
-                        sprintf(tempbuf,"%+.3f N/m",(int(adc[i])-HEX_VALC)/float(HEX_VALC)*full_scale_const[currentMatrixIndex - 1][i]);
+                        sprintf(tempbuf,"%+.3f Nm",(int(adc[i])-HEX_VALC)/float(HEX_VALC)*full_scale_const[currentMatrixIndex - 1][i]);
                     }
                     QTableWidgetItem *item3 = ui->tableUseMatrix->item(i,COL_NEWTONMEASURE);
                     setText(item3,tempbuf);
@@ -1159,7 +1159,7 @@ void CalibrationWindow::onTimeout()
                     setText(item,"--- N");
                 }else{
                     QTableWidgetItem *item = ui->tableUseMatrix->item(i,COL_NEWTONMEASURE);
-                    setText(item,"--- N/m");
+                    setText(item,"--- Nm");
                 }
             }
         }

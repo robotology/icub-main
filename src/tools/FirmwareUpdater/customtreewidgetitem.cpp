@@ -85,7 +85,12 @@ bool CustomTreeWidgetItem::isCheckSelected()
 
 QString CustomTreeWidgetItem::getBoardType()
 {
-    return text(DEVICE);
+    return text(BOARDT);
+}
+
+QString CustomTreeWidgetItem::getBoardProcess()
+{
+    return text(PROCESS);
 }
 
 EthBoard CustomTreeWidgetItem::getBoard()
@@ -114,7 +119,13 @@ QString CustomTreeWidgetItem::retrieveCanBoards(bool force)
     if(type() == ETH_TREE_NODE){
         canBoards = core->getCanBoardsFromEth(text(ADDRESS),&result,CanPacket::everyCANbus,force);
     } else if(type() == CAN_TREE_ROOT_NODE){
-        canBoards = core->getCanBoardsFromDriver(text(DEVICE),text(ID).toInt(),&result,force);
+        QString ttt = text(DEVICEID);
+        QString device;
+        QString IDstr;
+        getDeviceID(ttt, IDstr, device);
+        int Id = IDstr.toInt();
+        //canBoards = core->getCanBoardsFromDriver(text(DEVICE),text(ID).toInt(),&result,force);
+        canBoards = core->getCanBoardsFromDriver(device,Id,&result,force);
     }
 
     return result;
@@ -135,7 +146,7 @@ void CustomTreeWidgetItem::replaceCanBoard(int index, sBoard board)
 EthTreeWidgetItem::EthTreeWidgetItem(QTreeWidgetItem *parent, FirmwareUpdaterCore *core, int indexOfBoard) : CustomTreeWidgetItem(parent,QStringList(),indexOfBoard,core,ETH_TREE_NODE)
 {
     refresh();
-    QTreeWidgetItem *empty = new QTreeWidgetItem(this,QStringList() << "" << "?");
+    QTreeWidgetItem *empty = new QTreeWidgetItem(this,QStringList() << "" << "" << "?");
     empty->setData(0,DEVICE_LEVEL,3);
     empty->setData(0,EMPTY_NODE,true);
 }
@@ -198,12 +209,13 @@ void EthTreeWidgetItem::refresh()
 
     QStringList myFields;
     myFields.append("");
-    myFields.append(board_type);
     myFields.append("");
+    myFields.append(board_type);
+//    myFields.append("");
     myFields.append(board_ipaddr);
     myFields.append(running_process);
     myFields.append(board_version);
-    myFields.append("");
+//    myFields.append("");
     myFields.append(board_info);
 
     setData(0,INDEX_OF_BOARD,m_indexOfBoard);
@@ -269,7 +281,7 @@ void CanTreeWidgetItem::refresh()
 
     sBoard board = getBoard();
 
-    snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string((eObrd_type_t)board.type));
+    snprintf(board_type, sizeof(board_type), "%s", eoboards_type2string2((eObrd_type_t)board.type, eobool_true));
     switch (board.status)
     {
     case BOARD_RUNNING:
@@ -304,9 +316,9 @@ void CanTreeWidgetItem::refresh()
     strncpy  (board_add_info, board.add_info,32);
 
     if(-1 == board.appl_vers_build){
-        sprintf (board_firmware_version, "%d.0x%x", board.appl_vers_major, board.appl_vers_minor);
+        sprintf (board_firmware_version, "%d.%d", board.appl_vers_major, board.appl_vers_minor);
     } else {
-        sprintf (board_firmware_version, "%d.0x%x.%d", board.appl_vers_major, board.appl_vers_minor, board.appl_vers_build);
+        sprintf (board_firmware_version, "%d.%d.%d", board.appl_vers_major, board.appl_vers_minor, board.appl_vers_build);
     }
 
     sprintf (board_appl_minor,"%d",board.appl_vers_minor);
@@ -322,14 +334,36 @@ void CanTreeWidgetItem::refresh()
         snprintf (board_protocol, sizeof(board_protocol), "%d.%d", board.prot_vers_major, board.prot_vers_minor);
     }
 
+#if defined(_MAIN_WINDOW_SHOW_CAN_ADDRESS_IN_ADDRESS_COLUMN)
+    char prefix[20] = {0};
+#if defined(_MAIN_WINDOW_USE_IP_PREFIX_FOR_CAN_ADDRESS)
+    bool bParentOnEth = (parentNode->type() == ETH_TREE_NODE) ? true : false;
+    if(bParentOnEth)
+    {
+        QString ipaddress = parentNode->text(ADDRESS);
+        QByteArray ba = ipaddress.toLatin1();
+        const char *c_str2 = ba.data();
+        snprintf(prefix, sizeof(prefix), "%s:", c_str2);
+    }
+#endif
     QStringList myFields;
     myFields.append("");
+    myFields.append("");
+    myFields.append(board_type);
+    //myFields.append("");
+    char canadr[32]={0};
+    snprintf(canadr, sizeof(canadr), "%sCAN%d:%d", prefix, board.bus, board.pid);
+    myFields.append(canadr);
+#else
+    QStringList myFields;
+    //myFields.append("");
     myFields.append(board_type);
     myFields.append(QString("%1").arg(board.pid));
-    myFields.append(QString("CAN_%1").arg(board.bus));
+    myFields.append(QString("CAN%1").arg(board.bus));
+#endif
     myFields.append(board_process);
     myFields.append(board_firmware_version);
-    myFields.append("");
+    //myFields.append("");
     myFields.append(board_add_info);
 
 
@@ -341,12 +375,12 @@ void CanTreeWidgetItem::refresh()
     setData(0,DEVICE_LEVEL,parentNode->type() == ETH_TREE_NODE ? 3 : 2);
     setData(0,EMPTY_NODE,false);
     setData(0,CAN_TYPE,board.type);
-    setData(0,CAN_ERASE_EEPROM,board.eeprom);
-    if(board.eeprom){
-        setIcon(ERASE_EEPROM,QIcon(":/images/remove-icon-md.png"));
-    }else{
-        setIcon(ERASE_EEPROM,QIcon());
-    }
+//    setData(0,CAN_ERASE_EEPROM,board.eeprom);
+//    if(board.eeprom){
+//        setIcon(ERASE_EEPROM,QIcon(":/images/remove-icon-md.png"));
+//    }else{
+//        setIcon(ERASE_EEPROM,QIcon());
+//    }
 
     if(isCheckSelected() != board.selected){
         setCheckSelected(board.selected);
@@ -356,4 +390,31 @@ void CanTreeWidgetItem::refresh()
 
 
 }
+
+bool CustomTreeWidgetItem::getDeviceID(QString devicefullstring, QString &idstr, QString &devicestr)
+{
+    QString tmp = devicefullstring;
+    QByteArray ba = tmp.toLatin1();
+    const char *c_str2 = ba.data();
+#if 0
+    char device_cstr[64] = {0};
+    char id_cstr[64] = {0};
+    sscanf(c_str2, "%s %s", device_cstr, id_cstr);
+    devicestr = device_cstr;
+    idstr = id_cstr;
+#else
+    string ttmp = string(c_str2);
+    std::size_t ff = ttmp.find("<");
+    std::size_t ll = ttmp.find(">");
+    string t1;
+    t1.assign(ttmp, 0, ff);
+    string t2;
+    t2.assign(ttmp, ff+1, ll-ff-1);
+    devicestr = t1.c_str();
+    idstr = t2.c_str();
+#endif
+
+    return true;
+}
+
 

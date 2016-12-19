@@ -43,7 +43,7 @@ public:
     void bootFromApplication();
     void bootFromUpdater();
     bool uploadEthApplication(QString filename, QString *resultString);
-    bool uploadCanApplication(QString filename, QString *resultString, QString address = "", int deviceId = -1, QList<sBoard> *resultCanBoards = NULL);
+    bool uploadCanApplication(QString filename, QString *resultString, bool ee, QString address = "", int deviceId = -1, QList<sBoard> *resultCanBoards = NULL);
     bool uploadLoader(QString filename, QString *resultString);
     bool uploadUpdater(QString filename, QString *resultString);
     //void updateProgressCallback(float);
