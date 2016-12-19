@@ -30,6 +30,7 @@
 #include <yarp/dev/Drivers.h>
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Log.h>
+#include <yarp/os/LogStream.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -76,6 +77,9 @@ SimulatorModule::SimulatorModule(WorldManager& world, RobotConfig& config,
     iCubRLeg = NULL;
     iCubTorso = NULL;
     failureToLaunch = false;
+    idesc = NULL;
+    dd_descSrv = NULL;
+    dd_descClnt = NULL;
 }
 
 void SimulatorModule::sendTouchLeftHand(Bottle& report){
@@ -189,12 +193,12 @@ void SimulatorModule::sendVision() {
 bool SimulatorModule::closeModule() {
     yInfo("Closing module...\n");
     interruptModule();
-    
-    if (sim!=NULL)
-        delete sim;
-    sim=NULL;
 
-    portLeft.interrupt();        
+    if (sim != NULL)
+        delete sim;
+    sim = NULL;
+
+    portLeft.interrupt();
     portRight.interrupt();
 #ifndef OMIT_LOGPOLAR
     portLeftFov.interrupt();
@@ -203,9 +207,9 @@ bool SimulatorModule::closeModule() {
     portRightLog.interrupt();
 #endif    
     portWide.interrupt();
-    
+
     portLeft.close();
-    
+
     portRight.close();
 
 #ifndef OMIT_LOGPOLAR
@@ -214,9 +218,9 @@ bool SimulatorModule::closeModule() {
     portRightFov.close();
     portRightLog.close();
 #endif
-    
+
     portWide.close();
-    
+
     tactileLeftHandPort.close();
     tactileRightHandPort.close();
     tactileLeftArmPort.close();
@@ -233,7 +237,21 @@ bool SimulatorModule::closeModule() {
     trqTorsoPort.close();
     trqLeftArmPort.close();
     trqRightArmPort.close();
-    
+
+    if (dd_descClnt)
+    {
+        dd_descClnt->close();
+        delete dd_descClnt;
+        dd_descClnt = 0;
+    }
+    if (dd_descSrv)
+    {
+        dd_descSrv->close();
+        delete dd_descSrv;
+        dd_descSrv = 0;
+    }
+
+
     yInfo("Successfully terminated...bye...\n");
     return true;
 }
@@ -344,35 +362,81 @@ void SimulatorModule::init()
         return;
     }
 
+    dd_descSrv = new yarp::dev::PolyDriver;
+    dd_descClnt = new yarp::dev::PolyDriver;
+    Property srv_opt;
+    srv_opt.put("device", "robotDescriptionServer");
+    srv_opt.put("local", "/robotDescription");
+    Property clnt_opt;
+    clnt_opt.put("device", "robotDescriptionClient");
+    clnt_opt.put("local", "/icubSim/robotDescriptionClient");
+    clnt_opt.put("remote", "/robotDescription");
+
+    bool b1 =  dd_descSrv->open(srv_opt);
+    bool b2 = dd_descClnt->open(clnt_opt);
+    if (b1 && b2 && dd_descSrv->isValid() && dd_descClnt->isValid())
+    {
+        dd_descClnt->view(idesc);
+    }
+    else
+    {
+        yError() << "Unable to open descriptionServer/descriptionClient";
+        //return false;
+    }
+
     Property options;
+    yarp::dev::RobotDescription desc;
     if (robot_flags.actLArm || robot_flags.actLHand) {
         //start left arm device driver
         iCubLArm = createPart("left_arm");
+        desc.device_name = moduleName+"/left_arm";
+        desc.device_type = "controlboardwrapper2";
+        if (idesc) idesc->registerDevice(desc);
     }
 
     if (robot_flags.actRArm || robot_flags.actRHand) {
-      	//start right arm device driver
-      	iCubRArm = createPart("right_arm");
+        //start right arm device driver
+        iCubRArm = createPart("right_arm");
+        desc.device_name = moduleName + "/right_arm";
+        desc.device_type = "controlboardwrapper2";
+        if (idesc) idesc->registerDevice(desc);
     }
 
     if (robot_flags.actHead) {
         //start head device driver
         iCubHead = createPart("head");
+        desc.device_name = moduleName + "/head";
+        desc.device_type = "controlboardwrapper2";
+        if (idesc) idesc->registerDevice(desc);
     }
 
     if (robot_flags.actLegs) {
         //start left leg device driver
         iCubLLeg = createPart("left_leg");
+        desc.device_name = moduleName + "/right_arm";
+        desc.device_type = "controlboardwrapper2";
+        if (idesc) idesc->registerDevice(desc);
     }
 
     if (robot_flags.actLegs) {
         //start right leg device driver
         iCubRLeg = createPart("right_leg");
+        desc.device_name = moduleName + "/right_leg";
+        desc.device_type = "controlboardwrapper2";
+        if (idesc) idesc->registerDevice(desc);
     }
     if (robot_flags.actTorso) {
         //start torso device driver
         iCubTorso = createPart("torso");
+        desc.device_name = moduleName + "/torso";
+        desc.device_type = "controlboardwrapper2";
+        if (idesc) idesc->registerDevice(desc);
     }
+
+    //dd_descClnt will be not used anymore.
+    dd_descClnt->close();
+    delete dd_descClnt;
+    dd_descClnt = 0;
 }
 
 void SimulatorModule::initImagePorts() {
