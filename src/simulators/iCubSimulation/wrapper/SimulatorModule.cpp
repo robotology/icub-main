@@ -354,12 +354,13 @@ yarp::dev::PolyDriver *SimulatorModule::createPart(const char *name) {
     return driver;
 }
 
-void SimulatorModule::init()
+bool SimulatorModule::initSimulatorModule()
 {
-    if (!robot_flags.valid) {
+    if (!robot_flags.valid)
+    {
         yDebug("Robot flags are not set when creating SimulatorModule\n");
         failureToLaunch = true;
-        return;
+        return false;
     }
 
     dd_descSrv = new yarp::dev::PolyDriver;
@@ -372,16 +373,33 @@ void SimulatorModule::init()
     clnt_opt.put("local", "/icubSim/robotDescriptionClient");
     clnt_opt.put("remote", "/robotDescription");
 
-    bool b1 =  dd_descSrv->open(srv_opt);
+    bool b1 = dd_descSrv->open(srv_opt);
     bool b2 = dd_descClnt->open(clnt_opt);
-    if (b1 && b2 && dd_descSrv->isValid() && dd_descClnt->isValid())
+
+    if (b1 && dd_descSrv->isValid())
+    {
+
+    }
+    else
+    {
+        delete dd_descSrv;
+        dd_descSrv = 0;
+        yWarning() << "Unable to open robotDescriptionServer";
+    }
+
+    //We can continue even if we were not able to start a robotDescriptionServer, because maybe it was opened externally.
+    //But we cannot continue if client failed to open.
+    if (b2 && dd_descClnt->isValid())
     {
         dd_descClnt->view(idesc);
     }
     else
     {
-        yError() << "Unable to open descriptionServer/descriptionClient";
-        //return false;
+        delete dd_descClnt;
+        dd_descClnt = 0;
+        yError() << "Unable to open robotDescriptionClient";
+        failureToLaunch = true;
+        return false;
     }
 
     Property options;
@@ -437,6 +455,8 @@ void SimulatorModule::init()
     dd_descClnt->close();
     delete dd_descClnt;
     dd_descClnt = 0;
+
+    return true;
 }
 
 void SimulatorModule::initImagePorts() {
@@ -551,7 +571,7 @@ bool SimulatorModule::open() {
     if (robot_flags.actVision) {
         initImagePorts();
     }
-    init();
+    initSimulatorModule();
     if (failureToLaunch) return false;
 
     sim->init(this,&robot_config);

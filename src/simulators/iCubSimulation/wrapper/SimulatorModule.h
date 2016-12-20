@@ -146,7 +146,7 @@ private:
     yarp::os::Semaphore mutex, pulse, ack;
     double sloth;
 
-    void init();
+    bool initSimulatorModule();
     void initImagePorts();
     void initIcubParts();
 
