@@ -50,7 +50,8 @@ private:
     // Up to day the skinwrapper is able to handle (attach to) just one analog sensor device
     int period;
     yarp::dev::IAnalogSensor *analog;
-
+    int numPorts;
+    yarp::dev::IMultipleWrapper *multipleWrapper;
 
 //    yarp::sig::Vector wholeData;      // may be useful if one the skin wrapper has to get data from more than one device...
 

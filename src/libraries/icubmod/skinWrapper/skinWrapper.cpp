@@ -30,19 +30,16 @@ void skinWrapper::calibrate()
     }
 }
 
-bool skinWrapper::open(yarp::os::Searchable &inputParams)
+bool skinWrapper::open(yarp::os::Searchable &params)
 {
-    yTrace() << "skinWrapper param = " << inputParams.toString().c_str();
-
-    Property params;
-    params.fromString(inputParams.toString().c_str());
     bool correct=true;
 		
-		if(params.check("ports"))
-		{
-			Bottle *ports=params.find("ports").asList();
-			setId(ports->get(0).asString().c_str());
-		}
+    if(params.check("ports"))
+    {
+        Bottle *ports=params.find("ports").asList();
+        setId(ports->get(0).asString().c_str());
+        numPorts=ports->size();
+    }
     // Verify minimum set of parameters required
     if(!params.check("robotName") )
     {
@@ -66,8 +63,6 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
 		std::string devicename=params.find("device").asString().c_str();
     params.put("device", devicename.c_str());
 
-    std::string canbusdevice=params.find("canbusdevice").asString().c_str();
-    params.put("canbusdevice", canbusdevice.c_str());
 
     driver.open(params);
     if (!driver.isValid())
@@ -86,76 +81,86 @@ bool skinWrapper::open(yarp::os::Searchable &inputParams)
     }
 */
     // Read the list of ports
+    int total_taxels=params.find("total_taxels").asInt();
     std::string robotName=params.find("robotName").asString().c_str();
     std::string root_name;
     root_name+="/";
     root_name+=robotName;
-    root_name+="/skin/";
+    root_name+="/skin";
 
-    std::vector<AnalogPortEntry> skinPorts;  // temporary, actual ports are owned by the analogserver
-		// port names are optional, do not check for correctness.
-    if(!params.check("ports"))
-		{
-        // if there is no "ports" section take the name of the "skin" group as the only port name
-        skinPorts.resize( (size_t) 1);
-        skinPorts[0].offset = 0;
-        skinPorts[0].length = -1;
-        skinPorts[0].port_name = root_name + this->id;
-    }
-    else
-		{
-        Bottle *ports=params.find("ports").asList();
+//    std::vector<AnalogPortEntry> skinPorts;  // temporary, actual ports are owned by the analogserver
+//		// port names are optional, do not check for correctness.
+//    if(!params.check("ports"))
+//		{
+//        // if there is no "ports" section take the name of the "skin" group as the only port name
+//        skinPorts.resize( (size_t) 1);
+//        skinPorts[0].offset = 0;
+//        skinPorts[0].length = -1;
+//        skinPorts[0].port_name = root_name + this->id;
+//    }
+//    else
+//		{
+//        Bottle *ports=params.find("ports").asList();
 
-        if (!params.check("total_taxels", "number of taxels of the part"))
-            return false;
-        int total_taxels=params.find("total_taxels").asInt();
-        int nports=ports->size();
-        int totalT = 0;
-        skinPorts.resize(nports);
+//        if (!params.check("total_taxels", "number of taxels of the part"))
+//            return false;
+//        int total_taxels=params.find("total_taxels").asInt();
+//        int nports=ports->size();
+//        int totalT = 0;
+//        skinPorts.resize(nports);
 
-        for(int k=0;k<ports->size();k++)
-        {
-            Bottle parameters=params.findGroup(ports->get(k).asString().c_str());
+//        for(int k=0;k<numPorts;k++)
+//        {
+//            Bottle parameters=params.findGroup(ports->get(k).asString().c_str());
 
-            if (parameters.size()!=5)
-            {
-                yError () <<"check skin port parameters in part description";
-                yError() << "--> I was expecting "<<ports->get(k).asString().c_str() << " followed by four integers";
-                return false;
-            }
+//            if (parameters.size()!=5)
+//            {
+//                yError () <<"check skin port parameters in part description";
+//                yError() << "--> I was expecting "<<ports->get(k).asString().c_str() << " followed by four integers";
+//                return false;
+//            }
 
-            int wBase=parameters.get(1).asInt();
-            int wTop=parameters.get(2).asInt();
-            int base=parameters.get(3).asInt();
-            int top=parameters.get(4).asInt();
+//            int wBase=parameters.get(1).asInt();
+//            int wTop=parameters.get(2).asInt();
+//            int base=parameters.get(3).asInt();
+//            int top=parameters.get(4).asInt();
 
-            yDebug() << "SkinWrapper part "<< id << " mapping port/taxels--> "<< ports->get(k).asString().c_str() << ": "<< wBase<<" "<<wTop<<" "<<base<<" "<<top;
+//            yDebug() << "SkinWrapper part "<< id << " mapping port/taxels--> "<< ports->get(k).asString().c_str() << ": "<< wBase<<" "<<wTop<<" "<<base<<" "<<top;
 
-            //check consistenty
-            if(wTop-wBase != top-base){
-                yError() <<"Error: check skin port parameters in part description";
-                yError() <<"Numbers of mapped taxels do not match.";
-                return false;
-            }
-            int taxels=top-base+1;
+//            //check consistenty
+//            if(wTop-wBase != top-base){
+//                yError() <<"Error: check skin port parameters in part description";
+//                yError() <<"Numbers of mapped taxels do not match.";
+//                return false;
+//            }
+//            int taxels=top-base+1;
 
-            skinPorts[k].length = taxels;
-            skinPorts[k].offset = wBase;
-            skinPorts[k].port_name = root_name+string(ports->get(k).asString().c_str());
+//            skinPorts[k].length = taxels;
+//            skinPorts[k].offset = wBase;
+//            skinPorts[k].port_name = root_name+string(ports->get(k).asString().c_str());
 
-            totalT+=taxels;
-        }
+//            totalT+=taxels;
+//        }
 
-        if (totalT!=total_taxels)
-        {
-            yError() <<"Error total number of mapped taxels does not correspond to total taxels";
-            return false;
-        }
-    }
+//        if (totalT!=total_taxels)
+//        {
+//            yError() <<"Error total number of mapped taxels does not correspond to total taxels";
+//            return false;
+//        }
+//    }
 
-    // If everything is ok create analog server, for now with period 0 (disabled I guess)
-    analogServer = new yarp::dev::AnalogServer(skinPorts);
-    analogServer->setRate(0);
+//    // If everything is ok create analog server, for now with period 0 (disabled I guess)
+//    analogServer = new yarp::dev::AnalogServer(skinPorts);
+    yDebug()<<"skinWrapper params:"<<params.toString();
+
+    Property option(params.toString().c_str());
+    option.put("name",root_name);
+    option.unput("device");
+    option.put("device","analogServer");
+    option.put("channels",total_taxels);
+    option.unput("total_taxels");
+    driver.open(option);
+    //analogServer->setRate(0);
     return true;
 }
 
@@ -194,32 +199,46 @@ bool skinWrapper::attachAll(const yarp::dev::PolyDriverList &skinDev)
         yError() << "skinWrapper: subdevice passed to attach method is invalid!!!";
         return false;
     }
-
-    // Check if both analogServer and analogSensor are ok before doing attach.
-    if( NULL == analogServer)
-    {
-        yError() << "skinWrapper: analogServer already attached!!!";
-        return false;
-    }
-
     if(NULL == analog)
     {
         yError() << "skinWrapper: The analog sensor is not correctly instantiated, cannot attach !!!";
         return false;
     }
+    if(driver.isValid())
+    {
+        driver.view(multipleWrapper);
+    }
+    else
+    {
+        yError()<<"skinWrapper: cannot open analog server for skin";
+        return false;
+    }
+    if(multipleWrapper == YARP_NULLPTR)
+    {
+        yError()<<"skinWrapper: cannot call attach function";
+        return false;
+    }
+    multipleWrapper->attachAll(skinDev);
+
+    // Check if both analogServer and analogSensor are ok before doing attach.
+//    if( NULL == analogServer)
+//    {
+//        yError() << "skinWrapper: analogServer already attached!!!";
+//        return false;
+//    }
 
     // if we got this far every conditions are ok
-//     analogServer = new yarp::dev::AnalogServer(skinPorts);
-    analogServer->setRate(period);
-    analogServer->attach(analog);
-    analogServer->start();
+
+//    analogServer->setRate(period);
+//    analogServer->attach(analog);
+//    analogServer->start();
     return true;
 }
 
 bool skinWrapper::detachAll()
 {
     yTrace();
-    analogServer->stop();
+//    analogServer->stop();
     return true;
 }
 
