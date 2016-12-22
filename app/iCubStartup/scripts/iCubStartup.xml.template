@@ -65,7 +65,7 @@
         <!-- Enable/disable wholeBodyDynamics if you do/don't have torque sensors -->
         <module>
                 <name>wholeBodyDynamics</name>
-                <!-- Remember to add the "--headV2" parameter for robots equipped with head v. 2.0 -->
+                <!-- Remember to add the "--head_version 2.0" (or 2.5) parameter for robots equipped with head 2.0 (or 2.5) -->
                 <parameters>--autoconnect</parameters>
                 <node>pwrNode6</node>
                 <dependencies>
@@ -76,7 +76,7 @@
         <!-- Enable/disable gravityCompensator if you do/don't have torque sensors -->
         <module>
                 <name>gravityCompensator</name>
-                <!-- Remember to add the "--headV2" parameter for robots equipped with head v. 2.0 -->
+                <!-- Remember to add the "--head_version 2.0" (or 2.5) parameter for robots equipped with head 2.0 (or 2.5) -->
                 <parameters></parameters>
                 <node>pwrNode6</node>
                 <dependencies>

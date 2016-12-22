@@ -360,10 +360,30 @@ public:
         icub_type.head_version = 1;
         icub_type.legs_version = 1;
 
-        if (rf.check("headV2"))
+        // set icub_type.head_version int to 1 (default) or 2
+        if (rf.check("head_version"))
         {
-            yInfo("'headV2' option found. Using icubV2 head kinematics.\n");
-            icub_type.head_version = 2;
+            if (rf.find("head_version").asDouble()==1.0)
+            {
+                yInfo("\"head_version\" %g requested => Using V1 head kinematics.\n",
+                      rf.find("head_version").asDouble());
+            }
+            else if (rf.find("head_version").asDouble()==2.0 ||
+                rf.find("head_version").asDouble()==2.5)
+            {
+                yInfo("\"head_version\" %g requested => Using V2 head kinematics.\n",
+                      rf.find("head_version").asDouble());
+                icub_type.head_version = 2;
+            }
+            else
+            {
+                yWarning("Unknown \"head_version\" %g requested => Using V1 head kinematics.\n",
+                         rf.find("head_version").asDouble());
+            }
+        }
+        else
+        {
+            yInfo("No \"head_version\" specified => Using V1 head kinematics.\n");
         }
 
         //----------SPECIAL PARAM TO DEFINE LEGS VERSION--------//
@@ -762,7 +782,7 @@ int main(int argc, char * argv[])
         cout << "\t--local      name: the prefix of the ports opened by the module. defualt: wholeBodyDynamics"                  << endl;
         cout << "\t--autoconnect     automatically connects the module ports to iCubInterface"                                   << endl;
         cout << "\t--no_legs         this option disables the dynamics computation for the legs joints"                          << endl;  
-        cout << "\t--headV2          use the model of the headV2"                                                                << endl;
+        cout << "\t--head_version v: head structure, v is one of 1.0 (default), 2.0 or 2.5"                                      << endl;
         cout << "\t--legsV2          use the model of legsV2"                                                                    << endl;
         cout << "\t--no_left_arm     disables the left arm"                                                                      << endl;
         cout << "\t--no_right_arm    disables the right arm"                                                                     << endl;
