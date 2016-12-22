@@ -363,47 +363,67 @@ bool SimulatorModule::initSimulatorModule()
         return false;
     }
 
-    dd_descSrv = new yarp::dev::PolyDriver;
+    //first we try to open the robotDescriptionClient, because maybe an external server is already running
     dd_descClnt = new yarp::dev::PolyDriver;
-    Property srv_opt;
-    srv_opt.put("device", "robotDescriptionServer");
-    srv_opt.put("local", "/robotDescription");
     Property clnt_opt;
     clnt_opt.put("device", "robotDescriptionClient");
     clnt_opt.put("local", "/icubSim/robotDescriptionClient");
     clnt_opt.put("remote", "/robotDescription");
 
-    bool b1 = dd_descSrv->open(srv_opt);
-    bool b2 = dd_descClnt->open(clnt_opt);
-
-    if (b1 && dd_descSrv->isValid())
+    bool b_client = false;
+    if (dd_descClnt->open(clnt_opt) && dd_descClnt->isValid())
     {
-
-    }
-    else
-    {
-        delete dd_descSrv;
-        dd_descSrv = 0;
-        yWarning() << "Unable to open robotDescriptionServer";
-    }
-
-    //We can continue even if we were not able to start a robotDescriptionServer, because maybe it was opened externally.
-    //But we cannot continue if client failed to open.
-    if (b2 && dd_descClnt->isValid())
-    {
+        yInfo() << "External robotDescriptionServer was found. Connection succesful.";
+        b_client = true;
         dd_descClnt->view(idesc);
     }
     else
     {
-        delete dd_descClnt;
-        dd_descClnt = 0;
-        yError() << "Unable to open robotDescriptionClient";
-        failureToLaunch = true;
-        return false;
+        yInfo() << "External robotDescriptionServer was not found. Opening a new RobotDescriptionServer.";
+    }
+
+    //if the previous operation failed, then retry opening first a robotDescriptionServer and then a robotDescriptionClient
+    if (b_client == false)
+    {
+        dd_descSrv = new yarp::dev::PolyDriver;
+        Property srv_opt;
+        srv_opt.put("device", "robotDescriptionServer");
+        srv_opt.put("local", "/robotDescription");
+
+        bool b_server = false;
+        if (dd_descSrv->open(srv_opt) && dd_descSrv->isValid())
+        {
+            b_server = true;
+        }
+        else
+        {
+            //unable to open a robotDescriptionServer, this is a critical failure!
+            delete dd_descSrv;
+            dd_descSrv = 0;
+            yError() << "Unable to open robotDescriptionServer";
+            failureToLaunch = true;
+            return false;
+        }
+
+        //robotDescriptionServer is running, so let's retry to open the robotDescriptionClient
+        if (dd_descClnt->open(clnt_opt) && dd_descClnt->isValid())
+        {
+            b_client = true;
+            dd_descClnt->view(idesc);
+        }
+        else
+        {
+            //unable to open the robotDescriptionClient, this is a critical failure!
+            delete dd_descClnt;
+            dd_descClnt = 0;
+            yError() << "Unable to open robotDescriptionClient";
+            failureToLaunch = true;
+            return false;
+        }
     }
 
     Property options;
-    yarp::dev::RobotDescription desc;
+    yarp::dev::DeviceDescription desc;
     if (robot_flags.actLArm || robot_flags.actLHand) {
         //start left arm device driver
         iCubLArm = createPart("left_arm");
