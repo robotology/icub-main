@@ -423,7 +423,8 @@ private:
     uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
 
     eomc_couplingInfo_t _couplingInfo; //contains coupling matrix vecchio campo controller
-    eomc_jointsetsInfo_t _jointsets_info;
+    std::vector<eomc_jointsSet> _jsets;
+    std::vector<int> _joint2set;
 
 
 
@@ -482,7 +483,7 @@ private:
     bool controlModeStatusConvert_yarp2embObj(int vocabMode, eOmc_controlmode_t &embOut);
     int  controlModeStatusConvert_embObj2yarp(eOenum08_t embObjMode);
 
-    eOmc_pidoutputtype_t pidOutputTypeConver_eomc2fw(int joint); //maybe a day we convert from yarp to fw!
+    eOmc_pidoutputtype_t pidOutputTypeConver_eomc2fw(PidAlgorithmType_t controlLaw); //maybe a day we convert from yarp to fw!
 
     void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
     void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);

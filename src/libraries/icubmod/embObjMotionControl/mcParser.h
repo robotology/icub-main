@@ -53,8 +53,11 @@
 #include <yarp/os/Bottle.h>
 #include <yarp/dev/ControlBoardPid.h>
 #include <yarp/dev/ControlBoardHelper.h>
+#include <yarp/os/ConstString.h>
 
 #include "EoMotionControl.h"
+
+
 
 
 
@@ -192,6 +195,32 @@ typedef struct
 } eomc_twofocSpecificInfo;
 
 
+class eomc_jointsSet
+{
+public:
+    int           id; //num of set. it can be between 0 and max number of joint (_njoints)
+    std::vector<int>   joints; //list of joints belongig to this set2joint
+
+    eOmc_jointset_configuration_t cfg;
+
+    eomc_jointsSet(int num=0)
+    {
+        id=num;
+        joints.resize(0);
+        cfg.candotorquecontrol=0;
+        cfg.usespeedfeedbackfrommotors=0;
+        cfg.pidoutputtype=eomc_pidoutputtype_unknown;
+        cfg.dummy=0;
+        cfg.constraints.type=eomc_jsetconstraint_unknown;
+        cfg.constraints.param1=0;
+        cfg.constraints.param2=0;
+    }
+public:
+    int getNumberofJoints(void) {return (joints.size());}
+    eOmc_jointset_configuration_t* getConfiguration(void) {return &cfg;}
+
+};
+
 class mcParser
 {
 
@@ -215,6 +244,7 @@ private:
 
 
 
+
     //PID parsing functions
     bool parseControlsGroup(yarp::os::Searchable &config);
     bool parseSelectedPositionControl(yarp::os::Searchable &config);
@@ -232,6 +262,7 @@ private:
 
 
     bool pidsAreEquals(yarp::dev::Pid &pid1, yarp::dev::Pid &pid2); //to move in yarp pid (override = operator)
+    bool convert(yarp::os::ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
 
     //general utils functions
     bool extractGroup(yarp::os::Bottle &input, yarp::os::Bottle &out, const std::string &key1, const std::string &txt, int size);
@@ -247,6 +278,7 @@ public:
     bool parsePids(yarp::os::Searchable &config, eomcParser_pidInfo *ppids, eomcParser_pidInfo *vpids, eomcParser_trqPidInfo *tpids, eomcParser_pidInfo *cpids, bool currentPidisMandatory);
     bool parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificInfo *twofocinfo);
     bool parseCurrentPid(yarp::os::Searchable &config, eomcParser_pidInfo *cpids);//deprecated
+    bool parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<eomc_jointsSet> &jsets, std::vector<int> &jointtoset);
 
 };
 

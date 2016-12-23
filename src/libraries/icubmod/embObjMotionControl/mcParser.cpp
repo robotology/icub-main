@@ -984,7 +984,252 @@ bool mcParser::parseCurrentPid(yarp::os::Searchable &config, eomcParser_pidInfo 
     return true;
 }
 
+bool mcParser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<eomc_jointsSet> &jsets, std::vector<int> &joint2set)
+{
+    Bottle jointsetcfg = config.findGroup("JOINTSET_CFG");
+    if (jointsetcfg.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Missing JOINTSET_CFG group";
+        return false;
+    }
 
+
+    Bottle xtmp;
+    int numofsets = 0;
+
+    if(!extractGroup(jointsetcfg, xtmp, "numberofsets", "number of sets ", 1))
+    {
+        return  false;
+    }
+
+    numofsets = xtmp.get(1).asInt();
+
+    if((0 == numofsets) || (numofsets > _njoints))
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Number of jointsets is not correct. it should belong to (1, " << _njoints << ")";
+        return false;
+    }
+
+    jsets.resize(numofsets);
+    joint2set.resize(_njoints, eomc_jointSetNum_none);
+
+    for(unsigned int s=0;s<numofsets;s++)
+    {
+        char jointset_string[80];
+        sprintf(jointset_string, "JOINTSET_%d", s);
+        bool formaterror = false;
+
+
+        Bottle &js_cfg = jointsetcfg.findGroup(jointset_string);
+        if(js_cfg.isNull())
+        {
+            yError() << "embObjMC BOARD " << _boardname << "cannot find " << jointset_string;
+            return false;
+        }
+
+        //1) id of set
+        jsets.at(s).id=s;
+
+
+        //2) list of joints
+        Bottle &b_listofjoints=js_cfg.findGroup("listofjoints", "list of joints");
+        if (b_listofjoints.isNull())
+        {
+            yError() << "embObjMC BOARD " << _boardname << "listofjoints parameter not found";
+            return false;
+        }
+
+        int numOfJointsInSet = b_listofjoints.size()-1;
+        if((numOfJointsInSet < 1) || (numOfJointsInSet>_njoints))
+        {
+            yError() << "embObjMC BOARD " << _boardname << "numof joints of set " << s << " is not correct";
+            return false;
+        }
+
+
+        for (int j = 0; j <numOfJointsInSet; j++)
+        {
+            int jointofthisset = b_listofjoints.get(j+1).asInt();
+
+            if((jointofthisset< 0) || (jointofthisset>_njoints))
+            {
+                yError() << "embObjMC BOARD " << _boardname << "invalid joint number for set " << s;
+                return false;
+            }
+
+            jsets.at(s).joints.push_back(jointofthisset);
+
+            //2.1) fill map joint to set
+            joint2set.at(jointofthisset) = s;
+        }
+
+        // 3) constraints
+        if(!extractGroup(js_cfg, xtmp, "constraint", "type of jointset constraint ", 1))
+        {
+            return  false;
+        }
+
+        eOmc_jsetconstraint_t constraint;
+        if(!convert(xtmp.get(1).asString(), constraint, formaterror))
+        {
+            return false;
+        }
+        jsets.at(s).cfg.constraints.type = constraint;
+
+        //param1
+        if(!extractGroup(js_cfg, xtmp, "param1", "param1 of jointset constraint ", 1))
+        {
+            return  false;
+        }
+        jsets.at(s).cfg.constraints.param1 = xtmp.get(1).asDouble();
+
+        //param2
+        if(!extractGroup(js_cfg, xtmp, "param2", "param2 of jointset constraint ", 1))
+        {
+            return  false;
+        }
+        jsets.at(s).cfg.constraints.param2 = xtmp.get(1).asDouble();
+
+
+    }
+    return true;
+}
+
+
+
+// bool mcParser::readJointsetCfgGroup(yarp::os::Searchable &config)
+// {
+//     Bottle jointsetCfg = config.findGroup("JOINTSET_CFG");
+//     if (jointsetCfg.isNull())
+//     {
+//         yError() << "embObjMC BOARD " << _boardname << "Missing JOINTSET_CFG group";
+//         return false;
+//     }
+//
+//
+//     Bottle xtmp;
+//     int numofsets = 0;
+//
+//     if(!extractGroup(jointsetcfg, xtmp, "numberofsets", "number of sets ", 1))
+//     {
+//         return  false;
+//     }
+//
+//     numofsets = xtmp.get(1).asInt();
+//
+//     if((0 == numofsets) || (numofsets > _njoints))
+//     {
+//         yError() << "embObjMC BOARD " << _boardname << "Number of jointsets is not correct. it should belong to (1, " << _njoints << ")";
+//         return false;
+//     }
+//
+//     _jsets.resize(numofsets);
+//
+//     for(unsigned int s=0;s<numofsets;s++)
+//     {
+//         char jointset_string[80];
+//         sprintf(jointset_string, "JOINTSET_%d", s);
+//         bool formaterror = false;
+//
+//
+//         Bottle &js_cfg = jointsetcfg.findGroup(jointset_string);
+//         if(js_cfg.isNull())
+//         {
+//             yError() << "embObjMC BOARD " << _boardname << "cannot find " << jointset_string;
+//             return false;
+//         }
+//
+//         //1) id of set
+//         _jsets.at(s).id=s;
+//
+//
+//         //2) list of joints
+//         Bottle &b_listofjoints=js_cfg.findGroup("listofjoints", "list of joints");
+//         if (b_listofjoints.isNull())
+//         {
+//             yError() << "embObjMC BOARD " << _boardname << "listofjoints parameter not found";
+//             return false;
+//         }
+//
+//         int numOfJointsInSet = b_listofjoints.size()-1;
+//         if((numOfJointsInSet < 1) || (numOfJointsInSet>_njoints))
+//         {
+//             yError() << "embObjMC BOARD " << _boardname << "numof joints of set " << s << " is not correct";
+//             return false;
+//         }
+//
+//
+//         for (int j = 0; j <numOfJointsInSet; j++)
+//         {
+//             int jointofthisset = b_listofjoints.get(j+1).asInt();
+//
+//             if((jointofthisset< 0) || (jointofthisset>_njoints))
+//             {
+//                 yError() << "embObjMC BOARD " << _boardname << "invalid joint number for set " << s;
+//                 return false;
+//             }
+//
+//             _jsets.at(s).joints.push_back(jointofthisset);
+//
+//             //2.1) fill map joint to set
+//             joint2set[jointofthisset] = s;
+//         }
+//
+//         // 3) constraints
+//         if(!extractGroup(js_cfg, xtmp, "constraint", "type of jointset constraint ", 1))
+//         {
+//             return  false;
+//         }
+//
+//         eOmc_jsetconstraint_t constraint;
+//         if(!convert(xtmp.get(1).asString(), constraint, formaterror))
+//         {
+//             return false;
+//         }
+//         _jsets.at(s).cfg.constraints.type = constraint;
+//
+//         //param1
+//         if(!extractGroup(js_cfg, xtmp, "param1", "param1 of jointset constraint ", 1))
+//         {
+//             return  false;
+//         }
+//         _jsets.at(s).cfg.constraints.param1 = xtmp.get(1).asDouble();
+//
+//         //param2
+//         if(!extractGroup(js_cfg, xtmp, "param2", "param2 of jointset constraint ", 1))
+//         {
+//             return  false;
+//         }
+//         _jsets.at(s).cfg.constraints.param2 = xtmp.get(1).asDouble();
+//
+//
+//     }
+//     return true;
+// }
+
+
+bool mcParser::convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror)
+{
+    const char *t = fromstring.c_str();
+
+    eObool_t usecompactstring = eobool_false;
+    jsetconstraint = eomc_string2jsetconstraint(t, usecompactstring);
+
+    if(eomc_jsetconstraint_unknown == jsetconstraint)
+    {
+        usecompactstring = eobool_true;
+        jsetconstraint = eomc_string2jsetconstraint(t, usecompactstring);
+    }
+
+    if(eomc_jsetconstraint_unknown == jsetconstraint)
+    {
+        yWarning() << "ServiceParser::convert(): string" << t << "cannot be converted into a proper eOmc_jsetconstraint_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
 //////////////////////////////////////////////////////////////////////////////
 /////////////////// DEBUG FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////

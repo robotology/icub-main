@@ -499,10 +499,6 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_maxJntCmdVelocity);
     checkAndDestroy(_maxMotorVelocity);
     checkAndDestroy(_newtonsToSensor);
-    checkAndDestroy(_ppids);
-    checkAndDestroy(_vpids);
-    checkAndDestroy(_tpids);
-    checkAndDestroy(_cpids);
     checkAndDestroy(_impedance_params);
     checkAndDestroy(_impedance_limits);
     checkAndDestroy(_limitsMax);
@@ -523,7 +519,6 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_enabledPid);
     checkAndDestroy(_calibrated);
     checkAndDestroy(_twofocinfo);
-    checkAndDestroy(_axisName);
     checkAndDestroy(_jointType);
     checkAndDestroy(_rotorlimits_max);
     checkAndDestroy(_rotorlimits_min);
@@ -542,6 +537,9 @@ bool embObjMotionControl::dealloc()
 
     if(_cpids)
         delete [] _cpids;
+
+    if(_axisName)
+        delete [] _axisName;
 
 
     return true;
@@ -648,6 +646,9 @@ embObjMotionControl::embObjMotionControl() :
 
     parser = NULL;
     _mcparser = NULL;
+
+    _jsets.resize(0);
+    _joint2set.resize(0);
 
 }
 
@@ -1215,19 +1216,28 @@ bool embObjMotionControl::parseGeneralMecGroup(Bottle &general)
 
         //Note: currently in eth protocol this parameter belongs to jointset configuration. So
         // i need to check that every joint belog to same set has the same value
-        for(int s=0; s<_jointsets_info.numofjointsets; s++)
+        for(int s=0; s< _jsets.size(); s++)
         {
-            bool firstjointval = useMotorSpeedFbk[_jointsets_info.set2joint[s][0]];
-            for(int j=1; j<_jointsets_info.set2joint[s].size(); j++)
+            int numofjointsinset = _jsets[s].getNumberofJoints();
+            if(numofjointsinset == 0 )
             {
-                int joint = _jointsets_info.set2joint[s][j];
-                if(firstjointval != useMotorSpeedFbk[joint])
+                    yError() << "embObjMC BOARD " << boardIPstring << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
+                    return false;
+            }
+
+            int firstjointofset = _jsets[s].joints[0];
+            for(int j=1; j<numofjointsinset; j++)
+            {
+                int joint = _jsets[s].joints[j];
+                if(useMotorSpeedFbk[firstjointofset] != useMotorSpeedFbk[joint])
                 {
-                    yError() << "In board " << boardIPstring << ". Param useMotorSpeedFbk should have same value for joints belong same set. See joint " << _jointsets_info.set2joint[s][0] << " and " << joint;
+                    yError() << "In board " << boardIPstring << ". Param useMotorSpeedFbk should have same value for joints belong same set. See joint " << firstjointofset << " and " << joint;
                     return false;
                 }
             }
-            _jointsets_info.jointset_cfgs[s].usespeedfeedbackfrommotors = firstjointval;
+
+            eOmc_jointset_configuration_t* cfg_ptr = _jsets[s].getConfiguration();
+            cfg_ptr->usespeedfeedbackfrommotors = useMotorSpeedFbk[firstjointofset];
         }
     }
 
@@ -1768,131 +1778,40 @@ void embObjMotionControl::debugUtil_printJointsetInfo(void)
     yError() << "****** DEBUG PRINTS **********";
     yError() << "joint to set:";
     for(int x=0; x< _njoints; x++)
-        yError() << " /t j " << x << ": set " <<_jointsets_info.joint2set[x];
+        yError() << " /t j " << x << ": set " <<_joint2set[x];
     yError() << "jointmap:";
 
-    yError() << " size in set2joint=" << _jointsets_info.set2joint.size();
-    for(int x=0; x<_jointsets_info.set2joint.size(); x++)
+    yError() << " number of sets" << _jsets.size();
+    for(int x=0; x< _jsets.size(); x++)
     {
-        yError() << "set " << x<< "has size " << _jointsets_info.set2joint[x].size();
-        for(int y=0; y<_jointsets_info.set2joint[x].size(); y++)
-            yError() << "set " << x << ": " << _jointsets_info.set2joint[x][y];
+        yError() << "set " << x<< "has size " <<_jsets[x].getNumberofJoints();
+        for(int y=0; y<_jsets[x].getNumberofJoints(); y++)
+            yError() << "set " << x << ": " << _jsets[x].joints[y];
     }
     yError() << "********* END ****************";
 
 }
 
 
-bool embObjMotionControl::parseJointsetCfgGroup(Bottle &jointsetcfg)
-{
-    Bottle xtmp;
-    int numofsets = 0;
-    vector<int> listofjoints;
 
-    if(!extractGroup(jointsetcfg, xtmp, "numberofsets", "number of sets ", 1))
-    {
-        return  false;
-    }
-
-    numofsets = xtmp.get(1).asInt();
-
-    if((0 == numofsets) || (numofsets > _njoints))
-    {
-        yError() << "embObjMC BOARD " << boardIPstring << "Number of jointsets is not correct. it should belong to (1, " << _njoints << ")";
-        return false;
-    }
-
-    //reset joint2jointset map
-    _jointsets_info.numofjointsets = numofsets;
-    _jointsets_info.joint2set.resize(_njoints, eomc_jointSetNum_none);
-
-    //reset jointsets' cfg
-    eOmc_jointset_configuration_t cfg_reset = {0};
-    _jointsets_info.jointset_cfgs.resize(numofsets, cfg_reset);
-
-    _jointsets_info.set2joint.resize(numofsets);
-    for(unsigned int s=0;s<numofsets;s++)
-    {
-        char jointset_string[80];
-        sprintf(jointset_string, "JOINTSET_%d", s);
-        bool formaterror = false;
-
-
-        Bottle &js_cfg = jointsetcfg.findGroup(jointset_string);
-        if(js_cfg.isNull())
-        {
-            yError() << "embObjMC BOARD " << boardIPstring << "cannot find " << jointset_string;
-            return false;
-        }
-
-        //list of joints
-        Bottle &b_listofjoints=js_cfg.findGroup("listofjoints", "list of joints");
-        if (b_listofjoints.isNull())
-        {
-            yError() << "embObjMC BOARD " << boardIPstring << "listofjoints parameter not found";
-            return false;
-        }
-
-       _jointsets_info.set2joint[s].resize(b_listofjoints.size()-1);
-
-
-        for (int k = 1; k <=_jointsets_info.set2joint[s].size(); k++)
-        {
-            int jointofthisset = b_listofjoints.get(k).asInt();
-            if((jointofthisset< 0) || (jointofthisset>_njoints))
-            {
-                yError() << "embObjMC BOARD " << boardIPstring << "invalid joint number for set " << s;
-                return false;
-            }
-            _jointsets_info.joint2set[jointofthisset] = s;
-            _jointsets_info.set2joint[s][k-1] = jointofthisset;
-        }
-
-        //constraints
-        if(!extractGroup(js_cfg, xtmp, "constraint", "type of jointset constraint ", 1))
-        {
-            return  false;
-        }
-
-        eOmc_jsetconstraint_t constraint;
-        if(!parser->convert(xtmp.get(1).asString(), constraint, formaterror))
-        {
-            return false;
-        }
-        _jointsets_info.jointset_cfgs[s].constraints.type = constraint;
-
-
-        //param1
-        if(!extractGroup(js_cfg, xtmp, "param1", "param1 of jointset constraint ", 1))
-        {
-            return  false;
-        }
-        _jointsets_info.jointset_cfgs[s].constraints.param1 = xtmp.get(1).asDouble();
-
-        //param2
-        if(!extractGroup(js_cfg, xtmp, "param2", "param2 of jointset constraint ", 1))
-        {
-            return  false;
-        }
-        _jointsets_info.jointset_cfgs[s].constraints.param2 = xtmp.get(1).asDouble();
-    }
-    return true;
-}
 
 bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_pidInfo *pidInfo)
 {
 
-    for(int s=0; s<_jointsets_info.set2joint.size(); s++)
+    for(int s=0; s<_jsets.size(); s++)
     {
-       if(_jointsets_info.set2joint[s].size() == 0 )
+       int numofjoints = _jsets[s].getNumberofJoints();
+
+       if(numofjoints== 0 )
        {
             yError() << "embObjMC BOARD " << boardIPstring << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
             return false;
        }
-        int firstjoint = _jointsets_info.set2joint[s][0];
-        for(int k=1; k<_jointsets_info.set2joint[s].size(); k++)
+        int firstjoint = _jsets[s].joints[0];//get firts joint of set s
+
+        for(int k=1; k<numofjoints; k++)
         {
-            int otherjoint = _jointsets_info.set2joint[s][k];
+            int otherjoint = _jsets[s].joints[k];
 
             if(pidInfo[firstjoint].usernamePidSelected != pidInfo[otherjoint].usernamePidSelected)
             {
@@ -1913,17 +1832,20 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_t
 {
 #warning VALE ho dovuto replicare la funz verifyUserControlLawConsistencyInJointSet per torque ==>metti type in pidinfo class
 
-    for(int s=0; s<_jointsets_info.set2joint.size(); s++)
+    for(int s=0; s<_jsets.size(); s++)
     {
-       if(_jointsets_info.set2joint[s].size() == 0 )
+       int numofjoints = _jsets[s].getNumberofJoints();
+
+       if(numofjoints== 0 )
        {
             yError() << "embObjMC BOARD " << boardIPstring << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
             return false;
        }
-        int firstjoint = _jointsets_info.set2joint[s][0];
-        for(int k=1; k<_jointsets_info.set2joint[s].size(); k++)
+        int firstjoint = _jsets[s].joints[0];//get firts joint of set s
+
+        for(int k=1; k<numofjoints; k++)
         {
-            int otherjoint = _jointsets_info.set2joint[s][k];
+            int otherjoint = _jsets[s].joints[k];
 
             if(pidInfo[firstjoint].usernamePidSelected != pidInfo[otherjoint].usernamePidSelected)
             {
@@ -1937,9 +1859,9 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_t
 }
 
 //maybe a day we convert from yarp to fw!
-eOmc_pidoutputtype_t embObjMotionControl::pidOutputTypeConver_eomc2fw(int joint)
+eOmc_pidoutputtype_t embObjMotionControl::pidOutputTypeConver_eomc2fw(PidAlgorithmType_t controlLaw)
 {
-     switch( _ppids[joint].controlLaw)
+     switch(controlLaw)
      {
          case PidAlgo_simple:
             return(eomc_pidoutputtype_pwm);
@@ -1959,12 +1881,20 @@ eOmc_pidoutputtype_t embObjMotionControl::pidOutputTypeConver_eomc2fw(int joint)
 
 bool embObjMotionControl::updatedJointsetsCfgWithControlInfo()
 {
-    for(int s=0; s<_jointsets_info.set2joint.size(); s++)
+    for(int s=0; s<_jsets.size(); s++)
     {
-        int joint = _jointsets_info.set2joint[s][0];
-        _jointsets_info.jointset_cfgs[s].pidoutputtype = pidOutputTypeConver_eomc2fw(joint);
+        if(_jsets[s].getNumberofJoints() == 0)
+        {
+            yError() << "embObjMC BOARD " << boardIPstring << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
+            return false;
+        }
+        int joint = _jsets[s].joints[0];
 
-        _jointsets_info.jointset_cfgs[s].candotorquecontrol = isTorqueControlEnabled(joint);
+        eOmc_jointset_configuration_t* cfg_ptr = _jsets[s].getConfiguration();
+
+        cfg_ptr->pidoutputtype = pidOutputTypeConver_eomc2fw(_ppids[joint].controlLaw);
+
+        cfg_ptr->candotorquecontrol = isTorqueControlEnabled(joint);
     }
     return true;
 }
@@ -2003,6 +1933,10 @@ bool embObjMotionControl::saveCouplingsData(void)
             return true;
         } break;
 
+        case eomn_serv_MC_generic:
+        {
+            return true;
+        } break;
         default:
         {
             return false;
@@ -2011,12 +1945,10 @@ bool embObjMotionControl::saveCouplingsData(void)
 
     memset(jc_dest, 0, sizeof(eOmc_4jomo_coupling_t));
 
-    // very important: so far, the fw in Controller.c must find eomc_jointSetNum_none in un-used entries, even if we have less than 4 joints.
-    memset(jc_dest->joint2set, eomc_jointSetNum_none, sizeof(jc_dest->joint2set));
 
-    for(int i=0; i<_jointsets_info.joint2set.size(); i++)
+    for(int i=0; i<_njoints; i++)
     {
-        jc_dest->joint2set[i] = _jointsets_info.joint2set[i];
+        jc_dest->joint2set[i] = _joint2set[i];
     }
 
     for(int i=0; i<4; i++)
@@ -2037,9 +1969,10 @@ bool embObjMotionControl::saveCouplingsData(void)
         }
     }
 
-    for(int s=0; s< _jointsets_info.numofjointsets; s++)
+    for(int s=0; s< _jsets.size(); s++)
     {
-        memcpy(&jc_dest->jsetcfg[s]  , &_jointsets_info.jointset_cfgs[s], sizeof(eOmc_jointset_configuration_t));
+        eOmc_jointset_configuration_t* cfg_ptr = _jsets[s].getConfiguration();
+        memcpy(&(jc_dest->jsetcfg[s]), cfg_ptr, sizeof(eOmc_jointset_configuration_t));
     }
 
     return true;
@@ -2071,19 +2004,23 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
         }
 
-        ////// JOINTSET_CFG
-        {
-            Bottle jointsetCfg = config.findGroup("JOINTSET_CFG");
-            if (jointsetCfg.isNull())
-            {
-                yError() << "embObjMC BOARD " << boardIPstring << "Missing JOINTSET_CFG group";
+         ////// JOINTSET_CFG
+//         {
+//             Bottle jointsetCfg = config.findGroup("JOINTSET_CFG");
+//             if (jointsetCfg.isNull())
+//             {
+//                 yError() << "embObjMC BOARD " << boardIPstring << "Missing JOINTSET_CFG group";
+//                 return false;
+//             }
+//
+//             if(!parseJointsetCfgGroup(jointsetCfg))
+//                 return false;
+//
+//         }
+           if(!_mcparser->parseJointsetCfgGroup(config, _jsets, _joint2set))
                 return false;
-            }
 
-            if(!parseJointsetCfgGroup(jointsetCfg))
-                return false;
-
-        }
+           debugUtil_printJointsetInfo();
     }
 
     //VALE: i have to call parseGeneralMecGroup after parsing jointsetcfg, because inside generalmec group there is useMotorSpeedFbk that needs jointset info.
@@ -2309,7 +2246,7 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
     {
         jointEncoder_ptr = parser->getEncoderAtJoint(i);
         motorEncoder_ptr = parser->getEncoderAtMotor(i);
-#warning VALE: metti dei controlli per verificare la validita' delle configurazioni degli encoder
+#warning VALE: metti dei controlli per verificare la validita delle configurazioni degli encoder
         if(NULL == jointEncoder_ptr)
         {
             _jointEncoderRes[i]  = 1;
