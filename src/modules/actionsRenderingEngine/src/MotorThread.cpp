@@ -103,39 +103,23 @@ int MotorThread::checkArm(int arm, Vector &xd, const bool applyOffset)
 
 bool MotorThread::setImpedance(bool turn_on)
 {
-    bool done=true;
-    if(turn_on)
+    InteractionModeEnum mode=(turn_on?VOCAB_IM_COMPLIANT:VOCAB_IM_STIFF);
+    for(int i=0; i<5; i++)
     {
-        for(int i=0; i<5; i++)
-        {
-            if(action[LEFT]!=NULL)
-                done=done && int_mode_arm[LEFT]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
-            if(action[RIGHT]!=NULL)
-                done=done && int_mode_arm[RIGHT]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
-        }
-        
-        for(int i=0; i<3; i++)
-            done=done && int_mode_torso->setInteractionMode(i,VOCAB_IM_STIFF);
-
-        status_impedance_on=done;
-    }
-    else
-    {
-        for(int i=0; i<5; i++)
-        {
-            if(action[LEFT]!=NULL)
-                done=done && int_mode_arm[LEFT]->setInteractionMode(i,VOCAB_IM_STIFF);
-            if(action[RIGHT]!=NULL)
-                done=done && int_mode_arm[RIGHT]->setInteractionMode(i,VOCAB_IM_STIFF);
-        }
-
-        for(int i=0; i<3; i++)
-            done=done && int_mode_torso->setInteractionMode(i,VOCAB_IM_STIFF);
-
-        status_impedance_on=!done;
+        if(action[LEFT]!=NULL)
+            int_mode_arm[LEFT]->setInteractionMode(i,mode);
+        if(action[RIGHT]!=NULL)
+            int_mode_arm[RIGHT]->setInteractionMode(i,mode);
     }
 
-    return done;
+    if (int_mode_torso!=NULL)
+    {
+        InteractionModeEnum modes[3]={VOCAB_IM_STIFF, VOCAB_IM_STIFF, VOCAB_IM_STIFF};
+        int_mode_torso->setInteractionModes(modes);
+    }
+
+    status_impedance_on=turn_on;
+    return true;
 }
 
 
@@ -788,11 +772,10 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
 
     extForceThresh[arm]=b.check("external_forces_thresh",Value(0.0)).asDouble();
 
-    if(b.check("grasp_model_file"))
-    {
-        string tmpGraspPath=rf.getHomeContextPath().c_str();
-        graspPath[arm]=tmpGraspPath+"/"+b.find("grasp_model_file").asString().c_str();
-    }
+    string modelFile("grasp_model_");
+    modelFile+=(arm==LEFT?"left":"right");
+    modelFile+=".ini";
+    graspFile[arm]=b.check("grasp_model_file",Value(modelFile)).asString();
 
     return true;
 }
@@ -806,47 +789,26 @@ void MotorThread::close()
     //set the system back to velocity mode
     setImpedance(false);
     
-    if(drv_head!=NULL)
-    {
-        delete drv_head;
-        drv_head=NULL;
-    }
+    delete drv_head;
+    drv_head=NULL;
 
-    if(drv_torso!=NULL)
-    {
-        delete drv_torso;
-        drv_torso=NULL;
-    }
+    delete drv_torso;
+    drv_torso=NULL;
 
-    if(drv_arm[LEFT]!=NULL)
-    {
-        delete drv_arm[LEFT];
-        drv_arm[LEFT]=NULL;
-    }
-        
-    if(drv_arm[RIGHT]!=NULL)
-    {
-        delete drv_arm[RIGHT];
-        drv_arm[RIGHT]=NULL;
-    }
+    delete drv_arm[LEFT];
+    drv_arm[LEFT]=NULL;
+    
+    delete drv_arm[RIGHT];
+    drv_arm[RIGHT]=NULL;
 
-    if(drv_ctrl_gaze!=NULL)
-    {
-        delete drv_ctrl_gaze;
-        drv_ctrl_gaze=NULL;
-    }
+    delete drv_ctrl_gaze;
+    drv_ctrl_gaze=NULL;
 
-    if (action[LEFT]!=NULL)
-    {
-        delete action[LEFT];
-        action[LEFT]=NULL;
-    }
+    delete action[LEFT];
+    action[LEFT]=NULL;
 
-    if (action[RIGHT]!=NULL)
-    {
-        delete action[RIGHT];
-        action[RIGHT]=NULL;
-    }
+    delete action[RIGHT];
+    action[RIGHT]=NULL;
 
     disparityPort.interrupt();
     disparityPort.close();
@@ -866,7 +828,6 @@ void MotorThread::close()
 bool MotorThread::threadInit()
 {
     Bottle bMotor=rf.findGroup("motor");
-
     if(bMotor.isNull())
     {
         yError("Motor part is missing!");
@@ -924,9 +885,9 @@ bool MotorThread::threadInit()
     drv_head=new PolyDriver;
     drv_torso=new PolyDriver;
     drv_ctrl_gaze=new PolyDriver;
-    if (!drv_head->open(optHead)             ||
-        !drv_torso->open(optTorso)           ||
-        !drv_ctrl_gaze->open(optctrl_gaze)       )
+    if (!drv_head->open(optHead) ||
+        !drv_torso->open(optTorso) ||
+        !drv_ctrl_gaze->open(optctrl_gaze))
     {
         close();
         return false;
@@ -1237,7 +1198,10 @@ bool MotorThread::threadInit()
     //init the kinematics offsets and table height
     kinematics_file=bMotor.find("kinematics_file").asString().c_str();
     if(!loadKinematicOffsets())
+    {
+        close();
         return false;
+    }
 
     //set the initial stereo2cartesian mode
     int starting_modeS2C=bMotor.check("stereoTocartesian_mode",Value("homography")).asVocab();
@@ -1251,7 +1215,6 @@ bool MotorThread::threadInit()
     grasp_state=GRASP_STATE_IDLE;
 
     Rand::init();
-
     
     head_mode=HEAD_MODE_IDLE;
     arm_mode=ARM_MODE_IDLE;
@@ -2456,7 +2419,7 @@ bool MotorThread::calibFingers(Bottle &options)
             graspModel[arm]->calibrate(prop);
 
             ofstream fout;
-            fout.open(graspPath[arm].c_str());
+            fout.open((rf.getHomeContextPath()+"/"+graspFile[arm]).c_str());
             graspModel[arm]->toStream(fout);
             fout.close();
 

@@ -178,7 +178,7 @@ private:
 
     //tactile perception
     iCub::perception::Model             *graspModel[2];
-    string                              graspPath[2];
+    string                              graspFile[2];
 
     //stereo 2 cartesian mode
     int                                 modeS2C;
