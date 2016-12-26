@@ -136,7 +136,7 @@ private:
     IInteractionMode                    *int_mode_arm[2];
     IImpedanceControl                   *ctrl_impedance_arm[2];
 
-    int                                 default_gaze_context;
+    int                                 gaze_context;
 
     bool                                gazeUnderControl;
     bool                                status_impedance_on;
@@ -281,7 +281,8 @@ public:
         Bottle *bTarget=options.find("target").asList();
         if (!gazeUnderControl)
         {
-            ctrl_gaze->restoreContext(default_gaze_context);
+            ctrl_gaze->stopControl();
+            ctrl_gaze->restoreContext(gaze_context);
 
             if (checkOptions(options,"no_sacc"))
                 ctrl_gaze->setSaccadesMode(false);

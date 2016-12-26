@@ -1016,8 +1016,9 @@ bool MotorThread::threadInit()
         ctrl_gaze->blockEyes(bMotor.find("block_eyes").asDouble());
 
     //store the current context and restore the initial one
-    ctrl_gaze->storeContext(&default_gaze_context);
+    ctrl_gaze->storeContext(&gaze_context);
     ctrl_gaze->restoreContext(initial_gaze_context);
+    ctrl_gaze->deleteContext(initial_gaze_context);
     gazeUnderControl=false;
 
     //-------------------------------
@@ -1737,43 +1738,40 @@ bool MotorThread::point(Bottle &options)
 
 bool MotorThread::look(Bottle &options)
 {
+    setGazeIdle();
+    ctrl_gaze->restoreContext(gaze_context);
+
     if (checkOptions(options,"hand"))
     {
-        setGazeIdle();
-        ctrl_gaze->restoreContext(default_gaze_context);
-        
         int arm=ARM_IN_USE;
         if(checkOptions(options,"left") || checkOptions(options,"right"))
             arm=checkOptions(options,"left")?LEFT:RIGHT;
 
         arm=checkArm(arm);        
         lookAtHand(options);        
-        return true;
     }
-
-    Bottle *bTarget=options.find("target").asList();
-
-    Vector xd;
-    if (!targetToCartesian(bTarget,xd))
-        return false;
-
-    setGazeIdle();
-    ctrl_gaze->restoreContext(default_gaze_context);
-
-    if (options.check("block_eyes"))
-        ctrl_gaze->blockEyes(options.find("block_eyes").asDouble());
-
-    if (checkOptions(options,"fixate"))
+    else
     {
-        gaze_fix_point=xd;
-        keepFixation(options);
-    }
-        
-    ctrl_gaze->lookAtFixationPoint(xd);
-    if (checkOptions(options,"wait"))
-    {
-        ctrl_gaze->waitMotionDone();
-        Time::delay(1.5);
+        Vector xd;
+        Bottle *bTarget=options.find("target").asList();        
+        if (!targetToCartesian(bTarget,xd))
+            return false;
+
+        if (options.check("block_eyes"))
+            ctrl_gaze->blockEyes(options.find("block_eyes").asDouble());
+
+        if (checkOptions(options,"fixate"))
+        {
+            gaze_fix_point=xd;
+            keepFixation(options);
+        }
+            
+        ctrl_gaze->lookAtFixationPoint(xd);
+        if (checkOptions(options,"wait"))
+        {
+            ctrl_gaze->waitMotionDone();
+            Time::delay(1.5);
+        }
     }
 
     return true;
@@ -2066,7 +2064,7 @@ bool MotorThread::goHome(Bottle &options)
 
         gazeUnderControl=true;
         ctrl_gaze->stopControl();
-        ctrl_gaze->restoreContext(default_gaze_context);
+        ctrl_gaze->restoreContext(gaze_context);
         ctrl_gaze->setTrackingMode(true);
 
         if (homeFixCartType)
@@ -2315,8 +2313,7 @@ bool MotorThread::calibTable(Bottle &options)
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        ctrl_gaze->restoreContext(default_gaze_context);
-        //keepFixation(options);
+        ctrl_gaze->restoreContext(gaze_context);
         ctrl_gaze->lookAtFixationPoint(deployEnd);
     }
 
