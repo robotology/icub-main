@@ -862,7 +862,7 @@ void Solver::threadRelease()
 /************************************************************************/
 void Solver::suspend()
 {
-    commData->port_xd->lock();    
+    commData->port_xd->lock();
     RateThread::suspend();
     yInfo("Solver has been suspended!");
 }

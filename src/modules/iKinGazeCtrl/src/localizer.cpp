@@ -476,6 +476,14 @@ bool Localizer::triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x
 
 
 /************************************************************************/
+double Localizer::getDistFromVergence(const double ver)
+{
+    double tg=tan(CTRL_DEG2RAD*ver/2.0);
+    return eyesHalfBaseline*sqrt(1.0+1.0/(tg*tg));
+}
+
+
+/************************************************************************/
 void Localizer::handleMonocularInput()
 {
     if (Bottle *mono=port_mono.read(false))
@@ -487,26 +495,29 @@ void Localizer::handleMonocularInput()
             double v=mono->get(2).asDouble();
             double z;
 
+            bool ok=false;
             if (mono->get(3).isDouble())
+            {
                 z=mono->get(3).asDouble();
-            else if (mono->get(3).asString()=="ver")
-            {
-                double ver=CTRL_DEG2RAD*mono->get(4).asDouble();
-                double tg=tan(ver/2.0);
-                z=eyesHalfBaseline*sqrt(1.0+1.0/(tg*tg));
+                ok=true;
             }
-            else
+            else if ((mono->get(3).asString()=="ver") && (mono->size()>=5))
             {
-                yError("Got wrong monocular information!");
-                return;
+                double ver=mono->get(4).asDouble();
+                z=getDistFromVergence(ver);
+                ok=true;
             }
 
-            Vector fp;
-            if (projectPoint(type,u,v,z,fp))
-                commData->port_xd->set_xd(fp);
+            if (ok)
+            {
+                Vector fp;
+                if (projectPoint(type,u,v,z,fp))
+                    commData->port_xd->set_xd(fp);
+                return;
+            }
         }
-        else
-            yError("Got wrong monocular information!");
+
+        yError("Got wrong monocular information!");
     }
 }
 

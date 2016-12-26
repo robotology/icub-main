@@ -298,6 +298,7 @@ void Controller::stopLimb(const bool execStopPosition)
 
     commData->ctrlActive=false;
     motionDone=true;
+    eventLook.signal();
 }
 
 
@@ -477,6 +478,24 @@ void Controller::doSaccade(const Vector &ang, const Vector &vel)
 
 
 /************************************************************************/
+bool Controller::look(const Vector &x)
+{
+    LockGuard lg(mutexLook);
+
+    mutexRun.lock();    
+    bool ret=commData->port_xd->set_xd(x);
+    if (ret)
+        eventLook.reset();
+    mutexRun.unlock();
+
+    if (ret)
+        eventLook.wait();
+
+    return ret;
+}
+
+
+/************************************************************************/
 void Controller::resetCtrlEyes()
 {
     LockGuard lg(mutexCtrl);
@@ -594,6 +613,7 @@ void Controller::run()
     {
         stopControlHelper();
         commData->port_xd->get_new()=false;
+        eventLook.signal();
     }
 
     string event="none";
@@ -622,7 +642,7 @@ void Controller::run()
     if (!getFeedback(fbTorso,fbHead,drvTorso,drvHead,commData,&q_stamp))
     {
         yError("Communication timeout detected!");
-        notifyEvent("comm-timeout");
+        notifyEvent("comm-timeout");        
         suspend();
         return;
     }
@@ -744,6 +764,7 @@ void Controller::run()
         setJointsCtrlMode();
         jointsToSet.clear();
         motionDone=false;
+        eventLook.signal();
         q0=fbHead;
     }
     mutexCtrl.unlock();
@@ -970,7 +991,7 @@ void Controller::suspend()
     LockGuard lg(mutexCtrl);
     RateThread::suspend();    
     stopLimb();
-    commData->saccadeUnderway=false;
+    commData->saccadeUnderway=false;    
     yInfo("Controller has been suspended!");
     notifyEvent("suspended");
 }
