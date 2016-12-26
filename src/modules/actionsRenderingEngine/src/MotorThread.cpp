@@ -74,12 +74,12 @@ bool MotorThread::storeContext(const int arm)
 {
     if ((arm==LEFT) || (arm==RIGHT))
     {
-        if (action[arm]!=nullptr)
+        if (action[arm]!=NULL)
         {
-            ICartesianControl *ctrl=nullptr;
+            ICartesianControl *ctrl=NULL;
             if (action[arm]->getCartesianIF(ctrl))
             {
-                if (ctrl!=nullptr)
+                if (ctrl!=NULL)
                 {
                     ctrl->storeContext(&action_context[arm]);
                     return true;
@@ -96,12 +96,12 @@ bool MotorThread::restoreContext(const int arm)
 {
     if ((arm==LEFT) || (arm==RIGHT))
     {
-        if (action[arm]!=nullptr)
+        if (action[arm]!=NULL)
         {
-            ICartesianControl *ctrl=nullptr;
+            ICartesianControl *ctrl=NULL;
             if (action[arm]->getCartesianIF(ctrl))
             {
-                if (ctrl!=nullptr)
+                if (ctrl!=NULL)
                 {
                     ctrl->stopControl();
                     ctrl->restoreContext(action_context[arm]);
@@ -119,12 +119,12 @@ bool MotorThread::deleteContext(const int arm)
 {
     if ((arm==LEFT) || (arm==RIGHT))
     {
-        if (action[arm]!=nullptr)
+        if (action[arm]!=NULL)
         {
-            ICartesianControl *ctrl=nullptr;
+            ICartesianControl *ctrl=NULL;
             if (action[arm]->getCartesianIF(ctrl))
             {
-                if (ctrl!=nullptr)
+                if (ctrl!=NULL)
                 {
                     ctrl->deleteContext(action_context[arm]);
                     return true;
@@ -2115,7 +2115,7 @@ bool MotorThread::changeExecTime(const int arm, const double execTime)
         if ((arm==LEFT) || (arm==RIGHT))
         {
             bool ret=false;
-            if (action[arm]!=nullptr)
+            if (action[arm]!=NULL)
             {
                 ICartesianControl *ctrl;
                 action[arm]->getCartesianIF(ctrl);
