@@ -658,7 +658,8 @@ public:
                 if (command.size()>1)
                 {
                     double execTime=command.get(1).asDouble();
-                    motorThr->changeExecTime(execTime);
+                    motorThr->changeExecTime(LEFT,execTime);
+                    motorThr->changeExecTime(RIGHT,execTime);
                     reply.addString("execution time updated");
                 }
                 else
@@ -1138,18 +1139,8 @@ public:
                         break;
                     }
 
-
                     case CMD_DROP:
                     {
-                        //to be fixed by config ini...choice of either check for holding or not
-                        //if(!motorThr->isHolding(command))
-                        //{
-                        //    reply.addVocab(NACK);
-                        //    reply.addString("Nothing to drop. Not holding anything");
-                        //    motorThr->release(command);
-                        //    motorThr->goHome(command);
-                        //    break;
-                       // }
                         idle = false;
                         if(check(command,"over") && command.size()>2)
                             visuoThr->getTarget(command.get(2),command);

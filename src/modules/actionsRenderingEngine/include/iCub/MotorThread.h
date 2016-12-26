@@ -147,6 +147,7 @@ private:
     ff2LayNN_tansig_purelin             net;
 
     ActionPrimitivesLayer2              *action[2];
+    int                                 action_context[2];
 
     bool                                homeFixCartType;
     Vector                              homeFix;
@@ -222,6 +223,14 @@ private:
 
     double                              random_pos_y;
 
+    bool storeContext(const int arm);
+    bool restoreContext(const int arm);
+    bool deleteContext(const int arm);
+
+    bool storeContext(ActionPrimitives *action);
+    bool restoreContext(ActionPrimitives *action);
+    bool deleteContext(ActionPrimitives *action);
+
     bool loadExplorationPoses(const string &file_name);
     int checkArm(int arm);
     int checkArm(int arm, Vector &xd, const bool applyOffset=true);
@@ -236,9 +245,8 @@ private:
     bool saveKinematicOffsets();
     bool getArmOptions(Bottle &b, const int &arm);
     void goWithTorsoUpright(ActionPrimitives *action, const Vector &xin, const Vector &oin);
-    void close();
-    
     bool avoidTable(bool avoid);
+    void close();
 
 public:
     MotorThread(ResourceFinder &_rf, Initializer *initializer)
@@ -412,7 +420,7 @@ public:
     bool suspendLearningModeKinOffset(Bottle &options);
 
     bool changeElbowHeight(const int arm, const double height, const double weight);
-    bool changeExecTime(const double execTime);
+    bool changeExecTime(const int arm, const double execTime);
 
     bool setImpedance(bool turn_on);
     bool setTorque(bool turn_on, int arm=ARM_IN_USE);
