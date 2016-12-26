@@ -2030,8 +2030,9 @@ void MotorThread::goWithTorsoUpright(ActionPrimitives *action,
     ctrl->setTrajTime(default_exec_time);
 
     ctrl->goToPoseSync(xin,oin);
-    ctrl->waitMotionDone(0.1,reachingTimeout);
+    ctrl->waitMotionDone(0.1,2.0*reachingTimeout);
 
+    ctrl->stopControl();
     ctrl->restoreContext(context);
     ctrl->deleteContext(context);
 }
