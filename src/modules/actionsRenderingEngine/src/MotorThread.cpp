@@ -1340,15 +1340,6 @@ void MotorThread::run()
             if(norm(force)>dragger.extForceThresh)
                 x=x+0.1*force/norm(force);
 
-            //dragger.ctrl->goToPositionSync(x,1.0);
-
-            //dragCtrl->askForPosition(x,xd,od,qd);
-
-            //pos_torso->positionmove(0,qd[0]);
-            //pos_torso->positionmove(1,qd[1]);
-            //pos_torso->positionmove(2,qd[2]);
-
-
             break;
         }
 
@@ -1386,7 +1377,6 @@ void MotorThread::run()
                 zeros4d=0.0;
 
                 Vector v=dragger.I->integrate(a);
-
                 dragger.ctrl->setTaskVelocities(v,zeros4d);
             }
 
@@ -1403,15 +1393,12 @@ void MotorThread::run()
                 if(stereoHand.size()==4)
                 {
                     //move toward the target point
-                    
-
                 }
 
             }
 
             break;
         }
-
 
         default:
         {
@@ -1431,8 +1418,7 @@ void MotorThread::run()
                         if(fabs(x[1]-head_x[1])<0.2)
                             x[1]=head_x[1]+sign(x[1]-head_x[1])*0.2;
 
-                        //action[arm]->pushAction(x,o);
-                        ICartesianControl           *tmp_ctrl;
+                        ICartesianControl *tmp_ctrl;
                         action[arm]->getCartesianIF(tmp_ctrl);
                         x[2]=avoid_table_height[arm];
                         
@@ -2821,7 +2807,6 @@ bool MotorThread::imitateAction(Bottle &options)
     arm=checkArm(arm);
 
     string arm_name=arm==LEFT?"left":"right";
-
     string action_name=options.find("action_name").asString().c_str();
 
     Bottle actions;
@@ -2834,30 +2819,23 @@ bool MotorThread::imitateAction(Bottle &options)
 
         stringstream strstr;
         strstr << action_fin.rdbuf();
-
         actions.fromString(strstr.str().c_str());
     }
-    else
-    {
-        if (!opcPort.getAction(action_name, &actions))
-            return false;
-    }
+    else if (!opcPort.getAction(action_name, &actions))
+        return false;
 
     ICartesianControl *ctrl;
     action[arm]->getCartesianIF(ctrl);
 
-    double currTrajTime;
-    ctrl->getTrajTime(&currTrajTime);
-    ctrl->setTrajTime(0.75);
-    
+    int context;
+    ctrl->storeContext(&context);
+
     Vector newPos;
     ctrl->getDOF(newPos);
-    newPos[0]=0.0;
-    newPos[1]=0.0;
-    newPos[2]=1.0;
+    newPos[0]=newPos[1]=0.0; newPos[2]=1.0;
     ctrl->setDOF(newPos,newPos);
-
     ctrl->setInTargetTol(0.01);
+    ctrl->setTrajTime(0.75);
 
     Vector init_x,init_o;
     ctrl->getPose(init_x,init_o);
@@ -2872,21 +2850,14 @@ bool MotorThread::imitateAction(Bottle &options)
         for(int j=0; j<4; j++)
             o[j]=b->get(j+3).asDouble();
 
-        //ctrl->goToPosition(init_x-x);
-        ctrl->goToPose(init_x-x,o);
-
-        //Time::delay(dragger.samplingRate);
+        ctrl->goToPoseSync(init_x-x,o);
         Time::delay(0.1);
     }
 
-    ctrl->getDOF(newPos);
-    newPos=1.0;
-    newPos[1]=0.0;
-    ctrl->setDOF(newPos,newPos);
-
-    //tmpCtrl->setInTargetTol(armTargetTol);
-
-    ctrl->setTrajTime(currTrajTime);
+    ctrl->waitMotionDone(0.1,reachingTimeout);
+    ctrl->stopControl();
+    ctrl->restoreContext(context);
+    ctrl->deleteContext(context);
 
     return true;
 }
