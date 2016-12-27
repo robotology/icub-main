@@ -1863,12 +1863,9 @@ bool MotorThread::look(Bottle &options)
             keepFixation(options);
         }
             
-        ctrl_gaze->lookAtFixationPoint(xd);
+        ctrl_gaze->lookAtFixationPointSync(xd);
         if (checkOptions(options,"wait"))
-        {
             ctrl_gaze->waitMotionDone();
-            Time::delay(1.5);
-        }
     }
 
     return true;
@@ -2202,9 +2199,9 @@ bool MotorThread::goHome(Bottle &options)
         ctrl_gaze->setTrackingMode(true);
 
         if (homeFixCartType)
-            ctrl_gaze->lookAtFixationPoint(homeFix);
+            ctrl_gaze->lookAtFixationPointSync(homeFix);
         else
-            ctrl_gaze->lookAtAbsAngles(homeFix);
+            ctrl_gaze->lookAtAbsAnglesSync(homeFix);
     }
 
     if (arms_home)
