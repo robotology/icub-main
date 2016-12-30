@@ -1576,7 +1576,7 @@ void ServerCartesianController::run()
 {    
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         // read the feedback
         double stamp=getFeedback(fb);
@@ -1699,8 +1699,6 @@ void ServerCartesianController::run()
             motionOngoingEventsFlush();
             notifyEvent(event);
         }
-
-        mutex.unlock();
     }
     else if ((++connectCnt)*getRate()>CARTCTRL_CONNECT_TMO)
     {
@@ -1982,6 +1980,8 @@ bool ServerCartesianController::close()
 {
     if (closed)
         return true;
+
+    LockGuard lg(mutex);
 
     detachAll();
 
@@ -2372,10 +2372,8 @@ bool ServerCartesianController::setTrackingModeHelper(const bool f)
 /************************************************************************/
 bool ServerCartesianController::setTrackingMode(const bool f)
 {
-    mutex.lock();
-    bool ret=setTrackingModeHelper(f);
-    mutex.unlock();
-    return ret;
+    LockGuard lg(mutex);
+    return setTrackingModeHelper(f);
 }
 
 
@@ -2424,7 +2422,7 @@ bool ServerCartesianController::setPosePriority(const ConstString &p)
     bool ret=false;
     if (connected && ((p=="position") || (p=="orientation")))
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -2436,8 +2434,6 @@ bool ServerCartesianController::setPosePriority(const ConstString &p)
             ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
         else
             yError("%s: unable to get reply from solver!",ctrlName.c_str());
-
-        mutex.unlock();
     }
 
     return ret;
@@ -2474,7 +2470,7 @@ bool ServerCartesianController::getPose(Vector &x, Vector &o, Stamp *stamp)
 {
     if (attached)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
         Vector pose=chainState->EndEffPose();
     
         x.resize(3);
@@ -2488,8 +2484,7 @@ bool ServerCartesianController::getPose(Vector &x, Vector &o, Stamp *stamp)
 
         if (stamp!=NULL)
             *stamp=txInfo;
-    
-        mutex.unlock();
+
         return true;
     }
     else
@@ -2503,7 +2498,7 @@ bool ServerCartesianController::getPose(const int axis, Vector &x,
 {
     if (attached)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         bool ret=false;
         if (axis<(int)chainState->getN())
@@ -2523,7 +2518,6 @@ bool ServerCartesianController::getPose(const int axis, Vector &x,
             ret=true;
         }
 
-        mutex.unlock();
         return ret;
     }
     else
@@ -2537,7 +2531,7 @@ bool ServerCartesianController::goToPose(const Vector &xd, const Vector &od,
 {
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         Vector _xd(xd.length()+od.length());
         for (size_t i=0; i<xd.length(); i++)
@@ -2547,10 +2541,7 @@ bool ServerCartesianController::goToPose(const Vector &xd, const Vector &od,
             _xd[xd.length()+i]=od[i];
 
         taskVelModeOn=false;
-        bool ret=goTo(IKINCTRL_POSE_FULL,_xd,t);
-
-        mutex.unlock();
-        return ret;
+        return goTo(IKINCTRL_POSE_FULL,_xd,t);
     }
     else
         return false;
@@ -2562,13 +2553,10 @@ bool ServerCartesianController::goToPosition(const Vector &xd, const double t)
 {
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         taskVelModeOn=false;
-        bool ret=goTo(IKINCTRL_POSE_XYZ,xd,t);
-
-        mutex.unlock();
-        return ret;
+        return goTo(IKINCTRL_POSE_XYZ,xd,t);
     }
     else
         return false;
@@ -2596,7 +2584,7 @@ bool ServerCartesianController::getDesired(Vector &xdhat, Vector &odhat,
 {
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         xdhat.resize(3);
         odhat.resize(xdes.length()-3);
@@ -2618,7 +2606,6 @@ bool ServerCartesianController::getDesired(Vector &xdhat, Vector &odhat,
                 qdhat[i]=CTRL_RAD2DEG*qdes[cnt++];
         }
 
-        mutex.unlock();
         return true;
     }
     else
@@ -2634,7 +2621,7 @@ bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
     if (!connected)
         return false;
 
-    mutex.lock();
+    LockGuard lg(mutex);
 
     Bottle command, reply;
     Vector tg(xd.length()+od.length());
@@ -2655,7 +2642,6 @@ bool ServerCartesianController::askForPose(const Vector &xd, const Vector &od,
     else
         yError("%s: unable to get reply from solver!",ctrlName.c_str());         
 
-    mutex.unlock();
     return ret;
 }
 
@@ -2668,7 +2654,7 @@ bool ServerCartesianController::askForPose(const Vector &q0, const Vector &xd,
     if (!connected)
         return false;
 
-    mutex.lock();
+    LockGuard lg(mutex);
 
     Bottle command, reply;
     Vector tg(xd.length()+od.length());
@@ -2690,7 +2676,6 @@ bool ServerCartesianController::askForPose(const Vector &q0, const Vector &xd,
     else
         yError("%s: unable to get reply from solver!",ctrlName.c_str());         
 
-    mutex.unlock();
     return ret;
 }
 
@@ -2702,7 +2687,7 @@ bool ServerCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
     if (!connected)
         return false;
 
-    mutex.lock();
+    LockGuard lg(mutex);
 
     Bottle command, reply;
     command.addVocab(IKINSLV_VOCAB_CMD_ASK);
@@ -2716,7 +2701,6 @@ bool ServerCartesianController::askForPosition(const Vector &xd, Vector &xdhat,
     else
         yError("%s: unable to get reply from solver!",ctrlName.c_str());         
 
-    mutex.unlock();
     return ret;
 }
 
@@ -2729,7 +2713,7 @@ bool ServerCartesianController::askForPosition(const Vector &q0, const Vector &x
     if (!connected)
         return false;
 
-    mutex.lock();
+    LockGuard lg(mutex);
 
     Bottle command, reply;
     command.addVocab(IKINSLV_VOCAB_CMD_ASK);
@@ -2744,7 +2728,6 @@ bool ServerCartesianController::askForPosition(const Vector &q0, const Vector &x
     else
         yError("%s: unable to get reply from solver!",ctrlName.c_str());         
 
-    mutex.unlock();
     return ret;
 }
 
@@ -2754,13 +2737,12 @@ bool ServerCartesianController::getDOF(Vector &curDof)
 {
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         curDof.resize(chainState->getN());
         for (unsigned int i=0; i<chainState->getN(); i++)
             curDof[i]=!(*chainState)[i].isBlocked();
     
-        mutex.unlock();
         return true;
     }
     else
@@ -2773,7 +2755,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
 {
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -2811,8 +2793,7 @@ bool ServerCartesianController::setDOF(const Vector &newDof, Vector &curDof)
         }
         else
             yError("%s: unable to get reply from solver!",ctrlName.c_str());         
-
-        mutex.unlock();
+        
         return ret;
     }
     else
@@ -2825,7 +2806,7 @@ bool ServerCartesianController::getRestPos(Vector &curRestPos)
 {
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_GET);
@@ -2843,9 +2824,8 @@ bool ServerCartesianController::getRestPos(Vector &curRestPos)
             ret=true;            
         }
         else
-            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
-
-        mutex.unlock();
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());
+                
         return ret;
     }
     else
@@ -2859,7 +2839,7 @@ bool ServerCartesianController::setRestPos(const Vector &newRestPos,
 {
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -2878,9 +2858,8 @@ bool ServerCartesianController::setRestPos(const Vector &newRestPos,
             ret=true;            
         }
         else
-            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
-            
-        mutex.unlock();
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());
+
         return ret;
     }
     else
@@ -2893,7 +2872,7 @@ bool ServerCartesianController::getRestWeights(Vector &curRestWeights)
 {
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_GET);
@@ -2911,9 +2890,8 @@ bool ServerCartesianController::getRestWeights(Vector &curRestWeights)
             ret=true;            
         }
         else
-            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
-            
-        mutex.unlock();
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());
+
         return ret;
     }
     else
@@ -2927,7 +2905,7 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
 {
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -2946,9 +2924,8 @@ bool ServerCartesianController::setRestWeights(const Vector &newRestWeights,
             ret=true;
         }
         else
-            yError("%s: unable to get reply from solver!",ctrlName.c_str());         
-            
-        mutex.unlock();
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());
+
         return ret;
     }
     else
@@ -2963,7 +2940,7 @@ bool ServerCartesianController::getLimits(const int axis, double *min,
     bool ret=false;
     if (connected && (min!=NULL) && (max!=NULL))
     {
-        mutex.lock();
+        LockGuard lg(mutex);
         if (axis<(int)chainState->getN())
         {
             Bottle command, reply;
@@ -2980,8 +2957,7 @@ bool ServerCartesianController::getLimits(const int axis, double *min,
                 *max=reply.get(2).asDouble();                        
                 ret=true;
             }
-        }
-        mutex.unlock();
+        }        
     }
 
     return ret;
@@ -2995,7 +2971,7 @@ bool ServerCartesianController::setLimits(const int axis, const double min,
     bool ret=false;
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -3009,8 +2985,6 @@ bool ServerCartesianController::setLimits(const int axis, const double min,
             ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
         else
             yError("%s: unable to get reply from solver!",ctrlName.c_str());
-
-        mutex.unlock();
     }
 
     return ret;
@@ -3046,10 +3020,8 @@ bool ServerCartesianController::setTrajTimeHelper(const double t)
 /************************************************************************/
 bool ServerCartesianController::setTrajTime(const double t)
 {
-    mutex.lock();
-    bool ret=setTrajTimeHelper(t);
-    mutex.unlock();
-    return ret;
+    LockGuard lg(mutex);
+    return setTrajTimeHelper(t);
 }
 
 
@@ -3109,10 +3081,8 @@ bool ServerCartesianController::isInTargetHelper()
 /************************************************************************/
 bool ServerCartesianController::setInTargetTol(const double tol)
 {
-    mutex.lock();
-    bool ret=setInTargetTolHelper(tol);
-    mutex.unlock();
-    return ret;
+    LockGuard lg(mutex);
+    return setInTargetTolHelper(tol);
 }
 
 
@@ -3121,9 +3091,8 @@ bool ServerCartesianController::getJointsVelocities(Vector &qdot)
 {
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
         qdot=velCmd;
-        mutex.unlock();
         return true;
     }
     else
@@ -3136,7 +3105,7 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
 {
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         Matrix J=ctrl->get_J();
         Vector taskVel(7,0.0);
@@ -3165,7 +3134,6 @@ bool ServerCartesianController::getTaskVelocities(Vector &xdot, Vector &odot)
         for (size_t i=0; i<odot.length(); i++)
             odot[i]=taskVel[xdot.length()+i];
 
-        mutex.unlock();
         return true;
     }
     else
@@ -3179,7 +3147,7 @@ bool ServerCartesianController::setTaskVelocities(const Vector &xdot,
 {
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         for (int i=0; i<3; i++)
             xdot_set[i]=xdot[i];
@@ -3199,8 +3167,7 @@ bool ServerCartesianController::setTaskVelocities(const Vector &xdot,
         }
         else
             stopControlHelper();
-        
-        mutex.unlock();
+
         return true;
     }
     else
@@ -3213,7 +3180,7 @@ bool ServerCartesianController::attachTipFrame(const Vector &x, const Vector &o)
 {
     if (connected && (x.length()>=3) || (o.length()>=4))
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -3242,8 +3209,7 @@ bool ServerCartesianController::attachTipFrame(const Vector &x, const Vector &o)
         }
         else
             yError("%s: unable to get reply from solver!",ctrlName.c_str());         
-
-        mutex.unlock();
+        
         return ret;
     }
     else
@@ -3256,16 +3222,13 @@ bool ServerCartesianController::getTipFrame(Vector &x, Vector &o)
 {
     if (connected)
     {
-        mutex.lock();
-
+        LockGuard lg(mutex);
         Matrix HN=chainState->getHN();
 
         x=HN.getCol(3);
         x.pop_back();
 
-        o=dcm2axis(HN);
-
-        mutex.unlock();
+        o=dcm2axis(HN);        
         return true;
     }
     else
@@ -3346,10 +3309,8 @@ bool ServerCartesianController::stopControlHelper()
 /************************************************************************/
 bool ServerCartesianController::stopControl()
 {
-    mutex.lock();
-    bool ret=stopControlHelper();
-    mutex.unlock();
-    return ret;
+    LockGuard lg(mutex);
+    return stopControlHelper();
 }
 
 
@@ -3387,7 +3348,7 @@ bool ServerCartesianController::storeContext(int *id)
         getTrackingMode(&_mode);
         getReferenceMode(&_useReference);
 
-        mutex.lock();
+        LockGuard lg(mutex);
 
         Context &context=contextMap[contextIdCnt];
         context.dof=_dof;
@@ -3406,8 +3367,6 @@ bool ServerCartesianController::storeContext(int *id)
         getSolverConvergenceOptions(context.solverConvergence);
 
         *id=contextIdCnt++;
-
-        mutex.unlock();
         return true;
     }
     else
@@ -3478,7 +3437,7 @@ bool ServerCartesianController::deleteContexts(Bottle *contextIdList)
 {
     if (contextIdList!=NULL)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         for (int i=0; i<contextIdList->size(); i++)
         {
@@ -3488,7 +3447,6 @@ bool ServerCartesianController::deleteContexts(Bottle *contextIdList)
                 contextMap.erase(itr);
         }
 
-        mutex.unlock();
         return true;
     }
     else
@@ -3675,10 +3633,8 @@ bool ServerCartesianController::registerMotionOngoingEvent(const double checkPoi
 {
     if ((checkPoint>=0.0) && (checkPoint<=1.0))
     {
-        mutex.lock();
+        LockGuard lg(mutex);
         motionOngoingEvents.insert(checkPoint);
-        mutex.unlock();
-
         return true;
     }
     else
@@ -3692,14 +3648,13 @@ bool ServerCartesianController::unregisterMotionOngoingEvent(const double checkP
     bool ret=false;
     if ((checkPoint>=0.0) && (checkPoint<=1.0))
     {
-        mutex.lock();
+        LockGuard lg(mutex);
         multiset<double>::iterator itr=motionOngoingEvents.find(checkPoint);
         if (itr!=motionOngoingEvents.end())
         {
             motionOngoingEvents.erase(itr);
             ret=true;
         }
-        mutex.unlock();
     }
 
     return ret;
@@ -3711,10 +3666,9 @@ Bottle ServerCartesianController::listMotionOngoingEvents()
 {
     Bottle events;
 
-    mutex.lock();
+    LockGuard lg(mutex);
     for (multiset<double>::iterator itr=motionOngoingEvents.begin(); itr!=motionOngoingEvents.end(); itr++)
         events.addDouble(*itr);
-    mutex.unlock();
 
     return events;
 }
@@ -3750,7 +3704,7 @@ bool ServerCartesianController::setTask2ndOptions(const Value &v)
     bool ret=false;
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -3762,8 +3716,6 @@ bool ServerCartesianController::setTask2ndOptions(const Value &v)
             ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
         else
             yError("%s: unable to get reply from solver!",ctrlName.c_str());
-
-        mutex.unlock();
     }
 
     return ret;
@@ -3800,7 +3752,7 @@ bool ServerCartesianController::setSolverConvergenceOptions(const Bottle &option
     bool ret=false;
     if (connected)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
 
         Bottle command, reply;
         command.addVocab(IKINSLV_VOCAB_CMD_SET);
@@ -3811,9 +3763,7 @@ bool ServerCartesianController::setSolverConvergenceOptions(const Bottle &option
         if (portSlvRpc.write(command,reply))
             ret=(reply.get(0).asVocab()==IKINSLV_VOCAB_REP_ACK);
         else
-            yError("%s: unable to get reply from solver!",ctrlName.c_str());
-
-        mutex.unlock();
+            yError("%s: unable to get reply from solver!",ctrlName.c_str());        
     }
 
     return ret;
@@ -3847,7 +3797,7 @@ bool ServerCartesianController::tweakGet(Bottle &options)
 {
     if (attached)
     {
-        mutex.lock();
+        LockGuard lg(mutex);
         options.clear();
 
         bool ret=true;
@@ -3873,7 +3823,6 @@ bool ServerCartesianController::tweakGet(Bottle &options)
         if (ret)
             options.append(b);
 
-        mutex.unlock();
         return ret;
     }
     else
