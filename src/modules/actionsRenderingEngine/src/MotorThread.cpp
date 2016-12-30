@@ -1592,7 +1592,7 @@ bool MotorThread::reach(Bottle &options)
         !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        keepFixation(options);
+        options.addString("fixate");
         look(options);
     }
 
@@ -1680,7 +1680,7 @@ bool MotorThread::powerGrasp(Bottle &options)
     if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        keepFixation(options);
+        options.addString("fixate");
         look(options);
     }
 
@@ -1752,7 +1752,7 @@ bool MotorThread::push(Bottle &options)
     if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        keepFixation(options);
+        options.addString("fixate");
         look(options);
     }
 
@@ -1771,6 +1771,7 @@ bool MotorThread::push(Bottle &options)
     if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
+        ctrl_gaze->restoreContext(gaze_context);
         keepFixation(options);
         lookAtHand(options);
     }
@@ -2275,7 +2276,7 @@ bool MotorThread::deploy(Bottle &options)
     arm=checkArm(arm);
 
     Vector x,o;
-    action[arm]->getPose(x,o);    
+    action[arm]->getPose(x,o);
 
     Bottle *bTarget=options.find("target").asList();
 
@@ -2304,6 +2305,7 @@ bool MotorThread::deploy(Bottle &options)
         !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
+        ctrl_gaze->restoreContext(gaze_context);
         keepFixation(options);
         ctrl_gaze->lookAtFixationPoint(deployZone);
     }
