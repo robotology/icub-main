@@ -216,6 +216,14 @@ void ServerCartesianController::openPorts()
 /************************************************************************/
 void ServerCartesianController::closePorts()
 {
+    if (portCmd!=NULL)
+    {
+        portCmd->disableCallback();
+        portCmd->interrupt();
+        portCmd->close();
+        delete portCmd;
+    }
+
     portSlvIn.interrupt();
     portSlvOut.interrupt();
     portSlvRpc.interrupt();
@@ -229,13 +237,6 @@ void ServerCartesianController::closePorts()
     portState.close();
     portEvent.close();
     portRpc.close();
-
-    if (portCmd!=NULL)
-    {
-        portCmd->interrupt();
-        portCmd->close();
-        delete portCmd;
-    }
 
     if (debugInfoEnabled)
     {
