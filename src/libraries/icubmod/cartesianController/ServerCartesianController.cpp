@@ -216,6 +216,8 @@ void ServerCartesianController::openPorts()
 /************************************************************************/
 void ServerCartesianController::closePorts()
 {
+    // close this first since the
+    // callback does quite a lot
     if (portCmd!=NULL)
     {
         portCmd->disableCallback();
