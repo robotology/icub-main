@@ -1984,6 +1984,8 @@ bool ServerCartesianController::close()
     if (closed)
         return true;
 
+    LockGuard lg(mutex);
+
     detachAll();
 
     for (unsigned int i=0; i<lRmp.size(); i++)
