@@ -364,18 +364,24 @@ bool SimulatorModule::initSimulatorModule()
     }
 
     //first we try to open the robotDescriptionClient, because maybe an external server is already running
-    dd_descClnt = new yarp::dev::PolyDriver;
+    bool b_client = false;
     Property clnt_opt;
     clnt_opt.put("device", "robotDescriptionClient");
     clnt_opt.put("local", "/icubSim/robotDescriptionClient");
     clnt_opt.put("remote", "/robotDescription");
-
-    bool b_client = false;
-    if (dd_descClnt->open(clnt_opt) && dd_descClnt->isValid())
+    dd_descClnt = new yarp::dev::PolyDriver;
+    if (yarp::os::Network::exists("/robotDescription/rpc"))
     {
-        yInfo() << "External robotDescriptionServer was found. Connection succesful.";
-        b_client = true;
-        dd_descClnt->view(idesc);
+        if (dd_descClnt->open(clnt_opt) && dd_descClnt->isValid())
+        {
+            yInfo() << "External robotDescriptionServer was found. Connection succesful.";
+            b_client = true;
+            dd_descClnt->view(idesc);
+        }
+        else
+        {
+            yInfo() << "External robotDescriptionServer was not found. Opening a new RobotDescriptionServer.";
+        }
     }
     else
     {
@@ -451,7 +457,7 @@ bool SimulatorModule::initSimulatorModule()
     if (robot_flags.actLegs) {
         //start left leg device driver
         iCubLLeg = createPart("left_leg");
-        desc.device_name = moduleName + "/right_arm";
+        desc.device_name = moduleName + "/left_leg";
         desc.device_type = "controlboardwrapper2";
         if (idesc) idesc->registerDevice(desc);
     }
