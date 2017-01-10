@@ -85,6 +85,7 @@ class Pid_Algorithm
 public:
     PidAlgorithmType_t type;
     GenericControlUnitsType_t ctrlUnitsType;
+    virtual ~Pid_Algorithm() {;};
 
 };
 

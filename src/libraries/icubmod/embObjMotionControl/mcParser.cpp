@@ -668,7 +668,12 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
         {
             case(PidAlgo_simple):
             {
-                Pid_Algorithm_simple *pidAlgo_simple_ptr = (Pid_Algorithm_simple*)pidAlgo_ptr;
+                Pid_Algorithm_simple *pidAlgo_simple_ptr = dynamic_cast<Pid_Algorithm_simple*>(pidAlgo_ptr);
+                if(pidAlgo_simple_ptr == NULL)
+                {
+                    yError() << "embObjMC BOARD " << _boardname << "dynamic_cast error (ref1)";
+                    return false;
+                }
                 ppids[i].pid = pidAlgo_simple_ptr->pid[i];
                 ppids[i].ctrlUnitsType = pidAlgo_simple_ptr->ctrlUnitsType;
                 ppids[i].controlLaw =  pidAlgo_simple_ptr->type;
@@ -677,7 +682,12 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
 
                 if(vpidAlgo_ptr)
                 {
-                    Pid_Algorithm_simple *vpidAlgo_simple_ptr = (Pid_Algorithm_simple*)vpidAlgo_ptr;
+                    Pid_Algorithm_simple *vpidAlgo_simple_ptr = dynamic_cast<Pid_Algorithm_simple*>(vpidAlgo_ptr);
+                    if(vpidAlgo_simple_ptr == NULL)
+                    {
+                        yError() << "embObjMC BOARD " << _boardname << "dynamic_cast error (ref2)";
+                        return false;
+                    }
                     vpids[i].pid = vpidAlgo_simple_ptr->pid[i];
                     vpids[i].ctrlUnitsType = vpidAlgo_simple_ptr->ctrlUnitsType;
                     vpids[i].controlLaw =  vpidAlgo_simple_ptr->type;
@@ -693,7 +703,12 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
 
                 if(tpidAlgo_ptr)
                 {
-                    Pid_Algorithm_simple *tpidAlgo_simple_ptr = (Pid_Algorithm_simple*)tpidAlgo_ptr;
+                    Pid_Algorithm_simple *tpidAlgo_simple_ptr = dynamic_cast<Pid_Algorithm_simple*>(tpidAlgo_ptr);
+                    if(tpidAlgo_simple_ptr == NULL)
+                    {
+                        yError() << "embObjMC BOARD " << _boardname << "dynamic_cast error (ref3)";
+                        return false;
+                    }
                     tpids[i].pid = tpidAlgo_simple_ptr->pid[i];
                     tpids[i].ctrlUnitsType = tpidAlgo_simple_ptr->ctrlUnitsType;
                     tpids[i].controlLaw =  tpidAlgo_simple_ptr->type;
@@ -713,7 +728,12 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
 
             case(PIdAlgo_velocityInnerLoop):
             {
-                PidAlgorithm_VelocityInnerLoop *pidAlgo_innerVelLoop_ptr = (PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr;
+                PidAlgorithm_VelocityInnerLoop *pidAlgo_innerVelLoop_ptr = dynamic_cast<PidAlgorithm_VelocityInnerLoop*>(pidAlgo_ptr);
+                if(pidAlgo_innerVelLoop_ptr == NULL)
+                {
+                    yError() << "embObjMC BOARD " << _boardname << "dynamic_cast error (ref4)";
+                    return false;
+                }
                 ppids[i].pid = pidAlgo_innerVelLoop_ptr->extPid[i];
                 ppids[i].ctrlUnitsType = pidAlgo_innerVelLoop_ptr->ctrlUnitsType;
                 ppids[i].controlLaw =  pidAlgo_innerVelLoop_ptr->type;
@@ -727,7 +747,12 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
 
                 if(tpidAlgo_ptr)
                 {
-                    PidAlgorithm_VelocityInnerLoop *tpidAlgo_innerVelLoop_ptr = (PidAlgorithm_VelocityInnerLoop*)tpidAlgo_ptr;
+                    PidAlgorithm_VelocityInnerLoop *tpidAlgo_innerVelLoop_ptr = dynamic_cast<PidAlgorithm_VelocityInnerLoop*>(tpidAlgo_ptr);
+                    if(tpidAlgo_innerVelLoop_ptr == NULL)
+                    {
+                        yError() << "embObjMC BOARD " << _boardname << "dynamic_cast error (ref5)";
+                        return false;
+                    }
                     tpids[i].pid = tpidAlgo_innerVelLoop_ptr->extPid[i];
                     tpids[i].ctrlUnitsType = tpidAlgo_innerVelLoop_ptr->ctrlUnitsType;
                     tpids[i].controlLaw =  tpidAlgo_innerVelLoop_ptr->type;
