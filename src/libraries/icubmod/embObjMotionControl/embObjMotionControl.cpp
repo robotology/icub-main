@@ -643,7 +643,7 @@ embObjMotionControl::embObjMotionControl() :
     {
         verbosewhenok = false;
     }
-
+    verbosewhenok=true;
     parser = NULL;
     _mcparser = NULL;
 
@@ -751,9 +751,11 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
     if(!res->verifyEPprotocol(eoprot_endpoint_motioncontrol))
     {
+        yError() << "embObjMotionControl: failed verifyEPprotocol. Cannot continue!";
         cleanup();
         return false;
     }
+    yDebug() << "embObjMotionControl:verifyEPprotocol OK!";
 
 //    uint32_t addr = res->getIPv4remoteAddress();
 
@@ -790,10 +792,11 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-
+    yDebug() << "embObjMotionControl:serviceVerifyActivate OK!";
     NVnumber = res->getNVnumber(eoprot_endpoint_motioncontrol);
     requestQueue = new eoRequestsQueue(NVnumber);
 
+    yDebug() << "embObjMotionControl:new eoRequestsQueue OK!";
     if(!init() )
     {
         yError() << "embObjMotionControl::open() has an error in call of embObjMotionControl::init() for BOARD" << res->getName() << "IP" << res->getIPv4string();
