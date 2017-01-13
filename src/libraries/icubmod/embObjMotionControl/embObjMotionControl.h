@@ -54,8 +54,8 @@ using namespace std;
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
-#include <yarp/dev/ControlBoardInterfacesImpl.h>
-#include <yarp/dev/ControlBoardInterfacesImpl.inl>
+//#include <yarp/dev/ControlBoardInterfacesImpl.h>
+//#include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #include <yarp/dev/IVirtualAnalogSensor.h>
 
@@ -109,53 +109,47 @@ using namespace std;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-struct ImpedanceLimits
-{
-    double min_stiff;
-    double max_stiff;
-    double min_damp;
-    double max_damp;
-    double param_a;
-    double param_b;
-    double param_c;
+// struct ImpedanceLimits
+// {
+//     double min_stiff;
+//     double max_stiff;
+//     double min_damp;
+//     double max_damp;
+//     double param_a;
+//     double param_b;
+//     double param_c;
+//
+// public:
+//     ImpedanceLimits()
+//     {
+//         min_stiff=0;
+//         max_stiff=0;
+//         min_damp=0;
+//         max_damp=0;
+//         param_a=0;
+//         param_b=0;
+//         param_c=0;
+//     }
+//
+//     double get_min_stiff()
+//     {
+//         return min_stiff;
+//     }
+//     double get_max_stiff()
+//     {
+//         return max_stiff;
+//     }
+//     double get_min_damp()
+//     {
+//         return min_damp;
+//     }
+//     double get_max_damp()
+//     {
+//         return max_damp;
+//     }
+// };
 
-public:
-    ImpedanceLimits()
-    {
-        min_stiff=0;
-        max_stiff=0;
-        min_damp=0;
-        max_damp=0;
-        param_a=0;
-        param_b=0;
-        param_c=0;
-    }
 
-    double get_min_stiff()
-    {
-        return min_stiff;
-    }
-    double get_max_stiff()
-    {
-        return max_stiff;
-    }
-    double get_min_damp()
-    {
-        return min_damp;
-    }
-    double get_max_damp()
-    {
-        return max_damp;
-    }
-};
-
-struct ImpedanceParameters
-{
-    double stiffness;
-    double damping;
-    ImpedanceLimits limits;
-    ImpedanceParameters() {stiffness=0; damping=0;}
-};
 
 struct SpeedEstimationParameters
 {
@@ -173,13 +167,7 @@ struct SpeedEstimationParameters
     }
 };
 
-struct MotorCurrentLimits
-{
-    double nominalCurrent;
-    double peakCurrent;
-    double overloadCurrent;
-    MotorCurrentLimits() {nominalCurrent=0; peakCurrent=0; overloadCurrent=0;}
-};
+
 
 
 class torqueControlHelper
@@ -231,12 +219,7 @@ typedef struct
 
 
 
-typedef struct
-{
-    vector<double>                  matrixJ2M;
-    vector<double>                  matrixM2J;
-    vector<double>                  matrixE2J;
-} eomc_couplingInfo_t;
+
 
 namespace yarp {
     namespace dev  {
@@ -314,7 +297,6 @@ private:
     yarp::os::Semaphore _mutex;
 
 
-    int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
     uint8_t *_jointEncoderType;                 /** joint encoder type*/
@@ -324,69 +306,51 @@ private:
     uint8_t *_rotorNumOfNoiseBits;              /** Num of error bits passable for joint encoder */
     uint8_t *_rotorEncoderType;                  /** rotor encoder type*/
     double *_gearbox;                           /** the gearbox ratio */
-    double *_gearboxE2J;                           /** the gearbox ratio */
+    double *_gearboxE2J;                        /** the gearbox ratio */
 
     eomc_twofocSpecificInfo *_twofocinfo;
 
 
 
-    double *_rotorlimits_max;                   /** */
-    double *_rotorlimits_min;                   /** */
-//     Pid *_pids;                                 /** initial gains */
-//     Pid *_vpids;                                /** initial velocity gains */
-//     Pid *_tpids;                                /** initial torque gains */
+    std::vector<eomc_rotorLimits> _rotorsLimits; //contains limit about rotors such as position and pwm
+    std::vector<eomc_jointLimits> _jointsLimits; //contains limit about joints such as position and velocity
+    std::vector<eomc_motorCurrentLimits>_currentLimits;
+    eomc_couplingInfo_t _couplingInfo; //contains coupling matrix vecchio campo controller
+    std::vector<eomc_jointsSet> _jsets;
+    std::vector<int> _joint2set;
+    std::vector<eomc_timeouts_t> _timeouts;
 
-
+    std::vector<eomc_impedanceParameters>  _impedance_params;   /** impedance parameters */ // TODO doubled!!! optimize using just one of the 2!!!
+    eomc_impedanceLimits     *_impedance_limits;     /** impedancel imits */
+    eOmc_impedance_t         *_cacheImpedance; /* cache impedance value to split up the 2 sets */
 
 
     eomcParser_pidInfo *_ppids;
     eomcParser_pidInfo *_vpids;
     eomcParser_trqPidInfo *_tpids;
     eomcParser_pidInfo *_cpids;
-   // Pid *_cpids;                                /** initial current gains */
-    //bool _currentPidsAvailables;                /** is true if _cpids contains current pids read in xml file. Current pids are not mandatory file */
+
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
-    string *_axisName;                          /** axis name */
-    JointTypeEnum *_jointType;                  /** axis type */
-    ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
-    double *_limitsMin;                         /** user joint limits, max*/
-    double *_limitsMax;                         /** user joint limits, min*/
-    double *_hwLimitsMax;                       /** hardaware joint limits, max */
-    double *_hwLimitsMin;                       /** hardaware joint limits, min */
-    //double *_currentLimits;                     /** current limits */
-    MotorCurrentLimits *_currentLimits;
-    double *_maxJntCmdVelocity;                 /** max joint commanded velocity */
-    double *_maxMotorVelocity;                  /** max motor velocity */
-    int *_velocityTimeout;                      /** velocity shifts */
-//     double *_kbemf;                             /** back-emf compensation parameter */
-//     double *_ktau;                              /** motor torque constant */
-//     int * _filterType;                          /** the filter type (int value) used by the force control algorithm */
+
+    int *_axisMap;                              /** axies map*/
+    std::vector<eomc_axisInfo_t> _axesInfo;
+
+
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
     bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
     #define MAX_POSITION_MOVE_INTERVAL 0.080
     double *_last_position_move_time;           /** time stamp for last received position move command*/
-    double *_motorPwmLimits;                    /** motors PWM limits*/
 
-    // TODO doubled!!! optimize using just one of the 2!!!
-    ImpedanceParameters *_impedance_params;     /** impedance parameters */
-    eOmc_impedance_t *_cacheImpedance;			/* cache impedance value to split up the 2 sets */
 
-    bool        useRawEncoderData;
-    bool        _pwmIsLimited;                         /** set to true if pwm is limited */
 
-//     enum       torqueControlUnitsType {T_MACHINE_UNITS=0, T_METRIC_UNITS=1};
-//     torqueControlUnitsType _torqueControlUnits;
+
+
+    //behaviour flags
+    bool        _useRawEncoderData;              /** if true than do not use calibration data */
+    bool        _pwmIsLimited;                  /** set to true if pwm is limited */
+
+
      torqueControlHelper    *_torqueControlHelper;
-//
-//     enum       positionControlUnitsType {P_MACHINE_UNITS=0, P_METRIC_UNITS=1};
-//     positionControlUnitsType _positionControlUnits;
-//
-//     enum       velocityControlUnitsType {V_MACHINE_UNITS=0, V_METRIC_UNITS=1};
-//     velocityControlUnitsType _velocityControlUnits;
-
-
-    //enum posControlLawType {emsPwm_2focOpenloop = 0, emsVel_2focPwm = 2};
-
 
 
     // debug purpose
@@ -422,9 +386,7 @@ private:
 
     uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
 
-    eomc_couplingInfo_t _couplingInfo; //contains coupling matrix vecchio campo controller
-    std::vector<eomc_jointsSet> _jsets;
-    std::vector<int> _joint2set;
+
 
 
 
@@ -433,28 +395,26 @@ private:
     bool askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size);
     bool checkRemoteControlModeStatus(int joint, int target_mode);
 
-    bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
-
     bool dealloc();
     bool isEpManagedByBoard();
-    bool parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[]);
-    bool parseVelocityPidsGroup(Bottle& pidsGroup, Pid myPid[]);
-    bool parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], double kbemf[], double ktau[], int filterType[]);
-    bool parseImpedanceGroup_NewFormat(Bottle& pidsGroup, ImpedanceParameters vals[]);
-    bool parseCurrentPidsGroup(Bottle& pidsGroup, Pid myPid[]);
-    bool parseGeneralMecGroup(Bottle& general);
-    bool parsePosPid(Bottle &posPidsGroup);
-    bool parseVelPid(Bottle &velPidsGroup);
-    bool parseTrqPid(Bottle &trqPidsGroup);
-    bool parseCurrPid(Bottle &currentPidsGroup);
-    bool parseLimitsGroup( Bottle &limits);
-    bool parseTimeoutsGroup( Bottle &timeouts);
-    bool parse2FocGroup(Bottle &focGroup);
-    bool parseCouplingGroup(Bottle &coupling);
-    bool parseJointsetCfgGroup(Bottle &jointsetcfg);
+    //bool parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[]);
+    //bool parseVelocityPidsGroup(Bottle& pidsGroup, Pid myPid[]);
+   // bool parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], double kbemf[], double ktau[], int filterType[]);
+   // bool parseImpedanceGroup_NewFormat(Bottle& pidsGroup, eomc_impedanceParameters vals[]);
+    //bool parseCurrentPidsGroup(Bottle& pidsGroup, Pid myPid[]);
+   // bool parseGeneralMecGroup(Bottle& general);
+    //bool parsePosPid(Bottle &posPidsGroup);
+   // bool parseVelPid(Bottle &velPidsGroup);
+   // bool parseTrqPid(Bottle &trqPidsGroup);
+   // bool parseCurrPid(Bottle &currentPidsGroup);
+   // bool parseLimitsGroup( Bottle &limits);
+   // bool parseTimeoutsGroup( Bottle &timeouts);
+   // bool parse2FocGroup(Bottle &focGroup);
+   // bool parseCouplingGroup(Bottle &coupling);
+   // bool parseJointsetCfgGroup(Bottle &jointsetcfg);
 
-    bool parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw);
-    bool parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw);
+    //bool parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw);
+  // bool parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw);
 
 
     bool convertPosPid(eomcParser_pidInfo myPidInfo[]);
@@ -463,6 +423,7 @@ private:
     bool verifyUserControlLawConsistencyInJointSet(eomcParser_pidInfo *ipdInfo);
     bool verifyUserControlLawConsistencyInJointSet(eomcParser_trqPidInfo *pidInfo);
     bool verifyTorquePidshasSameUnitTypes(GenericControlUnitsType_t &unittype);
+    bool verifyUseMotorSpeedFbkInJointSet(int useMotorSpeedFbk []);
     bool updatedJointsetsCfgWithControlInfo(void);
     bool saveCouplingsData(void);
     bool updatedJointsetsCfg(int joint, eOmc_pidoutputtype_t pidoutputtype);
@@ -488,7 +449,7 @@ private:
     void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
     void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
 
-    bool pidsAreEquals(Pid &pid1, Pid &pid2);
+    //bool pidsAreEquals(Pid &pid1, Pid &pid2);
 
     bool EncoderType_iCub2eo(const string* in, uint8_t *out);
     bool EncoderType_eo2iCub(const uint8_t *in, string* out);

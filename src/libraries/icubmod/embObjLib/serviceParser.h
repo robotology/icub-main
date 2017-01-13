@@ -213,7 +213,7 @@ public:
     bool parseService(Searchable &config, servConfigMC_t &mcconfig);
     bool parseService2(Searchable &config, servConfigMC_t &mcconfig); // the fixed one.
     bool convert(ConstString const &fromstring, eOmc_ctrlboard_t &controllerboard, bool &formaterror);
-    bool convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, int targetsize);
+    //bool convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, int targetsize);
     bool convert(ConstString const &fromstring, eOmc_actuator_t &toactuatortype, bool &formaterror);
     bool convert(ConstString const &fromstring, eOmc_position_t &toposition, bool &formaterror);
     bool convert(ConstString const &fromstring, eOmc_encoder_t &toencodertype, bool &formaterror);

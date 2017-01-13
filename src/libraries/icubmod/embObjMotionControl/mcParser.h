@@ -28,7 +28,7 @@
  *
  * Copyright (C) 2012 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
  *
- * Author: Alberto Cardellino
+ * Author: Valentina Gaggero
  *
  * CopyPolicy: Released under the terms of the GNU GPL v2.0.
  *
@@ -55,7 +55,13 @@
 #include <yarp/dev/ControlBoardHelper.h>
 #include <yarp/os/ConstString.h>
 
+#include <yarp/dev/ControlBoardInterfacesImpl.h>
+#include <yarp/dev/ControlBoardInterfacesImpl.inl>
+
 #include "EoMotionControl.h"
+#include <yarp/os/LogStream.h>
+
+
 
 
 
@@ -222,12 +228,78 @@ public:
 
 };
 
+typedef struct
+{
+    int velocity;
+}eomc_timeouts_t;
+
+typedef struct
+{
+    double nominalCurrent;
+    double peakCurrent;
+    double overloadCurrent;
+}eomc_motorCurrentLimits;
+
+
+typedef struct
+{
+    double posMin;                         /** user joint limits, max*/
+    double posMax;                         /** user joint limits, min*/
+    double posHwMax;                       /** hardaware joint limits, max */
+    double posHwMin;                       /** hardaware joint limits, min */
+    double velMax;
+}eomc_jointLimits;
+
+typedef struct
+{
+    double posMin;
+    double posMax;
+    double pwmMax;
+}eomc_rotorLimits;
+
+
+typedef struct
+{
+    std::vector<double>                  matrixJ2M;
+    std::vector<double>                  matrixM2J;
+    std::vector<double>                  matrixE2J;
+} eomc_couplingInfo_t;
+
+typedef struct
+{
+    int             mappedto;
+    std::string     name;
+    JointTypeEnum   type;
+}eomc_axisInfo_t;
+
+typedef struct
+{
+    double min_stiff;
+    double max_stiff;
+    double min_damp;
+    double max_damp;
+    double param_a;
+    double param_b;
+    double param_c;
+} eomc_impedanceLimits;
+
+
+typedef struct
+{
+    double stiffness;
+    double damping;
+    eomc_impedanceLimits limits;
+}eomc_impedanceParameters;
+
+//template <class T>
+
 class mcParser
 {
 
 private:
     int _njoints;
     std::string _boardname;
+    bool _verbosewhenok;
 
     std::map<std::string, Pid_Algorithm*> posAlgoMap;
     std::map<std::string, Pid_Algorithm*> velAlgoMap;
@@ -264,9 +336,22 @@ private:
 
     bool pidsAreEquals(yarp::dev::Pid &pid1, yarp::dev::Pid &pid2); //to move in yarp pid (override = operator)
     bool convert(yarp::os::ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
+    bool convert(yarp::os::Bottle &bottle, std::vector<double> &matrix, bool &formaterror, int targetsize);
 
     //general utils functions
     bool extractGroup(yarp::os::Bottle &input, yarp::os::Bottle &out, const std::string &key1, const std::string &txt, int size);
+    template <class T>
+    bool checkAndSetVectorSize(std::vector<T> &vec, int size, const std::string &funcName)
+    {
+         if(size > vec.capacity())
+        {
+            yError() << "embObjMC BOARD " << _boardname << " in " <<  funcName.c_str() << ": try to insert " << size << "element in vector with " << vec.capacity() << " elements";
+            return false;
+        }
+
+        vec.resize(size);
+        return true;
+    }
 
     ///////// DEBUG FUNCTIONS
     void debugUtil_printControlLaws(void);
@@ -278,9 +363,21 @@ public:
 
     bool parsePids(yarp::os::Searchable &config, eomcParser_pidInfo *ppids, eomcParser_pidInfo *vpids, eomcParser_trqPidInfo *tpids, eomcParser_pidInfo *cpids, bool currentPidisMandatory);
     bool parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificInfo *twofocinfo);
-    bool parseCurrentPid(yarp::os::Searchable &config, eomcParser_pidInfo *cpids);//deprecated
+    //bool parseCurrentPid(yarp::os::Searchable &config, eomcParser_pidInfo *cpids);//deprecated
     bool parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<eomc_jointsSet> &jsets, std::vector<int> &jointtoset);
-
+    bool parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<eomc_timeouts_t> &timeouts, int defaultVelocityTimeout);
+    bool parseCurrentLimits(yarp::os::Searchable &config, std::vector<eomc_motorCurrentLimits> &currLimits);
+    bool parseJointsLimits(yarp::os::Searchable &config, std::vector<eomc_jointLimits> &jointsLimits);
+    bool parseRotorsLimits(yarp::os::Searchable &config, std::vector<eomc_rotorLimits> &rotorsLimits);
+    bool parseCouplingInfo(yarp::os::Searchable &config, eomc_couplingInfo_t &couplingInfo);
+    bool parseMotioncontrolVersion(yarp::os::Searchable &config, int &version);
+    bool parseBehaviourFalgs(yarp::os::Searchable &config, bool &useRawEncoderData, bool  &pwmIsLimited );
+    bool isVerboseEnabled(yarp::os::Searchable &config);
+    bool parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vector<eomc_axisInfo_t> &axisInfo);
+    bool parseEncoderFactor(yarp::os::Searchable &config, double encoderFactor[]);
+    bool parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J[], double gearbox_E2J[]);
+    bool parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[]);
+    bool parseImpedanceGroup(yarp::os::Searchable &config,std::vector<eomc_impedanceParameters> &impedance);
 };
 
 #endif // include guard

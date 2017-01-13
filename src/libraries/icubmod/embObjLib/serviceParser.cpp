@@ -1036,34 +1036,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
 
 #if defined(SERVICE_PARSER_USE_MC)
 
-bool ServiceParser::convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, int targetsize)
-{
-    matrix.resize(0);
-    
-    int tmp = bottle.size();
-    int sizeofmatrix = tmp - 1;    // first position of bottle contains the tag "matrix"
 
-    // check if there are really the target number of elements in matrix.
-    if(targetsize != sizeofmatrix)
-    {
-        yError() << "ServiceParser::check() in a SERVICE.PROPERTIES.CONTROLLER.matrix there are not" << targetsize << "elements";
-        return false;
-    }
-
-    formaterror = false;
-    for(int i=0; i<sizeofmatrix; i++)
-    {
-        double item = 0;
-
-        // ok, i use the standard converter ... but what if it is not a double format? so far we dont check.
-        item = bottle.get(i+1).asDouble();
-        matrix.push_back(item);
-    }
-
-    // in here we could decide to return false if any previous conversion function has returned error
-    
-    return true;        
-}
 
 bool ServiceParser::parse_encoder_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t &toport, bool &formaterror)
 {

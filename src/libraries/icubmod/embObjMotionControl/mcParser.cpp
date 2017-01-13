@@ -35,6 +35,7 @@ mcParser::mcParser(int numofjoints, string boardname)
 {
     _njoints = numofjoints;
     _boardname = boardname;
+    _verbosewhenok = 0;
     _posistionControlLaw.resize(0);
     _velocityControlLaw.resize(0);
     _torqueControlLaw.resize(0);
@@ -971,43 +972,43 @@ bool mcParser::parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificI
 
 
 
-bool mcParser::parseCurrentPid(yarp::os::Searchable &config, eomcParser_pidInfo *cpids)
-{
-    Bottle currentPidsGroup;
-    currentPidsGroup=config.findGroup("CURRENT_CONTROL", "Current control parameters");
-    if(currentPidsGroup.isNull())
-    {
-        yError() << "embObjMC BOARD " << _boardname << " no CURRENT_CONTROL group found in config file";
-        return false;
-
-    }
-    yarp::dev::Pid *mycpids =  allocAndCheck<yarp::dev::Pid>(_njoints);
-
-    GenericControlUnitsType_t unitstype;
-    if(!parsePidUnitsType(currentPidsGroup, unitstype))
-        return false;
-
-    if(unitstype != controlUnits_metric)
-    {
-        yError() << "embObjMC BOARD " << _boardname << " current pids can use only metric units";
-        return false;
-    }
-
-    if(!parsePidsGroup(currentPidsGroup, mycpids, string("")))
-        return false;
-
-    for(int i=0; i<_njoints; i++)
-    {
-        cpids[i].enabled = true;
-        cpids[i].ctrlUnitsType = unitstype;
-        cpids[i].controlLaw = PidAlgo_simple;
-        cpids[i].pid = mycpids[i];
-    }
-
-    checkAndDestroy(mycpids);
-
-    return true;
-}
+// bool mcParser::parseCurrentPid(yarp::os::Searchable &config, eomcParser_pidInfo *cpids)
+// {
+//     Bottle currentPidsGroup;
+//     currentPidsGroup=config.findGroup("CURRENT_CONTROL", "Current control parameters");
+//     if(currentPidsGroup.isNull())
+//     {
+//         yError() << "embObjMC BOARD " << _boardname << " no CURRENT_CONTROL group found in config file";
+//         return false;
+//
+//     }
+//     yarp::dev::Pid *mycpids =  allocAndCheck<yarp::dev::Pid>(_njoints);
+//
+//     GenericControlUnitsType_t unitstype;
+//     if(!parsePidUnitsType(currentPidsGroup, unitstype))
+//         return false;
+//
+//     if(unitstype != controlUnits_metric)
+//     {
+//         yError() << "embObjMC BOARD " << _boardname << " current pids can use only metric units";
+//         return false;
+//     }
+//
+//     if(!parsePidsGroup(currentPidsGroup, mycpids, string("")))
+//         return false;
+//
+//     for(int i=0; i<_njoints; i++)
+//     {
+//         cpids[i].enabled = true;
+//         cpids[i].ctrlUnitsType = unitstype;
+//         cpids[i].controlLaw = PidAlgo_simple;
+//         cpids[i].pid = mycpids[i];
+//     }
+//
+//     checkAndDestroy(mycpids);
+//
+//     return true;
+// }
 
 bool mcParser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<eomc_jointsSet> &jsets, std::vector<int> &joint2set)
 {
@@ -1035,7 +1036,16 @@ bool mcParser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<e
         return false;
     }
 
-    jsets.resize(numofsets);
+
+
+    if(!checkAndSetVectorSize(jsets, numofsets, "parseJointsetCfgGroup"))
+        return false;
+
+    if(!checkAndSetVectorSize(joint2set, _njoints, "parseJointsetCfgGroup"))
+        return false;
+
+    //NOTE: here i need to initualize all element of joint2set with "eomc_jointSetNum_none"
+#warning VALE: posso togliere la reinit con eomc_jointSetNum_none
     joint2set.resize(_njoints, eomc_jointSetNum_none);
 
     for(unsigned int s=0;s<numofsets;s++)
@@ -1120,118 +1130,564 @@ bool mcParser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<e
     return true;
 }
 
+bool mcParser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<eomc_timeouts_t> &timeouts, int defaultVelocityTimeout)
+{
+    if(!checkAndSetVectorSize(timeouts, _njoints, "parseTimeoutsGroup"))
+        return false;
+
+    bool useDefVal = false;
+    int i;
+
+    Bottle timeoutsGroup =config.findGroup("TIMEOUTS");
+    if(timeoutsGroup.isNull())
+    {
+        yWarning() << "embObjMC BOARD " << _boardname << " no TIMEOUTS group found in config file, default values will be used.";
+        useDefVal = true;
+    }
+    else
+    {
+        Bottle xtmp;
+        xtmp.clear();
+        if (!extractGroup(timeoutsGroup, xtmp, "velocity", "a list of timeout to be used in the vmo control", _njoints))
+        {
+            useDefVal = true;
+        }
+        else
+        {
+            for(i=1; i<xtmp.size(); i++)
+                timeouts[i-1].velocity = xtmp.get(i).asInt();
+        }
+    }
+
+    if(useDefVal)
+    {
+        yWarning() << "Using default velocity Timeout="<< defaultVelocityTimeout <<" millisec";
+        for(i=0; i<_njoints; i++)
+            timeouts[i].velocity = defaultVelocityTimeout;
+    }
+    return true;
+
+}
+
+bool mcParser::parseCurrentLimits(yarp::os::Searchable &config, std::vector<eomc_motorCurrentLimits> &currLimits)
+{
+    Bottle &limits=config.findGroup("LIMITS");
+    if (limits.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << " detected that Group LIMITS is not found in configuration file";
+        return false;
+    }
+
+    currLimits.resize(_njoints);
+    int i;
+    Bottle xtmp;
+
+    // current limit
+    if (!extractGroup(limits, xtmp, "motorOverloadCurrents","a list of current limits", _njoints))
+        return false;
+    else
+        for(i=1; i<xtmp.size(); i++) currLimits[i-1].overloadCurrent=xtmp.get(i).asDouble();
+
+    // nominal current
+    if (!extractGroup(limits, xtmp, "motorNominalCurrents","a list of nominal current limits", _njoints))
+        return false;
+    else
+        for(i=1; i<xtmp.size(); i++) currLimits[i-1].nominalCurrent =xtmp.get(i).asDouble();
+
+    // peak current
+    if (!extractGroup(limits, xtmp, "motorPeakCurrents","a list of peak current limits", _njoints))
+        return false;
+    else
+        for(i=1; i<xtmp.size(); i++) currLimits[i-1].peakCurrent=xtmp.get(i).asDouble();
+
+    return true;
+
+}
+
+bool mcParser::parseJointsLimits(yarp::os::Searchable &config, std::vector<eomc_jointLimits> &jointsLimits)
+{
+    Bottle &limits=config.findGroup("LIMITS");
+    if (limits.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << " detected that Group LIMITS is not found in configuration file";
+        return false;
+    }
+
+    jointsLimits.resize(_njoints);
+    int i;
+    Bottle xtmp;
+
+    // max limit
+    if (!extractGroup(limits, xtmp, "jntPosMax","a list of user maximum angles (in degrees)", _njoints))
+        return false;
+    else
+        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posMax = xtmp.get(i).asDouble();
+
+    // min limit
+    if (!extractGroup(limits, xtmp, "jntPosMin","a list of user minimum angles (in degrees)", _njoints))
+        return false;
+    else
+        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posMin = xtmp.get(i).asDouble();
+
+    // max hardware limit
+    if (!extractGroup(limits, xtmp, "hardwareJntPosMax","a list of hardware maximum angles (in degrees)", _njoints))
+    {
+         yWarning() << "embObjMotionControl: missing hardwareJntPosMax param. Values of jntPosMax param will be used like hardware limits ";
+         for(i=0; i<_njoints; i++) jointsLimits[i].posHwMax = jointsLimits[i].posMax;
+    }
+    else
+    {
+        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posHwMax = xtmp.get(i).asDouble();
+
+        //check hardware limits are bigger then user limits
+        for(i=0; i<_njoints; i++)
+        {
+            if(jointsLimits[i].posMax > jointsLimits[i].posHwMax)
+            {
+                yError() << "embObjMotionControl: user has set a limit  bigger then hardware limit!. Please check jntPosMax.";
+                return false;
+            }
+        }
+    }
+
+    // min hardware limit
+    if (!extractGroup(limits, xtmp, "hardwareJntPosMin","a list of hardware minimum angles (in degrees)", _njoints))
+    {
+         yWarning() << "embObjMotionControl: missing hardwareJntPosMin param. Values of jntPosMin param will be used like hardware limits ";
+         for(i=0; i<_njoints; i++) jointsLimits[i].posHwMin = jointsLimits[i].posMin;
+    }
+    else
+    {
+        for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posHwMin = xtmp.get(i).asDouble();
+
+        //check hardware limits are bigger then user limits
+        for(i=0; i<_njoints; i++)
+        {
+            if(jointsLimits[i].posMin < jointsLimits[i].posHwMin)
+            {
+                yError() << "embObjMotionControl: user has set a limit  bigger then hardware limit!. Please check jntPosMin.";
+                return false;
+            }
+        }
+
+    }
+
+    // joint Velocity command max limit
+    if (!extractGroup(limits, xtmp, "jntVelMax", "a list of maximum velocities for the joints (in degrees/s)", _njoints))
+        return false;
+    else
+        for (i = 1; i<xtmp.size(); i++)     jointsLimits[i - 1].velMax = xtmp.get(i).asDouble();
+
+    return true;
+}
 
 
-// bool mcParser::readJointsetCfgGroup(yarp::os::Searchable &config)
-// {
-//     Bottle jointsetCfg = config.findGroup("JOINTSET_CFG");
-//     if (jointsetCfg.isNull())
-//     {
-//         yError() << "embObjMC BOARD " << _boardname << "Missing JOINTSET_CFG group";
-//         return false;
-//     }
-//
-//
-//     Bottle xtmp;
-//     int numofsets = 0;
-//
-//     if(!extractGroup(jointsetcfg, xtmp, "numberofsets", "number of sets ", 1))
-//     {
-//         return  false;
-//     }
-//
-//     numofsets = xtmp.get(1).asInt();
-//
-//     if((0 == numofsets) || (numofsets > _njoints))
-//     {
-//         yError() << "embObjMC BOARD " << _boardname << "Number of jointsets is not correct. it should belong to (1, " << _njoints << ")";
-//         return false;
-//     }
-//
-//     _jsets.resize(numofsets);
-//
-//     for(unsigned int s=0;s<numofsets;s++)
-//     {
-//         char jointset_string[80];
-//         sprintf(jointset_string, "JOINTSET_%d", s);
-//         bool formaterror = false;
-//
-//
-//         Bottle &js_cfg = jointsetcfg.findGroup(jointset_string);
-//         if(js_cfg.isNull())
-//         {
-//             yError() << "embObjMC BOARD " << _boardname << "cannot find " << jointset_string;
-//             return false;
-//         }
-//
-//         //1) id of set
-//         _jsets.at(s).id=s;
-//
-//
-//         //2) list of joints
-//         Bottle &b_listofjoints=js_cfg.findGroup("listofjoints", "list of joints");
-//         if (b_listofjoints.isNull())
-//         {
-//             yError() << "embObjMC BOARD " << _boardname << "listofjoints parameter not found";
-//             return false;
-//         }
-//
-//         int numOfJointsInSet = b_listofjoints.size()-1;
-//         if((numOfJointsInSet < 1) || (numOfJointsInSet>_njoints))
-//         {
-//             yError() << "embObjMC BOARD " << _boardname << "numof joints of set " << s << " is not correct";
-//             return false;
-//         }
-//
-//
-//         for (int j = 0; j <numOfJointsInSet; j++)
-//         {
-//             int jointofthisset = b_listofjoints.get(j+1).asInt();
-//
-//             if((jointofthisset< 0) || (jointofthisset>_njoints))
-//             {
-//                 yError() << "embObjMC BOARD " << _boardname << "invalid joint number for set " << s;
-//                 return false;
-//             }
-//
-//             _jsets.at(s).joints.push_back(jointofthisset);
-//
-//             //2.1) fill map joint to set
-//             joint2set[jointofthisset] = s;
-//         }
-//
-//         // 3) constraints
-//         if(!extractGroup(js_cfg, xtmp, "constraint", "type of jointset constraint ", 1))
-//         {
-//             return  false;
-//         }
-//
-//         eOmc_jsetconstraint_t constraint;
-//         if(!convert(xtmp.get(1).asString(), constraint, formaterror))
-//         {
-//             return false;
-//         }
-//         _jsets.at(s).cfg.constraints.type = constraint;
-//
-//         //param1
-//         if(!extractGroup(js_cfg, xtmp, "param1", "param1 of jointset constraint ", 1))
-//         {
-//             return  false;
-//         }
-//         _jsets.at(s).cfg.constraints.param1 = xtmp.get(1).asDouble();
-//
-//         //param2
-//         if(!extractGroup(js_cfg, xtmp, "param2", "param2 of jointset constraint ", 1))
-//         {
-//             return  false;
-//         }
-//         _jsets.at(s).cfg.constraints.param2 = xtmp.get(1).asDouble();
-//
-//
-//     }
-//     return true;
-// }
+bool mcParser::parseRotorsLimits(yarp::os::Searchable &config, std::vector<eomc_rotorLimits> &rotorsLimits)
+{
+    Bottle &limits=config.findGroup("LIMITS");
+    if (limits.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << " detected that Group LIMITS is not found in configuration file";
+        return false;
+    }
 
+    if(!checkAndSetVectorSize(rotorsLimits, _njoints, "parseRotorsLimits"))
+        return false;
+
+    Bottle xtmp;
+    int i;
+
+    // Rotor max limit
+    if (!extractGroup(limits, xtmp, "rotorPosMax","a list of maximum rotor angles (in degrees)", _njoints))
+        return false;
+    else
+        for(i=1; i<xtmp.size(); i++) rotorsLimits[i-1].posMax = xtmp.get(i).asDouble();
+
+
+
+    // Rotor min limit
+    if (!extractGroup(limits, xtmp, "rotorPosMin","a list of minimum roto angles (in degrees)", _njoints))
+        return false;
+    else
+        for(i=1; i<xtmp.size(); i++) rotorsLimits[i-1].posMin = xtmp.get(i).asDouble();
+
+    // Motor pwm limit
+    if (!extractGroup(limits, xtmp, "motorPwmLimit","a list of motor PWM limits", _njoints))
+        return false;
+    else
+        for(i=1; i<xtmp.size(); i++)
+        {
+            rotorsLimits[i-1].pwmMax = xtmp.get(i).asDouble();
+            if(rotorsLimits[i-1].pwmMax<0)
+            {
+                yError() << "motorPwmLimit should be a positive value";
+                return false;
+            }
+        }
+
+    return true;
+
+}
+
+
+
+
+bool mcParser::parseCouplingInfo(yarp::os::Searchable &config, eomc_couplingInfo_t &couplingInfo)
+{
+    Bottle coupling_bottle = config.findGroup("COUPLINGS");
+    if (coupling_bottle.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname <<  "Missing Coupling group";
+        return false;
+    }
+    Bottle xtmp;
+    int  fixedMatrix4X4Size = 16;
+    int  fixedMatrix4X6Size = 24;
+    bool formaterror =false;
+
+    // matrix J2M
+    if (!extractGroup(coupling_bottle, xtmp, "matrixJ2M", "matrixJ2M ", fixedMatrix4X4Size))
+    {
+        return false;
+    }
+
+    if(false == convert(xtmp, couplingInfo.matrixJ2M, formaterror, fixedMatrix4X4Size))
+    {
+       yError() << "embObjMC BOARD " << _boardname << " has detected an illegal format for some of the values of CONTROLLER.matrixJ2M";
+       return false;
+    }
+
+
+    // matrix E2J
+    if (!extractGroup(coupling_bottle, xtmp, "matrixE2J", "matrixE2J ", fixedMatrix4X6Size))
+    {
+        return false;
+    }
+
+    formaterror = false;
+    if(false == convert(xtmp, couplingInfo.matrixE2J, formaterror, fixedMatrix4X6Size))
+    {
+        yError() << "embObjMC BOARD " << _boardname << " has detected an illegal format for some of the values of CONTROLLER.matrixE2J";
+        return false;
+    }
+
+
+    // matrix M2J
+    if (!extractGroup(coupling_bottle, xtmp, "matrixM2J", "matrixM2J ", fixedMatrix4X4Size))
+    {
+        return false;
+    }
+
+    formaterror = false;
+    if( false == convert(xtmp, couplingInfo.matrixM2J, formaterror, fixedMatrix4X4Size))
+    {
+        yError() << "embObjMC BOARD " << _boardname << " has detected an illegal format for some of the values of CONTROLLER.matrixM2J";
+        return false;
+    }
+
+    return true;
+}
+
+
+bool mcParser::parseMotioncontrolVersion(yarp::os::Searchable &config, int &version)
+{
+    if (!config.findGroup("GENERAL").find("MotioncontrolVersion").isInt())
+    {
+        yError() << "Missing MotioncontrolVersion parameter. RobotInterface cannot start. Please contact icub-support@iit.it";
+        return false;
+    }
+
+    version = config.findGroup("GENERAL").find("MotioncontrolVersion").asInt();
+    return true;
+
+}
+
+bool mcParser::isVerboseEnabled(yarp::os::Searchable &config)
+{
+    bool ret = false;
+    if(!config.findGroup("GENERAL").find("verbose").isBool())
+    {
+        yError() << "embObjMotionControl::open() detects that general->verbose bool param is different from accepted values (true / false). Assuming false";
+        ret = false;
+    }
+    else
+    {
+       ret = config.findGroup("GENERAL").find("verbose").asBool();
+    }
+    _verbosewhenok = ret;
+    return ret;
+}
+
+bool mcParser::parseBehaviourFalgs(yarp::os::Searchable &config, bool &useRawEncoderData, bool  &pwmIsLimited )
+{
+
+    // Check useRawEncoderData = do not use calibration data!
+    Value use_raw = config.findGroup("GENERAL").find("useRawEncoderData");
+
+    if(use_raw.isNull())
+    {
+        useRawEncoderData = false;
+    }
+    else
+    {
+        if(!use_raw.isBool())
+        {
+            yWarning() << "embObjMotionControl::open() detected that useRawEncoderData bool param is different from accepted values (true / false). Assuming false";
+            useRawEncoderData = false;
+        }
+        else
+        {
+            useRawEncoderData = use_raw.asBool();
+            if(useRawEncoderData)
+            {
+                yWarning() << "embObjMotionControl::open() detected that it is using raw data from encoders! Be careful  See 'useRawEncoderData' param in config file";
+                yWarning() << "DO NOT USE OR CALIBRATE THE ROBOT IN THIS CONFIGURATION!";
+                yWarning() << "CHECK IF THE FAULT BUTTON IS PRESSED and press ENTER to continue";
+                getchar();
+            }
+        }
+    }
+
+    // Check useRawEncoderData = do not use calibration data!
+    Value use_limitedPWM = config.findGroup("GENERAL").find("useLimitedPWM");
+    if(use_limitedPWM.isNull())
+    {
+        pwmIsLimited = false;
+    }
+    else
+    {
+        if(!use_limitedPWM.isBool())
+        {
+            pwmIsLimited = false;
+        }
+        else
+        {
+            pwmIsLimited = use_limitedPWM.asBool();
+        }
+    }
+
+    return true;
+}
+
+
+
+bool mcParser::parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vector<eomc_axisInfo_t> &axisInfo)
+{
+
+    Bottle xtmp;
+    int i;
+    axisInfo.resize(_njoints);
+
+    Bottle general = config.findGroup("GENERAL");
+    if (general.isNull())
+    {
+       yError() << "embObjMC BOARD " << _boardname << "Missing General group" ;
+       return false;
+    }
+
+
+    if (!extractGroup(general, xtmp, "AxisMap", "a list of reordered indices for the axes", _njoints))
+        return false;
+
+    for (i = 1; i < xtmp.size(); i++)
+        axisMap[i-1] = xtmp.get(i).asInt();
+
+    if (!extractGroup(general, xtmp, "AxisName", "a list of strings representing the axes names", _njoints))
+        return false;
+
+    //beware: axis name has to be remapped here because they are not set using the toHw() helper function
+    for (i = 1; i < xtmp.size(); i++)
+    {
+        int mappedto = axisInfo[i-1].mappedto;
+        axisInfo[axisMap[i - 1]].name = xtmp.get(i).asString();
+    }
+
+    if (!extractGroup(general, xtmp, "AxisType", "a list of strings representing the axes type (revolute/prismatic)", _njoints))
+        return false;
+
+    //beware: axis type has to be remapped here because they are not set using the toHw() helper function
+    for (i = 1; i < xtmp.size(); i++)
+    {
+        string s = xtmp.get(i).asString();
+        int mappedto = axisInfo[i-1].mappedto;
+        if (s == "revolute")  axisInfo[axisMap[i - 1]].type = VOCAB_JOINTTYPE_REVOLUTE;
+        else if (s == "prismatic")  axisInfo[axisMap[i - 1]].type = VOCAB_JOINTTYPE_PRISMATIC;
+        else
+        {
+            yError("Unknown AxisType value %s!", s.c_str());
+            axisInfo[axisMap[i - 1]].type = VOCAB_JOINTTYPE_UNKNOWN;
+            return false;
+        }
+    }
+
+    return true;
+}
+
+
+
+
+bool mcParser::parseEncoderFactor(yarp::os::Searchable &config, double encoderFactor[])
+{
+    Bottle general = config.findGroup("GENERAL");
+    if (general.isNull())
+    {
+       yError() << "embObjMC BOARD " << _boardname << "Missing General group" ;
+       return false;
+    }
+    Bottle xtmp;
+    int i;
+    double tmp_A2E;
+
+    // Encoder scales
+    if (!extractGroup(general, xtmp, "Encoder", "a list of scales for the encoders", _njoints))
+    {
+        return false;
+    }
+
+    for (i = 1; i < xtmp.size(); i++)
+    {
+        tmp_A2E = xtmp.get(i).asDouble();
+        if (tmp_A2E<0)
+        {
+            yWarning() << "embObjMC BOARD " << _boardname << "Encoder parameter should be positive!";
+        }
+        encoderFactor[i - 1] = tmp_A2E;
+    }
+
+    return true;
+}
+
+
+bool mcParser::parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J[], double gearbox_E2J[])
+{
+    Bottle general = config.findGroup("GENERAL");
+    if (general.isNull())
+    {
+       yError() << "embObjMC BOARD " << _boardname << "Missing General group" ;
+       return false;
+    }
+
+    Bottle xtmp;
+    int i;
+
+    // Gearbox_M2J
+    if (!extractGroup(general, xtmp, "Gearbox_M2J", "The gearbox reduction ratio", _njoints))
+    {
+        return false;
+    }
+
+    for (i = 1; i < xtmp.size(); i++)
+    {
+        gearbox_M2J[i-1] = xtmp.get(i).asDouble();
+        if (gearbox_M2J[i-1]==0)
+        {
+            yError()  << "embObjMC BOARD " << _boardname << "Using a gearbox value = 0 may cause problems! Check your configuration files";
+            return false;
+        }
+    }
+
+
+    //Gearbox_E2J
+    if (!extractGroup(general, xtmp, "Gearbox_E2J", "The gearbox reduction ratio between encoder and joint", _njoints))
+    {
+        yWarning()  << "embObjMC BOARD " << _boardname << "Missing Gearbox_E2J param. I use default value (1) " ;
+        for(int i=0; i<_njoints; i++)
+        {
+            gearbox_E2J[i] = 1;
+        }
+    }
+    else
+    {
+        int test = xtmp.size();
+        for (i = 1; i < xtmp.size(); i++)
+        {
+            gearbox_E2J[i-1] = xtmp.get(i).asDouble();
+            if (gearbox_E2J[i-1]==0)
+            {
+                yError()  << "embObjMC BOARD " << _boardname << "Using a gearbox value = 0 may cause problems! Check your configuration files";
+                return false;
+            }
+        }
+    }
+
+    return true;
+}
+
+
+
+bool mcParser::parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[])
+{
+    Bottle general = config.findGroup("GENERAL");
+    if (general.isNull())
+    {
+       yError() << "embObjMC BOARD " << _boardname << "Missing General group" ;
+       return false;
+    }
+    Bottle xtmp;
+    int i;
+
+    if(!extractGroup(general, xtmp, "useMotorSpeedFbk", "Use motor speed feedback", _njoints))
+    {
+        return false;
+    }
+
+    for (int i = 1; i < xtmp.size(); i++)
+    {
+        useMotorSpeedFbk[i-1] = xtmp.get(i).asInt();
+    }
+
+    return true;
+
+}
+
+
+
+
+
+
+bool mcParser::parseImpedanceGroup(yarp::os::Searchable &config,std::vector<eomc_impedanceParameters> &impedance)
+{
+    Bottle impedanceGroup;
+    impedanceGroup=config.findGroup("IMPEDANCE","IMPEDANCE parameters");
+
+    if(impedanceGroup.isNull())
+    {
+        yError() <<"embObjMC BOARD " << _boardname << "fromConfig(): Error: no IMPEDANCE group found in config file, returning";
+        return false;
+    }
+
+
+
+    if(_verbosewhenok)
+    {
+        yDebug()  << "embObjMC BOARD " << _boardname << ":fromConfig() detected that IMPEDANCE parameters section is found";
+    }
+
+    if(!checkAndSetVectorSize(impedance, _njoints, "parseImpedanceGroup"))
+        return false;
+
+
+    int j=0;
+    Bottle xtmp;
+    if (!extractGroup(impedanceGroup, xtmp, "stiffness", "stiffness parameter", _njoints))
+        return false;
+
+    for (j=0; j<_njoints; j++)
+        impedance[j].stiffness = xtmp.get(j+1).asDouble();
+
+    if (!extractGroup(impedanceGroup, xtmp, "damping", "damping parameter", _njoints))
+        return false;
+
+    for (j=0; j<_njoints; j++)
+        impedance[j].damping = xtmp.get(j+1).asDouble();
+
+    if(_verbosewhenok)
+    {
+        yInfo() << "embObjMC BOARD " << _boardname << "IMPEDANCE section: parameters successfully loaded";
+    }
+    return true;
+
+}
 
 bool mcParser::convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror)
 {
@@ -1248,13 +1704,45 @@ bool mcParser::convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jse
 
     if(eomc_jsetconstraint_unknown == jsetconstraint)
     {
-        yWarning() << "ServiceParser::convert(): string" << t << "cannot be converted into a proper eOmc_jsetconstraint_t";
+        yError() << "embObjMC BOARD " << _boardname << "String" << t << "cannot be converted into a proper eOmc_jsetconstraint_t";
         formaterror = true;
         return false;
     }
 
     return true;
 }
+
+
+
+bool mcParser::convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, int targetsize)
+{
+    matrix.resize(0);
+
+    int tmp = bottle.size();
+    int sizeofmatrix = tmp - 1;    // first position of bottle contains the tag "matrix"
+
+    // check if there are really the target number of elements in matrix.
+    if(targetsize != sizeofmatrix)
+    {
+        yError() << "embObjMC BOARD " << _boardname << " in converting string do matrix.In the matrix there are not" << targetsize << "elements";
+        return false;
+    }
+
+    formaterror = false;
+    for(int i=0; i<sizeofmatrix; i++)
+    {
+        double item = 0;
+
+        // ok, i use the standard converter ... but what if it is not a double format? so far we dont check.
+        item = bottle.get(i+1).asDouble();
+        matrix.push_back(item);
+    }
+
+    // in here we could decide to return false if any previous conversion function has returned error
+
+    return true;
+}
+
 //////////////////////////////////////////////////////////////////////////////
 /////////////////// DEBUG FUNCTIONS
 ////////////////////////////////////////////////////////////////////////////////
