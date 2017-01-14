@@ -37,7 +37,7 @@
 #define CARTCTRL_DEFAULT_TRAJTIME           2.0     // [s]
 #define CARTCTRL_DEFAULT_POSCTRL            "on"
 #define CARTCTRL_DEFAULT_MULJNTCTRL         "on"
-#define CARTCTRL_CONNECT_TMO                5e3     // [ms]
+#define CARTCTRL_CONNECT_SOLVER_PING        1e3     // [ms]
 
 using namespace std;
 using namespace yarp::os;
@@ -1703,7 +1703,7 @@ void ServerCartesianController::run()
             notifyEvent(event);
         }
     }
-    else if ((++connectCnt)*getRate()>CARTCTRL_CONNECT_TMO)
+    else if ((++connectCnt)*getRate()>CARTCTRL_CONNECT_SOLVER_PING)
     {
         if (connectToSolver())
         {
