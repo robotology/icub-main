@@ -387,6 +387,7 @@ public:
     bool powerGrasp(Bottle &options);
     bool push(Bottle &options);
     bool point(Bottle &options);
+    bool point_far(Bottle &options);
     bool look(Bottle &options);
     bool hand(const Bottle &options, const string &type="", bool *holding=NULL);
     bool grasp(const Bottle &options);
