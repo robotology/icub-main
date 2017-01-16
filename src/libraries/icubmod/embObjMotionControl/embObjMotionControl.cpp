@@ -631,7 +631,6 @@ embObjMotionControl::embObjMotionControl() :
     {
         verbosewhenok = false;
     }
-    verbosewhenok=true;
     parser = NULL;
     _mcparser = NULL;
 
@@ -693,13 +692,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
     // - now all other things
 
-    yError() << "**************************************************************************";
-    yError() << "**************************************************************************";
-    yError() << " size" << _rotorsLimits.size() << " capacity=" << _rotorsLimits.capacity() <<" max_size=" << _rotorsLimits.max_size();
-    yError() << " size" << _jointsLimits.size() << " capacity=" << _jointsLimits.capacity() <<" max_size=" << _jointsLimits.max_size();
-    yError() << " size" << _currentLimits.size() << " capacity=" << _currentLimits.capacity() <<" max_size=" << _currentLimits.max_size();
-    yError() << "**************************************************************************";
-
     // READ CONFIGURATION
     if(!fromConfig(config))
     {
@@ -707,13 +699,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-
-    yError() << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
-    yError() << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
-    yError() << " size" << _rotorsLimits.size() << " capacity=" << _rotorsLimits.capacity() <<" max_size=" << _rotorsLimits.max_size();
-    yError() << " size" << _jointsLimits.size() << " capacity=" << _jointsLimits.capacity() <<" max_size=" << _jointsLimits.max_size();
-    yError() << " size" << _currentLimits.size() << " capacity=" << _currentLimits.capacity() <<" max_size=" << _currentLimits.max_size();
-    yError() << "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++";
 
     //  INIT ALL INTERFACES
     yarp::sig::Vector tmpZeros; tmpZeros.resize (_njoints, 0.0);
@@ -755,7 +740,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         cleanup();
         return false;
     }
-    yDebug() << "embObjMotionControl:verifyEPprotocol OK!";
+
 
 //    uint32_t addr = res->getIPv4remoteAddress();
 
@@ -1121,7 +1106,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         if(!_mcparser->parseJointsetCfgGroup(config, _jsets, _joint2set))
             return false;
 
-        debugUtil_printJointsetInfo();
+        //debugUtil_printJointsetInfo();
     }
 
 
@@ -1436,14 +1421,6 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
     }
 
 
-    yError() << "--------------------------------------------------------------------------";
-    yError() << "--------------------------------------------------------------------------";
-    yError() << " size" << _rotorsLimits.size() << " capacity=" << _rotorsLimits.capacity() <<" max_size=" << _rotorsLimits.max_size();
-    yError() << " size" << _jointsLimits.size() << " capacity=" << _jointsLimits.capacity() <<" max_size=" << _jointsLimits.max_size();
-    yError() << " size" << _currentLimits.size() << " capacity=" << _currentLimits.capacity() <<" max_size=" << _currentLimits.max_size();
-    yError() << "--------------------------------------------------------------------------";
-
-
     _mcparser = new mcParser(_njoints, string(boardIPstring));
 
     ////// check motion control xml files version
@@ -1585,9 +1562,6 @@ bool embObjMotionControl::init()
 
         jconfig.userlimits.max = (eOmeas_position_t) S_32(convertA2I(_jointsLimits[logico].posMax, 0.0, _angleToEncoder[logico]));
         jconfig.userlimits.min = (eOmeas_position_t) S_32(convertA2I(_jointsLimits[logico].posMin, 0.0, _angleToEncoder[logico]));
-
-        yError() << "Limiti di " << res->getIPv4string() << "j " << logico << ":MAx" << _jointsLimits[logico].posMax << "("<< jconfig.userlimits.max << ")";
-        yError() << "Limiti di " << res->getIPv4string() << "j " << logico << ":min" << _jointsLimits[logico].posMin << "("<< jconfig.userlimits.min << ")";
 
         jconfig.hardwarelimits.max = (eOmeas_position_t) S_32(convertA2I(_jointsLimits[logico].posHwMax, 0.0, _angleToEncoder[logico]));
         jconfig.hardwarelimits.min = (eOmeas_position_t) S_32(convertA2I(_jointsLimits[logico].posHwMin, 0.0, _angleToEncoder[logico]));
