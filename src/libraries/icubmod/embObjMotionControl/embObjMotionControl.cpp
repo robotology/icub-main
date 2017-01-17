@@ -411,31 +411,14 @@ bool embObjMotionControl::alloc(int nj)
     _rotorEncoderRes = allocAndCheck<int>(nj);
     _gearbox = allocAndCheck<double>(nj);
     _gearboxE2J = allocAndCheck<double>(nj);
-   // _maxJntCmdVelocity = allocAndCheck<double>(nj);
-   // _maxMotorVelocity = allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
     _twofocinfo=allocAndCheck<eomc_twofocSpecificInfo>(nj);
-    //_rotorlimits_max = allocAndCheck<double>(nj);
-    //_rotorlimits_min = allocAndCheck<double>(nj);
-
     _ppids= new eomcParser_pidInfo[nj];
     _vpids= new eomcParser_pidInfo[nj];
     _tpids= new eomcParser_trqPidInfo [nj];
     _cpids= new eomcParser_pidInfo[nj];
-
-   //_impedance_params=allocAndCheck<ImpedanceParameters>(nj);
     _impedance_limits=allocAndCheck<eomc_impedanceLimits>(nj);
-
-
-    //_limitsMax=allocAndCheck<double>(nj);
-    //_limitsMin=allocAndCheck<double>(nj);
-   // _hwLimitsMax=allocAndCheck<double>(nj);
-   // _hwLimitsMin=allocAndCheck<double>(nj);
-    //_currentLimits=allocAndCheck<MotorCurrentLimits>(nj);
-   // _motorPwmLimits=allocAndCheck<double>(nj);
     checking_motiondone=allocAndCheck<bool>(nj);
-
-    //_velocityTimeout=allocAndCheck<int>(nj);
     _last_position_move_time=allocAndCheck<double>(nj);
 
     // Reserve space for data stored locally. values are initialize to 0
@@ -444,7 +427,7 @@ bool embObjMotionControl::alloc(int nj)
     _ref_command_speeds = allocAndCheck<double>(nj);
     _ref_speeds = allocAndCheck<double>(nj);
     _ref_accs = allocAndCheck<double>(nj);
-    _ref_torques = allocAndCheck<double>(nj);
+
     _enabledAmp = allocAndCheck<bool>(nj);
     _enabledPid = allocAndCheck<bool>(nj);
     _calibrated = allocAndCheck<bool>(nj);
@@ -477,32 +460,19 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_rotorNumOfNoiseBits);
     checkAndDestroy(_gearbox);
     checkAndDestroy(_gearboxE2J);
-   // checkAndDestroy(_maxJntCmdVelocity);
-   // checkAndDestroy(_maxMotorVelocity);
     checkAndDestroy(_newtonsToSensor);
-   // checkAndDestroy(_impedance_params);
     checkAndDestroy(_impedance_limits);
-    //checkAndDestroy(_limitsMax);
-    //checkAndDestroy(_limitsMin);
-   // checkAndDestroy(_hwLimitsMax);
-    //checkAndDestroy(_hwLimitsMin);
-    //checkAndDestroy(_currentLimits);
-    //checkAndDestroy(_motorPwmLimits);
     checkAndDestroy(checking_motiondone);
-   // checkAndDestroy(_velocityTimeout);
     checkAndDestroy(_ref_command_positions);
     checkAndDestroy(_ref_positions);
     checkAndDestroy(_ref_command_speeds);
     checkAndDestroy(_ref_speeds);
     checkAndDestroy(_ref_accs);
-    checkAndDestroy(_ref_torques);
+
     checkAndDestroy(_enabledAmp);
     checkAndDestroy(_enabledPid);
     checkAndDestroy(_calibrated);
     checkAndDestroy(_twofocinfo);
-  //  checkAndDestroy(_jointType);
-    //checkAndDestroy(_rotorlimits_max);
-   // checkAndDestroy(_rotorlimits_min);
 
     if(requestQueue)
         delete requestQueue;
@@ -573,22 +543,7 @@ embObjMotionControl::embObjMotionControl() :
     _angleToEncoder = NULL;
     _twofocinfo = NULL;
     _cacheImpedance   = NULL;
-   // _impedance_params = NULL;
     _impedance_limits = NULL;
-    //_rotorlimits_max  = NULL;
-    //_rotorlimits_min  = NULL;
-
- //   _axisName         = NULL;
-  //  _jointType        = NULL;
-    //_limitsMin        = NULL;
-    //_limitsMax        = NULL;
-    //_hwLimitsMax      = NULL;
-    //_hwLimitsMin      = NULL;
-    //_currentLimits    = NULL;
-    //_motorPwmLimits   = NULL;
-   // _velocityTimeout  = NULL;
-   // _maxJntCmdVelocity= NULL;
-   // _maxMotorVelocity = NULL;
     _newtonsToSensor  = NULL;
     _jointEncoderRes  = NULL;
     _jointEncoderType = NULL;
@@ -601,7 +556,6 @@ embObjMotionControl::embObjMotionControl() :
     _ref_command_positions= NULL;
     _ref_positions    = NULL;
     _ref_speeds       = NULL;
-    _ref_torques      = NULL;
     _torqueControlHelper = NULL;
 
     checking_motiondone = NULL;

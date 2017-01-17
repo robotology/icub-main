@@ -972,43 +972,6 @@ bool mcParser::parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificI
 
 
 
-// bool mcParser::parseCurrentPid(yarp::os::Searchable &config, eomcParser_pidInfo *cpids)
-// {
-//     Bottle currentPidsGroup;
-//     currentPidsGroup=config.findGroup("CURRENT_CONTROL", "Current control parameters");
-//     if(currentPidsGroup.isNull())
-//     {
-//         yError() << "embObjMC BOARD " << _boardname << " no CURRENT_CONTROL group found in config file";
-//         return false;
-//
-//     }
-//     yarp::dev::Pid *mycpids =  allocAndCheck<yarp::dev::Pid>(_njoints);
-//
-//     GenericControlUnitsType_t unitstype;
-//     if(!parsePidUnitsType(currentPidsGroup, unitstype))
-//         return false;
-//
-//     if(unitstype != controlUnits_metric)
-//     {
-//         yError() << "embObjMC BOARD " << _boardname << " current pids can use only metric units";
-//         return false;
-//     }
-//
-//     if(!parsePidsGroup(currentPidsGroup, mycpids, string("")))
-//         return false;
-//
-//     for(int i=0; i<_njoints; i++)
-//     {
-//         cpids[i].enabled = true;
-//         cpids[i].ctrlUnitsType = unitstype;
-//         cpids[i].controlLaw = PidAlgo_simple;
-//         cpids[i].pid = mycpids[i];
-//     }
-//
-//     checkAndDestroy(mycpids);
-//
-//     return true;
-// }
 
 bool mcParser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<eomc_jointsSet> &jsets, std::vector<int> &joint2set)
 {

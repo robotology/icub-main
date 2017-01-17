@@ -312,23 +312,23 @@ private:
 
 
 
-    std::vector<eomc_rotorLimits> _rotorsLimits; //contains limit about rotors such as position and pwm
-    std::vector<eomc_jointLimits> _jointsLimits; //contains limit about joints such as position and velocity
-    std::vector<eomc_motorCurrentLimits>_currentLimits;
-    eomc_couplingInfo_t _couplingInfo; //contains coupling matrix vecchio campo controller
-    std::vector<eomc_jointsSet> _jsets;
-    std::vector<int> _joint2set;
-    std::vector<eomc_timeouts_t> _timeouts;
+    std::vector<eomc_rotorLimits>           _rotorsLimits; /** contains limit about rotors such as position and pwm */
+    std::vector<eomc_jointLimits>           _jointsLimits; /** contains limit about joints such as position and velocity */
+    std::vector<eomc_motorCurrentLimits>    _currentLimits;
+    eomc_couplingInfo_t                     _couplingInfo; /** contains coupling matrix */
+    std::vector<eomc_jointsSet>             _jsets;
+    std::vector<int>                        _joint2set;
+    std::vector<eomc_timeouts_t>            _timeouts;
 
     std::vector<eomc_impedanceParameters>  _impedance_params;   /** impedance parameters */ // TODO doubled!!! optimize using just one of the 2!!!
-    eomc_impedanceLimits     *_impedance_limits;     /** impedancel imits */
-    eOmc_impedance_t         *_cacheImpedance; /* cache impedance value to split up the 2 sets */
+    eomc_impedanceLimits                   *_impedance_limits;  /** impedancel imits */
+    eOmc_impedance_t                       *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
 
 
-    eomcParser_pidInfo *_ppids;
-    eomcParser_pidInfo *_vpids;
-    eomcParser_trqPidInfo *_tpids;
-    eomcParser_pidInfo *_cpids;
+    eomcParser_pidInfo      *_ppids;
+    eomcParser_pidInfo      *_vpids;
+    eomcParser_trqPidInfo   *_tpids;
+    eomcParser_pidInfo      *_cpids;
 
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
 
@@ -368,10 +368,8 @@ private:
     // basic knowledge of my joints
     int   _njoints;                             // Number of joints handled by this EMS; this values will be extracted by the config file
 
-    double 		SAFETY_THRESHOLD;
-    // debug
-    //int     start;
-    //int     end;
+    double  SAFETY_THRESHOLD;
+
 
     // internal stuff
     bool    *_enabledAmp;       // Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
@@ -382,7 +380,6 @@ private:
     double  *_ref_command_speeds;   // used for velocity control.
     double  *_ref_positions;    // used for direct position control.
     double  *_ref_accs;         // for velocity control, in position min jerk eq is used.
-    double  *_ref_torques;      // for torque control.
 
     uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
 
@@ -397,25 +394,6 @@ private:
 
     bool dealloc();
     bool isEpManagedByBoard();
-    //bool parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[]);
-    //bool parseVelocityPidsGroup(Bottle& pidsGroup, Pid myPid[]);
-   // bool parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], double kbemf[], double ktau[], int filterType[]);
-   // bool parseImpedanceGroup_NewFormat(Bottle& pidsGroup, eomc_impedanceParameters vals[]);
-    //bool parseCurrentPidsGroup(Bottle& pidsGroup, Pid myPid[]);
-   // bool parseGeneralMecGroup(Bottle& general);
-    //bool parsePosPid(Bottle &posPidsGroup);
-   // bool parseVelPid(Bottle &velPidsGroup);
-   // bool parseTrqPid(Bottle &trqPidsGroup);
-   // bool parseCurrPid(Bottle &currentPidsGroup);
-   // bool parseLimitsGroup( Bottle &limits);
-   // bool parseTimeoutsGroup( Bottle &timeouts);
-   // bool parse2FocGroup(Bottle &focGroup);
-   // bool parseCouplingGroup(Bottle &coupling);
-   // bool parseJointsetCfgGroup(Bottle &jointsetcfg);
-
-    //bool parsePidPos_withInnerVelPid(Bottle &b_pid, string controlLaw);
-  // bool parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw);
-
 
     bool convertPosPid(eomcParser_pidInfo myPidInfo[]);
     bool convertTrqPid(eomcParser_trqPidInfo myPidInfo[]);
@@ -433,8 +411,6 @@ private:
     bool isTorqueControlEnabled(int joint);
     bool isVelocityControlEnabled(int joint);
 
-//    bool getStatusBasic_withWait(const int n_joint, const int *joints, eOmc_joint_status_basic_t *_statuslist);             // helper function
-//    bool getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);     // helper function
     bool interactionModeStatusConvert_embObj2yarp(eOenum08_t embObjMode, int &vocabOut);
     bool interactionModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut);
 
