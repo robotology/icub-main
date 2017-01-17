@@ -3466,15 +3466,21 @@ bool ServerCartesianController::getInfo(Bottle &info)
         serverVer.addString("server_version");
         serverVer.addDouble(CARTCTRL_SERVER_VER);
 
+        string kinPartStr(kinPart.c_str());
         string type=limbState->getType();
+
         size_t pos=type.find("_v");
         double hwVer=1.0;
         if (pos!=string::npos)
-            hwVer=strtod(type.substr(pos+2).c_str(),NULL);
+            hwVer=strtod(type.substr(pos+2).c_str(),NULL);        
 
         Bottle &partVer=info.addList();
-        partVer.addString((string(kinPart.c_str())+"_version").c_str());
+        partVer.addString((kinPartStr+"_version").c_str());
         partVer.addDouble(hwVer);
+
+        Bottle &partType=info.addList();
+        partType.addString((kinPartStr+"_type").c_str());
+        partType.addString(type);
 
         Bottle &events=info.addList();
         events.addString("events");
