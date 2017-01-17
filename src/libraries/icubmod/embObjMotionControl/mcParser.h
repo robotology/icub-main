@@ -225,7 +225,9 @@ public:
 public:
     int getNumberofJoints(void) {return (joints.size());}
     eOmc_jointset_configuration_t* getConfiguration(void) {return &cfg;}
-
+    void setUseSpeedFeedbackFromMotors(bool flag){cfg.usespeedfeedbackfrommotors = flag;}
+    void setPidOutputType(eOmc_pidoutputtype_t type){cfg.pidoutputtype = type;}
+    void setCanDoTorqueControl(bool flag) {cfg.candotorquecontrol = flag;}
 };
 
 typedef struct

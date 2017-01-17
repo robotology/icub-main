@@ -950,20 +950,11 @@ bool embObjMotionControl::updatedJointsetsCfgWithControlInfo()
             return false;
         }
         int joint = _jsets[s].joints[0];
-
-        eOmc_jointset_configuration_t* cfg_ptr = _jsets[s].getConfiguration();
-
-        cfg_ptr->pidoutputtype = pidOutputTypeConver_eomc2fw(_ppids[joint].controlLaw);
-
-        cfg_ptr->candotorquecontrol = isTorqueControlEnabled(joint);
+        _jsets[s].setPidOutputType(pidOutputTypeConver_eomc2fw(_ppids[joint].controlLaw));
+        _jsets[s].setCanDoTorqueControl(isTorqueControlEnabled(joint));
     }
     return true;
 }
-
-
-
-
-
 
 
 
@@ -1243,8 +1234,7 @@ bool embObjMotionControl::verifyUseMotorSpeedFbkInJointSet(int useMotorSpeedFbk 
             }
         }
 
-        eOmc_jointset_configuration_t* cfg_ptr = _jsets[s].getConfiguration();
-        cfg_ptr->usespeedfeedbackfrommotors = useMotorSpeedFbk[firstjointofset];
+        _jsets[s].setUseSpeedFeedbackFromMotors(useMotorSpeedFbk[firstjointofset]);
     }
 
     return true;
