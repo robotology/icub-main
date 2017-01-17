@@ -1007,10 +1007,6 @@ bool mcParser::parseJointsetCfgGroup(yarp::os::Searchable &config, std::vector<e
     if(!checkAndSetVectorSize(joint2set, _njoints, "parseJointsetCfgGroup"))
         return false;
 
-    //NOTE: here i need to initualize all element of joint2set with "eomc_jointSetNum_none"
-#warning VALE: posso togliere la reinit con eomc_jointSetNum_none
-    joint2set.resize(_njoints, eomc_jointSetNum_none);
-
     for(unsigned int s=0;s<numofsets;s++)
     {
         char jointset_string[80];

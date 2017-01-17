@@ -1006,8 +1006,20 @@ bool embObjMotionControl::saveCouplingsData(void)
 
     memset(jc_dest, 0, sizeof(eOmc_4jomo_coupling_t));
 
+    //I need to initialize all elements of joint2set with "eomc_jointSetNum_none": it is used by fw to get num of setBemfParamRaw
+    //4 is teh satic dimension of joint2set. see definition of type eOmc_4jomo_coupling_t
+    for(int i=0; i<4; i++)
+    {
+        jc_dest->joint2set[i] = eomc_jointSetNum_none;
+    }
 
-    for(int i=0; i<_njoints; i++)
+    if(_joint2set.size() > 4 )
+    {
+        yError() << "embObjMC BOARD " << boardIPstring << "Jointsset size is bigger than 4. I can't send jointset information to fw.";
+        return false;
+    }
+
+    for(int i=0; i<_joint2set.size(); i++)
     {
         jc_dest->joint2set[i] = _joint2set[i];
     }
