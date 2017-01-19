@@ -31,6 +31,7 @@
 #include <iCub/iKin/iKinFwd.h>
 
 #include <iCub/MotorThread.h>
+#include <iCub/pointing_far.h>
 
 using namespace iCub::ctrl;
 using namespace iCub::iKin;
@@ -1459,21 +1460,13 @@ void MotorThread::run()
                 force[1]=wrench[1];
                 force[2]=wrench[2];
 
-                yDebug("force = %f. thresh = %f",norm(force),dragger.extForceThresh);
-
                 if (norm(force)<dragger.extForceThresh)
                     force=0.0;
                 else
                     D/=5.0;
                 
-                yDebug("force= %s",force.toString().c_str());
-
                 Vector b=force/dragger.inertia;
-                yDebug("force/dragger.inertia = %s",b.toString().c_str());
-
                 Vector c=D*dragger.I->get();
-                yDebug("D*dragger.I->get() = %s",c.toString().c_str());
-
                 Vector a=force/dragger.inertia-D*dragger.I->get();
                 Vector zeros4d(4);
                 zeros4d=0.0;
@@ -1828,6 +1821,55 @@ bool MotorThread::point(Bottle &options)
     {
         setGazeIdle();
         ctrl_gaze->setTrackingMode(false);
+    }
+
+    return true;
+}
+
+
+bool MotorThread::point_far(Bottle &options)
+{
+    Vector xd;
+    Bottle *bTarget=options.find("target").asList();    
+    if (!targetToCartesian(bTarget,xd))
+        return false;
+
+    int arm=ARM_MOST_SUITED;
+    if (checkOptions(options,"left"))
+        arm=LEFT;
+    else if (checkOptions(options,"right"))
+        arm=RIGHT;
+    else
+        arm=checkArm(arm,xd);
+
+    restoreContext(arm);
+    ICartesianControl* iarm;
+    action[arm]->getCartesianIF(iarm);
+
+    Property requirements;
+    Bottle point; point.addList().read(xd);
+    requirements.put("point",point.get(0));
+    
+    Vector q,x;
+    if (PointingFar::compute(iarm,requirements,q,x))
+    {
+        if (!checkOptions(options,"no_head") &&
+            !checkOptions(options,"no_gaze"))
+        {
+            setGazeIdle();
+            options.addString("fixate");
+            look(options);
+        }
+
+        action[arm]->pushAction("pointing_hand");
+        PointingFar::point(iarm,q,x);
+
+        if (!checkOptions(options,"no_head") &&
+            !checkOptions(options,"no_gaze"))
+        {
+            setGazeIdle();
+            ctrl_gaze->setTrackingMode(false);
+        }
     }
 
     return true;
