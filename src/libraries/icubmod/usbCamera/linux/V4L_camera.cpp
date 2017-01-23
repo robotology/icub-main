@@ -557,7 +557,6 @@ bool V4L_camera::deviceInit()
         printf("DONE: v4lconvert_try_format\n\t");
         printf("Message is: %s", v4lconvert_get_error_message(_v4lconvert_data));
     }
-
     printf("param.width = %d; src.width = %d\n", param.width, param.src_fmt.fmt.pix.width);
 
     // dst is tmp, just to convert camera pixel type (YUYV) into user pixel type (RGB)
@@ -1300,76 +1299,74 @@ void V4L_camera::captureStart()
 {
     unsigned int i;
     enum v4l2_buf_type type;
-    
+
     switch (param.io)
     {
         case IO_METHOD_READ:
             /* Nothing to do. */
             break;
-            
+
         case IO_METHOD_MMAP:
             for (i = 0; i < param.n_buffers; ++i)
             {
                 struct v4l2_buffer buf;
-                
                 CLEAR(buf);
-                
+
                 buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                 buf.memory = V4L2_MEMORY_MMAP;
                 buf.index = i;
-                
+
                 if (-1 == xioctl(param.fd, VIDIOC_QBUF, &buf))
                     errno_exit("VIDIOC_QBUF");
             }
-            
+
             type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            
+
             if (-1 == xioctl(param.fd, VIDIOC_STREAMON, &type))
                 errno_exit("VIDIOC_STREAMON");
-            
+
 //             param.raw_image = param.buffers[0].start;
             break;
-            
+
         case IO_METHOD_USERPTR:
             for (i = 0; i < param.n_buffers; ++i) {
                 struct v4l2_buffer buf;
-                
+
                 CLEAR (buf);
-                
+
                 buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                 buf.memory = V4L2_MEMORY_USERPTR;
                 buf.index = i;
                 buf.m.userptr = (unsigned long) param.buffers[i].start;
                 buf.length = param.buffers[i].length;
-                
+
                 if (-1 == xioctl(param.fd, VIDIOC_QBUF, &buf))
                     errno_exit("VIDIOC_QBUF");
             }
-            
+
             type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            
+
             if (-1 == xioctl(param.fd, VIDIOC_STREAMON, &type))
                 errno_exit("VIDIOC_STREAMON");
-            
+
             break;
     }
 }
 
 
-
 bool V4L_camera::readInit(unsigned int buffer_size)
 {
     param.buffers = (struct buffer *) calloc(1, sizeof(*(param.buffers)));
-    
+
     if (!param.buffers) 
     {
         fprintf(stderr, "Out of memory\n");
         return false;
     }
-    
+
     param.buffers[0].length = buffer_size;
     param.buffers[0].start = malloc(buffer_size);
-    
+
     if (!param.buffers[0].start) 
     {
         fprintf (stderr, "Out of memory\n");
@@ -1381,12 +1378,12 @@ bool V4L_camera::readInit(unsigned int buffer_size)
 bool V4L_camera::mmapInit()
 {
     CLEAR(param.req);
-    
+
     param.n_buffers = VIDIOC_REQBUFS_COUNT;
     param.req.count = param.n_buffers;
     param.req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     param.req.memory = V4L2_MEMORY_MMAP;
-    
+
     if (-1 == xioctl(param.fd, VIDIOC_REQBUFS, &param.req))
     {
         if (EINVAL == errno)
@@ -1400,7 +1397,7 @@ bool V4L_camera::mmapInit()
             return false;
         }
     }
-    
+
     if (param.req.count < 1)
     {
         fprintf(stderr, "Insufficient buffer memory on %s\n", param.deviceId.c_str());
@@ -1411,9 +1408,9 @@ bool V4L_camera::mmapInit()
     {
         fprintf(stderr, "Only 1 buffer was available, you may encounter performance issue acquiring images from device %s\n", param.deviceId.c_str());
     }
-    
+
     param.buffers = (struct buffer *) calloc(param.req.count, sizeof(*(param.buffers)));
-    
+
     if (!param.buffers) 
     {
         fprintf(stderr, "Out of memory\n");
@@ -1426,20 +1423,19 @@ bool V4L_camera::mmapInit()
 
     for (param.n_buffers = 0; param.n_buffers < param.req.count; param.n_buffers++)
     {
-        
         CLEAR(buf);
-        
+
         buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         buf.memory = V4L2_MEMORY_MMAP;
         buf.index = param.n_buffers;
-        
+
         if (-1 == xioctl(param.fd, VIDIOC_QUERYBUF, &buf))
             errno_exit("VIDIOC_QUERYBUF");
-        
+
         printf("image size is %d - buf.len is %d, offset is %d - new offset is %d\n", param.image_size, buf.length, buf.m.offset, param.image_size*param.n_buffers);
         param.buffers[param.n_buffers].length = buf.length;
         param.buffers[param.n_buffers].start = v4l2_mmap(NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, param.fd, buf.m.offset);
-        
+
         if (MAP_FAILED == param.buffers[param.n_buffers].start)
             errno_exit("mmap");
     }
@@ -1454,16 +1450,16 @@ bool V4L_camera::userptrInit(unsigned int buffer_size)
 {
 //     struct v4l2_requestbuffers req;
     unsigned int page_size;
-    
+
     page_size = getpagesize();
     buffer_size = (buffer_size + page_size - 1) & ~(page_size - 1);
-    
+
     CLEAR(param.req);
-    
+
     param.req.count = VIDIOC_REQBUFS_COUNT;
     param.req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     param.req.memory = V4L2_MEMORY_USERPTR;
-    
+
     if (-1 == xioctl(param.fd, VIDIOC_REQBUFS, &param.req))
     {
         if (EINVAL == errno) 
@@ -1477,20 +1473,20 @@ bool V4L_camera::userptrInit(unsigned int buffer_size)
             return false;
         }
     }
-    
+
     param.buffers = (struct buffer *) calloc(4, sizeof(*(param.buffers)));
-    
+
     if (!param.buffers) 
     {
         fprintf(stderr, "Out of memory\n");
         return false;
     }
-    
+
     for (param.n_buffers = 0; param.n_buffers < 4; ++param.n_buffers) 
     {
         param.buffers[param.n_buffers].length = buffer_size;
         param.buffers[param.n_buffers].start = memalign(/* boundary */ page_size, buffer_size);
-        
+
         if (!param.buffers[param.n_buffers].start) 
         {
             fprintf(stderr, "Out of memory\n");
