@@ -25,7 +25,7 @@
 #include <yarp/math/Math.h>
 #include "ClientGazeController.h"
 
-#define GAZECTRL_CLIENT_VER     1.1
+#define GAZECTRL_CLIENT_VER     1.2
 #define GAZECTRL_DEFAULT_TMO    0.1     // [s]
 #define GAZECTRL_ACK            Vocab::encode("ack")
 #define GAZECTRL_NACK           Vocab::encode("nack")
@@ -445,6 +445,159 @@ bool ClientGazeController::lookAtStereoPixels(const Vector &pxl, const Vector &p
 
     portCmdStereo.writeStrict();
     return true;
+}
+
+
+/************************************************************************/
+bool ClientGazeController::lookAtFixationPointSync(const Vector &fp)
+{
+    if (!connected || (fp.length()<3))
+        return false;
+
+    Bottle command, reply;
+    command.addString("look");
+    command.addString("3D");
+    Bottle &payLoad=command.addList();
+    payLoad.addDouble(fp[0]);
+    payLoad.addDouble(fp[1]);
+    payLoad.addDouble(fp[2]);
+
+    if (!portRpc.write(command,reply))
+    {
+        yError("unable to get reply from server!");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::lookAtAbsAnglesSync(const Vector &ang)
+{
+    if (!connected || (ang.length()<3))
+        return false;
+
+    Bottle command, reply;
+    command.addString("look");
+    command.addString("ang");
+    Bottle &payLoad=command.addList();
+    payLoad.addString("abs");
+    for (size_t i=0; i<ang.length(); i++)
+        payLoad.addDouble(ang[i]);
+
+    if (!portRpc.write(command,reply))
+    {
+        yError("unable to get reply from server!");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::lookAtRelAnglesSync(const Vector &ang)
+{
+    if (!connected || (ang.length()<3))
+        return false;
+
+    Bottle command, reply;
+    command.addString("look");
+    command.addString("ang");
+    Bottle &payLoad=command.addList();
+    payLoad.addString("rel");
+    for (size_t i=0; i<ang.length(); i++)
+        payLoad.addDouble(ang[i]);
+
+    if (!portRpc.write(command,reply))
+    {
+        yError("unable to get reply from server!");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::lookAtMonoPixelSync(const int camSel,
+                                               const Vector &px,
+                                               const double z)
+{
+    if (!connected || (px.length()<2))
+        return false;
+
+    Bottle command, reply;
+    command.addString("look");
+    command.addString("mono");
+    Bottle &payLoad=command.addList();
+    payLoad.addString((camSel==0)?"left":"right");
+    payLoad.addDouble(px[0]);
+    payLoad.addDouble(px[1]);
+    payLoad.addDouble(z);
+
+    if (!portRpc.write(command,reply))
+    {
+        yError("unable to get reply from server!");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::lookAtMonoPixelWithVergenceSync(const int camSel,
+                                                           const Vector &px,
+                                                           const double ver)
+{
+    if (!connected || (px.length()<2))
+        return false;
+
+    Bottle command, reply;
+    command.addString("look");
+    command.addString("mono");
+    Bottle &payLoad=command.addList();
+    payLoad.addString((camSel==0)?"left":"right");
+    payLoad.addDouble(px[0]);
+    payLoad.addDouble(px[1]);
+    payLoad.addString("ver");
+    payLoad.addDouble(ver);
+
+    if (!portRpc.write(command,reply))
+    {
+        yError("unable to get reply from server!");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
+}
+
+
+/************************************************************************/
+bool ClientGazeController::lookAtStereoPixelsSync(const Vector &pxl,
+                                                  const Vector &pxr)
+{
+    if (!connected || (pxl.length()<2) || (pxr.length()<2))
+        return false;
+
+    Bottle command, reply;
+    command.addString("look");
+    command.addString("stereo");
+    Bottle &payLoad=command.addList();
+    payLoad.addDouble(pxl[0]);
+    payLoad.addDouble(pxl[1]);
+    payLoad.addDouble(pxr[0]);
+    payLoad.addDouble(pxr[1]);    
+
+    if (!portRpc.write(command,reply))
+    {
+        yError("unable to get reply from server!");
+        return false;
+    }
+
+    return (reply.get(0).asVocab()==GAZECTRL_ACK);
 }
 
 

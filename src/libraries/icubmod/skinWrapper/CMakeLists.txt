@@ -11,7 +11,7 @@ IF (NOT SKIP_${PROJECTNAME})
   INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}/src/libraries/icubmod/analogServer)
   INCLUDE_DIRECTORIES(${CMAKE_CURRENT_SOURCE_DIR} ${YARP_INCLUDE_DIRS} ${iCubDev_INCLUDE_DIRS})
 
-  yarp_add_plugin(${PROJECTNAME} ${PROJECTNAME}.cpp ${PROJECTNAME}.h ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/analogServer/analogServer.cpp ${CMAKE_SOURCE_DIR}/src/libraries/icubmod/analogServer/analogServer.h)
+  yarp_add_plugin(${PROJECTNAME} ${PROJECTNAME}.cpp ${PROJECTNAME}.h)
   TARGET_LINK_LIBRARIES(${PROJECTNAME} ${YARP_LIBRARIES} ${ACE_LIBRARIES})
   icub_export_plugin(${PROJECTNAME})
   yarp_install(FILES skinWrapper.ini  DESTINATION ${ICUB_PLUGIN_MANIFESTS_INSTALL_DIR})

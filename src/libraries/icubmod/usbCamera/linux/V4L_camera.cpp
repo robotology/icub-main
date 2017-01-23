@@ -84,12 +84,28 @@ V4L_camera::V4L_camera() : RateThread(1000/DEFAULT_FRAMERATE), doCropping(false)
     param.deviceId = "/dev/video0";
     param.fd  = -1;
     param.image_size = 0;
-    param.dst_image = NULL;
     param.n_buffers = 0;
+    param.dst_image = NULL;
     param.buffers = NULL;
-    param.camModel = SEE3CAMCU50;
+    param.camModel = STANDARD_UVC;
+    param.tmp_image= NULL;
+    param.tmp_image2 = NULL;
+    param.raw_image = NULL;
     myCounter = 0;
     timeTot = 0;
+
+    use_exposure_absolute = false;
+    camMap["default"]           = STANDARD_UVC;
+    camMap["leopard_python"]    = LEOPARD_PYTHON;
+
+    configFx = false;
+    configFy = false;
+    configPPx = false;
+    configPPy =false;
+    configRet = false;
+    configDistM = false;
+    configIntrins = false;
+    configured = false;
 }
 
 yarp::os::Stamp V4L_camera::getLastInputStamp()
@@ -150,13 +166,69 @@ bool V4L_camera::open(yarp::os::Searchable& config)
 
     // Initting video device
     deviceInit();
-    yInfo() << "START enumerating controls";
     enumerate_controls();
-    yInfo() << "DONE enumerating controls\n\n";
+    if(!check_V4L2_control(V4L2_CID_EXPOSURE) )
+    {
+        use_exposure_absolute = check_V4L2_control(V4L2_CID_EXPOSURE_ABSOLUTE);
+    }
     captureStart();
     yarp::os::Time::delay(0.5);
     start();
 
+    return true;
+}
+
+
+int V4L_camera::getRgbHeight(){
+    return height();
+}
+
+int V4L_camera::getRgbWidth(){
+    return width();
+}
+
+bool V4L_camera::setRgbResolution(int width, int height){
+    mutex.wait();
+    captureStop();
+    deviceUninit();
+    param.width=width;
+    param.height=height;
+    bool res=deviceInit();
+    captureStart();
+    mutex.post();
+    return res;
+}
+
+bool V4L_camera::getRgbFOV(double &horizontalFov, double &verticalFov){
+    horizontalFov=param.horizontalFov;
+    verticalFov=param.verticalFov;
+    return configFx && configFy;
+}
+
+bool V4L_camera::setRgbFOV(double horizontalFov, double verticalFov){
+    param.horizontalFov=horizontalFov;
+    param.verticalFov=verticalFov;
+    return true;
+}
+
+bool V4L_camera::getRgbIntrinsicParam(yarp::os::Property &intrinsic){
+    intrinsic=param.intrinsic;
+    return configIntrins;
+}
+
+bool V4L_camera::getRgbMirroring(bool &mirror){
+
+    mirror=ioctl(param.fd,V4L2_CID_HFLIP);
+    return true;
+}
+
+bool V4L_camera::setRgbMirroring(bool mirror){
+    int ret=ioctl(param.fd,V4L2_CID_HFLIP,&mirror);
+    if (ret < 0)
+    {
+        yError()<<"V4L2_CID_HFLIP - Unable to mirror image-"<<strerror(errno);
+        return false;
+    }
     return true;
 }
 
@@ -197,10 +269,28 @@ bool V4L_camera::fromConfig(yarp::os::Searchable& config)
 
     if(!config.check("camModel") )
     {
-        yWarning() << "No 'camModel' was specified, working with default SEE3CAMCU50 (camModel 1)";
+        yInfo() << "No 'camModel' was specified, working with 'standard' uvc";
+        param.camModel = STANDARD_UVC;
     }
     else
-        param.camModel = (supported_cams) config.find("camModel").asInt();
+    {
+        std::map <std::string, supported_cams>::iterator it= camMap.find(config.find("camModel").asString().c_str());
+        if( it != camMap.end() )
+        {
+            param.camModel = it->second;
+            yDebug() << "cam model name : " <<  config.find("camModel").asString() << "  -- number : " << it->second;
+        }
+        else
+        {
+            yError() << "Unknown camera model <" << config.find("camModel").asString() << ">";
+            yInfo() << "Supported models are: ";
+            for(it=camMap.begin(); it!=camMap.end(); it++)
+            {
+                yInfo(" <%s>", it->first.c_str());
+            }
+            return false;
+        }
+    }
 
     if(config.check("crop") )
     {
@@ -244,6 +334,71 @@ bool V4L_camera::fromConfig(yarp::os::Searchable& config)
             return false;
             break;
     }
+    yarp::os::Value *val;
+    Value* retM;
+    retM=Value::makeList("1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0");
+    configFx=config.check("horizontalFov");
+    configFy=config.check("verticalFov");
+    configPPx=config.check("principalPointX");
+    configPPy=config.check("principalPointY");
+    configRet=config.check("retificationMatrix");
+    configDistM=config.check("distortionModel");
+    Bottle bt;
+    bt=config.findGroup("cameraDistortionModelGroup");
+    if(!bt.isNull())
+    {
+        if(bt.find("name").isNull() || bt.find("k1").isNull()
+                    || bt.find("k2").isNull() || bt.find("k3").isNull()
+                    || bt.find("t1").isNull() || bt.find("t2").isNull())
+        {
+            yError()<<"usbCamera: group cameraDistortionModelGroup incomplete, "
+                      "fields k1, k2, k3, t1, t2, name are required when using cameraDistortionModelGroup";
+            configIntrins=false;
+            return false;
+        }
+        else
+            configIntrins=true;
+    }
+    else
+        configIntrins=false;
+    param.horizontalFov=config.check("horizontalFov",Value(0.0),
+                               "desired horizontal fov of test image").asDouble();
+    param.verticalFov=config.check("verticalFov",Value(0.0),
+                               "desired vertical fov of test image").asDouble();
+    if(config.check("mirror"))
+    {
+        if(!setRgbMirroring(config.check("mirror",
+                                        Value(false),
+                                        "mirroring disabled by default").asBool())){
+            yError("usbCamera: cannot set mirroring option");
+            return false;
+        }
+    }
+
+    param.intrinsic.put("focalLengthX",config.check("focalLengthX",Value(0.0),"").asDouble());
+    param.intrinsic.put("focalLengthY",config.check("focalLengthY",Value(0.0),"").asDouble());
+    param.intrinsic.put("principalPointX",config.check("principalPointX",Value(0.0),"").asDouble());
+    param.intrinsic.put("principalPointY",config.check("principalPointY",Value(0.0),"").asDouble());
+    param.intrinsic.put("retificationMatrix",config.check("retificationMatrix",*retM,""));
+    param.intrinsic.put("distortionModel",config.check("distortionModel",Value(""),"").asString());
+    if(bt.isNull())
+    {
+        param.intrinsic.put("name","");
+        param.intrinsic.put("k1",0.0);
+        param.intrinsic.put("k2",0.0);
+        param.intrinsic.put("k3",0.0);
+        param.intrinsic.put("t1",0.0);
+        param.intrinsic.put("t2",0.0);
+    }
+    else{
+        param.intrinsic.put("name",bt.check("name",Value(""),"").asString());
+        param.intrinsic.put("k1",bt.check("k1",Value(0.0),"").asDouble());
+        param.intrinsic.put("k2",bt.check("k2",Value(0.0),"").asDouble());
+        param.intrinsic.put("k3",bt.check("k3",Value(0.0),"").asDouble());
+        param.intrinsic.put("t1",bt.check("t1",Value(0.0),"").asDouble());
+        param.intrinsic.put("t2",bt.check("t2",Value(0.0),"").asDouble());
+    }
+    delete retM;
 
     yDebug() << "using following device " << param.deviceId << "with the configuration: " << param.width << "x" << param.height << "; camModel is " << param.camModel;
     return true;
@@ -296,6 +451,7 @@ bool V4L_camera::deviceInit()
     struct v4l2_crop crop;
     struct v4l2_streamparm frameint;
     unsigned int min;
+    configured = false;
     
     if (-1 == xioctl(param.fd, VIDIOC_QUERYCAP, &cap)) 
     {
@@ -354,6 +510,7 @@ bool V4L_camera::deviceInit()
         
         if (-1 == xioctl(param.fd, VIDIOC_S_CROP, &crop)) 
         {
+            yError() << "xioctl error VIDIOC_S_FMT" << strerror(errno);
             switch (errno) 
             {
                 case EINVAL:
@@ -400,15 +557,16 @@ bool V4L_camera::deviceInit()
         printf("DONE: v4lconvert_try_format\n\t");
         printf("Message is: %s", v4lconvert_get_error_message(_v4lconvert_data));
     }
-
     printf("param.width = %d; src.width = %d\n", param.width, param.src_fmt.fmt.pix.width);
 
     // dst is tmp, just to convert camera pixel type (YUYV) into user pixel type (RGB)
     param.dst_fmt = param.src_fmt;
     param.dst_fmt.fmt.pix.pixelformat = param.pixelType;
 
-    if (-1 == xioctl(param.fd, VIDIOC_S_FMT, &param.src_fmt))
-        std::cout << "xioctl error VIDIOC_S_FMT" << std::endl;
+    if (-1 == xioctl(param.fd, VIDIOC_S_FMT, &param.src_fmt)){
+        yError() << "xioctl error VIDIOC_S_FMT" << strerror(errno);
+        return false;
+    }
     
     
     /* Note VIDIOC_S_FMT may change width and height. */
@@ -456,7 +614,7 @@ bool V4L_camera::deviceInit()
 
     param.image_size = param.src_fmt.fmt.pix.sizeimage;
     param.rgb_src_image_size = param.src_fmt.fmt.pix.width * param.src_fmt.fmt.pix.height * 3;
-    param.dst_image  = (unsigned char*) malloc(param.width * param.height * 3 *100);  // 3 for rgb without gamma  *100 is for debug
+    param.dst_image  = (unsigned char*) malloc(param.width * param.height * 3);
     param.tmp_image  = new unsigned char[param.rgb_src_image_size];
     param.tmp_image2 = new unsigned char[param.rgb_src_image_size];
 
@@ -476,6 +634,7 @@ bool V4L_camera::deviceInit()
     }
 
     query_current_image_fmt_v4l2(param.fd);
+    configured =true;
 
     return true;
 }
@@ -484,6 +643,7 @@ bool V4L_camera::deviceUninit()
 {
     unsigned int i;
     bool ret = true;
+    configured=false;
     
     switch (param.io)
     {
@@ -522,6 +682,31 @@ bool V4L_camera::deviceUninit()
     
     if(param.buffers != 0)
         free(param.buffers);
+
+    if(param.dst_image != NULL)
+    {
+        free (param.dst_image);
+        param.dst_image=NULL;
+    }
+
+    if(param.tmp_image != NULL)
+    {
+        delete[] param.tmp_image;
+        param.tmp_image=NULL;
+    }
+
+    if(param.tmp_image2 != NULL)
+    {
+        delete[] param.tmp_image2;
+        param.tmp_image2=NULL;
+    }
+
+    if(param.raw_image != NULL)
+    {
+        free (param.raw_image);
+        param.raw_image=NULL;
+
+    }
     return ret;
 }
 
@@ -544,25 +729,6 @@ bool V4L_camera::close()
         return false;
     }
     param.fd = -1;
-    if(param.dst_image != NULL)
-    {
-        delete[] param.dst_image;
-    }
-
-    if(param.tmp_image != NULL)
-    {
-        delete[] param.tmp_image;
-    }
-
-    if(param.tmp_image2 != NULL)
-    {
-        delete[] param.tmp_image2;
-    }
-
-    if(param.raw_image != NULL)
-    {
-        free (param.raw_image);
-    }
     return true;
 }
 
@@ -570,29 +736,48 @@ bool V4L_camera::close()
 // IFrameGrabberRgb Interface 777
 bool V4L_camera::getRgbBuffer(unsigned char *buffer)
 {
+    bool res=false;
     mutex.wait();
-    imageProcess(param.raw_image);
-//     memcpy(buffer, param.dst_image, param.rgb_src_image_size*12/16);
-//     memcpy(buffer, param.tmp_image2, param.rgb_src_image_size*12/16);
-//     memcpy(buffer, param.outMat.data, param.src_fmt.fmt.pix.width * param.src_fmt.fmt.pix.height * 3);
+    if(configured){
+        imageProcess(param.raw_image);
+    //     memcpy(buffer, param.dst_image, param.rgb_src_image_size*12/16);
+    //     memcpy(buffer, param.tmp_image2, param.rgb_src_image_size*12/16);
+    //     memcpy(buffer, param.outMat.data, param.src_fmt.fmt.pix.width * param.src_fmt.fmt.pix.height * 3);
 
-//     memcpy(buffer, param.img.data, param.src_fmt.fmt.pix.width*12/16 * param.src_fmt.fmt.pix.height * 3);
-//     std::cout << "dst_image_size"<< param.dst_image_size << "; compute " << param.src_fmt.fmt.pix.width * param.src_fmt.fmt.pix.height * 3 *12 /16  << std::endl;
-//     memcpy(buffer, param.outMat.data, param.src_fmt.fmt.pix.width * param.src_fmt.fmt.pix.height * 3 *12 /16 );
-//     int __size = param.outMat.total();
-    memcpy(buffer, param.outMat.data, param.outMat.total()*3);
-    mutex.post();
-    return true;
+    //     memcpy(buffer, param.img.data, param.src_fmt.fmt.pix.width*12/16 * param.src_fmt.fmt.pix.height * 3);
+    //     std::cout << "dst_image_size"<< param.dst_image_size << "; compute " << param.src_fmt.fmt.pix.width * param.src_fmt.fmt.pix.height * 3 *12 /16  << std::endl;
+    //     memcpy(buffer, param.outMat.data, param.src_fmt.fmt.pix.width * param.src_fmt.fmt.pix.height * 3 *12 /16 );
+    //     int __size = param.outMat.total();
+        memcpy(buffer, param.outMat.data, param.outMat.total()*3);
+        mutex.post();
+        res=true;
+    }
+    else
+    {
+        yError()<<"usbCamera: unable to get the buffer, device unitialized";
+        mutex.post();
+        res=false;
+    }
+    return res;
 }
 
 // IFrameGrabber Interface
 bool V4L_camera::getRawBuffer(unsigned char *buffer)
 {
+    bool res=false;
     mutex.wait();
-    imageProcess(param.raw_image);
-    memcpy(buffer, param.dst_image, param.dst_image_size);
+    if(configured){
+        imageProcess(param.raw_image);
+        memcpy(buffer, param.tmp_image, param.dst_image_size);
+        res=true;
+    }
+    else{
+        yError()<<"usbCamera: unable to get the buffer, device unitialized";
+
+        res=false;
+    }
     mutex.post();
-    return true;
+    return res;
 }
 
 int V4L_camera::getRawBufferSize()
@@ -797,6 +982,7 @@ void* V4L_camera::frameRead()
 {
     struct v4l2_buffer buf;
     unsigned int i;
+    mutex.wait();
     
     switch (param.io) 
     {
@@ -807,6 +993,7 @@ void* V4L_camera::frameRead()
                 switch (errno) 
                 {
                     case EAGAIN:
+                        mutex.post();
                         return NULL;
                         
                     case EIO:
@@ -815,6 +1002,7 @@ void* V4L_camera::frameRead()
                         
                     default:
                         errno_exit("read");
+                        mutex.post();
                         return NULL;
                 }
                 timeStamp.update(toEpochOffset + buf.timestamp.tv_sec + buf.timestamp.tv_usec/1000000.0);
@@ -840,6 +1028,7 @@ void* V4L_camera::frameRead()
                     {
                         default:
                             printf("\n ERROR: VIDIOC_DQBUF\n");
+                            mutex.post();
                             return NULL;
                     }
                 }
@@ -847,19 +1036,20 @@ void* V4L_camera::frameRead()
                 if( !(buf.index < param.n_buffers) )
                 {
                     yError() << "at line " << __LINE__;
+                    mutex.post();
+                    return NULL;
                 }
                 
 
-                mutex.wait();
                 memcpy(param.raw_image, param.buffers[buf.index].start, param.buffers[0].length); //param.image_size);
 //                 param.raw_image = param.buffers[buf.index].start;
 //                 imageProcess(param.raw_image);
                 timeStamp.update(toEpochOffset + buf.timestamp.tv_sec + buf.timestamp.tv_usec/1000000.0);
-                mutex.post();
 
                 if (-1 == xioctl(param.fd, VIDIOC_QBUF, &buf))
                 {
                     errno_exit("VIDIOC_QBUF");
+                    mutex.post();
                     return NULL;
                 }
 
@@ -897,13 +1087,13 @@ void* V4L_camera::frameRead()
                     if(! (i < param.n_buffers) )
                     {
                         yError() << "at line " << __LINE__;
+                        mutex.post();
+                        return NULL;
                     }
 
-                mutex.wait();
                 memcpy(param.raw_image, param.buffers[buf.index].start, param.image_size);
 //                 param.raw_image = (void*) buf.m.userptr;
                 timeStamp.update(toEpochOffset + buf.timestamp.tv_sec + buf.timestamp.tv_usec/1000000.0);
-                mutex.post();
 
 
                 if (-1 == xioctl(param.fd, VIDIOC_QBUF, &buf))
@@ -916,13 +1106,14 @@ void* V4L_camera::frameRead()
 //             param.raw_image = NULL;
         }
     }
+    mutex.post();
     return (void*) param.raw_image; //param.dst_image;
 }
 
 /**
  *   process image read
  */
-void V4L_camera::imageProcess(void* p)
+void V4L_camera::imageProcess(void* p, bool useRawData)
 {
     static bool initted = false;
     static int err=0;
@@ -931,12 +1122,57 @@ void V4L_camera::imageProcess(void* p)
 
     switch(param.camModel)
     {
-        case RAW_DATA:
+        case LEOPARD_PYTHON:
         {
-            break;
-        }
+            uint16_t *raw_p = (uint16_t*) p;
+            for(int i=0; i<param.dst_fmt.fmt.pix.height; i++)
+            {
+                for(int j=0; j<param.dst_fmt.fmt.pix.width; j++)
+                {
+                    param.tmp_image[i*param.width + j] =  (unsigned char) ( raw_p[i*param.width + j] >> 4);
+                }
+            }
 
-        case SEE3CAMCU50:
+            if(useRawData)
+                break;
+
+            param.src_fmt.fmt.pix.width             = param.width;
+            param.src_fmt.fmt.pix.height            = param.height;
+            // real bayer image size is 1 byte per pixel, this camera is 2bytes per pixel because it uses int16 instead of int8.
+            // The shift in the for loop is to reduce pixel size to 1 byte in order to use standard convertion algorithms.
+            // The 4 LSB are ignored.
+            param.src_fmt.fmt.pix.bytesperline      = param.width;
+            param.src_fmt.fmt.pix.sizeimage         = param.width * param.height;
+
+            param.dst_fmt.fmt.pix.width             = param.width;
+            param.dst_fmt.fmt.pix.height            = param.height;
+            param.dst_fmt.fmt.pix.bytesperline      = param.width * 3;  // 3 for rgb
+            param.dst_fmt.fmt.pix.sizeimage         = param.width * param.height * 3;  // 3 for rgb
+
+            // workaround for buggy camera info
+            param.src_fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_SGRBG8;
+            param.dst_fmt.fmt.pix.pixelformat = V4L2_PIX_FMT_RGB24;
+
+            if( v4lconvert_convert((v4lconvert_data*) _v4lconvert_data,  &param.src_fmt,   &param.dst_fmt,
+                (unsigned char *)param.tmp_image,  param.width * param.height, param.tmp_image2, param.width * param.height * 3)  <0 )
+            {
+                if((err %20) == 0)
+                {
+                    printf("error converting \n"); fflush(stdout);
+                    printf("Message is: %s", v4lconvert_get_error_message(_v4lconvert_data));
+                    err=0;
+                }
+                err++;
+                return;
+            }
+
+            cv::Mat img(cv::Size(param.src_fmt.fmt.pix.width, param.src_fmt.fmt.pix.height), CV_8UC3, param.tmp_image2);
+            param.img=img;
+            cv::resize(img, param.outMat, cvSize(param.width, param.height), 0, 0, cv::INTER_CUBIC);
+        }
+        break;
+
+        case STANDARD_UVC:
         {
 //             std::cout << "dst w " << param.dst_fmt.fmt.pix.width << "; src w " << param.src_fmt.fmt.pix.width << std::endl;
 //             std::cout << "dst h " << param.dst_fmt.fmt.pix.height << "; src h " << param.src_fmt.fmt.pix.height << std::endl;
@@ -1004,15 +1240,6 @@ void V4L_camera::imageProcess(void* p)
                 cv::resize(img, param.outMat, cvSize(param.width, param.height), 0, 0, cv::INTER_CUBIC);
 //                 memcpy((unsigned char *)param.dst_image, (unsigned char *)param.tmp_image, param.image_size);
             }
-
-            break;
-        }
-
-        case LEOPARD_MT9M021C:
-        {
-//             raw_to_bmp( (uint8_t*) p, (uint8_t*) param.dst_image, param.width, param.height, 12, 0,
-//                         true, 1.6,
-//                         600, -92, -70, -97, 389, -36, -130, -304, 690, 0, 0, 0);
             break;
         }
 
@@ -1036,8 +1263,6 @@ void V4L_camera::imageProcess(void* p)
             myCounter = 0;
             initted  = true;
         }
-        else
-            yDebug("time mean is %.06f ms\n", timeTot/myCounter*1000);
     }
 
 }
@@ -1074,76 +1299,74 @@ void V4L_camera::captureStart()
 {
     unsigned int i;
     enum v4l2_buf_type type;
-    
+
     switch (param.io)
     {
         case IO_METHOD_READ:
             /* Nothing to do. */
             break;
-            
+
         case IO_METHOD_MMAP:
             for (i = 0; i < param.n_buffers; ++i)
             {
                 struct v4l2_buffer buf;
-                
                 CLEAR(buf);
-                
+
                 buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                 buf.memory = V4L2_MEMORY_MMAP;
                 buf.index = i;
-                
+
                 if (-1 == xioctl(param.fd, VIDIOC_QBUF, &buf))
                     errno_exit("VIDIOC_QBUF");
             }
-            
+
             type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            
+
             if (-1 == xioctl(param.fd, VIDIOC_STREAMON, &type))
                 errno_exit("VIDIOC_STREAMON");
-            
+
 //             param.raw_image = param.buffers[0].start;
             break;
-            
+
         case IO_METHOD_USERPTR:
             for (i = 0; i < param.n_buffers; ++i) {
                 struct v4l2_buffer buf;
-                
+
                 CLEAR (buf);
-                
+
                 buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
                 buf.memory = V4L2_MEMORY_USERPTR;
                 buf.index = i;
                 buf.m.userptr = (unsigned long) param.buffers[i].start;
                 buf.length = param.buffers[i].length;
-                
+
                 if (-1 == xioctl(param.fd, VIDIOC_QBUF, &buf))
                     errno_exit("VIDIOC_QBUF");
             }
-            
+
             type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-            
+
             if (-1 == xioctl(param.fd, VIDIOC_STREAMON, &type))
                 errno_exit("VIDIOC_STREAMON");
-            
+
             break;
     }
 }
 
 
-
 bool V4L_camera::readInit(unsigned int buffer_size)
 {
     param.buffers = (struct buffer *) calloc(1, sizeof(*(param.buffers)));
-    
+
     if (!param.buffers) 
     {
         fprintf(stderr, "Out of memory\n");
         return false;
     }
-    
+
     param.buffers[0].length = buffer_size;
     param.buffers[0].start = malloc(buffer_size);
-    
+
     if (!param.buffers[0].start) 
     {
         fprintf (stderr, "Out of memory\n");
@@ -1155,12 +1378,12 @@ bool V4L_camera::readInit(unsigned int buffer_size)
 bool V4L_camera::mmapInit()
 {
     CLEAR(param.req);
-    
+
     param.n_buffers = VIDIOC_REQBUFS_COUNT;
     param.req.count = param.n_buffers;
     param.req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     param.req.memory = V4L2_MEMORY_MMAP;
-    
+
     if (-1 == xioctl(param.fd, VIDIOC_REQBUFS, &param.req))
     {
         if (EINVAL == errno)
@@ -1174,7 +1397,7 @@ bool V4L_camera::mmapInit()
             return false;
         }
     }
-    
+
     if (param.req.count < 1)
     {
         fprintf(stderr, "Insufficient buffer memory on %s\n", param.deviceId.c_str());
@@ -1185,9 +1408,9 @@ bool V4L_camera::mmapInit()
     {
         fprintf(stderr, "Only 1 buffer was available, you may encounter performance issue acquiring images from device %s\n", param.deviceId.c_str());
     }
-    
+
     param.buffers = (struct buffer *) calloc(param.req.count, sizeof(*(param.buffers)));
-    
+
     if (!param.buffers) 
     {
         fprintf(stderr, "Out of memory\n");
@@ -1200,20 +1423,19 @@ bool V4L_camera::mmapInit()
 
     for (param.n_buffers = 0; param.n_buffers < param.req.count; param.n_buffers++)
     {
-        
         CLEAR(buf);
-        
+
         buf.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
         buf.memory = V4L2_MEMORY_MMAP;
         buf.index = param.n_buffers;
-        
+
         if (-1 == xioctl(param.fd, VIDIOC_QUERYBUF, &buf))
             errno_exit("VIDIOC_QUERYBUF");
-        
+
         printf("image size is %d - buf.len is %d, offset is %d - new offset is %d\n", param.image_size, buf.length, buf.m.offset, param.image_size*param.n_buffers);
         param.buffers[param.n_buffers].length = buf.length;
         param.buffers[param.n_buffers].start = v4l2_mmap(NULL, buf.length, PROT_READ | PROT_WRITE, MAP_SHARED, param.fd, buf.m.offset);
-        
+
         if (MAP_FAILED == param.buffers[param.n_buffers].start)
             errno_exit("mmap");
     }
@@ -1228,16 +1450,16 @@ bool V4L_camera::userptrInit(unsigned int buffer_size)
 {
 //     struct v4l2_requestbuffers req;
     unsigned int page_size;
-    
+
     page_size = getpagesize();
     buffer_size = (buffer_size + page_size - 1) & ~(page_size - 1);
-    
+
     CLEAR(param.req);
-    
+
     param.req.count = VIDIOC_REQBUFS_COUNT;
     param.req.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
     param.req.memory = V4L2_MEMORY_USERPTR;
-    
+
     if (-1 == xioctl(param.fd, VIDIOC_REQBUFS, &param.req))
     {
         if (EINVAL == errno) 
@@ -1251,20 +1473,20 @@ bool V4L_camera::userptrInit(unsigned int buffer_size)
             return false;
         }
     }
-    
+
     param.buffers = (struct buffer *) calloc(4, sizeof(*(param.buffers)));
-    
+
     if (!param.buffers) 
     {
         fprintf(stderr, "Out of memory\n");
         return false;
     }
-    
+
     for (param.n_buffers = 0; param.n_buffers < 4; ++param.n_buffers) 
     {
         param.buffers[param.n_buffers].length = buffer_size;
         param.buffers[param.n_buffers].start = memalign(/* boundary */ page_size, buffer_size);
-        
+
         if (!param.buffers[param.n_buffers].start) 
         {
             fprintf(stderr, "Out of memory\n");
@@ -1291,7 +1513,7 @@ bool V4L_camera::set_V4L2_control(uint32_t id, double value, bool verbatim)
         }
         else
         {
-            yError("Cannot set control <%s> (id %d) is not supported \n", queryctrl.name, queryctrl.id);
+            yError("Cannot set control <%s> (id 0x%0X) is not supported \n", queryctrl.name, queryctrl.id);
         }
         return false;
     }
@@ -1342,10 +1564,6 @@ bool V4L_camera::check_V4L2_control(uint32_t id)
         {
             perror ("VIDIOC_QUERYCTRL");
         }
-//         else
-//         {
-//             printf ("Control %s (id %d) is not supported\n", queryctrl.name, id);
-//         }
         return false;
     }
     return true;
@@ -1368,10 +1586,7 @@ double V4L_camera::get_V4L2_control(uint32_t id, bool verbatim)
         {
             perror ("VIDIOC_QUERYCTRL");
         }
-//         else
-//         {
-//             printf ("Control %s is not supported\n", queryctrl.name);
-//         }
+
         return -1.0;
     }
 
@@ -1386,7 +1601,6 @@ double V4L_camera::get_V4L2_control(uint32_t id, bool verbatim)
             perror ("VIDIOC_G_CTRL");
             return -1.0;
         }
-//         printf("Control %s got value %d!\n", queryctrl.name, control.value);
     }
     if(verbatim)
         return control.value;
@@ -1403,7 +1617,14 @@ double V4L_camera::getBrightness()
 
 double V4L_camera::getExposure()
 {
-    return get_V4L2_control(V4L2_CID_EXPOSURE);
+    double ret;
+
+    if(!use_exposure_absolute)
+        ret = get_V4L2_control(V4L2_CID_EXPOSURE);
+    else
+        ret = get_V4L2_control(V4L2_CID_EXPOSURE_ABSOLUTE);
+
+    return ret;
 }
 
 double V4L_camera::getGain()
@@ -1461,7 +1682,12 @@ bool V4L_camera::setBrightness(double v)
 
 bool V4L_camera::setExposure(double v)
 {
-    return set_V4L2_control(V4L2_CID_EXPOSURE, v);
+    bool ret;
+    if(use_exposure_absolute)
+        ret = set_V4L2_control(V4L2_CID_EXPOSURE_ABSOLUTE, v);
+    else
+        ret = set_V4L2_control(V4L2_CID_EXPOSURE, v);
+    return ret;
 }
 
 bool V4L_camera::setGain(double v)
@@ -1534,7 +1760,7 @@ bool V4L_camera::hasFeature(int feature, bool *_hasFeature)
 
         case YARP_FEATURE_EXPOSURE:
         {
-            tmpMan = check_V4L2_control(V4L2_CID_EXPOSURE);
+            tmpMan = check_V4L2_control(V4L2_CID_EXPOSURE) || check_V4L2_control(V4L2_CID_EXPOSURE_ABSOLUTE);
             tmpAuto = check_V4L2_control(V4L2_CID_EXPOSURE_AUTO);
         } break;
 
@@ -1550,12 +1776,44 @@ bool V4L_camera::hasFeature(int feature, bool *_hasFeature)
 
 bool V4L_camera::setFeature(int feature, double value)
 {
-    return set_V4L2_control(convertYARP_to_V4L(feature), value);
+    bool ret = false;
+    switch(feature)
+    {
+        case YARP_FEATURE_EXPOSURE:
+        {
+            if(use_exposure_absolute)
+                ret = set_V4L2_control(V4L2_CID_EXPOSURE_ABSOLUTE, value);
+            else
+                ret = set_V4L2_control(V4L2_CID_EXPOSURE, value);
+        }
+        break;
+
+        default:
+            ret = set_V4L2_control(convertYARP_to_V4L(feature), value);
+        break;
+    }
+    return ret;
 }
 
 bool V4L_camera::getFeature(int feature, double* value)
 {
-    double tmp =  get_V4L2_control(convertYARP_to_V4L(feature));
+    double tmp = false;
+    switch(feature)
+    {
+        case YARP_FEATURE_EXPOSURE:
+        {
+            if(use_exposure_absolute)
+                tmp = get_V4L2_control(V4L2_CID_EXPOSURE_ABSOLUTE);
+            else
+                tmp = get_V4L2_control(V4L2_CID_EXPOSURE);
+        }
+        break;
+
+        default:
+            tmp = get_V4L2_control(convertYARP_to_V4L(feature));
+            break;
+    }
+
     if( tmp == -1)
         return false;
 
@@ -1666,6 +1924,7 @@ bool V4L_camera::setActive(int feature, bool onoff)
             }
         } break;
     }
+    return true;
 }
 
 bool V4L_camera::getActive(int feature, bool *_isActive)
@@ -1688,11 +1947,11 @@ bool V4L_camera::getActive(int feature, bool *_isActive)
 
         case YARP_FEATURE_EXPOSURE:
         {
-            bool _hasMan;
-            hasFeature(V4L2_CID_EXPOSURE, &_hasMan);                // check manual version
+            bool _hasMan, _hasMan2;
+            hasFeature(V4L2_CID_EXPOSURE, &_hasMan) ||  hasFeature(V4L2_CID_EXPOSURE_ABSOLUTE, &_hasMan2);   // check manual version (normal and asbolute)
             double _hasAuto =  get_V4L2_control(V4L2_CID_EXPOSURE_AUTO, true); // check auto version
 
-            *_isActive = (_hasAuto == V4L2_EXPOSURE_AUTO)|| _hasMan;
+            *_isActive = (_hasAuto == V4L2_EXPOSURE_AUTO) || _hasMan || _hasMan2;
         } break;
 
         default:
@@ -1751,7 +2010,7 @@ bool V4L_camera::hasManual(int feature, bool* _hasManual)
 
     if(feature == YARP_FEATURE_EXPOSURE)
     {
-        *_hasManual = check_V4L2_control(V4L2_CID_EXPOSURE);
+        *_hasManual = check_V4L2_control(V4L2_CID_EXPOSURE) || check_V4L2_control(V4L2_CID_EXPOSURE_ABSOLUTE);
         return true;
     }
     return hasFeature(feature, _hasManual);
@@ -1778,22 +2037,36 @@ bool V4L_camera::hasOnePush(int feature, bool *_hasOnePush)
 
 bool V4L_camera::setMode(int feature, FeatureMode mode)
 {
+    bool ret = false;
     switch(feature)
     {
         case YARP_FEATURE_WHITE_BALANCE:
         {
             if(mode == MODE_AUTO)
-                set_V4L2_control(V4L2_CID_AUTO_WHITE_BALANCE, true);
+                ret = set_V4L2_control(V4L2_CID_AUTO_WHITE_BALANCE, true);
             else
-                set_V4L2_control(V4L2_CID_AUTO_WHITE_BALANCE, false);
+                ret = set_V4L2_control(V4L2_CID_AUTO_WHITE_BALANCE, false);
         } break;
 
         case YARP_FEATURE_EXPOSURE:
         {
-            if(mode == MODE_AUTO)
-                set_V4L2_control(V4L2_CID_EXPOSURE_AUTO, true);
+            bool _tmpAuto;
+            hasAuto(V4L2_CID_EXPOSURE_AUTO, &_tmpAuto);
+
+            if(_tmpAuto)
+            {
+                if(mode == MODE_AUTO)
+                    ret = set_V4L2_control(V4L2_CID_EXPOSURE_AUTO, true);
+                else
+                    ret = set_V4L2_control(V4L2_CID_EXPOSURE_AUTO, false);
+            }
             else
-                set_V4L2_control(V4L2_CID_EXPOSURE_AUTO, false);
+            {
+                if(mode == MODE_AUTO)
+                    ret = false;
+                else
+                    ret = true;
+            }
         } break;
 
         case YARP_FEATURE_GAIN:
@@ -1801,29 +2074,42 @@ bool V4L_camera::setMode(int feature, FeatureMode mode)
             if(mode == MODE_AUTO)
             {
                 yInfo() << "GAIN: set mode auto";
-                set_V4L2_control(V4L2_CID_AUTOGAIN, true);
+                ret = set_V4L2_control(V4L2_CID_AUTOGAIN, true);
             }
             else
             {
                 yInfo() << "GAIN: set mode manual";
-                set_V4L2_control(V4L2_CID_AUTOGAIN, false);
+                ret = set_V4L2_control(V4L2_CID_AUTOGAIN, false);
             }
         } break;
 
         case YARP_FEATURE_BRIGHTNESS:
         {
-            if(mode == MODE_AUTO)
-                set_V4L2_control(V4L2_CID_AUTOBRIGHTNESS, true);
+            bool _tmpAuto;
+            hasAuto(YARP_FEATURE_BRIGHTNESS, &_tmpAuto);
+
+            if(_tmpAuto)
+            {
+                if(mode == MODE_AUTO)
+                    ret = set_V4L2_control(V4L2_CID_AUTOBRIGHTNESS, true);
+                else
+                    ret = set_V4L2_control(V4L2_CID_AUTOBRIGHTNESS, false);
+            }
             else
-                set_V4L2_control(V4L2_CID_AUTOBRIGHTNESS, false);
+            {
+                if(mode == MODE_AUTO)
+                    ret = false;
+                else
+                    ret = true;
+            }
         } break;
 
         case YARP_FEATURE_HUE:
         {
             if(mode == MODE_AUTO)
-                set_V4L2_control(V4L2_CID_HUE_AUTO, true);
+                ret = set_V4L2_control(V4L2_CID_HUE_AUTO, true);
             else
-                set_V4L2_control(V4L2_CID_HUE_AUTO, false);
+                ret = set_V4L2_control(V4L2_CID_HUE_AUTO, false);
         } break;
 
         default:
@@ -1831,7 +2117,7 @@ bool V4L_camera::setMode(int feature, FeatureMode mode)
             yError() << "Feature " << feature << " does not support auto mode";
         } break;
     }
-    return true;
+    return ret;
 }
 
 bool V4L_camera::getMode(int feature, FeatureMode *mode)
@@ -1848,6 +2134,12 @@ bool V4L_camera::getMode(int feature, FeatureMode *mode)
         case YARP_FEATURE_EXPOSURE:
         {
             double ret  = get_V4L2_control(V4L2_CID_EXPOSURE_AUTO);
+            if(ret == -1.0)
+            {
+                *mode = MODE_MANUAL;
+                break;
+            }
+
             if( ret == V4L2_EXPOSURE_MANUAL)
                 *mode = MODE_MANUAL;
             else

@@ -56,7 +56,7 @@ protected:
 
     Mutex  mutex_0;
     Mutex  mutex_1;
-    Event  syncEvent;
+    Event  triggerNeck;
     Vector xd;
     Vector xdDelayed;    
     bool   isNew;
@@ -79,7 +79,7 @@ public:
     int     get_rx() const   { return rx;           }
     bool   &get_new()        { return isNew;        }
     bool   &get_newDelayed() { return isNewDelayed; }    
-    void    set_xd(const Vector &_xd);
+    bool    set_xd(const Vector &_xd);
     Vector  get_xd();
     Vector  get_xdDelayed();
 };

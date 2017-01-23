@@ -62,7 +62,7 @@ void xdPort::init(const Vector &xd0)
 xdPort::~xdPort()
 {
     closing=true;
-    syncEvent.signal();
+    triggerNeck.signal();
 
     if (slv!=NULL)
         stop();
@@ -83,21 +83,22 @@ void xdPort::onRead(Bottle &b)
     isNew=true;
     rx++;
 
-    syncEvent.signal();
+    triggerNeck.signal();
 }
 
 
 /************************************************************************/
-void xdPort::set_xd(const Vector &_xd)
+bool xdPort::set_xd(const Vector &_xd)
 {
     LockGuard lg(mutex_0);
     if (locked)
-        return;
+        return false;
 
     xd=_xd;
     isNew=true;
     rx++;
-    syncEvent.signal();
+    triggerNeck.signal();
+    return true;
 }
 
 
@@ -124,8 +125,8 @@ void xdPort::run()
 {
     while (!isStopping() && !closing)
     {
-        syncEvent.reset();
-        syncEvent.wait();
+        triggerNeck.reset();
+        triggerNeck.wait();
 
         double timeDelay=0.0;
         double theta=static_cast<Solver*>(slv)->neckTargetRotAngle(xd);

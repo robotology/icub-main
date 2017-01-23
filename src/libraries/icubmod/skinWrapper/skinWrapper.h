@@ -39,18 +39,17 @@
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/Wrapper.h>
 
-#include "analogServer.h"
 #include <yarp/os/LogStream.h>
 
 class skinWrapper : public yarp::dev::DeviceDriver,
                     public yarp::dev::IMultipleWrapper
 {
 private:
-    yarp::dev::AnalogServer *analogServer;
     // Up to day the skinwrapper is able to handle (attach to) just one analog sensor device
     int period;
     yarp::dev::IAnalogSensor *analog;
-
+    int numPorts;
+    yarp::dev::IMultipleWrapper *multipleWrapper;
 
 //    yarp::sig::Vector wholeData;      // may be useful if one the skin wrapper has to get data from more than one device...
 
@@ -65,7 +64,7 @@ public:
     bool open(yarp::os::Searchable &params);
     bool close();
     void calibrate();
-    Vector * getData();
+    yarp::sig::Vector * getData();
 
     void setId(const std::string &i)
     {

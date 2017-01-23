@@ -31,6 +31,7 @@
 #include <iCub/iKin/iKinFwd.h>
 
 #include <iCub/MotorThread.h>
+#include <iCub/pointing_far.h>
 
 using namespace iCub::ctrl;
 using namespace iCub::iKin;
@@ -53,7 +54,6 @@ bool MotorThread::checkOptions(const Bottle &options, const string &parameter)
 }
 
 
-//Dragger initializer
 void Dragger::init(Bottle &initializer, double thread_rate)
 {
     extForceThresh=initializer.check("external_force_thresh",Value(1e9)).asDouble();
@@ -69,8 +69,106 @@ void Dragger::init(Bottle &initializer, double thread_rate)
     ctrl=NULL;
     actionName="";
 }
-//-------------------
 
+
+bool MotorThread::storeContext(const int arm)
+{
+    if ((arm==LEFT) || (arm==RIGHT))
+    {
+        if (action[arm]!=NULL)
+        {
+            ICartesianControl *ctrl=NULL;
+            if (action[arm]->getCartesianIF(ctrl))
+            {
+                if (ctrl!=NULL)
+                {
+                    ctrl->storeContext(&action_context[arm]);
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+
+bool MotorThread::restoreContext(const int arm)
+{
+    if ((arm==LEFT) || (arm==RIGHT))
+    {
+        if (action[arm]!=NULL)
+        {
+            ICartesianControl *ctrl=NULL;
+            if (action[arm]->getCartesianIF(ctrl))
+            {
+                if (ctrl!=NULL)
+                {
+                    ctrl->stopControl();
+                    ctrl->restoreContext(action_context[arm]);
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+
+bool MotorThread::deleteContext(const int arm)
+{
+    if ((arm==LEFT) || (arm==RIGHT))
+    {
+        if (action[arm]!=NULL)
+        {
+            ICartesianControl *ctrl=NULL;
+            if (action[arm]->getCartesianIF(ctrl))
+            {
+                if (ctrl!=NULL)
+                {
+                    ctrl->deleteContext(action_context[arm]);
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
+
+
+bool MotorThread::storeContext(ActionPrimitives *action)
+{
+    if (action==&action[LEFT])
+        return storeContext(LEFT);
+    else if (action==&action[RIGHT])
+        return storeContext(RIGHT);
+    else
+        return false;
+}
+
+
+bool MotorThread::restoreContext(ActionPrimitives *action)
+{
+    if (action==&action[LEFT])
+        return restoreContext(LEFT);
+    else if (action==&action[RIGHT])
+        return restoreContext(RIGHT);
+    else
+        return false;
+}
+
+
+bool MotorThread::deleteContext(ActionPrimitives *action)
+{
+    if (action==&action[LEFT])
+        return deleteContext(LEFT);
+    else if (action==&action[RIGHT])
+        return deleteContext(RIGHT);
+    else
+        return false;
+}
 
 
 int MotorThread::checkArm(int arm)
@@ -103,39 +201,23 @@ int MotorThread::checkArm(int arm, Vector &xd, const bool applyOffset)
 
 bool MotorThread::setImpedance(bool turn_on)
 {
-    bool done=true;
-    if(turn_on)
+    InteractionModeEnum mode=(turn_on?VOCAB_IM_COMPLIANT:VOCAB_IM_STIFF);
+    for(int i=0; i<5; i++)
     {
-        for(int i=0; i<5; i++)
-        {
-            if(action[LEFT]!=NULL)
-                done=done && int_mode_arm[LEFT]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
-            if(action[RIGHT]!=NULL)
-                done=done && int_mode_arm[RIGHT]->setInteractionMode(i,VOCAB_IM_COMPLIANT);
-        }
-        
-        for(int i=0; i<3; i++)
-            done=done && int_mode_torso->setInteractionMode(i,VOCAB_IM_STIFF);
-
-        status_impedance_on=done;
-    }
-    else
-    {
-        for(int i=0; i<5; i++)
-        {
-            if(action[LEFT]!=NULL)
-                done=done && int_mode_arm[LEFT]->setInteractionMode(i,VOCAB_IM_STIFF);
-            if(action[RIGHT]!=NULL)
-                done=done && int_mode_arm[RIGHT]->setInteractionMode(i,VOCAB_IM_STIFF);
-        }
-
-        for(int i=0; i<3; i++)
-            done=done && int_mode_torso->setInteractionMode(i,VOCAB_IM_STIFF);
-
-        status_impedance_on=!done;
+        if(action[LEFT]!=NULL)
+            int_mode_arm[LEFT]->setInteractionMode(i,mode);
+        if(action[RIGHT]!=NULL)
+            int_mode_arm[RIGHT]->setInteractionMode(i,mode);
     }
 
-    return done;
+    if (int_mode_torso!=NULL)
+    {
+        InteractionModeEnum modes[3]={VOCAB_IM_STIFF, VOCAB_IM_STIFF, VOCAB_IM_STIFF};
+        int_mode_torso->setInteractionModes(modes);
+    }
+
+    status_impedance_on=turn_on;
+    return true;
 }
 
 
@@ -788,11 +870,10 @@ bool MotorThread::getArmOptions(Bottle &b, const int &arm)
 
     extForceThresh[arm]=b.check("external_forces_thresh",Value(0.0)).asDouble();
 
-    if(b.check("grasp_model_file"))
-    {
-        string tmpGraspPath=rf.getHomeContextPath().c_str();
-        graspPath[arm]=tmpGraspPath+"/"+b.find("grasp_model_file").asString().c_str();
-    }
+    string modelFile("grasp_model_");
+    modelFile+=(arm==LEFT?"left":"right");
+    modelFile+=".ini";
+    graspFile[arm]=b.check("grasp_model_file",Value(modelFile)).asString();
 
     return true;
 }
@@ -806,49 +887,26 @@ void MotorThread::close()
     //set the system back to velocity mode
     setImpedance(false);
     
-    if(drv_head!=NULL)
-    {
-        delete drv_head;
-        drv_head=NULL;
-    }
+    delete drv_head;
+    drv_head=NULL;
 
-    if(drv_torso!=NULL)
-    {
-        delete drv_torso;
-        drv_torso=NULL;
-    }
+    delete drv_torso;
+    drv_torso=NULL;
 
-    if(drv_arm[LEFT]!=NULL)
-    {
-        delete drv_arm[LEFT];
-        drv_arm[LEFT]=NULL;
-    }
-        
-    if(drv_arm[RIGHT]!=NULL)
-    {
-        delete drv_arm[RIGHT];
-        drv_arm[RIGHT]=NULL;
-    }
+    delete drv_arm[LEFT];
+    drv_arm[LEFT]=NULL;
+    
+    delete drv_arm[RIGHT];
+    drv_arm[RIGHT]=NULL;
 
-    if(drv_ctrl_gaze!=NULL)
-    {
-        if(ctrl_gaze!=NULL)
-            ctrl_gaze->restoreContext(initial_gaze_context);
-        delete drv_ctrl_gaze;
-        drv_ctrl_gaze=NULL;
-    }
+    delete drv_ctrl_gaze;
+    drv_ctrl_gaze=NULL;
 
-    if (action[LEFT]!=NULL)
-    {
-        delete action[LEFT];
-        action[LEFT]=NULL;
-    }
+    delete action[LEFT];
+    action[LEFT]=NULL;
 
-    if (action[RIGHT]!=NULL)
-    {
-        delete action[RIGHT];
-        action[RIGHT]=NULL;
-    }
+    delete action[RIGHT];
+    action[RIGHT]=NULL;
 
     disparityPort.interrupt();
     disparityPort.close();
@@ -868,7 +926,6 @@ void MotorThread::close()
 bool MotorThread::threadInit()
 {
     Bottle bMotor=rf.findGroup("motor");
-
     if(bMotor.isNull())
     {
         yError("Motor part is missing!");
@@ -926,9 +983,9 @@ bool MotorThread::threadInit()
     drv_head=new PolyDriver;
     drv_torso=new PolyDriver;
     drv_ctrl_gaze=new PolyDriver;
-    if (!drv_head->open(optHead)             ||
-        !drv_torso->open(optTorso)           ||
-        !drv_ctrl_gaze->open(optctrl_gaze)       )
+    if (!drv_head->open(optHead) ||
+        !drv_torso->open(optTorso) ||
+        !drv_ctrl_gaze->open(optctrl_gaze))
     {
         close();
         return false;
@@ -995,12 +1052,12 @@ bool MotorThread::threadInit()
     // initialize the gaze controller
 
     //store the current context
+    int initial_gaze_context;
     ctrl_gaze->storeContext(&initial_gaze_context);
 
     ctrl_gaze->setTrackingMode(false);
     ctrl_gaze->setEyesTrajTime(eyesTrajTime);
     ctrl_gaze->setNeckTrajTime(neckTrajTime);
-
 
     // set the values for the stereo PID controller
     Bottle stereoOpt;
@@ -1057,8 +1114,9 @@ bool MotorThread::threadInit()
         ctrl_gaze->blockEyes(bMotor.find("block_eyes").asDouble());
 
     //store the current context and restore the initial one
-    ctrl_gaze->storeContext(&default_gaze_context);
+    ctrl_gaze->storeContext(&gaze_context);
     ctrl_gaze->restoreContext(initial_gaze_context);
+    ctrl_gaze->deleteContext(initial_gaze_context);
     gazeUnderControl=false;
 
     //-------------------------------
@@ -1136,7 +1194,6 @@ bool MotorThread::threadInit()
     for(int i=0; i<bImpedanceTorsoStiff->size(); i++)
         ctrl_impedance_torso->setImpedance(i,torso_stiffness[i],torso_damping[i]);
 
-
     //arm impedence values
     vector<double> arm_stiffness(0),arm_damping(0);
     Bottle *bImpedanceArmStiff=bMotor.find("impedence_arm_stiffness").asList();
@@ -1147,7 +1204,6 @@ bool MotorThread::threadInit()
         arm_stiffness.push_back(bImpedanceArmStiff->get(i).asDouble());
         arm_damping.push_back(bImpedanceArmDamp->get(i).asDouble());
     }
-
 
     option.put("local",name.c_str());
 
@@ -1206,11 +1262,18 @@ bool MotorThread::threadInit()
             ICartesianControl *tmpCtrl;
             action[arm]->getCartesianIF(tmpCtrl);
 
+            int context;
+            tmpCtrl->storeContext(&context);
+
             double armTargetTol=bMotor.check("arm_target_tol",Value(0.01)).asDouble();
             tmpCtrl->setInTargetTol(armTargetTol);
 
             double tmpTargetTol;
             tmpCtrl->getInTargetTol(&tmpTargetTol);
+
+            storeContext(arm);
+            tmpCtrl->restoreContext(context);
+            tmpCtrl->deleteContext(context);
 
             // set elbow parameters
             if (Bottle *pB=bArm[arm].find("elbow_height").asList())
@@ -1239,7 +1302,10 @@ bool MotorThread::threadInit()
     //init the kinematics offsets and table height
     kinematics_file=bMotor.find("kinematics_file").asString().c_str();
     if(!loadKinematicOffsets())
+    {
+        close();
         return false;
+    }
 
     //set the initial stereo2cartesian mode
     int starting_modeS2C=bMotor.check("stereoTocartesian_mode",Value("homography")).asVocab();
@@ -1253,7 +1319,6 @@ bool MotorThread::threadInit()
     grasp_state=GRASP_STATE_IDLE;
 
     Rand::init();
-
     
     head_mode=HEAD_MODE_IDLE;
     arm_mode=ARM_MODE_IDLE;
@@ -1276,22 +1341,6 @@ void MotorThread::run()
 
     switch(head_mode)
     {
-        case(HEAD_MODE_GO_HOME):
-        {
-            gazeUnderControl=true;
-            ctrl_gaze->stopControl();
-            ctrl_gaze->restoreContext(default_gaze_context);
-            ctrl_gaze->setTrackingMode(true);
-
-            if (homeFixCartType)
-                ctrl_gaze->lookAtFixationPoint(homeFix);
-            else
-                ctrl_gaze->lookAtAbsAngles(homeFix);
-
-            head_mode=HEAD_MODE_LOOK;
-            break;
-        }
-
         case(HEAD_MODE_TRACK_HAND):
         {
             if (!gazeUnderControl)
@@ -1355,20 +1404,6 @@ void MotorThread::run()
                 gazeUnderControl=true;
             break;
         }
-
-        case(HEAD_MODE_LOOK):
-        {
-            bool done;
-            ctrl_gaze->checkMotionDone(&done);
-            if (done)
-            {
-                ctrl_gaze->stopControl();
-                ctrl_gaze->restoreContext(initial_gaze_context);
-                head_mode=HEAD_MODE_IDLE;
-                gazeUnderControl=false;
-            }
-            break;
-        }
     }
 
     switch(arm_mode)
@@ -1408,15 +1443,6 @@ void MotorThread::run()
             if(norm(force)>dragger.extForceThresh)
                 x=x+0.1*force/norm(force);
 
-            //dragger.ctrl->goToPositionSync(x,1.0);
-
-            //dragCtrl->askForPosition(x,xd,od,qd);
-
-            //pos_torso->positionmove(0,qd[0]);
-            //pos_torso->positionmove(1,qd[1]);
-            //pos_torso->positionmove(2,qd[2]);
-
-
             break;
         }
 
@@ -1434,27 +1460,18 @@ void MotorThread::run()
                 force[1]=wrench[1];
                 force[2]=wrench[2];
 
-                yDebug("force = %f. thresh = %f",norm(force),dragger.extForceThresh);
-
                 if (norm(force)<dragger.extForceThresh)
                     force=0.0;
                 else
                     D/=5.0;
                 
-                yDebug("force= %s",force.toString().c_str());
-
                 Vector b=force/dragger.inertia;
-                yDebug("force/dragger.inertia = %s",b.toString().c_str());
-
                 Vector c=D*dragger.I->get();
-                yDebug("D*dragger.I->get() = %s",c.toString().c_str());
-
                 Vector a=force/dragger.inertia-D*dragger.I->get();
                 Vector zeros4d(4);
                 zeros4d=0.0;
 
                 Vector v=dragger.I->integrate(a);
-
                 dragger.ctrl->setTaskVelocities(v,zeros4d);
             }
 
@@ -1471,15 +1488,12 @@ void MotorThread::run()
                 if(stereoHand.size()==4)
                 {
                     //move toward the target point
-                    
-
                 }
 
             }
 
             break;
         }
-
 
         default:
         {
@@ -1499,8 +1513,7 @@ void MotorThread::run()
                         if(fabs(x[1]-head_x[1])<0.2)
                             x[1]=head_x[1]+sign(x[1]-head_x[1])*0.2;
 
-                        //action[arm]->pushAction(x,o);
-                        ICartesianControl           *tmp_ctrl;
+                        ICartesianControl *tmp_ctrl;
                         action[arm]->getCartesianIF(tmp_ctrl);
                         x[2]=avoid_table_height[arm];
                         
@@ -1521,7 +1534,6 @@ void MotorThread::threadRelease()
 }
 
 
-// in case it is implemented....
 void MotorThread::onStop()
 {
     if(action[LEFT]!=NULL)
@@ -1543,6 +1555,8 @@ bool MotorThread::goUp(Bottle &options, const double h)
     Vector x,o;
     action[arm]->getPose(x,o);
     x[2]+=h;
+
+    // no need to restore context (it's done in other methods)
 
     bool f;
     action[arm]->pushAction(x,o);
@@ -1571,7 +1585,7 @@ bool MotorThread::reach(Bottle &options)
         !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        keepFixation(options);
+        options.addString("fixate");
         look(options);
     }
 
@@ -1593,6 +1607,8 @@ bool MotorThread::reach(Bottle &options)
         if (checkOptions(options,"touch"))
             xd[2]=std::min(xd[2],table_height-table_height_tolerance);
     }
+
+    restoreContext(arm);
     
     wbdRecalibration();
     action[arm]->enableContactDetection();
@@ -1657,7 +1673,7 @@ bool MotorThread::powerGrasp(Bottle &options)
     if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        keepFixation(options);
+        options.addString("fixate");
         look(options);
     }
 
@@ -1685,6 +1701,8 @@ bool MotorThread::powerGrasp(Bottle &options)
 
     Vector approach_x=x+dx+dy+dz;
     Vector approach_o=dcm2axis(axis2dcm(y)*R);
+
+    restoreContext(arm);
 
     wbdRecalibration();
     action[arm]->enableContactDetection();
@@ -1727,7 +1745,7 @@ bool MotorThread::push(Bottle &options)
     if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        keepFixation(options);
+        options.addString("fixate");
         look(options);
     }
 
@@ -1737,6 +1755,8 @@ bool MotorThread::push(Bottle &options)
     Vector tmpDisp=push_direction*reachSideDisp[arm];
     Vector tmpOrient=reachSideOrient[arm];
 
+    restoreContext(arm);
+
     bool f;
     action[arm]->pushAction(xd+tmpDisp,tmpOrient);
     action[arm]->checkActionsDone(f,true);
@@ -1744,6 +1764,7 @@ bool MotorThread::push(Bottle &options)
     if (!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
+        ctrl_gaze->restoreContext(gaze_context);
         keepFixation(options);
         lookAtHand(options);
     }
@@ -1789,6 +1810,8 @@ bool MotorThread::point(Bottle &options)
     R(1,1)=(arm==LEFT)?-1.0:1.0;
     R(2,2)=(arm==LEFT)?1.0:-1.0;
 
+    restoreContext(arm);
+
     Vector od=dcm2axis(R);
     action[arm]->pushAction(xd,od,"pointing_hand");
 
@@ -1804,45 +1827,88 @@ bool MotorThread::point(Bottle &options)
 }
 
 
+bool MotorThread::point_far(Bottle &options)
+{
+    Vector xd;
+    Bottle *bTarget=options.find("target").asList();    
+    if (!targetToCartesian(bTarget,xd))
+        return false;
+
+    int arm=ARM_MOST_SUITED;
+    if (checkOptions(options,"left"))
+        arm=LEFT;
+    else if (checkOptions(options,"right"))
+        arm=RIGHT;
+    else
+        arm=checkArm(arm,xd);
+
+    restoreContext(arm);
+    ICartesianControl* iarm;
+    action[arm]->getCartesianIF(iarm);
+
+    Property requirements;
+    Bottle point; point.addList().read(xd);
+    requirements.put("point",point.get(0));
+    
+    Vector q,x;
+    if (PointingFar::compute(iarm,requirements,q,x))
+    {
+        if (!checkOptions(options,"no_head") &&
+            !checkOptions(options,"no_gaze"))
+        {
+            setGazeIdle();
+            options.addString("fixate");
+            look(options);
+        }
+
+        action[arm]->pushAction("pointing_hand");
+        PointingFar::point(iarm,q,x);
+
+        if (!checkOptions(options,"no_head") &&
+            !checkOptions(options,"no_gaze"))
+        {
+            setGazeIdle();
+            ctrl_gaze->setTrackingMode(false);
+        }
+    }
+
+    return true;
+}
+
+
 bool MotorThread::look(Bottle &options)
 {
+    setGazeIdle();
+    ctrl_gaze->restoreContext(gaze_context);
+
     if (checkOptions(options,"hand"))
     {
-        setGazeIdle();
-        ctrl_gaze->restoreContext(default_gaze_context);
-        
         int arm=ARM_IN_USE;
         if(checkOptions(options,"left") || checkOptions(options,"right"))
             arm=checkOptions(options,"left")?LEFT:RIGHT;
 
         arm=checkArm(arm);        
         lookAtHand(options);        
-        return true;
     }
-
-    Bottle *bTarget=options.find("target").asList();
-
-    Vector xd;
-    if (!targetToCartesian(bTarget,xd))
-        return false;
-
-    setGazeIdle();
-    ctrl_gaze->restoreContext(default_gaze_context);
-
-    if (options.check("block_eyes"))
-        ctrl_gaze->blockEyes(options.find("block_eyes").asDouble());
-
-    if (checkOptions(options,"fixate"))
+    else
     {
-        gaze_fix_point=xd;
-        keepFixation(options);
-    }
-        
-    ctrl_gaze->lookAtFixationPoint(xd);
-    if (checkOptions(options,"wait"))
-    {
-        ctrl_gaze->waitMotionDone();
-        Time::delay(1.5);
+        Vector xd;
+        Bottle *bTarget=options.find("target").asList();        
+        if (!targetToCartesian(bTarget,xd))
+            return false;
+
+        if (options.check("block_eyes"))
+            ctrl_gaze->blockEyes(options.find("block_eyes").asDouble());
+
+        if (checkOptions(options,"fixate"))
+        {
+            gaze_fix_point=xd;
+            keepFixation(options);
+        }
+            
+        ctrl_gaze->lookAtFixationPointSync(xd);
+        if (checkOptions(options,"wait"))
+            ctrl_gaze->waitMotionDone();
     }
 
     return true;
@@ -1862,6 +1928,7 @@ bool MotorThread::takeTool(Bottle &options)
         lookAtHand(options);
     }
 
+    restoreContext(arm);
     action[arm]->pushAction(takeToolPos[arm],takeToolOrient[arm],"open_hand");
 
     bool f;
@@ -1890,7 +1957,6 @@ bool MotorThread::takeTool(Bottle &options)
 }
 
 
-
 bool MotorThread::expect(Bottle &options)
 {
     int arm=ARM_IN_USE;
@@ -1905,6 +1971,7 @@ bool MotorThread::expect(Bottle &options)
         lookAtHand(options);
     }
 
+    restoreContext(arm);
     action[arm]->pushAction(expectPos[arm],expectOrient[arm],"open_hand");
 
     bool f;
@@ -1945,11 +2012,11 @@ bool MotorThread::give(Bottle &options)
         lookAtHand(options);
     }
 
+    restoreContext(arm);
     action[arm]->pushAction(expectPos[arm],expectOrient[arm]);
 
     bool f;
     action[arm]->checkActionsDone(f,true);
-
     action[arm]->pushAction("open_hand");
 
     wbdRecalibration();
@@ -1971,6 +2038,7 @@ bool MotorThread::give(Bottle &options)
     return true;
 }
 
+
 bool MotorThread::clearIt(Bottle &options)
 {
     setGazeIdle();
@@ -1979,6 +2047,7 @@ bool MotorThread::clearIt(Bottle &options)
 
     return true;
 }
+
 
 bool MotorThread::hand(const Bottle &options, const string &type,
                        bool *holding)
@@ -2017,6 +2086,7 @@ bool MotorThread::hand(const Bottle &options, const string &type,
     }
 }
 
+
 bool MotorThread::grasp(const Bottle &options)
 {
     bool holding;
@@ -2026,17 +2096,30 @@ bool MotorThread::grasp(const Bottle &options)
         return false;
 }
 
+
 bool MotorThread::release(const Bottle &options)
 {
     hand(options,"release_hand");
     return true;
 }
 
+
 bool MotorThread::changeElbowHeight(const int arm, const double height,
                                     const double weight)
 {
+    bool ret=false;
     if (action[arm]!=NULL)
     {
+        ICartesianControl *ctrl;
+        action[arm]->getCartesianIF(ctrl);
+
+        ctrl->stopControl();
+
+        int context;
+        ctrl->storeContext(&context);
+
+        restoreContext(arm);
+
         Bottle tweakOptions;
         Bottle &optTask2=tweakOptions.addList();
         optTask2.addString("task_2");
@@ -2050,34 +2133,54 @@ bool MotorThread::changeElbowHeight(const int arm, const double height,
         weightsPart.addDouble(0.0);
         weightsPart.addDouble(0.0);
         weightsPart.addDouble(weight);
+        ret=ctrl->tweakSet(tweakOptions);
 
-        ICartesianControl *ctrl;
-        action[arm]->getCartesianIF(ctrl);
-        return ctrl->tweakSet(tweakOptions);
+        deleteContext(arm);
+        storeContext(arm);
+
+        ctrl->restoreContext(context);
+        ctrl->deleteContext(context);
     }
-    else
-        return false;
+
+    return ret;
 }
 
 
-bool MotorThread::changeExecTime(const double execTime)
+bool MotorThread::changeExecTime(const int arm, const double execTime)
 {
     if (execTime>0.0)
     {
         default_exec_time=execTime; 
         reachingTimeout=std::max(2.0*default_exec_time,4.0);
+        if ((arm==LEFT) || (arm==RIGHT))
+        {
+            bool ret=false;
+            if (action[arm]!=NULL)
+            {
+                ICartesianControl *ctrl;
+                action[arm]->getCartesianIF(ctrl);
 
-        bool ret=true;
-        if (action[LEFT]!=NULL)
-            ret&=action[LEFT]->setDefaultExecTime(execTime);
+                ctrl->stopControl();
 
-        if (action[RIGHT]!=NULL)
-            ret&=action[RIGHT]->setDefaultExecTime(execTime);
+                int context;
+                ctrl->storeContext(&context);
 
-        return ret;
+                restoreContext(arm);
+
+                ret=action[LEFT]->setDefaultExecTime(execTime);
+
+                deleteContext(arm);
+                storeContext(arm);
+
+                ctrl->restoreContext(context);
+                ctrl->deleteContext(context);
+            }
+
+            return ret;
+        }
     }
-    else
-        return false;
+
+    return false;
 }
 
 
@@ -2087,8 +2190,8 @@ void MotorThread::goWithTorsoUpright(ActionPrimitives *action,
     ICartesianControl *ctrl;
     action->getCartesianIF(ctrl);
 
-    int context;
-    ctrl->storeContext(&context);
+    ctrl->stopControl();
+    restoreContext(action);
 
     Vector dof;
     ctrl->getDOF(dof); dof=1.0;
@@ -2101,10 +2204,10 @@ void MotorThread::goWithTorsoUpright(ActionPrimitives *action,
     ctrl->setTrajTime(default_exec_time);
 
     ctrl->goToPoseSync(xin,oin);
-    ctrl->waitMotionDone(0.1,reachingTimeout);
+    ctrl->waitMotionDone(0.1,2.0*reachingTimeout);
 
-    ctrl->restoreContext(context);
-    ctrl->deleteContext(context);
+    ctrl->stopControl();
+    restoreContext(action);
 }
 
 
@@ -2130,7 +2233,19 @@ bool MotorThread::goHome(Bottle &options)
         left_arm=right_arm=true;
 
     if (head_home)
+    {
         head_mode=HEAD_MODE_GO_HOME;
+
+        gazeUnderControl=true;
+        ctrl_gaze->stopControl();
+        ctrl_gaze->restoreContext(gaze_context);
+        ctrl_gaze->setTrackingMode(true);
+
+        if (homeFixCartType)
+            ctrl_gaze->lookAtFixationPointSync(homeFix);
+        else
+            ctrl_gaze->lookAtAbsAnglesSync(homeFix);
+    }
 
     if (arms_home)
     {
@@ -2152,14 +2267,15 @@ bool MotorThread::goHome(Bottle &options)
         }
 
         for (size_t i=0; i<2; i++)
-        {
-            bool f;
+        {            
             if (exec_arm[i] && (action[which_arm[i]]!=NULL))
             {
                 if (hand_home)
                     action[which_arm[i]]->pushAction("open_hand");
 
                 goWithTorsoUpright(action[which_arm[i]],homePos[which_arm[i]],homeOrient[which_arm[i]]);
+
+                bool f;
                 action[which_arm[i]]->checkActionsDone(f,true);
             }
         }
@@ -2181,9 +2297,11 @@ bool MotorThread::goHome(Bottle &options)
 
     if (head_home)
     {
-        double t0=Time::now();
-        while ((head_mode!=HEAD_MODE_IDLE) && (Time::now()-t0<5.0))
-            Time::delay(0.1);
+        ctrl_gaze->waitMotionDone();
+        ctrl_gaze->stopControl();   // because we're on tracking
+        ctrl_gaze->setTrackingMode(false);
+        head_mode=HEAD_MODE_IDLE;
+        gazeUnderControl=false;
     }
 
     return true;
@@ -2200,7 +2318,7 @@ bool MotorThread::deploy(Bottle &options)
     arm=checkArm(arm);
 
     Vector x,o;
-    action[arm]->getPose(x,o);    
+    action[arm]->getPose(x,o);
 
     Bottle *bTarget=options.find("target").asList();
 
@@ -2229,6 +2347,7 @@ bool MotorThread::deploy(Bottle &options)
         !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
+        ctrl_gaze->restoreContext(gaze_context);
         keepFixation(options);
         ctrl_gaze->lookAtFixationPoint(deployZone);
     }
@@ -2237,6 +2356,8 @@ bool MotorThread::deploy(Bottle &options)
 
     Vector deployOffs(deployZone.length(),0.0);
     deployOffs[2]=reachAboveDisp[2];
+
+    restoreContext(arm);
 
     bool f;
     action[arm]->pushAction(deployZone+deployOffs,tmpOrient);
@@ -2289,6 +2410,7 @@ bool MotorThread::drawNear(Bottle &options)
     return true;
 }
 
+
 bool MotorThread::shiftAndGrasp(Bottle &options)
 {
     int arm=ARM_IN_USE;
@@ -2302,6 +2424,7 @@ bool MotorThread::shiftAndGrasp(Bottle &options)
     action[arm]->getPose(x,o);
     x=x+shiftPos[arm];
 
+    // no need to restore context (it's done in reach())
     action[arm]->pushAction(x,reachAboveOrient[arm],"close_hand");
 
     bool f;
@@ -2309,6 +2432,7 @@ bool MotorThread::shiftAndGrasp(Bottle &options)
 
     return true;
 }
+
 
 bool MotorThread::getHandImagePosition(Bottle &hand_image_pos)
 {
@@ -2331,6 +2455,7 @@ bool MotorThread::getHandImagePosition(Bottle &hand_image_pos)
 
     return true;
 }
+
 
 bool MotorThread::isHolding(const Bottle &options)
 {
@@ -2355,7 +2480,7 @@ bool MotorThread::calibTable(Bottle &options)
         arm=checkOptions(options,"left")?LEFT:RIGHT;
 
     arm=checkArm(arm);
-
+    
     Vector deployZone=deployPos[arm];
     deployZone=deployZone+randomDeployOffset();
 
@@ -2370,13 +2495,14 @@ bool MotorThread::calibTable(Bottle &options)
     if(!checkOptions(options,"no_head") && !checkOptions(options,"no_gaze"))
     {
         setGazeIdle();
-        ctrl_gaze->restoreContext(default_gaze_context);
-        //keepFixation(options);
+        ctrl_gaze->restoreContext(gaze_context);
         ctrl_gaze->lookAtFixationPoint(deployEnd);
     }
 
     if(isHolding(options))
         action[arm]->pushAction("open_hand");
+
+    restoreContext(arm);
 
     wbdRecalibration();
     action[arm]->enableContactDetection();
@@ -2474,7 +2600,7 @@ bool MotorThread::calibFingers(Bottle &options)
             graspModel[arm]->calibrate(prop);
 
             ofstream fout;
-            fout.open(graspPath[arm].c_str());
+            fout.open((rf.getHomeContextPath()+"/"+graspFile[arm]).c_str());
             graspModel[arm]->toStream(fout);
             fout.close();
 
@@ -2486,8 +2612,12 @@ bool MotorThread::calibFingers(Bottle &options)
         }
     }
 
-    if(!no_head)
-        head_mode=HEAD_MODE_GO_HOME;
+    if (!no_head)
+    {
+        Bottle options;
+        options.addString("head");
+        goHome(options);
+    }
 
     setArmInUse(currentArm);
 
@@ -2514,13 +2644,10 @@ bool MotorThread::avoidTable(bool avoid)
 }
 
 
-
-//************************************************************************************************
 bool MotorThread::exploreTorso(Bottle &options)
 {
     int dbg_cnt=0;
     this->avoidTable(true);
-    // avoid torso controlDisp
 
     Bottle info;
     ctrl_gaze->getInfo(info);
@@ -2650,9 +2777,6 @@ bool MotorThread::exploreTorso(Bottle &options)
 }
 
 
-
-
-//************************************************************************************************
 bool MotorThread::exploreHand(Bottle &options)
 {
     if(arm_mode!=ARM_MODE_IDLE)
@@ -2758,7 +2882,6 @@ bool MotorThread::exploreHand(Bottle &options)
 }
 
 
-//Action Learning mode
 bool MotorThread::startLearningModeAction(Bottle &options)
 {
     if(arm_mode!=ARM_MODE_IDLE)
@@ -2793,7 +2916,6 @@ bool MotorThread::startLearningModeAction(Bottle &options)
     dragger.actionName=action_name;
     dragger.actions.clear();
 
-
     bool f;
     action[arm]->checkActionsDone(f,true);
     action[arm]->getCartesianIF(dragger.ctrl);
@@ -2817,7 +2939,6 @@ bool MotorThread::startLearningModeAction(Bottle &options)
     }
 
     dragger.t0=Time::now();
-
     arm_mode=ARM_MODE_LEARN_ACTION;
 
     return true;
@@ -2874,7 +2995,6 @@ bool MotorThread::imitateAction(Bottle &options)
     arm=checkArm(arm);
 
     string arm_name=arm==LEFT?"left":"right";
-
     string action_name=options.find("action_name").asString().c_str();
 
     Bottle actions;
@@ -2887,30 +3007,22 @@ bool MotorThread::imitateAction(Bottle &options)
 
         stringstream strstr;
         strstr << action_fin.rdbuf();
-
         actions.fromString(strstr.str().c_str());
     }
-    else
-    {
-        if (!opcPort.getAction(action_name, &actions))
-            return false;
-    }
+    else if (!opcPort.getAction(action_name, &actions))
+        return false;
+
+    restoreContext(arm);
 
     ICartesianControl *ctrl;
-    action[arm]->getCartesianIF(ctrl);
+    action[arm]->getCartesianIF(ctrl);    
 
-    double currTrajTime;
-    ctrl->getTrajTime(&currTrajTime);
-    ctrl->setTrajTime(0.75);
-    
     Vector newPos;
     ctrl->getDOF(newPos);
-    newPos[0]=0.0;
-    newPos[1]=0.0;
-    newPos[2]=1.0;
+    newPos[0]=newPos[1]=0.0; newPos[2]=1.0;
     ctrl->setDOF(newPos,newPos);
-
     ctrl->setInTargetTol(0.01);
+    ctrl->setTrajTime(0.75);
 
     Vector init_x,init_o;
     ctrl->getPose(init_x,init_o);
@@ -2925,27 +3037,17 @@ bool MotorThread::imitateAction(Bottle &options)
         for(int j=0; j<4; j++)
             o[j]=b->get(j+3).asDouble();
 
-        //ctrl->goToPosition(init_x-x);
-        ctrl->goToPose(init_x-x,o);
-
-        //Time::delay(dragger.samplingRate);
+        ctrl->goToPoseSync(init_x-x,o);
         Time::delay(0.1);
     }
 
-    ctrl->getDOF(newPos);
-    newPos=1.0;
-    newPos[1]=0.0;
-    ctrl->setDOF(newPos,newPos);
-
-    //tmpCtrl->setInTargetTol(armTargetTol);
-
-    ctrl->setTrajTime(currTrajTime);
+    ctrl->waitMotionDone(0.1,reachingTimeout);
+    restoreContext(arm);
 
     return true;
 }
 
 
-//Action Learning mode
 bool MotorThread::startLearningModeKinOffset(Bottle &options)
 {
     //check if kinematic offset learning is already going on and if the system is not busy
@@ -3048,9 +3150,7 @@ bool MotorThread::suspendLearningModeKinOffset(Bottle &options)
 
     dragger.ctrl=NULL;
 
-    //reset the previous control mode
     setTorque(false);
-
     setGazeIdle();
 
     return true;

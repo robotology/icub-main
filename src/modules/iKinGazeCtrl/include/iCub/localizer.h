@@ -73,6 +73,7 @@ protected:
 public:
     Localizer(ExchangeData *_commData, const unsigned int _period);
 
+    double getDistFromVergence(const double ver);
     void   getPidOptions(Bottle &options);
     void   setPidOptions(const Bottle &options);
     bool   projectPoint(const string &type, const Vector &x, Vector &px);

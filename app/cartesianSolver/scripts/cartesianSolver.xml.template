@@ -3,58 +3,61 @@
 
         <dependencies>
         </dependencies>
-      
+
         <module>
-                <name>iCubInterface</name>
-                <node>pc104</node>
-                <stdio>console</stdio>
-                <tag>icubInterface</tag>
+                <name>yarplogger</name>
+                <parameters>--start --no_stop</parameters>
+                <node>console</node>
         </module>
 
         <module>
-                <name>iCubInterfaceGuiClient</name>
-                <node>console</node>
-                <tag>iCubInterfaceGuiClient</tag>
+                <name>yarprobotinterface</name>
+                <node>pc104</node>
         </module>
-   
+
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--part right_arm</parameters>
                 <node>pwrNode1</node>
-                <tag>rightArmSolver</tag>
+                <dependencies>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+                </dependencies>
         </module>
 
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--part left_arm</parameters>
                 <node>pwrNode2</node>
-                <tag>leftArmSolver</tag>
+                <dependencies>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+                </dependencies>
         </module>
 
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--part right_leg</parameters>
                 <node>pwrNode3</node>
-                <tag>rightLegSolver</tag>
+                <dependencies>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+                </dependencies>
         </module>
 
         <module>
                 <name>iKinCartesianSolver</name>
                 <parameters>--part left_leg</parameters>
                 <node>pwrNode4</node>
-                <tag>leftLegSolver</tag>
+                <dependencies>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+                </dependencies>
         </module>
 
         <module>
                 <name>iKinGazeCtrl</name>
+                <parameters></parameters>
                 <node>pwrNode5</node>
-                <tag>gazeController</tag>
+                <dependencies>
+                    <port timeout="60.0" request="is_ready" reply="[ok]">/icub/yarprobotinterface</port>
+                </dependencies>
         </module>
-
-        <connection>
-                <from>/icubinterfacegui/client</from>
-                <to>/icubinterfacegui/server</to>
-                <protocol>tcp</protocol>
-        </connection>
 
 </application>

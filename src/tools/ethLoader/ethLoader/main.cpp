@@ -7,7 +7,7 @@
 
 #include <ace/ACE.h>
 
-#undef ETHLOADER_USE_MAINTAINER
+#define ETHLOADER_USE_MAINTAINER
 
 #include <gtk/gtk.h>
 #include <gtk/gtkmain.h>
@@ -21,6 +21,7 @@
 #else
 #include "EthMaintainer.h"
 #endif
+
 
 #include <yarp/os/Property.h>
 #include <yarp/os/Log.h>
@@ -51,6 +52,7 @@ GtkWidget *discover_button = NULL;
 #if !defined(ETHLOADER_USE_MAINTAINER)
 #else
 GtkWidget *maintenanceON_button = NULL;
+GtkWidget *applicationON_button = NULL;
 #endif
 GtkWidget *upload_button   = NULL;
 
@@ -91,8 +93,8 @@ void activate_buttons()
     int size=gUpdater.getBoardList().size();
     int nsel=gUpdater.getBoardList().numSelected();
 #else
-    int size=gMNT.getBoards().size();
-    int nsel=gMNT.getBoards().numberof(0);
+    int size=gMNT.boards_get().size();
+    int nsel=gMNT.boards_get().numberof(EthMaintainer::ipv4OfAllSelected);
 #endif
 
     bool bHaveSelected=nsel!=0;
@@ -105,6 +107,7 @@ void activate_buttons()
 #if !defined(ETHLOADER_USE_MAINTAINER)
 #else
     gtk_widget_set_sensitive(maintenanceON_button,bHaveSelected);
+    gtk_widget_set_sensitive(applicationON_button,bHaveSelected);
 #endif
     gtk_widget_set_sensitive(procs_button,bHaveSelected);
 
@@ -198,7 +201,7 @@ static GtkTreeModel* refresh_board_list_model()
 
 #else
     // add data to the list store
-    EthBoardList boards = gMNT.getBoards();
+    EthBoardList boards = gMNT.boards_get();
     for (int i=0; i<boards.size(); ++i)
     {
         EthBoard board = boards[i];
@@ -359,9 +362,9 @@ static void fixed_toggled(GtkCellRendererToggle *cell,gchar *path_str,gpointer d
         gUpdater.getBoardList()[index[0]].mSelected=fixed;
     }
 #else    
-    if (index!=NULL && index[0]<gMNT.getBoards().size())
+    if (index!=NULL && index[0]<gMNT.boards_get().size())
     {
-        gMNT.getBoards()[index[0]].setSelected(fixed);
+        gMNT.boards_get()[index[0]].setSelected(fixed);
     }
 #endif
     else
@@ -465,7 +468,7 @@ static void edited_ip_addr(GtkCellRendererText *cell,gchar *path_str,gchar *new_
     ACE_UINT32 address=gUpdater.getBoardList()[index[0]].mAddress;
     ACE_UINT32 mask=gUpdater.getBoardList()[index[0]].mMask;
 #else
-    ACE_UINT32 address = gMNT.IPV4toACE(gMNT.getBoards()[index[0]].getIPV4());
+    ACE_UINT32 address = ipv4toace(gMNT.boards_get()[index[0]].getIPV4());
     ACE_UINT32 mask = 0xFFFFFF00;
 #endif
 
@@ -492,7 +495,7 @@ static void edited_ip_addr(GtkCellRendererText *cell,gchar *path_str,gchar *new_
 #if !defined(ETHLOADER_USE_MAINTAINER)
             gUpdater.cmdChangeAddress(iNewAddress, address);
 #else
-            gMNT.commandChangeAddress(gMNT.ACEtoIPV4(address), gMNT.ACEtoIPV4(iNewAddress), true, true);
+            gMNT.command_changeaddress(acetoipv4(address), acetoipv4(iNewAddress), true, true, true, true);
 #endif
         }
 
@@ -553,9 +556,9 @@ static void edited_info(GtkCellRendererText *cell, gchar *path_str, gchar *newin
 
     string oldInfo = gUpdater.getBoardList()[index[0]].mInfo32;
 #else
-    eOipv4addr_t ipv4 = gMNT.getBoards()[index[0]].getIPV4();
+    eOipv4addr_t ipv4 = gMNT.boards_get()[index[0]].getIPV4();
 
-    string oldInfo = gMNT.getBoards()[index[0]].getInfoOnEEPROM();
+    string oldInfo = gMNT.boards_get()[index[0]].getInfoOnEEPROM();
 #endif
 
     string newInfo = string(newinfo);
@@ -577,9 +580,9 @@ static void edited_info(GtkCellRendererText *cell, gchar *path_str, gchar *newin
                 gUpdater.getBoardList()[index[0]].mInfo32 = vv[0];
             }
 #else
-            gMNT.commandInfo32Set(newInfo, ipv4);
+            gMNT.command_info32_set(ipv4, newInfo);
 
-            vector<string> vv = gMNT.commandInfo32Get(ipv4);
+            vector<string> vv = gMNT.command_info32_get(ipv4);
 
             // it already sets it internally to commandInfo32Get()
 //            if(vv.size() > 0)
@@ -717,8 +720,7 @@ static void discover_cbk(GtkButton *button,gpointer user_data)
 
     // default values
     bool clearlist = true;
-    eOipv4addr_t ipv4 = EthMaintainer::ipv4Broadcast; // EO_COMMON_IPV4ADDR(10, 0, 1, 1);
-    gMNT.commandDiscover(clearlist, ipv4);
+    gMNT.discover(true, 2, 1.0);
 #endif
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
@@ -734,10 +736,20 @@ static void maintenanceON_cbk(GtkButton *button,gpointer user_data)
     gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(info_text)),"",-1);
 
 
-    gMNT.commandForceMaintenance(0, true, 3, 0.5);
-//    gUpdater.cmdForceUpdatingMode(true);
+    gMNT.go2maintenance(EthMaintainer::ipv4OfAllSelected, true, 5, 1.0);
 
-//    gUpdater.cmdDiscover(true);
+
+    gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
+    gtk_widget_draw(treeview,NULL);
+
+    activate_buttons();
+}
+
+static void applicationON_cbk(GtkButton *button,gpointer user_data)
+{
+    gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(info_text)),"",-1);
+
+    gMNT.go2application(EthMaintainer::ipv4OfAllSelected, true, 10, true);
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
     gtk_widget_draw(treeview,NULL);
@@ -751,7 +763,7 @@ static void upload_cbk(GtkButton *button, gpointer user_data)
 #if !defined(ETHLOADER_USE_MAINTAINER) 
     if (!gUpdater.getBoardList().numSelected())
 #else
-    if(0 == gMNT.getBoards().numberof(0))
+    if(0 == gMNT.boards_get().numberof(EthMaintainer::ipv4OfAllSelected))
 #endif
     {
         dialog_message(GTK_MESSAGE_ERROR,"No board selected!","Select a board to download the firmware");
@@ -801,16 +813,63 @@ static void upload_cbk(GtkButton *button, gpointer user_data)
     uint32_t addr = 0; // all selected
     //addr = (10 << 24) | (0 << 16) | (1 << 8) | (2); test only one board w/ address 10.0.1.2
     std::string result=gUpdater.cmdProgram(programFile,*(int*)user_data,updateProgressBar, addr);
+    fclose(programFile);
+#else
+
+#define TEST_PROG
+#if defined(TEST_PROG)
+
+
+    //fclose(programFile);
+
+    std::string result;
+
+    eOuprot_process_t process = eApplication; //eApplPROGupdater; //eApplication; //eLoader;
+    if(*(int*)user_data == uprot_partitionLOADER)
+    {
+        process = eLoader;
+
+    }
+    else if(*(int*)user_data == uprot_partitionUPDATER)
+    {
+        process = eUpdater;
+    }
+    else if(*(int*)user_data == uprot_partitionAPPLICATION)
+    {
+        process = eApplication;
+    }
+
+
+    {
+
+        gMNT.verbose(true);
+    eOversion_t ver;
+    ver.major = 0;
+    ver.minor = 0;
+    eOipv4addr_t ipv4 = 0;
+    eObrd_ethtype_t type = eobrd_ethtype_none; //eobrd_ethtype_ems4;
+    bool ret = gMNT.program(ipv4, type, process, ver, programFile, false, updateProgressBar, false);
+
+
+    if(ret)
+        result = "OK";
+    else
+        result = "KO";
+
+    fclose(programFile);
 #else
     eOipv4addr_t ipv4 = 0; // all selected
     //addr = (10 << 24) | (0 << 16) | (1 << 8) | (2); test only one board w/ address 10.0.1.2
     //std::string result=gUpdater.cmdProgram(programFile,*(int*)user_data,updateProgressBar, addr);
     std::string result;
-    bool ok = gMNT.commandProgram(programFile,*(int*)user_data,updateProgressBar, result, ipv4);
+    bool ok = gMNT.commandProgram(programFile,(eOuprot_partition2prog_t)*(int*)user_data, updateProgressBar, NULL, result, ipv4);
     ok = ok;
+    fclose(programFile);
+#endif
+    }
+
 #endif
 
-    fclose(programFile);
 
     gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(info_text)),result.c_str(),-1);
 }
@@ -820,8 +879,8 @@ static void sel_all_cbk(GtkButton *button,gpointer user_data)
 #if !defined(ETHLOADER_USE_MAINTAINER)
     gUpdater.getBoardList().selectAll(true);
 #else
-    eOipv4addr_t ipv4 = 0;
-    gMNT.getBoards().select(true, ipv4);
+    eOipv4addr_t ipv4 = EthBoardList::ipv4all;
+    gMNT.boards_get().select(true, ipv4);
 #endif
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
@@ -835,8 +894,8 @@ static void des_all_cbk(GtkButton *button,gpointer user_data)
 #if !defined(ETHLOADER_USE_MAINTAINER)
     gUpdater.getBoardList().selectAll(false);
 #else
-    eOipv4addr_t ipv4 = 0;
-    gMNT.getBoards().select(false, ipv4);
+    eOipv4addr_t ipv4 = EthBoardList::ipv4all;
+    gMNT.boards_get().select(false, ipv4);
 #endif
    
     gtk_tree_view_set_model(GTK_TREE_VIEW(treeview),refresh_board_list_model());
@@ -850,7 +909,7 @@ static void boot_upd_cbk(GtkButton *button,gpointer user_data)
 #if !defined(ETHLOADER_USE_MAINTAINER)
     gUpdater.cmdSetDEF2RUN(eUpdater);
 #else
-    gMNT.commandSetDEF2RUN(eUpdater);
+    gMNT.command_def2run(EthMaintainer::ipv4OfAllSelected, eUpdater, false, false);
 #endif
 }
 
@@ -859,7 +918,7 @@ static void boot_app_cbk(GtkButton *button,gpointer user_data)
 #if !defined(ETHLOADER_USE_MAINTAINER)
     gUpdater.cmdSetDEF2RUN(eApplication);
 #else
-    gMNT.commandSetDEF2RUN(eApplication);
+    gMNT.command_def2run(EthMaintainer::ipv4OfAllSelected, eApplication, false, false);
 #endif
 }
 
@@ -868,7 +927,7 @@ static void jump_upd_cbk(GtkButton *button,gpointer user_data)
 #if !defined(ETHLOADER_USE_MAINTAINER)
     gUpdater.cmdJumpUpd();
 #else
-    gMNT.commandJumpUpd();
+    gMNT.command_jump2updater(EthMaintainer::ipv4OfAllSelected);
 #endif
 }
 
@@ -877,7 +936,7 @@ static void reset_cbk(GtkButton *button,gpointer user_data)
 #if !defined(ETHLOADER_USE_MAINTAINER)
     gUpdater.cmdRestart();
 #else
-    gMNT.commandRestart();
+    gMNT.command_restart(EthMaintainer::ipv4OfAllSelected);
 #endif
 }
 
@@ -887,8 +946,7 @@ static void procs_cbk(GtkButton *button,gpointer user_data)
 #if !defined(ETHLOADER_USE_MAINTAINER)
     std::string procs=gUpdater.cmdGetMoreInfo();
 #else
-    std::string procs = gMNT.commandGetMoreInfo();
-    //std::string procs = gMNT.getTextualDescription();
+    std::string procs = gMNT.moreinformation(EthMaintainer::ipv4OfAllSelected, false);
 #endif
 
     gtk_text_buffer_set_text(gtk_text_view_get_buffer(GTK_TEXT_VIEW(info_text)), procs.c_str(), -1);
@@ -899,7 +957,7 @@ static void blink_cbk(GtkButton *button,gpointer user_data)
 #if !defined(ETHLOADER_USE_MAINTAINER)
 	gUpdater.cmdBlink();
 #else
-    gMNT.commandBlink();
+    gMNT.command_blink(EthMaintainer::ipv4OfAllSelected);
 #endif
 }
 
@@ -910,7 +968,7 @@ static void eraseinfo_cbk(GtkButton *button,gpointer user_data)
 #if !defined(ETHLOADER_USE_MAINTAINER)
         gUpdater.cmdInfo32Clear();
 #else
-        gMNT.commandInfo32Clear();
+        gMNT.command_info32_clr(EthMaintainer::ipv4OfAllSelected);
 #endif
     }
 }
@@ -962,7 +1020,7 @@ static void eraseeprom_cbk(GtkButton *button, gpointer user_data)
 #if !defined(ETHLOADER_USE_MAINTAINER)
         gUpdater.cmdEraseEEPROM();
 #else
-        gMNT.commandEraseEEPROM();
+        gMNT.command_eeprom_erase(EthMaintainer::ipv4OfAllSelected);
 #endif
     }
 
@@ -1109,14 +1167,19 @@ int myMain(int argc,char *argv[])
         int partition_UPDATER = EthUpdater::partition_UPDATER;
         int partition_LOADER = EthUpdater::partition_LOADER;
 #else
-        int partition_APPLICATION = EthMaintainer::partition_APPLICATION;
-        int partition_UPDATER = EthMaintainer::partition_UPDATER;
-        int partition_LOADER = EthMaintainer::partition_LOADER;
+        int partition_APPLICATION = uprot_partitionAPPLICATION;
+        int partition_UPDATER = uprot_partitionUPDATER;
+        int partition_LOADER = uprot_partitionLOADER;
 
         maintenanceON_button=gtk_button_new_with_mnemonic("Maintenance ON");
         gtk_container_add(GTK_CONTAINER(buttons_box), maintenanceON_button);
         g_signal_connect(maintenanceON_button,"clicked",G_CALLBACK(maintenanceON_cbk),NULL);
         gtk_widget_set_size_request(maintenanceON_button,180,30);
+
+        applicationON_button=gtk_button_new_with_mnemonic("Application ON");
+        gtk_container_add(GTK_CONTAINER(buttons_box), applicationON_button);
+        g_signal_connect(applicationON_button,"clicked",G_CALLBACK(applicationON_cbk),NULL);
+        gtk_widget_set_size_request(applicationON_button,180,30);
 #endif
         
         //add_button("Start Upload",  upload_button,   upload_cbk,   buttons_box);

@@ -710,7 +710,7 @@ public:
     * @param i is the Link number. 
     * @param col selects the part of the derived homogeneous matrix 
     *            to be put in the upper side of the Jacobian
-    *            matrix: 0 => x, 1 => y, 2 => z, 3 => p (default)
+    *            matrix: 0 => x, 1 => y, 2 => z, 3 => p
     * @return the analitical Jacobian.
     */
     yarp::sig::Matrix AnaJacobian(const unsigned int i, unsigned int col);

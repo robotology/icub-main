@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<robot name="icubSim">
+<robot name="icubSim" portprefix="icubSim" build="0">
 
     <device name="torso" type="remote_controlboard">
         <param name="remote"> /icubSim/torso </param>

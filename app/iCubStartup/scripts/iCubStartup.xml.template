@@ -10,7 +10,6 @@
                 <node>console</node>
         </module>
 
-
         <module>
                 <name>yarprobotinterface</name>
                 <node>pc104</node>

@@ -27,6 +27,7 @@
 #include <yarp/os/Semaphore.h>
 #include <yarp/sig/Image.h>
 #include <yarp/dev/PolyDriver.h>
+#include <yarp/dev/IRobotDescription.h>
 
 #include "RobotStreamer.h"
 #include "RobotConfig.h"
@@ -109,6 +110,10 @@ private:
     void sendImage(yarp::os::BufferedPort<yarp::sig::ImageOf<yarp::sig::PixelRgb> >& port);
 
     std::string moduleName;
+    yarp::dev::IRobotDescription* idesc;
+    yarp::dev::PolyDriver *dd_descSrv;
+    yarp::dev::PolyDriver *dd_descClnt;
+
 #ifndef OMIT_LOGPOLAR
     iCub::logpolar::logpolarTransform trsf;
 #endif
@@ -141,7 +146,7 @@ private:
     yarp::os::Semaphore mutex, pulse, ack;
     double sloth;
 
-    void init();
+    bool initSimulatorModule();
     void initImagePorts();
     void initIcubParts();
 

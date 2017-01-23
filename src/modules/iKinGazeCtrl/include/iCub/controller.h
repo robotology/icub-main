@@ -80,6 +80,8 @@ protected:
     Mutex mutexChain;
     Mutex mutexCtrl;
     Mutex mutexData;
+    Mutex mutexLook;
+    Event eventLook;
     unsigned int period;
     bool unplugCtrlEyes;
     bool ctrlInhibited;
@@ -130,6 +132,7 @@ public:
     void   minAllowedVergenceChanged();
     void   resetCtrlEyes();
     void   doSaccade(const Vector &ang, const Vector &vel);
+    bool   look(const Vector &x);
     void   stopControl();    
     void   printIter(Vector &xd, Vector &fp, Vector &qd, Vector &q, Vector &v, double printTime);
     bool   threadInit();

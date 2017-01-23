@@ -422,7 +422,7 @@ following ports:
       reference frame.
     - [get] [3D] [ang] (<type> <azi> <ele> <ver>): transforms
       angular coordinates into cartesian coordinates. The
-      options <type> can be ["abs"|"rel"].
+      option <type> can be ["abs"|"rel"].
     - [get] [ang] (<x> <y> <z>): transforms cartesian
       coordinates into absolute angular coordinates.
     - [get] [pid]: returns (enclosed in a list) a property-like
@@ -465,6 +465,22 @@ following ports:
     - [set] [tweak] ((prop0 (<val> <val> ...)) (prop1) (<val>
       <val> ...)): sets parameters for the low-level
       controller's configuration.
+    - [look] [3D] (<x> <y> <z>): yields gazing at target specified
+      as 3D point. Distances are in meters.
+    - [look] [mono] (<type> < u> <v> <z>): yields gazing at target
+      specified in terms of pixel coordinates (u,v) in the image
+      plane <type> ["left"|"right"] along with third component
+      <z> in the eye's reference frame. Distances are in meters.
+    - [look] [mono] (<type> < u> <v> "ver" <ver>): yields gazing at target
+      specified in terms of pixel coordinates (u,v) in the image
+      plane <type> ["left"|"right"] along with the vergence <ver>.
+      Angles are in degrees.
+    - [look] [stereo] (< ul> <vl> <ur> <vr>): yields gazing at target
+      specified in terms of projected pixels coordinates (ul,vl) and
+      (ur,vr) in the image planes.
+    - [look] [ang] (<type> <azi> <ele> <ver>): yields gazing at target
+      specified in angular coordinates. The option <type> can be ["abs"|"rel"].
+      Angles are in degrees.
     - [store]: store the controller context returning an integer
       identifier. The context comprises the values of internal
       controller variables, such as the tracking mode, the
@@ -558,7 +574,7 @@ Windows, Linux
 #include <iCub/solver.h>
 #include <iCub/controller.h>
 
-#define GAZECTRL_SERVER_VER     1.1
+#define GAZECTRL_SERVER_VER     1.2
 
 using namespace std;
 using namespace yarp::os;
@@ -1070,7 +1086,7 @@ public:
         commData.stabilizationOn=(imuGroup.check("mode",Value("on")).asString()=="on");
         commData.stabilizationGain=imuGroup.check("stabilization_gain",Value(11.0)).asDouble();
         commData.gyro_noise_threshold=CTRL_DEG2RAD*imuGroup.check("gyro_noise_threshold",Value(5.0)).asDouble();
-        commData.debugInfoEnabled=rf.check("debugInfo",Value("off")).asString()=="on";        
+        commData.debugInfoEnabled=rf.check("debugInfo",Value("off")).asString()=="on";
 
         if (commData.stabilizationOn)
         {
@@ -1628,6 +1644,120 @@ public:
                             {
                                 reply.addVocab(tweakSet(*bOpt)?ack:nack);
                                 return true;
+                            }
+                        }
+                    }
+
+                    break;
+                }
+
+                //-----------------
+                case VOCAB4('l','o','o','k'):
+                {
+                    if (command.size()>2)
+                    {
+                        int type=command.get(1).asVocab();
+                        if (type==VOCAB2('3','D'))
+                        {
+                            if (Bottle *bOpt=command.get(2).asList())
+                            {
+                                if (bOpt->size()>2)
+                                {
+                                    Vector x(3);
+                                    x[0]=bOpt->get(0).asDouble();
+                                    x[1]=bOpt->get(1).asDouble();
+                                    x[2]=bOpt->get(2).asDouble();
+
+                                    if (ctrl->look(x))
+                                    {
+                                        reply.addVocab(ack);
+                                        return true;
+                                    }
+                                }
+                            }
+                        }
+                        else if (type==VOCAB4('m','o','n','o'))
+                        {
+                            if (Bottle *bOpt=command.get(2).asList())
+                            {
+                                if (bOpt->size()>3)
+                                {
+                                    string eye=bOpt->get(0).asString().c_str();
+                                    double u=bOpt->get(1).asDouble();
+                                    double v=bOpt->get(2).asDouble();
+                                    double z;
+
+                                    bool ok=false;
+                                    if (bOpt->get(3).isDouble())
+                                    {
+                                        z=bOpt->get(3).asDouble();
+                                        ok=true;
+                                    }
+                                    else if ((bOpt->get(3).asString()=="ver") && (bOpt->size()>4))
+                                    {
+                                        double ver=bOpt->get(4).asDouble();
+                                        z=loc->getDistFromVergence(ver);
+                                        ok=true;
+                                    }
+
+                                    if (ok)
+                                    {
+                                        Vector x;
+                                        if (loc->projectPoint(eye,u,v,z,x))
+                                        {
+                                            if (ctrl->look(x))
+                                            {
+                                                reply.addVocab(ack);
+                                                return true;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (type==VOCAB4('s','t','e','r'))
+                        {
+                            if (Bottle *bOpt=command.get(2).asList())
+                            {
+                                if (bOpt->size()>3)
+                                {
+                                    Vector pxl(2),pxr(2);
+                                    pxl[0]=bOpt->get(0).asDouble();
+                                    pxl[1]=bOpt->get(1).asDouble();
+                                    pxr[0]=bOpt->get(2).asDouble();
+                                    pxr[1]=bOpt->get(3).asDouble();
+
+                                    Vector x;
+                                    if (loc->triangulatePoint(pxl,pxr,x))
+                                    {
+                                        if (ctrl->look(x))
+                                        {
+                                            reply.addVocab(ack);
+                                            return true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (type==VOCAB3('a','n','g'))
+                        {
+                            if (Bottle *bOpt=command.get(2).asList())
+                            {
+                                if (bOpt->size()>3)
+                                {
+                                    Vector ang(3);
+                                    string type=bOpt->get(0).asString().c_str();
+                                    ang[0]=CTRL_DEG2RAD*bOpt->get(1).asDouble();
+                                    ang[1]=CTRL_DEG2RAD*bOpt->get(2).asDouble();
+                                    ang[2]=CTRL_DEG2RAD*bOpt->get(3).asDouble();
+
+                                    Vector x=loc->get3DPoint(type,ang);
+                                    if (ctrl->look(x))
+                                    {
+                                        reply.addVocab(ack);
+                                        return true;
+                                    }
+                                }
                             }
                         }
                     }
