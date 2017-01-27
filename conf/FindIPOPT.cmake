@@ -60,7 +60,10 @@ if(NOT WIN32)
         find_library(${_LIBRARY}_PATH
                      NAMES ${_LIBRARY}
                      PATHS ${_PC_IPOPT_LIBRARY_DIRS})
-        list(APPEND IPOPT_LIBRARIES ${${_LIBRARY}_PATH})
+        # Workaround for https://github.com/robotology/icub-main/issues/418 
+        if(${_LIBRARY}_PATH)
+          list(APPEND IPOPT_LIBRARIES ${${_LIBRARY}_PATH})
+        endif()
       endforeach()
     else()
       set(IPOPT_DEFINITIONS "")
