@@ -1268,9 +1268,6 @@ bool MotorThread::threadInit()
             double armTargetTol=bMotor.check("arm_target_tol",Value(0.01)).asDouble();
             tmpCtrl->setInTargetTol(armTargetTol);
 
-            double tmpTargetTol;
-            tmpCtrl->getInTargetTol(&tmpTargetTol);
-
             storeContext(arm);
             tmpCtrl->restoreContext(context);
             tmpCtrl->deleteContext(context);
