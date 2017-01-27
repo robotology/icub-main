@@ -103,18 +103,13 @@ action: if the robot is holding an object it brings it in the FoV of
 its cameras with the final purpose of visually explore it.
 
 <b>DROP</b> \n
-format: [drop] "param1" "param2" or [drop] "over" [target] "param1" "param2" \n
+format: [drop] "param1" or [drop] "over" [target] "param1" \n
 action: if the robot is holding an object it brings it over the table and drops it
 on a random position approximatively in front of it.
-Optional parameter "side" or "above" can be provided in order to select the
-hand orientation that the robot should try to mantain during the drop action.
 Optional parameter "away" can be provided in orded to have the robot leave the object
 outside the cameras FoV (on the right or left side of the robot depending on the arm in use).
 Optional parameter "over" can be supplied together with the action [target] in order
-to have the robot drop the object on top of the visual target. Also in this case
-the optional parameter "side" or "above" can be specified. Furthermore in this case an optional
-parameters "gently" can be specified in order for the robot to gently deploy the hand-held
-object over the target.
+to have the robot drop the object on top of the visual target.
 
 <b>HAND</b> \n
 format: [hand] "action-type" "hand-type" \n
