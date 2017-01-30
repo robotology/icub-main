@@ -295,9 +295,9 @@ bool mcParser::parseSelectedVelocityControl(yarp::os::Searchable &config)
         string s_controlaw = controlLaw.toString();
         if (s_controlaw==string("Pid_inVel_outPwm"))
         {
-            if (!parsePid_inPos_outPwm(velControlLaw, _velocityControlLaw[i]))
+            if (!parsePid_inVel_outPwm(velControlLaw, _velocityControlLaw[i]))
             {
-                yError() << "embObjMC BOARD " << _boardname << "format error in Pid_inPos_outPwm";
+                yError() << "embObjMC BOARD " << _boardname << "format error in Pid_inVel_outPwm";
                 return false;
             }
 
