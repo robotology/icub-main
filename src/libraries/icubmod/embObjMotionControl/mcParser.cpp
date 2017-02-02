@@ -304,7 +304,7 @@ bool mcParser::parseSelectedVelocityControl(yarp::os::Searchable &config)
         }
         else
         {
-           yError() << "embObjMC BOARD " << _boardname << "Unable to use control law " << s_controlaw << " por position control. Quitting.";
+           yError() << "embObjMC BOARD " << _boardname << "Unable to use control law " << s_controlaw << " for velocity control. Quitting.";
             return false;
         }
 
@@ -358,7 +358,7 @@ bool mcParser::parseSelectedTorqueControl(yarp::os::Searchable &config)
         }
         else
         {
-            yError() << "embObjMC BOARD " << _boardname << "Unable to use control law " << s_controlaw << " por position control. Quitting.";
+            yError() << "embObjMC BOARD " << _boardname << "Unable to use control law " << s_controlaw << " for torque control. Quitting.";
             return false;
         }
 
@@ -620,12 +620,12 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
             tpidAlgo_ptr = trqAlgoMap[_torqueControlLaw[i]];
         }
 
-        //verifico che i giunti abbiamo lo stesso algoritmo per pid posizione, velocita' e torque
-        if((vpidAlgo_ptr) && (pidAlgo_ptr->type != vpidAlgo_ptr->type))
-        {
-            yError() << "embObjMC BOARD " << _boardname << "Position control law is not equal to velocity control law for joint " << i;
-            return false;
-        }
+        //verifico che i giunti abbiamo lo stesso tipo di algoritmo per pid posizione e torque, mentre per il pid di velocita' puo' essere solo Pid_Algorithm_simple
+//         if((vpidAlgo_ptr) && (pidAlgo_ptr->type != vpidAlgo_ptr->type))
+//         {
+//             yError() << "embObjMC BOARD " << _boardname << "Position control law is not equal to velocity control law for joint " << i;
+//             return false;
+//         }
 
         if((tpidAlgo_ptr) && (pidAlgo_ptr->type != tpidAlgo_ptr->type))
         {
@@ -638,15 +638,12 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
         {
             if(vpidAlgo_ptr)
             {
-                for(int x =0; x<_njoints; x++)
-                {
 #warning VALE: Do I need to check that pids have same control unit type??
-                    //if they have same values , they should have same unit type!
-                    if( ! pidsAreEquals(((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->innerVelPid[x], ((Pid_Algorithm_simple*)vpidAlgo_ptr)->pid[x]))
-                    {
-                        yError() << "embObjMC BOARD " << _boardname << "velocity pid values of inner loop of position control are not equal to velocity control pid values";
-                        return false;
-                    }
+                //if they have same values , they should have same unit type!
+                if( ! pidsAreEquals(((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->innerVelPid[i], ((Pid_Algorithm_simple*)vpidAlgo_ptr)->pid[i]))
+                {
+                    yError() << "embObjMC BOARD " << _boardname << ":Joint" << i << ": velocity pid values of inner loop of position control are not equal to velocity control pid values";
+                    return false;
                 }
             }
 
@@ -1760,6 +1757,7 @@ void eomcParser_pidInfo::dumpdata(void)
     else
         cout << ". ctr Unit type is " << "unknown.";
 
+    cout << " kp is " << pid.kp;
     cout << endl;
 
 }
