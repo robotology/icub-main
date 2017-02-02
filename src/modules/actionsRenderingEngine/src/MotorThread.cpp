@@ -2187,8 +2187,9 @@ void MotorThread::goWithTorsoUpright(ActionPrimitives *action,
     ICartesianControl *ctrl;
     action->getCartesianIF(ctrl);
 
+    int tmp_ctxt;
     ctrl->stopControl();
-    restoreContext(action);
+    ctrl->storeContext(&tmp_ctxt);
 
     Vector dof;
     ctrl->getDOF(dof); dof=1.0;
@@ -2199,12 +2200,13 @@ void MotorThread::goWithTorsoUpright(ActionPrimitives *action,
     ctrl->setLimits(2,0.0,0.0);
 
     ctrl->setTrajTime(default_exec_time);
+    ctrl->setInTargetTol(0.02);
 
     ctrl->goToPoseSync(xin,oin);
     ctrl->waitMotionDone(0.1,2.0*reachingTimeout);
 
     ctrl->stopControl();
-    restoreContext(action);
+    ctrl->restoreContext(tmp_ctxt);
 }
 
 
