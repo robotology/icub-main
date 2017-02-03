@@ -349,7 +349,7 @@ bool mcParser::parseSelectedTorqueControl(yarp::os::Searchable &config)
         }
         else if (s_controlaw==string("PidTrq_withInnerVelPid"))
         {
-            if (!parsePidPos_withInnerVelPid(trqControlLaw,_torqueControlLaw[i] ))
+            if (!parsePidTrq_withInnerVelPid(trqControlLaw,_torqueControlLaw[i] ))
             {
                 yError() << "embObjMC BOARD " << _boardname << " format error in PidTrq_withInnerVelPid";
                 return false;
@@ -393,7 +393,7 @@ bool mcParser::extractGroup(Bottle &input, Bottle &out, const std::string &key1,
     Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
     if (tmp.isNull())
     {
-        yError () << key1.c_str() << " parameter not found for board " << _boardname;
+        yError () << key1.c_str() << " parameter not found for board " << _boardname << "in bottle" << input.toString().c_str();
         return false;
     }
 
@@ -554,9 +554,9 @@ bool mcParser::parsePidTrq_withInnerVelPid(Bottle &b_pid, string controlLaw)
 
     Bottle xtmp;
     //torque specific params
-    if (!extractGroup(b_pid, xtmp, "kbemf", "kbemf parameter", _njoints))         return false; for (int j=0; j<_njoints; j++) _kbemf[j]      = xtmp.get(j+1).asDouble();
-    if (!extractGroup(b_pid, xtmp, "ktau", "ktau parameter", _njoints))           return false; for (int j=0; j<_njoints; j++) _ktau[j]       = xtmp.get(j+1).asDouble();
-    if (!extractGroup(b_pid, xtmp, "filterType", "filterType param", _njoints))   return false; for (int j=0; j<_njoints; j++) _filterType[j] = xtmp.get(j+1).asInt();
+    if (!extractGroup(b_pid, xtmp, "trq_kbemf", "kbemf parameter", _njoints))         return false; for (int j=0; j<_njoints; j++) _kbemf[j]      = xtmp.get(j+1).asDouble();
+    if (!extractGroup(b_pid, xtmp, "trq_ktau", "ktau parameter", _njoints))           return false; for (int j=0; j<_njoints; j++) _ktau[j]       = xtmp.get(j+1).asDouble();
+    if (!extractGroup(b_pid, xtmp, "trq_filterType", "filterType param", _njoints))   return false; for (int j=0; j<_njoints; j++) _filterType[j] = xtmp.get(j+1).asInt();
 
     if(!parsePidsGroup(b_pid, pidInnerVel_ptr->innerVelPid, string("vel_")))
         return false;
