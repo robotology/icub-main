@@ -319,7 +319,7 @@ bool PointingFar::point(ICartesianControl *iarm, const Vector& q, const Vector& 
 
         iarm->setInTargetTol(0.02);
         iarm->goToPoseSync(x.subVector(0,2),x.subVector(3,6));
-        iarm->waitMotionDone();
+        iarm->waitMotionDone(0.1,5.0);
 
         iarm->restoreContext(context);
         iarm->deleteContext(context);
