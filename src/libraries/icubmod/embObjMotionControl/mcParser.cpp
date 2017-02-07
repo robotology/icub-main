@@ -1762,3 +1762,24 @@ void eomcParser_pidInfo::dumpdata(void)
 
 }
 
+void eomc_jointsSet::dumpdata(void)
+{
+    switch(cfg.constraints.type)
+    {
+        case eomc_jsetconstraint_none:
+            cout <<  "constraint is " << "eomc_jsetconstraint_none";
+            break;
+        case eomc_jsetconstraint_cerhand:
+            cout <<  "constraint is " << "eomc_jsetconstraint_cerhand";
+             break;
+        case eomc_jsetconstraint_trifid:
+            cout <<  "constraint is " << "eomc_jsetconstraint_trifid";
+             break;
+      default :
+            cout <<  ". constraint is " << "unknown";
+    }
+
+    cout << " param1="<< cfg.constraints.param1 << " param2=" << cfg.constraints.param2 << endl;
+
+}
+

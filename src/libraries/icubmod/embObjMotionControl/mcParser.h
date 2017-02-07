@@ -228,6 +228,7 @@ public:
     void setUseSpeedFeedbackFromMotors(bool flag){cfg.usespeedfeedbackfrommotors = flag;}
     void setPidOutputType(eOmc_pidoutputtype_t type){cfg.pidoutputtype = type;}
     void setCanDoTorqueControl(bool flag) {cfg.candotorquecontrol = flag;}
+    void dumpdata();
 };
 
 typedef struct
