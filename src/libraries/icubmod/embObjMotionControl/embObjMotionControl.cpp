@@ -891,8 +891,6 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_p
 
 bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_trqPidInfo *pidInfo)
 {
-#warning VALE ho dovuto replicare la funz verifyUserControlLawConsistencyInJointSet per torque ==>metti type in pidinfo class
-
     for(int s=0; s<_jsets.size(); s++)
     {
        int numofjoints = _jsets[s].getNumberofJoints();
@@ -1312,7 +1310,7 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
     {
         jointEncoder_ptr = parser->getEncoderAtJoint(i);
         motorEncoder_ptr = parser->getEncoderAtMotor(i);
-#warning VALE: metti dei controlli per verificare la validita delle configurazioni degli encoder
+
         if(NULL == jointEncoder_ptr)
         {
             _jointEncoderRes[i]  = 1;
@@ -3200,7 +3198,7 @@ bool embObjMotionControl::getMaxCurrentRaw(int j, double *val)
 
 bool embObjMotionControl::getAmpStatusRaw(int j, int *st)
 {
-#warning VALE: can i set this func like deprecated? noone set _enabledAmp!!
+ //VALE: can i set this func like deprecated? none sets _enabledAmp!!
     (_enabledAmp[j ]) ? *st = 1 : *st = 0;
     return true;
 }

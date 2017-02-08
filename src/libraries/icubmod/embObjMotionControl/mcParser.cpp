@@ -638,9 +638,10 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
         {
             if(vpidAlgo_ptr)
             {
-#warning VALE: Do I need to check that pids have same control unit type??
-                //if they have same values , they should have same unit type!
-                if( ! pidsAreEquals(((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->innerVelPid[i], ((Pid_Algorithm_simple*)vpidAlgo_ptr)->pid[i]))
+
+                //pids are equal if they have same control units type and same values
+                if( ( ((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->ctrlUnitsType != ((Pid_Algorithm_simple*)vpidAlgo_ptr)->ctrlUnitsType) ||
+                    ( ! pidsAreEquals(((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->innerVelPid[i], ((Pid_Algorithm_simple*)vpidAlgo_ptr)->pid[i])))
                 {
                     yError() << "embObjMC BOARD " << _boardname << ":Joint" << i << ": velocity pid values of inner loop of position control are not equal to velocity control pid values";
                     return false;
@@ -651,14 +652,14 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
             {
                 for(int x =0; x<_njoints; x++)
                 {
-                    if(! pidsAreEquals( ((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->innerVelPid[x], ((PidAlgorithm_VelocityInnerLoop*)tpidAlgo_ptr)->innerVelPid[x]))
+                    if( ( ((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->ctrlUnitsType != ((Pid_Algorithm_simple*)vpidAlgo_ptr)->ctrlUnitsType ) ||
+                        (! pidsAreEquals( ((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->innerVelPid[x], ((PidAlgorithm_VelocityInnerLoop*)tpidAlgo_ptr)->innerVelPid[x])) )
                     {
-                        yError() << "embObjMC BOARD " << _boardname << "velocity pid values of inner loop of torque control are not equal to velocity control pid values";
+                        yError() << "embObjMC BOARD " << _boardname << "velocity pid values of inner loop of torque control are not equal to velocity pid values of inner position pid ";
                         return false;
                     }
                 }
             }
-
         }
 
 
