@@ -11,7 +11,7 @@
 #include <list.hpp>
 #include <yarp/os/Time.h>
 #include <yarp/os/Value.h>
-#include "libv4lconvert.h"
+
 
 
 #include <opencv2/core/core.hpp>
@@ -23,7 +23,6 @@
 
 //#include <Leopard_MT9M021C.h>
 
-struct v4lconvert_data *_v4lconvert_data;
 
 using namespace yarp::os;
 using namespace yarp::dev;
@@ -87,6 +86,7 @@ V4L_camera::V4L_camera() : RateThread(1000/DEFAULT_FRAMERATE), doCropping(false)
     param.dst_image = NULL;
     param.n_buffers = 0;
     param.buffers = NULL;
+    _v4lconvert_data = NULL;
     param.camModel = SEE3CAMCU50;
     myCounter = 0;
     timeTot = 0;
@@ -522,6 +522,11 @@ bool V4L_camera::deviceUninit()
     
     if(param.buffers != 0)
         free(param.buffers);
+    if(_v4lconvert_data != NULL)
+    {
+        v4lconvert_destroy(_v4lconvert_data);
+        _v4lconvert_data=NULL;
+    }
     return ret;
 }
 
