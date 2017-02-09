@@ -33,7 +33,7 @@ before_script:
   #install yarp from master
   - git clone https://github.com/robotology/yarp
   - cd yarp
-  - git checkout devel
+  - git checkout master
   - mkdir build
   - cd build
   - cmake ../ -DCREATE_GUIS:BOOL=ON -DCREATE_LIB_MATH:BOOL=ON -DCREATE_OPTIONAL_CARRIERS:BOOL=ON -DENABLE_yarpcar_bayer_carrier:BOOL=ON
