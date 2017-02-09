@@ -42,6 +42,7 @@
 #include <linux/videodev2.h>
 #include <jpeglib.h>
 #include <libv4l2.h>
+#include <libv4lconvert.h>
 
 #include <cv.h>
 
@@ -194,6 +195,7 @@ public:
 
 private:
 
+    v4lconvert_data *_v4lconvert_data;
     yarp::os::Stamp timeStamp;
     Video_params param;
     yarp::os::Semaphore mutex;
