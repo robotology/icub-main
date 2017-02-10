@@ -1355,7 +1355,10 @@ double CalibModule::getBlockEyes()
 /************************************************************************/
 bool CalibModule::blockEyes()
 {
-    return igaze->blockEyes(block_eyes);
+    if (igaze->blockEyes(block_eyes))
+        return igaze->waitMotionDone();
+    else
+        return false;
 }
 
 

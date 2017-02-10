@@ -1111,7 +1111,10 @@ bool MotorThread::threadInit()
     }
 
     if (bMotor.check("block_eyes"))
+    {
         ctrl_gaze->blockEyes(bMotor.find("block_eyes").asDouble());
+        ctrl_gaze->waitMotionDone();
+    }
 
     //store the current context and restore the initial one
     ctrl_gaze->storeContext(&gaze_context);
@@ -1895,14 +1898,14 @@ bool MotorThread::look(Bottle &options)
             return false;
 
         if (options.check("block_eyes"))
+        {
             ctrl_gaze->blockEyes(options.find("block_eyes").asDouble());
+            ctrl_gaze->waitMotionDone();
+        }
 
         if (checkOptions(options,"fixate"))
-        {
-            gaze_fix_point=xd;
             keepFixation(options);
-        }
-            
+
         ctrl_gaze->lookAtFixationPointSync(xd);
         if (checkOptions(options,"wait"))
             ctrl_gaze->waitMotionDone();
@@ -2039,9 +2042,7 @@ bool MotorThread::give(Bottle &options)
 bool MotorThread::clearIt(Bottle &options)
 {
     setGazeIdle();
-    ctrl_gaze->blockEyes(5.0);
     ctrl_gaze->setSaccadesMode(false);
-
     return true;
 }
 

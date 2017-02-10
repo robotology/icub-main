@@ -217,7 +217,6 @@ private:
     string                              actions_path;
     Dragger                             dragger;
 
-    Vector                              gaze_fix_point;
     Vector                              track_cartesian_target;
     double                              avoid_table_height[2];
 

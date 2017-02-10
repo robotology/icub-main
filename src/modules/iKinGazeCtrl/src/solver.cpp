@@ -153,8 +153,13 @@ bool EyePinvRefGen::bindEyes(const double ver)
         lim(2,0)=lim(2,1)=ver_rad;
         I->setLim(lim);
 
-        yInfo("eyes constrained at vergence %g deg",commData->eyesBoundVer);        
-        commData->port_xd->set_xd(fp);        
+        qd[0]=fbHead[3];
+        qd[1]=0.0;
+        qd[2]=ver_rad;
+        I->reset(qd);
+
+        yInfo("eyes constrained at vergence %g deg",commData->eyesBoundVer);
+        ctrl->look(fp);
         return true;
     }
     else
