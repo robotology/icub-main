@@ -815,13 +815,15 @@ public:
 
 protected:
     void* system_resources;
+    bool raw;
     FeatureMode TRANSL_MODE(bool mode) { return (mode ? MODE_AUTO : MODE_MANUAL); }
     bool TRANSL_MODE(FeatureMode mode) { return (mode == MODE_AUTO? 1 : 0); }
 };
 
 class yarp::dev::DragonflyDeviceDriver2Rgb : 
     public yarp::dev::DragonflyDeviceDriver2,
-    public IFrameGrabberImage
+    public IFrameGrabberImage,
+    public IFrameGrabberImageRaw
 {
 private:
     DragonflyDeviceDriver2Rgb(const DragonflyDeviceDriver2Rgb&);
@@ -847,6 +849,14 @@ public:
     */
     bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image);
 
+    /**
+        * FrameGrabber image interface, returns the last acquired frame as
+        * a raw image.
+        * @param image that will store the last frame.
+        * @return true/false upon success/failure
+        */
+    bool getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image);
+
     /** 
      * Return the height of each frame.
      * @return image height
@@ -860,7 +870,7 @@ public:
     virtual int width() const;
 };
 
-class yarp::dev::DragonflyDeviceDriver2Raw : 
+class yarp::dev::DragonflyDeviceDriver2Raw :
     public yarp::dev::DragonflyDeviceDriver2,
     public IFrameGrabberImageRaw
 {
