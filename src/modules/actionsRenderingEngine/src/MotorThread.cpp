@@ -2228,16 +2228,13 @@ bool MotorThread::goHome(Bottle &options)
     bool left_arm=checkOptions(options,"left") || checkOptions(options,"both");
     bool right_arm=checkOptions(options,"right") || checkOptions(options,"both");
 
-    //if none is specified the assume both arms (or hands) are going home
+    //if none is specified then assume both arms (or hands) are going home
     if (!left_arm && !right_arm)
         left_arm=right_arm=true;
 
     if (head_home)
     {
-        head_mode=HEAD_MODE_GO_HOME;
-
-        gazeUnderControl=true;
-        ctrl_gaze->stopControl();
+        setGazeIdle();
         ctrl_gaze->restoreContext(gaze_context);
         ctrl_gaze->setTrackingMode(true);
 
@@ -2299,9 +2296,6 @@ bool MotorThread::goHome(Bottle &options)
     {
         ctrl_gaze->waitMotionDone();
         ctrl_gaze->stopControl();   // because we're on tracking
-        ctrl_gaze->setTrackingMode(false);
-        head_mode=HEAD_MODE_IDLE;
-        gazeUnderControl=false;
     }
 
     return true;
