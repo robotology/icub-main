@@ -30,6 +30,11 @@ bool DragonflyDeviceDriver2Rgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>
     return RES(system_resources)->CaptureImage(image);
 }
 
+bool DragonflyDeviceDriver2Rgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
+{
+    return RES(system_resources)->CaptureImage(image);
+}
+
 int DragonflyDeviceDriver2Rgb::width () const
 {
 	return RES(system_resources)->width();
@@ -57,9 +62,9 @@ int DragonflyDeviceDriver2Raw::height () const
 
 ////////////////////////////////////////////////////
 
-DragonflyDeviceDriver2::DragonflyDeviceDriver2(bool raw)
+DragonflyDeviceDriver2::DragonflyDeviceDriver2(bool raw=false)
 {
-	system_resources=(void*)new CFWCamera_DR2_2(raw);
+    this->raw=raw;
 	//ACE_ASSERT(system_resources!=NULL);
 }
 
@@ -74,6 +79,21 @@ DragonflyDeviceDriver2::~DragonflyDeviceDriver2()
 
 bool DragonflyDeviceDriver2::open(yarp::os::Searchable& config)
 {
+
+    if(config.check("pixelType"))
+    {
+        if(config.find(("pixeltype")).asVocab()==VOCAB_PIXEL_MONO)
+            raw=true;
+        else if((config.find(("pixeltype")).asVocab()==VOCAB_PIXEL_RGB))
+            raw=false;
+        else
+        {
+            yError()<<"DragonflyDeviceDriver2: invalid pixelType:"<<yarp::os::Vocab::decode(config.find(("pixeltype")).asVocab());
+            return false;
+        }
+    }
+
+    system_resources=(void*)new CFWCamera_DR2_2(raw);
 	if (!RES(system_resources)->Create(config))
 	{
 		fprintf(stderr,"DragonflyDeviceDriver2: can't open camera\n");
