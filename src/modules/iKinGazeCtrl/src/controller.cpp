@@ -482,7 +482,7 @@ bool Controller::look(const Vector &x)
 {
     LockGuard lg(mutexLook);
 
-    mutexRun.lock();    
+    mutexRun.lock();
     bool ret=commData->port_xd->set_xd(x);
     if (ret)
         eventLook.reset();
@@ -1065,13 +1065,16 @@ bool Controller::isMotionDone()
 /************************************************************************/
 void Controller::setTrackingMode(const bool f)
 {
-    LockGuard lg(mutexRun);
-    commData->trackingModeOn=f;
-    yInfo("tracking mode set to %s",
-          commData->trackingModeOn?"on":"off");
+    if (commData->trackingModeOn!=f)
+    {        
+        if (f)
+            look(commData->get_x());
 
-    if (commData->trackingModeOn)
-        commData->port_xd->set_xd(commData->get_x());    
+        LockGuard lg(mutexRun);
+        commData->trackingModeOn=f;
+        yInfo("tracking mode set to %s",
+              commData->trackingModeOn?"on":"off");
+    }
 }
 
 
