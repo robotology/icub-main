@@ -1219,11 +1219,16 @@ public:
     * @param chainJoints the vector containing the joints values to 
     *                    be used with the iKinLimb methods expressed
     *                    in degrees.
+    * @param jointEncodersBounds the matrix 15-by-2 containing the 
+    *                            minimum and maximum bounds of
+    *                            analog readings. By default, the
+    *                            matrix (255 0; 255 0; ...) is used.
     * @return true/false on success/failure. 
     */
     virtual bool getChainJoints(const yarp::sig::Vector &motorEncoders,
                                 const yarp::sig::Vector &jointEncoders,
-                                yarp::sig::Vector &chainJoints);
+                                yarp::sig::Vector &chainJoints,
+                                const yarp::sig::Matrix &jointEncodersBounds=yarp::math::zeros(1,2));
 };
 
 
