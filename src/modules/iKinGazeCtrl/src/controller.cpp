@@ -764,8 +764,8 @@ void Controller::run()
         setJointsCtrlMode();
         jointsToSet.clear();
         motionDone=false;
-        eventLook.signal();
         q0=fbHead;
+        eventLook.signal();        
     }
     mutexCtrl.unlock();
 
