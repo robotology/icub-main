@@ -2201,10 +2201,10 @@ void MotorThread::goWithTorsoUpright(ActionPrimitives *action,
     ctrl->setLimits(2,0.0,0.0);
 
     ctrl->setTrajTime(default_exec_time);
-    ctrl->setInTargetTol(0.02);
+    ctrl->setInTargetTol(0.04);
 
     ctrl->goToPoseSync(xin,oin);
-    ctrl->waitMotionDone(0.1,2.0*reachingTimeout);
+    ctrl->waitMotionDone(0.1,reachingTimeout);
 
     ctrl->stopControl();
     ctrl->restoreContext(tmp_ctxt);
@@ -2294,8 +2294,9 @@ bool MotorThread::goHome(Bottle &options)
 
     if (head_home)
     {
-        ctrl_gaze->waitMotionDone();
+        ctrl_gaze->waitMotionDone(0.1,3.0);
         ctrl_gaze->stopControl();   // because we're on tracking
+        ctrl_gaze->setTrackingMode(false);
     }
 
     return true;
