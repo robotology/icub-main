@@ -65,6 +65,7 @@ int DragonflyDeviceDriver2Raw::height () const
 DragonflyDeviceDriver2::DragonflyDeviceDriver2(bool raw=false)
 {
     this->raw=raw;
+    system_resources=NULL;
 	//ACE_ASSERT(system_resources!=NULL);
 }
 
