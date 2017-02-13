@@ -80,16 +80,15 @@ DragonflyDeviceDriver2::~DragonflyDeviceDriver2()
 
 bool DragonflyDeviceDriver2::open(yarp::os::Searchable& config)
 {
-
     if(config.check("pixelType"))
     {
-        if(config.find(("pixeltype")).asVocab()==VOCAB_PIXEL_MONO)
+        if(config.find(("pixelType")).asVocab()==VOCAB_PIXEL_MONO)
             raw=true;
-        else if((config.find(("pixeltype")).asVocab()==VOCAB_PIXEL_RGB))
+        else if((config.find(("pixelType")).asVocab()==VOCAB_PIXEL_RGB))
             raw=false;
         else
         {
-            yError()<<"DragonflyDeviceDriver2: invalid pixelType:"<<yarp::os::Vocab::decode(config.find(("pixeltype")).asVocab());
+            yError()<<"DragonflyDeviceDriver2: invalid pixelType:"<<yarp::os::Vocab::decode(config.find(("pixelType")).asVocab());
             return false;
         }
     }
