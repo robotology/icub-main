@@ -721,10 +721,9 @@ void CalibModule::doTouch(const Vector &xd)
     Time::delay(2.0);
 
     yInfo("moving to xd=(%s); od=(%s)",x.toString(3,3).c_str(),od.toString(3,3).c_str());
-    iarm->goToPoseSync(x,od);
-    iarm->waitMotionDone();
-
     iarm->setInTargetTol(exploration_intargettol);
+    iarm->goToPoseSync(x,od);
+    iarm->waitMotionDone();    
 
     x[0]=-0.35;
     x[1]=(arm=="left"?-0.2:0.2);
