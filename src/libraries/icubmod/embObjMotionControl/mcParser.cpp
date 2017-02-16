@@ -1188,10 +1188,7 @@ bool mcParser::parseJointsLimits(yarp::os::Searchable &config, std::vector<eomc_
 
     // max hardware limit
     if (!extractGroup(limits, xtmp, "hardwareJntPosMax","a list of hardware maximum angles (in degrees)", _njoints))
-    {
-         yWarning() << "embObjMotionControl: missing hardwareJntPosMax param. Values of jntPosMax param will be used like hardware limits ";
-         for(i=0; i<_njoints; i++) jointsLimits[i].posHwMax = jointsLimits[i].posMax;
-    }
+        return false;
     else
     {
         for(i=1; i<xtmp.size(); i++) jointsLimits[i-1].posHwMax = xtmp.get(i).asDouble();
