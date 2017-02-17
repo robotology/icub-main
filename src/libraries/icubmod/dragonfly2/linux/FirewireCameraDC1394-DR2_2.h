@@ -29,6 +29,7 @@
 #include <yarp/os/LogStream.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/os/Value.h>
+#include <yarp/dev/IVisualParams.h>
 
 #define NUM_DMA_BUFFERS 4
 
@@ -49,7 +50,8 @@
 #define DR_YUV_1024x768          10
 #define DR_BAYER_1024x768        11
 
-class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394
+class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394,
+                        public yarp::dev::IRgbVisualParams
 {
 public:   
     CFWCamera_DR2_2(bool raw);
@@ -117,6 +119,14 @@ protected:
     double m_SecondOffset;
 
     dc1394camera_t *m_pCamera;
+
+    double          horizontalFov;
+    double          verticalFov;
+    yarp::os::Property intrinsic;
+    bool configFx,configFy;
+    bool configPPx,configPPy;
+    bool configRet,configDistM;
+    bool configIntrins;
 
     inline uint32_t NormToValue(double& dVal,int feature);
     inline double ValueToNorm(uint32_t iVal,int feature);
@@ -304,6 +314,17 @@ public:
     virtual double getShutter();
     virtual double getGain();
     virtual double getIris();
+
+    /*Implementation of IRgbVisualParams interface*/
+    virtual int getRgbHeight();
+    virtual int getRgbWidth();
+    virtual bool getRgbResolution(int &width, int &height);
+    virtual bool setRgbResolution(int width, int height);
+    virtual bool getRgbFOV(double &horizontalFov, double &verticalFov);
+    virtual bool setRgbFOV(double horizontalFov, double verticalFov);
+    virtual bool getRgbIntrinsicParam(yarp::os::Property &intrinsic);
+    virtual bool getRgbMirroring(bool &mirror);
+    virtual bool setRgbMirroring(bool mirror);
 };
 
 #endif
