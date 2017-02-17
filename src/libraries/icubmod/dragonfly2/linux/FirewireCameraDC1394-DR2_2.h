@@ -52,62 +52,32 @@
 class CFWCamera_DR2_2 : public yarp::dev::IFrameGrabberControlsDC1394
 {
 public:   
-    CFWCamera_DR2_2(bool raw) : mRawDriver(raw),
-                                m_pCamera(NULL),
-                                m_pCameraList(NULL),
-                                m_dc1394_handle(NULL),
-                                m_LastSecond(0),
-                                m_SecondOffset(0)
-
-    {
-        m_ConvFrame.image=NULL;
-    }
+    CFWCamera_DR2_2(bool raw);
 
     virtual ~CFWCamera_DR2_2()
     {
         if (m_pCamera) Close(); 
     }
 
-    inline int width() { return m_XDim; }
-    inline int height(){ return m_YDim; }
-    inline int getRawBufferSize(){ return m_RawBufferSize; }
+    inline int width();
+    inline int height();
+    inline int getRawBufferSize();
 
-    inline const yarp::os::Stamp& getLastInputStamp() { return m_Stamp; }
+    inline const yarp::os::Stamp& getLastInputStamp();
 
     bool Create(yarp::os::Searchable& config);
 
     virtual void Close();
 
-    bool CaptureImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image)
-    {
-        return Capture(&image);
-    }
+    bool CaptureImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image);
 
-	bool CaptureImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
-	{
-		return Capture(&image);
-	}
+    bool CaptureImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image);
 
-    bool CaptureRgb(unsigned char* pBuffer)
-    {
-        return Capture(0,pBuffer);
-    }
+    bool CaptureRgb(unsigned char* pBuffer);
 
-    bool CaptureRaw(unsigned char* pBuffer)
-    {
-        return Capture(0,pBuffer,true);
-    }
+    bool CaptureRaw(unsigned char* pBuffer);
 
-    static void busReset(int port,double wait_sec)
-    {
-        raw1394handle_t bus_handle=raw1394_new_handle_on_port(port);
-
-        raw1394_reset_bus_new(bus_handle,RAW1394_LONG_RESET);
-
-        yarp::os::Time::delay(wait_sec);
-
-        raw1394_destroy_handle(bus_handle);
-    }
+    static void busReset(int port,double wait_sec);
 
     bool SetVideoMode(dc1394video_mode_t videoMode);
     bool SetF7(int newVideoMode,int newXdim,int newYdim,int newColorCoding,int newSpeed,int x0,int y0);
@@ -153,40 +123,11 @@ protected:
 
     int TRANSL(int feature);
 
-    bool manage(dc1394error_t error,yarp::os::Semaphore *pToUnlock=NULL)
-    {
-        if (error!=DC1394_SUCCESS)
-        {
-            yError("%d\n",error);
-            if (pToUnlock)
-            {
-                pToUnlock->post();
-            }
-		    return true;
-	    }
+    bool manage(dc1394error_t error,yarp::os::Semaphore *pToUnlock=NULL);
 
-        return false;
-    }
+    int checkInt(yarp::os::Searchable& config,const char* key);
 
-    int checkInt(yarp::os::Searchable& config,const char* key)
-    {
-        if (config.check(key))
-        {
-            return config.find(key).asInt();
-        }
-
-        return 0;
-    }
-
-    double checkDouble(yarp::os::Searchable& config,const char* key)
-    {
-        if (config.check(key))
-        {
-            return config.find(key).asDouble();
-        }
-
-        return -1.0;
-    }
+    double checkDouble(yarp::os::Searchable& config,const char* key);
 
     int maxFPS(dc1394video_mode_t mode,dc1394color_coding_t pixelFormat);
     double bytesPerPixel(dc1394color_coding_t pixelFormat);

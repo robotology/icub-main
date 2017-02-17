@@ -55,6 +55,29 @@ static dc1394error_t set_embedded_timestamp(dc1394camera_t *camera,
     return (enable==current)?DC1394_SUCCESS: DC1394_FAILURE;
 }
 
+CFWCamera_DR2_2::CFWCamera_DR2_2(bool raw): mRawDriver(raw),
+    m_pCamera(NULL),
+    m_pCameraList(NULL),
+    m_dc1394_handle(NULL),
+    m_LastSecond(0),
+    m_SecondOffset(0)
+{
+    configFx = false;
+    configFy = false;
+    configPPx = false;
+    configPPy =false;
+    configRet = false;
+    configDistM = false;
+    configIntrins = false;
+    m_ConvFrame.image=NULL;
+}
+
+inline int CFWCamera_DR2_2::width() { return m_XDim; }
+inline int CFWCamera_DR2_2::height(){ return m_YDim; }
+inline int CFWCamera_DR2_2::getRawBufferSize(){ return m_RawBufferSize; }
+
+inline const yarp::os::Stamp& CFWCamera_DR2_2::getLastInputStamp() { return m_Stamp; }
+
 double CFWCamera_DR2_2::bytesPerPixel(dc1394color_coding_t pixelFormat)
 {
     switch (pixelFormat)
@@ -508,8 +531,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
     error=dc1394_video_set_transmission(m_pCamera,DC1394_ON);
 	if (error!=DC1394_SUCCESS)
-	{
-		yError("%d can't start transmission\n");
+    {
+        yError("%d can't start transmission\n",error);
 		dc1394_camera_free(m_pCamera);
 		m_pCamera=NULL;
 		return false;
@@ -568,6 +591,37 @@ void CFWCamera_DR2_2::Close()
 
 	if (m_ConvFrame.image) delete [] m_ConvFrame.image;
 	m_ConvFrame.image=NULL;
+}
+
+bool CFWCamera_DR2_2::CaptureImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image)
+{
+    return Capture(&image);
+}
+
+bool CFWCamera_DR2_2::CaptureImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
+{
+    return Capture(&image);
+}
+
+bool CFWCamera_DR2_2::CaptureRgb(unsigned char* pBuffer)
+{
+    return Capture(0,pBuffer);
+}
+
+bool CFWCamera_DR2_2::CaptureRaw(unsigned char* pBuffer)
+{
+    return Capture(0,pBuffer,true);
+}
+
+void CFWCamera_DR2_2::busReset(int port,double wait_sec)
+{
+    raw1394handle_t bus_handle=raw1394_new_handle_on_port(port);
+
+    raw1394_reset_bus_new(bus_handle,RAW1394_LONG_RESET);
+
+    yarp::os::Time::delay(wait_sec);
+
+    raw1394_destroy_handle(bus_handle);
 }
 
 bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
@@ -2196,6 +2250,41 @@ int CFWCamera_DR2_2::TRANSL(int feature)
     }
 
     return NOT_PRESENT;
+}
+
+bool CFWCamera_DR2_2::manage(dc1394error_t error,yarp::os::Semaphore *pToUnlock)
+{
+    if (error!=DC1394_SUCCESS)
+    {
+        yError("%d\n",error);
+        if (pToUnlock)
+        {
+            pToUnlock->post();
+        }
+        return true;
+    }
+
+    return false;
+}
+
+int CFWCamera_DR2_2::checkInt(yarp::os::Searchable& config,const char* key)
+{
+    if (config.check(key))
+    {
+        return config.find(key).asInt();
+    }
+
+    return 0;
+}
+
+double CFWCamera_DR2_2::checkDouble(yarp::os::Searchable& config,const char* key)
+{
+    if (config.check(key))
+    {
+        return config.find(key).asDouble();
+    }
+
+    return -1.0;
 }
 
 bool CFWCamera_DR2_2::setBrightness(double v)
