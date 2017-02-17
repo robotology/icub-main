@@ -21,6 +21,7 @@
 #include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/PreciselyTimed.h>
+#include <yarp/dev/IVisualParams.h>
 
 namespace yarp {
     namespace dev {
@@ -287,7 +288,8 @@ class yarp::dev::DragonflyDeviceDriver2 :
     public IFrameGrabber,
     public IFrameGrabberRgb,
     public IFrameGrabberControls2,
-    public IFrameGrabberControlsDC1394
+    public IFrameGrabberControlsDC1394,
+    public IRgbVisualParams
 {
 private:
     DragonflyDeviceDriver2(const DragonflyDeviceDriver2&);
@@ -793,6 +795,78 @@ public:
     * @return true/false upon success/failure
     */
     virtual bool setBytesPerPacketDC1394(unsigned int bpp);
+
+    //IVisualParams
+
+    /**
+     * Return the height of each frame.
+     * @return rgb image height
+     */
+    virtual int getRgbHeight();
+
+    /**
+     * Return the width of each frame.
+     * @return rgb image width
+     */
+    virtual int getRgbWidth();
+    /**
+     * Get the possible configurations of the camera
+     * @param configurations  list of camera supported configurations as CameraConfig type
+     * @return true on success
+     */
+    virtual bool getRgbResolution(int &width, int &height);
+    /**
+     * Set the resolution of the rgb image from the camera
+     * @param width  image width
+     * @param height image height
+     * @return true on success
+     */
+
+    virtual bool setRgbResolution(int width, int height);
+
+    /**
+     * Get the field of view (FOV) of the rgb camera.
+     *
+     * @param  horizontalFov will return the value of the horizontal fov in degrees
+     * @param  verticalFov   will return the value of the vertical fov in degrees
+     * @return true on success
+     */
+    virtual bool getRgbFOV(double &horizontalFov, double &verticalFov);
+
+    /**
+     * Set the field of view (FOV) of the rgb camera.
+     *
+     * @param  horizontalFov will set the value of the horizontal fov in degrees
+     * @param  verticalFov   will set the value of the vertical fov in degrees
+     * @return true on success
+     */
+    virtual bool setRgbFOV(double horizontalFov, double verticalFov);
+
+    /**
+     * Get the intrinsic parameters of the rgb camera
+     * @param  intrinsic  return a Property containing intrinsic parameters
+     *       of the optical model of the camera.
+     * @return true if success
+     *
+     * Look at IVisualParams.h for more details
+     */
+    virtual bool getRgbIntrinsicParam(yarp::os::Property &intrinsic);
+
+    /**
+     * Get the mirroring setting of the sensor
+     *
+     * @param mirror: true if image is mirrored, false otherwise
+     * @return true if success
+     */
+    virtual bool getRgbMirroring(bool &mirror);
+
+    /**
+     * Set the mirroring setting of the sensor
+     *
+     * @param mirror: true if image should be mirrored, false otherwise
+     * @return true if success
+     */
+    virtual bool setRgbMirroring(bool mirror);
 
     // Control2
 

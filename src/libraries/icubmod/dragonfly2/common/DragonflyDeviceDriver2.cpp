@@ -402,6 +402,50 @@ unsigned int DragonflyDeviceDriver2::getBytesPerPacketDC1394()
 	return RES(system_resources)->getBytesPerPacketDC1394();
 }
 
+//IVisualParams
+
+int DragonflyDeviceDriver2::getRgbHeight(){
+    return RES(system_resources)->getRgbHeight();
+}
+
+int DragonflyDeviceDriver2::getRgbWidth(){
+    return RES(system_resources)->getRgbWidth();
+}
+
+bool DragonflyDeviceDriver2::getRgbResolution(int &width, int &height)
+{
+    return RES(system_resources)->getRgbResolution(width,height);
+}
+
+bool DragonflyDeviceDriver2::setRgbResolution(int width, int height){
+    if(width<=0 || height<=0){
+        yError()<<"DragonflyDeviceDriver: invalid width or height";
+        return false;
+    }
+    return RES(system_resources)->setRgbResolution(width,height);
+}
+
+bool DragonflyDeviceDriver2::getRgbFOV(double &horizontalFov, double &verticalFov){
+    return RES(system_resources)->getRgbFOV(horizontalFov, verticalFov);
+}
+
+bool DragonflyDeviceDriver2::setRgbFOV(double horizontalFov, double verticalFov){
+    return RES(system_resources)->setRgbFOV(horizontalFov, verticalFov);
+}
+
+bool DragonflyDeviceDriver2::getRgbIntrinsicParam(yarp::os::Property &intrinsic){
+    return RES(system_resources)->getRgbIntrinsicParam(intrinsic);
+}
+
+bool DragonflyDeviceDriver2::getRgbMirroring(bool &mirror){
+    return RES(system_resources)->getRgbMirroring(mirror);
+
+}
+
+bool DragonflyDeviceDriver2::setRgbMirroring(bool mirror){
+    return RES(system_resources)->setRgbMirroring(mirror);
+}
+
 ///////////////////////////
 // IFrameGrabberControl2 //
 ///////////////////////////
