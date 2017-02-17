@@ -27,7 +27,7 @@ public:
      * \author Ugo Pattacini (15/01/2017)
      * 
      * \param iarm the Cartesian Interface.
-     * \param requirements a Property specifying: <br>"point":(x y z) [m].
+     * \param requirements a Property specifying: <br>"point":(x y z) [m]<br>"finger-joints":(...) [deg].
      * \param q Vector containing the joints: torso(3) ... arm(7) [deg].
      * \param x Vector containing the pose: x y z ax ay az [m]/[rad].
      *  
