@@ -46,9 +46,9 @@ using namespace iCub::iKin;
 /*************************************************************************/
 class PointingFarNLP : public Ipopt::TNLP
 {
-    string type;
-    iCubArm *arm;
-    iCubArm *elbow;
+    iCubArm *finger_tip;
+    iCubArm *finger_base;
+    iCubFinger *finger;
     Vector point;
 
 public:
@@ -58,77 +58,92 @@ public:
     {
         Bottle info;
         iarm->getInfo(info);
-        type=info.find("arm_type").asString();
-        arm=new iCubArm(type);
-        elbow=new iCubArm(type);
+        string hand=info.find("arm_type").asString();
+        finger_tip=new iCubArm(hand);
+        finger_base=new iCubArm(hand);
 
-        size_t underscore=type.find('_');
+        size_t underscore=hand.find('_');
         if (underscore!=string::npos)
-            type=type.substr(0,underscore);
+            hand=hand.substr(0,underscore);
 
         // update joints limits
-        for (size_t i=0; i<arm->getN(); i++)
+        for (size_t i=0; i<finger_tip->getN(); i++)
         {
             double min,max;
             iarm->getLimits(i,&min,&max);
-            (*arm->asChain())[i].setMin(DEG2RAD*min);
-            (*arm->asChain())[i].setMax(DEG2RAD*max);
-            (*elbow->asChain())[i].setMin(DEG2RAD*min);
-            (*elbow->asChain())[i].setMax(DEG2RAD*max);
+            (*finger_tip->asChain())[i].setMin(DEG2RAD*min);
+            (*finger_tip->asChain())[i].setMax(DEG2RAD*max);
+            (*finger_base->asChain())[i].setMin(DEG2RAD*min);
+            (*finger_base->asChain())[i].setMax(DEG2RAD*max);
         }
 
-        // arm: block torso
-        arm->blockLink(0,0.0);
-        arm->blockLink(1,0.0);
-        arm->blockLink(2,0.0);
+        // finger_tip: block torso
+        finger_tip->blockLink(0,0.0);
+        finger_tip->blockLink(1,0.0);
+        finger_tip->blockLink(2,0.0);
 
-        // arm: block wrist
-        arm->blockLink(8,0.0);
-        arm->blockLink(9,0.0);
+        // finger_tip: block wrist
+        finger_tip->blockLink(8,0.0);
+        finger_tip->blockLink(9,0.0);
 
-        // elbow: block torso
-        elbow->blockLink(0,0.0);
-        elbow->blockLink(1,0.0);
-        elbow->blockLink(2,0.0);
+        // finger_base: block torso
+        finger_base->blockLink(0,0.0);
+        finger_base->blockLink(1,0.0);
+        finger_base->blockLink(2,0.0);
 
-        // elbow: remove wrist,
-        // pronosupination and elbow
-        elbow->asChain()->popLink();
-        elbow->asChain()->popLink();
-        elbow->asChain()->popLink();
-        elbow->asChain()->popLink();
+        // finger_base: block wrist
+        finger_base->blockLink(8,0.0);
+        finger_base->blockLink(9,0.0);
 
-        arm->asChain()->setAllConstraints(false);
-        elbow->asChain()->setAllConstraints(false);
+        // remove all constraints
+        finger_tip->asChain()->setAllConstraints(false);
+        finger_base->asChain()->setAllConstraints(false);
+
+        finger=new iCubFinger(hand+"_index");
+        finger->asChain()->setAllConstraints(false);
+        setFingerJoints(zeros(16));
     }
 
     /*********************************************************************/
     virtual ~PointingFarNLP()
     {
-        delete arm;
-        delete elbow;
+        delete finger_tip;
+        delete finger_base;
+        delete finger;
     }
 
     /*********************************************************************/
-    void setRequirements(const Vector& point)
+    void setPoint(const Vector& point)
     {
         this->point=point;
     }
 
     /*********************************************************************/
+    void setFingerJoints(const Vector& finger_joints)
+    {        
+        Vector chain_joints;
+        finger->getChainJoints(finger_joints,chain_joints);
+        finger->setAng(DEG2RAD*chain_joints);
+
+        // add final transformations
+        finger_tip->asChain()->setHN(finger->getH());
+        finger_base->asChain()->setHN(finger->getH0());
+    }
+
+    /*********************************************************************/
     void getResult(Vector &q, Vector &x) const
     {
-        q.resize(arm->getN());
+        q.resize(finger_tip->getN());
         for (size_t i=0; i<q.length(); i++)
-            q[i]=RAD2DEG*arm->getAng(i);
-        x=arm->EndEffPose();
+            q[i]=RAD2DEG*finger_tip->getAng(i);
+        x=finger_tip->EndEffPose();
     }
 
     /*********************************************************************/
     bool get_nlp_info(Ipopt::Index& n, Ipopt::Index& m, Ipopt::Index& nnz_jac_g,
                       Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style)
     {
-        n=arm->getDOF();
+        n=finger_tip->getDOF();
         m=1;
         nnz_jac_g=n;
         nnz_h_lag=0;
@@ -142,11 +157,12 @@ public:
     {
         for (Ipopt::Index i=0; i<n; i++)
         {
-            x_l[i]=(*arm->asChain())(i).getMin();
-            x_u[i]=(*arm->asChain())(i).getMax();
+            x_l[i]=(*finger_tip->asChain())(i).getMin();
+            x_u[i]=(*finger_tip->asChain())(i).getMax();
         }
 
-        g_l[0]=g_u[0]=1.0;
+        g_l[0]=1.0;
+        g_u[0]=std::numeric_limits<double>::max();
         return true;
     }
 
@@ -156,18 +172,19 @@ public:
                             Ipopt::Index m, bool init_lambda, Ipopt::Number* lambda)
     {
         for (Ipopt::Index i=0; i<n; i++)
-            x[i]=0.5*((*arm->asChain())(i).getMin()+(*arm->asChain())(i).getMax());
+            x[i]=0.5*((*finger_tip->asChain())(i).getMin()+
+                      (*finger_tip->asChain())(i).getMax());
         return true;
     }
 
     /*********************************************************************/
     void setAng(const Ipopt::Number* x)
     {
-        Vector q(arm->getDOF());
+        Vector q(finger_tip->getDOF());
         for (size_t i=0; i<q.length(); i++)
            q[i]=x[i];
-        arm->setAng(q);
-        elbow->setAng(q.subVector(0,elbow->getDOF()-1));
+        finger_tip->setAng(q);
+        finger_base->setAng(q);
     }
 
     /*********************************************************************/
@@ -175,8 +192,8 @@ public:
                 Ipopt::Number& obj_value)
     {
         setAng(x);
-        Matrix handH=arm->getH();
-        double e=(type=="left"?1.0:-1.0)-handH(2,2);
+        Matrix handH=finger_tip->getH();
+        double e=-1.0-handH(2,2);
         obj_value=e*e;
         return true;
     }
@@ -186,9 +203,9 @@ public:
                      Ipopt::Number* grad_f)
     {
         setAng(x);
-        Matrix handH=arm->getH();
-        double e=(type=="left"?1.0:-1.0)-handH(2,2);
-        Matrix dhandHZ=arm->AnaJacobian(2);        
+        Matrix handH=finger_tip->getH();
+        double e=-1.0-handH(2,2);
+        Matrix dhandHZ=finger_tip->AnaJacobian(2);
         for (Ipopt::Index i=0; i<n; i++)
             grad_f[i]=-2.0*e*dhandHZ(2,i);
         return true;
@@ -199,10 +216,10 @@ public:
                 Ipopt::Index m, Ipopt::Number* g)
     {
         setAng(x);
-        Vector elbowPos=elbow->EndEffPosition();
-        Vector pe_dir=point-elbowPos;
-        Vector he_dir=arm->EndEffPosition()-elbowPos;
-        g[0]=dot(pe_dir,he_dir)/(norm(pe_dir)*norm(he_dir));        
+        Vector fingerBasePos=finger_base->EndEffPosition();
+        Vector pb_dir=point-fingerBasePos;
+        Vector tb_dir=finger_tip->EndEffPosition()-fingerBasePos;
+        g[0]=dot(pb_dir,tb_dir)/(norm(pb_dir)*norm(tb_dir));
         return true;
     }
 
@@ -222,20 +239,23 @@ public:
         else
         {
             setAng(x);
-            Vector elbowPos=elbow->EndEffPosition();
-            Vector pe_dir=point-elbowPos;
-            Vector he_dir=arm->EndEffPosition()-elbowPos;
+            Vector fingerBasePos=finger_base->EndEffPosition();
+            Vector pb_dir=point-fingerBasePos;
+            Vector tb_dir=finger_tip->EndEffPosition()-fingerBasePos;
 
-            double npe=norm(pe_dir);
-            double nhe=norm(he_dir);
-            double nn=npe*nhe;
+            Matrix dpb_dir=-1.0*finger_base->AnaJacobian().removeRows(3,3);
+            Matrix dtb_dir=finger_tip->AnaJacobian().removeRows(3,3)+dpb_dir;
 
-            Matrix dpe_dir=-1.0*cat(elbow->AnaJacobian().removeRows(3,3),zeros(3,2));
-            Matrix dhe_dir=arm->AnaJacobian().removeRows(3,3)+dpe_dir;
+            double npb=norm(pb_dir);
+            double ntb=norm(tb_dir);
+            double nn=npb*ntb;
+            double tmp1=dot(pb_dir,tb_dir);
+            double tmp2=ntb/npb;
+            double tmp3=nn*nn;
 
             for (Ipopt::Index i=0; i<n; i++)
-                values[i]=(dot(dpe_dir.getCol(i),he_dir)+dot(pe_dir,dhe_dir.getCol(i)))/nn-
-                          dot(pe_dir,he_dir)*(dot(pe_dir,dpe_dir.getCol(i))/npe)/(nn*nn);
+                values[i]=(dot(dpb_dir.getCol(i),tb_dir)+dot(pb_dir,dtb_dir.getCol(i)))/nn-
+                          tmp1*(dot(pb_dir,dpb_dir.getCol(i))*tmp2)/tmp3;
         }
         return true;
     }
@@ -278,7 +298,7 @@ bool PointingFar::compute(ICartesianControl *iarm, const Property& requirements,
         yError()<<"Target point not provided";
         return false;
     }
-
+    
     Vector point(3,0.0);
     for (int i=0; i<bPoint->size(); i++)
         point[i]=bPoint->get(i).asDouble();
@@ -296,7 +316,17 @@ bool PointingFar::compute(ICartesianControl *iarm, const Property& requirements,
     app->Initialize();
 
     Ipopt::SmartPtr<PointingFarNLP> nlp=new PointingFarNLP(iarm);
-    nlp->setRequirements(point);
+
+    // specify requirements
+    nlp->setPoint(point);
+    if (Bottle *bFingerJoints=requirements.find("finger-joints").asList())
+    {
+        Vector finger_joints(bFingerJoints->size());
+        for (size_t i=0; i<finger_joints.length(); i++)
+            finger_joints[i]=bFingerJoints->get(i).asDouble();
+        nlp->setFingerJoints(finger_joints);
+    }
+
     Ipopt::ApplicationReturnStatus status=app->OptimizeTNLP(GetRawPtr(nlp));    
     nlp->getResult(q,x);
     return true;

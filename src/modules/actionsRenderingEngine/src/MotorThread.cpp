@@ -1847,9 +1847,23 @@ bool MotorThread::point_far(Bottle &options)
     action[arm]->getCartesianIF(iarm);
 
     Property requirements;
-    Bottle point; point.addList().read(xd);
-    requirements.put("point",point.get(0));
-    
+    Bottle point; point.addList().read(xd);    
+    requirements.put("point",point.get(0));    
+
+    Bottle pointing_sequence;
+    if (action[arm]->getHandSequence("pointing_hand",pointing_sequence))
+    {
+        int numWayPoints=pointing_sequence.find("numWayPoints").asInt();
+        ostringstream wp; wp<<"wp_"<<numWayPoints-1;
+        Bottle *poss=pointing_sequence.find(wp.str()).asList()->find("poss").asList();
+        Vector joints(poss->size());
+        for (size_t i=0; i<joints.length(); i++)
+            joints[i]=poss->get(i).asDouble();
+
+        Bottle finger_joints; finger_joints.addList().read(joints);
+        requirements.put("finger-joints",finger_joints.get(0));
+    }
+
     Vector q,x;
     if (PointingFar::compute(iarm,requirements,q,x))
     {
