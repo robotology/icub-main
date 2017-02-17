@@ -144,8 +144,8 @@ public:
                       Ipopt::Index& nnz_h_lag, IndexStyleEnum& index_style)
     {
         n=finger_tip->getDOF();
-        m=1;
-        nnz_jac_g=n;
+        m=2;
+        nnz_jac_g=m*n;
         nnz_h_lag=0;
         index_style=TNLP::C_STYLE;
         return true;
@@ -163,6 +163,8 @@ public:
 
         g_l[0]=1.0;
         g_u[0]=std::numeric_limits<double>::max();
+
+        g_l[1]=g_u[1]=0.0;
         return true;
     }
 
@@ -191,10 +193,7 @@ public:
     bool eval_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                 Ipopt::Number& obj_value)
     {
-        setAng(x);
-        Matrix handH=finger_tip->getH();
-        double e=-1.0-handH(2,2);
-        obj_value=e*e;
+        obj_value=x[3]*x[3];
         return true;
     }
 
@@ -202,12 +201,8 @@ public:
     bool eval_grad_f(Ipopt::Index n, const Ipopt::Number* x, bool new_x,
                      Ipopt::Number* grad_f)
     {
-        setAng(x);
-        Matrix handH=finger_tip->getH();
-        double e=-1.0-handH(2,2);
-        Matrix dhandHZ=finger_tip->AnaJacobian(2);
         for (Ipopt::Index i=0; i<n; i++)
-            grad_f[i]=-2.0*e*dhandHZ(2,i);
+            grad_f[i]=(i==3?2.0*x[3]:0.0);
         return true;
     }
 
@@ -216,10 +211,16 @@ public:
                 Ipopt::Index m, Ipopt::Number* g)
     {
         setAng(x);
+
         Vector fingerBasePos=finger_base->EndEffPosition();
         Vector pb_dir=point-fingerBasePos;
-        Vector tb_dir=finger_tip->EndEffPosition()-fingerBasePos;
+
+        Matrix tip=finger_tip->getH();
+        Vector tb_dir=tip.getCol(3).subVector(0,2)-fingerBasePos;
         g[0]=dot(pb_dir,tb_dir)/(norm(pb_dir)*norm(tb_dir));
+        
+        double e=-1.0-tip(2,2);
+        g[1]=e*e;
         return true;
     }
 
@@ -229,11 +230,17 @@ public:
                     Ipopt::Index *jCol, Ipopt::Number* values)
     {
         if (!values)
-        {            
-            for (Ipopt::Index i=0; i<n; i++)
+        {
+            Ipopt::Index idx=0;
+            for (Ipopt::Index i=0; i<n; i++,idx++)
             {
-                iRow[i]=0;
-                jCol[i]=i;
+                iRow[idx]=0;
+                jCol[idx]=i;
+            }
+            for (Ipopt::Index i=0; i<n; i++,idx++)
+            {
+                iRow[idx]=1;
+                jCol[idx]=i;
             }
         }
         else
@@ -241,7 +248,9 @@ public:
             setAng(x);
             Vector fingerBasePos=finger_base->EndEffPosition();
             Vector pb_dir=point-fingerBasePos;
-            Vector tb_dir=finger_tip->EndEffPosition()-fingerBasePos;
+
+            Matrix tip=finger_tip->getH();
+            Vector tb_dir=tip.getCol(3).subVector(0,2)-fingerBasePos;
 
             Matrix dpb_dir=-1.0*finger_base->AnaJacobian().removeRows(3,3);
             Matrix dtb_dir=finger_tip->AnaJacobian().removeRows(3,3)+dpb_dir;
@@ -256,6 +265,11 @@ public:
             for (Ipopt::Index i=0; i<n; i++)
                 values[i]=(dot(dpb_dir.getCol(i),tb_dir)+dot(pb_dir,dtb_dir.getCol(i)))/nn-
                           tmp1*(dot(pb_dir,dpb_dir.getCol(i))*tmp2)/tmp3;
+            
+            double e=-1.0-tip(2,2);
+            Matrix dtipZ=finger_tip->AnaJacobian(2);
+            for (Ipopt::Index i=0; i<n; i++)
+                values[n+i]=-2.0*e*dtipZ(2,i);
         }
         return true;
     }
@@ -304,11 +318,11 @@ bool PointingFar::compute(ICartesianControl *iarm, const Property& requirements,
         point[i]=bPoint->get(i).asDouble();
 
     Ipopt::SmartPtr<Ipopt::IpoptApplication> app=new Ipopt::IpoptApplication;
-    app->Options()->SetNumericValue("tol",0.001);
-    app->Options()->SetNumericValue("constr_viol_tol",0.001);
+    app->Options()->SetNumericValue("tol",0.01);
+    app->Options()->SetNumericValue("constr_viol_tol",0.01);
     app->Options()->SetIntegerValue("acceptable_iter",0);
     app->Options()->SetStringValue("mu_strategy","adaptive");
-    app->Options()->SetIntegerValue("max_iter",1000);
+    app->Options()->SetIntegerValue("max_iter",100);
     app->Options()->SetStringValue("nlp_scaling_method","gradient-based");
     app->Options()->SetStringValue("hessian_approximation","limited-memory");
     app->Options()->SetStringValue("derivative_test","none");
@@ -347,9 +361,11 @@ bool PointingFar::point(ICartesianControl *iarm, const Vector& q, const Vector& 
         for (size_t i=0; i<q.length(); i++)
             iarm->setLimits(i,q[i],q[i]);
 
+        double traj;
+        iarm->getTrajTime(&traj);
         iarm->setInTargetTol(0.02);
         iarm->goToPoseSync(x.subVector(0,2),x.subVector(3,6));
-        iarm->waitMotionDone(0.1,5.0);
+        iarm->waitMotionDone(0.2,4.0*traj);
 
         iarm->restoreContext(context);
         iarm->deleteContext(context);
