@@ -61,11 +61,11 @@ public:
         if (m_pCamera) Close(); 
     }
 
-    inline int width();
-    inline int height();
-    inline int getRawBufferSize();
+    int width();
+    int height();
+    int getRawBufferSize();
 
-    inline const yarp::os::Stamp& getLastInputStamp();
+    const yarp::os::Stamp& getLastInputStamp();
 
     bool Create(yarp::os::Searchable& config);
 

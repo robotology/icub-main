@@ -72,11 +72,11 @@ CFWCamera_DR2_2::CFWCamera_DR2_2(bool raw): mRawDriver(raw),
     m_ConvFrame.image=NULL;
 }
 
-inline int CFWCamera_DR2_2::width() { return m_XDim; }
-inline int CFWCamera_DR2_2::height(){ return m_YDim; }
-inline int CFWCamera_DR2_2::getRawBufferSize(){ return m_RawBufferSize; }
+int CFWCamera_DR2_2::width() { return m_XDim; }
+int CFWCamera_DR2_2::height(){ return m_YDim; }
+int CFWCamera_DR2_2::getRawBufferSize(){ return m_RawBufferSize; }
 
-inline const yarp::os::Stamp& CFWCamera_DR2_2::getLastInputStamp() { return m_Stamp; }
+const yarp::os::Stamp& CFWCamera_DR2_2::getLastInputStamp() { return m_Stamp; }
 
 double CFWCamera_DR2_2::bytesPerPixel(dc1394color_coding_t pixelFormat)
 {
