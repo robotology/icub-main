@@ -814,6 +814,13 @@ public:
      * @param configurations  list of camera supported configurations as CameraConfig type
      * @return true on success
      */
+    /**
+     * Get the resolution of the rgb image from the camera
+     * @param width  image width
+     * @param height image height
+     * @return true on success
+     */
+
     virtual bool getRgbResolution(int &width, int &height);
     /**
      * Set the resolution of the rgb image from the camera
