@@ -412,6 +412,11 @@ int DragonflyDeviceDriver2::getRgbWidth(){
     return RES(system_resources)->getRgbWidth();
 }
 
+bool DragonflyDeviceDriver2::getRgbSupportedConfigurations(yarp::sig::VectorOf<CameraConfig> &configurations)
+{
+    return RES(system_resources)->getRgbSupportedConfigurations(configurations);
+}
+
 bool DragonflyDeviceDriver2::getRgbResolution(int &width, int &height)
 {
     return RES(system_resources)->getRgbResolution(width,height);

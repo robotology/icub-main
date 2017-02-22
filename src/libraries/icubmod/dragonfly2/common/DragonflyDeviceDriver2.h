@@ -814,6 +814,8 @@ public:
      * @param configurations  list of camera supported configurations as CameraConfig type
      * @return true on success
      */
+
+    virtual bool getRgbSupportedConfigurations(yarp::sig::VectorOf<yarp::dev::CameraConfig> &configurations);
     /**
      * Get the resolution of the rgb image from the camera
      * @param width  image width

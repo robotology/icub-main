@@ -318,6 +318,7 @@ public:
     /*Implementation of IRgbVisualParams interface*/
     virtual int getRgbHeight();
     virtual int getRgbWidth();
+    virtual bool getRgbSupportedConfigurations(yarp::sig::VectorOf<yarp::dev::CameraConfig> &configurations);
     virtual bool getRgbResolution(int &width, int &height);
     virtual bool setRgbResolution(int width, int height);
     virtual bool getRgbFOV(double &horizontalFov, double &verticalFov);
@@ -325,6 +326,7 @@ public:
     virtual bool getRgbIntrinsicParam(yarp::os::Property &intrinsic);
     virtual bool getRgbMirroring(bool &mirror);
     virtual bool setRgbMirroring(bool mirror);
+
 };
 
 #endif
