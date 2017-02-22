@@ -2488,6 +2488,11 @@ int CFWCamera_DR2_2::getRgbWidth(){
     return width();
 }
 
+bool CFWCamera_DR2_2::getRgbSupportedConfigurations(yarp::sig::VectorOf<yarp::dev::CameraConfig> &configurations)
+{
+    yError()<<"CFWCamera_DR2_2: getRgbSupportedConfigurations not supported yet";
+    return false;
+}
 bool CFWCamera_DR2_2::getRgbResolution(int &width, int &height)
 {
     width = this->width();
