@@ -140,6 +140,10 @@ private:
     bool    skipCalibration;
     bool    clearHwFault;
 
-    std::string deviceName;
+    int                 totJointsToCalibrate;
+    std::string         deviceName;
+    yarp::os::Bottle    calibJointsString;      // joints handled by this caibrator as a string for error messages
+    std::list<int>      calibJoints;            // joints handled by this caibrator as a list
+
 };
 #endif
