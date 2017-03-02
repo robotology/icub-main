@@ -843,7 +843,7 @@ void embObjMotionControl::debugUtil_printJointsetInfo(void)
     yError() << "jointmap:";
 
     yError() << " number of sets" << _jsets.size();
-    for(int x=0; x< _jsets.size(); x++)
+    for(size_t x=0; x< _jsets.size(); x++)
     {
         yError() << "set " << x<< "has size " <<_jsets[x].getNumberofJoints();
         for(int y=0; y<_jsets[x].getNumberofJoints(); y++)
@@ -859,7 +859,7 @@ void embObjMotionControl::debugUtil_printJointsetInfo(void)
 bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_pidInfo *pidInfo)
 {
 
-    for(int s=0; s<_jsets.size(); s++)
+    for(size_t s=0; s<_jsets.size(); s++)
     {
        int numofjoints = _jsets[s].getNumberofJoints();
 
@@ -891,7 +891,7 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_p
 
 bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_trqPidInfo *pidInfo)
 {
-    for(int s=0; s<_jsets.size(); s++)
+    for(size_t s=0; s<_jsets.size(); s++)
     {
        int numofjoints = _jsets[s].getNumberofJoints();
 
@@ -940,7 +940,7 @@ eOmc_pidoutputtype_t embObjMotionControl::pidOutputTypeConver_eomc2fw(PidAlgorit
 
 bool embObjMotionControl::updatedJointsetsCfgWithControlInfo()
 {
-    for(int s=0; s<_jsets.size(); s++)
+    for(size_t s=0; s<_jsets.size(); s++)
     {
         if(_jsets[s].getNumberofJoints() == 0)
         {
@@ -1008,7 +1008,7 @@ bool embObjMotionControl::saveCouplingsData(void)
         return false;
     }
 
-    for(int i=0; i<_joint2set.size(); i++)
+    for(size_t i=0; i<_joint2set.size(); i++)
     {
         jc_dest->joint2set[i] = _joint2set[i];
     }
@@ -1031,7 +1031,7 @@ bool embObjMotionControl::saveCouplingsData(void)
         }
     }
 
-    for(int s=0; s< _jsets.size(); s++)
+    for(size_t s=0; s< _jsets.size(); s++)
     {
         eOmc_jointset_configuration_t* cfg_ptr = _jsets[s].getConfiguration();
         memcpy(&(jc_dest->jsetcfg[s]), cfg_ptr, sizeof(eOmc_jointset_configuration_t));
@@ -1047,7 +1047,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     Bottle xtmp;
     int i,j;
 
-    eOmn_serv_type_t mc_serv_type;
+    //eOmn_serv_type_t mc_serv_type;
 
     if(iNeedCouplingsInfo())
     {
@@ -1220,7 +1220,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
 bool embObjMotionControl::verifyUseMotorSpeedFbkInJointSet(int useMotorSpeedFbk [])
 {
-    for(int s=0; s< _jsets.size(); s++)
+    for(size_t s=0; s< _jsets.size(); s++)
     {
         int numofjointsinset = _jsets[s].getNumberofJoints();
         if(numofjointsinset == 0 )
@@ -2027,26 +2027,6 @@ bool embObjMotionControl::setOffsetRaw(int j, double v)
 //    Velocity control interface raw  //
 ////////////////////////////////////////
 
-bool embObjMotionControl::setVelocityModeRaw()
-{
-    bool ret = true;
-
-    eOprotID32_t protid;
-
-    eOmc_controlmode_command_t val = eomc_controlmode_cmd_velocity;
-    for(int j=0, index=0; j< _njoints; j++, index++)
-    {
-        protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-
-        if(! res->addSetMessage(protid, (uint8_t *) &val))
-        {
-            yError() << "while setting velocity mode";
-            return false;
-        }
-    }
-    return ret;
-}
-
 bool embObjMotionControl::velocityMoveRaw(int j, double sp)
 {
     int mode=0;
@@ -2357,11 +2337,6 @@ bool embObjMotionControl::getAxes(int *ax)
     *ax=_njoints;
 
     return true;
-}
-
-bool embObjMotionControl::setPositionModeRaw()
-{
-    return DEPRECATED("setPositionModeRaw");
 }
 
 bool embObjMotionControl::positionMoveRaw(int j, double ref)
@@ -3793,7 +3768,7 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     val.clear();
     if (key == "kinematic_mj")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_couplingInfo.matrixJ2M.size(); i++) { r.addDouble(_couplingInfo.matrixJ2M[i]); }
+        Bottle& r = val.addList(); for (size_t i = 0; i<_couplingInfo.matrixJ2M.size(); i++) { r.addDouble(_couplingInfo.matrixJ2M[i]); }
         return true;
     }
     else if (key == "encoders")
@@ -4144,18 +4119,6 @@ bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorq
 
 
 // Torque control
-bool embObjMotionControl::setTorqueModeRaw()
-{
-    bool ret = true;
-    eOmc_controlmode_command_t val = eomc_controlmode_cmd_torque;
-    for(int j=0; j<_njoints; j++)
-    {
-        eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-        ret &= res->addSetMessage(protid, (uint8_t*) &val);
-    }
-    return ret;
-}
-
 bool embObjMotionControl::getTorqueRaw(int j, double *t)
 {
     eOmeas_torque_t meas_torque = 0;
@@ -4762,11 +4725,6 @@ bool embObjMotionControl::getVelPidsRaw(Pid *pids)
 }
 
 // PositionDirect Interface
-bool embObjMotionControl::setPositionDirectModeRaw()
-{
-    return DEPRECATED("setPositionDirectModeRaw");
-}
-
 bool embObjMotionControl::setPositionRaw(int j, double ref)
 {
     // does the same as setReferenceRaw, with some more misterious (missing) checks.
@@ -5139,11 +5097,6 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 //
 // OPENLOOP interface
 //
-bool embObjMotionControl::setOpenLoopModeRaw()
-{
-    return DEPRECATED("setOpenLoopModeRaw");
-}
-
 bool embObjMotionControl::setRefOutputRaw(int j, double v)
 {
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);

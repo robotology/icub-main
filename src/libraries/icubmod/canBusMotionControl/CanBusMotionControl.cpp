@@ -5539,26 +5539,6 @@ bool CanBusMotionControl::disablePidRaw(int axis)
     return DEPRECATED("disablePidRaw");
 }
 
-bool CanBusMotionControl::setPositionModeRaw()
-{
-    return DEPRECATED("setPositionModeRaw");
-}
-
-bool CanBusMotionControl::setOpenLoopModeRaw()
-{
-    return DEPRECATED("setOpenLoopModeRaw");
-}
-
-bool CanBusMotionControl::setTorqueModeRaw()
-{
-    return DEPRECATED("setTorqueModeRaw");
-}
-
-bool CanBusMotionControl::setVelocityModeRaw()
-{
-    return DEPRECATED("setVelocityModeRaw");
-}
-
 bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
 {
     /// prepare can message.
@@ -6866,11 +6846,6 @@ bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 }
 
 // PositionDirect Interface
-bool CanBusMotionControl::setPositionDirectModeRaw()
-{
-    return DEPRECATED("setPositionDirectModeRaw");
-}
-
 bool CanBusMotionControl::setPositionRaw(int j, double ref)
 {
     CanBusResources& r = RES(system_resources);

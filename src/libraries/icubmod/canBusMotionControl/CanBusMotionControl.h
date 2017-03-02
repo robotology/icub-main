@@ -853,7 +853,6 @@ public:
     //
     /// POSITION CONTROL INTERFACE RAW
     virtual bool getAxes(int *ax);
-    virtual bool setPositionModeRaw();
     virtual bool positionMoveRaw(int j, double ref);
     virtual bool positionMoveRaw(const double *refs);
     virtual bool relativeMoveRaw(int j, double delta);
@@ -907,7 +906,6 @@ public:
     virtual bool setTorqueErrorLimitsRaw(const double *limits);
     virtual bool getTorqueErrorRaw(int j, double *err);
     virtual bool getTorqueErrorsRaw(double *errs);
-    virtual bool setTorqueModeRaw();
     virtual bool getTorquePidOutputRaw(int j, double *v);
     virtual bool getTorquePidOutputsRaw(double *v);
  
@@ -944,7 +942,6 @@ public:
 
     ///////////// OpenLoop control interface raw
     ///
-    virtual bool setOpenLoopModeRaw();
     virtual bool setRefOutputRaw(int axis, double v);
     virtual bool setRefOutputsRaw(const double *v);
     virtual bool getRefOutputRaw(int j, double *out);
@@ -961,7 +958,6 @@ public:
 
     ///////////// Velocity control interface raw
     ///
-    virtual bool setVelocityModeRaw();
     virtual bool velocityMoveRaw(int j, double sp);
     virtual bool velocityMoveRaw(const double *sp);
     //
@@ -1103,7 +1099,6 @@ public:
     virtual bool setTorqueSource(int axis, char board_id, char board_chan);
 
     // PositionDirect Interface
-    virtual bool setPositionDirectModeRaw();
     virtual bool setPositionRaw(int j, double ref);
     virtual bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     virtual bool setPositionsRaw(const double *refs);
