@@ -20,6 +20,8 @@ endif()
 
 project(iCub)
 
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+
 #### Find YARP, require that YARP version is at least ICUB_REQYARP_VERSION
 set(ICUB_REQYARP_VERSION_MAJOR "2")
 set(ICUB_REQYARP_VERSION_MINOR "3")
