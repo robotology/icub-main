@@ -1091,13 +1091,21 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         // useMotorSpeedFbk
         if(eomn_serv_MC_mc4 != (eOmn_serv_type_t)serviceConfig.ethservice.configuration.type)
         {
-            int useMotorSpeedFbk[_njoints];
-            if(! _mcparser->parseMechanicalsFlags(config, useMotorSpeedFbk))
+            int* useMotorSpeedFbk = 0;
+            useMotorSpeedFbk = new int[_njoints];
+            if (!_mcparser->parseMechanicalsFlags(config, useMotorSpeedFbk))
+            {
+                delete[] useMotorSpeedFbk;
                 return false;
+            }
             //Note: currently in eth protocol this parameter belongs to jointset configuration. So
             // i need to check that every joint belog to same set has the same value
-            if(!verifyUseMotorSpeedFbkInJointSet(useMotorSpeedFbk))
+            if (!verifyUseMotorSpeedFbkInJointSet(useMotorSpeedFbk))
+            {
+                delete[] useMotorSpeedFbk;
                 return false;
+            }
+            delete[] useMotorSpeedFbk;
         }
     }
 
