@@ -641,7 +641,7 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
 
                 //pids are equal if they have same control units type and same values
                 if( ( ((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->ctrlUnitsType != ((Pid_Algorithm_simple*)vpidAlgo_ptr)->ctrlUnitsType) ||
-                    ( ! pidsAreEquals(((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->innerVelPid[i], ((Pid_Algorithm_simple*)vpidAlgo_ptr)->pid[i])))
+                     ( ! (((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->innerVelPid[i]==((Pid_Algorithm_simple*)vpidAlgo_ptr)->pid[i]) ) )
                 {
                     yError() << "embObjMC BOARD " << _boardname << ":Joint" << i << ": velocity pid values of inner loop of position control are not equal to velocity control pid values";
                     return false;
@@ -653,9 +653,9 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
                 for(int x =0; x<_njoints; x++)
                 {
                     if( ( ((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->ctrlUnitsType != ((Pid_Algorithm_simple*)vpidAlgo_ptr)->ctrlUnitsType ) ||
-                        (! pidsAreEquals( ((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->innerVelPid[x], ((PidAlgorithm_VelocityInnerLoop*)tpidAlgo_ptr)->innerVelPid[x])) )
+                        ( ! (((PidAlgorithm_VelocityInnerLoop*)pidAlgo_ptr)->innerVelPid[x]==((PidAlgorithm_VelocityInnerLoop*)tpidAlgo_ptr)->innerVelPid[x]) ) )
                     {
-                        yError() << "embObjMC BOARD " << _boardname << "velocity pid values of inner loop of torque control are not equal to velocity pid values of inner position pid ";
+                        yError() << "embObjMC BOARD " <<_boardname << ":Joint" << i << ":velocity pid values of inner loop of torque control are not equal to velocity pid values of inner position pid ";
                         return false;
                     }
                 }
@@ -815,36 +815,6 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
 
 }
 
-//to move in yarp pid (override = operator)
-bool mcParser::pidsAreEquals(Pid &pid1, Pid &pid2)
-{
-    if(pid1.kp != pid2.kp)
-        return false;
-
-    if(pid1.ki != pid2.ki)
-        return false;
-
-    if(pid1.kd != pid2.kd)
-        return false;
-
-    if(pid1.max_output != pid2.max_output)
-        return false;
-
-    if(pid1.max_int != pid2.max_int)
-        return false;
-
-    if(pid1.kff != pid2.kff)
-        return false;
-
-    if(pid1.offset != pid2.offset)
-        return false;
-
-    if(pid1.scale != pid2.scale)
-        return false;
-
-    return true;
-
-}
 
 bool mcParser::parsePidUnitsType(Bottle &bPid, GenericControlUnitsType_t &unitstype)
 {

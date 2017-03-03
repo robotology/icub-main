@@ -337,7 +337,6 @@ private:
     bool parsePidUnitsType(yarp::os::Bottle &bPid, GenericControlUnitsType_t &unitstype);
 
 
-    bool pidsAreEquals(yarp::dev::Pid &pid1, yarp::dev::Pid &pid2); //to move in yarp pid (override = operator)
     bool convert(yarp::os::ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
     bool convert(yarp::os::Bottle &bottle, std::vector<double> &matrix, bool &formaterror, int targetsize);
 
