@@ -132,6 +132,43 @@ void CartesianCtrlCommandPort::onRead(Bottle &command)
 
 
 /************************************************************************/
+TaskRefVelTargetGenerator::TaskRefVelTargetGenerator(const double Ts,
+                                                     const Vector &x0)
+{
+    yAssert(x0.length()>=7);
+    I=new Integrator(Ts,x0.subVector(0,2));
+    R=axis2dcm(x0.subVector(3,6));
+}
+
+
+/************************************************************************/
+void TaskRefVelTargetGenerator::reset(const Vector &x0)
+{
+    yAssert(x0.length()>=7);
+    I->reset(x0.subVector(0,2));
+    R=axis2dcm(x0.subVector(3,6));
+}
+
+
+/************************************************************************/
+Vector TaskRefVelTargetGenerator::integrate(const Vector &vel)
+{
+    yAssert(vel.length()>=7);
+    Vector w=vel.subVector(3,6);
+    w[3]*=I->getTs();
+    R=axis2dcm(w)*R;
+    return cat(I->integrate(vel.subVector(0,2)),dcm2axis(R));
+}
+
+
+/************************************************************************/
+TaskRefVelTargetGenerator::~TaskRefVelTargetGenerator()
+{
+    delete I;
+}
+
+
+/************************************************************************/
 ServerCartesianController::ServerCartesianController() :
                            RateThread(CARTCTRL_DEFAULT_PER)
 {
@@ -2199,7 +2236,7 @@ bool ServerCartesianController::attachAll(const PolyDriverList &p)
 
     // create the target generator for
     // task-space reference velocity
-    taskRefVelTargetGen=new Integrator(taskRefVelPeriodFactor*(getRate()/1000.0),ctrl->get_x());
+    taskRefVelTargetGen=new TaskRefVelTargetGenerator(taskRefVelPeriodFactor*(getRate()/1000.0),ctrl->get_x());
     taskRefVelPeriodCnt=0;
 
     start();
@@ -2214,6 +2251,7 @@ bool ServerCartesianController::detachAll()
     if (isRunning())
         stop();
 
+    delete taskRefVelTargetGen;
     return true;
 }
 
