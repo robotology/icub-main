@@ -65,11 +65,11 @@ Localizer::Localizer(ExchangeData *_commData, const unsigned int _period) :
     bool ret;
 
     // get camera projection matrix
-    ret=getCamPrj(commData->rf_cameras,"CAMERA_CALIBRATION_LEFT",&PrjL,true);
+    ret=getCamParams(commData->rf_cameras,"CAMERA_CALIBRATION_LEFT",&PrjL,widthL,heightL,true);
     if (commData->tweakOverwrite)
     {
         Matrix *Prj;
-        if (getCamPrj(commData->rf_tweak,"CAMERA_CALIBRATION_LEFT",&Prj,true))
+        if (getCamParams(commData->rf_tweak,"CAMERA_CALIBRATION_LEFT",&Prj,widthL,heightL,true))
         {
             delete PrjL;
             PrjL=Prj;
@@ -86,11 +86,11 @@ Localizer::Localizer(ExchangeData *_commData, const unsigned int _period) :
         PrjL=invPrjL=NULL;
 
     // get camera projection matrix
-    ret=getCamPrj(commData->rf_cameras,"CAMERA_CALIBRATION_RIGHT",&PrjR,true);
+    ret=getCamParams(commData->rf_cameras,"CAMERA_CALIBRATION_RIGHT",&PrjR,widthR,heightR,true);
     if (commData->tweakOverwrite)
     {
         Matrix *Prj;
-        if (getCamPrj(commData->rf_tweak,"CAMERA_CALIBRATION_RIGHT",&Prj,true))
+        if (getCamParams(commData->rf_tweak,"CAMERA_CALIBRATION_RIGHT",&Prj,widthR,heightR,true))
         {
             delete PrjR;
             PrjR=Prj;
@@ -611,13 +611,16 @@ void Localizer::handleAnglesOutput()
 
 
 /************************************************************************/
-bool Localizer::getIntrinsicsMatrix(const string &type, Matrix &M)
+bool Localizer::getIntrinsicsMatrix(const string &type, Matrix &M,
+                                    int &w, int &h)
 {
     if (type=="left")
     {
         if (PrjL!=NULL)
         {
             M=*PrjL;
+            w=widthL;
+            h=heightL;
             return true;
         }
         else
@@ -628,6 +631,8 @@ bool Localizer::getIntrinsicsMatrix(const string &type, Matrix &M)
         if (PrjR!=NULL)
         {
             M=*PrjR;
+            w=widthR;
+            h=heightR;
             return true;
         }
         else
@@ -639,7 +644,8 @@ bool Localizer::getIntrinsicsMatrix(const string &type, Matrix &M)
 
 
 /************************************************************************/
-bool Localizer::setIntrinsicsMatrix(const string &type, const Matrix &M)
+bool Localizer::setIntrinsicsMatrix(const string &type, const Matrix &M,
+                                    const int w, const int h)
 {
     if (type=="left")
     {
@@ -653,6 +659,9 @@ bool Localizer::setIntrinsicsMatrix(const string &type, const Matrix &M)
             PrjL=new Matrix(M);
             invPrjL=new Matrix(pinv(M.transposed()).transposed());
         }
+
+        widthL=w;
+        heightL=h;
 
         return true;
     }
@@ -668,6 +677,9 @@ bool Localizer::setIntrinsicsMatrix(const string &type, const Matrix &M)
             PrjR=new Matrix(M);
             invPrjR=new Matrix(pinv(M.transposed()).transposed());
         }
+
+        widthR=w;
+        heightR=h;
 
         return true;
     }

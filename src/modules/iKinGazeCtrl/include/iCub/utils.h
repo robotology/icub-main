@@ -195,7 +195,7 @@ inline double sat(const double val, const double min, const double max)
 // Allocates Projection Matrix Prj for the camera read from cameras::file;
 // type is in {"CAMERA_CALIBRATION_LEFT","CAMERA_CALIBRATION_RIGHT"}.
 // Returns true if correctly configured.
-bool getCamPrj(const ResourceFinder &rf, const string &type, Matrix **Prj, const bool verbose=false);
+bool getCamParams(const ResourceFinder &rf, const string &type, Matrix **Prj, int &w, int &h, const bool verbose=false);
 
 
 // Allocates the two aligning matrices read from cameras::file;

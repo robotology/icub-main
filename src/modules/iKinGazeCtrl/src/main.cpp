@@ -797,8 +797,8 @@ protected:
         LockGuard lg(mutexTweak);
         if (Bottle *pB=options.find("camera_intrinsics_left").asList())
         {
-            Matrix Prj(3,4); Prj=0.0;
-            loc->getIntrinsicsMatrix("left",Prj);
+            Matrix Prj=zeros(3,4); int w,h;
+            loc->getIntrinsicsMatrix("left",Prj,w,h);
 
             int r=0; int c=0;
             for (int i=0; i<pB->size(); i++)
@@ -812,14 +812,14 @@ protected:
                 }
             }
 
-            loc->setIntrinsicsMatrix("left",Prj);
+            loc->setIntrinsicsMatrix("left",Prj,w,h);
             doSaveTweakFile=commData.tweakOverwrite;
         }
 
         if (Bottle *pB=options.find("camera_intrinsics_right").asList())
         {
-            Matrix Prj(3,4); Prj=0.0;
-            loc->getIntrinsicsMatrix("right",Prj);
+            Matrix Prj=zeros(3,4); int w,h;
+            loc->getIntrinsicsMatrix("right",Prj,w,h);
 
             int r=0; int c=0;
             for (int i=0; i<pB->size(); i++)
@@ -833,8 +833,40 @@ protected:
                 }
             }
 
-            loc->setIntrinsicsMatrix("right",Prj);
+            loc->setIntrinsicsMatrix("right",Prj,w,h);
             doSaveTweakFile=commData.tweakOverwrite;
+        }
+
+        if (options.check("camera_width_left"))
+        {
+            Matrix Prj=zeros(3,4); int w,h;
+            loc->getIntrinsicsMatrix("left",Prj,w,h);
+            w=options.find("camera_width_left").asInt();
+            loc->setIntrinsicsMatrix("left",Prj,w,h);
+        }
+
+        if (options.check("camera_height_left"))
+        {
+            Matrix Prj=zeros(3,4); int w,h;
+            loc->getIntrinsicsMatrix("left",Prj,w,h);
+            h=options.find("camera_height_left").asInt();
+            loc->setIntrinsicsMatrix("left",Prj,w,h);
+        }
+
+        if (options.check("camera_width_right"))
+        {
+            Matrix Prj=zeros(3,4); int w,h;
+            loc->getIntrinsicsMatrix("right",Prj,w,h);
+            w=options.find("camera_width_right").asInt();
+            loc->setIntrinsicsMatrix("right",Prj,w,h);
+        }
+
+        if (options.check("camera_height_right"))
+        {
+            Matrix Prj=zeros(3,4); int w,h;
+            loc->getIntrinsicsMatrix("right",Prj,w,h);
+            h=options.find("camera_height_right").asInt();
+            loc->setIntrinsicsMatrix("right",Prj,w,h);
         }
 
         bool doMinAllowedVer=false;
@@ -913,20 +945,34 @@ protected:
         Bottle &intrinsicsLeft=options.addList();
         intrinsicsLeft.addString("camera_intrinsics_left");
         Bottle &intrinsicsLeftValues=intrinsicsLeft.addList();
-        Matrix PrjL;
-        if (loc->getIntrinsicsMatrix("left",PrjL))
+        Matrix PrjL; int wL,hL;
+        if (loc->getIntrinsicsMatrix("left",PrjL,wL,hL))
             for (int r=0; r<PrjL.rows(); r++)
                 for (int c=0; c<PrjL.cols(); c++)
                     intrinsicsLeftValues.addDouble(PrjL(r,c));
 
+        Bottle &widthLeft=options.addList();
+        widthLeft.addString("camera_width_left");
+        widthLeft.addInt(wL);
+        Bottle &heightLeft=options.addList();
+        heightLeft.addString("camera_height_left");
+        heightLeft.addInt(hL);
+
         Bottle &intrinsicsRight=options.addList();
         intrinsicsRight.addString("camera_intrinsics_right");
         Bottle &intrinsicsRightValues=intrinsicsRight.addList();
-        Matrix PrjR;
-        if (loc->getIntrinsicsMatrix("right",PrjR))
+        Matrix PrjR; int wR,hR;
+        if (loc->getIntrinsicsMatrix("right",PrjR,wR,hR))
             for (int r=0; r<PrjR.rows(); r++)
                 for (int c=0; c<PrjR.cols(); c++)
                     intrinsicsRightValues.addDouble(PrjR(r,c));
+
+        Bottle &widthRight=options.addList();
+        widthRight.addString("camera_width_right");
+        widthRight.addInt(wR);
+        Bottle &heightRight=options.addList();
+        heightRight.addString("camera_height_right");
+        heightRight.addInt(hR);
 
         Bottle &extrinsicsLeft=options.addList();
         extrinsicsLeft.addString("camera_extrinsics_left");
@@ -952,11 +998,11 @@ protected:
     /************************************************************************/
     void saveTweakFile()
     {
-        Matrix PrjL;
-        bool validIntrinsicsL=loc->getIntrinsicsMatrix("left",PrjL);
+        Matrix PrjL; int wL,hL;
+        bool validIntrinsicsL=loc->getIntrinsicsMatrix("left",PrjL,wL,hL);
 
-        Matrix PrjR;
-        bool validIntrinsicsR=loc->getIntrinsicsMatrix("right",PrjR);
+        Matrix PrjR; int wR,hR;
+        bool validIntrinsicsR=loc->getIntrinsicsMatrix("right",PrjR,wR,hR);
 
         Matrix HNL;
         loc->getExtrinsicsMatrix("left",HNL);
@@ -973,6 +1019,8 @@ protected:
             if (validIntrinsicsL)
             {
                 fout<<"[CAMERA_CALIBRATION_LEFT]"<<endl;
+                fout<<"w  "<<wL<<endl;
+                fout<<"h  "<<hL<<endl;
                 fout<<"fx "<<PrjL(0,0)<<endl;
                 fout<<"fy "<<PrjL(1,1)<<endl;
                 fout<<"cx "<<PrjL(0,2)<<endl;
@@ -983,6 +1031,8 @@ protected:
             if (validIntrinsicsR)
             {
                 fout<<"[CAMERA_CALIBRATION_RIGHT]"<<endl;
+                fout<<"w  "<<wR<<endl;
+                fout<<"h  "<<hR<<endl;
                 fout<<"fx "<<PrjR(0,0)<<endl;
                 fout<<"fy "<<PrjR(1,1)<<endl;
                 fout<<"cx "<<PrjR(0,2)<<endl;
