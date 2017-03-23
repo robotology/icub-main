@@ -810,7 +810,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             // if we find, ... we do a pushback of it inside
             bool found = false;
             // i decide to use a brute force search ... for now
-            for(int n=0; n<as_service.properties.sensors.size(); n++)
+            for(size_t n=0; n<as_service.properties.sensors.size(); n++)
             {
                 servAnalogSensor_t item = as_service.properties.sensors.at(n);
                 //if(item.id == cpp_str)
@@ -1007,7 +1007,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
     inertialsconfig.inertials.resize(0);
 
     EOarray* array = eo_array_New(eOas_inertials_maxnumber, sizeof(eOas_inertial_descriptor_t), &inertialsconfig.ethservice.configuration.data.as.inertial.arrayofsensors);
-    for(int i=0; i<as_service.settings.enabledsensors.size(); i++)
+    for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
     {
         servAnalogSensor_t sensor = as_service.settings.enabledsensors.at(i);
         eOas_sensor_t type = sensor.type;
@@ -2578,7 +2578,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             // 1. ->version (of mc4 board) + ->mais.version.
             bool mc4boardFound = false;
             bool maisboardFound = false;
-            for(int i=0; i<mc_service.properties.canboards.size(); i++)
+            for(size_t i=0; i<mc_service.properties.canboards.size(); i++)
             {
                 if(eobrd_cantype_mc4 == mc_service.properties.canboards[i].type)
                 {
@@ -2620,7 +2620,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             // 5. ->broadcastflags
             data_mc->broadcastflags = 0;
-            for(int i=0; i<mc_service.properties.mc4broadcasts.size(); i++)
+            for(size_t i=0; i<mc_service.properties.mc4broadcasts.size(); i++)
             {
                 eOmc_mc4broadcast_t item = mc_service.properties.mc4broadcasts[i];
                 if((eomc_mc4broadcast_none != item) && (eomc_mc4broadcast_unknown != item))

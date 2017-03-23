@@ -1481,6 +1481,68 @@ bool mcParser::parseEncoderFactor(yarp::os::Searchable &config, double encoderFa
     return true;
 }
 
+bool mcParser::parseDutycycleToPWM(yarp::os::Searchable &config, double dutycycleToPWM[])
+{
+    Bottle general = config.findGroup("GENERAL");
+    if (general.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Missing General group";
+        return false;
+    }
+    Bottle xtmp;
+    int i;
+    double tmpval;
+
+    // Encoder scales
+    if (!extractGroup(general, xtmp, "dutycycleToPWM", "a list of scales for the dutycycleToPWM conversion factor", _njoints))
+    {
+        return false;
+    }
+
+    for (i = 1; i < xtmp.size(); i++)
+    {
+        tmpval = xtmp.get(i).asDouble();
+        if (tmpval<0)
+        {
+            yWarning() << "embObjMC BOARD " << _boardname << "dutycycleToPWM parameter should be positive!";
+        }
+        dutycycleToPWM[i - 1] = tmpval;
+    }
+
+    return true;
+}
+
+
+bool mcParser::parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSensor[])
+{
+    Bottle general = config.findGroup("GENERAL");
+    if (general.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Missing General group";
+        return false;
+    }
+    Bottle xtmp;
+    int i;
+    double tmpval;
+
+    // Encoder scales
+    if (!extractGroup(general, xtmp, "ampsToSensor", "a list of scales for the ampsToSensor conversion factor", _njoints))
+    {
+        return false;
+    }
+
+    for (i = 1; i < xtmp.size(); i++)
+    {
+        tmpval = xtmp.get(i).asDouble();
+        if (tmpval<0)
+        {
+            yWarning() << "embObjMC BOARD " << _boardname << "ampsToSensor parameter should be positive!";
+        }
+        ampsToSensor[i - 1] = tmpval;
+    }
+
+    return true;
+}
 
 bool mcParser::parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J[], double gearbox_E2J[])
 {

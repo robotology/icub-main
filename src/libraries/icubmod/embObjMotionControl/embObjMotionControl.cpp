@@ -255,8 +255,12 @@ bool embObjMotionControl::controlModeCommandConvert_yarp2embObj(int vocabMode, e
         embOut = eomc_controlmode_cmd_impedance_vel;
         break;
 
-    case VOCAB_CM_OPENLOOP:
+    case VOCAB_CM_PWM:
         embOut = eomc_controlmode_cmd_openloop;
+        break;
+
+    case VOCAB_CM_CURRENT:
+        embOut = eomc_controlmode_cmd_current;
         break;
 
     case VOCAB_CM_FORCE_IDLE:
@@ -326,8 +330,11 @@ int embObjMotionControl::controlModeStatusConvert_embObj2yarp(eOenum08_t embObjM
         break;
 
     case eomc_controlmode_openloop:
-    case eomc_controlmode_current:          // for the high level they are the same
-        vocabOut = VOCAB_CM_OPENLOOP;
+        vocabOut = VOCAB_CM_PWM;
+        break;
+
+    case eomc_controlmode_current:
+        vocabOut = VOCAB_CM_CURRENT;
         break;
 
     case eomc_controlmode_hwFault:
@@ -412,6 +419,8 @@ bool embObjMotionControl::alloc(int nj)
     _gearbox = allocAndCheck<double>(nj);
     _gearboxE2J = allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
+    _ampsToSensor = allocAndCheck<double>(nj);
+    _dutycycleToPWM = allocAndCheck<double>(nj);
     _twofocinfo=allocAndCheck<eomc_twofocSpecificInfo>(nj);
     _ppids= new eomcParser_pidInfo[nj];
     _vpids= new eomcParser_pidInfo[nj];
@@ -461,6 +470,8 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_gearbox);
     checkAndDestroy(_gearboxE2J);
     checkAndDestroy(_newtonsToSensor);
+    checkAndDestroy(_ampsToSensor);
+    checkAndDestroy(_dutycycleToPWM);
     checkAndDestroy(_impedance_limits);
     checkAndDestroy(checking_motiondone);
     checkAndDestroy(_ref_command_positions);
@@ -512,11 +523,12 @@ embObjMotionControl::embObjMotionControl() :
     ImplementTorqueControl(this),
     ImplementControlLimits2(this),
     ImplementPositionDirect(this),
-    ImplementOpenLoopControl(this),
     ImplementInteractionMode(this),
     ImplementMotor(this),
     ImplementRemoteVariables(this),
     ImplementAxisInfo(this),
+    ImplementPWMControl(this),
+    ImplementCurrentControl(this),
     _mutex(1),
     SAFETY_THRESHOLD(2.0),
     _rotorsLimits(0),
@@ -671,11 +683,12 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, NULL, _newtonsToSensor);
     ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, NULL, _newtonsToSensor);
     ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-    ImplementOpenLoopControl::initialize(_njoints, _axisMap);
     ImplementInteractionMode::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
     ImplementMotor::initialize(_njoints, _axisMap);
     ImplementRemoteVariables::initialize(_njoints, _axisMap);
     ImplementAxisInfo::initialize(_njoints, _axisMap);
+    ImplementCurrentControl::initialize(_njoints, _axisMap, _ampsToSensor);
+    ImplementPWMControl::initialize(_njoints, _axisMap, _dutycycleToPWM);
 
 
     // -- instantiate EthResource etc.
@@ -1082,6 +1095,12 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             if(!_mcparser->parseEncoderFactor(config, _angleToEncoder))
                 return false;
         }
+
+        if (!_mcparser->parseDutycycleToPWM(config, _dutycycleToPWM))
+            return false;
+
+        if (!_mcparser->parseAmpsToSensor(config, _ampsToSensor))
+            return false;
 
         //VALE: i have to parse GeneralMecGroup after parsing jointsetcfg, because inside generalmec group there is useMotorSpeedFbk that needs jointset info.
 
@@ -1659,10 +1678,11 @@ bool embObjMotionControl::close()
     ImplementControlLimits2::uninitialize();
     ImplementTorqueControl::uninitialize();
     ImplementPositionDirect::uninitialize();
-    ImplementOpenLoopControl::uninitialize();
     ImplementInteractionMode::uninitialize();
     ImplementRemoteVariables::uninitialize();
     ImplementAxisInfo::uninitialize();
+    ImplementCurrentControl::uninitialize();
+    ImplementPWMControl::uninitialize();
 
     if (_torqueControlHelper)  {delete _torqueControlHelper; _torqueControlHelper=0;}
 
@@ -2658,10 +2678,6 @@ bool embObjMotionControl::setImpedanceVelocityModeRaw(int j)
     return DEPRECATED("setImpedanceVelocityModeRaw");
 }
 
-bool embObjMotionControl::setOpenLoopModeRaw(int j)
-{
-    return DEPRECATED("setOpenLoopModeRaw");
-}
 // puo' essere richiesto con get
 bool embObjMotionControl::getControlModeRaw(int j, int *v)
 {
@@ -3697,40 +3713,6 @@ bool embObjMotionControl::getRotorIndexOffsetRaw(int j, double& rotorOffset)
 
     // refresh cached value when reading data from the EMS
     rotorOffset = (double)motor_cfg.rotorIndexOffset;
-
-    return true;
-}
-
-bool embObjMotionControl::getCurrentPidRaw(int j, Pid *pid)
-{
-    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getRotorIndexOffsetRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
-    uint16_t size;
-    eOmc_motor_config_t    motor_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
-
-    // refresh cached value when reading data from the EMS
-    eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg.pidcurrent;
-    copyPid_eo2iCub(&tmp, pid);
 
     return true;
 }
@@ -5094,70 +5076,6 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 }
 
 
-//
-// OPENLOOP interface
-//
-bool embObjMotionControl::setRefOutputRaw(int j, double v)
-{
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
-
-    eOmc_setpoint_t setpoint;
-
-    setpoint.type = (eOenum08_t) eomc_setpoint_openloop;
-    setpoint.to.openloop.value =  (eOmeas_pwm_t) S_16(v);
-
-    return res->addSetMessage(protid, (uint8_t*) &setpoint);
-}
-
-bool embObjMotionControl::setRefOutputsRaw(const double *v)
-{
-    bool ret = true;
-    for(int j=0; j<_njoints; j++)
-    {
-        ret = ret && setRefOutputRaw(j, v[j]);
-    }
-    return ret;
-}
-
-bool embObjMotionControl::getRefOutputRaw(int j, double *out)
-{
-    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_target);
-    uint16_t size = 0;
-    *out = 0;
-    eOmc_joint_status_target_t  target = {0};
-
-
-    if(!askRemoteValue(protoId, (uint8_t *)&target, size))
-    {
-        yError() << "embObjMotionControl::getRefOutputRaw() could not read openloop reference for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-        return false;
-    }
-
-
-
-#if NEW_JSTATUS_STRUCT
-
-    *out = (double) target.trgt_openloop;
-
-    return true;
-
-#else
-    *out = (double) jstatus.ofpid.legacy.positionreference;
-    return true;
-#endif
-
-}
-
-bool embObjMotionControl::getRefOutputsRaw(double *outs)
-{
-    bool ret = true;
-    for(int j=0; j<_njoints; j++)
-    {
-        ret = ret && getRefOutputRaw(j, &outs[j]);
-    }
-    return ret;
-}
-
 bool embObjMotionControl::getOutputRaw(int j, double *out)
 {
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
@@ -5546,6 +5464,213 @@ bool embObjMotionControl::iMange2focBoards(void)
         return true;
     else
         return false;
+}
+
+//PWM interface
+bool embObjMotionControl::setRefDutyCycleRaw(int j, double v)
+{
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
+
+    eOmc_setpoint_t setpoint;
+
+    setpoint.type = (eOenum08_t)eomc_setpoint_openloop;
+    setpoint.to.openloop.value = (eOmeas_pwm_t)S_16(v);
+
+    return res->addSetMessage(protid, (uint8_t*)&setpoint);
+}
+
+bool embObjMotionControl::setRefDutyCyclesRaw(const double *v)
+{
+    bool ret = true;
+    for (int j = 0; j<_njoints; j++)
+    {
+        ret = ret && setRefDutyCycleRaw(j, v[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getRefDutyCycleRaw(int j, double *v)
+{
+    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_target);
+    uint16_t size = 0;
+    *v = 0;
+    eOmc_joint_status_target_t  target = { 0 };
+
+
+    if (!askRemoteValue(protoId, (uint8_t *)&target, size))
+    {
+        yError() << "embObjMotionControl::getRefDutyCycleRaw() could not read openloop reference for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
+        return false;
+    }
+
+
+
+#if NEW_JSTATUS_STRUCT
+
+    *v = (double)target.trgt_openloop;
+
+    return true;
+
+#else
+    *v = (double)jstatus.ofpid.legacy.positionreference;
+    return true;
+#endif
+}
+
+bool embObjMotionControl::getRefDutyCyclesRaw(double *v)
+{
+    bool ret = true;
+    for (int j = 0; j<_njoints; j++)
+    {
+        ret = ret && getRefDutyCycleRaw(j, &v[j]);
+    }
+    return ret;
+}
+
+bool embObjMotionControl::getDutyCycleRaw(int j, double *v)
+{
+    return NOT_YET_IMPLEMENTED("getDutyCycleRaw");
+}
+
+bool embObjMotionControl::getDutyCyclesRaw(double *v)
+{
+    bool ret = true;
+    for (int j = 0; j< _njoints; j++)
+    {
+        ret &= getDutyCycleRaw(j, &v[j]);
+    }
+    return ret;
+}
+
+// Current interface
+/*bool embObjMotionControl::getCurrentRaw(int j, double *t)
+{
+return NOT_YET_IMPLEMENTED("getCurrentRaw");
+}
+
+bool embObjMotionControl::getCurrentsRaw(double *t)
+{
+return NOT_YET_IMPLEMENTED("getCurrentsRaw");
+}
+*/
+
+bool embObjMotionControl::getCurrentRangeRaw(int j, double *min, double *max)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentRangeRaw");
+}
+
+bool embObjMotionControl::getCurrentRangesRaw(double *min, double *max)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentRangesRaw");
+}
+
+bool embObjMotionControl::setRefCurrentsRaw(const double *t)
+{
+    return NOT_YET_IMPLEMENTED("setRefCurrentsRaw");
+}
+
+bool embObjMotionControl::setRefCurrentRaw(int j, double t)
+{
+    return NOT_YET_IMPLEMENTED("setRefCurrentRaw");
+}
+
+bool embObjMotionControl::setRefCurrentsRaw(const int n_joint, const int *joints, const double *t)
+{
+    return NOT_YET_IMPLEMENTED("setRefCurrentsRaw");
+}
+
+bool embObjMotionControl::getRefCurrentsRaw(double *t)
+{
+    return NOT_YET_IMPLEMENTED("getRefCurrentsRaw");
+}
+
+bool embObjMotionControl::getRefCurrentRaw(int j, double *t)
+{
+    return NOT_YET_IMPLEMENTED("getRefCurrentRaw");
+}
+
+bool embObjMotionControl::setCurrentPidRaw(int j, const Pid &pid)
+{
+    return NOT_YET_IMPLEMENTED("setCurrentPidRaw");
+}
+
+bool embObjMotionControl::setCurrentPidsRaw(const Pid *pids)
+{
+    return NOT_YET_IMPLEMENTED("setCurrentPidsRaw");
+}
+
+bool embObjMotionControl::getCurrentErrorRaw(int j, double *err)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentErrorRaw");
+}
+
+bool embObjMotionControl::getCurrentErrorsRaw(double *errs)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentErrorsRaw");
+}
+
+bool embObjMotionControl::getCurrentPidOutputRaw(int j, double *out)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentPidOutputRaw");
+}
+
+bool embObjMotionControl::getCurrentPidOutputsRaw(double *outs)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentPidOutputsRaw");
+}
+
+bool embObjMotionControl::getCurrentPidRaw(int j, Pid *pid)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
+
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+
+    if (!res->addGetMessage(protoid))
+        return false;
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getRotorIndexOffsetRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
+    // Get the value
+    uint16_t size;
+    eOmc_motor_config_t    motor_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+
+    // refresh cached value when reading data from the EMS
+    eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg.pidcurrent;
+    copyPid_eo2iCub(&tmp, pid);
+
+    return true;
+}
+
+bool embObjMotionControl::getCurrentPidsRaw(Pid *pids)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentPidsRaw");
+}
+
+bool embObjMotionControl::resetCurrentPidRaw(int j)
+{
+    return NOT_YET_IMPLEMENTED("resetCurrentPidRaw");
+}
+
+bool embObjMotionControl::disableCurrentPidRaw(int j)
+{
+    return NOT_YET_IMPLEMENTED("disableCurrentPidRaw");
+}
+
+bool embObjMotionControl::enableCurrentPidRaw(int j)
+{
+    return NOT_YET_IMPLEMENTED("enableCurrentPidRaw");
 }
 
 // eof

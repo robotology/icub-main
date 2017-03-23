@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
     IControlMode2 *iMode2=0;
     IMotor *imot=0;
     ITorqueControl *itorque=0;
-    IOpenLoopControl *iopenloop=0;
+    IPWMControl *ipwm=0;
     IImpedanceControl *iimp=0;
     IInteractionMode *iInteract=0;
     IMotorEncoders *iMotEnc=0;
@@ -145,7 +145,7 @@ int main(int argc, char *argv[])
     ok &= dd.view(lim2);
 //    ok &= dd.view(icm);
     ok &= dd.view(itorque);
-    ok &= dd.view(iopenloop);
+    ok &= dd.view(ipwm);
     ok &= dd.view(iimp);
     ok &= dd.view(iposDir);
     ok &= dd.view(iMode2);
@@ -203,20 +203,21 @@ int main(int argc, char *argv[])
             printf("Available commands:\n");
             printf("-------------------\n\n");
 
-            printf("IOpenLoop:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_IOPENLOOP).c_str());
-            printf("    [set] [%s] <int> <float>\n", Vocab::decode(VOCAB_OUTPUT).c_str());
-            printf("    [get] [%s] <int>\n", Vocab::decode(VOCAB_OUTPUT).c_str());
-            printf("    [get] [%s]\n", Vocab::decode(VOCAB_OUTPUTS).c_str());
+            printf("IPWMControl:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_PWMCONTROL_INTERFACE).c_str());
+            printf("    [set] [%s] <int> <float>\n", Vocab::decode(VOCAB_PWMCONTROL_REF_PWM).c_str());
+            printf("    [get] [%s] <int>\n", Vocab::decode(VOCAB_PWMCONTROL_REF_PWM).c_str());
+            printf("    [get] [%s]\n", Vocab::decode(VOCAB_PWMCONTROL_PWM_OUTPUT).c_str());
             printf("\n");
 
             printf("IControlMode:\ntype [%s] and one of the following:\n", Vocab::decode(VOCAB_ICONTROLMODE).c_str());
-            printf("    [set] [%s]|[%s]|[%s]|[%s]|[%s]|[%s]|[%s]|[%s][%s]|[%s]\n",
+            printf("    [set] [%s]|[%s]|[%s]|[%s]|[%s]|[%s]|[%s]|[%s]|[%s][%s]|[%s]\n",
                     Vocab::decode(VOCAB_CM_POSITION).c_str(),
                     Vocab::decode(VOCAB_CM_POSITION_DIRECT).c_str(),
                     Vocab::decode(VOCAB_CM_VELOCITY).c_str(),
                     Vocab::decode(VOCAB_CM_MIXED).c_str(),
                     Vocab::decode(VOCAB_CM_TORQUE).c_str(),
-                    Vocab::decode(VOCAB_CM_OPENLOOP).c_str(),
+                    Vocab::decode(VOCAB_CM_PWM).c_str(),
+                    Vocab::decode(VOCAB_CM_CURRENT).c_str(),
                     Vocab::decode(VOCAB_CM_IDLE).c_str(),
                     Vocab::decode(VOCAB_CM_FORCE_IDLE).c_str(),
                     Vocab::decode(VOCAB_CM_IMPEDANCE_POS).c_str(),
@@ -688,22 +689,24 @@ int main(int argc, char *argv[])
                 }
                 break;
 
-                case VOCAB_OUTPUTS: {
-                    if (iopenloop==0) {printf ("unavailable interface\n"); break;}
-                    iopenloop->getOutputs(tmp);
-                    printf ("%s: (", Vocab::decode(VOCAB_OUTPUTS).c_str());
+                case VOCAB_PWMCONTROL_PWM_OUTPUTS: {
+                    if (ipwm==0) {printf ("unavailable interface\n"); break;}
+                    ipwm->getDutyCycles(tmp);
+                    printf("%s: (", Vocab::decode(VOCAB_PWMCONTROL_PWM_OUTPUTS).c_str());
                     for(i = 0; i < jnts; i++)
                         printf ("%.2f ", tmp[i]);
                     printf (")\n");
                 }
                 break;
 
-                case VOCAB_OUTPUT: {
-                    if (iopenloop==0) {printf ("unavailable interface\n"); break;}
+                case VOCAB_PWMCONTROL_PWM_OUTPUT: 
+                //case VOCAB_AMP_PWM:
+                {
+                    if (ipwm == 0) { printf("unavailable interface\n"); break; }
                     int j = p.get(2).asInt();
                     double v;
-                    iopenloop->getOutput(j, &v);
-                    printf("%s: ", Vocab::decode(VOCAB_OUTPUT).c_str());
+                    ipwm->getDutyCycle(j, &v);
+                    printf("%s: ", Vocab::decode(VOCAB_PWMCONTROL_PWM_OUTPUT).c_str());
                     printf("%.2f ", v);
                     printf("\n");
                 }
@@ -772,15 +775,6 @@ int main(int argc, char *argv[])
                     for(i = 0; i < jnts; i++)
                         printf ("%.2f ", tmp[i]);
                     printf (")\n");
-                }
-                break;
-
-                case VOCAB_AMP_PWM:
-                {
-                    int j = p.get(2).asInt();
-                    amp->getPWM(j, tmp);
-                    printf ("%s: (", Vocab::decode(VOCAB_AMP_PWM).c_str());
-                    printf ("%.2f )\n", tmp[0]);
                 }
                 break;
 
@@ -1040,11 +1034,11 @@ int main(int argc, char *argv[])
                 }
                 break;
 
-                case VOCAB_OUTPUT: {
+                case VOCAB_PWMCONTROL_REF_PWM: {
                     int j=p.get(2).asInt();
                     double v=p.get(3).asDouble();
-                    iopenloop->setRefOutput(j,v);
-                    printf("%s: setting output for axis %d to %f\n", Vocab::decode(VOCAB_OUTPUT).c_str(), j, v);            
+                    ipwm->setRefDutyCycle(j,v);
+                    printf("%s: setting pwm for axis %d to %f\n", Vocab::decode(VOCAB_PWMCONTROL_REF_PWM).c_str(), j, v);
                 }
                 break;
             }
@@ -1545,22 +1539,25 @@ void handleControlModeMsg(IControlMode2 *iMode, const yarp::os::Bottle& cmd,
                 switch (mode)
                     {
                     case VOCAB_CM_POSITION:
-                        *ok = iMode->setPositionMode(axis);
+                        *ok = iMode->setControlMode(axis, VOCAB_CM_POSITION);
                         break;
                     case VOCAB_CM_POSITION_DIRECT:
                         *ok = iMode->setControlMode(axis, VOCAB_CM_POSITION_DIRECT);
                         break;
                     case VOCAB_CM_VELOCITY:
-                        *ok = iMode->setVelocityMode(axis);
+                        *ok = iMode->setControlMode(axis, VOCAB_CM_VELOCITY);
                         break;
                     case VOCAB_CM_MIXED:
                         *ok = iMode->setControlMode(axis, VOCAB_CM_MIXED);
                         break;
                     case VOCAB_CM_TORQUE:
-                        *ok = iMode->setTorqueMode(axis);
+                        *ok = iMode->setControlMode(axis, VOCAB_CM_TORQUE);
                         break;
-                    case VOCAB_CM_OPENLOOP:
-                        *ok = iMode->setOpenLoopMode(axis);
+                    case VOCAB_CM_PWM:
+                        *ok = iMode->setControlMode(axis, VOCAB_CM_PWM);
+                        break;
+                    case VOCAB_CM_CURRENT:
+                        *ok = iMode->setControlMode(axis, VOCAB_CM_CURRENT);
                         break;
                     case VOCAB_CM_IDLE:
                         *ok = iMode->setControlMode(axis, VOCAB_CM_IDLE);

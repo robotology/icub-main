@@ -163,7 +163,8 @@ protected:
     yarp::dev::IControlLimits   *ilim;
     yarp::dev::IEncoders        *ienc;
     yarp::dev::IPidControl      *ipid;
-    yarp::dev::IOpenLoopControl *iolc;
+    yarp::dev::IPWMControl      *ipwm;
+    yarp::dev::ICurrentControl  *icur;
 
     yarp::os::Mutex    mutex;
     yarp::os::Event    doneEvent;
@@ -358,7 +359,8 @@ protected:
     yarp::dev::IEncoders        *ienc;
     yarp::dev::IPositionControl *ipos;
     yarp::dev::IPidControl      *ipid;
-    yarp::dev::IOpenLoopControl *iolc;
+    yarp::dev::IPWMControl      *ipwm;
+    yarp::dev::ICurrentControl  *icur;
     yarp::dev::Pid              *pidCur;
     yarp::dev::Pid               pidOld;
     yarp::dev::Pid               pidNew;
