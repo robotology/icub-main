@@ -429,7 +429,12 @@ protected:
     double *current_mot_torques; // at the moment this is fake
 
     //pwm value
+    double *pwm; // at the moment this is fake
     double *pwm_ref; // at the moment this is fake
+
+    //motor current
+    double *current_ampere; // at the moment this is fake
+    double *current_ampere_ref; // at the moment this is fake
 
     //current velocity of the joints
     double *current_jnt_vel;

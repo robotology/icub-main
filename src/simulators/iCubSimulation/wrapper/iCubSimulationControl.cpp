@@ -141,7 +141,10 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     current_mot_pos = allocAndCheck<double>(njoints);
     current_mot_vel = allocAndCheck<double>(njoints);
     current_mot_torques = allocAndCheck<double>(njoints);
+    pwm = allocAndCheck<double>(njoints);
     pwm_ref = allocAndCheck<double>(njoints);
+    current_ampere = allocAndCheck<double>(njoints);
+    current_ampere_ref = allocAndCheck<double>(njoints);
     next_pos = allocAndCheck<double>(njoints);
     next_vel = allocAndCheck<double>(njoints);
     next_torques = allocAndCheck<double>(njoints);
@@ -190,6 +193,21 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
         return false;
     }
     for (int i = 1; i < xtmp.size(); i++) angleToEncoder[i-1] = xtmp.get(i).asDouble();
+
+    xtmp = p.findGroup("GENERAL").findGroup("dutycycleToPWM", "a list of scales for the dutycycleToPWM param");
+    if (xtmp.size() != njoints + 1) {
+        yError("dutycycleToPWM does not have the right number of entries\n");
+        return false;
+    }
+    for (int i = 1; i < xtmp.size(); i++) dutycycleToPWM[i - 1] = xtmp.get(i).asDouble();
+
+    xtmp = p.findGroup("GENERAL").findGroup("ampsToSensor", "a list of scales for the ampsToSensor param");
+    if (xtmp.size() != njoints + 1) {
+        yError("ampsToSensor does not have the right number of entries\n");
+        return false;
+    }
+    for (int i = 1; i < xtmp.size(); i++) ampsToSensor[i - 1] = xtmp.get(i).asDouble();
+
     xtmp = p.findGroup("GENERAL").findGroup("Zeros","a list of offsets for the zero point");
     if (xtmp.size() != njoints+1) {
         yError("Zeros does not have the right number of entries\n");
@@ -363,7 +381,10 @@ bool iCubSimulationControl::close (void)
     checkAndDestroy<double>(current_jnt_torques);
     checkAndDestroy<double>(current_mot_pos);
     checkAndDestroy<double>(current_mot_torques);
+    checkAndDestroy<double>(pwm);
     checkAndDestroy<double>(pwm_ref);
+    checkAndDestroy<double>(current_ampere);
+    checkAndDestroy<double>(current_ampere_ref);
     checkAndDestroy<double>(current_jnt_vel);
     checkAndDestroy<double>(current_mot_vel);
     checkAndDestroy<double>(next_pos);
@@ -473,9 +494,9 @@ void iCubSimulationControl::jointStep() {
             {
                 ctrl.setTorque(next_torques[axis]);
             }
-            else if (controlMode[axis]==MODE_PWM ||
-                     controlMode[axis]==MODE_CURRENT)
+            else if (controlMode[axis]==MODE_PWM)
             {
+                pwm[axis] = pwm_ref[axis];
                 //currently identical to velocity control, with fixed velocity
                 if (((current_jnt_pos[axis]<limitsMin[axis]) && (pwm_ref[axis]<0)) || ((current_jnt_pos[axis]>limitsMax[axis]) && (pwm_ref[axis]>0)))
                 {
@@ -488,6 +509,30 @@ void iCubSimulationControl::jointStep() {
                         ctrl.setVelocity(3);
                     }
                     else if (pwm_ref[axis]<-0.001)
+                    {
+                        ctrl.setVelocity(-3);
+                    }
+                    else
+                    {
+                        ctrl.setVelocity(0.0);
+                    }
+                }
+            }
+            else if (controlMode[axis] == MODE_CURRENT)
+            {
+                current_ampere[axis] = current_ampere_ref[axis];
+                //currently identical to velocity control, with fixed velocity
+                if (((current_jnt_pos[axis]<limitsMin[axis]) && (current_ampere_ref[axis]<0)) || ((current_jnt_pos[axis]>limitsMax[axis]) && (current_ampere_ref[axis]>0)))
+                {
+                    ctrl.setVelocity(0.0);
+                }
+                else
+                {
+                    if (current_ampere_ref[axis]>0.001)
+                    {
+                        ctrl.setVelocity(3);
+                    }
+                    else if (current_ampere_ref[axis]<-0.001)
                     {
                         ctrl.setVelocity(-3);
                     }
@@ -627,7 +672,7 @@ bool iCubSimulationControl::getOutputRaw(int axis, double *out)
     if( (axis>=0) && (axis<njoints) )
         {
             _mutex.wait();
-            *out = pwm_ref[axis];
+            *out = pwm[axis];
             _mutex.post();
             return true;
         }
@@ -640,7 +685,7 @@ bool iCubSimulationControl::getOutputsRaw(double *outs)
 {
     _mutex.wait();
     for(int axis = 0; axis<njoints; axis++)
-        outs[axis] = pwm_ref[axis];
+        outs[axis] = pwm[axis];
     _mutex.post();
     return true;
 }
@@ -1432,7 +1477,7 @@ bool iCubSimulationControl::getCurrentsRaw(double *cs)
 {
    _mutex.wait();
     for(int axis = 0; axis<njoints; axis++)
-        cs[axis] = 0;
+        cs[axis] = current_ampere[axis];
     _mutex.post();
     return true;
 }
@@ -1443,7 +1488,7 @@ bool iCubSimulationControl::getCurrentRaw(int axis, double *c)
     if( (axis>=0) && (axis<njoints) )
     {
         _mutex.wait();
-        *c=0;
+        *c = current_ampere[axis];
         _mutex.post();
     }
     else
@@ -2144,6 +2189,7 @@ bool iCubSimulationControl::setControlModeRaw(const int j, const int mode)
             controlMode[j] = ControlModes_yarp2iCubSIM(mode);
             next_pos[j]=current_jnt_pos[j];
             if (controlMode[j] != MODE_PWM) pwm_ref[j] = 0;
+            if (controlMode[j] != MODE_CURRENT) current_ampere_ref[j] = 0;
             _mutex.post();
         }
        return true;
@@ -2383,12 +2429,25 @@ bool iCubSimulationControl::getRefDutyCyclesRaw(double *v)
 
 bool iCubSimulationControl::getDutyCycleRaw(int j, double *v)
 {
-    return NOT_YET_IMPLEMENTED("getDutyCycleRaw");
+    if ((j >= 0) && (j<njoints))
+    {
+        _mutex.wait();
+        *v = pwm[j];
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        yError("getDutyCycleRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
+    return false;
 }
 
 bool iCubSimulationControl::getDutyCyclesRaw(double *v)
 {
-    return NOT_YET_IMPLEMENTED("getDutyCyclesRaw");
+    _mutex.wait();
+    for (int axis = 0; axis<njoints; axis++)
+        v[axis] = pwm[axis];
+    _mutex.post();
+    return true;
 }
 
 // Current interface
@@ -2415,37 +2474,78 @@ bool iCubSimulationControl::getCurrentRangesRaw(double *min, double *max)
 
 bool iCubSimulationControl::setRefCurrentsRaw(const double *t)
 {
-    return NOT_YET_IMPLEMENTED("setRefCurrentsRaw");
+    _mutex.wait();
+    for (int axis = 0; axis<njoints; axis++)
+        current_ampere_ref[axis] = t[axis];
+    _mutex.post();
+    return true;
 }
 
 bool iCubSimulationControl::setRefCurrentRaw(int j, double t)
 {
-    return NOT_YET_IMPLEMENTED("setRefCurrentRaw");
+    if ((j >= 0) && (j<njoints))
+    {
+        _mutex.wait();
+        current_ampere_ref[j] = t;
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        yError("setRefCurrentRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
+    return false;
 }
 
 bool iCubSimulationControl::setRefCurrentsRaw(const int n_joint, const int *joints, const double *t)
 {
-    return NOT_YET_IMPLEMENTED("setRefCurrentsRaw");
+    bool ret = true;
+    for (int j = 0; j<n_joint; j++)
+    {
+        ret = ret && setRefCurrentRaw(joints[j], t[j]);
+    }
+    return ret;
 }
 
 bool iCubSimulationControl::getRefCurrentsRaw(double *t)
 {
-    return NOT_YET_IMPLEMENTED("getRefCurrentsRaw");
+    _mutex.wait();
+    for (int axis = 0; axis<njoints; axis++)
+        t[axis] = current_ampere_ref[axis];
+    _mutex.post();
+    return true;
 }
 
 bool iCubSimulationControl::getRefCurrentRaw(int j, double *t)
 {
-    return NOT_YET_IMPLEMENTED("getRefCurrentRaw");
+    if ((j >= 0) && (j<njoints))
+    {
+        _mutex.wait();
+        *t = current_ampere_ref[j];
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        yError("getRefCurrentRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
+    return false;
 }
 
 bool iCubSimulationControl::setCurrentPidRaw(int j, const Pid &pid)
 {
-    return NOT_YET_IMPLEMENTED("setCurrentPidRaw");
+    if ((j >= 0) && (j<njoints))
+    {
+        current_pid[j] = pid;
+    }
+    NOT_YET_IMPLEMENTED("setCurrentPidRaw");
+    return true; //fake
 }
 
 bool iCubSimulationControl::setCurrentPidsRaw(const Pid *pids)
 {
-    return NOT_YET_IMPLEMENTED("setCurrentPidsRaw");
+    for (int i = 0; i<njoints; i++)
+    {
+        current_pid[i] = pids[i];
+    }
+    NOT_YET_IMPLEMENTED("setCurrentPidsRaw");
+    return true; //fake
 }
 
 bool iCubSimulationControl::getCurrentErrorRaw(int j, double *err)
@@ -2470,12 +2570,22 @@ bool iCubSimulationControl::getCurrentPidOutputsRaw(double *outs)
 
 bool iCubSimulationControl::getCurrentPidRaw(int j, Pid *pid)
 {
-    return NOT_YET_IMPLEMENTED("getCurrentPidRaw");
+    if ((j >= 0) && (j<njoints))
+    {
+        *pid = current_pid[j];
+    }
+    NOT_YET_IMPLEMENTED("getCurrentPidRaw");
+    return true; //fake
 }
 
 bool iCubSimulationControl::getCurrentPidsRaw(Pid *pids)
 {
-    return NOT_YET_IMPLEMENTED("getCurrentPidsRaw");
+    for (int i = 0; i<njoints; i++)
+    {
+        pids[i] = current_pid[i];
+    }
+    NOT_YET_IMPLEMENTED("getCurrentPidsRaw");
+    return true; //fake
 }
 
 bool iCubSimulationControl::resetCurrentPidRaw(int j)
