@@ -18,6 +18,7 @@
 
 #include <cmath>
 
+#include <yarp/os/Log.h>
 #include <yarp/math/Math.h>
 #include <iCub/ctrl/math.h>
 #include <iCub/ctrl/pids.h>
@@ -34,6 +35,7 @@ using namespace iCub::ctrl;
 /************************************************************************/
 Integrator::Integrator(const double _Ts, const Vector &y0, const Matrix &_lim)
 {
+    yAssert(_lim.rows()==y0.length());
     dim=y0.length();
     x_old.resize(dim,0.0);
     applySat=true;
@@ -71,7 +73,7 @@ void Integrator::allocate(const Integrator &I)
 
 /************************************************************************/
 Vector Integrator::saturate(const Vector &v)
-{
+{    
     if (applySat)
     {
         Vector res=v;
@@ -109,6 +111,7 @@ void Integrator::setTs(const double _Ts)
 /************************************************************************/
 void Integrator::setLim(const Matrix &_lim)
 {
+    yAssert(_lim.rows()==dim);
     lim=_lim;
 
     if (applySat)
@@ -119,6 +122,8 @@ void Integrator::setLim(const Matrix &_lim)
 /************************************************************************/
 const Vector& Integrator::integrate(const Vector &x)
 {
+    yAssert(x.length()==dim);
+
     // implements the Tustin formula
     y=saturate(y+(x+x_old)*(Ts/2));
     x_old=x;
@@ -130,6 +135,7 @@ const Vector& Integrator::integrate(const Vector &x)
 /************************************************************************/
 void Integrator::reset(const Vector &y0)
 {
+    yAssert(y0.length()==dim);
     y=saturate(y0);
     x_old=0.0;
 }
