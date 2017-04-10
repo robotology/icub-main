@@ -1322,31 +1322,21 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 _rotToEncoder[i-1] = xtmp.get(i).asDouble();
         }
 
-    if (!validate_optional(general, xtmp, "dutycycleToPWM", " list of scales for the dutycycleToPWM conversion factor", nj + 1))
+    if (!validate(general, xtmp, "fullscalePWM", " list of scales for the fullscalePWM conversion factor", nj + 1))
     {
-        yWarning("dutycycleToPWM: Using default value = 1\n");
-        for (i = 1; i<nj + 1; i++)
-            _dutycycleToPWM[i - 1] = 1.0;
+        yError("fullscalePWM param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support");
+        return false;
     }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-            _dutycycleToPWM[i - 1] = xtmp.get(i).asDouble();
-    }
+    for (i = 1; i < xtmp.size(); i++)
+        _dutycycleToPwm[i - 1] = xtmp.get(i).asDouble()/100.0;
 
-    if (!validate_optional(general, xtmp, "ampsToSensor", "a list of scales for the ampsToSensor conversion factor", nj + 1))
+    if (!validate(general, xtmp, "ampsToSensor", "a list of scales for the ampsToSensor conversion factor", nj + 1))
     {
-        yWarning("ampsToSensor: Using default value = 1\n");
-        for (i = 1; i<nj + 1; i++)
-            _ampsToSensor[i - 1] = 1.0;
+        yError("ampsToSensor param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support");
+        return false;
     }
-    else
-    {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
-            _ampsToSensor[i - 1] = xtmp.get(i).asDouble();
-    }
+    for (i = 1; i < xtmp.size(); i++)
+        _ampsToSensor[i - 1] = xtmp.get(i).asDouble();
 
     if (!validate(general, xtmp, "Zeros","a list of offsets for the zero point", nj+1))
         return false;
@@ -1896,7 +1886,7 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _maxTorque=0;
     _newtonsToSensor=0;
     _ampsToSensor = 0;
-    _dutycycleToPWM = 0;
+    _dutycycleToPwm = 0;
     _debug_params=0;
     _impedance_params=0;
     _impedance_limits=0;
@@ -1934,7 +1924,7 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _maxTorque=allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
     _ampsToSensor = allocAndCheck<double>(nj);
-    _dutycycleToPWM = allocAndCheck<double>(nj);
+    _dutycycleToPwm = allocAndCheck<double>(nj);
     _bemfGain=allocAndCheck<double>(nj);
     _ktau=allocAndCheck<double>(nj);
     _maxStep=allocAndCheck<double>(nj);
@@ -2001,7 +1991,7 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<double>(_maxTorque);
     checkAndDestroy<double>(_newtonsToSensor);
     checkAndDestroy<double>(_ampsToSensor);
-    checkAndDestroy<double>(_dutycycleToPWM);
+    checkAndDestroy<double>(_dutycycleToPwm);
     checkAndDestroy<double>(_bemfGain);
     checkAndDestroy<double>(_ktau);
     checkAndDestroy<double>(_maxStep);
@@ -2558,7 +2548,7 @@ bool CanBusMotionControl::open (Searchable &config)
     ImplementAxisInfo::initialize(p._njoints, p._axisMap);
     ImplementRemoteVariables::initialize(p._njoints, p._axisMap);
     ImplementCurrentControl::initialize(p._njoints, p._axisMap, p._ampsToSensor);
-    ImplementPWMControl::initialize(p._njoints, p._axisMap, p._dutycycleToPWM);
+    ImplementPWMControl::initialize(p._njoints, p._axisMap, p._dutycycleToPwm);
 
     delete [] tmpZeros; tmpZeros=0;
     delete [] tmpOnes;  tmpOnes=0;

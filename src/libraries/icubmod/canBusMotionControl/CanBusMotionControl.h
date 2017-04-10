@@ -203,7 +203,7 @@ public:
     double *_maxTorque;                         /** Max torque of a joint */
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
     double *_ampsToSensor;
-    double *_dutycycleToPWM;
+    double *_dutycycleToPwm;
     enum       torqueControlUnitsType {MACHINE_UNITS=0, METRIC_UNITS=1};
     torqueControlUnitsType _torqueControlUnits;
     bool _torqueControlEnabled;                 /** abilitation for torque control */

@@ -116,7 +116,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     zeros = allocAndCheck<double>(njoints);
     newtonsToSensor = allocAndCheck<double>(njoints);
     ampsToSensor = allocAndCheck<double>(njoints);
-    dutycycleToPWM = allocAndCheck<double>(njoints);
+    dutycycleToPwm = allocAndCheck<double>(njoints);
 
     controlMode = allocAndCheck<int>(njoints);
     interactionMode = allocAndCheck<int>(njoints);
@@ -194,12 +194,12 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     }
     for (int i = 1; i < xtmp.size(); i++) angleToEncoder[i-1] = xtmp.get(i).asDouble();
 
-    xtmp = p.findGroup("GENERAL").findGroup("dutycycleToPWM", "a list of scales for the dutycycleToPWM param");
+    xtmp = p.findGroup("GENERAL").findGroup("fullscalePWM", "a list of scales for the fullscalePWM param");
     if (xtmp.size() != njoints + 1) {
-        yError("dutycycleToPWM does not have the right number of entries\n");
+        yError("fullscalePWM does not have the right number of entries\n");
         return false;
     }
-    for (int i = 1; i < xtmp.size(); i++) dutycycleToPWM[i - 1] = xtmp.get(i).asDouble();
+    for (int i = 1; i < xtmp.size(); i++) dutycycleToPwm[i - 1] = xtmp.get(i).asDouble()/100.0;
 
     xtmp = p.findGroup("GENERAL").findGroup("ampsToSensor", "a list of scales for the ampsToSensor param");
     if (xtmp.size() != njoints + 1) {
@@ -318,7 +318,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     ImplementAxisInfo::initialize(njoints, axisMap);
     ImplementMotor::initialize(njoints, axisMap);
     ImplementCurrentControl::initialize(njoints, axisMap, ampsToSensor);
-    ImplementPWMControl::initialize(njoints, axisMap, dutycycleToPWM);
+    ImplementPWMControl::initialize(njoints, axisMap, dutycycleToPwm);
 
     if (!p.check("joint_device")) {
         yError("Need a device to access the joints\n");
@@ -428,7 +428,7 @@ bool iCubSimulationControl::close (void)
     checkAndDestroy<int>(rotorIndexOffset);
     checkAndDestroy<int>(motorPoles);
     checkAndDestroy<double>(ampsToSensor);
-    checkAndDestroy<double>(dutycycleToPWM);
+    checkAndDestroy<double>(dutycycleToPwm);
     //  delete[] jointNames;
 
     _opened = false;

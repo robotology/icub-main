@@ -476,7 +476,7 @@ protected:
     double *zeros;                             /** encoder zeros */
     double *newtonsToSensor;
     double *ampsToSensor;
-    double *dutycycleToPWM;
+    double *dutycycleToPwm;
 
     double *error_tol;
 

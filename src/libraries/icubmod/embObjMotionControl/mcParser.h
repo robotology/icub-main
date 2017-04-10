@@ -377,7 +377,7 @@ public:
     bool isVerboseEnabled(yarp::os::Searchable &config);
     bool parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::vector<eomc_axisInfo_t> &axisInfo);
     bool parseEncoderFactor(yarp::os::Searchable &config, double encoderFactor[]);
-    bool parseDutycycleToPWM(yarp::os::Searchable &config, double dutycycleToPWM[]);
+    bool parsefullscalePWM(yarp::os::Searchable &config, double dutycycleToPWM[]);
     bool parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSensor[]);
     bool parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J[], double gearbox_E2J[]);
     bool parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[]);

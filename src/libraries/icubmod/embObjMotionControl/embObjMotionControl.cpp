@@ -1096,7 +1096,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
                 return false;
         }
 
-        if (!_mcparser->parseDutycycleToPWM(config, _dutycycleToPWM))
+        if (!_mcparser->parsefullscalePWM(config, _dutycycleToPWM))
             return false;
 
         if (!_mcparser->parseAmpsToSensor(config, _ampsToSensor))

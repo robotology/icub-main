@@ -1481,7 +1481,7 @@ bool mcParser::parseEncoderFactor(yarp::os::Searchable &config, double encoderFa
     return true;
 }
 
-bool mcParser::parseDutycycleToPWM(yarp::os::Searchable &config, double dutycycleToPWM[])
+bool mcParser::parsefullscalePWM(yarp::os::Searchable &config, double dutycycleToPWM[])
 {
     Bottle general = config.findGroup("GENERAL");
     if (general.isNull())
@@ -1493,9 +1493,10 @@ bool mcParser::parseDutycycleToPWM(yarp::os::Searchable &config, double dutycycl
     int i;
     double tmpval;
 
-    // Encoder scales
-    if (!extractGroup(general, xtmp, "dutycycleToPWM", "a list of scales for the dutycycleToPWM conversion factor", _njoints))
+    // fullscalePWM
+    if (!extractGroup(general, xtmp, "fullscalePWM", "a list of scales for the fullscalePWM conversion factor", _njoints))
     {
+        yError("fullscalePWM param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support");
         return false;
     }
 
@@ -1504,9 +1505,10 @@ bool mcParser::parseDutycycleToPWM(yarp::os::Searchable &config, double dutycycl
         tmpval = xtmp.get(i).asDouble();
         if (tmpval<0)
         {
-            yWarning() << "embObjMC BOARD " << _boardname << "dutycycleToPWM parameter should be positive!";
+            yError() << "embObjMC BOARD " << _boardname << "fullscalePWM parameter should be positive!";
+            return false;
         }
-        dutycycleToPWM[i - 1] = tmpval;
+        dutycycleToPWM[i - 1] = tmpval / 100.0;
     }
 
     return true;
@@ -1525,9 +1527,10 @@ bool mcParser::parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSens
     int i;
     double tmpval;
 
-    // Encoder scales
+    // ampsToSensor
     if (!extractGroup(general, xtmp, "ampsToSensor", "a list of scales for the ampsToSensor conversion factor", _njoints))
     {
+        yError("ampsToSensor param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support");
         return false;
     }
 
@@ -1536,7 +1539,8 @@ bool mcParser::parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSens
         tmpval = xtmp.get(i).asDouble();
         if (tmpval<0)
         {
-            yWarning() << "embObjMC BOARD " << _boardname << "ampsToSensor parameter should be positive!";
+            yError() << "embObjMC BOARD " << _boardname << "ampsToSensor parameter should be positive!";
+            return false;
         }
         ampsToSensor[i - 1] = tmpval;
     }
