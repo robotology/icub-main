@@ -2464,12 +2464,29 @@ return NOT_YET_IMPLEMENTED("getCurrentsRaw");
 
 bool iCubSimulationControl::getCurrentRangeRaw(int j, double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getCurrentRangeRaw");
+    if ((j >= 0) && (j<njoints))
+    {
+        _mutex.wait();
+        *min = -3;
+        *max = 3;
+        _mutex.post();
+        return true;
+    }
+    if (verbosity)
+        yError("setRefCurrentRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
+    return false;
 }
 
 bool iCubSimulationControl::getCurrentRangesRaw(double *min, double *max)
 {
-    return NOT_YET_IMPLEMENTED("getCurrentRangesRaw");
+    _mutex.wait();
+    for (int axis = 0; axis < njoints; axis++)
+    {
+        min[axis] = -3;
+        max[axis] = 3;
+    }
+    _mutex.post();
+    return true;
 }
 
 bool iCubSimulationControl::setRefCurrentsRaw(const double *t)
