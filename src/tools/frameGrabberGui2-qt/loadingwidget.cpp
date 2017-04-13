@@ -6,6 +6,7 @@ LoadingWidget::LoadingWidget(QWidget *parent) :
     ui(new Ui::LoadingWidget)
 {
     ui->setupUi(this);
+    counter=0;
 
     setWindowFlags(Qt::FramelessWindowHint | Qt::Dialog);
     setAttribute(Qt::WA_TranslucentBackground);
