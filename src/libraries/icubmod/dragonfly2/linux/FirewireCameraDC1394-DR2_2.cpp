@@ -237,12 +237,12 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         }
     }
 
-    intrinsic.put("focalLengthX",config.check("focalLengthX",yarp::os::Value(0.0),"").asDouble());
-    intrinsic.put("focalLengthY",config.check("focalLengthY",yarp::os::Value(0.0),"").asDouble());
-    intrinsic.put("principalPointX",config.check("principalPointX",yarp::os::Value(0.0),"").asDouble());
-    intrinsic.put("principalPointY",config.check("principalPointY",yarp::os::Value(0.0),"").asDouble());
-    intrinsic.put("retificationMatrix",config.check("retificationMatrix",*retM,""));
-    intrinsic.put("distortionModel",config.check("distortionModel",yarp::os::Value(""),"").asString());
+    intrinsic.put("focalLengthX",config.check("focalLengthX",yarp::os::Value(0.0),"Horizontal component of the focal lenght").asDouble());
+    intrinsic.put("focalLengthY",config.check("focalLengthY",yarp::os::Value(0.0),"Vertical component of the focal lenght").asDouble());
+    intrinsic.put("principalPointX",config.check("principalPointX",yarp::os::Value(0.0),"X coordinate of the principal point").asDouble());
+    intrinsic.put("principalPointY",config.check("principalPointY",yarp::os::Value(0.0),"Y coordinate of the principal point").asDouble());
+    intrinsic.put("retificationMatrix",config.check("retificationMatrix",*retM,"Matrix that describes the lens' distortion"));
+    intrinsic.put("distortionModel",config.check("distortionModel",yarp::os::Value(""),"Reference to group of parameters describing the distortion model").asString());
     if(bt.isNull())
     {
         intrinsic.put("name","");
@@ -253,12 +253,12 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
         intrinsic.put("t2",0.0);
     }
     else{
-        intrinsic.put("name",bt.check("name",yarp::os::Value(""),"").asString());
-        intrinsic.put("k1",bt.check("k1",yarp::os::Value(0.0),"").asDouble());
-        intrinsic.put("k2",bt.check("k2",yarp::os::Value(0.0),"").asDouble());
-        intrinsic.put("k3",bt.check("k3",yarp::os::Value(0.0),"").asDouble());
-        intrinsic.put("t1",bt.check("t1",yarp::os::Value(0.0),"").asDouble());
-        intrinsic.put("t2",bt.check("t2",yarp::os::Value(0.0),"").asDouble());
+        intrinsic.put("name",bt.check("name",yarp::os::Value(""),"Name of the distortion model, see notes").asString());
+        intrinsic.put("k1",bt.check("k1",yarp::os::Value(0.0),"Radial distortion coefficient of the lens").asDouble());
+        intrinsic.put("k2",bt.check("k2",yarp::os::Value(0.0),"Radial distortion coefficient of the lens").asDouble());
+        intrinsic.put("k3",bt.check("k3",yarp::os::Value(0.0),"Radial distortion coefficient of the lens").asDouble());
+        intrinsic.put("t1",bt.check("t1",yarp::os::Value(0.0),"Tangential distortion of the lens").asDouble());
+        intrinsic.put("t2",bt.check("t2",yarp::os::Value(0.0),"Tangential distortion of the lens").asDouble());
     }
     delete retM;
 
