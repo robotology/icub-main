@@ -1481,6 +1481,72 @@ bool mcParser::parseEncoderFactor(yarp::os::Searchable &config, double encoderFa
     return true;
 }
 
+bool mcParser::parsefullscalePWM(yarp::os::Searchable &config, double dutycycleToPWM[])
+{
+    Bottle general = config.findGroup("GENERAL");
+    if (general.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Missing General group";
+        return false;
+    }
+    Bottle xtmp;
+    int i;
+    double tmpval;
+
+    // fullscalePWM
+    if (!extractGroup(general, xtmp, "fullscalePWM", "a list of scales for the fullscalePWM conversion factor", _njoints))
+    {
+        yError("fullscalePWM param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support");
+        return false;
+    }
+
+    for (i = 1; i < xtmp.size(); i++)
+    {
+        tmpval = xtmp.get(i).asDouble();
+        if (tmpval<0)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "fullscalePWM parameter should be positive!";
+            return false;
+        }
+        dutycycleToPWM[i - 1] = tmpval / 100.0;
+    }
+
+    return true;
+}
+
+
+bool mcParser::parseAmpsToSensor(yarp::os::Searchable &config, double ampsToSensor[])
+{
+    Bottle general = config.findGroup("GENERAL");
+    if (general.isNull())
+    {
+        yError() << "embObjMC BOARD " << _boardname << "Missing General group";
+        return false;
+    }
+    Bottle xtmp;
+    int i;
+    double tmpval;
+
+    // ampsToSensor
+    if (!extractGroup(general, xtmp, "ampsToSensor", "a list of scales for the ampsToSensor conversion factor", _njoints))
+    {
+        yError("ampsToSensor param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support");
+        return false;
+    }
+
+    for (i = 1; i < xtmp.size(); i++)
+    {
+        tmpval = xtmp.get(i).asDouble();
+        if (tmpval<0)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "ampsToSensor parameter should be positive!";
+            return false;
+        }
+        ampsToSensor[i - 1] = tmpval;
+    }
+
+    return true;
+}
 
 bool mcParser::parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J[], double gearbox_E2J[])
 {

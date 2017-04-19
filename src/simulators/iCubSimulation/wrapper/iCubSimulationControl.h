@@ -47,7 +47,8 @@
 #define MODE_TORQUE                     0x03
 #define MODE_IMPEDANCE_POS              0x04
 #define MODE_IMPEDANCE_VEL              0x05
-#define MODE_OPENLOOP                   0x50
+#define MODE_PWM                        0x50
+#define MODE_CURRENT                    0x60
 #define MODE_MIXED                      VOCAB_CM_MIXED
 #define MODE_FORCE_IDLE                 VOCAB_CM_FORCE_IDLE
 #define MODE_HW_FAULT                   VOCAB_CM_HW_FAULT
@@ -71,41 +72,42 @@ namespace yarp{
     }
 }
 class yarp::dev::iCubSimulationControl :
-public DeviceDriver,
-//public yarp::os::RateThread, 
-public IPositionControl2Raw,
-public ImplementPositionControl2,
-public IVelocityControl2Raw,
-public ImplementVelocityControl2,
-public ITorqueControlRaw,
-public ImplementTorqueControl,
-public IAmplifierControlRaw,
-public ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>,
-public IControlCalibrationRaw,
-public ImplementControlCalibration<iCubSimulationControl, IControlCalibration>,
-public IControlLimits2Raw,
-public ImplementControlLimits2,
-public IControlMode2Raw,
-public ImplementControlMode2,
-public IInteractionModeRaw,
-public ImplementInteractionMode,
-public IPidControlRaw,
-public ImplementPidControl<iCubSimulationControl, IPidControl>,
-public IEncodersTimedRaw,
-public ImplementEncodersTimed,
-public IMotorEncodersRaw,
-public ImplementMotorEncoders,
-public IMotorRaw,
-public ImplementMotor,
-public IPositionDirectRaw,
-public ImplementPositionDirect,
-public IOpenLoopControlRaw,
-public ImplementOpenLoopControl,
-public IRemoteVariablesRaw,
-public ImplementRemoteVariables,
-public IAxisInfoRaw,
-public ImplementAxisInfo
-
+    public DeviceDriver,
+    //public yarp::os::RateThread, 
+    public IPositionControl2Raw,
+    public ImplementPositionControl2,
+    public IVelocityControl2Raw,
+    public ImplementVelocityControl2,
+    public ITorqueControlRaw,
+    public ImplementTorqueControl,
+    public IAmplifierControlRaw,
+    public ImplementAmplifierControl<iCubSimulationControl, IAmplifierControl>,
+    public IControlCalibrationRaw,
+    public ImplementControlCalibration<iCubSimulationControl, IControlCalibration>,
+    public IControlLimits2Raw,
+    public ImplementControlLimits2,
+    public IControlMode2Raw,
+    public ImplementControlMode2,
+    public IInteractionModeRaw,
+    public ImplementInteractionMode,
+    public IPidControlRaw,
+    public ImplementPidControl<iCubSimulationControl, IPidControl>,
+    public IEncodersTimedRaw,
+    public ImplementEncodersTimed,
+    public IMotorEncodersRaw,
+    public ImplementMotorEncoders,
+    public IMotorRaw,
+    public ImplementMotor,
+    public IPositionDirectRaw,
+    public ImplementPositionDirect,
+    public IRemoteVariablesRaw,
+    public ImplementRemoteVariables,
+    public IAxisInfoRaw,
+    public ImplementAxisInfo,
+    public IPWMControlRaw,
+    public ImplementPWMControl,
+    public ICurrentControlRaw,
+    public ImplementCurrentControl
 {
  private:
   iCubSimulationControl(const iCubSimulationControl&);
@@ -140,17 +142,6 @@ public ImplementAxisInfo
   virtual bool getEncoderTimedRaw(int j, double *encs, double *stamp);
 
 
-  ///////////// OPENLOOP INTERFACE
-  //
-  virtual bool setRefOutputRaw (int j, double v);
-  virtual bool setRefOutputsRaw (const double *v);
-  virtual bool getRefOutputRaw (int j, double *v);
-  virtual bool getRefOutputsRaw (double *v);
-  virtual bool getOutputRaw (int j, double *v);
-  virtual bool getOutputsRaw (double *v);
-  virtual bool setOpenLoopModeRaw ();
-  /////////////////////////////// END OPENLOOP INTERFACE
-
   ///////////// PID INTERFACE
   //
   virtual bool setPidRaw(int j, const Pid &pid);
@@ -161,8 +152,8 @@ public ImplementAxisInfo
   virtual bool setErrorLimitsRaw(const double *limits);
   virtual bool getErrorRaw(int j, double *err);
   virtual bool getErrorsRaw(double *errs);
-  //virtual bool getOutputRaw(int j, double *out);
-  //virtual bool getOutputsRaw(double *outs);
+  virtual bool getOutputRaw(int j, double *out);
+  virtual bool getOutputsRaw(double *outs);
   virtual bool getPidRaw(int j, Pid *pid);
   virtual bool getPidsRaw(Pid *pids);
   virtual bool getReferenceRaw(int j, double *ref);
@@ -349,7 +340,6 @@ public ImplementAxisInfo
   virtual bool setTorqueModeRaw(int j);
   virtual bool setImpedancePositionModeRaw(int j);
   virtual bool setImpedanceVelocityModeRaw(int j);
-  virtual bool setOpenLoopModeRaw(int j);
   virtual bool getControlModeRaw(int j, int *mode);
   virtual bool getControlModesRaw(int* modes);
 
@@ -376,6 +366,37 @@ public ImplementAxisInfo
   virtual bool getRefPositionRaw(const int joint, double *ref);
   virtual bool getRefPositionsRaw(double *refs);
   virtual bool getRefPositionsRaw(const int n_joint, const int *joints, double *refs);
+
+  /////// PWMControl
+  virtual bool setRefDutyCycleRaw(int j, double v);
+  virtual bool setRefDutyCyclesRaw(const double *v);
+  virtual bool getRefDutyCycleRaw(int j, double *v);
+  virtual bool getRefDutyCyclesRaw(double *v);
+  virtual bool getDutyCycleRaw(int j, double *v);
+  virtual bool getDutyCyclesRaw(double *v);
+
+  /////// CurrentControl
+  // virtual bool getAxes(int *ax);
+  //virtual bool getCurrentRaw(int j, double *t);
+  //virtual bool getCurrentsRaw(double *t);
+  virtual bool getCurrentRangeRaw(int j, double *min, double *max);
+  virtual bool getCurrentRangesRaw(double *min, double *max);
+  virtual bool setRefCurrentsRaw(const double *t);
+  virtual bool setRefCurrentRaw(int j, double t);
+  virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t);
+  virtual bool getRefCurrentsRaw(double *t);
+  virtual bool getRefCurrentRaw(int j, double *t);
+  virtual bool setCurrentPidRaw(int j, const Pid &pid);
+  virtual bool setCurrentPidsRaw(const Pid *pids);
+  virtual bool getCurrentErrorRaw(int j, double *err);
+  virtual bool getCurrentErrorsRaw(double *errs);
+  virtual bool getCurrentPidOutputRaw(int j, double *out);
+  virtual bool getCurrentPidOutputsRaw(double *outs);
+  virtual bool getCurrentPidRaw(int j, Pid *pid);
+  virtual bool getCurrentPidsRaw(Pid *pids);
+  virtual bool resetCurrentPidRaw(int j);
+  virtual bool disableCurrentPidRaw(int j);
+  virtual bool enableCurrentPidRaw(int j);
 
 //void run(void);
 
@@ -407,8 +428,13 @@ protected:
     double *current_jnt_torques; // at the moment this is fake
     double *current_mot_torques; // at the moment this is fake
 
-    //openloop/pwm value
-    double *openloop_ref; // at the moment this is fake
+    //pwm value
+    double *pwm; // at the moment this is fake
+    double *pwm_ref; // at the moment this is fake
+
+    //motor current
+    double *current_ampere; // at the moment this is fake
+    double *current_ampere_ref; // at the moment this is fake
 
     //current velocity of the joints
     double *current_jnt_vel;
@@ -449,6 +475,8 @@ protected:
 
     double *zeros;                             /** encoder zeros */
     double *newtonsToSensor;
+    double *ampsToSensor;
+    double *dutycycleToPwm;
 
     double *error_tol;
 

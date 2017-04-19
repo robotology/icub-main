@@ -202,6 +202,8 @@ public:
     int *_torqueSensorChan;                     /** Channel of associated Joint Torque Sensor */
     double *_maxTorque;                         /** Max torque of a joint */
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
+    double *_ampsToSensor;
+    double *_dutycycleToPwm;
     enum       torqueControlUnitsType {MACHINE_UNITS=0, METRIC_UNITS=1};
     torqueControlUnitsType _torqueControlUnits;
     bool _torqueControlEnabled;                 /** abilitation for torque control */
@@ -661,7 +663,6 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public IControlLimits2Raw,
             public ITorqueControlRaw,
             public IImpedanceControlRaw,
-            public IOpenLoopControlRaw,
             public IControlMode2Raw,
             public IPreciselyTimed,
             public ImplementPositionControl2,
@@ -680,7 +681,6 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementControlLimits2,
             public ImplementTorqueControl,
             public ImplementImpedanceControl,
-            public ImplementOpenLoopControl,
             public ImplementControlMode2,
             public IInteractionModeRaw,
             public ImplementInteractionMode,
@@ -688,6 +688,10 @@ class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public ImplementRemoteVariables,
             public IAxisInfoRaw,
             public ImplementAxisInfo,
+            public IPWMControlRaw,
+            public ImplementPWMControl,
+            public ICurrentControlRaw,
+            public ImplementCurrentControl,
             public IFactoryInterface,
             public IClientLogger
 {
@@ -835,8 +839,8 @@ public:
     virtual bool setErrorLimitsRaw(const double *limits);
     virtual bool getErrorRaw(int j, double *err);
     virtual bool getErrorsRaw(double *errs);
-//    virtual bool getOutputRaw(int j, double *out);    // also in the openloop interface
-//    virtual bool getOutputsRaw(double *outs);         // also in the openloop interface
+    virtual bool getOutputRaw(int j, double *out);
+    virtual bool getOutputsRaw(double *outs);
     virtual bool getPidRaw(int j, Pid *pid);
     virtual bool getPidsRaw(Pid *pids);
     virtual bool getReferenceRaw(int j, double *ref);
@@ -929,7 +933,6 @@ public:
     virtual bool setTorqueModeRaw(int j);
     virtual bool setImpedancePositionModeRaw(int j);
     virtual bool setImpedanceVelocityModeRaw(int j);
-    virtual bool setOpenLoopModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int* v);
 
@@ -938,17 +941,6 @@ public:
     virtual bool setControlModeRaw(const int j, const int mode);
     virtual bool setControlModesRaw(const int n_joint, const int *joints, int *modes);
     virtual bool setControlModesRaw(int *modes);
-
-
-    ///////////// OpenLoop control interface raw
-    ///
-    virtual bool setRefOutputRaw(int axis, double v);
-    virtual bool setRefOutputsRaw(const double *v);
-    virtual bool getRefOutputRaw(int j, double *out);
-    virtual bool getRefOutputsRaw(double *outs);
-    virtual bool getOutputRaw(int j, double *out);
-    virtual bool getOutputsRaw(double *outs);
-    /////////////////////////////// END OpenLoop Control INTERFACE
 
     //////////////////////// BEGIN RemoteVariables Interface
     virtual bool getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val);
@@ -1113,6 +1105,37 @@ public:
     virtual bool setInteractionModeRaw(int axis, yarp::dev::InteractionModeEnum mode);
     virtual bool setInteractionModesRaw(int n_joints, int *joints, yarp::dev::InteractionModeEnum* modes);
     virtual bool setInteractionModesRaw(yarp::dev::InteractionModeEnum* modes);
+
+    // PWMControl
+    virtual bool setRefDutyCycleRaw(int j, double v);
+    virtual bool setRefDutyCyclesRaw(const double *v);
+    virtual bool getRefDutyCycleRaw(int j, double *v);
+    virtual bool getRefDutyCyclesRaw(double *v);
+    virtual bool getDutyCycleRaw(int j, double *v);
+    virtual bool getDutyCyclesRaw(double *v);
+
+    // CurrentControl
+    // virtual bool getAxes(int *ax);
+    //virtual bool getCurrentRaw(int j, double *t);
+    //virtual bool getCurrentsRaw(double *t);
+    virtual bool getCurrentRangeRaw(int j, double *min, double *max);
+    virtual bool getCurrentRangesRaw(double *min, double *max);
+    virtual bool setRefCurrentsRaw(const double *t);
+    virtual bool setRefCurrentRaw(int j, double t);
+    virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t);
+    virtual bool getRefCurrentsRaw(double *t);
+    virtual bool getRefCurrentRaw(int j, double *t);
+    virtual bool setCurrentPidRaw(int j, const Pid &pid);
+    virtual bool setCurrentPidsRaw(const Pid *pids);
+    virtual bool getCurrentErrorRaw(int j, double *err);
+    virtual bool getCurrentErrorsRaw(double *errs);
+    virtual bool getCurrentPidOutputRaw(int j, double *out);
+    virtual bool getCurrentPidOutputsRaw(double *outs);
+    virtual bool getCurrentPidRaw(int j, Pid *pid);
+    virtual bool getCurrentPidsRaw(Pid *pids);
+    virtual bool resetCurrentPidRaw(int j);
+    virtual bool disableCurrentPidRaw(int j);
+    virtual bool enableCurrentPidRaw(int j);
 
 protected:
     bool setBCastMessages (int axis, unsigned int v);

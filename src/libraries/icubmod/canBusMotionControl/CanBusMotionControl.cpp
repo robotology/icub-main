@@ -38,6 +38,7 @@
 #include "can_string_generic.h"
 /// get the message types from the DSP code.
 #include "messages.h"
+#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
@@ -1321,6 +1322,22 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 _rotToEncoder[i-1] = xtmp.get(i).asDouble();
         }
 
+    if (!validate(general, xtmp, "fullscalePWM", " list of scales for the fullscalePWM conversion factor", nj + 1))
+    {
+        yError("fullscalePWM param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support");
+        return false;
+    }
+    for (i = 1; i < xtmp.size(); i++)
+        _dutycycleToPwm[i - 1] = xtmp.get(i).asDouble()/100.0;
+
+    if (!validate(general, xtmp, "ampsToSensor", "a list of scales for the ampsToSensor conversion factor", nj + 1))
+    {
+        yError("ampsToSensor param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support");
+        return false;
+    }
+    for (i = 1; i < xtmp.size(); i++)
+        _ampsToSensor[i - 1] = xtmp.get(i).asDouble();
+
     if (!validate(general, xtmp, "Zeros","a list of offsets for the zero point", nj+1))
         return false;
 
@@ -1868,6 +1885,8 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _torqueSensorChan=0;
     _maxTorque=0;
     _newtonsToSensor=0;
+    _ampsToSensor = 0;
+    _dutycycleToPwm = 0;
     _debug_params=0;
     _impedance_params=0;
     _impedance_limits=0;
@@ -1904,6 +1923,8 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _torqueSensorChan= allocAndCheck<int>(nj);
     _maxTorque=allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
+    _ampsToSensor = allocAndCheck<double>(nj);
+    _dutycycleToPwm = allocAndCheck<double>(nj);
     _bemfGain=allocAndCheck<double>(nj);
     _ktau=allocAndCheck<double>(nj);
     _maxStep=allocAndCheck<double>(nj);
@@ -1969,6 +1990,8 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<int>(_torqueSensorChan);
     checkAndDestroy<double>(_maxTorque);
     checkAndDestroy<double>(_newtonsToSensor);
+    checkAndDestroy<double>(_ampsToSensor);
+    checkAndDestroy<double>(_dutycycleToPwm);
     checkAndDestroy<double>(_bemfGain);
     checkAndDestroy<double>(_ktau);
     checkAndDestroy<double>(_maxStep);
@@ -2372,7 +2395,6 @@ ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>(this),
 ImplementControlLimits2(this),
 ImplementTorqueControl(this),
 ImplementImpedanceControl(this),
-ImplementOpenLoopControl(this),
 ImplementControlMode2(this),
 ImplementPositionDirect(this),
 ImplementInteractionMode(this),
@@ -2380,6 +2402,8 @@ ImplementMotorEncoders(this),
 ImplementMotor(this),
 ImplementRemoteVariables(this),
 ImplementAxisInfo(this),
+ImplementPWMControl(this),
+ImplementCurrentControl(this),
 _mutex(1),
 _done(0)
 {
@@ -2518,12 +2542,13 @@ bool CanBusMotionControl::open (Searchable &config)
     
     _axisImpedanceHelper = new axisImpedanceHelper(p._njoints, p._impedance_limits);
     ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
-    ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
     ImplementPositionDirect::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
     ImplementInteractionMode::initialize(p._njoints, p._axisMap);
     _axisPositionDirectHelper = new axisPositionDirectHelper(p._njoints, p._axisMap, p._angleToEncoder, p._maxStep);
     ImplementAxisInfo::initialize(p._njoints, p._axisMap);
     ImplementRemoteVariables::initialize(p._njoints, p._axisMap);
+    ImplementCurrentControl::initialize(p._njoints, p._axisMap, p._ampsToSensor);
+    ImplementPWMControl::initialize(p._njoints, p._axisMap, p._dutycycleToPwm);
 
     delete [] tmpZeros; tmpZeros=0;
     delete [] tmpOnes;  tmpOnes=0;
@@ -2990,11 +3015,12 @@ bool CanBusMotionControl::close (void)
         ImplementControlMode2::uninitialize();
         ImplementTorqueControl::uninitialize();
         ImplementImpedanceControl::uninitialize();
-        ImplementOpenLoopControl::uninitialize();
         ImplementPositionDirect::uninitialize();
         ImplementInteractionMode::uninitialize();
         ImplementRemoteVariables::uninitialize();
         ImplementAxisInfo::uninitialize();
+        ImplementCurrentControl::uninitialize();
+        ImplementPWMControl::uninitialize();
 
         //stop analog sensors
         std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
@@ -3813,11 +3839,6 @@ bool CanBusMotionControl::setPositionModeRaw(int j)
     return DEPRECATED("setPositionModeRaw");
 }
 
-bool CanBusMotionControl::setOpenLoopModeRaw(int j)
-{
-    return DEPRECATED("setOpenLoopModeRaw");
-}
-
 bool CanBusMotionControl::setVelocityModeRaw(int j)
 {
     return DEPRECATED("setVelocityModeRaw");
@@ -3940,8 +3961,12 @@ unsigned char CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
     case VOCAB_CM_IMPEDANCE_VEL:
         return icubCanProto_controlmode_impedance_vel;
         break;
-    case VOCAB_CM_OPENLOOP:
+    case VOCAB_CM_PWM:
         return  icubCanProto_controlmode_openloop;
+        break;
+    case VOCAB_CM_CURRENT:
+        return  VOCAB_CM_UNKNOWN;
+        yError("'VOCAB_CM_CURRENT' error condition detected");
         break;
 
     case VOCAB_CM_FORCE_IDLE: 
@@ -3984,7 +4009,7 @@ int CanBusMotionControl::from_modeint_to_modevocab (unsigned char modeint)
         return VOCAB_CM_IMPEDANCE_VEL;
         break;
     case icubCanProto_controlmode_openloop:
-        return VOCAB_CM_OPENLOOP;
+        return VOCAB_CM_PWM;
         break;
 
     //internal status
@@ -5453,55 +5478,6 @@ bool CanBusMotionControl::setDebugReferencePositionRaw(int axis, double value)
 
     //return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_DESIRED_POSITION, axis, S_32(value));
     return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, axis, S_32(value));
-}
-
-bool CanBusMotionControl::setRefOutputsRaw(const double *v)
-{
-    CanBusResources& r = RES(system_resources);
-
-    int i;
-    for (i = 0; i < r.getJoints(); i++)
-    {
-        setRefOutputRaw(i,v[i]);
-    }
-
-    return true;
-}
-
-bool CanBusMotionControl::setRefOutputRaw(int axis, double v)
-{
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_OPENLOOP_PARAMS, axis, S_16(v));
-}
-
-bool CanBusMotionControl::getRefOutputRaw(int j, double *out)
-{
-    const int axis = j;
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    short int value = 0;
-    if (_readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_OPENLOOP_PARAMS, axis, value) == true)
-        *out = double (value);
-    else
-        return false;
-
-    return true;
-}
-
-bool CanBusMotionControl::getRefOutputsRaw(double *outs)
-{
-    CanBusResources& r = RES(system_resources);
-    if (outs==0) return false;
-    int i = 0;
-    bool ret = true;
-    for (i = 0; i < r.getJoints(); i++)
-    {
-        ret = ret & getRefOutputRaw(i,&outs[i]);
-    }
-    return ret;
 }
 
 bool CanBusMotionControl::getOutputRaw(int axis, double *out)
@@ -7651,4 +7627,166 @@ bool CanBusMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
     }
 
     return true;
+}
+
+//PWM interface
+bool CanBusMotionControl::setRefDutyCycleRaw(int j, double v)
+{
+    if (!(j >= 0 && j <= (CAN_MAX_CARDS - 1) * 2))
+        return false;
+
+    return _writeWord16(ICUBCANPROTO_POL_MC_CMD__SET_OPENLOOP_PARAMS, j, S_16(v));
+}
+
+bool CanBusMotionControl::setRefDutyCyclesRaw(const double *v)
+{
+    CanBusResources& r = RES(system_resources);
+
+    int i;
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        setRefDutyCycleRaw(i, v[i]);
+    }
+
+    return true;
+}
+
+bool CanBusMotionControl::getRefDutyCycleRaw(int j, double *v)
+{
+    const int axis = j;
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
+        return false;
+
+    short int value = 0;
+    if (_readWord16(ICUBCANPROTO_POL_MC_CMD__GET_OPENLOOP_PARAMS, axis, value) == true)
+        *v = double(value);
+    else
+        return false;
+
+    return true;
+}
+
+bool CanBusMotionControl::getRefDutyCyclesRaw(double *v)
+{
+    CanBusResources& r = RES(system_resources);
+    if (v == 0) return false;
+    int i = 0;
+    bool ret = true;
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        ret = ret & getRefDutyCycleRaw(i, &v[i]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::getDutyCycleRaw(int j, double *v)
+{
+    return NOT_YET_IMPLEMENTED("getDutyCycleRaw");
+}
+
+bool CanBusMotionControl::getDutyCyclesRaw(double *v)
+{
+    return NOT_YET_IMPLEMENTED("getDutyCyclesRaw");
+}
+
+// Current interface
+/*bool CanBusMotionControl::getCurrentRaw(int j, double *t)
+{
+return NOT_YET_IMPLEMENTED("getCurrentRaw");
+}
+
+bool CanBusMotionControl::getCurrentsRaw(double *t)
+{
+return NOT_YET_IMPLEMENTED("getCurrentsRaw");
+}
+*/
+
+bool CanBusMotionControl::getCurrentRangeRaw(int j, double *min, double *max)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentRangeRaw");
+}
+
+bool CanBusMotionControl::getCurrentRangesRaw(double *min, double *max)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentRangesRaw");
+}
+
+bool CanBusMotionControl::setRefCurrentsRaw(const double *t)
+{
+    return NOT_YET_IMPLEMENTED("setRefCurrentsRaw");
+}
+
+bool CanBusMotionControl::setRefCurrentRaw(int j, double t)
+{
+    return NOT_YET_IMPLEMENTED("setRefCurrentRaw");
+}
+
+bool CanBusMotionControl::setRefCurrentsRaw(const int n_joint, const int *joints, const double *t)
+{
+    return NOT_YET_IMPLEMENTED("setRefCurrentsRaw");
+}
+
+bool CanBusMotionControl::getRefCurrentsRaw(double *t)
+{
+    return NOT_YET_IMPLEMENTED("getRefCurrentsRaw");
+}
+
+bool CanBusMotionControl::getRefCurrentRaw(int j, double *t)
+{
+    return NOT_YET_IMPLEMENTED("getRefCurrentRaw");
+}
+
+bool CanBusMotionControl::setCurrentPidRaw(int j, const Pid &pid)
+{
+    return NOT_YET_IMPLEMENTED("setCurrentPidRaw");
+}
+
+bool CanBusMotionControl::setCurrentPidsRaw(const Pid *pids)
+{
+    return NOT_YET_IMPLEMENTED("setCurrentPidsRaw");
+}
+
+bool CanBusMotionControl::getCurrentErrorRaw(int j, double *err)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentErrorRaw");
+}
+
+bool CanBusMotionControl::getCurrentErrorsRaw(double *errs)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentErrorsRaw");
+}
+
+bool CanBusMotionControl::getCurrentPidOutputRaw(int j, double *out)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentPidOutputRaw");
+}
+
+bool CanBusMotionControl::getCurrentPidOutputsRaw(double *outs)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentPidOutputsRaw");
+}
+
+bool CanBusMotionControl::getCurrentPidRaw(int j, Pid *pid)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentPidRaw");
+}
+
+bool CanBusMotionControl::getCurrentPidsRaw(Pid *pids)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentPidsRaw");
+}
+
+bool CanBusMotionControl::resetCurrentPidRaw(int j)
+{
+    return NOT_YET_IMPLEMENTED("resetCurrentPidRaw");
+}
+
+bool CanBusMotionControl::disableCurrentPidRaw(int j)
+{
+    return NOT_YET_IMPLEMENTED("disableCurrentPidRaw");
+}
+
+bool CanBusMotionControl::enableCurrentPidRaw(int j)
+{
+    return NOT_YET_IMPLEMENTED("enableCurrentPidRaw");
 }
