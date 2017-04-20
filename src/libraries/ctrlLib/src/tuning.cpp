@@ -389,7 +389,7 @@ void OnlineStictionEstimator::run()
 /**********************************************************************/
 void OnlineStictionEstimator::threadRelease()
 {
-    ipwm->setRefDutyCycle(joint, 0.0);
+    ipwm->setRefDutyCycle(joint,0.0);
     imod->setControlMode(joint,VOCAB_CM_POSITION);
     delete pid;
 
@@ -646,7 +646,7 @@ void OnlineCompensatorDesign::commandJoint(double &enc, double &u)
     }
 
     u=(pwm_pos?max_pwm:-max_pwm);
-    ipwm->setRefDutyCycle(joint, dpos_dV*u);
+    ipwm->setRefDutyCycle(joint,dpos_dV*u);
 }
 
 
@@ -769,7 +769,7 @@ void OnlineCompensatorDesign::run()
                     {
                         pidCur=(pidCur==&pidOld?&pidNew:&pidOld);                    
                         if ((pidCur==&pidOld) && controller_validation_stiction_yarp)
-                            ipwm->setRefDutyCycle(joint, 0.0);
+                            ipwm->setRefDutyCycle(joint,0.0);
 
                         ipid->setPid(joint,*pidCur);
                         controller_validation_num_cycles=0;
@@ -777,8 +777,8 @@ void OnlineCompensatorDesign::run()
                 }
 
                 if ((pidCur==&pidNew) && controller_validation_stiction_yarp)
-                    ipwm->setRefDutyCycle(joint, (x_tg == x_max) ? controller_validation_stiction_up :
-                                                           controller_validation_stiction_down);
+                    ipwm->setRefDutyCycle(joint,(x_tg==x_max)?controller_validation_stiction_up:
+                                                              controller_validation_stiction_down);
 
                 if (controller_validation_ref_square)
                     ipid->setReference(joint,x_tg);
@@ -818,7 +818,7 @@ void OnlineCompensatorDesign::threadRelease()
         // -----
         case plant_validation:
         {
-            ipwm->setRefDutyCycle(joint, 0.0);
+            ipwm->setRefDutyCycle(joint,0.0);
             imod->setControlMode(joint,VOCAB_CM_POSITION);
             break;
         }
