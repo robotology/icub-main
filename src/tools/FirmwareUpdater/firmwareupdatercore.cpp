@@ -15,15 +15,19 @@ FirmwareUpdaterCore::FirmwareUpdaterCore(QObject *parent) : QObject(parent), mut
     self = this;
 }
 
-bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address)
+bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address, int VerbositY)
 {
+    verbosity = VerbositY;
 
     mutex.lock();
     if(!gMNT.open()){
-        qDebug("Can't open socket, aborting.");
+        if(verbosity>0) qDebug("Can't open socket, aborting.");
         mutex.unlock();
         return false;
     }
+
+    setVerbosity(verbosity);
+
 
     Bottle sensorSetConfig=config.findGroup("DRIVERS").tail();
 
@@ -32,7 +36,8 @@ bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address)
 
         QString type = QString("%1").arg(sensorConfig.get(0).asString().c_str());
         QString line = QString("%1").arg(sensorConfig.get(1).asString().c_str());
-        qDebug() << type << "-" << line;
+        if(verbosity>0) qDebug() << type << "-" << line;
+
 
         bool ok;
         int num = QString("%1").arg(line).toInt(&ok);
@@ -43,6 +48,16 @@ bool FirmwareUpdaterCore::init(Searchable& config, int port, QString address)
         }
     }
     mutex.unlock();
+    return true;
+}
+
+bool FirmwareUpdaterCore::setVerbosity(int verb)
+{
+    verbosity = verb;
+    bool lowers_are_verbose = (verb >= 1) ? true : false;
+    gMNT.verbose(lowers_are_verbose);
+    downloader.set_verbose(lowers_are_verbose);
+
     return true;
 }
 
@@ -108,8 +123,10 @@ int FirmwareUpdaterCore::connectTo(QString device, QString id)
     if(!device.isEmpty() && !id.isEmpty()){
         if(device.contains("ETH")){
             int num = gMNT.discover(true, 2, 1.0).size();
-            yDebug() << "Found " << num << " devices";
-            qDebug() << "Found " << num << " devices";
+            if(verbosity>0)
+            {
+                yDebug() << "FirmwareUpdaterCore::connectTo() has found " << num << " ETH boards";
+            }
             mutex.unlock();
             return num;
         }else{
@@ -286,15 +303,15 @@ QList<sBoard> FirmwareUpdaterCore::getCanBoardsFromDriver(QString driver, int ne
     params.put("canRxTimeout", 2000);
 
     //try to connect to the driver
-    int ret = downloader.initdriver(params);
+    int ret = downloader.initdriver(params, (verbosity>1) ? true : false);
 
     if (0 != ret){
         if(-2 == ret){
-            qDebug() << "FirmwareUpdaterCore::getCanBoardsFromDriver(): Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
+            if(verbosity>0) qDebug() << "FirmwareUpdaterCore::getCanBoardsFromDriver(): Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
             *retString = "FirmwareUpdaterCore::getCanBoardsFromDriver(): Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
             // TODO DIALOG
         } else {
-            qDebug() << "FirmwareUpdaterCore::getCanBoardsFromDriver(): Init driver failed - Hardware busy or not connected?!";
+            if(verbosity>0) qDebug() << "FirmwareUpdaterCore::getCanBoardsFromDriver(): Init driver failed - Hardware busy or not connected?!";
             *retString = "Cannot init driver " + driver + "<" +  QString::number(networkId) + "> ... HW is busy or not connected";
             // TODO DIALOG
         }
@@ -307,7 +324,7 @@ QList<sBoard> FirmwareUpdaterCore::getCanBoardsFromDriver(QString driver, int ne
 
     if (ret == -1)
     {
-        qDebug()  << "FirmwareUpdaterCore::getCanBoardsFromDriver(): No answer received from CAN boards after a successful driver init.";
+        if(verbosity>0) qDebug()  << "FirmwareUpdaterCore::getCanBoardsFromDriver(): No answer received from CAN boards after a successful driver init.";
         *retString = "No CAN boards found beneath " + driver + "<" + QString::number(networkId) + ">";
         downloader.stopdriver();
         currentAddress = "";
@@ -354,7 +371,7 @@ QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString
 
 
     if (!compile_ip_addresses(address.toLatin1().data(),&remoteAddr,&localAddr)){
-        qDebug() << "Init driver failed - Could not find network interface";
+        if(verbosity>0) qDebug() << "FirmwareUpdaterCore::getCanBoardsFromEth(): Init driver failed - Could not find network interface";
         // TODO DIALOG
         *retString = "Init driver failed - Could not find network interface";
         address = "";
@@ -371,15 +388,15 @@ QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString
 
 
     //try to connect to the driver
-    int ret = downloader.initdriver(params);
+    int ret = downloader.initdriver(params, (verbosity>1) ? true : false);
 
     if (0 != ret){
         if(-2 == ret){
-            qDebug() << "FirmwareUpdaterCore::getCanBoardsFromEth((): Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
+            if(verbosity>0) qDebug() << "FirmwareUpdaterCore::getCanBoardsFromEth((): Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
             *retString = "FirmwareUpdaterCore::getCanBoardsFromEth((): Init ETH driver - The ETH board has just jumped to eUpdater\n Connect again";
             // TODO DIALOG
         } else {
-            qDebug() << "FirmwareUpdaterCore::getCanBoardsFromEth((): Init driver failed - Hardware busy or not connected?!";
+            if(verbosity>0) qDebug() << "FirmwareUpdaterCore::getCanBoardsFromEth((): Init driver failed - Hardware busy or not connected?!";
             *retString = "FirmwareUpdaterCore::getCanBoardsFromEth(): Init driver failed - Hardware busy or not connected?!";
             // TODO DIALOG
         }
@@ -392,7 +409,7 @@ QList<sBoard > FirmwareUpdaterCore::getCanBoardsFromEth(QString address, QString
 
     if (ret == -1)
     {
-        qDebug()  << "FirmwareUpdaterCore::getCanBoardsFromEth(): No CAN boards found beneath " << address << " after a successful driver init.";
+        if(verbosity>0) qDebug()  << "FirmwareUpdaterCore::getCanBoardsFromEth(): No CAN boards found beneath " << address << " after a successful driver init.";
         *retString = "No CAN boards found beneath " + address;
         downloader.stopdriver();
         address = "";
@@ -475,18 +492,18 @@ bool FirmwareUpdaterCore::setEthBoardInfo(int index, QString newInfo)
     eOipv4addr_t address = gMNT.boards_get()[index].getIPV4();
     bool ret = gMNT.command_info32_set(address, newInfo.toLatin1().data());
     if(!ret){
-        qDebug() << "setEthBoardInfo failed";
+        if(verbosity>0) qDebug() << "setEthBoardInfo failed";
     }
 
 
     vector<string> vv = gMNT.command_info32_get(address);
     foreach (string v, vv) {
-        qDebug() << v.c_str();
+        if(verbosity>0) qDebug() << v.c_str();
     }
     // TODO chiedere
     // it already sets it internally to commandInfo32Get()
     if(vv.size() > 0){
-        qDebug() << gMNT.boards_get()[index].getInfoOnEEPROM().c_str();
+        if(verbosity>0) qDebug() << gMNT.boards_get()[index].getInfoOnEEPROM().c_str();
     }
     mutex.unlock();
     return true;
@@ -527,12 +544,12 @@ bool FirmwareUpdaterCore::setCanBoardAddress(int bus, int id, int canType,QStrin
 
     int new_val = newAddress.toInt();
     if (new_val <=0 || new_val> 15){
-        qDebug() << "Error, new address out of range 0 - 15";
+        if(verbosity>0) qDebug() << "Error, new address out of range 0 - 15";
         return false;
     }
 
     if (new_val == id){
-        qDebug() << "Error, same address set";
+        if(verbosity>0) qDebug() << "Error, same address set";
         return false;
     }
 
@@ -548,12 +565,12 @@ bool FirmwareUpdaterCore::setCanBoardAddress(int bus, int id, int canType,QStrin
 
 //        int new_val = newAddress.toInt();
 //        if (new_val <=0 || new_val> 15){
-//            qDebug() << "Error, new address out of range 0 - 15";
+//            if(verbosity>0) qDebug() << "Error, new address out of range 0 - 15";
 //            return false;
 //        }
 
 //        if (new_val == id){
-//            qDebug() << "Error, same address set";
+//            if(verbosity>0) qDebug() << "Error, same address set";
 //            return false;
 //        }
 
@@ -581,19 +598,19 @@ bool FirmwareUpdaterCore::setEthBoardAddress(int index, QString newAddress)
     ACE_UINT32 mask = 0xFFFFFF00;
 
     if(iNewAddress == (iNewAddress & mask)){ // checks new ip address is not a network address . For example x.y.z.w/24 x.y.z.0
-        qDebug() << "Error Setting address";
+        if(verbosity>0) qDebug() << "Error Setting address";
         mutex.unlock();
         return false;
     }
 
     if((~mask) == (iNewAddress & (~mask))){ // checks new ip address is not a broadcast address . For example x.y.z.w/24 x.y.z.255
-        qDebug() << "Error Setting address";
+        if(verbosity>0) qDebug() << "Error Setting address";
         mutex.unlock();
         return false;
     }
 
     if (iNewAddress == address){
-        qDebug() << "Error, same address set";
+        if(verbosity>0) qDebug() << "Error, same address set";
         mutex.unlock();
         return false;
     }
@@ -615,7 +632,7 @@ bool FirmwareUpdaterCore::uploadLoader(QString filename,QString *resultString)
     FILE *programFile=fopen(filename.toLatin1().data(),"r");
     if (!programFile){
         //TODO ERROR
-        qDebug() << "Error opening the selected file!";
+        if(verbosity>0) qDebug() << "Error opening the selected file!";
         mutex.unlock();
         return false;
     }
@@ -645,7 +662,7 @@ bool FirmwareUpdaterCore::uploadUpdater(QString filename,QString *resultString)
     FILE *programFile=fopen(filename.toLatin1().data(),"r");
     if (!programFile){
         //TODO ERROR
-        qDebug() << "Error opening the selected file!";
+        if(verbosity>0) qDebug() << "Error opening the selected file!";
         mutex.unlock();
         return false;
     }
@@ -713,7 +730,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
         {
             canDevices.insertMulti(downloader.board_list[i].bus,i);
             downloader.board_list[i].selected = false;
-            qDebug() << "FOUND SELECTED SCHEDA " << i << " ON BUS " << downloader.board_list[i].bus;
+            if(verbosity>0) qDebug() << "FOUND SELECTED SCHEDA " << i << " ON BUS " << downloader.board_list[i].bus;
         }
     }
 
@@ -729,7 +746,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
             mutex.unlock();
             return false;
         }
-        qDebug() << "FILE " << filename << " OPENED";
+        if(verbosity>0) qDebug() << "FILE " << filename << " OPENED";
         //TODO
         //@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
         //        if (strstr (buffer, "calibrationDataSN") != 0)
@@ -752,14 +769,14 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
         QList<int> indexes = canDevices.values(bus);
 //        foreach (int index, indexes) {
 //            downloader.board_list[index].selected = true;
-//            qDebug() << "SELECTING BOARD " << index << " OF BUS " << k;
+//            if(verbosity>0) qDebug() << "SELECTING BOARD " << index << " OF BUS " << k;
 //        }
 
 
         for(int i=0;i<indexes.count();i++){
             int index = indexes.at(i);
             downloader.board_list[index].selected = true;
-            qDebug() << "SELECTING BOARD " << index << " OF BUS " << bus;
+            if(verbosity>0) qDebug() << "SELECTING BOARD " << index << " OF BUS " << bus;
             if (downloader.board_list[index].status==BOARD_RUNNING){
                 if (downloader.startscheda(bus,
                                            downloader.board_list[index].pid,
@@ -769,7 +786,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
                     mutex.unlock();
                     return false;
                 } else {
-                    qDebug() << "START SCHEDA  " << index << " ON BUS " << bus << " OK";
+                    if(verbosity>0) qDebug() << "START SCHEDA  " << index << " ON BUS " << bus << " OK";
                     downloader.board_list[index].status=BOARD_WAITING;
                 }
                 download_type = downloader.board_list[index].type;
@@ -789,7 +806,7 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
 //                    *resultString = "Unable to start the board - Unable to send message 'start' or no answer received";
 //                    return false;
 //                } else {
-//                    qDebug() << "START SCHEDA  " << i << " OK";
+//                    if(verbosity>0) qDebug() << "START SCHEDA  " << i << " OK";
 //                    downloader.board_list[i].status=BOARD_WAITING;
 //                }
 //                download_type = downloader.board_list[i].type;
@@ -806,22 +823,22 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
         do
         {
             ret = downloader.download_file(bus, 0x0F, download_type,download_eeprom);
-            if (float(downloader.progress)/downloader.file_length/busCount >0.0  && print00==false)    {qDebug("downloading %s, 1%% done\n",filename.toLatin1().data()); print00=true;}
-            if (float(downloader.progress)/downloader.file_length/busCount >0.25 && print25==false)    {qDebug("downloading %s, 25%% done\n",filename.toLatin1().data()); print25=true;}
-            if (float(downloader.progress)/downloader.file_length/busCount >0.50 && print50==false)    {qDebug("downloading %s, 50%% done\n",filename.toLatin1().data()); print50=true;}
-            if (float(downloader.progress)/downloader.file_length/busCount >0.75 && print75==false)    {qDebug("downloading %s, 75%% done\n",filename.toLatin1().data()); print75=true;}
-            if (float(downloader.progress)/downloader.file_length/busCount >0.99 && print99==false)    {qDebug("downloading %s, finished!\n",filename.toLatin1().data()); print99=true;}
+            if (float(downloader.progress)/downloader.file_length/busCount >0.0  && print00==false)    {if(verbosity>0) qDebug("downloading %s, 1%% done\n",filename.toLatin1().data()); print00=true;}
+            if (float(downloader.progress)/downloader.file_length/busCount >0.25 && print25==false)    {if(verbosity>0) qDebug("downloading %s, 25%% done\n",filename.toLatin1().data()); print25=true;}
+            if (float(downloader.progress)/downloader.file_length/busCount >0.50 && print50==false)    {if(verbosity>0) qDebug("downloading %s, 50%% done\n",filename.toLatin1().data()); print50=true;}
+            if (float(downloader.progress)/downloader.file_length/busCount >0.75 && print75==false)    {if(verbosity>0) qDebug("downloading %s, 75%% done\n",filename.toLatin1().data()); print75=true;}
+            if (float(downloader.progress)/downloader.file_length/busCount >0.99 && print99==false)    {if(verbosity>0) qDebug("downloading %s, finished!\n",filename.toLatin1().data()); print99=true;}
 
             if (ret==1){
                 updateProgress(float(downloader.progress)/downloader.file_length/busCount);
             }
             if (ret==-1){
-                qDebug() << "Fatal Error during download, terminate";
+                if(verbosity>0) qDebug() << "Fatal Error during download, terminate";
                 *resultString = "Fatal Error during download, terminate";
                 finished = 1;
             }
             if (ret==0){
-                qDebug() << "Download terminated";
+                if(verbosity>0) qDebug() << "Download terminated";
                 *resultString = "Download terminated";
                 finished = 1;
             }
@@ -832,14 +849,14 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
         // End the download for the selected boards
 
         if(downloader.stopscheda(bus, 15) != 0){
-            qDebug() << "ERROR STOPPING SCHEDA";
+            if(verbosity>0) qDebug() << "ERROR STOPPING SCHEDA";
         }else{
-            qDebug() << "scheda stopped";
+            if(verbosity>0) qDebug() << "scheda stopped";
         }
 
         foreach (int index, indexes) {
             downloader.board_list[index].selected = false;
-            qDebug() << "DE-SELECTING BOARD " << index << " OF BUS " << bus;
+            if(verbosity>0) qDebug() << "DE-SELECTING BOARD " << index << " OF BUS " << bus;
         }
 
 
@@ -977,11 +994,11 @@ bool FirmwareUpdaterCore::uploadCanApplication(QString filename,QString *resultS
     do
     {
         ret = downloader.download_file(CanPacket::everyCANbus, 0x0F, download_type,download_eeprom);
-        if (float(downloader.progress)/downloader.file_length >0.0  && print00==false)    {qDebug("downloading %s, 1%% done\n",filename.toLatin1().data()); print00=true;}
-        if (float(downloader.progress)/downloader.file_length >0.25 && print25==false)    {qDebug("downloading %s, 25%% done\n",filename.toLatin1().data()); print25=true;}
-        if (float(downloader.progress)/downloader.file_length >0.50 && print50==false)    {qDebug("downloading %s, 50%% done\n",filename.toLatin1().data()); print50=true;}
-        if (float(downloader.progress)/downloader.file_length >0.75 && print75==false)    {qDebug("downloading %s, 75%% done\n",filename.toLatin1().data()); print75=true;}
-        if (float(downloader.progress)/downloader.file_length >0.99 && print99==false)    {qDebug("downloading %s, finished!\n",filename.toLatin1().data()); print99=true;}
+        if (float(downloader.progress)/downloader.file_length >0.0  && print00==false)    {if(verbosity>0) qDebug("programming %s: 1%% done",filename.toLatin1().data()); print00=true;}
+        if (float(downloader.progress)/downloader.file_length >0.25 && print25==false)    {if(verbosity>0) qDebug("programming %s: 25%% done",filename.toLatin1().data()); print25=true;}
+        if (float(downloader.progress)/downloader.file_length >0.50 && print50==false)    {if(verbosity>0) qDebug("programming %s: 50%% done",filename.toLatin1().data()); print50=true;}
+        if (float(downloader.progress)/downloader.file_length >0.75 && print75==false)    {if(verbosity>0) qDebug("programming %s: 75%% done",filename.toLatin1().data()); print75=true;}
+        if (float(downloader.progress)/downloader.file_length >0.99 && print99==false)    {if(verbosity>0) qDebug("programming %s: finished!",filename.toLatin1().data()); print99=true;}
 
 //        if ((float(downloader.progress)/downloader.file_length > acemortest_progress) && (acemortest_notyetstopped))
 //        {
@@ -1067,9 +1084,10 @@ bool FirmwareUpdaterCore::uploadEthApplication(QString filename,QString *resultS
 {
     mutex.lock();
     FILE *programFile=fopen(filename.toLatin1().data(),"r");
+//    if(verbosity>0) qDebug() << "attempting opening the selected file:" << filename << "or .." << filename.toLatin1().data();
     if (!programFile){
         //TODO ERROR
-        qDebug() << "Error opening the selected file!";
+        if(verbosity>0) qDebug() << "Error opening the selected file:" << filename << "or .." << filename.toLatin1().data();
         mutex.unlock();
         return false;
     }

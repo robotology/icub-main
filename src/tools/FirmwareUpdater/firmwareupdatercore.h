@@ -18,7 +18,8 @@ class FirmwareUpdaterCore : public QObject
 public:
     explicit FirmwareUpdaterCore(QObject *parent = 0);
 
-    bool init(Searchable& config, int port, QString address);
+    bool init(Searchable& config, int port, QString address, int VerbositY);
+    bool setVerbosity(int verb);
     QStringList getDevicesName();
     QList<QPair<QString,QVariant> > getDevices();
     int connectTo(QString device, QString id);
@@ -68,6 +69,7 @@ private:
     QString currentDriver;
     int currentId;
     QList <sBoard> canBoards;
+    int verbosity;
 
 signals:
     void updateProgress(float);

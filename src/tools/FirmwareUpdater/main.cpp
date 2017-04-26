@@ -8,7 +8,7 @@
 
 #include "firmwareupdatercore.h"
 
-#define UPDATER_RELEASE
+#undef UPDATER_RELEASE
 
 #ifdef Q_OS_WIN
 #include <Windows.h>
@@ -16,6 +16,8 @@
 
 #define MY_ADDR "10.0.1.104"
 #define MY_PORT 3333
+
+int verbosity = 1;
 
 using namespace yarp::os;
 
@@ -67,6 +69,7 @@ int main(int argc, char *argv[])
     QCommandLineOption ethForceMaintenance(QStringList() << "m" << "force-eth-maintenance", "Force the board to go in maintenace mode","");
     QCommandLineOption ethForceApplication(QStringList() << "o" << "force-eth-application", "Force the board to go in application mode","");
     QCommandLineOption eraseEEpromOption(QStringList() << "p" << "erase_eeprom" << "Erase EEprom","");
+    QCommandLineOption verbosityOption(QStringList() << "x" << "verbosity", "Choose a verbosity level [0, 1]","verbosity","");
 
 
     parser.addOption(noGuiOption);
@@ -85,6 +88,7 @@ int main(int argc, char *argv[])
     parser.addOption(ethForceMaintenance);
     parser.addOption(ethForceApplication);
     parser.addOption(eraseEEpromOption);
+    parser.addOption(verbosityOption);
 
     parser.process(a);
 
@@ -95,25 +99,31 @@ int main(int argc, char *argv[])
     bool bPrintUsage=false;
     int port = MY_PORT;
 
+    if(parser.isSet(verbosityOption))
+    {
+        QString vv = parser.value(verbosityOption);
+        verbosity = vv.toInt();
+    }
+
 
     if(parser.isSet(addressOption)){
         address = parser.value(addressOption);
     }else{
-        qDebug() << "Using default address " << MY_ADDR;
-        yDebug() << "Using default address " << MY_ADDR;
+        if(verbosity >= 1) qDebug() << "Using default address " << MY_ADDR;
+        //yDebug() << "Using default address " << MY_ADDR;
         bPrintUsage=true;
     }
 
     if(parser.isSet(portOption)){
         port = parser.value(portOption).toInt();
     }else{
-        qDebug() << "Using default port " << MY_PORT;
-        yDebug() << "Using default port " << MY_PORT;
+        if(verbosity >= 1) qDebug() << "Using default port " << MY_PORT;
+        //yDebug() << "Using default port " << MY_PORT;
         bPrintUsage=true;
     }
 
     if (bPrintUsage){
-        qDebug() << "Usage: " << argv[0] << " --port n --address xxx.xxx.xxx.xxx\n";
+        //qDebug() << "Usage: " << argv[0] << " --port n --address xxx.xxx.xxx.xxx\n";
     }
 
 
@@ -121,7 +131,10 @@ int main(int argc, char *argv[])
 
 
     ResourceFinder rf;
-    rf.setVerbose();
+    if(verbosity >= 1)
+    {
+        rf.setVerbose();
+    }
     rf.setDefaultContext("firmwareUpdater");
     rf.setDefaultConfigFile(iniFile.toLatin1().data());
 
@@ -129,10 +142,10 @@ int main(int argc, char *argv[])
         return false;
     }
 
-    if(!core.init(rf, port, address)){
+    if(!core.init(rf, port, address, verbosity)){
         return -1;
     }
-    int ret = 0;
+    int ret = 1;
     MainWindow w(&core,adminMode);
     if(!noGui){
         w.show();
@@ -147,16 +160,19 @@ int main(int argc, char *argv[])
         QString canLine = parser.value(ethCanLineOption);
         QString canId = parser.value(ethCanIdOption);
 
+
         bool forceMaintenance = parser.isSet(ethForceMaintenance);
         bool forceApplication = parser.isSet(ethForceApplication);
         bool eraseEEprom = parser.isSet(eraseEEpromOption);
 
+        core.setVerbosity(verbosity);
+
 
         if(discover){
             if(device.isEmpty()){
-                qDebug() << "Need a device to be set";
+                if(verbosity >= 1) qDebug() << "Need a device to be set";
             }else if(id.isEmpty()){
-                qDebug() << "Need an id to be set";
+                if(verbosity >= 1) qDebug() << "Need an id to be set";
             }else{
 
                 if(board.isEmpty()){
@@ -167,13 +183,13 @@ int main(int argc, char *argv[])
             }
         }else if(program){
             if(device.isEmpty()){
-                qDebug() << "Need a device to be set";
+                if(verbosity >= 1) qDebug() << "Need a device to be set";
             }else if(id.isEmpty()){
-                qDebug() << "Need an id to be set";
+                if(verbosity >= 1) qDebug() << "Need an id to be set";
             }else if(board.isEmpty() && device.contains("ETH")){
-                qDebug() << "Need a board to be set";
+                if(verbosity >= 1) qDebug() << "Need a board to be set";
             }else if(file.isEmpty()){
-                qDebug() << "Need a file path to be set";
+                if(verbosity >= 1) qDebug() << "Need a file path to be set";
             }else if(canLine.isEmpty() && canId.isEmpty()){
                 ret = programEthDevice(&core,device,id,board,file);
                 if(eraseEEprom && ret == 0){
@@ -181,20 +197,20 @@ int main(int argc, char *argv[])
                 }
             }else{
                 if(canLine.isEmpty()){
-                    qDebug() << "Need a can line to be set";
+                    if(verbosity >= 1) qDebug() << "Need a can line to be set";
                 } else if(canId.isEmpty()){
-                    qDebug() << "Need a can id to be set";
+                    if(verbosity >= 1) qDebug() << "Need a can id to be set";
                 }else{
                     ret = programCanDevice(&core,device,id,board,canLine,canId,file,eraseEEprom);
                 }
             }
         }else if(forceApplication || forceMaintenance){
             if(device.isEmpty()){
-                qDebug() << "Need a device to be set";
+                if(verbosity >= 1) qDebug() << "Need a device to be set";
             }else if(id.isEmpty()){
-                qDebug() << "Need an id to be set";
+                if(verbosity >= 1) qDebug() << "Need an id to be set";
             }else if(board.isEmpty()){
-                qDebug() << "Need a board to be set";
+                if(verbosity >= 1) qDebug() << "Need a board to be set";
             }else{
                 if(forceApplication){
                     ret = setBoardToApplication(&core,device,id,board);
@@ -288,14 +304,14 @@ int programCanDevice(FirmwareUpdaterCore *core,QString device,QString id,QString
                         if(selectedCount > 0){
                             core->setSelectedCanBoards(canBoards,board);
                             bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, board);
-                            qDebug() << retString;
+                            if(verbosity >= 1) qDebug() << retString;
                             return ret ? 0 : -1;
                         }else{
-                            qDebug() << "No board selected";
+                            if(verbosity >= 1) qDebug() << "No board selected";
                             return -1;
                         }
                     }else{
-                        qDebug() << retString;
+                        if(verbosity >= 1) qDebug() << retString;
                         return -1;
                     }
 
@@ -319,14 +335,14 @@ int programCanDevice(FirmwareUpdaterCore *core,QString device,QString id,QString
             if(selectedCount > 0){
                 core->setSelectedCanBoards(canBoards,device,id.toInt());
                 bool ret = core->uploadCanApplication(file, &retString, eraseEEprom, device, id.toInt());
-                qDebug() << retString;
+                if(verbosity >= 1) qDebug() << retString;
                 return ret ? 0 : -1;
             }else{
-                qDebug() << "No board selected";
+                if(verbosity >= 1) qDebug() << "No board selected";
                 return -1;
             }
         }else{
-            qDebug() << retString;
+            if(verbosity >= 1) qDebug() << retString;
             return -1;
         }
     }
@@ -349,10 +365,10 @@ int programEthDevice(FirmwareUpdaterCore *core,QString device,QString id,QString
                     QString resultString;
                     bool b = core->uploadEthApplication(file,&resultString);
                     if(!b){
-                        qDebug() << resultString;
+                        if(verbosity >= 1) qDebug() << resultString;
                         return -1;
                     }else{
-                        qDebug() << "Update Done";
+                        if(verbosity >= 1) qDebug() << "Update Done";
                         return 0;
                     }
                     break;
@@ -361,7 +377,7 @@ int programEthDevice(FirmwareUpdaterCore *core,QString device,QString id,QString
         }
 
     }else{
-        qDebug() << "No boards found";
+        if(verbosity >= 1) qDebug() << "No boards found";
     }
     return -1;
 
@@ -393,7 +409,7 @@ int printSecondLevelDevices(FirmwareUpdaterCore *core,QString device,QString id)
             memset(board_info,0,sizeof(board_info));
 
 
-            qDebug() << "-------------------------------------------------------------";
+            if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
             for(int i=0;i<core->getEthBoardList().size();i++){
                 EthBoard board = core->getEthBoardList()[i];
 
@@ -418,26 +434,26 @@ int printSecondLevelDevices(FirmwareUpdaterCore *core,QString device,QString id)
                 snprintf(board_date, sizeof(board_date), "%s", board.getDatefRunning().c_str());
                 snprintf(board_built, sizeof(board_date), "%s", board.getCompilationDateOfRunning().c_str());
 
-                qDebug() << "************** Device " << i << " ******************";
-                qDebug() << "Ip:        "<< board_ipaddr;
-                qDebug() << "Mac:       "<< board_mac;
-                qDebug() << "Version:   "<< board_version;
-                qDebug() << "Type:      "<< board_type;
-                qDebug() << "Process:   "<< running_process;
-                qDebug() << "Info:      "<< board_info;
-                qDebug() << "Date:      "<< board_date;
-                qDebug() << "Built:     "<< board_built;
-                qDebug() << "\n";
+                if(verbosity >= 1) qDebug() << "************** Device " << i << " ******************";
+                if(verbosity >= 1) qDebug() << "Ip:        "<< board_ipaddr;
+                if(verbosity >= 1) qDebug() << "Mac:       "<< board_mac;
+                if(verbosity >= 1) qDebug() << "Version:   "<< board_version;
+                if(verbosity >= 1) qDebug() << "Type:      "<< board_type;
+                if(verbosity >= 1) qDebug() << "Process:   "<< running_process;
+                if(verbosity >= 1) qDebug() << "Info:      "<< board_info;
+                if(verbosity >= 1) qDebug() << "Date:      "<< board_date;
+                if(verbosity >= 1) qDebug() << "Built:     "<< board_built;
+                if(verbosity >= 1) qDebug() << "\n";
 
             }
-            qDebug() << "-------------------------------------------------------------";
+            if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
 
         }
     }else{
         QString retString;
         QList <sBoard> canBoards = core->getCanBoardsFromDriver(device,id.toInt(),&retString,true);
         if(canBoards.count() <= 0){
-            qDebug() <<  retString;
+            if(verbosity >= 1) qDebug() <<  retString;
         }else{
             printCanDevices(canBoards);
         }
@@ -461,18 +477,18 @@ int printThirdLevelDevices(FirmwareUpdaterCore *core,QString device,QString id,Q
                 QString retString;
                 QList <sBoard> canBoards = core->getCanBoardsFromEth(board,&retString);
                 if(canBoards.count() <= 0){
-                    qDebug() <<  retString;
+                    if(verbosity >= 1) qDebug() <<  retString;
                 }else{
                     printCanDevices(canBoards);
                 }
 
             }else{
-                qDebug() << "You have to put the device in maintenace mode to perform this operation.";
+                if(verbosity >= 1) qDebug() << "You have to put the device in maintenace mode to perform this operation.";
             }
 
         }
     }else{
-        qDebug() << "No boards Found";
+        if(verbosity >= 1) qDebug() << "No boards Found";
     }
 
     return 0;
@@ -480,7 +496,7 @@ int printThirdLevelDevices(FirmwareUpdaterCore *core,QString device,QString id,Q
 
 void printCanDevices(QList<sBoard> canBoards)
 {
-    qDebug() << "-------------------------------------------------------------";
+    if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
     for(int i=0;i<canBoards.count();i++){
         sBoard board = canBoards.at(i);
 
@@ -548,19 +564,19 @@ void printCanDevices(QList<sBoard> canBoards)
             snprintf (board_protocol, sizeof(board_protocol), "%d.%d", board.prot_vers_major, board.prot_vers_minor);
         }
 
-        qDebug() << "************** Board " << i << " ******************";
-        qDebug() << "Type:              " << board_type;
-        qDebug() << "Id:                " << board.pid;
-        qDebug() << "Address:           " << "CAN_" << board.bus;
-        qDebug() << "Process:           " << board_process;
-        qDebug() << "Status:            " << board_status;
-        qDebug() << "Info:              " << board_add_info;
-        qDebug() << "Firmware Version:  " << board_firmware_version;
-        qDebug() << "Serial:            " << board_serial;
-        qDebug() << "Protocol:          " << board_protocol;
-        qDebug() << "\n";
+        if(verbosity >= 1) qDebug() << "************** Board " << i << " ******************";
+        if(verbosity >= 1) qDebug() << "Type:              " << board_type;
+        if(verbosity >= 1) qDebug() << "Id:                " << board.pid;
+        if(verbosity >= 1) qDebug() << "Address:           " << "CAN_" << board.bus;
+        if(verbosity >= 1) qDebug() << "Process:           " << board_process;
+        if(verbosity >= 1) qDebug() << "Status:            " << board_status;
+        if(verbosity >= 1) qDebug() << "Info:              " << board_add_info;
+        if(verbosity >= 1) qDebug() << "Firmware Version:  " << board_firmware_version;
+        if(verbosity >= 1) qDebug() << "Serial:            " << board_serial;
+        if(verbosity >= 1) qDebug() << "Protocol:          " << board_protocol;
+        if(verbosity >= 1) qDebug() << "\n";
     }
-    qDebug() << "-------------------------------------------------------------";
+    if(verbosity >= 1) qDebug() << "-------------------------------------------------------------";
 }
 
 bool checkApplicationLock()
