@@ -176,7 +176,7 @@ unsigned int       sprsPage;
  int nSelectedBoards; 
 
 bool    connected;
-int initdriver(yarp::os::Searchable &config);
+int initdriver(yarp::os::Searchable &config, bool verbose = true);
 int stopdriver();
 
 int initschede			();
@@ -223,7 +223,10 @@ int sg6_get_amp_gain      (int bus, int target_id, char channel, unsigned int& g
 int sg6_set_amp_gain      (int bus, int target_id, char channel, unsigned int  gain1, unsigned int  gain2 );
 
 
-cDownloader();
+cDownloader(bool verbose = true);
+
+bool set_verbose(bool verbose);
+
 
 private:
     void clean_rx(void);
@@ -235,6 +238,8 @@ private:
     void set_bus(yarp::dev::CanMessage &msg, int bus);
     int get_bus(yarp::dev::CanMessage &msg);
 #endif
+
+    bool _verbose;
 };
 
 #endif

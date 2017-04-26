@@ -23,12 +23,15 @@ using namespace yarp::dev;
 cDriver2::cDriver2()
 {
     yarp::os::Time::turboBoost();
+    _verbose = true;
 }
 
 
-int cDriver2::init (Searchable &config)
+int cDriver2::init (Searchable &config, bool verbose)
 {
     bool ret;
+
+    _verbose = verbose;
 
     ret=dd.open(config);
     if (!ret)
@@ -191,6 +194,7 @@ void cDriver2::destroyCanBuffer(yarp::dev::CanBuffer &buff)
 eDriver2::eDriver2()
 {
     mSocket = new CanSocket;
+    _verbose = true;
 }
 
 eDriver2::~eDriver2()
@@ -200,9 +204,11 @@ eDriver2::~eDriver2()
 
 #undef USE_LEGACY_0X20_MESSAGE
 
-int eDriver2::init(yarp::os::Searchable &config)
+int eDriver2::init(yarp::os::Searchable &config, bool verbose)
 {
     ACE_UINT32 local=(ACE_UINT32)config.find("local").asInt();
+
+    _verbose = verbose;
 
     int ret = 0;
 
@@ -241,7 +247,7 @@ int eDriver2::init(yarp::os::Searchable &config)
     //unsigned char CMD_CANGTW_START=0x20;
     //mSocket->sendTo(&CMD_CANGTW_START, 1, 3333, mBoardAddr);
     static unsigned char cmd_cangtw_start[8] = {0x20, 0, 0, 0, 0, 0, 0, 0};
-    yDebug() << "byte is ...." << cmd_cangtw_start[0];
+    if(_verbose) yDebug() << "byte is ...." << cmd_cangtw_start[0];
 
     mSocket->sendTo(cmd_cangtw_start, 1, 3333, mBoardAddr);
 
@@ -254,7 +260,7 @@ int eDriver2::init(yarp::os::Searchable &config)
 
 #else
 
-    yWarning("sending request to start can gateway mode");
+    if(_verbose) yWarning("sending request to start can gateway mode");
 
     const uint16_t t_can_stabilisation = 900; // ms
     const uint8_t b_send_ff_after_can_stabilisation = 0;
@@ -296,7 +302,7 @@ int eDriver2::init(yarp::os::Searchable &config)
     {
         eOuprot_cmdREPLY_t cmdreply = {0};
 
-        yDebug("waiting for an ack/nak from board");
+        if(_verbose) yDebug("waiting for an ack/nak from board");
 
         // we wait at least waitingTime sec because if the remote board does not run the new protocol, then it will not send an ack back.
         // and we must wait the rigth amout of time
@@ -305,40 +311,40 @@ int eDriver2::init(yarp::os::Searchable &config)
 
         if(-1 == nrec)
         {
-            yWarning("remote board did not sent any ack to command 0x20. it may have a version of eUpdater older than 6.6");
+            if(_verbose) yWarning("remote board did not sent any ack to command 0x20. it may have a version of eUpdater older than 6.6");
             ret = 0;
         }
         else if(sizeof(cmdreply) == nrec)
         {
             if((uprot_OPC_CANGATEWAY == cmdreply.opc) && (uprot_RES_OK == cmdreply.res))
             {
-                yDebug("REMOTE BOARD is in CAN gateway now");
+                if(_verbose) yDebug("REMOTE BOARD is in CAN gateway now");
                 ret = 0;
             }
             else if((uprot_OPC_CANGATEWAY == cmdreply.opc) && (uprot_RES_OK != cmdreply.res))
             {
                 if(uprot_RES_ERR_TRYAGAIN == cmdreply.res)
                 {
-                    yWarning("REMOTE BOARD tells that it cannot go to CAN gateway mode, BUT: The eApplication has jumped to eUpdater. Try connect again.");
+                    if(_verbose) yWarning("REMOTE BOARD tells that it cannot go to CAN gateway mode, BUT: The eApplication has jumped to eUpdater. Try connect again.");
                     ret = -2;
                 }
                 else
                 {
-                    yWarning("REMOTE BOARD tells that it cannot go to CAN gateway mode.");
+                    if(_verbose) yWarning("REMOTE BOARD tells that it cannot go to CAN gateway mode.");
                     ret = -1;
                 }
             }
             else
             {
                 uint8_t *bb = (uint8_t*) &cmdreply;
-                yWarning("REMOTE BOARD sends an unknown reply[%d] = {%x, %x, %x, %x}.", nrec, bb[0], bb[1], bb[2], bb[3]);
+                if(_verbose) yWarning("REMOTE BOARD sends an unknown reply[%d] = {%x, %x, %x, %x}.", nrec, bb[0], bb[1], bb[2], bb[3]);
                 ret = -1;
             }
         }
         else
         {
             uint8_t *bb = (uint8_t*) &cmdreply;
-            yWarning("REMOTE BOARD sends an unknown reply[%d] = {%x, %x, %x, %x}.", nrec, bb[0], bb[1], bb[2], bb[3]);
+            if(_verbose) yWarning("REMOTE BOARD sends an unknown reply[%d] = {%x, %x, %x, %x}.", nrec, bb[0], bb[1], bb[2], bb[3]);
             ret = -1;
         }
     }

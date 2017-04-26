@@ -97,7 +97,7 @@ public:
     typedef enum { can_driver2 = 0, eth_driver2 = 1 } iDriver2Type;
 public:
     virtual ~iDriver2(){}
-    virtual int init(yarp::os::Searchable &config)=0;
+    virtual int init(yarp::os::Searchable &config, bool verbose = true)=0;
     virtual int uninit()=0;
     // using legacy rule: canpackets must be of size able to keep howMany messages. however, i put inside the vector up to howmany. returns the numer of read.
     // much better: howMany keeps the max messages and canpackets can be resized with the read ones.
@@ -116,7 +116,7 @@ class cDriver2 : public iDriver2
 public:
     cDriver2();
     ~cDriver2(){}
-    int init(yarp::os::Searchable &config);
+    int init(yarp::os::Searchable &config, bool verbose = true);
     int uninit();
     int receive_message(vector<CanPacket> &canpackets, int howMany = MAX_READ_MSG, double TIMEOUT = 1);
     int send_message(vector<CanPacket> &canpackets, int n);
@@ -130,6 +130,7 @@ private:
     yarp::dev::CanBuffer canTXbuffer;
     yarp::dev::CanBuffer canRXbuffer;
 
+    bool _verbose;
 
 private:
     // used to create buffers for tx/rx with YARP
@@ -148,16 +149,18 @@ class eDriver2 : public iDriver2
 public:
     eDriver2();
     ~eDriver2();
-    int init(yarp::os::Searchable &config);
+    int init(yarp::os::Searchable &config, bool verbose = true);
     int uninit();
     int receive_message(vector<CanPacket> &canpackets, int howMany = MAX_READ_MSG, double TIMEOUT = 1);
     int send_message(vector<CanPacket> &canpackets, int n);
     iDriver2Type type() { return eth_driver2; }
 
+    bool set_verbose(bool v);
 private:
     CanSocket *mSocket;
     ACE_UINT32 mBoardAddr;
     double timestart;
+    bool _verbose;
 };
 
 
