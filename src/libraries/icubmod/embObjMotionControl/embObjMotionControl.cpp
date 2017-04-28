@@ -557,6 +557,8 @@ embObjMotionControl::embObjMotionControl() :
     _cacheImpedance   = NULL;
     _impedance_limits = NULL;
     _newtonsToSensor  = NULL;
+    _ampsToSensor = NULL;
+    _dutycycleToPWM = NULL;
     _jointEncoderRes  = NULL;
     _jointEncoderType = NULL;
     _rotorEncoderRes  = NULL;
@@ -5529,7 +5531,22 @@ bool embObjMotionControl::getRefDutyCyclesRaw(double *v)
 
 bool embObjMotionControl::getDutyCycleRaw(int j, double *v)
 {
-    return NOT_YET_IMPLEMENTED("getDutyCycleRaw");
+    uint16_t      size;
+    eOmc_motor_status_basic_t     status;
+    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_status_basic);
+
+    bool ret = res->readBufferedValue(protid, (uint8_t *)&status, &size);
+    if (ret)
+    {
+        *v = (double)status.mot_pwm;
+    }
+    else
+    {
+        yError() << "embObjMotionControl::getDutyCycleRaw failed for BOARD" << res->getName() << "IP" << res->getIPv4string() << " motor " << j;
+        *v = 0;
+    }
+
+    return ret;
 }
 
 bool embObjMotionControl::getDutyCyclesRaw(double *v)
