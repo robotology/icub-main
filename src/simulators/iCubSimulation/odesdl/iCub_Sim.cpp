@@ -1251,8 +1251,8 @@ void OdeSdlSimulation::simLoop(int h,int w) {
     startTime = (long) clock();
     odeinit.stop = false;
 
-    std::signal(yarp::os::YARP_SIGINT, sighandler);
-    std::signal(yarp::os::YARP_SIGTERM, sighandler);
+    std::signal(SIGINT, sighandler);
+    std::signal(SIGTERM, sighandler);
 
     glrun = true;
     odeinit._wrld->WAITLOADING = false;
