@@ -1404,7 +1404,7 @@ void MainWindow::checkEnableButtons()
             ui->btnCahngeInfo->setEnabled(true);
 
             sBoard canBoard = ((EthTreeWidgetItem*)selectedNodes.first()->getParentNode())->getCanBoard(selectedNodes.first()->getIndexOfBoard());
-            if(canBoard.type == icubCanProto_boardType__strain || canBoard.type == icubCanProto_boardType__6sg && canBoard.status == BOARD_RUNNING ){
+            if(((canBoard.type == icubCanProto_boardType__strain) || (canBoard.type == icubCanProto_boardType__strain2) || (canBoard.type == icubCanProto_boardType__6sg)) && (canBoard.status == BOARD_RUNNING) ){
                 ui->btnCalibrate->setEnabled(true);
                 //ui->btnEraseEeprom->setEnabled(true);
                 ui->btnEraseEeprom->setEnabled(false);

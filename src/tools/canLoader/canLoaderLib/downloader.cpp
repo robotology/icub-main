@@ -1140,8 +1140,8 @@ int cDownloader::get_serial_no       (int bus, int target_id, char* serial_no)
 
     for (i=0; i<board_list_size; i++)
     {
-        if (board_list[i].pid==target_id &&
-            board_list[i].type==icubCanProto_boardType__strain)
+        if ((board_list[i].pid==target_id) &&
+            (board_list[i].type==icubCanProto_boardType__strain) || (board_list[i].type==icubCanProto_boardType__strain2))
         {
             this->strain_get_serial_number(bus, target_id, serial_no);
             ret = 0;
@@ -1204,6 +1204,8 @@ int cDownloader::get_firmware_version(int bus, int target_id, eObrd_cantype_t bo
         case eobrd_cantype_strain:
         case eobrd_cantype_mais:
         case eobrd_cantype_6sg:
+        case eobrd_cantype_mtb4:
+        case eobrd_cantype_strain2:
         {
             boardisMC = false;
             txBuffer[0].setId(EOCANPROT_D_CREATE_CANID(ICUBCANPROTO_CLASS_POLLING_ANALOGSENSOR, 0, target_id));
@@ -1421,6 +1423,8 @@ int cDownloader::change_card_address(int bus, int target_id, int new_id, int boa
         case icubCanProto_boardType__skin:
         case icubCanProto_boardType__mais:
         case icubCanProto_boardType__6sg:
+        case icubCanProto_boardType__mtb4:
+        case icubCanProto_boardType__strain2:
             txBuffer[0].setId((0x02 << 8) + (ID_MASTER << 4) + target_id);
             txBuffer[0].setLen(2);
             txBuffer[0].getData()[0]= ICUBCANPROTO_POL_MC_CMD__SET_BOARD_ID;
@@ -1743,6 +1747,8 @@ int cDownloader::startscheda(int bus, int board_pid, bool board_eeprom, int boar
     case icubCanProto_boardType__2foc:
     case icubCanProto_boardType__6sg:
     case icubCanProto_boardType__jog:
+    case icubCanProto_boardType__mtb4:
+    case icubCanProto_boardType__strain2:
     case icubCanProto_boardType__unknown:
     {
         // Send command
@@ -2424,6 +2430,8 @@ int cDownloader::download_file(int bus, int board_pid, int download_type, bool b
                         case icubCanProto_boardType__2foc:
                         case icubCanProto_boardType__jog:
                         case icubCanProto_boardType__6sg:
+                        case icubCanProto_boardType__mtb4:
+                        case icubCanProto_boardType__strain2:
                              ret = download_hexintel_line(buffer, strlen(buffer), bus, board_pid, board_eeprom, download_type);
 
                         break;

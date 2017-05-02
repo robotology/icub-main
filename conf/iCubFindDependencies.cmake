@@ -33,7 +33,7 @@ message(STATUS "CMake modules directory: ${CMAKE_MODULE_PATH}")
 # the requested one.
 find_package(icub_firmware_shared COMPONENTS canProtocolLib QUIET)
 if(icub_firmware_shared_FOUND)
-  find_package(icub_firmware_shared 0.2.6 COMPONENTS canProtocolLib)
+  find_package(icub_firmware_shared 0.2.7 COMPONENTS canProtocolLib)
 endif()
 
 find_package(GSL)
