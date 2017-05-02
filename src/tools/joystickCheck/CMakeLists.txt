@@ -16,7 +16,7 @@ IF (APPLE)
 ENDIF (APPLE)
 
 INCLUDE_DIRECTORIES(${CMAKE_SOURCE_DIR}
-		    ${SDL_INCLUDE_DIR}
+		                ${SDL_INCLUDE_DIR}
                     ${YARP_INCLUDE_DIRS})
 
 SET(folder_source joystickCheck.cpp)
