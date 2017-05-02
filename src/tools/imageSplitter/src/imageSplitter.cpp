@@ -27,6 +27,18 @@ ImageSplitter::~ImageSplitter()
 bool ImageSplitter::configure(yarp::os::ResourceFinder &rf)
 {
     bool shouldConnect =false;
+    if(rf.check("help"))
+    {
+        cout<<"Usage:"<<endl<<"<imageSplitter> --param1 arg1 --param2 arg2 ..."<<endl;
+        cout<<"Here the available parameters:"<<endl;
+        cout<<"align      specify if the alignement of the images is 'vertical' or 'horizontal'"<<endl;
+        cout<<"local      prefix for the ports that will be opened by this module, if not specified the default is '/imageSplitter'"<<endl;
+        cout<<"nameInput  name of the module's' input port, if not specified by default is <local> + '/input:i'"<<endl;
+        cout<<"nameLeft   name of the output port for the 'left image', if not specified by default is <local> + '/left:o'"<<endl;
+        cout<<"nameRight  name of the output port for the 'right image', if not specified by default is <local> + '/right:o'"<<endl;
+        cout<<"remote     name of the source port, if specified it connects automatically to the module's input port"<<endl;
+        std::exit(1);
+    }
     // Check input parameters
     if(rf.check("align"))
     {
