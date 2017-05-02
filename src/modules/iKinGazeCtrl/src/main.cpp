@@ -719,8 +719,8 @@ protected:
             commData.saccadesActivationAngle=context.saccadesActivationAngle;
 
             // controller part
-            ctrl->setTeyes(context.eyesTime);   // always remind to set eyes before the neck
-            ctrl->setTneck(context.neckTime);   // due to internal saturation
+            ctrl->setTeyes(context.eyesTime);
+            ctrl->setTneck(context.neckTime);
             ctrl->setTrackingMode(context.trackingOn);
             ctrl->setGazeStabilization(context.gazeStabilizationOn);
 

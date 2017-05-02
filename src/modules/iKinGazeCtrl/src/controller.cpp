@@ -1051,6 +1051,9 @@ void Controller::setTeyes(const double execTime)
     }
     else
         eyesTime=execTime;
+
+    // to realign neck time
+    setTneck(neckTime);
 }
 
 
