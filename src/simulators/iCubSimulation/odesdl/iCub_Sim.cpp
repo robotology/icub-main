@@ -23,6 +23,8 @@
 #include "OdeInit.h"
 #include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
+#include <cstdlib>
+#include <csignal>
 #include <set>
 
 using namespace yarp::sig;
@@ -1249,8 +1251,8 @@ void OdeSdlSimulation::simLoop(int h,int w) {
     startTime = (long) clock();
     odeinit.stop = false;
 
-    yarp::os::signal(yarp::os::YARP_SIGINT, sighandler);
-    yarp::os::signal(yarp::os::YARP_SIGTERM, sighandler);
+    std::signal(yarp::os::YARP_SIGINT, sighandler);
+    std::signal(yarp::os::YARP_SIGTERM, sighandler);
 
     glrun = true;
     odeinit._wrld->WAITLOADING = false;
@@ -1398,7 +1400,7 @@ void OdeSdlSimulation::init(RobotStreamer *streamer,
     OdeInit& odeinit = OdeInit::get();
     if (video!=NULL) {
         yError("Only one Simulation object allowed\n");
-        yarp::os::exit(1);
+        std::exit(1);
     }
     robot_streamer = streamer;
     robot_config = config;
