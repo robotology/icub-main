@@ -1177,8 +1177,7 @@ bool mcParser::parseJointsLimits(yarp::os::Searchable &config, std::vector<eomc_
     // min hardware limit
     if (!extractGroup(limits, xtmp, "hardwareJntPosMin","a list of hardware minimum angles (in degrees)", _njoints))
     {
-         yWarning() << "embObjMotionControl: missing hardwareJntPosMin param. Values of jntPosMin param will be used like hardware limits ";
-         for(i=0; i<_njoints; i++) jointsLimits[i].posHwMin = jointsLimits[i].posMin;
+        return false;
     }
     else
     {
