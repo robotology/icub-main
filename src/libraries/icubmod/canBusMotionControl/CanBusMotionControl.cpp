@@ -7681,12 +7681,28 @@ bool CanBusMotionControl::getRefDutyCyclesRaw(double *v)
 
 bool CanBusMotionControl::getDutyCycleRaw(int j, double *v)
 {
-    return NOT_YET_IMPLEMENTED("getDutyCycleRaw");
+    CanBusResources& r = RES(system_resources);
+    if (!(j >= 0 && j <= r.getJoints()))
+        return false;
+    _mutex.wait();
+    *(v) = double(r._bcastRecvBuffer[j]._pid_value);
+    _mutex.post();
+    return true;
 }
 
 bool CanBusMotionControl::getDutyCyclesRaw(double *v)
 {
-    return NOT_YET_IMPLEMENTED("getDutyCyclesRaw");
+    CanBusResources& r = RES(system_resources);
+    int i;
+
+    _mutex.wait();
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        v[i] = double(r._bcastRecvBuffer[i]._pid_value);
+    }
+
+    _mutex.post();
+    return true;
 }
 
 // Current interface
