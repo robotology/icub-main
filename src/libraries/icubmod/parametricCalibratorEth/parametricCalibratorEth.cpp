@@ -1,3 +1,4 @@
+
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
@@ -12,6 +13,7 @@
 
 #include "parametricCalibratorEth.h"
 #include <math.h>
+#include <algorithm>
 
 #include <yarp/os/LogStream.h>
 
@@ -64,7 +66,8 @@ parametricCalibratorEth::parametricCalibratorEth() :
     timeout_goToZero(NULL),
     timeout_calibration(NULL),
     disableHomeAndPark(NULL),
-    disableStartupPosCheck(NULL)
+    disableStartupPosCheck(NULL),
+    totJointsToCalibrate(0)
 {
 }
 
@@ -84,7 +87,7 @@ bool parametricCalibratorEth::open(yarp::os::Searchable& config)
     {
       yError() << "Parametric calibrator: missing [GENERAL] section"; 
       return false;
-    } 
+    }
 
     if(p.findGroup("GENERAL").check("deviceName"))
     {
@@ -439,7 +442,8 @@ bool parametricCalibratorEth::calibrate(DeviceDriver *device)
 bool parametricCalibratorEth::calibrate()
 {
     int  setOfJoint_idx = 0;
-    int totJointsToCalibrate = 0;
+    totJointsToCalibrate = 0;
+    calibJoints.clear();
 
     if (dev2calibrate==0)
     {
@@ -453,21 +457,13 @@ bool parametricCalibratorEth::calibrate()
         return false;
     }
 
-    //before starting the calibration, checks for joints in hardware fault, and clears them if the user set the clearHwFaultBeforeCalibration option
-    for (int i=0; i<n_joints; i++)
-    {
-        checkHwFault(i);
-    }
-
     std::list<int>  currentSetList;
-    std::list<std::list<int> >::iterator Bit=joints.begin(); 
+    std::list<std::list<int> >::iterator Bit=joints.begin();
     std::list<std::list<int> >::iterator Bend=joints.end();
 
     // count how many joints are there in the list of things to be calibrated
-    std::string joints_string;
     while(Bit != Bend)
     {
-        joints_string += "( ";
         currentSetList.clear();
         currentSetList = (*Bit);
         std::list<int>::iterator lit  = currentSetList.begin();
@@ -477,19 +473,29 @@ bool parametricCalibratorEth::calibrate()
         char joints_buff [10];
         while(lit != lend)
         {
-            sprintf(joints_buff, "%d ", (*lit));
-            joints_string += joints_buff;
+            calibJoints.push_back(*lit);
             lit++;
         }
         Bit++;
-        joints_string += ") ";
     }
-    yDebug() << deviceName << ": Joints calibration order:" << joints_string;
+
+    //before starting the calibration, checks for joints in hardware fault, and clears them if the user set the clearHwFaultBeforeCalibration option
+    for (int i=0; i<totJointsToCalibrate; i++)
+    {
+        checkHwFault(i);
+    }
+
+    yDebug() << deviceName << ": Joints calibration order:" << calibJointsString.toString();
 
     if (totJointsToCalibrate > n_joints)
     {
         yError() << deviceName << ": too much axis to calibrate for this part..." << totJointsToCalibrate << " bigger than " << n_joints;
         return false;
+    }
+
+    if (totJointsToCalibrate < n_joints)
+    {
+        yWarning() << deviceName << " is calibrating only a subset of the robot part. Calibrating " << totJointsToCalibrate << " over a total of " << n_joints;
     }
 
     original_max_pwm = new double[n_joints];
@@ -499,9 +505,9 @@ bool parametricCalibratorEth::calibrate()
         yWarning() << deviceName << ": skipCalibration flag is on! Setting safe pid but skipping calibration.";
 
     Bit=joints.begin();
+    std::list<int>::iterator lit; //iterator for joint in a set 
     while( (Bit != Bend) && (!abortCalib) )   // for each set of joints
     {
-        std::list<int>::iterator lit; //iterator for joint in a set 
         
         setOfJoint_idx++;
         currentSetList.clear();
@@ -683,9 +689,9 @@ bool parametricCalibratorEth::calibrate()
     if(abortCalib)
     {
         yError() << deviceName << ": calibration has been aborted!I'm going to disable all joints..." ;
-        for(int i=0; i<n_joints; i++) //for each joint of set
+        for(lit  = currentSetList.begin(); lit != currentSetList.end() && !abortCalib; lit++) //for each joint of set
         {
-            iControlMode->setControlMode(i,VOCAB_CM_IDLE);
+            iControlMode->setControlMode(*lit, VOCAB_CM_IDLE);
         }
         return false;
     }
@@ -695,10 +701,15 @@ bool parametricCalibratorEth::calibrate()
     return isCalibrated;
 }
 
-bool parametricCalibratorEth::calibrateJoint(int joint)
+bool parametricCalibratorEth::calibrateJoint(int j)
 {
-    yDebug() << deviceName << ": Calling calibrateJoint on joint " << joint << ": type "<< calibParams[joint].type << " with params: " << calibParams[joint].param1 << calibParams[joint].param2 << calibParams[joint].param3 << calibParams[joint].param4 << calibParams[joint].param5;
-    bool b = iCalibrate->setCalibrationParameters(joint, calibParams[joint]);
+    if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
+    {
+        yError("%s cannot perform 'calibration' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
+        return false;
+    }
+    yDebug() << deviceName << ": Calling calibrateJoint on joint " << j << ": type "<< calibParams[j].type << " with params: " << calibParams[j].param1 << calibParams[j].param2 << calibParams[j].param3 << calibParams[j].param4 << calibParams[j].param5;
+    bool b = iCalibrate->setCalibrationParameters(j, calibParams[j]);
     return b;
 }
 
@@ -746,6 +757,12 @@ bool parametricCalibratorEth::checkCalibrateJointEnded(std::list<int> set)
 
 bool parametricCalibratorEth::checkHwFault(int j)
 {
+    if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
+    {
+        yError("%s cannot perform 'check hardware fault' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
+        return false;
+    }
+
     int mode=0;
     iControlMode->getControlMode(j,&mode);
     if (mode == VOCAB_CM_HW_FAULT)
@@ -783,6 +800,12 @@ bool parametricCalibratorEth::checkHwFault(int j)
 
 bool parametricCalibratorEth::goToZero(int j)
 {
+    if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
+    {
+        yError("%s cannot perform 'go to zero' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
+        return false;
+    }
+
     bool ret = true;
     if (disableStartupPosCheck[j])
     {
@@ -799,6 +822,12 @@ bool parametricCalibratorEth::goToZero(int j)
 
 bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
 {
+    if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
+    {
+        yError("%s cannot perform 'check gone to zero' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
+        return false;
+    }
+
     if (disableStartupPosCheck[j])
     {
         yWarning() << deviceName << ": checkGoneToZeroThreshold, joint " << j << " is disabled on user request";
@@ -860,7 +889,8 @@ bool parametricCalibratorEth::checkGoneToZeroThreshold(int j)
 bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
 {
     yTrace();
-
+    std::list<int>::iterator lit;  
+ 
     bool allJointsCanParkSimultaneously = true;
     for (int i = 0; i < n_joints; i++)
     {
@@ -870,7 +900,10 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     {
         yWarning() << deviceName << "Joints will be parked separately, since some of them have the disableHomeAndPark flag set";
         bool ret = true;
-        for (int i = 0; i < n_joints; i++) { ret &= this->parkSingleJoint(i); }
+        for(lit  = calibJoints.begin(); lit != calibJoints.end() && !abortCalib; lit++) //for each joint of set
+        { 
+            ret &= this->parkSingleJoint(*lit);
+        }
         return ret;
     }
 
@@ -900,41 +933,41 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
         yError() << deviceName << ": error getting control mode during parking";
     }
 
-    for(int i=0; i<n_joints; i++)
+    for(lit  = calibJoints.begin(); lit != calibJoints.end() && !abortCalib; lit++) //for each joint of set
     {
-        switch(currentControlModes[i])
+        switch(currentControlModes[(*lit)])
         {
             case VOCAB_CM_IDLE:
             {
-                yError() << deviceName << ": joint " << i << " is idle, skipping park";
-                cannotPark[i] = true;
+                yError() << deviceName << ": joint " << (*lit) << " is idle, skipping park";
+                cannotPark[(*lit)] = true;
             }
             break;
 
             case VOCAB_CM_HW_FAULT:
             {
-                yError() << deviceName << ": joint " << i << " has an hardware fault, skipping park";
-                cannotPark[i] = true;
+                yError() << deviceName << ": joint " << (*lit) << " has an hardware fault, skipping park";
+                cannotPark[(*lit)] = true;
             }
             break;
 
             case VOCAB_CM_NOT_CONFIGURED:
             {
-                yError() << deviceName << ": joint " << i << " is not configured, skipping park";
-                cannotPark[i] = true;
+                yError() << deviceName << ": joint " << (*lit) << " is not configured, skipping park";
+                cannotPark[(*lit)] = true;
             }
             break;
 
             case VOCAB_CM_UNKNOWN:
             {
-                yError() << deviceName << ": joint " << i << " is in unknown state, skipping park";
-                cannotPark[i] = true;
+                yError() << deviceName << ": joint " << (*lit) << " is in unknown state, skipping park";
+                cannotPark[(*lit)] = true;
             }
 
             default:
             {
-                iControlMode->setControlMode(i,VOCAB_CM_POSITION);
-                cannotPark[i] = false;
+                iControlMode->setControlMode((*lit), VOCAB_CM_POSITION);
+                cannotPark[(*lit)] = false;
             }
         }
     }
@@ -945,32 +978,32 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
     
     if (wait)
     {
-       for (int i = 0; i < n_joints; i++)
+        for(lit  = calibJoints.begin(); lit != calibJoints.end() && !abortCalib; lit++) //for each joint of set
         {
             int timeout = 0;
-            if (cannotPark[i] ==false)
+            if (cannotPark[(*lit)] ==false)
             {
-                yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << i;
+                yDebug() << deviceName.c_str() << ": Moving to park position, joint:" << (*lit);
                 bool done=false;
-                iPosition->checkMotionDone(i, &done);
-                while ((!done) && (timeout<timeout_park[i]) && (!abortParking))
+                iPosition->checkMotionDone((*lit), &done);
+                while ((!done) && (timeout<timeout_park[(*lit)]) && (!abortParking))
                 {
                     Time::delay(1);
                     timeout++;
-                    iPosition->checkMotionDone(i, &done);
+                    iPosition->checkMotionDone((*lit), &done);
                 }
                 if(!done)
                 {
-                    yError() << deviceName << ": joint " << i << " not in position after a timeout of" << timeout_park[i] << " seconds";
+                    yError() << deviceName << ": joint " << (*lit) << " not in position after a timeout of" << timeout_park[(*lit)] << " seconds";
                 }
             }
         }
     }
 
     yDebug() << deviceName.c_str() << ": Park " << (abortParking ? "aborted" : "completed");
-    for(int j=0; j < n_joints; j++)
+    for(lit  = calibJoints.begin(); lit != calibJoints.end() && !abortCalib; lit++) //for each joint of set
     {
-        switch(currentControlModes[j])
+        switch(currentControlModes[(*lit)])
         {
             case VOCAB_CM_IDLE:
             case VOCAB_CM_HW_FAULT:
@@ -980,7 +1013,7 @@ bool parametricCalibratorEth::park(DeviceDriver *dd, bool wait)
                 break;
             default:
             {
-                iControlMode->setControlMode(j,VOCAB_CM_IDLE);
+                iControlMode->setControlMode((*lit), VOCAB_CM_IDLE);
             }
         }
     }
@@ -1008,7 +1041,12 @@ yarp::dev::IRemoteCalibrator *parametricCalibratorEth::getCalibratorDevice()
 
 bool parametricCalibratorEth::calibrateSingleJoint(int j)
 {
-    yTrace();
+    if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
+    {
+        yError("%s cannot perform 'calibration' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
+        return false;
+    }
+
     return calibrateJoint(j);
 }
 
@@ -1020,7 +1058,12 @@ bool parametricCalibratorEth::calibrateWholePart()
 
 bool parametricCalibratorEth::homingSingleJoint(int j)
 {
-    yTrace();
+    if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
+    {
+        yError("%s cannot perform 'homing' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
+        return false;
+    }
+
     if (disableHomeAndPark[j])
     {
         yWarning() << deviceName << ": homingSingleJoint, joint " << j << " is disabled on user request";
@@ -1033,16 +1076,22 @@ bool parametricCalibratorEth::homingWholePart()
 {
     yTrace();
     bool ret = true;
-    for(int j=0; j<n_joints; j++)
+    std::list<int>::iterator lit;
+    for(lit  = calibJoints.begin(); lit != calibJoints.end() && !abortCalib; lit++) //for each joint of set
     {
-        ret = homingSingleJoint(j) && ret;
+        ret = homingSingleJoint(*lit) && ret;
     }
     return ret;
 }
 
 bool parametricCalibratorEth::parkSingleJoint(int j, bool _wait)
 {
-    yTrace();
+    if(std::find(calibJoints.begin(), calibJoints.end(), j) == calibJoints.end())
+    {
+        yError("%s cannot perform 'park' operation because joint number %d is out of range [%s].", deviceName.c_str(), j, calibJointsString.toString().c_str());
+        return false;
+    }
+
     if (disableHomeAndPark[j])
     {
         yWarning() << deviceName << ": parkSingleJoint, joint " << j << " is disabled on user request";
