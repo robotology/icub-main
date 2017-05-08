@@ -2387,7 +2387,7 @@ RateThread(10),
 ImplementPositionControl2(this),
 //ImplementVelocityControl<CanBusMotionControl, IVelocityControl>(this),
 ImplementVelocityControl2(this),
-ImplementPidControl<CanBusMotionControl, IPidControl>(this),
+ImplementPidControl(this),
 ImplementEncodersTimed(this),
 ImplementControlCalibration<CanBusMotionControl, IControlCalibration>(this),
 ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>(this),
@@ -2512,8 +2512,7 @@ bool CanBusMotionControl::open (Searchable &config)
 //    ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::
 //        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementPidControl<CanBusMotionControl, IPidControl>::
-        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementPidControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
     ImplementEncodersTimed::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
@@ -3004,7 +3003,7 @@ bool CanBusMotionControl::close (void)
 //        ImplementPositionControl<CanBusMotionControl, IPositionControl>::uninitialize ();
 //        ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::uninitialize();
 
-        ImplementPidControl<CanBusMotionControl, IPidControl>::uninitialize();
+        ImplementPidControl::uninitialize();
         ImplementEncodersTimed::uninitialize();
         ImplementMotorEncoders::uninitialize();
         ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::uninitialize();

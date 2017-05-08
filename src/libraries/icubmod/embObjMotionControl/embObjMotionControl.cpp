@@ -509,7 +509,7 @@ bool embObjMotionControl::dealloc()
 embObjMotionControl::embObjMotionControl() :
     ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>(this),
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>(this),
-    ImplementPidControl<embObjMotionControl, IPidControl>(this),
+    ImplementPidControl(this),
     ImplementEncodersTimed(this),
     ImplementPositionControl2(this),
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>(this),
@@ -677,7 +677,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementEncodersTimed::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
     ImplementMotorEncoders::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
     ImplementPositionControl2::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-    ImplementPidControl<embObjMotionControl, IPidControl>::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
+    ImplementPidControl::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
     ImplementControlMode2::initialize(_njoints, _axisMap);
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
     ImplementVelocityControl2::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
@@ -1673,7 +1673,7 @@ bool embObjMotionControl::close()
     ImplementPositionControl2::uninitialize();
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::uninitialize();
     ImplementVelocityControl2::uninitialize();
-    ImplementPidControl<embObjMotionControl, IPidControl>::uninitialize();
+    ImplementPidControl::uninitialize();
     ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::uninitialize();
     ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::uninitialize();
     ImplementImpedanceControl::uninitialize();

@@ -57,7 +57,7 @@ iCubSimulationControl::iCubSimulationControl() :
     //RateThread(10),
     ImplementPositionControl2(this),
     ImplementVelocityControl2(this),
-    ImplementPidControl<iCubSimulationControl, IPidControl>(this),
+    ImplementPidControl(this),
     ImplementEncodersTimed(this),
     ImplementTorqueControl(this),
     ImplementControlMode2(this),
@@ -301,8 +301,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     ImplementPositionControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementVelocityControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementPidControl<iCubSimulationControl, IPidControl>::
-        initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementPidControl::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementEncodersTimed::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementMotorEncoders::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::
@@ -361,7 +360,7 @@ bool iCubSimulationControl::close (void)
         ImplementPositionControl2::uninitialize();
         ImplementVelocityControl2::uninitialize();
         ImplementTorqueControl::uninitialize();
-        ImplementPidControl<iCubSimulationControl, IPidControl>::uninitialize();
+        ImplementPidControl::uninitialize();
         ImplementEncodersTimed::uninitialize();
         ImplementMotorEncoders::uninitialize();
         ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::uninitialize();
