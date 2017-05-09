@@ -91,7 +91,7 @@ class yarp::dev::iCubSimulationControl :
     public IInteractionModeRaw,
     public ImplementInteractionMode,
     public IPidControlRaw,
-    public ImplementPidControl<iCubSimulationControl, IPidControl>,
+    public ImplementPidControl,
     public IEncodersTimedRaw,
     public ImplementEncodersTimed,
     public IMotorEncodersRaw,
