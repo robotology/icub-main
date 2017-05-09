@@ -911,6 +911,17 @@ bool mcParser::parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificI
             twofocinfo[i - 1].rotorIndexOffset = xtmp.get(i).asInt();
     }
 
+
+    //Now I verify if rotor encoder hasn't index, then  rotor offset must be zero.
+    for (i = 0; i < _njoints; i++)
+    {
+        if((0 == twofocinfo[i].hasRotorEncoderIndex) && (0 != twofocinfo[i].rotorIndexOffset))
+        {
+            yError() << "In " << _boardname << "joint " << i << ": inconsistent configuration: if rotor encoder hasn't index then its offset should be 0." ;
+            return false;
+        }
+    }
+
     // Number of motor poles
     if (!extractGroup(focGroup, xtmp, "MotorPoles", "MotorPoles", _njoints))
     {
