@@ -227,12 +227,31 @@ public:
 
         //------------SPECIAL PARAM TP DEFINE THE HEAD TYPE-----//
         version_tag icub_type;
-        if (rf.check("headV2"))
+        // set icub_type.head_version int to 1 (default) or 2
+        if (rf.check("head_version"))
         {
-            yInfo("'headV2' option found. Using icubV2 head kinematics.\n");
-            icub_type.head_version = 2;
+            if (rf.find("head_version").asDouble()==1.0)
+            {
+                yInfo("\"head_version\" %g requested => Using V1 head kinematics.\n",
+                      rf.find("head_version").asDouble());
+            }
+            else if (rf.find("head_version").asDouble()==2.0 ||
+                rf.find("head_version").asDouble()==2.5)
+            {
+                yInfo("\"head_version\" %g requested => Using V2 head kinematics.\n",
+                      rf.find("head_version").asDouble());
+                icub_type.head_version = 2;
+            }
+            else
+            {
+                yWarning("Unknown \"head_version\" %g requested => Using V1 head kinematics.\n",
+                         rf.find("head_version").asDouble());
+            }
         }
-
+        else
+        {
+            yInfo("No \"head_version\" specified => Using V1 head kinematics.\n");
+        }
         //------------------CHECK IF LEGS ARE ENABLED-----------//
         if (rf.check("no_legs"))
         {
@@ -526,7 +545,7 @@ int main(int argc, char * argv[])
         yInfo() << "--from       from: the name of the file.ini to be used for calibration";
         yInfo() << "--rate       rate: the period used by the module. default 100ms (not less than 15ms)";
         yInfo() << "--no_legs    this option disables the gravity compensation for the legs joints" ;
-        yInfo() << "--headV2     use the model of the headV2";
+        yInfo() << "--head_version v:  head structure, v is one of 1.0 (default), 2.0 or 2.5";
         yInfo() << "--no_left_arm      disables the left arm";
         yInfo() << "--no_right_arm     disables the right arm";
         yInfo() << "--no_legs          disables the legs";
