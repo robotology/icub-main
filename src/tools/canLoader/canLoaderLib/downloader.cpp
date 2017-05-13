@@ -185,7 +185,7 @@ int cDownloader::initdriver(Searchable &config)
 }
 
 //*****************************************************************/
-int cDownloader::strain_save_to_eeprom  (int bus, int target_id)
+int cDownloader::strain_save_to_eeprom  (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -309,7 +309,7 @@ int cDownloader::sg6_set_amp_gain      (int bus, int target_id, char channel, un
 }
 
 //*****************************************************************/
-int cDownloader::strain_get_adc(int bus, int target_id, char channel, unsigned int& adc, int type)
+int cDownloader::strain_get_adc(int bus, int target_id, char channel, unsigned int& adc, int type, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -360,7 +360,7 @@ int cDownloader::strain_get_adc(int bus, int target_id, char channel, unsigned i
 }
 
 //*****************************************************************/
-int cDownloader::strain_get_offset(int bus, int target_id, char channel, unsigned int& offset)
+int cDownloader::strain_get_offset(int bus, int target_id, char channel, unsigned int& offset, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -405,7 +405,7 @@ int cDownloader::strain_get_offset(int bus, int target_id, char channel, unsigne
     return -1;
 }
 //*****************************************************************/
-int cDownloader::strain_get_calib_bias     (int bus, int target_id, char channel, signed int& bias)
+int cDownloader::strain_get_calib_bias     (int bus, int target_id, char channel, signed int& bias, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -435,7 +435,7 @@ int cDownloader::strain_get_calib_bias     (int bus, int target_id, char channel
      return -1;
 }
 //*****************************************************************/
-int cDownloader::strain_set_calib_bias     (int bus, int target_id)
+int cDownloader::strain_set_calib_bias     (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -455,7 +455,7 @@ int cDownloader::strain_set_calib_bias     (int bus, int target_id)
      return 0;
 }
 //*****************************************************************/
-int cDownloader::strain_set_calib_bias     (int bus, int target_id, char channel, int bias)
+int cDownloader::strain_set_calib_bias     (int bus, int target_id, char channel, int bias, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -480,7 +480,7 @@ int cDownloader::strain_set_calib_bias     (int bus, int target_id, char channel
 }
 
 //*****************************************************************/
-int cDownloader::strain_reset_calib_bias (int bus, int target_id)
+int cDownloader::strain_reset_calib_bias (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -500,7 +500,7 @@ int cDownloader::strain_reset_calib_bias (int bus, int target_id)
      return 0;
 }
 //*****************************************************************/
-int cDownloader::strain_get_curr_bias     (int bus, int target_id, char channel, signed int& bias)
+int cDownloader::strain_get_curr_bias     (int bus, int target_id, char channel, signed int& bias, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -530,7 +530,7 @@ int cDownloader::strain_get_curr_bias     (int bus, int target_id, char channel,
      return -1;
 }
 //*****************************************************************/
-int cDownloader::strain_set_curr_bias     (int bus, int target_id)
+int cDownloader::strain_set_curr_bias     (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -551,7 +551,7 @@ int cDownloader::strain_set_curr_bias     (int bus, int target_id)
 }
 
 //*****************************************************************/
-int cDownloader::strain_set_curr_bias     (int bus, int target_id, char channel, int bias)
+int cDownloader::strain_set_curr_bias     (int bus, int target_id, char channel, int bias, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -575,7 +575,7 @@ int cDownloader::strain_set_curr_bias     (int bus, int target_id, char channel,
      return 0;
 }
 //*****************************************************************/
-int cDownloader::strain_reset_curr_bias     (int bus, int target_id)
+int cDownloader::strain_reset_curr_bias     (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -596,7 +596,7 @@ int cDownloader::strain_reset_curr_bias     (int bus, int target_id)
 }
 
 //*****************************************************************/
-int cDownloader::strain_set_serial_number (int bus, int target_id, const char* serial_number)
+int cDownloader::strain_set_serial_number (int bus, int target_id, const char* serial_number, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -623,7 +623,7 @@ int cDownloader::strain_set_serial_number (int bus, int target_id, const char* s
 }
 
 //*****************************************************************/
-int cDownloader::strain_get_serial_number (int bus, int target_id, char* serial_number)
+int cDownloader::strain_get_serial_number (int bus, int target_id, char* serial_number, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -664,7 +664,7 @@ int cDownloader::strain_get_serial_number (int bus, int target_id, char* serial_
 }
 
 //*****************************************************************/
-int cDownloader::strain_get_eeprom_saved (int bus, int target_id, bool* status)
+int cDownloader::strain_get_eeprom_saved (int bus, int target_id, bool* status, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -697,7 +697,7 @@ int cDownloader::strain_get_eeprom_saved (int bus, int target_id, bool* status)
      return -1;
 }
 //*****************************************************************/
-int cDownloader::strain_get_matrix_gain     (int bus, int target_id, unsigned int& gain)
+int cDownloader::strain_get_matrix_gain     (int bus, int target_id, unsigned int& gain, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -731,7 +731,31 @@ int cDownloader::strain_get_matrix_gain     (int bus, int target_id, unsigned in
 }
 
 //*****************************************************************/
-int cDownloader::strain_set_matrix_gain     (int bus, int target_id, unsigned int  gain)
+int cDownloader::strain_set_matrix(int bus, int target_id, int matrix, string *errorstring)
+{
+    if(0 == matrix)
+    {
+        return 0;
+    }
+
+    if(NULL != errorstring)
+    {
+        *errorstring += "cDownloader::strain_set_matrix() cannot set a non zero matrix number";
+        //*errorstring += std::to_string(matrix); // c++ 11 ...........
+    }
+    return -1;
+}
+
+//*****************************************************************/
+
+int cDownloader::strain_get_matrix(int bus, int target_id, int &matrix, string *errorstring)
+{
+    matrix = 0;
+    return 0;
+}
+
+//*****************************************************************/
+int cDownloader::strain_set_matrix_gain     (int bus, int target_id, unsigned int  gain, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -754,7 +778,7 @@ int cDownloader::strain_set_matrix_gain     (int bus, int target_id, unsigned in
 }
 
 //*****************************************************************/
-int cDownloader::strain_get_full_scale     (int bus, int target_id, unsigned char channel, unsigned int&  full_scale)
+int cDownloader::strain_get_full_scale      (int bus, int target_id, unsigned char channel, unsigned int&  full_scale, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -787,7 +811,7 @@ int cDownloader::strain_get_full_scale     (int bus, int target_id, unsigned cha
      return -1;
 }
 //*****************************************************************/
-int cDownloader::strain_set_full_scale     (int bus, int target_id, unsigned char channel,  unsigned int full_scale)
+int cDownloader::strain_set_full_scale      (int bus, int target_id, unsigned char channel,  unsigned int full_scale, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -811,7 +835,7 @@ int cDownloader::strain_set_full_scale     (int bus, int target_id, unsigned cha
      return 0;
 }
 //*****************************************************************/
-int cDownloader::strain_get_matrix_rc     (int bus, int target_id, char r, char c, unsigned int& elem)
+int cDownloader::strain_get_matrix_rc     (int bus, int target_id, char r, char c, unsigned int& elem, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -857,7 +881,7 @@ int cDownloader::strain_get_matrix_rc     (int bus, int target_id, char r, char 
 }
 
 //*****************************************************************/
-int cDownloader::strain_set_matrix_rc     (int bus, int target_id, char r, char c, unsigned int  elem)
+int cDownloader::strain_set_matrix_rc     (int bus, int target_id, char r, char c, unsigned int  elem, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -882,7 +906,7 @@ int cDownloader::strain_set_matrix_rc     (int bus, int target_id, char r, char 
 }
 
 //*****************************************************************/
-int cDownloader::strain_set_offset(int bus, int target_id, char channel, unsigned int offset)
+int cDownloader::strain_set_offset(int bus, int target_id, char channel, unsigned int offset, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -917,7 +941,7 @@ int cDownloader::strain_set_offset(int bus, int target_id, char channel, unsigne
 
 
 //*****************************************************************/
-int cDownloader::strain_start_sampling    (int bus, int target_id)
+int cDownloader::strain_start_sampling    (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -943,7 +967,7 @@ int cDownloader::strain_start_sampling    (int bus, int target_id)
 }
 
 //*****************************************************************/
-int cDownloader::strain_stop_sampling    (int bus, int target_id)
+int cDownloader::strain_stop_sampling    (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
@@ -969,7 +993,7 @@ int cDownloader::strain_stop_sampling    (int bus, int target_id)
 }
 
 //*****************************************************************/
-int cDownloader::strain_calibrate_offset  (int bus, int target_id, unsigned int middle_val)
+int cDownloader::strain_calibrate_offset  (int bus, int target_id, unsigned int middle_val, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)

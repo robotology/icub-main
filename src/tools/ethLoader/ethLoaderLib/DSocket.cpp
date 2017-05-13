@@ -9,7 +9,7 @@
 #include <ace/Time_Value.h>
 #include <ace/OS_NS_sys_socket.h>
 
-#include <arpa/inet.h>
+//#include <arpa/inet.h>
 
 DSocket::DSocket()
 { 

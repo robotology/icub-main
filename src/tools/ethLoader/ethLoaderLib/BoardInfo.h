@@ -133,7 +133,7 @@ private:
     string from_boardtype_to_string(uint8_t type)
     {
         // marco.accame.TODO: use what in EoCommon.c .......
-        string ret(eoboards_type2string((eObrd_type_t)type));
+        string ret(eoboards_type2string2((eObrd_type_t)type, eobool_true));
         return ret;
     }
 
