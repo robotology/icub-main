@@ -1632,13 +1632,13 @@ void CartesianSolver::afterStart(bool s)
 /************************************************************************/
 void CartesianSolver::suspend()
 {
-    if (isRunning())
-    {
-        yInfo("%s suspended",slvName.c_str());
-        RateThread::suspend();
-    }
-    else
+    if (isSuspended())
         yWarning("%s is already suspended",slvName.c_str());
+    else
+    {
+        RateThread::suspend();
+        yInfo("%s suspended",slvName.c_str());        
+    }
 }
 
 
@@ -1646,10 +1646,10 @@ void CartesianSolver::suspend()
 void CartesianSolver::resume()
 {
     if (isSuspended())
-    {
-        yInfo("%s resumed",slvName.c_str());
+    {        
         initPos();
         RateThread::resume();
+        yInfo("%s resumed",slvName.c_str());
     }
     else
         yWarning("%s is already running",slvName.c_str());
