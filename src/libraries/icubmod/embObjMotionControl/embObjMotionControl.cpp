@@ -676,7 +676,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     ImplementEncodersTimed::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
     ImplementMotorEncoders::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
     ImplementPositionControl2::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-    ImplementPidControl::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
+    ImplementPidControl::initialize(_njoints, _axisMap, _angleToEncoder, NULL, _newtonsToSensor, _ampsToSensor);
     ImplementControlMode2::initialize(_njoints, _axisMap);
     ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
     ImplementVelocityControl2::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
@@ -1768,7 +1768,7 @@ eoThreadEntry *embObjMotionControl::getThreadTable(int threadId)
 
 ///////////// PID INTERFACE
 
-bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
+bool embObjMotionControl::setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid)
 {
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition);
     eOmc_PID_t  outPid;
@@ -1802,17 +1802,17 @@ bool embObjMotionControl::setPidRaw(int j, const Pid &pid)
     return true;
 }
 
-bool embObjMotionControl::setPidsRaw(const Pid *pids)
+bool embObjMotionControl::setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids)
 {
     bool ret = true;
     for(int j=0; j< _njoints; j++)
     {
-        ret &= setPidRaw(j, pids[j]);
+        ret &= setPidRaw(pidtype, j, pids[j]);
     }
     return ret;
 }
 
-bool embObjMotionControl::setReferenceRaw(int j, double ref)
+bool embObjMotionControl::setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref)
 {
     int mode = 0;
     getControlModeRaw(j, &mode);
@@ -1838,29 +1838,29 @@ bool embObjMotionControl::setReferenceRaw(int j, double ref)
     return res->addSetMessage(protoId, (uint8_t*) &setpoint);
 }
 
-bool embObjMotionControl::setReferencesRaw(const double *refs)
+bool embObjMotionControl::setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs)
 {
     bool ret = true;
     for(int j=0, index=0; j< _njoints; j++, index++)
     {
-        ret &= setReferenceRaw(j, refs[index]);
+        ret &= setPidReferenceRaw(pidtype, j, refs[index]);
     }
     return ret;
 }
 
-bool embObjMotionControl::setErrorLimitRaw(int j, double limit)
+bool embObjMotionControl::setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit)
 {
     // print_debug(AC_trace_file, "embObjMotionControl::setErrorLimitRaw()");
     return NOT_YET_IMPLEMENTED("setErrorLimitRaw");
 }
 
-bool embObjMotionControl::setErrorLimitsRaw(const double *limits)
+bool embObjMotionControl::setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits)
 {
     // print_debug(AC_trace_file, "embObjMotionControl::setErrorLimitsRaw()");
     return NOT_YET_IMPLEMENTED("setErrorLimitsRaw");
 }
 
-bool embObjMotionControl::getErrorRaw(int j, double *err)
+bool embObjMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int j, double *err)
 {
     uint16_t size = 0;
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
@@ -1898,17 +1898,17 @@ bool embObjMotionControl::getErrorRaw(int j, double *err)
     return true;
 }
 
-bool embObjMotionControl::getErrorsRaw(double *errs)
+bool embObjMotionControl::getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs)
 {
     bool ret = true;
     for(int j=0; j< _njoints; j++)
     {
-        ret &= getErrorRaw(j, &errs[j]);
+        ret &= getPidErrorRaw(pidtype, j, &errs[j]);
     }
     return ret;
 }
 
-bool embObjMotionControl::getPidRaw(int j, Pid *pid)
+bool embObjMotionControl::getPidRaw(const PidControlTypeEnum& pidtype, int j, Pid *pid)
 {
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition);
     // Sign up for waiting the reply
@@ -1960,7 +1960,7 @@ bool embObjMotionControl::getPidRaw(int j, Pid *pid)
     return true;
 }
 
-bool embObjMotionControl::getPidsRaw(Pid *pids)
+bool embObjMotionControl::getPidsRaw(const PidControlTypeEnum& pidtype, Pid *pids)
 {
     bool ret = true;
 
@@ -1968,12 +1968,12 @@ bool embObjMotionControl::getPidsRaw(Pid *pids)
     // This is because otherwise too many msg will be placed into can queue
     for(int j=0, index=0; j<_njoints; j++, index++)
     {
-        ret &=getPidRaw(j, &pids[j]);
+        ret &=getPidRaw(pidtype, j, &pids[j]);
     }
     return ret;
 }
 
-bool embObjMotionControl::getReferenceRaw(int j, double *ref)
+bool embObjMotionControl::getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref)
 {
     uint16_t size = 0;
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
@@ -2001,7 +2001,7 @@ bool embObjMotionControl::getReferenceRaw(int j, double *ref)
 
 }
 
-bool embObjMotionControl::getReferencesRaw(double *refs)
+bool embObjMotionControl::getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs)
 {
     bool ret = true;
 
@@ -2009,37 +2009,37 @@ bool embObjMotionControl::getReferencesRaw(double *refs)
     // This is because otherwise too many msg will be placed into can queue
     for(int j=0; j< _njoints; j++)
     {
-        ret &= getReferenceRaw(j, &refs[j]);
+        ret &= getPidReferenceRaw(pidtype, j, &refs[j]);
     }
     return ret;
 }
 
-bool embObjMotionControl::getErrorLimitRaw(int j, double *limit)
+bool embObjMotionControl::getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *limit)
 {
     return NOT_YET_IMPLEMENTED("getErrorLimit");
 }
 
-bool embObjMotionControl::getErrorLimitsRaw(double *limits)
+bool embObjMotionControl::getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *limits)
 {
     return NOT_YET_IMPLEMENTED("getErrorLimit");
 }
 
-bool embObjMotionControl::resetPidRaw(int j)
+bool embObjMotionControl::resetPidRaw(const PidControlTypeEnum& pidtype, int j)
 {
     return NOT_YET_IMPLEMENTED("resetPid");
 }
 
-bool embObjMotionControl::disablePidRaw(int j)
+bool embObjMotionControl::disablePidRaw(const PidControlTypeEnum& pidtype, int j)
 {
     return DEPRECATED("disablePidRaw");
 }
 
-bool embObjMotionControl::enablePidRaw(int j)
+bool embObjMotionControl::enablePidRaw(const PidControlTypeEnum& pidtype, int j)
 {
     return DEPRECATED("enablePidRaw");
 }
 
-bool embObjMotionControl::setOffsetRaw(int j, double v)
+bool embObjMotionControl::setPidOffsetRaw(const PidControlTypeEnum& pidtype, int j, double v)
 {
     return NOT_YET_IMPLEMENTED("setOffset");
 }
@@ -4724,7 +4724,7 @@ bool embObjMotionControl::setPositionRaw(int j, double ref)
         #endif
     }
 
-    return setReferenceRaw(j, ref);
+    return setPidReferenceRaw(yarp::dev::VOCAB_PIDTYPE_POSITION, j, ref);
 }
 
 bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
@@ -5077,7 +5077,7 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 }
 
 
-bool embObjMotionControl::getOutputRaw(int j, double *out)
+bool embObjMotionControl::getPidOutputRaw(const PidControlTypeEnum& pidtype, int j, double *out)
 {
     eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core);
     uint16_t size = 0;
@@ -5104,14 +5104,19 @@ bool embObjMotionControl::getOutputRaw(int j, double *out)
 
 }
 
-bool embObjMotionControl::getOutputsRaw(double *outs)
+bool embObjMotionControl::getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs)
 {
     bool ret = true;
     for(int j=0; j< _njoints; j++)
     {
-        ret &= getOutputRaw(j, &outs[j]);
+        ret &= getPidOutputRaw(pidtype, j, &outs[j]);
     }
     return ret;
+}
+
+bool embObjMotionControl::isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool* enabled)
+{
+    return NOT_YET_IMPLEMENTED("isPidEnabled");
 }
 
 bool embObjMotionControl::getNumberOfMotorsRaw(int* num)
