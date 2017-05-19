@@ -570,6 +570,8 @@ public:
     virtual bool getRefAccelerationsRaw(double *accs);
     virtual bool stopRaw(int j);
     virtual bool stopRaw();
+    bool helper_setPosPidRaw( int j, const Pid &pid);
+    bool helper_getPosPidRaw(int j, Pid *pid);
 
     // Position Control2 Interface
     virtual bool positionMoveRaw(const int n_joint, const int *joints, const double *refs);
@@ -725,35 +727,19 @@ public:
     virtual bool setRefTorquesRaw(const int n_joint, const int *joints, const double *t);
     virtual bool getRefTorquesRaw(double *t);
     virtual bool getRefTorqueRaw(int j, double *t);
-    virtual bool setTorquePidRaw(int j, const Pid &pid);
-    virtual bool setTorquePidsRaw(const Pid *pids);
-    virtual bool setTorqueErrorLimitRaw(int j, double limit);
-    virtual bool setTorqueErrorLimitsRaw(const double *limits);
-    virtual bool getTorqueErrorRaw(int j, double *err);
-    virtual bool getTorqueErrorsRaw(double *errs);
-    virtual bool getTorquePidOutputRaw(int j, double *out);
-    virtual bool getTorquePidOutputsRaw(double *outs);
-    virtual bool getTorquePidRaw(int j, Pid *pid);
-    virtual bool getTorquePidsRaw(Pid *pids);
-    virtual bool getTorqueErrorLimitRaw(int j, double *limit);
-    virtual bool getTorqueErrorLimitsRaw(double *limits);
-    virtual bool resetTorquePidRaw(int j);
-    virtual bool disableTorquePidRaw(int j);
-    virtual bool enableTorquePidRaw(int j);
-    virtual bool setTorqueOffsetRaw(int j, double v);
     virtual bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params);
     virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
     int32_t getRefSpeedInTbl(uint8_t boardNum, int j, eOmeas_position_t pos);
+    bool helper_setTrqPidRaw( int j, const Pid &pid);
+    bool helper_getTrqPidRaw(int j, Pid *pid);
 
     // IVelocityControl2
     virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
-    virtual bool setVelPidRaw(int j, const Pid &pid);
-    virtual bool setVelPidsRaw(const Pid *pids);
-    virtual bool getVelPidRaw(int j, Pid *pid);
-    virtual bool getVelPidsRaw(Pid *pids);
     virtual bool getRefVelocityRaw(const int joint, double *ref);
     virtual bool getRefVelocitiesRaw(double *refs);
     virtual bool getRefVelocitiesRaw(const int n_joint, const int *joints, double *refs);
+    bool helper_setVelPidRaw( int j, const Pid &pid);
+    bool helper_getVelPidRaw(int j, Pid *pid);
 
     // Impedance interface
     virtual bool getImpedanceRaw(int j, double *stiffness, double *damping);
@@ -809,17 +795,10 @@ public:
     virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t);
     virtual bool getRefCurrentsRaw(double *t);
     virtual bool getRefCurrentRaw(int j, double *t);
-    virtual bool setCurrentPidRaw(int j, const Pid &pid);
-    virtual bool setCurrentPidsRaw(const Pid *pids);
-    virtual bool getCurrentErrorRaw(int j, double *err);
-    virtual bool getCurrentErrorsRaw(double *errs);
-    virtual bool getCurrentPidOutputRaw(int j, double *out);
-    virtual bool getCurrentPidOutputsRaw(double *outs);
-    virtual bool getCurrentPidRaw(int j, Pid *pid);
-    virtual bool getCurrentPidsRaw(Pid *pids);
-    virtual bool resetCurrentPidRaw(int j);
-    virtual bool disableCurrentPidRaw(int j);
-    virtual bool enableCurrentPidRaw(int j);
+
+    //helper
+    bool helper_setCurPidRaw(int j, const Pid &pid);
+    bool helper_getCurPidRaw(int j, Pid *pid);
 };
 
 #endif // include guard

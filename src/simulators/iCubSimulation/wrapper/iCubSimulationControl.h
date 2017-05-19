@@ -208,10 +208,6 @@ class yarp::dev::iCubSimulationControl :
   
   // Velocity Control2 Interface
   virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
-  virtual bool setVelPidRaw(int j, const yarp::dev::Pid &pid);
-  virtual bool setVelPidsRaw(const yarp::dev::Pid *pids);
-  virtual bool getVelPidRaw(int j, yarp::dev::Pid *pid);
-  virtual bool getVelPidsRaw(yarp::dev::Pid *pids);
   virtual bool getRefVelocityRaw(const int joint, double *ref);
   virtual bool getRefVelocitiesRaw(double *refs);
   virtual bool getRefVelocitiesRaw(const int n_joint, const int *joints, double *refs);
@@ -316,22 +312,6 @@ class yarp::dev::iCubSimulationControl :
   virtual bool getRefTorqueRaw(int,double *);
   virtual bool getBemfParamRaw(int,double *);
   virtual bool setBemfParamRaw(int,double );
-  virtual bool setTorquePidRaw(int,const yarp::dev::Pid &);
-  virtual bool setTorquePidsRaw(const yarp::dev::Pid *);
-  virtual bool setTorqueErrorLimitRaw(int,double);
-  virtual bool setTorqueErrorLimitsRaw(const double *);
-  virtual bool getTorqueErrorRaw(int,double *);
-  virtual bool getTorqueErrorsRaw(double *);
-  virtual bool getTorquePidOutputRaw(int,double *);
-  virtual bool getTorquePidOutputsRaw(double *);
-  virtual bool getTorquePidRaw(int,yarp::dev::Pid *);
-  virtual bool getTorquePidsRaw(yarp::dev::Pid *);
-  virtual bool getTorqueErrorLimitRaw(int,double *);
-  virtual bool getTorqueErrorLimitsRaw(double *);
-  virtual bool resetTorquePidRaw(int);
-  virtual bool disableTorquePidRaw(int);
-  virtual bool enableTorquePidRaw(int);
-  virtual bool setTorqueOffsetRaw(int,double);
   virtual bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params);
   virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
 
@@ -387,17 +367,6 @@ class yarp::dev::iCubSimulationControl :
   virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t);
   virtual bool getRefCurrentsRaw(double *t);
   virtual bool getRefCurrentRaw(int j, double *t);
-  virtual bool setCurrentPidRaw(int j, const Pid &pid);
-  virtual bool setCurrentPidsRaw(const Pid *pids);
-  virtual bool getCurrentErrorRaw(int j, double *err);
-  virtual bool getCurrentErrorsRaw(double *errs);
-  virtual bool getCurrentPidOutputRaw(int j, double *out);
-  virtual bool getCurrentPidOutputsRaw(double *outs);
-  virtual bool getCurrentPidRaw(int j, Pid *pid);
-  virtual bool getCurrentPidsRaw(Pid *pids);
-  virtual bool resetCurrentPidRaw(int j);
-  virtual bool disableCurrentPidRaw(int j);
-  virtual bool enableCurrentPidRaw(int j);
 
 //void run(void);
 
@@ -511,6 +480,7 @@ protected:
     Pid    *position_pid;
     Pid    *torque_pid;
     Pid    *current_pid;
+    Pid    *velocity_pid;
     MotorTorqueParameters *motor_torque_params;
     yarp::sig::Matrix kinematic_mj;
 
