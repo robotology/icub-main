@@ -252,7 +252,7 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 //    eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
     Bottle paramNameBoard(groupEthBoardSettings.find("Name").asString());
     char xmlboardname[64] = {0};
-    strcpy(xmlboardname, paramNameBoard.toString().c_str());
+    snprintf(xmlboardname, sizeof(xmlboardname), "%s", paramNameBoard.toString().c_str());
 
     lock(true);
 

@@ -1157,7 +1157,7 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
     {
         Bottle paramProt(groupEthBoardSettings.find("protocolToUse").asString());
         char protocol2use[64] = {0};
-        strcpy(protocol2use, paramProt.toString().c_str());
+        snprintf(protocol2use, sizeof(protocol2use), "%s", paramProt.toString().c_str());
         if(0 == strcmp(protocol2use, "STANDARD"))
         {
             jomos = 4;
