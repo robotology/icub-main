@@ -2166,7 +2166,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int bus, int board_
             //check the first character of the line
             if (!(line[0] == ':'))
             {
-                printf ("start tag character not found\n");
+                if(_verbose) yError("start tag character not found in hex file\n");
                 return -1;
             }
             else
@@ -2213,6 +2213,34 @@ int cDownloader::download_hexintel_line(char* line, int len, int bus, int board_
 
                 sprsPage=getvalue(line+i,4);
                 i=i+4;
+
+                // marco.accame on 25may17:
+                // here is extra safety to avoid an accidental loading of stm32 code (which starts at 0x0800) on dspic based boards.
+                // the bootloader on dspic boards in such a case erases the first sector which tells to execute to the bootloader
+                // at reset with teh result that the board become unreachable.
+                // as we shall release strain2.hex and mtb4.hex which use stm32 mpus w/ code at 0x0800 and beyond, any accidental
+                // attempt to program an old strain w/ strain2.hex becomes more probable. As the damage is high (removal of the the
+                // FT sensor + disassembly + re-programming + recalibration), some sort of protection is mandatory.
+                // instead, strain2/mtb4 are safe if any attempt is done to program them with old strain.hex/skin.hex code
+                if(sprsPage >= 0x0800)
+                {   // only mtb4 and strain2 are allowed to use such a code space.
+                    if((icubCanProto_boardType__mtb4 == board_type) || (icubCanProto_boardType__strain2 == board_type))
+                    {   // it is ok
+                    }
+                    else
+                    {   // be careful with that axe, eugene. ahhhhhhhhhhhhhhhh
+                        //if(_verbose)
+                        {
+                            char msg[32] = {0};
+                            snprintf(msg, sizeof(msg), "0x%04X", sprsPage);
+                            yError() << "Upload of FW to board" << eoboards_type2string2((eObrd_type_t)board_type, eobool_true) << "is aborted because it was detected a wrong page number =" << msg << "in the .hex file";
+                            yError() << "You must have loaded the .hex file of another board. Perform a new discovery, check the file name and retry.";
+                        }
+                        return -1;
+                    }
+                }
+
+
             break;
             }
             sprsState=SPRS_STATE_CHECKSUM;
@@ -2442,6 +2470,7 @@ int cDownloader::download_file(int bus, int board_pid, int download_type, bool b
                     }
                     if (ret != 0)
                         {
+                            if(_verbose) yError("fatal error during download: abort\n");
                             // fatal error during download, abort
                             filestr.close();
                             return -1;
