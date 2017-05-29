@@ -645,7 +645,7 @@ bool TheEthManager::Transmission(void)
     return true;
 }
 
-bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t* boardipv4, char *boardipv4string, int stringsize)
+bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t* boardipv4, char *boardipv4string, int stringsize, char *boardNameStr, int sizeofBoardNameStr)
 {
     // Get PC104 address and port from config file
     Bottle groupPC104  = Bottle(cfgtotal.findGroup("PC104"));
@@ -708,6 +708,20 @@ bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4add
         eo_common_ipv4addr_to_string(ipv4, boardipv4string, stringsize);
     }
 
+
+
+    if((NULL != boardNameStr) && (0 != sizeofBoardNameStr))
+    {
+        Bottle groupEthBoardSettings = Bottle(groupETH_BOARD.findGroup("ETH_BOARD_SETTINGS"));
+        if(groupEthBoardSettings.isNull())
+        {
+            yError() << "TheEthManager::verifyEthBoardInfo() cannot find ETH_BOARD_SETTINGS group in config files";
+            return NULL;
+        }
+
+        Bottle paramNameBoard(groupEthBoardSettings.find("Name").asString());
+        snprintf(boardNameStr, sizeofBoardNameStr, "%s", paramNameBoard.toString().c_str());
+    }
     return true;
 }
 

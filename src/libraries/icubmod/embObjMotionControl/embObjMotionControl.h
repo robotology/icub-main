@@ -277,6 +277,7 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
 private:
 
     char boardIPstring[20];
+    char boardName[30];
 
     TheEthManager* ethManager;
     EthResource* res;

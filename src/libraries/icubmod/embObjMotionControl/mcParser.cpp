@@ -1073,36 +1073,29 @@ bool mcParser::parseTimeoutsGroup(yarp::os::Searchable &config, std::vector<eomc
     if(!checkAndSetVectorSize(timeouts, _njoints, "parseTimeoutsGroup"))
         return false;
 
-    bool useDefVal = false;
     int i;
 
     Bottle timeoutsGroup =config.findGroup("TIMEOUTS");
     if(timeoutsGroup.isNull())
     {
-        yWarning() << "embObjMC BOARD " << _boardname << " no TIMEOUTS group found in config file, default values will be used.";
-        useDefVal = true;
+        yError() << "embObjMC BOARD " << _boardname << " no TIMEOUTS group found in config file.";
+        return false;
+    }
+
+    Bottle xtmp;
+    xtmp.clear();
+    if (!extractGroup(timeoutsGroup, xtmp, "velocity", "a list of timeout to be used in the vmo control", _njoints))
+    {
+        yError() << "embObjMC BOARD " << _boardname << " no velocity parameter found in TIMEOUTS group in motion control config file.";
+        return false;
     }
     else
     {
-        Bottle xtmp;
-        xtmp.clear();
-        if (!extractGroup(timeoutsGroup, xtmp, "velocity", "a list of timeout to be used in the vmo control", _njoints))
-        {
-            useDefVal = true;
-        }
-        else
-        {
-            for(i=1; i<xtmp.size(); i++)
-                timeouts[i-1].velocity = xtmp.get(i).asInt();
-        }
+        for(i=1; i<xtmp.size(); i++)
+            timeouts[i-1].velocity = xtmp.get(i).asInt();
     }
 
-    if(useDefVal)
-    {
-        yWarning() << "Using default velocity Timeout="<< defaultVelocityTimeout <<" millisec";
-        for(i=0; i<_njoints; i++)
-            timeouts[i].velocity = defaultVelocityTimeout;
-    }
+
     return true;
 
 }

@@ -201,7 +201,7 @@ public:
     // useful for printing times relative to start of the object
     double getLifeTime(void);
 
-    bool verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t* boardipv4, char *boardipv4string, int stringsize);
+    bool verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t* boardipv4, char *boardipv4string, int stringsize, char *boardNameStr=NULL, int sizeofBoardNameStr=0);
 
 //    bool parseEthBoardInfo(yarp::os::Searchable &cfgtotal, ethFeature_t& info);
 

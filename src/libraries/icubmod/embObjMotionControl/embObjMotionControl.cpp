@@ -643,8 +643,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-
-    if(false == ethManager->verifyEthBoardInfo(config, NULL, boardIPstring, sizeof(boardIPstring)))
+    if(false == ethManager->verifyEthBoardInfo(config, NULL, boardIPstring, sizeof(boardIPstring), boardName, sizeof(boardName)))
     {
         yError() << "embObjMotionControl::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
@@ -880,7 +879,7 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_p
 
        if(numofjoints== 0 )
        {
-            yError() << "embObjMC BOARD " << boardIPstring << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
+            yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
             return false;
        }
         int firstjoint = _jsets[s].joints[0];//get firts joint of set s
@@ -891,7 +890,7 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_p
 
             if(pidInfo[firstjoint].usernamePidSelected != pidInfo[otherjoint].usernamePidSelected)
             {
-                yError() << "embObjMC BOARD " << boardIPstring << "Joints beloning to same set must be have same control law. Joint " << otherjoint << " differs from " << firstjoint << "Set num " << s ;
+                yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Joints beloning to same set must be have same control law. Joint " << otherjoint << " differs from " << firstjoint << "Set num " << s ;
                 yError() << pidInfo[firstjoint].usernamePidSelected << "***" << pidInfo[otherjoint].usernamePidSelected;
                 return false;
             }
@@ -912,7 +911,7 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_t
 
        if(numofjoints== 0 )
        {
-            yError() << "embObjMC BOARD " << boardIPstring << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
+            yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
             return false;
        }
         int firstjoint = _jsets[s].joints[0];//get firts joint of set s
@@ -923,7 +922,7 @@ bool embObjMotionControl::verifyUserControlLawConsistencyInJointSet(eomcParser_t
 
             if(pidInfo[firstjoint].usernamePidSelected != pidInfo[otherjoint].usernamePidSelected)
             {
-                yError() << "embObjMC BOARD " << boardIPstring << "Joints beloning to same set must be have same control law. Joint " << otherjoint << " differs from " << firstjoint << "Set num " << s ;
+                yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Joints beloning to same set must be have same control law. Joint " << otherjoint << " differs from " << firstjoint << "Set num " << s ;
                 yError() << pidInfo[firstjoint].usernamePidSelected << "***" << pidInfo[otherjoint].usernamePidSelected;
                 return false;
             }
@@ -947,7 +946,7 @@ eOmc_pidoutputtype_t embObjMotionControl::pidOutputTypeConver_eomc2fw(PidAlgorit
              return(eomc_pidoutputtype_iqq);
          default:
          {
-             yError() << "embObjMC BOARD " << boardIPstring << "pidOutputTypeConver_eomc2fw: unknown pid output type" ;
+             yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "pidOutputTypeConver_eomc2fw: unknown pid output type" ;
              return(eomc_pidoutputtype_unknown);
          }
      }
@@ -959,7 +958,7 @@ bool embObjMotionControl::updatedJointsetsCfgWithControlInfo()
     {
         if(_jsets[s].getNumberofJoints() == 0)
         {
-            yError() << "embObjMC BOARD " << boardIPstring << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
+            yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
             return false;
         }
         int joint = _jsets[s].joints[0];
@@ -1019,7 +1018,7 @@ bool embObjMotionControl::saveCouplingsData(void)
 
     if(_joint2set.size() > 4 )
     {
-        yError() << "embObjMC BOARD " << boardIPstring << "Jointsset size is bigger than 4. I can't send jointset information to fw.";
+        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Jointsset size is bigger than 4. I can't send jointset information to fw.";
         return false;
     }
 
@@ -1189,7 +1188,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     ////// IMPEDANCE PARAMETERS
     if(! _mcparser->parseImpedanceGroup(config,_impedance_params))
     {
-        yError() << "embObjMC BOARD " << boardIPstring << "IMPEDANCE section: error detected in parameters syntax";
+        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "IMPEDANCE section: error detected in parameters syntax";
         return false;
     }
 
@@ -1246,7 +1245,7 @@ bool embObjMotionControl::verifyUseMotorSpeedFbkInJointSet(int useMotorSpeedFbk 
         int numofjointsinset = _jsets[s].getNumberofJoints();
         if(numofjointsinset == 0 )
         {
-                yError() << "embObjMC BOARD " << boardIPstring << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
+                yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Jointsset " << s << "hasn't joints!!! I should be never stay here!!!";
                 return false;
         }
 
@@ -1291,7 +1290,7 @@ bool embObjMotionControl::verifyTorquePidshasSameUnitTypes(GenericControlUnitsTy
         {
             if(_tpids[firstjoint].ctrlUnitsType != _tpids[i].ctrlUnitsType)
             {
-                yError() << "embObjMC BOARD " << boardIPstring << "all joints with torque enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
+                yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "all joints with torque enabled should have same controlunits type. Joint " << firstjoint << " differs from joint " << i;
                 return false;
             }
         }
@@ -1321,13 +1320,13 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
 #if defined(EMBOBJMC_USESERVICEPARSER)
     if(false == parser->parseService(config, serviceConfig))
     {
-        yError() << "embObjMC BOARD " << boardIPstring << "cannot parse service" ;
+        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "cannot parse service" ;
         return false;
     }
 
     if(eomn_serv_MC_generic == serviceConfig.ethservice.configuration.type)
     {
-        yError() << "embObjMC BOARD " << boardIPstring << "it is no longer possible use eomn_serv_MC_generic, because firmware cannot configure itself!" ;
+        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "it is no longer possible use eomn_serv_MC_generic, because firmware cannot configure itself!" ;
         return false;
     }
 
@@ -1392,19 +1391,19 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if(0 == _njoints)
     {
-        yError() << "embObjMC BOARD " << boardIPstring << "fromConfig(): detected _njoints = " << _njoints;
+        yError() << "embObjMC BOARD " << boardIPstring << "(" << boardName << ")"<< "fromConfig(): detected _njoints = " << _njoints;
         return false;
     }
 
     // we have number of joints inside _njoints. we allocate all required buffers
     if(!alloc(_njoints))
     {
-        yError() << "embObjMC BOARD " << boardIPstring <<"fromConfig(): alloc() failed for _njoints = " << _njoints;
+        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" <<"fromConfig(): alloc() failed for _njoints = " << _njoints;
         return false;
     }
 
 
-    _mcparser = new mcParser(_njoints, string(boardIPstring));
+    _mcparser = new mcParser(_njoints, string(boardName));
 
     ////// check motion control xml files version
     int currentMCversion =0;
@@ -1413,7 +1412,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (currentMCversion != PARSER_MOTION_CONTROL_VERSION)
     {
-        yError() << "embObjMC BOARD " << boardIPstring << "Wrong MotioncontrolVersion parameter. RobotInterface cannot start. Please contact icub-support@iit.it";
+        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Wrong MotioncontrolVersion parameter. RobotInterface cannot start. Please contact icub-support@iit.it";
         return false;
     }
 
@@ -4601,7 +4600,7 @@ bool embObjMotionControl::setVelPidRaw(int j, const Pid &pid)
 
     if(!_vpids[j].enabled)
     {
-        yError() << "eoMc board " << boardIPstring << ": it is not possible set velocity pid for joint " << j <<", because velocity pid is enabled in xml files";
+        yError() << "eoMc board " << boardIPstring  << "(" << boardName << ")" << ": it is not possible set velocity pid for joint " << j <<", because velocity pid is enabled in xml files";
         return false;
     }
     if(_vpids[j].ctrlUnitsType == controlUnits_metric)
@@ -4618,7 +4617,7 @@ bool embObjMotionControl::setVelPidRaw(int j, const Pid &pid)
     }
     else
     {
-        yError() << "eoMc board " << boardIPstring << ": Unknown _positionControlUnits, needed by setVelPidRaw()";
+        yError() << "eoMc board " << boardIPstring  << "(" << boardName << ")" << ": Unknown _positionControlUnits, needed by setVelPidRaw()";
     }
 
     copyPid_iCub2eo(&hwPid, &outPid);
@@ -4689,7 +4688,7 @@ bool embObjMotionControl::getVelPidRaw(int j, Pid *pid)
     }
     else
     {
-        yError() << "eoMc board " << boardIPstring << ":Unknown _positionControlUnits needed by getVelPid()";
+        yError() << "eoMc board " << boardIPstring  << "(" << boardName << ")" << ":Unknown _positionControlUnits needed by getVelPid()";
     }
 
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
