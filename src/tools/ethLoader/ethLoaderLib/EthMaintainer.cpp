@@ -685,6 +685,7 @@ string EthMaintainer::processDiscoveryReplies2(EthBoardList &boardlist, double w
 
                 memcpy(&binfo.macaddress, disc->mac48, 6);
                 binfo.boardtype = (eObrd_ethtype_t)disc->boardtype;
+                binfo.applicationdetails = disc->unused[0];
 
                 memcpy(&binfo.processes, &disc->processes, sizeof(eOuprot_proctable_t));
                 memcpy(binfo.boardinfo32, disc->boardinfo32, sizeof(binfo.boardinfo32));
@@ -833,6 +834,7 @@ std::string EthMaintainer::processMoreInfoReplies(EthBoardList &boardlist)
 
                 memcpy(&binfo.macaddress, disc->mac48, 6);
                 binfo.boardtype = (eObrd_ethtype_t)disc->boardtype;
+                binfo.applicationdetails = disc->unused[0];
 
                 memcpy(&binfo.processes, &disc->processes, sizeof(eOuprot_proctable_t));
                 memcpy(binfo.boardinfo32, disc->boardinfo32, sizeof(binfo.boardinfo32));
@@ -976,6 +978,7 @@ std::string EthMaintainer::prepareMoreInfoText(eOuprot_cmd_DISCOVER_REPLY_t * di
     binfo.capabilities = disc->capabilities;
     memcpy(&binfo.macaddress, disc->mac48, 6);
     binfo.boardtype = (eObrd_ethtype_t)disc->boardtype;
+    binfo.applicationdetails = disc->unused[0];
     memcpy(&binfo.processes, &disc->processes, sizeof(eOuprot_proctable_t));
     memcpy(binfo.boardinfo32, disc->boardinfo32, sizeof(binfo.boardinfo32));
 

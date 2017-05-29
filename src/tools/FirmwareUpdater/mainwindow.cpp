@@ -1021,6 +1021,17 @@ void MainWindow::onAppendInfo(boardInfo2_t info,eOipv4addr_t address)
     {
         mode = "special application for programming the updater";
     }
+    else if((eApplication == info.processes.runningnow) && (0xff != info.applicationdetails))
+    {
+        if(0x01 == (0x01 & info.applicationdetails))
+        {
+            mode = "application (RUNNING)";
+        }
+        else
+        {
+            mode = "application (IDLE)";
+        }
+    }
 
     QTreeWidgetItem *statusNode = new QTreeWidgetItem(boardNode, QStringList() << "Status" << mode);
     

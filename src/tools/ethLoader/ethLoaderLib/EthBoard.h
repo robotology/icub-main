@@ -40,7 +40,7 @@ struct boardInfo2_t
     eOuprot_proctable_t processes;          // it contains the properties of the processes in the remote board
     uint8_t             boardinfo32[32];    // if boardinfo32[0] is not 0xff then boardinfo32[1] contains a descriptive string of the remote board (30 characters max).
     bool                maintenanceIsActive;// tells if the maintenance is active (hence if the processes.runningnow is the eUpdater).
-
+    uint8_t             applicationdetails;
     eOversion_t         versionOfRunning;   // we keep this info (which for protversion is also inside processes.info[processes.runningnow].version) because ...
                                             // in the case of protversion 0 we dont have any info about which process is running now.
     string              moreinfostring;
@@ -56,6 +56,7 @@ struct boardInfo2_t
         macaddress = 0;
         boardtype = eobrd_ethtype_unknown;
         capabilities = 0;
+        applicationdetails = 0xff;
         memset(&processes, 0, sizeof(processes));
         processes.numberofthem = 0;
         processes.def2run = uprot_proc_None;
