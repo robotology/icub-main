@@ -161,7 +161,7 @@ bool mcParser::parseSelectedCurrentPid(yarp::os::Searchable &config, bool curren
 
     if(_currentControlLaw[0]=="none")
     {
-       yDebug() << "embObjMC BOARD " << _boardname << "No current control found "; 
+       //yDebug() << "embObjMC BOARD " << _boardname << "No current control found "; 
        return true;
     }
 
