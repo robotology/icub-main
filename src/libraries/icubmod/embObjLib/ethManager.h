@@ -215,6 +215,8 @@ public:
 
     bool Transmission(void);
 
+    bool CheckPresence(void);
+
     bool Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, bool collectStatistics);
 
     EthResource* getEthResource(eOipv4addr_t ipv4);
