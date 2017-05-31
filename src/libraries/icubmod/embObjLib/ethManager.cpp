@@ -645,6 +645,24 @@ bool TheEthManager::Transmission(void)
     return true;
 }
 
+
+void ethEvalPresence(EthResource *r, void* p)
+{
+    if((NULL == r) || (NULL == p))
+    {
+        return;
+    }
+    r->Check();
+}
+
+
+bool TheEthManager::CheckPresence(void)
+{
+    ethBoards->execute(ethEvalPresence, this);
+    return true;
+}
+
+
 bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t* boardipv4, char *boardipv4string, int stringsize, char *boardNameStr, int sizeofBoardNameStr)
 {
     // Get PC104 address and port from config file
@@ -1212,6 +1230,8 @@ bool TheEthManager::Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, b
 
     if(NULL != r)
     {
+        r->Tick();
+
         if(false == r->canProcessRXpacket(data, size))
         {   // cannot give packet to ethresource
             yError() << "TheEthManager::Reception() cannot give a received packet of size" << size << "to EthResource because EthResource::canProcessRXpacket() returns false.";
@@ -1510,14 +1530,15 @@ void EthReceiver::run()
         {
             // marco.accame: i prefer using <= 0.
             earlyexit = 1;
-            return;
+            break; // we do not return because we want to be sure to execute: ethManager->CheckPresence();
         }
 
         // we have a packet ... we give it to the ethmanager for it parsing
         bool collectStatistics = (statPrintInterval > 0) ? true : false;
         ethManager->Reception(sender_addr, incoming_msg_data, incoming_msg_size, collectStatistics);
     }
-
+    // execute the check on presence of all eth boards.
+    ethManager->CheckPresence();
 }
 
 

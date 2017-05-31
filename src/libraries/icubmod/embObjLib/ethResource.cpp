@@ -27,6 +27,100 @@ using namespace yarp::os::impl;
 
 
 
+// - class EthMonitorPresence
+
+EthMonitorPresence::EthMonitorPresence()
+{
+    lastTickTime = 0;
+    lastMissingReportTime = 0;
+    lastHeardTime = 0;
+    reportedMissing = false;
+}
+
+
+EthMonitorPresence::~EthMonitorPresence()
+{
+
+}
+
+
+void EthMonitorPresence::config(const Config &cfg)
+{
+    configuration = cfg;
+    // i dont check consistency... use sensibly
+}
+
+
+void EthMonitorPresence::enable(bool en)
+{
+    configuration.enabled = en;
+}
+
+
+bool EthMonitorPresence::isenabled()
+{
+    return configuration.enabled;
+}
+
+
+void EthMonitorPresence::tick()
+{
+    lastTickTime = yarp::os::Time::now();
+}
+
+
+bool EthMonitorPresence::check()
+{
+
+    if(false == configuration.enabled)
+    {
+        return true;
+    }
+
+
+    double tnow = yarp::os::Time::now();
+
+    if((true == reportedMissing) && (lastTickTime > 0))
+    {
+        yDebug() << "EthMonitorPresence: BOARD" << configuration.name << "has shown after being lost for" << tnow - lastHeardTime << "sec";
+        reportedMissing = false;
+        lastHeardTime = tnow;
+    }
+
+    if((true == reportedMissing) && (configuration.periodmissingreport > 0))
+    {
+        // i report the board is still missing. but at a smaller rate
+        if((tnow - lastMissingReportTime) >= configuration.periodmissingreport)
+        {
+            yDebug() << "EthMonitorPresence: BOARD" << configuration.name << "has been silent for another" << tnow - lastMissingReportTime << "sec, for a total of" << tnow - lastHeardTime << "sec";
+            lastMissingReportTime = tnow;
+        }
+        return false;
+    }
+
+
+    // check vs the target timeout
+    double delta = tnow - lastTickTime;
+
+    if(delta > configuration.timeout)
+    {
+        yDebug() << "EthMonitorPresence: BOARD" << configuration.name << "has been silent for" << delta << "sec (its timeout is" << configuration.timeout << "sec)";
+
+        // also: mark the board as lost.
+        lastMissingReportTime = tnow;
+        reportedMissing = true;
+        lastHeardTime = lastTickTime;
+        lastTickTime = -1;
+
+        return false;
+    }
+
+    // we have the board and we hard of it by its timeout
+    return true;
+}
+
+
+
 // - class EthNetworkQuery
 
 EthNetworkQuery::EthNetworkQuery()
@@ -154,6 +248,8 @@ EthResource::EthResource()
     {
         verbosewhenok = false;
     }
+
+    regularsAreSet = false;
 }
 
 
@@ -303,6 +399,89 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
         snprintf(boardName, sizeof(boardName), "NOT-NAMED");
     }
 
+
+    // init EthMonitorPresence object now when we have the address and boardname strings
+
+    EthMonitorPresence::Config mpConfig;
+
+    // default values ...
+    mpConfig.enabled = true;
+    mpConfig.timeout = 0.020;
+    mpConfig.periodmissingreport = 60.0;
+    mpConfig.name = std::string(ipv4addrstring) + " (" + std::string(boardName) + ")";
+
+    // do we have a proper section ETH_BOARD_ACTIONS/MONITOR_ITS_PRESENCE? if so we change its config
+
+    Bottle groupEthBoardActions = Bottle(groupEthBoard.findGroup("ETH_BOARD_ACTIONS"));
+    if(!groupEthBoardActions.isNull())
+    {
+
+        Bottle groupEthBoardActions_Monitor = Bottle(groupEthBoardActions.findGroup("MONITOR_ITS_PRESENCE"));
+        if(!groupEthBoardActions_Monitor.isNull())
+        {
+
+            Bottle groupEthBoardActions_Monitor_enabled = groupEthBoardActions_Monitor.findGroup("enabled");
+            ConstString Ena = groupEthBoardActions_Monitor_enabled.get(1).asString();
+            const char *strEna = Ena.c_str();
+
+            if(0 == strcmp(strEna, "true"))
+            {
+                mpConfig.enabled = true;
+            }
+
+            if(true == groupEthBoardActions_Monitor.check("timeout"))
+            {
+                double presenceTimeout = groupEthBoardActions_Monitor.find("timeout").asDouble();
+
+                if(presenceTimeout <= 0)
+                {
+                    presenceTimeout = 0;
+                    mpConfig.enabled = false;
+                }
+
+                if(presenceTimeout > 0.100)
+                {
+                    presenceTimeout = 0.100;
+                }
+
+                mpConfig.timeout = presenceTimeout;
+
+            }
+
+
+            if(true == groupEthBoardActions_Monitor.check("periodOfMissingReport"))
+            {
+                double reportMissingPeriod = groupEthBoardActions_Monitor.find("periodOfMissingReport").asDouble();
+
+                if(reportMissingPeriod <= 0)
+                {
+                    reportMissingPeriod = 0.0;
+                }
+
+                if(reportMissingPeriod > 600)
+                {
+                    reportMissingPeriod = 600;
+                }
+
+                mpConfig.periodmissingreport = reportMissingPeriod;
+
+            }
+        }
+    }
+
+    if(mpConfig.enabled)
+    {
+        yDebug() << "EthResource::open2(): monitoring of presence is ON for BOARD" << mpConfig.name << "with timeout =" << mpConfig.timeout << "sec and period of missing report =" << mpConfig.periodmissingreport << "sec";
+    }
+    else
+    {
+        yDebug() << "EthResource::open2(): monitoring of presence is OFF for BOARD" << mpConfig.name;
+    }
+
+    monitorpresence.config(mpConfig);
+    monitorpresence.tick();
+
+
     lock(false);
 
     return ret;
@@ -353,6 +532,25 @@ void EthResource::checkIsAlive(double curr_time)
     }
 
 }
+
+
+bool EthResource::Tick()
+{
+    monitorpresence.tick();
+    return true;
+}
+
+
+bool EthResource::Check()
+{
+    if(false == regularsAreSet)
+    {   // we dont comply if the regulars are not set because ... poor board: it does not regularly transmit
+        return true;
+    }
+
+    return monitorpresence.check();
+}
+
 
 
 bool EthResource::canProcessRXpacket(uint64_t *data, uint16_t size)
@@ -843,6 +1041,8 @@ bool EthResource::cleanBoardBehaviour(void)
         yError() << "EthResource::cleanBoardBehaviour() cannot stop services for BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
         return(false);
     }
+
+    regularsAreSet = false;
 
 
     if(verbosewhenok)
@@ -1740,7 +1940,9 @@ bool EthResource::serviceSetRegulars(eOmn_serv_category_t category, vector<eOpro
         eo_array_PushBack(array, &id32);
     }
 
-    return(serviceCommand(eomn_serv_operation_regsig_load, category, &param, timeout, 1));
+    regularsAreSet = serviceCommand(eomn_serv_operation_regsig_load, category, &param, timeout, 1);
+
+    return regularsAreSet;
 }
 
 
@@ -1761,6 +1963,11 @@ bool EthResource::serviceStart(eOmn_serv_category_t category, double timeout)
 bool EthResource::serviceStop(eOmn_serv_category_t category, double timeout)
 {
     bool ret = serviceCommand(eomn_serv_operation_stop, category, NULL, timeout, 3);
+
+    if(ret && (category == eomn_serv_category_all))
+    {
+        regularsAreSet = false;
+    }
 
     //#warning TODO: the result for command stop shall also tell if the the board is in running mode or not.
     return ret;
