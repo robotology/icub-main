@@ -1148,27 +1148,27 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
     hosttxrxcfg.sizes.maxnumberofregularrops        = 0;
 
 
-    // ok, now the nvset ...
-
-    int jomos = 12;
+    // ok, now the nvset ... we use maximum capabilities so that we can manage communication of up to 12 jomos
     const eOnvset_BRDcfg_t* brdcf2use = &eonvset_BRDcfgMax;
 
-    if(true == groupEthBoardSettings.check("protocolToUse"))
-    {
-        Bottle paramProt(groupEthBoardSettings.find("protocolToUse").asString());
-        char protocol2use[64] = {0};
-        snprintf(protocol2use, sizeof(protocol2use), "%s", paramProt.toString().c_str());
-        if(0 == strcmp(protocol2use, "STANDARD"))
-        {
-            jomos = 4;
-            brdcf2use = &eonvset_BRDcfgStd;
-        }
-        yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected protocolToUse =" << protocol2use << "and will prepare protocol for" << jomos << "jomos for BOARD w/ IP" << remoteipstring;
-    }
-    else
-    {
-        yWarning() << "HostTransceiver::prepareTransceiverConfig2() could not detected group protocolToUse, thus will prepare protocol for" << jomos << "jomos for BOARD w/ IP" << remoteipstring;
-    }
+// marco.accame: removed it on 31may17 to simply the xxx-eln.xml file, group ETH_BOARD_SETTINGS
+//    int jomos = 12;
+//    if(true == groupEthBoardSettings.check("protocolToUse"))
+//    {
+//        Bottle paramProt(groupEthBoardSettings.find("protocolToUse").asString());
+//        char protocol2use[64] = {0};
+//        snprintf(protocol2use, sizeof(protocol2use), "%s", paramProt.toString().c_str());
+//        if(0 == strcmp(protocol2use, "STANDARD"))
+//        {
+//            jomos = 4;
+//            brdcf2use = &eonvset_BRDcfgStd;
+//        }
+//        yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected protocolToUse =" << protocol2use << "and will prepare protocol for" << jomos << "jomos for BOARD w/ IP" << remoteipstring;
+//    }
+//    else
+//    {
+//        yWarning() << "HostTransceiver::prepareTransceiverConfig2() could not detected group protocolToUse, thus will prepare protocol for" << jomos << "jomos for BOARD w/ IP" << remoteipstring;
+//    }
 
     memcpy(&nvsetbrdconfig, brdcf2use, sizeof(eOnvset_BRDcfg_t));
     nvsetbrdconfig.boardnum = get_protBRDnumber();
