@@ -23,7 +23,7 @@
  *
  * Implementation of polynomial fitting through a least-squares 
  * based algorithm on a adpative window (<a 
- * href="http://ieeexplore.ieee.org/iel5/87/19047/00880606.pdf">PDF</a>) 
+ * href="https://doi.org/10.1109/87.880606">PDF</a>) 
  *
  * \author Ugo Pattacini
  *
