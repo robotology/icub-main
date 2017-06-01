@@ -1516,27 +1516,36 @@ void EthReceiver::run()
     flags |= MSG_DONTWAIT;
 #endif
 
-    static int earlyexit = 0;
+    static uint8_t earlyexit_prev = 0;
+    static uint8_t earlyexit_prevprev = 0;
 
-    //  marco.accame: set it as a fixed minimum number + the number of boards + an offset of 30% which depends on activity
-    int maxUDPpackets = 2 + EthReceiver::rateofthread*ethManager->getNumberOfResources() * (1.0f + 0.3f * earlyexit);
+    // marco.accame: set maxUDPpackets as a fixed minimum number (2) + the number of boards. all is multipled by rateofthread and by a gain which depends on past activity
+    // the gain on past activity is usually 1. if maxUDPpackets is not enough the gain becomes (1+f1). if again it is not enough, the gain becomes 1+f1+f2+f3 and stays as
+    // such until it is enough. at this time it becomes 1+f2 and then 1 again
+    const double f1 = 0.5;
+    const double f2 = 0.5;
+    const double f3 = 8.0;
+    double gain = 1.0 + f1*(1-earlyexit_prev) + f2*(1-earlyexit_prevprev) + f3*(1-earlyexit_prev)*(1-earlyexit_prevprev);
+    int maxUDPpackets = (2 + ethManager->getNumberOfResources()) * EthReceiver::rateofthread *  gain;
 
-    earlyexit = 0;
+
+    earlyexit_prevprev = earlyexit_prev;    // save previous early exit
+    earlyexit_prev = 0;                     // consider no early exit this time
 
     for(int i=0; i<maxUDPpackets; i++)
     {
         incoming_msg_size = recv_socket->recv((void *) incoming_msg_data, incoming_msg_capacity, sender_addr, flags);
         if(incoming_msg_size <= 0)
-        {
-            // marco.accame: i prefer using <= 0.
-            earlyexit = 1;
-            break; // we do not return because we want to be sure to execute: ethManager->CheckPresence();
+        { // marco.accame: i prefer using <= 0.
+            earlyexit_prev = 1; // yes, we have an early exit
+            break; // we break and do not return because we want to be sure to execute what is after the for() loop
         }
 
         // we have a packet ... we give it to the ethmanager for it parsing
         bool collectStatistics = (statPrintInterval > 0) ? true : false;
         ethManager->Reception(sender_addr, incoming_msg_data, incoming_msg_size, collectStatistics);
     }
+
     // execute the check on presence of all eth boards.
     ethManager->CheckPresence();
 }
