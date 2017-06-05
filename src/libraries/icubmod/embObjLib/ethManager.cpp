@@ -21,10 +21,10 @@
 #include <yarp/os/NetType.h>
 #include <ace/Time_Value.h>
 
-#ifdef ICUB_USE_REALTIME_LINUX
+#if defined(__unix__)
 #include <pthread.h>
 #include <unistd.h>
-#endif //ICUB_USE_REALTIME_LINUX
+#endif
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -301,7 +301,7 @@ bool EthBoards::get_LUTindex(eOipv4addr_t ipv4, uint8_t &index)
     index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
     index --;
-    
+
     if(index>=maxEthBoards)
     {
         return false;
@@ -318,12 +318,12 @@ IethResource* EthBoards::get_interface(eOipv4addr_t ipv4, iethresType_t type)
 {
     IethResource *dev = NULL;
     uint8_t index;
-    
+
     if(!get_LUTindex(ipv4, index))
     {
         return NULL;
     }
-    
+
     if(iethres_none == type)
     {
         return NULL;
@@ -1384,7 +1384,7 @@ bool EthSender::threadInit()
 {
     yTrace() << "Do some initialization here if needed";
 
-#ifdef ICUB_USE_REALTIME_LINUX
+#if defined(__unix__)
     /**
      * Make it realtime (works on both RT and Standard linux kernels)
      * - increase the priority upto the system IRQ's priorities (50) and less than the receiver thread
@@ -1393,7 +1393,7 @@ bool EthSender::threadInit()
     struct sched_param thread_param;
     thread_param.sched_priority = sched_get_priority_max(SCHED_FIFO)/2 - 1; // = 48
     pthread_setschedparam(pthread_self(), SCHED_FIFO, &thread_param);
-#endif //ICUB_USE_REALTIME_LINUX
+#endif
 
     return true;
 }
@@ -1401,7 +1401,7 @@ bool EthSender::threadInit()
 
 
 void EthSender::run()
-{    
+{
     // by calling this metod of ethManager, we put protection vs concurrency internal to the class.
     // for tx we must protect the EthResource not being changed. they can be changed by a device such as
     // embObjMotionControl etc which adds or releases its resources.
@@ -1482,7 +1482,7 @@ bool EthReceiver::threadInit()
 {
     yTrace() << "Do some initialization here if needed";
 
-#ifdef ICUB_USE_REALTIME_LINUX
+#if defined(__unix__)
     /**
      * Make it realtime (works on both RT and Standard linux kernels)
      * - increase the priority upto the system IRQ's priorities (< 50)
@@ -1491,7 +1491,7 @@ bool EthReceiver::threadInit()
     struct sched_param thread_param;
     thread_param.sched_priority = sched_get_priority_max(SCHED_FIFO)/2; // = 49
     pthread_setschedparam(pthread_self(), SCHED_FIFO, &thread_param);
-#endif //ICUB_USE_REALTIME_LINUX
+#endif
 
     return true;
 }
@@ -1553,7 +1553,3 @@ void EthReceiver::run()
 
 
 // eof
-
-
-
-
