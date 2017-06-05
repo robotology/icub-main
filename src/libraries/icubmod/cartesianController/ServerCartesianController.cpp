@@ -2023,24 +2023,8 @@ bool ServerCartesianController::close()
 
     detachAll();
 
-    for (unsigned int i=0; i<lRmp.size(); i++)
-        delete[] lRmp[i];
-
-    lDsc.clear();
-    lMod.clear();
-    lEnc.clear();
-    lEnt.clear();
-    lPid.clear();
-    lLim.clear();
-    lVel.clear();
-    lPos.clear();
-    lStp.clear();
-    lJnt.clear();
-    lRmp.clear();
-
     delete limbState;
     delete limbPlan;
-    delete ctrl;
 
     while (eventsMap.size()>0)
         unregisterEvent(*eventsMap.begin()->second);
@@ -2252,6 +2236,30 @@ bool ServerCartesianController::detachAll()
         stop();
 
     delete taskRefVelTargetGen;
+    taskRefVelTargetGen=NULL;
+
+    for (unsigned int i=0; i<lRmp.size(); i++)
+    {
+        delete[] lRmp[i];
+        lRmp[i]=NULL;
+    }
+
+    lDsc.clear();
+    lMod.clear();
+    lEnc.clear();
+    lEnt.clear();
+    lPid.clear();
+    lLim.clear();
+    lVel.clear();
+    lPos.clear();
+    lStp.clear();
+    lJnt.clear();
+    lRmp.clear();
+
+    delete ctrl;
+    ctrl=NULL;
+
+    attached=false;
     return true;
 }
 
