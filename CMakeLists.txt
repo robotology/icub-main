@@ -56,15 +56,6 @@ set_property(GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS) # this is populated iCubFi
 # add yarp definitions
 add_definitions(${YARP_DEFINES})   #this contains also -D_REENTRANT
 
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    option(ICUB_REALTIME_EXPERIMENTAL "Experimental: Prioritize essential threads to run in the real-time mode" OFF)
-    mark_as_advanced (ICUB_REALTIME_EXPERIMENTAL)
-
-    if(ICUB_REALTIME_EXPERIMENTAL)
-        add_definitions(-DICUB_USE_REALTIME_LINUX)
-    endif(ICUB_REALTIME_EXPERIMENTAL)
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-
 # pick up yarp's cmake scripts
 list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
 
