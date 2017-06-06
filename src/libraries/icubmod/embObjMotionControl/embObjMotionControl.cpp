@@ -1858,28 +1858,7 @@ bool embObjMotionControl::setPidsRaw(const PidControlTypeEnum& pidtype, const Pi
 
 bool embObjMotionControl::setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref)
 {
-    int mode = 0;
-    getControlModeRaw(j, &mode);
-    if (mode != VOCAB_CM_POSITION_DIRECT &&
-        mode != VOCAB_CM_IDLE)
-    {
-        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint "<< j;
-        setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-        #else
-        yError() << "setReferenceRaw: skipping command because BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j << " is not in VOCAB_CM_POSITION_DIRECT mode";
-        #endif
-    }
-
-    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
-    eOmc_setpoint_t setpoint = {0};
-
-    _ref_positions[j] = ref;   // save internally the new value of pos.
-    setpoint.type = (eOenum08_t) eomc_setpoint_positionraw;
-    setpoint.to.position.value = (eOmeas_position_t) S_32(ref);
-    setpoint.to.position.withvelocity = 0;
-
-    return res->addSetMessage(protoId, (uint8_t*) &setpoint);
+    return NOT_YET_IMPLEMENTED("setPidReferenceRaw");
 }
 
 bool embObjMotionControl::setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs)
@@ -1916,20 +1895,29 @@ bool embObjMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int 
     switch(pidtype)
     {
         case VOCAB_PIDTYPE_POSITION:
+        {
             if((eomc_controlmode_torque == jcore.modes.controlmodestatus)   ||
                (eomc_controlmode_openloop == jcore.modes.controlmodestatus) ||
                (eomc_controlmode_current == jcore.modes.controlmodestatus))
                     return true;
             else
-                *err = (double) jcore.ofpid.generic.error1  ;
+                *err = (double) jcore.ofpid.generic.error1;
+        }
         break;
         case VOCAB_PIDTYPE_VELOCITY:
-            *err=0;
+        {
+            *err=0;  //not yet implemented
+            NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_VELOCITY");
+        }
         break;
         case VOCAB_PIDTYPE_CURRENT:
-            *err=0;
+        {
+            *err=0;  //not yet implemented
+            NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_CURRENT");
+        }
         break;
         case VOCAB_PIDTYPE_TORQUE:
+        {
             if ((eOmc_interactionmode_compliant == jcore.modes.interactionmodestatus) &&
                 (eomc_controlmode_position == jcore.modes.controlmodestatus))
             {
@@ -1940,9 +1928,12 @@ bool embObjMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int 
             {
                 *err = (double) jcore.ofpid.torque.errtrq;
             }
+        }
         break;
         default:
+        {
             yError()<<"Invalid pidtype:"<<pidtype;
+        }
         break;
     }
     return true;
@@ -2032,13 +2023,42 @@ bool embObjMotionControl::getPidReferenceRaw(const PidControlTypeEnum& pidtype, 
     if(!res->readBufferedValue(id32, (uint8_t *)&jcore, &size))
         return false;
 
-    if((eomc_controlmode_torque == jcore.modes.controlmodestatus)   ||
-       (eomc_controlmode_openloop == jcore.modes.controlmodestatus) ||
-       (eomc_controlmode_current == jcore.modes.controlmodestatus))
-            return true;
-
-    *ref = (double) jcore.ofpid.generic.reference1;
-
+    switch (pidtype)
+    {
+        case VOCAB_PIDTYPE_POSITION:
+        {
+            if((eomc_controlmode_torque == jcore.modes.controlmodestatus) ||
+            (eomc_controlmode_openloop == jcore.modes.controlmodestatus) ||
+            (eomc_controlmode_current == jcore.modes.controlmodestatus))
+            { *ref = 0; yError() << "Invalid getPidReferenceRaw() request for current control mode"; return true; }
+            *ref = (double) jcore.ofpid.generic.reference1;
+        }
+        break;
+        case VOCAB_PIDTYPE_VELOCITY:
+        {
+            *ref=0;
+            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_VELOCITY");
+        }
+        break;
+        case VOCAB_PIDTYPE_CURRENT:
+        {
+            *ref=0;
+            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_CURRENT");
+        }
+        break;
+        case VOCAB_PIDTYPE_TORQUE:
+        {
+            *ref=0;
+            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_TORQUE");
+        }
+        break;
+        default:
+        {
+            *ref=0;
+            yError()<<"Invalid pidtype:"<<pidtype;
+        }
+        break;
+    }
     return true;
 }
 
@@ -2098,12 +2118,8 @@ bool embObjMotionControl::velocityMoveRaw(int j, double sp)
         (mode != VOCAB_CM_IMPEDANCE_VEL) &&
         (mode != VOCAB_CM_IDLE))
     {
-        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j;
-        setControlModeRaw(j, VOCAB_CM_VELOCITY);
-        #else
         yError() << "velocityMoveRaw: skipping command because BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j << " is not in VOCAB_CM_VELOCITY mode";
-        #endif
+        return true;
     }
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
@@ -2416,12 +2432,8 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
         (mode != VOCAB_CM_IMPEDANCE_POS) &&
         (mode != VOCAB_CM_IDLE))
     {
-        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yDebug() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j;
-        setControlModeRaw(j, VOCAB_CM_POSITION);
-        #else
         yError() << "positionMoveRaw: skipping command because BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j << " is not in VOCAB_CM_POSITION mode";
-        #endif
+        return true;
     }
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
@@ -4584,21 +4596,24 @@ bool embObjMotionControl::helper_getVelPidRaw(int j, Pid *pid)
 // PositionDirect Interface
 bool embObjMotionControl::setPositionRaw(int j, double ref)
 {
-    // does the same as setReferenceRaw, with some more misterious (missing) checks.
     int mode = 0;
     getControlModeRaw(j, &mode);
     if (mode != VOCAB_CM_POSITION_DIRECT &&
         mode != VOCAB_CM_IDLE)
     {
-        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j;
-        setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-        #else
-        yError() << "setPositionRaw: skipping command because BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j << " is not in VOCAB_CM_POSITION_DIRECT mode";
-        #endif
+        yError() << "setReferenceRaw: skipping command because BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j << " is not in VOCAB_CM_POSITION_DIRECT mode";
+        return true;
     }
 
-    return setPidReferenceRaw(yarp::dev::VOCAB_PIDTYPE_POSITION, j, ref);
+    eOprotID32_t protoId = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
+    eOmc_setpoint_t setpoint = {0};
+
+    _ref_positions[j] = ref;   // save internally the new value of pos.
+    setpoint.type = (eOenum08_t) eomc_setpoint_positionraw;
+    setpoint.to.position.value = (eOmeas_position_t) S_32(ref);
+    setpoint.to.position.withvelocity = 0;
+
+    return res->addSetMessage(protoId, (uint8_t*) &setpoint);
 }
 
 bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)

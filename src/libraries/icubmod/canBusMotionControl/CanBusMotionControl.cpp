@@ -2580,7 +2580,7 @@ bool CanBusMotionControl::open (Searchable &config)
     {
         _MCtorqueControlEnabled = true;
         yarp::os::Time::delay(0.005);
-        setTorquePids(p._tpids);
+        setPids(VOCAB_PIDTYPE_TORQUE, p._tpids);
         
         for (int i=0; i<p._njoints; i++)
         {
@@ -4849,24 +4849,7 @@ bool CanBusMotionControl::setPidsRaw(const PidControlTypeEnum& pidtype, const Pi
 /// cmd is a SingleAxis poitner with 1 double arg
 bool CanBusMotionControl::setPidReferenceRaw (const PidControlTypeEnum& pidtype, int j, double ref)
 {
-    const int axis = j;
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-        int mode = 0;
-        getControlModeRaw(j, &mode);
-        if (mode != VOCAB_CM_POSITION_DIRECT &&
-            mode != VOCAB_CM_IDLE)
-        {
-            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-            yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, " << networkName.c_str() << " joint: " << axis;
-            setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-            #else
-            yError() << "setReferenceRaw: skipping command because " << networkName.c_str() << " joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
-            #endif
-        }
-
-    return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, axis, S_32(ref));
+    return NOT_YET_IMPLEMENTED("setPidReferenceRaw");
 }
 
 /// cmd is an array of double (LATER: to be optimized).
@@ -5005,8 +4988,12 @@ bool CanBusMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int 
         *err = double(r._bcastRecvBuffer[axis]._torque_error);
         break;
         case VOCAB_PIDTYPE_VELOCITY:
+        *err = 0; //not yet implemented
+        NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_VELOCITY");
         break;
         case VOCAB_PIDTYPE_CURRENT:
+        *err = 0; //not yet implemented
+        NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_CURRENT");
         break;
     }
     _mutex.post();
@@ -5333,14 +5320,46 @@ bool CanBusMotionControl::getPidReferenceRaw(const PidControlTypeEnum& pidtype, 
 {
     const int axis = j;
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+    {
         return false;
+    }
 
-    int value = 0;
-    if (_readDWord (ICUBCANPROTO_POL_MC_CMD__GET_DESIRED_POSITION, axis, value) == true)
-        *ref = double (value);
-    else
-        return false;
-
+    switch (pidtype)
+    {
+        case VOCAB_PIDTYPE_POSITION:
+        {
+            int value = 0;
+            if (_readDWord (ICUBCANPROTO_POL_MC_CMD__GET_DESIRED_POSITION, axis, value) == true)
+            { *ref = double (value);}
+            else
+            { *ref =0; yError() << "Invalid _readDWord (ICUBCANPROTO_POL_MC_CMD__GET_DESIRED_POSITION)"; return false; }
+        }
+        break;
+        case VOCAB_PIDTYPE_VELOCITY:
+        {
+            *ref=0;
+            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_VELOCITY");
+        }
+        break;
+        case VOCAB_PIDTYPE_CURRENT:
+        {
+            *ref=0;
+            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_CURRENT");
+        }
+        break;
+        case VOCAB_PIDTYPE_TORQUE:
+        {
+            *ref=0;
+            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_TORQUE");
+        }
+        break;
+        default:
+        {
+            *ref=0;
+            yError()<<"Invalid pidtype:"<<pidtype;
+        }
+        break;
+    }
     return true;
 }
 
@@ -5507,12 +5526,8 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         mode != VOCAB_CM_IMPEDANCE_POS &&
         mode != VOCAB_CM_IDLE)
     {
-        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, " << networkName.c_str() << " joint: " << axis;
-        setControlModeRaw(axis,VOCAB_CM_POSITION);
-        #else
         yError() << "positionMoveRaw: skipping command because " << networkName.c_str() << " joint " << axis << "is not in VOCAB_CM_POSITION mode";
-        #endif
+        return true;
     }
 
     _mutex.wait();
@@ -6012,12 +6027,8 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
         mode != VOCAB_CM_IMPEDANCE_VEL && 
         mode != VOCAB_CM_IDLE)
     {
-        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, " << networkName.c_str() << " joint: " << axis;
-        setControlModeRaw(axis,VOCAB_CM_VELOCITY);
-        #else
         yError() << "velocityMoveRaw: skipping command because " << networkName.c_str() << " joint " << axis << "is not in VOCAB_CM_VELOCITY mode";
-        #endif
+        return true;
     }
 
     _mutex.wait();
@@ -6798,12 +6809,8 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
         if (mode != VOCAB_CM_POSITION_DIRECT &&
             mode != VOCAB_CM_IDLE)
         {
-            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-            yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, " << networkName.c_str() << " joint: " << j;
-            setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-            #else
             yError() << "setPositionRaw: skipping command because " << networkName.c_str() << " joint " << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
-            #endif
+            return true;
         }
         return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(ref));
     }

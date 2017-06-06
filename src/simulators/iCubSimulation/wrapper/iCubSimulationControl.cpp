@@ -627,28 +627,36 @@ bool iCubSimulationControl::setPidsRaw(const PidControlTypeEnum& pidtype, const 
 /// cmd is a SingleAxis pointer with 1 double arg
 bool iCubSimulationControl::setPidReferenceRaw (const PidControlTypeEnum& pidtype, int axis, double ref)
 {
-    int mode = 0;
-    getControlModeRaw(axis, &mode);
-    if (mode != VOCAB_CM_POSITION_DIRECT)
-    {
-        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, part " << partSelec << " joint: " << axis;
-        setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-        #else
-        yError() << "setReferenceRaw: skipping command because part " << partSelec << " joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
-        return false;
-        #endif
-    }
-
     if( (axis>=0) && (axis<njoints) )
-        {
-            _mutex.wait();
-            next_pos[axis] = ref;
-            _mutex.post();
-            return true;
-        }
+    {
+       int mode = 0;
+       getControlModeRaw(axis, &mode);
+       switch (pidtype)
+       {
+           case VOCAB_PIDTYPE_POSITION:
+               //if (mode == VOCAB_CM_POSITION_DIRECT) {_mutex.wait();
+               //next_pos[axis] = ref;
+               //_mutex.post();}
+               NOT_YET_IMPLEMENTED("setPidReferenceRaw");
+           break;
+           case VOCAB_PIDTYPE_VELOCITY:
+               NOT_YET_IMPLEMENTED("setPidReferenceRaw");
+           break;
+           case VOCAB_PIDTYPE_CURRENT:
+               NOT_YET_IMPLEMENTED("setPidReferenceRaw");
+           break;
+           case VOCAB_PIDTYPE_TORQUE:
+               NOT_YET_IMPLEMENTED("setPidReferenceRaw");
+           break;
+           default:
+           break;
+       }
+       return true;
+    }
     if (verbosity)
+    {
         yError("setReferenceRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    }
     return false;
 }
 
@@ -713,14 +721,80 @@ bool iCubSimulationControl::getPidErrorsRaw(const PidControlTypeEnum& pidtype, d
 bool iCubSimulationControl::getPidOutputRaw(const PidControlTypeEnum& pidtype, int axis, double *out)
 {
     if( (axis>=0) && (axis<njoints) )
-        {
-            _mutex.wait();
-            *out = pwm[axis];
-            _mutex.post();
-            return true;
-        }
+    {
+       int mode = 0;
+       getControlModeRaw(axis, &mode);
+       switch (pidtype)
+       {
+           case VOCAB_PIDTYPE_POSITION:
+           if (mode == VOCAB_CM_POSITION_DIRECT ||
+               mode == VOCAB_CM_POSITION ||
+               mode == VOCAB_CM_MIXED)
+           {
+               _mutex.wait();
+               *out = pwm[axis];
+               _mutex.post();
+           }
+           else
+           {
+               _mutex.wait();
+               *out = 0;
+               _mutex.post();
+           }
+           break;
+           case VOCAB_PIDTYPE_VELOCITY:
+           if (mode == VOCAB_CM_VELOCITY)
+           {
+               _mutex.wait();
+               *out = pwm[axis];
+               _mutex.post();
+           }
+           else
+           {
+               _mutex.wait();
+               *out = 0;
+               _mutex.post();
+           }
+           break;
+           case VOCAB_PIDTYPE_CURRENT:
+           if (mode == VOCAB_CM_CURRENT)
+           {
+               _mutex.wait();
+               *out = pwm[axis];
+               _mutex.post();
+           }
+           else
+           {
+               _mutex.wait();
+               *out = 0;
+               _mutex.post();
+           }
+           break;
+           case VOCAB_PIDTYPE_TORQUE:
+           if (mode == VOCAB_CM_TORQUE)
+           {
+               _mutex.wait();
+               *out = pwm[axis];
+               _mutex.post();
+           }
+           else
+           {
+               _mutex.wait();
+               *out = 0;
+               _mutex.post();
+           }
+           break;
+           default:
+               _mutex.wait();
+               *out = 0;
+               _mutex.post();
+           break;
+       }
+    }
     if (verbosity)
+    {
         yError("getOutputRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    }
     return false;
 }
 
@@ -817,19 +891,40 @@ bool iCubSimulationControl::getPowerSupplyVoltageRaw(int j, double* val)
 bool iCubSimulationControl::getPidReferenceRaw(const PidControlTypeEnum& pidtype, int axis, double *ref)
 {
     if( (axis>=0) && (axis<njoints) )
-        {
-            _mutex.wait();
-            switch(pidtype)
-            {
-                case VOCAB_PIDTYPE_POSITION:
-                     *ref = next_pos[axis];
-                break;
-            }
-            _mutex.post();
-            return true;
-        }
+    {
+       int mode = 0;
+       getControlModeRaw(axis, &mode);
+       switch (pidtype)
+       {
+           case VOCAB_PIDTYPE_POSITION:
+               _mutex.wait();
+               *ref = next_pos[axis];
+               _mutex.post();
+           break;
+           case VOCAB_PIDTYPE_VELOCITY:
+               _mutex.wait();
+               *ref = next_vel[axis];
+               _mutex.post();
+           break;
+           case VOCAB_PIDTYPE_CURRENT:
+               _mutex.wait();
+               *ref = current_ampere_ref[axis];
+               _mutex.post();
+           break;
+           case VOCAB_PIDTYPE_TORQUE:
+               _mutex.wait();
+               *ref = next_torques[axis];
+               _mutex.post();
+           break;
+           default:
+           break;
+       }
+       return true;
+    }
     if (verbosity)
+    {
         yError("getReferenceRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    }
     return false;
 }
 
@@ -891,13 +986,8 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
         if (mode != VOCAB_CM_POSITION &&
             mode != VOCAB_CM_MIXED  )
         {
-            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-            yWarning() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, part " << partSelec << " joint: " << axis;
-            setControlModeRaw(axis,VOCAB_CM_POSITION);
-            #else
             yError() << "positionMoveRaw: skipping command because part " << partSelec << " joint " << axis << "is not in VOCAB_CM_POSITION mode";
             return false;
-            #endif
         }
 
         _mutex.wait();
@@ -1259,13 +1349,8 @@ bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)
         if (mode != VOCAB_CM_VELOCITY &&
         mode != VOCAB_CM_MIXED)
         {
-            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-            yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, part " << partSelec << " joint: " << axis;
-            setControlModeRaw(axis,VOCAB_CM_VELOCITY);
-            #else
             yError() << "velocityMoveRaw: skipping command because part " << partSelec << " joint " << axis << "is not in VOCAB_CM_VELOCITY mode";
             return false;
-            #endif
         }
         _mutex.wait();
         next_vel[axis] = sp;
@@ -2241,13 +2326,8 @@ bool iCubSimulationControl::setPositionRaw(int axis, double ref)
         getControlModeRaw(axis, &mode);
         if (mode != VOCAB_CM_POSITION_DIRECT)
         {
-            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-            yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, part:" << partSelec << " joint: " << axis;
-            setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-            #else
             yError() << "setPositionRaw: skipping command because part " << partSelec << " joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
             return false;
-            #endif
         }
         _mutex.wait();
         if(ref< limitsMin[axis])

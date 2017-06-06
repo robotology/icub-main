@@ -14,10 +14,6 @@ yarp_prepare_plugin(embObjMotionControl
         add_definitions( -DETHRES_DEBUG_DONTREADBACK)
     endif(ETHRES_DEBUG_DONTREADBACK)
 
-  if (ICUB_AUTOMATIC_MODE_SWITCHING)
-	add_definitions(-DICUB_AUTOMATIC_MODE_SWITCHING)
-  endif()
-
   if (ICUB_ASK_REFERENCE_TO_FIRMWARE)
       add_definitions(-DASK_REFERENCE_TO_FIRMWARE)
   endif()
