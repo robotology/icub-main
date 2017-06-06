@@ -459,6 +459,7 @@ OnlineCompensatorDesign::OnlineCompensatorDesign() : RateThread(1000),
     ilim=NULL;
     ienc=NULL;
     ipos=NULL;
+    idir=NULL;
     ipid=NULL;
     ipwm=NULL;
     icur=NULL;
@@ -477,6 +478,7 @@ bool OnlineCompensatorDesign::configure(PolyDriver &driver, const Property &opti
     ok&=driver.view(ilim);
     ok&=driver.view(ienc);
     ok&=driver.view(ipos);
+    ok&=driver.view(idir);
     ok&=driver.view(ipid);
     ok&=driver.view(ipwm);
     ok&=driver.view(icur);
@@ -598,12 +600,15 @@ bool OnlineCompensatorDesign::threadInit()
         case controller_validation:
         {
             pidCur=&pidOld;
-            imod->setControlMode(joint,VOCAB_CM_POSITION);
             x_tg=x_max;
             if (controller_validation_ref_square)
-                ipid->setPidReference(VOCAB_PIDTYPE_POSITION,joint,x_tg);
+            {
+                imod->setControlMode(joint,VOCAB_CM_POSITION_DIRECT);
+                idir->setPosition(joint,x_tg);
+            }
             else
             {
+                imod->setControlMode(joint,VOCAB_CM_POSITION);
                 ipos->setRefAcceleration(joint,std::numeric_limits<double>::max());
                 ipos->setRefSpeed(joint,(x_max-x_min)/controller_validation_ref_period);
                 ipos->positionMove(joint,x_tg);
@@ -781,7 +786,7 @@ void OnlineCompensatorDesign::run()
                                                               controller_validation_stiction_down);
 
                 if (controller_validation_ref_square)
-                    ipid->setPidReference(VOCAB_PIDTYPE_POSITION,joint,x_tg);
+                    idir->setPosition(joint,x_tg);
                 else
                     ipos->positionMove(joint,x_tg);
             }

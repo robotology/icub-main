@@ -358,6 +358,7 @@ protected:
     yarp::dev::IControlLimits   *ilim;
     yarp::dev::IEncoders        *ienc;
     yarp::dev::IPositionControl *ipos;
+    yarp::dev::IPositionDirect  *idir;
     yarp::dev::IPidControl      *ipid;
     yarp::dev::IPWMControl      *ipwm;
     yarp::dev::ICurrentControl  *icur;
