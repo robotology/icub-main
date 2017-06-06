@@ -1111,7 +1111,7 @@ double ServerCartesianController::getFeedback(Vector &_fb)
         bool ok;
 
         if (useReferences)
-            ok=lPid[i]->getReferences(fbTmp.data());
+            ok=lPid[i]->getPidReferences(VOCAB_PIDTYPE_POSITION,fbTmp.data());
         else if (encTimedEnabled)
         {
             ok=lEnt[i]->getEncodersTimed(fbTmp.data(),stamps.data());
