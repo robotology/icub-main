@@ -160,6 +160,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
     position_pid = allocAndCheck <Pid>(njoints);
     torque_pid = allocAndCheck  <Pid>(njoints);
     current_pid = allocAndCheck  <Pid>(njoints);
+    velocity_pid = allocAndCheck <Pid>(njoints);
     motor_torque_params = allocAndCheck <MotorTorqueParameters>(njoints);
     rotToEncoder = allocAndCheck<double>(njoints);
     gearbox = allocAndCheck<double>(njoints);
@@ -301,7 +302,7 @@ bool iCubSimulationControl::open(yarp::os::Searchable& config) {
 
     ImplementPositionControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementVelocityControl2::initialize(njoints, axisMap, angleToEncoder, zeros);
-    ImplementPidControl::initialize(njoints, axisMap, angleToEncoder, zeros);
+    ImplementPidControl::initialize(njoints, axisMap, angleToEncoder, zeros,newtonsToSensor,ampsToSensor);
     ImplementEncodersTimed::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementMotorEncoders::initialize(njoints, axisMap, angleToEncoder, zeros);
     ImplementControlCalibration<iCubSimulationControl, IControlCalibration>::
@@ -418,6 +419,7 @@ bool iCubSimulationControl::close (void)
     checkAndDestroy<bool>(motor_on);
     checkAndDestroy<Pid>(position_pid);
     checkAndDestroy<Pid>(torque_pid);
+    checkAndDestroy<Pid>(velocity_pid);
     checkAndDestroy<MotorTorqueParameters>(motor_torque_params);
     checkAndDestroy<double>(rotToEncoder);
     checkAndDestroy<double>(gearbox);
@@ -554,100 +556,150 @@ bool iCubSimulationControl::getAxes(int *ax)
     return true;
 }
 
-bool iCubSimulationControl::setPidRaw (int axis, const Pid &pid)
+bool iCubSimulationControl::setPidRaw (const PidControlTypeEnum& pidtype, int j, const Pid &pid)
 {
-   if( (axis>=0) && (axis<njoints) )
+   if( (j>=0) && (j<njoints) )
    {
-       position_pid[axis]=pid;
+       switch (pidtype)
+       {
+           case VOCAB_PIDTYPE_POSITION:
+               position_pid[j]=pid;
+           break;
+           case VOCAB_PIDTYPE_VELOCITY:
+               velocity_pid[j]=pid;
+           break;
+           case VOCAB_PIDTYPE_CURRENT:
+               current_pid[j]=pid;
+           break;
+           case VOCAB_PIDTYPE_TORQUE:
+              torque_pid[j]=pid;
+           break;
+           default:
+           break;
+       }
    }
-   NOT_YET_IMPLEMENTED("setPidRaw");
-   return true; //fake
+   return true;
 }
 
-bool iCubSimulationControl::getPidRaw (int axis, Pid *out)
+bool iCubSimulationControl::getPidRaw (const PidControlTypeEnum& pidtype, int j, Pid *out)
 {
-   if( (axis>=0) && (axis<njoints) )
+   if( (j>=0) && (j<njoints) )
    {
-       *out=position_pid[axis];
+       switch (pidtype)
+       {
+           case VOCAB_PIDTYPE_POSITION:
+               *out=position_pid[j];
+           break;
+           case VOCAB_PIDTYPE_VELOCITY:
+               *out=velocity_pid[j];
+           break;
+           case VOCAB_PIDTYPE_CURRENT:
+               *out=current_pid[j];
+           break;
+           case VOCAB_PIDTYPE_TORQUE:
+               *out=torque_pid[j];
+           break;
+           default:
+           break;
+       }
    }
-   NOT_YET_IMPLEMENTED("getPidRaw");
-   return true; //fake
+   return true;
 }
 
-bool iCubSimulationControl::getPidsRaw (Pid *out)
+bool iCubSimulationControl::getPidsRaw (const PidControlTypeEnum& pidtype, Pid *out)
 {
     for (int i=0; i<njoints; i++)
     {
-        out[i]=position_pid[i];
+       getPidRaw(pidtype, i, &out[i]);
     }
-    NOT_YET_IMPLEMENTED("getPidsRaw");
-    return true; //fake
+    return true;
 }
 
-bool iCubSimulationControl::setPidsRaw(const Pid *pids)
+bool iCubSimulationControl::setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids)
 {
     for (int i=0; i<njoints; i++)
     {
-        position_pid[i]=pids[i];
+        setPidRaw(pidtype,i,pids[i]);
     }
-    NOT_YET_IMPLEMENTED("setPidsRaw");
-    return true; //fake
+    return true;
 }
 
 /// cmd is a SingleAxis pointer with 1 double arg
-bool iCubSimulationControl::setReferenceRaw (int axis, double ref)
+bool iCubSimulationControl::setPidReferenceRaw (const PidControlTypeEnum& pidtype, int axis, double ref)
 {
-    int mode = 0;
-    getControlModeRaw(axis, &mode);
-    if (mode != VOCAB_CM_POSITION_DIRECT)
-    {
-        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, part " << partSelec << " joint: " << axis;
-        setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-        #else
-        yError() << "setReferenceRaw: skipping command because part " << partSelec << " joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
-        return false;
-        #endif
-    }
-
     if( (axis>=0) && (axis<njoints) )
-        {
-            _mutex.wait();
-            next_pos[axis] = ref;
-            _mutex.post();
-            return true;
-        }
+    {
+       int mode = 0;
+       getControlModeRaw(axis, &mode);
+       switch (pidtype)
+       {
+           case VOCAB_PIDTYPE_POSITION:
+               //if (mode == VOCAB_CM_POSITION_DIRECT) {_mutex.wait();
+               //next_pos[axis] = ref;
+               //_mutex.post();}
+               NOT_YET_IMPLEMENTED("setPidReferenceRaw");
+           break;
+           case VOCAB_PIDTYPE_VELOCITY:
+               NOT_YET_IMPLEMENTED("setPidReferenceRaw");
+           break;
+           case VOCAB_PIDTYPE_CURRENT:
+               NOT_YET_IMPLEMENTED("setPidReferenceRaw");
+           break;
+           case VOCAB_PIDTYPE_TORQUE:
+               NOT_YET_IMPLEMENTED("setPidReferenceRaw");
+           break;
+           default:
+           break;
+       }
+       return true;
+    }
     if (verbosity)
+    {
         yError("setReferenceRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    }
     return false;
 }
 
-bool iCubSimulationControl::setReferencesRaw (const double *refs)
+bool iCubSimulationControl::setPidReferencesRaw (const PidControlTypeEnum& pidtype, const double *refs)
 {
    bool ret = true;
    for(int axis = 0; axis<njoints; axis++)
    {
-      ret &= setReferenceRaw(axis, refs[axis]);
+      ret &= setPidReferenceRaw(pidtype, axis, refs[axis]);
    }
    return ret;
 }
 
-bool iCubSimulationControl::setErrorLimitRaw(int axis, double limit)
+bool iCubSimulationControl::setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int axis, double limit)
 {
     return NOT_YET_IMPLEMENTED("setErrorLimitRaw");
 }
 
-bool iCubSimulationControl::setErrorLimitsRaw(const double *limit)
+bool iCubSimulationControl::setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limit)
 {
     return NOT_YET_IMPLEMENTED("setErrorLimitsRaw");
 }
 
-bool iCubSimulationControl::getErrorRaw(int axis, double *err)
+bool iCubSimulationControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int axis, double *err)
 {
     if ((axis >= 0) && (axis<njoints))
     {
         _mutex.wait();
-        *err = current_jnt_pos[axis] - next_pos[axis];
+        switch (pidtype)
+        {
+            case VOCAB_PIDTYPE_POSITION:
+            *err = current_jnt_pos[axis] - next_pos[axis];
+            break;
+            case VOCAB_PIDTYPE_TORQUE:
+            *err = current_jnt_torques[axis] - next_torques[axis];
+            break;
+            case VOCAB_PIDTYPE_VELOCITY:
+            *err = current_jnt_vel[axis] - next_vel[axis];
+            break;
+            case VOCAB_PIDTYPE_CURRENT:
+            *err = current_ampere[axis] - current_ampere_ref[axis];
+            break;
+        }
         _mutex.post();
         return true;
     }
@@ -656,37 +708,108 @@ bool iCubSimulationControl::getErrorRaw(int axis, double *err)
     return false;
 }
 
-bool iCubSimulationControl::getErrorsRaw(double *errs)
+bool iCubSimulationControl::getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs)
 {
     bool ret = true;
     for (int axis = 0; axis<njoints; axis++)
     {
-        ret &= getErrorRaw(axis, &errs[axis]);
+        ret &= getPidErrorRaw(pidtype, axis, &errs[axis]);
     }
     return ret;
 }
 
-bool iCubSimulationControl::getOutputRaw(int axis, double *out)
+bool iCubSimulationControl::getPidOutputRaw(const PidControlTypeEnum& pidtype, int axis, double *out)
 {
     if( (axis>=0) && (axis<njoints) )
-        {
-            _mutex.wait();
-            *out = pwm[axis];
-            _mutex.post();
-            return true;
-        }
+    {
+       int mode = 0;
+       getControlModeRaw(axis, &mode);
+       switch (pidtype)
+       {
+           case VOCAB_PIDTYPE_POSITION:
+           if (mode == VOCAB_CM_POSITION_DIRECT ||
+               mode == VOCAB_CM_POSITION ||
+               mode == VOCAB_CM_MIXED)
+           {
+               _mutex.wait();
+               *out = pwm[axis];
+               _mutex.post();
+           }
+           else
+           {
+               _mutex.wait();
+               *out = 0;
+               _mutex.post();
+           }
+           break;
+           case VOCAB_PIDTYPE_VELOCITY:
+           if (mode == VOCAB_CM_VELOCITY)
+           {
+               _mutex.wait();
+               *out = pwm[axis];
+               _mutex.post();
+           }
+           else
+           {
+               _mutex.wait();
+               *out = 0;
+               _mutex.post();
+           }
+           break;
+           case VOCAB_PIDTYPE_CURRENT:
+           if (mode == VOCAB_CM_CURRENT)
+           {
+               _mutex.wait();
+               *out = pwm[axis];
+               _mutex.post();
+           }
+           else
+           {
+               _mutex.wait();
+               *out = 0;
+               _mutex.post();
+           }
+           break;
+           case VOCAB_PIDTYPE_TORQUE:
+           if (mode == VOCAB_CM_TORQUE)
+           {
+               _mutex.wait();
+               *out = pwm[axis];
+               _mutex.post();
+           }
+           else
+           {
+               _mutex.wait();
+               *out = 0;
+               _mutex.post();
+           }
+           break;
+           default:
+               _mutex.wait();
+               *out = 0;
+               _mutex.post();
+           break;
+       }
+    }
     if (verbosity)
+    {
         yError("getOutputRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    }
     return false;
 }
 
-bool iCubSimulationControl::getOutputsRaw(double *outs)
+bool iCubSimulationControl::getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs)
 {
     _mutex.wait();
     for(int axis = 0; axis<njoints; axis++)
         outs[axis] = pwm[axis];
     _mutex.post();
     return true;
+}
+
+bool iCubSimulationControl::isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool* enabled)
+{
+    return NOT_YET_IMPLEMENTED("isPidEnabled");
 }
 
 bool iCubSimulationControl::getNumberOfMotorsRaw(int* num)
@@ -765,55 +888,81 @@ bool iCubSimulationControl::getPowerSupplyVoltageRaw(int j, double* val)
     return NOT_YET_IMPLEMENTED("getPowerSupplyVoltageRaw");
 }
 
-bool iCubSimulationControl::getReferenceRaw(int axis, double *ref)
+bool iCubSimulationControl::getPidReferenceRaw(const PidControlTypeEnum& pidtype, int axis, double *ref)
 {
     if( (axis>=0) && (axis<njoints) )
-        {
-            _mutex.wait();
-            *ref = next_pos[axis];
-            _mutex.post();
-            return true;
-        }
+    {
+       int mode = 0;
+       getControlModeRaw(axis, &mode);
+       switch (pidtype)
+       {
+           case VOCAB_PIDTYPE_POSITION:
+               _mutex.wait();
+               *ref = next_pos[axis];
+               _mutex.post();
+           break;
+           case VOCAB_PIDTYPE_VELOCITY:
+               _mutex.wait();
+               *ref = next_vel[axis];
+               _mutex.post();
+           break;
+           case VOCAB_PIDTYPE_CURRENT:
+               _mutex.wait();
+               *ref = current_ampere_ref[axis];
+               _mutex.post();
+           break;
+           case VOCAB_PIDTYPE_TORQUE:
+               _mutex.wait();
+               *ref = next_torques[axis];
+               _mutex.post();
+           break;
+           default:
+           break;
+       }
+       return true;
+    }
     if (verbosity)
+    {
         yError("getReferenceRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", axis, njoints);
+    }
     return false;
 }
 
-bool iCubSimulationControl::getReferencesRaw(double *ref)
+bool iCubSimulationControl::getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *ref)
 {
-    _mutex.wait();
     for(int axis = 0; axis<njoints; axis++)
-        ref[axis] = next_pos[axis];
-    _mutex.post();
+    {
+        getPidReferenceRaw(pidtype, axis, &ref[axis]);
+    }
     return true;
 }
 
-bool iCubSimulationControl::getErrorLimitRaw(int axis, double *err)
+bool iCubSimulationControl::getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int axis, double *err)
 {
      return NOT_YET_IMPLEMENTED("getErrorLimitRaw");
 }
 
-bool iCubSimulationControl::getErrorLimitsRaw(double *errs)
+bool iCubSimulationControl::getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *errs)
 {
    return NOT_YET_IMPLEMENTED("getErrorLimitsRaw");
 }
 
-bool iCubSimulationControl::resetPidRaw(int axis)
+bool iCubSimulationControl::resetPidRaw(const PidControlTypeEnum& pidtype, int axis)
 {
     return NOT_YET_IMPLEMENTED("resetPidRaw");
 }
 
-bool iCubSimulationControl::enablePidRaw(int axis)
+bool iCubSimulationControl::enablePidRaw(const PidControlTypeEnum& pidtype, int axis)
 {
     return DEPRECATED("enablePidRaw");
 }
 
-bool iCubSimulationControl::setOffsetRaw(int axis, double v)
+bool iCubSimulationControl::setPidOffsetRaw(const PidControlTypeEnum& pidtype, int axis, double v)
 {
     return NOT_YET_IMPLEMENTED("setOffsetRaw");
 }
 
-bool iCubSimulationControl::disablePidRaw(int axis)
+bool iCubSimulationControl::disablePidRaw(const PidControlTypeEnum& pidtype, int axis)
 {
     return DEPRECATED("disablePidRaw");
 }
@@ -837,13 +986,8 @@ bool iCubSimulationControl::positionMoveRaw(int axis, double ref)
         if (mode != VOCAB_CM_POSITION &&
             mode != VOCAB_CM_MIXED  )
         {
-            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-            yWarning() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, part " << partSelec << " joint: " << axis;
-            setControlModeRaw(axis,VOCAB_CM_POSITION);
-            #else
             yError() << "positionMoveRaw: skipping command because part " << partSelec << " joint " << axis << "is not in VOCAB_CM_POSITION mode";
             return false;
-            #endif
         }
 
         _mutex.wait();
@@ -1205,13 +1349,8 @@ bool iCubSimulationControl::velocityMoveRaw (int axis, double sp)
         if (mode != VOCAB_CM_VELOCITY &&
         mode != VOCAB_CM_MIXED)
         {
-            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-            yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, part " << partSelec << " joint: " << axis;
-            setControlModeRaw(axis,VOCAB_CM_VELOCITY);
-            #else
             yError() << "velocityMoveRaw: skipping command because part " << partSelec << " joint " << axis << "is not in VOCAB_CM_VELOCITY mode";
             return false;
-            #endif
         }
         _mutex.wait();
         next_vel[axis] = sp;
@@ -1765,26 +1904,6 @@ bool iCubSimulationControl::stopRaw(const int n_joint, const int *joints)
     return ret;
 }
 
-bool iCubSimulationControl::setVelPidRaw(int j, const yarp::dev::Pid &pid)
-{
-    return NOT_YET_IMPLEMENTED("setVelPidRaw");
-}
-
-bool iCubSimulationControl::setVelPidsRaw(const yarp::dev::Pid *pids)
-{
-    return NOT_YET_IMPLEMENTED("setVelPidsRaw");
-}
-
-bool iCubSimulationControl::getVelPidRaw(int j, yarp::dev::Pid *pid)
-{
-    return NOT_YET_IMPLEMENTED("getVelPidRaw");
-}
-
-bool iCubSimulationControl::getVelPidsRaw(yarp::dev::Pid *pids)
-{
-    return NOT_YET_IMPLEMENTED("getVelPidsRaw");
-}
-
 bool iCubSimulationControl::getAxisNameRaw(int axis, yarp::os::ConstString& name)
 {
     if ((axis >= 0) && (axis < njoints))
@@ -1907,24 +2026,7 @@ bool iCubSimulationControl::setBemfParamRaw(int axis,double bemf)
 {
     return NOT_YET_IMPLEMENTED("setBemfParamRaw");
 }
-bool iCubSimulationControl::setTorquePidRaw(int axis, const yarp::dev::Pid &pid)
-{
-    if( (axis >=0) && (axis<njoints) )
-    {
-        torque_pid[axis]=pid;
-    }
-    NOT_YET_IMPLEMENTED("setTorquePidRaw");
-    return true; //fake
-}
-bool iCubSimulationControl::setTorquePidsRaw(const yarp::dev::Pid *pid)
-{
-    for (int i=0; i<njoints; i++)
-    {
-         torque_pid[i]=pid[i];
-    }
-    NOT_YET_IMPLEMENTED("setTorquePidsRaw");
-    return true; //fake
-}
+
 bool iCubSimulationControl::getMotorTorqueParamsRaw(int axis, MotorTorqueParameters *params)
 {
     if( (axis >=0) && (axis<njoints) )
@@ -1949,74 +2051,6 @@ bool iCubSimulationControl::setMotorTorqueParamsRaw(int axis, const MotorTorqueP
     }
     NOT_YET_IMPLEMENTED("setMotorTorqueParamsRaw");
     return true; //fake
-}
-
-bool iCubSimulationControl::setTorqueErrorLimitRaw(int axis, double lim)
-{
-    return NOT_YET_IMPLEMENTED("setTorqueErrorLimitRaw");
-}
-bool iCubSimulationControl::setTorqueErrorLimitsRaw(const double *lims)
-{
-    return NOT_YET_IMPLEMENTED("setTorqueErrorLimitsRaw");
-}
-bool iCubSimulationControl::getTorqueErrorRaw(int axis,double *err)
-{
-    return NOT_YET_IMPLEMENTED("getTorqueErrorRaw");
-}
-bool iCubSimulationControl::getTorqueErrorsRaw(double *err)
-{
-    return NOT_YET_IMPLEMENTED("getTorqueErrorsRaw");
-}
-bool iCubSimulationControl::getTorquePidOutputRaw(int axis, double *out)
-{
-    *out=0.0;
-    return false;
-}
-bool iCubSimulationControl::getTorquePidOutputsRaw(double *out)
-{
-    return NOT_YET_IMPLEMENTED("getTorquePidOutputsRaw");
-}
-bool iCubSimulationControl::getTorquePidRaw(int axis, yarp::dev::Pid *pid)
-{
-    if( (axis >=0) && (axis<njoints) )
-    {
-        *pid=torque_pid[axis];
-    }
-    NOT_YET_IMPLEMENTED("getTorquePidRaw");
-    return true; //fake
-}
-bool iCubSimulationControl::getTorquePidsRaw(yarp::dev::Pid *pid)
-{
-    for (int i=0; i<njoints; i++)
-    {
-        pid[i]=torque_pid[i];
-    }
-    NOT_YET_IMPLEMENTED("getTorquePidRaw");
-    return true; //fake
-}
-bool iCubSimulationControl::getTorqueErrorLimitRaw(int axis, double *err)
-{
-    return NOT_YET_IMPLEMENTED("getTorqueErrorLimitRaw");
-}
-bool iCubSimulationControl::getTorqueErrorLimitsRaw(double *err)
-{
-    return NOT_YET_IMPLEMENTED("getTorqueErrorLimitsRaw");
-}
-bool iCubSimulationControl::resetTorquePidRaw(int axis)
-{
-    return NOT_YET_IMPLEMENTED("resetTorquePidRaw");
-}
-bool iCubSimulationControl::disableTorquePidRaw(int axis)
-{
-    return DEPRECATED("disableTorquePidRaw");
-}
-bool iCubSimulationControl::enableTorquePidRaw(int axis)
-{
-    return DEPRECATED("enableTorquePidRaw");
-}
-bool iCubSimulationControl::setTorqueOffsetRaw(int axis,double offset)
-{
-    return NOT_YET_IMPLEMENTED("setTorqueOffsetRaw");
 }
 
 bool iCubSimulationControl::setPositionModeRaw(int j)
@@ -2292,13 +2326,8 @@ bool iCubSimulationControl::setPositionRaw(int axis, double ref)
         getControlModeRaw(axis, &mode);
         if (mode != VOCAB_CM_POSITION_DIRECT)
         {
-            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-            yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, part:" << partSelec << " joint: " << axis;
-            setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-            #else
             yError() << "setPositionRaw: skipping command because part " << partSelec << " joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
             return false;
-            #endif
         }
         _mutex.wait();
         if(ref< limitsMin[axis])
@@ -2542,79 +2571,4 @@ bool iCubSimulationControl::getRefCurrentRaw(int j, double *t)
     if (verbosity)
         yError("getRefCurrentRaw: joint with index %d does not exist; valid joint indices are between 0 and %d\n", j, njoints);
     return false;
-}
-
-bool iCubSimulationControl::setCurrentPidRaw(int j, const Pid &pid)
-{
-    if ((j >= 0) && (j<njoints))
-    {
-        current_pid[j] = pid;
-    }
-    NOT_YET_IMPLEMENTED("setCurrentPidRaw");
-    return true; //fake
-}
-
-bool iCubSimulationControl::setCurrentPidsRaw(const Pid *pids)
-{
-    for (int i = 0; i<njoints; i++)
-    {
-        current_pid[i] = pids[i];
-    }
-    NOT_YET_IMPLEMENTED("setCurrentPidsRaw");
-    return true; //fake
-}
-
-bool iCubSimulationControl::getCurrentErrorRaw(int j, double *err)
-{
-    return NOT_YET_IMPLEMENTED("getCurrentErrorRaw");
-}
-
-bool iCubSimulationControl::getCurrentErrorsRaw(double *errs)
-{
-    return NOT_YET_IMPLEMENTED("getCurrentErrorsRaw");
-}
-
-bool iCubSimulationControl::getCurrentPidOutputRaw(int j, double *out)
-{
-    return NOT_YET_IMPLEMENTED("getCurrentPidOutputRaw");
-}
-
-bool iCubSimulationControl::getCurrentPidOutputsRaw(double *outs)
-{
-    return NOT_YET_IMPLEMENTED("getCurrentPidOutputsRaw");
-}
-
-bool iCubSimulationControl::getCurrentPidRaw(int j, Pid *pid)
-{
-    if ((j >= 0) && (j<njoints))
-    {
-        *pid = current_pid[j];
-    }
-    NOT_YET_IMPLEMENTED("getCurrentPidRaw");
-    return true; //fake
-}
-
-bool iCubSimulationControl::getCurrentPidsRaw(Pid *pids)
-{
-    for (int i = 0; i<njoints; i++)
-    {
-        pids[i] = current_pid[i];
-    }
-    NOT_YET_IMPLEMENTED("getCurrentPidsRaw");
-    return true; //fake
-}
-
-bool iCubSimulationControl::resetCurrentPidRaw(int j)
-{
-    return NOT_YET_IMPLEMENTED("resetCurrentPidRaw");
-}
-
-bool iCubSimulationControl::disableCurrentPidRaw(int j)
-{
-    return NOT_YET_IMPLEMENTED("disableCurrentPidRaw");
-}
-
-bool iCubSimulationControl::enableCurrentPidRaw(int j)
-{
-    return NOT_YET_IMPLEMENTED("enableCurrentPidRaw");
 }

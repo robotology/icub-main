@@ -19,10 +19,6 @@ if(ICUB_HAS_icub_firmware_shared)
        add_definitions(-DICUB_CANPROTOCOL_STRICT)
    endif()
 
-   if (ICUB_AUTOMATIC_MODE_SWITCHING)
-   add_definitions(-DICUB_AUTOMATIC_MODE_SWITCHING)
-   endif()
-
    if (ICUB_CANMASKS_STRICT_FILTER)
        add_definitions(-DICUB_CANMASKS_STRICT_FILTER)
    endif()

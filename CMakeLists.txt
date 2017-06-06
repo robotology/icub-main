@@ -26,7 +26,7 @@ project(iCub)
 set(ICUB_REQYARP_VERSION_MAJOR "2")
 set(ICUB_REQYARP_VERSION_MINOR "3")
 set(ICUB_REQYARP_VERSION_PATCH "69")
-set(ICUB_REQYARP_VERSION_TWEAK "9")
+set(ICUB_REQYARP_VERSION_TWEAK "10")
 
 if(ICUB_REQYARP_VERSION_TWEAK)
     set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH}.${ICUB_REQYARP_VERSION_TWEAK})
@@ -129,7 +129,6 @@ set_property(CACHE YARP_FORCE_DYNAMIC_PLUGINS PROPERTY TYPE INTERNAL)
 # temporary options for debugging/testing new functionalities
 set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus protocol and firmware versions" FORCE)
 set(ICUB_CANMASKS_STRICT_FILTER TRUE CACHE BOOL "Enable strict filtering on can address. Needed with sharedcan.")
-set(ICUB_AUTOMATIC_MODE_SWITCHING FALSE CACHE BOOL "Enable automatic switching between control modes")
 set(ICUB_ASK_REFERENCE_TO_FIRMWARE TRUE CACHE BOOL "Pos/Vel/Trq references will be asked to the firmware instead of being cached by motion control")
 
 ###################### End options and definitions

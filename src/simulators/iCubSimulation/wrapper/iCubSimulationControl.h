@@ -144,26 +144,27 @@ class yarp::dev::iCubSimulationControl :
 
   ///////////// PID INTERFACE
   //
-  virtual bool setPidRaw(int j, const Pid &pid);
-  virtual bool setPidsRaw(const Pid *pids);
-  virtual bool setReferenceRaw(int j, double ref);
-  virtual bool setReferencesRaw(const double *refs);
-  virtual bool setErrorLimitRaw(int j, double limit);
-  virtual bool setErrorLimitsRaw(const double *limits);
-  virtual bool getErrorRaw(int j, double *err);
-  virtual bool getErrorsRaw(double *errs);
-  virtual bool getOutputRaw(int j, double *out);
-  virtual bool getOutputsRaw(double *outs);
-  virtual bool getPidRaw(int j, Pid *pid);
-  virtual bool getPidsRaw(Pid *pids);
-  virtual bool getReferenceRaw(int j, double *ref);
-  virtual bool getReferencesRaw(double *refs);
-  virtual bool getErrorLimitRaw(int j, double *limit);
-  virtual bool getErrorLimitsRaw(double *limits);
-  virtual bool resetPidRaw(int j);
-  virtual bool disablePidRaw(int j);
-  virtual bool enablePidRaw(int j);
-  virtual bool setOffsetRaw(int j, double v);/**/
+  virtual bool setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid);
+  virtual bool setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids);
+  virtual bool setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref);
+  virtual bool setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs);
+  virtual bool setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit);
+  virtual bool setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits);
+  virtual bool getPidErrorRaw(const PidControlTypeEnum& pidtype, int j, double *err);
+  virtual bool getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs);
+  virtual bool getPidOutputRaw(const PidControlTypeEnum& pidtype, int j, double *out);
+  virtual bool getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs);
+  virtual bool getPidRaw(const PidControlTypeEnum& pidtype, int j, Pid *pid);
+  virtual bool getPidsRaw(const PidControlTypeEnum& pidtype, Pid *pids);
+  virtual bool getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref);
+  virtual bool getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs);
+  virtual bool getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *limit);
+  virtual bool getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *limits);
+  virtual bool resetPidRaw(const PidControlTypeEnum& pidtype, int j);
+  virtual bool disablePidRaw(const PidControlTypeEnum& pidtype, int j);
+  virtual bool enablePidRaw(const PidControlTypeEnum& pidtype, int j);
+  virtual bool setPidOffsetRaw(const PidControlTypeEnum& pidtype, int j, double v);
+  virtual bool isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool* enabled);
   //
   /////////////////////////////// END PID INTERFACE
 
@@ -207,10 +208,6 @@ class yarp::dev::iCubSimulationControl :
   
   // Velocity Control2 Interface
   virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
-  virtual bool setVelPidRaw(int j, const yarp::dev::Pid &pid);
-  virtual bool setVelPidsRaw(const yarp::dev::Pid *pids);
-  virtual bool getVelPidRaw(int j, yarp::dev::Pid *pid);
-  virtual bool getVelPidsRaw(yarp::dev::Pid *pids);
   virtual bool getRefVelocityRaw(const int joint, double *ref);
   virtual bool getRefVelocitiesRaw(double *refs);
   virtual bool getRefVelocitiesRaw(const int n_joint, const int *joints, double *refs);
@@ -315,22 +312,6 @@ class yarp::dev::iCubSimulationControl :
   virtual bool getRefTorqueRaw(int,double *);
   virtual bool getBemfParamRaw(int,double *);
   virtual bool setBemfParamRaw(int,double );
-  virtual bool setTorquePidRaw(int,const yarp::dev::Pid &);
-  virtual bool setTorquePidsRaw(const yarp::dev::Pid *);
-  virtual bool setTorqueErrorLimitRaw(int,double);
-  virtual bool setTorqueErrorLimitsRaw(const double *);
-  virtual bool getTorqueErrorRaw(int,double *);
-  virtual bool getTorqueErrorsRaw(double *);
-  virtual bool getTorquePidOutputRaw(int,double *);
-  virtual bool getTorquePidOutputsRaw(double *);
-  virtual bool getTorquePidRaw(int,yarp::dev::Pid *);
-  virtual bool getTorquePidsRaw(yarp::dev::Pid *);
-  virtual bool getTorqueErrorLimitRaw(int,double *);
-  virtual bool getTorqueErrorLimitsRaw(double *);
-  virtual bool resetTorquePidRaw(int);
-  virtual bool disableTorquePidRaw(int);
-  virtual bool enableTorquePidRaw(int);
-  virtual bool setTorqueOffsetRaw(int,double);
   virtual bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params);
   virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
 
@@ -386,17 +367,6 @@ class yarp::dev::iCubSimulationControl :
   virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t);
   virtual bool getRefCurrentsRaw(double *t);
   virtual bool getRefCurrentRaw(int j, double *t);
-  virtual bool setCurrentPidRaw(int j, const Pid &pid);
-  virtual bool setCurrentPidsRaw(const Pid *pids);
-  virtual bool getCurrentErrorRaw(int j, double *err);
-  virtual bool getCurrentErrorsRaw(double *errs);
-  virtual bool getCurrentPidOutputRaw(int j, double *out);
-  virtual bool getCurrentPidOutputsRaw(double *outs);
-  virtual bool getCurrentPidRaw(int j, Pid *pid);
-  virtual bool getCurrentPidsRaw(Pid *pids);
-  virtual bool resetCurrentPidRaw(int j);
-  virtual bool disableCurrentPidRaw(int j);
-  virtual bool enableCurrentPidRaw(int j);
 
 //void run(void);
 
@@ -510,6 +480,7 @@ protected:
     Pid    *position_pid;
     Pid    *torque_pid;
     Pid    *current_pid;
+    Pid    *velocity_pid;
     MotorTorqueParameters *motor_torque_params;
     yarp::sig::Matrix kinematic_mj;
 

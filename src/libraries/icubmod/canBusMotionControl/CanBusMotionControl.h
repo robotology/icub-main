@@ -831,26 +831,28 @@ public:
 
     ///////////// PID INTERFACE
     //
-    virtual bool setPidRaw(int j, const Pid &pid);
-    virtual bool setPidsRaw(const Pid *pids);
-    virtual bool setReferenceRaw(int j, double ref);
-    virtual bool setReferencesRaw(const double *refs);
-    virtual bool setErrorLimitRaw(int j, double limit);
-    virtual bool setErrorLimitsRaw(const double *limits);
-    virtual bool getErrorRaw(int j, double *err);
-    virtual bool getErrorsRaw(double *errs);
-    virtual bool getOutputRaw(int j, double *out);
-    virtual bool getOutputsRaw(double *outs);
-    virtual bool getPidRaw(int j, Pid *pid);
-    virtual bool getPidsRaw(Pid *pids);
-    virtual bool getReferenceRaw(int j, double *ref);
-    virtual bool getReferencesRaw(double *refs);
-    virtual bool getErrorLimitRaw(int j, double *limit);
-    virtual bool getErrorLimitsRaw(double *limits);
-    virtual bool resetPidRaw(int j);
-    virtual bool disablePidRaw(int j);
-    virtual bool enablePidRaw(int j);
-    virtual bool setOffsetRaw(int j, double v);
+    virtual bool setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid);
+    virtual bool setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids);
+    virtual bool setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref);
+    virtual bool setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs);
+    virtual bool setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit);
+    virtual bool setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits);
+    virtual bool getPidErrorRaw(const PidControlTypeEnum& pidtype, int j, double *err);
+    virtual bool getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs);
+    virtual bool getPidOutputRaw(const PidControlTypeEnum& pidtype, int j, double *out);
+    virtual bool getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs);
+    virtual bool getPidRaw(const PidControlTypeEnum& pidtype, int j, Pid *pid);
+    virtual bool getPidsRaw(const PidControlTypeEnum& pidtype, Pid *pids);
+    virtual bool getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref);
+    virtual bool getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs);
+    virtual bool getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *limit);
+    virtual bool getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *limits);
+    virtual bool resetPidRaw(const PidControlTypeEnum& pidtype, int j);
+    virtual bool disablePidRaw(const PidControlTypeEnum& pidtype, int j);
+    virtual bool enablePidRaw(const PidControlTypeEnum& pidtype, int j);
+    virtual bool setPidOffsetRaw(const PidControlTypeEnum& pidtype, int j, double v);
+    virtual bool isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool* enabled);
+
     //
     /////////////////////////////// END PID INTERFACE
 
@@ -873,6 +875,10 @@ public:
     virtual bool getRefAccelerationsRaw(double *accs);
     virtual bool stopRaw(int j);
     virtual bool stopRaw();
+    //helpers
+    bool helper_setPosPidRaw( int j, const Pid &pid);
+    bool helper_getPosPidRaw(int j, Pid *pid);
+
     //
     /////////////////////////////// END Position Control INTERFACE
 
@@ -894,25 +900,10 @@ public:
     virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
     virtual bool getFilterTypeRaw(int j, int *type);
     virtual bool setFilterTypeRaw(int j, int type);
-
-    virtual bool setTorquePidRaw(int j, const Pid &pid);
-    virtual bool setTorquePidsRaw( const Pid *pid);
-    virtual bool getTorquePidRaw(int j, Pid *pid);
-    virtual bool getTorquePidsRaw(Pid *pids);
-    virtual bool resetTorquePidRaw(int j);
-    virtual bool disableTorquePidRaw(int j);
-    virtual bool enableTorquePidRaw(int j);
-    virtual bool setTorqueOffsetRaw(int j, double v);
-
-    virtual bool getTorqueErrorLimitRaw(int j, double *limit);
-    virtual bool getTorqueErrorLimitsRaw(double *limits);
-    virtual bool setTorqueErrorLimitRaw(int j, double limit);
-    virtual bool setTorqueErrorLimitsRaw(const double *limits);
-    virtual bool getTorqueErrorRaw(int j, double *err);
-    virtual bool getTorqueErrorsRaw(double *errs);
-    virtual bool getTorquePidOutputRaw(int j, double *v);
-    virtual bool getTorquePidOutputsRaw(double *v);
- 
+    //helper
+    bool helper_setTrqPidRaw(int j, const Pid &pid);
+    bool helper_getTrqPidRaw(int j, Pid *pid);
+    
     //
     /////////////////////////////// END Torque Control INTERFACE
 
@@ -1077,13 +1068,12 @@ public:
 
     // IVelocityControl2
     virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
-    virtual bool setVelPidRaw(int j, const Pid &pid);
-    virtual bool setVelPidsRaw(const Pid *pids);
-    virtual bool getVelPidRaw(int j, Pid *pid);
-    virtual bool getVelPidsRaw(Pid *pids);
     virtual bool getRefVelocityRaw(const int joint, double *ref);
     virtual bool getRefVelocitiesRaw(double *refs);
     virtual bool getRefVelocitiesRaw(const int n_joint, const int *joints, double *refs);
+    //helper
+    bool helper_getVelPidRaw(int j, Pid *pid);
+    bool helper_setVelPidRaw(int j, const Pid &pid);
 
     // Firmware version
     virtual bool getFirmwareVersionRaw(int axis, can_protocol_info const& icub_interface_protocol, firmware_info *info);
@@ -1125,17 +1115,9 @@ public:
     virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t);
     virtual bool getRefCurrentsRaw(double *t);
     virtual bool getRefCurrentRaw(int j, double *t);
-    virtual bool setCurrentPidRaw(int j, const Pid &pid);
-    virtual bool setCurrentPidsRaw(const Pid *pids);
-    virtual bool getCurrentErrorRaw(int j, double *err);
-    virtual bool getCurrentErrorsRaw(double *errs);
-    virtual bool getCurrentPidOutputRaw(int j, double *out);
-    virtual bool getCurrentPidOutputsRaw(double *outs);
-    virtual bool getCurrentPidRaw(int j, Pid *pid);
-    virtual bool getCurrentPidsRaw(Pid *pids);
-    virtual bool resetCurrentPidRaw(int j);
-    virtual bool disableCurrentPidRaw(int j);
-    virtual bool enableCurrentPidRaw(int j);
+    //helper
+    bool helper_setCurPidRaw(int j, const Pid &pid);
+    bool helper_getCurPidRaw(int j, Pid *pid);
 
 protected:
     bool setBCastMessages (int axis, unsigned int v);
