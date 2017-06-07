@@ -6,6 +6,8 @@ if (NOT ICUB_FOUND)
 
 message(STATUS "Using iCub from build tree")
 
+set(ICUB_VERSION @ICUB_VERSION@)
+
 include("@CMAKE_BINARY_DIR@/@EXPORT_INCLUDE_FILE@")
 include("@CMAKE_BINARY_DIR@/@EXPORT_CONFIG_FILE@")
 
