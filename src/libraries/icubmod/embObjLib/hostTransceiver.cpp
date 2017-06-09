@@ -1143,9 +1143,9 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
             {
                 int tmp = groupEthBoardSettings_RunningMode.find("maxtimeOfRXactivity").asInt();
 
-                if((tmp <=0) || (tmp >= 1000))
+                if((tmp < 5) || (tmp > 990))
                 {
-                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxtimeOfRXactivity must be in (0, 1000) (so far) and it was:" << tmp << "Using default value";
+                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxtimeOfRXactivity must be in [5, 990] (so far) and it was:" << tmp << "Using default value";
                     tmp = defmaxtimeRX;
                 }
 
@@ -1157,9 +1157,9 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
             {
                 int tmp = groupEthBoardSettings_RunningMode.find("maxtimeOfDOactivity").asInt();
 
-                if((tmp <=0) || (tmp >= 1000))
+                if((tmp < 5) || (tmp > 990))
                 {
-                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxtimeOfDOactivity must be in (0, 1000) (so far) and it was:" << tmp << "Using default value";
+                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxtimeOfDOactivity must be in [5, 990] (so far) and it was:" << tmp << "Using default value";
                     tmp = defmaxtimeDO;
                 }
 
@@ -1171,9 +1171,9 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
             {
                 int tmp = groupEthBoardSettings_RunningMode.find("maxtimeOfTXactivity").asInt();
 
-                if((tmp <=0) || (tmp >= 1000))
+                if((tmp < 5) || (tmp > 990))
                 {
-                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxtimeOfTXactivity must be in (0, 1000) (so far) and it was:" << tmp << "Using default value";
+                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxtimeOfTXactivity must be in [5, 990] (so far) and it was:" << tmp << "Using default value";
                     tmp = defmaxtimeTX;
                 }
 
