@@ -59,7 +59,7 @@ class HostTransceiver
 {
 public:
      enum { maxSizeOfRXpacket = 1496 };
-     enum { defTXrateOfRegulars = 1, defMaxSizeOfROP = 256, defMaxSizeOfTXpacket = 768 };
+     enum { defTXrateOfRegularROPs = 3, defMaxSizeOfROP = 256, defMaxSizeOfTXpacket = 768, defcycletime = 1000, defmaxtimeRX = 400, defmaxtimeDO = 300, defmaxtimeTX = 300};
 
 public:
 
@@ -117,7 +117,11 @@ protected:
     EOpacket                *p_RxPkt;
     uint16_t                pktsizerx;
 
-    uint8_t TXrateOfRegulars;
+    uint8_t TXrateOfRegularROPs;
+    eOreltime_t cycletime;
+    uint16_t    maxtimeRX;
+    uint16_t    maxtimeDO;
+    uint16_t    maxtimeTX;
     uint16_t capacityofTXpacket;
     uint16_t maxSizeOfROP;
     eOnvset_BRDcfg_t nvsetbrdconfig;

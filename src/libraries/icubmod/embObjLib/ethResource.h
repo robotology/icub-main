@@ -336,7 +336,7 @@ private:
 
 
     bool verifyBoard();
-    bool setTXrate();
+    bool setTimingOfRunningCycle();
     bool verifyBoardPresence();
     bool verifyBoardTransceiver();
     bool cleanBoardBehaviour(void);

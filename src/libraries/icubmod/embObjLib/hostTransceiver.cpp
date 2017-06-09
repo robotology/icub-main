@@ -104,7 +104,13 @@ HostTransceiver::HostTransceiver():delayAfterROPloadingFailure(0.001) // 1ms
     nvset               = NULL;
     memcpy(&hosttxrxcfg, &eo_hosttransceiver_cfg_default, sizeof(eOhosttransceiver_cfg_t));
 
-    TXrateOfRegulars = defTXrateOfRegulars;
+    TXrateOfRegularROPs = defTXrateOfRegularROPs;
+    cycletime = defcycletime;
+    maxtimeRX = defmaxtimeRX;
+    maxtimeDO = defmaxtimeDO;
+    maxtimeTX = defmaxtimeTX;
+
+
     capacityofTXpacket = defMaxSizeOfTXpacket;
     maxSizeOfROP = defMaxSizeOfROP;
 
@@ -1094,29 +1100,122 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
         return NULL;
     }
 
+
     Bottle groupEthBoardSettings = Bottle(cfgEthBoard.findGroup("ETH_BOARD_SETTINGS"));
     if(groupEthBoardSettings.isNull())
     {
-        yError() << "HostTransceiver::method() cannot find ETH_BOARD_PROPERTIES group in config files for BOARD w/ IP" << remoteipstring;
+        yError() << "HostTransceiver::method() cannot find ETH_BOARD_SETTINGS group in config files for BOARD w/ IP" << remoteipstring;
         return NULL;
     }
-
-
-    if(true == groupEthBoardSettings.check("regularsTXrate"))
+    else
     {
-        TXrateOfRegulars = groupEthBoardSettings.find("regularsTXrate").asInt();
+        TXrateOfRegularROPs = defTXrateOfRegularROPs;
+        cycletime = defcycletime;
+        maxtimeRX = defmaxtimeRX;
+        maxtimeDO = defmaxtimeDO;
+        maxtimeTX = defmaxtimeTX;
 
-        if(0 == TXrateOfRegulars)
+        Bottle groupEthBoardSettings_RunningMode = Bottle(groupEthBoardSettings.findGroup("RUNNINGMODE"));
+        if(groupEthBoardSettings_RunningMode.isNull())
         {
-            TXrateOfRegulars = 1;
+            yWarning() << "HostTransceiver::method(): cannot find ETH_BOARD_PROPERTIES/RUNNINGMODE group in config files for BOARD w/ IP" << remoteipstring << " and will use default values";
+            yWarning() << "Default values for ETH_BOARD_PROPERTIES/RUNNINGMODE group: (period, maxtimeOfRXactivity, maxtimeOfDOactivity, maxtimeOfTXactivity, TXrateOfRegularROPs) = " <<
+                          cycletime << maxtimeRX << maxtimeDO << maxtimeTX << TXrateOfRegularROPs;
         }
+        else
+        {
 
-        if(TXrateOfRegulars > 20)
-        {
-            TXrateOfRegulars = 20;
+            if(true == groupEthBoardSettings_RunningMode.check("period"))
+            {
+                int tmp = groupEthBoardSettings_RunningMode.find("period").asInt();
+
+                if(1000 != tmp)
+                {
+                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::period can be only 1000 (so far) and it was:" << tmp;
+                    tmp = 1000;
+                }
+
+                cycletime = tmp;
+                yError() << cycletime;
+            }
+
+            if(true == groupEthBoardSettings_RunningMode.check("maxtimeOfRXactivity"))
+            {
+                int tmp = groupEthBoardSettings_RunningMode.find("maxtimeOfRXactivity").asInt();
+
+                if((tmp <=0) || (tmp >= 1000))
+                {
+                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxtimeOfRXactivity must be in (0, 1000) (so far) and it was:" << tmp << "Using default value";
+                    tmp = defmaxtimeRX;
+                }
+
+                maxtimeRX = tmp;
+                yError() << maxtimeRX;
+            }
+
+            if(true == groupEthBoardSettings_RunningMode.check("maxtimeOfDOactivity"))
+            {
+                int tmp = groupEthBoardSettings_RunningMode.find("maxtimeOfDOactivity").asInt();
+
+                if((tmp <=0) || (tmp >= 1000))
+                {
+                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxtimeOfDOactivity must be in (0, 1000) (so far) and it was:" << tmp << "Using default value";
+                    tmp = defmaxtimeDO;
+                }
+
+                maxtimeDO = tmp;
+                yError() << maxtimeDO;
+            }
+
+            if(true == groupEthBoardSettings_RunningMode.check("maxtimeOfTXactivity"))
+            {
+                int tmp = groupEthBoardSettings_RunningMode.find("maxtimeOfTXactivity").asInt();
+
+                if((tmp <=0) || (tmp >= 1000))
+                {
+                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxtimeOfTXactivity must be in (0, 1000) (so far) and it was:" << tmp << "Using default value";
+                    tmp = defmaxtimeTX;
+                }
+
+                maxtimeTX = tmp;
+                yError() << maxtimeTX;
+            }
+
+
+            if(true == groupEthBoardSettings_RunningMode.check("TXrateOfRegularROPs"))
+            {
+                int tmp = groupEthBoardSettings_RunningMode.find("TXrateOfRegularROPs").asInt();
+
+                if(tmp <=0)
+                {
+                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::TXrateOfRegularROPs must be in [1, 20] and it was:" << tmp << "Using value = 1";
+                    tmp = 1;
+                }
+                if(tmp >200)
+                {
+                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::TXrateOfRegularROPs must be in [1, 20] and it was:" << tmp << "Using value = 20";
+                    tmp = 20;
+                }
+                TXrateOfRegularROPs = tmp;
+
+                yError() << TXrateOfRegularROPs;
+            }
+
+            // consistency check
+            if((maxtimeRX+maxtimeDO+maxtimeTX) != cycletime)
+            {
+                yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "In ETH_BOARD_SETTINGS::RUNNINGMODE sum(maxtimeOfRXactivity, maxtimeOfDOactivity, maxtimeOfTXactivity) != period !!! Using default values";
+
+                yError() << maxtimeRX+maxtimeDO+maxtimeTX;
+                cycletime = defcycletime;
+                maxtimeRX = defmaxtimeRX;
+                maxtimeDO = defmaxtimeDO;
+                maxtimeTX = defmaxtimeTX;
+            }
+
         }
-        yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected TXrateOfRegulars =" << TXrateOfRegulars << "for BOARD w/ IP" << remoteipstring;
     }
+
 
     if(true == groupEthBoardProperties.check("maxSizeRXpacket"))
     {
@@ -1151,24 +1250,6 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
     // ok, now the nvset ... we use maximum capabilities so that we can manage communication of up to 12 jomos
     const eOnvset_BRDcfg_t* brdcf2use = &eonvset_BRDcfgMax;
 
-// marco.accame: removed it on 31may17 to simply the xxx-eln.xml file, group ETH_BOARD_SETTINGS
-//    int jomos = 12;
-//    if(true == groupEthBoardSettings.check("protocolToUse"))
-//    {
-//        Bottle paramProt(groupEthBoardSettings.find("protocolToUse").asString());
-//        char protocol2use[64] = {0};
-//        snprintf(protocol2use, sizeof(protocol2use), "%s", paramProt.toString().c_str());
-//        if(0 == strcmp(protocol2use, "STANDARD"))
-//        {
-//            jomos = 4;
-//            brdcf2use = &eonvset_BRDcfgStd;
-//        }
-//        yDebug() << "HostTransceiver::prepareTransceiverConfig2() has detected protocolToUse =" << protocol2use << "and will prepare protocol for" << jomos << "jomos for BOARD w/ IP" << remoteipstring;
-//    }
-//    else
-//    {
-//        yWarning() << "HostTransceiver::prepareTransceiverConfig2() could not detected group protocolToUse, thus will prepare protocol for" << jomos << "jomos for BOARD w/ IP" << remoteipstring;
-//    }
 
     memcpy(&nvsetbrdconfig, brdcf2use, sizeof(eOnvset_BRDcfg_t));
     nvsetbrdconfig.boardnum = get_protBRDnumber();

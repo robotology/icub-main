@@ -339,13 +339,6 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 
     snprintf(boardTypeString, sizeof(boardTypeString), "%s", eoboards_type2string2(eoboards_ethtype2type(ethboardtype), eobool_true));
 
-// -- i dont use this code as long as i retrieve the remote ip address from the remIP argument .... however i may remove this argument and use the following code
-//    Bottle paramIPboard(groupEth.find("IpAddress").asString());
-//    char str[64] = {0};
-//    strcpy(str, paramIPboard.toString().c_str());
-//    int ip1, ip2, ip3, ip4;
-//    sscanf(str, "\"%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
-//    eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
     Bottle paramNameBoard(groupEthBoardSettings.find("Name").asString());
     char xmlboardname[64] = {0};
     snprintf(xmlboardname, sizeof(xmlboardname), "%s", paramNameBoard.toString().c_str());
@@ -502,12 +495,6 @@ bool EthResource::getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofr
 }
 
 
-//int EthResource::getRXpacketCapacity()
-//{
-//    return HostTransceiver::getCapacityOfRXpacket();
-//}
-
-
 bool EthResource::printRXstatistics(void)
 {
     infoPkts->forceReport();
@@ -622,254 +609,12 @@ void EthResource::getBoardInfo(eOdate_t &date, eOversion_t &version)
     version = boardVersion;
 }
 
-//int EthResource::getNumberOfAttachedInterfaces(void)
-//{
-//    ethManager->ethBoards->number_of_interfaces(this);
-//}
+
 
 bool EthResource::isEPsupported(eOprot_endpoint_t ep)
 {
     return HostTransceiver::isSupported(ep);
 }
-
-// #define ETHRES_CHECK_MN_APPL_STATUS
-//bool EthResource::goToConfig(void)
-//{
-//    // stop the control loop (if running) and force the board to enter in config mode
-//    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
-
-//    eOenum08_t command_go2state = applstate_config;
-//    if(!addSetMessage(protid, (uint8_t*) &command_go2state))
-//    {
-//        yError() << "for var goToConfig";
-//        return false;
-//    }
-
-
-//#if !defined(ETHRES_CHECK_MN_APPL_STATUS)
-
-//    isInRunningMode = false;
-//    return true;
-
-//#else
-
-//    // this delay is required because we want to force the two rops (go2state comamnd and ask<state>) to be in different udp packets
-//    //Time::delay(0.010);
-//    // however, if we do the loop over maxAttempts then we dont need it anymore. if the board can execute the order
-//    // then at most there will be two iterations of the for() loop.
-
-
-//    yDebug("EthResource::goToConfig() is called for BOARD %s (%s)", ipv4addrstring, boardName);
-
-
-//    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
-//    eOmn_appl_status_t status = {0};
-//    uint16_t size = 0;
-//    const char* statestr[] = {"applstate_config", "applstate_running", "applstate_error", "applstate_unknown"};
-
-//    const int maxAttempts = 5;
-//    bool verified = false;
-//    bool found = false;
-
-//    char foundmessage[512] = "nothing found";
-//    const char *foundstatestr = statestr[3];
-
-//    for(int i=0; i<maxAttempts; i++)
-//    {
-//        // getRemoteValue() sends a request and blocks until the value arrives from the board.
-//        // if the value does not arrive within a timeout it asks again and again
-//        if(true == getRemoteValue(id32, &status, size))
-//        {
-//            found = true;
-
-//            int index = (status.currstate > 2) ? (3) : (status.currstate);
-
-//            foundstatestr = statestr[index];
-
-//            snprintf(foundmessage, sizeof(foundmessage), "EthResource::goToConfig() detected BOARD %s (%s). It has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
-//                                            ipv4addrstring,
-//                                            boardName,
-//                                            status.name,
-//                                            status.version.major,
-//                                            status.version.minor,
-//                                            status.buildate.day,
-//                                            status.buildate.month,
-//                                            status.buildate.year,
-//                                            status.buildate.hour,
-//                                            status.buildate.min,
-//                                            foundstatestr);
-
-
-//            if(applstate_config == status.currstate)
-//            {
-//                yInfo("%s", foundmessage);
-//                yDebug("EthResource::goToConfig() successfully sent BOARD %s (%s) in cfg mode", ipv4addrstring, boardName);
-
-//                verified = true;
-//                isInRunningMode = false;
-//                break;
-//            }
-//            else
-//            {
-//                // we have received a reply from the board but: if i is equal to 0, the board may not have processed the order yet (it takes 1 ms = 1 cycle of its control-loop).
-//                // or ... the remote board have processed the order but it cannot execute it.
-//                // we keep on asking some more times because if we dont verify then we must quit robotInterface
-//            }
-//        }
-//        else
-//        {
-//            // in here if we havent received any reply from the remote board. it is unlikely but possible. maybe the board crashed.
-//            // ok, there is also teh possibility that id32 is wrong (unlikely) or &status is NULL (unlikely).
-//            yError("EthResource::goToConfig() called getRemoteValue() for BOARD %s (%s) but there was no reply", ipv4addrstring, boardName);
-
-//        }
-//    }
-
-//    if(false == found)
-//    {
-//        yError("EthResource::goToConfig() could not verify the status of BOARD %s (%s) because it could not find it after %d attempts", ipv4addrstring, boardName, maxAttempts);
-//    }
-//    else if(false == verified)
-//    {
-//        yInfo("%s", foundmessage);
-//        yError("EthResource::goToConfig() could not send BOARD %s (%s) in cfg state. the board is instead in state %s", ipv4addrstring, boardName, foundstatestr);
-
-//        isInRunningMode = (applstate_running == status.currstate) ? true : false; // we quit robotInterface ... it means nothing to set this value
-//    }
-
-//    return verified;
-
-//#endif
-
-//}
-
-
-//bool EthResource::goToRun(eOprotEndpoint_t endpoint, eOprotEntity_t entity)
-//{
-
-//#if defined(ETHRES_DEBUG_DONTREADBACK)
-//    yWarning() << "EthResource::goToRun() is in ETHRES_DEBUG_DONTREADBACK mode";
-//    // execute but force verify to false
-//    return true;
-//#endif
-
-//    // start the control loop by sending a proper message to the board
-//    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_cmmnds_go2state);
-
-
-//    eOenum08_t command_go2state = applstate_running;
-//    if(!addSetMessage(protid, (uint8_t*) &command_go2state))
-//    {
-//        yError("EthResource::goToRun() in BOARD %s (%s) fails to add a command go2state running to transceiver", ipv4addrstring, boardName);
-//        return false;
-//    }
-
-//#if !defined(ETHRES_CHECK_MN_APPL_STATUS)
-
-//    isInRunningMode = true;
-//    return true;
-
-//#else
-
-//    // this delay is required because we want to force the two rops (go2state comamnd and ask<state>) to be in different udp packets
-//    //Time::delay(0.010);
-//    // however, if we do the loop over maxAttempts then we dont need it anymore. if the board can execute the order
-//    // then at most there will be two iterations of the for() loop.
-
-
-
-//    yDebug("EthResource::goToRun() is called for BOARD %s (%s) for the entity %s", ipv4addrstring, boardName, eoprot_EN2string(endpoint, entity));
-
-//    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
-//    eOmn_appl_status_t status = {0};
-//    uint16_t size = 0;
-//    const char* statestr[] = {"applstate_config", "applstate_running", "applstate_error", "applstate_unknown"};
-
-//    const int maxAttempts = 5;
-//    bool verified = false;
-//    bool found = false;
-
-//    char foundmessage[512] = "nothing found";
-//    const char *foundstatestr = statestr[3];
-
-//    for(int i=0; i<maxAttempts; i++)
-//    {
-//        // getRemoteValue() sends a request and blocks until the value arrives from the board.
-//        // if the value does not arrive within a timeout it asks again and again
-//        if(true == getRemoteValue(id32, &status, size))
-//        {
-//            found = true;
-
-//            int index = (status.currstate > 2) ? (3) : (status.currstate);
-
-//            foundstatestr = statestr[index];
-
-//            snprintf(foundmessage, sizeof(foundmessage), "EthResource::goToRun() detected BOARD %s (%s). It has a binary with: name = %s, ver = %d.%d, build date = %d.%d.%d at %d:%d. Its application is now in state %s",
-//                                            ipv4addrstring,
-//                                            boardName,
-//                                            status.name,
-//                                            status.version.major,
-//                                            status.version.minor,
-//                                            status.buildate.day,
-//                                            status.buildate.month,
-//                                            status.buildate.year,
-//                                            status.buildate.hour,
-//                                            status.buildate.min,
-//                                            foundstatestr);
-
-
-//            if(applstate_running == status.currstate)
-//            {
-//                yInfo("%s", foundmessage);
-//                yDebug("EthResource::goToRun() successfully sent BOARD %s (%s) in run mode", ipv4addrstring, boardName);
-
-//                verified = true;
-//                isInRunningMode = true;
-//                break;
-//            }
-//            else
-//            {
-//                // we have received a reply from the board but: if i is equal to 0, the board may not have processed the order yet (it must decode the whole udp packet containing the order before it can change state).
-//                // or ... the remote board have processed the order but it cannot execute it. this second situation may happen if the board cannot find the required can boards attached to it.
-//                // in any case, we ask some more times because if we dont set verified equal to true, then we must quit robotInterface
-//            }
-//        }
-//        else
-//        {
-//            // in here if we havent received any reply from the remote board. it is unlikely but possible. maybe the board crashed.
-//            // ok, there is also teh possibility that id32 is wrong (unlikely) or &status is NULL (unlikely).
-//            yError("EthResource::goToRun() called getRemoteValue() for BOARD %s (%s) but there was no reply", ipv4addrstring, boardName);
-//        }
-//    }
-
-
-//    if(false == found)
-//    {
-//        yError("EthResource::goToRun() could not verify the status of BOARD %s (%s) because it could not find it after %d attempts", ipv4addrstring, boardName, maxAttempts);
-//    }
-//    else if(false == verified)
-//    {
-//        yInfo("%s", foundmessage);
-//        yError("EthResource::goToRun() could not send BOARD %s (%s) in run state. the board is instead in state %s", ipv4addrstring, boardName, foundstatestr);
-
-//        if(applstate_config == status.currstate)
-//        {
-//            yError() << "It may be that the BOARD is not ready yet to enter in run mode: PLEASE WAIT A FEW SECONDS AND RELAUNCH robotInterface";
-//        }
-//        isInRunningMode = (applstate_running == status.currstate) ? true : false; // we quit robotInterface ... it means nothing to set this value
-//    }
-
-//    return verified;
-
-//#endif
-
-//}
-
-
-//double  EthResource::getLastRecvMsgTimestamp(void)
-//{
-//    return(infoPkts->last_recvPktTime);
-//}
 
 
 
@@ -934,7 +679,7 @@ bool EthResource::verifyBoardTransceiver()
         // must release the semaphore
         ethQuery->stop(sem);
         yError() << "  FATAL: EthResource::verifyBoardTransceiver() had a timeout of" << timeout << "secs when asking the comm status to BOARD" << getName() << "with IP" << getIPv4string() <<  ": cannot proceed any further";
-        yError() << "         EthResource::verifyBoardTransceiver() asks: can you ping the board? if so, is the MN protocol version of BOARD equal to (" << pc104versionMN->major << pc104versionMN->minor << ")? if not, perform FW upgrade. if so, was the ropframe transmitted in time?";
+        yError() << "         EthResource::verifyBoardTransceiver() asks: can you ping the board? if so, is the MN protocol version of BOARD equal to (" << pc104versionMN->major << pc104versionMN->minor << ")? if not, perform FW update. if so, was the ropframe transmitted in time?";
         return(false);
     }
 
@@ -952,23 +697,21 @@ bool EthResource::verifyBoardTransceiver()
     memcpy(&boardCommStatus, &brdstatus, sizeof(boardCommStatus));
 
 
-    //#warning --> marco.accame: inside EthResource::verifyBoardTransceiver() in the future you shall use variable mnprotocolversion
-    // now i must verify that there is the same mn protocol version
-    //const eoprot_version_t * brdversionMN = pc104versionMN; // at the moment we cannot get it from remote board
     eoprot_version_t * brdversionMN = (eoprot_version_t*)&brdstatus.managementprotocolversion;
 
     if(pc104versionMN->major != brdversionMN->major)
     {
-        yError() << "EthResource::verifyBoardTransceiver() detected different mn protocol major versions: local =" << pc104versionMN->major << ", remote =" << brdversionMN->major << ": cannot proceed any further. FW upgrade is required";
+        yError() << "EthResource::verifyBoardTransceiver() detected different mn protocol major versions: local =" << pc104versionMN->major << ", remote =" << brdversionMN->major << ": cannot proceed any further";
+        yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
         return(false);
     }
 
 
     if(pc104versionMN->minor != brdversionMN->minor)
     {
-        yError() << "EthResource::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": cannot proceed any further. FW upgrade is required";
+        yError() << "EthResource::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": cannot proceed any further.";
+        yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
         return(false);
-        //yWarning() << "EthResource::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": FW upgrade is advised";
     }
 
 
@@ -984,11 +727,11 @@ bool EthResource::verifyBoardTransceiver()
 }
 
 
-bool EthResource::setTXrate()
+bool EthResource::setTimingOfRunningCycle()
 {
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
-    yWarning() << "EthResource::setTXrate() is in ETHRES_DEBUG_DONTREADBACK mode";
+    yWarning() << "EthResource::setTimingOfRunningCycle() is in ETHRES_DEBUG_DONTREADBACK mode";
     txrateISset = true;
     return true;
 #endif
@@ -998,27 +741,32 @@ bool EthResource::setTXrate()
         return(true);
     }
 
-    // step 1: we send teh remote board a message of type eoprot_tag_mn_appl_config_txratedivider with the value read from the proper section
-    //         if doen find the section we set it with value 1
+    // step 1: we send the remote board a message of type eoprot_tag_mn_appl_config with the value read from the proper section
+    //         if does find the section we use default values
 
     // call a set until verified
 
-    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_config_txratedivider);
-    uint8_t txratediv = HostTransceiver::TXrateOfRegulars;
-    if(false == setRemoteValueUntilVerified(id32, &txratediv, sizeof(txratediv), 5, 0.010, 0.050, 2))
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_config);
+    eOmn_appl_config_t config = {0};
+    config.cycletime = HostTransceiver::cycletime;
+    config.maxtimeRX = HostTransceiver::maxtimeRX;
+    config.maxtimeDO = HostTransceiver::maxtimeDO;
+    config.maxtimeTX = HostTransceiver::maxtimeTX;
+    config.txratedivider = HostTransceiver::TXrateOfRegularROPs;
+    if(false == setRemoteValueUntilVerified(id32, &config, sizeof(config), 5, 0.010, 0.050, 2))
     {
-        yWarning() << "EthResource::setTXrate() could not configure txrate divider at" << txratediv << "in BOARD" << getName() << "with IP" << getIPv4string();
+        yWarning() << "EthResource::setTimingOfRunningCycle() for BOARD" << getName() << "with IP" << getIPv4string() << "could not configure: cycletime =" << config.cycletime << "usec, RX DO TX = (" << config.maxtimeRX << config.maxtimeDO << config.maxtimeTX << ") usec and TX rate =" << config.txratedivider << " every cycle";
         return true;
     }
     else
     {
-        yDebug() << "EthResource::setTXrate() has succesfully set the TX rate of the transceiver of BOARD" << getName() << "with IP" << getIPv4string() << "at" << HostTransceiver::TXrateOfRegulars << "ms";
+        yDebug() << "EthResource::setTimingOfRunningCycle() for BOARD" << getName() << "with IP" << getIPv4string() << "has succesfully set: cycletime =" << config.cycletime << "usec, RX DO TX = (" << config.maxtimeRX << config.maxtimeDO << config.maxtimeTX << ") usec and TX rate =" << config.txratedivider << " every cycle";
     }
 
 
     if(verbosewhenok)
     {
-        yDebug() << "EthResource::setTXrate() has succesfully set the TX rate of the transceiver of BOARD" << getName() << "with IP" << getIPv4string() << "at" << HostTransceiver::TXrateOfRegulars << "ms";
+        yDebug() << "EthResource::setTimingOfRunningCycle() for BOARD" << getName() << "with IP" << getIPv4string() << "has succesfully set: cycletime =" << config.cycletime << "usec, RX DO TX = (" << config.maxtimeRX << config.maxtimeDO << config.maxtimeTX << ") usec and TX rate =" << config.txratedivider << " every cycle";
     }
 
     txrateISset = true;
@@ -1105,12 +853,6 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
     // the semaphore used for waiting for replies from the board
     yarp::os::Semaphore* sem = NULL;
 
-//    const int capacityOfArrayOfEPDES = (EOMANAGEMENT_COMMAND_DATA_SIZE - sizeof(eOarray_head_t)) / sizeof(eoprot_endpoint_descriptor_t);
-//    if(boardEPsNumber > capacityOfArrayOfEPDES)
-//    {   // to support more than capacityOfArrayOfEPDES (= 16 on date of jul 22 2014) endpoints: just send two (or more) eoprot_tag_mn_comm_cmmnds_command_queryarray messages with setnumbers 0 and 1 (or more)
-//        yError() << "EthResource::verifyEPprotocol() detected that BOARD" << getName() << "with IP" << getIPv4string() << "has" << boardEPsNumber << "endpoints and at most" << capacityOfArrayOfEPDES << "are supported: cannot proceed any further (review the code to support them all)";
-//        return(false);
-//    }
 
     // step 1: ask all the EP descriptors. from them we can extract protocol version of MN and of the target ep
     id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_queryarray);
@@ -1154,14 +896,8 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
     eOmn_cmd_replyarray_t* cmdreplyarray = (eOmn_cmd_replyarray_t*)&command.cmd.replyarray;
     EOarray* array = (EOarray*)cmdreplyarray->array;
 
-    //yDebug() << "EthResource::verifyEPprotocol() -> xxx-debug TO BE REMOVED AFTER DEBUG: head.capacity, itemsize, size" << array->head.capacity << array->head.itemsize << array->head.size;
 
     uint8_t sizeofarray = eo_array_Size(array);
-
-//    if(sizeofarray != boardEPsNumber)
-//    {
-//        yWarning() << "EthResource::verifyEPprotocol() retrieved from BOARD" << ethManager->getName(ipv4addr) << ":" << sizeofarray << "endpoint descriptors, and there are" << boardEPsNumber << "endpoints";
-//    }
 
 
     for(int i=0; i<sizeofarray; i++)
@@ -1174,13 +910,16 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
             if(pc104versionMN->major != epd->version.major)
             {
                 yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.major =" << pc104versionMN->major << "and board.version.major =" << epd->version.major;
-                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD" << getName() << "with IP" << getIPv4string() << "for eoprot_endpoint_management: cannot proceed any further. FW upgrade is required";
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD" << getName() << "with IP" << getIPv4string() << "for eoprot_endpoint_management: cannot proceed any further.";
+                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
                 return(false);
             }
             if(pc104versionMN->minor != epd->version.minor)
             {
-                yWarning() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionMN->minor << "and board.version.minor =" << epd->version.minor;
-                yWarning() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor BOARD" << getName() << "with IP" << getIPv4string() << "for eoprot_endpoint_management: FW upgrade is advised";
+                yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionMN->minor << "and board.version.minor =" << epd->version.minor;
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor BOARD" << getName() << "with IP" << getIPv4string() << "for eoprot_endpoint_management: cannot proceed any further.";
+                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
+                return false;
             }
         }
         if(epd->endpoint == ep)
@@ -1189,13 +928,15 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
             if(pc104versionEP->major != epd->version.major)
             {
                 yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.major =" << pc104versionEP->major << "and board.version.major =" << epd->version.major;
-                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD" << getName() << "with IP" << getIPv4string() << " for" << eoprot_EP2string(ep) << ": cannot proceed any further. FW upgrade is required";
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD" << getName() << "with IP" << getIPv4string() << " for" << eoprot_EP2string(ep) << ": cannot proceed any further.";
+                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update to offer services for" << eoprot_EP2string(ep);
                 return(false);
             }
             if(pc104versionEP->minor != epd->version.minor)
             {
                 yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionEP->minor << "and board.version.minor =" << epd->version.minor;
-                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor in BOARD" << getName() << "with IP" << getIPv4string() << " for" << eoprot_EP2string(ep) << ": FW upgrade is required";
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor in BOARD" << getName() << "with IP" << getIPv4string() << " for" << eoprot_EP2string(ep) << ": annot proceed any further";
+                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update to offer services for" << eoprot_EP2string(ep);
                 return(false);
             }
         }
@@ -1213,7 +954,7 @@ bool EthResource::verifyBoard(void)
 {
     if((true == verifyBoardPresence()) &&
        (true == verifyBoardTransceiver()) &&
-       (true == setTXrate()) &&
+       (true == setTimingOfRunningCycle()) &&
        (true == cleanBoardBehaviour()) )
     {
         return(true);
@@ -1853,6 +1594,7 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
         return true;
 #endif
 
+
     eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_cmmnds_command);
     eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_status_commandresult);;
 
@@ -1899,7 +1641,7 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
 
         if(false == ethQueryServices->wait(sem, timeout))
         {
-            yWarning() << "EthResource::serviceCommand() had a timeout of" << timeout << "secs when sending an activation request to BOARD" << getName() << "with IP" << getIPv4string();
+            yWarning() << "EthResource::serviceCommand() had a timeout of" << timeout << "secs in reception of the ack of an activation request to BOARD" << getName() << "with IP" << getIPv4string();
         }
         else
         {
@@ -1909,6 +1651,12 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
     }
     // must release the semaphore
     ethQueryServices->stop(sem);
+
+    if(false == replied)
+    {
+        yError() << "EthResource::serviceCommand() failed an acked activation request to BOARD" << getName() << "with IP" << getIPv4string() << "after" << times << "attempts" << "each with waiting timeout of" << timeout << "seconds";
+        return false;
+    }
 
     // now i get the answer
     eOmn_service_command_result_t result = {0};
@@ -1926,7 +1674,7 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
 
 bool EthResource::serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout)
 {
-    return(serviceCommand(eomn_serv_operation_verifyactivate, category, param, timeout, 1));
+    return(serviceCommand(eomn_serv_operation_verifyactivate, category, param, timeout, 3));
 }
 
 
@@ -1940,7 +1688,7 @@ bool EthResource::serviceSetRegulars(eOmn_serv_category_t category, vector<eOpro
         eo_array_PushBack(array, &id32);
     }
 
-    regularsAreSet = serviceCommand(eomn_serv_operation_regsig_load, category, &param, timeout, 1);
+    regularsAreSet = serviceCommand(eomn_serv_operation_regsig_load, category, &param, timeout, 3);
 
     return regularsAreSet;
 }
@@ -1949,7 +1697,7 @@ bool EthResource::serviceSetRegulars(eOmn_serv_category_t category, vector<eOpro
 
 bool EthResource::serviceStart(eOmn_serv_category_t category, double timeout)
 {
-    bool ret = serviceCommand(eomn_serv_operation_start, category, NULL, timeout, 1);
+    bool ret = serviceCommand(eomn_serv_operation_start, category, NULL, timeout, 3);
 
     if(ret)
     {
