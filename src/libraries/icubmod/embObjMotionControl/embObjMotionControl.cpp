@@ -2211,6 +2211,7 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         // muove
     case eomc_calibration_type5_hard_stops:
         calib.params.type5.pwmlimit   = (int32_t) S_32(params.param1);
+        calib.params.type5.final_pos = (int32_t) S_32(params.param2);
         calib.params.type5.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
         break;
 
