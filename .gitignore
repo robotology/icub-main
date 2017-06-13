@@ -6,6 +6,7 @@
 /bindings/lua/
 /bindings/python/
 /bindings/ruby/
+/doc/
 *kdev*
 *.orig
 /package-tmp/
