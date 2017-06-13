@@ -22,6 +22,7 @@ Topics:
    (collections of modules)
  - \ref icub_tutorials \endref - a set of tutorials to learn how to use the software
  - The documentation for contributed software is here: <a href="http://wiki.icub.org/iCub/contrib"> Contrib documentation </A> 
+ - \ref changelog
  - Programmer's checklist:
   - \ref compile_status \endref - check if your code is compiling on a test server
   - <a href="http://wiki.icub.org/wiki/Licensing"> Licensing </A> - have you declared your authorship, and rights granted?

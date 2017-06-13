@@ -1,0 +1,19 @@
+/*
+ * Copyright (C) 2016 iCub Facility, Istituto Italiano di Tecnologia
+ * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
+ */
+
+
+/**
+ * @page changelog iCub ChangeLog
+
+This page lists the main changes introduced in iCub at each release.
+
+\tableofcontents
+
+\subpage md_src_doc_release_v1_8_0
+
+This page can be edited at \link src/doc/releases.dox.
+
+ *
+ */
