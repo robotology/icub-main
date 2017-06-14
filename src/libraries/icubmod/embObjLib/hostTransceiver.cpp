@@ -1119,7 +1119,7 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
         if(groupEthBoardSettings_RunningMode.isNull())
         {
             yWarning() << "HostTransceiver::method(): cannot find ETH_BOARD_PROPERTIES/RUNNINGMODE group in config files for BOARD w/ IP" << remoteipstring << " and will use default values";
-            yWarning() << "Default values for ETH_BOARD_PROPERTIES/RUNNINGMODE group: (period, maxtimeOfRXactivity, maxtimeOfDOactivity, maxtimeOfTXactivity, TXrateOfRegularROPs) = " <<
+            yWarning() << "Default values for ETH_BOARD_PROPERTIES/RUNNINGMODE group: (period, maxTimeOfRXactivity, maxTimeOfDOactivity, maxTimeOfTXactivity, TXrateOfRegularROPs) = " <<
                           cycletime << maxtimeRX << maxtimeDO << maxtimeTX << TXrateOfRegularROPs;
         }
         else
@@ -1134,28 +1134,25 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
                     yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::period can be only 1000 (so far) and it was:" << tmp;
                     tmp = 1000;
                 }
-
                 cycletime = tmp;
-                yError() << cycletime;
             }
 
-            if(true == groupEthBoardSettings_RunningMode.check("maxtimeOfRXactivity"))
+            if(true == groupEthBoardSettings_RunningMode.check("maxTimeOfRXactivity"))
             {
-                int tmp = groupEthBoardSettings_RunningMode.find("maxtimeOfRXactivity").asInt();
+                int tmp = groupEthBoardSettings_RunningMode.find("maxTimeOfRXactivity").asInt();
 
                 if((tmp < 5) || (tmp > 990))
                 {
-                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxtimeOfRXactivity must be in [5, 990] (so far) and it was:" << tmp << "Using default value";
+                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxTimeOfRXactivity must be in [5, 990] (so far) and it was:" << tmp << "Using default value";
                     tmp = defmaxtimeRX;
                 }
 
                 maxtimeRX = tmp;
-                yError() << maxtimeRX;
             }
 
-            if(true == groupEthBoardSettings_RunningMode.check("maxtimeOfDOactivity"))
+            if(true == groupEthBoardSettings_RunningMode.check("maxTimeOfDOactivity"))
             {
-                int tmp = groupEthBoardSettings_RunningMode.find("maxtimeOfDOactivity").asInt();
+                int tmp = groupEthBoardSettings_RunningMode.find("maxTimeOfDOactivity").asInt();
 
                 if((tmp < 5) || (tmp > 990))
                 {
@@ -1164,21 +1161,19 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
                 }
 
                 maxtimeDO = tmp;
-                yError() << maxtimeDO;
             }
 
-            if(true == groupEthBoardSettings_RunningMode.check("maxtimeOfTXactivity"))
+            if(true == groupEthBoardSettings_RunningMode.check("maxTimeOfTXactivity"))
             {
-                int tmp = groupEthBoardSettings_RunningMode.find("maxtimeOfTXactivity").asInt();
+                int tmp = groupEthBoardSettings_RunningMode.find("maxTimeOfTXactivity").asInt();
 
                 if((tmp < 5) || (tmp > 990))
                 {
-                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxtimeOfTXactivity must be in [5, 990] (so far) and it was:" << tmp << "Using default value";
+                    yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "ETH_BOARD_SETTINGS::RUNNINGMODE::maxTimeOfTXactivity must be in [5, 990] (so far) and it was:" << tmp << "Using default value";
                     tmp = defmaxtimeTX;
                 }
 
                 maxtimeTX = tmp;
-                yError() << maxtimeTX;
             }
 
 
@@ -1197,14 +1192,12 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
                     tmp = 20;
                 }
                 TXrateOfRegularROPs = tmp;
-
-                yError() << TXrateOfRegularROPs;
             }
 
             // consistency check
             if((maxtimeRX+maxtimeDO+maxtimeTX) != cycletime)
             {
-                yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "In ETH_BOARD_SETTINGS::RUNNINGMODE sum(maxtimeOfRXactivity, maxtimeOfDOactivity, maxtimeOfTXactivity) != period !!! Using default values";
+                yWarning() << "HostTransceiver::method() for BOARD" << remoteipstring << "In ETH_BOARD_SETTINGS::RUNNINGMODE sum(maxTimeOfRXactivity, maxTimeOfDOactivity, maxTimeOfTXactivity) != period !!! Using default values";
 
                 yError() << maxtimeRX+maxtimeDO+maxtimeTX;
                 cycletime = defcycletime;
@@ -1212,6 +1205,9 @@ bool HostTransceiver::prepareTransceiverConfig2(yarp::os::Searchable &cfgEthBoar
                 maxtimeDO = defmaxtimeDO;
                 maxtimeTX = defmaxtimeTX;
             }
+
+            yInfo() << "Found group ETH_BOARD_PROPERTIES/RUNNINGMODE with values: (period, maxTimeOfRXactivity, maxTimeOfDOactivity, maxTimeOfTXactivity, TXrateOfRegularROPs) = " <<
+                        cycletime << maxtimeRX << maxtimeDO << maxtimeTX << TXrateOfRegularROPs;
 
         }
     }
