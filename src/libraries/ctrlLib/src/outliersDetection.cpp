@@ -16,6 +16,7 @@
 */
 
 #include <cmath>
+#include <limits>
 #include <iCub/ctrl/outliersDetection.h>
 
 using namespace std;
@@ -156,7 +157,7 @@ set<size_t> ModifiedThompsonTau::detect(const Vector &data, const Property &opti
         mean=options.find("mean").asDouble();
         stdev=options.find("std").asDouble();
     }
-    else
+    else if (N>0)
     {
         // find mean and standard deviation
         for (size_t i=0; i<data.length(); i++)
@@ -170,7 +171,9 @@ set<size_t> ModifiedThompsonTau::detect(const Vector &data, const Property &opti
         }
 
         mean/=N;
-        stdev=sqrt(stdev/N-mean*mean);
+        stdev=(N>1)?
+              sqrt(stdev/(N-1)-mean*mean):  // unbiased estimator
+              std::numeric_limits<double>::max();
     }
 
     size_t i_check;
