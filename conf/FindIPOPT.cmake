@@ -8,8 +8,8 @@
 # if this fails then try to locate the library in the directory pointed by
 # the IPOPT_DIR enviromental variable.
 #
-# On Windows systems,  just try to find the library using the IPOPT_DIR 
-# enviromental variable.  
+# On Windows systems,  just try to find the library using the IPOPT_DIR
+# enviromental variable.
 #
 # Create the following variables::
 #
@@ -145,12 +145,7 @@ else()
   # libraries embedded in the library, newer releases require them to
   # be explicitly linked.
   if(IPOPT_IPOPT_LIBRARY)
-    # FIXME Remove this check when CMake 2.8.11 or later is required
-    if(NOT CMAKE_VERSION VERSION_LESS 2.8.11)
-      get_filename_component(_MSVC_BINDIR "${CMAKE_LINKER}" PATH)
-    else()
-      get_filename_component(_MSVC_DIR "${CMAKE_LINKER}" DIRECTORY)
-    endif()
+    get_filename_component(_MSVC_DIR "${CMAKE_LINKER}" DIRECTORY)
 
     # Find the lib.exe executable
     find_program(LIB_EXECUTABLE
@@ -203,12 +198,7 @@ else()
     unset(_path)
 
     if(NOT "${_lib_output}" MATCHES "libifcoremd.dll")
-      # FIXME Remove this check when CMake 2.8.11 or later is required
-      if(NOT CMAKE_VERSION VERSION_LESS 2.8.11)
-        get_filename_component(_IPOPT_IPOPT_LIBRARY_DIR "${_IPOPT_LIB}" PATH)
-      else()
-        get_filename_component(_IPOPT_IPOPT_LIBRARY_DIR "${_IPOPT_LIB}" DIRECTORY)
-      endif()
+      get_filename_component(_IPOPT_IPOPT_LIBRARY_DIR "${_IPOPT_LIB}" DIRECTORY)
 
       foreach(_lib ifconsol
                    libifcoremd

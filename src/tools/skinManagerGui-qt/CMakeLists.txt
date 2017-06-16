@@ -6,8 +6,8 @@ include(iCubUseQt5)
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 
-include_directories(${YARP_INCLUDE_DIRS}
-                    ${skinDynLib_INCLUDE_DIRS})
+include_directories(${skinDynLib_INCLUDE_DIRS}
+                    ${YARP_INCLUDE_DIRS})
 
 set(skinManagerGui_qt_SRCS main.cpp
                            loadingwidget.cpp

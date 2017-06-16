@@ -38,6 +38,7 @@
 #include "can_string_generic.h"
 /// get the message types from the DSP code.
 #include "messages.h"
+#include <yarp/os/Log.h>
 #include <yarp/os/LogStream.h>
 #include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
@@ -1321,6 +1322,22 @@ bool CanBusMotionControlParameters::fromConfig(yarp::os::Searchable &p)
                 _rotToEncoder[i-1] = xtmp.get(i).asDouble();
         }
 
+    if (!validate(general, xtmp, "fullscalePWM", " list of scales for the fullscalePWM conversion factor", nj + 1))
+    {
+        yError("fullscalePWM param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support");
+        return false;
+    }
+    for (i = 1; i < xtmp.size(); i++)
+        _dutycycleToPwm[i - 1] = xtmp.get(i).asDouble()/100.0;
+
+    if (!validate(general, xtmp, "ampsToSensor", "a list of scales for the ampsToSensor conversion factor", nj + 1))
+    {
+        yError("ampsToSensor param not found in config file. Please update robot configuration files or contact https://github.com/robotology/icub-support");
+        return false;
+    }
+    for (i = 1; i < xtmp.size(); i++)
+        _ampsToSensor[i - 1] = xtmp.get(i).asDouble();
+
     if (!validate(general, xtmp, "Zeros","a list of offsets for the zero point", nj+1))
         return false;
 
@@ -1868,6 +1885,8 @@ CanBusMotionControlParameters::CanBusMotionControlParameters()
     _torqueSensorChan=0;
     _maxTorque=0;
     _newtonsToSensor=0;
+    _ampsToSensor = 0;
+    _dutycycleToPwm = 0;
     _debug_params=0;
     _impedance_params=0;
     _impedance_limits=0;
@@ -1904,6 +1923,8 @@ bool CanBusMotionControlParameters::alloc(int nj)
     _torqueSensorChan= allocAndCheck<int>(nj);
     _maxTorque=allocAndCheck<double>(nj);
     _newtonsToSensor=allocAndCheck<double>(nj);
+    _ampsToSensor = allocAndCheck<double>(nj);
+    _dutycycleToPwm = allocAndCheck<double>(nj);
     _bemfGain=allocAndCheck<double>(nj);
     _ktau=allocAndCheck<double>(nj);
     _maxStep=allocAndCheck<double>(nj);
@@ -1969,6 +1990,8 @@ CanBusMotionControlParameters::~CanBusMotionControlParameters()
     checkAndDestroy<int>(_torqueSensorChan);
     checkAndDestroy<double>(_maxTorque);
     checkAndDestroy<double>(_newtonsToSensor);
+    checkAndDestroy<double>(_ampsToSensor);
+    checkAndDestroy<double>(_dutycycleToPwm);
     checkAndDestroy<double>(_bemfGain);
     checkAndDestroy<double>(_ktau);
     checkAndDestroy<double>(_maxStep);
@@ -2364,7 +2387,7 @@ RateThread(10),
 ImplementPositionControl2(this),
 //ImplementVelocityControl<CanBusMotionControl, IVelocityControl>(this),
 ImplementVelocityControl2(this),
-ImplementPidControl<CanBusMotionControl, IPidControl>(this),
+ImplementPidControl(this),
 ImplementEncodersTimed(this),
 ImplementControlCalibration<CanBusMotionControl, IControlCalibration>(this),
 ImplementControlCalibration2<CanBusMotionControl, IControlCalibration2>(this),
@@ -2372,7 +2395,6 @@ ImplementAmplifierControl<CanBusMotionControl, IAmplifierControl>(this),
 ImplementControlLimits2(this),
 ImplementTorqueControl(this),
 ImplementImpedanceControl(this),
-ImplementOpenLoopControl(this),
 ImplementControlMode2(this),
 ImplementPositionDirect(this),
 ImplementInteractionMode(this),
@@ -2380,6 +2402,8 @@ ImplementMotorEncoders(this),
 ImplementMotor(this),
 ImplementRemoteVariables(this),
 ImplementAxisInfo(this),
+ImplementPWMControl(this),
+ImplementCurrentControl(this),
 _mutex(1),
 _done(0)
 {
@@ -2488,8 +2512,7 @@ bool CanBusMotionControl::open (Searchable &config)
 //    ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::
 //        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
-    ImplementPidControl<CanBusMotionControl, IPidControl>::
-        initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
+    ImplementPidControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, NULL, p._newtonsToSensor, p._ampsToSensor);
 
     ImplementEncodersTimed::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
 
@@ -2518,12 +2541,13 @@ bool CanBusMotionControl::open (Searchable &config)
     
     _axisImpedanceHelper = new axisImpedanceHelper(p._njoints, p._impedance_limits);
     ImplementImpedanceControl::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros, p._newtonsToSensor);
-    ImplementOpenLoopControl::initialize(p._njoints, p._axisMap);
     ImplementPositionDirect::initialize(p._njoints, p._axisMap, p._angleToEncoder, p._zeros);
     ImplementInteractionMode::initialize(p._njoints, p._axisMap);
     _axisPositionDirectHelper = new axisPositionDirectHelper(p._njoints, p._axisMap, p._angleToEncoder, p._maxStep);
     ImplementAxisInfo::initialize(p._njoints, p._axisMap);
     ImplementRemoteVariables::initialize(p._njoints, p._axisMap);
+    ImplementCurrentControl::initialize(p._njoints, p._axisMap, p._ampsToSensor);
+    ImplementPWMControl::initialize(p._njoints, p._axisMap, p._dutycycleToPwm);
 
     delete [] tmpZeros; tmpZeros=0;
     delete [] tmpOnes;  tmpOnes=0;
@@ -2550,13 +2574,13 @@ bool CanBusMotionControl::open (Searchable &config)
 
     // default initialization for this device driver.
     yarp::os::Time::delay(0.005);
-    setPids(p._pids);
+    setPids(VOCAB_PIDTYPE_POSITION, p._pids);
     
     if (p._torqueControlEnabled==true)
     {
         _MCtorqueControlEnabled = true;
         yarp::os::Time::delay(0.005);
-        setTorquePids(p._tpids);
+        setPids(VOCAB_PIDTYPE_TORQUE, p._tpids);
         
         for (int i=0; i<p._njoints; i++)
         {
@@ -2979,7 +3003,7 @@ bool CanBusMotionControl::close (void)
 //        ImplementPositionControl<CanBusMotionControl, IPositionControl>::uninitialize ();
 //        ImplementVelocityControl<CanBusMotionControl, IVelocityControl>::uninitialize();
 
-        ImplementPidControl<CanBusMotionControl, IPidControl>::uninitialize();
+        ImplementPidControl::uninitialize();
         ImplementEncodersTimed::uninitialize();
         ImplementMotorEncoders::uninitialize();
         ImplementControlCalibration<CanBusMotionControl, IControlCalibration>::uninitialize();
@@ -2990,11 +3014,12 @@ bool CanBusMotionControl::close (void)
         ImplementControlMode2::uninitialize();
         ImplementTorqueControl::uninitialize();
         ImplementImpedanceControl::uninitialize();
-        ImplementOpenLoopControl::uninitialize();
         ImplementPositionDirect::uninitialize();
         ImplementInteractionMode::uninitialize();
         ImplementRemoteVariables::uninitialize();
         ImplementAxisInfo::uninitialize();
+        ImplementCurrentControl::uninitialize();
+        ImplementPWMControl::uninitialize();
 
         //stop analog sensors
         std::list<TBR_AnalogSensor *>::iterator it=analogSensors.begin();
@@ -3813,11 +3838,6 @@ bool CanBusMotionControl::setPositionModeRaw(int j)
     return DEPRECATED("setPositionModeRaw");
 }
 
-bool CanBusMotionControl::setOpenLoopModeRaw(int j)
-{
-    return DEPRECATED("setOpenLoopModeRaw");
-}
-
 bool CanBusMotionControl::setVelocityModeRaw(int j)
 {
     return DEPRECATED("setVelocityModeRaw");
@@ -3940,8 +3960,12 @@ unsigned char CanBusMotionControl::from_modevocab_to_modeint (int modevocab)
     case VOCAB_CM_IMPEDANCE_VEL:
         return icubCanProto_controlmode_impedance_vel;
         break;
-    case VOCAB_CM_OPENLOOP:
+    case VOCAB_CM_PWM:
         return  icubCanProto_controlmode_openloop;
+        break;
+    case VOCAB_CM_CURRENT:
+        return  VOCAB_CM_UNKNOWN;
+        yError("'VOCAB_CM_CURRENT' error condition detected");
         break;
 
     case VOCAB_CM_FORCE_IDLE: 
@@ -3984,7 +4008,7 @@ int CanBusMotionControl::from_modeint_to_modevocab (unsigned char modeint)
         return VOCAB_CM_IMPEDANCE_VEL;
         break;
     case icubCanProto_controlmode_openloop:
-        return VOCAB_CM_OPENLOOP;
+        return VOCAB_CM_PWM;
         break;
 
     //internal status
@@ -4284,13 +4308,10 @@ bool CanBusMotionControl::getAxes(int *ax)
     return true;
 }
 
-// LATER: can be optimized.
-bool CanBusMotionControl::setPidRaw (int axis, const Pid &pid)
+bool CanBusMotionControl::helper_setPosPidRaw (int axis, const Pid &pid)
 {
-    //    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
-
     _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_P_GAIN, axis, S_16(pid.kp));
     _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_D_GAIN, axis, S_16(pid.kd));
     _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_I_GAIN, axis, S_16(pid.ki));
@@ -4299,6 +4320,33 @@ bool CanBusMotionControl::setPidRaw (int axis, const Pid &pid)
     _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_SCALE, axis, S_16(pid.scale));
     _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_TLIM, axis, S_16(pid.max_output));
     _writeWord16Ex (ICUBCANPROTO_POL_MC_CMD__SET_POS_STICTION_PARAMS, axis, S_16(pid.stiction_up_val), S_16(pid.stiction_down_val), false);
+    return true;
+}
+
+bool CanBusMotionControl::setPidRaw (const PidControlTypeEnum& pidtype, int axis, const Pid &pid)
+{
+    //    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    switch (pidtype)
+    {
+        case VOCAB_PIDTYPE_POSITION:
+            helper_setPosPidRaw(axis,pid);
+        break;
+        case VOCAB_PIDTYPE_VELOCITY:
+            helper_setVelPidRaw(axis,pid);
+        break;
+        case VOCAB_PIDTYPE_CURRENT:
+            helper_setCurPidRaw(axis,pid);
+        break;
+        case VOCAB_PIDTYPE_TORQUE:
+            helper_setTrqPidRaw(axis,pid);
+        break;
+        default:
+            yError()<<"Invalid pidtype:"<<pidtype;
+        break;
+    }
     return true;
 }
 
@@ -4520,7 +4568,7 @@ bool CanBusMotionControl::setImpedanceOffsetRaw (int axis, double off)
     return true;
 }
 
-bool CanBusMotionControl::getPidRaw (int axis, Pid *out)
+bool CanBusMotionControl::helper_getPosPidRaw (int axis, Pid *out)
 {
     //    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
@@ -4547,45 +4595,50 @@ bool CanBusMotionControl::getPidRaw (int axis, Pid *out)
     _readWord16Ex (ICUBCANPROTO_POL_MC_CMD__GET_POS_STICTION_PARAMS, axis, s, s2 ); out->stiction_up_val = double(s); out->stiction_down_val = double(s2);
     DEBUG_FUNC("Get PID done!\n");
     
-
     return true;
 }
 
-bool CanBusMotionControl::getPidsRaw (Pid *out)
+bool CanBusMotionControl::getPidRaw (const PidControlTypeEnum& pidtype, int axis, Pid *pid)
+{
+    //    ACE_ASSERT (axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2);
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+        return false;
+
+    switch (pidtype)
+    {
+        case VOCAB_PIDTYPE_POSITION:
+            helper_getPosPidRaw(axis,pid);
+        break;
+        case VOCAB_PIDTYPE_VELOCITY:
+            helper_getVelPidRaw(axis,pid);
+        break;
+        case VOCAB_PIDTYPE_CURRENT:
+            helper_getCurPidRaw(axis,pid);
+        break;
+        case VOCAB_PIDTYPE_TORQUE:
+            helper_getTrqPidRaw(axis,pid);
+        break;
+        default:
+            yError()<<"Invalid pidtype:"<<pidtype;
+        break;
+    }
+    return true;
+}
+
+bool CanBusMotionControl::getPidsRaw (const PidControlTypeEnum& pidtype, Pid *pids)
 {
     CanBusResources& r = RES(system_resources);
 
     int i;
     for (i = 0; i < r.getJoints(); i++)
     {
-        short s;
-        short s2;
-        _readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_P_GAIN, i, s); out[i].kp = double(s);
-        _readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_D_GAIN, i, s); out[i].kd = double(s);
-        _readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_I_GAIN, i, s); out[i].ki = double(s);
-        _readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_ILIM_GAIN, i, s); out[i].max_int = double(s);
-        _readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_OFFSET, i, s); out[i].offset= double(s);
-        _readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_SCALE, i, s); out[i].scale = double(s);
-        _readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_TLIM, i, s); out[i].max_output = double(s);
-        _readWord16Ex (ICUBCANPROTO_POL_MC_CMD__GET_POS_STICTION_PARAMS, i, s, s2 ); out[i].stiction_up_val = double(s); out[i].stiction_down_val = double(s2);
+        getPidRaw(pidtype,i,&pids[i]);
     }
 
     return true;
 }
 
-bool CanBusMotionControl::setTorquePidsRaw(const Pid *pids)
-{
-    CanBusResources& r = RES(system_resources);
-
-    int i;
-    for (i = 0; i < r.getJoints(); i++) {
-        setTorquePidRaw(i,pids[i]);
-    }
-
-    return true;
-}
-                          
-bool CanBusMotionControl::setTorquePidRaw(int axis, const Pid &pid)
+bool CanBusMotionControl::helper_setTrqPidRaw(int axis, const Pid &pid)
 {
      /// prepare Can message.
     CanBusResources& r = RES(system_resources);
@@ -4633,21 +4686,7 @@ bool CanBusMotionControl::setTorquePidRaw(int axis, const Pid &pid)
     return true;
 }
 
-bool CanBusMotionControl::getTorquePidOutputRaw(int j, double *b)
-{
-    const int axis = j;
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    return NOT_YET_IMPLEMENTED("getTorquePidOutputRaw");
-}
-
-bool CanBusMotionControl::getTorquePidOutputsRaw(double *b)
-{
-    return NOT_YET_IMPLEMENTED("getTorquePidOutputsRaw");
-}
-
-bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
+bool CanBusMotionControl::helper_getTrqPidRaw (int axis, Pid *out)
 {
     DEBUG_FUNC("Calling CAN_GET_TORQUE_PID \n");
 
@@ -4793,63 +4832,28 @@ bool CanBusMotionControl::getTorquePidRaw (int axis, Pid *out)
     return true;
 }
 
-bool CanBusMotionControl::getTorquePidsRaw (Pid *out)
+bool CanBusMotionControl::setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids)
 {
     CanBusResources& r = RES(system_resources);
+    if (pids==0) return false;
 
     int i;
     for (i = 0; i < r.getJoints(); i++)
     {
-        getTorquePidRaw(i, &(out[i]));
-    }
-
-    return true;
-}
-
-bool CanBusMotionControl::setPidsRaw(const Pid *pids)
-{
-    CanBusResources& r = RES(system_resources);
-
-    int i;
-    for (i = 0; i < r.getJoints(); i++) {
-        _writeWord16   (ICUBCANPROTO_POL_MC_CMD__SET_P_GAIN, i, S_16(pids[i].kp));
-        _writeWord16   (ICUBCANPROTO_POL_MC_CMD__SET_D_GAIN, i, S_16(pids[i].kd));
-        _writeWord16   (ICUBCANPROTO_POL_MC_CMD__SET_I_GAIN, i, S_16(pids[i].ki));
-        _writeWord16   (ICUBCANPROTO_POL_MC_CMD__SET_ILIM_GAIN, i, S_16(pids[i].max_int));
-        _writeWord16   (ICUBCANPROTO_POL_MC_CMD__SET_OFFSET, i, S_16(pids[i].offset));
-        _writeWord16   (ICUBCANPROTO_POL_MC_CMD__SET_SCALE, i, S_16(pids[i].scale));
-        _writeWord16   (ICUBCANPROTO_POL_MC_CMD__SET_TLIM, i, S_16(pids[i].max_output));
-        _writeWord16Ex (ICUBCANPROTO_POL_MC_CMD__SET_POS_STICTION_PARAMS, i, S_16(pids[i].stiction_up_val), S_16(pids[i].stiction_down_val), false);
+        setPidRaw(pidtype, i, pids[i]);
     }
 
     return true;
 }
 
 /// cmd is a SingleAxis poitner with 1 double arg
-bool CanBusMotionControl::setReferenceRaw (int j, double ref)
+bool CanBusMotionControl::setPidReferenceRaw (const PidControlTypeEnum& pidtype, int j, double ref)
 {
-    const int axis = j;
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-        int mode = 0;
-        getControlModeRaw(j, &mode);
-        if (mode != VOCAB_CM_POSITION_DIRECT &&
-            mode != VOCAB_CM_IDLE)
-        {
-            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-            yWarning() << "setReferenceRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, " << networkName.c_str() << " joint: " << axis;
-            setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-            #else
-            yError() << "setReferenceRaw: skipping command because " << networkName.c_str() << " joint" << axis << "is not in VOCAB_CM_POSITION_DIRECT mode";
-            #endif
-        }
-
-    return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, axis, S_32(ref));
+    return NOT_YET_IMPLEMENTED("setPidReferenceRaw");
 }
 
 /// cmd is an array of double (LATER: to be optimized).
-bool CanBusMotionControl::setReferencesRaw (const double *refs)
+bool CanBusMotionControl::setPidReferencesRaw (const PidControlTypeEnum& pidtype, const double *refs)
 {
     CanBusResources& r = RES(system_resources);
     if (refs==0) return false;
@@ -4858,7 +4862,7 @@ bool CanBusMotionControl::setReferencesRaw (const double *refs)
     bool ret = true;
     for (i = 0; i < r.getJoints(); i++)
     {
-        ret = ret & setReferenceRaw(i,refs[i]);
+        ret = ret & setPidReferenceRaw(pidtype,i,refs[i]);
     }
 
     return ret;
@@ -4968,55 +4972,29 @@ bool CanBusMotionControl::getTorqueRangesRaw (double *min, double *max)
     return NOT_YET_IMPLEMENTED("getTorqueRangesRaw");
 }
 
-bool CanBusMotionControl::disableTorquePidRaw(int j)
-{
-    return NOT_YET_IMPLEMENTED("disableTorquePidRaw");
-}
-
-bool CanBusMotionControl::enableTorquePidRaw(int j)
-{
-    return NOT_YET_IMPLEMENTED("enableTorquePidRaw");
-}
-
-bool CanBusMotionControl::setErrorLimitRaw(int j, double limit)
-{
-    return NOT_YET_IMPLEMENTED("setErrorLimit");
-}
-
-bool CanBusMotionControl::setErrorLimitsRaw(const double *limit)
-{
-    return NOT_YET_IMPLEMENTED("setErrorLimits");
-}
-
-bool CanBusMotionControl::setTorqueErrorLimitRaw(int j, double limit)
-{
-    return NOT_YET_IMPLEMENTED("setTorqueErrorLimit");
-}
-
-bool CanBusMotionControl::setTorqueErrorLimitsRaw(const double *limit)
-{
-    return NOT_YET_IMPLEMENTED("setTorqueErrorLimits");
-}
-
-bool CanBusMotionControl::getTorqueErrorRaw(int axis, double *err)
+bool CanBusMotionControl::getPidErrorRaw(const PidControlTypeEnum& pidtype, int axis, double *err)
 {
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))
         return false;
-    _mutex.wait();
-    *(err) = double(r._bcastRecvBuffer[axis]._torque_error);
-    _mutex.post();
-    return true;
-}
 
-bool CanBusMotionControl::getTorqueErrorsRaw(double *errs)
-{
-    CanBusResources& r = RES(system_resources);
-    int i;
     _mutex.wait();
-    for (i = 0; i < r.getJoints(); i++)
+    switch (pidtype)
     {
-        errs[i] = double(r._bcastRecvBuffer[i]._torque_error);
+        case VOCAB_PIDTYPE_POSITION:
+        *err = double(r._bcastRecvBuffer[axis]._position_error);
+        break;
+        case VOCAB_PIDTYPE_TORQUE:
+        *err = double(r._bcastRecvBuffer[axis]._torque_error);
+        break;
+        case VOCAB_PIDTYPE_VELOCITY:
+        *err = 0; //not yet implemented
+        NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_VELOCITY");
+        break;
+        case VOCAB_PIDTYPE_CURRENT:
+        *err = 0; //not yet implemented
+        NOT_YET_IMPLEMENTED("getPidErrorRaw VOCAB_PIDTYPE_CURRENT");
+        break;
     }
     _mutex.post();
     return true;
@@ -5116,27 +5094,13 @@ bool CanBusMotionControl::getRefPositionsRaw(int nj, const int * jnts, double *r
     return ret;
 }
 
-bool CanBusMotionControl::getErrorRaw(int axis, double *err)
+bool CanBusMotionControl::getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs)
 {
     CanBusResources& r = RES(system_resources);
-    if (!(axis >= 0 && axis <= r.getJoints()))
-        return false;
-    _mutex.wait();
-    *(err) = double(r._bcastRecvBuffer[axis]._position_error);
-    _mutex.post();
-    return true;
-}
-
-bool CanBusMotionControl::getErrorsRaw(double *errs)
-{
-    CanBusResources& r = RES(system_resources);
-    int i;
-    _mutex.wait();
-    for (i = 0; i < r.getJoints(); i++)
+    for (int i = 0; i < r.getJoints(); i++)
     {
-        errs[i] = double(r._bcastRecvBuffer[i]._position_error);
+        errs[i] = getPidErrorRaw(pidtype, i, &errs[i]);
     }
-    _mutex.post();
     return true;
 }
 
@@ -5352,62 +5316,97 @@ bool CanBusMotionControl::getFirmwareVersionRaw (int axis, can_protocol_info con
     return true;
 }
 
-bool CanBusMotionControl::getReferenceRaw(int j, double *ref)
+bool CanBusMotionControl::getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref)
 {
     const int axis = j;
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
+    {
         return false;
+    }
 
-    int value = 0;
-    if (_readDWord (ICUBCANPROTO_POL_MC_CMD__GET_DESIRED_POSITION, axis, value) == true)
-        *ref = double (value);
-    else
-        return false;
-
+    switch (pidtype)
+    {
+        case VOCAB_PIDTYPE_POSITION:
+        {
+            int value = 0;
+            if (_readDWord (ICUBCANPROTO_POL_MC_CMD__GET_DESIRED_POSITION, axis, value) == true)
+            { *ref = double (value);}
+            else
+            { *ref =0; yError() << "Invalid _readDWord (ICUBCANPROTO_POL_MC_CMD__GET_DESIRED_POSITION)"; return false; }
+        }
+        break;
+        case VOCAB_PIDTYPE_VELOCITY:
+        {
+            *ref=0;
+            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_VELOCITY");
+        }
+        break;
+        case VOCAB_PIDTYPE_CURRENT:
+        {
+            *ref=0;
+            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_CURRENT");
+        }
+        break;
+        case VOCAB_PIDTYPE_TORQUE:
+        {
+            *ref=0;
+            NOT_YET_IMPLEMENTED("getPidReferenceRaw VOCAB_PIDTYPE_TORQUE");
+        }
+        break;
+        default:
+        {
+            *ref=0;
+            yError()<<"Invalid pidtype:"<<pidtype;
+        }
+        break;
+    }
     return true;
 }
 
-bool CanBusMotionControl::getReferencesRaw(double *ref)
+bool CanBusMotionControl::getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs)
 {
-    return _readDWordArray(ICUBCANPROTO_POL_MC_CMD__GET_DESIRED_POSITION, ref);
+    bool ret = true;
+    CanBusResources& r = RES(system_resources);
+    if (refs==0) return false;
+
+    for (int i = 0; i < r.getJoints(); i++)
+    {
+        ret &= getPidReferenceRaw(pidtype, i, &refs[i]);
+    }
+    return ret;
 }
 
-bool CanBusMotionControl::getErrorLimitRaw(int j, double *err)
+bool CanBusMotionControl::getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *err)
 {
     return NOT_YET_IMPLEMENTED("getErrorLimit");
 }
 
-bool CanBusMotionControl::getErrorLimitsRaw(double *errs)
+bool CanBusMotionControl::getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *errs)
 {
     return NOT_YET_IMPLEMENTED("getErrorLimits");
 }
 
-bool CanBusMotionControl::getTorqueErrorLimitRaw(int j, double *err)
+bool CanBusMotionControl::setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit)
 {
-    return NOT_YET_IMPLEMENTED("getTorqueErrorLimit");
+    return NOT_YET_IMPLEMENTED("setErrorLimit");
 }
 
-bool CanBusMotionControl::getTorqueErrorLimitsRaw(double *errs)
+bool CanBusMotionControl::setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits)
 {
-    return NOT_YET_IMPLEMENTED("getTorqueErrorLimits");
+    return NOT_YET_IMPLEMENTED("setErrorLimits");
 }
 
-bool CanBusMotionControl::resetPidRaw(int j)
+bool CanBusMotionControl::resetPidRaw(const PidControlTypeEnum& pidtype, int j)
 {
     return NOT_YET_IMPLEMENTED("resetPid");
 }
 
-bool CanBusMotionControl::resetTorquePidRaw(int j)
+bool CanBusMotionControl::enablePidRaw(const PidControlTypeEnum& pidtype, int axis)
 {
-    return NOT_YET_IMPLEMENTED("resetTorquePid");
+    return NOT_YET_IMPLEMENTED("enablePidRaw");
 }
 
-bool CanBusMotionControl::enablePidRaw(int axis)
-{
-    return DEPRECATED("enablePidRaw");
-}
-
-bool CanBusMotionControl::setOffsetRaw(int axis, double v)
+bool CanBusMotionControl::setPidOffsetRaw(const PidControlTypeEnum& pidtype, int axis, double v)
 {
     if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
         return false;
@@ -5455,108 +5454,49 @@ bool CanBusMotionControl::setDebugReferencePositionRaw(int axis, double value)
     return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, axis, S_32(value));
 }
 
-bool CanBusMotionControl::setRefOutputsRaw(const double *v)
-{
-    CanBusResources& r = RES(system_resources);
-
-    int i;
-    for (i = 0; i < r.getJoints(); i++)
-    {
-        setRefOutputRaw(i,v[i]);
-    }
-
-    return true;
-}
-
-bool CanBusMotionControl::setRefOutputRaw(int axis, double v)
-{
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    return _writeWord16 (ICUBCANPROTO_POL_MC_CMD__SET_OPENLOOP_PARAMS, axis, S_16(v));
-}
-
-bool CanBusMotionControl::getRefOutputRaw(int j, double *out)
-{
-    const int axis = j;
-    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS-1)*2))
-        return false;
-
-    short int value = 0;
-    if (_readWord16 (ICUBCANPROTO_POL_MC_CMD__GET_OPENLOOP_PARAMS, axis, value) == true)
-        *out = double (value);
-    else
-        return false;
-
-    return true;
-}
-
-bool CanBusMotionControl::getRefOutputsRaw(double *outs)
-{
-    CanBusResources& r = RES(system_resources);
-    if (outs==0) return false;
-    int i = 0;
-    bool ret = true;
-    for (i = 0; i < r.getJoints(); i++)
-    {
-        ret = ret & getRefOutputRaw(i,&outs[i]);
-    }
-    return ret;
-}
-
-bool CanBusMotionControl::getOutputRaw(int axis, double *out)
+bool CanBusMotionControl::getPidOutputRaw(const PidControlTypeEnum& pidtype, int axis, double *out)
 {
     CanBusResources& r = RES(system_resources);
     if (!(axis >= 0 && axis <= r.getJoints()))
         return false;
     _mutex.wait();
-    *(out) = double(r._bcastRecvBuffer[axis]._pid_value);
+
+    switch (pidtype)
+    {
+        case VOCAB_PIDTYPE_POSITION:
+            *(out) = double(r._bcastRecvBuffer[axis]._pid_value);
+        break;
+        case VOCAB_PIDTYPE_VELOCITY:
+            *(out) = double(r._bcastRecvBuffer[axis]._pid_value);
+        break;
+        case VOCAB_PIDTYPE_CURRENT:
+            *(out) = double(r._bcastRecvBuffer[axis]._pid_value);
+        break;
+        case VOCAB_PIDTYPE_TORQUE:
+            *(out) = double(r._bcastRecvBuffer[axis]._pid_value);
+        break;
+        default:
+            yError()<<"Invalid pidtype:"<<pidtype;
+        break;
+    }
+    
     _mutex.post();
     return true;
 }
 
-bool CanBusMotionControl::getOutputsRaw(double *outs)
+bool CanBusMotionControl::getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs)
 {
     CanBusResources& r = RES(system_resources);
-    int i;
-
-    _mutex.wait();
-    for (i = 0; i < r.getJoints(); i++)
+    for (int i = 0; i < r.getJoints(); i++)
     {
-        outs[i] = double(r._bcastRecvBuffer[i]._pid_value);
+        getPidOutput(pidtype, i, &outs[i]);
     }
-
-    _mutex.post();
     return true;
 }
-bool CanBusMotionControl::setTorqueOffsetRaw(int axis, double v)
-{
-    return NOT_YET_IMPLEMENTED("setTorqueOffsetRaw");
-}
 
-bool CanBusMotionControl::disablePidRaw(int axis)
+bool CanBusMotionControl::disablePidRaw(const PidControlTypeEnum& pidtype, int axis)
 {
-    return DEPRECATED("disablePidRaw");
-}
-
-bool CanBusMotionControl::setPositionModeRaw()
-{
-    return DEPRECATED("setPositionModeRaw");
-}
-
-bool CanBusMotionControl::setOpenLoopModeRaw()
-{
-    return DEPRECATED("setOpenLoopModeRaw");
-}
-
-bool CanBusMotionControl::setTorqueModeRaw()
-{
-    return DEPRECATED("setTorqueModeRaw");
-}
-
-bool CanBusMotionControl::setVelocityModeRaw()
-{
-    return DEPRECATED("setVelocityModeRaw");
+    return NOT_YET_IMPLEMENTED("disablePidRaw");
 }
 
 bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
@@ -5586,12 +5526,8 @@ bool CanBusMotionControl::positionMoveRaw(int axis, double ref)
         mode != VOCAB_CM_IMPEDANCE_POS &&
         mode != VOCAB_CM_IDLE)
     {
-        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "positionMoveRaw: Deprecated automatic switch to VOCAB_CM_POSITION, " << networkName.c_str() << " joint: " << axis;
-        setControlModeRaw(axis,VOCAB_CM_POSITION);
-        #else
         yError() << "positionMoveRaw: skipping command because " << networkName.c_str() << " joint " << axis << "is not in VOCAB_CM_POSITION mode";
-        #endif
+        return true;
     }
 
     _mutex.wait();
@@ -6091,12 +6027,8 @@ bool CanBusMotionControl::velocityMoveRaw (int axis, double sp)
         mode != VOCAB_CM_IMPEDANCE_VEL && 
         mode != VOCAB_CM_IDLE)
     {
-        #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-        yWarning() << "velocityMoveRaw: Deprecated automatic switch to VOCAB_CM_VELOCITY, " << networkName.c_str() << " joint: " << axis;
-        setControlModeRaw(axis,VOCAB_CM_VELOCITY);
-        #else
         yError() << "velocityMoveRaw: skipping command because " << networkName.c_str() << " joint " << axis << "is not in VOCAB_CM_VELOCITY mode";
-        #endif
+        return true;
     }
 
     _mutex.wait();
@@ -6817,29 +6749,28 @@ bool CanBusMotionControl::velocityMoveRaw(const int n_joint, const int *joints, 
     return ret;
 }
 
-bool CanBusMotionControl::setVelPidRaw(int j, const Pid &pid)
+bool CanBusMotionControl::helper_setCurPidRaw(int j, const Pid &pid)
+{
+    // Our boards do not have a Velocity Pid
+    return NOT_YET_IMPLEMENTED("Our boards do not have a Current Pid");
+}
+bool CanBusMotionControl::helper_getCurPidRaw(int j, Pid *pid)
+{
+    // Our boards do not have a Velocity Pid
+    return NOT_YET_IMPLEMENTED("Our boards do not have a Current Pid");
+}
+
+bool CanBusMotionControl::helper_setVelPidRaw(int j, const Pid &pid)
+{
+    // Our boards do not have a Velocity Pid
+    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
+}
+bool CanBusMotionControl::helper_getVelPidRaw(int j, Pid *pid)
 {
     // Our boards do not have a Velocity Pid
     return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
 }
 
-bool CanBusMotionControl::setVelPidsRaw(const Pid *pids)
-{
-    // Our boards do not have a VelocityPid
-    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
-}
-
-bool CanBusMotionControl::getVelPidRaw(int j, Pid *pid)
-{
-    // Our boards do not have a VelocityPid
-    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
-}
-
-bool CanBusMotionControl::getVelPidsRaw(Pid *pids)
-{
-    // Our boards do not have a VelocityPid
-    return NOT_YET_IMPLEMENTED("Our boards do not have a Velocity Pid");
-}
 ///////////// END Velocity Control 2 INTERFACE  //////////////////
 
 // IControlLimits2
@@ -6866,11 +6797,6 @@ bool CanBusMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 }
 
 // PositionDirect Interface
-bool CanBusMotionControl::setPositionDirectModeRaw()
-{
-    return DEPRECATED("setPositionDirectModeRaw");
-}
-
 bool CanBusMotionControl::setPositionRaw(int j, double ref)
 {
     CanBusResources& r = RES(system_resources);
@@ -6883,12 +6809,8 @@ bool CanBusMotionControl::setPositionRaw(int j, double ref)
         if (mode != VOCAB_CM_POSITION_DIRECT &&
             mode != VOCAB_CM_IDLE)
         {
-            #ifdef ICUB_AUTOMATIC_MODE_SWITCHING
-            yWarning() << "setPositionRaw: Deprecated automatic switch to VOCAB_CM_POSITION_DIRECT, " << networkName.c_str() << " joint: " << j;
-            setControlModeRaw(j,VOCAB_CM_POSITION_DIRECT);
-            #else
             yError() << "setPositionRaw: skipping command because " << networkName.c_str() << " joint " << j << "is not in VOCAB_CM_POSITION_DIRECT mode";
-            #endif
+            return true;
         }
         return _writeDWord (ICUBCANPROTO_POL_MC_CMD__SET_COMMAND_POSITION, j, S_32(ref));
     }
@@ -6929,8 +6851,10 @@ bool CanBusMotionControl::setPositionsRaw(const double *refs)
     return ret;
 }
 
-
-
+bool CanBusMotionControl::isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool* enabled)
+{
+    return NOT_YET_IMPLEMENTED("isPidEnabled");
+}
 
 bool CanBusMotionControl::loadBootMemory()
 {
@@ -7677,3 +7601,127 @@ bool CanBusMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
 
     return true;
 }
+
+//PWM interface
+bool CanBusMotionControl::setRefDutyCycleRaw(int j, double v)
+{
+    if (!(j >= 0 && j <= (CAN_MAX_CARDS - 1) * 2))
+        return false;
+
+    return _writeWord16(ICUBCANPROTO_POL_MC_CMD__SET_OPENLOOP_PARAMS, j, S_16(v));
+}
+
+bool CanBusMotionControl::setRefDutyCyclesRaw(const double *v)
+{
+    CanBusResources& r = RES(system_resources);
+
+    int i;
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        setRefDutyCycleRaw(i, v[i]);
+    }
+
+    return true;
+}
+
+bool CanBusMotionControl::getRefDutyCycleRaw(int j, double *v)
+{
+    const int axis = j;
+    if (!(axis >= 0 && axis <= (CAN_MAX_CARDS - 1) * 2))
+        return false;
+
+    short int value = 0;
+    if (_readWord16(ICUBCANPROTO_POL_MC_CMD__GET_OPENLOOP_PARAMS, axis, value) == true)
+        *v = double(value);
+    else
+        return false;
+
+    return true;
+}
+
+bool CanBusMotionControl::getRefDutyCyclesRaw(double *v)
+{
+    CanBusResources& r = RES(system_resources);
+    if (v == 0) return false;
+    int i = 0;
+    bool ret = true;
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        ret = ret & getRefDutyCycleRaw(i, &v[i]);
+    }
+    return ret;
+}
+
+bool CanBusMotionControl::getDutyCycleRaw(int j, double *v)
+{
+    CanBusResources& r = RES(system_resources);
+    if (!(j >= 0 && j <= r.getJoints()))
+        return false;
+    _mutex.wait();
+    *(v) = double(r._bcastRecvBuffer[j]._pid_value);
+    _mutex.post();
+    return true;
+}
+
+bool CanBusMotionControl::getDutyCyclesRaw(double *v)
+{
+    CanBusResources& r = RES(system_resources);
+    int i;
+
+    _mutex.wait();
+    for (i = 0; i < r.getJoints(); i++)
+    {
+        v[i] = double(r._bcastRecvBuffer[i]._pid_value);
+    }
+
+    _mutex.post();
+    return true;
+}
+
+// Current interface
+/*bool CanBusMotionControl::getCurrentRaw(int j, double *t)
+{
+return NOT_YET_IMPLEMENTED("getCurrentRaw");
+}
+
+bool CanBusMotionControl::getCurrentsRaw(double *t)
+{
+return NOT_YET_IMPLEMENTED("getCurrentsRaw");
+}
+*/
+
+bool CanBusMotionControl::getCurrentRangeRaw(int j, double *min, double *max)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentRangeRaw");
+}
+
+bool CanBusMotionControl::getCurrentRangesRaw(double *min, double *max)
+{
+    return NOT_YET_IMPLEMENTED("getCurrentRangesRaw");
+}
+
+bool CanBusMotionControl::setRefCurrentsRaw(const double *t)
+{
+    return NOT_YET_IMPLEMENTED("setRefCurrentsRaw");
+}
+
+bool CanBusMotionControl::setRefCurrentRaw(int j, double t)
+{
+    return NOT_YET_IMPLEMENTED("setRefCurrentRaw");
+}
+
+bool CanBusMotionControl::setRefCurrentsRaw(const int n_joint, const int *joints, const double *t)
+{
+    return NOT_YET_IMPLEMENTED("setRefCurrentsRaw");
+}
+
+bool CanBusMotionControl::getRefCurrentsRaw(double *t)
+{
+    return NOT_YET_IMPLEMENTED("getRefCurrentsRaw");
+}
+
+bool CanBusMotionControl::getRefCurrentRaw(int j, double *t)
+{
+    return NOT_YET_IMPLEMENTED("getRefCurrentRaw");
+}
+

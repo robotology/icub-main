@@ -67,9 +67,13 @@
  *  
  * It is also given the option to execute a callback whenever an
  * action is accomplished. 
- *  
- * To detect contacts among fingers and objects the \ref 
+ * 
+ * To detect contacts among fingers and objects the \ref
  * PerceptiveModels library is employed.
+ * 
+ * @note To streamline the code, the <b>context switching of
+ *       the Cartesian Interface</b> is delegated to the module
+ *       linking against ActionPrimitives.
  */ 
 
 #ifndef __AFFACTIONPRIMITIVES_H__
@@ -230,7 +234,6 @@ protected:
 
     int jHandMin;
     int jHandMax;
-    int startup_context_id;
 
     yarp::sig::Vector enableTorsoSw;
     yarp::sig::Vector disableTorsoSw;

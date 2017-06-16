@@ -3,22 +3,13 @@
 # CopyPolicy: Released under the terms of the GNU GPL v2.0.
 # 
 
-SET(PROJECTNAME iKinCartesianSolver)
+project(iKinCartesianSolver)
 
-PROJECT(${PROJECTNAME})
+set(folder_source main.cpp)
 
-SET(folder_source main.cpp)
-
-SOURCE_GROUP("Source Files" FILES ${folder_source})
-
-INCLUDE_DIRECTORIES(${iKin_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS})
-
-ADD_EXECUTABLE(${PROJECTNAME} ${folder_source})
-
-TARGET_LINK_LIBRARIES(${PROJECTNAME} iKin
-                                     ${YARP_LIBRARIES})
-
-INSTALL(TARGETS ${PROJECTNAME} DESTINATION bin)
+include_directories(${iKin_INCLUDE_DIRS} ${YARP_INCLUDE_DIRS})
+add_executable(${PROJECT_NAME} ${folder_source})
+target_link_libraries(${PROJECT_NAME} iKin ${YARP_LIBRARIES})
+install(TARGETS ${PROJECT_NAME} DESTINATION bin)
 
 

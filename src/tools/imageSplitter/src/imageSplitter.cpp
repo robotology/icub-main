@@ -26,6 +26,19 @@ ImageSplitter::~ImageSplitter()
 
 bool ImageSplitter::configure(yarp::os::ResourceFinder &rf)
 {
+    bool shouldConnect =false;
+    if(rf.check("help"))
+    {
+        cout<<"Usage:"<<endl<<"<imageSplitter> --param1 arg1 --param2 arg2 ..."<<endl;
+        cout<<"Here the available parameters:"<<endl;
+        cout<<"align      specify if the alignement of the images is 'vertical' or 'horizontal'"<<endl;
+        cout<<"local      prefix for the ports that will be opened by this module, if not specified the default is '/imageSplitter'"<<endl;
+        cout<<"nameInput  name of the module's' input port, if not specified by default is <local> + '/input:i'"<<endl;
+        cout<<"nameLeft   name of the output port for the 'left image', if not specified by default is <local> + '/left:o'"<<endl;
+        cout<<"nameRight  name of the output port for the 'right image', if not specified by default is <local> + '/right:o'"<<endl;
+        cout<<"remote     name of the source port, if specified it connects automatically to the module's input port"<<endl;
+        std::exit(1);
+    }
     // Check input parameters
     if(rf.check("align"))
     {
@@ -44,11 +57,23 @@ bool ImageSplitter::configure(yarp::os::ResourceFinder &rf)
             return false;
         }
     }
+    yarp::os::ConstString inputPortName;
+    yarp::os::ConstString outLeftPortName;
+    yarp::os::ConstString outRightPortName;
 
-    yarp::os::ConstString inputPortName    = "/imageSplitter/input:i";
-    yarp::os::ConstString outLeftPortName  = "/imageSplitter/left:o";
-    yarp::os::ConstString outRightPortName = "/imageSplitter/right:o";
 
+    if(rf.check("local"))
+    {
+        string rootName = rf.find("local").asString();
+        inputPortName    = rootName + "/input:i";
+        outLeftPortName  = rootName + "/left:o";
+        outRightPortName = rootName + "/right:o";
+    }
+    else{
+        inputPortName    = "/imageSplitter/input:i";
+        outLeftPortName  = "/imageSplitter/left:o";
+        outRightPortName = "/imageSplitter/right:o";
+    }
     if (rf.check("nameInput"))
     {
         inputPortName = rf.find("nameInput").asString();
@@ -64,19 +89,22 @@ bool ImageSplitter::configure(yarp::os::ResourceFinder &rf)
         outRightPortName = rf.find("nameRight").asString();
     }
 
-    if(!rf.check("remote"))
-    {
-        yError() << "Missing 'remote' parameter. Please insert the name of the port to connect to.";
-        return false;
-    }
-
-    yarp::os::ConstString remotePortName = rf.find("remote").asString();
-
     // opening ports
     bool ret=true;
     ret &= inputPort.open(inputPortName);
     ret &= outLeftPort.open(outLeftPortName);
     ret &= outRightPort.open(outRightPortName);
+
+    yarp::os::ConstString remotePortName;
+
+    if(rf.check("remote"))
+    {
+        remotePortName = rf.find("remote").asString();
+        shouldConnect = true;
+
+    }
+    else
+        yInfo() << "ImageSplitter: waiting for connection to port" << inputPortName;
 
     if(!ret)
     {
@@ -85,8 +113,8 @@ bool ImageSplitter::configure(yarp::os::ResourceFinder &rf)
     }
 
     // Connections
-    if (rf.check("autoconnect")) {
-        yInfo("'autoconnect' option enabled.\n");
+    if (shouldConnect){
+        yInfo("connecting to the source...\n");
         if(! yarp::os::Network::connect(remotePortName, inputPortName))
         {
             yError() << "Cannot connect to remote port " << remotePortName;

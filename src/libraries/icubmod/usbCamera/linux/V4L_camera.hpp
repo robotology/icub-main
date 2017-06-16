@@ -43,6 +43,7 @@
 #include <jpeglib.h>
 #include <libv4l2.h>
 #include <libv4lconvert.h>
+#include <map>
 
 #include <cv.h>
 
@@ -50,6 +51,7 @@
 #include <yarp/os/RateThread.h>
 #include <yarp/dev/PreciselyTimed.h>
 #include <yarp/dev/FrameGrabberInterfaces.h>
+#include <yarp/dev/IVisualParams.h>
 
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
 
@@ -72,10 +74,10 @@ typedef enum {
 } io_method;
 
 typedef enum {
-    RAW_DATA = 0,
-    SEE3CAMCU50,
-    LEOPARD_MT9M021C
+    STANDARD_UVC = 0,
+    LEOPARD_PYTHON,
 } supported_cams;
+
 
 struct buffer {
     void *          start;
@@ -89,6 +91,9 @@ typedef struct
     int             fd;
     __u32           width;
     __u32           height;
+    double          horizontalFov;
+    double          verticalFov;
+    yarp::os::Property intrinsic;
     io_method       io;
     int             fps;
     unsigned int    image_size;
@@ -100,6 +105,8 @@ typedef struct
     void            *raw_image;
     cv::Mat         outMat;
     cv::Mat         img;
+    yarp::sig::VectorOf<yarp::dev::CameraConfig> configurations;
+    bool            flip;
 
     unsigned int    n_buffers;
     struct buffer   *buffers;
@@ -122,11 +129,12 @@ class yarp::dev::V4L_camera :   public yarp::dev::DeviceDriver,
                                 public yarp::dev::IFrameGrabberControls,
                                 public yarp::dev::IFrameGrabberControls2,
                                 public yarp::dev::IPreciselyTimed,
-                                public yarp::os::RateThread
+                                public yarp::os::RateThread,
+                                public IRgbVisualParams
 {
 public:
     V4L_camera();
-    
+
     // DeviceDriver Interface
     bool open(yarp::os::Searchable& config);
     bool close();
@@ -175,6 +183,18 @@ public:
     double getGain();
     double getIris();
 
+    /*Implementation of IRgbVisualParams interface*/
+    virtual int getRgbHeight();
+    virtual int getRgbWidth();
+    virtual bool getRgbSupportedConfigurations(yarp::sig::VectorOf<CameraConfig> &configurations);
+    virtual bool getRgbResolution(int &width, int &height);
+    virtual bool setRgbResolution(int width, int height);
+    virtual bool getRgbFOV(double &horizontalFov, double &verticalFov);
+    virtual bool setRgbFOV(double horizontalFov, double verticalFov);
+    virtual bool getRgbIntrinsicParam(yarp::os::Property &intrinsic);
+    virtual bool getRgbMirroring(bool &mirror);
+    virtual bool setRgbMirroring(bool mirror);
+
 
     /* Implementation of IFrameGrabberControls2 interface */
     virtual bool getCameraDescription(CameraDescriptor *camera);
@@ -196,9 +216,16 @@ public:
 private:
 
     v4lconvert_data *_v4lconvert_data;
+    bool use_exposure_absolute;
+
     yarp::os::Stamp timeStamp;
     Video_params param;
     yarp::os::Semaphore mutex;
+    bool configFx,configFy;
+    bool configPPx,configPPy;
+    bool configRet,configDistM;
+    bool configIntrins;
+    bool configured;
     bool doCropping;
     bool dual;
     bool isActive_vector[YARP_FEATURE_NUMBER_OF];
@@ -206,7 +233,15 @@ private:
     int myCounter;
     int frameCounter;
 
+    std::map <std::string, supported_cams> camMap;
+
     bool fromConfig(yarp::os::Searchable& config);
+
+    void populateConfigurations();
+
+    int convertV4L_to_YARP_format(int format);
+
+
 
     // initialize device
     bool deviceInit();
@@ -244,7 +279,7 @@ private:
 
     void* full_FrameRead(void);
 
-    void imageProcess(void* p);
+    void imageProcess(void* p, bool raw=false);
 
     int getfd();
 
@@ -269,6 +304,11 @@ private:
     double get_V4L2_control(uint32_t id, bool verbatim=false);   // verbatim = do not convert value, for enum types
 
     double toEpochOffset;
+
+    // leopard de-bayer test
+    int bit_shift;
+    int bit_bayer;
+    int pixel_fmt_leo;
 };
 
 #endif // _V4L_CAMERA_HPP_

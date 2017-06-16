@@ -30,6 +30,11 @@ bool DragonflyDeviceDriver2Rgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>
     return RES(system_resources)->CaptureImage(image);
 }
 
+bool DragonflyDeviceDriver2Rgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
+{
+    return RES(system_resources)->CaptureImage(image);
+}
+
 int DragonflyDeviceDriver2Rgb::width () const
 {
 	return RES(system_resources)->width();
@@ -57,9 +62,10 @@ int DragonflyDeviceDriver2Raw::height () const
 
 ////////////////////////////////////////////////////
 
-DragonflyDeviceDriver2::DragonflyDeviceDriver2(bool raw)
+DragonflyDeviceDriver2::DragonflyDeviceDriver2(bool raw=false)
 {
-	system_resources=(void*)new CFWCamera_DR2_2(raw);
+    this->raw=raw;
+    system_resources=NULL;
 	//ACE_ASSERT(system_resources!=NULL);
 }
 
@@ -74,6 +80,20 @@ DragonflyDeviceDriver2::~DragonflyDeviceDriver2()
 
 bool DragonflyDeviceDriver2::open(yarp::os::Searchable& config)
 {
+    if(config.check("pixelType"))
+    {
+        if(config.find(("pixelType")).asVocab()==VOCAB_PIXEL_MONO)
+            raw=true;
+        else if((config.find(("pixelType")).asVocab()==VOCAB_PIXEL_RGB))
+            raw=false;
+        else
+        {
+            yError()<<"DragonflyDeviceDriver2: invalid pixelType:"<<yarp::os::Vocab::decode(config.find(("pixelType")).asVocab());
+            return false;
+        }
+    }
+
+    system_resources=(void*)new CFWCamera_DR2_2(raw);
 	if (!RES(system_resources)->Create(config))
 	{
 		fprintf(stderr,"DragonflyDeviceDriver2: can't open camera\n");
@@ -380,6 +400,55 @@ bool DragonflyDeviceDriver2::setBytesPerPacketDC1394(unsigned int bpp)
 unsigned int DragonflyDeviceDriver2::getBytesPerPacketDC1394()
 {
 	return RES(system_resources)->getBytesPerPacketDC1394();
+}
+
+//IVisualParams
+
+int DragonflyDeviceDriver2::getRgbHeight(){
+    return RES(system_resources)->getRgbHeight();
+}
+
+int DragonflyDeviceDriver2::getRgbWidth(){
+    return RES(system_resources)->getRgbWidth();
+}
+
+bool DragonflyDeviceDriver2::getRgbSupportedConfigurations(yarp::sig::VectorOf<CameraConfig> &configurations)
+{
+    return RES(system_resources)->getRgbSupportedConfigurations(configurations);
+}
+
+bool DragonflyDeviceDriver2::getRgbResolution(int &width, int &height)
+{
+    return RES(system_resources)->getRgbResolution(width,height);
+}
+
+bool DragonflyDeviceDriver2::setRgbResolution(int width, int height){
+    if(width<=0 || height<=0){
+        yError()<<"DragonflyDeviceDriver: invalid width or height";
+        return false;
+    }
+    return RES(system_resources)->setRgbResolution(width,height);
+}
+
+bool DragonflyDeviceDriver2::getRgbFOV(double &horizontalFov, double &verticalFov){
+    return RES(system_resources)->getRgbFOV(horizontalFov, verticalFov);
+}
+
+bool DragonflyDeviceDriver2::setRgbFOV(double horizontalFov, double verticalFov){
+    return RES(system_resources)->setRgbFOV(horizontalFov, verticalFov);
+}
+
+bool DragonflyDeviceDriver2::getRgbIntrinsicParam(yarp::os::Property &intrinsic){
+    return RES(system_resources)->getRgbIntrinsicParam(intrinsic);
+}
+
+bool DragonflyDeviceDriver2::getRgbMirroring(bool &mirror){
+    return RES(system_resources)->getRgbMirroring(mirror);
+
+}
+
+bool DragonflyDeviceDriver2::setRgbMirroring(bool mirror){
+    return RES(system_resources)->setRgbMirroring(mirror);
 }
 
 ///////////////////////////

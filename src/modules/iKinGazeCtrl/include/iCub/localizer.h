@@ -59,6 +59,8 @@ protected:
 
     Matrix *PrjL, *invPrjL;
     Matrix *PrjR, *invPrjR;
+    int     widthL, heightL;
+    int     widthR, heightR;
     double  cxl, cyl;
     double  cxr, cyr;
 
@@ -73,6 +75,7 @@ protected:
 public:
     Localizer(ExchangeData *_commData, const unsigned int _period);
 
+    double getDistFromVergence(const double ver);
     void   getPidOptions(Bottle &options);
     void   setPidOptions(const Bottle &options);
     bool   projectPoint(const string &type, const Vector &x, Vector &px);
@@ -83,8 +86,8 @@ public:
     bool   triangulatePoint(const Vector &pxl, const Vector &pxr, Vector &x);
     Vector getAbsAngles(const Vector &x);
     Vector get3DPoint(const string &type, const Vector &ang);
-    bool   getIntrinsicsMatrix(const string &type, Matrix &M);
-    bool   setIntrinsicsMatrix(const string &type, const Matrix &M);
+    bool   getIntrinsicsMatrix(const string &type, Matrix &M, int &w, int &h);
+    bool   setIntrinsicsMatrix(const string &type, const Matrix &M, const int w, const int h);
     bool   threadInit();
     void   afterStart(bool s);
     void   run();

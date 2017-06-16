@@ -2009,36 +2009,66 @@ bool iCubFinger::getChainJoints(const Vector &motorEncoders,
 /************************************************************************/
 bool iCubFinger::getChainJoints(const Vector &motorEncoders,
                                 const Vector &jointEncoders,
-                                Vector &chainJoints)
+                                Vector &chainJoints,
+                                const Matrix &jointEncodersBounds)
 {
     if (((motorEncoders.length()!=9) && (motorEncoders.length()!=16)) ||
-        (jointEncoders.length()<15))
+        (jointEncoders.length()<15) || (jointEncodersBounds.cols()<2))
         return false;
 
     int offs=(motorEncoders.length()==16?7:0);
+
+    Matrix bounds=jointEncodersBounds;
+    if (bounds.rows()!=jointEncoders.length())
+    {
+        bounds=zeros(jointEncoders.length(),2);
+        for (size_t r=0; r<jointEncoders.length(); r++)
+            bounds(r,0)=255.0;
+    }
     
     if (finger=="thumb")
     {
         chainJoints.resize(4);
         chainJoints[0]=motorEncoders[offs+1];
-        for (unsigned int i=1; i<chainJoints.length(); i++)
-            chainJoints[i]=((1.0-std::min(1.0,std::max(0.0,jointEncoders[i-1]/255.0)))*
-                            ((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin())*CTRL_RAD2DEG;
+        for (size_t i=1; i<chainJoints.length(); i++)
+        {
+            double c=0.0;
+            double span=bounds(i-1,1)-bounds(i-1,0);
+            if (span>0.0)
+                c=std::min(1.0,std::max(0.0,(jointEncoders[i-1]-bounds(i-1,0))/span));
+            else if (span<0.0)
+                c=1.0-std::min(1.0,std::max(0.0,(bounds(i-1,1)-jointEncoders[i-1])/span));
+            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin());
+        }
     }
     else if (finger=="index")
     {
         chainJoints.resize(4);
         chainJoints[0]=motorEncoders[offs+0]/3.0;
-        for (unsigned int i=1; i<chainJoints.length(); i++)
-            chainJoints[i]=((1.0-std::min(1.0,std::max(0.0,jointEncoders[i+2]/255.0)))*
-                            ((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin())*CTRL_RAD2DEG;
+        for (size_t i=1; i<chainJoints.length(); i++)
+        {
+            double c=0.0;
+            double span=bounds(i+2,1)-bounds(i+2,0);
+            if (span>0.0)
+                c=std::min(1.0,std::max(0.0,(jointEncoders[i+2]-bounds(i+2,0))/span));
+            else if (span<0.0)
+                c=1.0-std::min(1.0,std::max(0.0,(bounds(i+2,1)-jointEncoders[i+2])/span));
+            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin());
+        }
     }
     else if (finger=="middle")
     {
         chainJoints.resize(3);
-        for (unsigned int i=0; i<chainJoints.length(); i++)
-            chainJoints[i]=((1.0-std::min(1.0,std::max(0.0,jointEncoders[i+6]/255.0)))*
-                            ((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin())*CTRL_RAD2DEG;
+        for (size_t i=0; i<chainJoints.length(); i++)
+        {
+            double c=0.0;
+            double span=bounds(i+6,1)-bounds(i+6,0);
+            if (span>0.0)
+                c=std::min(1.0,std::max(0.0,(jointEncoders[i+6]-bounds(i+6,0))/span));
+            else if (span<0.0)
+                c=1.0-std::min(1.0,std::max(0.0,(bounds(i+6,1)-jointEncoders[i+6])/span));
+            chainJoints[i]=CTRL_RAD2DEG*(c*((*this)[i].getMax()-(*this)[i].getMin())+(*this)[i].getMin());
+        }
     }
     else
         return false;

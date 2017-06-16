@@ -354,13 +354,14 @@ public:
 
             if (ctrlCompletePose)
             {
-                double e_o=norm(odhat-o);
+                Vector e_o=dcm2axis(axis2dcm(odhat)*axis2dcm(o).transposed());
+                e_o*=e_o[3]; e_o.pop_back();
 
                 printf("od        [rad]   = %s\n",od.toString().c_str());
                 printf("odhat     [rad]   = %s\n",odhat.toString().c_str());
                 printf("o         [rad]   = %s\n",o.toString().c_str());
                 printf("odot      [rad/s] = %s\n",odot.toString().c_str());
-                printf("norm(e_o) [rad]   = %g\n",e_o);
+                printf("norm(e_o) [rad]   = %g\n",norm(e_o));
             }
 
             printf("\n");

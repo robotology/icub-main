@@ -12,12 +12,10 @@ FILE(GLOB folder_header include/iCub/skinManager/*.h)
 SOURCE_GROUP("Source Files" FILES ${folder_source})
 SOURCE_GROUP("Header Files" FILES ${folder_header})
 
-
 include_directories(${PROJECT_SOURCE_DIR}/include)
-include_directories(${YARP_INCLUDE_DIRS})
 include_directories(${skinDynLib_INCLUDE_DIRS})
 include_directories(${CMAKE_SOURCE_DIR}/src/libraries/icubmod/skinLib)
-
+include_directories(${YARP_INCLUDE_DIRS})
 
 ADD_EXECUTABLE(${PROJECTNAME} ${folder_source} ${folder_header})
 target_link_libraries(${PROJECTNAME}	${YARP_LIBRARIES} skinDynLib)

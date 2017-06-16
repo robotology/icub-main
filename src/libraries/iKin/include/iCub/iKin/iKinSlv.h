@@ -404,25 +404,24 @@ protected:
 
     yarp::dev::PolyDriver *waitPart(const yarp::os::Property &partOpt);
     
-    bool   isNewDOF(const yarp::sig::Vector &_dof);
-    bool   changeDOF(const yarp::sig::Vector &_dof);
+    bool isNewDOF(const yarp::sig::Vector &_dof);
+    bool changeDOF(const yarp::sig::Vector &_dof);
 
-    bool   alignJointsBounds();
-    bool   setLimits(int axis, double min, double max);
-    void   countUncontrolledJoints();
-    void   latchUncontrolledJoints(yarp::sig::Vector &joints);
-    void   getFeedback(const bool wait=false);    
-    void   initPos();
-    void   lock();
-    void   unlock();    
+    bool alignJointsBounds();
+    bool setLimits(int axis, double min, double max);
+    void countUncontrolledJoints();
+    void latchUncontrolledJoints(yarp::sig::Vector &joints);
+    void getFeedback(const bool wait=false);    
+    void initPos();
+    void lock();
+    void unlock();    
 
-    void   waitDOFHandling();
-    void   postDOFHandling();
-    void   fillDOFInfo(yarp::os::Bottle &reply);
-    double getNorm(const yarp::sig::Vector &v, const std::string &typ);    
-    void   send(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q, double *tok);
-    void   printInfo(const std::string &typ, const yarp::sig::Vector &xd, const yarp::sig::Vector &x,
-                     const yarp::sig::Vector &q, const double t);    
+    void waitDOFHandling();
+    void postDOFHandling();
+    void fillDOFInfo(yarp::os::Bottle &reply);
+    void send(const yarp::sig::Vector &xd, const yarp::sig::Vector &x, const yarp::sig::Vector &q, double *tok);
+    void printInfo(const std::string &typ, const yarp::sig::Vector &xd, const yarp::sig::Vector &x,
+                   const yarp::sig::Vector &q, const double t);    
 
     virtual void prepareJointsRestTask();
     virtual void respond(const yarp::os::Bottle &command, yarp::os::Bottle &reply);

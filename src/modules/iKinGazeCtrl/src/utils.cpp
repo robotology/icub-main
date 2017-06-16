@@ -62,7 +62,7 @@ void xdPort::init(const Vector &xd0)
 xdPort::~xdPort()
 {
     closing=true;
-    syncEvent.signal();
+    triggerNeck.signal();
 
     if (slv!=NULL)
         stop();
@@ -83,21 +83,22 @@ void xdPort::onRead(Bottle &b)
     isNew=true;
     rx++;
 
-    syncEvent.signal();
+    triggerNeck.signal();
 }
 
 
 /************************************************************************/
-void xdPort::set_xd(const Vector &_xd)
+bool xdPort::set_xd(const Vector &_xd)
 {
     LockGuard lg(mutex_0);
     if (locked)
-        return;
+        return false;
 
     xd=_xd;
     isNew=true;
     rx++;
-    syncEvent.signal();
+    triggerNeck.signal();
+    return true;
 }
 
 
@@ -124,8 +125,8 @@ void xdPort::run()
 {
     while (!isStopping() && !closing)
     {
-        syncEvent.reset();
-        syncEvent.wait();
+        triggerNeck.reset();
+        triggerNeck.wait();
 
         double timeDelay=0.0;
         double theta=static_cast<Solver*>(slv)->neckTargetRotAngle(xd);
@@ -433,8 +434,8 @@ bool GazeComponent::setExtrinsicsMatrix(const string &type, const Matrix &M)
 
 
 /************************************************************************/
-bool getCamPrj(const ResourceFinder &rf, const string &type,
-               Matrix **Prj, const bool verbose)
+bool getCamParams(const ResourceFinder &rf, const string &type,
+                  Matrix **Prj, int &w, int &h, const bool verbose)
 {
     ResourceFinder &_rf=const_cast<ResourceFinder&>(rf);
     *Prj=NULL;
@@ -447,9 +448,12 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
     {
         message+=": intrinsic parameters for "+type;
         Bottle &parType=_rf.findGroup(type.c_str());
-        if (parType.check("fx") && parType.check("fy") &&
+        if (parType.check("w")  && parType.check("h") &&
+            parType.check("fx") && parType.check("fy") &&
             parType.check("cx") && parType.check("cy"))
         {
+            w=parType.find("w").asInt();
+            h=parType.find("h").asInt();
             double fx=parType.find("fx").asDouble();
             double fy=parType.find("fy").asDouble();
             double cx=parType.find("cx").asDouble();
@@ -458,6 +462,8 @@ bool getCamPrj(const ResourceFinder &rf, const string &type,
             if (verbose)
             {
                 yInfo("%s found:",message.c_str());
+                yInfo("w  = %d",w);
+                yInfo("h  = %d",h);
                 yInfo("fx = %g",fx);
                 yInfo("fy = %g",fy);
                 yInfo("cx = %g",cx);

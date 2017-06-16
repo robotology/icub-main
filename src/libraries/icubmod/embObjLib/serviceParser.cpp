@@ -143,6 +143,51 @@ bool ServiceParser::convert(ConstString const &fromstring, eObrd_type_t& tobrdty
 }
 
 
+bool ServiceParser::convert(ConstString const &fromstring, eOmc_pidoutputtype_t& pidoutputtype, bool& formaterror)
+{
+    const char *t = fromstring.c_str();
+
+    eObool_t usecompactstring = eobool_false;
+    pidoutputtype = eomc_string2pidoutputtype(t, usecompactstring);
+
+    if(eomc_pidoutputtype_unknown == pidoutputtype)
+    {
+        usecompactstring = eobool_true;
+        pidoutputtype = eomc_string2pidoutputtype(t, usecompactstring);
+    }
+
+    if(eomc_pidoutputtype_unknown == pidoutputtype)
+    {
+        yWarning() << "ServiceParser::convert(): string" << t << "cannot be converted into a proper eOmc_pidoutputtype_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
+
+bool ServiceParser::convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror)
+{
+    const char *t = fromstring.c_str();
+
+    eObool_t usecompactstring = eobool_false;
+    jsetconstraint = eomc_string2jsetconstraint(t, usecompactstring);
+
+    if(eomc_jsetconstraint_unknown == jsetconstraint)
+    {
+        usecompactstring = eobool_true;
+        jsetconstraint = eomc_string2jsetconstraint(t, usecompactstring);
+    }
+
+    if(eomc_jsetconstraint_unknown == jsetconstraint)
+    {
+        yWarning() << "ServiceParser::convert(): string" << t << "cannot be converted into a proper eOmc_jsetconstraint_t";
+        formaterror = true;
+        return false;
+    }
+
+    return true;
+}
 
 bool ServiceParser::convert(ConstString const &fromstring, eObrd_cantype_t& tobrdcantype, bool& formaterror)
 {
@@ -765,7 +810,7 @@ bool ServiceParser::check_analog(Searchable &config, eOmn_serv_type_t type)
             // if we find, ... we do a pushback of it inside
             bool found = false;
             // i decide to use a brute force search ... for now
-            for(int n=0; n<as_service.properties.sensors.size(); n++)
+            for(size_t n=0; n<as_service.properties.sensors.size(); n++)
             {
                 servAnalogSensor_t item = as_service.properties.sensors.at(n);
                 //if(item.id == cpp_str)
@@ -962,7 +1007,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
     inertialsconfig.inertials.resize(0);
 
     EOarray* array = eo_array_New(eOas_inertials_maxnumber, sizeof(eOas_inertial_descriptor_t), &inertialsconfig.ethservice.configuration.data.as.inertial.arrayofsensors);
-    for(int i=0; i<as_service.settings.enabledsensors.size(); i++)
+    for(size_t i=0; i<as_service.settings.enabledsensors.size(); i++)
     {
         servAnalogSensor_t sensor = as_service.settings.enabledsensors.at(i);
         eOas_sensor_t type = sensor.type;
@@ -991,34 +1036,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigInertials_t &iner
 
 #if defined(SERVICE_PARSER_USE_MC)
 
-bool ServiceParser::convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, int targetsize)
-{
-    matrix.resize(0);
-    
-    int tmp = bottle.size();
-    int sizeofmatrix = tmp - 1;    // first position of bottle contains the tag "matrix"
 
-    // check if there are really the target number of elements in matrix.
-    if(targetsize != sizeofmatrix)
-    {
-        yError() << "ServiceParser::check() in a SERVICE.PROPERTIES.CONTROLLER.matrix there are not" << targetsize << "elements";
-        return false;
-    }
-
-    formaterror = false;
-    for(int i=0; i<sizeofmatrix; i++)
-    {
-        double item = 0;
-
-        // ok, i use the standard converter ... but what if it is not a double format? so far we dont check.
-        item = bottle.get(i+1).asDouble();
-        matrix.push_back(item);
-    }
-
-    // in here we could decide to return false if any previous conversion function has returned error
-    
-    return true;        
-}
 
 bool ServiceParser::parse_encoder_port(ConstString const &fromstring, eObrd_ethtype_t const ethboard, eOmc_encoder_t type, uint8_t &toport, bool &formaterror)
 {
@@ -1027,7 +1045,6 @@ bool ServiceParser::parse_encoder_port(ConstString const &fromstring, eObrd_etht
     bool ret = false;
     switch(type)
     {
-        default:
         case eomc_enc_unknown:
         {
             yWarning() << "ServiceParser::parse_encoder_port():" << t << "cannot be converted into a port because argument type is" << eomc_encoder2string(type, eobool_false);
@@ -1067,56 +1084,50 @@ bool ServiceParser::parse_encoder_port(ConstString const &fromstring, eObrd_etht
         } break;
 
 
-    case eomc_enc_mais:
-    {
-        uint8_t toport1 = eobrd_port_unknown;
-        bool result = parse_port_mais(fromstring, toport1, formaterror);
-
-        if(false == result)
+        case eomc_enc_mais:
         {
-            yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for an encoder connector port";
-            formaterror = true;
-            ret = false;
-        }
-        else
-        {
-            toport = toport1;
-            ret = true;
-        }
-
-    } break;
-
-        case eomc_enc_onfoc:
-        {
-            // read it as a CAN address
-            eObrd_location_t loc;
-            bool result = convert(fromstring, loc, formaterror);
+            uint8_t toport1 = eobrd_port_unknown;
+            bool result = parse_port_mais(fromstring, toport1, formaterror);
 
             if(false == result)
             {
-                yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for a eObrd_location_t";
+                yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for an encoder connector port";
                 formaterror = true;
                 ret = false;
             }
             else
             {
-                // copy into .... nothing
-                if(eobrd_place_can == loc.any.place)
-                {
-                    toport = eobrd_port_none;
-                    ret = true;
-                }
-                else
-                {
-                    toport = eobrd_port_none;
-                    ret = true;
-                }
+                toport = toport1;
+                ret = true;
             }
 
         } break;
+        default:
+        {
+            int len = strlen(t);
 
+            if(len > 15)
+            {
+                yWarning() << "SServiceParser::parse_encoder_port():" << t << "is not a legal string for a encoder port because it is too long with size =" << len;
+                formaterror = true;
+                return false;
+            }
+            char prefix[16] = {0};
+            sscanf(t, "%3c", prefix);
+            if(0 == strcmp(prefix, "CAN"))
+            {
+                toport = eobrd_port_nolocal;
+                ret = true;
+            }
+            else
+            {
+                toport = eobrd_port_none;
+                yWarning() << "ServiceParser::parse_encoder_port():" << t << "is not a legal string for a encoder port!";
+                formaterror = true;
+                return false;
+            }
+        }break;
     }
-
     return ret;
 }
 
@@ -1566,876 +1577,840 @@ bool ServiceParser::check_motion(Searchable &config)
         yError() << "ServiceParser::check_motion() cannot find PROPERTIES";
         return false;
     }
-    else
+
+
+    // now, inside PROPERTIES there are groups which depend on mc_service.type.
+    // i prefer to check them all in here rather to go on and check them one after another.
+    Bottle b_PROPERTIES_ETHBOARD = Bottle(b_PROPERTIES.findGroup("ETHBOARD"));
+    bool has_PROPERTIES_ETHBOARD = !b_PROPERTIES_ETHBOARD.isNull();
+
+    Bottle b_PROPERTIES_MAIS = Bottle(b_PROPERTIES.findGroup("MAIS"));
+    bool has_PROPERTIES_MAIS = !b_PROPERTIES_MAIS.isNull();
+
+    Bottle b_PROPERTIES_MC4 = Bottle(b_PROPERTIES.findGroup("MC4"));
+    bool has_PROPERTIES_MC4 = !b_PROPERTIES_MC4.isNull();
+
+    Bottle b_PROPERTIES_CANBOARDS = Bottle(b_PROPERTIES.findGroup("CANBOARDS"));
+    bool has_PROPERTIES_CANBOARDS = !b_PROPERTIES_CANBOARDS.isNull();
+
+    Bottle b_PROPERTIES_JOINTMAPPING = Bottle(b_PROPERTIES.findGroup("JOINTMAPPING"));
+    bool has_PROPERTIES_JOINTMAPPING = !b_PROPERTIES_JOINTMAPPING.isNull();
+
+
+
+    bool itisoksofar = false;
+    switch(mc_service.type)
     {
-        //bool has_PROPERTIES = true;
-
-        // now, inside PROPERTIES there are groups which depend on mc_service.type.
-        // i prefer to check them all in here rather to go on and check them one after another.
-        Bottle b_PROPERTIES_ETHBOARD = Bottle(b_PROPERTIES.findGroup("ETHBOARD"));
-        bool has_PROPERTIES_ETHBOARD = !b_PROPERTIES_ETHBOARD.isNull();
-
-        Bottle b_PROPERTIES_MAIS = Bottle(b_PROPERTIES.findGroup("MAIS"));
-        bool has_PROPERTIES_MAIS = !b_PROPERTIES_MAIS.isNull();
-
-        Bottle b_PROPERTIES_MC4 = Bottle(b_PROPERTIES.findGroup("MC4"));
-        bool has_PROPERTIES_MC4 = !b_PROPERTIES_MC4.isNull();
-
-        Bottle b_PROPERTIES_CANBOARDS = Bottle(b_PROPERTIES.findGroup("CANBOARDS"));
-        bool has_PROPERTIES_CANBOARDS = !b_PROPERTIES_CANBOARDS.isNull();
-
-        Bottle b_PROPERTIES_CONTROLLER = Bottle(b_PROPERTIES.findGroup("CONTROLLER"));
-        bool has_PROPERTIES_CONTROLLER = !b_PROPERTIES_CONTROLLER.isNull();
-
-        Bottle b_PROPERTIES_JOINTMAPPING = Bottle(b_PROPERTIES.findGroup("JOINTMAPPING"));
-        bool has_PROPERTIES_JOINTMAPPING = !b_PROPERTIES_JOINTMAPPING.isNull();
-
-        Bottle b_PROPERTIES_JOINTSETS = Bottle(b_PROPERTIES.findGroup("JOINTSETS"));
-        bool has_PROPERTIES_JOINTSETS = !b_PROPERTIES_JOINTSETS.isNull();
-
-
-        bool itisoksofar = false;
-        switch(mc_service.type)
+        case eomn_serv_MC_foc:
         {
-            case eomn_serv_MC_foc:
+            // must have: ETHBOARD, CANBOARDS, JOINTMAPPING
+            itisoksofar = true;
+
+            if(false == has_PROPERTIES_ETHBOARD)
             {
-                // must have: ETHBOARD, CANBOARDS, CONTROLLER, JOINTMAPPING, JOINTSETS
-                itisoksofar = true;
-
-                if(false == has_PROPERTIES_ETHBOARD)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_CANBOARDS)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_CONTROLLER)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CONTROLLER for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_JOINTMAPPING)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_JOINTSETS)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-            } break;
-
-
-            case eomn_serv_MC_mc4plus:
-            {
-                // must have: ETHBOARD, CONTROLLER, JOINTMAPPING, JOINTSETS
-
-                itisoksofar = true;
-
-                if(false == has_PROPERTIES_ETHBOARD)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_CONTROLLER)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CONTROLLER for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_JOINTMAPPING)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_JOINTSETS)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-            } break;
-
-
-            case eomn_serv_MC_mc4plusmais:
-            {
-                // must have: ETHBOARD, CANBOARDS, MAIS, CONTROLLER, JOINTMAPPING, JOINTSETS
-
-                itisoksofar = true;
-
-                if(false == has_PROPERTIES_ETHBOARD)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_CANBOARDS)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_MAIS)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MAIS for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_CONTROLLER)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CONTROLLER for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_JOINTMAPPING)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_JOINTSETS)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-            } break;
-
-            case eomn_serv_MC_mc4:
-            {
-                // must have: ETHBOARD, CANBOARDS, MC4, MAIS
-
-                itisoksofar = true;
-
-                if(false == has_PROPERTIES_ETHBOARD)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_CANBOARDS)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_MC4)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4 for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-                if(false == has_PROPERTIES_MAIS)
-                {
-                    yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MAIS for type" << eomn_servicetype2string(mc_service.type);
-                    itisoksofar = false;
-                }
-
-            } break;
-
-            default:
-            {
-                yError() << "ServiceParser::check_motion() has found an unknown type" << eomn_servicetype2string(mc_service.type);
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD for type" << eomn_servicetype2string(mc_service.type);
                 itisoksofar = false;
-            } break;
-        }
+            }
 
-        if(false == itisoksofar)
+            if(false == has_PROPERTIES_CANBOARDS)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+            if(false == has_PROPERTIES_JOINTMAPPING)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+        } break;
+
+
+        case eomn_serv_MC_mc4plus:
         {
-            yError() << "ServiceParser::check_motion() detected missing groups in PROPERTIES";
+            // must have: ETHBOARD, JOINTMAPPING
+
+            itisoksofar = true;
+
+            if(false == has_PROPERTIES_ETHBOARD)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+            if(false == has_PROPERTIES_JOINTMAPPING)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+        } break;
+
+
+        case eomn_serv_MC_mc4plusmais:
+        {
+            // must have: ETHBOARD, CANBOARDS, MAIS, JOINTMAPPING
+
+            itisoksofar = true;
+
+            if(false == has_PROPERTIES_ETHBOARD)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+            if(false == has_PROPERTIES_CANBOARDS)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+            if(false == has_PROPERTIES_MAIS)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MAIS for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+            if(false == has_PROPERTIES_JOINTMAPPING)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+
+        } break;
+
+        case eomn_serv_MC_mc4:
+        {
+            // must have: ETHBOARD, CANBOARDS, MC4, MAIS
+
+            itisoksofar = true;
+
+            if(false == has_PROPERTIES_ETHBOARD)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+            if(false == has_PROPERTIES_CANBOARDS)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+            if(false == has_PROPERTIES_MC4)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4 for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+            if(false == has_PROPERTIES_MAIS)
+            {
+                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MAIS for type" << eomn_servicetype2string(mc_service.type);
+                itisoksofar = false;
+            }
+
+        } break;
+
+        default:
+        {
+            yError() << "ServiceParser::check_motion() has found an unknown type" << eomn_servicetype2string(mc_service.type);
+            itisoksofar = false;
+        } break;
+    }
+
+    if(false == itisoksofar)
+    {
+        yError() << "ServiceParser::check_motion() detected missing groups in PROPERTIES";
+        return false;
+    }
+
+    // now i parse the groups
+
+    if(true == has_PROPERTIES_ETHBOARD)
+    {
+        // i get type
+
+        Bottle b_PROPERTIES_ETHBOARD_type = b_PROPERTIES_ETHBOARD.findGroup("type");
+        if(b_PROPERTIES_ETHBOARD_type.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD.type";
             return false;
         }
 
-        // now i parse the groups
-
-        if(true == has_PROPERTIES_ETHBOARD)
+        // we must have only one board
+        int numofethboards = b_PROPERTIES_ETHBOARD_type.size() - 1;
+        if(1 != numofethboards)
         {
-            // i get type
-
-            Bottle b_PROPERTIES_ETHBOARD_type = b_PROPERTIES_ETHBOARD.findGroup("type");
-            if(b_PROPERTIES_ETHBOARD_type.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.ETHBOARD.type";
-                return false;
-            }
-
-            // we must have only one board
-            int numofethboards = b_PROPERTIES_ETHBOARD_type.size() - 1;
-            if(1 != numofethboards)
-            {
-                yError() << "ServiceParser::check_motion() PROPERTIES.ETHBOARD.type must have one board only";
-                return false;
-            }
-            if(false == convert(b_PROPERTIES_ETHBOARD_type.get(1).asString(), mc_service.properties.ethboardtype, formaterror))
-            {
-                yError() << "ServiceParser::check_motion() has found unknown SERVICE.PROPERTIES.ETHBOARD.type = " << b_PROPERTIES_ETHBOARD_type.get(1).asString();
-                return false;
-            }
-
-        } // has_PROPERTIES_ETHBOARD
-
-
-        if(true == has_PROPERTIES_CANBOARDS)
+            yError() << "ServiceParser::check_motion() PROPERTIES.ETHBOARD.type must have one board only";
+            return false;
+        }
+        if(false == convert(b_PROPERTIES_ETHBOARD_type.get(1).asString(), mc_service.properties.ethboardtype, formaterror))
         {
-            // i get type, PROTOCOL.major/minor, FIRMWARE.major/minor/build and see their sizes. they must be all equal. i can have more than one board
+            yError() << "ServiceParser::check_motion() has found unknown SERVICE.PROPERTIES.ETHBOARD.type = " << b_PROPERTIES_ETHBOARD_type.get(1).asString();
+            return false;
+        }
 
-            Bottle b_PROPERTIES_CANBOARDS_type = b_PROPERTIES_CANBOARDS.findGroup("type");
-            if(b_PROPERTIES_CANBOARDS_type.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.type";
-                return false;
-            }
-            Bottle b_PROPERTIES_CANBOARDS_PROTOCOL = Bottle(b_PROPERTIES_CANBOARDS.findGroup("PROTOCOL"));
-            if(b_PROPERTIES_CANBOARDS_PROTOCOL.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.PROTOCOL";
-                return false;
-            }
-            Bottle b_PROPERTIES_CANBOARDS_PROTOCOL_major = Bottle(b_PROPERTIES_CANBOARDS_PROTOCOL.findGroup("major"));
-            if(b_PROPERTIES_CANBOARDS_PROTOCOL_major.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.PROTOCOL.major";
-                return false;
-            }
-            Bottle b_PROPERTIES_CANBOARDS_PROTOCOL_minor = Bottle(b_PROPERTIES_CANBOARDS_PROTOCOL.findGroup("minor"));
-            if(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.PROTOCOL.minor";
-                return false;
-            }
-            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE = Bottle(b_PROPERTIES_CANBOARDS.findGroup("FIRMWARE"));
-            if(b_PROPERTIES_CANBOARDS_FIRMWARE.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.FIRMWARE";
-                return false;
-            }
-            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_major = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("major"));
-            if(b_PROPERTIES_CANBOARDS_FIRMWARE_major.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.FIRMWARE.major";
-                return false;
-            }
-            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_minor = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("minor"));
-            if(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.FIRMWARE.minor";
-                return false;
-            }
-            Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_build = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("build"));
-            if(b_PROPERTIES_CANBOARDS_FIRMWARE_build.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.FIRMWARE.build";
-                return false;
-            }
-
-            int tmp = b_PROPERTIES_CANBOARDS_type.size();
-            int numboards = tmp - 1;    // first position of bottle contains the tag "type"
-
-            // check if all other fields have the same size.
-            if( (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_major.size()) ||
-                (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_minor.size()) ||
-                (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_major.size()) ||
-                (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_minor.size()) ||
-                (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_build.size())
-                )
-            {
-                yError() << "ServiceParser::check_motion() in PROPERTIES.CANBOARDS some params have inconsistent lengths";
-                return false;
-            }
+    } // has_PROPERTIES_ETHBOARD
 
 
-            mc_service.properties.canboards.resize(0);
+    if(true == has_PROPERTIES_CANBOARDS)
+    {
+        // i get type, PROTOCOL.major/minor, FIRMWARE.major/minor/build and see their sizes. they must be all equal. i can have more than one board
 
-            formaterror = false;
-            for(int i=0; i<numboards; i++)
-            {
-                servCanBoard_t item;
-
-                convert(b_PROPERTIES_CANBOARDS_type.get(i+1).asString(), item.type, formaterror);
-                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(i+1).asInt(), item.protocol.major, formaterror);
-                convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(i+1).asInt(), item.protocol.minor, formaterror);
-
-                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(i+1).asInt(), item.firmware.major, formaterror);
-                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(i+1).asInt(), item.firmware.minor, formaterror);
-                convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(i+1).asInt(), item.firmware.build, formaterror);
-
-                mc_service.properties.canboards.push_back(item);
-            }
-
-            // in here we could decide to return false if any previous conversion function has returned error
-            // bool fromStringToBoolean(string str, bool &anyerror); // inside: if error then .... be sure to set error = true. dont set it to false.
-
-            if(true == formaterror)
-            {
-                yError() << "ServiceParser::check_motion() has detected an illegal format for some of the params of PROPERTIES.CANBOARDS some param has inconsistent length";
-                return false;
-            }
-
-        } // has_PROPERTIES_CANBOARDS
-
-
-        if(true == has_PROPERTIES_MAIS)
+        Bottle b_PROPERTIES_CANBOARDS_type = b_PROPERTIES_CANBOARDS.findGroup("type");
+        if(b_PROPERTIES_CANBOARDS_type.isNull())
         {
-            // i get .location and nothing else
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.type";
+            return false;
+        }
+        Bottle b_PROPERTIES_CANBOARDS_PROTOCOL = Bottle(b_PROPERTIES_CANBOARDS.findGroup("PROTOCOL"));
+        if(b_PROPERTIES_CANBOARDS_PROTOCOL.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.PROTOCOL";
+            return false;
+        }
+        Bottle b_PROPERTIES_CANBOARDS_PROTOCOL_major = Bottle(b_PROPERTIES_CANBOARDS_PROTOCOL.findGroup("major"));
+        if(b_PROPERTIES_CANBOARDS_PROTOCOL_major.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.PROTOCOL.major";
+            return false;
+        }
+        Bottle b_PROPERTIES_CANBOARDS_PROTOCOL_minor = Bottle(b_PROPERTIES_CANBOARDS_PROTOCOL.findGroup("minor"));
+        if(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.PROTOCOL.minor";
+            return false;
+        }
+        Bottle b_PROPERTIES_CANBOARDS_FIRMWARE = Bottle(b_PROPERTIES_CANBOARDS.findGroup("FIRMWARE"));
+        if(b_PROPERTIES_CANBOARDS_FIRMWARE.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.FIRMWARE";
+            return false;
+        }
+        Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_major = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("major"));
+        if(b_PROPERTIES_CANBOARDS_FIRMWARE_major.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.FIRMWARE.major";
+            return false;
+        }
+        Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_minor = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("minor"));
+        if(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.FIRMWARE.minor";
+            return false;
+        }
+        Bottle b_PROPERTIES_CANBOARDS_FIRMWARE_build = Bottle(b_PROPERTIES_CANBOARDS_FIRMWARE.findGroup("build"));
+        if(b_PROPERTIES_CANBOARDS_FIRMWARE_build.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CANBOARDS.FIRMWARE.build";
+            return false;
+        }
 
-            Bottle b_PROPERTIES_MAIS_location = b_PROPERTIES_MAIS.findGroup("location");
-            if(b_PROPERTIES_MAIS_location.isNull())
+        int tmp = b_PROPERTIES_CANBOARDS_type.size();
+        int numboards = tmp - 1;    // first position of bottle contains the tag "type"
+
+        // check if all other fields have the same size.
+        if( (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_major.size()) ||
+            (tmp != b_PROPERTIES_CANBOARDS_PROTOCOL_minor.size()) ||
+            (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_major.size()) ||
+            (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_minor.size()) ||
+            (tmp != b_PROPERTIES_CANBOARDS_FIRMWARE_build.size())
+            )
+        {
+            yError() << "ServiceParser::check_motion() in PROPERTIES.CANBOARDS some params have inconsistent lengths";
+            return false;
+        }
+
+
+        mc_service.properties.canboards.resize(0);
+
+        formaterror = false;
+        for(int i=0; i<numboards; i++)
+        {
+            servCanBoard_t item;
+
+            convert(b_PROPERTIES_CANBOARDS_type.get(i+1).asString(), item.type, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_PROTOCOL_major.get(i+1).asInt(), item.protocol.major, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_PROTOCOL_minor.get(i+1).asInt(), item.protocol.minor, formaterror);
+
+            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_major.get(i+1).asInt(), item.firmware.major, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_minor.get(i+1).asInt(), item.firmware.minor, formaterror);
+            convert(b_PROPERTIES_CANBOARDS_FIRMWARE_build.get(i+1).asInt(), item.firmware.build, formaterror);
+
+            mc_service.properties.canboards.push_back(item);
+        }
+
+        // in here we could decide to return false if any previous conversion function has returned error
+        // bool fromStringToBoolean(string str, bool &anyerror); // inside: if error then .... be sure to set error = true. dont set it to false.
+
+        if(true == formaterror)
+        {
+            yError() << "ServiceParser::check_motion() has detected an illegal format for some of the params of PROPERTIES.CANBOARDS some param has inconsistent length";
+            return false;
+        }
+
+    } // has_PROPERTIES_CANBOARDS
+
+
+    if(true == has_PROPERTIES_MAIS)
+    {
+        // i get .location and nothing else
+
+        Bottle b_PROPERTIES_MAIS_location = b_PROPERTIES_MAIS.findGroup("location");
+        if(b_PROPERTIES_MAIS_location.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MAIS.location";
+            return false;
+        }
+
+        int tmp = b_PROPERTIES_MAIS_location.size();
+        int numboards = tmp - 1;    // first position of bottle contains the tag "location"
+
+        // check if numboards is 1.
+        if(1 != numboards)
+        {
+            yError() << "ServiceParser::check_motion() in PROPERTIES.MAIS.location must contain one item only and it has:" << numboards;
+            return false;
+        }
+
+        formaterror = false;
+        eObrd_location_t loc;
+        if(false == convert(b_PROPERTIES_MAIS_location.get(1).asString(), loc, formaterror))
+        {
+            yError() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.MAIS.location";
+            return false;
+        }
+
+        if(eobrd_place_can == loc.any.place)
+        {
+            mc_service.properties.maislocation.port = loc.can.port;
+            mc_service.properties.maislocation.addr = loc.can.addr;
+            mc_service.properties.maislocation.insideindex = eobrd_caninsideindex_none;
+        }
+        else if(eobrd_place_extcan == loc.any.place)
+        {
+            mc_service.properties.maislocation.port = loc.extcan.port;
+            mc_service.properties.maislocation.addr = loc.extcan.addr;
+            mc_service.properties.maislocation.insideindex = eobrd_caninsideindex_none;
+        }
+        else
+        {
+            yError() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.MAIS.location. it must be either can or extcan";
+            return false;
+        }
+
+    } // has_PROPERTIES_MAIS
+
+
+    if(true == has_PROPERTIES_MC4)
+    {
+        // i get:
+        // SHIFTS.velocity/estimJointVelocity/estimJointAcceleration/estimMotorVelocity/estimMotorAcceleration,
+        // BROADCASTPOLICY, JOINT2BOARD)
+
+        Bottle b_PROPERTIES_MC4_SHIFTS = Bottle(b_PROPERTIES_MC4.findGroup("SHIFTS"));
+        if(b_PROPERTIES_MC4_SHIFTS.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS";
+            return false;
+        }
+
+        Bottle b_PROPERTIES_MC4_SHIFTS_velocity = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("velocity"));
+        if(b_PROPERTIES_MC4_SHIFTS_velocity.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.velocity";
+            return false;
+        }
+        Bottle b_PROPERTIES_MC4_SHIFTS_estimJointVelocity = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("estimJointVelocity"));
+        if(b_PROPERTIES_MC4_SHIFTS_estimJointVelocity.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.estimJointVelocity";
+            return false;
+        }
+        Bottle b_PROPERTIES_MC4_SHIFTS_estimJointAcceleration = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("estimJointAcceleration"));
+        if(b_PROPERTIES_MC4_SHIFTS_estimJointAcceleration.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.estimJointAcceleration";
+            return false;
+        }
+        Bottle b_PROPERTIES_MC4_SHIFTS_estimMotorVelocity = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("estimMotorVelocity"));
+        if(b_PROPERTIES_MC4_SHIFTS_estimMotorVelocity.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.estimMotorVelocity";
+            return false;
+        }
+        Bottle b_PROPERTIES_MC4_SHIFTS_estimMotorAcceleration = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("estimMotorAcceleration"));
+        if(b_PROPERTIES_MC4_SHIFTS_estimMotorAcceleration.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.estimMotorAcceleration";
+            return false;
+        }
+
+        Bottle b_PROPERTIES_MC4_BROADCASTPOLICY = Bottle(b_PROPERTIES_MC4.findGroup("BROADCASTPOLICY"));
+        if(b_PROPERTIES_MC4_BROADCASTPOLICY.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.BROADCASTPOLICY";
+            return false;
+        }
+
+        Bottle b_PROPERTIES_MC4_BROADCASTPOLICY_enable = Bottle(b_PROPERTIES_MC4_BROADCASTPOLICY.findGroup("enable"));
+        if(b_PROPERTIES_MC4_BROADCASTPOLICY_enable.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.BROADCASTPOLICY.enable";
+            return false;
+        }
+
+/*        Bottle b_PROPERTIES_MC4_JOINT2BOARD = Bottle(b_PROPERTIES_MC4.findGroup("JOINT2BOARD"));
+        if(b_PROPERTIES_MC4_JOINT2BOARD.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.JOINT2BOARD";
+            return false;
+        }
+
+        Bottle b_PROPERTIES_MC4_JOINT2BOARD_location = Bottle(b_PROPERTIES_MC4_JOINT2BOARD.findGroup("location"));
+        if(b_PROPERTIES_MC4_JOINT2BOARD_location.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.JOINT2BOARD.location";
+            return false;
+        }
+*/
+        // 1. get values for SHIFTS
+
+        uint8_t value = 0;
+        if(true == convert(b_PROPERTIES_MC4_SHIFTS_velocity.get(1).asInt(), value, formaterror))
+        {
+            mc_service.properties.mc4shifts.velocity = value;
+        }
+        if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimJointVelocity.get(1).asInt(), value, formaterror))
+        {
+            if(value > 15)
             {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MAIS.location";
+                yError() << "ServiceParser::check_motion() manages values of PROPERTIES.MC4.SHIFTS.estim* only in range [0, 15]. read value =" << value;
                 return false;
             }
-
-            int tmp = b_PROPERTIES_MAIS_location.size();
-            int numboards = tmp - 1;    // first position of bottle contains the tag "location"
-
-            // check if numboards is 1.
-            if(1 != numboards)
+            mc_service.properties.mc4shifts.estimJointVelocity = value;
+        }
+        if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimJointAcceleration.get(1).asInt(), value, formaterror))
+        {
+            if(value > 15)
             {
-                yError() << "ServiceParser::check_motion() in PROPERTIES.MAIS.location must contain one item only and it has:" << numboards;
+                yError() << "ServiceParser::check_motion() manages values of PROPERTIES.MC4.SHIFTS.estim* only in range [0, 15]. read value =" << value;
                 return false;
             }
+            mc_service.properties.mc4shifts.estimJointAcceleration = value;
+        }
+        if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimMotorVelocity.get(1).asInt(), value, formaterror))
+        {
+            if(value > 15)
+            {
+                yError() << "ServiceParser::check_motion() manages values of PROPERTIES.MC4.SHIFTS.estim* only in range [0, 15]. read value =" << value;
+                return false;
+            }
+            mc_service.properties.mc4shifts.estimMotorVelocity = value;
+        }
+        if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimMotorAcceleration.get(1).asInt(), value, formaterror))
+        {
+            if(value > 15)
+            {
+                yError() << "ServiceParser::check_motion() manages values of PROPERTIES.MC4.SHIFTS.estim* only in range [0, 15]. read value =" << value;
+                return false;
+            }
+            mc_service.properties.mc4shifts.estimMotorAcceleration = value;
+        }
+
+        // 2. i get the values for b_PROPERTIES_MC4_BROADCASTPOLICY_enable
+
+        int tmp = b_PROPERTIES_MC4_BROADCASTPOLICY_enable.size();
+        int numofenables = tmp - 1;    // first position of bottle contains the tag "enable"
+
+        mc_service.properties.mc4broadcasts.resize(0);
+        for(int i=0; i<numofenables; i++)
+        {
+            // transform the string into a value.
+            eOmc_mc4broadcast_t item = eomc_mc4broadcast_unknown;
+            const char *str = b_PROPERTIES_MC4_BROADCASTPOLICY_enable.get(i+1).asString().c_str();
+
+            // check compact and then non-compact form
+            if(eomc_mc4broadcast_unknown == (item = eomc_string2mc4broadcast(str, eobool_true)))
+            {
+                item = eomc_string2mc4broadcast(str, eobool_false);
+            }
+
+            if((eomc_mc4broadcast_unknown != item) && (eomc_mc4broadcast_none != item))
+            {   // if meaningful ...
+                mc_service.properties.mc4broadcasts.push_back(item);
+            }
+        }
+
+
+
+        // 3. i get the values for b_PROPERTIES_MC4_JOINT2BOARD_location.... there must be 12 values
+
+/*        int tmp1 = b_PROPERTIES_MC4_JOINT2BOARD_location.size();
+        int numoflocations = tmp1 - 1;    // first position of bottle contains the tag "location"
+
+        if(12 != numoflocations)
+        {
+            yError() << "ServiceParser::check_motion() detects that PROPERTIES.MC4.JOINT2BOARD.location has not 12 items but" << numoflocations;
+            return false;
+        }
+
+        mc_service.properties.mc4joints.resize(0);
+        for(int i=0; i<numoflocations; i++)
+        {
+            // transform the string into a location
 
             formaterror = false;
             eObrd_location_t loc;
-            if(false == convert(b_PROPERTIES_MAIS_location.get(1).asString(), loc, formaterror))
+            if(false == convert(b_PROPERTIES_MC4_JOINT2BOARD_location.get(i+1).asString(), loc, formaterror))
             {
-                yError() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.MAIS.location";
+                yError() << "ServiceParser::check_motion() has detected an illegal format for PROPERTIES.MC4.JOINT2BOARD.location";
                 return false;
             }
 
-            if(eobrd_place_can == loc.any.place)
+            eObrd_canlocation_t item;
+            if(eobrd_place_extcan == loc.any.place)
             {
-                mc_service.properties.maislocation.port = loc.can.port;
-                mc_service.properties.maislocation.addr = loc.can.addr;
-                mc_service.properties.maislocation.insideindex = eobrd_caninsideindex_none;
-            }
-            else if(eobrd_place_extcan == loc.any.place)
-            {
-                mc_service.properties.maislocation.port = loc.extcan.port;
-                mc_service.properties.maislocation.addr = loc.extcan.addr;
-                mc_service.properties.maislocation.insideindex = eobrd_caninsideindex_none;
+                item.port = loc.extcan.port;
+                item.addr = loc.extcan.addr;
+                item.insideindex = loc.extcan.index;
             }
             else
             {
-                yError() << "ServiceParser::check_motion() has detected an illegal format for SERVICE.PROPERTIES.MAIS.location. it must be either can or extcan";
+                yError() << "ServiceParser::check_motion() has detected an illegal format for PROPERTIES.MC4.JOINT2BOARD.location. it must be extcan";
                 return false;
             }
 
-        } // has_PROPERTIES_MAIS
+            mc_service.properties.mc4joints.push_back(item);
+        }
+*/
+
+    } // has_PROPERTIES_MC4
 
 
-        if(true == has_PROPERTIES_MC4)
+    if(true == has_PROPERTIES_JOINTMAPPING)
+    {
+
+        // actuator, encoder1, encoder2 must all be present. the params contained inside must be all of equal length and equal to numberofjoints
+
+        Bottle b_PROPERTIES_JOINTMAPPING_ACTUATOR = Bottle(b_PROPERTIES_JOINTMAPPING.findGroup("ACTUATOR"));
+        if(b_PROPERTIES_JOINTMAPPING_ACTUATOR.isNull())
         {
-            // i get:
-            // SHIFTS.velocity/estimJointVelocity/estimJointAcceleration/estimMotorVelocity/estimMotorAcceleration,
-            // BROADCASTPOLICY, JOINT2BOARD)
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ACTUATOR";
+            return false;
+        }
 
-            Bottle b_PROPERTIES_MC4_SHIFTS = Bottle(b_PROPERTIES_MC4.findGroup("SHIFTS"));
-            if(b_PROPERTIES_MC4_SHIFTS.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS";
-                return false;
-            }
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1 = Bottle(b_PROPERTIES_JOINTMAPPING.findGroup("ENCODER1"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER1.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1";
+            return false;
+        }
 
-            Bottle b_PROPERTIES_MC4_SHIFTS_velocity = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("velocity"));
-            if(b_PROPERTIES_MC4_SHIFTS_velocity.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.velocity";
-                return false;
-            }
-            Bottle b_PROPERTIES_MC4_SHIFTS_estimJointVelocity = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("estimJointVelocity"));
-            if(b_PROPERTIES_MC4_SHIFTS_estimJointVelocity.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.estimJointVelocity";
-                return false;
-            }
-            Bottle b_PROPERTIES_MC4_SHIFTS_estimJointAcceleration = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("estimJointAcceleration"));
-            if(b_PROPERTIES_MC4_SHIFTS_estimJointAcceleration.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.estimJointAcceleration";
-                return false;
-            }
-            Bottle b_PROPERTIES_MC4_SHIFTS_estimMotorVelocity = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("estimMotorVelocity"));
-            if(b_PROPERTIES_MC4_SHIFTS_estimMotorVelocity.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.estimMotorVelocity";
-                return false;
-            }
-            Bottle b_PROPERTIES_MC4_SHIFTS_estimMotorAcceleration = Bottle(b_PROPERTIES_MC4_SHIFTS.findGroup("estimMotorAcceleration"));
-            if(b_PROPERTIES_MC4_SHIFTS_estimMotorAcceleration.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.SHIFTS.estimMotorAcceleration";
-                return false;
-            }
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2 = Bottle(b_PROPERTIES_JOINTMAPPING.findGroup("ENCODER2"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER2.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2";
+            return false;
+        }
 
-            Bottle b_PROPERTIES_MC4_BROADCASTPOLICY = Bottle(b_PROPERTIES_MC4.findGroup("BROADCASTPOLICY"));
-            if(b_PROPERTIES_MC4_BROADCASTPOLICY.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.BROADCASTPOLICY";
-                return false;
-            }
+        // now the vectors the above three contain ...
 
-            Bottle b_PROPERTIES_MC4_BROADCASTPOLICY_enable = Bottle(b_PROPERTIES_MC4_BROADCASTPOLICY.findGroup("enable"));
-            if(b_PROPERTIES_MC4_BROADCASTPOLICY_enable.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.BROADCASTPOLICY.enable";
-                return false;
-            }
+        Bottle b_PROPERTIES_JOINTMAPPING_ACTUATOR_type = Bottle(b_PROPERTIES_JOINTMAPPING_ACTUATOR.findGroup("type"));
+        if(b_PROPERTIES_JOINTMAPPING_ACTUATOR_type.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ACTUATOR.type";
+            return false;
+        }
+        Bottle b_PROPERTIES_JOINTMAPPING_ACTUATOR_port = Bottle(b_PROPERTIES_JOINTMAPPING_ACTUATOR.findGroup("port"));
+        if(b_PROPERTIES_JOINTMAPPING_ACTUATOR_port.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ACTUATOR.port";
+            return false;
+        }
 
-            Bottle b_PROPERTIES_MC4_JOINT2BOARD = Bottle(b_PROPERTIES_MC4.findGroup("JOINT2BOARD"));
-            if(b_PROPERTIES_MC4_JOINT2BOARD.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.JOINT2BOARD";
-                return false;
-            }
-
-            Bottle b_PROPERTIES_MC4_JOINT2BOARD_location = Bottle(b_PROPERTIES_MC4_JOINT2BOARD.findGroup("location"));
-            if(b_PROPERTIES_MC4_JOINT2BOARD_location.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.MC4.JOINT2BOARD.location";
-                return false;
-            }
-
-            // 1. get values for SHIFTS
-
-            uint8_t value = 0;
-            if(true == convert(b_PROPERTIES_MC4_SHIFTS_velocity.get(1).asInt(), value, formaterror))
-            {
-                mc_service.properties.mc4shifts.velocity = value;
-            }
-            if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimJointVelocity.get(1).asInt(), value, formaterror))
-            {
-                if(value > 15)
-                {
-                    yError() << "ServiceParser::check_motion() manages values of PROPERTIES.MC4.SHIFTS.estim* only in range [0, 15]. read value =" << value;
-                    return false;
-                }
-                mc_service.properties.mc4shifts.estimJointVelocity = value;
-            }
-            if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimJointAcceleration.get(1).asInt(), value, formaterror))
-            {
-                if(value > 15)
-                {
-                    yError() << "ServiceParser::check_motion() manages values of PROPERTIES.MC4.SHIFTS.estim* only in range [0, 15]. read value =" << value;
-                    return false;
-                }
-                mc_service.properties.mc4shifts.estimJointAcceleration = value;
-            }
-            if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimMotorVelocity.get(1).asInt(), value, formaterror))
-            {
-                if(value > 15)
-                {
-                    yError() << "ServiceParser::check_motion() manages values of PROPERTIES.MC4.SHIFTS.estim* only in range [0, 15]. read value =" << value;
-                    return false;
-                }
-                mc_service.properties.mc4shifts.estimMotorVelocity = value;
-            }
-            if(true == convert(b_PROPERTIES_MC4_SHIFTS_estimMotorAcceleration.get(1).asInt(), value, formaterror))
-            {
-                if(value > 15)
-                {
-                    yError() << "ServiceParser::check_motion() manages values of PROPERTIES.MC4.SHIFTS.estim* only in range [0, 15]. read value =" << value;
-                    return false;
-                }
-                mc_service.properties.mc4shifts.estimMotorAcceleration = value;
-            }
-
-            // 2. i get the values for b_PROPERTIES_MC4_BROADCASTPOLICY_enable
-
-            int tmp = b_PROPERTIES_MC4_BROADCASTPOLICY_enable.size();
-            int numofenables = tmp - 1;    // first position of bottle contains the tag "enable"
-
-            mc_service.properties.mc4broadcasts.resize(0);
-            for(int i=0; i<numofenables; i++)
-            {
-                // transform the string into a value.
-                eOmc_mc4broadcast_t item = eomc_mc4broadcast_unknown;
-                const char *str = b_PROPERTIES_MC4_BROADCASTPOLICY_enable.get(i+1).asString().c_str();
-
-                // check compact and then non-compact form
-                if(eomc_mc4broadcast_unknown == (item = eomc_string2mc4broadcast(str, eobool_true)))
-                {
-                    item = eomc_string2mc4broadcast(str, eobool_false);
-                }
-
-                if((eomc_mc4broadcast_unknown != item) && (eomc_mc4broadcast_none != item))
-                {   // if meaningful ...
-                    mc_service.properties.mc4broadcasts.push_back(item);
-                }
-            }
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_type = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("type"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER1_type.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.type";
+            return false;
+        }
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_port = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("port"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER1_port.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.port";
+            return false;
+        }
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_position = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("position"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER1_position.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.position";
+            return false;
+        }
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_resolution = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("resolution"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER1_resolution.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.resolution";
+            return false;
+        }
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_numofnoisebits = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("numofnoisebits"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER1_numofnoisebits.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.numofnoisebits";
+            return false;
+        }
 
 
 
-            // 3. i get the values for b_PROPERTIES_MC4_JOINT2BOARD_location.... there must be 12 values
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_type = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("type"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER2_type.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.type";
+            return false;
+        }
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_port = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("port"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER2_port.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.port";
+            return false;
+        }
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_position = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("position"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER2_position.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.position";
+            return false;
+        }
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_resolution = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("resolution"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER2_resolution.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.resolution";
+            return false;
+        }
+        Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_numofnoisebits = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("numofnoisebits"));
+        if(b_PROPERTIES_JOINTMAPPING_ENCODER2_numofnoisebits.isNull())
+        {
+            yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.numofnoisebits";
+            return false;
+        }
+        // now the size of the vectors must all be equal
 
-            int tmp1 = b_PROPERTIES_MC4_JOINT2BOARD_location.size();
-            int numoflocations = tmp1 - 1;    // first position of bottle contains the tag "location"
+        int tmp = b_PROPERTIES_JOINTMAPPING_ACTUATOR_type.size();
+        if( (tmp != b_PROPERTIES_JOINTMAPPING_ACTUATOR_port.size())      ||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_type.size())      ||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_port.size())      ||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_position.size())  ||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_resolution.size())||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_numofnoisebits.size()) ||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_type.size())      ||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_port.size())      ||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_position.size())  ||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_resolution.size()) ||
+            (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_numofnoisebits.size())
+            )
+        {
+            yError() << "ServiceParser::check_motion() detected wrong number of columns somewhere inside PROPERTIES.JOINTMAPPING";
+            return false;
+        }
 
-            if(12 != numoflocations)
-            {
-                yError() << "ServiceParser::check_motion() detects that PROPERTIES.MC4.JOINT2BOARD.location has not 12 items but" << numoflocations;
-                return false;
-            }
+        // ok, we have the number of joints .........
+        mc_service.properties.numofjoints = tmp-1;
 
+        // i attempt to parse the vectors inside actuators (type, port), encoder1 (type, port, position) and encoder2 (type, port, position).
+
+        mc_service.properties.actuators.resize(0);
+        mc_service.properties.encoder1s.resize(0);
+        mc_service.properties.encoder2s.resize(0);
+
+        if(eomn_serv_MC_mc4 == mc_service.type)
+        {
             mc_service.properties.mc4joints.resize(0);
-            for(int i=0; i<numoflocations; i++)
+        }
+
+
+        for(int i=0; i<mc_service.properties.numofjoints; i++)
+        {
+            servMC_actuator_t act;
+            servMC_encoder_t enc1;
+            servMC_encoder_t enc2;
+            bool formaterror = false;
+
+            eOmc_encoder_t enctype = eomc_enc_unknown;
+            uint8_t encport = eobrd_port_unknown;
+            eOmc_position_t encposition = eomc_pos_unknown;
+
+            // actuators ..
+            act.type = eomc_act_unknown;
+            act.desc.pwm.port = eobrd_port_unknown;
+
+            if(false == convert(b_PROPERTIES_JOINTMAPPING_ACTUATOR_type.get(i+1).asString(), act.type, formaterror))
             {
-                // transform the string into a location
+                yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.actuator.type not valid for item" << i;
+                return false;
+            }
 
-                formaterror = false;
-                eObrd_location_t loc;
-                if(false == convert(b_PROPERTIES_MC4_JOINT2BOARD_location.get(i+1).asString(), loc, formaterror))
-                {
-                    yError() << "ServiceParser::check_motion() has detected an illegal format for PROPERTIES.MC4.JOINT2BOARD.location";
-                    return false;
-                }
+            if((eomn_serv_MC_mc4 == mc_service.type) && (eomc_act_mc4 != act.type))
+            {
+                yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.actuator.type should be mc4 with mc service of type eomn_serv_MC_mc4. Error in item" << i;
+                return false;
+            }
 
+            if(false == parse_actuator_port(b_PROPERTIES_JOINTMAPPING_ACTUATOR_port.get(i+1).asString(), mc_service.properties.ethboardtype, act.type, act.desc, formaterror))
+            {
+                    yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.actuator.port not valid for item" << i;
+                return false;
+            }
+
+            if(eomn_serv_MC_mc4 == mc_service.type)
+            {
                 eObrd_canlocation_t item;
-                if(eobrd_place_extcan == loc.any.place)
-                {
-                    item.port = loc.extcan.port;
-                    item.addr = loc.extcan.addr;
-                    item.insideindex = loc.extcan.index;
-                }
-                else
-                {
-                    yError() << "ServiceParser::check_motion() has detected an illegal format for PROPERTIES.MC4.JOINT2BOARD.location. it must be extcan";
-                    return false;
-                }
+                item.port = act.desc.mc4.canloc.port;
+                item.addr = act.desc.mc4.canloc.addr;
+                item.insideindex = act.desc.mc4.canloc.insideindex;
 
                 mc_service.properties.mc4joints.push_back(item);
             }
 
 
-        } // has_PROPERTIES_MC4
+            // encoder1s ...
 
+            enc1.desc.type = eomc_enc_unknown;
+            enc1.desc.port = eobrd_port_unknown;
+            enc1.desc.pos = eomc_pos_unknown;
 
-
-        if(true == has_PROPERTIES_CONTROLLER)
-        {
-            formaterror = false;
-
-            Bottle b_PROPERTIES_CONTROLLER_type = b_PROPERTIES_CONTROLLER.findGroup("type");
-            if(b_PROPERTIES_CONTROLLER_type.isNull())
+            enctype = eomc_enc_unknown;
+            if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER1_type.get(i+1).asString(), enctype, formaterror))
             {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.CONTROLLER.type";
+                yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder1.type not valid for item" << i;
                 return false;
             }
+            enc1.desc.type = enctype;
 
-            if(false == convert(b_PROPERTIES_CONTROLLER_type.get(1).asString(), mc_service.properties.controller.type, formaterror))
+            // depending on type, we ....
+
+
+
+            // dobbiamo fare un parser che riconosca CONN:P6 se aea, qenc etc, oppure MAIS:thumbproximal se mais
+
+            encport = eobrd_port_unknown;
+            if(false == parse_encoder_port(b_PROPERTIES_JOINTMAPPING_ENCODER1_port.get(i+1).asString(), mc_service.properties.ethboardtype, enctype, encport, formaterror))
             {
-                yError() << "ServiceParser::check_motion() has found unknown SERVICE.PROPERTIES.CONTROLLER.type = " << b_PROPERTIES_CONTROLLER_type.toString();
+                yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder1.port not valid for item" << i;
                 return false;
             }
+            enc1.desc.port = encport;
 
-            // matrix J2M
-
-            Bottle b_PROPERTIES_CONTROLLER_matrixJ2M = Bottle(b_PROPERTIES_CONTROLLER.findGroup("matrixJ2M"));
-            if(b_PROPERTIES_CONTROLLER_matrixJ2M.isNull())
+            encposition = eomc_pos_unknown;
+            if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER1_position.get(i+1).asString(), encposition, formaterror))
             {
-                yError() << "ServiceParser::check_motion() cannot find SERVICE.PROPERTIES.CONTROLLER.matrixJ2M";
+                    yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder1.position not valid for item" << i;
                 return false;
             }
+            enc1.desc.pos = encposition;
 
-            formaterror = false;
-            if(false == convert(b_PROPERTIES_CONTROLLER_matrixJ2M, mc_service.properties.controller.matrixJ2M, formaterror, 16))
+            enc1.resolution = b_PROPERTIES_JOINTMAPPING_ENCODER1_resolution.get(i+1).asInt();
+
+            enc1.numofnoisebits = b_PROPERTIES_JOINTMAPPING_ENCODER1_numofnoisebits.get(i+1).asInt();
+
+
+
+            // encoder2s ...
+
+            enc2.desc.type = eomc_enc_unknown;
+            enc2.desc.port = eobrd_port_unknown;
+            enc2.desc.pos = eomc_pos_unknown;
+
+            enctype = eomc_enc_unknown;
+            if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER2_type.get(i+1).asString(), enctype, formaterror))
             {
-                yError() << "ServiceParser::check_motion() has detected an illegal format for some of the values of SERVICE.PROPERTIES.CONTROLLER.matrixJ2M";
+                yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.type not valid for item" << i;
                 return false;
             }
+//             //VALE: workaround to solve problem of configuration of encoder connected to 2foc board.
+//             if((eomn_serv_MC_foc == mc_service.type) &&  (eomc_enc_roie == enctype))
+//             {
+//                 enctype = eomc_enc_none;
+//             }
 
 
-            // matrix E2J
+            enc2.desc.type = enctype;
 
-            Bottle b_PROPERTIES_CONTROLLER_matrixE2J = Bottle(b_PROPERTIES_CONTROLLER.findGroup("matrixE2J"));
-            if(b_PROPERTIES_CONTROLLER_matrixE2J.isNull())
+
+            encport = eobrd_port_unknown;
+            if(false == parse_encoder_port(b_PROPERTIES_JOINTMAPPING_ENCODER2_port.get(i+1).asString(), mc_service.properties.ethboardtype, enctype, encport, formaterror))
             {
-                yError() << "ServiceParser::check_motion() cannot find SERVICE.PROPERTIES.CONTROLLER.matrixE2J";
+                yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.port not valid for item" << i;
                 return false;
             }
+            enc2.desc.port = encport;
 
-#warning TODO: if we need 6x6 matrixE2J, change 16 into 36 and then change mn data structure ....
-            formaterror = false;
-            if(false == convert(b_PROPERTIES_CONTROLLER_matrixE2J, mc_service.properties.controller.matrixE2J, formaterror, 16))
+            encposition = eomc_pos_unknown;
+            if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER2_position.get(i+1).asString(), encposition, formaterror))
             {
-                yError() << "ServiceParser::check_motion() has detected an illegal format for some of the values of SERVICE.PROPERTIES.CONTROLLER.matrixE2J";
+                    yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.position not valid for item" << i;
                 return false;
             }
+//              //VALE: workaround to solve problem of configuration of encoder connected to 2foc board.
+//             if((eomn_serv_MC_foc == mc_service.type) &&  (eomc_enc_roie == enctype))
+//             {
+//                  enc2.desc.pos = eomc_pos_none;
+//             }
+//             else
+//             {
+//                  enc2.desc.pos = encposition;
+//             }
+
+            enc2.desc.pos = encposition;
+
+            enc2.resolution = b_PROPERTIES_JOINTMAPPING_ENCODER2_resolution.get(i+1).asInt();
+            enc2.numofnoisebits = b_PROPERTIES_JOINTMAPPING_ENCODER2_numofnoisebits.get(i+1).asInt();
 
 
-            // matrix M2J
-            mc_service.properties.controller.matrixM2J.resize(0);
-//            Bottle b_PROPERTIES_CONTROLLER_matrixM2J = Bottle(b_PROPERTIES_CONTROLLER.findGroup("matrixM2J"));
-//            if(b_PROPERTIES_CONTROLLER_matrixM2J.isNull())
-//            {
-//                yError() << "ServiceParser::check_motion() cannot find SERVICE.PROPERTIES.CONTROLLER.matrixM2J";
-//                return false;
-//            }
-//
-//            formaterror = false;
-//            if( false == convert(b_PROPERTIES_CONTROLLER_matrixM2J, mc_service.properties.controller.matrixM2J, formaterror, 16))
-//            {
-//                yError() << "ServiceParser::check_motion() has detected an illegal format for some of the values of SERVICE.PROPERTIES.CONTROLLER.matrixM2J";
-//                return false;
-//            }
+            // ok, we push act, enc1, enc2
 
-        } // has_PROPERTIES_CONTROLLER
+            mc_service.properties.actuators.push_back(act);
+            mc_service.properties.encoder1s.push_back(enc1);
+            mc_service.properties.encoder2s.push_back(enc2);
 
+        }
 
-        if(true == has_PROPERTIES_JOINTMAPPING)
-        {
+    } // has_PROPERTIES_JOINTMAPPING
 
-            // actuator, encoder1, encoder2 must all be present. the params contained inside must be all of equal length and equal to numberofjoints
-
-            Bottle b_PROPERTIES_JOINTMAPPING_ACTUATOR = Bottle(b_PROPERTIES_JOINTMAPPING.findGroup("ACTUATOR"));
-            if(b_PROPERTIES_JOINTMAPPING_ACTUATOR.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ACTUATOR";
-                return false;
-            }
-
-            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1 = Bottle(b_PROPERTIES_JOINTMAPPING.findGroup("ENCODER1"));
-            if(b_PROPERTIES_JOINTMAPPING_ENCODER1.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1";
-                return false;
-            }
-
-            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2 = Bottle(b_PROPERTIES_JOINTMAPPING.findGroup("ENCODER2"));
-            if(b_PROPERTIES_JOINTMAPPING_ENCODER2.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2";
-                return false;
-            }
-
-            // now the vectors the above three contain ...
-
-            Bottle b_PROPERTIES_JOINTMAPPING_ACTUATOR_type = Bottle(b_PROPERTIES_JOINTMAPPING_ACTUATOR.findGroup("type"));
-            if(b_PROPERTIES_JOINTMAPPING_ACTUATOR_type.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ACTUATOR.type";
-                return false;
-            }
-            Bottle b_PROPERTIES_JOINTMAPPING_ACTUATOR_port = Bottle(b_PROPERTIES_JOINTMAPPING_ACTUATOR.findGroup("port"));
-            if(b_PROPERTIES_JOINTMAPPING_ACTUATOR_port.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ACTUATOR.port";
-                return false;
-            }
-
-            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_type = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("type"));
-            if(b_PROPERTIES_JOINTMAPPING_ENCODER1_type.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.type";
-                return false;
-            }
-            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_port = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("port"));
-            if(b_PROPERTIES_JOINTMAPPING_ENCODER1_port.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.port";
-                return false;
-            }
-            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER1_position = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER1.findGroup("position"));
-            if(b_PROPERTIES_JOINTMAPPING_ENCODER1_position.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER1.position";
-                return false;
-            }
-
-            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_type = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("type"));
-            if(b_PROPERTIES_JOINTMAPPING_ENCODER2_type.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.type";
-                return false;
-            }
-            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_port = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("port"));
-            if(b_PROPERTIES_JOINTMAPPING_ENCODER2_port.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.port";
-                return false;
-            }
-            Bottle b_PROPERTIES_JOINTMAPPING_ENCODER2_position = Bottle(b_PROPERTIES_JOINTMAPPING_ENCODER2.findGroup("position"));
-            if(b_PROPERTIES_JOINTMAPPING_ENCODER2_position.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTMAPPING.ENCODER2.position";
-                return false;
-            }
-
-            // now the size of the vectors must all be equal
-
-            int tmp = b_PROPERTIES_JOINTMAPPING_ACTUATOR_type.size();
-            if( (tmp != b_PROPERTIES_JOINTMAPPING_ACTUATOR_port.size()) ||
-                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_type.size()) ||
-                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_port.size()) ||
-                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER1_position.size()) ||
-                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_type.size()) ||
-                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_port.size()) ||
-                (tmp != b_PROPERTIES_JOINTMAPPING_ENCODER2_position.size())
-              )
-            {
-                yError() << "ServiceParser::check_motion() detected wrong number of columns somewhere inside PROPERTIES.JOINTMAPPING";
-                return false;
-            }
-
-            // ok, we have the number of joints .........
-            mc_service.properties.numofjoints = tmp-1;
-
-            // i attempt to parse the vectors inside actuators (type, port), encoder1 (type, port, position) and encoder2 (type, port, position).
-
-            mc_service.properties.actuators.resize(0);
-            mc_service.properties.encoder1s.resize(0);
-            mc_service.properties.encoder2s.resize(0);
-
-            for(int i=0; i<mc_service.properties.numofjoints; i++)
-            {
-                servMC_actuator_t act;
-                servMC_encoder_t enc1;
-                servMC_encoder_t enc2;
-                bool formaterror = false;
-
-                eOmc_encoder_t enctype = eomc_enc_unknown;
-                uint8_t encport = eobrd_port_unknown;
-                eOmc_position_t encposition = eomc_pos_unknown;
-
-                // actuators ..
-                act.type = eomc_act_unknown;
-                act.desc.pwm.port = eobrd_port_unknown;
-
-                if(false == convert(b_PROPERTIES_JOINTMAPPING_ACTUATOR_type.get(i+1).asString(), act.type, formaterror))
-                {
-                    yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.actuator.type not valid for item" << i;
-                    return false;
-                }
-
-                if(false == parse_actuator_port(b_PROPERTIES_JOINTMAPPING_ACTUATOR_port.get(i+1).asString(), mc_service.properties.ethboardtype, act.type, act.desc, formaterror))
-                {
-                     yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.actuator.port not valid for item" << i;
-                    return false;
-                }
-
-
-                // encoder1s ...
-
-                enc1.desc.type = eomc_enc_unknown;
-                enc1.desc.port = eobrd_port_unknown;
-                enc1.desc.pos = eomc_pos_unknown;
-
-                enctype = eomc_enc_unknown;
-                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER1_type.get(i+1).asString(), enctype, formaterror))
-                {
-                    yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder1.type not valid for item" << i;
-                    return false;
-                }
-                enc1.desc.type = enctype;
-
-                // depending on type, we ....
-
-
-
-                // dobbiamo fare un parser che riconosca CONN:P6 se aea, qenc etc, oppure MAIS:thumbproximal se mais
-
-                encport = eobrd_port_unknown;
-                if(false == parse_encoder_port(b_PROPERTIES_JOINTMAPPING_ENCODER1_port.get(i+1).asString(), mc_service.properties.ethboardtype, enctype, encport, formaterror))
-                {
-                    yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder1.port not valid for item" << i;
-                    return false;
-                }
-                enc1.desc.port = encport;
-
-                encposition = eomc_pos_unknown;
-                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER1_position.get(i+1).asString(), encposition, formaterror))
-                {
-                     yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder1.position not valid for item" << i;
-                    return false;
-                }
-                enc1.desc.pos = encposition;
-
-
-
-                // encoder2s ...
-
-                enc2.desc.type = eomc_enc_unknown;
-                enc2.desc.port = eobrd_port_unknown;
-                enc2.desc.pos = eomc_pos_unknown;
-
-                enctype = eomc_enc_unknown;
-                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER2_type.get(i+1).asString(), enctype, formaterror))
-                {
-                    yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.type not valid for item" << i;
-                    return false;
-                }
-                enc2.desc.type = enctype;
-
-                encport = eobrd_port_unknown;
-                if(false == parse_encoder_port(b_PROPERTIES_JOINTMAPPING_ENCODER2_port.get(i+1).asString(), mc_service.properties.ethboardtype, enctype, encport, formaterror))
-                {
-                    yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.port not valid for item" << i;
-                    return false;
-                }
-                enc2.desc.port = encport;
-
-                encposition = eomc_pos_unknown;
-                if(false == convert(b_PROPERTIES_JOINTMAPPING_ENCODER2_position.get(i+1).asString(), encposition, formaterror))
-                {
-                     yError() << "ServiceParser::check_motion() PROPERTIES.JOINTMAPPING.encoder2.position not valid for item" << i;
-                    return false;
-                }
-                enc2.desc.pos = encposition;
-
-
-                // ok, we push act, enc1, enc2
-
-                mc_service.properties.actuators.push_back(act);
-                mc_service.properties.encoder1s.push_back(enc1);
-                mc_service.properties.encoder2s.push_back(enc2);
-            }
-
-
-        } // has_PROPERTIES_JOINTMAPPING
-
-
-
-
-        if(true == has_PROPERTIES_JOINTSETS)
-        {
-
-            Bottle b_PROPERTIES_JOINTSETS_list = Bottle(b_PROPERTIES_JOINTSETS.findGroup("list"));
-            if(b_PROPERTIES_JOINTSETS_list.isNull())
-            {
-                yError() << "ServiceParser::check_motion() cannot find PROPERTIES.JOINTSETS.list";
-                return false;
-            }
-
-            if((b_PROPERTIES_JOINTSETS_list.size()-1) != mc_service.properties.numofjoints)
-            {
-                yError() << "ServiceParser::check_motion() detected a wrong size of PROPERTIES.JOINTSETS.list: it must be equal to the number of joints" << mc_service.properties.numofjoints;
-                return false;
-            }
-
-            mc_service.properties.joint2set.resize(0);
-
-            for(int i=0; i<mc_service.properties.numofjoints; i++)
-            {
-                mc_service.properties.joint2set.push_back(b_PROPERTIES_JOINTSETS_list.get(i+1).asInt());
-            }
-
-        } // has_PROPERTIES_JOINTSETS
-
-    }
-    
     return true;
 }
+
+// int ServiceParser::getnumofjointsets(void)
+// {
+//
+//     int n=0;
+//     int njointsinset[mc_service.properties.numofjoints]; //the max number of sets is equal to max number of joints.
+//     for(int i=0; i<mc_service.properties.numofjoints;i++)
+//     {
+//         njointsinset[i] = 0;
+//     }
+//
+//     for(int i=0; i<mc_service.properties.numofjoints;i++)
+//     {
+//         int set = mc_service.properties.joint2set[i];
+//
+//         if(set > mc_service.properties.numofjoints)
+//         {
+//             yError() << "ServiceParser::getnumofjointsets: error in joint2set param. The set number is too big. Remember: max number of set is equal to max num of joint.";
+//             return false;
+//         }
+//
+//        njointsinset[set]++;
+//     }
+//     int count =0;
+//     for(int i=0; i<mc_service.properties.numofjoints;i++)
+//     {
+//         if(njointsinset[i] != 0)
+//             count++;
+//     }
+//
+//     return  count;
+// }
 
 
 //bool ServiceParser::parseMCEncoderItem(Bottle &b_ENCODER,  vector<servMC_encoder_t> &encoders, char *encString)
@@ -2488,6 +2463,47 @@ bool ServiceParser::check_motion(Searchable &config)
 //}
 
 
+// bool ServiceParser::copyjomocouplingInfo( eOmc_4jomo_coupling_t *jc_dest)
+// {
+//
+//     memset(jc_dest, 0, sizeof(eOmc_4jomo_coupling_t));
+//
+//     // very important: so far, the fw in Controller.c must find eomc_jointSetNum_none in un-used entries, even if we have less than 4 joints.
+//     memset(jc_dest->joint2set, eomc_jointSetNum_none, sizeof(jc_dest->joint2set));
+//
+//     for(int i=0; i<mc_service.properties.numofjoints; i++)
+//     {
+//         jc_dest->joint2set[i] = mc_service.properties.joint2set[i];
+//     }
+//
+//     for(int i=0; i<4; i++)
+//     {
+//         for(int j=0; j<4; j++)
+//         {
+//             jc_dest->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
+//             jc_dest->motor2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixM2J[4*i+j]);
+//         }
+//     }
+//
+//
+//     for(int r=0; r<4; r++)
+//     {
+//         for(int c=0; c<6; c++)
+//         {
+//             jc_dest->encoder2joint[r][c] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[6*r+c]);
+//         }
+//     }
+//
+//     for(int s=0; s< mc_service.properties.numofjointsets; s++)
+//     {
+//         memcpy(&jc_dest->jsetcfg[s]  , &mc_service.properties.jointset_cfgs[s], sizeof(eOmc_jointset_configuration_t));
+//     }
+//
+//     return true;
+// }
+
+
+
 bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 {
     bool ret = false;
@@ -2510,17 +2526,14 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
         {
             eOmn_serv_config_data_mc_foc_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.foc_based);
 
-            // 1. ->boardtype4mccontroller
-            data_mc->boardtype4mccontroller = mc_service.properties.controller.type;
-
-            // 2. ->version (of foc board).
+            // 1. ->version (of foc board).
             data_mc->version.firmware.major = mc_service.properties.canboards.at(0).firmware.major;
             data_mc->version.firmware.minor = mc_service.properties.canboards.at(0).firmware.minor;
             data_mc->version.firmware.build = mc_service.properties.canboards.at(0).firmware.build;
             data_mc->version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
             data_mc->version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
 
-            // 3. ->arrayofjomodescriptors
+            // 2. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
             int numofjomos = mc_service.properties.numofjoints;
 
@@ -2548,26 +2561,10 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             }
 
 
-            // 4. ->jomocoupling
-            eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
-            memset(jomocoupling, 0, sizeof(eOmc_4jomo_coupling_t));
+            //// 3. ->jomocoupling
+            //eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
 
-            // very important: so far, the fw in Controller.c must find eomc_jointSetNum_none in un-used entries, even if we have less than 4 joints.
-            memset(jomocoupling->joint2set, eomc_jointSetNum_none, sizeof(jomocoupling->joint2set));
-            for(int i=0; i<numofjomos; i++)
-            {
-                jomocoupling->joint2set[i] = mc_service.properties.joint2set[i];
-            }
-
-            for(int i=0; i<4; i++)
-            {
-                for(int j=0; j<4; j++)
-                {
-                    jomocoupling->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
-                    jomocoupling->encoder2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[4*i+j]);
-                }
-            }
-
+            //ret = copyjomocouplingInfo(jomocoupling);
 
             // ok, everything is done
             ret = true;
@@ -2581,7 +2578,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             // 1. ->version (of mc4 board) + ->mais.version.
             bool mc4boardFound = false;
             bool maisboardFound = false;
-            for(int i=0; i<mc_service.properties.canboards.size(); i++)
+            for(size_t i=0; i<mc_service.properties.canboards.size(); i++)
             {
                 if(eobrd_cantype_mc4 == mc_service.properties.canboards[i].type)
                 {
@@ -2623,7 +2620,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             // 5. ->broadcastflags
             data_mc->broadcastflags = 0;
-            for(int i=0; i<mc_service.properties.mc4broadcasts.size(); i++)
+            for(size_t i=0; i<mc_service.properties.mc4broadcasts.size(); i++)
             {
                 eOmc_mc4broadcast_t item = mc_service.properties.mc4broadcasts[i];
                 if((eomc_mc4broadcast_none != item) && (eomc_mc4broadcast_unknown != item))
@@ -2641,9 +2638,6 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
         {
             eOmn_serv_config_data_mc_mc4plus_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4plus_based);
 
-            // 1. ->boardtype4mccontroller
-            data_mc->boardtype4mccontroller = mc_service.properties.controller.type;
-
             // 3. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
             int numofjomos = mc_service.properties.numofjoints;
@@ -2669,37 +2663,21 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
 
             }
 
-            // 4. ->jomocoupling
-            eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
-            memset(jomocoupling, 0, sizeof(eOmc_4jomo_coupling_t));
+            // // 3. ->jomocoupling
+            //eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
 
-            for(int i=0; i<numofjomos; i++)
-            {
-                jomocoupling->joint2set[i] = mc_service.properties.joint2set[i];
-            }
-
-            for(int i=0; i<4; i++)
-            {
-                for(int j=0; j<4; j++)
-                {
-                    jomocoupling->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
-                    jomocoupling->encoder2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[4*i+j]);
-                }
-            }
-
+            //ret = copyjomocouplingInfo(jomocoupling);
 
             // ok, everything is done
             ret = true;
+
         } break;
         
         case eomn_serv_MC_mc4plusmais:
         {
             eOmn_serv_config_data_mc_mc4plusmais_t *data_mc = &(mcconfig.ethservice.configuration.data.mc.mc4plusmais_based);
 
-            // 1. ->boardtype4mccontroller
-            data_mc->boardtype4mccontroller = mc_service.properties.controller.type;
-
-            // 2. ->mais
+            // 1. ->mais
             eOmn_serv_config_data_as_mais_t *mais = &data_mc->mais;
 
             mais->canloc.port = mc_service.properties.maislocation.port;
@@ -2712,7 +2690,7 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             mais->version.protocol.major = mc_service.properties.canboards.at(0).protocol.major;
             mais->version.protocol.minor = mc_service.properties.canboards.at(0).protocol.minor;
 
-            // 3. ->arrayofjomodescriptors
+            // 2. ->arrayofjomodescriptors
             EOarray *arrayofjomos = eo_array_New(4, sizeof(eOmc_jomo_descriptor_t), &data_mc->arrayofjomodescriptors);
             int numofjomos = mc_service.properties.numofjoints;
 
@@ -2738,27 +2716,14 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
             }
 
 
-            // 4. ->jomocoupling
-            eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
-            memset(jomocoupling, 0, sizeof(eOmc_4jomo_coupling_t));
+            //// 3. ->jomocoupling
+            //eOmc_4jomo_coupling_t *jomocoupling = &data_mc->jomocoupling;
 
-            for(int i=0; i<numofjomos; i++)
-            {
-                jomocoupling->joint2set[i] = mc_service.properties.joint2set[i];
-            }
-
-            for(int i=0; i<4; i++)
-            {
-                for(int j=0; j<4; j++)
-                {
-                    jomocoupling->joint2motor[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixJ2M[4*i+j]);
-                    jomocoupling->encoder2joint[i][j] = eo_common_float_to_Q17_14(mc_service.properties.controller.matrixE2J[4*i+j]);
-                }
-            }
-
+            //ret = copyjomocouplingInfo(jomocoupling);
 
             // ok, everything is done
             ret = true;
+
         } break;
 
         case eomn_serv_MC_generic:
@@ -2771,11 +2736,42 @@ bool ServiceParser::parseService(Searchable &config, servConfigMC_t &mcconfig)
         default:
         {
             yError() << "ServiceParser::parseService() unknown value in eOmn_serv_type_t field";
+            ret = false;
         } break;
     }
     
 
     return ret;
+}
+
+
+servMC_encoder_t * ServiceParser::getEncoderAtJoint(int index)
+{
+    if(mc_service.properties.encoder1s[index].desc.pos ==  eomc_pos_atjoint)
+    {
+        return(&mc_service.properties.encoder1s[index]);
+    }
+    else if(mc_service.properties.encoder2s[index].desc.pos ==  eomc_pos_atjoint)
+    {
+        return(&mc_service.properties.encoder2s[index]);
+    }
+    else
+        return NULL;
+}
+
+servMC_encoder_t * ServiceParser::getEncoderAtMotor(int index)
+{
+    if(mc_service.properties.encoder1s[index].desc.pos ==  eomc_pos_atmotor)
+    {
+        return(&mc_service.properties.encoder1s[index]);
+    }
+    else if(mc_service.properties.encoder2s[index].desc.pos ==  eomc_pos_atmotor)
+    {
+        return(&mc_service.properties.encoder2s[index]);
+    }
+    else
+        return NULL;
+
 }
 
 static  eOmn_serv_configuration_t s_serv_config_mc_v3_0B0;
@@ -3300,10 +3296,10 @@ eOq17_14_t  m2[][4]=
 
 
 
-    s_serv_config_mc_v3_0B1.type       = eomn_serv_MC_mc4plus;
+   // s_serv_config_mc_v3_0B1.type       = eomn_serv_MC_mc4plus;
     //s_serv_config_mc_v3_0B1.filler     = {0, 0, 0};
 
-    s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.boardtype4mccontroller = 6; //emscontroller_board_HEAD_neckyaw_eyes;
+    //s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.boardtype4mccontroller = 6; //emscontroller_board_HEAD_neckyaw_eyes;
     //s_serv_config_mc_v3_0B1.data.mc.mc4plus_based.filler = {0};
 
     ja->head.capacity       = 4;

@@ -710,7 +710,7 @@ public:
     * @param i is the Link number. 
     * @param col selects the part of the derived homogeneous matrix 
     *            to be put in the upper side of the Jacobian
-    *            matrix: 0 => x, 1 => y, 2 => z, 3 => p (default)
+    *            matrix: 0 => x, 1 => y, 2 => z, 3 => p
     * @return the analitical Jacobian.
     */
     yarp::sig::Matrix AnaJacobian(const unsigned int i, unsigned int col);
@@ -1219,11 +1219,16 @@ public:
     * @param chainJoints the vector containing the joints values to 
     *                    be used with the iKinLimb methods expressed
     *                    in degrees.
+    * @param jointEncodersBounds the matrix 15-by-2 containing the 
+    *                            minimum and maximum bounds of
+    *                            analog readings. By default, the
+    *                            matrix (255 0; 255 0; ...) is used.
     * @return true/false on success/failure. 
     */
     virtual bool getChainJoints(const yarp::sig::Vector &motorEncoders,
                                 const yarp::sig::Vector &jointEncoders,
-                                yarp::sig::Vector &chainJoints);
+                                yarp::sig::Vector &chainJoints,
+                                const yarp::sig::Matrix &jointEncodersBounds=yarp::math::zeros(1,2));
 };
 
 

@@ -124,13 +124,12 @@ typedef struct
 
 #if defined(SERVICE_PARSER_USE_MC)
 
-typedef struct
-{
-    eOmc_ctrlboard_t                type;
-    vector<double>                  matrixJ2M;
-    vector<double>                  matrixM2J;
-    vector<double>                  matrixE2J;
-} servMC_controller_t;
+// typedef struct
+// {
+//     vector<double>                  matrixJ2M;
+//     vector<double>                  matrixM2J;
+//     vector<double>                  matrixE2J;
+// } servMC_controller_t;
 
 
 
@@ -145,6 +144,8 @@ typedef struct
 typedef struct
 {
     eOmc_encoder_descriptor_t       desc;
+    int32_t                         resolution;
+    uint8_t                         numofnoisebits;
 } servMC_encoder_t;
 
 
@@ -161,13 +162,15 @@ typedef struct
     vector<eOmc_mc4broadcast_t>         mc4broadcasts;
     vector<eObrd_canlocation_t>         mc4joints;
 
-    servMC_controller_t                 controller;
+    //servMC_controller_t                 controller;
 
     vector<servMC_actuator_t>           actuators;
     vector<servMC_encoder_t>            encoder1s;
     vector<servMC_encoder_t>            encoder2s;
 
-    vector<int>                         joint2set;
+    //vector<int>                         joint2set;
+    //int                                 numofjointsets;
+    //vector<eOmc_jointset_configuration_t> jointset_cfgs;
 } servMCproperties_t;
 
 
@@ -210,7 +213,7 @@ public:
     bool parseService(Searchable &config, servConfigMC_t &mcconfig);
     bool parseService2(Searchable &config, servConfigMC_t &mcconfig); // the fixed one.
     bool convert(ConstString const &fromstring, eOmc_ctrlboard_t &controllerboard, bool &formaterror);
-    bool convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, int targetsize);
+    //bool convert(Bottle &bottle, vector<double> &matrix, bool &formaterror, int targetsize);
     bool convert(ConstString const &fromstring, eOmc_actuator_t &toactuatortype, bool &formaterror);
     bool convert(ConstString const &fromstring, eOmc_position_t &toposition, bool &formaterror);
     bool convert(ConstString const &fromstring, eOmc_encoder_t &toencodertype, bool &formaterror);
@@ -245,6 +248,10 @@ public:
     bool convert(eObrd_protocolversion_t const &prot, char *str, int len);
     bool convert(eObrd_firmwareversion_t const &firm, char *str, int len);
 
+    bool convert(ConstString const &fromstring, eOmc_pidoutputtype_t& pidoutputtype, bool& formaterror);
+    bool convert(ConstString const &fromstring, eOmc_jsetconstraint_t &jsetconstraint, bool& formaterror);
+    servMC_encoder_t * getEncoderAtMotor(int index);
+    servMC_encoder_t * getEncoderAtJoint(int index);
 public:
 
     servAScollector_t           as_service;
@@ -259,6 +266,11 @@ private:
     bool check_analog(yarp::os::Searchable &config, eOmn_serv_type_t type);
 
     bool check_motion(yarp::os::Searchable &config);
+
+    int getnumofjointsets(void);
+
+    bool copyjomocouplingInfo(eOmc_4jomo_coupling_t *jc_dest);
+
     
     // suggestion: split check_motion() in sub-methods which parse the groups ...
 };

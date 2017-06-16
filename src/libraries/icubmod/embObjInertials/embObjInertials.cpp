@@ -119,9 +119,9 @@ typedef enum
 
 } eOas_inertial1_position_t;
 
-const uint8_t fromip2indexof_thepositions[12] = { 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 3, 4 };
+const uint8_t fromip2indexof_thepositions[23] = { 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5 };
 
-const eOas_inertial1_position_t thepositions[5][2][16] =
+const eOas_inertial1_position_t thepositions[6][2][16] =
 {
     {   // none
         {   // can1
@@ -191,6 +191,20 @@ const eOas_inertial1_position_t thepositions[5][2][16] =
             eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
             eoas_inertial1_pos_r_lower_leg_1,   eoas_inertial1_pos_r_lower_leg_2,   eoas_inertial1_pos_r_lower_leg_3,   eoas_inertial1_pos_r_lower_leg_4,
             eoas_inertial1_pos_r_foot_2,        eoas_inertial1_pos_r_foot_1,        eoas_inertial1_pos_none,            eoas_inertial1_pos_none
+        }
+    },
+    {   // eb22
+        {   // can1
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_chest_1,
+            eoas_inertial1_pos_chest_2,         eoas_inertial1_pos_chest_3,         eoas_inertial1_pos_chest_4,         eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none
+        },
+        {   // can2
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,
+            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none,            eoas_inertial1_pos_none
         }
     }
 };

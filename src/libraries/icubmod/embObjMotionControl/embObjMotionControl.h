@@ -54,8 +54,8 @@ using namespace std;
 #include <yarp/dev/PolyDriver.h>
 #include <yarp/os/Semaphore.h>
 #include <yarp/os/RateThread.h>
-#include <yarp/dev/ControlBoardInterfacesImpl.h>
-#include <yarp/dev/ControlBoardInterfacesImpl.inl>
+//#include <yarp/dev/ControlBoardInterfacesImpl.h>
+//#include <yarp/dev/ControlBoardInterfacesImpl.inl>
 
 #include <yarp/dev/IVirtualAnalogSensor.h>
 
@@ -81,6 +81,7 @@ using namespace std;
 #include "EoMotionControl.h"
 
 #include "serviceParser.h"
+#include "mcParser.h"
 
 // - public #define  --------------------------------------------------------------------------------------------------
 
@@ -108,53 +109,47 @@ using namespace std;
 using namespace yarp::os;
 using namespace yarp::dev;
 
-struct ImpedanceLimits
-{
-    double min_stiff;
-    double max_stiff;
-    double min_damp;
-    double max_damp;
-    double param_a;
-    double param_b;
-    double param_c;
+// struct ImpedanceLimits
+// {
+//     double min_stiff;
+//     double max_stiff;
+//     double min_damp;
+//     double max_damp;
+//     double param_a;
+//     double param_b;
+//     double param_c;
+//
+// public:
+//     ImpedanceLimits()
+//     {
+//         min_stiff=0;
+//         max_stiff=0;
+//         min_damp=0;
+//         max_damp=0;
+//         param_a=0;
+//         param_b=0;
+//         param_c=0;
+//     }
+//
+//     double get_min_stiff()
+//     {
+//         return min_stiff;
+//     }
+//     double get_max_stiff()
+//     {
+//         return max_stiff;
+//     }
+//     double get_min_damp()
+//     {
+//         return min_damp;
+//     }
+//     double get_max_damp()
+//     {
+//         return max_damp;
+//     }
+// };
 
-public:
-    ImpedanceLimits()
-    {
-        min_stiff=0;
-        max_stiff=0;
-        min_damp=0;
-        max_damp=0;
-        param_a=0;
-        param_b=0;
-        param_c=0;
-    }
 
-    double get_min_stiff()
-    {
-        return min_stiff;
-    }
-    double get_max_stiff()
-    {
-        return max_stiff;
-    }
-    double get_min_damp()
-    {
-        return min_damp;
-    }
-    double get_max_damp()
-    {
-        return max_damp;
-    }
-};
-
-struct ImpedanceParameters
-{
-    double stiffness;
-    double damping;
-    ImpedanceLimits limits;
-    ImpedanceParameters() {stiffness=0; damping=0;}
-};
 
 struct SpeedEstimationParameters
 {
@@ -172,13 +167,7 @@ struct SpeedEstimationParameters
     }
 };
 
-struct MotorCurrentLimits
-{
-    double nominalCurrent;
-    double peakCurrent;
-    double overloadCurrent;
-    MotorCurrentLimits() {nominalCurrent=0; peakCurrent=0; overloadCurrent=0;}
-};
+
 
 
 class torqueControlHelper
@@ -218,6 +207,20 @@ class torqueControlHelper
     }
 };
 
+
+
+typedef struct
+{
+    vector<int>                         joint2set;
+    vector <vector <int> >              set2joint;
+    int                                 numofjointsets;
+    vector<eOmc_jointset_configuration_t> jointset_cfgs;
+} eomc_jointsetsInfo_t;
+
+
+
+
+
 namespace yarp {
     namespace dev  {
     class embObjMotionControl;
@@ -249,7 +252,7 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>,
     public ImplementPositionControl2,
     public ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>,
-    public ImplementPidControl<embObjMotionControl, IPidControl>,
+    public ImplementPidControl,
     public ImplementVelocityControl<embObjMotionControl, IVelocityControl>,
     public ImplementVelocityControl2,
     public ITorqueControlRaw,
@@ -259,13 +262,14 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public ImplementPositionDirect,
     public IInteractionModeRaw,
     public ImplementInteractionMode,
-    public IOpenLoopControlRaw,
-    public ImplementOpenLoopControl,
     public IRemoteVariablesRaw,
     public ImplementRemoteVariables,
     public IAxisInfoRaw,
     public ImplementAxisInfo,
-
+    public IPWMControlRaw,
+    public ImplementPWMControl,
+    public ICurrentControlRaw,
+    public ImplementCurrentControl,
     public IethResource
 {
 
@@ -273,10 +277,12 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
 private:
 
     char boardIPstring[20];
+    char boardName[30];
 
     TheEthManager* ethManager;
     EthResource* res;
     ServiceParser* parser;
+    mcParser *_mcparser;
 
     bool opened;
     bool verbosewhenok;
@@ -287,75 +293,69 @@ private:
     servConfigMC_t serviceConfig;
 #endif
 
-    int tot_packet_recv;
-    int errors;
+    //int tot_packet_recv;
+    //int errors;
 
     yarp::os::Semaphore _mutex;
 
 
-    int *_axisMap;                              /** axis remapping lookup-table */
     double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
+    double *_ampsToSensor;
+    double *_dutycycleToPWM;
     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
-    float *_DEPRECATED_encoderconversionfactor;            /** iCubDegrees to encoder conversion factors */
-    float *_DEPRECATED_encoderconversionoffset;            /** iCubDegrees offset */
     uint8_t *_jointEncoderType;                 /** joint encoder type*/
+    uint8_t *_jointNumOfNoiseBits;              /** Num of error bits passable for joint encoder */
     int    *_jointEncoderRes;                   /** joint encoder resolution */
     int    *_rotorEncoderRes;                   /** rotor encoder resolution */
+    uint8_t *_rotorNumOfNoiseBits;              /** Num of error bits passable for joint encoder */
     uint8_t *_rotorEncoderType;                  /** rotor encoder type*/
     double *_gearbox;                           /** the gearbox ratio */
-    bool   *_hasHallSensor;                     /** */
-    bool   *_hasTempSensor;                     /** */
-    bool   *_hasRotorEncoder;                   /** */
-    bool   *_hasRotorEncoderIndex;              /** */
-    bool   *_hasSpeedEncoder;                   /** */
-    int    *_rotorIndexOffset;                  /** */
-    int    *_motorPoles;                        /** */
-    double *_rotorlimits_max;                   /** */
-    double *_rotorlimits_min;                   /** */
-    Pid *_pids;                                 /** initial gains */
-    Pid *_vpids;                                /** initial velocity gains */
-    Pid *_tpids;                                /** initial torque gains */
-    Pid *_cpids;                                /** initial current gains */
-    bool _currentPidsAvailables;                /** is true if _cpids contains current pids read in xml file. Current pids are not mandatory file */
+    double *_gearboxE2J;                        /** the gearbox ratio */
+
+    eomc_twofocSpecificInfo *_twofocinfo;
+
+
+
+    std::vector<eomc_rotorLimits>           _rotorsLimits; /** contains limit about rotors such as position and pwm */
+    std::vector<eomc_jointLimits>           _jointsLimits; /** contains limit about joints such as position and velocity */
+    std::vector<eomc_motorCurrentLimits>    _currentLimits;
+    eomc_couplingInfo_t                     _couplingInfo; /** contains coupling matrix */
+    std::vector<eomc_jointsSet>             _jsets;
+    std::vector<int>                        _joint2set;
+    std::vector<eomc_timeouts_t>            _timeouts;
+
+    std::vector<eomc_impedanceParameters>  _impedance_params;   /** impedance parameters */ // TODO doubled!!! optimize using just one of the 2!!!
+    eomc_impedanceLimits                   *_impedance_limits;  /** impedancel imits */
+    eOmc_impedance_t                       *_cacheImpedance;    /* cache impedance value to split up the 2 sets */
+
+
+    eomcParser_pidInfo      *_ppids;
+    eomcParser_pidInfo      *_vpids;
+    eomcParser_trqPidInfo   *_tpids;
+    eomcParser_pidInfo      *_cpids;
+
     SpeedEstimationParameters *_estim_params;   /** parameters for speed/acceleration estimation */
-    string *_axisName;                          /** axis name */
-    JointTypeEnum *_jointType;                  /** axis type */
-    ImpedanceLimits     *_impedance_limits;     /** impedancel imits */
-    double *_limitsMin;                         /** joint limits, max*/
-    double *_limitsMax;                         /** joint limits, min*/
-    double *_kinematic_mj;                      /** the kinematic coupling matrix from joints space to motor space */
-    //double *_currentLimits;                     /** current limits */
-    MotorCurrentLimits *_currentLimits;
-    double *_maxJntCmdVelocity;                 /** max joint commanded velocity */
-    double *_maxMotorVelocity;                  /** max motor velocity */
-    int *_velocityShifts;                       /** velocity shifts */
-    int *_velocityTimeout;                      /** velocity shifts */
-    double *_kbemf;                             /** back-emf compensation parameter */
-    double *_ktau;                              /** motor torque constant */
-    int * _filterType;                          /** the filter type (int value) used by the force control algorithm */
+
+    int *_axisMap;                              /** axies map*/
+    std::vector<eomc_axisInfo_t> _axesInfo;
+
+
     double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
     bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
     #define MAX_POSITION_MOVE_INTERVAL 0.080
     double *_last_position_move_time;           /** time stamp for last received position move command*/
-    double *_motorPwmLimits;                    /** motors PWM limits*/
 
-    // TODO doubled!!! optimize using just one of the 2!!!
-    ImpedanceParameters *_impedance_params;     /** impedance parameters */
-    eOmc_impedance_t *_cacheImpedance;			/* cache impedance value to split up the 2 sets */
 
-    bool        useRawEncoderData;
-    bool        _pwmIsLimited;                         /** set to true if pwm is limited */
-    bool        _torqueControlEnabled;                 /** set to true if the torque control parameters are successfully loaded. If false, boards cannot switch in torque mode */
 
-    enum       torqueControlUnitsType {T_MACHINE_UNITS=0, T_METRIC_UNITS=1};
-    torqueControlUnitsType _torqueControlUnits;
-    torqueControlHelper    *_torqueControlHelper;
 
-    enum       positionControlUnitsType {P_MACHINE_UNITS=0, P_METRIC_UNITS=1};
-    positionControlUnitsType _positionControlUnits;
 
-    enum       velocityControlUnitsType {V_MACHINE_UNITS=0, V_METRIC_UNITS=1};
-    velocityControlUnitsType _velocityControlUnits;
+    //behaviour flags
+    bool        _useRawEncoderData;              /** if true than do not use calibration data */
+    bool        _pwmIsLimited;                  /** set to true if pwm is limited */
+
+
+     torqueControlHelper    *_torqueControlHelper;
+
 
     // debug purpose
 
@@ -372,10 +372,8 @@ private:
     // basic knowledge of my joints
     int   _njoints;                             // Number of joints handled by this EMS; this values will be extracted by the config file
 
-    double 		SAFETY_THRESHOLD;
-    // debug
-    int     start;
-    int     end;
+    double  SAFETY_THRESHOLD;
+
 
     // internal stuff
     bool    *_enabledAmp;       // Middle step toward a full enabled motor controller. Amp (pwm) plus Pid enable command must be sent in order to get the joint into an active state.
@@ -386,9 +384,11 @@ private:
     double  *_ref_command_speeds;   // used for velocity control.
     double  *_ref_positions;    // used for direct position control.
     double  *_ref_accs;         // for velocity control, in position min jerk eq is used.
-    double  *_ref_torques;      // for torque control.
 
     uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
+
+
+
 
 
 private:
@@ -396,18 +396,25 @@ private:
     bool askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size);
     bool checkRemoteControlModeStatus(int joint, int target_mode);
 
-    bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
-
     bool dealloc();
     bool isEpManagedByBoard();
-    bool parsePositionPidsGroup(Bottle& pidsGroup, Pid myPid[]);
-    bool parseVelocityPidsGroup(Bottle& pidsGroup, Pid myPid[]);
-    bool parseTorquePidsGroup(Bottle& pidsGroup, Pid myPid[], double kbemf[], double ktau[], int filterType[]);
-    bool parseImpedanceGroup_NewFormat(Bottle& pidsGroup, ImpedanceParameters vals[]);
-    bool parseCurrentPidsGroup(Bottle& pidsGroup, Pid myPid[]);
 
-//    bool getStatusBasic_withWait(const int n_joint, const int *joints, eOmc_joint_status_basic_t *_statuslist);             // helper function
-//    bool getInteractionMode_withWait(const int n_joint, const int *joints, eOenum08_t *_modes);     // helper function
+    bool convertPosPid(eomcParser_pidInfo myPidInfo[]);
+    bool convertTrqPid(eomcParser_trqPidInfo myPidInfo[]);
+
+    bool verifyUserControlLawConsistencyInJointSet(eomcParser_pidInfo *ipdInfo);
+    bool verifyUserControlLawConsistencyInJointSet(eomcParser_trqPidInfo *pidInfo);
+    bool verifyTorquePidshasSameUnitTypes(GenericControlUnitsType_t &unittype);
+    bool verifyUseMotorSpeedFbkInJointSet(int useMotorSpeedFbk []);
+    bool updatedJointsetsCfgWithControlInfo(void);
+    bool saveCouplingsData(void);
+    bool updatedJointsetsCfg(int joint, eOmc_pidoutputtype_t pidoutputtype);
+    void debugUtil_printJointsetInfo(void);
+    void debugUtil_printControlLaws(void);
+
+    bool isTorqueControlEnabled(int joint);
+    bool isVelocityControlEnabled(int joint);
+
     bool interactionModeStatusConvert_embObj2yarp(eOenum08_t embObjMode, int &vocabOut);
     bool interactionModeCommandConvert_yarp2embObj(int vocabMode, eOenum08_t &embOut);
 
@@ -417,11 +424,20 @@ private:
     bool controlModeStatusConvert_yarp2embObj(int vocabMode, eOmc_controlmode_t &embOut);
     int  controlModeStatusConvert_embObj2yarp(eOenum08_t embObjMode);
 
+    eOmc_pidoutputtype_t pidOutputTypeConver_eomc2fw(PidAlgorithmType_t controlLaw); //maybe a day we convert from yarp to fw!
+
     void copyPid_iCub2eo(const Pid *in, eOmc_PID_t *out);
     void copyPid_eo2iCub(eOmc_PID_t *in, Pid *out);
 
+    //bool pidsAreEquals(Pid &pid1, Pid &pid2);
+
     bool EncoderType_iCub2eo(const string* in, uint8_t *out);
     bool EncoderType_eo2iCub(const uint8_t *in, string* out);
+
+    // eOmn_serv_type_t getMcServiceType(void);
+
+    bool iNeedCouplingsInfo(void); //the device needs coupling info if it manages joints controlled by 2foc and mc4plus.
+    bool iMange2focBoards(void);
 
     // saturation check and rounding for 16 bit unsigned integer
     int U_16(double x) const
@@ -481,9 +497,9 @@ private:
 private:
 
     int fromConfig_NumOfJoints(yarp::os::Searchable &config);
-    bool fromConfig_Step1(yarp::os::Searchable &config);
+    bool fromConfig_getGeneralInfo(yarp::os::Searchable &config); //get general info: useRawEncoderData, useLiitedPwm, etc....
     bool fromConfig_Step2(yarp::os::Searchable &config);
-    bool fromConfig_Step3(yarp::os::Searchable &config);
+    bool fromConfig_readServiceCfg(yarp::os::Searchable &config);
 
 
 public:
@@ -514,30 +530,30 @@ public:
     bool init(void);
 
     /////////   PID INTERFACE   /////////
-    virtual bool setPidRaw(int j, const Pid &pid);
-    virtual bool setPidsRaw(const Pid *pids);
-    virtual bool setReferenceRaw(int j, double ref);
-    virtual bool setReferencesRaw(const double *refs);
-    virtual bool setErrorLimitRaw(int j, double limit);
-    virtual bool setErrorLimitsRaw(const double *limits);
-    virtual bool getErrorRaw(int j, double *err);
-    virtual bool getErrorsRaw(double *errs);
-//    virtual bool getOutputRaw(int j, double *out);    // uses iOpenLoop interface
-//    virtual bool getOutputsRaw(double *outs);         // uses iOpenLoop interface
-    virtual bool getPidRaw(int j, Pid *pid);
-    virtual bool getPidsRaw(Pid *pids);
-    virtual bool getReferenceRaw(int j, double *ref);
-    virtual bool getReferencesRaw(double *refs);
-    virtual bool getErrorLimitRaw(int j, double *limit);
-    virtual bool getErrorLimitsRaw(double *limits);
-    virtual bool resetPidRaw(int j);
-    virtual bool disablePidRaw(int j);
-    virtual bool enablePidRaw(int j);
-    virtual bool setOffsetRaw(int j, double v);
+    virtual bool setPidRaw(const PidControlTypeEnum& pidtype, int j, const Pid &pid);
+    virtual bool setPidsRaw(const PidControlTypeEnum& pidtype, const Pid *pids);
+    virtual bool setPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double ref);
+    virtual bool setPidReferencesRaw(const PidControlTypeEnum& pidtype, const double *refs);
+    virtual bool setPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double limit);
+    virtual bool setPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, const double *limits);
+    virtual bool getPidErrorRaw(const PidControlTypeEnum& pidtype, int j, double *err);
+    virtual bool getPidErrorsRaw(const PidControlTypeEnum& pidtype, double *errs);
+    virtual bool getPidOutputRaw(const PidControlTypeEnum& pidtype, int j, double *out);
+    virtual bool getPidOutputsRaw(const PidControlTypeEnum& pidtype, double *outs);
+    virtual bool getPidRaw(const PidControlTypeEnum& pidtype, int j, Pid *pid);
+    virtual bool getPidsRaw(const PidControlTypeEnum& pidtype, Pid *pids);
+    virtual bool getPidReferenceRaw(const PidControlTypeEnum& pidtype, int j, double *ref);
+    virtual bool getPidReferencesRaw(const PidControlTypeEnum& pidtype, double *refs);
+    virtual bool getPidErrorLimitRaw(const PidControlTypeEnum& pidtype, int j, double *limit);
+    virtual bool getPidErrorLimitsRaw(const PidControlTypeEnum& pidtype, double *limits);
+    virtual bool resetPidRaw(const PidControlTypeEnum& pidtype, int j);
+    virtual bool disablePidRaw(const PidControlTypeEnum& pidtype, int j);
+    virtual bool enablePidRaw(const PidControlTypeEnum& pidtype, int j);
+    virtual bool setPidOffsetRaw(const PidControlTypeEnum& pidtype, int j, double v);
+    virtual bool isPidEnabledRaw(const PidControlTypeEnum& pidtype, int j, bool* enabled);
 
     // POSITION CONTROL INTERFACE RAW
     virtual bool getAxes(int *ax);
-    virtual bool setPositionModeRaw();
     virtual bool positionMoveRaw(int j, double ref);
     virtual bool positionMoveRaw(const double *refs);
     virtual bool relativeMoveRaw(int j, double delta);
@@ -554,6 +570,8 @@ public:
     virtual bool getRefAccelerationsRaw(double *accs);
     virtual bool stopRaw(int j);
     virtual bool stopRaw();
+    bool helper_setPosPidRaw( int j, const Pid &pid);
+    bool helper_getPosPidRaw(int j, Pid *pid);
 
     // Position Control2 Interface
     virtual bool positionMoveRaw(const int n_joint, const int *joints, const double *refs);
@@ -569,7 +587,6 @@ public:
     virtual bool getTargetPositionsRaw(const int n_joint, const int *joints, double *refs);
 
     //  Velocity control interface raw
-    virtual bool setVelocityModeRaw();
     virtual bool velocityMoveRaw(int j, double sp);
     virtual bool velocityMoveRaw(const double *sp);
 
@@ -588,7 +605,6 @@ public:
     virtual bool setTorqueModeRaw(int j);
     virtual bool setImpedancePositionModeRaw(int j);
     virtual bool setImpedanceVelocityModeRaw(int j);
-    virtual bool setOpenLoopModeRaw(int j);
     virtual bool getControlModeRaw(int j, int *v);
     virtual bool getControlModesRaw(int *v);
 
@@ -656,7 +672,6 @@ public:
     virtual bool getHasRotorEncoderIndexRaw(int j, int& ret);
     virtual bool getMotorPolesRaw(int j, int& poles);
     virtual bool getRotorIndexOffsetRaw(int j, double& rotorOffset);
-    virtual bool getCurrentPidRaw(int j, Pid *pid);
     virtual bool getTorqueControlFilterType(int j, int& type);
     virtual bool getRotorLimitsRaw(int j, double *rotorMin, double *rotorMax);
 
@@ -701,7 +716,6 @@ public:
     virtual bool getVelLimitsRaw(int axis, double *min, double *max);
 
     // Torque control
-    virtual bool setTorqueModeRaw();
     virtual bool getTorqueRaw(int j, double *t);
     virtual bool getTorquesRaw(double *t);
     virtual bool getBemfParamRaw(int j, double *bemf);
@@ -713,35 +727,19 @@ public:
     virtual bool setRefTorquesRaw(const int n_joint, const int *joints, const double *t);
     virtual bool getRefTorquesRaw(double *t);
     virtual bool getRefTorqueRaw(int j, double *t);
-    virtual bool setTorquePidRaw(int j, const Pid &pid);
-    virtual bool setTorquePidsRaw(const Pid *pids);
-    virtual bool setTorqueErrorLimitRaw(int j, double limit);
-    virtual bool setTorqueErrorLimitsRaw(const double *limits);
-    virtual bool getTorqueErrorRaw(int j, double *err);
-    virtual bool getTorqueErrorsRaw(double *errs);
-    virtual bool getTorquePidOutputRaw(int j, double *out);
-    virtual bool getTorquePidOutputsRaw(double *outs);
-    virtual bool getTorquePidRaw(int j, Pid *pid);
-    virtual bool getTorquePidsRaw(Pid *pids);
-    virtual bool getTorqueErrorLimitRaw(int j, double *limit);
-    virtual bool getTorqueErrorLimitsRaw(double *limits);
-    virtual bool resetTorquePidRaw(int j);
-    virtual bool disableTorquePidRaw(int j);
-    virtual bool enableTorquePidRaw(int j);
-    virtual bool setTorqueOffsetRaw(int j, double v);
     virtual bool getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params);
     virtual bool setMotorTorqueParamsRaw(int j, const MotorTorqueParameters params);
     int32_t getRefSpeedInTbl(uint8_t boardNum, int j, eOmeas_position_t pos);
+    bool helper_setTrqPidRaw( int j, const Pid &pid);
+    bool helper_getTrqPidRaw(int j, Pid *pid);
 
     // IVelocityControl2
     virtual bool velocityMoveRaw(const int n_joint, const int *joints, const double *spds);
-    virtual bool setVelPidRaw(int j, const Pid &pid);
-    virtual bool setVelPidsRaw(const Pid *pids);
-    virtual bool getVelPidRaw(int j, Pid *pid);
-    virtual bool getVelPidsRaw(Pid *pids);
     virtual bool getRefVelocityRaw(const int joint, double *ref);
     virtual bool getRefVelocitiesRaw(double *refs);
     virtual bool getRefVelocitiesRaw(const int n_joint, const int *joints, double *refs);
+    bool helper_setVelPidRaw( int j, const Pid &pid);
+    bool helper_getVelPidRaw(int j, Pid *pid);
 
     // Impedance interface
     virtual bool getImpedanceRaw(int j, double *stiffness, double *damping);
@@ -752,7 +750,6 @@ public:
     virtual bool getWholeImpedanceRaw(int j, eOmc_impedance_t &imped);
 
     // PositionDirect Interface
-    virtual bool setPositionDirectModeRaw();
     virtual bool setPositionRaw(int j, double ref);
     virtual bool setPositionsRaw(const int n_joint, const int *joints, double *refs);
     virtual bool setPositionsRaw(const double *refs);
@@ -779,14 +776,29 @@ public:
     virtual bool getNominalCurrentRaw(int m, double *val);
     virtual bool setNominalCurrentRaw(int m, const double val);
 
-    // OPENLOOP interface
-    virtual bool setRefOutputRaw(int j, double v);
-    virtual bool setRefOutputsRaw(const double *v);
-    virtual bool getRefOutputRaw(int j, double *out);
-    virtual bool getRefOutputsRaw(double *outs);
-    virtual bool getOutputRaw(int j, double *out);
-    virtual bool getOutputsRaw(double *outs);
-    virtual bool setOpenLoopModeRaw();
+    // PWMControl
+    virtual bool setRefDutyCycleRaw(int j, double v);
+    virtual bool setRefDutyCyclesRaw(const double *v);
+    virtual bool getRefDutyCycleRaw(int j, double *v);
+    virtual bool getRefDutyCyclesRaw(double *v);
+    virtual bool getDutyCycleRaw(int j, double *v);
+    virtual bool getDutyCyclesRaw(double *v);
+
+    // CurrentControl
+    // virtual bool getAxes(int *ax);
+    //virtual bool getCurrentRaw(int j, double *t);
+    //virtual bool getCurrentsRaw(double *t);
+    virtual bool getCurrentRangeRaw(int j, double *min, double *max);
+    virtual bool getCurrentRangesRaw(double *min, double *max);
+    virtual bool setRefCurrentsRaw(const double *t);
+    virtual bool setRefCurrentRaw(int j, double t);
+    virtual bool setRefCurrentsRaw(const int n_joint, const int *joints, const double *t);
+    virtual bool getRefCurrentsRaw(double *t);
+    virtual bool getRefCurrentRaw(int j, double *t);
+
+    //helper
+    bool helper_setCurPidRaw(int j, const Pid &pid);
+    bool helper_getCurPidRaw(int j, Pid *pid);
 };
 
 #endif // include guard

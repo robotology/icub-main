@@ -53,11 +53,11 @@ source_group("Generated Files" FILES ${iCubGui_QRC_GEN_SRCS}
                                      ${iCubGui_UI_GEN_SRCS})
 
 
-include_directories(${GLUT_INCLUDE_DIRS}
+include_directories(${skinDynLib_INCLUDE_DIRS}
+                    ${GLUT_INCLUDE_DIRS}
                     ${OpenGL_INCLUDE_DIRS}
-                    ${Qt5_INCLUDE_DIRS}
-                    ${YARP_INCLUDE_DIRS}
-                    ${skinDynLib_INCLUDE_DIRS})
+                    ${Qt5_INCLUDE_DIRS}                    
+                    ${YARP_INCLUDE_DIRS})
 
 set(CMAKE_INCLUDE_CURRENT_DIR TRUE)
 

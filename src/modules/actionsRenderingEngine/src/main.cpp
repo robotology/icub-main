@@ -49,7 +49,7 @@ consists in the vocab [ack]/[nack] in case of success/failure.
 Some commands require to specify a visual target for
 the action required. In these cases the parameter [target] can be expressed as follows:
 
-(notation: [.] identifies a vocab, "." identifies a string)
+(notation: [.] identifies a vocab, "." identifies a string, <.> identifies a double)
 
 --[motion] when using motion cues to detect the visual target.
 
@@ -153,15 +153,19 @@ root reference frame.
 
 <b>POINT</b> \n
 format: [point] [target] \n
-action: the robot tries to point the specified [target] with its index finger.
+action: the robot tries to point at the specified [target] with its index finger.
+
+<b>POINT_FAR</b> \n
+format: [pfar] [target] \n
+action: the robot tries to point at the specified [target] located far from the robot.
 
 <b>LOOK</b> \n
-format: [look] [target] "param1" (block_eyes ver) \n
+format: [look] [target] "param1" (block_eyes <ver>) \n
 action: the robot looks at the specified [target]. "param1" can be set equal to "fixate" in order to
 keep the gaze fixating the requested target also when other
 commands are issued to the torso. The further option "wait" can be specified in
 order to let the robot wait until the target is under fixation before returning.\n
-If provided, the option (block_eyes ver) serves to block the
+If provided, the option (block_eyes <ver>) serves to block the
 eyes at the specified vergence while gazing. \n
 Note: the special target [hand] (with optional parameter
 "left"/"right") can be provided to have the robot look at its
@@ -378,6 +382,7 @@ Windows, Linux
 #define CMD_PICK                    VOCAB4('p','i','c','k')
 #define CMD_PUSH                    VOCAB4('p','u','s','h')
 #define CMD_POINT                   VOCAB4('p','o','i','n')
+#define CMD_POINT_FAR               VOCAB4('p','f','a','r')
 #define CMD_LOOK                    VOCAB4('l','o','o','k')
 #define CMD_TRACK                   VOCAB4('t','r','a','c')
 #define CMD_EXPECT                  VOCAB4('e','x','p','e')
@@ -653,7 +658,8 @@ public:
                 if (command.size()>1)
                 {
                     double execTime=command.get(1).asDouble();
-                    motorThr->changeExecTime(execTime);
+                    motorThr->changeExecTime(LEFT,execTime);
+                    motorThr->changeExecTime(RIGHT,execTime);
                     reply.addString("execution time updated");
                 }
                 else
@@ -1133,18 +1139,8 @@ public:
                         break;
                     }
 
-
                     case CMD_DROP:
                     {
-                        //to be fixed by config ini...choice of either check for holding or not
-                        //if(!motorThr->isHolding(command))
-                        //{
-                        //    reply.addVocab(NACK);
-                        //    reply.addString("Nothing to drop. Not holding anything");
-                        //    motorThr->release(command);
-                        //    motorThr->goHome(command);
-                        //    break;
-                       // }
                         idle = false;
                         if(check(command,"over") && command.size()>2)
                             visuoThr->getTarget(command.get(2),command);
@@ -1341,7 +1337,31 @@ public:
                         reply.addVocab(ACK);
                         break;
                     }
+                    case CMD_POINT_FAR:
+                    {
+                        if(command.size()<2)
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
 
+                        visuoThr->getTarget(command.get(1),command);
+
+                        if(!motorThr->point_far(command))
+                        {
+                            reply.addVocab(NACK);
+                            break;
+                        }
+
+                        if(!check(command,"still"))
+                        {
+                            Time::delay(2.0);
+                            motorThr->goHome(command);
+                        }
+
+                        reply.addVocab(ACK);
+                        break;
+                    }
                     case CMD_LOOK:
                     {
                         if(command.size()<2)

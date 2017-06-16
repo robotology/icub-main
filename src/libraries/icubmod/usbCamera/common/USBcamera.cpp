@@ -61,17 +61,18 @@ bool USBCameraDriver::open(yarp::os::Searchable& config)
 
     yarp::os::Property prop;
     prop.fromString(config.toString().c_str());
+    if(!prop.check("pixelType")){
+        switch(pixelType)
+        {
+            case VOCAB_PIXEL_MONO:
+                prop.put("pixelType", VOCAB_PIXEL_MONO);
+                break;
 
-    switch(pixelType)
-    {
-        case VOCAB_PIXEL_MONO:
-            prop.put("pixelType", VOCAB_PIXEL_MONO);
-            break;
-
-        case VOCAB_PIXEL_RGB:
-        default:
-            prop.put("pixelType", VOCAB_PIXEL_RGB);
-            break;
+            case VOCAB_PIXEL_RGB:
+            default:
+                prop.put("pixelType", VOCAB_PIXEL_RGB);
+                break;
+        }
     }
     if(!os_device->open(prop) )
         return false;
@@ -81,6 +82,7 @@ bool USBCameraDriver::open(yarp::os::Searchable& config)
     os_device->view(deviceControls);
     os_device->view(deviceControls2);
     os_device->view(deviceTimed);
+    os_device->view(deviceRgbVisualParam);
 
     if(deviceRaw)
     {
@@ -100,6 +102,7 @@ bool USBCameraDriver::close(void)
 {
     // close OS dependant device
     os_device->close();
+    delete os_device;
 	return true;
 }
 
@@ -122,6 +125,7 @@ int USBCameraDriver::height () const
     else
         return 0;
 }
+
 
 bool USBCameraDriver::getRawBuffer(unsigned char *buff)
 {
@@ -291,6 +295,76 @@ bool USBCameraDriver::setWhiteBalance(double blue, double red)
     return false;
 }
 
+int USBCameraDriver::getRgbHeight(){
+    if(deviceRgbVisualParam)
+        return deviceRgbVisualParam->getRgbHeight();
+    return false;
+}
+
+int USBCameraDriver::getRgbWidth(){
+    if(deviceRgbVisualParam)
+        return deviceRgbVisualParam->getRgbWidth();
+    return false;
+}
+
+
+bool USBCameraDriver::getRgbSupportedConfigurations(yarp::sig::VectorOf<CameraConfig> &configurations)
+{
+    if(deviceRgbVisualParam)
+        return deviceRgbVisualParam->getRgbSupportedConfigurations(configurations);
+    return false;
+}
+
+bool USBCameraDriver::getRgbResolution(int &width, int &height)
+{
+    if(deviceRgbVisualParam)
+        return deviceRgbVisualParam->getRgbResolution(width,height);
+    return false;
+}
+
+bool USBCameraDriver::setRgbResolution(int width, int height){
+    if(width<=0 || height<=0){
+        yError()<<"usbCamera: invalid width or height";
+        return false;
+    }
+    if(deviceRgbVisualParam){
+        _width=width;
+        _height=height;
+        return deviceRgbVisualParam->setRgbResolution(width, height);
+    }
+    return false;
+}
+
+bool USBCameraDriver::getRgbFOV(double &horizontalFov, double &verticalFov){
+    if(deviceRgbVisualParam)
+        return deviceRgbVisualParam->getRgbFOV(horizontalFov, verticalFov);
+    return false;
+}
+
+bool USBCameraDriver::setRgbFOV(double horizontalFov, double verticalFov){
+    if(deviceRgbVisualParam)
+        return deviceRgbVisualParam->setRgbFOV(horizontalFov, verticalFov);
+    return false;
+}
+
+bool USBCameraDriver::getRgbIntrinsicParam(yarp::os::Property &intrinsic){
+    if(deviceRgbVisualParam)
+        return deviceRgbVisualParam->getRgbIntrinsicParam(intrinsic);
+    return false;
+}
+
+bool USBCameraDriver::getRgbMirroring(bool &mirror){
+    if(deviceRgbVisualParam)
+        return deviceRgbVisualParam->getRgbMirroring(mirror);
+    return false;
+}
+
+bool USBCameraDriver::setRgbMirroring(bool mirror){
+    if(deviceRgbVisualParam)
+        return deviceRgbVisualParam->setRgbMirroring(mirror);
+    return false;
+}
+
 
 
 //// RGB ///
@@ -309,8 +383,16 @@ bool USBCameraDriverRgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image
 {
     if( (image.width() != _width) || (image.height() != _height) )
         image.resize(_width, _height);
-
     deviceRgb->getRgbBuffer(image.getRawImage());
+    return true;
+}
+
+bool USBCameraDriverRgb::getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
+{
+    if( (image.width() != _width) || (image.height() != _height) )
+        image.resize(_width, _height);
+
+    deviceRaw->getRawBuffer(image.getRawImage());
     return true;
 }
 
@@ -323,7 +405,6 @@ int USBCameraDriverRgb::height () const
 {
     return USBCameraDriver::height();
 }
-
 
 //// RAW ///
 USBCameraDriverRaw::USBCameraDriverRaw()  : USBCameraDriver()
@@ -355,6 +436,8 @@ int USBCameraDriverRaw::height () const
 {
     return USBCameraDriver::height();
 }
+
+
 
 /*  Implementation of IFrameGrabberControls2 interface
  *

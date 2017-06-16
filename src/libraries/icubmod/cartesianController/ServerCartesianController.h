@@ -92,6 +92,20 @@ public:
 };
 
 
+class TaskRefVelTargetGenerator
+{
+protected:
+    iCub::ctrl::Integrator *I;
+    yarp::sig::Matrix R;
+
+public:
+    TaskRefVelTargetGenerator(const double Ts, const yarp::sig::Vector &x0);
+    void reset(const yarp::sig::Vector &x0);
+    yarp::sig::Vector integrate(const yarp::sig::Vector &vel);
+    virtual ~TaskRefVelTargetGenerator();
+};
+
+
 class ServerCartesianController : public    yarp::dev::DeviceDriver,
                                   public    yarp::dev::IMultipleWrapper,
                                   public    yarp::dev::ICartesianControl,
@@ -128,7 +142,7 @@ protected:
     iCub::iKin::iKinLimb            *limbState,*limbPlan;
     iCub::iKin::iKinChain           *chainState,*chainPlan;
     iCub::iKin::MultiRefMinJerkCtrl *ctrl;
-    iCub::ctrl::Integrator          *taskRefVelTargetGen;
+    TaskRefVelTargetGenerator       *taskRefVelTargetGen;
 
     yarp::os::Property plantModelProperties;
     SmithPredictor     smithPredictor;

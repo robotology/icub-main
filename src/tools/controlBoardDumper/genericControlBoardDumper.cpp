@@ -203,7 +203,7 @@ bool GetControlModes::getData(double *e)
           else if (tmp[i] == VOCAB_CM_VELOCITY)        e[i] = 2;
           else if (tmp[i] == VOCAB_CM_MIXED)           e[i] = 3;
           else if (tmp[i] == VOCAB_CM_TORQUE)          e[i] = 4;
-          else if (tmp[i] == VOCAB_CM_OPENLOOP)        e[i] = 5;
+          else if (tmp[i] == VOCAB_CM_PWM)             e[i] = 5;
           else if (tmp[i] == VOCAB_CM_IDLE)            e[i] = 6;
           else                                         e[i] =-1;
       }

@@ -200,7 +200,7 @@ class ArmWavingMonitor : public RateThread
 {
     ICartesianControl *cartCtrl;
     Vector restPos, restOrien;
-    int ctxt;
+    double trajTime;
 
 public:
     /************************************************************************/
@@ -220,6 +220,8 @@ public:
     /************************************************************************/
     void afterStart(bool success)
     {
+        cartCtrl->getTrajTime(&trajTime);
+
         // start in suspended mode
         disable();
     }
@@ -234,7 +236,7 @@ public:
             cartCtrl->getPose(xdhat,restOrien);
             cartCtrl->askForPose(restPos,restOrien,xdhat,restOrien,qdhat);
 
-            cartCtrl->storeContext(&ctxt);
+            cartCtrl->getTrajTime(&trajTime);
             cartCtrl->setTrajTime(ACTIONPRIM_BALANCEARM_PERIOD);
 
             resume();
@@ -248,11 +250,9 @@ public:
     bool disable()
     {
         if (!isSuspended())
-        {            
+        {
             suspend();
-            cartCtrl->restoreContext(ctxt);
-            cartCtrl->deleteContext(ctxt);
-
+            cartCtrl->setTrajTime(trajTime);
             return true;
         }
         else
@@ -624,9 +624,6 @@ bool ActionPrimitives::open(Property &opt)
     polyHand.view(posCtrl);
     polyCart.view(cartCtrl);
 
-    // latch the controller context
-    cartCtrl->storeContext(&startup_context_id);
-
     // set tolerance
     cartCtrl->setInTargetTol(reach_tol);
 
@@ -650,7 +647,7 @@ bool ActionPrimitives::open(Property &opt)
         enableTorsoSw[i]=curDof[i];
 
     // start with torso disabled
-    disableTorsoDof();    
+    disableTorsoDof();
 
     jHandMin=7;                     // hand first joint
     posCtrl->getAxes(&jHandMax);    // hand last joint
@@ -719,7 +716,6 @@ void ActionPrimitives::close()
     if (polyCart.isValid())
     {
         printMessage(log::info,"closing cartesian driver ...");
-        cartCtrl->restoreContext(startup_context_id);
         polyCart.close();
     }
 

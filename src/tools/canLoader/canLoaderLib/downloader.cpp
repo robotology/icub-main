@@ -84,14 +84,20 @@ int cDownloader::get_dst_from_id (int id)
 
 //*****************************************************************/
 
-cDownloader::cDownloader()
+cDownloader::cDownloader(bool verbose)
 {
+    _verbose = verbose;
     board_list = NULL;
     board_list_size = 0;
     connected = false;
     m_idriver=NULL;
     sprsPage=0;
     set_canbus_id(-1);
+}
+
+bool cDownloader::set_verbose(bool verbose)
+{
+    _verbose = verbose;
 }
 
 
@@ -117,8 +123,10 @@ int cDownloader::stopdriver()
 
 //*****************************************************************/
 
-int cDownloader::initdriver(Searchable &config)
+int cDownloader::initdriver(Searchable &config, bool verbose)
 {
+    _verbose = verbose;
+
     int ret = 0; // 0 is ok, -1 is failure, -2 is retry ...
     if (m_idriver !=NULL)
         {
@@ -152,7 +160,7 @@ int cDownloader::initdriver(Searchable &config)
         tmp = config.check("canDeviceNum")?config.find("canDeviceNum").asInt():99;
     }
 
-    if (0 != (ret = m_idriver->init(config)))
+    if (0 != (ret = m_idriver->init(config, _verbose)))
         {
             if (m_idriver)
                 {
@@ -185,12 +193,12 @@ int cDownloader::initdriver(Searchable &config)
 }
 
 //*****************************************************************/
-int cDownloader::strain_save_to_eeprom  (int bus, int target_id)
+int cDownloader::strain_save_to_eeprom  (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -203,7 +211,7 @@ int cDownloader::strain_save_to_eeprom  (int bus, int target_id)
     // check if send_message was successful
     if (ret==0)
         {
-            yError ("Unable to send message\n");
+            if(_verbose) yError ("Unable to send message\n");
             return -1;
         }
 
@@ -217,17 +225,17 @@ int cDownloader::strain_save_to_eeprom  (int bus, int target_id)
         {
             if(rxBuffer[i].getData()[1]!=0)
             {
-                 yInfo ("Data has been saved in EEprom correctly\n");
+                 if(_verbose) yInfo ("Data has been saved in EEprom correctly\n");
                 return 1;
             }
             else
             {
-                 yError ("Error in data saving in EEprom \n");
+                 if(_verbose) yError ("Error in data saving in EEprom \n");
                  return 0;
             }
         }
     }
-    yError ("Save_to_eeprom didn't receive answer...maybe strain firmware is obsolete \n");
+    if(_verbose) yError ("Save_to_eeprom didn't receive answer...maybe strain firmware is obsolete \n");
     return -1;
 
 }
@@ -238,7 +246,7 @@ int cDownloader::sg6_get_amp_gain      (int bus, int target_id, char channel, un
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
      
@@ -252,7 +260,7 @@ int cDownloader::sg6_get_amp_gain      (int bus, int target_id, char channel, un
      // check if send_message was successful
      if (ret==0)
      {
-         yError ("Unable to send message\n");
+         if(_verbose) yError ("Unable to send message\n");
          return -1;
      }
 
@@ -274,7 +282,7 @@ int cDownloader::sg6_get_amp_gain      (int bus, int target_id, char channel, un
                  }
                  else
                  {
-                    yError ("sg6_get_amp_gain : invalid response\n");
+                    if(_verbose) yError ("sg6_get_amp_gain : invalid response\n");
                     return -1;
                  }
              }
@@ -289,7 +297,7 @@ int cDownloader::sg6_set_amp_gain      (int bus, int target_id, char channel, un
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -309,12 +317,12 @@ int cDownloader::sg6_set_amp_gain      (int bus, int target_id, char channel, un
 }
 
 //*****************************************************************/
-int cDownloader::strain_get_adc(int bus, int target_id, char channel, unsigned int& adc, int type)
+int cDownloader::strain_get_adc(int bus, int target_id, char channel, unsigned int& adc, int type, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -329,7 +337,7 @@ int cDownloader::strain_get_adc(int bus, int target_id, char channel, unsigned i
      // check if send_message was successful
      if (ret==0)
          {
-            yError ("Unable to send message\n");
+            if(_verbose) yError ("Unable to send message\n");
             return -1;
         }
 
@@ -350,7 +358,7 @@ int cDownloader::strain_get_adc(int bus, int target_id, char channel, unsigned i
                  }
                  else
                  {
-                    yError ("strain_get_adc : invalid response\n");
+                    if(_verbose) yError ("strain_get_adc : invalid response\n");
                     return -1;
                  }
              }
@@ -360,12 +368,12 @@ int cDownloader::strain_get_adc(int bus, int target_id, char channel, unsigned i
 }
 
 //*****************************************************************/
-int cDownloader::strain_get_offset(int bus, int target_id, char channel, unsigned int& offset)
+int cDownloader::strain_get_offset(int bus, int target_id, char channel, unsigned int& offset, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -395,7 +403,7 @@ int cDownloader::strain_get_offset(int bus, int target_id, char channel, unsigne
                 }
                 else
                 {
-                    yError ("strain_get_offset : invalid response\n");
+                    if(_verbose) yError ("strain_get_offset : invalid response\n");
                     return -1;
                 }
                 
@@ -405,12 +413,12 @@ int cDownloader::strain_get_offset(int bus, int target_id, char channel, unsigne
     return -1;
 }
 //*****************************************************************/
-int cDownloader::strain_get_calib_bias     (int bus, int target_id, char channel, signed int& bias)
+int cDownloader::strain_get_calib_bias     (int bus, int target_id, char channel, signed int& bias, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -435,12 +443,12 @@ int cDownloader::strain_get_calib_bias     (int bus, int target_id, char channel
      return -1;
 }
 //*****************************************************************/
-int cDownloader::strain_set_calib_bias     (int bus, int target_id)
+int cDownloader::strain_set_calib_bias     (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -455,12 +463,12 @@ int cDownloader::strain_set_calib_bias     (int bus, int target_id)
      return 0;
 }
 //*****************************************************************/
-int cDownloader::strain_set_calib_bias     (int bus, int target_id, char channel, int bias)
+int cDownloader::strain_set_calib_bias     (int bus, int target_id, char channel, int bias, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -480,12 +488,12 @@ int cDownloader::strain_set_calib_bias     (int bus, int target_id, char channel
 }
 
 //*****************************************************************/
-int cDownloader::strain_reset_calib_bias (int bus, int target_id)
+int cDownloader::strain_reset_calib_bias (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -500,12 +508,12 @@ int cDownloader::strain_reset_calib_bias (int bus, int target_id)
      return 0;
 }
 //*****************************************************************/
-int cDownloader::strain_get_curr_bias     (int bus, int target_id, char channel, signed int& bias)
+int cDownloader::strain_get_curr_bias     (int bus, int target_id, char channel, signed int& bias, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -530,12 +538,12 @@ int cDownloader::strain_get_curr_bias     (int bus, int target_id, char channel,
      return -1;
 }
 //*****************************************************************/
-int cDownloader::strain_set_curr_bias     (int bus, int target_id)
+int cDownloader::strain_set_curr_bias     (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -551,12 +559,12 @@ int cDownloader::strain_set_curr_bias     (int bus, int target_id)
 }
 
 //*****************************************************************/
-int cDownloader::strain_set_curr_bias     (int bus, int target_id, char channel, int bias)
+int cDownloader::strain_set_curr_bias     (int bus, int target_id, char channel, int bias, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -575,12 +583,12 @@ int cDownloader::strain_set_curr_bias     (int bus, int target_id, char channel,
      return 0;
 }
 //*****************************************************************/
-int cDownloader::strain_reset_curr_bias     (int bus, int target_id)
+int cDownloader::strain_reset_curr_bias     (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -596,12 +604,12 @@ int cDownloader::strain_reset_curr_bias     (int bus, int target_id)
 }
 
 //*****************************************************************/
-int cDownloader::strain_set_serial_number (int bus, int target_id, const char* serial_number)
+int cDownloader::strain_set_serial_number (int bus, int target_id, const char* serial_number, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -623,12 +631,12 @@ int cDownloader::strain_set_serial_number (int bus, int target_id, const char* s
 }
 
 //*****************************************************************/
-int cDownloader::strain_get_serial_number (int bus, int target_id, char* serial_number)
+int cDownloader::strain_get_serial_number (int bus, int target_id, char* serial_number, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -664,12 +672,12 @@ int cDownloader::strain_get_serial_number (int bus, int target_id, char* serial_
 }
 
 //*****************************************************************/
-int cDownloader::strain_get_eeprom_saved (int bus, int target_id, bool* status)
+int cDownloader::strain_get_eeprom_saved (int bus, int target_id, bool* status, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -697,12 +705,12 @@ int cDownloader::strain_get_eeprom_saved (int bus, int target_id, bool* status)
      return -1;
 }
 //*****************************************************************/
-int cDownloader::strain_get_matrix_gain     (int bus, int target_id, unsigned int& gain)
+int cDownloader::strain_get_matrix_gain     (int bus, int target_id, unsigned int& gain, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -731,12 +739,36 @@ int cDownloader::strain_get_matrix_gain     (int bus, int target_id, unsigned in
 }
 
 //*****************************************************************/
-int cDownloader::strain_set_matrix_gain     (int bus, int target_id, unsigned int  gain)
+int cDownloader::strain_set_matrix(int bus, int target_id, int matrix, string *errorstring)
+{
+    if(0 == matrix)
+    {
+        return 0;
+    }
+
+    if(NULL != errorstring)
+    {
+        *errorstring += "cDownloader::strain_set_matrix() cannot set a non zero matrix number";
+        //*errorstring += std::to_string(matrix); // c++ 11 ...........
+    }
+    return -1;
+}
+
+//*****************************************************************/
+
+int cDownloader::strain_get_matrix(int bus, int target_id, int &matrix, string *errorstring)
+{
+    matrix = 0;
+    return 0;
+}
+
+//*****************************************************************/
+int cDownloader::strain_set_matrix_gain     (int bus, int target_id, unsigned int  gain, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -754,12 +786,12 @@ int cDownloader::strain_set_matrix_gain     (int bus, int target_id, unsigned in
 }
 
 //*****************************************************************/
-int cDownloader::strain_get_full_scale     (int bus, int target_id, unsigned char channel, unsigned int&  full_scale)
+int cDownloader::strain_get_full_scale      (int bus, int target_id, unsigned char channel, unsigned int&  full_scale, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -787,12 +819,12 @@ int cDownloader::strain_get_full_scale     (int bus, int target_id, unsigned cha
      return -1;
 }
 //*****************************************************************/
-int cDownloader::strain_set_full_scale     (int bus, int target_id, unsigned char channel,  unsigned int full_scale)
+int cDownloader::strain_set_full_scale      (int bus, int target_id, unsigned char channel,  unsigned int full_scale, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -811,12 +843,12 @@ int cDownloader::strain_set_full_scale     (int bus, int target_id, unsigned cha
      return 0;
 }
 //*****************************************************************/
-int cDownloader::strain_get_matrix_rc     (int bus, int target_id, char r, char c, unsigned int& elem)
+int cDownloader::strain_get_matrix_rc     (int bus, int target_id, char r, char c, unsigned int& elem, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -848,7 +880,7 @@ int cDownloader::strain_get_matrix_rc     (int bus, int target_id, char r, char 
                 }
                 else
                 {
-                    yError ("strain_get_matrix_rc : invalid response\n");
+                    if(_verbose) yError ("strain_get_matrix_rc : invalid response\n");
                     return -1;
                 }
             }
@@ -857,12 +889,12 @@ int cDownloader::strain_get_matrix_rc     (int bus, int target_id, char r, char 
 }
 
 //*****************************************************************/
-int cDownloader::strain_set_matrix_rc     (int bus, int target_id, char r, char c, unsigned int  elem)
+int cDownloader::strain_set_matrix_rc     (int bus, int target_id, char r, char c, unsigned int  elem, int matrix, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -882,12 +914,12 @@ int cDownloader::strain_set_matrix_rc     (int bus, int target_id, char r, char 
 }
 
 //*****************************************************************/
-int cDownloader::strain_set_offset(int bus, int target_id, char channel, unsigned int offset)
+int cDownloader::strain_set_offset(int bus, int target_id, char channel, unsigned int offset, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError (" Driver not ready\n");
+            if(_verbose) yError (" Driver not ready\n");
             return -1;
         }
 
@@ -917,12 +949,12 @@ int cDownloader::strain_set_offset(int bus, int target_id, char channel, unsigne
 
 
 //*****************************************************************/
-int cDownloader::strain_start_sampling    (int bus, int target_id)
+int cDownloader::strain_start_sampling    (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -936,19 +968,19 @@ int cDownloader::strain_start_sampling    (int bus, int target_id)
     // check if send_message was successful
     if (ret==0)
         {
-            yError ("Unable to send message\n");
+            if(_verbose) yError ("Unable to send message\n");
             return -1;
         }
     return 0;
 }
 
 //*****************************************************************/
-int cDownloader::strain_stop_sampling    (int bus, int target_id)
+int cDownloader::strain_stop_sampling    (int bus, int target_id, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -962,19 +994,19 @@ int cDownloader::strain_stop_sampling    (int bus, int target_id)
     // check if send_message was successful
     if (ret==0)
         {
-            yError ("Unable to send message\n");
+            if(_verbose) yError ("Unable to send message\n");
             return -1;
         }
     return 0;
 }
 
 //*****************************************************************/
-int cDownloader::strain_calibrate_offset  (int bus, int target_id, unsigned int middle_val)
+int cDownloader::strain_calibrate_offset  (int bus, int target_id, unsigned int middle_val, string *errorstring)
 {
      // check if driver is running
      if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -1000,7 +1032,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, unsigned int 
         // check if send_message was successful
         if (ret==0)
             {
-                yError ("Unable to send message\n");
+                if(_verbose) yError ("Unable to send message\n");
                 return -1;
             }
         //read adc
@@ -1067,7 +1099,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, unsigned int 
             // check if send_message was successful
             if (ret==0)
             {
-                yError ("Unable to send message\n");
+                if(_verbose) yError ("Unable to send message\n");
                 return -1;
             }
             //read adc
@@ -1102,14 +1134,14 @@ int cDownloader::get_serial_no       (int bus, int target_id, char* serial_no)
     // check if driver is running
     if (m_idriver == NULL)
     {
-        yError ("Driver not ready\n");
+        if(_verbose) yError ("Driver not ready\n");
         return -1;
     }
 
     for (i=0; i<board_list_size; i++)
     {
-        if (board_list[i].pid==target_id &&
-            board_list[i].type==icubCanProto_boardType__strain)
+        if ((board_list[i].pid==target_id) &&
+            (board_list[i].type==icubCanProto_boardType__strain) || (board_list[i].type==icubCanProto_boardType__strain2))
         {
             this->strain_get_serial_number(bus, target_id, serial_no);
             ret = 0;
@@ -1134,7 +1166,7 @@ int cDownloader::get_firmware_version(int bus, int target_id, eObrd_cantype_t bo
     // check if driver is running
     if(NULL == m_idriver)
     {
-        yError ("cDownloader::get_firmware_version(): driver not ready\n");
+        if(_verbose) yError ("cDownloader::get_firmware_version(): driver not ready\n");
         return -1;
     }
 
@@ -1172,6 +1204,8 @@ int cDownloader::get_firmware_version(int bus, int target_id, eObrd_cantype_t bo
         case eobrd_cantype_strain:
         case eobrd_cantype_mais:
         case eobrd_cantype_6sg:
+        case eobrd_cantype_mtb4:
+        case eobrd_cantype_strain2:
         {
             boardisMC = false;
             txBuffer[0].setId(EOCANPROT_D_CREATE_CANID(ICUBCANPROTO_CLASS_POLLING_ANALOGSENSOR, 0, target_id));
@@ -1180,7 +1214,7 @@ int cDownloader::get_firmware_version(int bus, int target_id, eObrd_cantype_t bo
 
         default:
         {
-            yError ("cDownloader::get_firmware_version(): this board %d is not supported. returning all zeros\n", boardtype);
+            if(_verbose) yError ("cDownloader::get_firmware_version(): this board %d is not supported. returning all zeros\n", boardtype);
             return -2;
         }
     }
@@ -1190,7 +1224,7 @@ int cDownloader::get_firmware_version(int bus, int target_id, eObrd_cantype_t bo
     int ret = m_idriver->send_message(txBuffer, 1);
     if(ret==0)
     {
-        yError ("Unable to send message\n");
+        if(_verbose) yError ("Unable to send message\n");
         return -1;
     }
 
@@ -1250,7 +1284,7 @@ int cDownloader::get_board_info       (int bus, int target_id, char* board_info)
     // check if driver is running
     if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -1267,7 +1301,7 @@ int cDownloader::get_board_info       (int bus, int target_id, char* board_info)
     // check if send_message was successful
     if (ret==0)
         {
-            yError ("Unable to send message\n");
+            if(_verbose) yError ("Unable to send message\n");
             return -1;
         }
 
@@ -1328,7 +1362,7 @@ int cDownloader::change_board_info(int bus, int target_id, char* board_info)
     // check if driver is running
     if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -1358,7 +1392,7 @@ int cDownloader::change_board_info(int bus, int target_id, char* board_info)
     // check if send_message was successful
     if (ret==0)
         {
-            yError ("Unable to send message\n");
+            if(_verbose) yError ("Unable to send message\n");
             return -1;
         }
 
@@ -1379,7 +1413,7 @@ int cDownloader::change_card_address(int bus, int target_id, int new_id, int boa
     // check if driver is running
     if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -1389,6 +1423,8 @@ int cDownloader::change_card_address(int bus, int target_id, int new_id, int boa
         case icubCanProto_boardType__skin:
         case icubCanProto_boardType__mais:
         case icubCanProto_boardType__6sg:
+        case icubCanProto_boardType__mtb4:
+        case icubCanProto_boardType__strain2:
             txBuffer[0].setId((0x02 << 8) + (ID_MASTER << 4) + target_id);
             txBuffer[0].setLen(2);
             txBuffer[0].getData()[0]= ICUBCANPROTO_POL_MC_CMD__SET_BOARD_ID;
@@ -1409,7 +1445,7 @@ int cDownloader::change_card_address(int bus, int target_id, int new_id, int boa
         break;
 
         default:
-            yError ("Unknown board type for change of CAN address\n");
+            if(_verbose) yError ("Unknown board type for change of CAN address\n");
         return -1;
 
     }
@@ -1420,7 +1456,7 @@ int cDownloader::change_card_address(int bus, int target_id, int new_id, int boa
     // check if send_message was successful
     if (ret==0)
         {
-            yError ("Unable to send message\n");
+            if(_verbose) yError ("Unable to send message\n");
             return -1;
         }
         // pause
@@ -1439,7 +1475,7 @@ int cDownloader::initschede()
     // check if driver is running
     if (m_idriver == NULL)
         {
-            yError ("Driver not ready\n");
+            if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
 
@@ -1454,7 +1490,7 @@ int cDownloader::initschede()
         // in here we send the discovery command on the selected CAN bus (CAN1 / CAN2) or on both
         if(CanPacket::everyCANbus == get_canbus_id())
         {
-            yDebug("working on every CAN bus");
+            if(_verbose) yDebug("working on every CAN bus");
         }
 
         set_bus(txBuffer[0], get_canbus_id());
@@ -1478,7 +1514,7 @@ int cDownloader::initschede()
 
     if(CanPacket::everyCANbus == get_canbus_id())
     {
-        yDebug("Discovery on every CAN bus is not allowed: reverting to bus CAN1");
+        if(_verbose) yDebug("Discovery on every CAN bus is not allowed: reverting to bus CAN1");
         set_canbus_id(1);
     }
 
@@ -1495,7 +1531,7 @@ int cDownloader::initschede()
     // check if send_message was successful
     if (ret==0)
         {
-            yError ("Unable to send message\n");
+            if(_verbose) yError ("Unable to send message\n");
             return -1;
         }
 
@@ -1511,7 +1547,7 @@ int cDownloader::initschede()
             //Timeout: no answers
             if (read_messages==0)
                 {
-                    yError ("No answers\n");
+                    if(_verbose) yError ("No answers\n");
                     return -1;
                 }
 
@@ -1547,7 +1583,7 @@ int cDownloader::initschede()
                     times++;
                     if (times==100)
                         {
-                            yError ("No Boards found\n");
+                            if(_verbose) yError ("No Boards found\n");
                             return -1;
                         }
                 }
@@ -1558,7 +1594,7 @@ int cDownloader::initschede()
 
         }
 
-//    yDebug ("received all answers to FF\n");
+//    if(_verbose) yDebug ("received all answers to FF\n");
 
 
     //Create the list of the boards
@@ -1597,7 +1633,7 @@ int cDownloader::initschede()
                 }
         }
 
-    //yDebug ("about to ask boardinfo \n");
+    //if(_verbose) yDebug ("about to ask boardinfo \n");
 
     for (i=0; i<board_list_size; i++)
         {
@@ -1609,7 +1645,7 @@ int cDownloader::initschede()
         }
 
 
-    //yDebug ("about to ask serialno \n");
+    //if(_verbose) yDebug ("about to ask serialno \n");
 
     for (i=0; i<board_list_size; i++)
     {
@@ -1628,7 +1664,7 @@ int cDownloader::initschede()
 
 #if defined(TEST_GET_FW_VERSION)
 
-    yDebug ("about to ask fw version \n");
+    if(_verbose) yDebug ("about to ask fw version \n");
     for(i=0; i<board_list_size; i++)
     {
         // marco.accame on 25 may 2016: i have added this code for demostration of how we can use the get_firmware_version() function.
@@ -1639,11 +1675,13 @@ int cDownloader::initschede()
         memset(&info, 0, sizeof(info));
         bool noreply = true;
         int rr = get_firmware_version(board_list[i].bus, board_list[i].pid, (eObrd_cantype_t)board_list[i].type, &info, noreply);
-        fprintf(stderr, "board %d: ret = %d, reply = %d, type = %d, f=(%d, %d, %d), pr=(%d, %d)\n", i, rr, !noreply,
-                                    info.type,
-                                    info.firmware.major, info.firmware.minor, info.firmware.build,
-                                    info.protocol.major, info.protocol.minor);
-
+        if(_verbose)
+        {
+            fprintf(stderr, "board %d: ret = %d, reply = %d, type = %d, f=(%d, %d, %d), pr=(%d, %d)\n", i, rr, !noreply,
+                                        info.type,
+                                        info.firmware.major, info.firmware.minor, info.firmware.build,
+                                        info.protocol.major, info.protocol.minor);
+        }
         board_list[i].prot_vers_major = info.protocol.major;
         board_list[i].prot_vers_minor = info.protocol.minor;
         drv_sleep(10);
@@ -1651,11 +1689,11 @@ int cDownloader::initschede()
 #endif
 
 
-    yInfo("CONNECTED: %d Boards",board_list_size);
-    yDebug("  BUS:id   type     version");
+    if(_verbose) yInfo("CONNECTED: %d Boards",board_list_size);
+    if(_verbose) yDebug("  BUS:id   type     version");
     for (int i = 0; i < board_list_size; i++)
     {
-        yDebug(" CAN%d:%d   %5d     %d.%d.%d", board_list[i].bus, board_list[i].pid, board_list[i].type , board_list[i].appl_vers_major , board_list[i].appl_vers_minor , board_list[i].appl_vers_build);
+        if(_verbose) yDebug(" CAN%d:%d   %5d     %d.%d.%d", board_list[i].bus, board_list[i].pid, board_list[i].type , board_list[i].appl_vers_major , board_list[i].appl_vers_minor , board_list[i].appl_vers_build);
     }
 
     return 0;
@@ -1680,7 +1718,7 @@ int cDownloader::startscheda(int bus, int board_pid, bool board_eeprom, int boar
     // check if driver is running
     if (m_idriver == NULL)
         {
-            yError ("START_CMD: Driver not ready\n");
+            if(_verbose) yError ("START_CMD: Driver not ready\n");
             return -1;
         }
 
@@ -1709,6 +1747,8 @@ int cDownloader::startscheda(int bus, int board_pid, bool board_eeprom, int boar
     case icubCanProto_boardType__2foc:
     case icubCanProto_boardType__6sg:
     case icubCanProto_boardType__jog:
+    case icubCanProto_boardType__mtb4:
+    case icubCanProto_boardType__strain2:
     case icubCanProto_boardType__unknown:
     {
         // Send command
@@ -1730,7 +1770,7 @@ int cDownloader::startscheda(int bus, int board_pid, bool board_eeprom, int boar
     // check if send_message was successful
     if (ret==0)
         {
-            yError ("START_CMD: Unable to send message\n");
+            if(_verbose) yError ("START_CMD: Unable to send message\n");
             return -1;
         }
 
@@ -1756,7 +1796,7 @@ int cDownloader::startscheda(int bus, int board_pid, bool board_eeprom, int boar
   // return 0;  //DEBUG
 
     //ERROR
-    yError ("START_CMD: No ACK received from board %d\n", board_pid);
+    if(_verbose) yError ("START_CMD: No ACK received from board %d\n", board_pid);
     return -1;
 
 }
@@ -1768,7 +1808,7 @@ int cDownloader::stopscheda(int bus, int board_pid)
     // check if driver is running
     if (m_idriver == NULL)
         {
-            yError ("STOP_CMD: Driver not ready\n");
+            if(_verbose) yError ("STOP_CMD: Driver not ready\n");
             return -1;
         }
 
@@ -1782,7 +1822,7 @@ int cDownloader::stopscheda(int bus, int board_pid)
     // check if send_message was successful
     if (ret==0)
         {
-            yError ("STOP_CMD: Unable to send message\n");
+            if(_verbose) yError ("STOP_CMD: Unable to send message\n");
             return -1;
         }
 
@@ -1806,7 +1846,7 @@ int cDownloader::stopscheda(int bus, int board_pid)
         }
 
     //ERROR
-    yError ("TOP_CMD: No ACK received from board %d\n", board_pid);
+    if(_verbose) yError ("TOP_CMD: No ACK received from board %d\n", board_pid);
     return -1;
 }
 
@@ -1920,14 +1960,14 @@ int cDownloader::download_motorola_line(char* line, int len, int bus, int board_
         }
     else
         {
-            yError ("Failed Checksum\n");
+            if(_verbose) yError ("Failed Checksum\n");
             return -1;
         }
 
     //state: WAIT
     if (!(line[0] == 'S'))
         {
-            yError ("start tag character not found\n");
+            if(_verbose) yError ("start tag character not found\n");
             return -1;
         }
     i=1;
@@ -1976,7 +2016,7 @@ int cDownloader::download_motorola_line(char* line, int len, int bus, int board_
             // check if send_message was successful
             if (ret==0)
                 {
-                    yError ("Unable to send message\n");
+                    if(_verbose) yError ("Unable to send message\n");
                     return -1;
                 }
 
@@ -2014,7 +2054,7 @@ int cDownloader::download_motorola_line(char* line, int len, int bus, int board_
                     // check if send_message was successful
                     if (ret==0)
                         {
-                            yError ("Unable to send message\n");
+                            if(_verbose) yError ("Unable to send message\n");
                             return -1;
                         }
 
@@ -2053,7 +2093,7 @@ int cDownloader::download_motorola_line(char* line, int len, int bus, int board_
             // check if send_message was successful
             if (ret==0)
                 {
-                    yError ("Unable to send message\n");
+                    if(_verbose) yError ("Unable to send message\n");
                     return -1;
                 }
 
@@ -2069,13 +2109,13 @@ int cDownloader::download_motorola_line(char* line, int len, int bus, int board_
 
 
         default:
-            yError ("wrong format tag character %c (hex:%X)\n", sprsRecordType, sprsRecordType);
+            if(_verbose) yError ("wrong format tag character %c (hex:%X)\n", sprsRecordType, sprsRecordType);
             return -1;
 
             break;
         }
 
-    yError ("Can't reach here!\n");
+    if(_verbose) yError ("Can't reach here!\n");
     return -1;
 }
 
@@ -2112,9 +2152,9 @@ int cDownloader::download_hexintel_line(char* line, int len, int bus, int board_
     }
     else
     {
-      yError ("Failed Checksum\n");
+      if(_verbose) yError ("Failed Checksum\n");
       return -1;
-     }
+    }
 
     sprsState=SPRS_STATE_WAIT;
     // Init of parsing process
@@ -2126,7 +2166,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int bus, int board_
             //check the first character of the line
             if (!(line[0] == ':'))
             {
-                printf ("start tag character not found\n");
+                if(_verbose) yError("start tag character not found in hex file\n");
                 return -1;
             }
             else
@@ -2173,6 +2213,34 @@ int cDownloader::download_hexintel_line(char* line, int len, int bus, int board_
 
                 sprsPage=getvalue(line+i,4);
                 i=i+4;
+
+                // marco.accame on 25may17:
+                // here is extra safety to avoid an accidental loading of stm32 code (which starts at 0x0800) on dspic based boards.
+                // the bootloader on dspic boards in such a case erases the first sector which tells to execute to the bootloader
+                // at reset with teh result that the board become unreachable.
+                // as we shall release strain2.hex and mtb4.hex which use stm32 mpus w/ code at 0x0800 and beyond, any accidental
+                // attempt to program an old strain w/ strain2.hex becomes more probable. As the damage is high (removal of the the
+                // FT sensor + disassembly + re-programming + recalibration), some sort of protection is mandatory.
+                // instead, strain2/mtb4 are safe if any attempt is done to program them with old strain.hex/skin.hex code
+                if(sprsPage >= 0x0800)
+                {   // only mtb4 and strain2 are allowed to use such a code space.
+                    if((icubCanProto_boardType__mtb4 == board_type) || (icubCanProto_boardType__strain2 == board_type))
+                    {   // it is ok
+                    }
+                    else
+                    {   // be careful with that axe, eugene. ahhhhhhhhhhhhhhhh
+                        //if(_verbose)
+                        {
+                            char msg[32] = {0};
+                            snprintf(msg, sizeof(msg), "0x%04X", sprsPage);
+                            yError() << "Upload of FW to board" << eoboards_type2string2((eObrd_type_t)board_type, eobool_true) << "is aborted because it was detected a wrong page number =" << msg << "in the .hex file";
+                            yError() << "You must have loaded the .hex file of another board. Perform a new discovery, check the file name and retry.";
+                        }
+                        return -1;
+                    }
+                }
+
+
             break;
             }
             sprsState=SPRS_STATE_CHECKSUM;
@@ -2207,7 +2275,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int bus, int board_
 
 
                     {
-                        yError ("Unable to send message\n");
+                        if(_verbose) yError ("Unable to send message\n");
                         return -1;
                     }
                     //pause
@@ -2244,7 +2312,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int bus, int board_
                         // check if send_message was successful
                         if (ret==0)
                             {
-                                yError ("Unable to send message\n");
+                                if(_verbose) yError ("Unable to send message\n");
                                 return -1;
                             }
                         //pause
@@ -2276,7 +2344,7 @@ int cDownloader::download_hexintel_line(char* line, int len, int bus, int board_
                     // check if send_message was successful
                     if (ret==0)
                     {
-                        yError ("Unable to send message\n");
+                        if(_verbose) yError ("Unable to send message\n");
                         return -1;
                     }
                     //pause
@@ -2298,14 +2366,14 @@ int cDownloader::download_hexintel_line(char* line, int len, int bus, int board_
             } //end if
             else
             {
-            yError ("Checksum Error\n");
+                if(_verbose) yError ("Checksum Error\n");
             }
         break;
         } //end switch
     }
     while(true);
 
-    yError ("Can't reach here!\n");
+    if(_verbose) yError ("Can't reach here!\n");
     return -1;
 }
 //*****************************************************************/
@@ -2318,7 +2386,7 @@ int cDownloader::open_file(std::string file)
     filestr.open (file.c_str(), fstream::in);
     if (!filestr.is_open())
         {
-            yError ("Error opening file!\n");
+            if(_verbose) yError ("Error opening file!\n");
             return -1;
         }
 
@@ -2336,7 +2404,7 @@ int cDownloader::open_file(std::string file)
     filestr.open (file.c_str(), fstream::in);
     if (!filestr.is_open())
         {
-            yError ("Error opening file!\n");
+            if(_verbose) yError ("Error opening file!\n");
             return -1;
         }
 
@@ -2353,7 +2421,7 @@ int cDownloader::download_file(int bus, int board_pid, int download_type, bool b
 
     if (!filestr.is_open())
         {
-            yError ("File not open!\n");
+            if(_verbose) yError ("File not open!\n");
             return -1;
         }
 
@@ -2390,6 +2458,8 @@ int cDownloader::download_file(int bus, int board_pid, int download_type, bool b
                         case icubCanProto_boardType__2foc:
                         case icubCanProto_boardType__jog:
                         case icubCanProto_boardType__6sg:
+                        case icubCanProto_boardType__mtb4:
+                        case icubCanProto_boardType__strain2:
                              ret = download_hexintel_line(buffer, strlen(buffer), bus, board_pid, board_eeprom, download_type);
 
                         break;
@@ -2400,6 +2470,7 @@ int cDownloader::download_file(int bus, int board_pid, int download_type, bool b
                     }
                     if (ret != 0)
                         {
+                            if(_verbose) yError("fatal error during download: abort\n");
                             // fatal error during download, abort
                             filestr.close();
                             return -1;

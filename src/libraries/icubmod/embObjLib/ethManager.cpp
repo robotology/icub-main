@@ -21,10 +21,10 @@
 #include <yarp/os/NetType.h>
 #include <ace/Time_Value.h>
 
-#ifdef ICUB_USE_REALTIME_LINUX
+#if defined(__unix__)
 #include <pthread.h>
 #include <unistd.h>
-#endif //ICUB_USE_REALTIME_LINUX
+#endif
 
 using namespace yarp::dev;
 using namespace yarp::os;
@@ -301,7 +301,7 @@ bool EthBoards::get_LUTindex(eOipv4addr_t ipv4, uint8_t &index)
     index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
     index --;
-    
+
     if(index>=maxEthBoards)
     {
         return false;
@@ -318,12 +318,12 @@ IethResource* EthBoards::get_interface(eOipv4addr_t ipv4, iethresType_t type)
 {
     IethResource *dev = NULL;
     uint8_t index;
-    
+
     if(!get_LUTindex(ipv4, index))
     {
         return NULL;
     }
-    
+
     if(iethres_none == type)
     {
         return NULL;
@@ -645,7 +645,25 @@ bool TheEthManager::Transmission(void)
     return true;
 }
 
-bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t* boardipv4, char *boardipv4string, int stringsize)
+
+void ethEvalPresence(EthResource *r, void* p)
+{
+    if((NULL == r) || (NULL == p))
+    {
+        return;
+    }
+    r->Check();
+}
+
+
+bool TheEthManager::CheckPresence(void)
+{
+    ethBoards->execute(ethEvalPresence, this);
+    return true;
+}
+
+
+bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t* boardipv4, char *boardipv4string, int stringsize, char *boardNameStr, int sizeofBoardNameStr)
 {
     // Get PC104 address and port from config file
     Bottle groupPC104  = Bottle(cfgtotal.findGroup("PC104"));
@@ -708,6 +726,20 @@ bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4add
         eo_common_ipv4addr_to_string(ipv4, boardipv4string, stringsize);
     }
 
+
+
+    if((NULL != boardNameStr) && (0 != sizeofBoardNameStr))
+    {
+        Bottle groupEthBoardSettings = Bottle(groupETH_BOARD.findGroup("ETH_BOARD_SETTINGS"));
+        if(groupEthBoardSettings.isNull())
+        {
+            yError() << "TheEthManager::verifyEthBoardInfo() cannot find ETH_BOARD_SETTINGS group in config files";
+            return NULL;
+        }
+
+        Bottle paramNameBoard(groupEthBoardSettings.find("Name").asString());
+        snprintf(boardNameStr, sizeofBoardNameStr, "%s", paramNameBoard.toString().c_str());
+    }
     return true;
 }
 
@@ -1198,6 +1230,8 @@ bool TheEthManager::Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, b
 
     if(NULL != r)
     {
+        r->Tick();
+
         if(false == r->canProcessRXpacket(data, size))
         {   // cannot give packet to ethresource
             yError() << "TheEthManager::Reception() cannot give a received packet of size" << size << "to EthResource because EthResource::canProcessRXpacket() returns false.";
@@ -1350,7 +1384,7 @@ bool EthSender::threadInit()
 {
     yTrace() << "Do some initialization here if needed";
 
-#ifdef ICUB_USE_REALTIME_LINUX
+#if defined(__unix__)
     /**
      * Make it realtime (works on both RT and Standard linux kernels)
      * - increase the priority upto the system IRQ's priorities (50) and less than the receiver thread
@@ -1359,7 +1393,7 @@ bool EthSender::threadInit()
     struct sched_param thread_param;
     thread_param.sched_priority = sched_get_priority_max(SCHED_FIFO)/2 - 1; // = 48
     pthread_setschedparam(pthread_self(), SCHED_FIFO, &thread_param);
-#endif //ICUB_USE_REALTIME_LINUX
+#endif
 
     return true;
 }
@@ -1367,7 +1401,7 @@ bool EthSender::threadInit()
 
 
 void EthSender::run()
-{    
+{
     // by calling this metod of ethManager, we put protection vs concurrency internal to the class.
     // for tx we must protect the EthResource not being changed. they can be changed by a device such as
     // embObjMotionControl etc which adds or releases its resources.
@@ -1448,7 +1482,7 @@ bool EthReceiver::threadInit()
 {
     yTrace() << "Do some initialization here if needed";
 
-#ifdef ICUB_USE_REALTIME_LINUX
+#if defined(__unix__)
     /**
      * Make it realtime (works on both RT and Standard linux kernels)
      * - increase the priority upto the system IRQ's priorities (< 50)
@@ -1457,7 +1491,7 @@ bool EthReceiver::threadInit()
     struct sched_param thread_param;
     thread_param.sched_priority = sched_get_priority_max(SCHED_FIFO)/2; // = 49
     pthread_setschedparam(pthread_self(), SCHED_FIFO, &thread_param);
-#endif //ICUB_USE_REALTIME_LINUX
+#endif
 
     return true;
 }
@@ -1482,21 +1516,29 @@ void EthReceiver::run()
     flags |= MSG_DONTWAIT;
 #endif
 
-    static int earlyexit = 0;
+    static uint8_t earlyexit_prev = 0;
+    static uint8_t earlyexit_prevprev = 0;
 
-    //  marco.accame: set it as a fixed minimum number + the number of boards + an offset of 30% which depends on activity
-    int maxUDPpackets = 2 + EthReceiver::rateofthread*ethManager->getNumberOfResources() * (1.0f + 0.3f * earlyexit);
+    // marco.accame: set maxUDPpackets as a fixed minimum number (2) + the number of boards. all is multipled by rateofthread and by a gain which depends on past activity
+    // the gain on past activity is usually 1. if maxUDPpackets is not enough the gain becomes (1+f1). if again it is not enough, the gain becomes 1+f1+f2+f3 and stays as
+    // such until it is enough. at this time it becomes 1+f2 and then 1 again
+    const double f1 = 0.5;
+    const double f2 = 0.5;
+    const double f3 = 8.0;
+    double gain = 1.0 + f1*(1-earlyexit_prev) + f2*(1-earlyexit_prevprev) + f3*(1-earlyexit_prev)*(1-earlyexit_prevprev);
+    int maxUDPpackets = (2 + ethManager->getNumberOfResources()) * EthReceiver::rateofthread *  gain;
 
-    earlyexit = 0;
+
+    earlyexit_prevprev = earlyexit_prev;    // save previous early exit
+    earlyexit_prev = 0;                     // consider no early exit this time
 
     for(int i=0; i<maxUDPpackets; i++)
     {
         incoming_msg_size = recv_socket->recv((void *) incoming_msg_data, incoming_msg_capacity, sender_addr, flags);
         if(incoming_msg_size <= 0)
-        {
-            // marco.accame: i prefer using <= 0.
-            earlyexit = 1;
-            return;
+        { // marco.accame: i prefer using <= 0.
+            earlyexit_prev = 1; // yes, we have an early exit
+            break; // we break and do not return because we want to be sure to execute what is after the for() loop
         }
 
         // we have a packet ... we give it to the ethmanager for it parsing
@@ -1504,12 +1546,10 @@ void EthReceiver::run()
         ethManager->Reception(sender_addr, incoming_msg_data, incoming_msg_size, collectStatistics);
     }
 
+    // execute the check on presence of all eth boards.
+    ethManager->CheckPresence();
 }
 
 
 
 // eof
-
-
-
-

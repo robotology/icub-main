@@ -4,13 +4,8 @@
 </dependencies>
 <module>
       <name>yarpdev</name>
-      <parameters> --from camera/dragonfly2_config_left_bayer_640_480 </parameters>
+      <parameters> --from camera/ServerGrabberDualDragonBayer640_480.ini --split true</parameters>
 	  <node>pc104</node>
-   </module>
-   <module>
-      <name>yarpdev</name>
-      <parameters> --from camera/dragonfly2_config_right_bayer_640_480</parameters>
-      <node>pc104</node>
    </module>
     <module>
         <name>camCalib</name>

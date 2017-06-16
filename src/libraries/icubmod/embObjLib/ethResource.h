@@ -147,6 +147,41 @@ public:
 };
 
 
+class EthMonitorPresence
+{
+public:
+
+    struct Config
+    {
+        bool    enabled;
+        double  timeout;                // in seconds
+        double  periodmissingreport;    // in seconds
+        std::string name;
+        Config() : enabled(true), timeout(0.020), periodmissingreport(30.0), name("generic") {}
+        Config(bool en, double t, double p, const std::string& na) : enabled(en), timeout(t), periodmissingreport(p), name(na) {}
+    };
+
+    EthMonitorPresence();
+    ~EthMonitorPresence();
+
+    void config(const Config &cfg);
+    void enable(bool en);
+    bool isenabled();
+
+    void tick();
+    bool check();   // returns true if ok, false if missing
+
+private:
+
+    Config configuration;
+
+    double lastTickTime;
+    double lastMissingReportTime;
+    double lastHeardTime;
+    bool reportedMissing;
+};
+
+
 // -- class EthNetworkQuery
 // -- it is used to wait for a reply from a board.
 
@@ -248,6 +283,8 @@ public:
 
     bool serviceStop(eOmn_serv_category_t category, double timeout = 0.500);
 
+    bool Tick();
+    bool Check();
 
     // -- not used at the moment
     void checkIsAlive(double curr_time);
@@ -291,11 +328,15 @@ private:
 
     TheEthManager       *ethManager;
 
+    EthMonitorPresence monitorpresence;
+
+    bool regularsAreSet;
+
 private:
 
 
     bool verifyBoard();
-    bool setTXrate();
+    bool setTimingOfRunningCycle();
     bool verifyBoardPresence();
     bool verifyBoardTransceiver();
     bool cleanBoardBehaviour(void);

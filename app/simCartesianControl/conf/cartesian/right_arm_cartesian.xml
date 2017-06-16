@@ -1,4 +1,4 @@
-<devices>
+<devices robot="icubSim" build="0">
     <device name="right_arm_cartesian" type="cartesiancontrollerserver">
         <group name="GENERAL">
             <param name="ControllerName">icubSim/cartesianController/right_arm</param>

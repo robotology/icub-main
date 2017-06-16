@@ -39,8 +39,8 @@ struct boardInfo2_t
     uint32_t            capabilities;       // it contains a mask of eOuprot_proc_capabilities_t which tells what the remote board can do
     eOuprot_proctable_t processes;          // it contains the properties of the processes in the remote board
     uint8_t             boardinfo32[32];    // if boardinfo32[0] is not 0xff then boardinfo32[1] contains a descriptive string of the remote board (30 characters max).
-    bool                maintenanceIsActive;// tells if the maintenance is active (hence if processes.runningnow is either eUpdater or eApplPROGupdater).
-
+    bool                maintenanceIsActive;// tells if the maintenance is active (hence if the processes.runningnow is the eUpdater).
+    uint8_t             applicationdetails;
     eOversion_t         versionOfRunning;   // we keep this info (which for protversion is also inside processes.info[processes.runningnow].version) because ...
                                             // in the case of protversion 0 we dont have any info about which process is running now.
     string              moreinfostring;
@@ -56,6 +56,7 @@ struct boardInfo2_t
         macaddress = 0;
         boardtype = eobrd_ethtype_unknown;
         capabilities = 0;
+        applicationdetails = 0xff;
         memset(&processes, 0, sizeof(processes));
         processes.numberofthem = 0;
         processes.def2run = uprot_proc_None;
@@ -103,6 +104,8 @@ public:
 
     bool isInMaintenance();
 
+    bool isInApplication();
+
     void setMoreInfo(string &moreinfo);
 
     const string getMoreInfo(void);
@@ -125,6 +128,16 @@ class EthBoardList
 {
 public:
     vector<EthBoard> theboards;
+
+#if defined(WIN32)
+    enum {
+        ipv4selected = EO_COMMON_IPV4ADDR(0, 0, 0, 0),
+        ipv4all = EO_COMMON_IPV4ADDR(255, 255, 255, 255)
+    };
+#else
+    static const eOipv4addr_t ipv4all;
+    static const eOipv4addr_t ipv4selected;
+#endif
 
 public:
     EthBoardList();
@@ -151,7 +164,8 @@ public:
     int numberof(eOipv4addr_t ipv4);
 
     // retrieve a vector of pointers with a given ip address. if ipv4 is 0, then it retrieves all the selected
-    // we have a vector of pointer so that we can modify the boards (but dont delete them, use rem() or clear() instead).
+    // if 0xffffffff we retrieve them all
+    // we have a vector of pointer so that we can modify the boards (but dont delete them, use rem() or clear() instead).    
     vector<EthBoard *> get(eOipv4addr_t ipv4);
 
     EthBoard& operator[](int i);

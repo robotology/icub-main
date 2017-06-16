@@ -506,26 +506,6 @@ void CartesianSolver::unlock()
 
 
 /************************************************************************/
-double CartesianSolver::getNorm(const Vector &v, const string &typ)
-{
-    double ret=0.0;
-    int i1=0;
-    int i2=3;
-
-    if (typ=="ang")
-    {
-        i1=i2;
-        i2=v.length();
-    }
-
-    for (int i=i1; i<i2; i++)
-        ret+=v[i]*v[i];
-
-    return sqrt(ret);
-}
-
-
-/************************************************************************/
 void CartesianSolver::waitDOFHandling()
 {
     dofEvent.reset();
@@ -1183,18 +1163,12 @@ void CartesianSolver::printInfo(const string &typ, const Vector &xd,
                                 const double t)
 {
     // ensure same length of vectors
-    Vector _x=x.subVector(0,xd.length()-1);
-
-    // compute error
-    Vector e=xd-_x;
+    Vector x_=x.subVector(0,xd.length()-1);
 
     printf("   Request type       = %s\n",typ.c_str());
     printf("  Target rxPose   [m] = %s\n",xd.toString().c_str());
-    printf("  Target txPose   [m] = %s\n",_x.toString().c_str());
+    printf("  Target txPose   [m] = %s\n",x_.toString().c_str());
     printf("Target txJoints [deg] = %s\n",q.toString().c_str());
-    printf("  norm(rxPose-txPose) = pos [m]: %g\n",getNorm(e,"pos"));
-    if (ctrlPose==IKINCTRL_POSE_FULL)
-    printf("                        ang [*]: %g\n",getNorm(e,"ang"));
     printf("    computed in   [s] = %g\n",t);
 }
 
@@ -1658,13 +1632,13 @@ void CartesianSolver::afterStart(bool s)
 /************************************************************************/
 void CartesianSolver::suspend()
 {
-    if (isRunning())
-    {
-        yInfo("%s suspended",slvName.c_str());
-        RateThread::suspend();
-    }
-    else
+    if (isSuspended())
         yWarning("%s is already suspended",slvName.c_str());
+    else
+    {
+        RateThread::suspend();
+        yInfo("%s suspended",slvName.c_str());        
+    }
 }
 
 
@@ -1672,10 +1646,10 @@ void CartesianSolver::suspend()
 void CartesianSolver::resume()
 {
     if (isSuspended())
-    {
-        yInfo("%s resumed",slvName.c_str());
+    {        
         initPos();
         RateThread::resume();
+        yInfo("%s resumed",slvName.c_str());
     }
     else
         yWarning("%s is already running",slvName.c_str());

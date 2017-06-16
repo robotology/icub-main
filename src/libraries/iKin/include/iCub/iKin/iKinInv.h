@@ -469,7 +469,7 @@ public:
     *       (here a vector of 0s is returned). To do that, J and
     *       pinvJ are already computed when this method is called.
     */
-    virtual yarp::sig::Vector computeGPM() { yarp::sig::Vector ret(dim); ret=0.0; return ret; }
+    virtual yarp::sig::Vector computeGPM() { return yarp::sig::Vector(dim,0.0); }
 
     virtual void setChainConstraints(bool _constrained);
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, const unsigned int verbose=0);
@@ -650,7 +650,7 @@ public:
     *       pinvJ are already computed when this method is called.
     *       The LM-inverse matrix pinvLM is also available.
     */
-    virtual yarp::sig::Vector computeGPM() { yarp::sig::Vector ret(dim); ret=0.0; return ret; }
+    virtual yarp::sig::Vector computeGPM() { return yarp::sig::Vector(dim,0.0); }
 
     virtual void setChainConstraints(bool _constrained);
     virtual yarp::sig::Vector iterate(yarp::sig::Vector &xd, const unsigned int verbose=0);

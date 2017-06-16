@@ -609,7 +609,8 @@ void gravityCompensatorThread::feedFwdGravityControl(int part_ctrlJnt, string s_
         switch(ctrl_mode)
         {
             //for all this control modes do nothing
-            case VOCAB_CM_OPENLOOP:
+            case VOCAB_CM_CURRENT:
+            case VOCAB_CM_PWM:
             case VOCAB_CM_IDLE:
             case VOCAB_CM_UNKNOWN:
             case VOCAB_CM_HW_FAULT:

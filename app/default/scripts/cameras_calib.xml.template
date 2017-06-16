@@ -4,12 +4,7 @@
 </dependencies> 
 <module>
   <name>yarpdev</name>
-      <parameters> --from camera/dragonfly2_config_left.ini</parameters>
-  <node>pc104</node>
-</module>
-<module>
-  <name>yarpdev</name>
-      <parameters> --from camera/dragonfly2_config_right.ini</parameters>
+      <parameters> --from camera/ServerGrabberDualDragon.ini --split true</parameters>
   <node>pc104</node>
 </module>
 <module>
@@ -51,22 +46,22 @@
 <connection>
   <from>/icub/cam/left</from>
   <to>/icub/camcalib/left/in</to>
-  <protocol>tcp</protocol>
+  <protocol>udp</protocol>
 </connection>
 <connection>
   <from>/icub/cam/right</from>
   <to>/icub/camcalib/right/in</to>
-  <protocol>tcp</protocol>
+  <protocol>udp</protocol>
 </connection>
 <connection>
   <from>/icub/camcalib/left/out</from>
   <to>/icub/view/left</to>
-  <protocol>tcp</protocol>
+  <protocol>udp</protocol>
 </connection>
 <connection>
   <from>/icub/camcalib/right/out</from>
   <to>/icub/view/right</to>
-  <protocol>tcp</protocol>
+  <protocol>udp</protocol>
 </connection>
 </application>
 

@@ -41,7 +41,6 @@
 #define HEAD_MODE_TRACK_TEMP        3
 #define HEAD_MODE_TRACK_CART        4
 #define HEAD_MODE_TRACK_FIX         5
-#define HEAD_MODE_LOOK              6
 
 #define ARM_MODE_IDLE               0
 #define ARM_MODE_LEARN_ACTION       1
@@ -137,8 +136,7 @@ private:
     IInteractionMode                    *int_mode_arm[2];
     IImpedanceControl                   *ctrl_impedance_arm[2];
 
-    int                                 initial_gaze_context;
-    int                                 default_gaze_context;
+    int                                 gaze_context;
 
     bool                                gazeUnderControl;
     bool                                status_impedance_on;
@@ -149,6 +147,7 @@ private:
     ff2LayNN_tansig_purelin             net;
 
     ActionPrimitivesLayer2              *action[2];
+    int                                 action_context[2];
 
     bool                                homeFixCartType;
     Vector                              homeFix;
@@ -180,7 +179,7 @@ private:
 
     //tactile perception
     iCub::perception::Model             *graspModel[2];
-    string                              graspPath[2];
+    string                              graspFile[2];
 
     //stereo 2 cartesian mode
     int                                 modeS2C;
@@ -218,11 +217,18 @@ private:
     string                              actions_path;
     Dragger                             dragger;
 
-    Vector                              gaze_fix_point;
     Vector                              track_cartesian_target;
     double                              avoid_table_height[2];
 
     double                              random_pos_y;
+
+    bool storeContext(const int arm);
+    bool restoreContext(const int arm);
+    bool deleteContext(const int arm);
+
+    bool storeContext(ActionPrimitives *action);
+    bool restoreContext(ActionPrimitives *action);
+    bool deleteContext(ActionPrimitives *action);
 
     bool loadExplorationPoses(const string &file_name);
     int checkArm(int arm);
@@ -238,9 +244,8 @@ private:
     bool saveKinematicOffsets();
     bool getArmOptions(Bottle &b, const int &arm);
     void goWithTorsoUpright(ActionPrimitives *action, const Vector &xin, const Vector &oin);
-    void close();
-    
     bool avoidTable(bool avoid);
+    void close();
 
 public:
     MotorThread(ResourceFinder &_rf, Initializer *initializer)
@@ -283,7 +288,8 @@ public:
         Bottle *bTarget=options.find("target").asList();
         if (!gazeUnderControl)
         {
-            ctrl_gaze->restoreContext(default_gaze_context);
+            ctrl_gaze->stopControl();
+            ctrl_gaze->restoreContext(gaze_context);
 
             if (checkOptions(options,"no_sacc"))
                 ctrl_gaze->setSaccadesMode(false);
@@ -324,7 +330,6 @@ public:
     {
         head_mode=HEAD_MODE_IDLE;
         ctrl_gaze->stopControl();
-        ctrl_gaze->restoreContext(initial_gaze_context);
         gazeUnderControl=false;
     }
 
@@ -381,6 +386,7 @@ public:
     bool powerGrasp(Bottle &options);
     bool push(Bottle &options);
     bool point(Bottle &options);
+    bool point_far(Bottle &options);
     bool look(Bottle &options);
     bool hand(const Bottle &options, const string &type="", bool *holding=NULL);
     bool grasp(const Bottle &options);
@@ -414,7 +420,7 @@ public:
     bool suspendLearningModeKinOffset(Bottle &options);
 
     bool changeElbowHeight(const int arm, const double height, const double weight);
-    bool changeExecTime(const double execTime);
+    bool changeExecTime(const int arm, const double execTime);
 
     bool setImpedance(bool turn_on);
     bool setTorque(bool turn_on, int arm=ARM_IN_USE);

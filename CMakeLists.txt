@@ -20,11 +20,13 @@ endif()
 
 project(iCub)
 
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+
 #### Find YARP, require that YARP version is at least ICUB_REQYARP_VERSION
 set(ICUB_REQYARP_VERSION_MAJOR "2")
 set(ICUB_REQYARP_VERSION_MINOR "3")
-set(ICUB_REQYARP_VERSION_PATCH "68")
-set(ICUB_REQYARP_VERSION_TWEAK "0")
+set(ICUB_REQYARP_VERSION_PATCH "69")
+set(ICUB_REQYARP_VERSION_TWEAK "10")
 
 if(ICUB_REQYARP_VERSION_TWEAK)
     set(ICUB_REQYARP_VERSION ${ICUB_REQYARP_VERSION_MAJOR}.${ICUB_REQYARP_VERSION_MINOR}.${ICUB_REQYARP_VERSION_PATCH}.${ICUB_REQYARP_VERSION_TWEAK})
@@ -53,15 +55,6 @@ set_property(GLOBAL PROPERTY ICUB_DEPENDENCIES_FLAGS) # this is populated iCubFi
 #
 # add yarp definitions
 add_definitions(${YARP_DEFINES})   #this contains also -D_REENTRANT
-
-IF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    option(ICUB_REALTIME_EXPERIMENTAL "Experimental: Prioritize essential threads to run in the real-time mode" OFF)
-    mark_as_advanced (ICUB_REALTIME_EXPERIMENTAL)
-
-    if(ICUB_REALTIME_EXPERIMENTAL)
-        add_definitions(-DICUB_USE_REALTIME_LINUX)
-    endif(ICUB_REALTIME_EXPERIMENTAL)
-ENDIF(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 # pick up yarp's cmake scripts
 list(APPEND CMAKE_MODULE_PATH ${YARP_MODULE_PATH})
@@ -136,7 +129,6 @@ set_property(CACHE YARP_FORCE_DYNAMIC_PLUGINS PROPERTY TYPE INTERNAL)
 # temporary options for debugging/testing new functionalities
 set(ICUB_CANPROTOCOL_STRICT TRUE CACHE BOOL "Enable strict check of canbus protocol and firmware versions" FORCE)
 set(ICUB_CANMASKS_STRICT_FILTER TRUE CACHE BOOL "Enable strict filtering on can address. Needed with sharedcan.")
-set(ICUB_AUTOMATIC_MODE_SWITCHING FALSE CACHE BOOL "Enable automatic switching between control modes")
 set(ICUB_ASK_REFERENCE_TO_FIRMWARE TRUE CACHE BOOL "Pos/Vel/Trq references will be asked to the firmware instead of being cached by motion control")
 
 ###################### End options and definitions

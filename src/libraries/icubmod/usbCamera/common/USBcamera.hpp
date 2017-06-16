@@ -27,6 +27,7 @@
 #include <yarp/dev/FrameGrabberInterfaces.h>
 #include <yarp/os/Stamp.h>
 #include <yarp/dev/PreciselyTimed.h>
+#include <yarp/dev/IVisualParams.h>
 
 namespace yarp {
     namespace dev {
@@ -51,7 +52,8 @@ class yarp::dev::USBCameraDriver :
     public IFrameGrabber,
     public IFrameGrabberRgb,
     public IFrameGrabberControls,
-    public IFrameGrabberControls2
+    public IFrameGrabberControls2,
+    public IRgbVisualParams
 {
 protected:
     USBCameraDriver(const USBCameraDriver&);
@@ -62,6 +64,7 @@ protected:
     DeviceDriver            *os_device;
     IFrameGrabberControls   *deviceControls;
     IFrameGrabberControls2  *deviceControls2;
+    IRgbVisualParams        *deviceRgbVisualParam;
 
     int _width;
     int _height;
@@ -286,11 +289,92 @@ public:
     virtual bool setMode(int feature, FeatureMode mode);
     virtual bool getMode(int feature, FeatureMode *mode);
     virtual bool setOnePush(int feature);
+    /**
+     * Return the height of each frame.
+     * @return rgb image height
+     */
+    virtual int getRgbHeight();
+
+    /**
+     * Return the width of each frame.
+     * @return rgb image width
+     */
+    virtual int getRgbWidth();
+
+    /**
+     * Get the possible configurations of the camera
+     * @param configurations  list of camera supported configurations as CameraConfig type
+     * @return true on success
+     */
+
+    virtual bool getRgbSupportedConfigurations(yarp::sig::VectorOf<CameraConfig> &configurations);
+    /**
+     * Get the resolution of the rgb image from the camera
+     * @param width  image width
+     * @param height image height
+     * @return true on success
+     */
+
+    virtual bool getRgbResolution(int &width, int &height);
+
+    /**
+     * Set the resolution of the rgb image from the camera
+     * @param width  image width
+     * @param height image height
+     * @return true on success
+     */
+
+    virtual bool setRgbResolution(int width, int height);
+
+    /**
+     * Get the field of view (FOV) of the rgb camera.
+     *
+     * @param  horizontalFov will return the value of the horizontal fov in degrees
+     * @param  verticalFov   will return the value of the vertical fov in degrees
+     * @return true on success
+     */
+    virtual bool getRgbFOV(double &horizontalFov, double &verticalFov);
+
+    /**
+     * Set the field of view (FOV) of the rgb camera.
+     *
+     * @param  horizontalFov will set the value of the horizontal fov in degrees
+     * @param  verticalFov   will set the value of the vertical fov in degrees
+     * @return true on success
+     */
+    virtual bool setRgbFOV(double horizontalFov, double verticalFov);
+
+    /**
+     * Get the intrinsic parameters of the rgb camera
+     * @param  intrinsic  return a Property containing intrinsic parameters
+     *       of the optical model of the camera.
+     * @return true if success
+     *
+     * Look at IVisualParams.h for more details
+     */
+    virtual bool getRgbIntrinsicParam(yarp::os::Property &intrinsic);
+
+    /**
+     * Get the mirroring setting of the sensor
+     *
+     * @param mirror: true if image is mirrored, false otherwise
+     * @return true if success
+     */
+    virtual bool getRgbMirroring(bool &mirror);
+
+    /**
+     * Set the mirroring setting of the sensor
+     *
+     * @param mirror: true if image should be mirrored, false otherwise
+     * @return true if success
+     */
+    virtual bool setRgbMirroring(bool mirror);
 };
 
 
 class yarp::dev::USBCameraDriverRgb :   public yarp::dev::USBCameraDriver,
-                                        public IFrameGrabberImage
+                                        public IFrameGrabberImage,
+                                        public IFrameGrabberImageRaw
 {
 private:
     USBCameraDriverRgb(const USBCameraDriverRgb&);
@@ -309,6 +393,14 @@ public:
         * @return true/false upon success/failure
         */
     bool getImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image);
+
+    /**
+        * FrameGrabber image interface, returns the last acquired frame as
+        * a raw image.
+        * @param image that will store the last frame.
+        * @return true/false upon success/failure
+        */
+    bool getImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image);
 
     /**
         * Return the height of each frame.

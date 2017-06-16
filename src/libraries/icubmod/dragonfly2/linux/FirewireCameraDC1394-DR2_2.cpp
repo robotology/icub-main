@@ -55,6 +55,29 @@ static dc1394error_t set_embedded_timestamp(dc1394camera_t *camera,
     return (enable==current)?DC1394_SUCCESS: DC1394_FAILURE;
 }
 
+CFWCamera_DR2_2::CFWCamera_DR2_2(bool raw): mRawDriver(raw),
+    m_pCamera(NULL),
+    m_pCameraList(NULL),
+    m_dc1394_handle(NULL),
+    m_LastSecond(0),
+    m_SecondOffset(0)
+{
+    configFx = false;
+    configFy = false;
+    configPPx = false;
+    configPPy =false;
+    configRet = false;
+    configDistM = false;
+    configIntrins = false;
+    m_ConvFrame.image=NULL;
+}
+
+int CFWCamera_DR2_2::width() { return m_XDim; }
+int CFWCamera_DR2_2::height(){ return m_YDim; }
+int CFWCamera_DR2_2::getRawBufferSize(){ return m_RawBufferSize; }
+
+const yarp::os::Stamp& CFWCamera_DR2_2::getLastInputStamp() { return m_Stamp; }
+
 double CFWCamera_DR2_2::bytesPerPixel(dc1394color_coding_t pixelFormat)
 {
     switch (pixelFormat)
@@ -171,6 +194,73 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
     //bool bDR2=config.check("DR2");
 
     //bool bDR2=true;
+
+    //IVisualParams
+
+    yarp::os::Value* retM;
+    retM=yarp::os::Value::makeList("1.0 0.0 0.0 0.0 1.0 0.0 0.0 0.0 1.0");
+    configFx=config.check("horizontalFov");
+    configFy=config.check("verticalFov");
+    configPPx=config.check("principalPointX");
+    configPPy=config.check("principalPointY");
+    configRet=config.check("retificationMatrix");
+    configDistM=config.check("distortionModel");
+    yarp::os::Bottle bt;
+    bt=config.findGroup("cameraDistortionModelGroup");
+    if(!bt.isNull())
+    {
+        if(bt.find("name").isNull() || bt.find("k1").isNull()
+                    || bt.find("k2").isNull() || bt.find("k3").isNull()
+                    || bt.find("t1").isNull() || bt.find("t2").isNull())
+        {
+            yError()<<"usbCamera: group cameraDistortionModelGroup incomplete, "
+                      "fields k1, k2, k3, t1, t2, name are required when using cameraDistortionModelGroup";
+            configIntrins=false;
+            return false;
+        }
+        else
+            configIntrins=true;
+    }
+    else
+        configIntrins=false;
+    horizontalFov=config.check("horizontalFov",yarp::os::Value(0.0),
+                               "desired horizontal fov of test image").asDouble();
+    verticalFov=config.check("verticalFov",yarp::os::Value(0.0),
+                               "desired vertical fov of test image").asDouble();
+    if(config.check("mirror"))
+    {
+        if(!setRgbMirroring(config.check("mirror",
+                                        yarp::os::Value(false),
+                                        "mirroring disabled by default").asBool())){
+            yError("usbCamera: cannot set mirroring option");
+            return false;
+        }
+    }
+
+    intrinsic.put("focalLengthX",config.check("focalLengthX",yarp::os::Value(0.0),"Horizontal component of the focal lenght").asDouble());
+    intrinsic.put("focalLengthY",config.check("focalLengthY",yarp::os::Value(0.0),"Vertical component of the focal lenght").asDouble());
+    intrinsic.put("principalPointX",config.check("principalPointX",yarp::os::Value(0.0),"X coordinate of the principal point").asDouble());
+    intrinsic.put("principalPointY",config.check("principalPointY",yarp::os::Value(0.0),"Y coordinate of the principal point").asDouble());
+    intrinsic.put("retificationMatrix",config.check("retificationMatrix",*retM,"Matrix that describes the lens' distortion"));
+    intrinsic.put("distortionModel",config.check("distortionModel",yarp::os::Value(""),"Reference to group of parameters describing the distortion model").asString());
+    if(bt.isNull())
+    {
+        intrinsic.put("name","");
+        intrinsic.put("k1",0.0);
+        intrinsic.put("k2",0.0);
+        intrinsic.put("k3",0.0);
+        intrinsic.put("t1",0.0);
+        intrinsic.put("t2",0.0);
+    }
+    else{
+        intrinsic.put("name",bt.check("name",yarp::os::Value(""),"Name of the distortion model, see notes").asString());
+        intrinsic.put("k1",bt.check("k1",yarp::os::Value(0.0),"Radial distortion coefficient of the lens").asDouble());
+        intrinsic.put("k2",bt.check("k2",yarp::os::Value(0.0),"Radial distortion coefficient of the lens").asDouble());
+        intrinsic.put("k3",bt.check("k3",yarp::os::Value(0.0),"Radial distortion coefficient of the lens").asDouble());
+        intrinsic.put("t1",bt.check("t1",yarp::os::Value(0.0),"Tangential distortion of the lens").asDouble());
+        intrinsic.put("t2",bt.check("t2",yarp::os::Value(0.0),"Tangential distortion of the lens").asDouble());
+    }
+    delete retM;
 
     // check for CPU affinity 
     if(config.check("cpu_affinity")) {
@@ -508,8 +598,8 @@ bool CFWCamera_DR2_2::Create(yarp::os::Searchable& config)
 
     error=dc1394_video_set_transmission(m_pCamera,DC1394_ON);
 	if (error!=DC1394_SUCCESS)
-	{
-		yError("%d can't start transmission\n");
+    {
+        yError("%d can't start transmission\n",error);
 		dc1394_camera_free(m_pCamera);
 		m_pCamera=NULL;
 		return false;
@@ -568,6 +658,37 @@ void CFWCamera_DR2_2::Close()
 
 	if (m_ConvFrame.image) delete [] m_ConvFrame.image;
 	m_ConvFrame.image=NULL;
+}
+
+bool CFWCamera_DR2_2::CaptureImage(yarp::sig::ImageOf<yarp::sig::PixelRgb>& image)
+{
+    return Capture(&image);
+}
+
+bool CFWCamera_DR2_2::CaptureImage(yarp::sig::ImageOf<yarp::sig::PixelMono>& image)
+{
+    return Capture(&image);
+}
+
+bool CFWCamera_DR2_2::CaptureRgb(unsigned char* pBuffer)
+{
+    return Capture(0,pBuffer);
+}
+
+bool CFWCamera_DR2_2::CaptureRaw(unsigned char* pBuffer)
+{
+    return Capture(0,pBuffer,true);
+}
+
+void CFWCamera_DR2_2::busReset(int port,double wait_sec)
+{
+    raw1394handle_t bus_handle=raw1394_new_handle_on_port(port);
+
+    raw1394_reset_bus_new(bus_handle,RAW1394_LONG_RESET);
+
+    yarp::os::Time::delay(wait_sec);
+
+    raw1394_destroy_handle(bus_handle);
 }
 
 bool CFWCamera_DR2_2::SetVideoMode(dc1394video_mode_t videoMode)
@@ -2198,6 +2319,41 @@ int CFWCamera_DR2_2::TRANSL(int feature)
     return NOT_PRESENT;
 }
 
+bool CFWCamera_DR2_2::manage(dc1394error_t error,yarp::os::Semaphore *pToUnlock)
+{
+    if (error!=DC1394_SUCCESS)
+    {
+        yError("%d\n",error);
+        if (pToUnlock)
+        {
+            pToUnlock->post();
+        }
+        return true;
+    }
+
+    return false;
+}
+
+int CFWCamera_DR2_2::checkInt(yarp::os::Searchable& config,const char* key)
+{
+    if (config.check(key))
+    {
+        return config.find(key).asInt();
+    }
+
+    return 0;
+}
+
+double CFWCamera_DR2_2::checkDouble(yarp::os::Searchable& config,const char* key)
+{
+    if (config.check(key))
+    {
+        return config.find(key).asDouble();
+    }
+
+    return -1.0;
+}
+
 bool CFWCamera_DR2_2::setBrightness(double v)
 {
 	if (v<0.0 || v>1.0) return false;
@@ -2320,4 +2476,59 @@ double CFWCamera_DR2_2::getGain()
 double CFWCamera_DR2_2::getIris()
 { 
 	return getFeatureDC1394(TRANSL(YARP_FEATURE_IRIS));
+}
+
+//IVisualParams
+
+int CFWCamera_DR2_2::getRgbHeight(){
+    return height();
+}
+
+int CFWCamera_DR2_2::getRgbWidth(){
+    return width();
+}
+
+bool CFWCamera_DR2_2::getRgbSupportedConfigurations(yarp::sig::VectorOf<yarp::dev::CameraConfig> &configurations)
+{
+    yError()<<"CFWCamera_DR2_2: getRgbSupportedConfigurations not supported yet";
+    return false;
+}
+bool CFWCamera_DR2_2::getRgbResolution(int &width, int &height)
+{
+    width = this->width();
+    height = this->height();
+    return true;
+}
+
+bool CFWCamera_DR2_2::setRgbResolution(int width, int height){
+
+    yError()<<"CFWCamera_DR2_2: setRgbResolution not supported use setVideoModeDC1394 instead";
+    return false;
+}
+
+bool CFWCamera_DR2_2::getRgbFOV(double &horizontalFov, double &verticalFov){
+    horizontalFov=this->horizontalFov;
+    verticalFov=this->verticalFov;
+    return configFx && configFy;
+}
+
+bool CFWCamera_DR2_2::setRgbFOV(double horizontalFov, double verticalFov){
+    this->horizontalFov=horizontalFov;
+    this->verticalFov=verticalFov;
+    return true;
+}
+
+bool CFWCamera_DR2_2::getRgbIntrinsicParam(yarp::os::Property &intrinsic){
+    intrinsic=this->intrinsic;
+    return configIntrins;
+}
+
+bool CFWCamera_DR2_2::getRgbMirroring(bool &mirror){
+    yWarning()<<"CFWCamera_DR2_2: mirroring not supported";
+    return false;
+}
+
+bool CFWCamera_DR2_2::setRgbMirroring(bool mirror){
+    yWarning()<<"CFWCamera_DR2_2: mirroring not supported";
+    return false;
 }

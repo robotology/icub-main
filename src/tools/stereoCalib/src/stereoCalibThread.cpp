@@ -8,7 +8,7 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
 
     this->inputLeftPortName         = "/"+moduleName;
     this->inputLeftPortName        +=rf.check("imgLeft",Value("/cam/left:i"),"Input image port (string)").asString().c_str();
-   
+
     this->inputRightPortName        = "/"+moduleName;
     this->inputRightPortName       += rf.check("imgRight", Value("/cam/right:i"),"Input image port (string)").asString().c_str();
 
@@ -33,17 +33,17 @@ stereoCalibThread::stereoCalibThread(ResourceFinder &rf, Port* commPort, const c
     this->camCalibFile=rf.getHomeContextPath().c_str();
 
     string fileName= "outputCalib.ini"; //rf.find("from").asString().c_str();
-    
+
     this->camCalibFile=this->camCalibFile+"/"+fileName.c_str();
 
     this->mutex=new Semaphore(1);
 }
 
-bool stereoCalibThread::threadInit() 
+bool stereoCalibThread::threadInit()
 {
      if (!imagePortInLeft.open(inputLeftPortName.c_str())) {
       cout  << ": unable to open port " << inputLeftPortName << endl;
-      return false; 
+      return false;
    }
 
    if (!imagePortInRight.open(inputRightPortName.c_str())) {
@@ -63,7 +63,7 @@ bool stereoCalibThread::threadInit()
 
     //mono calibration does not need the joint positions initialised below
     if(!stereo) return true;
-    
+
     Property optHead;
     optHead.put("device","remote_controlboard");
     optHead.put("remote",("/"+robotName+"/head").c_str());
@@ -146,7 +146,7 @@ void stereoCalibThread::stereoCalibRun()
     boardSize.width=this->boardWidth;
     boardSize.height=this->boardHeight;
 
-    while (!isStopping()) { 
+    while (!isStopping()) {
         ImageOf<PixelRgb> *tmpL = imagePortInLeft.read(false);
         ImageOf<PixelRgb> *tmpR = imagePortInRight.read(false);
 
@@ -156,7 +156,7 @@ void stereoCalibThread::stereoCalibRun()
             imagePortInLeft.getEnvelope(TSLeft);
             initL=true;
         }
-        if(tmpR!=NULL) 
+        if(tmpR!=NULL)
         {
             *imageR=*tmpR;
             imagePortInRight.getEnvelope(TSRight);
@@ -192,7 +192,7 @@ void stereoCalibThread::stereoCalibRun()
                     foundL = findChessboardCorners( Left, boardSize, pointbufL, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
                     foundR = findChessboardCorners( Right, boardSize, pointbufR, CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
                 }
-                
+
                 if(foundL && foundR) {
                         cvCvtColor(imgL,imgL,CV_RGB2BGR);
                         cvCvtColor(imgR,imgR, CV_RGB2BGR);
@@ -289,7 +289,7 @@ void stereoCalibThread::monoCalibRun()
 
 
 
-    while (!isStopping()) { 
+    while (!isStopping()) {
        if(left)
             imageL = imagePortInLeft.read(false);
        else
@@ -333,7 +333,7 @@ void stereoCalibThread::monoCalibRun()
                         updateIntrinsics(imgL->width,imgL->height,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_LEFT");
                     else
                         updateIntrinsics(imgL->width,imgL->height,Kleft.at<double>(0,0),Kleft.at<double>(1,1),Kleft.at<double>(0,2),Kleft.at<double>(1,2),DistL.at<double>(0,0),DistL.at<double>(0,1),DistL.at<double>(0,2),DistL.at<double>(0,3),"CAMERA_CALIBRATION_RIGHT");
-                        
+
                     yInfo("Calibration Results Saved in %s \n", camCalibFile.c_str());
 
                     startCalibration=0;
@@ -361,7 +361,7 @@ void stereoCalibThread::monoCalibRun()
 
 
  }
-void stereoCalibThread::threadRelease() 
+void stereoCalibThread::threadRelease()
 {
     imagePortInRight.close();
     imagePortInLeft.close();
@@ -423,7 +423,7 @@ bool stereoCalibThread::checkTS(double TSLeft, double TSRight, double th) {
 
 void stereoCalibThread::preparePath(const char * imageDir, char* pathL, char* pathR, int count) {
     char num[5];
-    sprintf(num, "%i", count); 
+    sprintf(num, "%i", count);
 
 
     strncpy(pathL,imageDir, strlen(imageDir));
@@ -445,7 +445,7 @@ void stereoCalibThread::saveStereoImage(const char * imageDir, IplImage* left, I
     char pathL[256];
     char pathR[256];
     preparePath(imageDir, pathL,pathR,num);
-    
+
     yInfo("Saving images number %d \n",num);
 
     cvSaveImage(pathL,left);
@@ -455,7 +455,7 @@ void stereoCalibThread::saveStereoImage(const char * imageDir, IplImage* left, I
 void stereoCalibThread::saveImage(const char * imageDir, IplImage* left, int num) {
     char pathL[256];
     preparePath(imageDir, pathL,pathR,num);
-    
+
     yInfo("Saving images number %d \n",num);
 
     cvSaveImage(pathL,left);
@@ -469,7 +469,7 @@ bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, doubl
 
     ifstream in;
     in.open(camCalibFile.c_str()); //camCalibFile.c_str());
-    
+
     if(in.is_open()){
         // file exists
         string line;
@@ -549,12 +549,12 @@ bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, doubl
                     ss << p2;
                     line = "p2 " + string(ss.str());
                 }
-       
+
             }
             // buffer line
             lines.push_back(line);
         }
-        
+
         in.close();
 
         // rewrite file
@@ -574,14 +574,14 @@ bool stereoCalibThread::updateIntrinsics(int width, int height, double fx, doubl
             else
                 return false;
         }
-        
+
     }
     else{
         append = true;
     }
 
     if (append){
-        // file doesn't exist or section is appended 
+        // file doesn't exist or section is appended
         ofstream out;
         out.open(camCalibFile.c_str(), ios::app);
         if (out.is_open()){
@@ -638,7 +638,7 @@ void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boa
                                             CV_CALIB_CB_ADAPTIVE_THRESH | CV_CALIB_CB_FAST_CHECK | CV_CALIB_CB_NORMALIZE_IMAGE);
          }
 
-         if(found) 
+         if(found)
          {
             drawChessboardCorners( view, boardSize, Mat(pointbuf), found );
             imagePoints.push_back(pointbuf);
@@ -652,14 +652,13 @@ void stereoCalibThread::monoCalibration(const vector<string>& imageList, int boa
     K = Mat::eye(3, 3, CV_64F);
     if( flags & CV_CALIB_FIX_ASPECT_RATIO )
         K.at<double>(0,0) = aspectRatio;
-    
+
     Dist = Mat::zeros(4, 1, CV_64F);
-    
+
     std::vector<std::vector<Point3f> > objectPoints(1);
     calcChessboardCorners(boardSize, squareSize, objectPoints[0]);
-
     objectPoints.resize(imagePoints.size(),objectPoints[0]);
-    
+
     double rms = calibrateCamera(objectPoints, imagePoints, imageSize, K,
                     Dist, rvecs, tvecs,CV_CALIB_FIX_K3);
     yInfo("RMS error reported by calibrateCamera: %g\n", rms);
@@ -677,20 +676,19 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
         cout << "Error: the image list contains odd (non-even) number of elements\n";
         return;
     }
-    
+
     const int maxScale = 2;
     // ARRAY AND VECTOR STORAGE:
-    
+
     std::vector<std::vector<Point2f> > imagePoints[2];
-    std::vector<std::vector<Point3f> > objectPoints;
     Size imageSize;
-    
+
     int i, j, k, nimages = (int)imagelist.size()/2;
-    
+
     imagePoints[0].resize(nimages);
     imagePoints[1].resize(nimages);
     std::vector<string> goodImageList;
-    
+
     for( i = j = 0; i < nimages; i++ )
     {
         for( k = 0; k < 2; k++ )
@@ -752,25 +750,21 @@ void stereoCalibThread::stereoCalibration(const vector<string>& imagelist, int b
         yError("Error: too few pairs detected \n");
         return;
     }
-    
+
     imagePoints[0].resize(nimages);
     imagePoints[1].resize(nimages);
-    objectPoints.resize(nimages);
-    
-    for( i = 0; i < nimages; i++ )
-    {
-        for( j = 0; j < boardSize.height; j++ )
-            for( k = 0; k < boardSize.width; k++ )
-                objectPoints[i].push_back(Point3f(j*squareSize, k*squareSize, 0));
-    }
-    
+
+    std::vector<std::vector<Point3f> > objectPoints(1);
+    calcChessboardCorners(boardSize, squareSize, objectPoints[0]);
+    objectPoints.resize(nimages, objectPoints[0]);
+
     yInfo("Running stereo calibration ...\n");
-    
+
     Mat cameraMatrix[2], distCoeffs[2];
     Mat E, F;
-    
+
     if(this->Kleft.empty() || this->Kright.empty())
-    {    
+    {
         double rms = stereoCalibrate(objectPoints, imagePoints[0], imagePoints[1],
                         this->Kleft, this->DistL,
                         this->Kright, this->DistR,
@@ -884,7 +878,7 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
 
     ifstream in;
     in.open(camCalibFile.c_str()); //camCalibFile.c_str());
-    
+
     if(in.is_open()){
         // file exists
         string line;
@@ -924,7 +918,7 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
             // buffer line
             lines.push_back(line);
         }
-        
+
         in.close();
 
         // rewrite file
@@ -944,14 +938,14 @@ bool stereoCalibThread::updateExtrinsics(Mat Rot, Mat Tr, const string& groupnam
             else
                 return false;
         }
-        
+
     }
     else{
         append = true;
     }
 
     if (append){
-        // file doesn't exist or section is appended 
+        // file doesn't exist or section is appended
         ofstream out;
         out.open(camCalibFile.c_str(), ios::app);
         if (out.is_open()){
