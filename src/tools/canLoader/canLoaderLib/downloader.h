@@ -225,7 +225,7 @@ int sg6_set_amp_gain      (int bus, int target_id, char channel, unsigned int  g
 
 cDownloader(bool verbose = true);
 
-bool set_verbose(bool verbose);
+void set_verbose(bool verbose);
 
 
 private:
