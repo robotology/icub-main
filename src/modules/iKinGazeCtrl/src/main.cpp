@@ -119,8 +119,7 @@ Factors</a>.
 --torso \e name
 - The parameter \e name selects the robot's torso port to
   connect to; if not specified, \e torso is assumed. The special
-  string \e disabled can be used to skip opening the torso
-  device.
+ *string \e off can be used to skip opening the torso device.  
 
 --trajectory_time::neck \e time
 - Specify the neck trajectory execution time in point-to-point
@@ -1192,7 +1191,7 @@ public:
         // to send two packets per control slot
         optHead.put("writeStrict","on");
 
-        if (torsoName!="disabled")
+        if (torsoName!="off")
         {
             drvTorso=(ping_robot_tmo>0.0)?
                      waitPart(optTorso,ping_robot_tmo):
@@ -1209,7 +1208,7 @@ public:
         }
         else
         {
-            yWarning("Torso device disabled!");
+            yWarning("Torso device is off!");
             drvTorso=NULL;
         }
 
