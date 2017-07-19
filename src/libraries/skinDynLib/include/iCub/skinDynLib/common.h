@@ -72,15 +72,7 @@ const std::string SkinPart_s[] = {
 };
 
 // *** Mapping from SKIN PARTs to BODY PARTs ***
-// To represent this information you could use either a map<SkinPart,BodyPart>
-// or a vector of struct{SkinPart; BodyPart;}. I chose the second, but I
-// left the implementation for the first option (actually two different implementations)
-#define OPTION2 // this variable allows to switch between the different implementations
-#ifdef OPTION1
-std::map<SkinPart,BodyPart> createSkinPart_2_BodyPart();
-const std::map<SkinPart,BodyPart> SkinPart_2_BodyPart = createSkinPart_2_BodyPart();
-#endif
-#ifdef OPTION2
+// To represent this information we use a vector of struct{SkinPart; BodyPart;}
 struct Skin_2_Body { SkinPart skin; BodyPart body; };
 const Skin_2_Body SkinPart_2_BodyPart[SKIN_PART_SIZE] = {
     {SKIN_PART_UNKNOWN,     BODY_PART_UNKNOWN}, 
@@ -93,26 +85,6 @@ const Skin_2_Body SkinPart_2_BodyPart[SKIN_PART_SIZE] = {
     {SKIN_FRONT_TORSO,      TORSO},
     {SKIN_PART_ALL,         BODY_PART_ALL}
 };
-#endif
-#ifdef OPTION3
-struct A{
-    static std::map<SkinPart,BodyPart> create_map()
-    {
-        std::map<SkinPart,BodyPart> m;
-        m[UNKNOWN_SKIN_PART]    = UNKNOWN_BODY_PART;
-        m[LEFT_HAND]            = LEFT_ARM;
-        m[LEFT_FOREARM]         = LEFT_ARM;
-        m[LEFT_UPPER_ARM]       = LEFT_ARM;
-        m[RIGHT_HAND]           = RIGHT_ARM;
-        m[RIGHT_FOREARM]        = RIGHT_ARM;
-        m[RIGHT_UPPER_ARM]      = RIGHT_ARM;
-        m[FRONT_TORSO]          = TORSO;
-        return m;
-    }
-    static const std::map<SkinPart,BodyPart> SkinPart_2_BodyPart;
-};
-const std::map<SkinPart,BodyPart> A::SkinPart_2_BodyPart =  A::create_map();
-#endif
 
 // association between each skin part and the number of the link where it is mounted
 struct Skin_2_Link{ SkinPart skin; int linkNum; };
