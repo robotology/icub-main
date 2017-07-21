@@ -155,7 +155,7 @@ public:
     int send_message(vector<CanPacket> &canpackets, int n);
     iDriver2Type type() { return eth_driver2; }
 
-    bool set_verbose(bool v);
+    void set_verbose(bool v);
 private:
     CanSocket *mSocket;
     ACE_UINT32 mBoardAddr;
