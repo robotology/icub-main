@@ -5,11 +5,40 @@
 ## Order here is important, libraries go first because they set variables
 ## that are used by the other modules. 
 
+option(ICUBMAIN_COMPILE_LIBRARIES "Enable icub-main libraries." ON)
+mark_as_advanced(ICUBMAIN_COMPILE_LIBRARIES)
+
+option(ICUBMAIN_COMPILE_CORE "Enable icub-main core." ON)
+mark_as_advanced(ICUBMAIN_COMPILE_CORE)
+
+option(ICUBMAIN_COMPILE_TOOLS "Enable icub-main tools." ON)
+mark_as_advanced(ICUBMAIN_COMPILE_TOOLS)
+
+option(ICUBMAIN_COMPILE_SIMULATORS "Enable icub-main simulators." ON)
+mark_as_advanced(ICUBMAIN_COMPILE_SIMULATORS)
+
+option(ICUBMAIN_COMPILE_MODULES "Enable icub-main modules." ON)
+mark_as_advanced(ICUBMAIN_COMPILE_MODULES)
+
+if (ICUBMAIN_COMPILE_LIBRARIES)
 add_subdirectory(libraries)
+endif()
+
+if (ICUBMAIN_COMPILE_CORE)
 add_subdirectory(core)
+endif()
+
+if (ICUBMAIN_COMPILE_TOOLS)
 add_subdirectory(tools)
+endif()
+
+if (ICUBMAIN_COMPILE_SIMULATORS)
 add_subdirectory(simulators)
+endif()
+
+if (ICUBMAIN_COMPILE_MODULES)
 add_subdirectory(modules)
+endif()
 
 
 
