@@ -95,7 +95,7 @@ cDownloader::cDownloader(bool verbose)
     set_canbus_id(-1);
 }
 
-bool cDownloader::set_verbose(bool verbose)
+void cDownloader::set_verbose(bool verbose)
 {
     _verbose = verbose;
 }
