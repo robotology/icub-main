@@ -45,7 +45,7 @@ geoCenter(_geoCenter), taxelList(_taxelList), activeTaxels(_taxelList.size()), p
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, std::vector<unsigned int> _taxelList, double _pressure, const yarp::sig::Vector &_normalDir,
-	const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu)
+        const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu)
  :dynContact(_bodyPart,_linkNumber,_CoP,_Mu), skinPart(_skinPart),
  geoCenter(_geoCenter), taxelList(_taxelList), activeTaxels(_taxelList.size()), pressure(_pressure), normalDir(_normalDir){
    this->setForce(_F); //note that dynContact constructor sets Fmodule to 0; here setForce() overwrites the init with the proper force vector and sets 

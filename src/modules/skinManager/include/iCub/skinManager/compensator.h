@@ -55,15 +55,15 @@ namespace skinManager{
 class Compensator
 {
 private:
-	/* class constants */
+    /* class constants */
     static const int MAX_READ_ERROR = 100;      // max number of read errors before suspending the compensator
-	static const int MAX_SKIN = 255;            // max value you can read from the skin sensors
+    static const int MAX_SKIN = 255;            // max value you can read from the skin sensors
     static const int MIN_TOUCH_THR = 1;         // min value assigned to the touch thresholds (i.e. the 95% percentile)
-	static const double BIN_TOUCH;              // output value of the binarization filter when touch is detected
-	static const double BIN_NO_TOUCH;           // output value of the binarization filter when no touch is detected
-	
+    static const double BIN_TOUCH;              // output value of the binarization filter when touch is detected
+    static const double BIN_NO_TOUCH;           // output value of the binarization filter when no touch is detected
+    
     // INIT
-    unsigned int skinDim;						// number of taxels (for the hand it is 192)	
+    unsigned int skinDim;                       // number of taxels (for the hand it is 192)
     string robotName;
     string name;                                // name of the compensator
     SkinPart skinPart;                          // id of the part of the skin (e.g. left_hand, right_forearm, left_upper_arm)
@@ -72,83 +72,83 @@ private:
 
     // SKIN CONTACTS
     vector< list<int> >     neighborsXtaxel;    // list of neighbors for each taxel    
-	vector<Vector>          taxelPos;		    // taxel positions {xPos, yPos, zPos}
-    vector<Vector>          taxelOri;		    // taxel normals {xOri, yOri, zOri}
-	Vector					taxelPoseConfidence;// taxels pose estimation confidence 
+    vector<Vector>          taxelPos;           // taxel positions {xPos, yPos, zPos}
+    vector<Vector>          taxelOri;           // taxel normals {xOri, yOri, zOri}
+    Vector                  taxelPoseConfidence;// taxels pose estimation confidence
     double                  maxNeighDist;       // max distance between two neighbor taxels
     Semaphore               poseSem;            // mutex to access taxel poses
 
-	// COMPENSATION
-	vector<bool> touchDetected;					// true if touch has been detected in the last read of the taxel
-	vector<bool> touchDetectedFilt;             // true if touch has been detected after applying the filtering
+    // COMPENSATION
+    vector<bool> touchDetected;                 // true if touch has been detected in the last read of the taxel
+    vector<bool> touchDetectedFilt;             // true if touch has been detected after applying the filtering
     vector<bool> subTouchDetected;              // true if the taxel value has gone under the baseline (because of touch in neighbouring taxels)
     Vector rawData;                             // data read from the skin
-    Vector touchThresholds;						// thresholds for discriminating between "touch" and "no touch"
-	Semaphore touchThresholdSem;				// semaphore for controlling the access to the touchThreshold
-    Vector initialBaselines;					// mean of the raw tactile data computed during calibration
-    Vector baselines;							// mean of the raw tactile data     
-    Vector compensatedData;			    		// compensated tactile data (that is rawData-touchThreshold)
-	Vector compensatedDataOld;			    	// compensated tactile data of the previous step (used for smoothing filter)
+    Vector touchThresholds;                     // thresholds for discriminating between "touch" and "no touch"
+    Semaphore touchThresholdSem;                // semaphore for controlling the access to the touchThreshold
+    Vector initialBaselines;                    // mean of the raw tactile data computed during calibration
+    Vector baselines;                           // mean of the raw tactile data
+    Vector compensatedData;                     // compensated tactile data (that is rawData-touchThreshold)
+    Vector compensatedDataOld;                  // compensated tactile data of the previous step (used for smoothing filter)
     Vector compensatedDataFilt;                 // compensated tactile data after smooth filter
-	
-	// CALIBRATION
-    int calibrationRead;						// count the calibration reads
-	vector<float> start_sum;					// sum of the values read during the calibration
-    vector< vector<int> > skin_empty;			// distribution of the values read during the calibration
-	
-	// DEVICE
-	IAnalogSensor* tactileSensor;	        	// interface for executing the tactile sensor calibration
-	PolyDriver* tactileSensorDevice;
+    
+    // CALIBRATION
+    int calibrationRead;                        // count the calibration reads
+    vector<float> start_sum;                    // sum of the values read during the calibration
+    vector< vector<int> > skin_empty;           // distribution of the values read during the calibration
+    
+    // DEVICE
+    IAnalogSensor* tactileSensor;               // interface for executing the tactile sensor calibration
+    PolyDriver* tactileSensorDevice;
 
     // ERROR MANAGEMENT
     bool _isWorking;                            // true if the compensator is working fine
-    int readErrorCounter;						// it counts the number of successive errors
+    int readErrorCounter;                       // it counts the number of successive errors
     vector<unsigned int> saturatedTaxels;       // list of all the taxels whose baseline exceeded
 
     // input parameters
     unsigned int addThreshold;          // value added to the touch threshold of every taxel    
-	double compensationGain;            // proportional gain of the compensation algorithm
+    double compensationGain;            // proportional gain of the compensation algorithm
     double contactCompensationGain;     // proportional gain of the compensation algorithm during contact
-	bool zeroUpRawData;				    // if true the raw data are considered from zero up, otherwise from 255 down
-    float minBaseline;				    // min baseline value regarded as "safe"
-	bool binarization;				    // if true binarize the compensated output value (0: no touch, 255: touch)
-	bool smoothFilter;				    // if true the smooth filter is on, otherwise it is off
-	float smoothFactor;				    // intensity of the smooth filter action
-	Semaphore smoothFactorSem;
+    bool zeroUpRawData;                 // if true the raw data are considered from zero up, otherwise from 255 down
+    float minBaseline;                  // min baseline value regarded as "safe"
+    bool binarization;                  // if true binarize the compensated output value (0: no touch, 255: touch)
+    bool smoothFilter;                  // if true the smooth filter is on, otherwise it is off
+    float smoothFactor;                 // intensity of the smooth filter action
+    Semaphore smoothFactorSem;
 
-	/* ports */
-	BufferedPort<Vector> compensatedTactileDataPort;	// output port
-    BufferedPort<Bottle>* infoPort;					    // info output port
+    /* ports */
+    BufferedPort<Vector> compensatedTactileDataPort;    // output port
+    BufferedPort<Bottle>* infoPort;                     // info output port
     BufferedPort<Vector> inputPort;
-    Stamp timestamp;    // timestamp of last data read from inputPort
+    Stamp timestamp;                                    // timestamp of last data read from inputPort
 
-	
-	/* class private methods */	    
+    
+    /* class private methods */        
     bool init(string name, string robotName, string outputPortName, string inputPortName);
     bool readInputData(Vector& skin_values);
     void sendInfoMsg(string msg);
     void computeNeighbors();
-	void updateNeighbors(unsigned int taxelId);
+    void updateNeighbors(unsigned int taxelId);
 
-	/* class methods */
+    /* class methods */
 public:
-	Compensator(string name, string robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort,
+    Compensator(string name, string robotName, string outputPortName, string inputPortName, BufferedPort<Bottle>* _infoPort,
                          double _compensationGain, double _contactCompensationGain, int addThreshold, float _minBaseline, bool _zeroUpRawData, 
                          bool _binarization, bool _smoothFilter, float _smoothFactor, unsigned int _linkId = 0);
     ~Compensator();
-	    
-	void calibrationInit();
-	void calibrationDataCollection();
-	void calibrationFinish();
+        
+    void calibrationInit();
+    void calibrationDataCollection();
+    void calibrationFinish();
     bool readRawAndWriteCompensatedData();
-	void updateBaseline();
-	bool doesBaselineExceed(unsigned int &taxelIndex, double &baseline, double &initialBaseline);
+    void updateBaseline();
+    bool doesBaselineExceed(unsigned int &taxelIndex, double &baseline, double &initialBaseline);
     skinContactList getContacts();
     bool isWorking(){ return _isWorking; }
 
-	void setBinarization(bool value){ binarization = value; }
-	void setSmoothFilter(bool value);
-	bool setSmoothFactor(float value);    
+    void setBinarization(bool value){ binarization = value; }
+    void setSmoothFilter(bool value);
+    bool setSmoothFactor(float value);    
     bool setAddThreshold(unsigned int thr);
     bool setCompensationGain(double gain);
     bool setContactCompensationGain(double gain);
@@ -163,10 +163,10 @@ public:
     bool setTaxelOrientation(unsigned int taxelId, const Vector &orientation);
     void setSkinPart(SkinPart _skinPart);
 
-	Vector getTouchThreshold();
-	bool getBinarization(){     return binarization; }
+    Vector getTouchThreshold();
+    bool getBinarization(){     return binarization; }
     bool getSmoothFilter(){     return smoothFilter; }
-	float getSmoothFactor();
+    float getSmoothFactor();
     unsigned int getAddThreshold(){         return addThreshold; }
     double getCompensationGain(){           return compensationGain; }
     double getContactCompensationGain(){    return contactCompensationGain; }
@@ -176,7 +176,7 @@ public:
     vector<Vector> getTaxelOrientations();
     Vector getTaxelPose(unsigned int taxelId);
     vector<Vector> getTaxelPoses();
-	double getPoseConfidence(unsigned int taxelId);
+    double getPoseConfidence(unsigned int taxelId);
     Vector getPoseConfidences();
     unsigned int getNumTaxels();
     Vector getCompensation();

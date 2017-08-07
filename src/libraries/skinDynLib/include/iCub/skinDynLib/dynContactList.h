@@ -45,15 +45,15 @@ protected:
     
 public:
     //~~~~~~~~~~~~~~~~~~~~~~
-	//   CONSTRUCTORS
-	//~~~~~~~~~~~~~~~~~~~~~~
+    //   CONSTRUCTORS
+    //~~~~~~~~~~~~~~~~~~~~~~
     dynContactList();
     dynContactList(const size_type &n, const dynContact& value = dynContact());
 
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~
-	//   SERIALIZATION methods
-	//~~~~~~~~~~~~~~~~~~~~~~~~~
+    //   SERIALIZATION methods
+    //~~~~~~~~~~~~~~~~~~~~~~~~~
     /*
     * Read dynContactList from a connection.
     * return true iff a dynContactList was read correctly
@@ -70,7 +70,7 @@ public:
     /**
      * Useful to print some information.
      */
-	virtual std::string toString(const int &precision = -1) const;
+    virtual std::string toString(const int &precision = -1) const;
 };
 
 }

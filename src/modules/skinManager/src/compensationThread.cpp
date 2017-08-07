@@ -33,16 +33,16 @@ using namespace iCub::skinManager;
 
 CompensationThread::CompensationThread(string name, ResourceFinder* rf, string robotName, double _compensationGain, double _contactCompensationGain, 
                                        int addThreshold, float minBaseline, bool zeroUpRawData, 
-									   int period, bool binarization, bool smoothFilter, float smoothFactor)
-									   : 
-										RateThread(period), moduleName(name), compensationGain(_compensationGain), 
+                                       int period, bool binarization, bool smoothFilter, float smoothFactor)
+                                       : 
+                                        RateThread(period), moduleName(name), compensationGain(_compensationGain), 
                                             contactCompensationGain(_contactCompensationGain), 
-											ADD_THRESHOLD(addThreshold), robotName(robotName), 
-											binarization(binarization), smoothFilter(smoothFilter), smoothFactor(smoothFactor)
+                                            ADD_THRESHOLD(addThreshold), robotName(robotName), 
+                                            binarization(binarization), smoothFilter(smoothFilter), smoothFactor(smoothFactor)
 {
-   this->rf								= rf;
-   this->minBaseline					= minBaseline;
-   this->zeroUpRawData					= zeroUpRawData;
+   this->rf                             = rf;
+   this->minBaseline                    = minBaseline;
+   this->zeroUpRawData                  = zeroUpRawData;
    initializationFinished               = false;
 }
 
@@ -51,28 +51,28 @@ bool CompensationThread::threadInit()
     yTrace("[CompensationThread] threadInit()\n");
 
    /* initialize variables and create data-structures if needed */
-	readErrorCounter = 0;
-	state = calibration;
-	calibrationCounter = 0;
+    readErrorCounter = 0;
+    state = calibration;
+    calibrationCounter = 0;
     CAL_SAMPLES = 1000*CAL_TIME/((int)getRate()); // samples needed for calibration (note that getRate() returns the thread period)
 
     // open the output ports for communicating with the gui
     string monitorPortName = "/" + moduleName + "/monitor:o";   // output streaming data
     string infoPortName = "/" + moduleName + "/info:o";         // output occasional data
-	if(!monitorPort.open(monitorPortName.c_str())){
-		stringstream msg; msg<< "Unable to open port " << monitorPortName << endl;
+    if(!monitorPort.open(monitorPortName.c_str())){
+        stringstream msg; msg<< "Unable to open port " << monitorPortName << endl;
         sendErrorMsg(msg.str());
         initializationFinished = true;
-		return false;
-	}
+        return false;
+    }
     if(!infoPort.open(infoPortName.c_str())){
-		stringstream msg; msg<< "Unable to open port " << infoPortName << endl;
+        stringstream msg; msg<< "Unable to open port " << infoPortName << endl;
         sendErrorMsg(msg.str());
         initializationFinished = true;
-		return false;
-	}
+        return false;
+    }
 
-	// open the input and output ports for the skin data
+    // open the input and output ports for the skin data
     if(!rf->check("outputPorts") || !rf->check("inputPorts")){
         stringstream msg; msg<< "Input ports and/or output ports missing. Closing the module.";
         sendErrorMsg(msg.str());
@@ -80,18 +80,18 @@ bool CompensationThread::threadInit()
         return false;
     }
 
-	Bottle* outputPortList = rf->find("outputPorts").asList();
-	Bottle* inputPortList = rf->find("inputPorts").asList();
-	portNum = outputPortList->size();
-	if(portNum<=0 || portNum!=inputPortList->size()){
+    Bottle* outputPortList = rf->find("outputPorts").asList();
+    Bottle* inputPortList = rf->find("inputPorts").asList();
+    portNum = outputPortList->size();
+    if(portNum<=0 || portNum!=inputPortList->size()){
         stringstream msg;
-		msg<< "No input port specified or mismatching number of input and output ports ("
-			<< portNum<< " out ports; "<< inputPortList->size()<< " in ports).";
+        msg<< "No input port specified or mismatching number of input and output ports ("
+            << portNum<< " out ports; "<< inputPortList->size()<< " in ports).";
         sendErrorMsg(msg.str());
         initializationFinished = true;
-		return false;
-	}
-	
+        return false;
+    }
+    
     compensators.resize(portNum);
     compWorking.resize(portNum);
     compEnable.resize(portNum, true);
@@ -99,17 +99,17 @@ bool CompensationThread::threadInit()
     SKIN_DIM = 0;
     cout<< portNum<< " input ports found in the configuration file\n";
     FOR_ALL_PORTS(i){
-		string outputPortName = outputPortList->get(i).asString().c_str();
-		string inputPortName = inputPortList->get(i).asString().c_str();
+        string outputPortName = outputPortList->get(i).asString().c_str();
+        string inputPortName = inputPortList->get(i).asString().c_str();
         // cout << "Input port: "<< inputPortName<< " -> Output port: "<< outputPortName<< endl;
         yInfo("Input port: %s  -> Output port: %s",inputPortName.c_str(),outputPortName.c_str());
         stringstream name;
         name<< moduleName<< i;
-		compensators[i] = new Compensator(name.str(), robotName, outputPortName, inputPortName, &infoPort,
+        compensators[i] = new Compensator(name.str(), robotName, outputPortName, inputPortName, &infoPort,
                          compensationGain, contactCompensationGain, ADD_THRESHOLD, minBaseline, zeroUpRawData, binarization, 
                          smoothFilter, smoothFactor);
         SKIN_DIM += compensators[i]->getNumTaxels();
-	}
+    }
 
     // remove the compensators that did not open correctly
     FOR_ALL_PORTS(i){
@@ -130,16 +130,16 @@ bool CompensationThread::threadInit()
             compensatorCounter--;
             SKIN_DIM -= compensators[i]->getNumTaxels();            
         }
-    }	
+    }    
 
 
     // configure the SKIN_EVENT if the corresponding section exists
     skinEventsOn = false;
-	Bottle &skinEventsConf = rf->findGroup("SKIN_EVENTS");
-	if(!skinEventsConf.isNull()){
+    Bottle &skinEventsConf = rf->findGroup("SKIN_EVENTS");
+    if(!skinEventsConf.isNull()){
         yDebug("SKIN_EVENTS section found");
         string eventPortName = "/" + moduleName + "/skin_events:o";  // output skin events
-	    if(!skinEventsPort.open(eventPortName.c_str()))
+        if(!skinEventsPort.open(eventPortName.c_str()))
             sendErrorMsg("Unable to open port "+eventPortName);
         else
             skinEventsOn = true;
@@ -176,76 +176,76 @@ bool CompensationThread::threadInit()
                 yInfo("Max neighbor distance: %f m\n", maxNeighDist);
                 FOR_ALL_PORTS(i){
                     if(compWorking[i]){
-	                    string taxelPosFile = taxelPosFiles->get(i).asString().c_str();
-	                    string filePath(rf->findFile(taxelPosFile.c_str()));
+                        string taxelPosFile = taxelPosFiles->get(i).asString().c_str();
+                        string filePath(rf->findFile(taxelPosFile.c_str()));
                         compensators[i]->setMaxNeighborDistance(maxNeighDist);
-	                    compensators[i]->setTaxelPosesFromFile(filePath.c_str());
+                        compensators[i]->setTaxelPosesFromFile(filePath.c_str());
                     }
-	            }
+                }
             }
         }
-	}
+    }
     if(skinEventsOn)
         sendDebugMsg("Skin events ENABLED.");
     else
         sendDebugMsg("Skin events DISABLED.");
 
     initializationFinished = true;
-	return true;
+    return true;
 }
 
 void CompensationThread::calibrate(){
-	stateSem.wait();
-	if(state != calibration){
-		state = calibration;
-		calibrationCounter = 0;
-	}
-	stateSem.post();
+    stateSem.wait();
+    if(state != calibration){
+        state = calibration;
+        calibrationCounter = 0;
+    }
+    stateSem.post();
 }
 
 void CompensationThread::run(){
-	stateSem.wait();
+    stateSem.wait();
 
-	if( state == compensation){
-		// It reads the raw data, computes the difference between the read values and the baseline 
-		// and outputs these values
+    if( state == compensation){
+        // It reads the raw data, computes the difference between the read values and the baseline 
+        // and outputs these values
         FOR_ALL_PORTS(i){
             if(compWorking[i]){
-		        if(compensators[i]->readRawAndWriteCompensatedData()){
-			        //If the read succeeded, update the baseline
-			        compensators[i]->updateBaseline();
-		        }
+                if(compensators[i]->readRawAndWriteCompensatedData()){
+                    //If the read succeeded, update the baseline
+                    compensators[i]->updateBaseline();
+                }
             }
         }
 
         if(skinEventsOn){
             sendSkinEvents();
         }
-	}
-	else if(state == calibration){
+    }
+    else if(state == calibration){
         FOR_ALL_PORTS(i){    
             if(compWorking[i]){
-		        if(calibrationCounter==0)
-			        compensators[i]->calibrationInit();
-        		
-		        compensators[i]->calibrationDataCollection();
+                if(calibrationCounter==0)
+                    compensators[i]->calibrationInit();
+                
+                compensators[i]->calibrationDataCollection();
 
-		        if(calibrationCounter==CAL_SAMPLES){
-			        compensators[i]->calibrationFinish();
-			        state = compensation;
-		        }
+                if(calibrationCounter==CAL_SAMPLES){
+                    compensators[i]->calibrationFinish();
+                    state = compensation;
+                }
             }
         }
         calibrationCounter++;
-	}
-	else{
-		stateSem.post();
+    }
+    else{
+        stateSem.post();
         sendDebugMsg("[ERROR] Unknown state in CompensationThread. Suspending the thread.\n");
-		this->suspend();
-		return;
-    }	
+        this->suspend();
+        return;
+    }    
     stateSem.post();
-	sendMonitorData();
+    sendMonitorData();
     checkErrors();
 }
 
@@ -280,7 +280,7 @@ void CompensationThread::checkErrors(){
                 if(compensatorCounter==1){
                     fprintf(stderr, "No input port left. Stopping the compensation thread\n");
                     this->threadRelease();
-		            this->suspend();
+                    this->suspend();
                     return;
                 }
                 
@@ -332,16 +332,16 @@ void CompensationThread::threadRelease()
 
 // send the data on the monitor port
 void CompensationThread::sendMonitorData(){
-	// send the monitor data (if there is at least a connection)
+    // send the monitor data (if there is at least a connection)
     if(monitorPort.getOutputCount()>0){
         int originalSkinDim = 0;
         FOR_ALL_PORTS(i)
             originalSkinDim += compensators[i]->getNumTaxels();
 
-	    Vector &b = monitorPort.prepare();
-	    b.clear();        
+        Vector &b = monitorPort.prepare();
+        b.clear();        
         b.resize(1+ 2*originalSkinDim);
-	    b[0] = 1000.0/getEstPeriod(); // thread frequency
+        b[0] = 1000.0/getEstPeriod(); // thread frequency
         
         stateSem.wait();
         if(state==compensation){    // during calibration don't send this data
@@ -362,7 +362,7 @@ void CompensationThread::sendMonitorData(){
         }
         stateSem.post();
         //printf("Writing %d data on monitor port\n", b.size());
-	    monitorPort.write();
+        monitorPort.write();
     }
 }
 
@@ -388,11 +388,11 @@ Bottle CompensationThread::getInfo(){
     Bottle res;
     if(initializationFinished){    // check whether the thread has been initialized
         Bottle& nameB = res.addList();
-		nameB.addString("Name: ");
-		nameB.addString(moduleName.c_str());
-		Bottle& robotB = res.addList();
+        nameB.addString("Name: ");
+        nameB.addString(moduleName.c_str());
+        Bottle& robotB = res.addList();
         robotB.addString("Robot Name: "); 
-		robotB.addString(robotName.c_str());
+        robotB.addString(robotName.c_str());
         Bottle& portB = res.addList();
         string compName;
         FOR_ALL_PORTS(i){
@@ -400,7 +400,7 @@ Bottle CompensationThread::getInfo(){
             if(!compWorking[i])
                 compName = compName + " (NOT WORKING)";
             portB.addString(compName.c_str());
-			portB.addInt(compensators[i]->getNumTaxels());
+            portB.addInt(compensators[i]->getNumTaxels());
         }
     }else{
         res.addString("Module initialization has not been completed yet.");
@@ -411,29 +411,29 @@ Bottle CompensationThread::getInfo(){
 void CompensationThread::setBinarization(bool value){
     binarization = value;
     FOR_ALL_PORTS(i){
-	    compensators[i]->setBinarization(value);
+        compensators[i]->setBinarization(value);
     }
 }
 void CompensationThread::setSmoothFilter(bool value){
-	if(smoothFilter != value){
-		stateSem.wait();
+    if(smoothFilter != value){
+        stateSem.wait();
         smoothFilter = value;
         FOR_ALL_PORTS(i){
             compensators[i]->setSmoothFilter(value);
         }
-		stateSem.post();
-	}
+        stateSem.post();
+    }
 }
 bool CompensationThread::setSmoothFactor(float value){
-	if(value<0 || value>1)
-		return false;
-	if(value==1) 
-		value = 0.99f;	// otherwise with 1 the values don't update
-	smoothFactor = value;
+    if(value<0 || value>1)
+        return false;
+    if(value==1) 
+        value = 0.99f;    // otherwise with 1 the values don't update
+    smoothFactor = value;
     FOR_ALL_PORTS(i){
         compensators[i]->setSmoothFactor(value);
     }
-	return true;
+    return true;
 }
 bool CompensationThread::setAddThreshold(unsigned int thr){
     bool res = true;
@@ -527,21 +527,21 @@ bool CompensationThread::setTaxelPoses(SkinPart sp, const Vector &poses){
             unsigned int numTax = compensators[i]->getNumTaxels();
             if(poses.size()==6*numTax){
                 //return false;
-				vector<Vector> p(numTax);
-				for(unsigned int j=0; j<numTax; j++){
-					p[j] = poses.subVector(6*j, 6*j+5);
-				}
-				return compensators[i]->setTaxelPoses(p);
-			}
-			else if(poses.size()==7*numTax){ //check if there is also a confidence value of the estimation
-				vector<Vector> p(numTax);
-				for(unsigned int j=0; j<numTax; j++){
-					p[j] = poses.subVector(7*j, 7*j+6);
-				}
-				return compensators[i]->setTaxelPoses(p);
-			}
-			else
-				return false;
+                vector<Vector> p(numTax);
+                for(unsigned int j=0; j<numTax; j++){
+                    p[j] = poses.subVector(6*j, 6*j+5);
+                }
+                return compensators[i]->setTaxelPoses(p);
+            }
+            else if(poses.size()==7*numTax){ //check if there is also a confidence value of the estimation
+                vector<Vector> p(numTax);
+                for(unsigned int j=0; j<numTax; j++){
+                    p[j] = poses.subVector(7*j, 7*j+6);
+                }
+                return compensators[i]->setTaxelPoses(p);
+            }
+            else
+                return false;
         }
     }
     return false;
@@ -557,12 +557,12 @@ Vector CompensationThread::getTouchThreshold(){
     int currentDim=0;
     FOR_ALL_PORTS(i){
         if(compWorking[i]){
-	        Vector temp = compensators[i]->getTouchThreshold();
+            Vector temp = compensators[i]->getTouchThreshold();
             memcpy(res.data()+currentDim, temp.data(), temp.size()*sizeof(double));
             currentDim += temp.size();
         }
     }
-	return res;
+    return res;
 }
 
 unsigned int CompensationThread::getAddThreshold(){
@@ -575,19 +575,19 @@ double CompensationThread::getContactCompensationGain(){
     return contactCompensationGain;
 }
 bool CompensationThread::getBinarization(){
-	return binarization;
+    return binarization;
 }
 bool CompensationThread::getSmoothFilter(){
-	return smoothFilter;
+    return smoothFilter;
 }
 bool CompensationThread::isCalibrating(){
-	stateSem.wait();
-	bool res = state==calibration;
-	stateSem.post();
-	return res;
+    stateSem.wait();
+    bool res = state==calibration;
+    stateSem.post();
+    return res;
 }
 float CompensationThread::getSmoothFactor(){
-	return smoothFactor;
+    return smoothFactor;
 }
 Vector CompensationThread::getTaxelPosition(SkinPart sp, unsigned int taxelId){
     FOR_ALL_PORTS(i){
@@ -663,21 +663,21 @@ vector<Vector> CompensationThread::getTaxelPoses(SkinPart sp){
 }
 
 double CompensationThread::getPoseConfidence(SkinPart sp, unsigned int taxelId){
-	FOR_ALL_PORTS(i){
+    FOR_ALL_PORTS(i){
         if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->getPoseConfidence(taxelId);
         }
     }
-	return 0.0;
+    return 0.0;
 }
 
 Vector CompensationThread::getPoseConfidences(SkinPart sp){
-	FOR_ALL_PORTS(i){
+    FOR_ALL_PORTS(i){
         if(compensators[i]->getSkinPart()==sp){
             return compensators[i]->getPoseConfidences();
         }
     }
-	return zeros(0);
+    return zeros(0);
 }
 
 vector<SkinPart> CompensationThread::getSkinParts(){

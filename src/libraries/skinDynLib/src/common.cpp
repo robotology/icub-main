@@ -14,37 +14,6 @@ using namespace std;
 using namespace yarp::sig;
 using namespace iCub::skinDynLib;
 
-#ifdef OPTION1
-map<SkinPart,BodyPart> iCub::skinDynLib::createSkinPart_2_BodyPart()
-{
-    map<SkinPart,BodyPart> m;
-    m[UNKNOWN_SKIN_PART]    = UNKNOWN_BODY_PART;
-    m[LEFT_HAND]            = LEFT_ARM;
-    m[LEFT_FOREARM]         = LEFT_ARM;
-    m[LEFT_UPPER_ARM]       = LEFT_ARM;
-    m[RIGHT_HAND]           = RIGHT_ARM;
-    m[RIGHT_FOREARM]        = RIGHT_ARM;
-    m[RIGHT_UPPER_ARM]      = RIGHT_ARM;
-    m[FRONT_TORSO]          = TORSO;
-    return m;
-}
-
-vector<SkinPart> iCub::skinDynLib::getSkinParts(BodyPart b)
-{
-    vector<SkinPart> res;
-    for(map<SkinPart,BodyPart>::const_iterator it=SkinPart_2_BodyPart.begin(); it!=SkinPart_2_BodyPart.end(); it++)
-        if(it->second==b)
-            res.push_back(it->first);
-    return res;
-}
-
-BodyPart iCub::skinDynLib::getBodyPart(SkinPart s)
-{   
-    return SkinPart_2_BodyPart.at(s);
-}
-#endif
-
-#ifdef OPTION2
 vector<SkinPart> iCub::skinDynLib::getSkinParts(BodyPart b)
 {
     vector<SkinPart> res;
@@ -61,24 +30,6 @@ BodyPart iCub::skinDynLib::getBodyPart(SkinPart s)
             return SkinPart_2_BodyPart[i].body;
     return BODY_PART_UNKNOWN;
 }
-#endif
-
-
-#ifdef OPTION3
-vector<SkinPart> iCub::skinDynLib::getSkinParts(BodyPart b)
-{
-    vector<SkinPart> res;
-    for(map<SkinPart,BodyPart>::const_iterator it=A::SkinPart_2_BodyPart.begin(); it!=A::SkinPart_2_BodyPart.end(); it++)
-        if(it->second==b)
-            res.push_back(it->first);
-    return res;
-}
-
-BodyPart iCub::skinDynLib::getBodyPart(SkinPart s)
-{   
-    return A::SkinPart_2_BodyPart.at(s);
-}
-#endif
 
 int iCub::skinDynLib::getLinkNum(SkinPart s)
 {   
