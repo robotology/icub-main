@@ -157,28 +157,28 @@ will be accessed.
   "/"+moduleName+index+"/input", where "index" is an increasing counter starting from 0.
 - "/"+moduleName+"/rpc:i": input port to control the module (alternatively the \ref icub_skinManagerGui can be used). 
     This port accepts a yarp::os::yarp::os::Bottle that contains one of these commands:
-	- “calib”: force the sensor calibration
-	- "get touch thr": return a yarp::os::yarp::os::Bottle containing the 95 percentile values of the tactile sensors
-	- "set binarization": enable or disable the binarization (specifying the value on/off)
-	- "get binarization": get the binarization filter state (on, off)
-	- "set smooth filter": enable or disable the smooth filter (specifying the value on/off)
-	- "get smooth filter": get the smooth filter state (on, off)
-	- "set smooth factor": set the value of the smooth factor (in [0,1])
-	- "get smooth factor": get the smooth factor value
-	- "set threshold": set the safety threshold that is added to the touch thresholds (int in [0, 254])
-	- "get threshold": get the safety threshold that is added to the touch thresholds (int in [0, 254])
-	- "set gain": set the compensation gain
-	- "get gain": get the compensation gain
-	- "set contact gain": set the contact compensation gain
-	- "get contact gain": get the contact compensation gain
-	- "is calibrating": tell whether the skin calibration is in progress
-	- "get pose": get taxel pose(s) with input params: body part, skin part, taxel index (if taxel index is not specified return all taxel positions),
-	- "set pose": set taxel pose(s) with input params: body part, skin part, taxel index, pose(s) (if taxel index is not specified set all taxel positions),
-	- "get info": get information about the module (module name, robot name, input ports, num of taxels)
-	- "help": get a list of the commands accepted by this module
-	- "quit": quit the module
+    - "calib": force the sensor calibration
+    - "get touch thr": return a yarp::os::yarp::os::Bottle containing the 95 percentile values of the tactile sensors
+    - "set binarization": enable or disable the binarization (specifying the value on/off)
+    - "get binarization": get the binarization filter state (on, off)
+    - "set smooth filter": enable or disable the smooth filter (specifying the value on/off)
+    - "get smooth filter": get the smooth filter state (on, off)
+    - "set smooth factor": set the value of the smooth factor (in [0,1])
+    - "get smooth factor": get the smooth factor value
+    - "set threshold": set the safety threshold that is added to the touch thresholds (int in [0, 254])
+    - "get threshold": get the safety threshold that is added to the touch thresholds (int in [0, 254])
+    - "set gain": set the compensation gain
+    - "get gain": get the compensation gain
+    - "set contact gain": set the contact compensation gain
+    - "get contact gain": get the contact compensation gain
+    - "is calibrating": tell whether the skin calibration is in progress
+    - "get pose": get taxel pose(s) with input params: body part, skin part, taxel index (if taxel index is not specified return all taxel positions),
+    - "set pose": set taxel pose(s) with input params: body part, skin part, taxel index, pose(s) (if taxel index is not specified set all taxel positions),
+    - "get info": get information about the module (module name, robot name, input ports, num of taxels)
+    - "help": get a list of the commands accepted by this module
+    - "quit": quit the module
     .
-	All the commands accepted by this module are defined in rpcSkinManager.h .
+    All the commands accepted by this module are defined in rpcSkinManager.h .
 
 \section in_files_sec Input Data Files
 None.
@@ -255,7 +255,7 @@ namespace iCub {
             std::string robotName;
 
             /* ports */
-            yarp::os::Port handlerPort;									// a port to handle messages
+            yarp::os::Port handlerPort;                   // a port to handle messages
 
             /* pointer to a new thread to be created and started in configure() and stopped in close() */
             CompensationThread *myThread;
