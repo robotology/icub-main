@@ -272,7 +272,11 @@ public:
     * 20-?: list of the id's of the activated taxels; 
     * ?: pressure;
     * @return a Vector representation of this skinContact
+    * @deprecated This method is deprecated since iCub 1.10, as it is not able to serialize string attribute
+    *            such as linkName and frameName . Please use yarp::os::Portable facilities to serialize this class.
     */
+    SKINDYNLIB_DEPRECATED("toVector is not able to serialize string attributes such as "
+                          "linkName and frameName. Please use yarp::os::Portable facilities to serialize this class.")
     virtual yarp::sig::Vector toVector() const;
 
     /**
@@ -292,7 +296,11 @@ public:
     * ?: pressure;
     * @param v the vector to convert into a skinContact
     * @return true iff operation succeeded, false otherwise
+    * @deprecated This method is deprecated since iCub 1.10, as it is not able to serialize string attribute
+     *            such as linkName and frameName . Please use yarp::os::Portable facilities to serialize this class.
     */
+    SKINDYNLIB_DEPRECATED("fromVector is not able to serialize string attributes such as "
+                          "linkName and frameName. Please use yarp::os::Portable facilities to serialize this class.")
     virtual bool fromVector(const yarp::sig::Vector &v);
 
     /**
