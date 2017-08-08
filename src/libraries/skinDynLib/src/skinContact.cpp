@@ -104,6 +104,7 @@ bool skinContact::write(ConnectionWriter& connection){
     // - a list of 3 double, i.e. the normal direction
     // - a list of N int, i.e. the active taxel ids
     // - a double, i.e. the pressure
+    // - a list of 2 string, i.e. linkName, frameName
 
     connection.appendInt(BOTTLE_TAG_LIST);
     connection.appendInt(8);
@@ -141,6 +142,11 @@ bool skinContact::write(ConnectionWriter& connection){
     // - a double, i.e. the pressure
     connection.appendInt(BOTTLE_TAG_DOUBLE);
     connection.appendDouble(pressure);
+    // - a list of 2 string, i.e. linkName, frameName
+    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_STRING);
+    connection.appendInt(2);
+    connection.appendString(linkName.c_str());
+    connection.appendString(frameName.c_str());
 
     // if someone is foolish enough to connect in text mode,
     // let them see something readable.
@@ -162,6 +168,7 @@ bool skinContact::read(ConnectionReader& connection){
     // - a list of 3 double, i.e. the normal direction
     // - a list of N int, i.e. the active taxel ids
     // - a double, i.e. the pressure
+    // - a list of 2 string, i.e. linkName, frameName
     if(connection.expectInt() != BOTTLE_TAG_LIST || connection.expectInt() != 8)
         return false;
 
@@ -210,6 +217,12 @@ bool skinContact::read(ConnectionReader& connection){
     if(connection.expectInt()!=BOTTLE_TAG_DOUBLE)
         return false;
     pressure                            = connection.expectDouble();
+
+    // - a list of 2 string, i.e. linkName, frameName
+    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_STRING || connection.expectInt()!=2)
+        return false;
+    linkName   = connection.expectText();
+    frameName  = connection.expectText();
 
     return !connection.isError();
 }

@@ -63,6 +63,9 @@ void dynContact::init(const BodyPart &_bodyPart, unsigned int _linkNumber, const
         fDirKnown = false;
     else
         fixForceDirection(_Fdir);
+
+    linkName = "";
+    frameName = "";
 }
 //~~~~~~~~~~~~~~~~~~~~~~
 //   GET methods
@@ -86,6 +89,10 @@ BodyPart dynContact::getBodyPart() const{ return bodyPart;}
 string dynContact::getBodyPartName() const{ return BodyPart_s[bodyPart];}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 unsigned long dynContact::getId() const{ return contactId;}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+std::string dynContact::getLinkName() const{ return linkName;}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+std::string dynContact::getFrameName() const{ return frameName;}
 
 //~~~~~~~~~~~~~~~~~~~~~~
 //   IS methods
@@ -159,6 +166,14 @@ void dynContact::setLinkNumber(unsigned int _linkNum){
 void dynContact::setBodyPart(BodyPart _bodyPart){
     bodyPart = _bodyPart;
 }
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void dynContact::setLinkName(const std::string &_linkName){
+    linkName = _linkName;
+}
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void dynContact::setFrameName(const std::string &_frameName){
+    frameName = _frameName;
+}
 //~~~~~~~~~~~~~~~~~~~~~~
 //   FIX/UNFIX methods
 //~~~~~~~~~~~~~~~~~~~~~~ 
@@ -190,11 +205,12 @@ void dynContact::unfixMoment(){ muKnown=false;}
 //   SERIALIZATION methods
 //~~~~~~~~~~~~~~~~~~~~~~
 bool dynContact::write(ConnectionWriter& connection){
-    // represent a dynContact as a list of 4 elements that are:
+    // represent a dynContact as a list of 5 elements that are:
     // - a list of 3 int, i.e. contactId, bodyPart, linkNumber
     // - a list of 3 double, i.e. the CoP
     // - a list of 3 double, i.e. the force
     // - a list of 3 double, i.e. the moment
+    // - a list of 2 string, i.e. linkName, frameName
 
     connection.appendInt(BOTTLE_TAG_LIST);
     connection.appendInt(4);
@@ -215,7 +231,12 @@ bool dynContact::write(ConnectionWriter& connection){
     // list of 3 double, i.e. the moment
     connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_DOUBLE);
     connection.appendInt(3);
-    for(int i=0;i<3;i++) connection.appendDouble(Mu[i]);  
+    for(int i=0;i<3;i++) connection.appendDouble(Mu[i]);
+    // list of 2 string, i.e. linkName, frameName
+    connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_STRING);
+    connection.appendInt(2);
+    connection.appendString(linkName.c_str());
+    connection.appendString(frameName.c_str());
 
     // if someone is foolish enough to connect in text mode,
     // let them see something readable.
@@ -228,11 +249,12 @@ bool dynContact::read(ConnectionReader& connection){
     // auto-convert text mode interaction
     connection.convertTextMode();
 
-    // represent a dynContact as a list of 4 elements that are:
+    // represent a dynContact as a list of 5 elements that are:
     // - a list of 3 int, i.e. contactId, bodyPart, linkNumber
     // - a list of 3 double, i.e. the CoP
     // - a list of 3 double, i.e. the force
     // - a list of 3 double, i.e. the moment
+    // - a list of 2 string, i.e. linkName, frameName
     if(connection.expectInt()!= BOTTLE_TAG_LIST || connection.expectInt()!=4)
         return false;
     // - a list of 3 int, i.e. contactId, bodyPart, linkNumber
@@ -254,13 +276,19 @@ bool dynContact::read(ConnectionReader& connection){
     if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_DOUBLE || connection.expectInt()!=3)
         return false;
     for(int i=0;i<3;i++) Mu[i] = connection.expectDouble();
-     
+    // - a list of 2 string, i.e. linkName, frameName
+    if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_STRING || connection.expectInt()!=2)
+        return false;
+    linkName   = connection.expectText();
+    frameName  = connection.expectText();
+
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 string dynContact::toString(int precision) const{
     stringstream res;
-    res<< "Contact id: "<< contactId<< ", Body part: "<< BodyPart_s[bodyPart]<< ", link: "<< linkNumber<< ", CoP: "<< 
+    res<< "Contact id: "<< contactId<< ", Link name: "<< linkName << ", Frame name: " << frameName <<
+          ", Body part: "<< BodyPart_s[bodyPart]<< ", Link number: "<< linkNumber<< ", CoP: "<<
         CoP.toString(precision)<< ", F: "<< F.toString(precision)<< ", M: "<< Mu.toString(precision);
     return res.str();
 }

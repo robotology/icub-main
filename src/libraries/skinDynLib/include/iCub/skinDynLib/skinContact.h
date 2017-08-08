@@ -250,6 +250,7 @@ public:
     * - a list of 3 double, i.e. the normal direction
     * - a list of N int, i.e. the active taxel ids
     * - a double, i.e. the pressure
+    * - a list of 2 strings, containing linkName, frameName
     * @param connection connection to write to
     * @return true iff a skinContact was written correctly
     */

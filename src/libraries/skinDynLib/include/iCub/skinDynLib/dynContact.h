@@ -60,7 +60,7 @@ protected:
     BodyPart bodyPart;
     /// number of the link where the contact is applied
     unsigned int linkNumber;
-    /// center of pressure of the contact expressed w.r.t. the reference frame of the link
+    /// center of pressure of the contact expressed w.r.t. the reference frame
     yarp::sig::Vector CoP;
     ///contact force direction (unit vector)
     yarp::sig::Vector Fdir;
@@ -79,6 +79,10 @@ protected:
     ///verbosity flag
     unsigned int verbose;
 
+    /// name of the link on which the contact is applied
+    std::string linkName;
+    /// name of the frame on which all the vector quantities are expressed
+    std::string frameName;
 
     void init(const BodyPart &_bodyPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_Mu=yarp::sig::Vector(0), const yarp::sig::Vector &_Fdir=yarp::sig::Vector(0));
@@ -147,7 +151,7 @@ public:
     */
     virtual const yarp::sig::Vector&    getMoment()             const;
     /**
-    * Get the contact center of pressure expressed in the link reference frame.
+    * Get the contact center of pressure expressed in the reference frame.
     * @return a 3-dim vector
     */
     virtual const yarp::sig::Vector&    getCoP()                const;
@@ -171,7 +175,16 @@ public:
     * @return the contact id
     */
     virtual unsigned long               getId()                 const;
-    
+    /**
+    * Get the name of the link on which the contact is applied.
+    * @return the link name
+    */
+    virtual std::string                 getLinkName()           const;
+    /**
+     * Get the name of the frame in which the quantities of this contact are expressed.
+     * @return the link name
+     */
+    virtual std::string                 getFrameName()           const;
     //~~~~~~~~~~~~~~~~~~~~~~
     //   IS methods
     //~~~~~~~~~~~~~~~~~~~~~~
@@ -228,7 +241,7 @@ public:
      */
     virtual bool setForceMoment(const yarp::sig::Vector &_FMu);
     /**
-     * Set the contact center of pressure in link reference frame
+     * Set the contact center of pressure in reference frame
      * @param _CoP a 3x1 vector
      * @return true if the operation succeeded, false otherwise
      */
@@ -236,15 +249,21 @@ public:
     /**
      * Set the contact link number (0 is the first link)
      * @param _linkNum the link number
-     * @return true if the operation succeeded, false otherwise
      */
     virtual void setLinkNumber(unsigned int _linkNum);
     /**
      * Set the body part of this contact
      * @param _bodyPart the contact body part
-     * @return true if the operation succeeded, false otherwise
      */
     virtual void setBodyPart(BodyPart _bodyPart);
+    /**
+     * Set the name of the link on which the contact is applied.
+     */
+    virtual void setLinkName(const std::string & _linkName);
+    /**
+     * Set the name of the frame in which the quantities of this contact are expressed.
+     */
+    virtual void setFrameName(const std::string & _linkName);
 
     //~~~~~~~~~~~~~~~~~~~~~~
     //   FIX/UNFIX methods
@@ -288,21 +307,23 @@ public:
     //   SERIALIZATION methods
     //~~~~~~~~~~~~~~~~~~~~~~ 
     /*
-    * Read dynContact from a connection. It expects a list of 4 elements, that are:
+    * Read dynContact from a connection. It expects a list of 5 elements, that are:
     * - a list of 3 int, containing contactId, bodyPart and linkNumber
     * - a list of 3 double, containing the CoP
     * - a list of 3 double, containing the force
     * - a list of 3 double, containing the moment
+    * - a list of 2 strings, containing linkName, frameName
     * @param connection the connection to read from
     * @return true iff a dynContact was read correctly
     */
     virtual bool read(yarp::os::ConnectionReader& connection);
     /**
-    * Write dynContact to a connection as a list of 4 elements, that are:
+    * Write dynContact to a connection as a list of 5 elements, that are:
     * - a list of 3 int, containing contactId, bodyPart, linkNumber
     * - a list of 3 double, containing the CoP
     * - a list of 3 double, containing the force
     * - a list of 3 double, containing the moment
+    * - a list of 2 strings, containing linkName, frameName
     * @param connection the connection to write to
     * @return true iff the dynContact was written correctly
     */
@@ -313,7 +334,8 @@ public:
      * Convert this contact into a string. Useful to print some information.
      * @param precision number of decimal digits to use in the string representation
      * @return a string representation of this contact in this format:
-     * "Contact id: "<< contactId<< "Body part: "<< bodyPartName<< ", link: "<< linkNumber<< 
+     * "Contact id: "<< contactId<< ", link name: "<< linkName << ", frame name: " << frameName <<
+     * ", Body part: "<< bodyPartName<< ", link index: "<< linkNumber<<
      * ", CoP: "<< CoP<< ", F: "<< F<< ", M: "<< Mu
      */
     virtual std::string toString(int precision=-1) const;
