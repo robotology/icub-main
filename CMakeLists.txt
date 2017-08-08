@@ -87,6 +87,11 @@ else (NOT ICUB_HAS_GSL)
 endif (NOT ICUB_HAS_GSL)
 
 ### enable testing
+option(BUILD_TESTING "Compile tests" OFF)
+if(BUILD_TESTING)
+    enable_testing()
+endif()
+
 option(ICUB_DASHBOARD_SUBMIT "Submit compile tests to cdash" FALSE)
 
 if (ICUB_DASHBOARD_SUBMIT)
