@@ -47,6 +47,7 @@ before_script:
 script:
 
   - cmake --build .
+  - ctest --output-on-failure --build .
   - sudo make install
   - sudo make uninstall
 

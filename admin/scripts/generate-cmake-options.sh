@@ -8,6 +8,7 @@ CMAKE_OPTIONS="\
    -DTEST_MACHINE_HOSTNAME:STRING=$1 \
    -DTEST_MACHINE_OS_TYPE:STRING=$2 \
    -DTEST_MACHINE_TEST_TYPE:STRING=$3 \
+   -DBUILD_TESTING:BOOL=TRUE \
    -DENABLE_icubmod_cartesiancontrollerclient:BOOL=TRUE \
    -DENABLE_icubmod_cartesiancontrollerserver:BOOL=TRUE \
    -DENABLE_icubmod_gazecontrollerclient:BOOL=TRUE \
