@@ -43,11 +43,43 @@ namespace ctrl
 {
 
 /**
+* \ingroup IFilter
+*
+* Interface for the filters implemented in iCub::crtl.
+*/
+class IFilter {
+public:
+   /**
+    * Destructor
+    */
+    virtual ~IFilter() {};
+
+    /**
+     * Internal state reset.
+     * @param y0 new internal state.
+     */
+    virtual void init(const yarp::sig::Vector& y0) = 0;
+
+   /**
+    * Performs filtering on the actual input.
+    * @param u reference to the actual input.
+    * @return the corresponding output.
+    */
+    virtual const yarp::sig::Vector& filt(const yarp::sig::Vector& u) = 0;
+
+   /**
+    * Return current filter output.
+    * @return the filter output.
+    */
+    virtual const yarp::sig::Vector& output() const = 0;
+};
+
+/**
 * \ingroup Filters
 *
 * IIR and FIR.
 */
-class Filter
+class Filter : public iCub::ctrl::IFilter
 {
 protected:
    yarp::sig::Vector b;
@@ -77,7 +109,7 @@ public:
    * Internal state reset. 
    * @param y0 new internal state.
    */ 
-   void init(const yarp::sig::Vector &y0);
+   virtual void init(const yarp::sig::Vector &y0);
 
    /**
    * Internal state reset for filter with zero gain.
@@ -86,7 +118,7 @@ public:
    * @note The gain of a digital filter is the sum of the coefficients of its 
    *       numerator divided by the sum of the coefficients of its denumerator.
    */ 
-   void init(const yarp::sig::Vector &y0, const yarp::sig::Vector &u0);
+   virtual void init(const yarp::sig::Vector &y0, const yarp::sig::Vector &u0);
 
    /**
    * Returns the current filter coefficients.
@@ -136,13 +168,13 @@ public:
    * @param u reference to the actual input. 
    * @return the corresponding output. 
    */ 
-   const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
+   virtual const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
 
    /**
    * Return current filter output.
    * @return the filter output. 
    */ 
-   const yarp::sig::Vector& output() const { return y; }
+   virtual const yarp::sig::Vector& output() const { return y; }
 };
 
 
@@ -208,7 +240,7 @@ public:
 * H(s) = \frac{1}{1+\tau s}
 *
 */
-class FirstOrderLowPassFilter
+class FirstOrderLowPassFilter : public iCub::ctrl::IFilter
 {
 protected:
     Filter *filter;         // low pass filter
@@ -231,13 +263,13 @@ public:
     /**
     * Destructor. 
     */
-    ~FirstOrderLowPassFilter();
+    virtual ~FirstOrderLowPassFilter();
 
     /**
     * Internal state reset. 
     * @param y0 new internal state.
     */ 
-    void init(const yarp::sig::Vector &y0);
+    virtual void init(const yarp::sig::Vector &y0);
 
     /**
     * Change the cut frequency of the filter. 
@@ -268,13 +300,13 @@ public:
     * @param u reference to the actual input. 
     * @return the corresponding output. 
     */ 
-    const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
+    virtual const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
 
     /**
     * Return current filter output.
     * @return the filter output. 
     */ 
-    const yarp::sig::Vector& output() const { return y; }
+    virtual const yarp::sig::Vector& output() const { return y; }
 };
 
 
@@ -283,7 +315,7 @@ public:
 *
 * Median Filter
 */
-class MedianFilter
+class MedianFilter : public iCub::ctrl::IFilter
 {
 protected:
    std::deque<std::deque<double> > uold;
@@ -305,7 +337,7 @@ public:
    * Internal state reset. 
    * @param y0 new internal state.
    */ 
-   void init(const yarp::sig::Vector &y0);
+   virtual void init(const yarp::sig::Vector &y0);
 
    /**
    * Sets new filter order.
@@ -323,13 +355,13 @@ public:
    * @param u reference to the actual input. 
    * @return the corresponding output. 
    */ 
-   const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
+   virtual const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
 
    /**
    * Return current filter output.
    * @return the filter output. 
    */ 
-   const yarp::sig::Vector& output() const { return y; }
+   virtual const yarp::sig::Vector& output() const { return y; }
 };
 
 }
