@@ -42,11 +42,35 @@ namespace iCub
 namespace ctrl
 {
 
+/**
+* \ingroup IFilter
+*
+* Interface for the filters implemented in iCub::crtl.
+*/
 class IFilter {
 public:
+   /**
+    * Destructor
+    */
     virtual ~IFilter() {};
-    virtual void init(const yarp::sig::Vector&) = 0;
-    virtual const yarp::sig::Vector& filt(const yarp::sig::Vector&) = 0;
+
+    /**
+     * Internal state reset.
+     * @param y0 new internal state.
+     */
+    virtual void init(const yarp::sig::Vector& y0) = 0;
+
+   /**
+    * Performs filtering on the actual input.
+    * @param u reference to the actual input.
+    * @return the corresponding output.
+    */
+    virtual const yarp::sig::Vector& filt(const yarp::sig::Vector& u) = 0;
+
+   /**
+    * Return current filter output.
+    * @return the filter output.
+    */
     virtual const yarp::sig::Vector& output() const = 0;
 };
 
