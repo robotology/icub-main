@@ -44,7 +44,7 @@ namespace ctrl
 
 class IFilter {
 public:
-    virtual ~IFilter() = default;
+    virtual ~IFilter() {};
     virtual void init(const yarp::sig::Vector&) = 0;
     virtual const yarp::sig::Vector& filt(const yarp::sig::Vector&) = 0;
     virtual const yarp::sig::Vector& output() const = 0;
