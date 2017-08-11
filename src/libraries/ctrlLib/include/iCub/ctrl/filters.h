@@ -47,39 +47,41 @@ namespace ctrl
 *
 * Interface for the filters implemented in iCub::crtl.
 */
-class IFilter {
+class IFilter
+{
 public:
-   /**
+    /**
     * Destructor
     */
-    virtual ~IFilter() {};
+    virtual ~IFilter() { }
 
     /**
-     * Internal state reset.
-     * @param y0 new internal state.
-     */
+    * Internal state reset.
+    * @param y0 new internal state.
+    */
     virtual void init(const yarp::sig::Vector& y0) = 0;
 
-   /**
+    /**
     * Performs filtering on the actual input.
     * @param u reference to the actual input.
     * @return the corresponding output.
     */
     virtual const yarp::sig::Vector& filt(const yarp::sig::Vector& u) = 0;
 
-   /**
+    /**
     * Return current filter output.
     * @return the filter output.
     */
     virtual const yarp::sig::Vector& output() const = 0;
 };
 
+
 /**
 * \ingroup Filters
 *
 * IIR and FIR.
 */
-class Filter : public iCub::ctrl::IFilter
+class Filter : public IFilter
 {
 protected:
    yarp::sig::Vector b;
@@ -183,7 +185,7 @@ public:
 *
 * Rate Limiter.
 */
-class RateLimiter
+class RateLimiter : public IFilter
 {
 protected:
     yarp::sig::Vector uD;
@@ -206,7 +208,7 @@ public:
     * Init internal state.
     * @param u0 new internal state.
     */
-    void init(const yarp::sig::Vector &u0);
+    virtual void init(const yarp::sig::Vector &u0);
 
     /**
     * Returns the current Rate limits.
@@ -229,7 +231,13 @@ public:
     * @param u is the current input.
     * @return the output within the thresholds.
     */
-    const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
+    virtual const yarp::sig::Vector& filt(const yarp::sig::Vector &u);
+
+    /**
+    * Return current filter output.
+    * @return the filter output. 
+    */ 
+    virtual const yarp::sig::Vector& output() const { return uLim; }
 };
 
 
@@ -240,7 +248,7 @@ public:
 * H(s) = \frac{1}{1+\tau s}
 *
 */
-class FirstOrderLowPassFilter : public iCub::ctrl::IFilter
+class FirstOrderLowPassFilter : public IFilter
 {
 protected:
     Filter *filter;         // low pass filter
@@ -315,7 +323,7 @@ public:
 *
 * Median Filter
 */
-class MedianFilter : public iCub::ctrl::IFilter
+class MedianFilter : public IFilter
 {
 protected:
    std::deque<std::deque<double> > uold;
