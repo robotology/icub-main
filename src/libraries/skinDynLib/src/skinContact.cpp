@@ -21,39 +21,39 @@ using namespace std;
 //   CONSTRUCTORS
 //~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact(const dynContact &c)
-    :dynContact(c), skinPart(SKIN_PART_UNKNOWN), geoCenter(zeros(3)), pressure(0.0), activeTaxels(0), normalDir(zeros(3)) {}
+    :dynContact(c), skinPart(SKIN_PART_UNKNOWN), geoCenter(zeros(3)), pressure(0.0), activeTaxels(0), normalDir(zeros(3)), forceTorqueEstimateConfidence(0) {}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, unsigned int _activeTaxels, double _pressure)
 :dynContact(_bodyPart, _linkNumber, _CoP), skinPart(_skinPart), 
-geoCenter(_geoCenter), activeTaxels(_activeTaxels), taxelList(vector<unsigned int>(activeTaxels, 0)), pressure(_pressure), normalDir(zeros(3)){}
+geoCenter(_geoCenter), activeTaxels(_activeTaxels), taxelList(vector<unsigned int>(activeTaxels, 0)), pressure(_pressure), normalDir(zeros(3)), forceTorqueEstimateConfidence(0) {}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, unsigned int _activeTaxels, double _pressure, const Vector &_normalDir)
 :dynContact(_bodyPart, _linkNumber, _CoP), skinPart(_skinPart), 
-geoCenter(_geoCenter), activeTaxels(_activeTaxels), taxelList(vector<unsigned int>(activeTaxels, 0)), pressure(_pressure), normalDir(_normalDir){}
+geoCenter(_geoCenter), activeTaxels(_activeTaxels), taxelList(vector<unsigned int>(activeTaxels, 0)), pressure(_pressure), normalDir(_normalDir), forceTorqueEstimateConfidence(0) {}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, vector<unsigned int> _taxelList, double _pressure)
 :dynContact(_bodyPart, _linkNumber, _CoP), skinPart(_skinPart), 
-geoCenter(_geoCenter), taxelList(_taxelList), activeTaxels(_taxelList.size()), pressure(_pressure), normalDir(zeros(3)){}
+geoCenter(_geoCenter), taxelList(_taxelList), activeTaxels(_taxelList.size()), pressure(_pressure), normalDir(zeros(3)), forceTorqueEstimateConfidence(0) {}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, vector<unsigned int> _taxelList, double _pressure, const Vector &_normalDir)
 :dynContact(_bodyPart, _linkNumber, _CoP), skinPart(_skinPart), 
-geoCenter(_geoCenter), taxelList(_taxelList), activeTaxels(_taxelList.size()), pressure(_pressure), normalDir(_normalDir){}
+geoCenter(_geoCenter), taxelList(_taxelList), activeTaxels(_taxelList.size()), pressure(_pressure), normalDir(_normalDir), forceTorqueEstimateConfidence(0) {}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
  skinContact::skinContact(const BodyPart &_bodyPart, const SkinPart &_skinPart, unsigned int _linkNumber, const yarp::sig::Vector &_CoP, 
         const yarp::sig::Vector &_geoCenter, std::vector<unsigned int> _taxelList, double _pressure, const yarp::sig::Vector &_normalDir,
         const yarp::sig::Vector &_F, const yarp::sig::Vector &_Mu)
  :dynContact(_bodyPart,_linkNumber,_CoP,_Mu), skinPart(_skinPart),
- geoCenter(_geoCenter), taxelList(_taxelList), activeTaxels(_taxelList.size()), pressure(_pressure), normalDir(_normalDir){
+ geoCenter(_geoCenter), taxelList(_taxelList), activeTaxels(_taxelList.size()), pressure(_pressure), normalDir(_normalDir), forceTorqueEstimateConfidence(0) {
    this->setForce(_F); //note that dynContact constructor sets Fmodule to 0; here setForce() overwrites the init with the proper force vector and sets 
    //also Fmodule and Fdir appropriately  
  }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 skinContact::skinContact()
-: dynContact(), skinPart(SKIN_PART_UNKNOWN), geoCenter(zeros(3)), pressure(0.0), activeTaxels(0), normalDir(zeros(3)) {}
+: dynContact(), skinPart(SKIN_PART_UNKNOWN), geoCenter(zeros(3)), pressure(0.0), activeTaxels(0), normalDir(zeros(3)), forceTorqueEstimateConfidence(0) {}
 //~~~~~~~~~~~~~~~~~~~~~~
 //   SET methods
 //~~~~~~~~~~~~~~~~~~~~~~    
@@ -91,6 +91,10 @@ void skinContact::setTaxelList(const vector<unsigned int> &list){
     taxelList = list;
     activeTaxels = list.size();
 }
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+void skinContact::setForceTorqueEstimateConfidence(unsigned int _forceTorqueEstimateConfidence){
+    forceTorqueEstimateConfidence = _forceTorqueEstimateConfidence;
+}
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //   SERIALIZATION methods
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -105,7 +109,7 @@ bool skinContact::write(ConnectionWriter& connection){
     // - a list of N int, i.e. the active taxel ids
     // - a double, i.e. the pressure
     // - a list of 2 string, i.e. linkName, frameName
-
+    // - a int, the forceTorqueEstimateConfidence
     connection.appendInt(BOTTLE_TAG_LIST);
     connection.appendInt(8);
     // list of 4 int, i.e. contactId, bodyPart, linkNumber, skinPart
@@ -147,6 +151,9 @@ bool skinContact::write(ConnectionWriter& connection){
     connection.appendInt(2);
     connection.appendString(linkName.c_str());
     connection.appendString(frameName.c_str());
+    // - a int, the forceTorqueEstimateConfidence
+    connection.appendInt(BOTTLE_TAG_INT);
+    connection.appendInt(forceTorqueEstimateConfidence);
 
     // if someone is foolish enough to connect in text mode,
     // let them see something readable.
@@ -169,6 +176,7 @@ bool skinContact::read(ConnectionReader& connection){
     // - a list of N int, i.e. the active taxel ids
     // - a double, i.e. the pressure
     // - a list of 2 string, i.e. linkName, frameName
+    // - a int, the forceTorqueEstimateConfidence
     if(connection.expectInt() != BOTTLE_TAG_LIST || connection.expectInt() != 8)
         return false;
 
@@ -224,6 +232,11 @@ bool skinContact::read(ConnectionReader& connection){
     linkName   = connection.expectText();
     frameName  = connection.expectText();
 
+    // - a int, the forceTorqueEstimateConfidence
+    if(connection.expectInt()!=BOTTLE_TAG_INT)
+        return false;
+    forceTorqueEstimateConfidence       = connection.expectInt();
+
     return !connection.isError();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -275,7 +288,8 @@ string skinContact::toString(int precision) const{
     stringstream res;
     res<< dynContact::toString(precision)<< ", Skin part: "<< SkinPart_s[skinPart]<< ", geometric center: "<< 
         geoCenter.toString(precision)<< ", normal direction: "<< normalDir.toString(precision)<< 
-        ", active taxels: "<< activeTaxels<< ", pressure: "<< pressure;
+        ", active taxels: "<< activeTaxels<< ", pressure: "<< pressure << ", forceTorqueConfidence:"
+        << forceTorqueEstimateConfidence;
     return res.str();
 }
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

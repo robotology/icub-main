@@ -62,7 +62,10 @@ protected:
     unsigned int activeTaxels;
     // list of active taxel ids
     std::vector<unsigned int> taxelList;
-    
+    // non-zero integer representing the confidence on the provided force/torque estimate provided (default: 0)
+    unsigned int forceTorqueEstimateConfidence;
+
+
 public:
     //~~~~~~~~~~~~~~~~~~~~~~
     //   CONSTRUCTORS
@@ -187,6 +190,12 @@ public:
     * @return the list of taxels' id's
     */
     std::vector<unsigned int>           getTaxelList()          const{ return taxelList; }
+    /**
+    * Get a non-zero integer representing the confidence in the provided force/torque estimate.
+    * @return the forceTorqueEstimateConfidence
+    * @note the concrete meaning of this parameter is implementation defined.
+    */
+    unsigned int                        getForceTorqueEstimateConfidence() const{ return forceTorqueEstimateConfidence; }
     
    
     //~~~~~~~~~~~~~~~~~~~~~~
@@ -228,6 +237,12 @@ public:
      * @return true if the operation succeeded, false otherwise
      */
     void setTaxelList(const std::vector<unsigned int> &list);
+    /**
+     * Set a non-zero integer representing the confidence in the provided force/torque estimate.
+     * @param forceTorqueEstimateConfidence
+     * @note the concrete meaning of this parameter is implementation defined.
+     */
+    void setForceTorqueEstimateConfidence(unsigned int forceTorqueEstimateConfidence);
 
     //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     //   SERIALIZATION methods
@@ -251,6 +266,7 @@ public:
     * - a list of N int, i.e. the active taxel ids
     * - a double, i.e. the pressure
     * - a list of 2 strings, containing linkName, frameName
+    * - a int, the forceTorqueEstimateConfidence
     * @param connection connection to write to
     * @return true iff a skinContact was written correctly
     */

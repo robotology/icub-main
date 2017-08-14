@@ -22,6 +22,7 @@ void fillSkinContactWithArbitraryData(iCub::skinDynLib::skinContact & contact)
     contact.setTaxelList(taxelList);
     contact.setLinkName("l_upper_forearm");
     contact.setFrameName("l_upper_forearm_dh_frame");
+    contact.setForceTorqueEstimateConfidence(5);
 }
 
 void checkSkinContactIsPreserved(iCub::skinDynLib::skinContact & contact,
@@ -39,6 +40,7 @@ void checkSkinContactIsPreserved(iCub::skinDynLib::skinContact & contact,
     }
     yAssert(contact.getLinkName() == contactCheck.getLinkName());
     yAssert(contact.getFrameName() == contactCheck.getFrameName());
+    yAssert(contact.getForceTorqueEstimateConfidence() == contactCheck.getForceTorqueEstimateConfidence());
 }
 
 void checkAndBenchmarkSkinContactSerialization()
@@ -50,9 +52,9 @@ void checkAndBenchmarkSkinContactSerialization()
     // Create a buffer to which write the skin contact
     yarp::os::DummyConnector buffer;
 
-    // Run several times for a reliable benchmark
+    // Increase this parameter for a more reliable benchmark
+    size_t n = 20;
     double codec_time = 0.0;
-    size_t n = 200000;
     clock_t tic = clock();
     contact.write(buffer.getWriter());
     for (size_t i=0; i < n; i++)
@@ -97,9 +99,9 @@ void checkAndBenchmarkDynContactSerialization()
     // Create a buffer to which write the skin contact
     yarp::os::DummyConnector buffer;
 
-    // Run several times for a reliable benchmark
+    // Increase this parameter for a more reliable benchmark
+    size_t n = 20;
     double codec_time = 0.0;
-    size_t n = 200;
     clock_t tic = clock();
     contact.write(buffer.getWriter());
     for (size_t i=0; i < n; i++)
