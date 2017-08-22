@@ -149,8 +149,10 @@ bool skinContact::write(ConnectionWriter& connection){
     // - a list of 2 string, i.e. linkName, frameName
     connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_STRING);
     connection.appendInt(2);
-    connection.appendString(linkName.c_str());
-    connection.appendString(frameName.c_str());
+    connection.appendInt(linkName.length());
+    connection.appendExternalBlock((char*)linkName.c_str(), linkName.length());
+    connection.appendInt(frameName.length());
+    connection.appendExternalBlock((char*)frameName.c_str(), frameName.length());
     // - a int, the forceTorqueEstimateConfidence
     connection.appendInt(BOTTLE_TAG_INT);
     connection.appendInt(forceTorqueEstimateConfidence);
@@ -229,8 +231,14 @@ bool skinContact::read(ConnectionReader& connection){
     // - a list of 2 string, i.e. linkName, frameName
     if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_STRING || connection.expectInt()!=2)
         return false;
-    linkName   = connection.expectText();
-    frameName  = connection.expectText();
+    int linkNameLen = connection.expectInt();
+    linkName.resize(linkNameLen);
+    if (!connection.expectBlock((char*)linkName.c_str(), linkNameLen))
+        return false;
+    int frameNameLen = connection.expectInt();
+    frameName.resize(frameNameLen);
+    if (!connection.expectBlock((char*)frameName.c_str(), frameNameLen))
+        return false;
 
     // - a int, the forceTorqueEstimateConfidence
     if(connection.expectInt()!=BOTTLE_TAG_INT)
