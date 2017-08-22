@@ -12,6 +12,7 @@
 #include "stdio.h"
 
 #include <yarp/math/Math.h>
+#include <yarp/os/LogStream.h>
 #include "iCub/skinDynLib/dynContact.h"
 #include <iCub/ctrl/math.h>
 
@@ -213,7 +214,7 @@ bool dynContact::write(ConnectionWriter& connection){
     // - a list of 2 string, i.e. linkName, frameName
 
     connection.appendInt(BOTTLE_TAG_LIST);
-    connection.appendInt(4);
+    connection.appendInt(5);
     // list of 3 int, i.e. contactId, bodyPart, linkNumber
     connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_INT);
     connection.appendInt(3);
@@ -257,8 +258,18 @@ bool dynContact::read(ConnectionReader& connection){
     // - a list of 3 double, i.e. the force
     // - a list of 3 double, i.e. the moment
     // - a list of 2 string, i.e. linkName, frameName
-    if(connection.expectInt()!= BOTTLE_TAG_LIST || connection.expectInt()!=4)
+    if(connection.expectInt()!= BOTTLE_TAG_LIST)
         return false;
+
+    int listSize = connection.expectInt();
+    if(listSize != 5)
+    {
+        yError() << "skinDynLib: error reading skinContact, expecting a list of 10 elements, but "
+                 << listSize << " found. You are probably using two different versions of icub-main across the network. "
+                 << "See https://github.com/robotology/icub-main/pull/462 for more info.";
+        return false;
+    }
+
     // - a list of 3 int, i.e. contactId, bodyPart, linkNumber
     if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_INT || connection.expectInt()!=3)
         return false;

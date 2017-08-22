@@ -9,6 +9,7 @@
 #include <sstream>
 #include <iomanip>
 #include <yarp/math/Math.h>
+#include <yarp/os/LogStream.h>
 #include "iCub/skinDynLib/skinContact.h"
 
 using namespace iCub::skinDynLib;
@@ -111,7 +112,7 @@ bool skinContact::write(ConnectionWriter& connection){
     // - a list of 2 string, i.e. linkName, frameName
     // - a int, the forceTorqueEstimateConfidence
     connection.appendInt(BOTTLE_TAG_LIST);
-    connection.appendInt(8);
+    connection.appendInt(10);
     // list of 4 int, i.e. contactId, bodyPart, linkNumber, skinPart
     connection.appendInt(BOTTLE_TAG_LIST + BOTTLE_TAG_INT);
     connection.appendInt(4);
@@ -179,8 +180,17 @@ bool skinContact::read(ConnectionReader& connection){
     // - a double, i.e. the pressure
     // - a list of 2 string, i.e. linkName, frameName
     // - a int, the forceTorqueEstimateConfidence
-    if(connection.expectInt() != BOTTLE_TAG_LIST || connection.expectInt() != 8)
+    if(connection.expectInt() != BOTTLE_TAG_LIST)
         return false;
+
+    int listSize = connection.expectInt();
+    if(listSize != 10)
+    {
+        yError() << "skinDynLib: error reading skinContact, expecting a list of 10 elements, but "
+                 << listSize << " found. You are probably using two different versions of icub-main across the network. "
+                 << "See https://github.com/robotology/icub-main/pull/462 for more info.";
+        return false;
+    }
 
     // - a list of 4 int, i.e. contactId, bodyPart, linkNumber, skinPart
     if(connection.expectInt()!=BOTTLE_TAG_LIST+BOTTLE_TAG_INT || connection.expectInt()!=4)
