@@ -1660,6 +1660,8 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
       SkinPart skinPart;    // id of the part of the skin (e.g. SKIN_LEFT_FOREARM; from skinDynLib/common.h)
       BodyPart bodyPart;    // id of the body part
       HandPart handPart;    // id of the hand part  - INDEX, MIDDLE, RING, LITTLE, THUMB, PALM, ALL_HAND_PARTS, HAND_PART_SIZE
+      std::string linkName;
+      std::string frameName;
      
       //coordinate transformations for skinEvents and for emulating ind. taxel groups per skin part
       Vector geoCenter_SIM_FoR_forHomo(4,0.0), normal_SIM_FoR_forHomo(4,0.0);
@@ -1714,7 +1716,7 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
       for (list<OdeInit::contactOnSkin_t>::iterator it = odeinit.listOfSkinContactInfos.begin(); it!=odeinit.listOfSkinContactInfos.end(); it++){
           skinPart = SKIN_PART_UNKNOWN; bodyPart = BODY_PART_UNKNOWN;  handPart = ALL_HAND_PARTS; skinCoverFlag = false; fingertipFlag = false;
           taxel_list.clear();
-          odeinit._iCub->getSkinAndBodyPartFromSpaceAndGeomID((*it).body_geom_space_id,(*it).body_geom_id,skinPart,bodyPart,handPart,skinCoverFlag,fingertipFlag);
+          odeinit._iCub->getSkinAndBodyPartFromSpaceAndGeomID((*it).body_geom_space_id,(*it).body_geom_id,skinPart,bodyPart,handPart,skinCoverFlag,fingertipFlag,linkName,frameName);
           if(upper_body_transforms_available){
               geoCenter_SIM_FoR_forHomo.zero(); geoCenter_SIM_FoR_forHomo(3)=1.0; //setting the extra row to 1 - for multiplication by homogenous rototransl. matrix
               normal_SIM_FoR_forHomo.zero(); normal_SIM_FoR_forHomo(3)=1.0; 
@@ -1822,7 +1824,9 @@ void OdeSdlSimulation::inspectWholeBodyContactsAndSendTouch()
               else{    
                   taxel_list.push_back(FAKE_TAXEL_ID); // we will emulate one non-existent activated "taxel" per contact joint - say taxel "10000"
               }
-              skinContact c(bodyPart, skinPart, getLinkNum(skinPart), geoCenter_link_FoR, geoCenter_link_FoR,taxel_list, forceOnBody_magnitude, normal_link_FoR,force_link_FoR,moment_link_FoR);       
+              skinContact c(bodyPart, skinPart, getLinkNum(skinPart), geoCenter_link_FoR, geoCenter_link_FoR,taxel_list, forceOnBody_magnitude, normal_link_FoR,force_link_FoR,moment_link_FoR);
+              c.setLinkName(linkName);
+              c.setFrameName(frameName);
               //we have only one source of information - the contact as detected by ODE - therefore, we take the coordinates and set them both to CoP 
               //(which is supposed to come from the dynamic estimation) and as geoCenter (from skin); Similarly, we derive the pressure directly from the force vector from ODE.
               if (odeinit.verbosity > 4) yDebug("Creating skin contact as follows: %s.\n",c.toString().c_str());

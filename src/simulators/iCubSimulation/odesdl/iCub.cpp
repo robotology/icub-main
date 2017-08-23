@@ -4212,13 +4212,18 @@ void ICubSim::printPositionOfBody(dBodyID bodyID)
 
 
 
-void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, const dGeomID geomID, SkinPart& skinPart, BodyPart& bodyPart, HandPart & handPart, bool& skinCoverFlag, bool& fingertipFlag)
+void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, const dGeomID geomID, SkinPart& skinPart,
+                                                   BodyPart& bodyPart, HandPart & handPart, bool& skinCoverFlag, bool& fingertipFlag,
+                                                   std::string& linkName, std::string& frameName)
 {
    OdeInit& odeinit = OdeInit::get();
       
   if (geomSpaceID ==  odeinit._iCub->iCubTorsoSpace){
      skinPart = SKIN_FRONT_TORSO;
      bodyPart = TORSO;
+     linkName = "chest";
+     frameName = "chest_skin_frame";
+
      if(actTorsoCovers == "on"){
         if(geomID == model_ThreeD_obj["torso"].geom){
             skinCoverFlag = true; 
@@ -4235,6 +4240,8 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
       {
         skinPart = SKIN_LEFT_HAND;
         bodyPart = LEFT_ARM;
+        linkName = "l_hand";
+        frameName = "l_hand_dh_frame";
         //when the hand part is "off", there is no means to distinguish whether the fingertip was touched, so we will not emulate indiv. taxels and hence we don't need more details
         return;
       }
@@ -4248,6 +4255,8 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
       {
         skinPart = SKIN_LEFT_HAND;
         bodyPart = LEFT_ARM;
+        linkName = "l_hand";
+        frameName = "l_hand_dh_frame";
         if(geomID==geom[30]){
             handPart = THUMB;
             fingertipFlag = true;
@@ -4276,13 +4285,17 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
        
     if(odeinit._iCub->actLArm == "off"){
        if( (geomID == larm0_geom) || (geomID == larm1_geom) || (geomID == larm2_geom)){
-	 skinPart = SKIN_LEFT_UPPER_ARM;
+ 	 skinPart = SKIN_LEFT_UPPER_ARM;
 	 bodyPart = LEFT_ARM;
+	 linkName = "l_upper_arm";
+	 frameName = "l_upper_arm_dh_frame";
 	 return;
        }
        else if(geomID == larm3_geom){
 	 skinPart = SKIN_LEFT_FOREARM;
 	 bodyPart = LEFT_ARM;
+	 linkName = "l_forearm";
+	 frameName = "l_forearm_dh_frame";
 	 return;
        }
     }
@@ -4290,11 +4303,15 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
       if ( (geomID == geom[0]) || (geomID == geom[2]) || (geomID == geom[4]) || (geomID == geom[6])){
 	 skinPart = SKIN_LEFT_UPPER_ARM;
 	 bodyPart = LEFT_ARM;
+     linkName = "l_upper_arm";
+     frameName = "l_upper_arm_dh_frame";
 	 return;
       }
       else if (geomID == geom[8]){
 	  skinPart = SKIN_LEFT_FOREARM;
 	  bodyPart = LEFT_ARM;
+      linkName = "l_forearm";
+      frameName = "l_forearm_dh_frame";
 	  return;
       }
     }
@@ -4303,18 +4320,24 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
         if(geomID == model_ThreeD_obj["leftPalm"].geom){
             skinPart = SKIN_LEFT_HAND;
             bodyPart = LEFT_ARM;
+            linkName = "l_hand";
+            frameName = "l_hand_dh_frame";
             skinCoverFlag = true; 
             return;
         }
         else if(geomID == model_ThreeD_obj["lowerLeftArm"].geom){
             skinPart = SKIN_LEFT_FOREARM;
             bodyPart = LEFT_ARM;
+            linkName = "l_forearm";
+            frameName = "l_forearm_dh_frame";
             skinCoverFlag = true; 
             return;
         }
         else if(geomID == model_ThreeD_obj["upperLeftArm"].geom){
             skinPart = SKIN_LEFT_UPPER_ARM;
             bodyPart = LEFT_ARM;
+            linkName = "l_upper_arm";
+            frameName = "l_upper_arm_dh_frame";
             skinCoverFlag = true; 
             return;
         }
@@ -4331,6 +4354,8 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
         || (geomID == r_hand5_geom)){
             skinPart = SKIN_RIGHT_HAND;
             bodyPart = RIGHT_ARM;
+            linkName = "r_hand";
+            frameName = "r_hand_dh_frame";
             return;
         }
      }
@@ -4343,8 +4368,10 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
         {
                 skinPart = SKIN_RIGHT_HAND;
                 bodyPart = RIGHT_ARM;
+                linkName = "r_hand";
+                frameName = "r_hand_dh_frame";
          
-                 if(geomID==geom[49]){
+                if(geomID==geom[49]){
                     handPart = THUMB;
                     fingertipFlag = true;
                 }
@@ -4373,11 +4400,15 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
        if( (geomID == rarm0_geom) || (geomID == rarm1_geom) || (geomID == rarm2_geom)){
         skinPart = SKIN_RIGHT_UPPER_ARM;
         bodyPart = RIGHT_ARM;
+        linkName = "r_upper_arm";
+        frameName = "r_upper_arm_dh_frame";
         return;
        }
        else if(geomID == rarm3_geom){
         skinPart = SKIN_RIGHT_FOREARM;
         bodyPart = RIGHT_ARM;
+        linkName = "r_forearm";
+        frameName = "r_forearm_dh_frame";
         return;
        }
      }
@@ -4385,11 +4416,15 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
       if ( (geomID == geom[1]) || (geomID == geom[3]) || (geomID == geom[5]) || (geomID == geom[7])){
         skinPart = SKIN_RIGHT_UPPER_ARM;
         bodyPart = RIGHT_ARM;
+        linkName = "r_upper_arm";
+        frameName = "r_upper_arm_dh_frame";
         return;
       }
       else if (geomID == geom[9]){
         skinPart = SKIN_RIGHT_FOREARM;
         bodyPart = RIGHT_ARM;
+        linkName = "r_forearm";
+        frameName = "r_forearm_dh_frame";
         return;
       }
     }
@@ -4399,18 +4434,24 @@ void ICubSim::getSkinAndBodyPartFromSpaceAndGeomID(const dSpaceID geomSpaceID, c
         if(geomID == model_ThreeD_obj["rightPalm"].geom){
             skinPart = SKIN_RIGHT_HAND;
             bodyPart = RIGHT_ARM;
+            linkName = "r_hand";
+            frameName = "r_hand_dh_frame";
             skinCoverFlag = true; 
             return;
         }
         else if(geomID == model_ThreeD_obj["lowerRightArm"].geom){
             skinPart = SKIN_RIGHT_FOREARM;
             bodyPart = RIGHT_ARM;
+            linkName = "r_forearm";
+            frameName = "r_forearm_dh_frame";
             skinCoverFlag = true; 
             return;
         }
         else if(geomID == model_ThreeD_obj["upperRightArm"].geom){
             skinPart = SKIN_RIGHT_UPPER_ARM;
             bodyPart = RIGHT_ARM;
+            linkName = "r_upper_arm";
+            frameName = "r_upper_arm_dh_frame";
             skinCoverFlag = true; 
             return;
         }
