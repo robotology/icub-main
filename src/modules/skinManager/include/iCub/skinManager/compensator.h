@@ -69,6 +69,8 @@ private:
     SkinPart skinPart;                          // id of the part of the skin (e.g. left_hand, right_forearm, left_upper_arm)
     BodyPart bodyPart;                          // id of the body part
     unsigned int linkNum;                       // number of the link
+    string linkName;                            // name of the link to which the skin patch is attached
+    string frameName;                           // name of the frame in which all skin quantities are expressed
 
     // SKIN CONTACTS
     vector< list<int> >     neighborsXtaxel;    // list of neighbors for each taxel    

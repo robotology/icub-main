@@ -15,6 +15,7 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
  * Public License for more details
  */
+#include <yarp/os/LogStream.h>
 #include <yarp/os/Time.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/Rand.h> // TEMP
@@ -550,6 +551,8 @@ skinContactList Compensator::getContacts(){
         if(activeTaxelsGeo!=0)      geoCenter   /= activeTaxelsGeo;
         pressure    /= activeTaxels;
         skinContact c(bodyPart, skinPart, linkNum, CoP, geoCenter, taxelList, pressure, normal);
+        c.setLinkName(linkName);
+        c.setFrameName(frameName);
         // set an estimate of the force that is with normal direction and intensity equal to the pressure
         c.setForce(-0.05*activeTaxels*pressure*normal);
         contactList.push_back(c);
@@ -718,6 +721,8 @@ bool Compensator::setTaxelPosesFromFile(const char *filePath){
     yarp::os::Bottle &calibration = rf.findGroup("calibration");
     if (calibration.isNull())
     {
+        yError() << "skinManager: using deprecated legacy loading procedure for file " << filePath
+                 << " in taxelPositionFiles . This loading procedure will be removed soon, please update your setup.";
         return setTaxelPosesFromFileOld(filePath);
     }
     else
@@ -741,6 +746,9 @@ bool Compensator::setTaxelPosesFromFile(const char *filePath){
                 taxelPoseConfidence[i] = 1.0;
         }
         computeNeighbors();
+        // Set link name and frame name
+        linkName = rf.find("name").asString();
+        frameName = rf.find("frameName").asString();
         poseSem.post();
     }
 
