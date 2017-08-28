@@ -119,7 +119,7 @@ typedef enum
 
 } eOas_inertial1_position_t;
 
-const uint8_t fromip2indexof_thepositions[23] = { 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5 };
+const uint8_t fromip2indexof_thepositions[28] = { 0, 0, 1, 0, 2, 0, 0, 0, 0, 0, 3, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5, 0, 1, 0, 0, 2 };
 
 const eOas_inertial1_position_t thepositions[6][2][16] =
 {
