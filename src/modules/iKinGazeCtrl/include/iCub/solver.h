@@ -37,7 +37,7 @@
 #define SACCADES_INHIBITION_PERIOD          0.2     // [s]
 #define SACCADES_ACTIVATION_ANGLE           10.0    // [deg]
 #define NECKSOLVER_ACTIVATIONDELAY          0.25    // [s]
-#define NECKSOLVER_ACTIVATIONANGLE_JOINTS   0.1     // [deg]
+#define NECKSOLVER_ACTIVATIONANGLE_JOINTS   1.0     // [deg]
 #define NECKSOLVER_ACTIVATIONANGLE          2.5     // [deg]
 #define NECKSOLVER_RESTORINGANGLE           5.0     // [deg]
 
