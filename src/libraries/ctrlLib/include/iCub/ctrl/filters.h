@@ -349,7 +349,8 @@ public:
 
    /**
    * Sets new filter order.
-   * @param n new filter order.
+   * @param n new filter order. 
+   * @note the internal memory is reset. 
    */ 
    void setOrder(const size_t n);
 
