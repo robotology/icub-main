@@ -2076,13 +2076,14 @@ public:
         if (rpcPort.asPort().isOpen())
             rpcPort.close();
 
+        // this switch-off order does matter !!
+        delete commData.port_xd;
         delete loc;
         delete eyesRefGen;
         delete slv;
         delete ctrl;
         delete drvTorso;
         delete drvHead;
-        delete commData.port_xd;
 
         contextMap.clear();
     }

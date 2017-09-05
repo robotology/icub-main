@@ -52,7 +52,7 @@ class xdPort : public BufferedPort<Bottle>,
                public Thread
 {
 protected:
-    void  *slv;
+    void *slv;
 
     Mutex  mutex_0;
     Mutex  mutex_1;

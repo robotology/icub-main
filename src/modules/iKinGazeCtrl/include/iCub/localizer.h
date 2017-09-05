@@ -74,6 +74,7 @@ protected:
 
 public:
     Localizer(ExchangeData *_commData, const unsigned int _period);
+    virtual ~Localizer();
 
     double getDistFromVergence(const double ver);
     void   getPidOptions(Bottle &options);
@@ -89,9 +90,9 @@ public:
     bool   getIntrinsicsMatrix(const string &type, Matrix &M, int &w, int &h);
     bool   setIntrinsicsMatrix(const string &type, const Matrix &M, const int w, const int h);
     bool   threadInit();
+    void   threadRelease();
     void   afterStart(bool s);
     void   run();
-    void   threadRelease();
 };
 
 
