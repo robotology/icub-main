@@ -44,8 +44,7 @@ xdPort::xdPort(void *_slv) : slv(_slv)
     rx=0;
 
     useCallback();
-    if (slv!=NULL)
-        start();
+    start();
 }
 
 
@@ -61,8 +60,7 @@ xdPort::~xdPort()
 {
     closing=true;
     triggerNeck.signal();
-    if (slv!=NULL)
-        stop();
+    stop();
 }
 
 
