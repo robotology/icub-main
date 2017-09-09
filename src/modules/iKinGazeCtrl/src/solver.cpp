@@ -828,15 +828,12 @@ void Solver::run()
     // call the solver for neck
     if (doSolve)
     {
-        Vector gDir(4,0.0);
-        gDir[2]=gDir[3]=1.0;
+        Vector gDir(3,0.0); gDir[2]=-1.0;
         if (commData->stabilizationOn)
         {
-            Vector acc=commData->get_imu().subVector(3,5); 
-            acc.push_back(1.0); // impose homogeneous coordinates
-
+            Vector acc=-1.0*commData->get_imu().subVector(3,5);
             Matrix H=imu->getH(cat(fbTorso,fbHead.subVector(0,2)));
-            gDir=H*acc;            
+            gDir=H.submatrix(0,2,0,2)*acc;
         }
 
         Vector xdUserTol=computeTargetUserTolerance(xd);
@@ -854,8 +851,8 @@ void Solver::run()
     if (state_==ctrl_off)
     {
         // keep neck targets equal to current angles
-        // to avoid glitches in the control (especially
-        // during stabilization)
+        // to avoid glitches in the control,
+        // especially during stabilization
         commData->set_qd(0,neckPos[0]);
         commData->set_qd(1,neckPos[1]);
         commData->set_qd(2,neckPos[2]);
