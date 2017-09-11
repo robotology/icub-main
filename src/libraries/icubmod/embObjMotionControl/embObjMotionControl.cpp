@@ -2264,6 +2264,7 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
 
     case eomc_calibration_type12_absolute_sensor:
         calib.params.type12.rawValueAtZeroPos  = (int32_t)S_32(params.param1);
+        calib.params.type12.calibrationDelta = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
         break;
 
     default:
