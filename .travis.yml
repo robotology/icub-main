@@ -28,7 +28,7 @@ before_script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew tap robotology/cask; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install --only-dependencies yarp; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install goocanvas sdl sdl_gfx sdl_image gcc; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install ode --enable-double-precision; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install ode --with-double-precision; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install opencv; fi
   #use the same set of cmake options used in the dashboard build
   - source ./admin/scripts/generate-cmake-options.sh
