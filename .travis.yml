@@ -29,6 +29,9 @@ before_script:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install --only-dependencies yarp; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install goocanvas sdl sdl_gfx sdl_image gcc; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install ode --with-double-precision; fi
+#Fix for opencv and numpy already installed by system
+  - if [ "$TRAVIS_OS_NAME" = osx ]; then rm '/usr/local/bin/f2py'; fi
+  - if [ "$TRAVIS_OS_NAME" = osx ]; then rm -r '/usr/local/lib/python2.7/site-packages/numpy'; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install opencv; fi
   #use the same set of cmake options used in the dashboard build
   - source ./admin/scripts/generate-cmake-options.sh
