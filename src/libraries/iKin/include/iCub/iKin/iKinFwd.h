@@ -883,7 +883,6 @@ class iKinLimb : public iKinChain
 protected:
     std::deque<iKinLink*> linkList;
     std::string           type;
-    bool                  configured;
 
     virtual void getMatrixFromProperties(const yarp::os::Property &options,
                                          const std::string &tag, yarp::sig::Matrix &H);
@@ -1004,7 +1003,7 @@ public:
     * Checks if the limb has been properly configured.
     * @return true iff correctly configured.
     */
-    bool isValid() const { return configured; }
+    bool isValid() const { return (N>0); }
 
     /**
     * Copies a Limb object into the current one.

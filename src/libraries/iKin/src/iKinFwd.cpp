@@ -1378,7 +1378,8 @@ void iKinLimb::getMatrixFromProperties(const Property &options, const string &ta
 
 
 /************************************************************************/
-void iKinLimb::setMatrixToProperties(Property &options, const string &tag, Matrix &H)
+void iKinLimb::setMatrixToProperties(Property &options, const string &tag,
+                                     Matrix &H)
 {
     Bottle b; Bottle &l=b.addList();
     for (int r=0; r<H.rows(); r++)
@@ -1441,16 +1442,13 @@ bool iKinLimb::fromLinksProperties(const Property &options)
             blockLink(i,CTRL_DEG2RAD*bLink.find("blocked").asDouble());
     }
 
-    return configured=true;
+    return true;
 }
 
 
 /************************************************************************/
 bool iKinLimb::toLinksProperties(Property &options)
 {
-    if (!configured)
-        return false;
-
     Bottle links;
     for (unsigned int i=0; i<N; i++)
     {
@@ -1524,7 +1522,6 @@ iKinLimb::~iKinLimb()
 void iKinLimb::allocate(const string &_type)
 {
     type=_type;
-    configured=true;
 }
 
 
@@ -1537,8 +1534,6 @@ void iKinLimb::clone(const iKinLimb &limb)
 
     for (unsigned int i=0; i<limb.getN(); i++)
         pushLink(new iKinLink(*(limb.linkList[i])));
-
-    configured=limb.configured;
 }
 
 
@@ -1551,8 +1546,6 @@ void iKinLimb::dispose()
 
     linkList.clear();
     iKinChain::dispose();
-
-    configured=false;
 }
 
 
