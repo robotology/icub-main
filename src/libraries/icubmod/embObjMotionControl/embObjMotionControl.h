@@ -170,42 +170,125 @@ struct SpeedEstimationParameters
 
 
 
-class torqueControlHelper
+class measureConverter
 {
     int  jointsNum;
-    double* newtonsToSensor;
+    int *jointmap;
+
+    struct torqueData_t
+    {
+        double* newtonsToSensor;
+        double* angleToEncoders;
+    };
+
+    torqueData_t torqueData;
     double* angleToEncoders;
+    double* ampTosensor;
+    double* dutycycleToPWM;
 
     public:
-    torqueControlHelper(int njoints, double* angleToEncoders, double* newtons2sens);
-    torqueControlHelper(int njoints, float* angleToEncoders, double* newtons2sens);
-    inline ~torqueControlHelper()
+    measureConverter(int njoints, double* angleToEncoders, double* newtons2sens, double *ampTosensor, double *dutycycleToPWM);
+    inline ~measureConverter()
     {
-        if (newtonsToSensor)   delete [] newtonsToSensor;
-        if (angleToEncoders)   delete [] angleToEncoders;
-        newtonsToSensor=0;
+        //if (jointmap)          delete [] jointmap;
+        if (torqueData.newtonsToSensor)   delete [] torqueData.newtonsToSensor;
+        if (torqueData.angleToEncoders)   delete [] torqueData.angleToEncoders;
+        if (angleToEncoders)              delete [] angleToEncoders;
+        if (ampTosensor)                  delete [] ampTosensor;
+        if (dutycycleToPWM)               delete [] dutycycleToPWM;
+
         angleToEncoders=0;
+        ampTosensor=0;
+        torqueData.newtonsToSensor = 0;
+        torqueData.angleToEncoders = 0;
+        dutycycleToPWM = 0;
+
     }
+
+    //in these function there isn't check value of joint in input because they are used inside embObjmotioncontrol  that already perform the check on joint num.
     inline double getNewtonsToSensor (int jnt)
     {
-        if (jnt>=0 && jnt<jointsNum) return newtonsToSensor[jnt];
-        return 0;
+        return torqueData.newtonsToSensor[jnt];
     }
     inline double getAngleToEncoders (int jnt)
     {
-        if (jnt>=0 && jnt<jointsNum) return angleToEncoders[jnt];
-        return 0;
+        return angleToEncoders[jnt];
     }
     inline int getNumberOfJoints ()
     {
         return jointsNum;
     }
-    
-    inline double convertImpN2S(int j, double nw)
+
+    inline double* getAngleToEncodersArray(void)
     {
-        return nw * newtonsToSensor[j]/angleToEncoders[j];
+        return angleToEncoders;
     }
+
+    inline double* getNewtonsToSensorArray(void)
+    {
+        return torqueData.newtonsToSensor;
+    }
+
+    inline double* geAmpToSensorArray(void)
+    {
+        return ampTosensor;
+    }
+
+     inline double* geDutycycleToPWMArray(void)
+    {
+        return dutycycleToPWM;
+    }
+
+    inline double convertImp_N2S(int j, double nw)
+    {
+        return (nw * torqueData.newtonsToSensor[j] / torqueData.angleToEncoders[j]);
+    }
+
+    inline double convertImp_S2N(int j, double sens)
+    {
+        return (sens / torqueData.newtonsToSensor[j] * torqueData.angleToEncoders[j]);
+    }
+
+    inline double convertTrq_N2S(int j, double nw)
+    {
+        return (nw * torqueData.newtonsToSensor[j]);
+    }
+
+    inline double convertTrq_S2N(int j, double sens)
+    {
+        return (sens/torqueData.newtonsToSensor[j]);
+    }
+
+    inline double convertTrq_PWMonNm2S(int j, double value)
+    {
+        return (value/torqueData.newtonsToSensor[j]);
+    }
+
+    inline double convertTrq_S2PWMonNm(int j, double value)
+    {
+        return (value * torqueData.newtonsToSensor[j]);
+    }
+
+    inline double convertPos_A2E( int j, double ang)
+    {
+        return (ang*angleToEncoders[j]);
+    }
+
+    inline double convertPos_E2A( int j, double ang)
+    {
+        return (ang/angleToEncoders[j]);
+    }
+
+    void convertTrqPid_N2S(int j, yarp::dev::Pid &pid);//NEWTON TO SENSOR
+
+    void convertTrqPid_S2N(int j, yarp::dev::Pid &pid);
+
+    void convertPosPid_A2E(int j, yarp::dev::Pid &pid);//ANGLE TO SENSOR
+
+    void convertPosPid_E2A(int j, yarp::dev::Pid &pid);
 };
+
+
 
 
 
@@ -299,10 +382,7 @@ private:
     yarp::os::Semaphore _mutex;
 
 
-    double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
-    double *_ampsToSensor;
-    double *_dutycycleToPWM;
-    double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
+     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
     uint8_t *_jointEncoderType;                 /** joint encoder type*/
     uint8_t *_jointNumOfNoiseBits;              /** Num of error bits passable for joint encoder */
     int    *_jointEncoderRes;                   /** joint encoder resolution */
@@ -340,12 +420,9 @@ private:
     std::vector<eomc_axisInfo_t> _axesInfo;
 
 
-    double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
     bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
     #define MAX_POSITION_MOVE_INTERVAL 0.080
     double *_last_position_move_time;           /** time stamp for last received position move command*/
-
-
 
 
 
@@ -354,7 +431,7 @@ private:
     bool        _pwmIsLimited;                  /** set to true if pwm is limited */
 
 
-     torqueControlHelper    *_torqueControlHelper;
+     measureConverter       *_measureConverter;
 
 
     // debug purpose
