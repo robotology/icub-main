@@ -27,7 +27,7 @@ before_script:
   # macOS dependencies
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew tap robotology/cask; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install --only-dependencies yarp; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install gsl goocanvas sdl sdl_gfx sdl_image ipopt; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install gsl goocanvas sdl sdl_gfx sdl_image homebrew/science/ipopt; fi
   # Fix for opencv and numpy already installed by system
   - if [ "$TRAVIS_OS_NAME" = osx ]; then rm '/usr/local/bin/f2py'; fi
   - if [ "$TRAVIS_OS_NAME" = osx ]; then rm -r '/usr/local/lib/python2.7/site-packages/numpy'; fi
