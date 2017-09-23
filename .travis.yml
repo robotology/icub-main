@@ -47,6 +47,7 @@ before_script:
   - cd ../..
   - mkdir build
   - cd build
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then CMAKE_OPTIONS="${CMAKE_OPTIONS} -DENABLE_icubmod_usbCamera:BOOL=FALSE"; fi
   - cmake ../ ${CMAKE_OPTIONS}
 
 script:
