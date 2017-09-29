@@ -274,7 +274,8 @@ public:
         if (wbdPort.getOutputCount()>0)
         {
             Bottle cmd,reply;
-            cmd.addInt(0);
+            cmd.addString("calib");
+            cmd.addString("all");
             wbdPort.write(cmd,reply);
             Time::delay(0.3);
             return true;
