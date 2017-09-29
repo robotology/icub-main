@@ -82,6 +82,7 @@ using namespace std;
 
 #include "serviceParser.h"
 #include "mcParser.h"
+#include "measuresConverter.h"
 
 // - public #define  --------------------------------------------------------------------------------------------------
 
@@ -169,129 +170,6 @@ struct SpeedEstimationParameters
 
 
 
-
-class measureConverter
-{
-    int  jointsNum;
-    int *jointmap;
-
-    struct torqueData_t
-    {
-        double* newtonsToSensor;
-        double* angleToEncoders;
-    };
-
-    torqueData_t torqueData;
-    double* angleToEncoders;
-    double* ampTosensor;
-    double* dutycycleToPWM;
-
-    public:
-    measureConverter(int njoints, double* angleToEncoders, double* newtons2sens, double *ampTosensor, double *dutycycleToPWM);
-    inline ~measureConverter()
-    {
-        //if (jointmap)          delete [] jointmap;
-        if (torqueData.newtonsToSensor)   delete [] torqueData.newtonsToSensor;
-        if (torqueData.angleToEncoders)   delete [] torqueData.angleToEncoders;
-        if (angleToEncoders)              delete [] angleToEncoders;
-        if (ampTosensor)                  delete [] ampTosensor;
-        if (dutycycleToPWM)               delete [] dutycycleToPWM;
-
-        angleToEncoders=0;
-        ampTosensor=0;
-        torqueData.newtonsToSensor = 0;
-        torqueData.angleToEncoders = 0;
-        dutycycleToPWM = 0;
-
-    }
-
-    //in these function there isn't check value of joint in input because they are used inside embObjmotioncontrol  that already perform the check on joint num.
-    inline double getNewtonsToSensor (int jnt)
-    {
-        return torqueData.newtonsToSensor[jnt];
-    }
-    inline double getAngleToEncoders (int jnt)
-    {
-        return angleToEncoders[jnt];
-    }
-    inline int getNumberOfJoints ()
-    {
-        return jointsNum;
-    }
-
-    inline double* getAngleToEncodersArray(void)
-    {
-        return angleToEncoders;
-    }
-
-    inline double* getNewtonsToSensorArray(void)
-    {
-        return torqueData.newtonsToSensor;
-    }
-
-    inline double* geAmpToSensorArray(void)
-    {
-        return ampTosensor;
-    }
-
-     inline double* geDutycycleToPWMArray(void)
-    {
-        return dutycycleToPWM;
-    }
-
-    inline double convertImp_N2S(int j, double nw)
-    {
-        return (nw * torqueData.newtonsToSensor[j] / torqueData.angleToEncoders[j]);
-    }
-
-    inline double convertImp_S2N(int j, double sens)
-    {
-        return (sens / torqueData.newtonsToSensor[j] * torqueData.angleToEncoders[j]);
-    }
-
-    inline double convertTrq_N2S(int j, double nw)
-    {
-        return (nw * torqueData.newtonsToSensor[j]);
-    }
-
-    inline double convertTrq_S2N(int j, double sens)
-    {
-        return (sens/torqueData.newtonsToSensor[j]);
-    }
-
-    inline double convertTrq_PWMonNm2S(int j, double value)
-    {
-        return (value/torqueData.newtonsToSensor[j]);
-    }
-
-    inline double convertTrq_S2PWMonNm(int j, double value)
-    {
-        return (value * torqueData.newtonsToSensor[j]);
-    }
-
-    inline double convertPos_A2E( int j, double ang)
-    {
-        return (ang*angleToEncoders[j]);
-    }
-
-    inline double convertPos_E2A( int j, double ang)
-    {
-        return (ang/angleToEncoders[j]);
-    }
-
-    void convertTrqPid_N2S(int j, yarp::dev::Pid &pid);//NEWTON TO SENSOR
-
-    void convertTrqPid_S2N(int j, yarp::dev::Pid &pid);
-
-    void convertPosPid_A2E(int j, yarp::dev::Pid &pid);//ANGLE TO SENSOR
-
-    void convertPosPid_E2A(int j, yarp::dev::Pid &pid);
-};
-
-
-
-
-
 typedef struct
 {
     vector<int>                         joint2set;
@@ -301,7 +179,10 @@ typedef struct
 } eomc_jointsetsInfo_t;
 
 
+typedef struct
+{
 
+} eomc_measureCovFactors_t;
 
 
 namespace yarp {
@@ -310,6 +191,8 @@ namespace yarp {
     }
 }
 using namespace yarp::dev;
+
+
 
 enum { MAX_SHORT = 32767, MIN_SHORT = -32768, MAX_INT = 0x7fffffff, MIN_INT = 0x80000000,  MAX_U32 = 0xffffffff, MIN_U32 = 0x00, MAX_U16 = 0xffff, MIN_U16 = 0x0000};
 enum { CAN_SKIP_ADDR = 0x80 };
@@ -431,7 +314,7 @@ private:
     bool        _pwmIsLimited;                  /** set to true if pwm is limited */
 
 
-     measureConverter       *_measureConverter;
+     measuresConverter       *_measureConverter;
 
 
     // debug purpose
@@ -577,7 +460,7 @@ private:
     bool fromConfig_getGeneralInfo(yarp::os::Searchable &config); //get general info: useRawEncoderData, useLiitedPwm, etc....
     bool fromConfig_Step2(yarp::os::Searchable &config);
     bool fromConfig_readServiceCfg(yarp::os::Searchable &config);
-
+    bool initializeInterfaces(measureConvFactors &f);
 
 public:
 
