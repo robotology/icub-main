@@ -3812,14 +3812,23 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     {
         // Return the reduced kinematic_mj matrix considering only the joints actually exposed to the user
         Bottle& ret = val.addList();
-        for (int r=0; r<_njoints; r++)
-        {
-            for (int c = 0; c < _njoints; c++)
+
+        eOmn_serv_type_t mc_serv_type = (eOmn_serv_type_t)serviceConfig.ethservice.configuration.type;
+        if(iNeedCouplingsInfo())
             {
-                // matrixJ2M is stored as row major in the  eomc_couplingInfo_t,
-                // and kinematic_mj is returned as a row major serialization as well
-                ret.addDouble(_couplingInfo.matrixJ2M[4 * r + c]);
+            for (int r=0; r<_njoints; r++)
+            {
+                for (int c = 0; c < _njoints; c++)
+                {
+                    // matrixJ2M is stored as row major in the  eomc_couplingInfo_t,
+                    // and kinematic_mj is returned as a row major serialization as well
+                    ret.addDouble(_couplingInfo.matrixJ2M[4 * r + c]);
+                }
             }
+        }
+        else
+        {
+            ret.addDouble(0.0);
         }
         return true;
     }
