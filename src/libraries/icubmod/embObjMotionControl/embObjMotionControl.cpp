@@ -1544,9 +1544,11 @@ bool embObjMotionControl::init()
         jconfig.jntEncoderResolution = _jointEncoderRes[logico];
         jconfig.jntEncoderType = _jointEncoderType[logico];
         jconfig.jntEncNumOfNoiseBits = _jointNumOfNoiseBits[logico];
-        jconfig.motor_params.bemf_value = 0;
+
+        printf("SEND CONFIG: j%d, bemf=%f, ktau=%f \n", logico, _tpids[logico].kbemf, _tpids[logico].ktau);
+        jconfig.motor_params.bemf_value = (float) _measureConverter->convertTrqMotorBemfParam_MetricToMachineUnits(fisico,  _tpids[logico].kbemf);
         jconfig.motor_params.bemf_scale = 0;
-        jconfig.motor_params.ktau_value = 0;
+        jconfig.motor_params.ktau_value = (float) _measureConverter->convertTrqMotorKtaufParam_MetricToMachineUnits(fisico, _tpids[logico].ktau);
         jconfig.motor_params.ktau_scale = 0;
 
         jconfig.tcfiltertype=_tpids[logico].filterType;
@@ -1566,20 +1568,20 @@ bool embObjMotionControl::init()
         }
     }
 
-    /////////////////////////////////////////////////////////
-    // invia la configurazione dei parametri di stiction   //
-    /////////////////////////////////////////////////////////
-    for(int logico=0; logico< _njoints; logico++)
-    {
-        MotorTorqueParameters params;
-        params.bemf = _tpids[logico].kbemf;
-        params.bemf_scale = 0;
-        params.ktau = _tpids[logico].ktau;
-        params.ktau_scale = 0;
-        //use the yarp method to get the values properly converted from [SI] to HW units (if necessary)
-        printf("SEND CONFIG: j%d, bemf=%f, ktau=%f \n", logico, params.bemf, params.ktau);
-        setMotorTorqueParams(logico,params);
-    }
+//     /////////////////////////////////////////////////////////
+//     // invia la configurazione dei parametri di stiction   //
+//     /////////////////////////////////////////////////////////
+//     for(int logico=0; logico< _njoints; logico++)
+//     {
+//         MotorTorqueParameters params;
+//         params.bemf = _tpids[logico].kbemf;
+//         params.bemf_scale = 0;
+//         params.ktau = _tpids[logico].ktau;
+//         params.ktau_scale = 0;
+//         //use the yarp method to get the values properly converted from [SI] to HW units (if necessary)
+//         printf("SEND CONFIG: j%d, bemf=%f, ktau=%f \n", logico, params.bemf, params.ktau);
+//         setMotorTorqueParams(logico,params);
+//     }
 
     //////////////////////////////////////////
     // invia la configurazione dei MOTORI   //
