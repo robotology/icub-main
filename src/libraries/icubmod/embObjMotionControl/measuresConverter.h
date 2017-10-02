@@ -38,6 +38,7 @@
 
 
 #include <yarp/dev/ControlBoardHelper.h>
+#include <yarp/dev/ControlBoardPid.h>
 
 #ifndef __measureConverterh__
 #define __measureConverterh__
@@ -49,6 +50,10 @@ public:
     double* dutycycleToPWM;
     double* ampsToSensor;
     double* newtonsToSensor;
+
+    measureConvFactors(int numofjoints);
+
+    ~measureConvFactors();
 
 };
 
@@ -71,7 +76,7 @@ public:
 
     double get_N2S(int joint);
 
-    double get_A2E(int joint); 
+    double get_A2E(int joint);
 };
 
 

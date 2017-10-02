@@ -93,7 +93,7 @@ double measuresConverter::getAngleToEncoder(int j)
 void measuresConverter::convertTrqPid_N2S(int j, yarp::dev::Pid &pid)
 {
     //Here i need to use the conversion factors related to the torque control that could be different from the other torque conversion
-    double trq_factor_N2S = trqCrtlFactors->get_N2S();
+    double trq_factor_N2S = trqCrtlFactors->get_N2S(j);
 
     pid.kp = pid.kp / trq_factor_N2S ;  //[PWM/Nm] ==> [PWM/microNm]
     pid.ki = pid.ki / trq_factor_N2S;   //[PWM/Nm] ==> [PWM/microNm]
@@ -106,13 +106,13 @@ void measuresConverter::convertTrqPid_N2S(int j, yarp::dev::Pid &pid)
 void measuresConverter::convertTrqPid_S2N(int j, yarp::dev::Pid &pid)
 {
     //Here i need to use the conversion factors related to the torque control that could be different from the other torque conversion
-    double trq_factor_N2S = trqCrtlFactors->get_N2S();
+    double trq_factor_N2S = trqCrtlFactors->get_N2S(j);
 
-    pid.kp = pid.kp * trq_factor_N2S(j); //[PWM/microNm] ==> [PWM/Nm]
-    pid.ki = pid.ki * trq_factor_N2S(j); //[PWM/microNm] ==> [PWM/Nm]
-    pid.kd = pid.kd * trq_factor_N2S(j); //[PWM/microNm] ==> [PWM/Nm]
-    pid.stiction_up_val   = pid.stiction_up_val   / trq_factor_N2S(j); //[microNm] ==> [Nm]
-    pid.stiction_down_val = pid.stiction_down_val / trq_factor_N2S(j); //[microNm] ==> [Nm]
+    pid.kp = pid.kp * trq_factor_N2S; //[PWM/microNm] ==> [PWM/Nm]
+    pid.ki = pid.ki * trq_factor_N2S; //[PWM/microNm] ==> [PWM/Nm]
+    pid.kd = pid.kd * trq_factor_N2S; //[PWM/microNm] ==> [PWM/Nm]
+    pid.stiction_up_val   = pid.stiction_up_val   / trq_factor_N2S; //[microNm] ==> [Nm]
+    pid.stiction_down_val = pid.stiction_down_val / trq_factor_N2S; //[microNm] ==> [Nm]
 }
 
 
