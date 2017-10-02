@@ -133,23 +133,61 @@ void measuresConverter::convertPosPid_E2A(int j, yarp::dev::Pid &pid)
 double measuresConverter::convertTrqMotorBemfParam_MachineUnitsToMetric(int j, double bemf)
 {
     //Here i need to use the conversion factors related to the torque control that could be different from the other torque conversion
+    printf("convertTrqMotorBemfParam_MachineUnitsToMetric(%d)\n", j);
+    if(trqCrtlFactors==nullptr)
+    {
+        printf("   - ptr is null!!\n");
+        return (1.4);
+    }
+    printf("   - N2S %f \n", trqCrtlFactors->get_N2S(j));
+    printf("   - A2E %f \n", trqCrtlFactors->get_A2E(j));
+
+
     return ( bemf / trqCrtlFactors->get_N2S(j) *  trqCrtlFactors->get_A2E(j));
 }
 
 double measuresConverter::convertTrqMotorKtaufParam_MachineUnitsToMetric(int j, double ktau)
 {
     //Here i need to use the conversion factors related to the torque control that could be different from the other torque conversion
+    printf("convertTrqMotorKtaufParam_MachineUnitsToMetric(%d)\n", j);
+    if(trqCrtlFactors==nullptr)
+    {
+        printf("   - ptr is null!!\n");
+        return (1.5);
+    }
+    printf("   - N2S %f \n", trqCrtlFactors->get_N2S(j));
+    printf("   - A2E %f \n", trqCrtlFactors->get_A2E(j));
+
     return ( ktau * trqCrtlFactors->get_N2S(j));
 }
 
 double measuresConverter::convertTrqMotorBemfParam_MetricToMachineUnits(int j, double bemf)
 {
     //Here i need to use the conversion factors related to the torque control that could be different from the other torque conversion
+    printf("convertTrqMotorBemfParam_MetricToMachineUnits(%d)\n", j);
+    if(trqCrtlFactors==nullptr)
+    {
+        printf("   - ptr is null!!\n");
+        return (1.2);
+    }
+    printf("   - N2S %f \n", trqCrtlFactors->get_N2S(j));
+    printf("   - A2E %f \n", trqCrtlFactors->get_A2E(j));
+
     return ( bemf * trqCrtlFactors->get_N2S(j) /  trqCrtlFactors->get_A2E(j));
 }
 
 double measuresConverter::convertTrqMotorKtaufParam_MetricToMachineUnits(int j, double ktau)
 {
     //Here i need to use the conversion factors related to the torque control that could be different from the other torque conversion
+    printf("convertTrqMotorKtaufParam_MetricToMachineUnits(%d)\n", j);
+    if(trqCrtlFactors==nullptr)
+    {
+        printf("   - ptr is null!!\n");
+        return (1.3);
+    }
+    printf("   - N2S %f \n", trqCrtlFactors->get_N2S(j));
+    printf("   - A2E %f \n", trqCrtlFactors->get_A2E(j));
+
+
     return ( ktau / trqCrtlFactors->get_N2S(j));
 }
