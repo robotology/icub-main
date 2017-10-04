@@ -579,7 +579,7 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
     //since some joints could not have all pid configured, reset pid values to 0.
     memset(ppids, 0, sizeof(eomcParser_pidInfo)*_njoints);
     memset(vpids, 0, sizeof(eomcParser_pidInfo)*_njoints);
-    memset(tpids, 0, sizeof(eomcParser_pidInfo)*_njoints);
+    memset(tpids, 0, sizeof(eomcParser_trqPidInfo)*_njoints);
 
     map<string, Pid_Algorithm*>::iterator it;
 
