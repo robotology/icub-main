@@ -41,41 +41,8 @@ using namespace yarp::os::impl;
 
 
 // Utilities
-torqueControlHelper::torqueControlHelper(int njoints, double* p_angleToEncoders, double* p_newtonsTosens )
-{
-   jointsNum=njoints;
-   newtonsToSensor = new double  [jointsNum];
-   angleToEncoders = new double  [jointsNum];
-
-   if (p_angleToEncoders!=0)
-       memcpy(angleToEncoders, p_angleToEncoders, sizeof(double)*jointsNum);
-   else
-       for (int i=0; i<jointsNum; i++) {angleToEncoders[i]=1.0;}
-
-   if (p_newtonsTosens!=0)
-       memcpy(newtonsToSensor, p_newtonsTosens, sizeof(double)*jointsNum);
-   else
-       for (int i=0; i<jointsNum; i++) {newtonsToSensor[i]=1.0;}
 
 
-}
-
-torqueControlHelper::torqueControlHelper(int njoints, float* p_angleToEncoders, double* p_newtonsTosens )
-{
-   jointsNum=njoints;
-   newtonsToSensor = new double  [jointsNum];
-   angleToEncoders = new double  [jointsNum];
-
-   if (p_angleToEncoders!=0)
-       for (int i=0; i<jointsNum; i++) {angleToEncoders[i] = p_angleToEncoders[i];}
-   else
-       for (int i=0; i<jointsNum; i++) {angleToEncoders[i]=1.0;}
-
-   if (p_newtonsTosens!=0)
-       memcpy(newtonsToSensor, p_newtonsTosens, sizeof(double)*jointsNum);
-   else
-       for (int i=0; i<jointsNum; i++) {newtonsToSensor[i]=1.0;}
-}
 
 bool embObjMotionControl::EncoderType_iCub2eo(const string* in, uint8_t *out)
 {
@@ -188,11 +155,6 @@ void embObjMotionControl::copyPid_eo2iCub(eOmc_PID_t *in, Pid *out)
     out->setKff(in->kff);
 }
 
-// This will be moved in the ImplXXXInterface
-static double convertA2I(double angle_in_degrees, double zero, double factor)
-{
-    return (angle_in_degrees + zero) * factor;
-}
 
 
 static inline bool NOT_YET_IMPLEMENTED(const char *txt)
@@ -407,7 +369,6 @@ bool embObjMotionControl::alloc(int nj)
 {
     _axisMap = allocAndCheck<int>(nj);
 
-    _angleToEncoder = allocAndCheck<double>(nj);
     _encodersStamp = allocAndCheck<double>(nj);
     _jointEncoderType = allocAndCheck<uint8_t>(nj);
     _rotorEncoderType = allocAndCheck<uint8_t>(nj);
@@ -417,9 +378,6 @@ bool embObjMotionControl::alloc(int nj)
     _rotorEncoderRes = allocAndCheck<int>(nj);
     _gearbox = allocAndCheck<double>(nj);
     _gearboxE2J = allocAndCheck<double>(nj);
-    _newtonsToSensor=allocAndCheck<double>(nj);
-    _ampsToSensor = allocAndCheck<double>(nj);
-    _dutycycleToPWM = allocAndCheck<double>(nj);
     _twofocinfo=allocAndCheck<eomc_twofocSpecificInfo>(nj);
     _ppids= new eomcParser_pidInfo[nj];
     _vpids= new eomcParser_pidInfo[nj];
@@ -458,7 +416,6 @@ bool embObjMotionControl::alloc(int nj)
 bool embObjMotionControl::dealloc()
 {
     checkAndDestroy(_axisMap);
-    checkAndDestroy(_angleToEncoder);
     checkAndDestroy(_encodersStamp);
     checkAndDestroy(_jointEncoderRes);
     checkAndDestroy(_rotorEncoderRes);
@@ -468,9 +425,6 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_rotorNumOfNoiseBits);
     checkAndDestroy(_gearbox);
     checkAndDestroy(_gearboxE2J);
-    checkAndDestroy(_newtonsToSensor);
-    checkAndDestroy(_ampsToSensor);
-    checkAndDestroy(_dutycycleToPWM);
     checkAndDestroy(_impedance_limits);
     checkAndDestroy(checking_motiondone);
     checkAndDestroy(_ref_command_positions);
@@ -551,13 +505,9 @@ embObjMotionControl::embObjMotionControl() :
     _njoints      = 0;
     _axisMap      = NULL;
     _encodersStamp = NULL;
-    _angleToEncoder = NULL;
     _twofocinfo = NULL;
     _cacheImpedance   = NULL;
     _impedance_limits = NULL;
-    _newtonsToSensor  = NULL;
-    _ampsToSensor = NULL;
-    _dutycycleToPWM = NULL;
     _jointEncoderRes  = NULL;
     _jointEncoderType = NULL;
     _rotorEncoderRes  = NULL;
@@ -569,7 +519,7 @@ embObjMotionControl::embObjMotionControl() :
     _ref_command_positions= NULL;
     _ref_positions    = NULL;
     _ref_speeds       = NULL;
-    _torqueControlHelper = NULL;
+    _measureConverter = NULL;
 
     checking_motiondone = NULL;
     // debug connection
@@ -630,6 +580,32 @@ bool embObjMotionControl::initialised()
     return opened;
 }
 
+bool embObjMotionControl::initializeInterfaces(measureConvFactors &f)
+{
+
+    ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementEncodersTimed::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementMotorEncoders::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementPositionControl2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementPidControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor, f.ampsToSensor);
+    ImplementControlMode2::initialize(_njoints, _axisMap);
+    ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementVelocityControl2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementControlLimits2::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementImpedanceControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor);
+    ImplementTorqueControl::initialize(_njoints, _axisMap, f.angleToEncoder, NULL, f.newtonsToSensor);
+    ImplementPositionDirect::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementInteractionMode::initialize(_njoints, _axisMap, f.angleToEncoder, NULL);
+    ImplementMotor::initialize(_njoints, _axisMap);
+    ImplementRemoteVariables::initialize(_njoints, _axisMap);
+    ImplementAxisInfo::initialize(_njoints, _axisMap);
+    ImplementCurrentControl::initialize(_njoints, _axisMap, f.ampsToSensor);
+    ImplementPWMControl::initialize(_njoints, _axisMap, f.dutycycleToPWM);
+
+    return true;
+
+}
 
 bool embObjMotionControl::open(yarp::os::Searchable &config)
 {
@@ -664,31 +640,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         yError() << "Missing parameters in config file";
         return false;
     }
-
-
-    //  INIT ALL INTERFACES
-    yarp::sig::Vector tmpZeros; tmpZeros.resize (_njoints, 0.0);
-    yarp::sig::Vector tmpOnes;  tmpOnes.resize  (_njoints, 1.0);
-
-    ImplementControlCalibration2<embObjMotionControl, IControlCalibration2>::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-    ImplementAmplifierControl<embObjMotionControl, IAmplifierControl>::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-    ImplementEncodersTimed::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-    ImplementMotorEncoders::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-    ImplementPositionControl2::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-    ImplementPidControl::initialize(_njoints, _axisMap, _angleToEncoder, NULL, _newtonsToSensor, _ampsToSensor);
-    ImplementControlMode2::initialize(_njoints, _axisMap);
-    ImplementVelocityControl<embObjMotionControl, IVelocityControl>::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-    ImplementVelocityControl2::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-    ImplementControlLimits2::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-    ImplementImpedanceControl::initialize(_njoints, _axisMap, _angleToEncoder, NULL, _newtonsToSensor);
-    ImplementTorqueControl::initialize(_njoints, _axisMap, _angleToEncoder, NULL, _newtonsToSensor);
-    ImplementPositionDirect::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-    ImplementInteractionMode::initialize(_njoints, _axisMap, _angleToEncoder, NULL);
-    ImplementMotor::initialize(_njoints, _axisMap);
-    ImplementRemoteVariables::initialize(_njoints, _axisMap);
-    ImplementAxisInfo::initialize(_njoints, _axisMap);
-    ImplementCurrentControl::initialize(_njoints, _axisMap, _ampsToSensor);
-    ImplementPWMControl::initialize(_njoints, _axisMap, _dutycycleToPWM);
 
 
     // -- instantiate EthResource etc.
@@ -799,9 +750,7 @@ bool embObjMotionControl::convertPosPid(eomcParser_pidInfo myPidInfo[])
     {
         if(myPidInfo[j].ctrlUnitsType ==  controlUnits_metric)
         {
-            myPidInfo[j].pid.kp = myPidInfo[j].pid.kp / _angleToEncoder[j];  //[PWM/deg]
-            myPidInfo[j].pid.ki = myPidInfo[j].pid.ki / _angleToEncoder[j];  //[PWM/deg]
-            myPidInfo[j].pid.kd = myPidInfo[j].pid.kd / _angleToEncoder[j];  //[PWM/deg]
+            _measureConverter->convertPosPid_A2E(j, myPidInfo[j].pid);
         }
 
         else
@@ -812,6 +761,9 @@ bool embObjMotionControl::convertPosPid(eomcParser_pidInfo myPidInfo[])
      return true;
 }
 
+
+
+
 bool embObjMotionControl::convertTrqPid(eomcParser_trqPidInfo myPidInfo[])
 {
     //conversion from metric to machine units (if applicable)
@@ -821,15 +773,12 @@ bool embObjMotionControl::convertTrqPid(eomcParser_trqPidInfo myPidInfo[])
             continue;
 
         if(myPidInfo[j].ctrlUnitsType ==  controlUnits_metric)
-        myPidInfo[j].pid.kp = myPidInfo[j].pid.kp / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
-        myPidInfo[j].pid.ki = myPidInfo[j].pid.ki / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
-        myPidInfo[j].pid.kd = myPidInfo[j].pid.kd / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
-        myPidInfo[j].pid.stiction_up_val   = myPidInfo[j].pid.stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
-        myPidInfo[j].pid.stiction_down_val = myPidInfo[j].pid.stiction_down_val * _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
+        {
+            _measureConverter->convertTrqPid_N2S(j, myPidInfo[j].pid);
+        }
     }
 
     return true;
-
 }
 
 
@@ -1060,7 +1009,8 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
     Bottle xtmp;
     int i,j;
 
-    //eOmn_serv_type_t mc_serv_type;
+    measureConvFactors measConvFactors (_njoints);
+    torqueControlConvFactors trqCtrlConvFactors(_njoints);
 
     if(iNeedCouplingsInfo())
     {
@@ -1079,28 +1029,39 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
 
     ///////// GENERAL MECHANICAL INFO
+
+
     {
         if(!_mcparser->parseAxisInfo(config, _axisMap, _axesInfo))
             return false;
 
+         ////// measures conversion factors
         if(_useRawEncoderData)
         {
             for (i = 0; i < _njoints; i++)
             {
-                _angleToEncoder[i] = 1;
+                measConvFactors.angleToEncoder[i] = 1;
             }
         }
         else
         {
-            if(!_mcparser->parseEncoderFactor(config, _angleToEncoder))
+            if(!_mcparser->parseEncoderFactor(config, measConvFactors.angleToEncoder))
                 return false;
         }
 
-        if (!_mcparser->parsefullscalePWM(config, _dutycycleToPWM))
+        if (!_mcparser->parsefullscalePWM(config, measConvFactors.dutycycleToPWM))
             return false;
 
-        if (!_mcparser->parseAmpsToSensor(config, _ampsToSensor))
+        if (!_mcparser->parseAmpsToSensor(config, measConvFactors.ampsToSensor))
             return false;
+
+
+        //_newtonsToSensor not depends more on joint. Since now we use float number to change torque values with firmware, we can use micro Nm in order to have a good sensitivity.
+        for (i = 0; i < _njoints; i++)
+        {
+            measConvFactors.newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
+        }
+
 
         //VALE: i have to parse GeneralMecGroup after parsing jointsetcfg, because inside generalmec group there is useMotorSpeedFbk that needs jointset info.
 
@@ -1137,6 +1098,21 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
        if(!_mcparser->parsePids(config, _ppids, _vpids, _tpids, _cpids, currentPidisMandatory))
             return false;
+
+       for(int logico=0; logico< _njoints; logico++)
+       {
+           MotorTorqueParameters params;
+           params.bemf = _tpids[logico].kbemf;
+           params.bemf_scale = 0;
+           params.ktau = _tpids[logico].ktau;
+           params.ktau_scale = 0;
+           //use the yarp method to get the values properly converted from [SI] to HW units (if necessary)
+           printf("DOPO LETTURA FILE : j%d, bemf=%f, ktau=%f \n", logico, params.bemf, params.ktau);
+
+       }
+
+
+
         // 1) verify joint beloning to same set has same control law
         if(!verifyUserControlLawConsistencyInJointSet(_ppids))
             return false;
@@ -1150,24 +1126,35 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             return false;
 
 
-        //_newtonsToSensor not depends more on joint. Since now we use float number to change torque values with firmware, we can use micro Nm in order to have a good sensitivity.
-        for (i = 0; i < _njoints; i++)
+
+        // the measure converter used inside embObjMotioncontrol needs use the factor array of conversion factor ordered by hardware joints intsead of logic joints.
+        //so here i remap the conversion facors
+        measureConvFactors measConvFactors_remaped (_njoints);
+        int fakeAxisMap[_njoints];
+        for(int i=0; i<_njoints; i++)
         {
-            _newtonsToSensor[i] = 1000000.0f; // conversion from Nm into microNm
+            measConvFactors_remaped.angleToEncoder[_axisMap[i]]  = measConvFactors.angleToEncoder[i];
+            measConvFactors_remaped.dutycycleToPWM[_axisMap[i]]  = measConvFactors.dutycycleToPWM[i];
+            measConvFactors_remaped.ampsToSensor[_axisMap[i]]    = measConvFactors.ampsToSensor[i];
+            measConvFactors_remaped.newtonsToSensor[_axisMap[i]] = measConvFactors.newtonsToSensor[i];
+
+            fakeAxisMap[i]=i;
         }
 
-        //VALE: qui ho riportato lo stesso comportamento prima del refactory., ovevro se nel file xml non c'era il gruppo del torquecontrol, allora veniva scelto di usare machine units.
-        //va migliorato?se un giunto non puo' fare controllo di copia allora bisogna dare errore su invio di ogni parametro e comando riguardante la torque!
+
         if (trqunittype==controlUnits_metric)
         {
-            _torqueControlHelper = new torqueControlHelper(_njoints, _angleToEncoder, _newtonsToSensor);
+
+            trqCtrlConvFactors.init(measConvFactors_remaped.angleToEncoder, measConvFactors_remaped.newtonsToSensor);
         }
         else
         {
-            //    controlUnits_machine or controlUnits_unknown(i.e. no joint can perform torque control)
              yarp::sig::Vector tmpOnes; tmpOnes.resize(_njoints,1.0);
-            _torqueControlHelper = new torqueControlHelper(_njoints, tmpOnes.data(), tmpOnes.data());
+             trqCtrlConvFactors.init(tmpOnes.data(), tmpOnes.data());
         }
+
+        _measureConverter = new measuresConverter(_njoints,  fakeAxisMap, trqCtrlConvFactors, measConvFactors_remaped);
+
 
         // 2) convert pid values from metrics units to fw units(i.e. icubDegrees)
         convertPosPid(_ppids);
@@ -1178,6 +1165,9 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
         updatedJointsetsCfgWithControlInfo();
 
     }
+
+    ///////////////INIT INTERFACES
+    initializeInterfaces(measConvFactors);
 
     //Now save in data in structures EmbObj protocol compatible
     if(!saveCouplingsData())
@@ -1533,30 +1523,32 @@ bool embObjMotionControl::init()
         copyPid_iCub2eo(&(_tpids[logico].pid), &jconfig.pidtorque);
 
         //stiffness and damping read in xml file are in Nm/deg and Nm/(Deg/sec), so we need to convert before send to fw.
-        jconfig.impedance.damping   = (eOmeas_damping_t) _torqueControlHelper->convertImpN2S(logico, _impedance_params[logico].damping);
-        jconfig.impedance.stiffness = (eOmeas_stiffness_t) _torqueControlHelper->convertImpN2S(logico,  _impedance_params[logico].stiffness);
+        jconfig.impedance.damping   = (eOmeas_damping_t) _measureConverter->impN2S(_impedance_params[logico].damping, fisico);
+        jconfig.impedance.stiffness = (eOmeas_stiffness_t) _measureConverter->impN2S(_impedance_params[logico].stiffness, fisico);
         jconfig.impedance.offset    = 0; //impedance_params[j];
 
         _cacheImpedance[logico].stiffness = jconfig.impedance.stiffness;
         _cacheImpedance[logico].damping   = jconfig.impedance.damping;
         _cacheImpedance[logico].offset    = jconfig.impedance.offset;
 
-        jconfig.userlimits.max = (eOmeas_position_t) S_32(convertA2I(_jointsLimits[logico].posMax, 0.0, _angleToEncoder[logico]));
-        jconfig.userlimits.min = (eOmeas_position_t) S_32(convertA2I(_jointsLimits[logico].posMin, 0.0, _angleToEncoder[logico]));
+        jconfig.userlimits.max = (eOmeas_position_t) S_32(_measureConverter->posA2E(_jointsLimits[logico].posMax, fisico));
+        jconfig.userlimits.min = (eOmeas_position_t) S_32(_measureConverter->posA2E(_jointsLimits[logico].posMin, fisico));
 
-        jconfig.hardwarelimits.max = (eOmeas_position_t) S_32(convertA2I(_jointsLimits[logico].posHwMax, 0.0, _angleToEncoder[logico]));
-        jconfig.hardwarelimits.min = (eOmeas_position_t) S_32(convertA2I(_jointsLimits[logico].posHwMin, 0.0, _angleToEncoder[logico]));
+        jconfig.hardwarelimits.max = (eOmeas_position_t) S_32(_measureConverter->posA2E(_jointsLimits[logico].posHwMax, fisico));
+        jconfig.hardwarelimits.min = (eOmeas_position_t) S_32(_measureConverter->posA2E(_jointsLimits[logico].posHwMin, fisico));
 
 
-        jconfig.maxvelocityofjoint = S_32(_jointsLimits[logico].velMax * _angleToEncoder[logico]); //icubdeg/s
+        jconfig.maxvelocityofjoint = S_32(_measureConverter->posA2E(_jointsLimits[logico].velMax, fisico)); //icubdeg/s
         jconfig.velocitysetpointtimeout = (eOmeas_time_t) U_16(_timeouts[logico].velocity);
 
         jconfig.jntEncoderResolution = _jointEncoderRes[logico];
         jconfig.jntEncoderType = _jointEncoderType[logico];
         jconfig.jntEncNumOfNoiseBits = _jointNumOfNoiseBits[logico];
-        jconfig.motor_params.bemf_value = 0;
+
+        printf("SEND CONFIG: j%d, bemf=%f, ktau=%f \n", logico, _tpids[logico].kbemf, _tpids[logico].ktau);
+        jconfig.motor_params.bemf_value = (float) _measureConverter->convertTrqMotorBemfParam_MetricToMachineUnits(fisico,  _tpids[logico].kbemf);
         jconfig.motor_params.bemf_scale = 0;
-        jconfig.motor_params.ktau_value = 0;
+        jconfig.motor_params.ktau_value = (float) _measureConverter->convertTrqMotorKtaufParam_MetricToMachineUnits(fisico, _tpids[logico].ktau);
         jconfig.motor_params.ktau_scale = 0;
 
         jconfig.tcfiltertype=_tpids[logico].filterType;
@@ -1576,19 +1568,20 @@ bool embObjMotionControl::init()
         }
     }
 
-    /////////////////////////////////////////////////////////
-    // invia la configurazione dei parametri di stiction   //
-    /////////////////////////////////////////////////////////
-    for(int logico=0; logico< _njoints; logico++)
-    {
-        MotorTorqueParameters params;
-        params.bemf = _tpids[logico].kbemf;
-        params.bemf_scale = 0;
-        params.ktau = _tpids[logico].ktau;
-        params.ktau_scale = 0;
-        //use the yarp method to get the values properly converted from [SI] to HW units (if necessary)
-        setMotorTorqueParams(logico,params);
-    }
+//     /////////////////////////////////////////////////////////
+//     // invia la configurazione dei parametri di stiction   //
+//     /////////////////////////////////////////////////////////
+//     for(int logico=0; logico< _njoints; logico++)
+//     {
+//         MotorTorqueParameters params;
+//         params.bemf = _tpids[logico].kbemf;
+//         params.bemf_scale = 0;
+//         params.ktau = _tpids[logico].ktau;
+//         params.ktau_scale = 0;
+//         //use the yarp method to get the values properly converted from [SI] to HW units (if necessary)
+//         printf("SEND CONFIG: j%d, bemf=%f, ktau=%f \n", logico, params.bemf, params.ktau);
+//         setMotorTorqueParams(logico,params);
+//     }
 
     //////////////////////////////////////////
     // invia la configurazione dei MOTORI   //
@@ -1619,9 +1612,9 @@ bool embObjMotionControl::init()
         motor_cfg.rotorIndexOffset = _twofocinfo[logico].rotorIndexOffset;
         motor_cfg.rotorEncoderType = _rotorEncoderType[logico];
         motor_cfg.pwmLimit =_rotorsLimits[logico].pwmMax;
-        motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(convertA2I(_rotorsLimits[logico].posMax, 0.0, _angleToEncoder[logico]));
-        motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(convertA2I(_rotorsLimits[logico].posMin, 0.0, _angleToEncoder[logico]));
-        
+        motor_cfg.limitsofrotor.max = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMax, fisico ));
+        motor_cfg.limitsofrotor.min = (eOmeas_position_t) S_32(_measureConverter->posA2E(_rotorsLimits[logico].posMin, fisico ));
+
         if(_cpids[logico].enabled)
         {
             copyPid_iCub2eo(&(_cpids[logico].pid),  &motor_cfg.pidcurrent);
@@ -1684,8 +1677,7 @@ bool embObjMotionControl::close()
     ImplementCurrentControl::uninitialize();
     ImplementPWMControl::uninitialize();
 
-    if (_torqueControlHelper)  {delete _torqueControlHelper; _torqueControlHelper=0;}
-
+    if (_measureConverter)  {delete _measureConverter; _measureConverter=0;}
 
     // in cleanup, at date of 23feb2016 there is a call to ethManager->releaseResource() which ...
     // send to config all the boards and stops tx and rx treads.
@@ -1820,9 +1812,7 @@ bool embObjMotionControl::helper_setPosPidRaw(int j, const Pid &pid)
 
     if(_ppids[j].ctrlUnitsType == controlUnits_metric)
     {
-        hwPid.kp = hwPid.kp / _angleToEncoder[j];  //[PWM/deg]
-        hwPid.ki = hwPid.ki / _angleToEncoder[j];  //[PWM/deg]
-        hwPid.kd = hwPid.kd / _angleToEncoder[j];  //[PWM/deg]
+        _measureConverter->convertPosPid_A2E(j, hwPid);
     }
     if(_ppids[j].ctrlUnitsType == controlUnits_machine)
     {
@@ -1834,7 +1824,7 @@ bool embObjMotionControl::helper_setPosPidRaw(int j, const Pid &pid)
     {
         yError() << "Unknown _positionControlUnits";
     }
-
+    printf("helper_setPosPid: kp=%f ki=%f kd=%f\n", hwPid.kp, hwPid.ki, hwPid.kd);
     copyPid_iCub2eo(&hwPid, &outPid);
 
     if(!res->addSetMessage(protoId, (uint8_t *) &outPid))
@@ -1980,12 +1970,12 @@ bool embObjMotionControl::helper_getPosPidRaw(int j, Pid *pid)
     res->readBufferedValue(protid, (uint8_t *)&eoPID, &size);
 
     copyPid_eo2iCub(&eoPID, pid);
-
+    
+    printf("helper_getPosPid: kp=%f ki=%f kd=%f\n", pid->kp, pid->ki, pid->kd);
+    
     if(_ppids[j].ctrlUnitsType == controlUnits_metric)
     {
-        pid->kp = pid->kp * _angleToEncoder[j];  //[PWM/deg]
-        pid->ki = pid->ki * _angleToEncoder[j];  //[PWM/deg]
-        pid->kd = pid->kd * _angleToEncoder[j];  //[PWM/deg]
+        _measureConverter->convertPosPid_E2A(j, *pid);
     }
     else if(_ppids[j].ctrlUnitsType == controlUnits_machine)
     {
@@ -2175,21 +2165,21 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
     case eomc_calibration_type0_hard_stops:
         calib.params.type0.pwmlimit = (int16_t)S_16(params.param1);
         calib.params.type0.velocity = (eOmeas_velocity_t)S_32(params.param2);
-        calib.params.type0.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
+        calib.params.type0.calibrationZero = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
         break;
 
         // fermo
     case eomc_calibration_type1_abs_sens_analog:
         calib.params.type1.position = (int16_t)S_16(params.param1);
         calib.params.type1.velocity = (eOmeas_velocity_t)S_32(params.param2);
-        calib.params.type1.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
+        calib.params.type1.calibrationZero = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
         break;
 
         // muove
     case eomc_calibration_type2_hard_stops_diff:
         calib.params.type2.pwmlimit = (int16_t)S_16(params.param1);
         calib.params.type2.velocity = (eOmeas_velocity_t)S_32(params.param2);
-        calib.params.type2.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
+        calib.params.type2.calibrationZero = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
         break;
 
         // muove
@@ -2197,7 +2187,7 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         calib.params.type3.position = (int16_t)S_16(params.param1);
         calib.params.type3.velocity = (eOmeas_velocity_t)S_32(params.param2);
         calib.params.type3.offset = (int32_t)S_32(params.param3);
-        calib.params.type3.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
+        calib.params.type3.calibrationZero = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
         break;
 
         // muove
@@ -2205,14 +2195,14 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         calib.params.type4.position = (int16_t)S_16(params.param1);
         calib.params.type4.velocity = (eOmeas_velocity_t)S_32(params.param2);
         calib.params.type4.maxencoder = (int32_t)S_32(params.param3);
-        calib.params.type4.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
+        calib.params.type4.calibrationZero = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
         break;
 
         // muove
     case eomc_calibration_type5_hard_stops:
         calib.params.type5.pwmlimit   = (int32_t) S_32(params.param1);
         calib.params.type5.final_pos = (int32_t) S_32(params.param2);
-        calib.params.type5.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
+        calib.params.type5.calibrationZero = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
         break;
 
         // muove
@@ -2222,7 +2212,7 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         calib.params.type6.current = (int32_t)S_32(params.param3);
         calib.params.type6.vmin = (int32_t)S_32(params.param4);
         calib.params.type6.vmax = (int32_t)S_32(params.param5);
-        calib.params.type6.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
+        calib.params.type6.calibrationZero = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
         break;
 
         // muove
@@ -2232,7 +2222,7 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         //param3 is not used
         calib.params.type7.vmin = (int32_t)S_32(params.param4);
         calib.params.type7.vmax = (int32_t)S_32(params.param5);
-        calib.params.type7.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
+        calib.params.type7.calibrationZero = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
         break;
 
         //muove
@@ -2250,7 +2240,7 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
 
     case eomc_calibration_type10_abs_hard_stop:
         calib.params.type10.pwmlimit   = (int32_t) S_32(params.param1);
-        calib.params.type10.calibrationZero = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
+        calib.params.type10.calibrationZero = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
         break;
 
     case eomc_calibration_type11_cer_hands:
@@ -2264,7 +2254,7 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
 
     case eomc_calibration_type12_absolute_sensor:
         calib.params.type12.rawValueAtZeroPos  = (int32_t)S_32(params.param1);
-        calib.params.type12.calibrationDelta = (int32_t)S_32(params.paramZero * _angleToEncoder[j]);
+        calib.params.type12.calibrationDelta = (int32_t)S_32(_measureConverter->posA2E(params.paramZero, j));
         break;
 
     default:
@@ -3403,9 +3393,10 @@ bool embObjMotionControl::getRotorLimitsRaw(int j, double *rotorMin, double *rot
     res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
 
     // refresh cached value when reading data from the EMS
-    *rotorMax = (double)motor_cfg.limitsofrotor.max/_angleToEncoder[j];
-    *rotorMin = (double)motor_cfg.limitsofrotor.min/_angleToEncoder[j];
-
+//     *rotorMax = (double)(_measureConverter->convertPos_E2A(j, motor_cfg.limitsofrotor.max));
+//     *rotorMin = (double)(_measureConverter->convertPos_E2A(j, motor_cfg.limitsofrotor.min));
+    *rotorMax = (double)( motor_cfg.limitsofrotor.max);
+    *rotorMin = (double)( motor_cfg.limitsofrotor.min);
     return true;
 }
 
@@ -3834,7 +3825,7 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
     }
     else if (key == "encoders")
     {
-        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { r.addDouble(_angleToEncoder[i]); }
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { r.addDouble(_measureConverter->getAngleToEncoder(i)); }
         return true;
     }
     else if (key == "rotorEncoderResolution")
@@ -4171,7 +4162,7 @@ bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorq
     static double curr_time = Time::now();
     static int    count_saturation=0;
 
-    meas_torque = (eOmeas_torque_t) S_32(_newtonsToSensor[j]*fTorque);
+    meas_torque = (eOmeas_torque_t) S_32(_measureConverter->trqN2S(fTorque, j));
 
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
     return res->addSetMessageAndCacheLocally(protoid, (uint8_t*) &meas_torque);
@@ -4187,7 +4178,7 @@ bool embObjMotionControl::getTorqueRaw(int j, double *t)
     uint16_t size;
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
     bool ret = res->readSentValue(protoid, (uint8_t*) &meas_torque, &size);
-    *t = (double) meas_torque / _newtonsToSensor[j];
+    *t = (double) _measureConverter->trqS2N(meas_torque, j);
     return ret;
 }
 
@@ -4277,12 +4268,9 @@ bool embObjMotionControl::helper_setTrqPidRaw(int j, const Pid &pid)
 {
     eOmc_PID_t  outPid;
     Pid hwPid = pid;
-    hwPid.kp = hwPid.kp / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
-    hwPid.ki = hwPid.ki / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
-    hwPid.kd = hwPid.kd / _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
-    hwPid.stiction_up_val   = hwPid.stiction_up_val   * _torqueControlHelper->getNewtonsToSensor(j);  //[Nm]
-    hwPid.stiction_down_val = hwPid.stiction_down_val * _torqueControlHelper->getNewtonsToSensor(j);  //[Nm]
-    //printf("DEBUG setTorquePidRaw: %f %f %f %f %f\n",hwPid.kp ,  hwPid.ki, hwPid.kd , hwPid.stiction_up_val , hwPid.stiction_down_val );
+
+    _measureConverter->convertTrqPid_N2S(j, hwPid);
+    printf("DEBUG setTorquePidRaw: %f %f %f %f %f\n",hwPid.kp ,  hwPid.ki, hwPid.kd , hwPid.stiction_up_val , hwPid.stiction_down_val );
 
     copyPid_iCub2eo(&hwPid, &outPid);
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque);
@@ -4318,14 +4306,9 @@ bool embObjMotionControl::helper_getTrqPidRaw(int j, Pid *pid)
     eOmc_PID_t eoPID;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&eoPID, &size);
     copyPid_eo2iCub(&eoPID, pid);
-    //printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
+    printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
 
-    pid->kp = pid->kp * _torqueControlHelper->getNewtonsToSensor(j); //[PWM/Nm]
-    pid->ki = pid->ki * _torqueControlHelper->getNewtonsToSensor(j); //[PWM/Nm]
-    pid->kd = pid->kd * _torqueControlHelper->getNewtonsToSensor(j); //[PWM/Nm]
-    pid->stiction_up_val   = pid->stiction_up_val   / _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
-    pid->stiction_down_val = pid->stiction_down_val / _torqueControlHelper->getNewtonsToSensor(j); //[Nm]
-
+    _measureConverter->convertTrqPid_S2N(j, *pid);
     return ret;
 }
 
@@ -4484,11 +4467,11 @@ bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *
     eOmc_motor_params_t eo_params = {0};
     res->readBufferedValue(id32, (uint8_t *)&eo_params, &size);
 
-    params->bemf       = eo_params.bemf_value / _torqueControlHelper->getNewtonsToSensor(j) *  _torqueControlHelper->getAngleToEncoders(j);  //[Nm/deg/s]
+    params->bemf       = _measureConverter->convertTrqMotorBemfParam_MachineUnitsToMetric(j, eo_params.bemf_value);
     params->bemf_scale = eo_params.bemf_scale;
-    params->ktau       = eo_params.ktau_value * _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
+    params->ktau       = _measureConverter->convertTrqMotorKtaufParam_MachineUnitsToMetric(j, eo_params.ktau_value);   //eo_params.ktau_value * _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
     params->ktau_scale = eo_params.ktau_scale;
-    //printf("debug getMotorTorqueParamsRaw %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale);
+    printf("debug getMotorTorqueParamsRaw %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale);
 
     return true;
 }
@@ -4498,13 +4481,13 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
     eOmc_motor_params_t eo_params = {0};
 
-    //printf("getAngleToEncoders: %f\n",_torqueControlHelper->getAngleToEncoders(j));
+    printf("setMotorTorqueParamsRaw for j %d(INPUT): benf=%f ktau=%f\n",j, params.bemf, params.ktau);
 
-    eo_params.bemf_value    = (float) params.bemf * _torqueControlHelper->getNewtonsToSensor(j) /  _torqueControlHelper->getAngleToEncoders(j); //[Nm/deg/s]
+    eo_params.bemf_value    = (float) _measureConverter->convertTrqMotorBemfParam_MetricToMachineUnits(j, params.bemf); //(float) params.bemf * _torqueControlHelper->getNewtonsToSensor(j) /  _torqueControlHelper->getAngleToEncoders(j); //[Nm/deg/s]
     eo_params.bemf_scale    = (uint8_t) params.bemf_scale;
-    eo_params.ktau_value    = (float) params.ktau / _torqueControlHelper->getNewtonsToSensor(j); //[PWM/Nm]
+    eo_params.ktau_value    = (float) _measureConverter->convertTrqMotorKtaufParam_MetricToMachineUnits(j, params.ktau); //[PWM/Nm]
     eo_params.ktau_scale    = (uint8_t) params.ktau_scale;
-    //printf("DEBUG setMotorTorqueParamsRaw: %f %f %f %f\n",  params.bemf, params.bemf_scale, params.ktau,params.ktau_scale);
+    printf("setMotorTorqueParamsRaw(AFTER CONV): benf=%f %f ktau=%f %f\n",  params.bemf, params.bemf_scale, params.ktau,params.ktau_scale);
 
     if(!res->addSetMessage(id32, (uint8_t *) &eo_params))
     {
@@ -4540,9 +4523,7 @@ bool embObjMotionControl::helper_setVelPidRaw(int j, const Pid &pid)
     }
     if(_vpids[j].ctrlUnitsType == controlUnits_metric)
     {
-        hwPid.kp = hwPid.kp / _angleToEncoder[j];  //[PWM/deg]
-        hwPid.ki = hwPid.ki / _angleToEncoder[j];  //[PWM/deg]
-        hwPid.kd = hwPid.kd / _angleToEncoder[j];  //[PWM/deg]
+        _measureConverter->convertPosPid_A2E(j, hwPid); //the conversion of velocity pid and position pid are equal
     }
     else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
     {
@@ -4601,9 +4582,7 @@ bool embObjMotionControl::helper_getVelPidRaw(int j, Pid *pid)
 
     if(_vpids[j].ctrlUnitsType == controlUnits_metric)
     {
-        pid->kp = pid->kp * _angleToEncoder[j];  //[PWM/deg]
-        pid->ki = pid->ki * _angleToEncoder[j];  //[PWM/deg]
-        pid->kd = pid->kd * _angleToEncoder[j];  //[PWM/deg]
+        _measureConverter->convertPosPid_E2A(j, *pid);//the conversion of velocity pid and position pid are equal
     }
     else if(_vpids[j].ctrlUnitsType == controlUnits_machine)
     {

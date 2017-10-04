@@ -2,7 +2,7 @@
 
 /*
 * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
-* Authors: Alberto Cardellino
+* Authors: Valentina Gaggero
 * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
 *
 */
@@ -575,6 +575,11 @@ bool mcParser::getCorrectPidForEachJoint(eomcParser_pidInfo *ppids, eomcParser_p
     Pid_Algorithm *pidAlgo_ptr = NULL;
     Pid_Algorithm *vpidAlgo_ptr = NULL;
     Pid_Algorithm *tpidAlgo_ptr = NULL;
+
+    //since some joints could not have all pid configured, reset pid values to 0.
+    memset(ppids, 0, sizeof(eomcParser_pidInfo)*_njoints);
+    memset(vpids, 0, sizeof(eomcParser_pidInfo)*_njoints);
+    memset(tpids, 0, sizeof(eomcParser_trqPidInfo)*_njoints);
 
     map<string, Pid_Algorithm*>::iterator it;
 

@@ -82,6 +82,7 @@ using namespace std;
 
 #include "serviceParser.h"
 #include "mcParser.h"
+#include "measuresConverter.h"
 
 // - public #define  --------------------------------------------------------------------------------------------------
 
@@ -169,46 +170,6 @@ struct SpeedEstimationParameters
 
 
 
-
-class torqueControlHelper
-{
-    int  jointsNum;
-    double* newtonsToSensor;
-    double* angleToEncoders;
-
-    public:
-    torqueControlHelper(int njoints, double* angleToEncoders, double* newtons2sens);
-    torqueControlHelper(int njoints, float* angleToEncoders, double* newtons2sens);
-    inline ~torqueControlHelper()
-    {
-        if (newtonsToSensor)   delete [] newtonsToSensor;
-        if (angleToEncoders)   delete [] angleToEncoders;
-        newtonsToSensor=0;
-        angleToEncoders=0;
-    }
-    inline double getNewtonsToSensor (int jnt)
-    {
-        if (jnt>=0 && jnt<jointsNum) return newtonsToSensor[jnt];
-        return 0;
-    }
-    inline double getAngleToEncoders (int jnt)
-    {
-        if (jnt>=0 && jnt<jointsNum) return angleToEncoders[jnt];
-        return 0;
-    }
-    inline int getNumberOfJoints ()
-    {
-        return jointsNum;
-    }
-    
-    inline double convertImpN2S(int j, double nw)
-    {
-        return nw * newtonsToSensor[j]/angleToEncoders[j];
-    }
-};
-
-
-
 typedef struct
 {
     vector<int>                         joint2set;
@@ -218,7 +179,10 @@ typedef struct
 } eomc_jointsetsInfo_t;
 
 
+typedef struct
+{
 
+} eomc_measureCovFactors_t;
 
 
 namespace yarp {
@@ -227,6 +191,8 @@ namespace yarp {
     }
 }
 using namespace yarp::dev;
+
+
 
 enum { MAX_SHORT = 32767, MIN_SHORT = -32768, MAX_INT = 0x7fffffff, MIN_INT = 0x80000000,  MAX_U32 = 0xffffffff, MIN_U32 = 0x00, MAX_U16 = 0xffff, MIN_U16 = 0x0000};
 enum { CAN_SKIP_ADDR = 0x80 };
@@ -299,10 +265,7 @@ private:
     yarp::os::Semaphore _mutex;
 
 
-    double *_angleToEncoder;                    /** angle to iCubDegrees conversion factors */
-    double *_ampsToSensor;
-    double *_dutycycleToPWM;
-    double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
+     double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
     uint8_t *_jointEncoderType;                 /** joint encoder type*/
     uint8_t *_jointNumOfNoiseBits;              /** Num of error bits passable for joint encoder */
     int    *_jointEncoderRes;                   /** joint encoder resolution */
@@ -340,12 +303,9 @@ private:
     std::vector<eomc_axisInfo_t> _axesInfo;
 
 
-    double *_newtonsToSensor;                   /** Newtons to force sensor units conversion factors */
     bool  *checking_motiondone;                 /* flag telling if I'm already waiting for motion done */
     #define MAX_POSITION_MOVE_INTERVAL 0.080
     double *_last_position_move_time;           /** time stamp for last received position move command*/
-
-
 
 
 
@@ -354,7 +314,7 @@ private:
     bool        _pwmIsLimited;                  /** set to true if pwm is limited */
 
 
-     torqueControlHelper    *_torqueControlHelper;
+     measuresConverter       *_measureConverter;
 
 
     // debug purpose
@@ -500,7 +460,7 @@ private:
     bool fromConfig_getGeneralInfo(yarp::os::Searchable &config); //get general info: useRawEncoderData, useLiitedPwm, etc....
     bool fromConfig_Step2(yarp::os::Searchable &config);
     bool fromConfig_readServiceCfg(yarp::os::Searchable &config);
-
+    bool initializeInterfaces(measureConvFactors &f);
 
 public:
 
