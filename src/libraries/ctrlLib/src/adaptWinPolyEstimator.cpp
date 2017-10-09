@@ -19,11 +19,13 @@
 #include <cmath>
 #include <algorithm>
 
+#include <yarp/os/LogStream.h>
 #include <yarp/math/Math.h>
 #include <yarp/math/SVD.h>
 #include <iCub/ctrl/adaptWinPolyEstimator.h>
 
 using namespace std;
+using namespace yarp::os;
 using namespace yarp::sig;
 using namespace yarp::math;
 using namespace iCub::ctrl;
@@ -132,7 +134,10 @@ Vector AWPolyEstimator::estimate()
 
         // enforce condition on time vector
         if (t[j]<=0.0)
+        {
+            yWarning()<<"Provided non-increasing time vector";
             return esteem;
+        }
     }
 
     // cycle upon all elements
