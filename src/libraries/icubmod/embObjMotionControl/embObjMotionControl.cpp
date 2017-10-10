@@ -1107,7 +1107,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
            params.ktau = _tpids[logico].ktau;
            params.ktau_scale = 0;
            //use the yarp method to get the values properly converted from [SI] to HW units (if necessary)
-           printf("DOPO LETTURA FILE : j%d, bemf=%f, ktau=%f \n", logico, params.bemf, params.ktau);
+           //printf("after file has been read : j%d, bemf=%f, ktau=%f \n", logico, params.bemf, params.ktau);
 
        }
 
@@ -1545,7 +1545,7 @@ bool embObjMotionControl::init()
         jconfig.jntEncoderType = _jointEncoderType[logico];
         jconfig.jntEncNumOfNoiseBits = _jointNumOfNoiseBits[logico];
 
-        printf("SEND CONFIG: j%d, bemf=%f, ktau=%f \n", logico, _tpids[logico].kbemf, _tpids[logico].ktau);
+        //printf("SEND CONFIG: j%d, bemf=%f, ktau=%f \n", logico, _tpids[logico].kbemf, _tpids[logico].ktau);
         jconfig.motor_params.bemf_value = (float) _measureConverter->convertTrqMotorBemfParam_MetricToMachineUnits(fisico,  _tpids[logico].kbemf);
         jconfig.motor_params.bemf_scale = 0;
         jconfig.motor_params.ktau_value = (float) _measureConverter->convertTrqMotorKtaufParam_MetricToMachineUnits(fisico, _tpids[logico].ktau);
@@ -1824,7 +1824,7 @@ bool embObjMotionControl::helper_setPosPidRaw(int j, const Pid &pid)
     {
         yError() << "Unknown _positionControlUnits";
     }
-    printf("helper_setPosPid: kp=%f ki=%f kd=%f\n", hwPid.kp, hwPid.ki, hwPid.kd);
+    //printf("helper_setPosPid: kp=%f ki=%f kd=%f\n", hwPid.kp, hwPid.ki, hwPid.kd);
     copyPid_iCub2eo(&hwPid, &outPid);
 
     if(!res->addSetMessage(protoId, (uint8_t *) &outPid))
@@ -1971,7 +1971,7 @@ bool embObjMotionControl::helper_getPosPidRaw(int j, Pid *pid)
 
     copyPid_eo2iCub(&eoPID, pid);
     
-    printf("helper_getPosPid: kp=%f ki=%f kd=%f\n", pid->kp, pid->ki, pid->kd);
+    //printf("helper_getPosPid: kp=%f ki=%f kd=%f\n", pid->kp, pid->ki, pid->kd);
     
     if(_ppids[j].ctrlUnitsType == controlUnits_metric)
     {
@@ -4270,7 +4270,7 @@ bool embObjMotionControl::helper_setTrqPidRaw(int j, const Pid &pid)
     Pid hwPid = pid;
 
     _measureConverter->convertTrqPid_N2S(j, hwPid);
-    printf("DEBUG setTorquePidRaw: %f %f %f %f %f\n",hwPid.kp ,  hwPid.ki, hwPid.kd , hwPid.stiction_up_val , hwPid.stiction_down_val );
+    //printf("DEBUG setTorquePidRaw: %f %f %f %f %f\n",hwPid.kp ,  hwPid.ki, hwPid.kd , hwPid.stiction_up_val , hwPid.stiction_down_val );
 
     copyPid_iCub2eo(&hwPid, &outPid);
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque);
@@ -4306,7 +4306,7 @@ bool embObjMotionControl::helper_getTrqPidRaw(int j, Pid *pid)
     eOmc_PID_t eoPID;
     bool ret = res->readBufferedValue(protid, (uint8_t *)&eoPID, &size);
     copyPid_eo2iCub(&eoPID, pid);
-    printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
+    //printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
 
     _measureConverter->convertTrqPid_S2N(j, *pid);
     return ret;
@@ -4471,7 +4471,7 @@ bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *
     params->bemf_scale = eo_params.bemf_scale;
     params->ktau       = _measureConverter->convertTrqMotorKtaufParam_MachineUnitsToMetric(j, eo_params.ktau_value);   //eo_params.ktau_value * _torqueControlHelper->getNewtonsToSensor(j);  //[PWM/Nm]
     params->ktau_scale = eo_params.ktau_scale;
-    printf("debug getMotorTorqueParamsRaw %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale);
+    //printf("debug getMotorTorqueParamsRaw %f %f %f %f\n",  params->bemf, params->bemf_scale, params->ktau,params->ktau_scale);
 
     return true;
 }
@@ -4481,13 +4481,13 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
     eOmc_motor_params_t eo_params = {0};
 
-    printf("setMotorTorqueParamsRaw for j %d(INPUT): benf=%f ktau=%f\n",j, params.bemf, params.ktau);
+    //printf("setMotorTorqueParamsRaw for j %d(INPUT): benf=%f ktau=%f\n",j, params.bemf, params.ktau);
 
     eo_params.bemf_value    = (float) _measureConverter->convertTrqMotorBemfParam_MetricToMachineUnits(j, params.bemf); //(float) params.bemf * _torqueControlHelper->getNewtonsToSensor(j) /  _torqueControlHelper->getAngleToEncoders(j); //[Nm/deg/s]
     eo_params.bemf_scale    = (uint8_t) params.bemf_scale;
     eo_params.ktau_value    = (float) _measureConverter->convertTrqMotorKtaufParam_MetricToMachineUnits(j, params.ktau); //[PWM/Nm]
     eo_params.ktau_scale    = (uint8_t) params.ktau_scale;
-    printf("setMotorTorqueParamsRaw(AFTER CONV): benf=%f %f ktau=%f %f\n",  params.bemf, params.bemf_scale, params.ktau,params.ktau_scale);
+    //printf("setMotorTorqueParamsRaw(AFTER CONV): benf=%f %f ktau=%f %f\n",  params.bemf, params.bemf_scale, params.ktau,params.ktau_scale);
 
     if(!res->addSetMessage(id32, (uint8_t *) &eo_params))
     {
