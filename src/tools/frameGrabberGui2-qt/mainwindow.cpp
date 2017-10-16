@@ -4,6 +4,7 @@
 #include "log.h"
 #include "dc1394slider.h"
 #include "dc1394sliderwb.h"
+#include <iostream>
 
 static QStringList video_mode_labels;
 static QStringList video_rate_labels;
