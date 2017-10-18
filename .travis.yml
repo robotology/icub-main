@@ -26,7 +26,7 @@ before_script:
   - if [ "$TRAVIS_OS_NAME" = osx ]; then rm '/usr/local/bin/f2py'; fi
   - if [ "$TRAVIS_OS_NAME" = osx ]; then rm -r '/usr/local/lib/python2.7/site-packages/numpy'; fi
   # brew dependencies
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew tap robotology/cask; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew tap robotology/formulae; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install --only-dependencies yarp; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install --only-dependencies icub-main --with-ipopt --with-opencv; fi
   # add QT5 to path so that it can be found by CMake
