@@ -128,7 +128,8 @@ Vector AWPolyEstimator::estimate()
 
     // retrieve the time vector
     // starting from t=0 (numeric stability reason)
-    for (unsigned int j=0; j<N; j++)
+    t[0]=0.0;
+    for (unsigned int j=1; j<N; j++)
     {
         t[j]=elemList[delta+j].time-elemList[delta].time;
 
