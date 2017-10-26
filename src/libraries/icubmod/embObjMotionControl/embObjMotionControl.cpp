@@ -1126,9 +1126,16 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             return false;
 
 
+        // Due to historical reasons, the joint number used at user level, should be different from the number joint at device level (embObjMotioncontrol).
+        // Infact in configuration files there is the AxisMap parameter, that lets us to "translate" joint number from user level to device level.
+        // The configuration data written in xml files are given using "user" joint number, so when embObjMotioncontrol needs to send the configuration to fw or
+        // to save in its memory, it have to remaped the information using "device" joint number.
+        // For this reason,  in the following the _measureConverter uses the ramapped conversion factor and embObjMotionControl::init() discriminates between
+        // joint "fisico" from "logico".
+        // It is important to notice that functions ...*Raw are called with the joint numer at device level, so in those functions it is not necessary to perform any
+        // joint number translation.
+        // NOTE: (TODO) translate "fisico" and "logico" variables name in English.
 
-        // the measure converter used inside embObjMotioncontrol needs use the factor array of conversion factor ordered by hardware joints intsead of logic joints.
-        //so here i remap the conversion facors
         measureConvFactors measConvFactors_remaped (_njoints);
         int fakeAxisMap[_njoints];
         for(int i=0; i<_njoints; i++)
