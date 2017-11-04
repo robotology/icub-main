@@ -22,9 +22,9 @@ before_script:
 
   # macOS dependencies
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; fi
-  # Fix for opencv and numpy already installed by system
-  - if [ "$TRAVIS_OS_NAME" = osx ]; then rm '/usr/local/bin/f2py'; fi
-  - if [ "$TRAVIS_OS_NAME" = osx ]; then rm -r '/usr/local/lib/python2.7/site-packages/numpy'; fi
+  # Fix for compatibility with Travis default numpy
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rm '/usr/local/bin/f2py'; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rm -r '/usr/local/lib/python2.7/site-packages/numpy'; fi
   # brew dependencies
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew tap robotology/formulae; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install --only-dependencies yarp; fi
