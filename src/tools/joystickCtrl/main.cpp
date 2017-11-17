@@ -414,14 +414,23 @@ public:
         {
             joy_id=0;
             yInfo ( "One joystick found \n");
+#if (SDL_MAJOR_VERSION == 2)
+            yInfo ( "Using joystick: %s \n", SDL_JoystickNameForIndex(joy_id));
+#else
             yInfo ( "Using joystick: %s \n", SDL_JoystickName(joy_id));
+#endif
+
         }
         else
         {
             yInfo ( "More than one joystick found:\n");
             for (int i=0; i<joystick_num; i++)
             {
+#if (SDL_MAJOR_VERSION == 2)
+                yInfo ( "%d: %s\n",i,SDL_JoystickNameForIndex(i));
+#else
                 yInfo ( "%d: %s\n",i,SDL_JoystickName(i));
+#endif
             }
             yInfo ( "\n");
 
