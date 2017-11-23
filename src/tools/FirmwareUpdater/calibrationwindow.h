@@ -20,8 +20,9 @@ class CalibrationWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    explicit CalibrationWindow(FirmwareUpdaterCore *core, CustomTreeWidgetItem *item, QWidget *parent = 0);
+    explicit CalibrationWindow(FirmwareUpdaterCore *core, icubCanProto_boardType_t b, CustomTreeWidgetItem *item, QWidget *parent = 0);
     ~CalibrationWindow();
+
 
 protected:
     void closeEvent(QCloseEvent *e);
@@ -46,6 +47,7 @@ private:
     Ui::CalibrationWindow *ui;
     CustomTreeWidgetItem *item;
     FirmwareUpdaterCore *core;
+    icubCanProto_boardType_t boardtype;
     bool sliderPressed[6];
     unsigned int adc[6];
     unsigned int maxadc[6];

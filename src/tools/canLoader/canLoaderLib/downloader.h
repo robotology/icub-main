@@ -194,7 +194,7 @@ void set_canbus_id      (int id);
 
 int strain_start_sampling    (int bus, int target_id, string *errorstring = NULL);
 int strain_stop_sampling     (int bus, int target_id, string *errorstring = NULL);
-int strain_calibrate_offset  (int bus, int target_id, unsigned int middle_val, string *errorstring = NULL);
+int strain_calibrate_offset  (int bus, int target_id, icubCanProto_boardType_t boardtype, unsigned int middle_val, string *errorstring = NULL);
 int strain_get_offset		 (int bus, int target_id, char channel, unsigned int& offset, string *errorstring = NULL);
 int strain_set_offset		 (int bus, int target_id, char channel, unsigned int  offset, string *errorstring = NULL);
 int strain_get_adc			 (int bus, int target_id, char channel, unsigned int& adc, int type, string *errorstring = NULL);
@@ -219,8 +219,8 @@ int strain_get_eeprom_saved  (int bus, int target_id, bool* status, string *erro
 int strain_set_matrix        (int bus, int target_id, int matrix = 0, string *errorstring = NULL);
 int strain_get_matrix        (int bus, int target_id, int &matrix, string *errorstring = NULL);
 
-int sg6_get_amp_gain      (int bus, int target_id, char channel, unsigned int& gain1, unsigned int& gain2 );
-int sg6_set_amp_gain      (int bus, int target_id, char channel, unsigned int  gain1, unsigned int  gain2 );
+int sg6_obsolete_get_amp_gain      (int bus, int target_id, char channel, unsigned int& gain1, unsigned int& gain2 );
+int sg6_obsolete_set_amp_gain      (int bus, int target_id, char channel, unsigned int  gain1, unsigned int  gain2 );
 
 
 cDownloader(bool verbose = true);

@@ -241,15 +241,19 @@ int cDownloader::strain_save_to_eeprom  (int bus, int target_id, string *errorst
 }
 
 //*****************************************************************/
-int cDownloader::sg6_get_amp_gain      (int bus, int target_id, char channel, unsigned int& gain1, unsigned int& gain2 )
+int cDownloader::sg6_obsolete_get_amp_gain      (int bus, int target_id, char channel, unsigned int& gain1, unsigned int& gain2 )
 {
+#if 1
+    yError ("sg6_obsolete_get_amp_gain() is obsolete. \n");
+    return -1;
+#else
      // check if driver is running
      if (m_idriver == NULL)
         {
             if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
-     
+#error command ID 0x1D is not available anymore
      // Send read gain command to strain board
      txBuffer[0].setId((2 << 8) + target_id);
      txBuffer[0].setLen(2);
@@ -289,18 +293,23 @@ int cDownloader::sg6_get_amp_gain      (int bus, int target_id, char channel, un
         }
 
      return -1;
+#endif
 }
 
 //*****************************************************************/
-int cDownloader::sg6_set_amp_gain      (int bus, int target_id, char channel, unsigned int  gain1, unsigned int  gain2 )
+int cDownloader::sg6_obsolete_set_amp_gain      (int bus, int target_id, char channel, unsigned int  gain1, unsigned int  gain2 )
 {
+#if 1
+    yError ("sg6_obsolete_set_amp_gain() is obsolete. \n");
+    return -1;
+#else
      // check if driver is running
      if (m_idriver == NULL)
         {
             if(_verbose) yError ("Driver not ready\n");
             return -1;
         }
-
+#error command ID 0x1E is not available anymore
     //set amp gain
     txBuffer[0].setId((2 << 8) + target_id);
     txBuffer[0].setLen(6);
@@ -314,6 +323,7 @@ int cDownloader::sg6_set_amp_gain      (int bus, int target_id, char channel, un
     int ret = m_idriver->send_message(txBuffer, 1);
 
      return 0;
+#endif
 }
 
 //*****************************************************************/
@@ -1001,14 +1011,90 @@ int cDownloader::strain_stop_sampling    (int bus, int target_id, string *errors
 }
 
 //*****************************************************************/
-int cDownloader::strain_calibrate_offset  (int bus, int target_id, unsigned int middle_val, string *errorstring)
+int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_boardType_t boardtype, unsigned int middle_val, string *errorstring)
 {
-     // check if driver is running
-     if (m_idriver == NULL)
+
+    // check if driver is running
+    if (m_idriver == NULL)
+    {
+       if(_verbose) yError ("Driver not ready\n");
+       return -1;
+    }
+
+    int daclimit = 0x3ff;
+    int dacstep = 1;
+    long tolerance = 128;
+
+#define STRAIN2_USE_NEW_MODE
+
+#if !defined(STRAIN2_USE_NEW_MODE)
+    if(icubCanProto_boardType__strain2 == boardtype)
+    {
+        daclimit = 0xffff;
+        dacstep = 16;
+        tolerance = 64;
+    }
+#else
+    if(icubCanProto_boardType__strain2 == boardtype)
+    {
+        yDebug() << "we have a strain2 to calibrate with the new mode";
+
+        uint8_t set = 0;
+        uint8_t everychannel = 0x0f;
+        uint16_t tolerance = 100; 
+        uint8_t samples2average = 4; // if zero, the board uses its default (= 4)
+
+        // sending an autocalib message
+        txBuffer[0].setId((2 << 8) + target_id);
+        txBuffer[0].setLen(8);
+        txBuffer[0].getData()[0]= 0x22;
+        txBuffer[0].getData()[1]= ((set << 4) & 0xf0) | (everychannel & 0x0f);
+        txBuffer[0].getData()[2]= 0; // mode oneshot, the only possible so far
+        txBuffer[0].getData()[3]= middle_val & 0x00ff;          // little endian
+        txBuffer[0].getData()[4]= (middle_val >> 8) & 0x00ff;   // little endian
+        txBuffer[0].getData()[5]= tolerance & 0x00ff;          // little endian
+        txBuffer[0].getData()[6]= (tolerance >> 8) & 0x00ff;   // little endian
+        txBuffer[0].getData()[7]= samples2average;
+        set_bus(txBuffer[0], bus);
+        int ret = m_idriver->send_message(txBuffer, 1);
+        // check if send_message was successful
+        if (ret==0)
         {
-            if(_verbose) yError ("Driver not ready\n");
+            if(_verbose) yError ("Unable to send message\n");
             return -1;
         }
+
+        // now wait for a reply for most 3 seconds
+        double TOUT = 3.0;
+
+        yDebug() << "message sent." << "the strain2 is attempting to regularise its 6 output values to" << middle_val << "mae tolerence is" << tolerance << "and samples2average =" << samples2average << "now we wait for a reply";
+
+        int read_messages = m_idriver->receive_message(rxBuffer, TOUT);
+        for(int i=0; i<read_messages; i++)
+        {
+            if (rxBuffer[i].getData()[0]==0x22)
+            {
+                //dac = rxBuffer[i].getData()[2]<<8 | rxBuffer[i].getData()[3];
+                uint8_t resultmask = rxBuffer[i].getData()[2];
+                uint32_t mae =  (static_cast<uint32_t>(rxBuffer[i].getData()[3]))       |
+                                (static_cast<uint32_t>(rxBuffer[i].getData()[4]) << 8)  |
+                                (static_cast<uint32_t>(rxBuffer[i].getData()[5]) << 16) |
+                                (static_cast<uint32_t>(rxBuffer[i].getData()[6]) << 24);
+
+                if(resultmask != 0x3f)
+                {
+                    yDebug() << "calibration to value" << middle_val << "has sadly failed. ok mask =" << resultmask << "and MAE = " << mae;
+                }
+                yDebug() << "calibration to value" << middle_val << "is done and MAE = " << mae;
+                break;
+            }
+        }
+
+
+        return 0;
+    }
+#endif
+
 
     int channel=0;
     int i=0;
@@ -1021,6 +1107,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, unsigned int 
 
     for (channel=0; channel<6; channel++)
     {
+        // yDebug() << "starting OFFSET of channel" << channel;
         // Send read channel command to strain board
         txBuffer[0].setId((2 << 8) + target_id);
         txBuffer[0].setLen(3);
@@ -1067,13 +1154,15 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, unsigned int 
         error = long(measure) - long(middle_val);
         cycle=0;
 
-        while (abs(error)>128 && cycle<0x03FF)
+        while (abs(error)>tolerance && cycle<daclimit)
         {
-            if (error>0) dac--;
-            else         dac++;
+            if (error>0) dac -= dacstep;
+            else         dac += dacstep;
 
-            if (dac>0x3ff) dac = 0x3ff;
-            if (dac<0)       dac = 0;
+            if (dac>daclimit)       dac = daclimit;
+            if (dac<0)              dac = 0;
+
+            //yDebug() << "iter" << cycle << "err = " << error << "next dac =" << dac;
 
             // Send transmission command to strain board
             txBuffer[0].setId((2 << 8) + target_id);

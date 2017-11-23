@@ -86,7 +86,7 @@ void save_click (GtkButton *button,    gpointer   user_data)
 void auto_click (GtkButton *button,    gpointer   user_data)
 {
     STOP_TIMER
-    downloader.strain_calibrate_offset(downloader.board_list[selected].bus, downloader.board_list[selected].pid, calibration_value);
+    downloader.strain_calibrate_offset(downloader.board_list[selected].bus, downloader.board_list[selected].pid, icubCanProto_boardType__strain, calibration_value);
     START_TIMER
 }
 /*

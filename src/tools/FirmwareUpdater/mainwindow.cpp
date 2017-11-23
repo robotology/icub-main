@@ -21,6 +21,7 @@ MainWindow::MainWindow(FirmwareUpdaterCore *core, bool adminMode, QWidget *paren
     qRegisterMetaType <boardInfo2_t> ("boardInfo2_t");
     qRegisterMetaType <eOipv4addr_t> ("eOipv4addr_t");
     qRegisterMetaType <sBoard> ("sBoard");
+    sgboardtype = icubCanProto_boardType__strain;
     isLoading = false;
     loadCounter = 0;
     calibDlg = NULL;
@@ -768,7 +769,7 @@ void MainWindow::onCalibrate(bool click)
         calibDlg = NULL;
     }
 
-    calibDlg = new CalibrationWindow(core,selectedNodes.first(),this);
+    calibDlg = new CalibrationWindow(core,sgboardtype, selectedNodes.first(),this);
     calibDlg->show();
 
 }
@@ -1416,6 +1417,7 @@ void MainWindow::checkEnableButtons()
 
             sBoard canBoard = ((EthTreeWidgetItem*)selectedNodes.first()->getParentNode())->getCanBoard(selectedNodes.first()->getIndexOfBoard());
             if(((canBoard.type == icubCanProto_boardType__strain) || (canBoard.type == icubCanProto_boardType__strain2) || (canBoard.type == icubCanProto_boardType__6sg)) && (canBoard.status == BOARD_RUNNING) ){
+                sgboardtype = static_cast<icubCanProto_boardType_t>(canBoard.type);
                 ui->btnCalibrate->setEnabled(true);
                 //ui->btnEraseEeprom->setEnabled(true);
                 ui->btnEraseEeprom->setEnabled(false);
