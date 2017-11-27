@@ -21,8 +21,6 @@ CMAKE_OPTIONS="\
    -DENABLE_icubmod_fakecan:BOOL=TRUE \
    -DENABLE_icubmod_canmotioncontrol:BOOL=FALSE\
    -DENABLE_icubmod_debugInterfaceClient:BOOL=TRUE\
-   -DENABLE_icubmod_usbCamera:BOOL=TRUE \
-   -DENABLE_icubmod_usbCameraRaw:BOOL=TRUE \
    -DICUB_DASHBOARD_SUBMIT:BOOL=TRUE"
 
 case $3 in
