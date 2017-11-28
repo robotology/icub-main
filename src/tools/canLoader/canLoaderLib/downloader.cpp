@@ -1047,36 +1047,43 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
         uint8_t samples2average = 4; // if zero, the board uses its default (= 4)
 
 #define TESTMODE_STRAIN2
+#undef TESTMODE_STRAIN2_SAMEGAIN
+
 #if defined(TESTMODE_STRAIN2)
 
         const int index48 = 0;
         const int index36 = 1;
         const int index24 = 2;
-        //const int index12 = 3; // dont use it! i need to check for it...
+        const int index20 = 3;
+        const int index16 = 4;
 
-        const int i2u = index24;
 
-        const uint8_t cfg1map[4][6] =
+        const uint8_t cfg1map[5][6] =
         {
             {0x00, 0x40, 0x46, 0x25, 0x00, 0x80},   // gain = 48
             {0x00, 0x10, 0x46, 0x25, 0x00, 0x80},   // gain = 36
             {0x00, 0x40, 0x42, 0x25, 0x00, 0x80},   // gain = 24
-            {0x00, 0x10, 0x40, 0x25, 0x00, 0x80}    // gain = 12
+            {0x00, 0x20, 0x42, 0x25, 0x00, 0x80},   // gain = 20
+            {0x00, 0x00, 0x42, 0x25, 0x00, 0x80}    // gain = 16
         };
-        const float gainvalues[4] = {48, 36, 24, 12};
+        const float gainvalues[5] = {48, 36, 24, 20, 16};
 
-        yDebug() << "imposing gain =" << gainvalues[i2u] << "in every channel";
+#if defined(TESTMODE_STRAIN2_SAMEGAIN)
+
+        const int i2u_all = index16;
+
+        yDebug() << "imposing gain =" << gainvalues[i2u_all] << "in every channel";
 
         txBuffer[0].setId((2 << 8) + target_id);
         txBuffer[0].setLen(8);
         txBuffer[0].getData()[0]= 0x2B;
         txBuffer[0].getData()[1]= ((set << 4) & 0xf0) | (everychannel & 0x0f);
-        txBuffer[0].getData()[2]= cfg1map[i2u][0]; // lsb of gd
-        txBuffer[0].getData()[3]= cfg1map[i2u][1]; // msb of gd
-        txBuffer[0].getData()[4]= cfg1map[i2u][2];
-        txBuffer[0].getData()[5]= cfg1map[i2u][3]; // vc0
-        txBuffer[0].getData()[6]= cfg1map[i2u][4];
-        txBuffer[0].getData()[7]= cfg1map[i2u][5];
+        txBuffer[0].getData()[2]= cfg1map[i2u_all][0]; // lsb of gd
+        txBuffer[0].getData()[3]= cfg1map[i2u_all][1]; // msb of gd
+        txBuffer[0].getData()[4]= cfg1map[i2u_all][2];
+        txBuffer[0].getData()[5]= cfg1map[i2u_all][3]; // vc0
+        txBuffer[0].getData()[6]= cfg1map[i2u_all][4];
+        txBuffer[0].getData()[7]= cfg1map[i2u_all][5];
         set_bus(txBuffer[0], bus);
         yDebug("sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
 
@@ -1084,6 +1091,44 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
         // i wait some 100 ms
         yarp::os::Time::delay(1.0);
+
+#else
+        //#define NSETS 2
+        //const int set2index[NSETS] = {index20, index48};
+        //const int chn2set[6] = {0, 0, 1, 0, 1, 1}; // set with gain20 is on channels 0, 1, 3 and set with gain 48 is on channels 2, 4, 5
+
+        // gain = 20 is on channels 0, 1, 3; gain = 48 is on channels 2, 4, 5
+        int channel2index[6] = {index20, index20, index48, index20, index48, index48};
+
+        yDebug() << "imposing gains which are different of each channel";
+
+        for(int channel=0; channel<6; channel++)
+        {
+            int index = channel2index[channel];
+            yDebug() << "on channel" << channel << "we impose gain =" << gainvalues[index];
+
+            txBuffer[0].setId((2 << 8) + target_id);
+            txBuffer[0].setLen(8);
+            txBuffer[0].getData()[0]= 0x2B;
+            txBuffer[0].getData()[1]= ((set << 4) & 0xf0) | (channel & 0x0f);
+            txBuffer[0].getData()[2]= cfg1map[index][0]; // lsb of gd
+            txBuffer[0].getData()[3]= cfg1map[index][1]; // msb of gd
+            txBuffer[0].getData()[4]= cfg1map[index][2];
+            txBuffer[0].getData()[5]= cfg1map[index][3]; // vc0
+            txBuffer[0].getData()[6]= cfg1map[index][4];
+            txBuffer[0].getData()[7]= cfg1map[index][5];
+            set_bus(txBuffer[0], bus);
+            yDebug("sending: [%x, %x, %x, %x, %x, %x, %x, %x]", txBuffer[0].getData()[0], txBuffer[0].getData()[1], txBuffer[0].getData()[2], txBuffer[0].getData()[3], txBuffer[0].getData()[4], txBuffer[0].getData()[5], txBuffer[0].getData()[6], txBuffer[0].getData()[7]);
+
+            m_idriver->send_message(txBuffer, 1);
+
+            // i wait some 100 ms
+            yarp::os::Time::delay(1.0);
+        }
+
+
+#endif // #else of #if defined(TESTMODE_STRAIN2_SAMEGAIN)
+
 
 
         yDebug() << "i get the amplifier reg config";
