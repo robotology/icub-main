@@ -1062,15 +1062,15 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
         {
             {0x00, 0x40, 0x46, 0x25, 0x00, 0x80},   // gain = 48
             {0x00, 0x10, 0x46, 0x25, 0x00, 0x80},   // gain = 36
-            {0x00, 0x40, 0x42, 0x25, 0x00, 0x80},   // gain = 24
-            {0x00, 0x20, 0x42, 0x25, 0x00, 0x80},   // gain = 20
-            {0x00, 0x00, 0x42, 0x25, 0x00, 0x80}    // gain = 16
+            {0x00, 0x40, 0x42, 0x25, 0x00, 0x80},   // gain = 24 [or 0x26 instead of 0x42]
+            {0x00, 0x20, 0x42, 0x25, 0x00, 0x80},   // gain = 20 [or 0x26 instead of 0x42]
+            {0x00, 0x00, 0x42, 0x25, 0x00, 0x80}    // gain = 16 [or 0x26 instead of 0x42]
         };
         const float gainvalues[5] = {48, 36, 24, 20, 16};
 
 #if defined(TESTMODE_STRAIN2_SAMEGAIN)
 
-        const int i2u_all = index16;
+        const int i2u_all = index24;
 
         yDebug() << "imposing gain =" << gainvalues[i2u_all] << "in every channel";
 
@@ -1093,12 +1093,9 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
         yarp::os::Time::delay(1.0);
 
 #else
-        //#define NSETS 2
-        //const int set2index[NSETS] = {index20, index48};
-        //const int chn2set[6] = {0, 0, 1, 0, 1, 1}; // set with gain20 is on channels 0, 1, 3 and set with gain 48 is on channels 2, 4, 5
 
-        // gain = 20 is on channels 0, 1, 3; gain = 48 is on channels 2, 4, 5
-        int channel2index[6] = {index20, index20, index48, index20, index48, index48};
+        // gain = 24 is on channels 0, 1, 3; gain = 48 is on channels 2, 4, 5
+        int channel2index[6] = {index24, index24, index48, index24, index48, index48};
 
         yDebug() << "imposing gains which are different of each channel";
 
