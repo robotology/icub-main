@@ -21,13 +21,14 @@ before_script:
   - if [ "$TRAVIS_OS_NAME" = "linux" ]; then sudo apt-get --assume-yes --force-yes install cmake libeigen3-dev icub-common libv4lconvert0 libv4l-dev; fi
 
   # macOS dependencies
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew tap robotology/cask; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; fi
+  # Fix for compatibility with Travis default numpy
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rm '/usr/local/bin/f2py'; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then rm -r '/usr/local/lib/python2.7/site-packages/numpy'; fi
+  # brew dependencies
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew tap robotology/formulae; fi
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install --only-dependencies yarp; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install gsl goocanvas sdl sdl_gfx sdl_image homebrew/science/ipopt; fi
-  # Fix for opencv and numpy already installed by system
-  - if [ "$TRAVIS_OS_NAME" = osx ]; then rm '/usr/local/bin/f2py'; fi
-  - if [ "$TRAVIS_OS_NAME" = osx ]; then rm -r '/usr/local/lib/python2.7/site-packages/numpy'; fi
-  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install opencv; fi
+  - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew install --only-dependencies icub-main --with-ipopt --with-opencv; fi
   # add QT5 to path so that it can be found by CMake
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then export PATH="$PATH:/usr/local/opt/qt/bin"; fi
   #use the same set of cmake options used in the dashboard build
