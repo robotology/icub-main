@@ -37,7 +37,7 @@ using namespace yarp::os::impl;
 // macros
 #define ASK_REFERENCE_TO_FIRMWARE 1
 
-#define PARSER_MOTION_CONTROL_VERSION   3
+#define PARSER_MOTION_CONTROL_VERSION   4
 
 
 // Utilities
