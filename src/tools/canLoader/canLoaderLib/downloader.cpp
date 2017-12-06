@@ -1023,7 +1023,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
     int daclimit = 0x3ff;
     int dacstep = 1;
-    long tolerance = 128;
+    long tolerance = 256;
 
 #define STRAIN2_USE_NEW_MODE
 
@@ -1043,8 +1043,8 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
         uint8_t set = 0;
         uint8_t everychannel = 0x0f;
-        uint16_t tolerance = 100; 
-        uint8_t samples2average = 4; // if zero, the board uses its default (= 4)
+        tolerance = 256;
+        uint8_t samples2average = 8; // if zero, the board uses its default (= 4)
 
 #define TESTMODE_STRAIN2
 #undef TESTMODE_STRAIN2_SAMEGAIN
@@ -1221,18 +1221,19 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
             if (rxBuffer[i].getData()[0]==0x22)
             {
                 //dac = rxBuffer[i].getData()[2]<<8 | rxBuffer[i].getData()[3];
-                uint8_t resultmask = rxBuffer[i].getData()[2];
-                uint32_t mae =  (static_cast<uint32_t>(rxBuffer[i].getData()[3]))       |
-                                (static_cast<uint32_t>(rxBuffer[i].getData()[4]) << 8)  |
-                                (static_cast<uint32_t>(rxBuffer[i].getData()[5]) << 16) |
-                                (static_cast<uint32_t>(rxBuffer[i].getData()[6]) << 24);
+                uint8_t noisychannelmask = rxBuffer[i].getData()[2];
+                uint8_t algorithmOKmask = rxBuffer[i].getData()[3];
+                uint8_t finalmeasureOKmask = rxBuffer[i].getData()[4];
+                uint16_t mae =  (static_cast<uint32_t>(rxBuffer[i].getData()[6]))       |
+                                (static_cast<uint32_t>(rxBuffer[i].getData()[7]) << 8);
 
-                if(resultmask != 0x3f)
+                if(algorithmOKmask != 0x3f)
                 {
-                    yDebug() << "calibration to value" << middle_val << "has sadly failed. ok mask =" << resultmask << "and MAE = " << mae;
+                    yDebug() << "calibration to value" << middle_val << "has sadly failed because algorithm found required values ot of range of registers CFG0.OS or ZDAC.";
+                    yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
                     for(int i=0; i<6; i++)
                     {
-                        if((resultmask & (i<<i)) == 0)
+                        if((algorithmOKmask & (i<<i)) == 0)
                         {
                             yDebug() << "calibration fails in channel" << i;
                         }
@@ -1241,6 +1242,12 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
                 else
                 {
                     yDebug() << "calibration to value" << middle_val << "is done and MAE = " << mae;
+                    if(0 != noisychannelmask)
+                    {
+                        yDebug() << "however we found some noisy channels";
+                        yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
+
+                    }
                 }
                 break;
             }
