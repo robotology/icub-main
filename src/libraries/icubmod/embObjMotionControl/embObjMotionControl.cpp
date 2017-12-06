@@ -122,6 +122,11 @@ bool embObjMotionControl::EncoderType_eo2iCub(const uint8_t *in, string* out)
         *out = "HALL_MOTOR_SENS";
         return true;
     }
+    else if(*in == 9)
+    {
+        *out = "AMO";
+        return true;
+    }
     *out = "ERROR";
     return false;
 }
