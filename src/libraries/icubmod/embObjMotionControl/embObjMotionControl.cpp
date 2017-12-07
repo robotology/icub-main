@@ -378,8 +378,8 @@ bool embObjMotionControl::alloc(int nj)
     _jointEncoderType = allocAndCheck<uint8_t>(nj);
     _rotorEncoderType = allocAndCheck<uint8_t>(nj);
     _jointEncoderRes = allocAndCheck<int>(nj);
-    _jointNumOfNoiseBits = allocAndCheck<uint8_t>(nj);
-    _rotorNumOfNoiseBits = allocAndCheck<uint8_t>(nj);
+    _jointEncoderTolerance = allocAndCheck<double>(nj);
+    _rotorEncoderTolerance = allocAndCheck<double>(nj);
     _rotorEncoderRes = allocAndCheck<int>(nj);
     _gearbox = allocAndCheck<double>(nj);
     _gearboxE2J = allocAndCheck<double>(nj);
@@ -426,10 +426,10 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_rotorEncoderRes);
     checkAndDestroy(_jointEncoderType);
     checkAndDestroy(_rotorEncoderType);
-    checkAndDestroy(_jointNumOfNoiseBits);
-    checkAndDestroy(_rotorNumOfNoiseBits);
     checkAndDestroy(_gearbox);
     checkAndDestroy(_gearboxE2J);
+    checkAndDestroy(_jointEncoderTolerance);
+    checkAndDestroy(_rotorEncoderTolerance);
     checkAndDestroy(_impedance_limits);
     checkAndDestroy(checking_motiondone);
     checkAndDestroy(_ref_command_positions);
@@ -517,8 +517,8 @@ embObjMotionControl::embObjMotionControl() :
     _jointEncoderType = NULL;
     _rotorEncoderRes  = NULL;
     _rotorEncoderType = NULL;
-    _jointNumOfNoiseBits = NULL;
-    _rotorNumOfNoiseBits = NULL;
+    _jointEncoderTolerance = NULL;
+    _rotorEncoderTolerance = NULL;
     _ref_accs         = NULL;
     _ref_command_speeds   = NULL;
     _ref_command_positions= NULL;
@@ -1344,27 +1344,27 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
         {
             _jointEncoderRes[i]  = 1;
             _jointEncoderType[i] = eomc_enc_none;
-            _jointNumOfNoiseBits[i] = 0;
+            _jointEncoderTolerance[i]  = 0;
         }
         else
         {
             _jointEncoderRes[i]  = jointEncoder_ptr->resolution;
             _jointEncoderType[i] = jointEncoder_ptr->desc.type;
-            _jointNumOfNoiseBits[i] = jointEncoder_ptr->numofnoisebits;
+            _jointEncoderTolerance[i]   = jointEncoder_ptr->tolerance;
         }
 
 
         if(NULL == motorEncoder_ptr)
         {
-            _rotorEncoderRes[i]  = 1;
+            _rotorEncoderRes[i] = 1;
             _rotorEncoderRes[i] = eomc_enc_none;
-            _rotorNumOfNoiseBits[i] = 0;
+            _rotorEncoderTolerance[i] = 0;
         }
         else
         {
             _rotorEncoderRes[i]  = motorEncoder_ptr->resolution;
             _rotorEncoderType[i] = motorEncoder_ptr->desc.type;
-            _rotorNumOfNoiseBits[i] = motorEncoder_ptr->numofnoisebits;
+            _rotorEncoderTolerance[i]   = motorEncoder_ptr->tolerance;
         }
 
 
@@ -1373,7 +1373,7 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
      ////////Debug prints
     // for(int i=0; i<_njoints; i++)
     // {
-    //     yError() << "J_RES=" << _jointEncoderRes[i] << "Jtype=" << _jointEncoderType[i]  <<"JErrbits=" << _jointNumOfNoiseBits[i]<< "  M_RES=" <<  _rotorEncoderRes[i] << "Mtype=" << _rotorEncoderType[i] <<"MErrbits=" << _rotorNumOfNoiseBits[i];
+    //     yError() << "J_RES=" << _jointEncoderRes[i] << "Jtype=" << _jointEncoderType[i]  <<"JTol=" << _jointEncoderTolerance[i]<< "  M_RES=" <<  _rotorEncoderRes[i] << "Mtype=" << _rotorEncoderType[i] <<"Mtol=" << _rotorEncoderTolerance[i];
      //}
 
      //////end
@@ -1555,7 +1555,7 @@ bool embObjMotionControl::init()
 
         jconfig.jntEncoderResolution = _jointEncoderRes[logico];
         jconfig.jntEncoderType = _jointEncoderType[logico];
-        jconfig.jntEncNumOfNoiseBits = _jointNumOfNoiseBits[logico];
+        jconfig.jntEncTolerance = _jointEncoderTolerance[logico];
 
         //printf("SEND CONFIG: j%d, bemf=%f, ktau=%f \n", logico, _tpids[logico].kbemf, _tpids[logico].ktau);
         jconfig.motor_params.bemf_value = (float) _measureConverter->convertTrqMotorBemfParam_MetricToMachineUnits(fisico,  _tpids[logico].kbemf);
@@ -1614,7 +1614,7 @@ bool embObjMotionControl::init()
         motor_cfg.gearboxratio = _gearbox[logico];
         motor_cfg.gearboxratio2 = _gearboxE2J[logico];
         motor_cfg.rotorEncoderResolution = _rotorEncoderRes[logico];
-        motor_cfg.rotEncNumOfNoiseBits = _rotorNumOfNoiseBits[logico];
+        motor_cfg.rotEncTolerance = _rotorEncoderTolerance[logico];
         motor_cfg.hasHallSensor = _twofocinfo[logico].hasHallSensor;
         motor_cfg.hasRotorEncoder = _twofocinfo[logico].hasRotorEncoder;
         motor_cfg.hasTempSensor = _twofocinfo[logico].hasTempSensor;
@@ -4002,6 +4002,18 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getLimitsRaw(i, &tmp1, &tmp2);  r.addDouble(tmp1); }
         return true;
     }
+    else if (key == "jointEncTolerance")
+    {
+        double tmp1;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getJointEncTolerance(i, &tmp1);  r.addDouble(tmp1); }
+        return true;
+    }
+    else if (key == "motorEncTolerance")
+    {
+        double tmp1;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getMotorEncTolerance(i, &tmp1);  r.addDouble(tmp1); }
+        return true;
+    }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
 }
@@ -4092,6 +4104,8 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     listOfKeys->addString("rotorMin");
     listOfKeys->addString("jointMax");
     listOfKeys->addString("jointMin");
+    listOfKeys->addString("jointEncTolerance");
+    listOfKeys->addString("motorEncTolerance");
     return true;
 }
 
@@ -5557,5 +5571,54 @@ bool embObjMotionControl::helper_getCurPidRaw(int j, Pid *pid)
     return true;
 }
 
+
+bool embObjMotionControl::getJointConfiguration(int joint, eOmc_joint_config_t *jntCfg_ptr)
+{
+    uint32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joint, eoprot_tag_mc_joint_config);
+    uint16_t size;
+    if(!askRemoteValue(protoid, (void*)jntCfg_ptr, size))
+    {
+        yError ("Failure of askRemoteValue() inside embObjMotionControl::getJointConfiguration(axis=%d) for BOARD %s IP %s", joint, res->getName(), res->getIPv4string());
+        return false;
+    }
+    return true;
+}
+
+bool embObjMotionControl::getMotorConfiguration(int axis, eOmc_motor_config_t *motCfg_ptr)
+{
+    uint32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, axis, eoprot_tag_mc_motor_config);
+    uint16_t size;
+    if(!askRemoteValue(protoid, (void*)motCfg_ptr, size))
+    {
+        yError ("Failure of askRemoteValue() inside embObjMotionControl::getMotorConfiguration(axis=%d) for BOARD %s IP %s", axis, res->getName(), res->getIPv4string());
+        return false;
+    }
+    return true;
+}
+
+bool embObjMotionControl::getJointEncTolerance(int joint, double *jEncTolerance_ptr)
+{
+    eOmc_joint_config_t jntCfg;
+
+    if(!getJointConfiguration(joint, &jntCfg))
+    {
+        yError ("Failure embObjMotionControl::getJointEncTolerance(axis=%d) for BOARD %s IP %s", joint, res->getName(), res->getIPv4string());
+        return false;
+    }
+    *jEncTolerance_ptr = jntCfg.jntEncTolerance;
+    return true;
+}
+
+bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_ptr)
+{
+    eOmc_motor_config_t motorCfg;
+    if(!getMotorConfiguration(axis, &motorCfg))
+    {
+        yError ("Failure embObjMotionControl::getMotorEncTolerance(axis=%d) for BOARD %s IP %s", axis, res->getName(), res->getIPv4string());
+        return false;
+    }
+    *mEncTolerance_ptr = motorCfg.rotEncTolerance;
+    return true;
+}
 
 // eof
