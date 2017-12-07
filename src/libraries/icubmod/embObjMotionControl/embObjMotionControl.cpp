@@ -1448,7 +1448,7 @@ bool embObjMotionControl::fromConfig(yarp::os::Searchable &config)
 
     if (currentMCversion != PARSER_MOTION_CONTROL_VERSION)
     {
-        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Wrong MotioncontrolVersion parameter. RobotInterface cannot start. Please contact icub-support@iit.it";
+        yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "Wrong MotioncontrolVersion parameter. RobotInterface cannot start. Please try to update configuration files of robot and if the problem persists contact icub-support@iit.it";
         return false;
     }
 
