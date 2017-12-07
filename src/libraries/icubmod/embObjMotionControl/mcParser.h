@@ -341,7 +341,7 @@ private:
     bool convert(yarp::os::Bottle &bottle, std::vector<double> &matrix, bool &formaterror, int targetsize);
 
     //general utils functions
-    bool extractGroup(yarp::os::Bottle &input, yarp::os::Bottle &out, const std::string &key1, const std::string &txt, int size);
+    bool extractGroup(yarp::os::Bottle &input, yarp::os::Bottle &out, const std::string &key1, const std::string &txt, int size, bool mandatory=true);
     template <class T>
     bool checkAndSetVectorSize(std::vector<T> &vec, int size, const std::string &funcName)
     {
@@ -382,6 +382,7 @@ public:
     bool parseGearboxValues(yarp::os::Searchable &config, double gearbox_M2J[], double gearbox_E2J[]);
     bool parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[]);
     bool parseImpedanceGroup(yarp::os::Searchable &config,std::vector<eomc_impedanceParameters> &impedance);
+    bool parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found);
 };
 
 #endif // include guard

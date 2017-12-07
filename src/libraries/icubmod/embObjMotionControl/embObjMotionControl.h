@@ -274,6 +274,7 @@ private:
     uint8_t *_rotorEncoderType;                  /** rotor encoder type*/
     double *_gearbox_M2J;                           /** the gearbox ratio */
     double *_gearbox_E2J;                        /** the gearbox ratio */
+    double *_deadzone;
 
     eomc_twofocSpecificInfo *_twofocinfo;
 
@@ -404,6 +405,8 @@ private:
     bool getGerabox_E2J(int joint, double *gearbox_E2J_ptr);
     bool getJointEncTolerance(int joint, double *jEncTolerance_ptr);
     bool getMotorEncTolerance(int axis, double *mEncTolerance_ptr);
+    void updateDeadZoneWithDefaultValues(void);
+    bool getJointDeadZoneRaw(int j, double &jntDeadZone);
 
     // saturation check and rounding for 16 bit unsigned integer
     int U_16(double x) const

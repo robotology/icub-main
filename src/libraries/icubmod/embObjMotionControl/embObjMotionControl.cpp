@@ -26,6 +26,7 @@
 #include "EoProtocolMN.h"
 #include "EoProtocolMC.h"
 #include "EoProtocolAS.h"
+#include "motionControlDefaultValues.h"
 
 #include <yarp/os/NetType.h>
 
@@ -383,6 +384,7 @@ bool embObjMotionControl::alloc(int nj)
     _rotorEncoderRes = allocAndCheck<int>(nj);
     _gearbox_M2J = allocAndCheck<double>(nj);
     _gearbox_E2J = allocAndCheck<double>(nj);
+    _deadzone = allocAndCheck<double>(nj);
     _twofocinfo=allocAndCheck<eomc_twofocSpecificInfo>(nj);
     _ppids= new eomcParser_pidInfo[nj];
     _vpids= new eomcParser_pidInfo[nj];
@@ -430,6 +432,7 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_rotorEncoderTolerance);
     checkAndDestroy(_gearbox_M2J);
     checkAndDestroy(_gearbox_E2J);
+    checkAndDestroy(_deadzone);
     checkAndDestroy(_impedance_limits);
     checkAndDestroy(checking_motiondone);
     checkAndDestroy(_ref_command_positions);
@@ -500,6 +503,7 @@ embObjMotionControl::embObjMotionControl() :
 {
     _gearbox_M2J  = 0;
     _gearbox_E2J  = 0;
+    _deadzone     = 0;
     opened        = 0;
     _ppids         = NULL;
     _vpids        = NULL;
@@ -1092,6 +1096,13 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
             }
             delete[] useMotorSpeedFbk;
         }
+        bool deadzoneIsAvailable;
+        if(!_mcparser->parseDeadzoneValue(config, _deadzone, &deadzoneIsAvailable))
+            return false;
+        if(!deadzoneIsAvailable) // if parametr is not writte in configuration files then use default values
+        {
+            updateDeadZoneWithDefaultValues();
+        }
     }
 
 
@@ -1312,7 +1323,31 @@ bool embObjMotionControl::isVelocityControlEnabled(int joint)
 }
 
 
-
+void embObjMotionControl::updateDeadZoneWithDefaultValues(void)
+{
+    for(int i=0; i<_njoints; i++)
+    {
+        switch(_jointEncoderType[i])
+        {
+            case eomc_enc_aea:
+                _deadzone[i] = eomc_defaultValue::DeadZone::jointWithAEA;// 0.0494;
+                break;
+            case eomc_enc_amo:
+                _deadzone[i] = eomc_defaultValue::DeadZone::jointWithAMO;//  0.0055;
+                break;
+            case eomc_enc_roie:
+            case eomc_enc_absanalog:
+            case eomc_enc_mais:
+            case eomc_enc_qenc:
+            case eomc_enc_hallmotor:
+            case eomc_enc_spichainof2:
+            case eomc_enc_spichainof3:
+            default:
+                _deadzone[i] = 0.0;
+            
+        }
+    }
+}
 
 // use this one for ... service configuration
 bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config)
@@ -1564,6 +1599,9 @@ bool embObjMotionControl::init()
         jconfig.motor_params.ktau_scale = 0;
 
         jconfig.gearbox_E2J = _gearbox_E2J[logico];
+        
+        jconfig.deadzone = _measureConverter->posA2E(_deadzone[logico], fisico);
+
         jconfig.tcfiltertype=_tpids[logico].filterType;
 
 
@@ -3807,6 +3845,39 @@ bool embObjMotionControl::getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& ty
     }
 }
 
+bool embObjMotionControl::getJointDeadZoneRaw(int j, double &jntDeadZone)
+{
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
+    
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
+    tt->setPending(1);
+    
+    if (!res->addGetMessage(protoid))
+        return false;
+    
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        yError() << "embObjMotionControl::getJointEncoderResolutionRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
+        
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+    
+    // Get the value
+    uint16_t size;
+    eOmc_joint_config_t    joint_cfg;
+    res->readBufferedValue(protoid, (uint8_t *)&joint_cfg, &size);
+    
+    // refresh cached value when reading data from the EMS
+    jntDeadZone = _measureConverter->posE2A((double)joint_cfg.deadzone, _axisMap[j]);
+    
+    return true;
+}
+
 // IRemoteVariables
 bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::os::Bottle& val)
 {
@@ -4019,6 +4090,12 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getMotorEncTolerance(i, &tmp1);  r.addDouble(tmp1); }
         return true;
     }
+    else if (key == "jointDeadZone")
+    {
+        double tmp1;
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getJointDeadZoneRaw(i, tmp1);  r.addDouble(tmp1); }
+        return true;
+    }
     yWarning("getRemoteVariable(): Unknown variable %s", key.c_str());
     return false;
 }
@@ -4112,6 +4189,7 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     listOfKeys->addString("jointMin");
     listOfKeys->addString("jointEncTolerance");
     listOfKeys->addString("motorEncTolerance");
+    listOfKeys->addString("jointDeadZone");
     return true;
 }
 
