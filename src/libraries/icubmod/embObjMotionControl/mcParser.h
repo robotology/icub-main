@@ -199,6 +199,7 @@ typedef struct
     int  rotorIndexOffset;
     int  motorPoles;
     bool hasSpeedEncoder ; //facoltativo
+    bool verbose;
 } eomc_twofocSpecificInfo;
 
 

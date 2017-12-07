@@ -910,6 +910,34 @@ bool mcParser::parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificI
             twofocinfo[i - 1].hasRotorEncoderIndex = xtmp.get(i).asInt();
     }
 
+    if (!extractGroup(focGroup, xtmp, "Verbose", "Verbose 0/1 ", _njoints))
+    {
+        //return false;
+        yWarning() << "In " << _boardname << " there isn't 2FOC.Verbose filed. For default it is enabled" ;
+        for (i = 0; i < _njoints; i++)
+            twofocinfo[i].verbose = 1;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            twofocinfo[i - 1].verbose = xtmp.get(i).asInt();
+    }
+
+    int AutoCalibration[_njoints];
+    if (!extractGroup(focGroup, xtmp, "AutoCalibration", "AutoCalibration 0/1 ", _njoints))
+    {
+        //return false;
+        yWarning() << "In " << _boardname << " there isn't 2FOC.AutoCalibration filed. For default it is disabled" ;
+        for (i = 0; i < _njoints; i++)
+            AutoCalibration[i] = 0;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            AutoCalibration[i - 1] = xtmp.get(i).asInt();
+    }
+
+
     if (!extractGroup(focGroup, xtmp, "RotorIndexOffset", "RotorIndexOffset", _njoints))
     {
         return false;
@@ -917,7 +945,22 @@ bool mcParser::parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificI
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].rotorIndexOffset = xtmp.get(i).asInt();
+        {
+            if(AutoCalibration[i-1] == 0)
+            {
+                twofocinfo[i - 1].rotorIndexOffset = xtmp.get(i).asInt();
+                if (twofocinfo[i - 1].rotorIndexOffset <0 ||  twofocinfo[i - 1].rotorIndexOffset >359)
+                {
+                    yError() << "In " << _boardname << "joint " << i-1 << ": rotorIndexOffset should be in [0,359] range." ;
+                    return false;
+                }
+            }
+            else
+            {
+                yWarning() <<  "In " << _boardname << "joint " << i-1 << ": motor autocalibration is enabled!!! ATTENTION!!!" ;
+                twofocinfo[i - 1].rotorIndexOffset = -1;
+            }
+        }
     }
 
 
