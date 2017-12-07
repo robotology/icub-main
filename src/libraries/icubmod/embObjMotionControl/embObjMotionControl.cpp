@@ -381,8 +381,8 @@ bool embObjMotionControl::alloc(int nj)
     _jointEncoderTolerance = allocAndCheck<double>(nj);
     _rotorEncoderTolerance = allocAndCheck<double>(nj);
     _rotorEncoderRes = allocAndCheck<int>(nj);
-    _gearbox = allocAndCheck<double>(nj);
-    _gearboxE2J = allocAndCheck<double>(nj);
+    _gearbox_M2J = allocAndCheck<double>(nj);
+    _gearbox_E2J = allocAndCheck<double>(nj);
     _twofocinfo=allocAndCheck<eomc_twofocSpecificInfo>(nj);
     _ppids= new eomcParser_pidInfo[nj];
     _vpids= new eomcParser_pidInfo[nj];
@@ -426,10 +426,10 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_rotorEncoderRes);
     checkAndDestroy(_jointEncoderType);
     checkAndDestroy(_rotorEncoderType);
-    checkAndDestroy(_gearbox);
-    checkAndDestroy(_gearboxE2J);
     checkAndDestroy(_jointEncoderTolerance);
     checkAndDestroy(_rotorEncoderTolerance);
+    checkAndDestroy(_gearbox_M2J);
+    checkAndDestroy(_gearbox_E2J);
     checkAndDestroy(_impedance_limits);
     checkAndDestroy(checking_motiondone);
     checkAndDestroy(_ref_command_positions);
@@ -498,8 +498,8 @@ embObjMotionControl::embObjMotionControl() :
     _impedance_params(0),
     _axesInfo(0)
 {
-    _gearbox       = 0;
-    _gearboxE2J      = 0;
+    _gearbox_M2J  = 0;
+    _gearbox_E2J  = 0;
     opened        = 0;
     _ppids         = NULL;
     _vpids        = NULL;
@@ -1070,7 +1070,7 @@ bool embObjMotionControl::fromConfig_Step2(yarp::os::Searchable &config)
 
         //VALE: i have to parse GeneralMecGroup after parsing jointsetcfg, because inside generalmec group there is useMotorSpeedFbk that needs jointset info.
 
-        if(!_mcparser->parseGearboxValues(config, _gearbox, _gearboxE2J))
+        if(!_mcparser->parseGearboxValues(config, _gearbox_M2J, _gearbox_E2J))
             return false;
 
         // useMotorSpeedFbk
@@ -1563,6 +1563,7 @@ bool embObjMotionControl::init()
         jconfig.motor_params.ktau_value = (float) _measureConverter->convertTrqMotorKtaufParam_MetricToMachineUnits(fisico, _tpids[logico].ktau);
         jconfig.motor_params.ktau_scale = 0;
 
+        jconfig.gearbox_E2J = _gearbox_E2J[logico];
         jconfig.tcfiltertype=_tpids[logico].filterType;
 
 
@@ -1611,8 +1612,7 @@ bool embObjMotionControl::init()
         motor_cfg.currentLimits.nominalCurrent = _currentLimits[logico].nominalCurrent;
         motor_cfg.currentLimits.overloadCurrent = _currentLimits[logico].overloadCurrent;
         motor_cfg.currentLimits.peakCurrent = _currentLimits[logico].peakCurrent;
-        motor_cfg.gearboxratio = _gearbox[logico];
-        motor_cfg.gearboxratio2 = _gearboxE2J[logico];
+        motor_cfg.gearbox_M2J = _gearbox_M2J[logico];
         motor_cfg.rotorEncoderResolution = _rotorEncoderRes[logico];
         motor_cfg.rotEncTolerance = _rotorEncoderTolerance[logico];
         motor_cfg.hasHallSensor = _twofocinfo[logico].hasHallSensor;
@@ -3372,7 +3372,7 @@ bool embObjMotionControl::getGearboxRatioRaw(int j, double *gearbox)
     res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
 
     // refresh cached value when reading data from the EMS
-    *gearbox = (double)motor_cfg.gearboxratio;
+    *gearbox = (double)motor_cfg.gearbox_M2J;
 
     return true;
 }
@@ -3850,9 +3850,14 @@ bool embObjMotionControl::getRemoteVariableRaw(yarp::os::ConstString key, yarp::
         Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp = 0; getJointEncoderResolutionRaw(i, tmp);  r.addDouble(tmp); }
         return true;
     }
-    else if (key == "gearbox")
+    else if (key == "gearbox_M2J")
     {
         Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp=0; getGearboxRatioRaw(i, &tmp);  r.addDouble(tmp); }
+        return true;
+    }
+    else if (key == "gearbox_E2J")
+    {
+        Bottle& r = val.addList(); for (int i = 0; i<_njoints; i++) { double tmp=0; getGerabox_E2J(i, &tmp);  r.addDouble(tmp); }
         return true;
     }
     else if (key == "hasHallSensor")
@@ -4032,16 +4037,16 @@ bool embObjMotionControl::setRemoteVariableRaw(yarp::os::ConstString key, const 
         yWarning("setRemoteVariable(): Impossible to set kinematic_mj parameter at runtime.");
         return false;
     }
-    else if (key == "rotor")
-    {
-        for (int i = 0; i < _njoints; i++) _rotorEncoderRes[i] = val.get(i).asInt();
-        return true;
-    }
-    else if (key == "gearbox")
-    {
-        for (int i = 0; i < _njoints; i++) _gearbox[i] = val.get(i).asDouble();
-        return true;
-    }
+//     else if (key == "rotor")
+//     {
+//         for (int i = 0; i < _njoints; i++) _rotorEncoderRes[i] = val.get(i).asInt();//this operation has none effect on motor controlelr, so i remove it
+//         return true;
+//     }
+//     else if (key == "gearbox_M2J")
+//     {
+//         for (int i = 0; i < _njoints; i++) _gearbox_M2J[i] = val.get(i).asDouble();//this operation has none effect on motor controlelr, so i remove it
+//         return true;
+//     }
     else if (key == "PWMLimit")
     {
         for (int i = 0; i < _njoints; i++) setPWMLimitRaw(i, val.get(i).asDouble());
@@ -4078,7 +4083,8 @@ bool embObjMotionControl::getRemoteVariablesListRaw(yarp::os::Bottle* listOfKeys
     listOfKeys->clear();
     listOfKeys->addString("kinematic_mj");
     listOfKeys->addString("encoders");
-    listOfKeys->addString("gearbox");
+    listOfKeys->addString("gearbox_M2J");
+    listOfKeys->addString("gearbox_E2J");
     listOfKeys->addString("hasHallSensor");
     listOfKeys->addString("hasTempSensor");
     listOfKeys->addString("hasRotorEncoder");
@@ -5593,6 +5599,20 @@ bool embObjMotionControl::getMotorConfiguration(int axis, eOmc_motor_config_t *m
         yError ("Failure of askRemoteValue() inside embObjMotionControl::getMotorConfiguration(axis=%d) for BOARD %s IP %s", axis, res->getName(), res->getIPv4string());
         return false;
     }
+    return true;
+}
+
+
+bool embObjMotionControl::getGerabox_E2J(int joint, double *gearbox_E2J_ptr)
+{
+    eOmc_joint_config_t jntCfg;
+
+    if(!getJointConfiguration(joint, &jntCfg))
+    {
+        yError ("Failure embObjMotionControl::getGerabox_E2J(axis=%d) for BOARD %s IP %s", joint, res->getName(), res->getIPv4string());
+        return false;
+    }
+    *gearbox_E2J_ptr = jntCfg.gearbox_E2J;
     return true;
 }
 

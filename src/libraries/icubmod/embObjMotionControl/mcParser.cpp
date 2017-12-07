@@ -1588,25 +1588,20 @@ bool mcParser::parseGearboxValues(yarp::os::Searchable &config, double gearbox_M
     //Gearbox_E2J
     if (!extractGroup(general, xtmp, "Gearbox_E2J", "The gearbox reduction ratio between encoder and joint", _njoints))
     {
-        yWarning()  << "embObjMC BOARD " << _boardname << "Missing Gearbox_E2J param. I use default value (1) " ;
-        for(int i=0; i<_njoints; i++)
-        {
-            gearbox_E2J[i] = 1;
-        }
+        return false;
     }
-    else
+
+    int test = xtmp.size();
+    for (i = 1; i < xtmp.size(); i++)
     {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
+        gearbox_E2J[i-1] = xtmp.get(i).asDouble();
+        if (gearbox_E2J[i-1]==0)
         {
-            gearbox_E2J[i-1] = xtmp.get(i).asDouble();
-            if (gearbox_E2J[i-1]==0)
-            {
-                yError()  << "embObjMC BOARD " << _boardname << "Using a gearbox value = 0 may cause problems! Check your configuration files";
-                return false;
-            }
+            yError()  << "embObjMC BOARD " << _boardname << "Using a gearbox value = 0 may cause problems! Check your configuration files";
+            return false;
         }
     }
+
 
     return true;
 }

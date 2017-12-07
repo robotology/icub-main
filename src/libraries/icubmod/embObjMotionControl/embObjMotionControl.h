@@ -272,8 +272,8 @@ private:
     int    *_rotorEncoderRes;                   /** rotor encoder resolution */
     double *_rotorEncoderTolerance;;              /** Num of error bits passable for joint encoder */
     uint8_t *_rotorEncoderType;                  /** rotor encoder type*/
-    double *_gearbox;                           /** the gearbox ratio */
-    double *_gearboxE2J;                        /** the gearbox ratio */
+    double *_gearbox_M2J;                           /** the gearbox ratio */
+    double *_gearbox_E2J;                        /** the gearbox ratio */
 
     eomc_twofocSpecificInfo *_twofocinfo;
 
@@ -401,6 +401,7 @@ private:
 
     bool getJointConfiguration(int joint, eOmc_joint_config_t *jntCfg_ptr);
     bool getMotorConfiguration(int axis, eOmc_motor_config_t *motCfg_ptr);
+    bool getGerabox_E2J(int joint, double *gearbox_E2J_ptr);
     bool getJointEncTolerance(int joint, double *jEncTolerance_ptr);
     bool getMotorEncTolerance(int axis, double *mEncTolerance_ptr);
 
