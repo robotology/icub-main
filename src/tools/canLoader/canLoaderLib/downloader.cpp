@@ -1051,22 +1051,32 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
 #if defined(TESTMODE_STRAIN2)
 
+#define NUMofGAINS      8
+#define NUMofREGS       6
+#define NUMofCHANNELS   6
+
         const int index48 = 0;
         const int index36 = 1;
         const int index24 = 2;
         const int index20 = 3;
         const int index16 = 4;
+        const int index10 = 5;
+        const int index08 = 6;
+        const int index06 = 7;
 
 
-        const uint8_t cfg1map[5][6] =
+        const uint8_t cfg1map[NUMofGAINS][NUMofREGS] =
         {
             {0x00, 0x40, 0x46, 0x25, 0x00, 0x80},   // gain = 48
             {0x00, 0x10, 0x46, 0x25, 0x00, 0x80},   // gain = 36
             {0x00, 0x40, 0x42, 0x25, 0x00, 0x80},   // gain = 24 [or 0x26 instead of 0x42]
             {0x00, 0x20, 0x42, 0x25, 0x00, 0x80},   // gain = 20 [or 0x26 instead of 0x42]
-            {0x00, 0x00, 0x42, 0x25, 0x00, 0x80}    // gain = 16 [or 0x26 instead of 0x42]
+            {0x00, 0x00, 0x42, 0x25, 0x00, 0x80},   // gain = 16 [or 0x26 instead of 0x42]
+            {0x00, 0xC0, 0x02, 0x25, 0x00, 0x80},   // gain = 10 [or 0x10 instead of 0x02]
+            {0x00, 0x80, 0x02, 0x25, 0x00, 0x80},   // gain = 08 [or 0x10 instead of 0x02]
+            {0x00, 0x40, 0x02, 0x25, 0x00, 0x80}    // gain = 06 [or 0x10 instead of 0x02]
         };
-        const float gainvalues[5] = {48, 36, 24, 20, 16};
+        const float gainvalues[NUMofGAINS] = {48, 36, 24, 20, 16, 10, 8, 6};
 
 #if defined(TESTMODE_STRAIN2_SAMEGAIN)
 
@@ -1095,11 +1105,11 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 #else
 
         // gain = 24 is on channels 0, 1, 3; gain = 48 is on channels 2, 4, 5
-        int channel2index[6] = {index24, index24, index48, index24, index48, index48};
+        int channel2index[NUMofCHANNELS] = {index24, index24, index48, index24, index48, index48};
 
         yDebug() << "imposing gains which are different of each channel";
 
-        for(int channel=0; channel<6; channel++)
+        for(int channel=0; channel<NUMofCHANNELS; channel++)
         {
             int index = channel2index[channel];
             yDebug() << "on channel" << channel << "we impose gain =" << gainvalues[index];
@@ -1139,7 +1149,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
         yDebug() << "i print the amplifier reg config";
 
-        for(int nr=0; nr<6; nr++)
+        for(int nr=0; nr<NUMofCHANNELS; nr++)
         {
             int rm = m_idriver->receive_message(rxBuffer, 1.0);
             for(int i=0; i<rm; i++)
@@ -1168,7 +1178,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
 
         yDebug() << "i print the amplifier gains";
 
-        for(int nr=0; nr<6; nr++)
+        for(int nr=0; nr<NUMofCHANNELS; nr++)
         {
             int rm = m_idriver->receive_message(rxBuffer, 1.0);
             for(int i=0; i<rm; i++)
@@ -1231,7 +1241,7 @@ int cDownloader::strain_calibrate_offset  (int bus, int target_id, icubCanProto_
                 {
                     yDebug() << "calibration to value" << middle_val << "has sadly failed because algorithm found required values ot of range of registers CFG0.OS or ZDAC.";
                     yDebug("noisychannelmask = 0x%x, algorithmOKmask = 0x%x, finalmeasureOKmask = 0x%x, mae = %d", noisychannelmask, algorithmOKmask, finalmeasureOKmask, mae);
-                    for(int i=0; i<6; i++)
+                    for(int i=0; i<NUMofCHANNELS; i++)
                     {
                         if((algorithmOKmask & (i<<i)) == 0)
                         {
