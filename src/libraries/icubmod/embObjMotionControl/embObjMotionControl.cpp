@@ -1993,32 +1993,11 @@ bool embObjMotionControl::getPidErrorsRaw(const PidControlTypeEnum& pidtype, dou
 bool embObjMotionControl::helper_getPosPidRaw(int j, Pid *pid)
 {
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidposition);
-    // Sign up for waiting the reply
 
-    eoThreadEntry *tt = appendWaitRequest(j, protid);
-    tt->setPending(1);
-
-    if(!res->addGetMessage(protid) )
-    {
-        yError() << "Can't send get pid request for BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j;
-        return false;
-    }
-
-    // wait here
-    if(-1 == tt->synch() )
-    {
-        int threadId;
-        yError () << "embObjMotionControl::getPidRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j;
-
-        if(requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
-    eOmc_PID_t eoPID;
-    res->readBufferedValue(protid, (uint8_t *)&eoPID, &size);
+    eOmc_PID_t eoPID = {0};
+    if(!askRemoteValue(protid, (uint8_t *)&eoPID, size))
+        return false;
 
     copyPid_eo2iCub(&eoPID, pid);
     
@@ -3246,30 +3225,14 @@ bool embObjMotionControl::getCurrentsRaw(double *vals)
 bool embObjMotionControl::setMaxCurrentRaw(int j, double val)
 {
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_currentlimits);
-    eoThreadEntry *tt = appendWaitRequest(j, protid);
-    tt->setPending(1);
-
-    if(!res->addGetMessage(protid) )
-    {
-        yError() << "embObjMotionControl::setMaxCurrentRaw() can't send get current limit for board" << res->getName() << "IP" << res->getIPv4string() << " joint " << j;
-        return false;
-    }
-
-    // wait here
-    if(-1 == tt->synch() )
-    {
-        int threadId;
-        yError () << "embObjMotionControl::setMaxCurrentRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j;
-
-        if(requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    //get current limit params
     uint16_t size;
     eOmc_current_limits_params_t currentlimits = {0};
-    res->readBufferedValue(protid, (uint8_t *)&currentlimits, &size);
+    
+    if(!askRemoteValue(protid, (uint8_t *)&currentlimits, size))
+    {
+        yError() << "embObjMotionControl::setMaxCurrentRaw() could not read max current for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
+        return false;
+    }
 
     //set current overload
     currentlimits.overloadCurrent = (eOmeas_current_t) S_16(val);
@@ -3352,63 +3315,23 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
 {
     eOmeas_position_limits_t limits;
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_userlimits);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if(!res->addGetMessage(protoid) )
-    {
-        yError() << "Can't send get min position limit request for board" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-        return false;
-    }
-
-    // wait here
-    if(-1 == tt->synch() )
-    {
-        int threadId;
-        yError () << "embObjMotionControl::getLimitsRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j;
-
-        if(requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-    // Get the value
     uint16_t size;
-
-    bool ret = res->readBufferedValue(protoid, (uint8_t *)&limits, &size);
+    
+    if(! askRemoteValue(protoid, (void*)&limits, size))
+        return false;
 
     *min = (double)limits.min + SAFETY_THRESHOLD;
     *max = (double)limits.max - SAFETY_THRESHOLD;
-    return ret;
+    return true;
 }
 
 bool embObjMotionControl::getGearboxRatioRaw(int j, double *gearbox)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getGearbox() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+        return false;
 
     // refresh cached value when reading data from the EMS
     *gearbox = (double)motor_cfg.gearbox_M2J;
@@ -3419,33 +3342,10 @@ bool embObjMotionControl::getGearboxRatioRaw(int j, double *gearbox)
 bool embObjMotionControl::getRotorLimitsRaw(int j, double *rotorMin, double *rotorMax)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getGearbox() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
-
-    // refresh cached value when reading data from the EMS
-//     *rotorMax = (double)(_measureConverter->convertPos_E2A(j, motor_cfg.limitsofrotor.max));
-//     *rotorMin = (double)(_measureConverter->convertPos_E2A(j, motor_cfg.limitsofrotor.min));
+    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+        return false;
     *rotorMax = (double)( motor_cfg.limitsofrotor.max);
     *rotorMin = (double)( motor_cfg.limitsofrotor.min);
     return true;
@@ -3454,29 +3354,10 @@ bool embObjMotionControl::getRotorLimitsRaw(int j, double *rotorMin, double *rot
 bool embObjMotionControl::getTorqueControlFilterType(int j, int& type)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getRotorIndexOffsetRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_joint_config_t    joint_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&joint_cfg, &size);
+    if(! askRemoteValue(protoid, (void*)&joint_cfg, size))
+        return false;
 
     // refresh cached value when reading data from the EMS
     type = (int)joint_cfg.tcfiltertype;
@@ -3486,29 +3367,10 @@ bool embObjMotionControl::getTorqueControlFilterType(int j, int& type)
 bool embObjMotionControl::getRotorEncoderResolutionRaw(int j, double &rotres)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getRotorEncoderResolutionRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+        return false;
 
     // refresh cached value when reading data from the EMS
     rotres = (double)motor_cfg.rotorEncoderResolution;
@@ -3519,29 +3381,10 @@ bool embObjMotionControl::getRotorEncoderResolutionRaw(int j, double &rotres)
 bool embObjMotionControl::getJointEncoderResolutionRaw(int j, double &jntres)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getJointEncoderResolutionRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_joint_config_t    joint_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&joint_cfg, &size);
+    if(! askRemoteValue(protoid, (void*)&joint_cfg, size))
+        return false;
 
     // refresh cached value when reading data from the EMS
     jntres = (double)joint_cfg.jntEncoderResolution;
@@ -3552,29 +3395,10 @@ bool embObjMotionControl::getJointEncoderResolutionRaw(int j, double &jntres)
 bool embObjMotionControl::getJointEncoderTypeRaw(int j, int &type)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getJointEncoderResolutionRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_joint_config_t    joint_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&joint_cfg, &size);
+    if(! askRemoteValue(protoid, (void*)&joint_cfg, size))
+        return false;
 
     // refresh cached value when reading data from the EMS
     type = (int)joint_cfg.jntEncoderType;
@@ -3585,29 +3409,10 @@ bool embObjMotionControl::getJointEncoderTypeRaw(int j, int &type)
 bool embObjMotionControl::getRotorEncoderTypeRaw(int j, int &type)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getJointEncoderResolutionRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+        return false;
 
     // refresh cached value when reading data from the EMS
     type = (int)motor_cfg.rotorEncoderType;
@@ -3624,29 +3429,10 @@ bool embObjMotionControl::getKinematicMJRaw(int j, double &rotres)
 bool embObjMotionControl::getHasTempSensorsRaw(int j, int& ret)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getHasTempSensorsRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+        return false;
 
     // refresh cached value when reading data from the EMS
     ret = (int)motor_cfg.hasTempSensor;
@@ -3657,30 +3443,11 @@ bool embObjMotionControl::getHasTempSensorsRaw(int j, int& ret)
 bool embObjMotionControl::getHasHallSensorRaw(int j, int& ret)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getHasHallSensorsRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
-
+    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+        return false;
+    
     // refresh cached value when reading data from the EMS
     ret = (int)motor_cfg.hasHallSensor;
 
@@ -3690,29 +3457,10 @@ bool embObjMotionControl::getHasHallSensorRaw(int j, int& ret)
 bool embObjMotionControl::getHasRotorEncoderRaw(int j, int& ret)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getHasRotorEncoderRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+        return false;
 
     // refresh cached value when reading data from the EMS
     ret = (int)motor_cfg.hasRotorEncoder;
@@ -3723,29 +3471,10 @@ bool embObjMotionControl::getHasRotorEncoderRaw(int j, int& ret)
 bool embObjMotionControl::getHasRotorEncoderIndexRaw(int j, int& ret)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getHasRotorEncoderIndexRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+        return false;
 
     // refresh cached value when reading data from the EMS
     ret = (int)motor_cfg.hasRotorEncoderIndex;
@@ -3757,29 +3486,11 @@ bool embObjMotionControl::getMotorPolesRaw(int j, int& poles)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
 
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getMotorPolesRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
-
+    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+        return false;
+    
     // refresh cached value when reading data from the EMS
     poles = (int)motor_cfg.motorPoles;
 
@@ -3789,29 +3500,10 @@ bool embObjMotionControl::getMotorPolesRaw(int j, int& poles)
 bool embObjMotionControl::getRotorIndexOffsetRaw(int j, double& rotorOffset)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getRotorIndexOffsetRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+        return false;
 
     // refresh cached value when reading data from the EMS
     rotorOffset = (double)motor_cfg.rotorIndexOffset;
@@ -3849,30 +3541,11 @@ bool embObjMotionControl::getJointTypeRaw(int axis, yarp::dev::JointTypeEnum& ty
 bool embObjMotionControl::getJointDeadZoneRaw(int j, double &jntDeadZone)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
-    
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-    
-    if (!res->addGetMessage(protoid))
-        return false;
-    
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getJointEncoderResolutionRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-        
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-    
-    // Get the value
     uint16_t size;
     eOmc_joint_config_t    joint_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&joint_cfg, &size);
-    
+    if(! askRemoteValue(protoid, (void*)&joint_cfg, size))
+        return false;
+
     // refresh cached value when reading data from the EMS
     jntDeadZone = _measureConverter->posE2A((double)joint_cfg.deadzone, _axisMap[j]);
     
@@ -4202,38 +3875,16 @@ bool embObjMotionControl::setVelLimitsRaw(int axis, double min, double max)
 
 bool embObjMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
 {
-    eOmc_joint_config_t jconfig;
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(axis, protoid);
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-    {
-        yError() << "Can't send getVelLimits request for BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << axis;
-        return false;
-    }
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getVelLimitsRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << axis;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-    // Get the value
     uint16_t size;
+    eOmc_joint_config_t    joint_cfg;
+    if(! askRemoteValue(protoid, (void*)&joint_cfg, size))
+        return false;
 
-    bool ret = res->readBufferedValue(protoid, (uint8_t *)&jconfig, &size);
-
-    *max = jconfig.maxvelocityofjoint;
+    *max = joint_cfg.maxvelocityofjoint;
     *min = 0;
 
-    return ret;
+    return true;
 }
 
 
@@ -4391,36 +4042,18 @@ bool embObjMotionControl::helper_setTrqPidRaw(int j, const Pid &pid)
 bool embObjMotionControl::helper_getTrqPidRaw(int j, Pid *pid)
 {
     //_mutex.wait();
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque);
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque);
 
-    // Sign up for waiting the reply FIRST OF ALL!!
-    eoThreadEntry *tt = appendWaitRequest(j, protid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if(!res->addGetMessage(protid) )
-        return false;
-
-    // wait here
-    if(-1 == tt->synch() )
-    {
-        int threadId;
-        yError () << "embObjMotionControl::getTorquePidRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-
-        if(requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_PID_t eoPID;
-    bool ret = res->readBufferedValue(protid, (uint8_t *)&eoPID, &size);
+    if(! askRemoteValue(protoid, (void*)&eoPID, size))
+        return false;
+    
     copyPid_eo2iCub(&eoPID, pid);
     //printf("DEBUG getTorquePidRaw: %f %f %f %f %f\n",pid->kp , pid->ki, pid->kd , pid->stiction_up_val , pid->stiction_down_val );
 
     _measureConverter->convertTrqPid_S2N(j, *pid);
-    return ret;
+    return true;
 }
 
 bool embObjMotionControl::getImpedanceRaw(int j, double *stiffness, double *damping)
@@ -4441,28 +4074,9 @@ bool embObjMotionControl::getWholeImpedanceRaw(int j, eOmc_impedance_t &imped)
     // first set is done in the open function because the whole joint config is sent to the EMSs
 
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_impedance);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if(!res->addGetMessage(protoid) )
-        return false;
-
-    // wait here
-    if(-1 == tt->synch() )
-    {
-        int threadId;
-        yError () << "embObjMotionControl::getWholeImpedanceRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if(requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
-    res->readBufferedValue(protoid, (uint8_t *)&imped, &size);
+    if(! askRemoteValue(protoid, (void*)&imped, size))
+        return false;
 
     // refresh cached value when reading data from the EMS
     _cacheImpedance->damping   = (double) imped.damping;
@@ -4550,33 +4164,12 @@ bool embObjMotionControl::setBemfParamRaw(int j, double bemf)
 
 bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *params)
 {
-    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_motor_params);
 
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, id32);
-    tt->setPending(1);
-
-    if(!res->addGetMessage(id32) )
-    {
-        yError() << "embObjMotionControl::getMotorTorqueParamsRaw() could not send get message for BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-        return false;
-    }
-
-    // wait here
-    if(-1 == tt->synch() )
-    {
-        int threadId;
-        yError () << "embObjMotionControl::getMotorTorqueParamsRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if(requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_motor_params_t eo_params = {0};
-    res->readBufferedValue(id32, (uint8_t *)&eo_params, &size);
+    if(! askRemoteValue(protoid, (void*)&eo_params, size))
+        return false;
 
     params->bemf       = _measureConverter->convertTrqMotorBemfParam_MachineUnitsToMetric(j, eo_params.bemf_value);
     params->bemf_scale = eo_params.bemf_scale;
@@ -4660,33 +4253,11 @@ bool embObjMotionControl::helper_setVelPidRaw(int j, const Pid &pid)
 
 bool embObjMotionControl::helper_getVelPidRaw(int j, Pid *pid)
 {
-    eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidvelocity);
-    // Sign up for waiting the reply
-
-    eoThreadEntry *tt = appendWaitRequest(j, protid);
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protid))
-    {
-        yError() << "Can't send getVelPidRaw() request for BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j;
-        return false;
-    }
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getVelPidRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
+    eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidvelocity);
     uint16_t size;
     eOmc_PID_t eoPID;
-    res->readBufferedValue(protid, (uint8_t *)&eoPID, &size);
+    if(! askRemoteValue(protoid, (void*)&eoPID, size))
+        return false;
 
     copyPid_eo2iCub(&eoPID, pid);
 
@@ -5625,29 +5196,10 @@ bool embObjMotionControl::helper_setCurPidRaw(int j, const Pid &pid)
 bool embObjMotionControl::helper_getCurPidRaw(int j, Pid *pid)
 {
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
-
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(j, protoid);  // gestione errore e return di threadId, così non devo prenderlo nuovamente sotto in caso di timeout
-    tt->setPending(1);
-
-    if (!res->addGetMessage(protoid))
-        return false;
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        yError() << "embObjMotionControl::getRotorIndexOffsetRaw() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
-    // Get the value
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    res->readBufferedValue(protoid, (uint8_t *)&motor_cfg, &size);
+    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+        return false;
 
     // refresh cached value when reading data from the EMS
     eOmc_PID_t tmp = (eOmc_PID_t)motor_cfg.pidcurrent;

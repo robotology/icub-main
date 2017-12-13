@@ -470,6 +470,7 @@ private:
     bool fromConfig_Step2(yarp::os::Searchable &config);
     bool fromConfig_readServiceCfg(yarp::os::Searchable &config);
     bool initializeInterfaces(measureConvFactors &f);
+    eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
 
 public:
 
@@ -493,7 +494,7 @@ public:
     virtual eoThreadFifo * getFifo(uint32_t variableProgNum);
     virtual eoThreadEntry *getThreadTable(int  threadId);
 
-    eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
+
 
     bool alloc(int njoints);
     bool init(void);
