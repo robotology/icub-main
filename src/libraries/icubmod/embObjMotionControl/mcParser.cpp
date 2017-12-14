@@ -387,13 +387,17 @@ bool mcParser::parsePidsGroup(Bottle& pidsGroup, Pid myPid[], string prefix)
     return true;
 }
 
-bool mcParser::extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
+bool mcParser::extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size, bool mandatory)
 {
     size++;
     Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
     if (tmp.isNull())
     {
-        yError () << key1.c_str() << " parameter not found for board " << _boardname << "in bottle" << input.toString().c_str();
+        std::string message = key1 + " parameter not found for board " + _boardname + "in bottle" + input.toString();
+        if(mandatory)
+            yError () << message.c_str();
+        else
+            yWarning() << message.c_str();
         return false;
     }
 
@@ -906,6 +910,34 @@ bool mcParser::parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificI
             twofocinfo[i - 1].hasRotorEncoderIndex = xtmp.get(i).asInt();
     }
 
+    if (!extractGroup(focGroup, xtmp, "Verbose", "Verbose 0/1 ", _njoints))
+    {
+        //return false;
+        yWarning() << "In " << _boardname << " there isn't 2FOC.Verbose filed. For default it is enabled" ;
+        for (i = 0; i < _njoints; i++)
+            twofocinfo[i].verbose = 1;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            twofocinfo[i - 1].verbose = xtmp.get(i).asInt();
+    }
+
+    int AutoCalibration[_njoints];
+    if (!extractGroup(focGroup, xtmp, "AutoCalibration", "AutoCalibration 0/1 ", _njoints))
+    {
+        //return false;
+        yWarning() << "In " << _boardname << " there isn't 2FOC.AutoCalibration filed. For default it is disabled" ;
+        for (i = 0; i < _njoints; i++)
+            AutoCalibration[i] = 0;
+    }
+    else
+    {
+        for (i = 1; i < xtmp.size(); i++)
+            AutoCalibration[i - 1] = xtmp.get(i).asInt();
+    }
+
+
     if (!extractGroup(focGroup, xtmp, "RotorIndexOffset", "RotorIndexOffset", _njoints))
     {
         return false;
@@ -913,7 +945,22 @@ bool mcParser::parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificI
     else
     {
         for (i = 1; i < xtmp.size(); i++)
-            twofocinfo[i - 1].rotorIndexOffset = xtmp.get(i).asInt();
+        {
+            if(AutoCalibration[i-1] == 0)
+            {
+                twofocinfo[i - 1].rotorIndexOffset = xtmp.get(i).asInt();
+                if (twofocinfo[i - 1].rotorIndexOffset <0 ||  twofocinfo[i - 1].rotorIndexOffset >359)
+                {
+                    yError() << "In " << _boardname << "joint " << i-1 << ": rotorIndexOffset should be in [0,359] range." ;
+                    return false;
+                }
+            }
+            else
+            {
+                yWarning() <<  "In " << _boardname << "joint " << i-1 << ": motor autocalibration is enabled!!! ATTENTION!!!" ;
+                twofocinfo[i - 1].rotorIndexOffset = -1;
+            }
+        }
     }
 
 
@@ -1588,29 +1635,59 @@ bool mcParser::parseGearboxValues(yarp::os::Searchable &config, double gearbox_M
     //Gearbox_E2J
     if (!extractGroup(general, xtmp, "Gearbox_E2J", "The gearbox reduction ratio between encoder and joint", _njoints))
     {
-        yWarning()  << "embObjMC BOARD " << _boardname << "Missing Gearbox_E2J param. I use default value (1) " ;
-        for(int i=0; i<_njoints; i++)
-        {
-            gearbox_E2J[i] = 1;
-        }
+        return false;
     }
-    else
+
+    int test = xtmp.size();
+    for (i = 1; i < xtmp.size(); i++)
     {
-        int test = xtmp.size();
-        for (i = 1; i < xtmp.size(); i++)
+        gearbox_E2J[i-1] = xtmp.get(i).asDouble();
+        if (gearbox_E2J[i-1]==0)
         {
-            gearbox_E2J[i-1] = xtmp.get(i).asDouble();
-            if (gearbox_E2J[i-1]==0)
-            {
-                yError()  << "embObjMC BOARD " << _boardname << "Using a gearbox value = 0 may cause problems! Check your configuration files";
-                return false;
-            }
+            yError()  << "embObjMC BOARD " << _boardname << "Using a gearbox value = 0 may cause problems! Check your configuration files";
+            return false;
         }
     }
+
 
     return true;
 }
 
+bool mcParser::parseDeadzoneValue(yarp::os::Searchable &config, double deadzone[], bool *found)
+{
+//     Bottle general = config.findGroup("GENERAL");
+//     if (general.isNull())
+//     {
+//         yError() << "embObjMC BOARD " << _boardname << "Missing General group" ;
+//         return false;
+//     }
+
+    Bottle general = config.findGroup("OTHER_CONTROL_PARAMETERS");
+    if (general.isNull())
+    {
+        yWarning() << "embObjMC BOARD " << _boardname << "Missing OTHER_CONTROL_PARAMETERS.DeadZone parameter. I'll use default value. (see documentation for more datails)";
+        *found = false;
+        return true;
+    }    
+    Bottle xtmp;
+    int i;
+    
+    // DeadZone
+    if (!extractGroup(general, xtmp, "deadZone", "The deadzone of joint", _njoints, false))
+    {
+        yWarning() << "embObjMC BOARD " << _boardname << "Missing OTHER_CONTROL_PARAMETERS group.DeadZone parameter. I'll use default value. (see documentation for more datails)";
+        *found = false;
+        return true;
+    }
+ 
+    *found = true;
+    for (i = 1; i < xtmp.size(); i++)
+    {
+        deadzone[i-1] = xtmp.get(i).asDouble();
+    }
+    
+    return true;
+}
 
 
 bool mcParser::parseMechanicalsFlags(yarp::os::Searchable &config, int useMotorSpeedFbk[])

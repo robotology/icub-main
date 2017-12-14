@@ -267,13 +267,14 @@ private:
 
      double  *_encodersStamp;                    /** keep information about acquisition time for encoders read */
     uint8_t *_jointEncoderType;                 /** joint encoder type*/
-    uint8_t *_jointNumOfNoiseBits;              /** Num of error bits passable for joint encoder */
+    double *_jointEncoderTolerance;              /** Num of error bits passable for joint encoder */
     int    *_jointEncoderRes;                   /** joint encoder resolution */
     int    *_rotorEncoderRes;                   /** rotor encoder resolution */
-    uint8_t *_rotorNumOfNoiseBits;              /** Num of error bits passable for joint encoder */
+    double *_rotorEncoderTolerance;;              /** Num of error bits passable for joint encoder */
     uint8_t *_rotorEncoderType;                  /** rotor encoder type*/
-    double *_gearbox;                           /** the gearbox ratio */
-    double *_gearboxE2J;                        /** the gearbox ratio */
+    double *_gearbox_M2J;                           /** the gearbox ratio */
+    double *_gearbox_E2J;                        /** the gearbox ratio */
+    double *_deadzone;
 
     eomc_twofocSpecificInfo *_twofocinfo;
 
@@ -398,6 +399,14 @@ private:
 
     bool iNeedCouplingsInfo(void); //the device needs coupling info if it manages joints controlled by 2foc and mc4plus.
     bool iMange2focBoards(void);
+
+    bool getJointConfiguration(int joint, eOmc_joint_config_t *jntCfg_ptr);
+    bool getMotorConfiguration(int axis, eOmc_motor_config_t *motCfg_ptr);
+    bool getGerabox_E2J(int joint, double *gearbox_E2J_ptr);
+    bool getJointEncTolerance(int joint, double *jEncTolerance_ptr);
+    bool getMotorEncTolerance(int axis, double *mEncTolerance_ptr);
+    void updateDeadZoneWithDefaultValues(void);
+    bool getJointDeadZoneRaw(int j, double &jntDeadZone);
 
     // saturation check and rounding for 16 bit unsigned integer
     int U_16(double x) const
