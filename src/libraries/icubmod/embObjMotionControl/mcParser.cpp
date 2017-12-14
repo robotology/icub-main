@@ -910,7 +910,7 @@ bool mcParser::parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificI
             twofocinfo[i - 1].hasRotorEncoderIndex = xtmp.get(i).asInt();
     }
 
-    if (!extractGroup(focGroup, xtmp, "Verbose", "Verbose 0/1 ", _njoints))
+    if (!extractGroup(focGroup, xtmp, "Verbose", "Verbose 0/1 ", _njoints, false))
     {
         //return false;
         yWarning() << "In " << _boardname << " there isn't 2FOC.Verbose filed. For default it is enabled" ;
@@ -924,7 +924,7 @@ bool mcParser::parse2FocGroup(yarp::os::Searchable &config, eomc_twofocSpecificI
     }
 
     int AutoCalibration[_njoints];
-    if (!extractGroup(focGroup, xtmp, "AutoCalibration", "AutoCalibration 0/1 ", _njoints))
+    if (!extractGroup(focGroup, xtmp, "AutoCalibration", "AutoCalibration 0/1 ", _njoints, false))
     {
         //return false;
         yWarning() << "In " << _boardname << " there isn't 2FOC.AutoCalibration filed. For default it is disabled" ;
