@@ -83,18 +83,22 @@ extern void eoprot_fun_ONSAY_as(const EOnv* nv, const eOropdescriptor_t* rd)
     //    a say<id32, data, signature = 0xaa000000>. thus, if the received signature is 0xaa000000, then
     //    we must unblock using feat_signal_network_reply().
 
-    if(0xaa000000 == rd->signature)
-    {   // case a:
-        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
-        {
-            char str[256] = {0};
-            char nvinfo[128];
-            eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
-            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_as() received an unexpected message w/ 0xaa000000 signature for %s", nvinfo);
-            feat_PrintWarning(str);
-            return;
-        }
-    }
+//    if(0xaa000000 == rd->signature)
+//    {   // case a:
+//        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+//        {
+//            char str[256] = {0};
+//            char nvinfo[128];
+//            eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
+//            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_as() received an unexpected message w/ 0xaa000000 signature for %s", nvinfo);
+//            feat_PrintWarning(str);
+//            return;
+//        }
+//    }
+//    else
+//    {
+        feat_signal_network_onsay(eo_nv_GetIP(nv), rd->id32, rd->signature);
+//    }
 }
 
 

@@ -183,7 +183,7 @@ private:
     bool reportedMissing;
 };
 
-
+#if 0
 // -- class EthNetworkQuery
 // -- it is used to wait for a reply from a board.
 
@@ -208,7 +208,7 @@ private:
     yarp::os::Semaphore* iswaiting; // the semaphore used to guarantee that the wait of the class is unblocked only once and when it is required
 
 };
-
+#endif
 
 
 class yarp::dev::AbstractEthResource
@@ -289,76 +289,76 @@ public:
 // -- it is used to manage udp communication towards a given board ... there is no need to derive it from DeviceDriver, is there?
 
 class yarp::dev::EthResource:  public AbstractEthResource, public DeviceDriver,
-public HostTransceiver
+                               public HostTransceiver
 //class yarp::dev::EthResource:    public HostTransceiver
 {
 public:
-    
+
     // the size of the boardname must belong to EthResources because it is this class which extracts it from the xml file.
     // all other places where this name is stored have copied it from here using EthResource::getName(void).
     // an example is TheEthManager::ethBoards which makes it available with TheEthManager::getName(eOipv4addr_t ipv4)
-    
+
     enum { boardNameSize = 32 };
-    
+
     // this is the maximum size of rx and tx packets managed by the ethresource. however, the HostTranceveiver can reduce these values.
     enum { maxRXpacketsize = 1496, maxTXpacketsize = 1496 };
-    
+
 public:
-    
+
     EthResource();
     ~EthResource();
-    
-    
+
+
     bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal);
     bool            close();
     bool            isEPsupported(eOprot_endpoint_t ep);
-    
+
     ACE_INET_Addr   getRemoteAddress(void);
-    
+
     eOipv4addr_t    getIPv4remoteAddress(void);
-    
+
     const char *    getName(void);
     const char *    getIPv4string(void);
-    
+
     eObrd_ethtype_t getBoardType(void);
     const char *    getBoardTypeString(void);
-    
+
     void getBoardInfo(eOdate_t &date, eOversion_t &version);
-    
+
     // the function returns true if the packet can be transmitted. 
     // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
     bool            getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops);
-    
+
     bool            canProcessRXpacket(uint64_t *data, uint16_t size);
-    
+
     void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true);
-    
-    
-    bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout = 0.100, int retries = 10);
-    
+
+
+//    bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout = 0.100, int retries = 10);
+
     bool getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size, double timeout = 0.100, int retries = 10);
-    
-    
+
+
     // very important note: it works only if there is an handler for the id32 and it manages the unlock of the mutex
     bool setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries = 10, double waitbeforeverification = 0.001, double verificationtimeout = 0.050, int verificationretries = 2);
-    
-    
+
+
     bool verifyEPprotocol(eOprot_endpoint_t ep);
-    
-    bool aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
-    
+
+//    bool aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
+
     bool printRXstatistics(void);
     bool CANPrintHandler(eOmn_info_basic_t* infobasic);
-    
-    
+
+
     bool serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout = 0.500);
-    
+
     bool serviceSetRegulars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout = 0.500);
-    
+
     bool serviceStart(eOmn_serv_category_t category, double timeout = 0.500);
-    
+
     bool serviceStop(eOmn_serv_category_t category, double timeout = 0.500);
-    
+
     bool Tick();
     bool Check();
     bool readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size);
@@ -370,7 +370,7 @@ public:
     bool readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size);
     EOnv* getNVhandler(eOprotID32_t id32, EOnv* nv);
     bool isFake();
-    
+
     
     // -- not used at the moment
     void checkIsAlive(double curr_time);
@@ -378,9 +378,9 @@ public:
     // int             getNumberOfAttachedInterfaces(void);
     // returns the capacity of the receiving buffer.
     // int getRXpacketCapacity();
-    
+
 private:
-    
+
     eOipv4addr_t      ipv4addr;
     char              ipv4addrstring[20];
     char              boardName[32];
@@ -388,15 +388,15 @@ private:
     eObrd_ethtype_t   ethboardtype;
     ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
-    bool              isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
+    bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
     InfoOfRecvPkts    *infoPkts;
-    
+
     yarp::os::Semaphore*  objLock;
-    
-    EthNetworkQuery*    ethQuery;
-    
-    EthNetworkQuery*    ethQueryServices;
-    
+
+//    EthNetworkQuery*    ethQuery;
+//
+//    EthNetworkQuery*    ethQueryServices;
+
     
     
     bool                verifiedEPprotocol[eoprot_endpoints_numberof];
@@ -405,24 +405,24 @@ private:
     eOdate_t            boardDate;
     eOversion_t         boardVersion;
     eObrd_ethtype_t     detectedBoardType;
-    
+
     bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
     bool                txrateISset;
     bool                cleanedBoardBehaviour;    // the board is in config mode and does not have any regulars
     eOmn_comm_status_t  boardCommStatus;
     uint16_t            usedNumberOfRegularROPs;
-    
+
     can_string_eth*     c_string_handler[16];
-    
+
     TheEthManager       *ethManager;
-    
+
     EthMonitorPresence monitorpresence;
-    
+
     bool regularsAreSet;
-    
+
 private:
-    
-    
+
+
     bool verifyBoard();
     bool setTimingOfRunningCycle();
     bool verifyBoardPresence();
@@ -431,12 +431,12 @@ private:
     bool askBoardVersion(void);
     // we keep isRunning() and we add a field in the reply of serviceStart()/Stop() which tells if the board is in run mode or not.
     bool isRunning(void);
-    
+
     // lock of the object: on / off
     bool lock(bool on);
-    
+
     bool serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times);
-    
+
     bool verbosewhenok;
 };
 

@@ -116,20 +116,25 @@ extern void eoprot_fun_ONSAY_mn(const EOnv* nv, const eOropdescriptor_t* rd)
     //    a say<id32, data, signature = 0xaa000000>. thus, if the received signature is 0xaa000000, then
     //    we must unblock using feat_signal_network_reply().
 
-    if(0xaa000000 == rd->signature)
-    {   // case a:
-        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
-        {
-            char str[256] = {0};
-            char nvinfo[128];
-            char ipinfo[20];
-            eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
-            eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
-            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_mn() received an unexpected message w/ 0xaa000000 signature for IP %s and NV %s", ipinfo, nvinfo);
-            feat_PrintWarning(str);
-            return;
-       }
-    }
+//    if(0xaa000000 == rd->signature)
+//    {   // case a:
+//        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+//        {
+//            char str[256] = {0};
+//            char nvinfo[128];
+//            char ipinfo[20];
+//            eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
+//            eo_common_ipv4addr_to_string(eo_nv_GetIP(nv), ipinfo, sizeof(ipinfo));
+//            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_mn() received an unexpected message w/ 0xaa000000 signature for IP %s and NV %s", ipinfo, nvinfo);
+//            feat_PrintWarning(str);
+//            return;
+//       }
+//    }
+//    else
+//    {
+        feat_signal_network_onsay(eo_nv_GetIP(nv), rd->id32, rd->signature);
+//    }
+
 }
 
 
@@ -156,7 +161,7 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof(const EOnv* nv, co
 
     if(eo_ropcode_sig == rd->ropcode)
     {   // in here we have a sig and we cannot have the 0xaa000000 signature
-        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+        if(eobool_false == feat_signal_network_onsig(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             feat_PrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replynumof() has received an unexpected message");
             return;
@@ -174,7 +179,7 @@ extern void eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray(const EOnv* nv, co
 
     if(eo_ropcode_sig == rd->ropcode)
     {   // in here we have a sig and we cannot have the 0xaa000000 signature
-        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+        if(eobool_false == feat_signal_network_onsig(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             feat_PrintError("eoprot_fun_UPDT_mn_comm_cmmnds_command_replyarray() has received an unexpected message");
             return;
@@ -187,7 +192,7 @@ extern void eoprot_fun_UPDT_mn_service_status_commandresult(const EOnv* nv, cons
 {
     if(eo_ropcode_sig == rd->ropcode)
     {   // in here we have a sig
-        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+        if(eobool_false == feat_signal_network_onsig(eo_nv_GetIP(nv), rd->id32, rd->signature))
         {
             feat_PrintError("eoprot_fun_UPDT_mn_service_status_commandresult() has received an unexpected message");
             return;

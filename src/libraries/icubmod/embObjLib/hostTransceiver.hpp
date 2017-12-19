@@ -74,6 +74,8 @@ public:
     bool addSetMessageWithSignature(eOprotID32_t id32, uint8_t* data, uint32_t sig);
     bool addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data);
 
+    bool isID32supported(eOprotID32_t id32);
+
     // methods which put a ask<> ROP inside the UDP packet which will be transmitted by the EthSender
     bool appendGetMessage(eOprotID32_t id32);
     bool addGetMessageWithSignature(eOprotID32_t id32, uint32_t signature);

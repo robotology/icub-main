@@ -85,22 +85,26 @@ extern void eoprot_fun_ONSAY_mc(const EOnv* nv, const eOropdescriptor_t* rd)
     //    normal say<id32, data> with nos signature. in this case we unlock with wake().
 
 
-    if(0xaa000000 == rd->signature)
-    {   // case a:
-        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
-        {
-            char str[256] = {0};
-            char nvinfo[128];
-            eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
-            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_mc() received an unexpected message w/ 0xaa000000 signature for %s", nvinfo);
-            feat_PrintWarning(str);
-            return;
-        }
-    }
-    else
-    {   //case b:
-        wake(nv);
-    }
+//    if(0xaa000000 == rd->signature)
+//    {   // case a:
+//        if(eobool_false == feat_signal_network_reply(eo_nv_GetIP(nv), rd->id32, rd->signature))
+//        {
+//            char str[256] = {0};
+//            char nvinfo[128];
+//            eoprot_ID2information(rd->id32, nvinfo, sizeof(nvinfo));
+//            snprintf(str, sizeof(str), "eoprot_fun_ONSAY_mc() received an unexpected message w/ 0xaa000000 signature for %s", nvinfo);
+//            feat_PrintWarning(str);
+//            return;
+//        }
+//    }
+//    else
+//    {
+        feat_signal_network_onsay(eo_nv_GetIP(nv), rd->id32, rd->signature);
+//    }
+//    else
+//    {   //case b:
+//        wake(nv);
+//    }
 }
 
 

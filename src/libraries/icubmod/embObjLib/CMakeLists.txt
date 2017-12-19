@@ -18,7 +18,7 @@ endif(ETHRES_DEBUG_DONTREADBACK)
 
 add_definitions(-D_ICUB_CALLBACK_ -DUSE_EOPROT_XML -DEOPROT_CFG_OVERRIDE_CALLBACKS_IN_RUNTIME)
 
-
+add_definitions(${CXX11_FLAGS})
 
 if(ICUB_COMPILE_EMBOBJ_LIBRARY)
 
@@ -183,6 +183,7 @@ set(EXTRA_SOURCE            ${EXTRA_FOLDER}/hostTransceiver.cpp
                             ${EXTRA_FOLDER}/fakeEthResource.cpp
                             ${EXTRA_FOLDER}/eoRequestsQueue.cpp
                             ${EXTRA_FOLDER}/serviceParser.cpp
+                            ${EXTRA_FOLDER}/theNVmanager.cpp
                             )
 
 set(DEBUG_SOURCE            ${DEBUG_FOLDER}/eODeb_eoProtoParser.c

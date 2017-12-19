@@ -458,6 +458,11 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t id32, uint32_t signature)
     return ret;
 }
 
+bool HostTransceiver::isID32supported(eOprotID32_t id32)
+{
+    return (eobool_false == eoprot_id_isvalid(protboardnumber, id32)) ? false : true;
+}
+
 
 bool HostTransceiver::appendGetMessage(eOprotID32_t id32)
 {
@@ -976,7 +981,7 @@ void HostTransceiver::eoprot_override_as(void)
     // -----------------------------------------------------------------------------------------------------------------------------------
     // -- initialisation of onsay() function common in AS endpoint for every board
 
-    // function eoprot_fun_ONSAY_mc() is called by any say<> ROP which is received related to the AS endpoint
+    // function eoprot_fun_ONSAY_as() is called by any say<> ROP which is received related to the AS endpoint
     // it is used to unlock a waiting mutex
 
     eoprot_config_onsay_endpoint_set(eoprot_endpoint_analogsensors, eoprot_fun_ONSAY_as);

@@ -25,7 +25,8 @@ using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
-
+#include <theNVmanager.h>
+using namespace tbd;
 
 // - class EthMonitorPresence
 
@@ -120,7 +121,7 @@ bool EthMonitorPresence::check()
 }
 
 
-
+#if 0
 // - class EthNetworkQuery
 
 EthNetworkQuery::EthNetworkQuery()
@@ -193,7 +194,7 @@ bool EthNetworkQuery::stop(Semaphore *sem)
     return(true);
 }
 
-
+#endif
 
 // - class EthResource
 
@@ -231,9 +232,9 @@ EthResource::EthResource()
     memset(&boardCommStatus, 0, sizeof(boardCommStatus));
 
 
-    ethQuery = new EthNetworkQuery();
-
-    ethQueryServices = new EthNetworkQuery();
+//    ethQuery = new EthNetworkQuery();
+//
+//    ethQueryServices = new EthNetworkQuery();
 
 
     for(int i = 0; i<16; i++)
@@ -249,6 +250,8 @@ EthResource::EthResource()
         verbosewhenok = false;
     }
 
+    verbosewhenok = true;
+
     regularsAreSet = false;
 }
 
@@ -260,8 +263,8 @@ EthResource::~EthResource()
     delete infoPkts;
     delete objLock;
 
-    delete ethQuery;
-    delete ethQueryServices;
+//    delete ethQuery;
+//    delete ethQueryServices;
 
     // Delete every initialized can_string_eth object
     for(int i=0; i<16; i++)
@@ -624,20 +627,114 @@ bool EthResource::isRunning(void)
 }
 
 
-bool EthResource::aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature)
+//bool EthResource::aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature)
+//{
+//    if(id32 == eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_status_commandresult))
+//    {
+//        return(ethQueryServices->arrived(id32, signature));
+//    }
+//    else
+//    {
+//        return(ethQuery->arrived(id32, signature));
+//    }
+//}
+
+
+#if 1
+bool EthResource::verifyBoardTransceiver()
 {
-    if(id32 == eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_status_commandresult))
+
+    if(verifiedBoardTransceiver)
     {
-        return(ethQueryServices->arrived(id32, signature));
+        return(true);
     }
-    else
+
+    theNVmanager& nvman = theNVmanager::getInstance();
+
+
+    // step 1: we ask the remote board the eoprot_tag_mn_comm_status variable and then we verify vs transceiver properties and .. mn protocol version
+
+//    uint32_t signature = 0xaa000000;
+    const eoprot_version_t * pc104versionMN = eoprot_version_of_endpoint_get(eoprot_endpoint_management);
+    const double timeout = 0.100;   // now the timeout can be reduced because the board is already connected.
+
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status);
+    eOmn_comm_status_t brdstatus = {0};
+    uint16_t size = 0;
+//    // the semaphore used for waiting for replies from the board
+//    yarp::os::Semaphore* sem = ethQuery->start(id2wait, signature);
+
+
+//    // send ask message
+//    if(false == addGetMessageWithSignature(id2send, signature))
+//    {
+//        yError() << "EthResource::verifyBoardTransceiver() cannot transmit a request about the communication status to BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+//        return(false);
+//    }
+
+//    // wait for a say message arriving from the board. the eoprot_fun_UPDT_mn_comm_status() function shall release the waiting semaphore
+//    if(false == ethQuery->wait(sem, timeout))
+//    {
+//        // must release the semaphore
+//        ethQuery->stop(sem);
+//        yError() << "  FATAL: EthResource::verifyBoardTransceiver() had a timeout of" << timeout << "secs when asking the comm status to BOARD" << getName() << "with IP" << getIPv4string() <<  ": cannot proceed any further";
+//        yError() << "         EthResource::verifyBoardTransceiver() asks: can you ping the board? if so, is the MN protocol version of BOARD equal to (" << pc104versionMN->major << pc104versionMN->minor << ")? if not, perform FW update. if so, was the ropframe transmitted in time?";
+//        return(false);
+//    }
+
+//    // must release the semaphore
+//    ethQuery->stop(sem);
+
+//    // get the reply
+//    if(false == readBufferedValue(id2wait, (uint8_t*)&brdstatus, &size))
+//    {
+//        yError() << "EthResource::verifyBoardTransceiver() cannot read the comm status of BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+//        return(false);
+//    }
+
+
+    bool rr = nvman.ask(ipv4addr, id32, &brdstatus, size, timeout);
+
+    if(false == rr)
     {
-        return(ethQuery->arrived(id32, signature));
+        yError() << "EthResource::verifyBoardTransceiver() cannot read brdstatus w/ theNVmanager for BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        return(false);
     }
+
+    // save it in a variable of the class for future use
+    memcpy(&boardCommStatus, &brdstatus, sizeof(boardCommStatus));
+
+
+    eoprot_version_t * brdversionMN = (eoprot_version_t*)&brdstatus.managementprotocolversion;
+
+    if(pc104versionMN->major != brdversionMN->major)
+    {
+        yError() << "EthResource::verifyBoardTransceiver() detected different mn protocol major versions: local =" << pc104versionMN->major << ", remote =" << brdversionMN->major << ": cannot proceed any further";
+        yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
+        return(false);
+    }
+
+
+    if(pc104versionMN->minor != brdversionMN->minor)
+    {
+        yError() << "EthResource::verifyBoardTransceiver() detected different mn protocol minor versions: local =" << pc104versionMN->minor << ", remote =" << brdversionMN->minor << ": cannot proceed any further.";
+        yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
+        return(false);
+    }
+
+
+    if(verbosewhenok)
+    {
+        yDebug() << "EthResource::verifyBoardTransceiver() has validated the transceiver of BOARD" << getName() << "with IP" << getIPv4string();
+    }
+
+    verifiedBoardTransceiver = true;
+
+
+    return(true);
 }
 
-
-
+#else
 bool EthResource::verifyBoardTransceiver()
 {
 
@@ -725,6 +822,7 @@ bool EthResource::verifyBoardTransceiver()
 
     return(true);
 }
+#endif
 
 
 bool EthResource::setTimingOfRunningCycle()
@@ -753,6 +851,7 @@ bool EthResource::setTimingOfRunningCycle()
     config.maxtimeDO = HostTransceiver::maxtimeDO;
     config.maxtimeTX = HostTransceiver::maxtimeTX;
     config.txratedivider = HostTransceiver::TXrateOfRegularROPs;
+
     if(false == setRemoteValueUntilVerified(id32, &config, sizeof(config), 5, 0.010, 0.050, 2))
     {
         yWarning() << "EthResource::setTimingOfRunningCycle() for BOARD" << getName() << "with IP" << getIPv4string() << "could not configure: cycletime =" << config.cycletime << "usec, RX DO TX = (" << config.maxtimeRX << config.maxtimeDO << config.maxtimeTX << ") usec and TX rate =" << config.txratedivider << " every cycle";
@@ -804,7 +903,147 @@ bool EthResource::cleanBoardBehaviour(void)
 
 }
 
+#if 1
+bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
+{
+    if((uint8_t)ep >= eoprot_endpoints_numberof)
+    {
+        yError() << "EthResource::verifyEPprotocol() called with wrong ep = " << ep << ": cannot proceed any further";
+        return(false);
+    }
 
+    if(true == verifiedEPprotocol[ep])
+    {
+        return(true);
+    }
+
+    if(false == verifyBoard())
+    {
+        yError() << "EthResource::verifyEPprotocol() cannot verify BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        return(false);
+    }
+
+    if(false == askBoardVersion())
+    {
+        yError() << "EthResource::verifyEPprotocol() cannot ask the version to BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        return(false);
+    }
+
+#if defined(ETHRES_DEBUG_DONTREADBACK)
+    verifiedEPprotocol[ep] =  true;
+    yWarning() << "EthResource::verifyEPprotocol() is in ETHRES_DEBUG_DONTREADBACK mode";
+    return true;
+#endif
+
+    // 1. send a set<eoprot_tag_mn_comm_cmmnds_command_queryarray> and wait for the arrival of a sig<eoprot_tag_mn_comm_cmmnds_command_replyarray>
+    //    the opc to send is eomn_opc_query_array_EPdes which will trigger a opc in reception eomn_opc_reply_array_EPdes
+    // 2. the resulting array will contains a eoprot_endpoint_descriptor_t item for the specifeid ep with the protocol version of the ems.
+
+
+
+
+    const double timeout = 0.100;
+
+    eOprotID32_t id2send = eo_prot_ID32dummy;
+    eOprotID32_t id2wait = eo_prot_ID32dummy;
+    eOmn_command_t command = {0};
+    uint16_t size = 0;
+
+
+    // step 1: ask all the EP descriptors. from them we can extract protocol version of MN and of the target ep
+    id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_queryarray);
+    memset(&command, 0, sizeof(command));
+    command.cmd.opc                             = eomn_opc_query_array_EPdes;
+    command.cmd.queryarray.opcpar.opc           = eomn_opc_query_array_EPdes;
+    command.cmd.queryarray.opcpar.endpoint      = eoprot_endpoint_all;
+    command.cmd.queryarray.opcpar.setnumber     = 0;
+    command.cmd.queryarray.opcpar.setsize       = 0;
+
+    // the semaphore must be retrieved using the id of the variable which is waited. in this case, it is the array of descriptors
+    id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replyarray);
+
+#warning MAYBE remove size as last argument of nvman.set(): it is useless
+
+    theNVmanager& nvman = theNVmanager::getInstance();
+
+    if(false == nvman.set(ipv4addr, id2send, &command, sizeof(eOmn_command_t)))
+    {
+        yError() << "EthResource::verifyEPprotocol() cannot transmit a request about the endpoint descriptors to BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        return(false);
+    }
+
+    if(false == nvman.wait(theNVmanager::ropCode::sig, ipv4addr, id2wait, timeout))
+    {
+        yError() << "  FATAL: EthResource::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the endpoint descriptors to BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        return(false);
+    }
+
+    // now i get the array of descriptors
+    if(false == nvman.read(ipv4addr, id2wait, &command, size))
+    {
+        yError() << "  FATAL: EthResource::verifyEPprotocol() cannot retrieve the endpoint descriptors of BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        return(false);
+    }
+
+
+
+    // the array is ...
+    eOmn_cmd_replyarray_t* cmdreplyarray = (eOmn_cmd_replyarray_t*)&command.cmd.replyarray;
+    EOarray* array = (EOarray*)cmdreplyarray->array;
+
+
+    uint8_t sizeofarray = eo_array_Size(array);
+
+
+    for(int i=0; i<sizeofarray; i++)
+    {
+        eoprot_endpoint_descriptor_t *epd = (eoprot_endpoint_descriptor_t*)eo_array_At(array, i);
+
+        if(epd->endpoint == eoprot_endpoint_management)
+        {
+            const eoprot_version_t * pc104versionMN = eoprot_version_of_endpoint_get(eoprot_endpoint_management);
+            if(pc104versionMN->major != epd->version.major)
+            {
+                yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.major =" << pc104versionMN->major << "and board.version.major =" << epd->version.major;
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD" << getName() << "with IP" << getIPv4string() << "for eoprot_endpoint_management: cannot proceed any further.";
+                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
+                return(false);
+            }
+            if(pc104versionMN->minor != epd->version.minor)
+            {
+                yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionMN->minor << "and board.version.minor =" << epd->version.minor;
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor BOARD" << getName() << "with IP" << getIPv4string() << "for eoprot_endpoint_management: cannot proceed any further.";
+                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
+                return false;
+            }
+        }
+        if(epd->endpoint == ep)
+        {
+            const eoprot_version_t * pc104versionEP = eoprot_version_of_endpoint_get(ep);
+            if(pc104versionEP->major != epd->version.major)
+            {
+                yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.major =" << pc104versionEP->major << "and board.version.major =" << epd->version.major;
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD" << getName() << "with IP" << getIPv4string() << " for" << eoprot_EP2string(ep) << ": cannot proceed any further.";
+                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update to offer services for" << eoprot_EP2string(ep);
+                return(false);
+            }
+            if(pc104versionEP->minor != epd->version.minor)
+            {
+                yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionEP->minor << "and board.version.minor =" << epd->version.minor;
+                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor in BOARD" << getName() << "with IP" << getIPv4string() << " for" << eoprot_EP2string(ep) << ": annot proceed any further";
+                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update to offer services for" << eoprot_EP2string(ep);
+                return(false);
+            }
+        }
+    }
+
+    verifiedEPprotocol[ep] = true;
+
+    return(true);
+
+}
+
+#else
 bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
 {
     if((uint8_t)ep >= eoprot_endpoints_numberof)
@@ -947,7 +1186,7 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
     return(true);
 
 }
-
+#endif
 
 
 bool EthResource::verifyBoard(void)
@@ -963,7 +1202,89 @@ bool EthResource::verifyBoard(void)
     return(false);
 }
 
+#if 1
+bool EthResource::verifyBoardPresence(void)
+{
+    if(verifiedBoardPresence)
+    {
+        return(true);
+    }
 
+    theNVmanager& nvman = theNVmanager::getInstance();
+
+    yWarning() << "EthResource::verifyBoardPresence() is using new method";
+
+
+    //nvman.ask(ipv4addr, id2send, &brdstatus, size, 5.0);
+
+    // we ask the remote board a variable which is surely supported. best thing to do is asking the mn-protocol-version.
+    // however, at 03 sept 2014 there is not a single variable to contain this, thus ... ask the eoprot_tag_mn_comm_status variable.
+
+    //#warning --> marco.accame: inside EthResource::verifyBoardPresence() in the future you shall ask eoprot_tag_mn_comm_status_mnprotocolversion instead of eoprot_tag_mn_comm_status
+
+    const double timeout = 0.500;   // 500 ms is more than enough if board is present. if link is not on it is a good time to wait
+    const int retries = 20;         // the number of retries depends on the above timeout and on link-up time of the EMS.
+
+    uint32_t signature = 0xaa000000;
+    eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status);
+    eOprotID32_t id2wait = id2send;
+    eOmn_comm_status_t brdstatus = {0};
+    uint16_t size = 0;
+
+
+    bool pinged = false;
+    int i; // kept in here because i want to see it also outside of the loop
+
+    double start_time = yarp::os::Time::now();
+
+    for(i=0; i<retries; i++)
+    {
+        // attempt the request until either a reply arrives or the max retries are reached
+        //theNVmanager& nvman = theNVmanager::getInstance();
+        bool replied = nvman.ask(ipv4addr, id2send, &brdstatus, size, 5.0);
+
+        // wait for a say message arriving from the board. the eoprot_fun_UPDT_mn_xxx() function shall release the waiting semaphore
+        if(false == replied)
+        {
+            //yWarning() << "EthResource::verifyBoardPresence() had a timeout of" << timeout << "secs when asking a variable to BOARD" << getName() << "with IP" << getIPv4string()1;
+            //yError() << "EthResource::verifyBoardPresence() asks: can you ping the board?";
+        }
+        else
+        {
+            // ok: i have a reply: i just done read it ...
+            pinged = true;
+            // stop attempts
+            break;
+        }
+
+        if(!pinged)
+        {
+            yWarning() << "EthResource::verifyBoardPresence() cannot reach BOARD" << getName() << "with IP" << getIPv4string() << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
+        }
+
+    }
+
+
+    double end_time = yarp::os::Time::now();
+    if(pinged)
+    {
+        verifiedBoardPresence = true;
+        if(verbosewhenok)
+        {
+            yDebug() << "EthResource::verifyBoardPresence() found BOARD" << getName() << "with IP" << getIPv4string() << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";
+        }
+    }
+    else
+    {
+        yError() << "EthResource::verifyBoardPresence() DID NOT have replies from BOARD" << getName() << "with IP" << getIPv4string() << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+    }
+
+
+    return(verifiedBoardPresence);
+
+}
+
+#else
 bool EthResource::verifyBoardPresence(void)
 {
 
@@ -1059,6 +1380,8 @@ bool EthResource::verifyBoardPresence(void)
     return(verifiedBoardPresence);
 
 }
+#endif
+
 
 bool EthResource::askBoardVersion(void)
 {
@@ -1074,17 +1397,18 @@ bool EthResource::askBoardVersion(void)
         return(true);
     }
 
+#if 1
+
+    theNVmanager& nvman = theNVmanager::getInstance();
+
 
     const double timeout = 0.500;   // 500 ms is more than enough if board is present. if link is not on it is a good time to wait
     const int retries = 20;         // the number of retries depends on the above timeout and on link-up time of the EMS.
 
-    uint32_t signature = 0xaa000000;
-    eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
-    eOprotID32_t id2wait = id2send;
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_status);
     eOmn_appl_status_t applstatus = {0};
     uint16_t size = 0;
-    // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = ethQuery->start(id2wait, signature);
+
 
     bool pinged = false;
     int i; // kept in here because i want to see it also outside of the loop
@@ -1095,33 +1419,13 @@ bool EthResource::askBoardVersion(void)
     {
         // attempt the request until either a reply arrives or the max retries are reached
 
-        // send ask message
-        if(false == addGetMessageWithSignature(id2send, signature))
+        if(true == nvman.ask(ipv4addr, id32, &applstatus, size, timeout))
         {
-            yWarning() << "EthResource::askBoardVersion() cannot transmit a request about the communication status to BOARD" << getName() << "with IP" << getIPv4string();
+            // ok: i have a reply: i stop attempts
+            pinged = true;
+            break;
         }
 
-        // wait for a say message arriving from the board. the eoprot_fun_UPDT_mn_xxx() function shall release the waiting semaphore
-        if(false == ethQuery->wait(sem, timeout))
-        {
-            //yWarning() << "EthResource::askBoardVersion() had a timeout of" << timeout << "secs when asking a variable to BOARD" << getName() << "with IP" << getIPv4string()1;
-            //yError() << "EthResource::askBoardVersion() asks: can you ping the board?";
-        }
-        else
-        {
-            // get the reply
-            if(false == readBufferedValue(id2wait, (uint8_t*)&applstatus, &size))
-            {
-                yWarning() << "EthResource::askBoardVersion() received a reply from BOARD" << getName() << "with IP" << getIPv4string() << "but cannot read it";
-            }
-            else
-            {
-                // ok: i have a reply: i just done read it ...
-                pinged = true;
-                // stop attempts
-                break;
-            }
-        }
 
         if(!pinged)
         {
@@ -1130,8 +1434,10 @@ bool EthResource::askBoardVersion(void)
 
     }
 
-    // must release the semaphore
-    ethQuery->stop(sem);
+
+#else
+
+#endif
 
     double end_time = yarp::os::Time::now();
     if(pinged)
@@ -1183,211 +1489,15 @@ bool EthResource::askBoardVersion(void)
 
 bool EthResource::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries, double waitbeforeverification, double verificationtimeout, int verificationretries)
 {
-    int attempt = 0;
-    bool done = false;
-
-    int maxattempts = retries + 1;
-
-    for(attempt=0; (attempt<maxattempts) && (false == done); attempt++)
-    {
-
-        if(!addSetMessage(id32, (uint8_t *) value))
-        {
-            yWarning() << "EthResource::setRemoteValueUntilVerified() had an error while calling addSetMessage() in BOARD" << getName() << "with IP" << getIPv4string() << "at attempt #" << attempt+1;
-            continue;
-        }
-
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-        yWarning() << "EthResource::setRemoteValueUntilVerified() is in ETHRES_DEBUG_DONTREADBACK";
-        return true;
-#endif
-
-        // ok, now i wait some time before asking the value back for verification
-        Time::delay(waitbeforeverification);
-
-        if(false == verifyRemoteValue(id32, (uint8_t *) value, size, verificationtimeout, verificationretries))
-        {
-            yWarning() << "EthResource::setRemoteValueUntilVerified() had an error while calling verifyRemoteValue() in BOARD" << getName() << "with IP" << getIPv4string() << "at attempt #" << attempt+1;
-        }
-        else
-        {
-            done = true;
-        }
-
-    }
-
-    char nvinfo[128];
-    eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-
-    if(done)
-    {
-        if(attempt > 1)
-        {
-            yWarning() << "EthResource::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << getName() << "with IP" << getIPv4string() << "at attempt #" << attempt;
-        }
-        else
-        {
-            if(verbosewhenok)
-            {
-                yDebug() << "EthResource::setRemoteValueUntilVerified has set and verified ID" << nvinfo << "in BOARD" << getName() << "with IP" << getIPv4string() << "at attempt #" << attempt;
-            }
-        }
-    }
-    else
-    {
-        yError() << "FATAL: EthResource::setRemoteValueUntilVerified could not set and verify ID" << nvinfo << "in BOARD" << getName() << "with IP" << getIPv4string() << " even after " << attempt << "attempts";
-    }
-
-
-    return(done);
-}
-
-
-
-bool EthResource::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout, int retries)
-{
-
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-        yWarning() << "EthResource::verifyRemoteValue() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not verify";
-        return true;
-#endif
-
-
-    char nvinfo[128];
-    eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-    uint32_t signature = 0xaa000000;
-
-    if((NULL == value) || (0 == size))
-    {
-        yError() << "EthResource::verifyRemoteValue() detected NULL value or zero size for " << nvinfo << "for BOARD" << getName() << "with IP" << getIPv4string();
-        return false;
-    }
-
-    uint8_t *datainside = (uint8_t*)calloc(size, 1);
-    uint16_t sizeinside = 0;
-
-
-
-        eOprotID32_t id2send = id32;
-        eOprotID32_t id2wait = id32;
-//        const double timeout = 0.100;
-//        const int retries = 10;
-        bool replied = false;
-        bool valueisverified = false;
-        int i = 0; // must be in here because it count the number of attempts
-        // the semaphore used for waiting for replies from the board
-        yarp::os::Semaphore* sem = ethQuery->start(id2wait, signature);
-
-
-        double start_time = yarp::os::Time::now();
-
-        for(i=0; i<retries; i++)
-        {
-            // attempt the request until either a reply arrives or the max retries are reached
-
-
-            // send ask message
-            if(false == addGetMessageWithSignature(id2send, signature))
-            {
-                yWarning() << "EthResource::verifyRemoteValue() cannot transmit a request to BOARD" << getName() << "with IP" << getIPv4string();
-            //    free(datainside);
-            //    ethQuery->stop(sem);
-            //    yError() << "EthResource::verifyRemoteValue() cannot transmit a request about" << nvinfo << "to BOARD" << getName() << "with IP" << getIPv4string();
-            //    return false;
-            }
-
-            // wait for a say message arriving from the board. the proper function shall release the waiting semaphore
-            if(false == ethQuery->wait(sem, timeout))
-            {
-            //    free(datainside);
-            //    ethQuery->stop(sem);
-            //    yError() << "  FATAL: EthResource::verifyRemoteValue() had a timeout of" << timeout << "secs when asking value of" << nvinfo << "to BOARD" << getName() << "with IP" << getIPv4string();
-            //    return false;
-            }
-            else
-            {
-                // get the reply
-                if(false == readBufferedValue(id2wait, datainside, &sizeinside))
-                {
-                //    free(datainside);
-                //    ethQuery->stop(sem);
-                //    yError() << "EthResource::verifyRemoteValue() received a reply about" << nvinfo << "from BOARD" << getName() << "with IP" << getIPv4string() << "but cannot read it";
-                //    return false;
-                    yWarning() << "EthResource::verifyRemoteValue() received a reply from BOARD" << getName() << "with IP" << getIPv4string() << "but cannot read it";
-                }
-                else
-                {
-                    // ok: i have a reply: i just done read it ...
-                    replied = true;
-                    // stop attempts
-                    break;
-                }
-
-            }
-
-            if(!replied)
-            {
-                yWarning() << "EthResource::verifyRemoteValue() cannot have a reply from BOARD" << getName() << "with IP" << getIPv4string() << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
-            }
-
-        }
-
-
-        // must release the semaphore
-        ethQuery->stop(sem);
-
-        double end_time = yarp::os::Time::now();
-
-        if(replied)
-        {
-            // ok: i have a reply: compare it with a memcmp
-
-            if(size != sizeinside)
-            {
-                yError() << "  FATAL: EthResource::verifyRemoteValue() has found different sizes for" << nvinfo <<"arg, inside =" << size << sizeinside;
-                valueisverified = false;
-            }
-            else if(0 != memcmp(datainside, value, size))
-            {
-                yError() << "  FATAL: EthResource::verifyRemoteValue() has found different values for" << nvinfo << "from BOARD" << getName() << "with IP" << getIPv4string();
-                valueisverified = false;
-            }
-            else
-            {
-                if(0 == i)
-                {
-                    if(verbosewhenok)
-                    {
-                        yDebug() << "EthResource::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << getName() << "with IP" << getIPv4string() << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
-                    }
-                }
-                else
-                {
-                    yWarning() << "EthResource::verifyRemoteValue() verified value inside" << nvinfo << "from BOARD" << getName() << "with IP" << getIPv4string() << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
-                }
-                valueisverified = true;
-            }
-
-
-        }
-        else
-        {
-            yError() << "  FATAL: EthResource::verifyRemoteValue() DID NOT have replies from BOARD" << getName() << "with IP" << getIPv4string() << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
-            valueisverified = false;
-        }
-
-
-        // must release allocated buffer
-        free(datainside);
-
-        // return result
-        return valueisverified;
+    theNVmanager& nvman = theNVmanager::getInstance();
+    return nvman.setuntilverified(ipv4addr, id32, value, size, retries, waitbeforeverification, verificationtimeout, verificationretries);
 }
 
 
 
 bool EthResource::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size, double timeout, int retries)
 {
+
 
 #if defined(ETHRES_DEBUG_DONTREADBACK)
         yWarning() << "EthResource::getRemoteValue() is in ETHRES_DEBUG_DONTREADBACK mode, thus it does not verify";
@@ -1399,81 +1509,33 @@ bool EthResource::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size,
     //myverbosewhenok = false;
 
 
-    char nvinfo[128];
-    eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-    uint32_t signature = 0xaa000000;
+    theNVmanager& nvman = theNVmanager::getInstance();
 
-//    this check is done inside the methods of hostTransceiver class
-//    eOprotBRD_t brd = HostTransceiver::get_protBRDnumber();
-//    if(eobool_false == eoprot_id_isvalid(brd, id32))
-//    {
-//        yError() << "EthResource::getRemoteValue() detected an invalid" << nvinfo << "for BOARD" << getName() << "with IP" << getIPv4string();
-//        return false;
-//    }
-
-    if((NULL == value))
-    {
-        yError() << "EthResource::getRemoteValue() detected NULL value or zero size for" << nvinfo << "for BOARD" << getName() << "with IP" << getIPv4string();
-        return false;
-    }
-
-
-
-    eOprotID32_t id2send = id32;
-    eOprotID32_t id2wait = id32;
     bool replied = false;
-    int i = 0; // must be in here because it count the number of attempts
-    // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = ethQuery->start(id2wait, signature);
+    int numOfattempts = 0; // must be in here because the number of attempts must be visible after the for() loop
 
 
     double start_time = yarp::os::Time::now();
 
-    for(i=0; i<retries; i++)
+    for(numOfattempts=0; numOfattempts<retries; numOfattempts++)
     {
         // attempt the request until either a reply arrives or the max retries are reached
 
 
-        // send ask message
-        if(false == addGetMessageWithSignature(id2send, signature))
+        if(true == nvman.ask(ipv4addr, id32, value, size, timeout))
         {
-            yWarning() << "EthResource::getRemoteValue() cannot transmit a request to BOARD" << getName() << "with IP" << getIPv4string();
-        }
-
-        // wait for a say message arriving from the board. the proper function shall release the waiting semaphore
-        if(false == ethQuery->wait(sem, timeout))
-        {
-
-        }
-        else
-        {
-            uint16_t ss = 0;
-            // get the reply
-            if(false == readBufferedValue(id2wait, (uint8_t*)value, &ss))
-            {
-                yWarning() << "EthResource::getRemoteValue() received a reply from BOARD" << getName() << "with IP" << getIPv4string() << "but cannot read it";
-            }
-            else
-            {
-                // ok: i have a reply: i just done read it ...
-                size = ss;
-                replied = true;
-                // stop attempts
-                break;
-            }
-
+            replied = true;
+            // stop attempts
+            break;
         }
 
         if(!replied)
         {
-            yWarning() << "EthResource::getRemoteValue() cannot have a reply from BOARD" << getName() << "with IP" << getIPv4string() << "at attempt #" << i+1 << "w/ timeout of" << timeout << "seconds";
+            yWarning() << "EthResource::getRemoteValue() cannot have a reply from BOARD" << getName() << "with IP" << getIPv4string() << "at attempt #" << numOfattempts+1 << "w/ timeout of" << timeout << "seconds";
         }
 
     }
 
-
-    // must release the semaphore
-    ethQuery->stop(sem);
 
     double end_time = yarp::os::Time::now();
 
@@ -1482,22 +1544,26 @@ bool EthResource::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size,
     {
         // ok: i have a reply: compare it with a memcmp
 
-        if(0 == i)
+        if(0 == numOfattempts)
         {
             if(myverbosewhenok)
             {
-                yDebug() << "EthResource::getRemoteValue() obtained value inside" << nvinfo << "from BOARD" << getName() << "with IP" << getIPv4string() << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+                char nvinfo[128];
+                eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+                yDebug() << "EthResource::getRemoteValue() obtained value inside" << nvinfo << "from BOARD" << getName() << "with IP" << getIPv4string() << " at attempt #" << numOfattempts+1 << "after" << end_time-start_time << "seconds";;
             }
         }
         else
         {
-            yWarning() << "EthResource::getRemoteValue() obtained value inside" << nvinfo << "from BOARD" << getName() << "with IP" << getIPv4string() << " at attempt #" << i+1 << "after" << end_time-start_time << "seconds";;
+            char nvinfo[128];
+            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+            yWarning() << "EthResource::getRemoteValue() obtained value inside" << nvinfo << "from BOARD" << getName() << "with IP" << getIPv4string() << " at attempt #" << numOfattempts+1 << "after" << end_time-start_time << "seconds";;
         }
 
     }
     else
     {
-        yError() << "  FATAL: EthResource::getRemoteValue() DID NOT have replies from BOARD" << getName() << "with IP" << getIPv4string() << " even after " << i << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
+        yError() << "  FATAL: EthResource::getRemoteValue() DID NOT have replies from BOARD" << getName() << "with IP" << getIPv4string() << " even after " << numOfattempts << " attempts and" << end_time-start_time << "seconds: CANNOT PROCEED ANY FURTHER";
     }
 
 
@@ -1598,12 +1664,6 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
     eOprotID32_t id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_cmmnds_command);
     eOprotID32_t id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_service, 0, eoprot_tag_mn_service_status_commandresult);;
 
-    // get a sem, transmit a set<>, wait for a reply (add code in callback of status_commandresult), retrieve the result. return true or false
-
-    // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = NULL;
-
-
     eOmn_service_cmmnds_command_t command = {0};
     command.operation = operation;
     command.category = category;
@@ -1624,22 +1684,20 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
        }
     }
 
+    theNVmanager& nvman = theNVmanager::getInstance();
 
-    sem = ethQueryServices->start(id2wait, 0);
     bool replied = false;
 
     for(int i=0; i<times; i++)
     {
 
-        if(false == addSetMessage(id2send, (uint8_t*)&command))
+        if(false == nvman.set(ipv4addr, id2send, &command, sizeof(eOmn_command_t)))
         {
-            ethQueryServices->stop(sem);
-            yError() << "EthResource::serviceCommand() cannot transmit an activation request to BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+            yError() << "EthResource::serviceCommand() cannot transmit to ... BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
             return(false);
         }
 
-
-        if(false == ethQueryServices->wait(sem, timeout))
+        if(false == nvman.wait(theNVmanager::ropCode::sig, ipv4addr, id2wait, timeout))
         {
             yWarning() << "EthResource::serviceCommand() had a timeout of" << timeout << "secs in reception of the ack of an activation request to BOARD" << getName() << "with IP" << getIPv4string();
         }
@@ -1648,9 +1706,9 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
             replied = true;
             break;
         }
+
     }
-    // must release the semaphore
-    ethQueryServices->stop(sem);
+
 
     if(false == replied)
     {
@@ -1667,6 +1725,7 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
         return(false);
     }
 
+    yDebug() << "result is:" << result.latestcommandisok;
 
     return(result.latestcommandisok);
 }
