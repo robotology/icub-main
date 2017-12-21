@@ -1283,7 +1283,7 @@ bool ServiceParser::parse_actuator_port(ConstString const &fromstring, eObrd_eth
             // read it as a CAN address
             eObrd_location_t loc;
             bool result = convert(fromstring, loc, formaterror);
-
+            ret = true;
             if(false == result)
             {
                 yWarning() << "ServiceParser::parse_actuator_port():" << t << "is not a legal string for a eObrd_location_t";
@@ -1305,7 +1305,12 @@ bool ServiceParser::parse_actuator_port(ConstString const &fromstring, eObrd_eth
                     ret = false;
                 }
             }
-
+            
+            if(false == ret)
+            {
+                return ret;
+            }
+            
             if(eomc_act_foc == type)
             {
                 // copy into todes.foc
