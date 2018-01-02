@@ -748,21 +748,22 @@ bool embObjStrain::close()
 
 
 void embObjStrain::printServiceConfig(void)
-{
+{    
     char loc[20] = {0};
     char fir[20] = {0};
     char pro[20] = {0};
     const char * boardname = (NULL != res) ? (res->getName()) : ("NOT-ASSIGNED-YET");
     const char * ipv4 = (NULL != res) ? (res->getIPv4string()) : ("NOT-ASSIGNED-YET");
+    const char * boardtype = eoboards_type2string2(static_cast<eObrd_type_t>(serviceConfig.ethservice.configuration.data.as.strain.boardtype.type), eobool_true);
 
     parser->convert(serviceConfig.ethservice.configuration.data.as.strain.canloc, loc, sizeof(loc));
-    parser->convert(serviceConfig.ethservice.configuration.data.as.strain.version.firmware, fir, sizeof(fir));
-    parser->convert(serviceConfig.ethservice.configuration.data.as.strain.version.protocol, pro, sizeof(pro));
+    parser->convert(serviceConfig.ethservice.configuration.data.as.strain.boardtype.firmware, fir, sizeof(fir));
+    parser->convert(serviceConfig.ethservice.configuration.data.as.strain.boardtype.protocol, pro, sizeof(pro));
 
     yInfo() << "The embObjStrain device using BOARD" << boardname << " w/ IP" << ipv4 << "has the following service config:";
     yInfo() << "- acquisitionrate =" << serviceConfig.acquisitionrate;
     yInfo() << "- useCalibration =" << serviceConfig.useCalibration;
-    yInfo() << "- STRAIN named" << serviceConfig.nameOfStrain << "@" << loc << "with required protocol version =" << pro << "and required firmware version =" << fir;
+    yInfo() << "- STRAIN of type" << boardtype << "named" << serviceConfig.nameOfStrain << "@" << loc << "with required protocol version =" << pro << "and required firmware version =" << fir;
 }
 
 

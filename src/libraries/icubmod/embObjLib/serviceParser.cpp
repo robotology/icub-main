@@ -954,8 +954,9 @@ bool ServiceParser::parseService(Searchable &config, servConfigStrain_t &strainc
     memset(&strainconfig.ethservice.configuration, 0, sizeof(strainconfig.ethservice.configuration));
 
     strainconfig.ethservice.configuration.type = eomn_serv_AS_strain;
-    memcpy(&strainconfig.ethservice.configuration.data.as.strain.version.protocol, &thestrain_props.protocol, sizeof(eObrd_protocolversion_t));
-    memcpy(&strainconfig.ethservice.configuration.data.as.strain.version.firmware, &thestrain_props.firmware, sizeof(eObrd_firmwareversion_t));
+    strainconfig.ethservice.configuration.data.as.strain.boardtype.type = thestrain_props.type;
+    memcpy(&strainconfig.ethservice.configuration.data.as.strain.boardtype.protocol, &thestrain_props.protocol, sizeof(eObrd_protocolversion_t));
+    memcpy(&strainconfig.ethservice.configuration.data.as.strain.boardtype.firmware, &thestrain_props.firmware, sizeof(eObrd_firmwareversion_t));
 
     // second check we do is about thestrain_sensor.location
     if(eobrd_place_can != thestrain_sensor.location.any.place)
