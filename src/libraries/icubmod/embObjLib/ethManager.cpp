@@ -804,6 +804,14 @@ bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
     int rxrate = -1;                    // it uses default
 
     embBoardsConnected = true;
+    Bottle groupDEBUG  = cfgtotal.findGroup("DEBUG");
+    if ((! groupDEBUG.isNull()) && (groupDEBUG.check("embBoardsConnected")))
+        embBoardsConnected = groupDEBUG.find("embBoardsConnected").asBool();
+
+    if(!embBoardsConnected)
+    {
+        yError() << "ATTENTION: NO EMBEDDED BOARDS CONNECTED. YOU ARE IN DEBUG MODE";
+    }
 
     // localaddress
 
