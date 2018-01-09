@@ -102,25 +102,25 @@ public:
     ~EthBoards();
 
     size_t number_of_resources(void);
-    bool add(EthResource* res);
-    EthResource* get_resource(eOipv4addr_t ipv4);
-    bool rem(EthResource* res);
+    bool add(AbstractEthResource* res);
+    AbstractEthResource* get_resource(eOipv4addr_t ipv4);
+    bool rem(AbstractEthResource* res);
 
-    size_t number_of_interfaces(EthResource* res);
-    bool add(EthResource* res, IethResource* interface);
+    size_t number_of_interfaces(AbstractEthResource* res);
+    bool add(AbstractEthResource* res, IethResource* interface);
     IethResource* get_interface(eOipv4addr_t ipv4, eOprotID32_t id32);
     IethResource* get_interface(eOipv4addr_t ipv4, iethresType_t type);
-    bool rem(EthResource* res, iethresType_t type);
+    bool rem(AbstractEthResource* res, iethresType_t type);
     
 
     // the name of the board
     const char * name(eOipv4addr_t ipv4);
 
     // executes an action on all EthResource which have been added in the class.
-    bool execute(void (*action)(EthResource* res, void* p), void* par);
+    bool execute(void (*action)(AbstractEthResource* res, void* p), void* par);
 
     // executes an action on the ethResource having a specific ipv4.
-    bool execute(eOipv4addr_t ipv4, void (*action)(EthResource* res, void* p), void* par);
+    bool execute(eOipv4addr_t ipv4, void (*action)(AbstractEthResource* res, void* p), void* par);
 
 
 private:
@@ -137,7 +137,7 @@ private:
         char                name[EthBoards::ethboardNameMaxSize];
         uint8_t             numberofinterfaces;
         uint8_t             boardnumber;
-        EthResource*        resource;
+        AbstractEthResource*  resource;
         IethResource*       interfaces[iethresType_numberof];
     } ethboardProperties_t;
 
@@ -205,9 +205,9 @@ public:
 
 //    bool parseEthBoardInfo(yarp::os::Searchable &cfgtotal, ethFeature_t& info);
 
-    EthResource* requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal);
+    AbstractEthResource* requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal);
 
-    int releaseResource2(EthResource* ethresource, IethResource* interface);
+    int releaseResource2(AbstractEthResource* ethresource, IethResource* interface);
 
     const ACE_INET_Addr& getLocalIPaddress(void);
 
@@ -219,7 +219,7 @@ public:
 
     bool Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, bool collectStatistics);
 
-    EthResource* getEthResource(eOipv4addr_t ipv4);
+    AbstractEthResource* getEthResource(eOipv4addr_t ipv4);
 
     IethResource* getInterface(eOipv4addr_t ipv4, eOprotID32_t id32);
 
@@ -270,6 +270,7 @@ private:
     EthSender* sender;
     EthReceiver* receiver;
     ACE_SOCK_Dgram* UDP_socket;
+    bool embBoardsConnected;
 
 };
 

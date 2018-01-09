@@ -97,7 +97,7 @@ size_t EthBoards::number_of_resources(void)
     return(sizeofLUT);
 }
 
-size_t EthBoards::number_of_interfaces(EthResource * res)
+size_t EthBoards::number_of_interfaces(AbstractEthResource * res)
 {
     if(NULL == res)
     {
@@ -124,7 +124,7 @@ size_t EthBoards::number_of_interfaces(EthResource * res)
 }
 
 
-bool EthBoards::add(EthResource* res)
+bool EthBoards::add(AbstractEthResource* res)
 {
     if(NULL == res)
     {
@@ -168,7 +168,7 @@ bool EthBoards::add(EthResource* res)
 }
 
 
-bool EthBoards::add(EthResource* res, IethResource* interface)
+bool EthBoards::add(AbstractEthResource* res, IethResource* interface)
 {
     if((NULL == res) || (NULL == interface))
     {
@@ -211,7 +211,7 @@ bool EthBoards::add(EthResource* res, IethResource* interface)
 }
 
 
-bool EthBoards::rem(EthResource* res)
+bool EthBoards::rem(AbstractEthResource* res)
 {
     if(NULL == res)
     {
@@ -249,7 +249,7 @@ bool EthBoards::rem(EthResource* res)
 }
 
 
-bool EthBoards::rem(EthResource* res, iethresType_t type)
+bool EthBoards::rem(AbstractEthResource* res, iethresType_t type)
 {
     if((NULL == res) || (iethres_none == type))
     {
@@ -281,9 +281,9 @@ bool EthBoards::rem(EthResource* res, iethresType_t type)
 }
 
 
-EthResource* EthBoards::get_resource(eOipv4addr_t ipv4)
+AbstractEthResource* EthBoards::get_resource(eOipv4addr_t ipv4)
 {
-    EthResource * ret = NULL;
+    AbstractEthResource * ret = NULL;
 
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
@@ -423,7 +423,7 @@ const char * EthBoards::name(eOipv4addr_t ipv4)
 
 
 
-bool EthBoards::execute(void (*action)(EthResource* res, void* p), void* par)
+bool EthBoards::execute(void (*action)(AbstractEthResource* res, void* p), void* par)
 {
     if(NULL == action)
     {
@@ -432,7 +432,7 @@ bool EthBoards::execute(void (*action)(EthResource* res, void* p), void* par)
 
     for(int i=0; i<maxEthBoards; i++)
     {
-        EthResource* res = LUT[i].resource;
+        AbstractEthResource* res = LUT[i].resource;
         if(NULL != res)
         {
             action(res, par);
@@ -444,14 +444,14 @@ bool EthBoards::execute(void (*action)(EthResource* res, void* p), void* par)
 }
 
 
-bool EthBoards::execute(eOipv4addr_t ipv4, void (*action)(EthResource* res, void* p), void* par)
+bool EthBoards::execute(eOipv4addr_t ipv4, void (*action)(AbstractEthResource* res, void* p), void* par)
 {
     if(NULL == action)
     {
         return(false);
     }
 
-    EthResource* res = get_resource(ipv4);
+    AbstractEthResource* res = get_resource(ipv4);
 
     if(NULL == res)
     {
@@ -491,7 +491,7 @@ TheEthManager::TheEthManager()
 
 
 
-void delete_resources(EthResource *p, void* par)
+void delete_resources(AbstractEthResource *p, void* par)
 {
     delete p;
 }
@@ -612,9 +612,9 @@ void TheEthManager::initEOYsystem(void)
 
 
 
-void ethEvalTXropframe(EthResource *r, void* p)
+void ethEvalTXropframe(AbstractEthResource *r, void* p)
 {
-    if((NULL == r) || (NULL == p))
+    if((NULL == r) || (NULL == p) || (r->isFake()))
     {
         return;
     }
@@ -646,7 +646,7 @@ bool TheEthManager::Transmission(void)
 }
 
 
-void ethEvalPresence(EthResource *r, void* p)
+void ethEvalPresence(AbstractEthResource *r, void* p)
 {
     if((NULL == r) || (NULL == p))
     {
@@ -803,6 +803,7 @@ bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
     int txrate = -1;                    // it uses default
     int rxrate = -1;                    // it uses default
 
+    embBoardsConnected = true;
 
     // localaddress
 
@@ -884,9 +885,10 @@ bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
 }
 
 
-EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal)
+AbstractEthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal)
 {
 
+    
     if(communicationIsInitted == false)
     {
         yTrace() << "TheEthManager::requestResource2(): we need to init the communication";
@@ -929,7 +931,7 @@ EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::
     lockTXRX(true);
 
     // i do an attempt to get the resource.
-    EthResource *rr = ethBoards->get_resource(ipv4addr);
+    AbstractEthResource *rr = ethBoards->get_resource(ipv4addr);
 
     if(NULL == rr)
     {
@@ -938,7 +940,10 @@ EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::
         char ipinfo[20] = {0};
         eo_common_ipv4addr_to_string(ipv4addr, ipinfo, sizeof(ipinfo));
 
-        rr = new EthResource;
+        if(embBoardsConnected)
+            rr = new EthResource();
+        else
+            rr = new FakeEthResource();
 
         if(true == rr->open2(ipv4addr, cfgtotal))
         {
@@ -971,7 +976,7 @@ EthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::
 
 
 
-int TheEthManager::releaseResource2(EthResource* ethresource, IethResource* interface)
+int TheEthManager::releaseResource2(AbstractEthResource* ethresource, IethResource* interface)
 {
     int ret = 1; // -1 means that the singleton is not needed anymore. 0 means error
     if((NULL == ethresource) || (NULL == interface))
@@ -981,7 +986,7 @@ int TheEthManager::releaseResource2(EthResource* ethresource, IethResource* inte
     }
 
 
-    EthResource* rr = ethresource;
+    AbstractEthResource* rr = ethresource;
 
     iethresType_t type = interface->type();
 
@@ -1116,7 +1121,7 @@ bool TheEthManager::createCommunicationObjects(ACE_INET_Addr localaddress, int t
     if(!communicationIsInitted)
     {
         UDP_socket = new ACE_SOCK_Dgram();
-        if(-1 == UDP_socket->open(localaddress))
+        if((embBoardsConnected)  && (-1 == UDP_socket->open(localaddress)))
         {
             char tmp[64] = {0};
             localaddress.addr_to_string(tmp, 64);
@@ -1226,9 +1231,9 @@ bool TheEthManager::Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, b
 
     lockRX(true);
 
-    EthResource* r = ethBoards->get_resource(ipv4addr);
+    AbstractEthResource* r = ethBoards->get_resource(ipv4addr);
 
-    if(NULL != r)
+    if((NULL != r) && (!r->isFake()))
     {
         r->Tick();
 
@@ -1289,7 +1294,7 @@ const char * TheEthManager::getName(eOipv4addr_t ipv4)
 }
 
 
-EthResource* TheEthManager::getEthResource(eOipv4addr_t ipv4)
+AbstractEthResource* TheEthManager::getEthResource(eOipv4addr_t ipv4)
 {
     return(ethBoards->get_resource(ipv4));
 }

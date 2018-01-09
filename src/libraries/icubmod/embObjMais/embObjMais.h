@@ -84,7 +84,7 @@ private:
     char boardIPstring[20];
 
     TheEthManager* ethManager;
-    EthResource* res;
+    AbstractEthResource* res;
     ServiceParser* parser;
 
     bool opened;

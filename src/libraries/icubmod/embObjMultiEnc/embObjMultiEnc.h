@@ -87,7 +87,7 @@ private:
     uint8_t numofencperjoint;
 
     TheEthManager* ethManager;
-    EthResource* res;
+    AbstractEthResource* res;
     ServiceParser* parser;
 
     bool opened;

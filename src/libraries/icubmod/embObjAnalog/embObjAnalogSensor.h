@@ -123,7 +123,7 @@ private:
 
     //! eth messaging stuff
     TheEthManager       *ethManager;
-    EthResource        *res;
+    AbstractEthResource *res;
 
     bool opened;
     bool verbosewhenok;

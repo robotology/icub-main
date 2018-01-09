@@ -45,7 +45,7 @@ private:
 
     //! embObj stuff
     TheEthManager       *ethManager;
-    EthResource         *res;
+    AbstractEthResource *res;
 
     ////////////////////
     // parameters
