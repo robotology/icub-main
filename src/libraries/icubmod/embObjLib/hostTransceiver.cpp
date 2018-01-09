@@ -463,8 +463,11 @@ bool HostTransceiver::isID32supported(eOprotID32_t id32)
     return (eobool_false == eoprot_id_isvalid(protboardnumber, id32)) ? false : true;
 }
 
+uint16_t HostTransceiver::getMaxSizeofROP()
+{
+    return maxSizeOfROP;
+}
 
-bool HostTransceiver::appendGetMessage(eOprotID32_t id32)
 {
     return(HostTransceiver::addGetMessage__(id32, eo_rop_SIGNATUREdummy));
 }

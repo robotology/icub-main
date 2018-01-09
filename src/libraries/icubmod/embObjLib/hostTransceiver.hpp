@@ -76,6 +76,8 @@ public:
 
     bool isID32supported(eOprotID32_t id32);
 
+    uint16_t getMaxSizeofROP();
+
     // methods which put a ask<> ROP inside the UDP packet which will be transmitted by the EthSender
     bool appendGetMessage(eOprotID32_t id32);
     bool addGetMessageWithSignature(eOprotID32_t id32, uint32_t signature);
@@ -152,7 +154,6 @@ private:
 private:
 
     eOprotBRD_t get_protBRDnumber(void);    // the number in range [0, max-1]
-
 
     bool lock_transceiver(bool on);
     yarp::os::Semaphore *htmtx;

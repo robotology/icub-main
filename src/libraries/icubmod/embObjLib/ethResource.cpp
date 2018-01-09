@@ -614,6 +614,7 @@ void EthResource::getBoardInfo(eOdate_t &date, eOversion_t &version)
 
 
 
+
 bool EthResource::isEPsupported(eOprot_endpoint_t ep)
 {
     return HostTransceiver::isSupported(ep);
@@ -693,7 +694,7 @@ bool EthResource::verifyBoardTransceiver()
 //    }
 
 
-    bool rr = nvman.ask(ipv4addr, id32, &brdstatus, size, timeout);
+    bool rr = nvman.ask(ipv4addr, id32, &brdstatus, timeout);
 
     if(false == rr)
     {
@@ -962,11 +963,18 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
     // the semaphore must be retrieved using the id of the variable which is waited. in this case, it is the array of descriptors
     id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replyarray);
 
-#warning MAYBE remove size as last argument of nvman.set(): it is useless
 
     theNVmanager& nvman = theNVmanager::getInstance();
+#if 1
 
-    if(false == nvman.set(ipv4addr, id2send, &command, sizeof(eOmn_command_t)))
+    if(false == nvman.command(ipv4addr, id2send, &command, id2wait, &command, timeout))
+    {
+        yError() << "EthResource::verifyEPprotocol() retrieve the endpoint descriptors from BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
+        return(false);
+    }
+
+#else
+    if(false == nvman.set(ipv4addr, id2send, &command))
     {
         yError() << "EthResource::verifyEPprotocol() cannot transmit a request about the endpoint descriptors to BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
         return(false);
@@ -979,12 +987,12 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
     }
 
     // now i get the array of descriptors
-    if(false == nvman.read(ipv4addr, id2wait, &command, size))
+    if(false == nvman.read(ipv4addr, id2wait, &command))
     {
         yError() << "  FATAL: EthResource::verifyEPprotocol() cannot retrieve the endpoint descriptors of BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
         return(false);
     }
-
+#endif
 
 
     // the array is ...
@@ -1044,148 +1052,7 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
 }
 
 #else
-bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
-{
-    if((uint8_t)ep >= eoprot_endpoints_numberof)
-    {
-        yError() << "EthResource::verifyEPprotocol() called with wrong ep = " << ep << ": cannot proceed any further";
-        return(false);
-    }
 
-    if(true == verifiedEPprotocol[ep])
-    {
-        return(true);
-    }
-
-    if(false == verifyBoard())
-    {
-        yError() << "EthResource::verifyEPprotocol() cannot verify BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
-        return(false);
-    }
-
-    if(false == askBoardVersion())
-    {
-        yError() << "EthResource::verifyEPprotocol() cannot ask the version to BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
-        return(false);
-    }
-
-#if defined(ETHRES_DEBUG_DONTREADBACK)
-    verifiedEPprotocol[ep] =  true;
-    yWarning() << "EthResource::verifyEPprotocol() is in ETHRES_DEBUG_DONTREADBACK mode";
-    return true;
-#endif
-
-    // 1. send a set<eoprot_tag_mn_comm_cmmnds_command_queryarray> and wait for the arrival of a sig<eoprot_tag_mn_comm_cmmnds_command_replyarray>
-    //    the opc to send is eomn_opc_query_array_EPdes which will trigger a opc in reception eomn_opc_reply_array_EPdes
-    // 2. the resulting array will contains a eoprot_endpoint_descriptor_t item for the specifeid ep with the protocol version of the ems.
-
-
-
-    const double timeout = 0.100;
-
-    eOprotID32_t id2send = eo_prot_ID32dummy;
-    eOprotID32_t id2wait = eo_prot_ID32dummy;
-    eOmn_command_t command = {0};
-    uint16_t size = 0;
-
-
-    // the semaphore used for waiting for replies from the board
-    yarp::os::Semaphore* sem = NULL;
-
-
-    // step 1: ask all the EP descriptors. from them we can extract protocol version of MN and of the target ep
-    id2send = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_queryarray);
-    memset(&command, 0, sizeof(command));
-    command.cmd.opc                             = eomn_opc_query_array_EPdes;
-    command.cmd.queryarray.opcpar.opc           = eomn_opc_query_array_EPdes;
-    command.cmd.queryarray.opcpar.endpoint      = eoprot_endpoint_all;
-    command.cmd.queryarray.opcpar.setnumber     = 0;
-    command.cmd.queryarray.opcpar.setsize       = 0;
-
-    // the semaphore must be retrieved using the id of the variable which is waited. in this case, it is the array of descriptors
-    id2wait = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_cmmnds_command_replyarray);
-    sem = ethQuery->start(id2wait, 0);
-
-    if(false == addSetMessage(id2send, (uint8_t*)&command))
-    {
-        yError() << "EthResource::verifyEPprotocol() cannot transmit a request about the endpoint descriptors to BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
-        return(false);
-    }
-
-
-    if(false == ethQuery->wait(sem, timeout))
-    {
-        // must release the semaphore
-        ethQuery->stop(sem);
-        yError() << "  FATAL: EthResource::verifyEPprotocol() had a timeout of" << timeout << "secs when asking the endpoint descriptors to BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
-        return(false);
-    }
-    // must release the semaphore
-    ethQuery->stop(sem);
-
-    // now i get the array of descriptors
-    memset(&command, 0, sizeof(command));
-    if(false == readBufferedValue(id2wait, (uint8_t*)&command, &size))
-    {
-        yError() << "  FATAL: EthResource::verifyEPprotocol() cannot retrieve the endpoint descriptors of BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
-        return(false);
-    }
-
-    // the array is ...
-    eOmn_cmd_replyarray_t* cmdreplyarray = (eOmn_cmd_replyarray_t*)&command.cmd.replyarray;
-    EOarray* array = (EOarray*)cmdreplyarray->array;
-
-
-    uint8_t sizeofarray = eo_array_Size(array);
-
-
-    for(int i=0; i<sizeofarray; i++)
-    {
-        eoprot_endpoint_descriptor_t *epd = (eoprot_endpoint_descriptor_t*)eo_array_At(array, i);
-
-        if(epd->endpoint == eoprot_endpoint_management)
-        {
-            const eoprot_version_t * pc104versionMN = eoprot_version_of_endpoint_get(eoprot_endpoint_management);
-            if(pc104versionMN->major != epd->version.major)
-            {
-                yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.major =" << pc104versionMN->major << "and board.version.major =" << epd->version.major;
-                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD" << getName() << "with IP" << getIPv4string() << "for eoprot_endpoint_management: cannot proceed any further.";
-                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
-                return(false);
-            }
-            if(pc104versionMN->minor != epd->version.minor)
-            {
-                yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionMN->minor << "and board.version.minor =" << epd->version.minor;
-                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor BOARD" << getName() << "with IP" << getIPv4string() << "for eoprot_endpoint_management: cannot proceed any further.";
-                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update.";
-                return false;
-            }
-        }
-        if(epd->endpoint == ep)
-        {
-            const eoprot_version_t * pc104versionEP = eoprot_version_of_endpoint_get(ep);
-            if(pc104versionEP->major != epd->version.major)
-            {
-                yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.major =" << pc104versionEP->major << "and board.version.major =" << epd->version.major;
-                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.major in BOARD" << getName() << "with IP" << getIPv4string() << " for" << eoprot_EP2string(ep) << ": cannot proceed any further.";
-                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update to offer services for" << eoprot_EP2string(ep);
-                return(false);
-            }
-            if(pc104versionEP->minor != epd->version.minor)
-            {
-                yError() << "EthResource::verifyEPprotocol() for ep =" << eoprot_EP2string(epd->endpoint) << "detected: pc104.version.minor =" << pc104versionEP->minor << "and board.version.minor =" << epd->version.minor;
-                yError() << "EthResource::verifyEPprotocol() detected mismatching protocol version.minor in BOARD" << getName() << "with IP" << getIPv4string() << " for" << eoprot_EP2string(ep) << ": annot proceed any further";
-                yError() << "ACTION REQUIRED: BOARD" << getName() << "with IP" << getIPv4string() << "needs a FW update to offer services for" << eoprot_EP2string(ep);
-                return(false);
-            }
-        }
-    }
-
-    verifiedEPprotocol[ep] = true;
-
-    return(true);
-
-}
 #endif
 
 
@@ -1241,7 +1108,7 @@ bool EthResource::verifyBoardPresence(void)
     {
         // attempt the request until either a reply arrives or the max retries are reached
         //theNVmanager& nvman = theNVmanager::getInstance();
-        bool replied = nvman.ask(ipv4addr, id2send, &brdstatus, size, 5.0);
+        bool replied = nvman.ask(ipv4addr, id2send, &brdstatus, 5.0);
 
         // wait for a say message arriving from the board. the eoprot_fun_UPDT_mn_xxx() function shall release the waiting semaphore
         if(false == replied)
@@ -1419,7 +1286,7 @@ bool EthResource::askBoardVersion(void)
     {
         // attempt the request until either a reply arrives or the max retries are reached
 
-        if(true == nvman.ask(ipv4addr, id32, &applstatus, size, timeout))
+        if(true == nvman.ask(ipv4addr, id32, &applstatus, timeout))
         {
             // ok: i have a reply: i stop attempts
             pinged = true;
@@ -1490,7 +1357,7 @@ bool EthResource::askBoardVersion(void)
 bool EthResource::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries, double waitbeforeverification, double verificationtimeout, int verificationretries)
 {
     theNVmanager& nvman = theNVmanager::getInstance();
-    return nvman.setuntilverified(ipv4addr, id32, value, size, retries, waitbeforeverification, verificationtimeout, verificationretries);
+    return nvman.setcheck(ipv4addr, id32, value, retries, waitbeforeverification, verificationtimeout);
 }
 
 
@@ -1522,7 +1389,7 @@ bool EthResource::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size,
         // attempt the request until either a reply arrives or the max retries are reached
 
 
-        if(true == nvman.ask(ipv4addr, id32, value, size, timeout))
+        if(true == nvman.ask(ipv4addr, id32, value, timeout))
         {
             replied = true;
             // stop attempts
@@ -1686,12 +1553,38 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
 
     theNVmanager& nvman = theNVmanager::getInstance();
 
+#if 1
+
+    eOmn_service_command_result_t result = {0};
+
+    bool replied = false;
+    for(int i=0; i<times; i++)
+    {
+        if(true == nvman.command(ipv4addr, id2send, &command, id2wait, &result, timeout))
+        {
+            replied = true;
+            break;
+        }
+    }
+
+    if(false == replied)
+    {
+        yError() << "EthResource::serviceCommand() failed an acked activation request to BOARD" << getName() << "with IP" << getIPv4string() << "after" << times << "attempts" << "each with waiting timeout of" << timeout << "seconds";
+        return false;
+    }
+
+    yDebug() << "result is:" << result.latestcommandisok;
+
+    return(result.latestcommandisok);
+
+#else
+
     bool replied = false;
 
     for(int i=0; i<times; i++)
     {
 
-        if(false == nvman.set(ipv4addr, id2send, &command, sizeof(eOmn_command_t)))
+        if(false == nvman.set(ipv4addr, id2send, &command))
         {
             yError() << "EthResource::serviceCommand() cannot transmit to ... BOARD" << getName() << "with IP" << getIPv4string() << ": cannot proceed any further";
             return(false);
@@ -1727,7 +1620,11 @@ bool EthResource::serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_cate
 
     yDebug() << "result is:" << result.latestcommandisok;
 
+
     return(result.latestcommandisok);
+
+#endif
+
 }
 
 
