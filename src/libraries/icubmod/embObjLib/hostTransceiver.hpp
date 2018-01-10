@@ -52,6 +52,7 @@
 using namespace yarp::dev;
 
 
+
 // -- class HostTransceiver
 // -- it contains methods for communication with the ETH boards.
 
@@ -70,17 +71,17 @@ public:
     bool init2(yarp::os::Searchable &cfgEthBoard, eOipv4addressing_t& localIPaddressing, eOipv4addr_t remoteIP, uint16_t rxpktsize = maxSizeOfRXpacket);
 
     // methods which put a set<> ROP inside the UDP packet which will be transmitted by the EthSender
-    bool appendSetMessage(eOprotID32_t id32, uint8_t* data);
-    bool addSetMessageWithSignature(eOprotID32_t id32, uint8_t* data, uint32_t sig);
-    bool addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data);
+    bool addSetROP(eOprotID32_t id32, uint8_t* data);
+    bool addSetROPwithSignature(eOprotID32_t id32, uint8_t* data, uint32_t sig);
+    bool addSetROPandCacheLocally(eOprotID32_t id32, uint8_t* data);
 
     bool isID32supported(eOprotID32_t id32);
 
     uint16_t getMaxSizeofROP();
 
     // methods which put a ask<> ROP inside the UDP packet which will be transmitted by the EthSender
-    bool appendGetMessage(eOprotID32_t id32);
-    bool addGetMessageWithSignature(eOprotID32_t id32, uint32_t signature);
+    bool addGetROP(eOprotID32_t id32);
+    bool addGetROPwithSignature(eOprotID32_t id32, uint32_t signature);
 
     // called inside the thread ethReceiver (by a call to TheEthManager::Reception() which calls ... etc.) to process incoming UDP packet.
     // this function processes sig<> ROPs and say<> ROPs and it: 1. writes the received values into internal buffered memory, and
@@ -88,9 +89,9 @@ public:
     void onMsgReception(uint64_t *data, uint16_t size);
 
     // reads the value of a network variable buffered by the object at reception of a UDP packet by method onMsgReception().
-    bool getBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size);
+    bool readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size);
 
-    // This method echoes back a value that has just been sent from the HostTransceiver to someone else, if called addSetMessageAndCacheLocally()
+    // This method echoes back a value that has just been sent from the HostTransceiver to someone else, if called addSetROPAndCacheLocally()
     bool readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size);
 
 
@@ -106,10 +107,9 @@ public:
 
     // progressive index on the endpoint of the variable described by protid. EOK_uint32dummy if the id does not exist on that board.
     uint32_t translate_NVid2index(eOprotID32_t id32);
-    
-    bool isSupported(eOprot_endpoint_t ep);
 
 protected:
+
     eOprotBRD_t             protboardnumber;    // the number of board ranging from 0 upwards, in the format that the functions in EoProtocol.h expects.
     EOhostTransceiver       *hosttxrx;
     EOtransceiver           *pc104txrx;
@@ -142,7 +142,7 @@ protected:
     // inside the ropframe.
     bool getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops);
 
-    
+    bool isSupported(eOprot_endpoint_t ep);
 
 
 private:
@@ -163,8 +163,8 @@ private:
     yarp::os::Semaphore *nvmtx;
 
 
-    bool addSetMessage__(eOprotID32_t id32, uint8_t* data, uint32_t signature, bool writelocalrxcache = false);
-    bool addGetMessage__(eOprotID32_t id32, uint32_t signature);
+    bool addSetROP__(eOprotID32_t id32, uint8_t* data, uint32_t signature, bool writelocalrxcache = false);
+    bool addGetROP__(eOprotID32_t id32, uint32_t signature);
 
     bool initProtocol();
 

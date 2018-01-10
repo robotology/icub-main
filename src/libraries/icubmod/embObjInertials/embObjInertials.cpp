@@ -474,11 +474,10 @@ bool embObjInertials::open(yarp::os::Searchable &config)
 
     {   // start the configured sensors. so far, we must keep it in here. later on we can remove this command
 
-        eOas_inertial_commands_t startCommand = {0};
-        startCommand.enable = 1;
+        uint8_t enable = 1;
 
         eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_cmmnds_enable);
-        if(!res->addSetMessage(id32, (uint8_t*) &startCommand))
+        if(false == res->setRemoteValue(id32, &enable))
         {
             yError() << "embObjInertials::open() fails to command the start transmission of the configured inertials";
             cleanup();
@@ -488,12 +487,6 @@ bool embObjInertials::open(yarp::os::Searchable &config)
 
     opened = true;
     return true;
-}
-
-
-bool embObjInertials::isEpManagedByBoard()
-{    
-    return res->isEPsupported(eoprot_endpoint_analogsensors);
 }
 
 
@@ -522,9 +515,9 @@ bool embObjInertials::sendConfig2MTBboards(Searchable& globalConfig)
     }
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_config);
-    if(false == res->setRemoteValueUntilVerified(id32, &config, sizeof(config), 10, 0.010, 0.050, 2))
+    if(false == res->setcheckRemoteValue(id32, &config, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjInertials::sendConfig2MTBboards() had an error while calling setRemoteValueUntilVerified() for config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjInertials::sendConfig2MTBboards() had an error while calling setcheckRemoteValue() for config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         return false;
     }
     else

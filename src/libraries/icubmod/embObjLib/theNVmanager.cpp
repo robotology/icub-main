@@ -284,7 +284,7 @@ struct tbd::theNVmanager::Impl
 
     //size_t maxSizeOfNV(const eOprotIP_t ipv4);
 
-    bool ping(const eOprotIP_t ipv4, const double timeout = 0.5, const unsigned int retries = 20);
+    bool ping(const eOprotIP_t ipv4, eoprot_version_t &mnprotversion, const double timeout = 0.5, const unsigned int retries = 20);
 
     bool ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout);
     bool ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout);
@@ -710,7 +710,7 @@ bool tbd::theNVmanager::Impl::command(const eOprotIP_t ipv4, const eOprotID32_t 
 //    return res->getMaxSizeofROP();
 //}
 
-bool tbd::theNVmanager::Impl::ping(const eOprotIP_t ipv4, const double timeout, const unsigned int retries)
+bool tbd::theNVmanager::Impl::ping(const eOprotIP_t ipv4, eoprot_version_t &mnprotversion, const double timeout, const unsigned int retries)
 {
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status_managementprotocolversion);
     bool replied = false;
@@ -725,12 +725,9 @@ bool tbd::theNVmanager::Impl::ping(const eOprotIP_t ipv4, const double timeout, 
         return replied;
     }
 
-
-    eOversion_t managementprotocolversion = {0};
-
     for(int i=0; i<(1+retries); i++)
     {
-        if(true == ask(ipv4, id32, &managementprotocolversion, timeout))
+        if(true == ask(ipv4, id32, &mnprotversion, timeout))
         {
             replied = true;
             break;
@@ -765,16 +762,11 @@ bool tbd::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const eOprotID32_t id32
 
     // 3. must send a request
 
-//    char nvinfo[128];
-//    eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-//    yDebug() << "theNVmanager::Impl::ask() will call res->addGetMessageWithSignature() to BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo << "w/ signature" << assignedsignature;
-
-
-    if(false == res->addGetMessageWithSignature(id32, assignedsignature))
+    if(false == res->addGetROPwithSignature(id32, assignedsignature))
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "theNVmanager::Impl::ask() fails res->addGetMessage() to BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
+        yError() << "theNVmanager::Impl::ask() fails res->addGetROP() to BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
 
         // remove the transaction
         data.lock();
@@ -853,11 +845,11 @@ bool tbd::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const std::vector<eOpro
 
     for(int i=0; i<id32s.size(); i++)
     {
-        if(false == res->addGetMessageWithSignature(id32s[i], assignedsignature))
+        if(false == res->addGetROPwithSignature(id32s[i], assignedsignature))
         {
             char nvinfo[128];
             eoprot_ID2information(id32s[i], nvinfo, sizeof(nvinfo));
-            yError() << "theNVmanager::Impl::ask() fails res->addGetMessage() to BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
+            yError() << "theNVmanager::Impl::ask() fails res->addGetROP() to BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
 
             // remove the transaction
             data.lock();
@@ -921,7 +913,7 @@ bool tbd::theNVmanager::Impl::set(const eOprotIP_t ipv4, const eOprotID32_t id32
     }
 
 
-    if(false == res->addSetMessage(id32, reinterpret_cast<uint8_t*>(const_cast<void*>(value))))
+    if(false == res->addSetROP(id32, reinterpret_cast<uint8_t*>(const_cast<void*>(value))))
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
@@ -1069,9 +1061,9 @@ size_t tbd::theNVmanager::sizeOfNV(const eOprotID32_t id32)
     return pImpl->sizeofnv(id32);
 }
 
-bool tbd::theNVmanager::ping(const eOprotIP_t ipv4, const double timeout, const unsigned int retries)
+bool tbd::theNVmanager::ping(const eOprotIP_t ipv4, eoprot_version_t &mnprotversion, const double timeout, const unsigned int retries)
 {
-    return pImpl->ping(ipv4, timeout, retries);
+    return pImpl->ping(ipv4, mnprotversion, timeout, retries);
 }
 
 bool tbd::theNVmanager::ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)

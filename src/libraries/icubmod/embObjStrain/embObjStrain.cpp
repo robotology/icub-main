@@ -54,78 +54,15 @@ inline bool NOT_YET_IMPLEMENTED(const char *txt)
     return false;
 }
 
-// generic function that checks is key1 is present in input bottle and that the result has size elements
-// return true/false
-bool embObjStrain::extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size)
-{
-    size++;  // size includes also the name of the parameter
-    Bottle &tmp=input.findGroup(key1.c_str(), txt.c_str());
-    if (tmp.isNull())
-    {
-        yError ("%s not found\n", key1.c_str());
-        return false;
-    }
-
-    if(tmp.size()!=size)
-    {
-        yError("%s incorrect number of entries\n", key1.c_str());
-        return false;
-    }
-
-    out=tmp;
-
-    return true;
-}
-
 
 bool embObjStrain::fromConfig(yarp::os::Searchable &_config)
 {
-#if defined(EMBOBJSTRAIN_USESERVICEPARSER)
-
-
     if(false == parser->parseService(_config, serviceConfig))
     {
         return false;
     }
 
     return true;
-
-#else
-
-    Bottle xtmp;
-
-    int _period = 0;
-    int _useCalibration = 0;
-
-    // Analog Sensor stuff
-    Bottle config = _config.findGroup("GENERAL");
-    if (!extractGroup(config, xtmp, "Period", "transmitting period of the sensors", 1))
-    {
-        yError() << "embObjStrain Using default value = 0 (disabled)";
-        _period = 0;
-    }
-    else
-    {
-        _period = xtmp.get(1).asInt();
-        yDebug() << "embObjStrain::fromConfig() detects embObjStrain Using value of" << _period;
-    }
-
-
-    if (!extractGroup(config, xtmp, "UseCalibration", "Calibration parameters are needed", 1))
-    {
-        return false;
-    }
-    else
-    {
-        _useCalibration = xtmp.get(1).asInt();
-    }
-
-    return true;
-
-    serviceConfig.acquisitionrate = _period;
-    serviceConfig.useCalibration = (0 == _useCalibration) ? false : true;
-
-#endif
 }
 
 
@@ -210,17 +147,6 @@ bool embObjStrain::open(yarp::os::Searchable &config)
 
 
     // - now all other things
-
-
-//    bool ret = false;
-
-//    std::string str;
-//    if(config.findGroup("GENERAL").find("verbose").asBool())
-//        str=config.toString().c_str();
-//    else
-//        str="\n";
-//    yTrace() << str;
-
 
     if(NULL == parser)
     {
@@ -320,12 +246,6 @@ bool embObjStrain::open(yarp::os::Searchable &config)
 }
 
 
-bool embObjStrain::isEpManagedByBoard()
-{    
-    return res->isEPsupported(eoprot_endpoint_analogsensors);
-}
-
-
 bool embObjStrain::sendConfig2Strain(void)
 {
     eOas_strain_config_t strainConfig = {0};
@@ -336,11 +256,11 @@ bool embObjStrain::sendConfig2Strain(void)
 
     // version with read-back
 
-    eOprotID32_t id32 =  eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
+    eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
 
-    if(false == res->setRemoteValueUntilVerified(id32, &strainConfig, sizeof(strainConfig), 10, 0.010, 0.050, 2))
+    if(false == res->setcheckRemoteValue(id32, &strainConfig, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjStrain::sendConfig2Strain() had an error while calling setRemoteValueUntilVerified() for strain config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjStrain::sendConfig2Strain() had an error while calling setcheckRemoteValue() for strain config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         return false;
     }
     else
@@ -352,7 +272,6 @@ bool embObjStrain::sendConfig2Strain(void)
     }
 
     return true;
-
 }
 
 
@@ -364,6 +283,8 @@ bool embObjStrain::sendConfig2Strain(void)
 // EVEN better: in serviceVerifyActivate() we allow the retrieval of a parameter which the ETH board sends back. in such a param it is contained
 // the fullscales values ...
 
+// marco.accame on 09 jan 2018: much better using an ask(id32_fullscale) and making this variable proxied inside the ETH board ...
+
 bool embObjStrain::fillScaleFactor()
 {
     // if we already have set the scalefactor ...
@@ -373,7 +294,7 @@ bool embObjStrain::fillScaleFactor()
     }
 
     // at first we set the scale factors to 1, so that we are sure they have a safe value. it redundant, as we already set it to 1.0
-    for (size_t i = 0; i<scaleFactor.size(); i++)
+    for(size_t i = 0; i<scaleFactor.size(); i++)
     {
         scaleFactor[i] = 1.0f;
     }
@@ -391,6 +312,7 @@ bool embObjStrain::fillScaleFactor()
     }
 
     // if we need calibration, then we need to ask the fullscales directly to the strain
+
 
     // marco.accame on 11 apr 2014:
     // added the code under ifdef 1. the reason is that one cannot rely on validity of data structures inside the EOnv, as in protocol v2 the requirement is that
@@ -449,7 +371,7 @@ bool embObjStrain::fillScaleFactor()
     // wait for response
     while(!gotFullScaleValues && (timeout != 0))
     {
-        res->addSetMessage(id32_strain_config, (uint8_t *) &strainConfig);
+        res->setRemoteValue(id32_strain_config, &strainConfig);
         Time::delay(1.0);
         // read fullscale values
         res->readBufferedValue(id32_fullscale, (uint8_t *) &fullscale_values, &tmpNVsize);

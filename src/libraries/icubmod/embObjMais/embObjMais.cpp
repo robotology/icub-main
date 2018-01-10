@@ -353,9 +353,9 @@ bool embObjMais::sendConfig2Mais(void)
     uint8_t datarate  = serviceConfig.acquisitionrate;
     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 
-    if(false == res->setRemoteValueUntilVerified(id32, &datarate, sizeof(datarate), 10, 0.010, 0.050, 2))
+    if(false == res->setcheckRemoteValue(id32, &datarate, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjMais::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais datarate in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjMais::sendConfig2Mais() had an error while calling setcheckRemoteValue() for mais datarate in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         return false;
     }
     else
@@ -371,9 +371,9 @@ bool embObjMais::sendConfig2Mais(void)
     eOenum08_t maismode  = eoas_maismode_txdatacontinuously; // use eOas_maismode_t for value BUT USE   for type (their sizes can be different !!)
     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
 
-    if(false == res->setRemoteValueUntilVerified(id32, &maismode, sizeof(maismode), 10, 0.010, 0.050, 2))
+    if(false == res->setcheckRemoteValue(id32, &maismode, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjMais::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais mode in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjMais::sendConfig2Mais() had an error while calling setcheckRemoteValue() for mais mode in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         return false;
     }
     else

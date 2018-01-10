@@ -284,7 +284,7 @@ bool embObjVirtualAnalogSensor::updateMeasure(int ch, double &measure)
                 //    example measure * 32768.0/12.0;
     // measure should to saturated to resolution -2.0 to avoid casting problem.
     eOmeas_torque_t meas_torque = (eOmeas_torque_t)( measure * ((_resolution[ch]-2.0)/_fullscale[ch]));
-    return res->addSetMessageAndCacheLocally(protid, (uint8_t*) &meas_torque);
+    return res->addSetROPandCacheLocally(protid, (uint8_t*) &meas_torque);
 }
 
 void embObjVirtualAnalogSensor::cleanup(void)

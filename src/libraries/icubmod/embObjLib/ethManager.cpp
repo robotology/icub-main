@@ -743,57 +743,6 @@ bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4add
     return true;
 }
 
-//bool TheEthManager::parseEthBoardInfo(yarp::os::Searchable &cfgtotal, ethFeature_t& ethbrdinfo)
-//{
-//    // Get PC104 address and port from config file
-//    Bottle groupPC104  = Bottle(cfgtotal.findGroup("PC104"));
-//    if (groupPC104.isNull())
-//    {
-//        yError() << "TheEthManager::parseEthBoardInfo() cannot find PC104 group in config files";
-//        return false;
-//    }
-//    Value *PC104IpAddress_p;
-//    if (!groupPC104.check("PC104IpAddress", PC104IpAddress_p))
-//    {
-//        yError() << "missing PC104IpAddress";
-//        return false;
-//    }
-//    Bottle parameter1(groupPC104.find("PC104IpAddress").asString());
-//    ACE_UINT16 port = groupPC104.find("PC104IpPort").asInt();
-
-//    strcpy(ethbrdinfo.pc104IPaddr.string, parameter1.toString().c_str());
-//    ethbrdinfo.pc104IPaddr.port = port;
-
-//    // get ip adress and port for board from config file
-//    Bottle groupETH_BOARD  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
-//    if (groupETH_BOARD.isNull())
-//    {
-//        yError() << "TheEthManager::parseEthBoardInfo() cannot find ETH_BOARD group in config files";
-//        return false;
-//    }
-//    Bottle groupETH_BOARD_PROPERTIES  = Bottle(groupETH_BOARD.findGroup("ETH_BOARD_PROPERTIES"));
-//    if (groupETH_BOARD_PROPERTIES.isNull())
-//    {
-//        yError() << "TheEthManager::parseEthBoardInfo() cannot find ETH_BOARD_PROPERTIES group in config files";
-//        return false;
-//    }
-//    Bottle parameter2( groupETH_BOARD_PROPERTIES.find("IpAddress").asString() );
-//    strcpy(ethbrdinfo.boardIPaddr.string, parameter2.toString().c_str());
-//    ethbrdinfo.boardIPaddr.port = port;
-
-//    sscanf(ethbrdinfo.boardIPaddr.string,"\"%d.%d.%d.%d", &ethbrdinfo.boardIPaddr.ip1, &ethbrdinfo.boardIPaddr.ip2, &ethbrdinfo.boardIPaddr.ip3, &ethbrdinfo.boardIPaddr.ip4);
-//    sscanf(ethbrdinfo.pc104IPaddr.string,"\"%d.%d.%d.%d", &ethbrdinfo.pc104IPaddr.ip1, &ethbrdinfo.pc104IPaddr.ip2, &ethbrdinfo.pc104IPaddr.ip3, &ethbrdinfo.pc104IPaddr.ip4);
-
-//    snprintf(ethbrdinfo.boardIPaddr.string, sizeof(ethbrdinfo.boardIPaddr.string), "%u.%u.%u.%u:%u", ethbrdinfo.boardIPaddr.ip1, ethbrdinfo.boardIPaddr.ip2, ethbrdinfo.boardIPaddr.ip3, ethbrdinfo.boardIPaddr.ip4, ethbrdinfo.boardIPaddr.port);
-//    snprintf(ethbrdinfo.pc104IPaddr.string, sizeof(ethbrdinfo.pc104IPaddr.string), "%u.%u.%u.%u:%u", ethbrdinfo.pc104IPaddr.ip1, ethbrdinfo.pc104IPaddr.ip2, ethbrdinfo.pc104IPaddr.ip3, ethbrdinfo.pc104IPaddr.ip4, ethbrdinfo.pc104IPaddr.port);
-
-
-////    snprintf(ethbrdinfo.boardName, sizeof(ethbrdinfo.boardName), "BRD-IP-%s", ethbrdinfo.boardIPaddr.string);
-////    ethbrdinfo.boardNumber  = ethbrdinfo.boardIPaddr.ip4;
-
-//    return true;
-//}
-
 
 bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
 {
@@ -929,10 +878,6 @@ AbstractEthResource *TheEthManager::requestResource2(IethResource *interface, ya
     int ip1, ip2, ip3, ip4;
     sscanf(str, "\"%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
     eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
-//    Bottle paramNameBoard(groupEthBoardParams.find("Name").asString());
-//    char boardname[64] = {0};
-//    strcpy(boardname, paramNameBoard.toString().c_str());
-
 
     // i want to lock the use of resources managed by ethBoards to avoid that we attempt to use for TX a ethres not completely initted
 
@@ -1101,23 +1046,10 @@ IethResource* TheEthManager::getInterface(eOipv4addr_t ipv4, eOprotID32_t id32)
 }
 
 
-//EthSender* TheEthManager::getEthSender(void)
-//{
-//    return sender;
-//}
-
-
-//EthReceiver* TheEthManager::getEthReceiver(void)
-//{
-//    return receiver;
-//}
-
-
 double TheEthManager::getLifeTime(void)
 {
     return(yarp::os::Time::now() - startUpTime);
 }
-
 
 
 
@@ -1267,26 +1199,6 @@ bool TheEthManager::Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, b
     return(true);
 }
 
-
-//EthResource* TheEthManager::IPtoResource(ACE_INET_Addr adr)
-//{
-//    ACE_UINT32 a32 = adr.get_ip_address();
-//    uint8_t ip4 = a32 & 0xff;
-//    uint8_t ip3 = (a32 >> 8) & 0xff;
-//    uint8_t ip2 = (a32 >> 16) & 0xff;
-//    uint8_t ip1 = (a32 >> 24) & 0xff;
-
-//    eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
-//    return(ethBoards->get_resource(ipv4addr));
-//}
-
-
-//int TheEthManager::IPtoBoardNumber(ACE_INET_Addr adr)
-//{
-//    ACE_UINT32 a32 = adr.get_ip_address();
-//    uint8_t ip4 = a32 & 0xff;
-//    return(ip4);
-//}
 
 
 int TheEthManager::getNumberOfResources(void)

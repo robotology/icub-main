@@ -113,13 +113,10 @@ private:
 private:
 
     // for all
-    bool extractGroup(Bottle &input, Bottle &out, const std::string &key1, const std::string &txt, int size);
     bool fromConfig(yarp::os::Searchable &config);
     bool initRegulars();
     void cleanup(void);
     void printServiceConfig(void);
-    // not used ...
-    bool isEpManagedByBoard();
 
     // for strain
     bool fillScaleFactor();

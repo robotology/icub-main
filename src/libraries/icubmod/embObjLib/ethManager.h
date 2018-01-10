@@ -171,7 +171,6 @@ class EthSender;
 class EthReceiver;
 
 class yarp::dev::TheEthManager: public DeviceDriver
-//class yarp::dev::TheEthManager
 {
 
 public:
@@ -203,7 +202,6 @@ public:
 
     bool verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t* boardipv4, char *boardipv4string, int stringsize, char *boardNameStr=NULL, int sizeofBoardNameStr=0);
 
-//    bool parseEthBoardInfo(yarp::os::Searchable &cfgtotal, ethFeature_t& info);
 
     AbstractEthResource* requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal);
 

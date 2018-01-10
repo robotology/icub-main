@@ -634,12 +634,12 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
     // add specific info about this device ...
 
-#if defined(EMBOBJMC_USESERVICEPARSER)
+
     if(NULL == parser)
     {
         parser = new ServiceParser;
     }
-#endif
+
 
     // - now all other things
 
@@ -669,33 +669,12 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
 
-//    uint32_t addr = res->getIPv4remoteAddress();
-
-//    serviceConfig.id = (addr & 0xff000000) >> 24;
-//    yError() << " ************* board ID =" << serviceConfig.id;
-//    eOmn_serv_parameter_t* servparam = NULL;
-
-//    if(serviceConfig.id == 3)
-//    {
-//        if(false == parser->parseService(config, serviceConfig))
-//        {
-//            return false;
-//        }
-//     servparam= &serviceConfig.theservice;
-
-//     yError () << "*** board config addr .3  has been read from parser";
-//     }
-
-
-#if defined(EMBOBJMC_USESERVICEPARSER)
     const eOmn_serv_parameter_t* servparam = &serviceConfig.ethservice;
     if(eomn_serv_MC_generic == serviceConfig.ethservice.configuration.type)
     {
         servparam = NULL;
     }
-#else
-    const eOmn_serv_parameter_t* servparam = NULL;
-#endif
+
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_mc, servparam))
     {
@@ -1353,7 +1332,6 @@ void embObjMotionControl::updateDeadZoneWithDefaultValues(void)
 bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config)
 {
 
-#if defined(EMBOBJMC_USESERVICEPARSER)
     if(false == parser->parseService(config, serviceConfig))
     {
         yError() << "embObjMC BOARD " << boardIPstring  << "(" << boardName << ")" << "cannot parse service" ;
@@ -1405,15 +1383,6 @@ bool embObjMotionControl::fromConfig_readServiceCfg(yarp::os::Searchable &config
 
     }
 
-     ////////Debug prints
-    // for(int i=0; i<_njoints; i++)
-    // {
-    //     yError() << "J_RES=" << _jointEncoderRes[i] << "Jtype=" << _jointEncoderType[i]  <<"JTol=" << _jointEncoderTolerance[i]<< "  M_RES=" <<  _rotorEncoderRes[i] << "Mtype=" << _rotorEncoderType[i] <<"Mtol=" << _rotorEncoderTolerance[i];
-     //}
-
-     //////end
-
-#endif
 
     return true;
 }
@@ -1497,7 +1466,7 @@ bool embObjMotionControl::init()
         protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, fisico, eoprot_tag_mc_joint_cmmnds_controlmode);
         eOenum08_t controlMode = eomc_controlmode_cmd_idle;
 
-        if(!res->addSetMessage(protid, (uint8_t *) &controlMode))
+        if(false == res->setRemoteValue(protid, &controlMode))
         {
             yError() << "embObjMotionControl::init() had an error while setting eomc_controlmode_cmd_idle in BOARD" << res->getName() << "with IP" << res->getIPv4string();
             // return(false); i dont return false. because even if a failure, that is not a severe error.
@@ -1542,18 +1511,9 @@ bool embObjMotionControl::init()
         }
     }
 
-    Time::delay(0.005);  // 5 ms
+    Time::delay(0.005);
 
 
-
-
-
-//      ////////Debug prints
-//     for(int i=0; i<_njoints; i++)
-//     {
-//         yError() << " ** J_RES=" << _jointEncoderRes[i] << "  M_RES=" <<  _rotorEncoderRes[i];
-//         yError() << " ** J_TYPE=" << _jointEncoderType[i];
-//     }
 
     //////////////////////////////////////////
     // invia la configurazione dei GIUNTI   //
@@ -1605,9 +1565,9 @@ bool embObjMotionControl::init()
         jconfig.tcfiltertype=_tpids[logico].filterType;
 
 
-        if(false == res->setRemoteValueUntilVerified(protid, &jconfig, sizeof(jconfig), 10, 0.010, 0.050, 2))
+        if(false == res->setcheckRemoteValue(protid, &jconfig, 10, 0.010, 0.050))
         {
-            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for joint config fisico #" << fisico << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for joint config fisico #" << fisico << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
             return false;
         }
         else
@@ -1638,7 +1598,6 @@ bool embObjMotionControl::init()
     // invia la configurazione dei MOTORI   //
     //////////////////////////////////////////
 
-//    yDebug() << "Sending motor MAX CURRENT ONLY";
 
     for(int logico=0; logico<_njoints; logico++)
     {
@@ -1677,9 +1636,9 @@ bool embObjMotionControl::init()
             motor_cfg.pidcurrent.scale = 10;
         }
         
-        if (false == res->setRemoteValueUntilVerified(protid, &motor_cfg, sizeof(motor_cfg), 10, 0.010, 0.050, 2))
+        if (false == res->setcheckRemoteValue(protid, &motor_cfg, 10, 0.010, 0.050))
         {
-            yError() << "FATAL: embObjMotionControl::init() had an error while calling setRemoteValueUntilVerified() for motor config fisico #" << fisico << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+            yError() << "FATAL: embObjMotionControl::init() had an error while calling setcheckRemoteValue() for motor config fisico #" << fisico << "in BOARD" << res->getName() << "with IP" << res->getIPv4string();
             return false;
         }
         else
@@ -1878,7 +1837,7 @@ bool embObjMotionControl::helper_setPosPidRaw(int j, const Pid &pid)
     //printf("helper_setPosPid: kp=%f ki=%f kd=%f\n", hwPid.kp, hwPid.ki, hwPid.kd);
     copyPid_iCub2eo(&hwPid, &outPid);
 
-    if(!res->addSetMessage(protoId, (uint8_t *) &outPid))
+    if(false == res->setRemoteValue(protoId, &outPid))
     {
         yError() << "while setting position PIDs for BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j;
         return false;
@@ -1996,7 +1955,7 @@ bool embObjMotionControl::helper_getPosPidRaw(int j, Pid *pid)
 
     uint16_t size;
     eOmc_PID_t eoPID = {0};
-    if(!askRemoteValue(protid, (uint8_t *)&eoPID, size))
+    if(!askRemoteValue(protid, &eoPID, size))
         return false;
 
     copyPid_eo2iCub(&eoPID, pid);
@@ -2152,7 +2111,7 @@ bool embObjMotionControl::velocityMoveRaw(int j, double sp)
     setpoint.to.velocity.withacceleration = (eOmeas_acceleration_t) S_32(_ref_accs[j]);
 
 
-    if(! res->addSetMessage(protid, (uint8_t *) &setpoint))
+    if(false == res->setRemoteValue(protid, &setpoint))
     {
         yError() << "while setting velocity mode";
         return false;
@@ -2293,7 +2252,7 @@ bool embObjMotionControl::setCalibrationParametersRaw(int j, const CalibrationPa
         break;
     }
 
-    if (!res->addSetMessage(protid, (uint8_t *)&calib))
+    if (false == res->setRemoteValue(protid, &calib))
     {
         yError() << "while setting velocity mode";
         return false;
@@ -2369,7 +2328,7 @@ bool embObjMotionControl::calibrate2Raw(int j, unsigned int type, double p1, dou
         break;
     }
 
-    if(! res->addSetMessage(protid, (uint8_t *) &calib))
+    if(false == res->setRemoteValue(protid, &calib))
     {
         yError() << "while setting velocity mode";
         return false;
@@ -2471,7 +2430,7 @@ bool embObjMotionControl::positionMoveRaw(int j, double ref)
     setpoint.to.position.value =  (eOmeas_position_t) S_32(_ref_command_positions[j]);
     setpoint.to.position.withvelocity = (eOmeas_velocity_t) S_32(_ref_speeds[j]);
 
-    return res->addSetMessage(protid, (uint8_t*) &setpoint);
+    return res->setRemoteValue(protid, &setpoint);
 }
 
 bool embObjMotionControl::positionMoveRaw(const double *refs)
@@ -2627,7 +2586,7 @@ bool embObjMotionControl::stopRaw(int j)
 
     eObool_t stop = eobool_true;
 
-    return res->addSetMessage(protid, (uint8_t*) &stop);
+    return res->setRemoteValue(protid, &stop);
 }
 
 bool embObjMotionControl::stopRaw()
@@ -2818,7 +2777,7 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
     }
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_controlmode);
-    if(! res->addSetMessage(protid, (uint8_t*) &controlmodecommand) )
+    if(false == res->setRemoteValue(protid, &controlmodecommand) )
     {
         yError() << "setControlModeRaw failed for BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j << " mode " << Vocab::decode(_mode);
         return false;
@@ -2854,7 +2813,7 @@ bool embObjMotionControl::setControlModesRaw(const int n_joint, const int *joint
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joints[i], eoprot_tag_mc_joint_cmmnds_controlmode);
-        if(! res->addSetMessage(protid, (uint8_t*) &controlmodecommand) )
+        if(false == res->setRemoteValue(protid, &controlmodecommand) )
         {
             yError() << "setControlModesRaw() could not send set<cmmnds_controlmode> for BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << joints[i] << " mode " << Vocab::decode(modes[i]);
 
@@ -2895,7 +2854,7 @@ bool embObjMotionControl::setControlModesRaw(int *modes)
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, i, eoprot_tag_mc_joint_cmmnds_controlmode);
-        if(! res->addSetMessage(protid, (uint8_t*) &controlmodecommand) )
+        if(false == res->setRemoteValue(protid, &controlmodecommand) )
         {
             yError() << "setControlModesRaw failed for BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << i << " mode " << Vocab::decode(modes[i]);
             return false;
@@ -3228,7 +3187,7 @@ bool embObjMotionControl::setMaxCurrentRaw(int j, double val)
     uint16_t size;
     eOmc_current_limits_params_t currentlimits = {0};
     
-    if(!askRemoteValue(protid, (uint8_t *)&currentlimits, size))
+    if(!askRemoteValue(protid, &currentlimits, size))
     {
         yError() << "embObjMotionControl::setMaxCurrentRaw() could not read max current for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
         return false;
@@ -3238,7 +3197,7 @@ bool embObjMotionControl::setMaxCurrentRaw(int j, double val)
     currentlimits.overloadCurrent = (eOmeas_current_t) S_16(val);
 
     //send new values
-    return res->addSetMessage(protid, (uint8_t*) &currentlimits);
+    return res->setRemoteValue(protid, &currentlimits);
 }
 
 bool embObjMotionControl::getMaxCurrentRaw(int j, double *val)
@@ -3248,7 +3207,7 @@ bool embObjMotionControl::getMaxCurrentRaw(int j, double *val)
     eOmc_current_limits_params_t currentlimits = {0};
     *val = 0;
 
-    if(!askRemoteValue(protid, (uint8_t *)&currentlimits, size))
+    if(!askRemoteValue(protid, &currentlimits, size))
     {
         yError() << "embObjMotionControl::getMaxCurrentRaw() could not read max current for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
         return false;
@@ -3301,7 +3260,7 @@ bool embObjMotionControl::setLimitsRaw(int j, double min, double max)
     limits.max = (eOmeas_position_t) S_32(max);
     limits.min = (eOmeas_position_t) S_32(min);
 
-    ret = res->addSetMessage(protid, (uint8_t *) &limits);
+    ret = res->setRemoteValue(protid, &limits);
 
 
     if(!ret)
@@ -3317,7 +3276,7 @@ bool embObjMotionControl::getLimitsRaw(int j, double *min, double *max)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_userlimits);
     uint16_t size;
     
-    if(! askRemoteValue(protoid, (void*)&limits, size))
+    if(! askRemoteValue(protoid, &limits, size))
         return false;
 
     *min = (double)limits.min + SAFETY_THRESHOLD;
@@ -3330,7 +3289,7 @@ bool embObjMotionControl::getGearboxRatioRaw(int j, double *gearbox)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+    if(! askRemoteValue(protoid, &motor_cfg, size))
         return false;
 
     // refresh cached value when reading data from the EMS
@@ -3344,7 +3303,7 @@ bool embObjMotionControl::getRotorLimitsRaw(int j, double *rotorMin, double *rot
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+    if(! askRemoteValue(protoid, &motor_cfg, size))
         return false;
     *rotorMax = (double)( motor_cfg.limitsofrotor.max);
     *rotorMin = (double)( motor_cfg.limitsofrotor.min);
@@ -3356,7 +3315,7 @@ bool embObjMotionControl::getTorqueControlFilterType(int j, int& type)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
     uint16_t size;
     eOmc_joint_config_t    joint_cfg;
-    if(! askRemoteValue(protoid, (void*)&joint_cfg, size))
+    if(! askRemoteValue(protoid, &joint_cfg, size))
         return false;
 
     // refresh cached value when reading data from the EMS
@@ -3369,7 +3328,7 @@ bool embObjMotionControl::getRotorEncoderResolutionRaw(int j, double &rotres)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+    if(! askRemoteValue(protoid, &motor_cfg, size))
         return false;
 
     // refresh cached value when reading data from the EMS
@@ -3383,7 +3342,7 @@ bool embObjMotionControl::getJointEncoderResolutionRaw(int j, double &jntres)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
     uint16_t size;
     eOmc_joint_config_t    joint_cfg;
-    if(! askRemoteValue(protoid, (void*)&joint_cfg, size))
+    if(! askRemoteValue(protoid, &joint_cfg, size))
         return false;
 
     // refresh cached value when reading data from the EMS
@@ -3397,7 +3356,7 @@ bool embObjMotionControl::getJointEncoderTypeRaw(int j, int &type)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
     uint16_t size;
     eOmc_joint_config_t    joint_cfg;
-    if(! askRemoteValue(protoid, (void*)&joint_cfg, size))
+    if(! askRemoteValue(protoid, &joint_cfg, size))
         return false;
 
     // refresh cached value when reading data from the EMS
@@ -3411,7 +3370,7 @@ bool embObjMotionControl::getRotorEncoderTypeRaw(int j, int &type)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+    if(! askRemoteValue(protoid, &motor_cfg, size))
         return false;
 
     // refresh cached value when reading data from the EMS
@@ -3431,7 +3390,7 @@ bool embObjMotionControl::getHasTempSensorsRaw(int j, int& ret)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+    if(! askRemoteValue(protoid, &motor_cfg, size))
         return false;
 
     // refresh cached value when reading data from the EMS
@@ -3445,7 +3404,7 @@ bool embObjMotionControl::getHasHallSensorRaw(int j, int& ret)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+    if(! askRemoteValue(protoid, &motor_cfg, size))
         return false;
     
     // refresh cached value when reading data from the EMS
@@ -3459,7 +3418,7 @@ bool embObjMotionControl::getHasRotorEncoderRaw(int j, int& ret)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+    if(! askRemoteValue(protoid, &motor_cfg, size))
         return false;
 
     // refresh cached value when reading data from the EMS
@@ -3473,7 +3432,7 @@ bool embObjMotionControl::getHasRotorEncoderIndexRaw(int j, int& ret)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+    if(! askRemoteValue(protoid, &motor_cfg, size))
         return false;
 
     // refresh cached value when reading data from the EMS
@@ -3488,7 +3447,7 @@ bool embObjMotionControl::getMotorPolesRaw(int j, int& poles)
 
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+    if(! askRemoteValue(protoid, &motor_cfg, size))
         return false;
     
     // refresh cached value when reading data from the EMS
@@ -3502,7 +3461,7 @@ bool embObjMotionControl::getRotorIndexOffsetRaw(int j, double& rotorOffset)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+    if(! askRemoteValue(protoid, &motor_cfg, size))
         return false;
 
     // refresh cached value when reading data from the EMS
@@ -3543,7 +3502,7 @@ bool embObjMotionControl::getJointDeadZoneRaw(int j, double &jntDeadZone)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config);
     uint16_t size;
     eOmc_joint_config_t    joint_cfg;
-    if(! askRemoteValue(protoid, (void*)&joint_cfg, size))
+    if(! askRemoteValue(protoid, &joint_cfg, size))
         return false;
 
     // refresh cached value when reading data from the EMS
@@ -3878,7 +3837,7 @@ bool embObjMotionControl::getVelLimitsRaw(int axis, double *min, double *max)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_config);
     uint16_t size;
     eOmc_joint_config_t    joint_cfg;
-    if(! askRemoteValue(protoid, (void*)&joint_cfg, size))
+    if(! askRemoteValue(protoid, &joint_cfg, size))
         return false;
 
     *max = joint_cfg.maxvelocityofjoint;
@@ -3922,12 +3881,12 @@ bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorq
 
     eOmeas_torque_t meas_torque = 0;
     static double curr_time = Time::now();
-    static int    count_saturation=0;
+    static int count_saturation=0;
 
     meas_torque = (eOmeas_torque_t) S_32(_measureConverter->trqN2S(fTorque, j));
 
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
-    return res->addSetMessageAndCacheLocally(protoid, (uint8_t*) &meas_torque);
+    return res->addSetROPandCacheLocally(protoid, (uint8_t*) &meas_torque);
 }
 
 // end  IVirtualAnalogSensor //
@@ -3977,7 +3936,7 @@ bool embObjMotionControl::setRefTorqueRaw(int j, double t)
     setpoint.to.torque.value =  (eOmeas_torque_t) S_32(t);
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_setpoint);
-    return res->addSetMessage(protid, (uint8_t*) &setpoint);
+    return res->setRemoteValue(protid, &setpoint);
 }
 
 bool embObjMotionControl::setRefTorquesRaw(const int n_joint, const int *joints, const double *t)
@@ -4036,7 +3995,7 @@ bool embObjMotionControl::helper_setTrqPidRaw(int j, const Pid &pid)
 
     copyPid_iCub2eo(&hwPid, &outPid);
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidtorque);
-    return res->addSetMessage(protid, (uint8_t *)&outPid);
+    return res->setRemoteValue(protid, &outPid);
 }
 
 bool embObjMotionControl::helper_getTrqPidRaw(int j, Pid *pid)
@@ -4046,7 +4005,7 @@ bool embObjMotionControl::helper_getTrqPidRaw(int j, Pid *pid)
 
     uint16_t size;
     eOmc_PID_t eoPID;
-    if(! askRemoteValue(protoid, (void*)&eoPID, size))
+    if(! askRemoteValue(protoid, &eoPID, size))
         return false;
     
     copyPid_eo2iCub(&eoPID, pid);
@@ -4075,7 +4034,7 @@ bool embObjMotionControl::getWholeImpedanceRaw(int j, eOmc_impedance_t &imped)
 
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_impedance);
     uint16_t size;
-    if(! askRemoteValue(protoid, (void*)&imped, size))
+    if(! askRemoteValue(protoid, &imped, size))
         return false;
 
     // refresh cached value when reading data from the EMS
@@ -4106,7 +4065,7 @@ bool embObjMotionControl::setImpedanceRaw(int j, double stiffness, double dampin
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_impedance);
 
 
-    ret &= res->addSetMessage(protid, (uint8_t *) &val);
+    ret &= res->setRemoteValue(protid, &val);
     return ret;
 }
 
@@ -4127,7 +4086,7 @@ bool embObjMotionControl::setImpedanceOffsetRaw(int j, double offset)
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_impedance);
 
 
-    ret &= res->addSetMessage(protid, (uint8_t *) &val);
+    ret &= res->setRemoteValue(protid, &val);
 
     return ret;
 }
@@ -4168,7 +4127,7 @@ bool embObjMotionControl::getMotorTorqueParamsRaw(int j, MotorTorqueParameters *
 
     uint16_t size;
     eOmc_motor_params_t eo_params = {0};
-    if(! askRemoteValue(protoid, (void*)&eo_params, size))
+    if(! askRemoteValue(protoid, &eo_params, size))
         return false;
 
     params->bemf       = _measureConverter->convertTrqMotorBemfParam_MachineUnitsToMetric(j, eo_params.bemf_value);
@@ -4193,7 +4152,7 @@ bool embObjMotionControl::setMotorTorqueParamsRaw(int j, const MotorTorqueParame
     eo_params.ktau_scale    = (uint8_t) params.ktau_scale;
     //printf("setMotorTorqueParamsRaw(AFTER CONV): benf=%f %f ktau=%f %f\n",  params.bemf, params.bemf_scale, params.ktau,params.ktau_scale);
 
-    if(!res->addSetMessage(id32, (uint8_t *) &eo_params))
+    if(false == res->setRemoteValue(id32, &eo_params))
     {
         yError() << "embObjMotionControl::setMotorTorqueParamsRaw() could not send set message for BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
         return false;
@@ -4242,7 +4201,7 @@ bool embObjMotionControl::helper_setVelPidRaw(int j, const Pid &pid)
 
     copyPid_iCub2eo(&hwPid, &outPid);
 
-    if (!res->addSetMessage(protoId, (uint8_t *)&outPid))
+    if (false == res->setRemoteValue(protoId, &outPid))
     {
         yError() << "while setting velocity PIDs for BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j;
         return false;
@@ -4256,7 +4215,7 @@ bool embObjMotionControl::helper_getVelPidRaw(int j, Pid *pid)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_config_pidvelocity);
     uint16_t size;
     eOmc_PID_t eoPID;
-    if(! askRemoteValue(protoid, (void*)&eoPID, size))
+    if(! askRemoteValue(protoid, &eoPID, size))
         return false;
 
     copyPid_eo2iCub(&eoPID, pid);
@@ -4300,7 +4259,7 @@ bool embObjMotionControl::setPositionRaw(int j, double ref)
     setpoint.to.position.value = (eOmeas_position_t) S_32(ref);
     setpoint.to.position.withvelocity = 0;
 
-    return res->addSetMessage(protoId, (uint8_t*) &setpoint);
+    return res->setRemoteValue(protoId, &setpoint);
 }
 
 bool embObjMotionControl::setPositionsRaw(const int n_joint, const int *joints, double *refs)
@@ -4334,7 +4293,7 @@ bool embObjMotionControl::getTargetPositionRaw(int axis, double *ref)
     // Get the value
     uint16_t size;
     eOmc_joint_status_target_t  target = {0};
-    if(!askRemoteValue(id32, (uint8_t *)&target, size))
+    if(!askRemoteValue(id32, &target, size))
     {
         yError() << "embObjMotionControl::getTargetPositionRaw() could not read reference pos for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << axis;
         return false;
@@ -4379,7 +4338,7 @@ bool embObjMotionControl::getRefVelocityRaw(int axis, double *ref)
     // Get the value
     uint16_t size;
     eOmc_joint_status_target_t  target = {0};
-    if(!askRemoteValue(id32, (uint8_t *)&target, size))
+    if(!askRemoteValue(id32, &target, size))
     {
         yError() << "embObjMotionControl::getRefVelocityRaw() could not read reference vel for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << axis;
         return false;
@@ -4421,7 +4380,7 @@ bool embObjMotionControl::getRefPositionRaw(int axis, double *ref)
     // Get the value
     uint16_t size;
     eOmc_joint_status_target_t  target = {0};
-    if(!askRemoteValue(id32, (uint8_t *)&target, size))
+    if(!askRemoteValue(id32, &target, size))
     {
         yError() << "embObjMotionControl::getRefPositionRaw() could not read reference pos for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << axis;
         return false;
@@ -4517,7 +4476,7 @@ bool embObjMotionControl::setInteractionModeRaw(int j, yarp::dev::InteractionMod
 
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
 
-    if(! res->addSetMessage(protid, (uint8_t*) &interactionmodecommand) )
+    if(false == res->setRemoteValue(protid, &interactionmodecommand) )
     {
         yError() << "setInteractionModeRaw failed for BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j << " mode " << Vocab::decode(_mode);
         return false;
@@ -4558,7 +4517,7 @@ bool embObjMotionControl::setInteractionModesRaw(int n_joints, int *joints, yarp
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
-        if(! res->addSetMessage(protid, (uint8_t*) &interactionmodecommand) )
+        if(false == res->setRemoteValue(protid, &interactionmodecommand) )
         {
             yError() << "embObjMotionControl::setInteractionModesRaw() failed for BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j << " mode " << Vocab::decode(modes[j]);
             return false;
@@ -4615,7 +4574,7 @@ bool embObjMotionControl::setInteractionModesRaw(yarp::dev::InteractionModeEnum*
         }
 
         eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_cmmnds_interactionmode);
-        if(! res->addSetMessage(protid, (uint8_t*) &interactionmodecommand) )
+        if(false == res->setRemoteValue(protid, &interactionmodecommand) )
         {
             yError() << "setInteractionModeRaw failed for BOARD" << res->getName() << "IP" << res->getIPv4string() << " joint " << j << " mode " << Vocab::decode(modes[j]);
             return false;
@@ -4747,7 +4706,7 @@ bool embObjMotionControl::getTemperatureLimitRaw(int m, double *temp)
     uint16_t size;
     eOmeas_temperature_t temperaturelimit = {0};
     *temp = 0;
-    if(!askRemoteValue(protid, (uint8_t *)&temperaturelimit, size))
+    if(!askRemoteValue(protid, &temperaturelimit, size))
     {
         yError() << "embObjMotionControl::getTemperatureLimitRaw() can't read temperature limits  for BOARD" << res->getName() << "IP" << res->getIPv4string() << " motor " << m;
         return false;
@@ -4762,7 +4721,7 @@ bool embObjMotionControl::setTemperatureLimitRaw(int m, const double temp)
 {
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, m, eoprot_tag_mc_motor_config_temperaturelimit);
     eOmeas_temperature_t  temperatureLimit = (eOmeas_pwm_t) S_16(temp);
-    return res->addSetMessage(protid, (uint8_t*) &temperatureLimit);
+    return res->setRemoteValue(protid, &temperatureLimit);
 
 }
 
@@ -4772,7 +4731,7 @@ bool embObjMotionControl::getPeakCurrentRaw(int m, double *val)
     uint16_t size;
     eOmc_current_limits_params_t currentlimits = {0};
     *val = 0;
-    if(!askRemoteValue(protid, (uint8_t *)&currentlimits, size))
+    if(!askRemoteValue(protid, &currentlimits, size))
     {
         yError() << "embObjMotionControl::getPeakCurrentRaw() can't read current limits  for BOARD" << res->getName() << "IP" << res->getIPv4string() << " motor " << m;
         return false;
@@ -4788,7 +4747,7 @@ bool embObjMotionControl::setPeakCurrentRaw(int m, const double val)
     //get current limit params
     uint16_t size;
     eOmc_current_limits_params_t currentlimits = {0};
-    if(!askRemoteValue(protid, (uint8_t *)&currentlimits, size))
+    if(!askRemoteValue(protid, &currentlimits, size))
     {
         yError() << "embObjMotionControl::setPeakCurrentRaw can't read current limits for BOARD" << res->getName() << "IP" << res->getIPv4string() << " motor " << m ;
         return false;
@@ -4798,7 +4757,7 @@ bool embObjMotionControl::setPeakCurrentRaw(int m, const double val)
     currentlimits.peakCurrent = (eOmeas_current_t) S_16(val);
 
     //send new values
-    bool ret = res->addSetMessage(protid, (uint8_t*) &currentlimits);
+    bool ret = res->setRemoteValue(protid, &currentlimits);
     if(!ret)
     {
          yError() << "embObjMotionControl::setPeakCurrentRaw failed sending new value for BOARD" << res->getName() << "IP" << res->getIPv4string() << " motor " << m ;
@@ -4812,7 +4771,7 @@ bool embObjMotionControl::getNominalCurrentRaw(int m, double *val)
     uint16_t size;
     eOmc_current_limits_params_t currentlimits = {0};
     *val = 0;
-    if(!askRemoteValue(protid, (uint8_t *)&currentlimits, size))
+    if(!askRemoteValue(protid, &currentlimits, size))
     {
         yError() << "embObjMotionControl::getNominalCurrentRaw() can't read current limits  for BOARD" << res->getName() << "IP" << res->getIPv4string() << " motor " << m;
         return false;
@@ -4829,7 +4788,7 @@ bool embObjMotionControl::setNominalCurrentRaw(int m, const double val)
     //get current limit params
     uint16_t size;
     eOmc_current_limits_params_t currentlimits = {0};
-    if(!askRemoteValue(protid, (uint8_t *)&currentlimits, size))
+    if(!askRemoteValue(protid, &currentlimits, size))
     {
         yError() << "embObjMotionControl::setNominalCurrentRaw can't read current limits for BOARD" << res->getName() << "IP" << res->getIPv4string() << " motor " << m ;
         return false;
@@ -4839,7 +4798,7 @@ bool embObjMotionControl::setNominalCurrentRaw(int m, const double val)
     currentlimits.nominalCurrent = (eOmeas_current_t) S_16(val);
 
     //send new values
-    bool ret = res->addSetMessage(protid, (uint8_t*) &currentlimits);
+    bool ret = res->setRemoteValue(protid, &currentlimits);
     if(!ret)
     {
          yError() << "embObjMotionControl::setNominalCurrentRaw failed sending new value for BOARD" << res->getName() << "IP" << res->getIPv4string() << " motor " << m ;
@@ -4874,7 +4833,7 @@ bool embObjMotionControl::getPWMLimitRaw(int j, double* val)
     uint16_t size;
     eOmeas_pwm_t  motorPwmLimit;
 
-    bool ret = askRemoteValue(protid, (uint8_t *)&motorPwmLimit, size);
+    bool ret = askRemoteValue(protid, &motorPwmLimit, size);
     if(ret)
     {
         *val = (double) motorPwmLimit;
@@ -4897,7 +4856,7 @@ bool embObjMotionControl::setPWMLimitRaw(int j, const double val)
     }
     eOprotID32_t protid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config_pwmlimit);
     eOmeas_pwm_t  motorPwmLimit = (eOmeas_pwm_t) S_16(val);
-    return res->addSetMessage(protid, (uint8_t*) &motorPwmLimit);
+    return res->setRemoteValue(protid, &motorPwmLimit);
 }
 
 bool embObjMotionControl::getPowerSupplyVoltageRaw(int j, double* val)
@@ -4906,7 +4865,7 @@ bool embObjMotionControl::getPowerSupplyVoltageRaw(int j, double* val)
     uint16_t size;
     eOmc_controller_status_t  controllerStatus;
 
-    bool ret = askRemoteValue(protid, (uint8_t *)&controllerStatus, size);
+    bool ret = askRemoteValue(protid, &controllerStatus, size);
     if(ret)
     {
         *val = (double) controllerStatus.supplyVoltage;
@@ -4921,46 +4880,49 @@ bool embObjMotionControl::getPowerSupplyVoltageRaw(int j, double* val)
 }
 
 bool embObjMotionControl::askRemoteValue(eOprotID32_t id32, void* value, uint16_t& size)
-{
+{   
+#if 1
+
+    return res->getRemoteValue(id32, value, 0.200, 0);
+
+#else
     // marco.accame: this is a private methods, thus it is responsibility of the called to pass value pointer of suitable size. we dont do controls.
 
-    if(!res->isFake())
+    // Sign up for waiting the reply
+    eoThreadEntry *tt = appendWaitRequest(eoprot_ID2index(id32), id32);
+
+    if(NULL == tt)
     {
-        // Sign up for waiting the reply
-        eoThreadEntry *tt = appendWaitRequest(eoprot_ID2index(id32), id32);
-
-        if(NULL == tt)
-        {
-            char nvinfo[128];
-            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-            yError() << "embObjMotionControl::askRemoteValue() has a NULL eoThreadEntry for BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
-        }
-
-        tt->setPending(1);
-
-        if (!res->addGetMessage(id32))
-        {
-            char nvinfo[128];
-            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-            yError() << "embObjMotionControl::askRemoteValue() cannot send ask<> to BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
-            return false;
-        }
-
-
-
-        // wait here
-        if (-1 == tt->synch())
-        {
-            int threadId;
-            char nvinfo[128];
-            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-            yError() << "embObjMotionControl::askRemoteValue() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
-
-            if (requestQueue->threadPool->getId(&threadId))
-                requestQueue->cleanTimeouts(threadId);
-            return false;
-        }
+        char nvinfo[128];
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        yError() << "embObjMotionControl::askRemoteValue() has a NULL eoThreadEntry for BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
     }
+
+    tt->setPending(1);
+
+    if (!res->addGetROP(id32))
+    {
+        char nvinfo[128];
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        yError() << "embObjMotionControl::askRemoteValue() cannot send ask<> to BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
+        return false;
+    }
+
+
+
+    // wait here
+    if (-1 == tt->synch())
+    {
+        int threadId;
+        char nvinfo[128];
+        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+        yError() << "embObjMotionControl::askRemoteValue() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
+
+        if (requestQueue->threadPool->getId(&threadId))
+            requestQueue->cleanTimeouts(threadId);
+        return false;
+    }
+
     bool ret = res->readBufferedValue(id32, (uint8_t *)value, &size);
 
     if(false == ret)
@@ -4970,6 +4932,8 @@ bool embObjMotionControl::askRemoteValue(eOprotID32_t id32, void* value, uint16_
         yError() << "embObjMotionControl::askRemoteValue() fails res->readBufferedValue() for BOARD" << res->getName() << "IP" << res->getIPv4string() << "and nv" << nvinfo;
     }
     return ret;
+#endif
+
 }
 
 
@@ -4982,9 +4946,9 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
     uint16_t size = 0;
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joint, eoprot_tag_mc_joint_status_core_modes_controlmodestatus);
-    const double timeout = 0.250f;  // 250 msec
+    const double timeout = 0.250;  // 250 msec
     const int maxretries = 25;
-    const double delaybetweenqueries = 0.010f; // 10 msec
+    const double delaybetweenqueries = 0.010; // 10 msec
 
     // now i repeat the query until i am satisfied. how many times? for maximum time timeout seconds and with a gap of delaybetweenqueries
 
@@ -5070,7 +5034,7 @@ bool embObjMotionControl::setRefDutyCycleRaw(int j, double v)
     setpoint.type = (eOenum08_t)eomc_setpoint_openloop;
     setpoint.to.openloop.value = (eOmeas_pwm_t)S_16(v);
 
-    return res->addSetMessage(protid, (uint8_t*)&setpoint);
+    return res->setRemoteValue(protid, &setpoint);
 }
 
 bool embObjMotionControl::setRefDutyCyclesRaw(const double *v)
@@ -5091,7 +5055,7 @@ bool embObjMotionControl::getRefDutyCycleRaw(int j, double *v)
     eOmc_joint_status_target_t  target = { 0 };
 
 
-    if (!askRemoteValue(protoId, (uint8_t *)&target, size))
+    if (!askRemoteValue(protoId, &target, size))
     {
         yError() << "embObjMotionControl::getRefDutyCycleRaw() could not read openloop reference for  BOARD" << res->getName() << "IP" << res->getIPv4string() << "joint " << j;
         return false;
@@ -5200,7 +5164,7 @@ bool embObjMotionControl::helper_getCurPidRaw(int j, Pid *pid)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, j, eoprot_tag_mc_motor_config);
     uint16_t size;
     eOmc_motor_config_t    motor_cfg;
-    if(! askRemoteValue(protoid, (void*)&motor_cfg, size))
+    if(! askRemoteValue(protoid, &motor_cfg, size))
         return false;
 
     // refresh cached value when reading data from the EMS
@@ -5215,7 +5179,7 @@ bool embObjMotionControl::getJointConfiguration(int joint, eOmc_joint_config_t *
 {
     uint32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, joint, eoprot_tag_mc_joint_config);
     uint16_t size;
-    if(!askRemoteValue(protoid, (void*)jntCfg_ptr, size))
+    if(!askRemoteValue(protoid, jntCfg_ptr, size))
     {
         yError ("Failure of askRemoteValue() inside embObjMotionControl::getJointConfiguration(axis=%d) for BOARD %s IP %s", joint, res->getName(), res->getIPv4string());
         return false;
@@ -5227,7 +5191,7 @@ bool embObjMotionControl::getMotorConfiguration(int axis, eOmc_motor_config_t *m
 {
     uint32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_motor, axis, eoprot_tag_mc_motor_config);
     uint16_t size;
-    if(!askRemoteValue(protoid, (void*)motCfg_ptr, size))
+    if(!askRemoteValue(protoid, motCfg_ptr, size))
     {
         yError ("Failure of askRemoteValue() inside embObjMotionControl::getMotorConfiguration(axis=%d) for BOARD %s IP %s", axis, res->getName(), res->getIPv4string());
         return false;

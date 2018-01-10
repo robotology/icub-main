@@ -68,7 +68,7 @@ namespace tbd {
 
         // it returns true only when the remote board replies to the request of a given network variable.
         // the varible has id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status_managementprotocolversion)
-        bool ping(const eOprotIP_t ipv4, const double timeout = 0.5, const unsigned int retries = 20);
+        bool ping(const eOprotIP_t ipv4, eoprot_version_t &mnprotversion, const double timeout = 0.5, const unsigned int retries = 20);
 
 
         // management of a single variable at a time: ask(), set(), check(), setcheck()

@@ -256,7 +256,7 @@ bool HostTransceiver::init2(yarp::os::Searchable &cfgEthBoard, eOipv4addressing_
 
 
 // if signature is eo_rop_SIGNATUREdummy (0xffffffff) we dont send the signature. if writelocalcache is true we copy data into local ram of the EOnv 
-bool HostTransceiver::addSetMessage__(eOprotID32_t id32, uint8_t* data, uint32_t signature, bool writelocalrxcache)
+bool HostTransceiver::addSetROP__(eOprotID32_t id32, uint8_t* data, uint32_t signature, bool writelocalrxcache)
 {
 #ifdef    ETHRES_DEBUG_DONTREADBACK   // in test beds in which no EMS are connected, just skip this and go on
 return true;
@@ -271,14 +271,14 @@ return true;
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "HostTransceiver::addSetMessage__() called w/ invalid id on BOARD /w IP" << remoteipstring <<
+        yError() << "HostTransceiver::addSetROP__() called w/ invalid id on BOARD /w IP" << remoteipstring <<
                     "with id: " << nvinfo;
         return false;
     }
 
     if(NULL == data)
     {
-        yError() << "HostTransceiver::addSetMessage__() called w/ with NULL data";
+        yError() << "HostTransceiver::addSetROP__() called w/ with NULL data";
         return false;
     }
     
@@ -291,7 +291,7 @@ return true;
 
         if(NULL == nv_ptr)
         {
-            yError() << "HostTransceiver::addSetMessage__(): Unable to get pointer to desired NV with id32" << id32;
+            yError() << "HostTransceiver::addSetROP__(): Unable to get pointer to desired NV with id32" << id32;
             return false;
         }
 
@@ -304,7 +304,7 @@ return true;
         if(eores_OK != eores)
         {
             // the nv is not writeable
-            yError() << "HostTransceiver::addSetMessage__(): Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
+            yError() << "HostTransceiver::addSetROP__(): Maybe you are trying to write a read-only variable? (eo_nv_Set failed)";
             return false;
         }
         
@@ -335,11 +335,11 @@ return true;
         {
             char nvinfo[128];
             eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-            yWarning() << "HostTransceiver::addSetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "unsuccessful at attempt num " << i+1 <<
+            yWarning() << "HostTransceiver::addSetROP__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "unsuccessful at attempt num " << i+1 <<
                           "with id: " << nvinfo;
 
             eo_transceiver_lasterror_tx_Get(pc104txrx, &err, &info0, &info1, &info2);
-            yWarning() << "HostTransceiver::addSetMessage__(): eo_transceiver_lasterror_tx_Get() detected: err=" << err << "infos = " << info0 << info1 << info2;
+            yWarning() << "HostTransceiver::addSetROP__(): eo_transceiver_lasterror_tx_Get() detected: err=" << err << "infos = " << info0 << info1 << info2;
 
             yarp::os::Time::delay(delayAfterROPloadingFailure);
         }
@@ -349,7 +349,7 @@ return true;
             {
                 char nvinfo[128];
                 eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-                yDebug() << "HostTransceiver::addSetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "successful ONLY at attempt num " << i+1 <<
+                yDebug() << "HostTransceiver::addSetROP__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "successful ONLY at attempt num " << i+1 <<
                               "with id: " << nvinfo;                
             }
 
@@ -360,7 +360,7 @@ return true;
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "HostTransceiver::addSetMessage__(): ERROR in eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring+1 << "after all attempts" <<
+        yError() << "HostTransceiver::addSetROP__(): ERROR in eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring+1 << "after all attempts" <<
                     "with id: " << nvinfo;
     }
 
@@ -368,25 +368,25 @@ return true;
 }
 
 
-bool HostTransceiver::appendSetMessage(eOprotID32_t id32, uint8_t* data)
+bool HostTransceiver::addSetROP(eOprotID32_t id32, uint8_t* data)
 {
-   return(HostTransceiver::addSetMessage__(id32, data, eo_rop_SIGNATUREdummy, false));
+   return(HostTransceiver::addSetROP__(id32, data, eo_rop_SIGNATUREdummy, false));
 }
 
 
-bool HostTransceiver::addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data)
+bool HostTransceiver::addSetROPandCacheLocally(eOprotID32_t id32, uint8_t* data)
 {
-   return(HostTransceiver::addSetMessage__(id32, data, eo_rop_SIGNATUREdummy, true));
+   return(HostTransceiver::addSetROP__(id32, data, eo_rop_SIGNATUREdummy, true));
 }
 
 
-bool HostTransceiver::addSetMessageWithSignature(eOprotID32_t id32, uint8_t* data, uint32_t sig)
+bool HostTransceiver::addSetROPwithSignature(eOprotID32_t id32, uint8_t* data, uint32_t sig)
 {
-    return(HostTransceiver::addSetMessage__(id32, data, sig, false));
+    return(HostTransceiver::addSetROP__(id32, data, sig, false));
 }
 
 
-bool HostTransceiver::addGetMessage__(eOprotID32_t id32, uint32_t signature)
+bool HostTransceiver::addGetROP__(eOprotID32_t id32, uint32_t signature)
 {
     eOresult_t eores = eores_NOK_generic;
     int32_t err = -1;
@@ -398,7 +398,7 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t id32, uint32_t signature)
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "HostTransceiver::addGetMessage__() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
+        yError() << "HostTransceiver::addGetROP__() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
                     "with id: " << nvinfo;
         return false;
     }
@@ -427,11 +427,11 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t id32, uint32_t signature)
         {
             char nvinfo[128];
             eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-            yWarning() << "HostTransceiver::addGetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring<< "unsuccessfull at attempt num " << i+1 <<
+            yWarning() << "HostTransceiver::addGetROP__(): eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring<< "unsuccessfull at attempt num " << i+1 <<
                           "with id: " << nvinfo;
 
             eo_transceiver_lasterror_tx_Get(pc104txrx, &err, &info0, &info1, &info2);
-            yWarning() << "HostTransceiver::addGetMessage__(): eo_transceiver_lasterror_tx_Get() detected: err=" << err << "infos = " << info0 << info1 << info2;
+            yWarning() << "HostTransceiver::addGetROP__(): eo_transceiver_lasterror_tx_Get() detected: err=" << err << "infos = " << info0 << info1 << info2;
 
             yarp::os::Time::delay(delayAfterROPloadingFailure);
         }
@@ -441,7 +441,7 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t id32, uint32_t signature)
             {
                 char nvinfo[128];
                 eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-                yDebug() << "HostTransceiver::addGetMessage__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "succesful ONLY at attempt num " << i+1 <<
+                yDebug() << "HostTransceiver::addGetROP__(): eo_transceiver_OccasionalROP_Load() for BOARD /w IP" << remoteipstring << "succesful ONLY at attempt num " << i+1 <<
                               "with id: " << nvinfo;
 
             }
@@ -452,7 +452,7 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t id32, uint32_t signature)
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "HostTransceiver::addGetMessage__(): ERROR in eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring << "after all attempts " <<
+        yError() << "HostTransceiver::addGetROP__(): ERROR in eo_transceiver_OccasionalROP_Load() for BOARD w/ IP" << remoteipstring << "after all attempts " <<
                     "with id: " << nvinfo;
     }
     return ret;
@@ -463,23 +463,26 @@ bool HostTransceiver::isID32supported(eOprotID32_t id32)
     return (eobool_false == eoprot_id_isvalid(protboardnumber, id32)) ? false : true;
 }
 
+
 uint16_t HostTransceiver::getMaxSizeofROP()
 {
     return maxSizeOfROP;
 }
 
+
+bool HostTransceiver::addGetROP(eOprotID32_t id32)
 {
-    return(HostTransceiver::addGetMessage__(id32, eo_rop_SIGNATUREdummy));
+    return(HostTransceiver::addGetROP__(id32, eo_rop_SIGNATUREdummy));
 }
 
 
-bool HostTransceiver::addGetMessageWithSignature(eOprotID32_t id32, uint32_t signature)
+bool HostTransceiver::addGetROPwithSignature(eOprotID32_t id32, uint32_t signature)
 {
-    return(HostTransceiver::addGetMessage__(id32, signature));
+    return(HostTransceiver::addGetROP__(id32, signature));
 }
 
 
-bool HostTransceiver::getBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size)
+bool HostTransceiver::readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size)
 {      
     if(eobool_false == eoprot_id_isvalid(protboardnumber, id32))
     {
@@ -515,7 +518,7 @@ bool HostTransceiver::getBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16
 }
 
 
-// use the readSentValue() to retrieve a value previously set into a EOnv with method ::addSetMessage__(id32, data, signature, bool writelocalcache = true).
+// use the readSentValue() to retrieve a value previously set into a EOnv with method ::addSetROP__(id32, data, signature, bool writelocalcache = true).
 // take in mind however, that the opration is not clean.
 // the ram of EOnv is done to accept values coming from the network. if robot-interface writes data into a EOnv, then a received rop of type say<> or sig<> will
 // overwrite the same memory area. we need to re-think the mode with which someone wants to retrieve the last sent value of a EOnv.
