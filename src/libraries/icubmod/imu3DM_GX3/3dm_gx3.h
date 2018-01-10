@@ -44,8 +44,6 @@ struct XSensMTxParameters
 
 /**
  *
- * @ingroup dev_impl
- *
  * Driver for 3DM_GX3 IMU unit from MicroStrain
  * @author Alberto Cardellino
  */

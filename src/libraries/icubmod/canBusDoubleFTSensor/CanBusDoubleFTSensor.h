@@ -19,7 +19,7 @@ using namespace yarp::dev;
 
 /**
 *  @ingroup icub_hardware_modules
-*
+* @brief `canBusDoubleFTSensor` : driver for IIT's double FTSens over CAN.
 *
 * Driver for CAN communication with two six-axis FT sensor, mounted in parallel.
 * This driver acts as a wrapper and it combines the readings of this two FT sensors,
@@ -42,6 +42,10 @@ using namespace yarp::dev;
 * For the double sensor ankle setup this parameters extracted from the CAD are:
 *   firstSecondDistance : 0.046 m
 *   firstSingleDistance : 0.0101175 m
+*
+* | YARP device name |
+* |:-----------------:|
+* | `canBusDoubleFTSensor` |
 *
 * Parameters accepted in the config argument of the open method:
 * | Parameter name | Type   | Units | Default Value | Required | Description | Notes |

@@ -1,12 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/**
- * @ingroup icub_hardware_modules 
- * \defgroup cfw2can cfw2can
- *
- * Implements <a href="http://wiki.icub.org/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a cfw2 can bus device (cfw2 pc104 card). This is the cfw2can module
- * device.
- *
+/*
  * Copyright (C) 2010 RobotCub Consortium.
  *
  * Author: Lorenzo Natale
@@ -90,6 +84,14 @@ class yarp::dev::Cfw2CanMessage:public yarp::dev::CanMessage
     }
 };
 
+/**
+*  @ingroup icub_hardware_modules
+*  @brief `cfw2can` : driver implementing the yarp::dev::ICanBus interface for a cfw2 can bus device (cfw2 pc104 card).
+*
+* | YARP device name |
+* |:-----------------:|
+* | `cfw2can` |
+*/
 class yarp::dev::Cfw2Can: public ImplementCanBufferFactory<Cfw2CanMessage, CFWCAN_MSG>,
             public ICanBus, 
            /* public ICanBusErrors, */

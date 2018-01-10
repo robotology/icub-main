@@ -1,13 +1,6 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
- * @ingroup icub_hardware_modules 
- * \defgroup pcan pcan
- *
- * Implements <a href="http://wiki.icub.org/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a "plx based"
- * can bus device (cfw pc104 card). This is the pcan
- * device.
- *
  * Copyright (C) 2008 RobotCub Consortium.
  *
  * Author: Lorenzo Natale
@@ -93,6 +86,14 @@ class yarp::dev::PlxCanMessage:public yarp::dev::CanMessage
     }
 };
 
+/**
+ * @ingroup icub_hardware_modules
+ * @brief `pcan` : implements yarp::dev::ICanBus for a "plx based" can bus device (cfw pc104 card).
+ *
+ * | YARP device name |
+ * |:-----------------:|
+ * | `pcan` |
+ */
 class yarp::dev::PlxCan: public ImplementCanBufferFactory<PlxCanMessage, PLXCAN_MSG>,
             public ICanBus, 
             public ICanBusErrors,

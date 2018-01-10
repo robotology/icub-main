@@ -46,11 +46,13 @@ namespace yarp{
 // };
 
 /**
- *
- * @ingroup dev_impl
- *
- * Driver for 3DM_GX3 IMU unit from MicroStrain
+ * @ingroup icub_hardware_modules
+ * @brief `imuST_M1` : driver for 3DM_GX3 IMU unit from MicroStrain
  * @author Alberto Cardellino
+ *
+ * | YARP device name |
+ * |:-----------------:|
+ * | `imuST_M1` |
  */
 class yarp::dev::imuST_M1 :     public yarp::dev::IGenericSensor,
                                 public yarp::dev::IPreciselyTimed,

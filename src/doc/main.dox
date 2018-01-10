@@ -17,7 +17,7 @@ completely broken!
 Topics:
 
  - <a href="http://wiki.icub.org/wiki/ICub_Software_Installation">Software installation</a>.
- - \ref icub_modules_all \endref - most of the software (including \ref icub_module \endref)
+ - \ref icub_modules_all \endref - most of the software (including \ref icub_module \endref and \ref icub_mod_library \endref)
  - \ref icub_applications \endref - a list of documented applications 
    (collections of modules)
  - \ref icub_tutorials \endref - a set of tutorials to learn how to use the software

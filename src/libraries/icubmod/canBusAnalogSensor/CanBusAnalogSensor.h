@@ -19,10 +19,12 @@ using namespace yarp::dev;
 
 /**
 *  @ingroup icub_hardware_modules
-*  \defgroup canbusanalogsensor canbusanalogsensor
 *
+* @brief `canbusanalogsensor` : driver for CAN communication with IIT's analog sensor boards, including the MAIS and STRAIN boards.
 *
-* Driver for CAN communication with analog sensors.
+* | YARP device name |
+* |:-----------------:|
+* | `canbusanalogsensor` |
 *
 * Parameters accepted in the config argument of the open method:
 * | Parameter name | Type   | Units | Default Value | Required | Description | Notes |

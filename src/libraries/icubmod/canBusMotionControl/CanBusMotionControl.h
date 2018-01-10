@@ -1,30 +1,13 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
-/**
- * @ingroup icub_hardware_modules 
- * \defgroup canbusmotioncontrol canbusmotioncontrol
- *
- * This device contains code which handles communication to 
- * the motor control boards on a CAN bus. It 
- * converts requests from function calls into CAN bus messages for
- * the motor control boards. A thread monitors the bus for incoming
- * messages and dispatches replies to calling threads.
- *
- * Comunication with the CAN bus is done through the standard
- * YARP ICanBus interface.
- *
- * Copyright (C) 2010 RobotCub Consortium.
- *
- * Author: Lorenzo Natale
- *
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- */
-
 //
 // $Id: CanBusMotionControl.h,v 1.16 2009/07/29 13:12:29 nat Exp $
 //
 //
+
+// Copyright: (C) 2010-2017 iCub Facility, Istituto Italiano di Tecnologia
+// Authors: Lorenzo Natale <lorenzo.natale@iit.it>
+// CopyPolicy: Released under the terms of the GNU GPL v2.0.
 
 #ifndef __CanBusMotionControlh__
 #define __CanBusMotionControlh__
@@ -651,6 +634,24 @@ class axisTorqueHelper
     }
 };
 
+/**
+ * @ingroup icub_hardware_modules
+ * @brief `canbusmotioncontrol` : driver for motor control boards on a CAN bus.
+ *
+ * This device contains code which handles communication to
+ * the motor control boards on a CAN bus. It
+ * converts requests from function calls into CAN bus messages for
+ * the motor control boards. A thread monitors the bus for incoming
+ * messages and dispatches replies to calling threads.
+ *
+ * Communication with the CAN bus is done through the standard
+ * YARP ICanBus interface.
+ *
+ * | YARP device name |
+ * |:-----------------:|
+ * | `canbusmotioncontrol` |
+ *
+ */
 class yarp::dev::CanBusMotionControl:public DeviceDriver,
             public os::RateThread, 
             public IPidControlRaw, 
