@@ -28,6 +28,7 @@
 #include <cstdint>
 
 #include "EoProtocol.h"
+#include "ethResource.h"
 
 namespace tbd {
            
@@ -76,6 +77,7 @@ namespace tbd {
         // it sends a ask<> ROP to a single network variable and waits the say<> reply ROP until timeout.
         // result is in value, which must be a buffer with at least sizeOfNV(id32) bytes
         bool ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout = 0.5);
+        bool ask(yarp::dev::EthResource *res, const eOprotID32_t id32, void *value, const double timeout = 0.5);
         // imposes a value to a given network variable. it does not wait nor verify
         bool set(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value);
         // it asks the value of a single network variable and checks vs a given value which points to a buffer of at least sizeOfNV(id32) bytes

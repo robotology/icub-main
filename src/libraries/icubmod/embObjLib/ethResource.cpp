@@ -900,7 +900,7 @@ bool EthResource::getRemoteValue(const eOprotID32_t id32, void *value, const dou
 
     for(unsigned int numOfattempts=0; numOfattempts<(retries+1); numOfattempts++)
     {
-        if(true == nvman.ask(ipv4addr, id32, value, timeout))
+        if(true == nvman.ask(this, id32, value, timeout))
         {
             replied = true;
             // stop attempts
