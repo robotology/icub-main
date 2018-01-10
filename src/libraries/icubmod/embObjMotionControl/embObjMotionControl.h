@@ -246,7 +246,7 @@ private:
     char boardName[30];
 
     TheEthManager* ethManager;
-    EthResource* res;
+    AbstractEthResource* res;
     ServiceParser* parser;
     mcParser *_mcparser;
 

@@ -92,7 +92,7 @@ private:
     eOipv4addr_t ipv4addr;
 
     TheEthManager* ethManager;
-    EthResource* res;
+    AbstractEthResource* res;
     ServiceParser* parser;
 
     bool opened;

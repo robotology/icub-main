@@ -368,7 +368,7 @@ return true;
 }
 
 
-bool HostTransceiver::addSetMessage(eOprotID32_t id32, uint8_t* data)
+bool HostTransceiver::appendSetMessage(eOprotID32_t id32, uint8_t* data)
 {
    return(HostTransceiver::addSetMessage__(id32, data, eo_rop_SIGNATUREdummy, false));
 }
@@ -459,7 +459,7 @@ bool HostTransceiver::addGetMessage__(eOprotID32_t id32, uint32_t signature)
 }
 
 
-bool HostTransceiver::addGetMessage(eOprotID32_t id32)
+bool HostTransceiver::appendGetMessage(eOprotID32_t id32)
 {
     return(HostTransceiver::addGetMessage__(id32, eo_rop_SIGNATUREdummy));
 }
@@ -471,7 +471,7 @@ bool HostTransceiver::addGetMessageWithSignature(eOprotID32_t id32, uint32_t sig
 }
 
 
-bool HostTransceiver::readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size)
+bool HostTransceiver::getBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size)
 {      
     if(eobool_false == eoprot_id_isvalid(protboardnumber, id32))
     {

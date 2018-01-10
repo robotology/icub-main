@@ -70,12 +70,12 @@ public:
     bool init2(yarp::os::Searchable &cfgEthBoard, eOipv4addressing_t& localIPaddressing, eOipv4addr_t remoteIP, uint16_t rxpktsize = maxSizeOfRXpacket);
 
     // methods which put a set<> ROP inside the UDP packet which will be transmitted by the EthSender
-    bool addSetMessage(eOprotID32_t id32, uint8_t* data);
+    bool appendSetMessage(eOprotID32_t id32, uint8_t* data);
     bool addSetMessageWithSignature(eOprotID32_t id32, uint8_t* data, uint32_t sig);
     bool addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data);
 
     // methods which put a ask<> ROP inside the UDP packet which will be transmitted by the EthSender
-    bool addGetMessage(eOprotID32_t id32);
+    bool appendGetMessage(eOprotID32_t id32);
     bool addGetMessageWithSignature(eOprotID32_t id32, uint32_t signature);
 
     // called inside the thread ethReceiver (by a call to TheEthManager::Reception() which calls ... etc.) to process incoming UDP packet.
@@ -84,7 +84,7 @@ public:
     void onMsgReception(uint64_t *data, uint16_t size);
 
     // reads the value of a network variable buffered by the object at reception of a UDP packet by method onMsgReception().
-    bool readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size);
+    bool getBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size);
 
     // This method echoes back a value that has just been sent from the HostTransceiver to someone else, if called addSetMessageAndCacheLocally()
     bool readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size);
@@ -102,9 +102,10 @@ public:
 
     // progressive index on the endpoint of the variable described by protid. EOK_uint32dummy if the id does not exist on that board.
     uint32_t translate_NVid2index(eOprotID32_t id32);
+    
+    bool isSupported(eOprot_endpoint_t ep);
 
 protected:
-
     eOprotBRD_t             protboardnumber;    // the number of board ranging from 0 upwards, in the format that the functions in EoProtocol.h expects.
     EOhostTransceiver       *hosttxrx;
     EOtransceiver           *pc104txrx;
@@ -137,7 +138,7 @@ protected:
     // inside the ropframe.
     bool getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops);
 
-    bool isSupported(eOprot_endpoint_t ep);
+    
 
 
 private:

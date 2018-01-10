@@ -180,6 +180,7 @@ set(PROT_HEADER             ${PROT_FOLDER}/transport/EOhostTransceiver_hid.h
 set(EXTRA_SOURCE            ${EXTRA_FOLDER}/hostTransceiver.cpp
                             ${EXTRA_FOLDER}/ethManager.cpp
                             ${EXTRA_FOLDER}/ethResource.cpp
+                            ${EXTRA_FOLDER}/fakeEthResource.cpp
                             ${EXTRA_FOLDER}/eoRequestsQueue.cpp
                             ${EXTRA_FOLDER}/serviceParser.cpp
                             )

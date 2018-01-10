@@ -4924,41 +4924,43 @@ bool embObjMotionControl::askRemoteValue(eOprotID32_t id32, void* value, uint16_
 {
     // marco.accame: this is a private methods, thus it is responsibility of the called to pass value pointer of suitable size. we dont do controls.
 
-    // Sign up for waiting the reply
-    eoThreadEntry *tt = appendWaitRequest(eoprot_ID2index(id32), id32);
-
-    if(NULL == tt)
+    if(!res->isFake())
     {
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "embObjMotionControl::askRemoteValue() has a NULL eoThreadEntry for BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
+        // Sign up for waiting the reply
+        eoThreadEntry *tt = appendWaitRequest(eoprot_ID2index(id32), id32);
+
+        if(NULL == tt)
+        {
+            char nvinfo[128];
+            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+            yError() << "embObjMotionControl::askRemoteValue() has a NULL eoThreadEntry for BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
+        }
+
+        tt->setPending(1);
+
+        if (!res->addGetMessage(id32))
+        {
+            char nvinfo[128];
+            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+            yError() << "embObjMotionControl::askRemoteValue() cannot send ask<> to BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
+            return false;
+        }
+
+
+
+        // wait here
+        if (-1 == tt->synch())
+        {
+            int threadId;
+            char nvinfo[128];
+            eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
+            yError() << "embObjMotionControl::askRemoteValue() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
+
+            if (requestQueue->threadPool->getId(&threadId))
+                requestQueue->cleanTimeouts(threadId);
+            return false;
+        }
     }
-
-    tt->setPending(1);
-
-    if (!res->addGetMessage(id32))
-    {
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "embObjMotionControl::askRemoteValue() cannot send ask<> to BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
-        return false;
-    }
-
-
-
-    // wait here
-    if (-1 == tt->synch())
-    {
-        int threadId;
-        char nvinfo[128];
-        eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "embObjMotionControl::askRemoteValue() timed out the wait of reply from BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo;
-
-        if (requestQueue->threadPool->getId(&threadId))
-            requestQueue->cleanTimeouts(threadId);
-        return false;
-    }
-
     bool ret = res->readBufferedValue(id32, (uint8_t *)value, &size);
 
     if(false == ret)

@@ -1722,7 +1722,55 @@ bool EthResource::serviceStop(eOmn_serv_category_t category, double timeout)
 }
 
 
+bool EthResource::readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size)
+{
+    return getBufferedValue(id32, data, size);
+}
 
+bool EthResource::addSetMessage(eOprotID32_t id32, uint8_t* data)
+{
+    return appendSetMessage(id32, data);
+}
+bool EthResource::addGetMessage(eOprotID32_t id32)
+{
+    return appendGetMessage(id32);
+}
+
+uint16_t EthResource::getNVnumber(eOnvEP8_t ep)
+{
+    return HostTransceiver::getNVnumber(ep);
+}
+
+uint32_t EthResource::translate_NVid2index(eOprotID32_t id32)
+{
+    return HostTransceiver::translate_NVid2index(id32);
+}
+
+bool EthResource::addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data)
+{
+    return HostTransceiver::addSetMessageAndCacheLocally(id32,data);
+}
+
+bool EthResource::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size)
+{
+    return HostTransceiver::readSentValue(id32, data, size);
+}
+
+EOnv* EthResource::getNVhandler(eOprotID32_t id32, EOnv* nv)
+{
+    return HostTransceiver::getNVhandler(id32, nv);
+}
+
+bool EthResource::isFake()
+{
+    return false;
+}
+
+
+// AbstractEthResource::~AbstractEthResource()
+// {;}
+// AbstractEthResource::AbstractEthResource()
+// {;}
 // - class InfoOfRecvPkts
 
 
