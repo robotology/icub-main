@@ -941,6 +941,14 @@ bool tbd::theNVmanager::Impl::onarrival(const ropCode ropcode, const eOprotIP_t 
     char nvinfo[128];
     eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
 
+    static double tprev = yarp::os::Time::now();
+    double tcurr = yarp::os::Time::now();
+
+    double delta = tcurr - tprev;
+
+    tprev = tcurr;
+
+
     if(nullptr == res)
     {
         char ipinfo[32];
@@ -952,7 +960,7 @@ bool tbd::theNVmanager::Impl::onarrival(const ropCode ropcode, const eOprotIP_t 
 
     if(ropCode::say == ropcode)
     {
-        yDebug() << "theNVmanager::Impl::onarrival(ropCode::say) called for BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo << "w/ signature" << signature;
+        yDebug() << "theNVmanager::Impl::onarrival(ropCode::say) called for BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo << "w/ signature" << signature << "after sec" << delta;
 
         // we manage a reply. we decide that we search only by signature.
 
@@ -972,7 +980,7 @@ bool tbd::theNVmanager::Impl::onarrival(const ropCode ropcode, const eOprotIP_t 
     }
     else if(ropCode::sig == ropcode)
     {
-        yDebug() << "theNVmanager::Impl::onarrival(ropCode::sig) called for BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo << "w/ signature" << signature;
+        yDebug() << "theNVmanager::Impl::onarrival(ropCode::sig) called for BOARD" << res->getName() << "IP" << res->getIPv4string() << "for nv" << nvinfo << "w/ signature" << signature << "after sec" << delta;
 
         // we manage an expected sig<>. we search by [ipv4-id32].
 
