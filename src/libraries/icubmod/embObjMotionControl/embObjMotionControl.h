@@ -439,8 +439,7 @@ public:
     virtual bool initialised();
     virtual iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
-    virtual eoThreadFifo * getFifo(uint32_t variableProgNum);
-    virtual eoThreadEntry *getThreadTable(int  threadId);
+
 
 
 
