@@ -15,12 +15,19 @@
 #include <yarp/sig/all.h>
 using namespace yarp::os;
 using namespace yarp::sig;
-#include "cartesianController/ClientCartesianController.h"
-#include "gazeController/ClientGazeController.h"
+
+#include <iCub/iKin/iKinFwd.h>
+#include <iCub/iKin/iKinHlp.h>
+#include <iCub/iKin/iKinInv.h>
+#include <iCub/iKin/iKinIpOpt.h>
+#include <iCub/iKin/iKinSlv.h>
 %}
 
-%include "cartesianController/ClientCartesianController.h"
-%include "gazeController/ClientGazeController.h"
+%include <iCub/iKin/iKinFwd.h>
+%include <iCub/iKin/iKinHlp.h>
+%include <iCub/iKin/iKinInv.h>
+%include <iCub/iKin/iKinIpOpt.h>
+%include <iCub/iKin/iKinSlv.h>
 
 bool init();
 

@@ -46,7 +46,15 @@ set_source_files_properties(icub.i PROPERTIES CPLUSPLUS ON)
 
 if(CREATE_PYTHON)
     set(CMAKE_SWIG_FLAGS "-Wall;-module;icub;-threads")
-    find_package(PythonLibs)
+
+    set(ICUB_USE_PYTHON_VERSION "" CACHE STRING "Specify python version to use" )
+
+    find_package(PythonInterp ${ICUB_USE_PYTHON_VERSION} REQUIRED)
+    set(ICUB_USE_PYTHON_VERSION_ARGS)
+    if(NOT ICUB_USE_PYTHON_VERSION)
+      set (ICUB_USE_PYTHON_VERSION ${PYTHON_VERSION_STRING})
+    endif()
+    find_package(PythonLibs ${ICUB_USE_PYTHON_VERSION} EXACT)
 
     get_filename_component(PYTHON_DIR ${PYTHON_LIBRARY} PATH)
     link_directories(${PYTHON_DIR})
