@@ -306,22 +306,14 @@ double feat_yarp_time_now(void)
 eObool_t feat_signal_network_onsay(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature)
 {
     theNVmanager& nvman = theNVmanager::getInstance();
-
-<<<<<<< HEAD
-    AbstractEthResource* ethres = _interface2ethManager->getEthResource(ipv4);
-=======
     nvman.onarrival(theNVmanager::ropCode::say, ipv4, id32, signature);
->>>>>>> wip: first step of enhanced management of ETH messages set<>, get<>, sig<>
-
     return eobool_true;
 }
 
 eObool_t feat_signal_network_onsig(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature)
 {
     theNVmanager& nvman = theNVmanager::getInstance();
-
     nvman.onarrival(theNVmanager::ropCode::sig, ipv4, id32, signature);
-
     return eobool_true;
 }
 

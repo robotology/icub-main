@@ -446,8 +446,6 @@ bool embObjMotionControl::dealloc()
     checkAndDestroy(_calibrated);
     checkAndDestroy(_twofocinfo);
 
-    if(requestQueue)
-        delete requestQueue;
 
     if(_ppids)
         delete [] _ppids;
@@ -510,7 +508,6 @@ embObjMotionControl::embObjMotionControl() :
     _tpids        = NULL;
     _cpids        = NULL;
     res           = NULL;
-    requestQueue  = NULL;
     _njoints      = 0;
     _axisMap      = NULL;
     _encodersStamp = NULL;
@@ -542,8 +539,6 @@ embObjMotionControl::embObjMotionControl() :
     _enabledAmp       = NULL;
     _calibrated       = NULL;
     _last_position_move_time = NULL;
-    // NV stuff
-    NVnumber          = 0;
 
     _useRawEncoderData = false;
     _pwmIsLimited     = false;
@@ -684,8 +679,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
     }
 
     yDebug() << "embObjMotionControl:serviceVerifyActivate OK!";
-    NVnumber = res->getNVnumber(eoprot_endpoint_motioncontrol);
-    requestQueue = new eoRequestsQueue(NVnumber);
+
 
     yDebug() << "embObjMotionControl:new eoRequestsQueue OK!";
     if(!init() )
@@ -1714,17 +1708,6 @@ void embObjMotionControl::cleanup(void)
 
 
 
-eoThreadEntry * embObjMotionControl::appendWaitRequest(int j, uint32_t protoid)
-{
-    eoRequest req;
-    if(!requestQueue->threadPool->getId(&req.threadId) )
-        yError() << "Error: too much threads!! (embObjMotionControl)";
-    req.joint = j;
-    req.prognum = res->translate_NVid2index(protoid);
-    requestQueue->append(req);
-    return requestQueue->threadPool->getThreadTable(req.threadId);
-}
-
 iethresType_t embObjMotionControl::type()
 {
     return iethres_motioncontrol;
@@ -1754,16 +1737,6 @@ bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxda
     }
 
     return true;
-}
-
-eoThreadFifo * embObjMotionControl::getFifo(uint32_t variableProgNum)
-{
-    return requestQueue->getFifo(variableProgNum);
-}
-
-eoThreadEntry *embObjMotionControl::getThreadTable(int threadId)
-{
-    return requestQueue->threadPool->getThreadTable(threadId);
 }
 
 
@@ -3886,7 +3859,7 @@ bool embObjMotionControl::updateMeasure(int userLevel_jointNumber, double &fTorq
     meas_torque = (eOmeas_torque_t) S_32(_measureConverter->trqN2S(fTorque, j));
 
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_inputs_externallymeasuredtorque);
-    return res->addSetROPandCacheLocally(protoid, (uint8_t*) &meas_torque);
+    return res->addSetMessageAndCacheLocally(protoid, (uint8_t*) &meas_torque);
 }
 
 // end  IVirtualAnalogSensor //

@@ -497,6 +497,11 @@ bool EthResource::isEPsupported(eOprot_endpoint_t ep)
     return HostTransceiver::isSupported(ep);
 }
 
+bool EthResource::isID32supported(eOprotID32_t id32)
+{
+    return HostTransceiver::isID32supported(id32);
+}
+
 
 
 bool EthResource::isRunning(void)
@@ -1125,6 +1130,47 @@ bool EthResource::serviceStop(eOmn_serv_category_t category, double timeout)
 }
 
 
+// new methods from host transceiver
+
+bool EthResource::readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size)
+{
+    return HostTransceiver::readBufferedValue(id32, data, size);
+}
+
+bool EthResource::addSetMessage(eOprotID32_t id32, uint8_t* data)
+{
+    return HostTransceiver::addSetROP(id32, data);
+}
+
+bool EthResource::addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data)
+{
+    return HostTransceiver::addSetROPandCacheLocally(id32, data);
+}
+
+bool EthResource::addGetMessage(eOprotID32_t id32)
+{
+    return HostTransceiver::addGetROP(id32);
+}
+
+bool EthResource::addGetMessage(eOprotID32_t id32, std::uint32_t signature)
+{
+    return HostTransceiver::addGetROPwithSignature(id32, signature);
+}
+
+EOnv* EthResource::getNVhandler(eOprotID32_t id32, EOnv* nv)
+{
+    return HostTransceiver::getnvhandler(id32, nv);
+}
+
+bool EthResource::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size)
+{
+    return HostTransceiver::readSentValue(id32, data, size);
+}
+
+bool EthResource::isFake()
+{
+    return false;
+}
 
 // eof
 

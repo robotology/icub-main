@@ -299,10 +299,6 @@ private:
     double  *_ref_positions;    // used for direct position control.
     double  *_ref_accs;         // for velocity control, in position min jerk eq is used.
 
-    uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
-
-
-
 
 
 private:
@@ -423,7 +419,6 @@ private:
     bool fromConfig_Step2(yarp::os::Searchable &config);
     bool fromConfig_readServiceCfg(yarp::os::Searchable &config);
     bool initializeInterfaces(measureConvFactors &f);
-    eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
 
 public:
 

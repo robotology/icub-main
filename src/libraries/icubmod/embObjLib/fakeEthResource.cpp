@@ -238,18 +238,6 @@ bool FakeEthResource::getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *nu
 }
 
 
-bool FakeEthResource::printRXstatistics(void)
-{
-    yWarning()<< "FakeEthResource " << boardName << " : any packet has been received!! ";
-    return true;
-}
-
-
-void FakeEthResource::checkIsAlive(double curr_time)
-{
-    //method not used
-}
-
 
 bool FakeEthResource::Tick()
 {
@@ -331,12 +319,6 @@ bool FakeEthResource::isRunning(void)
 }
 
 
-bool FakeEthResource::aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature)
-{
-    yError() << "FakeEthResource " << boardName << ": I should never be in aNetQueryReplyHasArrived";
-    return false;
-}
-
 
 bool FakeEthResource::verifyEPprotocol(eOprot_endpoint_t ep)
 {
@@ -370,21 +352,23 @@ bool FakeEthResource::verifyBoard(void)
     return(true);
 }
 
-bool FakeEthResource::setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries, double waitbeforeverification, double verificationtimeout, int verificationretries)
+bool FakeEthResource::getRemoteValue(const eOprotID32_t id32, void *value, const double timeout, const unsigned int retries)
 {
     return true;
 }
 
 
-bool FakeEthResource::verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout, int retries)
+bool FakeEthResource::setRemoteValue(const eOprotID32_t id32, void *value)
 {
     return true;
 }
 
-bool FakeEthResource::getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size, double timeout, int retries)
+bool FakeEthResource::setcheckRemoteValue(const eOprotID32_t id32, void *value, const unsigned int retries, const double waitbeforecheck, const double timeout)
 {
     return true;
 }
+
+
 
 bool FakeEthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
 {
@@ -427,19 +411,15 @@ bool FakeEthResource::addSetMessage(eOprotID32_t id32, uint8_t* data)
 {
     return true;
 }
+
 bool FakeEthResource::addGetMessage(eOprotID32_t id32)
 {
     return true;
 }
 
-uint16_t FakeEthResource::getNVnumber(eOnvEP8_t ep)
+bool FakeEthResource::addGetMessage(eOprotID32_t id32, std::uint32_t signature)
 {
-    return myHostTrans->getNVnumber(ep);
-}
-
-uint32_t FakeEthResource::translate_NVid2index(eOprotID32_t id32)
-{
-    return myHostTrans->translate_NVid2index(id32);
+    return true;
 }
 
 bool FakeEthResource::addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data)
@@ -455,13 +435,19 @@ bool FakeEthResource::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* 
 
 EOnv* FakeEthResource::getNVhandler(eOprotID32_t id32, EOnv* nv)
 {
-    return myHostTrans->getNVhandler(id32, nv);
+    return myHostTrans->getnvhandler(id32, nv);
 }
 
 bool FakeEthResource::isFake()
 {
     return true;
 }
+
+bool FakeEthResource::isID32supported(eOprotID32_t id32)
+{
+    return true;
+}
+
 
 
 // eof

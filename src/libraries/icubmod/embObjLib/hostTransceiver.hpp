@@ -99,14 +99,10 @@ public:
     int getCapacityOfRXpacket(void);
 
 
-    // much better to remove this function from here, because direct access to EOnv data is not recommended.
-    EOnv* getNVhandler(eOprotID32_t id32, EOnv* nv);
+    bool isSupported(eOprot_endpoint_t ep);
 
-    // total number of variables inside the endpoint of the given board. on wrong params or is the ep is not present the function returns 0
-    uint16_t getNVnumber(eOnvEP8_t ep);
 
-    // progressive index on the endpoint of the variable described by protid. EOK_uint32dummy if the id does not exist on that board.
-    uint32_t translate_NVid2index(eOprotID32_t id32);
+    EOnv* getnvhandler(eOprotID32_t id32, EOnv* nv);
 
 protected:
 
@@ -141,8 +137,6 @@ protected:
     // if HOSTTRANSCEIVER_EmptyROPframesAreTransmitted is defined, the function returns true also if there are no rops
     // inside the ropframe.
     bool getTransmit(uint8_t **data, uint16_t *size, uint16_t* numofrops);
-
-    bool isSupported(eOprot_endpoint_t ep);
 
 
 private:

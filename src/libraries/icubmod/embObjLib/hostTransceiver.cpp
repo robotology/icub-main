@@ -287,7 +287,7 @@ return true;
         EOnv    nv;
         EOnv*   nv_ptr = NULL;
 
-        nv_ptr = getNVhandler(id32, &nv);
+        nv_ptr = getnvhandler(id32, &nv);
 
         if(NULL == nv_ptr)
         {
@@ -500,7 +500,7 @@ bool HostTransceiver::readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint1
     }       
     
     EOnv nv;
-    EOnv *nv_ptr = getNVhandler(id32, &nv);
+    EOnv *nv_ptr = getnvhandler(id32, &nv);
 
     if(NULL == nv_ptr)
     {
@@ -542,7 +542,7 @@ bool HostTransceiver::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* 
     }    
     
     EOnv nv;
-    EOnv *nv_ptr = getNVhandler(id32, &nv);
+    EOnv *nv_ptr = getnvhandler(id32, &nv);
 
     if(NULL == nv_ptr)
     {
@@ -684,7 +684,7 @@ bool HostTransceiver::getTransmit(uint8_t **data, uint16_t *size, uint16_t* numo
 }
 
 
-EOnv* HostTransceiver::getNVhandler(eOprotID32_t id32, EOnv* nv)
+EOnv* HostTransceiver::getnvhandler(eOprotID32_t id32, EOnv* nv)
 {
     eOresult_t    res;
     res = eo_nvset_NV_Get(nvset, id32, nv);
@@ -692,7 +692,7 @@ EOnv* HostTransceiver::getNVhandler(eOprotID32_t id32, EOnv* nv)
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
-        yError() << "HostTransceiver::getNVhandler() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
+        yError() << "HostTransceiver::getnvhandler() called w/ invalid protid: BOARD w/ IP" << remoteipstring <<
                     "with id: " << nvinfo;
         return NULL;
     }
@@ -720,16 +720,6 @@ bool HostTransceiver::getNVvalue(EOnv *nv, uint8_t* data, uint16_t* size)
     return ret;
 }
 
-
-uint16_t HostTransceiver::getNVnumber(eOnvEP8_t ep)
-{
-    return(eoprot_endpoint_numberofvariables_get(protboardnumber, ep));
-}
-
-uint32_t HostTransceiver::translate_NVid2index(eOprotID32_t id32)
-{
-    return(eoprot_endpoint_id2prognum(protboardnumber, id32));
-}
 
 
 eOprotBRD_t HostTransceiver::get_protBRDnumber(void)

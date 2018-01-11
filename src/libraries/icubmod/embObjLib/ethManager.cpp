@@ -843,9 +843,7 @@ bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
 
 
 AbstractEthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal)
-{
-
-    
+{    
     if(communicationIsInitted == false)
     {
         yTrace() << "TheEthManager::requestResource2(): we need to init the communication";

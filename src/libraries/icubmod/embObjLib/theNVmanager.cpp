@@ -267,16 +267,16 @@ struct tbd::theNVmanager::Impl
 
     size_t sizeofnv(const eOprotID32_t id32);
 
-    yarp::dev::EthResource * ethresource(const eOprotIP_t ipv4);
-    yarp::dev::EthResource * ethresourceID32(const eOprotIP_t ipv4, const eOprotID32_t id32);
-    yarp::dev::EthResource * ethresourceID32s(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s);
+    yarp::dev::AbstractEthResource * ethresource(const eOprotIP_t ipv4);
+    yarp::dev::AbstractEthResource * ethresourceID32(const eOprotIP_t ipv4, const eOprotID32_t id32);
+    yarp::dev::AbstractEthResource * ethresourceID32s(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s);
 
-    bool validparameters(yarp::dev::EthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void *value);
+    bool validparameters(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void *value);
 
-    bool validparameters(yarp::dev::EthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value);
+    bool validparameters(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value);
 
 
-    bool validparameters(yarp::dev::EthResource *res, const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values);
+    bool validparameters(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values);
 
     bool set(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value);
     bool setcheck(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const unsigned int retries, double waitbeforecheck, double timeout);
@@ -287,9 +287,9 @@ struct tbd::theNVmanager::Impl
     bool ping(const eOprotIP_t ipv4, eoprot_version_t &mnprotversion, const double timeout = 0.5, const unsigned int retries = 20);
 
     bool ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout);
-    bool ask(yarp::dev::EthResource *res, const eOprotID32_t id32, void *value, const double timeout);
+    bool ask(yarp::dev::AbstractEthResource *res, const eOprotID32_t id32, void *value, const double timeout);
 
-    bool askboard(yarp::dev::EthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout);
+    bool askboard(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout);
 
     bool ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout);
 
@@ -320,14 +320,14 @@ yarp::os::Semaphore tbd::theNVmanager::Impl::mtx = 1;
 
 bool tbd::theNVmanager::Impl::supported(const eOprotIP_t ipv4)
 {
-    yarp::dev::EthResource * res = ethresource(ipv4);
+    yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
     return (nullptr == res) ? false : true;
 }
 
 bool tbd::theNVmanager::Impl::supported(const eOprotIP_t ipv4, const eOprotID32_t id32)
 {
-    yarp::dev::EthResource * res = ethresource(ipv4);
+    yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
     if(nullptr == res)
     {
@@ -343,9 +343,9 @@ size_t tbd::theNVmanager::Impl::sizeofnv(const eOprotID32_t id32)
 }
 
 
-yarp::dev::EthResource * tbd::theNVmanager::Impl::ethresource(const eOprotIP_t ipv4)
+yarp::dev::AbstractEthResource * tbd::theNVmanager::Impl::ethresource(const eOprotIP_t ipv4)
 {
-    yarp::dev::EthResource * res = yarp::dev::TheEthManager::instance()->getEthResource(ipv4);
+    yarp::dev::AbstractEthResource * res = yarp::dev::TheEthManager::instance()->getEthResource(ipv4);
     if(nullptr == res)
     {
         char ipinfo[20];
@@ -357,9 +357,9 @@ yarp::dev::EthResource * tbd::theNVmanager::Impl::ethresource(const eOprotIP_t i
 }
 
 
-yarp::dev::EthResource * tbd::theNVmanager::Impl::ethresourceID32(const eOprotIP_t ipv4, const eOprotID32_t id32)
+yarp::dev::AbstractEthResource * tbd::theNVmanager::Impl::ethresourceID32(const eOprotIP_t ipv4, const eOprotID32_t id32)
 {
-    yarp::dev::EthResource * res = yarp::dev::TheEthManager::instance()->getEthResource(ipv4);
+    yarp::dev::AbstractEthResource * res = yarp::dev::TheEthManager::instance()->getEthResource(ipv4);
     if(nullptr == res)
     {
         char ipinfo[20];
@@ -380,9 +380,9 @@ yarp::dev::EthResource * tbd::theNVmanager::Impl::ethresourceID32(const eOprotIP
 }
 
 
-yarp::dev::EthResource * tbd::theNVmanager::Impl::ethresourceID32s(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s)
+yarp::dev::AbstractEthResource * tbd::theNVmanager::Impl::ethresourceID32s(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s)
 {
-    yarp::dev::EthResource * res = yarp::dev::TheEthManager::instance()->getEthResource(ipv4);
+    yarp::dev::AbstractEthResource * res = yarp::dev::TheEthManager::instance()->getEthResource(ipv4);
     if(nullptr == res)
     {
         char ipinfo[20];
@@ -406,7 +406,7 @@ yarp::dev::EthResource * tbd::theNVmanager::Impl::ethresourceID32s(const eOprotI
     return res;
 }
 
-bool tbd::theNVmanager::Impl::validparameters(yarp::dev::EthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void* value)
+bool tbd::theNVmanager::Impl::validparameters(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void* value)
 {
     if(nullptr == res)
     {
@@ -432,7 +432,7 @@ bool tbd::theNVmanager::Impl::validparameters(yarp::dev::EthResource *res, const
     return true;
 }
 
-bool tbd::theNVmanager::Impl::validparameters(yarp::dev::EthResource *res, const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values)
+bool tbd::theNVmanager::Impl::validparameters(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values)
 {
     if(nullptr == res)
     {
@@ -459,7 +459,7 @@ bool tbd::theNVmanager::Impl::validparameters(yarp::dev::EthResource *res, const
     return true;
 }
 
-bool tbd::theNVmanager::Impl::validparameters(yarp::dev::EthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value)
+bool tbd::theNVmanager::Impl::validparameters(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value)
 {
     if(nullptr == res)
     {
@@ -492,7 +492,7 @@ bool tbd::theNVmanager::Impl::setcheck(const eOprotIP_t ipv4, const eOprotID32_t
     int attempt = 0;
     bool done = false;
 
-    yarp::dev::EthResource * res = ethresource(ipv4);
+    yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
     if(false == validparameters(res, ipv4, id32, value))
     {
@@ -589,7 +589,7 @@ bool tbd::theNVmanager::Impl::check(const eOprotIP_t ipv4, const eOprotID32_t id
 
 bool tbd::theNVmanager::Impl::wait(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const double timeout)
 {
-    yarp::dev::EthResource * res = ethresourceID32(ipv4, id32);
+    yarp::dev::AbstractEthResource * res = ethresourceID32(ipv4, id32);
 
     if(nullptr == res)
     {
@@ -644,7 +644,7 @@ bool tbd::theNVmanager::Impl::read(const eOprotIP_t ipv4, const eOprotID32_t id3
         return false;
     }
 
-    yarp::dev::EthResource * res = ethresourceID32(ipv4, id32);
+    yarp::dev::AbstractEthResource * res = ethresourceID32(ipv4, id32);
 
     if(nullptr == res)
     {
@@ -705,7 +705,7 @@ bool tbd::theNVmanager::Impl::command(const eOprotIP_t ipv4, const eOprotID32_t 
 
 //size_t tbd::theNVmanager::Impl::maxSizeOfNV(const eOprotIP_t ipv4)
 //{
-//    yarp::dev::EthResource * res = ethresource(ipv4);
+//    yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
 //    if(nullptr == res)
 //    {
@@ -743,7 +743,7 @@ bool tbd::theNVmanager::Impl::ping(const eOprotIP_t ipv4, eoprot_version_t &mnpr
 
 
 
-bool tbd::theNVmanager::Impl::ask(yarp::dev::EthResource *res, const eOprotID32_t id32, void *value, const double timeout)
+bool tbd::theNVmanager::Impl::ask(yarp::dev::AbstractEthResource *res, const eOprotID32_t id32, void *value, const double timeout)
 {
     if(nullptr == res)
     {
@@ -764,7 +764,7 @@ bool tbd::theNVmanager::Impl::ask(yarp::dev::EthResource *res, const eOprotID32_
 
 bool tbd::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
 {
-    yarp::dev::EthResource * res = ethresource(ipv4);
+    yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
     if(false == validparameters(res, ipv4, id32, value))
     {
@@ -776,7 +776,7 @@ bool tbd::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const eOprotID32_t id32
 
 
 
-bool tbd::theNVmanager::Impl::askboard(yarp::dev::EthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
+bool tbd::theNVmanager::Impl::askboard(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
 {
     // 1. must prepare wait data etc.
 
@@ -791,7 +791,7 @@ bool tbd::theNVmanager::Impl::askboard(yarp::dev::EthResource *res, const eOprot
 
     // 2. must send a request
 
-    if(false == res->addGetROPwithSignature(id32, assignedsignature))
+    if(false == res->addGetMessage(id32, assignedsignature))
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
@@ -850,7 +850,7 @@ bool tbd::theNVmanager::Impl::askboard(yarp::dev::EthResource *res, const eOprot
 
 //bool tbd::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
 //{
-//    yarp::dev::EthResource * res = ethresource(ipv4);
+//    yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
 //    if(false == validparameters(res, ipv4, id32, value))
 //    {
@@ -932,7 +932,7 @@ bool tbd::theNVmanager::Impl::askboard(yarp::dev::EthResource *res, const eOprot
 bool tbd::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
 {
 
-    yarp::dev::EthResource * res = ethresource(ipv4);
+    yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
     if(false == validparameters(res, ipv4, id32s, values))
     {
@@ -955,7 +955,7 @@ bool tbd::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const std::vector<eOpro
 
     for(int i=0; i<id32s.size(); i++)
     {
-        if(false == res->addGetROPwithSignature(id32s[i], assignedsignature))
+        if(false == res->addGetMessage(id32s[i], assignedsignature))
         {
             char nvinfo[128];
             eoprot_ID2information(id32s[i], nvinfo, sizeof(nvinfo));
@@ -1015,7 +1015,7 @@ bool tbd::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const std::vector<eOpro
 
 bool tbd::theNVmanager::Impl::set(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value)
 {
-    yarp::dev::EthResource * res = ethresource(ipv4);
+    yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
     if(false == validparameters(res, ipv4, id32, value))
     {
@@ -1023,7 +1023,7 @@ bool tbd::theNVmanager::Impl::set(const eOprotIP_t ipv4, const eOprotID32_t id32
     }
 
 
-    if(false == res->addSetROP(id32, reinterpret_cast<uint8_t*>(const_cast<void*>(value))))
+    if(false == res->addSetMessage(id32, reinterpret_cast<uint8_t*>(const_cast<void*>(value))))
     {
         char nvinfo[128];
         eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
@@ -1047,7 +1047,7 @@ bool tbd::theNVmanager::Impl::signatureisvalid(const std::uint32_t signature)
 
 bool tbd::theNVmanager::Impl::onarrival(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const std::uint32_t signature)
 {
-    yarp::dev::EthResource * res = ethresource(ipv4);
+    yarp::dev::AbstractEthResource * res = ethresource(ipv4);
     char nvinfo[128];
     eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
 
@@ -1147,7 +1147,7 @@ tbd::theNVmanager::theNVmanager()
 //
 //size_t tbd::theNVmanager::sizeOfNV(const eOprotIP_t ipv4, const eOprotID32_t id32)
 //{
-//    yarp::dev::EthResource * res = pImpl->ethresourceID32(ipv4, id32);
+//    yarp::dev::AbstractEthResource * res = pImpl->ethresourceID32(ipv4, id32);
 //
 //    if(nullptr == res)
 //    {
@@ -1189,7 +1189,7 @@ bool tbd::theNVmanager::ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void
     return pImpl->ask(ipv4, id32, value, timeout);
 }
 
-bool tbd::theNVmanager::ask(yarp::dev::EthResource *res, const eOprotID32_t id32, void *value, const double timeout)
+bool tbd::theNVmanager::ask(yarp::dev::AbstractEthResource *res, const eOprotID32_t id32, void *value, const double timeout)
 {
     return pImpl->ask(res, id32, value, timeout);
 }
