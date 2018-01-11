@@ -24,6 +24,10 @@ using namespace yarp::sig;
 %}
 
 %include <iCub/iKin/iKinFwd.h>
+%include <iCub/iKin/iKinHlp.h>
+%include <iCub/iKin/iKinInv.h>
+%include <iCub/iKin/iKinIpOpt.h>
+%include <iCub/iKin/iKinSlv.h>
 
 bool init();
 
