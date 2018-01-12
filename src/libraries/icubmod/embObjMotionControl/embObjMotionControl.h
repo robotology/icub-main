@@ -17,24 +17,8 @@
  * Public License for more details
  */
 
-// update comment hereafter
 
-/**
- * @ingroup icub_hardware_modules
- * \defgroup eth2ems eth2ems
- *
- * Implements <a href="http://wiki.icub.org/yarpdoc/d3/d5b/classyarp_1_1dev_1_1ICanBus.html" ICanBus interface <\a> for a ems to can bus device.
- * This is the eth2ems module device.
- *
- * Copyright (C) 2012 Department of Robotics Brain and Cognitive Sciences - Istituto Italiano di Tecnologia
- *
- * Author: Alberto Cardellino
- *
- * CopyPolicy: Released under the terms of the GNU GPL v2.0.
- *
- * This file can be edited at src/modules/....h
- *
- */
+
 
 //
 // $Id: embObjMotionControl.h,v 1.5 2008/06/25 22:33:53 nat Exp $
@@ -125,7 +109,25 @@ namespace yarp {
 using namespace yarp::dev;
 
 
-
+/**
+ * @ingroup icub_hardware_modules
+ * @brief `embObjMotionControl` : driver for iCub motor control boards EMS on a ETH bus.
+ *
+ * This device contains code which handles communication to
+ * the motor control boards (EMS) on the internal ethernet network of the ETH iCub.
+ * It converts requests from function calls into ETH bus messages for
+ * the motor control boards. A thread monitors the bus for incoming
+ * messages and dispatches replies to calling threads.
+ *
+ * For the description of the parameters supported by this device, please check the
+ * template configuration file available in robotology/robots-configuration,
+ * i.e.  https://github.com/robotology/robots-configuration/blob/master/iCubTemplates/iCubTemplateV4_0/hardware/motorControl/body_part--ebX-jA_B-mc.xml .
+ *
+ * | YARP device name |
+ * |:-----------------:|
+ * | `embObjMotionControl` |
+ *
+ */
 class yarp::dev::embObjMotionControl:   public DeviceDriver,
     public IPidControlRaw,
     public IControlCalibration2Raw,
