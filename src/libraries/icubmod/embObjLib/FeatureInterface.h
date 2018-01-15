@@ -48,7 +48,6 @@ eObool_t feat_manage_analogsensors_data(eOipv4addr_t ipv4, eOprotID32_t id32, vo
 
 void * feat_MC_handler_get(eOipv4addr_t ipv4, eOprotID32_t id32);
 
-eObool_t feat_MC_mutex_post(void * mchandler, uint32_t prognum);
 
 double feat_yarp_time_now(void);
 

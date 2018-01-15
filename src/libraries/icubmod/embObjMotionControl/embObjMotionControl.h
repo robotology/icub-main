@@ -77,7 +77,6 @@ using namespace std;
 #include "../embObjLib/hostTransceiver.hpp"
 // #include "IRobotInterface.h"
 #include "IethResource.h"
-#include "eoRequestsQueue.hpp"
 #include "EoMotionControl.h"
 
 #include "serviceParser.h"
@@ -426,7 +425,6 @@ public:
     ~embObjMotionControl();
 
     Semaphore           semaphore;
-    eoRequestsQueue     *requestQueue;      // it contains the list of requests done to the remote board
 
 
     void cleanup(void);

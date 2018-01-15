@@ -243,41 +243,6 @@ void* feat_MC_handler_get(eOipv4addr_t ipv4, eOprotID32_t id32)
 }
 
 
-eObool_t feat_MC_mutex_post(void *mchandler, uint32_t prognum)
-{
-    eoThreadEntry *th = NULL;
-    IethResource *ier = static_cast<IethResource*>(mchandler);
-    IethResource *mc = ier; //dynamic_cast<embObjMotionControl *>(ier);
-
-    if(NULL == mc)
-    {
-        return eobool_false;
-    }
-    else if(false == mc->initialised())
-    {   // it can be that the object is already created but its open() not yet completed. it is in open() that we allocate requestQueue ....
-        return eobool_false;
-    }
-
-
-    int threadId;
-    eoThreadFifo *fuffy = mc->getFifo(prognum);
-
-    if( (threadId = fuffy->pop()) < 0)
-    {
-        yError() << "Received an answer message nobody is waiting for (MCmutex_post)";
-        return eobool_false;
-    }
-    else
-    {
-        th = mc->getThreadTable(threadId);
-        if(NULL == th)
-            yError() << "MCmutex_post error at line " << __LINE__;
-        th->push();
-        return eobool_true;
-    }
-
-    return eobool_false;
-}
 
 
 double feat_yarp_time_now(void)
@@ -285,23 +250,6 @@ double feat_yarp_time_now(void)
     return(yarp::os::Time::now());
 }
 
-
-//eObool_t feat_signal_network_reply(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature)
-//{
-//    if(NULL == _interface2ethManager)
-//    {
-//        return(eobool_false);
-//    }
-
-//    EthResource* ethres = _interface2ethManager->getEthResource(ipv4);
-
-//    if(NULL == ethres)
-//    {
-//        return(eobool_false);
-//    }
-
-//    return(ethres->aNetQueryReplyHasArrived(id32, signature));
-//}
 
 eObool_t feat_signal_network_onsay(eOipv4addr_t ipv4, eOprotID32_t id32, uint32_t signature)
 {

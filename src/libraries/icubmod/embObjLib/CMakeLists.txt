@@ -181,7 +181,6 @@ set(EXTRA_SOURCE            ${EXTRA_FOLDER}/hostTransceiver.cpp
                             ${EXTRA_FOLDER}/ethManager.cpp
                             ${EXTRA_FOLDER}/ethResource.cpp
                             ${EXTRA_FOLDER}/fakeEthResource.cpp
-                            ${EXTRA_FOLDER}/eoRequestsQueue.cpp
                             ${EXTRA_FOLDER}/serviceParser.cpp
                             ${EXTRA_FOLDER}/theNVmanager.cpp
                             )

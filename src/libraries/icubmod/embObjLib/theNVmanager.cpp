@@ -178,7 +178,7 @@ struct tbd::theNVmanager::Impl
 
         bool alert(const std::uint32_t signature)
         {
-            yDebug() << "theNVmanager::Impl::Data::alert(): themap.size() =" << themap.size();
+            //yDebug() << "theNVmanager::Impl::Data::alert(): themap.size() =" << themap.size();
             if(true == themap.empty())
             {
                 yDebug() << "theNVmanager::Impl::Data::alert(): themap is empty()";
@@ -207,7 +207,7 @@ struct tbd::theNVmanager::Impl
 
         bool alert(const eOprotIP_t ip, const eOprotID32_t id)
         {
-            yDebug() << "theNVmanager::Impl::Data::alert(): themap.size() =" << themap.size();
+            //yDebug() << "theNVmanager::Impl::Data::alert(): themap.size() =" << themap.size();
             if(true == themap.empty())
             {
                 yDebug() << "theNVmanager::Impl::Data::alert(): themap is empty()";
@@ -1064,7 +1064,7 @@ bool tbd::theNVmanager::Impl::onarrival(const ropCode ropcode, const eOprotIP_t 
         char ipinfo[32];
         eo_common_ipv4addr_to_string(ipv4, ipinfo, sizeof(ipinfo));
         yDebug() << "theNVmanager::Impl::onarrival() called for unsupported IP" << ipinfo << "for nv" << nvinfo << "w/ signature" << signature;
-        #warning meglio CONTROLLARE CHE NON CI SIA NULLA QUI ...
+        //#warning meglio CONTROLLARE CHE NON CI SIA NULLA QUI ...
         return false;
     }
 
