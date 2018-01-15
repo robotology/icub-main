@@ -491,7 +491,7 @@ void EthResource::getBoardInfo(eOdate_t &date, eOversion_t &version)
 
 
 
-#warning --- still used???
+//#warning --- still used???
 bool EthResource::isEPsupported(eOprot_endpoint_t ep)
 {
     return HostTransceiver::isSupported(ep);
