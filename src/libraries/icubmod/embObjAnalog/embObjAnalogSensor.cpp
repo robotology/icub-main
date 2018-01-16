@@ -1043,7 +1043,7 @@ bool embObjAnalogSensor::getFullscaleValues()
     while(!gotFullScaleValues && (timeout != 0))
     {
         res->setRemoteValue(protoid_strain_config, &strainConfig);
-        Time::delay(1.0);
+        SystemClock::delaySystem(1.0);
         // read fullscale values
         res->readBufferedValue(protoid_fullscale, (uint8_t *) &fullscale_values, &tmpNVsize);
         // If data arrives, size is bigger than zero
@@ -1179,7 +1179,7 @@ bool embObjAnalogSensor::init()
         }
     }
 
-    Time::delay(0.005);  // 5 ms (m.a.a-delay: before it was 0)
+    SystemClock::delaySystem(0.005);  // 5 ms (m.a.a-delay: before it was 0)
    
 
     return true;

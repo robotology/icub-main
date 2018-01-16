@@ -285,7 +285,7 @@ bool embObjMais::open(yarp::os::Searchable &config)
 
     if(false == res->serviceVerifyActivate(eomn_serv_category_mais, servparam, 5.0))
     {
-        yarp::os::Time::delay(1);
+        SystemClock::delaySystem(1);
         yError() << "embObjMais::open() has an error in call of ethResources::serviceVerifyActivate() for BOARD" << res->getName() << "IP" << res->getIPv4string();
         //printServiceConfig();
         cleanup();

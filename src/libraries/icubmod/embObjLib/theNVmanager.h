@@ -30,7 +30,7 @@
 #include "EoProtocol.h"
 #include "ethResource.h"
 
-namespace tbd {
+namespace eth {
            
     class theNVmanager
     {

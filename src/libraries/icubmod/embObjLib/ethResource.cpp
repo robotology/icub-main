@@ -26,7 +26,7 @@ using namespace yarp::os;
 using namespace yarp::os::impl;
 
 #include <theNVmanager.h>
-using namespace tbd;
+using namespace eth;
 
 // - class EthMonitorPresence
 

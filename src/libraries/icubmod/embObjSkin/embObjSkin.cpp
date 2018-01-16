@@ -174,7 +174,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
     } //end for for each special board cfg
 
-    Time::delay(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
+    SystemClock::delaySystem(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
 
     //-----------------------------------------------------------------------------------------------------
     //------------ read special cfg triangle --------------------------------------------------------------
@@ -228,7 +228,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         // otherwise the board sends up a diagnostics message telling that it cannot send a message in can bus
         // we do that by ... sic ... adding a small delay. 
         // the above "yDebug() << "\n Special triangle cfg num " << j;" used to test was probably doing the same effect as a delay of a few ms
-        Time::delay(0.010);
+        SystemClock::delaySystem(0.010);
 
         if(false == res->setRemoteValue(protoid, &tcfg))
         {
@@ -237,7 +237,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         }
     }
 
-    Time::delay(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
+    SystemClock::delaySystem(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
 
     return true;
 }
@@ -504,7 +504,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
 
     /* Following delay is necessary in order to give enough time to skin boards to configure all its triangles */
-    Time::delay(0.500);
+    SystemClock::delaySystem(0.500);
 
     if(!initWithSpecialConfig(config))
     {
@@ -675,7 +675,7 @@ bool EmbObjSkin::configPeriodicMessage(void)
             }
         }
     }
-    Time::delay(0.005);  // 5 ms (m.a.a-delay: before it was 0)
+    SystemClock::delaySystem(0.005);  // 5 ms (m.a.a-delay: before it was 0)
 
     return true;
 }
@@ -733,7 +733,7 @@ bool EmbObjSkin::init()
         }
 
     }
-    Time::delay(0.010);
+    SystemClock::delaySystem(0.010);
 
     for(i=0; i<_skCfg.numOfPatches;i++)
     {

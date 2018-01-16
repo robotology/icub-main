@@ -27,7 +27,7 @@
 #include <ace/Recursive_Thread_Mutex.h>
 
 #include <theNVmanager.h>
-using namespace tbd;
+using namespace eth;
 
 
 // --------------------------------------------------------------------------------------------------------------------

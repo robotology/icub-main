@@ -1468,7 +1468,7 @@ bool embObjMotionControl::init()
         }
     }
 
-    Time::delay(0.010);
+    SystemClock::delaySystem(0.010);
 
 
     ////////////////////////////////////////////////
@@ -1505,7 +1505,7 @@ bool embObjMotionControl::init()
         }
     }
 
-    Time::delay(0.005);
+    SystemClock::delaySystem(0.005);
 
 
 
@@ -4912,7 +4912,7 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
         {   // i print the warning only after at least one retry.
             yWarning ("embObjMotionControl::checkRemoteControlModeStatus() has done %d attempts and will retry again after a %f sec delay. (BOARD %s IP %s, joint %d) -> current mode = %s, requested = %s", attempt+1, delaybetweenqueries, res->getName() , res->getIPv4string(), joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
         }
-        yarp::os::Time::delay(delaybetweenqueries);
+        SystemClock::delaySystem(delaybetweenqueries);
     }
 
     if(false == ret)

@@ -372,7 +372,7 @@ bool embObjStrain::fillScaleFactor()
     while(!gotFullScaleValues && (timeout != 0))
     {
         res->setRemoteValue(id32_strain_config, &strainConfig);
-        Time::delay(1.0);
+        SystemClock::delaySystem(1.0);
         // read fullscale values
         res->readBufferedValue(id32_fullscale, (uint8_t *) &fullscale_values, &tmpNVsize);
         // If data arrives, size is bigger than zero

@@ -49,7 +49,7 @@
 
 
     
-struct tbd::theNVmanager::Impl
+struct eth::theNVmanager::Impl
 {
 
     static yarp::os::Semaphore mtx;
@@ -103,7 +103,7 @@ struct tbd::theNVmanager::Impl
 
         bool wait(std::uint16_t &numofrxrops, double timeout = 0.5)
         {
-            timeofwait = yarp::os::Time::now();
+            timeofwait = SystemClock::nowSystem();
             bool r = semaphore.waitWithTimeout(timeout);
             numofrxrops = receivedrops;
             return r;
@@ -114,7 +114,7 @@ struct tbd::theNVmanager::Impl
             receivedrops++;
             if(receivedrops == expectedrops)
             {
-                timeofpost = yarp::os::Time::now();
+                timeofpost = SystemClock::nowSystem();
                 semaphore.post();
             }
             return true;
@@ -307,10 +307,10 @@ struct tbd::theNVmanager::Impl
 };
 
 
-yarp::os::Semaphore tbd::theNVmanager::Impl::mtx = 1;
+yarp::os::Semaphore eth::theNVmanager::Impl::mtx = 1;
 
 
-//bool tbd::theNVmanager::Impl::initialise(const Config &_config)
+//bool eth::theNVmanager::Impl::initialise(const Config &_config)
 //{
 //    config = _config;
 //    data.pp1 = 1;
@@ -318,14 +318,14 @@ yarp::os::Semaphore tbd::theNVmanager::Impl::mtx = 1;
 //}
 
 
-bool tbd::theNVmanager::Impl::supported(const eOprotIP_t ipv4)
+bool eth::theNVmanager::Impl::supported(const eOprotIP_t ipv4)
 {
     yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
     return (nullptr == res) ? false : true;
 }
 
-bool tbd::theNVmanager::Impl::supported(const eOprotIP_t ipv4, const eOprotID32_t id32)
+bool eth::theNVmanager::Impl::supported(const eOprotIP_t ipv4, const eOprotID32_t id32)
 {
     yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
@@ -337,13 +337,13 @@ bool tbd::theNVmanager::Impl::supported(const eOprotIP_t ipv4, const eOprotID32_
     return res->isID32supported(id32);
 }
 
-size_t tbd::theNVmanager::Impl::sizeofnv(const eOprotID32_t id32)
+size_t eth::theNVmanager::Impl::sizeofnv(const eOprotID32_t id32)
 {
     return eoprot_variable_sizeof_get(eoprot_board_localboard, id32);
 }
 
 
-yarp::dev::AbstractEthResource * tbd::theNVmanager::Impl::ethresource(const eOprotIP_t ipv4)
+yarp::dev::AbstractEthResource * eth::theNVmanager::Impl::ethresource(const eOprotIP_t ipv4)
 {
     yarp::dev::AbstractEthResource * res = yarp::dev::TheEthManager::instance()->getEthResource(ipv4);
     if(nullptr == res)
@@ -357,7 +357,7 @@ yarp::dev::AbstractEthResource * tbd::theNVmanager::Impl::ethresource(const eOpr
 }
 
 
-yarp::dev::AbstractEthResource * tbd::theNVmanager::Impl::ethresourceID32(const eOprotIP_t ipv4, const eOprotID32_t id32)
+yarp::dev::AbstractEthResource * eth::theNVmanager::Impl::ethresourceID32(const eOprotIP_t ipv4, const eOprotID32_t id32)
 {
     yarp::dev::AbstractEthResource * res = yarp::dev::TheEthManager::instance()->getEthResource(ipv4);
     if(nullptr == res)
@@ -380,7 +380,7 @@ yarp::dev::AbstractEthResource * tbd::theNVmanager::Impl::ethresourceID32(const 
 }
 
 
-yarp::dev::AbstractEthResource * tbd::theNVmanager::Impl::ethresourceID32s(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s)
+yarp::dev::AbstractEthResource * eth::theNVmanager::Impl::ethresourceID32s(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s)
 {
     yarp::dev::AbstractEthResource * res = yarp::dev::TheEthManager::instance()->getEthResource(ipv4);
     if(nullptr == res)
@@ -406,7 +406,7 @@ yarp::dev::AbstractEthResource * tbd::theNVmanager::Impl::ethresourceID32s(const
     return res;
 }
 
-bool tbd::theNVmanager::Impl::validparameters(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void* value)
+bool eth::theNVmanager::Impl::validparameters(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void* value)
 {
     if(nullptr == res)
     {
@@ -432,7 +432,7 @@ bool tbd::theNVmanager::Impl::validparameters(yarp::dev::AbstractEthResource *re
     return true;
 }
 
-bool tbd::theNVmanager::Impl::validparameters(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values)
+bool eth::theNVmanager::Impl::validparameters(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values)
 {
     if(nullptr == res)
     {
@@ -459,7 +459,7 @@ bool tbd::theNVmanager::Impl::validparameters(yarp::dev::AbstractEthResource *re
     return true;
 }
 
-bool tbd::theNVmanager::Impl::validparameters(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value)
+bool eth::theNVmanager::Impl::validparameters(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value)
 {
     if(nullptr == res)
     {
@@ -487,7 +487,7 @@ bool tbd::theNVmanager::Impl::validparameters(yarp::dev::AbstractEthResource *re
 
 
 
-bool tbd::theNVmanager::Impl::setcheck(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const unsigned int retries, double waitbeforecheck, double timeout)
+bool eth::theNVmanager::Impl::setcheck(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const unsigned int retries, double waitbeforecheck, double timeout)
 {
     int attempt = 0;
     bool done = false;
@@ -511,7 +511,7 @@ bool tbd::theNVmanager::Impl::setcheck(const eOprotIP_t ipv4, const eOprotID32_t
         }
 
         // ok, now i wait some time before asking the value back for verification
-        Time::delay(waitbeforecheck);
+        SystemClock::delaySystem(waitbeforecheck);
 
         if(false == check(ipv4, id32, value, timeout, 0))
         {
@@ -551,7 +551,7 @@ bool tbd::theNVmanager::Impl::setcheck(const eOprotIP_t ipv4, const eOprotID32_t
 }
 
 
-bool tbd::theNVmanager::Impl::check(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const double timeout, const unsigned int retries)
+bool eth::theNVmanager::Impl::check(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const double timeout, const unsigned int retries)
 {
     if(false == supported(ipv4, id32))
     {
@@ -587,7 +587,7 @@ bool tbd::theNVmanager::Impl::check(const eOprotIP_t ipv4, const eOprotID32_t id
 
 
 
-bool tbd::theNVmanager::Impl::wait(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const double timeout)
+bool eth::theNVmanager::Impl::wait(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const double timeout)
 {
     yarp::dev::AbstractEthResource * res = ethresourceID32(ipv4, id32);
 
@@ -637,7 +637,7 @@ bool tbd::theNVmanager::Impl::wait(const ropCode ropcode, const eOprotIP_t ipv4,
     return true;
 }
 
-bool tbd::theNVmanager::Impl::read(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value)
+bool eth::theNVmanager::Impl::read(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value)
 {
     if(nullptr == value)
     {
@@ -666,7 +666,7 @@ bool tbd::theNVmanager::Impl::read(const eOprotIP_t ipv4, const eOprotID32_t id3
 }
 
 
-bool tbd::theNVmanager::Impl::command(const eOprotIP_t ipv4, const eOprotID32_t id32cmd, const void *cmd, const eOprotID32_t id32rep, void *rep, double timeout)
+bool eth::theNVmanager::Impl::command(const eOprotIP_t ipv4, const eOprotID32_t id32cmd, const void *cmd, const eOprotID32_t id32rep, void *rep, double timeout)
 {
     if(false == set(ipv4, id32cmd, cmd))
     {
@@ -703,7 +703,7 @@ bool tbd::theNVmanager::Impl::command(const eOprotIP_t ipv4, const eOprotID32_t 
 
 
 
-//size_t tbd::theNVmanager::Impl::maxSizeOfNV(const eOprotIP_t ipv4)
+//size_t eth::theNVmanager::Impl::maxSizeOfNV(const eOprotIP_t ipv4)
 //{
 //    yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
@@ -714,7 +714,7 @@ bool tbd::theNVmanager::Impl::command(const eOprotIP_t ipv4, const eOprotID32_t 
 //    return res->getMaxSizeofROP();
 //}
 
-bool tbd::theNVmanager::Impl::ping(const eOprotIP_t ipv4, eoprot_version_t &mnprotversion, const double timeout, const unsigned int retries)
+bool eth::theNVmanager::Impl::ping(const eOprotIP_t ipv4, eoprot_version_t &mnprotversion, const double timeout, const unsigned int retries)
 {
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_comm, 0, eoprot_tag_mn_comm_status_managementprotocolversion);
     bool replied = false;
@@ -743,7 +743,7 @@ bool tbd::theNVmanager::Impl::ping(const eOprotIP_t ipv4, eoprot_version_t &mnpr
 
 
 
-bool tbd::theNVmanager::Impl::ask(yarp::dev::AbstractEthResource *res, const eOprotID32_t id32, void *value, const double timeout)
+bool eth::theNVmanager::Impl::ask(yarp::dev::AbstractEthResource *res, const eOprotID32_t id32, void *value, const double timeout)
 {
     if(nullptr == res)
     {
@@ -762,7 +762,7 @@ bool tbd::theNVmanager::Impl::ask(yarp::dev::AbstractEthResource *res, const eOp
 
 }
 
-bool tbd::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
+bool eth::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
 {
     yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
@@ -776,7 +776,7 @@ bool tbd::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const eOprotID32_t id32
 
 
 
-bool tbd::theNVmanager::Impl::askboard(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
+bool eth::theNVmanager::Impl::askboard(yarp::dev::AbstractEthResource *res, const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
 {
     // 1. must prepare wait data etc.
 
@@ -848,7 +848,7 @@ bool tbd::theNVmanager::Impl::askboard(yarp::dev::AbstractEthResource *res, cons
 }
 
 
-//bool tbd::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
+//bool eth::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
 //{
 //    yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
@@ -929,7 +929,7 @@ bool tbd::theNVmanager::Impl::askboard(yarp::dev::AbstractEthResource *res, cons
 //}
 
 
-bool tbd::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
+bool eth::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
 {
 
     yarp::dev::AbstractEthResource * res = ethresource(ipv4);
@@ -1013,7 +1013,7 @@ bool tbd::theNVmanager::Impl::ask(const eOprotIP_t ipv4, const std::vector<eOpro
     return true;
 }
 
-bool tbd::theNVmanager::Impl::set(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value)
+bool eth::theNVmanager::Impl::set(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value)
 {
     yarp::dev::AbstractEthResource * res = ethresource(ipv4);
 
@@ -1035,7 +1035,7 @@ bool tbd::theNVmanager::Impl::set(const eOprotIP_t ipv4, const eOprotID32_t id32
 }
 
 
-bool tbd::theNVmanager::Impl::signatureisvalid(const std::uint32_t signature)
+bool eth::theNVmanager::Impl::signatureisvalid(const std::uint32_t signature)
 {
     if((eo_rop_SIGNATUREdummy == signature) || (signature >= 0xaa000000))
     {
@@ -1045,14 +1045,14 @@ bool tbd::theNVmanager::Impl::signatureisvalid(const std::uint32_t signature)
 }
 
 
-bool tbd::theNVmanager::Impl::onarrival(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const std::uint32_t signature)
+bool eth::theNVmanager::Impl::onarrival(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const std::uint32_t signature)
 {
     yarp::dev::AbstractEthResource * res = ethresource(ipv4);
     char nvinfo[128];
     eoprot_ID2information(id32, nvinfo, sizeof(nvinfo));
 
-    static double tprev = yarp::os::Time::now();
-    double tcurr = yarp::os::Time::now();
+    static double tprev = SystemClock::nowSystem();
+    double tcurr = SystemClock::nowSystem();
 
     double delta = tcurr - tprev;
 
@@ -1112,22 +1112,22 @@ bool tbd::theNVmanager::Impl::onarrival(const ropCode ropcode, const eOprotIP_t 
 // - the class
 // --------------------------------------------------------------------------------------------------------------------
 
-tbd::theNVmanager& tbd::theNVmanager::getInstance()
+eth::theNVmanager& eth::theNVmanager::getInstance()
 {
     static theNVmanager* p = nullptr;
 
-    tbd::theNVmanager::Impl::mtx.wait();
+    eth::theNVmanager::Impl::mtx.wait();
     if(nullptr == p)
     {
         p = new theNVmanager();
     }
-    tbd::theNVmanager::Impl::mtx.post();
+    eth::theNVmanager::Impl::mtx.post();
 
     return *p;
 }
 
 
-tbd::theNVmanager::theNVmanager()
+eth::theNVmanager::theNVmanager()
 : pImpl(new Impl)
 {
     //Config cfg;
@@ -1136,7 +1136,7 @@ tbd::theNVmanager::theNVmanager()
 }
 
          
-//bool tbd::theNVmanager::initialise(const Config &config)
+//bool eth::theNVmanager::initialise(const Config &config)
 //{
 
 //    pImpl->initialise(config);
@@ -1145,7 +1145,7 @@ tbd::theNVmanager::theNVmanager()
 //}
 
 //
-//size_t tbd::theNVmanager::sizeOfNV(const eOprotIP_t ipv4, const eOprotID32_t id32)
+//size_t eth::theNVmanager::sizeOfNV(const eOprotIP_t ipv4, const eOprotID32_t id32)
 //{
 //    yarp::dev::AbstractEthResource * res = pImpl->ethresourceID32(ipv4, id32);
 //
@@ -1157,82 +1157,82 @@ tbd::theNVmanager::theNVmanager()
 //    return eoprot_variable_sizeof_get(eoprot_board_localboard, id32);
 //}
 //
-//size_t tbd::theNVmanager::maxSizeOfNV(const eOprotIP_t ipv4)
+//size_t eth::theNVmanager::maxSizeOfNV(const eOprotIP_t ipv4)
 //{
 //    return pImpl->maxSizeOfNV(ipv4);
 //}
 //
 
 
-bool tbd::theNVmanager::supported(const eOprotIP_t ipv4)
+bool eth::theNVmanager::supported(const eOprotIP_t ipv4)
 {
     return pImpl->supported(ipv4);
 }
 
-bool tbd::theNVmanager::supported(const eOprotIP_t ipv4, const eOprotID32_t id32)
+bool eth::theNVmanager::supported(const eOprotIP_t ipv4, const eOprotID32_t id32)
 {
     return pImpl->supported(ipv4, id32);
 }
 
-size_t tbd::theNVmanager::sizeOfNV(const eOprotID32_t id32)
+size_t eth::theNVmanager::sizeOfNV(const eOprotID32_t id32)
 {
     return pImpl->sizeofnv(id32);
 }
 
-bool tbd::theNVmanager::ping(const eOprotIP_t ipv4, eoprot_version_t &mnprotversion, const double timeout, const unsigned int retries)
+bool eth::theNVmanager::ping(const eOprotIP_t ipv4, eoprot_version_t &mnprotversion, const double timeout, const unsigned int retries)
 {
     return pImpl->ping(ipv4, mnprotversion, timeout, retries);
 }
 
-bool tbd::theNVmanager::ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
+bool eth::theNVmanager::ask(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value, const double timeout)
 {
     return pImpl->ask(ipv4, id32, value, timeout);
 }
 
-bool tbd::theNVmanager::ask(yarp::dev::AbstractEthResource *res, const eOprotID32_t id32, void *value, const double timeout)
+bool eth::theNVmanager::ask(yarp::dev::AbstractEthResource *res, const eOprotID32_t id32, void *value, const double timeout)
 {
     return pImpl->ask(res, id32, value, timeout);
 }
 
 
 
-bool tbd::theNVmanager::ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
+bool eth::theNVmanager::ask(const eOprotIP_t ipv4, const std::vector<eOprotID32_t> &id32s, const std::vector<void*> &values, const double timeout)
 {
     return pImpl->ask(ipv4, id32s, values, timeout);
 }
 
-bool tbd::theNVmanager::set(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value)
+bool eth::theNVmanager::set(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value)
 {
     return pImpl->set(ipv4, id32, value);
 }
 
-bool tbd::theNVmanager::check(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const double timeout, const unsigned int retries)
+bool eth::theNVmanager::check(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const double timeout, const unsigned int retries)
 {
     return pImpl->check(ipv4, id32, value, timeout, retries);
 }
 
 
-bool tbd::theNVmanager::setcheck(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const unsigned int retries, double waitbeforecheck, double timeout)
+bool eth::theNVmanager::setcheck(const eOprotIP_t ipv4, const eOprotID32_t id32, const void *value, const unsigned int retries, double waitbeforecheck, double timeout)
 {
     return pImpl->setcheck(ipv4, id32, value, retries, waitbeforecheck, timeout);
 }
 
-bool tbd::theNVmanager::onarrival(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const std::uint32_t signature)
+bool eth::theNVmanager::onarrival(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const std::uint32_t signature)
 {
     return pImpl->onarrival(ropcode, ipv4, id32, signature);
 }
 
-//bool tbd::theNVmanager::wait(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const double timeout)
+//bool eth::theNVmanager::wait(const ropCode ropcode, const eOprotIP_t ipv4, const eOprotID32_t id32, const double timeout)
 //{
 //    return pImpl->wait(ropcode, ipv4, id32, timeout);
 //}
 
-//bool tbd::theNVmanager::read(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value)
+//bool eth::theNVmanager::read(const eOprotIP_t ipv4, const eOprotID32_t id32, void *value)
 //{
 //    return pImpl->read(ipv4, id32, value);
 //}
 
-bool tbd::theNVmanager::command(const eOprotIP_t ipv4, const eOprotID32_t id32cmd, const void *cmd, const eOprotID32_t id32rep, void *rep, double timeout)
+bool eth::theNVmanager::command(const eOprotIP_t ipv4, const eOprotID32_t id32cmd, const void *cmd, const eOprotID32_t id32rep, void *rep, double timeout)
 {
     return pImpl->command(ipv4, id32cmd, cmd, id32rep, rep, timeout);
 }
