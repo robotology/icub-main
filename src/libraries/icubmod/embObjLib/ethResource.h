@@ -1,7 +1,7 @@
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /**
- * @ingroup icub_hardware_modules 
+ * @ingroup icub_hardware_modules
  * \defgroup TheEthManager TheEthManager
  *
 */
@@ -80,75 +80,6 @@ using namespace std;
 
 
 
-
-
-// -- class InfoOfRecvPkts
-// -- it is used to compute (and print) statistics about time or reception of UDP packets from a given IP address, and hence for a given EthResource.
-// -- further comments (maybe to be revised and verified) are in the following.
-// --
-// -- this class contains all info about pkts received from a specific ems (its id is stored in "board" field)
-// -- and let you calculate statistic about receive timing and check if one of following errors occur:
-// -- 1) error in sequence number
-// -- 2) between two consecutive pkts there are more the "timeout" sec (default is 0.01 sec and this is can modified by environment var ETHREC_STATISTICS_TIMEOUT_MSEC):
-// --    this elapsed time is calculated in two way:
-// --    1) using sys time: when arrived a pkt number n its received time(get by sys call) is compared with received time of pkt number n-1
-// --    2) using ageOfFrame filed in packets: this time is insert by transmitter board. when arrive a pkt number n its is compared with ageOfFrme of pkt n-1.
-// --       if there are more then timeout sec it mean that board did not transmit for this period.
-
-class InfoOfRecvPkts
-{
-
-private:
-    enum { DEFAULT_MAX_COUNT_STAT = 60000 }; // 1 minute expressed in ms
-    const double DEFAULT_TIMEOUT_STAT;
-
-private:
-    eOipv4addr_t    ipv4;
-    char            ipv4string[20];
-public:
-    bool            initted;          //if true is pc104 has already received a pkt from the ems when it is in running mode
-    bool            isInError;        //is true if an error occur. it is used to avoid to print error every cicle
-    int             count;
-    int             max_count;        //every max_count received pkts statistics are printed. this number can be modified by environment variable ETHREC_STATISTICS_COUNT_RECPKT_MAX
-    double          timeout;          //is expressed in sec. its default val is 0.01 sec, but is it can modified by environment var ETHREC_STATISTICS_TIMEOUT_MSEC
-
-    double          reportperiod;
-    double          timeoflastreport;
-
-    long            receivedPackets;
-    uint64_t        last_seqNum;      //last seqNum rec
-    uint64_t        last_ageOfFrame;  //value of ageOfFrame filed of last rec pkt
-    double          last_recvPktTime; //time of last recv pkt
-
-    int             totPktLost;       //total pkt lost from start up
-    int             currPeriodPktLost; // total pkt lost during thsi period
-    StatExt         *stat_ageOfFrame; //period between two packets calculating using ageOfFrame filed of ropframe. values are stored in millisec
-    StatExt         *stat_periodPkt;  //delta time between two consegutivs pkt; time is calculating using pc104 systime. Values are stored in sec
-    StatExt         *stat_printstatPktgap;
-    StatExt         *stat_lostPktgap;
-    StatExt         *stat_precessPktTime; //values are stored in sec
-    StatExt         *stat_pktSize; // rx pkt size
-    bool            _verbose;
-    bool            justprinted;
-
-    InfoOfRecvPkts();
-    ~InfoOfRecvPkts();
-    void printStatistics(void);
-    void clearStatistics(void);
-    uint64_t getSeqNum(uint64_t *packet, uint16_t size);
-    uint64_t getAgeOfFrame(uint64_t *packet, uint16_t size);
-
-
-    void updateAndCheck(uint64_t *packet, uint16_t size, double reckPktTime, double processPktTime, bool evalreport = false);
-
-    void evalReport(void);
-
-    void forceReport(void);
-
-    void setBoardIP(eOipv4addr_t ip);
-};
-
-
 class EthMonitorPresence
 {
 public:
@@ -184,31 +115,6 @@ private:
 };
 
 
-// -- class EthNetworkQuery
-// -- it is used to wait for a reply from a board.
-
-class EthNetworkQuery
-{
-
-public:
-
-    EthNetworkQuery();
-    ~EthNetworkQuery();
-
-    Semaphore* start(eOprotID32_t id32, uint32_t signature);    // associates a semaphore to a (id2wait, signature) pair
-    bool wait(Semaphore* sem, double timeout);                  // waits the semaphore until either a reply arrives or timeout expires (returns false)
-    bool arrived(eOprotID32_t id32, uint32_t signature);        // a reply has arrived. the rx handler must call it. true if it releases, false if not
-    bool stop(Semaphore* sem);                                  // we deassociate the semaphore to the waiting pair
-
-private:
-
-    eOprotID32_t id2wait;           // the id32 which we wait
-    yarp::os::Semaphore* netwait;   // the semaphore used by the class to wait for a reply from network. it must have exclusive access
-    yarp::os::Semaphore* isbusy;    // the semaphore used to guarantee exclusive access of ::netwait to calling threads
-    yarp::os::Semaphore* iswaiting; // the semaphore used to guarantee that the wait of the class is unblocked only once and when it is required
-
-};
-
 
 
 class yarp::dev::AbstractEthResource
@@ -222,6 +128,7 @@ public:
     virtual bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal) = 0;
     virtual bool            close() = 0;
     virtual bool            isEPsupported(eOprot_endpoint_t ep) = 0;
+    virtual bool isID32supported(eOprotID32_t id32) = 0;
 
     virtual ACE_INET_Addr   getRemoteAddress(void) = 0;
 
@@ -235,7 +142,7 @@ public:
 
     virtual void getBoardInfo(eOdate_t &date, eOversion_t &version) = 0;
 
-    // the function returns true if the packet can be transmitted. 
+    // the function returns true if the packet can be transmitted.
     // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
     virtual bool            getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops) = 0;
 
@@ -244,23 +151,16 @@ public:
     virtual void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true) = 0;
 
 
-    virtual bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout = 0.100, int retries = 10) = 0;
+    virtual bool getRemoteValue(const eOprotID32_t id32, void *value, const double timeout = 0.100, const unsigned int retries = 0) = 0;
 
-    virtual bool getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size, double timeout = 0.100, int retries = 10) = 0;
+    virtual bool setRemoteValue(const eOprotID32_t id32, void *value) = 0;
 
-
-    // very important note: it works only if there is an handler for the id32 and it manages the unlock of the mutex
-    virtual bool setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries = 10, double waitbeforeverification = 0.001, double verificationtimeout = 0.050, int verificationretries = 2) = 0;
+    virtual bool setcheckRemoteValue(const eOprotID32_t id32, void *value, const unsigned int retries = 10, const double waitbeforecheck = 0.001, const double timeout = 0.050) = 0;
 
 
     virtual bool verifyEPprotocol(eOprot_endpoint_t ep) = 0;
 
-    virtual bool aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature) = 0;
-
-
-    virtual bool printRXstatistics(void) = 0;
     virtual bool CANPrintHandler(eOmn_info_basic_t* infobasic) = 0;
-
 
     virtual bool serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout = 0.500) = 0;
 
@@ -272,13 +172,12 @@ public:
 
     virtual bool Tick() = 0;
     virtual bool Check() = 0;
-     
+
     virtual bool readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size) = 0;
     virtual bool addSetMessage(eOprotID32_t id32, uint8_t* data) = 0;
     virtual bool addGetMessage(eOprotID32_t id32) = 0;
-    virtual uint16_t getNVnumber(eOnvEP8_t ep) = 0;
+    virtual bool addGetMessage(eOprotID32_t id32, std::uint32_t signature) = 0;
     virtual EOnv* getNVhandler(eOprotID32_t id32, EOnv* nv) = 0;
-    virtual uint32_t translate_NVid2index(eOprotID32_t id32) = 0;
     virtual bool addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data) = 0;
     virtual bool readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size) = 0;
     virtual bool isFake() = 0;
@@ -289,98 +188,86 @@ public:
 // -- it is used to manage udp communication towards a given board ... there is no need to derive it from DeviceDriver, is there?
 
 class yarp::dev::EthResource:  public AbstractEthResource, public DeviceDriver,
-public HostTransceiver
-//class yarp::dev::EthResource:    public HostTransceiver
+                               public HostTransceiver
 {
 public:
-    
+
     // the size of the boardname must belong to EthResources because it is this class which extracts it from the xml file.
     // all other places where this name is stored have copied it from here using EthResource::getName(void).
     // an example is TheEthManager::ethBoards which makes it available with TheEthManager::getName(eOipv4addr_t ipv4)
-    
+
     enum { boardNameSize = 32 };
-    
+
     // this is the maximum size of rx and tx packets managed by the ethresource. however, the HostTranceveiver can reduce these values.
     enum { maxRXpacketsize = 1496, maxTXpacketsize = 1496 };
-    
+
 public:
-    
+
     EthResource();
     ~EthResource();
-    
-    
+
+
     bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal);
     bool            close();
     bool            isEPsupported(eOprot_endpoint_t ep);
-    
+    bool            isID32supported(eOprotID32_t id32);
+
     ACE_INET_Addr   getRemoteAddress(void);
-    
+
     eOipv4addr_t    getIPv4remoteAddress(void);
-    
+
     const char *    getName(void);
     const char *    getIPv4string(void);
-    
+
     eObrd_ethtype_t getBoardType(void);
     const char *    getBoardTypeString(void);
-    
+
     void getBoardInfo(eOdate_t &date, eOversion_t &version);
-    
-    // the function returns true if the packet can be transmitted. 
+
+    // the function returns true if the packet can be transmitted.
     // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
     bool            getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops);
-    
+
     bool            canProcessRXpacket(uint64_t *data, uint16_t size);
-    
+
     void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true);
-    
-    
-    bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout = 0.100, int retries = 10);
-    
-    bool getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size, double timeout = 0.100, int retries = 10);
-    
-    
-    // very important note: it works only if there is an handler for the id32 and it manages the unlock of the mutex
-    bool setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries = 10, double waitbeforeverification = 0.001, double verificationtimeout = 0.050, int verificationretries = 2);
-    
-    
+
+
+    bool getRemoteValue(const eOprotID32_t id32, void *value, const double timeout = 0.100, const unsigned int retries = 0);
+
+    bool setRemoteValue(const eOprotID32_t id32, void *value);
+
+    bool setcheckRemoteValue(const eOprotID32_t id32, void *value, const unsigned int retries = 10, const double waitbeforecheck = 0.001, const double timeout = 0.050);
+
+
     bool verifyEPprotocol(eOprot_endpoint_t ep);
-    
-    bool aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
-    
-    bool printRXstatistics(void);
+
     bool CANPrintHandler(eOmn_info_basic_t* infobasic);
-    
-    
+
+
     bool serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout = 0.500);
-    
+
     bool serviceSetRegulars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout = 0.500);
-    
+
     bool serviceStart(eOmn_serv_category_t category, double timeout = 0.500);
-    
+
     bool serviceStop(eOmn_serv_category_t category, double timeout = 0.500);
-    
+
     bool Tick();
     bool Check();
+
     bool readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size);
     bool addSetMessage(eOprotID32_t id32, uint8_t* data);
     bool addGetMessage(eOprotID32_t id32);
-    uint16_t getNVnumber(eOnvEP8_t ep);
-    uint32_t translate_NVid2index(eOprotID32_t id32);
+    bool addGetMessage(eOprotID32_t id32, std::uint32_t signature);
     bool addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data);
     bool readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size);
     EOnv* getNVhandler(eOprotID32_t id32, EOnv* nv);
     bool isFake();
-    
-    
-    // -- not used at the moment
-    void checkIsAlive(double curr_time);
-    // double          getLastRecvMsgTimestamp(void);
-    // int             getNumberOfAttachedInterfaces(void);
-    // returns the capacity of the receiving buffer.
-    // int getRXpacketCapacity();
-    
+
+
 private:
-    
+
     eOipv4addr_t      ipv4addr;
     char              ipv4addrstring[20];
     char              boardName[32];
@@ -388,41 +275,36 @@ private:
     eObrd_ethtype_t   ethboardtype;
     ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
-    bool              isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
-    InfoOfRecvPkts    *infoPkts;
-    
+    bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
+
     yarp::os::Semaphore*  objLock;
-    
-    EthNetworkQuery*    ethQuery;
-    
-    EthNetworkQuery*    ethQueryServices;
-    
-    
-    
+
+
+
     bool                verifiedEPprotocol[eoprot_endpoints_numberof];
     bool                verifiedBoardPresence;
     bool                askedBoardVersion;
     eOdate_t            boardDate;
     eOversion_t         boardVersion;
+    eoprot_version_t    boardMNprotocolversion;
     eObrd_ethtype_t     detectedBoardType;
-    
+
     bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
     bool                txrateISset;
     bool                cleanedBoardBehaviour;    // the board is in config mode and does not have any regulars
-    eOmn_comm_status_t  boardCommStatus;
     uint16_t            usedNumberOfRegularROPs;
-    
+
     can_string_eth*     c_string_handler[16];
-    
+
     TheEthManager       *ethManager;
-    
+
     EthMonitorPresence monitorpresence;
-    
+
     bool regularsAreSet;
-    
+
 private:
-    
-    
+
+
     bool verifyBoard();
     bool setTimingOfRunningCycle();
     bool verifyBoardPresence();
@@ -431,12 +313,12 @@ private:
     bool askBoardVersion(void);
     // we keep isRunning() and we add a field in the reply of serviceStart()/Stop() which tells if the board is in run mode or not.
     bool isRunning(void);
-    
+
     // lock of the object: on / off
     bool lock(bool on);
-    
+
     bool serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times);
-    
+
     bool verbosewhenok;
 };
 
@@ -452,93 +334,81 @@ private:
 class yarp::dev::FakeEthResource :  public AbstractEthResource
 {
 public:
-    
+
     // the size of the boardname must belong to EthResources because it is this class which extracts it from the xml file.
     // all other places where this name is stored have copied it from here using EthResource::getName(void).
     // an example is TheEthManager::ethBoards which makes it available with TheEthManager::getName(eOipv4addr_t ipv4)
-    
+
     enum { boardNameSize = 32 };
-    
+
     // this is the maximum size of rx and tx packets managed by the ethresource. however, the HostTranceveiver can reduce these values.
     enum { maxRXpacketsize = 1496, maxTXpacketsize = 1496 };
-    
+
 public:
-    
+
     FakeEthResource();
     ~FakeEthResource();
-    
-    
+
+
     bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal) override;
     bool            close();
     bool            isEPsupported(eOprot_endpoint_t ep);
-    
+    bool isID32supported(eOprotID32_t id32);
+
     ACE_INET_Addr   getRemoteAddress(void);
-    
+
     eOipv4addr_t    getIPv4remoteAddress(void);
-    
+
     const char *    getName(void);
     const char *    getIPv4string(void);
-    
+
     eObrd_ethtype_t getBoardType(void);
     const char *    getBoardTypeString(void);
-    
+
     void getBoardInfo(eOdate_t &date, eOversion_t &version);
-    
-    // the function returns true if the packet can be transmitted. 
+
+    // the function returns true if the packet can be transmitted.
     // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
     bool            getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops);
-    
+
     bool            canProcessRXpacket(uint64_t *data, uint16_t size);
-    
+
     void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true);
-    
-    
-    bool verifyRemoteValue(eOprotID32_t id32, void *value, uint16_t size, double timeout = 0.100, int retries = 10);
-    
-    bool getRemoteValue(eOprotID32_t id32, void *value, uint16_t &size, double timeout = 0.100, int retries = 10);
-    
-    
-    // very important note: it works only if there is an handler for the id32 and it manages the unlock of the mutex
-    bool setRemoteValueUntilVerified(eOprotID32_t id32, void *value, uint16_t size, int retries = 10, double waitbeforeverification = 0.001, double verificationtimeout = 0.050, int verificationretries = 2);
-    
-    
+
+
+    bool getRemoteValue(const eOprotID32_t id32, void *value, const double timeout = 0.100, const unsigned int retries = 0);
+
+    bool setRemoteValue(const eOprotID32_t id32, void *value);
+
+    bool setcheckRemoteValue(const eOprotID32_t id32, void *value, const unsigned int retries = 10, const double waitbeforecheck = 0.001, const double timeout = 0.050);
+
     bool verifyEPprotocol(eOprot_endpoint_t ep);
-    
-    bool aNetQueryReplyHasArrived(eOprotID32_t id32, uint32_t signature);
-    
-    
-    bool printRXstatistics(void);
+
     bool CANPrintHandler(eOmn_info_basic_t* infobasic);
-    
-    
+
+
     bool serviceVerifyActivate(eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout = 0.500);
-    
+
     bool serviceSetRegulars(eOmn_serv_category_t category, vector<eOprotID32_t> &id32vector, double timeout = 0.500);
-    
+
     bool serviceStart(eOmn_serv_category_t category, double timeout = 0.500);
-    
+
     bool serviceStop(eOmn_serv_category_t category, double timeout = 0.500);
-    
+
     bool Tick();
     bool Check();
     bool readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size);
     bool addSetMessage(eOprotID32_t id32, uint8_t* data);
     bool addGetMessage(eOprotID32_t id32);
-    uint16_t getNVnumber(eOnvEP8_t ep);
-    uint32_t translate_NVid2index(eOprotID32_t id32);
+    bool addGetMessage(eOprotID32_t id32, std::uint32_t signature);
     bool addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data);
     bool readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size);
     EOnv* getNVhandler(eOprotID32_t id32, EOnv* nv);
-    
-    
-    // -- not used at the moment
-    void checkIsAlive(double curr_time);
+
+
     bool isFake();
-    // double          getLastRecvMsgTimestamp(void);
-    // int             getNumberOfAttachedInterfaces(void);
-    // returns the capacity of the receiving buffer.
-    // int getRXpacketCapacity();
-    
+
+
 private: //FAKE
     eOipv4addr_t      ipv4addr;
     char              ipv4addrstring[20];
@@ -548,23 +418,23 @@ private: //FAKE
     double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
     bool              isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
     ACE_INET_Addr     remote_dev;
-    
+
     yarp::os::Semaphore*  objLock;
-    
+
     bool                verifiedEPprotocol[eoprot_endpoints_numberof];
     bool                verifiedBoardPresence;
-    
+
     bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
     eOmn_comm_status_t  boardCommStatus;
     uint16_t            usedNumberOfRegularROPs;
-    
+
     TheEthManager       *ethManager;
     HostTransceiver     *myHostTrans;
 
-    
+
 private:
-    
-    
+
+
     bool verifyBoard();
 
 
@@ -572,11 +442,11 @@ private:
     bool cleanBoardBehaviour(void);
     // we keep isRunning() and we add a field in the reply of serviceStart()/Stop() which tells if the board is in run mode or not.
     bool isRunning(void);
-    
+
     // lock of the object: on / off
     bool lock(bool on);
-    
-    
+
+
     bool verbosewhenok;
 };
 

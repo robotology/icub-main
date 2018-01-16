@@ -77,7 +77,6 @@ using namespace std;
 #include "../embObjLib/hostTransceiver.hpp"
 // #include "IRobotInterface.h"
 #include "IethResource.h"
-#include "eoRequestsQueue.hpp"
 #include "EoMotionControl.h"
 
 #include "serviceParser.h"
@@ -98,58 +97,12 @@ using namespace std;
 
 #define     EMBOBJMC_DONT_USE_MAIS
 
-// marco.accame:
-// if the macro is disabled: the service parser which reads the runtime config parameters from the xml file is NOT called. everything is as it was before.
-// enable it only whan the service parser is full developed.
-
-#define EMBOBJMC_USESERVICEPARSER
 
 //
 //   Help structure
 //
 using namespace yarp::os;
 using namespace yarp::dev;
-
-// struct ImpedanceLimits
-// {
-//     double min_stiff;
-//     double max_stiff;
-//     double min_damp;
-//     double max_damp;
-//     double param_a;
-//     double param_b;
-//     double param_c;
-//
-// public:
-//     ImpedanceLimits()
-//     {
-//         min_stiff=0;
-//         max_stiff=0;
-//         min_damp=0;
-//         max_damp=0;
-//         param_a=0;
-//         param_b=0;
-//         param_c=0;
-//     }
-//
-//     double get_min_stiff()
-//     {
-//         return min_stiff;
-//     }
-//     double get_max_stiff()
-//     {
-//         return max_stiff;
-//     }
-//     double get_min_damp()
-//     {
-//         return min_damp;
-//     }
-//     double get_max_damp()
-//     {
-//         return max_damp;
-//     }
-// };
-
 
 
 struct SpeedEstimationParameters
@@ -255,9 +208,8 @@ private:
 
     ////////////////////
     // parameters
-#if defined(EMBOBJMC_USESERVICEPARSER)
     servConfigMC_t serviceConfig;
-#endif
+
 
     //int tot_packet_recv;
     //int errors;
@@ -270,7 +222,7 @@ private:
     double *_jointEncoderTolerance;              /** Num of error bits passable for joint encoder */
     int    *_jointEncoderRes;                   /** joint encoder resolution */
     int    *_rotorEncoderRes;                   /** rotor encoder resolution */
-    double *_rotorEncoderTolerance;;              /** Num of error bits passable for joint encoder */
+    double *_rotorEncoderTolerance;              /** Num of error bits passable for joint encoder */
     uint8_t *_rotorEncoderType;                  /** rotor encoder type*/
     double *_gearbox_M2J;                           /** the gearbox ratio */
     double *_gearbox_E2J;                        /** the gearbox ratio */
@@ -345,10 +297,6 @@ private:
     double  *_ref_command_speeds;   // used for velocity control.
     double  *_ref_positions;    // used for direct position control.
     double  *_ref_accs;         // for velocity control, in position min jerk eq is used.
-
-    uint16_t        NVnumber;       // keep if useful to store, otherwise can be removed. It is used to pass the total number of this EP to the requestqueue
-
-
 
 
 
@@ -470,7 +418,6 @@ private:
     bool fromConfig_Step2(yarp::os::Searchable &config);
     bool fromConfig_readServiceCfg(yarp::os::Searchable &config);
     bool initializeInterfaces(measureConvFactors &f);
-    eoThreadEntry *appendWaitRequest(int j, uint32_t protoid);
 
 public:
 
@@ -478,7 +425,6 @@ public:
     ~embObjMotionControl();
 
     Semaphore           semaphore;
-    eoRequestsQueue     *requestQueue;      // it contains the list of requests done to the remote board
 
 
     void cleanup(void);
@@ -491,8 +437,7 @@ public:
     virtual bool initialised();
     virtual iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void *rxdata);
-    virtual eoThreadFifo * getFifo(uint32_t variableProgNum);
-    virtual eoThreadEntry *getThreadTable(int  threadId);
+
 
 
 

@@ -120,8 +120,6 @@ private:
     bool initRegulars();
     void cleanup(void);
     void printServiceConfig(void);
-    // not used ...
-    bool isEpManagedByBoard();
 
     // for inertials
     bool sendConfig2MTBboards(yarp::os::Searchable &config);

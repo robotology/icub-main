@@ -486,7 +486,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
         startCommand.enable = 1;
 
         uint32_t id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_cmmnds_enable);
-        if(!res->addSetMessage(id32, (uint8_t*) &startCommand))
+        if(false == res->setRemoteValue(id32, (uint8_t*) &startCommand))
         {
             yError() << "embObjAnalogSensor::open() fails to command the start transmission of the inertials";
             cleanup();
@@ -500,7 +500,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 
 
 bool embObjAnalogSensor::isEpManagedByBoard()
-{    
+{
     return res->isEPsupported(eoprot_endpoint_analogsensors);
 }
 
@@ -531,9 +531,9 @@ bool embObjAnalogSensor::sendConfig2Strain(void)
 
     eOprotID32_t id32 =  eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
 
-    if(false == res->setRemoteValueUntilVerified(id32, &strainConfig, sizeof(strainConfig), 10, 0.010, 0.050, 2))
+    if(false == res->setcheckRemoteValue(id32, &strainConfig, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjAnalogSensor::sendConfig2Strain() had an error while calling setRemoteValueUntilVerified() for strain config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Strain() had an error while calling setcheckRemoteValue() for strain config in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         return false;
     }
     else
@@ -549,7 +549,7 @@ bool embObjAnalogSensor::sendConfig2Strain(void)
 #else
 
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_strain, 0, eoprot_tag_as_strain_config);
-    if(!res->addSetMessage(protoid, (uint8_t *) &strainConfig))
+    if(false == res->setRemoteValue(protoid, (uint8_t *) &strainConfig))
     {
         yError() << "embObjAnalogSensor::sendConfig2Strain() could not send a set message for eoprot_tag_as_strain_config";
     }
@@ -571,9 +571,9 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     uint8_t datarate  = _period;
     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 
-    if(false == res->setRemoteValueUntilVerified(id32, &datarate, sizeof(datarate), 10, 0.010, 0.050, 2))
+    if(false == res->setcheckRemoteValue(id32, &datarate, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais datarate in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setcheckRemoteValue() for mais datarate in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         return false;
     }
     else
@@ -589,9 +589,9 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     eOenum08_t maismode  = eoas_maismode_txdatacontinuously; // use eOas_maismode_t for value BUT USE   for type (their sizes can be different !!)
     id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
 
-    if(false == res->setRemoteValueUntilVerified(id32, &maismode, sizeof(maismode), 10, 0.010, 0.050, 2))
+    if(false == res->setcheckRemoteValue(id32, &maismode, 10, 0.010, 0.050))
     {
-        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setRemoteValueUntilVerified() for mais mode in BOARD" << res->getName() << "with IP" << res->getIPv4string();
+        yError() << "FATAL: embObjAnalogSensor::sendConfig2Mais() had an error while calling setcheckRemoteValue() for mais mode in BOARD" << res->getName() << "with IP" << res->getIPv4string();
         return false;
     }
     else
@@ -611,7 +611,7 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     eOprotID32_t protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_datarate);
 
 
-    if(!res->addSetMessage(protoid, &datarate))
+    if(false == res->setRemoteValue(protoid, &datarate))
     {
         yError() << "embObjAnalogSensor::sendConfig2Mais() could not send a set message fot datarate";
         yError() << "embObjAnalogSensor::sendConfig2Mais() however did not return false. IS CORRECT?";
@@ -622,7 +622,7 @@ bool embObjAnalogSensor::sendConfig2Mais(void)
     protoid = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_mais, 0, eoprot_tag_as_mais_config_mode);
 
 
-    if(!res->addSetMessage(protoid, (uint8_t *) &maismode))
+    if(false == res->setRemoteValue(protoid, (uint8_t *) &maismode))
     {
         yError() << "embObjAnalogSensor::sendConfig2Mais() could not send a set message fot maismode";
         yError() << "embObjAnalogSensor::sendConfig2Mais() however did not return false. IS CORRECT?";
@@ -794,7 +794,7 @@ bool embObjAnalogSensor::sendConfig2SkinInertial(Searchable& globalConfig)
 //    startCommand.enable = 1;
 
 //    id32 = eoprot_ID_get(eoprot_endpoint_analogsensors, eoprot_entity_as_inertial, 0, eoprot_tag_as_inertial_cmmnds_enable);
-//    if(!res->addSetMessage(id32, (uint8_t*) &startCommand))
+//    if(false == res->setRemoteValue(id32, (uint8_t*) &startCommand))
 //    {
 //        yError() << "ethResources::sendConfig2SkinInertial() fails to command the start transmission of the inertials";
 //        return false;
@@ -1042,8 +1042,8 @@ bool embObjAnalogSensor::getFullscaleValues()
     // wait for response
     while(!gotFullScaleValues && (timeout != 0))
     {
-        res->addSetMessage(protoid_strain_config, (uint8_t *) &strainConfig);
-        Time::delay(1.0);
+        res->setRemoteValue(protoid_strain_config, &strainConfig);
+        SystemClock::delaySystem(1.0);
         // read fullscale values
         res->readBufferedValue(protoid_fullscale, (uint8_t *) &fullscale_values, &tmpNVsize);
         // If data arrives, size is bigger than zero
@@ -1179,7 +1179,7 @@ bool embObjAnalogSensor::init()
         }
     }
 
-    Time::delay(0.005);  // 5 ms (m.a.a-delay: before it was 0)
+    SystemClock::delaySystem(0.005);  // 5 ms (m.a.a-delay: before it was 0)
    
 
     return true;

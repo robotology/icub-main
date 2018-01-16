@@ -19,7 +19,6 @@ endif(ETHRES_DEBUG_DONTREADBACK)
 add_definitions(-D_ICUB_CALLBACK_ -DUSE_EOPROT_XML -DEOPROT_CFG_OVERRIDE_CALLBACKS_IN_RUNTIME)
 
 
-
 if(ICUB_COMPILE_EMBOBJ_LIBRARY)
 
 if(NOT ICUB_HAS_icub_firmware_shared)
@@ -181,12 +180,14 @@ set(EXTRA_SOURCE            ${EXTRA_FOLDER}/hostTransceiver.cpp
                             ${EXTRA_FOLDER}/ethManager.cpp
                             ${EXTRA_FOLDER}/ethResource.cpp
                             ${EXTRA_FOLDER}/fakeEthResource.cpp
-                            ${EXTRA_FOLDER}/eoRequestsQueue.cpp
                             ${EXTRA_FOLDER}/serviceParser.cpp
+                            ${EXTRA_FOLDER}/theNVmanager.cpp
                             )
 
 set(DEBUG_SOURCE            ${DEBUG_FOLDER}/eODeb_eoProtoParser.c
                             ${DEBUG_FOLDER}/eOtheEthLowLevelParser.c)
+
+set_source_files_properties(${EXTRA_SOURCE} PROPERTIES COMPILE_FLAGS ${CXX11_FLAGS})
 
 
 set(embobj_source

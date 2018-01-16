@@ -166,8 +166,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
         protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[p].indexNv, eoprot_tag_sk_skin_cmmnds_boardscfg);
 
-
-        if(! res->addSetMessage(protoid, (uint8_t*)&bcfg))
+        if(false == res->setRemoteValue(protoid, &bcfg))
         {
             yError() << "EmbObjSkin::initWithSpecialConfig(): in skin BOARD" << res->getName() << "IP" << res->getIPv4string() << " Error in send special board config for mtb with addr from"<<  bcfg.addrstart << " to addr " << bcfg.addrend;
             return false;
@@ -175,7 +174,7 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
 
     } //end for for each special board cfg
 
-    Time::delay(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
+    SystemClock::delaySystem(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
 
     //-----------------------------------------------------------------------------------------------------
     //------------ read special cfg triangle --------------------------------------------------------------
@@ -229,16 +228,16 @@ bool EmbObjSkin::initWithSpecialConfig(yarp::os::Searchable& config)
         // otherwise the board sends up a diagnostics message telling that it cannot send a message in can bus
         // we do that by ... sic ... adding a small delay. 
         // the above "yDebug() << "\n Special triangle cfg num " << j;" used to test was probably doing the same effect as a delay of a few ms
-        Time::delay(0.010);
+        SystemClock::delaySystem(0.010);
 
-        if(! res->addSetMessage(protoid, (uint8_t*)&tcfg))
+        if(false == res->setRemoteValue(protoid, &tcfg))
         {
             yError() << "EmbObjSkin::initWithSpecialConfig(): in skin BOARD" << res->getName() << "IP" << res->getIPv4string() << " Error in send default triangle config for mtb "<<  tcfg.boardaddr;
             return false;
         }
     }
 
-    Time::delay(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
+    SystemClock::delaySystem(0.010); // 10 ms (m.a.a-delay: before it was 0.01)
 
     return true;
 }
@@ -505,7 +504,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
 
     /* Following delay is necessary in order to give enough time to skin boards to configure all its triangles */
-    Time::delay(0.500);
+    SystemClock::delaySystem(0.500);
 
     if(!initWithSpecialConfig(config))
     {
@@ -630,7 +629,7 @@ bool EmbObjSkin::start()
     for(i=0; i<_skCfg.numOfPatches;i++)
     {
         protoid = eoprot_ID_get(eoprot_endpoint_skin, eoprot_entity_sk_skin, _skCfg.patchInfoList[i].indexNv, eoprot_tag_sk_skin_config_sigmode);
-        ret = res->addSetMessage(protoid, &dat);
+        ret = res->setRemoteValue(protoid, &dat);
         if(!ret)
         {
             yError() << "EmbObjSkin::start(): unable to start skin for BOARD" << res->getName() << "IP" << res->getIPv4string() << " on port " <<  _skCfg.patchInfoList[i].idPatch;
@@ -676,7 +675,7 @@ bool EmbObjSkin::configPeriodicMessage(void)
             }
         }
     }
-    Time::delay(0.005);  // 5 ms (m.a.a-delay: before it was 0)
+    SystemClock::delaySystem(0.005);  // 5 ms (m.a.a-delay: before it was 0)
 
     return true;
 }
@@ -727,14 +726,14 @@ bool EmbObjSkin::init()
         defBoardCfg.addrstart = minAddr;
         defBoardCfg.addrend = maxAddr;
 
-        if(!res->addSetMessage(protoid, (uint8_t*)&defBoardCfg))
+        if(false == res->setRemoteValue(protoid, &defBoardCfg))
         {
             yError() << "EmbObjSkin::init(): in skin BOARD" << res->getName() << "IP" << res->getIPv4string() << " Error in send default board config for mtb with addr from "<<  defBoardCfg.addrstart << "to " << defBoardCfg.addrend;
             return false;
         }
 
     }
-    Time::delay(0.010);
+    SystemClock::delaySystem(0.010);
 
     for(i=0; i<_skCfg.numOfPatches;i++)
     {
@@ -743,7 +742,7 @@ bool EmbObjSkin::init()
         for(k=0; k<_skCfg.patchInfoList[i].cardAddrList.size(); k++)
         {
             defTriangleCfg.boardaddr = _skCfg.patchInfoList[i].cardAddrList[k];
-            if(! res->addSetMessage(protoid, (uint8_t*)&defTriangleCfg))
+            if(false == res->setRemoteValue(protoid, &defTriangleCfg))
             {
                 yError() << "EmbObjSkin::init(): in skin BOARD" << res->getName() << "IP" << res->getIPv4string() << " Error in send default triangle config for mtb "<<  defTriangleCfg.boardaddr;
                 return false;
