@@ -615,7 +615,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
 
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
         yFatal() << "embObjMotionControl::open() fails to instantiate ethManager";
@@ -1708,9 +1708,9 @@ void embObjMotionControl::cleanup(void)
 
 
 
-iethresType_t embObjMotionControl::type()
+eth::iethresType_t embObjMotionControl::type()
 {
-    return iethres_motioncontrol;
+    return eth::iethres_motioncontrol;
 }
 
 bool embObjMotionControl::update(eOprotID32_t id32, double timestamp, void *rxdata)

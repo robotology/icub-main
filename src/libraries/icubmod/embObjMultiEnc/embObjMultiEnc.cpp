@@ -195,7 +195,7 @@ bool embObjMultiEnc::open(yarp::os::Searchable &config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
 
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
         yFatal() << "embObjMultiEnc::open() fails to instantiate ethManager";
@@ -525,9 +525,9 @@ int embObjMultiEnc::calibrateChannel(int ch, double v)
 }
 
 
-iethresType_t embObjMultiEnc::type()
+eth::iethresType_t embObjMultiEnc::type()
 {
-    return iethres_analogmultienc;
+    return eth::iethres_analogmultienc;
 }
 
 

@@ -279,7 +279,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
 
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
         yFatal() << "embObjAnalogSensor::open() fails to instantiate ethManager";
@@ -1287,30 +1287,30 @@ int embObjAnalogSensor::calibrateChannel(int ch, double v)
     return AS_OK;
 }
 
-iethresType_t embObjAnalogSensor::type()
+eth::iethresType_t embObjAnalogSensor::type()
 {
-    iethresType_t ret = iethres_none;
+    eth::iethresType_t ret = eth::iethres_none;
 
     switch(_as_type)
     {
         case AS_Type_MAIS:
         {
-            ret = iethres_analogmais;
+            ret = eth::iethres_analogmais;
         } break;
 
         case AS_Type_STRAIN:
         {
-            ret = iethres_analogstrain;
+            ret = eth::iethres_analogstrain;
         } break;
 
         case AS_Type_INERTIAL_MTB:
         {
-            ret = iethres_analoginertial;
+            ret = eth::iethres_analoginertial;
         } break;
 
         default:
         {
-            ret = iethres_none;
+            ret = eth::iethres_none;
         }
     }
 

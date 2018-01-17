@@ -1,14 +1,38 @@
 // -*- Mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
+
 /*
- * Copyright (C) 2012 iCub Facility, Istituto Italiano di Tecnologia
- * Authors: Alberto Cardellino
- * CopyPolicy: Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
+ * Copyright (C) 2017 iCub Facility - Istituto Italiano di Tecnologia
+ * Author:  Alberto cardellino, Marco Accame
+ * email:   alberto.cardellino@iit.it, marco.accame@iit.it
+ * website: www.robotcub.org
+ * Permission is granted to copy, distribute, and/or modify this program
+ * under the terms of the GNU General Public License, version 2 or any
+ * later version published by the Free Software Foundation.
  *
- */
+ * A copy of the license can be found at
+ * http://www.robotcub.org/icub/license/gpl.txt
+ *
+ * This program is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General
+ * Public License for more details
+*/
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - public interface
+// --------------------------------------------------------------------------------------------------------------------
+
+#include <ethManager.h>
+
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - external dependencies
+// --------------------------------------------------------------------------------------------------------------------
 
 #include <string>
-#include <ethManager.h>
 #include <ethResource.h>
 #include <errno.h>
 
@@ -30,442 +54,35 @@ using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
+
+
+#include <fakeEthResource.h>
+#include <ethResource.h>
+
+using namespace eth;
+
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - pimpl: private implementation (see scott meyers: item 22 of effective modern c++, item 31 of effective c++
+// --------------------------------------------------------------------------------------------------------------------
+
+
+
+// --------------------------------------------------------------------------------------------------------------------
+// - the class
+// --------------------------------------------------------------------------------------------------------------------
+
+
+// - class eth::TheEthManager
+
+
 TheEthManager* TheEthManager::handle = NULL;
 yarp::os::Semaphore TheEthManager::managerSem = 1;
 
 yarp::os::Semaphore TheEthManager::rxSem = 1;
 yarp::os::Semaphore TheEthManager::txSem = 1;
 
-
-// - class IethResource
-
-const char * IethResource::names[iethresType_numberof+1] =
-{
-    "resManagement", "resAnalogMais", "resAnalogStrain", "resMotionControl",
-    "resSkin", "resAnalogVirtual", "resAnalogInertial", "resAnalogmultienc", "resNONE"
-};
-
-const char * IethResource::stringOfType()
-{
-    iethresType_t t = this->type();
-
-    if(iethres_none == t)
-    {
-        return names[iethresType_numberof];
-    }
-
-    return names[t];
-}
-
-
-
-// - class EthBoards
-
-const char * EthBoards::defaultnames[EthBoards::maxEthBoards] =
-{
-    "noname-in-xml-board.1", "noname-in-xml-board.2", "noname-in-xml-board.3", "noname-in-xml-board.4",
-    "noname-in-xml-board.5", "noname-in-xml-board.6", "noname-in-xml-board.7", "noname-in-xml-board.8",
-    "noname-in-xml-board.9", "noname-in-xml-board.10", "noname-in-xml-board.11", "noname-in-xml-board.12",
-    "noname-in-xml-board.13", "noname-in-xml-board.14", "noname-in-xml-board.15", "noname-in-xml-board.16",
-    "noname-in-xml-board.17", "noname-in-xml-board.18", "noname-in-xml-board.19", "noname-in-xml-board.20",
-    "noname-in-xml-board.21", "noname-in-xml-board.22", "noname-in-xml-board.23", "noname-in-xml-board.24",
-    "noname-in-xml-board.25", "noname-in-xml-board.26", "noname-in-xml-board.27", "noname-in-xml-board.28",
-    "noname-in-xml-board.29", "noname-in-xml-board.30", "noname-in-xml-board.31", "noname-in-xml-board.32"
-};
-
-const char * EthBoards::errorname[1] =
-{
-    "wrong-unknown-board"
-};
-
-EthBoards::EthBoards()
-{
-    memset(LUT, 0, sizeof(LUT));
-    sizeofLUT = 0;
-}
-
-
-EthBoards::~EthBoards()
-{
-    memset(LUT, 0, sizeof(LUT));
-    sizeofLUT = 0;
-}
-
-
-size_t EthBoards::number_of_resources(void)
-{
-    return(sizeofLUT);
-}
-
-size_t EthBoards::number_of_interfaces(AbstractEthResource * res)
-{
-    if(NULL == res)
-    {
-        return(0);
-    }
-
-    eOipv4addr_t ipv4 = res->getIPv4remoteAddress();
-    uint8_t index = 0;
-    eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
-    index --;
-
-
-    if(index>=maxEthBoards)
-    {
-        return 0;
-    }
-
-    if(NULL == LUT[index].resource)
-    {
-        return 0;
-    }
-
-    return(LUT[index].numberofinterfaces);
-}
-
-
-bool EthBoards::add(AbstractEthResource* res)
-{
-    if(NULL == res)
-    {
-        return false;
-    }
-
-    eOipv4addr_t ipv4 = res->getIPv4remoteAddress();
-    uint8_t index = 0;
-    eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
-    index --;
-
-    if(index>=maxEthBoards)
-    {
-        return false;
-    }
-
-    if(NULL != LUT[index].resource)
-    {
-        return false;
-    }
-
-    LUT[index].resource = res;
-    LUT[index].ipv4 = ipv4;
-    LUT[index].type = res->getBoardType();
-    LUT[index].nameoftype = res->getBoardTypeString();
-    LUT[index].boardnumber = index;
-    snprintf(LUT[index].name, sizeof(LUT[index].name), "%s", res->getName());
-    if(0 == strlen(LUT[index].name))
-    {   // use default name
-        snprintf(LUT[index].name, sizeof(LUT[index].name), "%s", defaultnames[index]);
-    }
-    LUT[index].numberofinterfaces = 0;
-    for(int i=0; i<iethresType_numberof; i++)
-    {
-        LUT[index].interfaces[i] = NULL;
-    }
-
-    sizeofLUT++;
-
-    return true;
-}
-
-
-bool EthBoards::add(AbstractEthResource* res, IethResource* interface)
-{
-    if((NULL == res) || (NULL == interface))
-    {
-        return false;
-    }
-
-    iethresType_t type = interface->type();
-
-    if(iethres_none == type)
-    {
-        return false;
-    }
-
-    // now i compute the index
-    eOipv4addr_t ipv4 = res->getIPv4remoteAddress();
-    uint8_t index = 0;
-    eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
-    index --;
-    if(index>=maxEthBoards)
-    {
-        return false;
-    }
-
-    if(res != LUT[index].resource)
-    {
-        return false;
-    }
-
-    if(NULL != LUT[index].interfaces[type])
-    {
-        return false;
-    }
-
-    // ok, i add it
-    LUT[index].interfaces[type] = interface;
-    LUT[index].numberofinterfaces ++;
-
-
-    return true;
-}
-
-
-bool EthBoards::rem(AbstractEthResource* res)
-{
-    if(NULL == res)
-    {
-        return false;
-    }
-
-    // now i compute the index
-    eOipv4addr_t ipv4 = res->getIPv4remoteAddress();
-    uint8_t index = 0;
-    eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
-    index --;
-    if(index>=maxEthBoards)
-    {
-        return false;
-    }
-
-    if(res != LUT[index].resource)
-    {
-        return false;
-    }
-
-    LUT[index].resource = NULL;
-    LUT[index].ipv4 = 0;
-    LUT[index].boardnumber = 0;
-    memset(LUT[index].name, 0, sizeof(LUT[index].name));
-    LUT[index].numberofinterfaces = 0;
-    for(int i=0; i<iethresType_numberof; i++)
-    {
-        LUT[index].interfaces[i] = NULL;
-    }
-
-    sizeofLUT--;
-
-    return true;
-}
-
-
-bool EthBoards::rem(AbstractEthResource* res, iethresType_t type)
-{
-    if((NULL == res) || (iethres_none == type))
-    {
-        return false;
-    }
-
-    // now i compute the index
-    eOipv4addr_t ipv4 = res->getIPv4remoteAddress();
-    uint8_t index = 0;
-    eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
-    index --;
-    if(index>=maxEthBoards)
-    {
-        return false;
-    }
-
-    if(res != LUT[index].resource)
-    {
-        return false;
-    }
-
-    if(NULL != LUT[index].interfaces[type])
-    {
-        LUT[index].interfaces[type] = NULL;
-        LUT[index].numberofinterfaces --;
-    }
-
-    return true;
-}
-
-
-AbstractEthResource* EthBoards::get_resource(eOipv4addr_t ipv4)
-{
-    AbstractEthResource * ret = NULL;
-
-    uint8_t index = 0;
-    eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
-    index --;
-    if(index<maxEthBoards)
-    {
-        ret = LUT[index].resource;
-    }
-
-    return(ret);
-}
-
-bool EthBoards::get_LUTindex(eOipv4addr_t ipv4, uint8_t &index)
-{
-    index = 0;
-    eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
-    index --;
-
-    if(index>=maxEthBoards)
-    {
-        return false;
-    }
-
-    if(NULL == LUT[index].resource)
-    {
-        return false;
-    }
-    return true;
-}
-
-IethResource* EthBoards::get_interface(eOipv4addr_t ipv4, iethresType_t type)
-{
-    IethResource *dev = NULL;
-    uint8_t index;
-
-    if(!get_LUTindex(ipv4, index))
-    {
-        return NULL;
-    }
-
-    if(iethres_none == type)
-    {
-        return NULL;
-    }
-
-    dev = LUT[index].interfaces[type];
-
-    return dev;
-
-}
-
-
-IethResource* EthBoards::get_interface(eOipv4addr_t ipv4, eOprotID32_t id32)
-{
-    IethResource *dev = NULL;
-
-    uint8_t index = 0;
-    eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
-    index --;
-    if(index>=maxEthBoards)
-    {
-        return NULL;
-    }
-
-    if(NULL == LUT[index].resource)
-    {
-        return dev;
-    }
-
-    iethresType_t type = iethres_none;
-    eOprotEndpoint_t ep = eoprot_ID2endpoint(id32);
-    switch(ep)
-    {
-        case eoprot_endpoint_management:
-        {
-            type = iethres_management;
-        } break;
-
-        case eoprot_endpoint_motioncontrol:
-        {
-            type = iethres_motioncontrol;
-        } break;
-
-        case eoprot_endpoint_skin:
-        {
-            type = iethres_skin;
-        } break;
-
-        case eoprot_endpoint_analogsensors:
-        {
-            eOprotEntity_t en = eoprot_ID2entity(id32);
-            if(eoprot_entity_as_strain == en)
-                type = iethres_analogstrain;
-            else if(eoprot_entity_as_mais == en)
-                type = iethres_analogmais;
-            else if(eoprot_entity_as_inertial == en)
-                type = iethres_analoginertial;
-            else
-                type = iethres_none;
-        } break;
-
-        default:
-        {
-            type = iethres_none;
-        } break;
-    }
-
-    if(iethres_none != type)
-    {
-        dev = LUT[index].interfaces[type];
-    }
-
-
-
-    return dev;
-}
-
-
-const char * EthBoards::name(eOipv4addr_t ipv4)
-{
-    const char * ret = NULL;
-
-    uint8_t index = 0;
-    eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
-    index --;
-    if(index<maxEthBoards)
-    {
-        ret = LUT[index].name;
-    }
-    else
-    {
-        ret = errorname[0]; // the last one contains an error string
-    }
-
-    return(ret);
-}
-
-
-
-bool EthBoards::execute(void (*action)(AbstractEthResource* res, void* p), void* par)
-{
-    if(NULL == action)
-    {
-        return(false);
-    }
-
-    for(int i=0; i<maxEthBoards; i++)
-    {
-        AbstractEthResource* res = LUT[i].resource;
-        if(NULL != res)
-        {
-            action(res, par);
-        }
-
-    }
-
-    return(true);
-}
-
-
-bool EthBoards::execute(eOipv4addr_t ipv4, void (*action)(AbstractEthResource* res, void* p), void* par)
-{
-    if(NULL == action)
-    {
-        return(false);
-    }
-
-    AbstractEthResource* res = get_resource(ipv4);
-
-    if(NULL == res)
-    {
-        return(false);
-    }
-
-    action(res, par);
-
-    return(true);
-}
-
-
-
-// - class TheEthManager
 
 
 TheEthManager::TheEthManager()
@@ -475,7 +92,7 @@ TheEthManager::TheEthManager()
     UDP_socket  = NULL;
 
     // the container of ethernet boards: resources and attached interfaces
-    ethBoards = new(EthBoards);
+    ethBoards = new(eth::EthBoards);
 
     // required by embobj system
     TheEthManager::initEOYsystem();
@@ -491,7 +108,7 @@ TheEthManager::TheEthManager()
 
 
 
-void delete_resources(AbstractEthResource *p, void* par)
+void delete_resources(eth::AbstractEthResource *p, void* par)
 {
     delete p;
 }
@@ -569,19 +186,6 @@ bool TheEthManager::killYourself()
 }
 
 
-bool TheEthManager::open()
-{
-    yTrace();
-    return true;
-}
-
-
-bool TheEthManager::close()
-{
-    yTrace();
-    return true;
-}
-
 // this function is called by the embobj error manager
 void embOBJerror(eOerrmanErrorType_t errtype, const char *info, eOerrmanCaller_t *caller, const eOerrmanDescriptor_t *des)
 {
@@ -612,7 +216,7 @@ void TheEthManager::initEOYsystem(void)
 
 
 
-void ethEvalTXropframe(AbstractEthResource *r, void* p)
+void ethEvalTXropframe(eth::AbstractEthResource *r, void* p)
 {
     if((NULL == r) || (NULL == p) || (r->isFake()))
     {
@@ -646,7 +250,7 @@ bool TheEthManager::Transmission(void)
 }
 
 
-void ethEvalPresence(AbstractEthResource *r, void* p)
+void ethEvalPresence(eth::AbstractEthResource *r, void* p)
 {
     if((NULL == r) || (NULL == p))
     {
@@ -842,8 +446,8 @@ bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
 }
 
 
-AbstractEthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal)
-{    
+eth::AbstractEthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal)
+{
     if(communicationIsInitted == false)
     {
         yTrace() << "TheEthManager::requestResource2(): we need to init the communication";
@@ -882,7 +486,7 @@ AbstractEthResource *TheEthManager::requestResource2(IethResource *interface, ya
     lockTXRX(true);
 
     // i do an attempt to get the resource.
-    AbstractEthResource *rr = ethBoards->get_resource(ipv4addr);
+    eth::AbstractEthResource *rr = ethBoards->get_resource(ipv4addr);
 
     if(NULL == rr)
     {
@@ -894,7 +498,7 @@ AbstractEthResource *TheEthManager::requestResource2(IethResource *interface, ya
         if(embBoardsConnected)
             rr = new EthResource();
         else
-            rr = new FakeEthResource();
+            rr = new eth::FakeEthResource();
 
         if(true == rr->open2(ipv4addr, cfgtotal))
         {
@@ -927,7 +531,7 @@ AbstractEthResource *TheEthManager::requestResource2(IethResource *interface, ya
 
 
 
-int TheEthManager::releaseResource2(AbstractEthResource* ethresource, IethResource* interface)
+int TheEthManager::releaseResource2(eth::AbstractEthResource* ethresource, IethResource* interface)
 {
     int ret = 1; // -1 means that the singleton is not needed anymore. 0 means error
     if((NULL == ethresource) || (NULL == interface))
@@ -937,7 +541,7 @@ int TheEthManager::releaseResource2(AbstractEthResource* ethresource, IethResour
     }
 
 
-    AbstractEthResource* rr = ethresource;
+    eth::AbstractEthResource* rr = ethresource;
 
     iethresType_t type = interface->type();
 
@@ -1077,14 +681,14 @@ bool TheEthManager::createCommunicationObjects(ACE_INET_Addr localaddress, int t
 
             if((txrate <= 0) || (txrate > EthSender::EthSenderMaxRate))
             {
-                txrate = EthSender::EthSenderDefaultRate;
+                txrate = eth::EthSender::EthSenderDefaultRate;
             }
             if((rxrate <= 0) | (rxrate > EthReceiver::EthReceiverMaxRate))
             {
                 rxrate = EthReceiver::EthReceiverDefaultRate;
             }
-            sender = new EthSender(txrate);
-            receiver = new EthReceiver(rxrate);
+            sender = new eth::EthSender(txrate);
+            receiver = new eth::EthReceiver(rxrate);
 
             sender->config(UDP_socket, this);
             receiver->config(UDP_socket, this);
@@ -1169,7 +773,7 @@ bool TheEthManager::Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, b
 
     lockRX(true);
 
-    AbstractEthResource* r = ethBoards->get_resource(ipv4addr);
+    eth::AbstractEthResource* r = ethBoards->get_resource(ipv4addr);
 
     if((NULL != r) && (!r->isFake()))
     {
@@ -1212,7 +816,7 @@ const char * TheEthManager::getName(eOipv4addr_t ipv4)
 }
 
 
-AbstractEthResource* TheEthManager::getEthResource(eOipv4addr_t ipv4)
+eth::AbstractEthResource* TheEthManager::getEthResource(eOipv4addr_t ipv4)
 {
     return(ethBoards->get_resource(ipv4));
 }
@@ -1279,200 +883,7 @@ bool TheEthManager::lockTXRX(bool on)
 }
 
 
-// -- class EthSender
-// -- here is it code
-
-EthSender::EthSender(int txrate) : RateThread(txrate)
-{
-    rateofthread = txrate;
-    yDebug() << "EthSender is a RateThread with txrate =" << rateofthread << "ms";
-    yTrace();
-}
-
-EthSender::~EthSender()
-{
-
-}
-
-bool EthSender::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
-{
-    yTrace();
-    send_socket = pSocket;
-    ethManager  = _ethManager;
-
-    return true;
-}
-
-bool EthSender::threadInit()
-{
-    yTrace() << "Do some initialization here if needed";
-
-#if defined(__unix__)
-    /**
-     * Make it realtime (works on both RT and Standard linux kernels)
-     * - increase the priority upto the system IRQ's priorities (50) and less than the receiver thread
-     * - set the scheduler to FIFO
-     */
-    struct sched_param thread_param;
-    thread_param.sched_priority = sched_get_priority_max(SCHED_FIFO)/2 - 1; // = 48
-    pthread_setschedparam(pthread_self(), SCHED_FIFO, &thread_param);
-#endif
-
-    return true;
-}
+// - end-of-file (leave a blank line after)----------------------------------------------------------------------------
 
 
 
-void EthSender::run()
-{
-    // by calling this metod of ethManager, we put protection vs concurrency internal to the class.
-    // for tx we must protect the EthResource not being changed. they can be changed by a device such as
-    // embObjMotionControl etc which adds or releases its resources.
-    ethManager->Transmission();
-}
-
-
-
-
-EthReceiver::EthReceiver(int raterx): RateThread(raterx)
-{
-    rateofthread = raterx;
-    yDebug() << "EthReceiver is a RateThread with rxrate =" << rateofthread << "ms";
-    // ok, and now i get it from xml file ... if i find it.
-
-    ConstString tmp = NetworkBase::getEnvironment("ETHSTAT_PRINT_INTERVAL");
-    if (tmp != "")
-    {
-        statPrintInterval = (double)NetType::toInt(tmp);
-    }
-    else
-    {
-        statPrintInterval = 0.0;
-    }
-}
-
-void EthReceiver::onStop()
-{
-    // in here i send a small packet to ... myself ?
-    uint8_t tmp = 0;
-    ethManager->sendPacket( &tmp, 1, ethManager->getLocalIPaddress());
-}
-
-EthReceiver::~EthReceiver()
-{
-
-}
-
-bool EthReceiver::config(ACE_SOCK_Dgram *pSocket, TheEthManager* _ethManager)
-{
-    yTrace();
-    recv_socket = pSocket;
-    ethManager  = _ethManager;
-
-    ACE_HANDLE sockfd = pSocket->get_handle();
-    int retval;
-    int32_t mysize = 1024*1024;     // 1Mb note:actually kernel uses memory with size doblem of mysize
-                                    // with this size i'm sure ems pkts are not lost
-    int len = sizeof(mysize);
-
-    // the user can change buffer size by environment variable ETHRECEIVER_BUFFER_SIZE
-    ConstString _dgram_buffer_size = NetworkBase::getEnvironment("ETHRECEIVER_BUFFER_SIZE");
-    if (_dgram_buffer_size!="")
-        mysize = NetType::toInt(_dgram_buffer_size);
-
-    retval = ACE_OS::setsockopt  (sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&mysize, sizeof(mysize));
-    if (retval != 0)
-    {
-        int myerr = errno;
-        yError()<< "ERROR in SetSockOpt SO_RCVBUF";
-    }
-
-    int32_t sock_input_buf_size = 0;
-    retval = ACE_OS::getsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, (char *)&sock_input_buf_size, &len);
-    if (retval != 0)
-    {
-        int myerr = errno;
-        yError() << "ERROR inGetSockOpt SO_RCVBUF";
-    }
-
-    yWarning() << "in EthReceiver::config() the config socket has queue size = "<< sock_input_buf_size<< "; you request ETHRECEIVER_BUFFER_SIZE=" << _dgram_buffer_size;
-
-    return true;
-}
-
-
-bool EthReceiver::threadInit()
-{
-    yTrace() << "Do some initialization here if needed";
-
-#if defined(__unix__)
-    /**
-     * Make it realtime (works on both RT and Standard linux kernels)
-     * - increase the priority upto the system IRQ's priorities (< 50)
-     * - set the scheduler to FIFO
-     */
-    struct sched_param thread_param;
-    thread_param.sched_priority = sched_get_priority_max(SCHED_FIFO)/2; // = 49
-    pthread_setschedparam(pthread_self(), SCHED_FIFO, &thread_param);
-#endif
-
-    return true;
-}
-
-
-uint64_t getRopFrameAge(char *pck)
-{
-    return(eo_ropframedata_age_Get((EOropframeData*)pck));
-}
-
-
-
-void EthReceiver::run()
-{
-    ssize_t       incoming_msg_size = 0;
-    ACE_INET_Addr sender_addr;
-    uint64_t      incoming_msg_data[EthResource::maxRXpacketsize/8];   // 8-byte aligned local buffer for incoming packet: it must be able to accomodate max size of packet
-    const ssize_t incoming_msg_capacity = EthResource::maxRXpacketsize;
-
-    int flags = 0;
-#ifndef WIN32
-    flags |= MSG_DONTWAIT;
-#endif
-
-    static uint8_t earlyexit_prev = 0;
-    static uint8_t earlyexit_prevprev = 0;
-
-    // marco.accame: set maxUDPpackets as a fixed minimum number (2) + the number of boards. all is multipled by rateofthread and by a gain which depends on past activity
-    // the gain on past activity is usually 1. if maxUDPpackets is not enough the gain becomes (1+f1). if again it is not enough, the gain becomes 1+f1+f2+f3 and stays as
-    // such until it is enough. at this time it becomes 1+f2 and then 1 again
-    const double f1 = 0.5;
-    const double f2 = 0.5;
-    const double f3 = 8.0;
-    double gain = 1.0 + f1*(1-earlyexit_prev) + f2*(1-earlyexit_prevprev) + f3*(1-earlyexit_prev)*(1-earlyexit_prevprev);
-    int maxUDPpackets = (2 + ethManager->getNumberOfResources()) * EthReceiver::rateofthread *  gain;
-
-
-    earlyexit_prevprev = earlyexit_prev;    // save previous early exit
-    earlyexit_prev = 0;                     // consider no early exit this time
-
-    for(int i=0; i<maxUDPpackets; i++)
-    {
-        incoming_msg_size = recv_socket->recv((void *) incoming_msg_data, incoming_msg_capacity, sender_addr, flags);
-        if(incoming_msg_size <= 0)
-        { // marco.accame: i prefer using <= 0.
-            earlyexit_prev = 1; // yes, we have an early exit
-            break; // we break and do not return because we want to be sure to execute what is after the for() loop
-        }
-
-        // we have a packet ... we give it to the ethmanager for it parsing
-        bool collectStatistics = (statPrintInterval > 0) ? true : false;
-        ethManager->Reception(sender_addr, incoming_msg_data, incoming_msg_size, collectStatistics);
-    }
-
-    // execute the check on presence of all eth boards.
-    ethManager->CheckPresence();
-}
-
-
-
-// eof

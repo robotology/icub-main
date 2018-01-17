@@ -30,6 +30,6 @@ namespace eomc_defaultValue
     {
         const double jointWithAEA = 0.0494;
         const double jointWithAMO = 0.0055;
-    };
+    }
 }
 #endif

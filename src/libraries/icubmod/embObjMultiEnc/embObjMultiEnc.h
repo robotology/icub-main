@@ -20,15 +20,15 @@
 
 #include <iCub/FactoryInterface.h>
 #include <iCub/LoggerInterfaces.h>
-#include <hostTransceiver.hpp>
-#include <ethResource.h>
-#include <ethManager.h>
 
 
-#include "FeatureInterface.h"  
-#include "EoAnalogSensors.h"
 
 #include "IethResource.h"
+#include <ethManager.h>
+#include <abstractEthResource.h>
+
+
+
 
 #include <yarp/os/LogStream.h>
 
@@ -37,7 +37,6 @@
 namespace yarp {
     namespace dev {
         class embObjMultiEnc;
-        class TheEthManager;
     }
 }
 
@@ -49,7 +48,7 @@ namespace yarp {
 
 class yarp::dev::embObjMultiEnc:        public yarp::dev::IAnalogSensor,
                                         public yarp::dev::DeviceDriver,
-                                        public IethResource
+                                        public eth::IethResource
 {
 
 public:
@@ -76,7 +75,7 @@ public:
 
     // IethResource interface
     virtual bool initialised();
-    virtual iethresType_t type();
+    virtual eth::iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
 
 private:
@@ -86,8 +85,8 @@ private:
     uint8_t numofjoints;
     uint8_t numofencperjoint;
 
-    TheEthManager* ethManager;
-    AbstractEthResource* res;
+    eth::TheEthManager* ethManager;
+    eth::AbstractEthResource* res;
     ServiceParser* parser;
 
     bool opened;

@@ -7,6 +7,12 @@
  *
  */
 
+// api
+
+#include <fakeEthResource.h>
+
+// other includes
+
 #include "ethResource.h"
 #include <ethManager.h>
 #include <yarp/os/Time.h>
@@ -24,9 +30,9 @@ using namespace yarp::dev;
 using namespace yarp::os;
 using namespace yarp::os::impl;
 
+using namespace eth;
 
-
-
+// implemention of the class
 
 FakeEthResource::FakeEthResource()
 {

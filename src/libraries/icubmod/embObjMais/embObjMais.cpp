@@ -176,7 +176,7 @@ bool embObjMais::open(yarp::os::Searchable &config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
 
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
         yFatal() << "embObjMais::open() fails to instantiate ethManager";
@@ -540,9 +540,9 @@ int embObjMais::calibrateChannel(int ch, double v)
 }
 
 
-iethresType_t embObjMais::type()
+eth::iethresType_t embObjMais::type()
 {
-    return iethres_analogmais;
+    return eth::iethres_analogmais;
 }
 
 

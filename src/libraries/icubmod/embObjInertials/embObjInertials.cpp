@@ -381,7 +381,7 @@ bool embObjInertials::open(yarp::os::Searchable &config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
 
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
         yFatal() << "embObjInertials::open() fails to instantiate ethManager";
@@ -680,9 +680,9 @@ int embObjInertials::calibrateChannel(int ch, double v)
 }
 
 
-iethresType_t embObjInertials::type()
+eth::iethresType_t embObjInertials::type()
 {
-    return iethres_analoginertial;
+    return eth::iethres_analoginertial;
 }
 
 

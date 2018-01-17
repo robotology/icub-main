@@ -179,6 +179,11 @@ set(PROT_HEADER             ${PROT_FOLDER}/transport/EOhostTransceiver_hid.h
 set(EXTRA_SOURCE            ${EXTRA_FOLDER}/hostTransceiver.cpp
                             ${EXTRA_FOLDER}/ethManager.cpp
                             ${EXTRA_FOLDER}/ethResource.cpp
+                            ${EXTRA_FOLDER}/ethMonitorPresence.cpp
+                            ${EXTRA_FOLDER}/ethBoards.cpp
+                            ${EXTRA_FOLDER}/ethSender.cpp
+                            ${EXTRA_FOLDER}/ethReceiver.cpp
+                            ${EXTRA_FOLDER}/IethResource.cpp
                             ${EXTRA_FOLDER}/fakeEthResource.cpp
                             ${EXTRA_FOLDER}/serviceParser.cpp
                             ${EXTRA_FOLDER}/theNVmanager.cpp

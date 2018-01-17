@@ -166,9 +166,9 @@ bool embObjVirtualAnalogSensor::update(eOprotID32_t id32, double timestamp, void
     return true;
 }
 
-iethresType_t embObjVirtualAnalogSensor::type()
+eth::iethresType_t embObjVirtualAnalogSensor::type()
 {
-    return iethres_analogvirtual;
+    return eth::iethres_analogvirtual;
 }
 
 
@@ -177,7 +177,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
 
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
         yFatal() << "embObjVirtualAnalogSensor::open() fails to instantiate ethManager";

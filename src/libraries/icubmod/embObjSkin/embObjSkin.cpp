@@ -433,7 +433,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
 
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
         yFatal() << "EmbObjSkin::open() fails to instantiate ethManager";
@@ -760,9 +760,9 @@ bool EmbObjSkin::initialised()
     return opened;
 }
 
-iethresType_t EmbObjSkin::type()
+eth::iethresType_t EmbObjSkin::type()
 {
-    return iethres_skin;
+    return eth::iethres_skin;
 }
 
 bool EmbObjSkin::update(eOprotID32_t id32, double timestamp, void *rxdata)

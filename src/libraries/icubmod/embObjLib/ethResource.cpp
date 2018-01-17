@@ -28,97 +28,6 @@ using namespace yarp::os::impl;
 #include <theNVmanager.h>
 using namespace eth;
 
-// - class EthMonitorPresence
-
-EthMonitorPresence::EthMonitorPresence()
-{
-    lastTickTime = 0;
-    lastMissingReportTime = 0;
-    lastHeardTime = 0;
-    reportedMissing = false;
-}
-
-
-EthMonitorPresence::~EthMonitorPresence()
-{
-
-}
-
-
-void EthMonitorPresence::config(const Config &cfg)
-{
-    configuration = cfg;
-    // i dont check consistency... use sensibly
-}
-
-
-void EthMonitorPresence::enable(bool en)
-{
-    configuration.enabled = en;
-}
-
-
-bool EthMonitorPresence::isenabled()
-{
-    return configuration.enabled;
-}
-
-
-void EthMonitorPresence::tick()
-{
-    lastTickTime = yarp::os::Time::now();
-}
-
-
-bool EthMonitorPresence::check()
-{
-
-    if(false == configuration.enabled)
-    {
-        return true;
-    }
-
-
-    double tnow = yarp::os::Time::now();
-
-    if((true == reportedMissing) && (lastTickTime > 0))
-    {
-        yDebug() << "EthMonitorPresence: BOARD" << configuration.name << "has shown after being lost for" << tnow - lastHeardTime << "sec";
-        reportedMissing = false;
-        lastHeardTime = tnow;
-    }
-
-    if((true == reportedMissing) && (configuration.periodmissingreport > 0))
-    {
-        // i report the board is still missing. but at a smaller rate
-        if((tnow - lastMissingReportTime) >= configuration.periodmissingreport)
-        {
-            yDebug() << "EthMonitorPresence: BOARD" << configuration.name << "has been silent for another" << tnow - lastMissingReportTime << "sec, for a total of" << tnow - lastHeardTime << "sec";
-            lastMissingReportTime = tnow;
-        }
-        return false;
-    }
-
-
-    // check vs the target timeout
-    double delta = tnow - lastTickTime;
-
-    if(delta > configuration.timeout)
-    {
-        yDebug() << "EthMonitorPresence: BOARD" << configuration.name << "has been silent for" << delta << "sec (its timeout is" << configuration.timeout << "sec)";
-
-        // also: mark the board as lost.
-        lastMissingReportTime = tnow;
-        reportedMissing = true;
-        lastHeardTime = lastTickTime;
-        lastTickTime = -1;
-
-        return false;
-    }
-
-    // we have the board and we hard of it by its timeout
-    return true;
-}
 
 
 // - class EthResource
@@ -206,7 +115,7 @@ bool EthResource::lock(bool on)
 
 bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 {
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
 
     Bottle groupEthBoard  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
     if(groupEthBoard.isNull())
@@ -302,7 +211,7 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 
     // init EthMonitorPresence object now when we have the address and boardname strings
 
-    EthMonitorPresence::Config mpConfig;
+    eth::EthMonitorPresence::Config mpConfig;
 
     // default values ...
     mpConfig.enabled = true;

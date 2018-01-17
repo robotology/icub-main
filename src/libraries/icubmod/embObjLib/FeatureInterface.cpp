@@ -26,6 +26,8 @@
 #include <ace/config.h>
 #include <ace/Recursive_Thread_Mutex.h>
 
+#include <abstractEthResource.h>
+
 #include <theNVmanager.h>
 using namespace eth;
 
@@ -69,7 +71,7 @@ using namespace eth;
 // - definition (and initialisation) of static variables
 // --------------------------------------------------------------------------------------------------------------------
 
-static TheEthManager *_interface2ethManager = NULL;
+static eth::TheEthManager *_interface2ethManager = NULL;
 
 
 // --------------------------------------------------------------------------------------------------------------------
@@ -81,7 +83,7 @@ void feat_Initialise(void *handleOfTheEthManager)
 {
     if(_interface2ethManager == NULL )
     {
-        _interface2ethManager = (TheEthManager*) handleOfTheEthManager;
+        _interface2ethManager = (eth::TheEthManager*) handleOfTheEthManager;
     }
 }
 
@@ -273,7 +275,7 @@ eObool_t feat_CANprint(eOipv4addr_t ipv4, eOmn_info_basic_t* infobasic)
         return(eobool_false);
     }
 
-    AbstractEthResource* ethres = _interface2ethManager->getEthResource(ipv4);
+    eth::AbstractEthResource* ethres = _interface2ethManager->getEthResource(ipv4);
 
     bool res = ethres->CANPrintHandler(infobasic);
     return res;

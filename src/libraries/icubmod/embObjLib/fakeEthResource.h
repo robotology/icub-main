@@ -1,10 +1,9 @@
-
 // -*- mode:C++; tab-width:4; c-basic-offset:4; indent-tabs-mode:nil -*-
 
 /*
  * Copyright (C) 2017 iCub Facility - Istituto Italiano di Tecnologia
- * Author:  Marco Accame
- * email:   marco.accame@iit.it
+ * Author:  Valentina Gaggero
+ * email:   valentina.gaggero@iit.it
  * website: www.robotcub.org
  * Permission is granted to copy, distribute, and/or modify this program
  * under the terms of the GNU General Public License, version 2 or any
@@ -21,27 +20,20 @@
 
 // - include guard ----------------------------------------------------------------------------------------------------
 
-#ifndef _ETHRESOURCE_H_
-#define _ETHRESOURCE_H_
+#ifndef _FAKEETHRESOURCE_H_
+#define _FAKEETHRESOURCE_H_
 
 
-#include <abstractEthResource.h>
-#include <hostTransceiver.hpp>
 
-#include <ethMonitorPresence.h>
-//#include <EoProtocol.h>
-#include <EoBoards.h>
+#include<abstractEthResource.h>
+
 #include <yarp/os/Semaphore.h>
-
 #include <ethManager.h>
 
 
-//#include "can_string_eth.h" // its inclusion in here produces multiple definition of CanFrame
-class can_string_eth;
-
 namespace eth {
-
-    class EthResource: public eth::AbstractEthResource, public HostTransceiver
+           
+    class FakeEthResource :  public eth::AbstractEthResource
     {
     public:
 
@@ -50,14 +42,14 @@ namespace eth {
 
     public:
 
-        EthResource();
-        ~EthResource();
+        FakeEthResource();
+        ~FakeEthResource();
 
 
-        bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal);
+        bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal) override;
         bool            close();
         bool            isEPsupported(eOprot_endpoint_t ep);
-        bool            isID32supported(eOprotID32_t id32);
+        bool isID32supported(eOprotID32_t id32);
 
         ACE_INET_Addr   getRemoteAddress(void);
 
@@ -86,7 +78,6 @@ namespace eth {
 
         bool setcheckRemoteValue(const eOprotID32_t id32, void *value, const unsigned int retries = 10, const double waitbeforecheck = 0.001, const double timeout = 0.050);
 
-
         bool verifyEPprotocol(eOprot_endpoint_t ep);
 
         bool CANPrintHandler(eOmn_info_basic_t* infobasic);
@@ -102,7 +93,6 @@ namespace eth {
 
         bool Tick();
         bool Check();
-
         bool readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size);
         bool addSetMessage(eOprotID32_t id32, uint8_t* data);
         bool addGetMessage(eOprotID32_t id32);
@@ -110,61 +100,48 @@ namespace eth {
         bool addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data);
         bool readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size);
         EOnv* getNVhandler(eOprotID32_t id32, EOnv* nv);
+
+
         bool isFake();
 
 
-    private:
-#warning non va bene 32 qui ....
+    private: //FAKE
         eOipv4addr_t      ipv4addr;
         char              ipv4addrstring[20];
         char              boardName[32];
         char              boardTypeString[32];
         eObrd_ethtype_t   ethboardtype;
-        ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
         double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
-        bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
+        bool              isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
+        ACE_INET_Addr     remote_dev;
 
         yarp::os::Semaphore*  objLock;
 
-
-
         bool                verifiedEPprotocol[eoprot_endpoints_numberof];
         bool                verifiedBoardPresence;
-        bool                askedBoardVersion;
-        eOdate_t            boardDate;
-        eOversion_t         boardVersion;
-        eoprot_version_t    boardMNprotocolversion;
-        eObrd_ethtype_t     detectedBoardType;
 
         bool                verifiedBoardTransceiver; // transceiver capabilities (size of rop, ropframe, etc.) + MN protocol version
-        bool                txrateISset;
-        bool                cleanedBoardBehaviour;    // the board is in config mode and does not have any regulars
+        eOmn_comm_status_t  boardCommStatus;
         uint16_t            usedNumberOfRegularROPs;
 
-        can_string_eth*     c_string_handler[16];
+        TheEthManager       *ethManager;
+        HostTransceiver     *myHostTrans;
 
-        eth::TheEthManager *ethManager;
-
-        eth::EthMonitorPresence monitorpresence;
-
-        bool regularsAreSet;
 
     private:
 
 
         bool verifyBoard();
-        bool setTimingOfRunningCycle();
-        bool verifyBoardPresence();
-        bool verifyBoardTransceiver();
+
+
+
         bool cleanBoardBehaviour(void);
-        bool askBoardVersion(void);
         // we keep isRunning() and we add a field in the reply of serviceStart()/Stop() which tells if the board is in run mode or not.
         bool isRunning(void);
 
         // lock of the object: on / off
         bool lock(bool on);
 
-        bool serviceCommand(eOmn_serv_operation_t operation, eOmn_serv_category_t category, const eOmn_serv_parameter_t* param, double timeout, int times);
 
         bool verbosewhenok;
     };
@@ -177,5 +154,10 @@ namespace eth {
 
 
 // - end-of-file (leave a blank line after)----------------------------------------------------------------------------
+
+
+
+
+
 
 

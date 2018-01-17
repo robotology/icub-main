@@ -20,15 +20,15 @@
 
 #include <iCub/FactoryInterface.h>
 #include <iCub/LoggerInterfaces.h>
-#include <hostTransceiver.hpp>
-#include <ethResource.h>
+
+#include "IethResource.h"
 #include <ethManager.h>
+#include <abstractEthResource.h>
 
 
 #include "FeatureInterface.h"  
 #include "EoAnalogSensors.h"
 
-#include "IethResource.h"
 
 #include <yarp/os/LogStream.h>
 
@@ -36,7 +36,6 @@
 namespace yarp {
     namespace dev {
         class embObjInertials;
-        class TheEthManager;
     }
 }
 
@@ -49,7 +48,7 @@ namespace yarp {
 // -- class embObjInertials
 class yarp::dev::embObjInertials:       public yarp::dev::IAnalogSensor,
                                         public yarp::dev::DeviceDriver,
-                                        public IethResource
+                                        public eth::IethResource
 {
 
 public:
@@ -83,7 +82,7 @@ public:
 
     // IethResource interface
     virtual bool initialised();
-    virtual iethresType_t type();
+    virtual eth::iethresType_t type();
     virtual bool update(eOprotID32_t id32, double timestamp, void* rxdata);
 
 private:
@@ -91,8 +90,8 @@ private:
     char boardIPstring[20];
     eOipv4addr_t ipv4addr;
 
-    TheEthManager* ethManager;
-    AbstractEthResource* res;
+    eth::TheEthManager* ethManager;
+    eth::AbstractEthResource* res;
     ServiceParser* parser;
 
     bool opened;

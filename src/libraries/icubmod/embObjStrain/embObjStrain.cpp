@@ -128,7 +128,7 @@ bool embObjStrain::open(yarp::os::Searchable &config)
 {
     // - first thing to do is verify if the eth manager is available. then i parse info about the eth board.
 
-    ethManager = TheEthManager::instance();
+    ethManager = eth::TheEthManager::instance();
     if(NULL == ethManager)
     {
         yFatal() << "embObjStrain::open() fails to instantiate ethManager";
@@ -601,9 +601,9 @@ int embObjStrain::calibrateChannel(int ch, double v)
     return AS_OK;
 }
 
-iethresType_t embObjStrain::type()
+eth::iethresType_t embObjStrain::type()
 {
-    return iethres_analogstrain;
+    return eth::iethres_analogstrain;
 }
 
 bool embObjStrain::update(eOprotID32_t id32, double timestamp, void* rxdata)
