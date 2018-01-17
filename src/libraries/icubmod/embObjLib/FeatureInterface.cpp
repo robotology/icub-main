@@ -291,7 +291,7 @@ const char * feat_GetBoardName(eOipv4addr_t ipv4)
         return errorstr;
     }
 
-    return(_interface2ethManager->getName(ipv4));
+    return(_interface2ethManager->getName(ipv4).c_str());
 }
 
 

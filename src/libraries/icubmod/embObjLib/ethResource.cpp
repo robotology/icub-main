@@ -26,7 +26,10 @@ using namespace yarp::os;
 using namespace yarp::os::impl;
 
 #include <theNVmanager.h>
+#include "ethParser.h"
 using namespace eth;
+
+
 
 
 
@@ -34,15 +37,12 @@ using namespace eth;
 
 EthResource::EthResource()
 {
-    yTrace();
-
     ipv4addr = 0;
-    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
+    ipv4addrstring = "0.0.0.0";
     ethboardtype = detectedBoardType = eobrd_ethtype_unknown;
-    snprintf(boardTypeString, sizeof(boardTypeString), "unknown");
+    boardTypeString = "unknown";
 
     ethManager                  = NULL;
-    lastRecvMsgTimestamp        = -1.0;
     isInRunningMode             = false;
     objLock                     = new Semaphore(1);
 
@@ -62,10 +62,12 @@ EthResource::EthResource()
 
     memset(verifiedEPprotocol, 0, sizeof(verifiedEPprotocol));
 
-    usedNumberOfRegularROPs     = 0;
+    usedNumberOfRegularROPs = 0;
 
     for(int i = 0; i<16; i++)
-        c_string_handler[i]     = NULL;
+    {
+        c_string_handler[i] = NULL;
+    }
 
     ConstString tmp = NetworkBase::getEnvironment("ETH_VERBOSEWHENOK");
     if (tmp != "")
@@ -88,8 +90,6 @@ EthResource::~EthResource()
     ethManager = NULL;
     delete objLock;
 
-//    delete ethQuery;
-//    delete ethQueryServices;
 
     // Delete every initialized can_string_eth object
     for(int i=0; i<16; i++)
@@ -112,10 +112,84 @@ bool EthResource::lock(bool on)
     return true;
 }
 
-
+#if 1
 bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 {
     ethManager = eth::TheEthManager::instance();
+
+    eth::parser::pc104Data pc104data;
+    eth::parser::read(cfgtotal, pc104data);
+//    eth::parser::print(pc104data);
+
+
+    eth::parser::boardData brddata;
+    eth::parser::read(cfgtotal, brddata);
+//    eth::parser::print(brddata);
+
+
+
+    // i fill remote address
+    ipv4addr = remIP;
+    ipv4addrstring = brddata.properties.ipv4string;
+    ipv4addressing = brddata.properties.ipv4addressing;
+
+    ethboardtype = brddata.properties.type;
+    boardTypeString = brddata.properties.typestring;
+
+    boardName = brddata.settings.name;
+
+
+    eth::EthMonitorPresence::Config mpConfig;
+
+    // default values ...
+    mpConfig.enabled = brddata.actions.monitorpresence_enabled;
+    mpConfig.timeout = brddata.actions.monitorpresence_timeout;
+    mpConfig.periodmissingreport = brddata.actions.monitorpresence_periodofmissingreport;
+    mpConfig.name = ipv4addrstring + " (" + boardName + ")";
+
+
+
+    // now i init objects
+
+    lock(true);
+
+    // 1. init transceiver
+
+    eOipv4addressing_t localIPv4 = ethManager->getLocalIPV4addressing();
+
+
+    if(false == transceiver.init2(cfgtotal, localIPv4, remIP))
+    {
+        yError() << "EthResource::open2() cannot init transceiver w/ HostTransceiver::init2() for BOARD" << boardName << "IP" << ipv4addrstring;
+        lock(false);
+        return false;
+    }
+
+    // 2. init monitor presence
+
+    monitorpresence.config(mpConfig);
+    monitorpresence.tick();
+
+
+    lock(false);
+
+    return true;
+}
+
+#else
+bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
+{
+    ethManager = eth::TheEthManager::instance();
+
+//    eth::parser::pc104Data pc104data;
+//    eth::parser::read(cfgtotal, pc104data);
+//    eth::parser::print(pc104data);
+
+
+//    eth::parser::boardData brddata;
+//    eth::parser::read(cfgtotal, brddata);
+//    eth::parser::print(brddata);
+
 
     Bottle groupEthBoard  = Bottle(cfgtotal.findGroup("ETH_BOARD"));
     if(groupEthBoard.isNull())
@@ -136,6 +210,25 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
         return NULL;
     }
 
+    // i fill remote address
+    ipv4addr = remIP;
+    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
+    ipv4addressing.addr = remIP;
+    ipv4addressing.port = 12345;
+
+
+    // -> ETH_BOARD/ETH_BOARD_PROPERTIES
+
+    // IpAddress:
+    // it is already inside remIP
+
+    // IpPort:
+    if(true == groupEthBoardProps.check("IpPort"))
+    {
+        ipv4addressing.port = groupEthBoardProps.find("IpPort").asInt();;
+    }
+
+    // Type:
     Bottle b_ETH_BOARD_PROPERTIES_Type = groupEthBoardProps.findGroup("Type");
     ConstString Type = b_ETH_BOARD_PROPERTIES_Type.get(1).asString();
     const char *strType = Type.c_str();
@@ -164,39 +257,20 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 
         ethboardtype = eoboards_type2ethtype(brd);
     }
-
     snprintf(boardTypeString, sizeof(boardTypeString), "%s", eoboards_type2string2(eoboards_ethtype2type(ethboardtype), eobool_true));
+
+    // maxSizeRXpacket:
+    // maxSizeROP:
+    // dont do it in here ...
+
+    // <- ETH_BOARD/ETH_BOARD_PROPERTIES
+
+
+    // -> ETH_BOARD/ETH_BOARD_SETTINGS
 
     Bottle paramNameBoard(groupEthBoardSettings.find("Name").asString());
     char xmlboardname[64] = {0};
     snprintf(xmlboardname, sizeof(xmlboardname), "%s", paramNameBoard.toString().c_str());
-
-    lock(true);
-
-    eOipv4addressing_t localIPv4 = ethManager->getLocalIPV4addressing();
-
-    bool ret;
-    uint8_t num = 0;
-    eo_common_ipv4addr_to_decimal(remIP, NULL, NULL, NULL, &num);
-    if(!HostTransceiver::init2(groupEthBoard, localIPv4, remIP))
-    {
-        ret = false;
-        char ipinfo[20] = {0};
-        eo_common_ipv4addr_to_string(remIP, ipinfo, sizeof(ipinfo));
-        yError() << "EthResource::open2() cannot init transceiver w/ HostTransceiver::init2() for BOARD" << xmlboardname << "IP" << ipinfo;
-    }
-    else
-    {
-        ret = true;
-    }
-
-    uint8_t ip1, ip2, ip3, ip4;
-    eo_common_ipv4addr_to_decimal(remIP, &ip1, &ip2, &ip3, &ip4);
-    ACE_UINT32 hostip = (ip1 << 24) | (ip2 << 16) | (ip3 << 8) | (ip4);
-    ACE_INET_Addr myIP((u_short)localIPv4.port, hostip);
-    remote_dev = myIP;
-    ipv4addr = remIP;
-    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
 
 
     if(0 != strlen(xmlboardname))
@@ -209,8 +283,16 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
     }
 
 
-    // init EthMonitorPresence object now when we have the address and boardname strings
+    // -> ETH_BOARD/ETH_BOARD_SETTINGS/RUNNINGMODE
+    // we dont do it in here
+    // <- ETH_BOARD/ETH_BOARD_SETTINGS/RUNNINGMODE
 
+
+    // <- ETH_BOARD/ETH_BOARD_SETTINGS
+
+
+    // -> ETH_BOARD/ETH_BOARD_ACTIONS
+    // -> ETH_BOARD/ETH_BOARD_ACTIONS/MONITOR_ITS_PRESENCE
     eth::EthMonitorPresence::Config mpConfig;
 
     // default values ...
@@ -278,14 +360,35 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
         }
     }
 
-    if(mpConfig.enabled)
+    // <- ETH_BOARD/ETH_BOARD_ACTIONS/MONITOR_ITS_PRESENCE
+    // <- ETH_BOARD/ETH_BOARD_ACTIONS
+
+
+
+    // now i init objects
+
+    lock(true);
+
+    // 1. init transceiver
+
+    eOipv4addressing_t localIPv4 = ethManager->getLocalIPV4addressing();
+
+    bool ret;
+    uint8_t num = 0;
+    eo_common_ipv4addr_to_decimal(remIP, NULL, NULL, NULL, &num);
+    if(false == transceiver.init2(groupEthBoard, localIPv4, remIP))
     {
-        yDebug() << "EthResource::open2(): monitoring of presence is ON for BOARD" << mpConfig.name << "with timeout =" << mpConfig.timeout << "sec and period of missing report =" << mpConfig.periodmissingreport << "sec";
+        ret = false;
+        char ipinfo[20] = {0};
+        eo_common_ipv4addr_to_string(remIP, ipinfo, sizeof(ipinfo));
+        yError() << "EthResource::open2() cannot init transceiver w/ HostTransceiver::init2() for BOARD" << xmlboardname << "IP" << ipinfo;
     }
     else
     {
-        yDebug() << "EthResource::open2(): monitoring of presence is OFF for BOARD" << mpConfig.name;
+        ret = true;
     }
+
+    // 2. init monitor presence
 
     monitorpresence.config(mpConfig);
     monitorpresence.tick();
@@ -293,9 +396,10 @@ bool EthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
 
     lock(false);
 
+
     return ret;
 }
-
+#endif
 
 
 bool EthResource::close()
@@ -307,7 +411,7 @@ bool EthResource::close()
 
 bool EthResource::getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops)
 {
-    return HostTransceiver::getTransmit(packet, size, numofrops);
+    return transceiver.getTransmit(packet, size, numofrops);
 }
 
 
@@ -333,51 +437,47 @@ bool EthResource::Check()
 bool EthResource::canProcessRXpacket(uint64_t *data, uint16_t size)
 {
     if(NULL == data)
+    {
         return false;
+    }
 
-    if(size > HostTransceiver::getCapacityOfRXpacket())
+    if(size > transceiver.getCapacityOfRXpacket())
+    {
         return false;
+    }
 
     return true;
 }
 
 
-void EthResource::processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics)
+void EthResource::processRXpacket(uint64_t *data, uint16_t size)
 {
-    bool collect = collectStatistics && isInRunningMode;
-
-    double curr_timeBeforeParsing = 0;
-
-    if(true == collect)
-    {
-        curr_timeBeforeParsing = yarp::os::Time::now();
-    }
-
-    HostTransceiver::onMsgReception(data, size);
-
-    if(true == collect)
-    {
-        double curr_timeAfterParsing = yarp::os::Time::now();
-    }
+    transceiver.onMsgReception(data, size);
 }
 
 
-ACE_INET_Addr EthResource::getRemoteAddress()
-{
-    return remote_dev;
-}
+//ACE_INET_Addr EthResource::getRemoteAddress()
+//{
+//    return remote_dev;
+//}
 
 eOipv4addr_t EthResource::getIPv4remoteAddress(void)
 {
     return ipv4addr;
 }
 
-const char * EthResource::getName(void)
+bool EthResource::getIPv4remoteAddressing(eOipv4addressing_t &addressing)
+{
+    addressing = ipv4addressing;
+    return true;
+}
+
+const string& EthResource::getName(void)
 {
     return boardName;
 }
 
-const char * EthResource::getIPv4string(void)
+const string & EthResource::getIPv4string(void)
 {
     return ipv4addrstring;
 }
@@ -387,7 +487,7 @@ eObrd_ethtype_t EthResource::getBoardType(void)
     return ethboardtype;
 }
 
-const char * EthResource::getBoardTypeString(void)
+const string & EthResource::getBoardTypeString(void)
 {
     return boardTypeString;
 }
@@ -400,15 +500,9 @@ void EthResource::getBoardInfo(eOdate_t &date, eOversion_t &version)
 
 
 
-//#warning --- still used???
-bool EthResource::isEPsupported(eOprot_endpoint_t ep)
-{
-    return HostTransceiver::isSupported(ep);
-}
-
 bool EthResource::isID32supported(eOprotID32_t id32)
 {
-    return HostTransceiver::isID32supported(id32);
+    return transceiver.isID32supported(id32);
 }
 
 
@@ -510,12 +604,10 @@ bool EthResource::setTimingOfRunningCycle()
     // call a set until verified
 
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_management, eoprot_entity_mn_appl, 0, eoprot_tag_mn_appl_config);
+
     eOmn_appl_config_t config = {0};
-    config.cycletime = HostTransceiver::cycletime;
-    config.maxtimeRX = HostTransceiver::maxtimeRX;
-    config.maxtimeDO = HostTransceiver::maxtimeDO;
-    config.maxtimeTX = HostTransceiver::maxtimeTX;
-    config.txratedivider = HostTransceiver::TXrateOfRegularROPs;
+    transceiver.get(config);
+
 
     theNVmanager& nvman = theNVmanager::getInstance();
 
@@ -610,7 +702,6 @@ bool EthResource::verifyEPprotocol(eOprot_endpoint_t ep)
     eOprotID32_t id2send = eo_prot_ID32dummy;
     eOprotID32_t id2wait = eo_prot_ID32dummy;
     eOmn_command_t command = {0};
-    uint16_t size = 0;
 
 
     // step 1: ask all the EP descriptors. from them we can extract protocol version of MN and of the target ep
@@ -874,14 +965,14 @@ bool EthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
     uint32_t msec = (infobasic->timestamp % 1000000) / 1000;
     uint32_t usec = infobasic->timestamp % 1000;
 
-    const char *boardstr = boardName;
+    const char *boardstr = boardName.c_str();
 
     // Validity check
     if(address > 15)
     {
         snprintf(canfullmessage,sizeof(canfullmessage),"Error while parsing the message: CAN address detected is out of allowed range");
         snprintf(str,sizeof(str), "from BOARD %s (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
-                                    ipv4addrstring,
+                                    ipv4addrstring.c_str(),
                                     boardstr,
                                     str_source,
                                     address,
@@ -914,7 +1005,7 @@ bool EthResource::CANPrintHandler(eOmn_info_basic_t *infobasic)
             c_string_handler[address]->clear_string(ret);
 
             snprintf(str,sizeof(str), "from BOARD %s (%s), src %s, adr %d, time %ds %dm %du: CAN PRINT MESSAGE[id %d] -> %s",
-                                        ipv4addrstring,
+                                        ipv4addrstring.c_str(),
                                         boardstr,
                                         str_source,
                                         address,
@@ -1043,37 +1134,37 @@ bool EthResource::serviceStop(eOmn_serv_category_t category, double timeout)
 
 bool EthResource::readBufferedValue(eOprotID32_t id32,  uint8_t *data, uint16_t* size)
 {
-    return HostTransceiver::readBufferedValue(id32, data, size);
+    return transceiver.readBufferedValue(id32, data, size);
 }
 
 bool EthResource::addSetMessage(eOprotID32_t id32, uint8_t* data)
 {
-    return HostTransceiver::addSetROP(id32, data);
+    return transceiver.addSetROP(id32, data);
 }
 
 bool EthResource::addSetMessageAndCacheLocally(eOprotID32_t id32, uint8_t* data)
 {
-    return HostTransceiver::addSetROPandCacheLocally(id32, data);
+    return transceiver.addSetROPandCacheLocally(id32, data);
 }
 
 bool EthResource::addGetMessage(eOprotID32_t id32)
 {
-    return HostTransceiver::addGetROP(id32);
+    return transceiver.addGetROP(id32);
 }
 
 bool EthResource::addGetMessage(eOprotID32_t id32, std::uint32_t signature)
 {
-    return HostTransceiver::addGetROPwithSignature(id32, signature);
+    return transceiver.addGetROPwithSignature(id32, signature);
 }
 
 EOnv* EthResource::getNVhandler(eOprotID32_t id32, EOnv* nv)
 {
-    return HostTransceiver::getnvhandler(id32, nv);
+    return transceiver.getnvhandler(id32, nv);
 }
 
 bool EthResource::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* size)
 {
-    return HostTransceiver::readSentValue(id32, data, size);
+    return transceiver.readSentValue(id32, data, size);
 }
 
 bool EthResource::isFake()

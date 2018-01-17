@@ -49,6 +49,7 @@ namespace eth {
     public:
 
         enum { maxEthBoards = 32 };
+        enum { ethboardNameMaxSize = 32 };
 
     public:
 
@@ -68,7 +69,7 @@ namespace eth {
         
 
         // the name of the board
-        const char * name(eOipv4addr_t ipv4);
+        const string & name(eOipv4addr_t ipv4);
 
         // executes an action on all EthResource which have been added in the class.
         bool execute(void (*action)(eth::AbstractEthResource* res, void* p), void* par);
@@ -79,17 +80,14 @@ namespace eth {
 
     private:
 
-        // private types
-
-        //enum { ethboardNameMaxSize = eth::AbstractEthResource::boardNameSize };
-        enum { ethboardNameMaxSize = 32 };
+        // private types      
 
         typedef struct
         {
             eOipv4addr_t        ipv4;
             eObrd_ethtype_t     type;
-            const char *        nameoftype;
-            char                name[EthBoards::ethboardNameMaxSize];
+            string              nameoftype;
+            string              name;
             uint8_t             numberofinterfaces;
             uint8_t             boardnumber;
             AbstractEthResource*  resource;
@@ -101,8 +99,8 @@ namespace eth {
 
         // private variables
 
-        static const char * defaultnames[EthBoards::maxEthBoards];
-        static const char * errorname[1];
+        static const string defaultnames[EthBoards::maxEthBoards];
+        static const string errorname[1];
 
         int sizeofLUT;
         ethboardProperties_t LUT[EthBoards::maxEthBoards];

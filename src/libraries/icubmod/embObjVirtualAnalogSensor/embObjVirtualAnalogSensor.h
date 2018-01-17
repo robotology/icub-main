@@ -40,7 +40,9 @@ class yarp::dev::embObjVirtualAnalogSensor:     public yarp::dev::IVirtualAnalog
 {
 private:
 
-    char boardIPstring[20];
+    string boardIPstring;
+    string boardName;
+    eOipv4addr_t ipv4addr;
 
     eth::TheEthManager *ethManager;
     eth::AbstractEthResource *res;

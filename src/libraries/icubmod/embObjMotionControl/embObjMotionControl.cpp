@@ -622,7 +622,7 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
         return false;
     }
 
-    if(false == ethManager->verifyEthBoardInfo(config, NULL, boardIPstring, sizeof(boardIPstring), boardName, sizeof(boardName)))
+    if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
         yError() << "embObjMotionControl::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
@@ -713,12 +713,6 @@ bool embObjMotionControl::open(yarp::os::Searchable &config)
 
     opened = true;
     return true;
-}
-
-
-bool embObjMotionControl::isEpManagedByBoard()
-{
-    return res->isEPsupported(eoprot_endpoint_motioncontrol);
 }
 
 
@@ -2321,7 +2315,7 @@ bool embObjMotionControl::doneRaw(int axis)
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, axis, eoprot_tag_mc_joint_status_core_modes_controlmodestatus);
     if(false == askRemoteValue(id32, &temp, size))
     {
-        yError ("Failure of askRemoteValue() inside embObjMotionControl::doneRaw(axis=%d) for BOARD %s IP %s", axis, res->getName(), res->getIPv4string());
+        yError ("Failure of askRemoteValue() inside embObjMotionControl::doneRaw(axis=%d) for BOARD %s IP %s", axis, res->getName().c_str(), res->getIPv4string().c_str());
         return false;
     }
 
@@ -2436,7 +2430,7 @@ bool embObjMotionControl::checkMotionDoneRaw(int j, bool *flag)
     eOprotID32_t id32 = eoprot_ID_get(eoprot_endpoint_motioncontrol, eoprot_entity_mc_joint, j, eoprot_tag_mc_joint_status_core_modes_ismotiondone);
     if(false == askRemoteValue(id32, &ismotiondone, size))
     {
-        yError ("Failure of askRemoteValue() inside embObjMotionControl::checkMotionDoneRaw(j=%d) for BOARD %s IP %s", j, res->getName(), res->getIPv4string());
+        yError ("Failure of askRemoteValue() inside embObjMotionControl::checkMotionDoneRaw(j=%d) for BOARD %s IP %s", j, res->getName().c_str(), res->getIPv4string().c_str());
         return false;
     }
 
@@ -2761,7 +2755,7 @@ bool embObjMotionControl::setControlModeRaw(const int j, const int _mode)
 
     if(false == ret)
     {
-        yError("In embObjMotionControl::setControlModeRaw(j=%d, mode=%s) for BOARD %s IP %s has failed checkRemoteControlModeStatus()", j, yarp::os::Vocab::decode(_mode).c_str(), res->getName(), res->getIPv4string());
+        yError("In embObjMotionControl::setControlModeRaw(j=%d, mode=%s) for BOARD %s IP %s has failed checkRemoteControlModeStatus()", j, yarp::os::Vocab::decode(_mode).c_str(), res->getName().c_str(), res->getIPv4string().c_str());
     }
 
     return ret;
@@ -4881,7 +4875,7 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
         ret = askRemoteValue(id32, &temp, size);
         if(ret == false)
         {
-            yError ("An error occurred inside embObjMotionControl::checkRemoteControlModeStatus(j=%d, targetmode=%s) for BOARD %s IP %s", joint, yarp::os::Vocab::decode(target_mode).c_str(), res->getName(), res->getIPv4string());
+            yError ("An error occurred inside embObjMotionControl::checkRemoteControlModeStatus(j=%d, targetmode=%s) for BOARD %s IP %s", joint, yarp::os::Vocab::decode(target_mode).c_str(), res->getName().c_str(), res->getIPv4string().c_str());
             break;
         }
         int current_mode = controlModeStatusConvert_embObj2yarp(temp);
@@ -4897,7 +4891,7 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
         }
         if(current_mode == VOCAB_CM_HW_FAULT)
         {
-            if(target_mode != VOCAB_CM_FORCE_IDLE) { yError ("embObjMotionControl::checkRemoteControlModeStatus(%d, %d) is unable to check the control mode of BOARD %s IP %s because it is now in HW_FAULT", joint, target_mode, res->getName(), res->getIPv4string()); }
+            if(target_mode != VOCAB_CM_FORCE_IDLE) { yError ("embObjMotionControl::checkRemoteControlModeStatus(%d, %d) is unable to check the control mode of BOARD %s IP %s because it is now in HW_FAULT", joint, target_mode, res->getName().c_str(), res->getIPv4string().c_str()); }
             ret = true;
             break;
         }
@@ -4905,19 +4899,19 @@ bool embObjMotionControl::checkRemoteControlModeStatus(int joint, int target_mod
         if((yarp::os::Time::now()-timeofstart) > timeout)
         {
             ret = false;
-            yError ("A %f sec timeout occured in embObjMotionControl::checkRemoteControlModeStatus(), BOARD %s IP %s, joint %d, current mode: %s, requested: %s", timeout, res->getName(), res->getIPv4string(), joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
+            yError ("A %f sec timeout occured in embObjMotionControl::checkRemoteControlModeStatus(), BOARD %s IP %s, joint %d, current mode: %s, requested: %s", timeout, res->getName().c_str(), res->getIPv4string().c_str(), joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
             break;
         }
         if(attempt > 0)
         {   // i print the warning only after at least one retry.
-            yWarning ("embObjMotionControl::checkRemoteControlModeStatus() has done %d attempts and will retry again after a %f sec delay. (BOARD %s IP %s, joint %d) -> current mode = %s, requested = %s", attempt+1, delaybetweenqueries, res->getName() , res->getIPv4string(), joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
+            yWarning ("embObjMotionControl::checkRemoteControlModeStatus() has done %d attempts and will retry again after a %f sec delay. (BOARD %s IP %s, joint %d) -> current mode = %s, requested = %s", attempt+1, delaybetweenqueries, res->getName().c_str() , res->getIPv4string().c_str(), joint, yarp::os::Vocab::decode(current_mode).c_str(), yarp::os::Vocab::decode(target_mode).c_str());
         }
         SystemClock::delaySystem(delaybetweenqueries);
     }
 
     if(false == ret)
     {
-        yError("failure of embObjMotionControl::checkRemoteControlModeStatus(j=%d, targetmode=%s) for BOARD %s IP %s after %d attempts and %f seconds", joint, yarp::os::Vocab::decode(target_mode).c_str(), res->getName(), res->getIPv4string(), attempt, yarp::os::Time::now()-timeofstart);
+        yError("failure of embObjMotionControl::checkRemoteControlModeStatus(j=%d, targetmode=%s) for BOARD %s IP %s after %d attempts and %f seconds", joint, yarp::os::Vocab::decode(target_mode).c_str(), res->getName().c_str(), res->getIPv4string().c_str(), attempt, yarp::os::Time::now()-timeofstart);
     }
 
 
@@ -5102,7 +5096,7 @@ bool embObjMotionControl::getJointConfiguration(int joint, eOmc_joint_config_t *
     uint16_t size;
     if(!askRemoteValue(protoid, jntCfg_ptr, size))
     {
-        yError ("Failure of askRemoteValue() inside embObjMotionControl::getJointConfiguration(axis=%d) for BOARD %s IP %s", joint, res->getName(), res->getIPv4string());
+        yError ("Failure of askRemoteValue() inside embObjMotionControl::getJointConfiguration(axis=%d) for BOARD %s IP %s", joint, res->getName().c_str(), res->getIPv4string().c_str());
         return false;
     }
     return true;
@@ -5114,7 +5108,7 @@ bool embObjMotionControl::getMotorConfiguration(int axis, eOmc_motor_config_t *m
     uint16_t size;
     if(!askRemoteValue(protoid, motCfg_ptr, size))
     {
-        yError ("Failure of askRemoteValue() inside embObjMotionControl::getMotorConfiguration(axis=%d) for BOARD %s IP %s", axis, res->getName(), res->getIPv4string());
+        yError ("Failure of askRemoteValue() inside embObjMotionControl::getMotorConfiguration(axis=%d) for BOARD %s IP %s", axis, res->getName().c_str(), res->getIPv4string().c_str());
         return false;
     }
     return true;
@@ -5127,7 +5121,7 @@ bool embObjMotionControl::getGerabox_E2J(int joint, double *gearbox_E2J_ptr)
 
     if(!getJointConfiguration(joint, &jntCfg))
     {
-        yError ("Failure embObjMotionControl::getGerabox_E2J(axis=%d) for BOARD %s IP %s", joint, res->getName(), res->getIPv4string());
+        yError ("Failure embObjMotionControl::getGerabox_E2J(axis=%d) for BOARD %s IP %s", joint, res->getName().c_str(), res->getIPv4string().c_str());
         return false;
     }
     *gearbox_E2J_ptr = jntCfg.gearbox_E2J;
@@ -5140,7 +5134,7 @@ bool embObjMotionControl::getJointEncTolerance(int joint, double *jEncTolerance_
 
     if(!getJointConfiguration(joint, &jntCfg))
     {
-        yError ("Failure embObjMotionControl::getJointEncTolerance(axis=%d) for BOARD %s IP %s", joint, res->getName(), res->getIPv4string());
+        yError ("Failure embObjMotionControl::getJointEncTolerance(axis=%d) for BOARD %s IP %s", joint, res->getName().c_str(), res->getIPv4string().c_str());
         return false;
     }
     *jEncTolerance_ptr = jntCfg.jntEncTolerance;
@@ -5152,7 +5146,7 @@ bool embObjMotionControl::getMotorEncTolerance(int axis, double *mEncTolerance_p
     eOmc_motor_config_t motorCfg;
     if(!getMotorConfiguration(axis, &motorCfg))
     {
-        yError ("Failure embObjMotionControl::getMotorEncTolerance(axis=%d) for BOARD %s IP %s", axis, res->getName(), res->getIPv4string());
+        yError ("Failure embObjMotionControl::getMotorEncTolerance(axis=%d) for BOARD %s IP %s", axis, res->getName().c_str(), res->getIPv4string().c_str());
         return false;
     }
     *mEncTolerance_ptr = motorCfg.rotEncTolerance;

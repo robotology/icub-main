@@ -113,7 +113,9 @@ public:
 
 private:
 
-    char boardIPstring[20];
+    string boardIPstring;
+    string boardName;
+    eOipv4addr_t ipv4addr;
 
     //! eth messaging stuff
     eth::TheEthManager *ethManager;
@@ -151,8 +153,6 @@ private:
     bool fromConfig(yarp::os::Searchable &config);
     bool init();
     void cleanup(void);
-    // not used ...
-    bool isEpManagedByBoard();
 
 
     // for strain

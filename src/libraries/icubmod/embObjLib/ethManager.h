@@ -91,6 +91,8 @@ namespace eth {
         // this is the maximum number of boards that the singleton can manage.
         enum { maxBoards = eth::EthBoards::maxEthBoards };
 
+        enum { maxRXpacketsize = 1496, maxTXpacketsize = 1496 };
+
         // these are the boards, their use is protected by txSem or rxSem or both of them.
         eth::EthBoards* ethBoards;
 
@@ -112,22 +114,20 @@ namespace eth {
         // useful for printing times relative to start of the object
         double getLifeTime(void);
 
-        bool verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t* boardipv4, char *boardipv4string, int stringsize, char *boardNameStr=NULL, int sizeofBoardNameStr=0);
+        bool verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t &boardipv4, string boardipv4string, string boardname);
 
 
         eth::AbstractEthResource* requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal);
 
         int releaseResource2(eth::AbstractEthResource* ethresource, IethResource* interface);
 
-        const ACE_INET_Addr& getLocalIPaddress(void);
-
-        const eOipv4addressing_t & getLocalIPV4addressing(void);
+        const eOipv4addressing_t& getLocalIPV4addressing(void);
 
         bool Transmission(void);
 
         bool CheckPresence(void);
 
-        bool Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, bool collectStatistics);
+        bool Reception(eOipv4addr_t from, uint64_t* data, ssize_t size);
 
         eth::AbstractEthResource* getEthResource(eOipv4addr_t ipv4);
 
@@ -135,15 +135,20 @@ namespace eth {
 
         int getNumberOfResources(void);
 
-        const char * getName(eOipv4addr_t ipv4);
+        const string & getName(eOipv4addr_t ipv4);
 
-        int sendPacket(void *udpframe, size_t len, ACE_INET_Addr toaddress);
+        int sendPacket(void *udpframe, size_t len, const eOipv4addressing_t &toaddressing);
+
+        eOipv4addr_t toipv4addr(const ACE_INET_Addr &aceinetaddr);
+
+        ACE_INET_Addr toaceinet(const eOipv4addressing_t &ipv4addressing);
 
     private:
 
+
         bool isCommunicationInitted(void);
 
-        bool createCommunicationObjects(ACE_INET_Addr local_addr, int txrate, int rxrate);
+        bool createCommunicationObjects(const eOipv4addressing_t &localaddress, int txrate, int rxrate);
 
         bool initCommunication(yarp::os::Searchable &cfgtotal);
 
@@ -171,7 +176,6 @@ namespace eth {
         // contains the start-up time of the system so that time measures / prints can be done relative.
         double startUpTime;
 
-        ACE_INET_Addr localIPaddress;
         eOipv4addressing_t ipv4local;
 
         bool communicationIsInitted;

@@ -183,6 +183,7 @@ set(EXTRA_SOURCE            ${EXTRA_FOLDER}/hostTransceiver.cpp
                             ${EXTRA_FOLDER}/ethBoards.cpp
                             ${EXTRA_FOLDER}/ethSender.cpp
                             ${EXTRA_FOLDER}/ethReceiver.cpp
+                            ${EXTRA_FOLDER}/ethParser.cpp
                             ${EXTRA_FOLDER}/IethResource.cpp
                             ${EXTRA_FOLDER}/fakeEthResource.cpp
                             ${EXTRA_FOLDER}/serviceParser.cpp

@@ -52,7 +52,7 @@
 
 // - class eth::EthBoards
 
-const char * eth::EthBoards::defaultnames[eth::EthBoards::maxEthBoards] =
+const string eth::EthBoards::defaultnames[eth::EthBoards::maxEthBoards] =
 {
     "noname-in-xml-board.1", "noname-in-xml-board.2", "noname-in-xml-board.3", "noname-in-xml-board.4",
     "noname-in-xml-board.5", "noname-in-xml-board.6", "noname-in-xml-board.7", "noname-in-xml-board.8",
@@ -64,7 +64,7 @@ const char * eth::EthBoards::defaultnames[eth::EthBoards::maxEthBoards] =
     "noname-in-xml-board.29", "noname-in-xml-board.30", "noname-in-xml-board.31", "noname-in-xml-board.32"
 };
 
-const char * eth::EthBoards::errorname[1] =
+const string eth::EthBoards::errorname[1] =
 {
     "wrong-unknown-board"
 };
@@ -142,11 +142,7 @@ bool eth::EthBoards::add(eth::AbstractEthResource* res)
     LUT[index].type = res->getBoardType();
     LUT[index].nameoftype = res->getBoardTypeString();
     LUT[index].boardnumber = index;
-    snprintf(LUT[index].name, sizeof(LUT[index].name), "%s", res->getName());
-    if(0 == strlen(LUT[index].name))
-    {   // use default name
-        snprintf(LUT[index].name, sizeof(LUT[index].name), "%s", defaultnames[index]);
-    }
+    LUT[index].name = res->getName();
     LUT[index].numberofinterfaces = 0;
     for(int i=0; i<iethresType_numberof; i++)
     {
@@ -227,7 +223,7 @@ bool eth::EthBoards::rem(eth::AbstractEthResource* res)
     LUT[index].resource = NULL;
     LUT[index].ipv4 = 0;
     LUT[index].boardnumber = 0;
-    memset(LUT[index].name, 0, sizeof(LUT[index].name));
+    LUT[index].name = "";
     LUT[index].numberofinterfaces = 0;
     for(int i=0; i<iethresType_numberof; i++)
     {
@@ -393,20 +389,20 @@ eth::IethResource* eth::EthBoards::get_interface(eOipv4addr_t ipv4, eOprotID32_t
 }
 
 
-const char * eth::EthBoards::name(eOipv4addr_t ipv4)
+const string & eth::EthBoards::name(eOipv4addr_t ipv4)
 {
-    const char * ret = NULL;
+    const string & ret = "none";
 
     uint8_t index = 0;
     eo_common_ipv4addr_to_decimal(ipv4, NULL, NULL, NULL, &index);
     index --;
     if(index<maxEthBoards)
     {
-        ret = LUT[index].name;
+        return LUT[index].name;
     }
     else
     {
-        ret = errorname[0]; // the last one contains an error string
+        return errorname[0]; // the last one contains an error string
     }
 
     return(ret);

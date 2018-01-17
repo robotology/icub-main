@@ -185,7 +185,7 @@ bool embObjVirtualAnalogSensor::open(yarp::os::Searchable &config)
     }
 
 
-    if(false == ethManager->verifyEthBoardInfo(config, NULL, boardIPstring, sizeof(boardIPstring)))
+    if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
         yError() << "embObjVirtualAnalogSensor::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;

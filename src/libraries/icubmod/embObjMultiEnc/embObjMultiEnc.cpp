@@ -203,7 +203,7 @@ bool embObjMultiEnc::open(yarp::os::Searchable &config)
     }
 
 
-    if(false == ethManager->verifyEthBoardInfo(config, NULL, boardIPstring, sizeof(boardIPstring)))
+    if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
         yError() << "embObjMultiEnc::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
@@ -319,10 +319,6 @@ bool embObjMultiEnc::open(yarp::os::Searchable &config)
 }
 
 
-bool embObjMultiEnc::isEpManagedByBoard()
-{    
-    return res->isEPsupported(eoprot_endpoint_analogsensors);
-}
 
 
 // bool embObjMultiEnc::sendConfig2Mais(void)

@@ -80,7 +80,9 @@ public:
 
 private:
 
-    char boardIPstring[20];
+    string boardIPstring;
+    string boardName;
+    eOipv4addr_t ipv4addr;
     
     uint8_t numofjoints;
     uint8_t numofencperjoint;
@@ -117,8 +119,6 @@ private:
     bool initRegulars();
     void cleanup(void);
     void printServiceConfig(void);
-    // not used ...
-    bool isEpManagedByBoard();
 
 
 

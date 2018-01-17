@@ -87,7 +87,8 @@ public:
 
 private:
 
-    char boardIPstring[20];
+    string boardIPstring;
+    string boardName;
     eOipv4addr_t ipv4addr;
 
     eth::TheEthManager* ethManager;

@@ -184,7 +184,7 @@ bool embObjMais::open(yarp::os::Searchable &config)
     }
 
 
-    if(false == ethManager->verifyEthBoardInfo(config, NULL, boardIPstring, sizeof(boardIPstring)))
+    if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
         yError() << "embObjMais::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
@@ -333,12 +333,6 @@ bool embObjMais::open(yarp::os::Searchable &config)
 
     opened = true;
     return true;
-}
-
-
-bool embObjMais::isEpManagedByBoard()
-{    
-    return res->isEPsupported(eoprot_endpoint_analogsensors);
 }
 
 
@@ -606,8 +600,8 @@ void embObjMais::printServiceConfig(void)
     char fir[20] = {0};
     char pro[20] = {0};
 
-    const char * boardname = (NULL != res) ? (res->getName()) : ("NOT-ASSIGNED-YET");
-    const char * ipv4 = (NULL != res) ? (res->getIPv4string()) : ("NOT-ASSIGNED-YET");
+    const char * boardname = (NULL != res) ? (res->getName().c_str()) : ("NOT-ASSIGNED-YET");
+    const char * ipv4 = (NULL != res) ? (res->getIPv4string().c_str()) : ("NOT-ASSIGNED-YET");
 
     parser->convert(serviceConfig.ethservice.configuration.data.as.mais.canloc, loc, sizeof(loc));
     parser->convert(serviceConfig.ethservice.configuration.data.as.mais.version.firmware, fir, sizeof(fir));

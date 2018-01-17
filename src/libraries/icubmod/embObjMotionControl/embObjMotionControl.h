@@ -178,8 +178,9 @@ class yarp::dev::embObjMotionControl:   public DeviceDriver,
 
 private:
 
-    char boardIPstring[20];
-    char boardName[30];
+    string boardIPstring;
+    string boardName;
+    eOipv4addr_t ipv4addr;
 
     eth::TheEthManager* ethManager;
     eth::AbstractEthResource* res;
@@ -289,7 +290,7 @@ private:
     bool checkRemoteControlModeStatus(int joint, int target_mode);
 
     bool dealloc();
-    bool isEpManagedByBoard();
+
 
     bool convertPosPid(eomcParser_pidInfo myPidInfo[]);
     bool convertTrqPid(eomcParser_trqPidInfo myPidInfo[]);

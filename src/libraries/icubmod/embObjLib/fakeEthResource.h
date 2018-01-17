@@ -35,10 +35,6 @@ namespace eth {
            
     class FakeEthResource :  public eth::AbstractEthResource
     {
-    public:
-
-        // this is the maximum size of rx and tx packets managed by the ethresource. however, the HostTranceveiver can reduce these values.
-        enum { maxRXpacketsize = 1496, maxTXpacketsize = 1496 };
 
     public:
 
@@ -46,20 +42,19 @@ namespace eth {
         ~FakeEthResource();
 
 
-        bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal) override;
-        bool            close();
-        bool            isEPsupported(eOprot_endpoint_t ep);
+        bool open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal) override;
+        bool close();
         bool isID32supported(eOprotID32_t id32);
 
-        ACE_INET_Addr   getRemoteAddress(void);
+        eOipv4addr_t getIPv4remoteAddress(void);
+        bool getIPv4remoteAddressing(eOipv4addressing_t &addressing);
 
-        eOipv4addr_t    getIPv4remoteAddress(void);
 
-        const char *    getName(void);
-        const char *    getIPv4string(void);
+        const string & getName(void);
+        const string & getIPv4string(void);
 
         eObrd_ethtype_t getBoardType(void);
-        const char *    getBoardTypeString(void);
+        const string & getBoardTypeString(void);
 
         void getBoardInfo(eOdate_t &date, eOversion_t &version);
 
@@ -69,7 +64,7 @@ namespace eth {
 
         bool            canProcessRXpacket(uint64_t *data, uint16_t size);
 
-        void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true);
+        void            processRXpacket(uint64_t *data, uint16_t size);
 
 
         bool getRemoteValue(const eOprotID32_t id32, void *value, const double timeout = 0.100, const unsigned int retries = 0);
@@ -106,16 +101,16 @@ namespace eth {
 
 
     private: //FAKE
+        eOipv4addressing_t ipv4addressing;
         eOipv4addr_t      ipv4addr;
-        char              ipv4addrstring[20];
-        char              boardName[32];
-        char              boardTypeString[32];
+        string ipv4addrstring;
+        string boardName;
+        string boardTypeString;
         eObrd_ethtype_t   ethboardtype;
         double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
         bool              isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
-        ACE_INET_Addr     remote_dev;
 
-        yarp::os::Semaphore*  objLock;
+        yarp::os::Semaphore* objLock;
 
         bool                verifiedEPprotocol[eoprot_endpoints_numberof];
         bool                verifiedBoardPresence;
@@ -124,8 +119,8 @@ namespace eth {
         eOmn_comm_status_t  boardCommStatus;
         uint16_t            usedNumberOfRegularROPs;
 
-        TheEthManager       *ethManager;
-        HostTransceiver     *myHostTrans;
+        TheEthManager *ethManager;
+        HostTransceiver myHostTrans;
 
 
     private:

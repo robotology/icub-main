@@ -77,7 +77,9 @@ public:
 
 private:
 
-    char boardIPstring[20];
+    string boardIPstring;
+    string boardName;
+    eOipv4addr_t ipv4addr;
 
     eth::TheEthManager* ethManager;
     eth::AbstractEthResource* res;
@@ -109,9 +111,6 @@ private:
     bool initRegulars();
     void cleanup(void);
     void printServiceConfig(void);
-    // not used ...
-    bool isEpManagedByBoard();
-
 
     // for mais
     bool sendConfig2Mais(void);

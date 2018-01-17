@@ -58,6 +58,7 @@ using namespace yarp::os::impl;
 
 #include <fakeEthResource.h>
 #include <ethResource.h>
+#include <ethParser.h>
 
 using namespace eth;
 
@@ -98,7 +99,6 @@ TheEthManager::TheEthManager()
     TheEthManager::initEOYsystem();
 
     // default address
-    localIPaddress = ACE_INET_Addr("10.0.1.104:12345");
     ipv4local.addr = eo_common_ipv4addr(10, 0, 1, 104);
     ipv4local.port = 12345;
 
@@ -232,8 +232,9 @@ void ethEvalTXropframe(eth::AbstractEthResource *r, void* p)
 
     if(true == transmitthepacket)
     {
-        ACE_INET_Addr ipaddress = r->getRemoteAddress();
-        ethman->sendPacket(data2send, (size_t)numofbytes, ipaddress);
+        eOipv4addressing_t ipv4addressing;
+        r->getIPv4remoteAddressing(ipv4addressing);
+        ethman->sendPacket(data2send, (size_t)numofbytes, ipv4addressing);
     }
 }
 
@@ -266,6 +267,28 @@ bool TheEthManager::CheckPresence(void)
     return true;
 }
 
+#if 1
+
+bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t &boardipv4, string boardipv4string, string boardname)
+{
+    eth::parser::boardData bdata;
+    if(false == eth::parser::read(cfgtotal, bdata))
+    {
+        yError() << "TheEthManager::verifyEthBoardInfo() fails";
+        return false;
+    }
+
+
+    boardipv4 = bdata.properties.ipv4addressing.addr;
+    boardipv4string = bdata.properties.ipv4string;
+    boardname = bdata.settings.name;
+
+    return true;
+}
+
+
+
+#else
 
 bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4addr_t* boardipv4, char *boardipv4string, int stringsize, char *boardNameStr, int sizeofBoardNameStr)
 {
@@ -347,16 +370,47 @@ bool TheEthManager::verifyEthBoardInfo(yarp::os::Searchable &cfgtotal, eOipv4add
     return true;
 }
 
+#endif
 
+#if 1
 bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
 {
-    // we need: ip address of pc104, port used by socket, tx rate, rx rate.
+    eth::parser::pc104Data pcdata;
+    if(false == eth::parser::read(cfgtotal, pcdata))
+    {
+        yError() << "TheEthManager::initCommunication() fails";
+        return false;
+    }
 
-    //ACE_INET_Addr ipaddress((u_short)12345, ((10 << 24) | (0 << 16) | (1 << 8) | (104)));            // it must be found ...
+    int txrate = pcdata.txrate;
+    int rxrate = pcdata.rxrate;
+    eOipv4addressing_t tmpaddress = pcdata.localaddressing;
+    embBoardsConnected = pcdata.embBoardsConnected;
+
+    // localaddress
+    if(false == createCommunicationObjects(tmpaddress, txrate, rxrate) )
+    {
+        yError () << "TheEthManager::initCommunication() cannot create communication objects";
+        return false;
+    }
+
+    // save local address
+    ipv4local.addr = tmpaddress.addr;
+    ipv4local.port = tmpaddress.port;
+
+    return true;
+}
+
+#else
+bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
+{
     int txrate = -1;                    // it uses default
     int rxrate = -1;                    // it uses default
 
     embBoardsConnected = true;
+
+
+
     Bottle groupDEBUG  = cfgtotal.findGroup("DEBUG");
     if ((! groupDEBUG.isNull()) && (groupDEBUG.check("embBoardsConnected")))
         embBoardsConnected = groupDEBUG.find("embBoardsConnected").asBool();
@@ -398,10 +452,9 @@ bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
     int ip1, ip2, ip3, ip4;
     sscanf(strIP, "\"%d.%d.%d.%d", &ip1, &ip2, &ip3, &ip4);
 
-    ACE_UINT32 hostip = (ip1 << 24) | (ip2 << 16) | (ip3 << 8) | (ip4);
-    ACE_INET_Addr myIP((u_short)port, hostip);
-
-    myIP.addr_to_string(strIP, 64);
+    eOipv4addressing_t tmpaddress;
+    tmpaddress.addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
+    tmpaddress.port = port;
 
     yDebug() << "TheEthManager::initCommunication() has found IP for PC104 = " << strIP;
 
@@ -430,21 +483,94 @@ bool TheEthManager::initCommunication(yarp::os::Searchable &cfgtotal)
     }
 
     // localaddress
-    if(false == createCommunicationObjects(myIP, txrate, rxrate) )
+    if(false == createCommunicationObjects(tmpaddress, txrate, rxrate) )
     {
         yError () << "TheEthManager::initCommunication() cannot create communication objects";
         return false;
     }
 
     // save local address
-
-    localIPaddress = myIP;
-    ipv4local.addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
-    ipv4local.port = port;
+    ipv4local.addr = tmpaddress.addr;
+    ipv4local.port = tmpaddress.port;
 
     return true;
 }
+#endif
 
+#if 1
+
+eth::AbstractEthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal)
+{
+    if(false == communicationIsInitted)
+    {
+        yTrace() << "TheEthManager::requestResource2(): we need to init the communication";
+
+        if(false == initCommunication(cfgtotal))
+        {
+            yError() << "TheEthManager::requestResource2(): cannot init the communication";
+            return NULL;
+        }
+    }
+
+    eth::parser::boardData bdata;
+    if(false == eth::parser::read(cfgtotal, bdata))
+    {
+        yError() << "TheEthManager::requestResource2() fails";
+        return NULL;
+    }
+
+    eOipv4addr_t ipv4addr = bdata.properties.ipv4addressing.addr;
+
+    // i want to lock the use of resources managed by ethBoards to avoid that we attempt to use for TX a ethres not completely initted
+
+    lockTXRX(true);
+
+    // i do an attempt to get the resource.
+    eth::AbstractEthResource *rr = ethBoards->get_resource(ipv4addr);
+
+    if(NULL == rr)
+    {
+        // i dont have the resource yet ...
+
+        if(true == embBoardsConnected)
+        {
+            rr = new EthResource();
+        }
+        else
+        {
+            rr = new eth::FakeEthResource();
+        }
+
+        if(true == rr->open2(ipv4addr, cfgtotal))
+        {
+            ethBoards->add(rr);
+        }
+        else
+        {
+            yError() << "TheEthManager::requestResource2(): error creating a new ethResource for IP = " << bdata.properties.ipv4string;
+
+            if(NULL != rr)
+            {
+                delete rr;
+            }
+
+            rr = NULL;
+            return NULL;
+        }
+
+        yDebug() << "TheEthManager::requestResource2(): has just succesfully created a new EthResource for board of type" << rr->getBoardTypeString()<< "with IP = " << bdata.properties.ipv4string;
+    }
+
+
+    ethBoards->add(rr, interface);
+
+
+    lockTXRX(false);
+
+    return(rr);
+}
+
+#else
 
 eth::AbstractEthResource *TheEthManager::requestResource2(IethResource *interface, yarp::os::Searchable &cfgtotal)
 {
@@ -528,7 +654,7 @@ eth::AbstractEthResource *TheEthManager::requestResource2(IethResource *interfac
 
     return(rr);
 }
-
+#endif
 
 
 int TheEthManager::releaseResource2(eth::AbstractEthResource* ethresource, IethResource* interface)
@@ -628,10 +754,6 @@ int TheEthManager::releaseResource2(eth::AbstractEthResource* ethresource, IethR
 }
 
 
-const ACE_INET_Addr& TheEthManager::getLocalIPaddress(void)
-{
-    return(localIPaddress);
-}
 
 
 const eOipv4addressing_t& TheEthManager::getLocalIPV4addressing(void)
@@ -655,18 +777,19 @@ double TheEthManager::getLifeTime(void)
 
 
 
-bool TheEthManager::createCommunicationObjects(ACE_INET_Addr localaddress, int txrate, int rxrate)
+bool TheEthManager::createCommunicationObjects(const eOipv4addressing_t &localaddress, int txrate, int rxrate)
 {
     lock(true);
 
+    ACE_INET_Addr inetaddr = toaceinet(localaddress);
 
     if(!communicationIsInitted)
     {
         UDP_socket = new ACE_SOCK_Dgram();
-        if((embBoardsConnected)  && (-1 == UDP_socket->open(localaddress)))
+        if((embBoardsConnected)  && (-1 == UDP_socket->open(inetaddr)))
         {
             char tmp[64] = {0};
-            localaddress.addr_to_string(tmp, 64);
+            inetaddr.addr_to_string(tmp, 64);
             yError() <<   "\n/--------------------------------------------------------------------------------------------------------------\\"
                      <<   "\n| TheEthManager::createCommunicationObjects() is unable to bind to local IP address " << tmp
                      <<   "\n\\--------------------------------------------------------------------------------------------------------------/";
@@ -677,7 +800,7 @@ bool TheEthManager::createCommunicationObjects(ACE_INET_Addr localaddress, int t
         else
         {
             communicationIsInitted = true;
-            localIPaddress = localaddress;
+            ipv4local = localaddress;
 
             if((txrate <= 0) || (txrate > EthSender::EthSenderMaxRate))
             {
@@ -754,26 +877,41 @@ bool TheEthManager::stopCommunicationThreads()
 
 
 
-int TheEthManager::sendPacket(void *udpframe, size_t len, ACE_INET_Addr toaddress)
+int TheEthManager::sendPacket(void *udpframe, size_t len, const eOipv4addressing_t &toaddressing)
 {
-    ssize_t ret = UDP_socket->send(udpframe, len, toaddress);
+    ACE_INET_Addr inetaddr = toaceinet(toaddressing);
+    ssize_t ret = UDP_socket->send(udpframe, len, inetaddr);
     return ret;
 }
 
 
-bool TheEthManager::Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, bool collectStatistics)
+
+eOipv4addr_t TheEthManager::toipv4addr(const ACE_INET_Addr &aceinetaddr)
 {
-    ACE_UINT32 a32 = adr.get_ip_address();
+    ACE_UINT32 a32 = aceinetaddr.get_ip_address();
     uint8_t ip4 = a32 & 0xff;
     uint8_t ip3 = (a32 >> 8) & 0xff;
     uint8_t ip2 = (a32 >> 16) & 0xff;
     uint8_t ip1 = (a32 >> 24) & 0xff;
+    return eo_common_ipv4addr(ip1, ip2, ip3, ip4);
+}
 
-    eOipv4addr_t ipv4addr = eo_common_ipv4addr(ip1, ip2, ip3, ip4);
+ACE_INET_Addr TheEthManager::toaceinet(const eOipv4addressing_t &ipv4addressing)
+{
+    uint8_t ip1, ip2, ip3, ip4;
+    eo_common_ipv4addr_to_decimal(ipv4addressing.addr, &ip1, &ip2, &ip3, &ip4);
+    ACE_UINT32 hostip = (ip1 << 24) | (ip2 << 16) | (ip3 << 8) | (ip4);
+    ACE_INET_Addr myIP((u_short)ipv4addressing.port, hostip);
 
+    return myIP;
+}
+
+
+bool TheEthManager::Reception(eOipv4addr_t from, uint64_t* data, ssize_t size)
+{
     lockRX(true);
 
-    eth::AbstractEthResource* r = ethBoards->get_resource(ipv4addr);
+    eth::AbstractEthResource* r = ethBoards->get_resource(from);
 
     if((NULL != r) && (!r->isFake()))
     {
@@ -785,7 +923,7 @@ bool TheEthManager::Reception(ACE_INET_Addr adr, uint64_t* data, ssize_t size, b
         }
         else
         {
-            r->processRXpacket(data, size, collectStatistics);
+            r->processRXpacket(data, size);
         }
 
     }
@@ -809,10 +947,9 @@ int TheEthManager::getNumberOfResources(void)
 }
 
 
-const char * TheEthManager::getName(eOipv4addr_t ipv4)
+const string & TheEthManager::getName(eOipv4addr_t ipv4)
 {
-    const char * ret = ethBoards->name(ipv4);
-    return ret;
+    return ethBoards->name(ipv4);
 }
 
 

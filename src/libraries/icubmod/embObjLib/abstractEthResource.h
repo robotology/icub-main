@@ -39,37 +39,33 @@ namespace eth {
     {
     public:
 
-//        enum { boardNameSize = 32 };
-
         //AbstractEthResource();
        // virtual ~AbstractEthResource() = 0;
 
 
-        virtual bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal) = 0;
-        virtual bool            close() = 0;
-        virtual bool            isEPsupported(eOprot_endpoint_t ep) = 0;
+        virtual bool open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal) = 0;
+        virtual bool close() = 0;
+
         virtual bool isID32supported(eOprotID32_t id32) = 0;
 
-        virtual ACE_INET_Addr   getRemoteAddress(void) = 0;
+        virtual eOipv4addr_t getIPv4remoteAddress(void) = 0;
+        virtual bool getIPv4remoteAddressing(eOipv4addressing_t &addressing) = 0;
 
-        virtual eOipv4addr_t    getIPv4remoteAddress(void) = 0;
-
-        virtual const char *    getName(void) = 0;
-        virtual const char *    getIPv4string(void) = 0;
+        virtual const string & getName(void) = 0;
+        virtual const string & getIPv4string(void) = 0;
 
         virtual eObrd_ethtype_t getBoardType(void) = 0;
-        virtual const char *    getBoardTypeString(void) = 0;
+        virtual const string & getBoardTypeString(void) = 0;
 
         virtual void getBoardInfo(eOdate_t &date, eOversion_t &version) = 0;
 
         // the function returns true if the packet can be transmitted.
         // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
-        virtual bool            getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops) = 0;
+        virtual bool getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops) = 0;
 
-        virtual bool            canProcessRXpacket(uint64_t *data, uint16_t size) = 0;
+        virtual bool canProcessRXpacket(uint64_t *data, uint16_t size) = 0;
 
-        virtual void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true) = 0;
-
+        virtual void processRXpacket(uint64_t *data, uint16_t size) = 0;
 
         virtual bool getRemoteValue(const eOprotID32_t id32, void *value, const double timeout = 0.100, const unsigned int retries = 0) = 0;
 

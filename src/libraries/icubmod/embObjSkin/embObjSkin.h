@@ -84,7 +84,9 @@ public:
 
 protected:
 
-    char boardIPstring[20];
+    string boardIPstring;
+    string boardName;
+    eOipv4addr_t ipv4addr;
 
     eth::TheEthManager *ethManager;
     eth::AbstractEthResource *res;
@@ -104,7 +106,6 @@ protected:
     bool            init();
     bool            fromConfig(yarp::os::Searchable& config);
     bool            initWithSpecialConfig(yarp::os::Searchable& config);
-    bool            isEpManagedByBoard();
     bool            start();
     bool            configPeriodicMessage(void);
     eOprotIndex_t convertIdPatch2IndexNv(int idPatch)

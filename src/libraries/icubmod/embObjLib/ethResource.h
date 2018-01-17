@@ -29,7 +29,6 @@
 #include <hostTransceiver.hpp>
 
 #include <ethMonitorPresence.h>
-//#include <EoProtocol.h>
 #include <EoBoards.h>
 #include <yarp/os/Semaphore.h>
 
@@ -41,12 +40,8 @@ class can_string_eth;
 
 namespace eth {
 
-    class EthResource: public eth::AbstractEthResource, public HostTransceiver
+    class EthResource: public eth::AbstractEthResource
     {
-    public:
-
-        // this is the maximum size of rx and tx packets managed by the ethresource. however, the HostTranceveiver can reduce these values.
-        enum { maxRXpacketsize = 1496, maxTXpacketsize = 1496 };
 
     public:
 
@@ -56,29 +51,27 @@ namespace eth {
 
         bool            open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal);
         bool            close();
-        bool            isEPsupported(eOprot_endpoint_t ep);
         bool            isID32supported(eOprotID32_t id32);
 
-        ACE_INET_Addr   getRemoteAddress(void);
+        //ACE_INET_Addr   getRemoteAddress(void);
 
-        eOipv4addr_t    getIPv4remoteAddress(void);
+        eOipv4addr_t getIPv4remoteAddress(void);
+        bool getIPv4remoteAddressing(eOipv4addressing_t &addressing);
 
-        const char *    getName(void);
-        const char *    getIPv4string(void);
-
+        const string & getName(void);
+        const string & getIPv4string(void);
         eObrd_ethtype_t getBoardType(void);
-        const char *    getBoardTypeString(void);
+        const string & getBoardTypeString(void);
 
         void getBoardInfo(eOdate_t &date, eOversion_t &version);
 
         // the function returns true if the packet can be transmitted.
         // it returns false if it cannot be transmitted: either it is with no rops inside in mode donttrxemptypackets, or there is an error somewhere
-        bool            getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops);
+        bool getTXpacket(uint8_t **packet, uint16_t *size, uint16_t *numofrops);
 
-        bool            canProcessRXpacket(uint64_t *data, uint16_t size);
+        bool canProcessRXpacket(uint64_t *data, uint16_t size);
 
-        void            processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics = true);
-
+        void processRXpacket(uint64_t *data, uint16_t size);
 
         bool getRemoteValue(const eOprotID32_t id32, void *value, const double timeout = 0.100, const unsigned int retries = 0);
 
@@ -114,17 +107,18 @@ namespace eth {
 
 
     private:
-#warning non va bene 32 qui ....
-        eOipv4addr_t      ipv4addr;
-        char              ipv4addrstring[20];
-        char              boardName[32];
-        char              boardTypeString[32];
-        eObrd_ethtype_t   ethboardtype;
-        ACE_INET_Addr     remote_dev;             //!< IP address of the EMS this class is talking to.
-        double            lastRecvMsgTimestamp;   //! stores the system time of the last received message, gettable with getLastRecvMsgTimestamp()
+
+//        ACE_INET_Addr     remote_dev;
+        eOipv4addressing_t ipv4addressing;
+        eOipv4addr_t        ipv4addr;
+        string              ipv4addrstring;
+        string              boardName;
+        string              boardTypeString;
+        eObrd_ethtype_t     ethboardtype;
+
         bool			  isInRunningMode;        //!< say if goToRun cmd has been sent to EMS
 
-        yarp::os::Semaphore*  objLock;
+        yarp::os::Semaphore* objLock;
 
 
 
@@ -146,6 +140,8 @@ namespace eth {
         eth::TheEthManager *ethManager;
 
         eth::EthMonitorPresence monitorpresence;
+
+        HostTransceiver transceiver;
 
         bool regularsAreSet;
 

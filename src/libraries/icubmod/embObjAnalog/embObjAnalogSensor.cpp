@@ -287,7 +287,7 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
     }
 
 
-    if(false == ethManager->verifyEthBoardInfo(config, NULL, boardIPstring, sizeof(boardIPstring)))
+    if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
         yError() << "embObjAnalogSensor::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
@@ -499,10 +499,6 @@ bool embObjAnalogSensor::open(yarp::os::Searchable &config)
 }
 
 
-bool embObjAnalogSensor::isEpManagedByBoard()
-{
-    return res->isEPsupported(eoprot_endpoint_analogsensors);
-}
 
 bool embObjAnalogSensor::sendConfig2Strain(void)
 {

@@ -440,8 +440,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
         return false;
     }
 
-    eOipv4addr_t boardIPaddress = 0;
-    if(false == ethManager->verifyEthBoardInfo(config, &boardIPaddress, boardIPstring, sizeof(boardIPstring)))
+    if(false == ethManager->verifyEthBoardInfo(config, ipv4addr, boardIPstring, boardName))
     {
         yError() << "embObjSkin::open(): object TheEthManager fails in parsing ETH propertiex from xml file";
         return false;
@@ -478,7 +477,7 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 
     // now we have an ip address, thus we can set the name in object SkinConfigReader
     char name[80];
-    snprintf(name, sizeof(name), "embObjSkin on BOARD %s IP %s", res->getName(), res->getIPv4string());
+    snprintf(name, sizeof(name), "embObjSkin on BOARD %s IP %s", res->getName().c_str(), res->getIPv4string().c_str());
     _cfgReader.setName(name);
 
 
@@ -544,10 +543,6 @@ bool EmbObjSkin::open(yarp::os::Searchable& config)
 }
 
 
-bool EmbObjSkin::isEpManagedByBoard()
-{
-    return res->isEPsupported(eoprot_endpoint_skin);
-}
 
 void EmbObjSkin::cleanup(void)
 {

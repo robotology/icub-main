@@ -39,9 +39,11 @@ FakeEthResource::FakeEthResource()
     yTrace();
 
     ipv4addr = 0;
-    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
+    ipv4addressing.addr = 0;
+    ipv4addressing.port = 0;
+    ipv4addrstring = "0.0.0.0";
     ethboardtype = eobrd_ethtype_unknown;
-    snprintf(boardTypeString, sizeof(boardTypeString), "unknown");
+    boardTypeString = "unknown";
 
     ethManager                  = NULL;
     isInRunningMode             = false;
@@ -55,7 +57,6 @@ FakeEthResource::FakeEthResource()
     usedNumberOfRegularROPs     = 0;
     memset(&boardCommStatus, 0, sizeof(boardCommStatus));
 
-    myHostTrans = new HostTransceiver();
 }
 
 
@@ -100,6 +101,18 @@ bool FakeEthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
         return NULL;
     }
 
+
+    // remote address
+    ipv4addr = remIP;
+//    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
+    ipv4addressing.addr = remIP;
+    ipv4addressing.port = 12345;
+
+    if(true == groupEthBoardProps.check("IpPort"))
+    {
+        ipv4addressing.port = groupEthBoardProps.find("IpPort").asInt();;
+    }
+
     Bottle b_ETH_BOARD_PROPERTIES_Type = groupEthBoardProps.findGroup("Type");
     ConstString Type = b_ETH_BOARD_PROPERTIES_Type.get(1).asString();
     const char *strType = Type.c_str();
@@ -129,7 +142,7 @@ bool FakeEthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
         ethboardtype = eoboards_type2ethtype(brd);
     }
 
-    snprintf(boardTypeString, sizeof(boardTypeString), "%s", eoboards_type2string2(eoboards_ethtype2type(ethboardtype), eobool_true));
+//    snprintf(boardTypeString, sizeof(boardTypeString), "%s", eoboards_type2string2(eoboards_ethtype2type(ethboardtype), eobool_true));
 
     Bottle paramNameBoard(groupEthBoardSettings.find("Name").asString());
     char xmlboardname[64] = {0};
@@ -143,7 +156,7 @@ bool FakeEthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
     bool ret;
     uint8_t num = 0;
     eo_common_ipv4addr_to_decimal(remIP, NULL, NULL, NULL, &num);
-    if(!myHostTrans->init2(groupEthBoard, localIPv4, remIP))
+    if(!myHostTrans.init2(groupEthBoard, localIPv4, remIP))
     {
         ret = false;
         char ipinfo[20] = {0};
@@ -155,23 +168,16 @@ bool FakeEthResource::open2(eOipv4addr_t remIP, yarp::os::Searchable &cfgtotal)
         ret = true;
     }
 
-    uint8_t ip1, ip2, ip3, ip4;
-    eo_common_ipv4addr_to_decimal(remIP, &ip1, &ip2, &ip3, &ip4);
-    ACE_UINT32 hostip = (ip1 << 24) | (ip2 << 16) | (ip3 << 8) | (ip4);
-    ACE_INET_Addr myIP((u_short)localIPv4.port, hostip);
-    remote_dev = myIP;
-    ipv4addr = remIP;
-    eo_common_ipv4addr_to_string(ipv4addr, ipv4addrstring, sizeof(ipv4addrstring));
 
 
-    if(0 != strlen(xmlboardname))
-    {
-        snprintf(boardName, sizeof(boardName), "%s", xmlboardname);
-    }
-    else
-    {
-        snprintf(boardName, sizeof(boardName), "NOT-NAMED");
-    }
+//    if(0 != strlen(xmlboardname))
+//    {
+//        snprintf(boardName, sizeof(boardName), "%s", xmlboardname);
+//    }
+//    else
+//    {
+//        snprintf(boardName, sizeof(boardName), "NOT-NAMED");
+//    }
 
 
 
@@ -263,33 +269,35 @@ bool FakeEthResource::canProcessRXpacket(uint64_t *data, uint16_t size)
     if(NULL == data)
         return false;
 
-    if(size > myHostTrans->getCapacityOfRXpacket())
+    if(size > myHostTrans.getCapacityOfRXpacket())
         return false;
 
     return true;
 }
 
 
-void FakeEthResource::processRXpacket(uint64_t *data, uint16_t size, bool collectStatistics)
+void FakeEthResource::processRXpacket(uint64_t *data, uint16_t size)
 {;}
 
 
-ACE_INET_Addr FakeEthResource::getRemoteAddress()
-{
-    return remote_dev;
-}
 
 eOipv4addr_t FakeEthResource::getIPv4remoteAddress(void)
 {
     return ipv4addr;
 }
 
-const char * FakeEthResource::getName(void)
+bool FakeEthResource::getIPv4remoteAddressing(eOipv4addressing_t &addressing)
+{
+    addressing = ipv4addressing;
+    return true;
+}
+
+const string & FakeEthResource::getName(void)
 {
     return boardName;
 }
 
-const char * FakeEthResource::getIPv4string(void)
+const string & FakeEthResource::getIPv4string(void)
 {
     return ipv4addrstring;
 }
@@ -299,7 +307,7 @@ eObrd_ethtype_t FakeEthResource::getBoardType(void)
     return ethboardtype;
 }
 
-const char * FakeEthResource::getBoardTypeString(void)
+const string & FakeEthResource::getBoardTypeString(void)
 {
     return boardTypeString;
 }
@@ -308,13 +316,6 @@ void FakeEthResource::getBoardInfo(eOdate_t &date, eOversion_t &version)
 {
     date = {0};
     version = {0};
-}
-
-
-
-bool FakeEthResource::isEPsupported(eOprot_endpoint_t ep)
-{
-    return myHostTrans->isSupported(ep);
 }
 
 
@@ -441,7 +442,7 @@ bool FakeEthResource::readSentValue(eOprotID32_t id32, uint8_t *data, uint16_t* 
 
 EOnv* FakeEthResource::getNVhandler(eOprotID32_t id32, EOnv* nv)
 {
-    return myHostTrans->getnvhandler(id32, nv);
+    return myHostTrans.getnvhandler(id32, nv);
 }
 
 bool FakeEthResource::isFake()

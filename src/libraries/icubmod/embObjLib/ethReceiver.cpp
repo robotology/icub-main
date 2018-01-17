@@ -67,22 +67,22 @@ EthReceiver::EthReceiver(int raterx): RateThread(raterx)
     yDebug() << "EthReceiver is a RateThread with rxrate =" << rateofthread << "ms";
     // ok, and now i get it from xml file ... if i find it.
 
-    ConstString tmp = NetworkBase::getEnvironment("ETHSTAT_PRINT_INTERVAL");
-    if (tmp != "")
-    {
-        statPrintInterval = (double)NetType::toInt(tmp);
-    }
-    else
-    {
-        statPrintInterval = 0.0;
-    }
+//    ConstString tmp = NetworkBase::getEnvironment("ETHSTAT_PRINT_INTERVAL");
+//    if (tmp != "")
+//    {
+//        statPrintInterval = (double)NetType::toInt(tmp);
+//    }
+//    else
+//    {
+//        statPrintInterval = 0.0;
+//    }
 }
 
 void EthReceiver::onStop()
 {
     // in here i send a small packet to ... myself ?
     uint8_t tmp = 0;
-    ethManager->sendPacket( &tmp, 1, ethManager->getLocalIPaddress());
+    ethManager->sendPacket( &tmp, 1, ethManager->getLocalIPV4addressing());
 }
 
 EthReceiver::~EthReceiver()
@@ -153,13 +153,13 @@ uint64_t getRopFrameAge(char *pck)
 }
 
 
-#warning --> EthResource::maxRXpacketsize shoudl be in EthManager
+
 void EthReceiver::run()
 {
     ssize_t       incoming_msg_size = 0;
     ACE_INET_Addr sender_addr;
-    uint64_t      incoming_msg_data[EthResource::maxRXpacketsize/8];   // 8-byte aligned local buffer for incoming packet: it must be able to accomodate max size of packet
-    const ssize_t incoming_msg_capacity = EthResource::maxRXpacketsize;
+    uint64_t      incoming_msg_data[TheEthManager::maxRXpacketsize/8];   // 8-byte aligned local buffer for incoming packet: it must be able to accomodate max size of packet
+    const ssize_t incoming_msg_capacity = TheEthManager::maxRXpacketsize;
 
     int flags = 0;
 #ifndef WIN32
@@ -192,8 +192,8 @@ void EthReceiver::run()
         }
 
         // we have a packet ... we give it to the ethmanager for it parsing
-        bool collectStatistics = (statPrintInterval > 0) ? true : false;
-        ethManager->Reception(sender_addr, incoming_msg_data, incoming_msg_size, collectStatistics);
+        //bool collectStatistics = (statPrintInterval > 0) ? true : false;
+        ethManager->Reception(ethManager->toipv4addr(sender_addr), incoming_msg_data, incoming_msg_size);
     }
 
     // execute the check on presence of all eth boards.

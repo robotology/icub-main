@@ -70,7 +70,15 @@ eth::EthMonitorPresence::~EthMonitorPresence()
 void eth::EthMonitorPresence::config(const Config &cfg)
 {
     configuration = cfg;
-    // i dont check consistency... use sensibly
+
+    if(true == configuration.enabled)
+    {
+        yDebug() << "eth::EthMonitorPresence::config(): monitoring of presence is ON for BOARD" << configuration.name << "with timeout =" << configuration.timeout << "sec and period of missing report =" << configuration.periodmissingreport << "sec";
+    }
+    else
+    {
+        yDebug() << "eth::EthMonitorPresence::config(): monitoring of presence is OFF for BOARD" << configuration.name;
+    }
 }
 
 
