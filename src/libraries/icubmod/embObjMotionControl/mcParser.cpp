@@ -1469,7 +1469,16 @@ bool mcParser::parseAxisInfo(yarp::os::Searchable &config, int axisMap[], std::v
         return false;
 
     for (i = 1; i < xtmp.size(); i++)
-        axisMap[i-1] = xtmp.get(i).asInt();
+    {
+        int user_joint =  xtmp.get(i).asInt();
+        if(user_joint>= _njoints)
+        {
+            yError() << "embObjMC BOARD " << _boardname << "In AxisMap param: joint " << i-1 << "has been mapped to not-existing joint ("<< user_joint <<"). Here there are only "<< _njoints <<"joints";
+            return false;
+        }
+        axisMap[i-1] = user_joint;
+    }
+    
 
     if (!extractGroup(general, xtmp, "AxisName", "a list of strings representing the axes names", _njoints))
         return false;
